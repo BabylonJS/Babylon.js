@@ -74,7 +74,7 @@ export class BaseSlider extends Control {
 
     /** Gets main bar offset in pixels*/
     public get barOffsetInPixels(): number {
-        return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._barOffset, this._cachedParentMeasure.width);
     }
 
     public set barOffset(value: string | number) {
@@ -95,7 +95,7 @@ export class BaseSlider extends Control {
 
     /** Gets thumb width in pixels */
     public get thumbWidthInPixels(): number {
-        return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._thumbWidth, this._cachedParentMeasure.width);
     }
 
     public set thumbWidth(value: string | number) {
@@ -216,17 +216,17 @@ export class BaseSlider extends Control {
         let thumbThickness = 0;
         switch (type) {
             case "circle":
-                if (this._thumbWidth.isPixel) {
-                    thumbThickness = Math.max(this._thumbWidth.getValue(this._host), this._backgroundBoxThickness);
+                if (!this._thumbWidth.isPercentage) {
+                    thumbThickness = Math.max(this._getValueInPixel(this._thumbWidth, 1), this._backgroundBoxThickness);
                 } else {
-                    thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
+                    thumbThickness = this._backgroundBoxThickness * this._getValueInPixel(this._thumbWidth, 1);
                 }
                 break;
             case "rectangle":
-                if (this._thumbWidth.isPixel) {
-                    thumbThickness = Math.min(this._thumbWidth.getValue(this._host), this._backgroundBoxThickness);
+                if (!this._thumbWidth.isPercentage) {
+                    thumbThickness = Math.min(this._getValueInPixel(this._thumbWidth, 1), this._backgroundBoxThickness);
                 } else {
-                    thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
+                    thumbThickness = this._backgroundBoxThickness * this._getValueInPixel(this._thumbWidth, 1);
                 }
         }
         return thumbThickness;
@@ -252,10 +252,10 @@ export class BaseSlider extends Control {
             Logger.Error("Height should be greater than width");
             return;
         }
-        if (this._barOffset.isPixel) {
-            this._effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._backgroundBoxThickness);
+        if (!this._barOffset.isPercentage) {
+            this._effectiveBarOffset = Math.min(this._getValueInPixel(this._barOffset, 1), this._backgroundBoxThickness);
         } else {
-            this._effectiveBarOffset = this._backgroundBoxThickness * this._barOffset.getValue(this._host);
+            this._effectiveBarOffset = this._backgroundBoxThickness * this._getValueInPixel(this._barOffset, 1);
         }
 
         this._backgroundBoxThickness -= this._effectiveBarOffset * 2;

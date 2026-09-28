@@ -35,7 +35,7 @@ export class RawTexture3D extends Texture {
      * @param depth defines the depth of the texture
      * @param format defines the texture format to use
      * @param scene defines the hosting scene
-     * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
+     * @param generateMipMaps defines whether mip levels should be generated across width, height, and depth (true by default)
      * @param invertY defines if texture must be stored with Y axis inverted
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT...)

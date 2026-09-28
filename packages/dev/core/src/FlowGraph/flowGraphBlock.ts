@@ -151,6 +151,9 @@ export class FlowGraphBlock {
      */
     public serialize(serializationObject: any = {}, _valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction) {
         serializationObject.uniqueId = this.uniqueId;
+        if (this.metadata !== undefined) {
+            serializationObject.metadata = this.metadata;
+        }
         serializationObject.config = {};
         if (this.config) {
             const config = this.config;

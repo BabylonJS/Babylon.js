@@ -156,12 +156,12 @@ export class Line extends Control {
 
     /** @internal */
     public get _effectiveX2(): number {
-        return (this._connectedControl ? this._connectedControl.centerX - this._cachedParentMeasure.left : 0) + this._x2.getValue(this._host);
+        return (this._connectedControl ? this._connectedControl.centerX - this._cachedParentMeasure.left : 0) + this._getValueInPixel(this._x2, 1);
     }
 
     /** @internal */
     public get _effectiveY2(): number {
-        return (this._connectedControl ? this._connectedControl.centerY - this._cachedParentMeasure.top : 0) + this._y2.getValue(this._host);
+        return (this._connectedControl ? this._connectedControl.centerY - this._cachedParentMeasure.top : 0) + this._getValueInPixel(this._y2, 1);
     }
 
     /**
@@ -198,7 +198,7 @@ export class Line extends Control {
         context.setLineDash(this._dash);
 
         context.beginPath();
-        context.moveTo(this._cachedParentMeasure.left + this._x1.getValue(this._host), this._cachedParentMeasure.top + this._y1.getValue(this._host));
+        context.moveTo(this._cachedParentMeasure.left + this._getValueInPixel(this._x1, 1), this._cachedParentMeasure.top + this._getValueInPixel(this._y1, 1));
 
         context.lineTo(this._cachedParentMeasure.left + this._effectiveX2, this._cachedParentMeasure.top + this._effectiveY2);
         context.stroke();
@@ -208,8 +208,8 @@ export class Line extends Control {
 
     public override _measure(): void {
         // Width / Height
-        this._currentMeasure.width = Math.abs(this._x1.getValue(this._host) - this._effectiveX2) + this._lineWidth;
-        this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
+        this._currentMeasure.width = Math.abs(this._getValueInPixel(this._x1, 1) - this._effectiveX2) + this._lineWidth;
+        this._currentMeasure.height = Math.abs(this._getValueInPixel(this._y1, 1) - this._effectiveY2) + this._lineWidth;
     }
 
     protected override _preMeasure(parentMeasure: Measure): void {
@@ -225,8 +225,8 @@ export class Line extends Control {
     }
 
     protected override _computeAlignment(parentMeasure: Measure): void {
-        this._currentMeasure.left = parentMeasure.left + Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
-        this._currentMeasure.top = parentMeasure.top + Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
+        this._currentMeasure.left = parentMeasure.left + Math.min(this._getValueInPixel(this._x1, 1), this._effectiveX2) - this._lineWidth / 2;
+        this._currentMeasure.top = parentMeasure.top + Math.min(this._getValueInPixel(this._y1, 1), this._effectiveY2) - this._lineWidth / 2;
     }
 
     /**
@@ -259,8 +259,8 @@ export class Line extends Control {
      * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
      */
     public override _moveToProjectedPosition(projectedPosition: Vector3, end: boolean = false): void {
-        const x: string = projectedPosition.x + this._linkOffsetX.getValue(this._host) + "px";
-        const y: string = projectedPosition.y + this._linkOffsetY.getValue(this._host) + "px";
+        const x: string = projectedPosition.x + this._getValueInPixel(this._linkOffsetX, 1) + "px";
+        const y: string = projectedPosition.y + this._getValueInPixel(this._linkOffsetY, 1) + "px";
 
         if (end) {
             this.x2 = x;

@@ -22,6 +22,7 @@ import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
 import { type HelpTopicId } from "./components/help/helpContent";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -162,9 +163,21 @@ export class GlobalState {
     /** Optional custom save handler */
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
+    /** Reason serialization is unavailable for the currently loaded graph set, or null when it is supported. */
+    serializationDisabledReason: Nullable<string> = null;
+
+    /** Whether the active coordinator depends on runtime services scoped to its imported asset. */
+    hasImportScopedRuntime = false;
+
+    /** Canonical KHR_interactivity import associated with the active editor coordinator. */
+    khrInteractivityImportResult: Nullable<IKHRInteractivityImportResult> = null;
+
     // ── Multi-Graph / Coordinator ──────────────────────────────────────
     /** The coordinator that owns all graphs in this editor session. */
     private _coordinator: Nullable<FlowGraphCoordinator> = null;
+
+    /** Coordinators created by editor parsing or graph creation and therefore safe for the editor to dispose. */
+    private readonly _editorOwnedCoordinators = new WeakSet<FlowGraphCoordinator>();
 
     /** Index of the currently active (displayed) graph within the coordinator. */
     private _activeGraphIndex: number = 0;
@@ -190,11 +203,32 @@ export class GlobalState {
      * This is the primary entry point when loading a new set of graphs.
      */
     public set coordinator(coordinator: Nullable<FlowGraphCoordinator>) {
+        this.setCoordinator(coordinator);
+    }
+
+    /**
+     * Sets the active coordinator and records whether its lifecycle belongs to the editor.
+     * @param coordinator coordinator to activate
+     * @param editorOwned whether the editor may dispose the coordinator when replacing it
+     */
+    public setCoordinator(coordinator: Nullable<FlowGraphCoordinator>, editorOwned = false): void {
+        if (coordinator && editorOwned) {
+            this._editorOwnedCoordinators.add(coordinator);
+        }
         this._coordinator = coordinator;
         if (coordinator && coordinator.flowGraphs.length > 0) {
             this._activeGraphIndex = 0;
             this._activateGraph(coordinator.flowGraphs[0]);
         }
+    }
+
+    /**
+     * Returns whether a coordinator's lifecycle belongs to this editor.
+     * @param coordinator coordinator to inspect
+     * @returns true when the editor created and may dispose the coordinator
+     */
+    public isCoordinatorEditorOwned(coordinator: Nullable<FlowGraphCoordinator>): boolean {
+        return !!coordinator && this._editorOwnedCoordinators.has(coordinator);
     }
 
     /**
@@ -227,11 +261,13 @@ export class GlobalState {
      * @returns the newly created FlowGraph
      */
     public addGraph(): FlowGraph {
-        if (!this._coordinator) {
-            this._coordinator = new FlowGraphCoordinator({ scene: this.scene });
+        let coordinator = this._coordinator;
+        if (!coordinator) {
+            coordinator = new FlowGraphCoordinator({ scene: this.scene });
+            this.setCoordinator(coordinator, true);
         }
-        const graph = this._coordinator.createGraph();
-        this._activeGraphIndex = this._coordinator.flowGraphs.indexOf(graph);
+        const graph = coordinator.createGraph();
+        this._activeGraphIndex = coordinator.flowGraphs.indexOf(graph);
         this._activateGraph(graph);
         this.onGraphListChanged.notifyObservers();
         return graph;
@@ -899,6 +935,8 @@ export class GlobalState {
 
     /** The scene context populated when a Playground snippet is loaded */
     sceneContext: Nullable<SceneContext> = null;
+    /** Canvas retained across scene-preview pane mounts so its engine and WebGL context remain usable. */
+    scenePreviewCanvas: Nullable<HTMLCanvasElement> = null;
     /** The source used to create the current preview scene, if known. */
     sceneSource: "default" | "snippet" | "file" | "host" | null = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */

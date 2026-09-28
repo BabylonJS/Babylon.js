@@ -1,9 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention, jsdoc/require-param, jsdoc/require-returns */
-import { type FBXNode, findChildByName, getPropertyValue, cleanFBXName } from "../types/fbxTypes";
+import { type FBXNode, type FBXPropertyValue, findChildByName, getPropertyValue, cleanFBXName } from "../types/fbxTypes";
 
 import { type FBXObjectMap, getChildren } from "./connections";
 
-import { getPropertyTemplate, resolvePropertyValue, resolvePropertyValues, type FBXPropertyTemplate, type FBXPropertyTemplateMap } from "./propertyTemplates";
+import {
+    extractUserProperties,
+    getPropertyEntries,
+    getPropertyTemplate,
+    resolvePropertyValue,
+    resolvePropertyValues,
+    type FBXPropertyTemplate,
+    type FBXPropertyTemplateMap,
+    type FBXUserPropertyValue,
+} from "./propertyTemplates";
+import { resolveMaterialModel, type FBXMaterialModel, type FBXMaterialSource } from "./materialModel";
 
 /** Parsed material data */
 export interface FBXMaterialData {
@@ -12,6 +22,10 @@ export interface FBXMaterialData {
     type: "Lambert" | "Phong";
     properties: FBXMaterialProperties;
     textures: FBXTextureRef[];
+    /** Unified classic + PBR parameter model resolved from whichever shader flavour the file uses */
+    model: FBXMaterialModel<FBXTextureRef>;
+    /** User-defined properties */
+    userProperties?: Record<string, FBXUserPropertyValue>;
 }
 
 export interface FBXMaterialProperties {
@@ -49,6 +63,12 @@ export interface FBXTextureRef {
     uvSetIndex?: number;
     /** Which named UV set this texture uses */
     uvSetName?: string;
+    /** WrapModeU: 0 = repeat, 1 = clamp */
+    wrapU?: number;
+    /** WrapModeV: 0 = repeat, 1 = clamp */
+    wrapV?: number;
+    /** Set when the texture came from a LayeredTexture (only the first layer is used) */
+    layeredTextureId?: number;
 }
 
 /**
@@ -72,7 +92,69 @@ export function extractMaterial(materialNode: FBXNode, materialId: number, objec
     const textureTemplate = templates ? (getPropertyTemplate(templates, "Texture", "FbxFileTexture") ?? getPropertyTemplate(templates, "Texture")) : undefined;
     const textures = extractTextures(materialId, objectMap, textureTemplate);
 
-    return { id: materialId, name, type, properties, textures };
+    // Resolve the unified material model (classic + PBR parameters) from all properties, textures and shader bindings.
+    const props = new Map<string, { type: string; values: FBXPropertyValue[] }>();
+    for (const tp of template?.properties.values() ?? []) {
+        props.set(tp.name, { type: tp.propertyType, values: tp.values });
+    }
+    for (const entry of getPropertyEntries(materialNode)) {
+        props.set(entry.name, { type: entry.type, values: entry.values });
+    }
+    const texturesByProp = new Map<string, FBXTextureRef>();
+    for (const tex of textures) {
+        if (!texturesByProp.has(tex.propertyName)) {
+            texturesByProp.set(tex.propertyName, tex);
+        }
+    }
+    const source: FBXMaterialSource<FBXTextureRef> = { shadingModelName: shadingType, props, texturesByProp, shader: extractShaderInfo(materialId, objectMap) };
+    const model = resolveMaterialModel(source);
+
+    return { id: materialId, name, type, properties, textures, model, userProperties: extractUserProperties(materialNode) };
+}
+
+/**
+ * Shader implementation connected to a material (Arnold, OSL / Standard Surface, Stingray PBS): the RenderAPI names
+ * the flavour and the binding table maps shader semantics to material property names.
+ */
+function extractShaderInfo(materialId: number, objectMap: FBXObjectMap): { renderApi: string; bindings: Map<string, string[]> } | undefined {
+    // The material is connected as a child of its Implementation (Material -> Implementation), so look at parents.
+    const implementations = objectMap.connections
+        .filter((conn) => conn.type === "OO" && conn.childId === materialId && objectMap.objects.get(conn.parentId)?.name === "Implementation")
+        .map((conn) => ({ id: conn.parentId, node: objectMap.objects.get(conn.parentId)! }));
+    if (implementations.length === 0) {
+        return undefined;
+    }
+    const impl = implementations[0];
+    const renderApi = getPropertyEntries(impl.node).find((e) => e.name === "RenderAPI")?.values[0];
+    const bindings = new Map<string, string[]>();
+    const add = (shaderProp: string, materialProp: string) => {
+        const list = bindings.get(shaderProp);
+        if (list) {
+            list.push(materialProp);
+        } else {
+            bindings.set(shaderProp, [materialProp]);
+        }
+    };
+    for (const table of getChildren(objectMap, impl.id, "BindingTable")) {
+        for (const entry of table.node.children) {
+            if (entry.name !== "Entry") {
+                continue;
+            }
+            const src = getPropertyValue<string>(entry, 0);
+            const srcType = getPropertyValue<string>(entry, 1);
+            const dst = getPropertyValue<string>(entry, 2);
+            const dstType = getPropertyValue<string>(entry, 3);
+            if (typeof src !== "string" || typeof dst !== "string") {
+                continue;
+            }
+            if (srcType === "FbxPropertyEntry" && dstType === "FbxSemanticEntry") {
+                add(dst, src);
+            } else if (srcType === "FbxSemanticEntry" && dstType === "FbxPropertyEntry") {
+                add(src, dst);
+            }
+        }
+    }
+    return { renderApi: typeof renderApi === "string" ? renderApi : "", bindings };
 }
 
 function extractMaterialProperties(materialNode: FBXNode, template?: FBXPropertyTemplate): FBXMaterialProperties {
@@ -97,6 +179,26 @@ function extractTextures(materialId: number, objectMap: FBXObjectMap, template?:
     const textureChildren = getChildren(objectMap, materialId, "Texture");
 
     for (const { id, node, propertyName } of textureChildren) {
+        textures.push(extractTextureRef(id, node, propertyName, objectMap, template));
+    }
+
+    // LayeredTexture: several textures blended into one slot. Babylon has no layer blending, so the first layer
+    // stands in for the stack; the layer count is recorded on the ref for diagnostics.
+    for (const { id: layeredId, propertyName } of getChildren(objectMap, materialId, "LayeredTexture")) {
+        const layers = getChildren(objectMap, layeredId, "Texture");
+        if (layers.length === 0) {
+            continue;
+        }
+        const ref = extractTextureRef(layers[0].id, layers[0].node, propertyName, objectMap, template);
+        ref.layeredTextureId = layeredId;
+        textures.push(ref);
+    }
+
+    return textures;
+}
+
+export function extractTextureRef(id: number, node: FBXNode, propertyName: string | undefined, objectMap: FBXObjectMap, template?: FBXPropertyTemplate): FBXTextureRef {
+    {
         const fileNameNode = findChildByName(node, "FileName");
         const relFileNameNode = findChildByName(node, "RelativeFilename");
 
@@ -116,6 +218,8 @@ function extractTextures(materialId: number, objectMap: FBXObjectMap, template?:
         }
         uvTranslation ??= getNumberPairChild(node, "ModelUVTranslation");
         uvScaling ??= getNumberPairChild(node, "ModelUVScaling");
+        const wrapU = getNumberProperty(node, template, "WrapModeU");
+        const wrapV = getNumberProperty(node, template, "WrapModeV");
 
         // Check for embedded texture data in connected Video node
         let embeddedData: Uint8Array | null = null;
@@ -132,7 +236,7 @@ function extractTextures(materialId: number, objectMap: FBXObjectMap, template?:
             }
         }
 
-        textures.push({
+        return {
             propertyName: propertyName ?? "DiffuseColor",
             fileName,
             relativeFileName,
@@ -142,10 +246,10 @@ function extractTextures(materialId: number, objectMap: FBXObjectMap, template?:
             uvScaling,
             uvRotation,
             uvSetName,
-        });
+            wrapU,
+            wrapV,
+        };
     }
-
-    return textures;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

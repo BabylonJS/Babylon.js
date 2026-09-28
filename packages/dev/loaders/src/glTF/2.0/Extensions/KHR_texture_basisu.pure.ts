@@ -50,7 +50,8 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
                     assign(babylonTexture);
                 },
                 texture._textureInfo.nonColorData ? { useRGBAIfASTCBC7NotAvailableWhenUASTC: true } : undefined,
-                !texture._textureInfo.nonColorData
+                !texture._textureInfo.nonColorData,
+                texture
             );
         });
     }

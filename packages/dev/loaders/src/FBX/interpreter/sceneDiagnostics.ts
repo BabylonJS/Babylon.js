@@ -24,7 +24,27 @@ export interface FBXSceneDiagnostic {
     childCount?: number;
 }
 
-const HELPER_NODE_NAMES = new Set(["Character", "CharacterPose", "ControlSet", "ControlSetPlug", "SelectionSet", "CollectionExclusive"]);
+const HELPER_NODE_NAMES = new Set(["Character", "CharacterPose", "ControlSet", "ControlSetPlug"]);
+
+/** Node attribute subtypes that are converted (or intentionally represented as plain transform nodes). */
+const HANDLED_NODE_ATTRIBUTES = new Set([
+    "Camera",
+    "Light",
+    "Null",
+    "LodGroup",
+    "LimbNode",
+    "Limb",
+    "Root",
+    "Skeleton",
+    "Marker",
+    "CameraSwitcher",
+    "Mesh",
+    "NurbsCurve",
+    "NurbsSurface",
+    "TrimNurbsSurface",
+    "Line",
+    "Boundary",
+]);
 
 export function extractSceneDiagnostics(objectMap: FBXObjectMap): FBXSceneDiagnostic[] {
     const diagnostics: FBXSceneDiagnostic[] = objectMap.diagnostics.map((diagnostic) => ({
@@ -38,15 +58,21 @@ export function extractSceneDiagnostics(objectMap: FBXObjectMap): FBXSceneDiagno
     for (const [id, node] of Array.from(objectMap.objects)) {
         const subType = getPropertyValue<string>(node, 2) ?? "";
         if (node.name === "Constraint") {
-            diagnostics.push(
-                createObjectDiagnostic(
-                    objectMap,
-                    id,
-                    node,
-                    "unsupported-constraint",
-                    `Constraint '${subType || cleanFBXName(getPropertyValue<string>(node, 1) ?? "")}' is preserved as diagnostic data but not evaluated at runtime.`
-                )
-            );
+            // Aim, parent, position, rotation and scale constraints are evaluated at runtime; IK chains are not.
+            const typeChild = node.children.find((c) => c.name === "Type");
+            const constraintType = (typeChild ? getPropertyValue<string>(typeChild, 0) : undefined) ?? subType;
+            const evaluated = new Set(["Aim", "Parent-Child", "Position From Positions", "Rotation From Rotations", "Scale From Scales"]);
+            if (!evaluated.has(constraintType)) {
+                diagnostics.push(
+                    createObjectDiagnostic(
+                        objectMap,
+                        id,
+                        node,
+                        "unsupported-constraint",
+                        `Constraint '${constraintType || cleanFBXName(getPropertyValue<string>(node, 1) ?? "")}' is preserved as metadata but not evaluated at runtime.`
+                    )
+                );
+            }
             continue;
         }
 
@@ -84,7 +110,7 @@ export function extractSceneDiagnostics(objectMap: FBXObjectMap): FBXSceneDiagno
             continue;
         }
 
-        if (node.name === "NodeAttribute" && subType && subType !== "Camera" && subType !== "Light") {
+        if (node.name === "NodeAttribute" && subType && !HANDLED_NODE_ATTRIBUTES.has(subType)) {
             diagnostics.push(
                 createObjectDiagnostic(
                     objectMap,

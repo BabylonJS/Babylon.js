@@ -135,6 +135,24 @@ export interface ITextureProcessOperand {
 }
 
 /**
+ * Controls the GPU texture created by a texture processing operation.
+ */
+export interface ITextureProcessorOutputOptions {
+    /**
+     * Texture type used by the render target. Defaults to `Constants.TEXTURETYPE_UNSIGNED_BYTE`.
+     */
+    textureType?: number;
+    /**
+     * Sampling mode used by the output texture. Defaults to `Constants.TEXTURE_BILINEAR_SAMPLINGMODE`.
+     */
+    samplingMode?: number;
+    /**
+     * Whether mipmaps are generated for the output texture. Defaults to `false`.
+     */
+    generateMipMaps?: boolean;
+}
+
+/**
  * Create an operand from a texture alone (no constant factor scaling).
  * @param texture - The texture to sample, or null to produce an identity (1,1,1,1) constant operand
  * @param channel - Optional channel selection. When set, the sampled value is swizzled before use
@@ -472,14 +490,15 @@ function _CreateProcessorTexture(
     defines: string[],
     outputSize: TextureSize,
     scene: Scene,
-    outputColorSpace: TextureColorSpace = TextureColorSpace.Linear
+    outputColorSpace: TextureColorSpace = TextureColorSpace.Linear,
+    outputOptions?: ITextureProcessorOutputOptions
 ): ProceduralTexture {
     const options: IProceduralTextureCreationOptions = {
-        type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        type: outputOptions?.textureType ?? Constants.TEXTURETYPE_UNSIGNED_BYTE,
         format: Constants.TEXTUREFORMAT_RGBA,
-        samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        samplingMode: outputOptions?.samplingMode ?? Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
         generateDepthBuffer: false,
-        generateMipMaps: false,
+        generateMipMaps: outputOptions?.generateMipMaps ?? false,
         gammaSpace: outputColorSpace === TextureColorSpace.SRGB,
         shaderLanguage: scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
         extraInitializationsAsync: async () => {
@@ -541,6 +560,7 @@ async function _RenderAsync(pt: ProceduralTexture): Promise<void> {
  *   result is converted to sRGB (IEC 61966-2-1) before being written. Defaults to `TextureColorSpace.Linear`.
  * @param outputChannelMask - Optional bitmask of channels to write. Excluded color channels are set to
  *   `0.0`; excluded alpha is set to `1.0`. Defaults to `ChannelMask.RGBA` (all channels written).
+ * @param outputOptions - Optional render-target type, sampling, and mipmap settings.
  * @returns An operand whose `texture` holds the GPU result, or whose `factor` holds the CPU-folded constant
  */
 export async function MultiplyTexturesAsync(
@@ -549,7 +569,8 @@ export async function MultiplyTexturesAsync(
     b: ITextureProcessOperand,
     scene: Scene,
     outputColorSpace?: TextureColorSpace,
-    outputChannelMask?: ChannelMask
+    outputChannelMask?: ChannelMask,
+    outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture) {
         const factor = _MultiplyConstants(_EvalConstant(a), _EvalConstant(b));
@@ -574,7 +595,7 @@ export async function MultiplyTexturesAsync(
     if (outputColorSpace) {
         defines.push("OUTPUT_SRGB");
     }
-    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b]), scene, outputColorSpace);
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b]), scene, outputColorSpace, outputOptions);
     _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform);
     _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform);
     try {
@@ -617,6 +638,7 @@ export async function MultiplyTexturesAsync(
  *   result is converted to sRGB (IEC 61966-2-1) before being written. Defaults to `TextureColorSpace.Linear`.
  * @param outputChannelMask - Optional bitmask of channels to write. Excluded color channels are set to
  *   `0.0`; excluded alpha is set to `1.0`. Defaults to `ChannelMask.RGBA` (all channels written).
+ * @param outputOptions - Optional render-target type, sampling, and mipmap settings.
  * @returns An operand whose `texture` holds the GPU result, or whose `factor` holds the CPU-folded constant
  */
 export async function MaxTexturesAsync(
@@ -625,7 +647,8 @@ export async function MaxTexturesAsync(
     b: ITextureProcessOperand,
     scene: Scene,
     outputColorSpace?: TextureColorSpace,
-    outputChannelMask?: ChannelMask
+    outputChannelMask?: ChannelMask,
+    outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture) {
         const factor = _MaxConstants(_EvalConstant(a), _EvalConstant(b));
@@ -651,7 +674,7 @@ export async function MaxTexturesAsync(
     if (outputColorSpace) {
         defines.push("OUTPUT_SRGB");
     }
-    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b]), scene, outputColorSpace);
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b]), scene, outputColorSpace, outputOptions);
     _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform);
     _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform);
     try {
@@ -696,6 +719,7 @@ export async function MaxTexturesAsync(
  *   result is converted to sRGB (IEC 61966-2-1) before being written. Defaults to `TextureColorSpace.Linear`.
  * @param outputChannelMask - Optional bitmask of channels to write. Excluded color channels are set to
  *   `0.0`; excluded alpha is set to `1.0`. Defaults to `ChannelMask.RGBA` (all channels written).
+ * @param outputOptions - Optional render-target type, sampling, and mipmap settings.
  * @returns An operand whose `texture` holds the GPU result, or whose `factor` holds the CPU-folded constant
  */
 export async function LerpTexturesAsync(
@@ -705,7 +729,8 @@ export async function LerpTexturesAsync(
     t: ITextureProcessOperand,
     scene: Scene,
     outputColorSpace?: TextureColorSpace,
-    outputChannelMask?: ChannelMask
+    outputChannelMask?: ChannelMask,
+    outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture && !t.texture) {
         const factor = _LerpConstants(_EvalConstant(a), _EvalConstant(b), _EvalConstant(t));
@@ -735,7 +760,7 @@ export async function LerpTexturesAsync(
     if (outputColorSpace) {
         defines.push("OUTPUT_SRGB");
     }
-    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b, t]), scene, outputColorSpace);
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b, t]), scene, outputColorSpace, outputOptions);
     _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform);
     _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform);
     _SetLerpBlendUniforms(pt, t, bakeTransform);
@@ -784,6 +809,7 @@ export async function LerpTexturesAsync(
  *   result is converted to sRGB (IEC 61966-2-1) before being written. Defaults to `TextureColorSpace.Linear`.
  * @param outputChannelMask - Optional bitmask of channels to write. Excluded color channels are set to
  *   `0.0`; excluded alpha is set to `1.0`. Defaults to `ChannelMask.RGBA` (all channels written).
+ * @param outputOptions - Optional render-target type, sampling, and mipmap settings.
  * @returns An operand whose `texture` holds the GPU result, or whose `factor` holds the CPU-folded constant
  */
 export async function InvertTextureAsync(
@@ -792,7 +818,8 @@ export async function InvertTextureAsync(
     scene: Scene,
     channels: ChannelMask = ChannelMask.RGBA,
     outputColorSpace?: TextureColorSpace,
-    outputChannelMask?: ChannelMask
+    outputChannelMask?: ChannelMask,
+    outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!input.texture) {
         const c = _EvalConstant(input);
@@ -810,7 +837,7 @@ export async function InvertTextureAsync(
     if (outputColorSpace) {
         defines.push("OUTPUT_SRGB");
     }
-    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene, outputColorSpace);
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene, outputColorSpace, outputOptions);
     _SetOperandUniforms(pt, input, "textureA", "factorA", false);
     try {
         await _RenderAsync(pt);
@@ -858,6 +885,7 @@ export async function InvertTextureAsync(
  *   result is converted to sRGB (IEC 61966-2-1) before being written. Defaults to `TextureColorSpace.Linear`.
  * @param outputChannelMask - Optional bitmask of channels to write. Excluded color channels are set to
  *   `0.0`; excluded alpha is set to `1.0`. Defaults to `ChannelMask.RGBA` (all channels written).
+ * @param outputOptions - Optional render-target type, sampling, and mipmap settings.
  * @returns An operand whose `texture` holds the GPU result, or whose `factor` holds the CPU-folded constant
  */
 export async function ExtractMaxChannelAsync(
@@ -866,7 +894,8 @@ export async function ExtractMaxChannelAsync(
     scene: Scene,
     includeAlpha: boolean = false,
     outputColorSpace?: TextureColorSpace,
-    outputChannelMask?: ChannelMask
+    outputChannelMask?: ChannelMask,
+    outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!input.texture) {
         const c = _EvalConstant(input);
@@ -883,7 +912,7 @@ export async function ExtractMaxChannelAsync(
     if (outputColorSpace) {
         defines.push("OUTPUT_SRGB");
     }
-    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene, outputColorSpace);
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene, outputColorSpace, outputOptions);
     _SetOperandUniforms(pt, input, "textureA", "factorA", false);
     try {
         await _RenderAsync(pt);
@@ -930,6 +959,7 @@ export async function ExtractMaxChannelAsync(
  *   result is converted to sRGB (IEC 61966-2-1) before being written. Defaults to `TextureColorSpace.Linear`.
  * @param outputChannelMask - Optional bitmask of channels to write. Excluded color channels are set to
  *   `0.0`; excluded alpha is set to `1.0`. Defaults to `ChannelMask.RGBA` (all channels written).
+ * @param outputOptions - Optional render-target type, sampling, and mipmap settings.
  * @returns An operand whose `texture` holds the GPU result, or whose `factor` holds the CPU-folded constant
  */
 export async function ExtractChannelAsync(
@@ -938,11 +968,12 @@ export async function ExtractChannelAsync(
     channel: TextureChannel,
     scene: Scene,
     outputColorSpace?: TextureColorSpace,
-    outputChannelMask?: ChannelMask
+    outputChannelMask?: ChannelMask,
+    outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!input.texture) {
         const swizzled = _ApplyChannelSwizzle(_EvalConstant(input), channel);
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(swizzled, outputChannelMask) : swizzled };
     }
-    return await MultiplyTexturesAsync(name, { ...input, channel }, CreateFactorOperand(new Color4(1, 1, 1, 1)), scene, outputColorSpace, outputChannelMask);
+    return await MultiplyTexturesAsync(name, { ...input, channel }, CreateFactorOperand(new Color4(1, 1, 1, 1)), scene, outputColorSpace, outputChannelMask, outputOptions);
 }

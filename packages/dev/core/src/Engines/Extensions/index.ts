@@ -14,6 +14,7 @@ export * from "./engine.prefilteredCubeTexture";
 export * from "./engine.renderTarget";
 export * from "./engine.renderTargetCube";
 export * from "./engine.renderTargetTexture";
+export * from "./engine.texture2DArrayImageSource";
 export * from "./engine.uniformBuffer";
 export * from "./engine.dynamicBuffer";
 export * from "./engine.readTexture";

@@ -23,6 +23,7 @@ import { SubMesh } from "./subMesh.pure";
 import { type BoundingSphere } from "../Culling/boundingSphere";
 import { type Effect } from "../Materials/effect.pure";
 import { Material } from "../Materials/material.pure";
+import { MaterialHelperGeometryRendering } from "../Materials/materialHelper.geometryrendering";
 import { MultiMaterial } from "../Materials/multiMaterial.pure";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { type Skeleton } from "../Bones/skeleton";
@@ -786,6 +787,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.metadata = source.metadata;
         }
         this._internalMetadata = source._internalMetadata;
+        this.meshBlendingTag = source.meshBlendingTag;
 
         // Tags
         if (Tags && Tags.HasTags(source)) {
@@ -2866,18 +2868,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             effectiveMaterial.bind(world, this);
         }
 
-        if (!effectiveMaterial.backFaceCulling && effectiveMaterial.separateCullingPass) {
-            engine.setState(true, effectiveMaterial.zOffset, false, !reverse, effectiveMaterial.cullBackFaces, effectiveMaterial.stencil, effectiveMaterial.zOffsetUnits);
-            this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._internalMeshDataInfo._effectiveMaterial);
-            engine.setState(true, effectiveMaterial.zOffset, false, reverse, effectiveMaterial.cullBackFaces, effectiveMaterial.stencil, effectiveMaterial.zOffsetUnits);
+        try {
+            if (MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, effect)) {
+                if (!effectiveMaterial.backFaceCulling && effectiveMaterial.separateCullingPass) {
+                    engine.setState(true, effectiveMaterial.zOffset, false, !reverse, effectiveMaterial.cullBackFaces, effectiveMaterial.stencil, effectiveMaterial.zOffsetUnits);
+                    this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._internalMeshDataInfo._effectiveMaterial);
+                    engine.setState(true, effectiveMaterial.zOffset, false, reverse, effectiveMaterial.cullBackFaces, effectiveMaterial.stencil, effectiveMaterial.zOffsetUnits);
 
-            if (this._internalMeshDataInfo._onBetweenPassObservable) {
-                this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);
+                    if (this._internalMeshDataInfo._onBetweenPassObservable) {
+                        this._internalMeshDataInfo._onBetweenPassObservable.notifyObservers(subMesh);
+                    }
+                }
+
+                // Draw
+                this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._internalMeshDataInfo._effectiveMaterial);
             }
+        } finally {
+            MaterialHelperGeometryRendering._RestoreAttachments(engine);
         }
-
-        // Draw
-        this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._internalMeshDataInfo._effectiveMaterial);
 
         // Unbind
         this._internalMeshDataInfo._effectiveMaterial.unbind();
@@ -4214,6 +4222,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this.metadata) {
             serializationObject.metadata = this.metadata;
         }
+        if (this.meshBlendingTag !== 0) {
+            serializationObject.meshBlendingTag = this.meshBlendingTag;
+        }
 
         // Instances
         serializationObject.instances = [];
@@ -4531,6 +4542,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (parsedMesh.metadata !== undefined) {
             mesh.metadata = parsedMesh.metadata;
+        }
+        if (parsedMesh.meshBlendingTag !== undefined) {
+            mesh.meshBlendingTag = parsedMesh.meshBlendingTag;
         }
 
         if (parsedMesh.rotationQuaternion) {

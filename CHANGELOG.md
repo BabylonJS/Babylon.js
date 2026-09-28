@@ -1,5 +1,151 @@
 # Changelog
 
+## 9.28.0
+
+### Addons
+
+- Atmosphere: only attach the PBR material plugin to materials in the atmosphere's scene - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18934](https://github.com/BabylonJS/Babylon.js/pull/18934))
+
+### Core
+
+- StandardMaterial: depth pre-pass honours every alpha source, and alphaCutOff is bound for all alpha-tested materials - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18936](https://github.com/BabylonJS/Babylon.js/pull/18936))
+- Complete cube / prefiltered texture load contract - [_Bug Fix_] by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#18874](https://github.com/BabylonJS/Babylon.js/pull/18874))
+- Add root motion for animation groups: RootMotionClip and RootMotionController - by [Pryme8](https://github.com/Pryme8) ([#18908](https://github.com/BabylonJS/Babylon.js/pull/18908))
+- Use nearest sampling for Gaussian Splatting data textures - by [luokn](https://github.com/luokn) ([#18933](https://github.com/BabylonJS/Babylon.js/pull/18933))
+- Fix WGSL vPartIndex redefinition when combining Gaussian Splatting material plugins - by [raymondyfei](https://github.com/raymondyfei) ([#18931](https://github.com/BabylonJS/Babylon.js/pull/18931))
+
+### Loaders
+
+- OBJFileLoader: Fix AssetContainer handling and add opt-in texture loading waits - by [noname0310](https://github.com/noname0310) ([#18895](https://github.com/BabylonJS/Babylon.js/pull/18895))
+
+## 9.27.1
+
+### Core
+
+- Add normalized occlusion query visibility API - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18919](https://github.com/BabylonJS/Babylon.js/pull/18919))
+- Frame graph: support Gaussian splats, sprites, and particles in geometry rendering - by [Popov72](https://github.com/Popov72) ([#18930](https://github.com/BabylonJS/Babylon.js/pull/18930))
+- WGSL: pass shadowTexture to computeShadowWithCSMPCF1 in the cascade blend branch - [_Bug Fix_] by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18920](https://github.com/BabylonJS/Babylon.js/pull/18920))
+- Avoid blob URL round-trip for in-memory ImageBitmap sources - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18924](https://github.com/BabylonJS/Babylon.js/pull/18924))
+- Fix Gaussian splatting with horizontal fixed FOV - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18921](https://github.com/BabylonJS/Babylon.js/pull/18921))
+- Fix WebGPU occlusion query begin sequencing - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18918](https://github.com/BabylonJS/Babylon.js/pull/18918))
+- Fix: static Gaussian Splatting part disappears after compacting a streaming compound - by [raymondyfei](https://github.com/raymondyfei) ([#18917](https://github.com/BabylonJS/Babylon.js/pull/18917))
+
+### Inspector
+
+- Inspector v2: Display mesh bounding box dimensions - [_New Feature_] by [Jeggery](https://github.com/Jeggery) ([#18875](https://github.com/BabylonJS/Babylon.js/pull/18875))
+
+### Node Render Graph Editor
+
+- Frame graph: support Gaussian splats, sprites, and particles in geometry rendering - by [Popov72](https://github.com/Popov72) ([#18930](https://github.com/BabylonJS/Babylon.js/pull/18930))
+
+## 9.27.0
+
+### Core
+
+- Add KHR_interactivity export support - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18914](https://github.com/BabylonJS/Babylon.js/pull/18914))
+
+### Loaders
+
+- Add KHR_interactivity export support - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18914](https://github.com/BabylonJS/Babylon.js/pull/18914))
+
+### Serializers
+
+- Add KHR_interactivity export support - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18914](https://github.com/BabylonJS/Babylon.js/pull/18914))
+
+## 9.26.2
+
+### Core
+
+- Fix: DoF seam (WebGL) and shader-compile crash (WebGPU) in LensRenderingPipeline - [_Bug Fix_] by [raymondyfei](https://github.com/raymondyfei) ([#18904](https://github.com/BabylonJS/Babylon.js/pull/18904))
+- Add mesh blending post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18915](https://github.com/BabylonJS/Babylon.js/pull/18915))
+- Widen input types in ProceduralTexture uniform setters - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#18916](https://github.com/BabylonJS/Babylon.js/pull/18916))
+- Add ratified KHR_interactivity Phase 1 support - by [RaananW](https://github.com/RaananW) ([#18903](https://github.com/BabylonJS/Babylon.js/pull/18903))
+
+### Inspector
+
+- Add mesh blending post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18915](https://github.com/BabylonJS/Babylon.js/pull/18915))
+- Add Inspector Lite text and sprite layer support - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18905](https://github.com/BabylonJS/Babylon.js/pull/18905))
+
+### Loaders
+
+- Improve Gaussian splatting coarse-first streaming and local-space culling - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18910](https://github.com/BabylonJS/Babylon.js/pull/18910))
+- Add ratified KHR_interactivity Phase 1 support - by [RaananW](https://github.com/RaananW) ([#18903](https://github.com/BabylonJS/Babylon.js/pull/18903))
+
+### Node Geometry Editor
+
+- Add WebMCP support to Node Geometry Editor - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18911](https://github.com/BabylonJS/Babylon.js/pull/18911))
+
+### Node Render Graph Editor
+
+- Add mesh blending post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18915](https://github.com/BabylonJS/Babylon.js/pull/18915))
+
+## 9.26.1
+
+### Addons
+
+- Add new MultiTexture class - [_New Feature_] by [abogartz](https://github.com/abogartz) ([#18822](https://github.com/BabylonJS/Babylon.js/pull/18822))
+
+### Core
+
+- Decouple Gaussian classification for effective tree shaking - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18909](https://github.com/BabylonJS/Babylon.js/pull/18909))
+- Add dithered tile fade material plugin - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18902](https://github.com/BabylonJS/Babylon.js/pull/18902))
+- Add new MultiTexture class - [_New Feature_] by [abogartz](https://github.com/abogartz) ([#18822](https://github.com/BabylonJS/Babylon.js/pull/18822))
+- Fluid renderer: per-particle size for GPUParticleSystem + fix GPU particle quad offsets - [_Bug Fix_] by [tini2n](https://github.com/tini2n) ([#18888](https://github.com/BabylonJS/Babylon.js/pull/18888))
+- Improve USD materials, instancing, morphs, and skinning - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18900](https://github.com/BabylonJS/Babylon.js/pull/18900))
+
+### Loaders
+
+- FBX loader: full format coverage, animation fidelity, DCC materials, NURBS, constraints - by [Pryme8](https://github.com/Pryme8) ([#18907](https://github.com/BabylonJS/Babylon.js/pull/18907))
+- Improve USD materials, instancing, morphs, and skinning - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18900](https://github.com/BabylonJS/Babylon.js/pull/18900))
+- chore(deps): update dependencies securely - by [RaananW](https://github.com/RaananW) ([#18899](https://github.com/BabylonJS/Babylon.js/pull/18899))
+
+### Sandbox
+
+- Improve USD materials, instancing, morphs, and skinning - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18900](https://github.com/BabylonJS/Babylon.js/pull/18900))
+
+### Viewer
+
+- Decouple Gaussian classification for effective tree shaking - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18909](https://github.com/BabylonJS/Babylon.js/pull/18909))
+
+## 9.26.0
+
+### Core
+
+- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
+- Add object ID geometry textures - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18879](https://github.com/BabylonJS/Babylon.js/pull/18879))
+- Add opt-out for iOS ringer switch audio workaround - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18886](https://github.com/BabylonJS/Babylon.js/pull/18886))
+- WebGPU: key the leftover uniform buffer slots on the draw context, not on draw order - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18880](https://github.com/BabylonJS/Babylon.js/pull/18880))
+- Feat: Add IBL Shadows support to ShadowOnlyMaterial - [_New Feature_] by [raymondyfei](https://github.com/raymondyfei) ([#18873](https://github.com/BabylonJS/Babylon.js/pull/18873))
+
+### GUI
+
+- fixes Bounty #9: Add FlexPanel and em/rem GUI units - by [Yabuku-xD](https://github.com/Yabuku-xD) ([#18881](https://github.com/BabylonJS/Babylon.js/pull/18881))
+
+### Inspector
+
+- Add Gaussian splatting stream diagnostics to Inspector V2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18885](https://github.com/BabylonJS/Babylon.js/pull/18885))
+- Feat: HDR output & cloudiness for SkyMaterial - by [raymondyfei](https://github.com/raymondyfei) ([#18897](https://github.com/BabylonJS/Babylon.js/pull/18897))
+- Add Inspector v2 Explorer contribution APIs - by [ryantrem](https://github.com/ryantrem) ([#18898](https://github.com/BabylonJS/Babylon.js/pull/18898))
+- Add initial Babylon Lite support to Inspector v2 - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18889](https://github.com/BabylonJS/Babylon.js/pull/18889))
+
+### Loaders
+
+- Add Gaussian splatting stream diagnostics to Inspector V2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18885](https://github.com/BabylonJS/Babylon.js/pull/18885))
+- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
+
+### Materials
+
+- Feat: HDR output & cloudiness for SkyMaterial - by [raymondyfei](https://github.com/raymondyfei) ([#18897](https://github.com/BabylonJS/Babylon.js/pull/18897))
+- Feat: Add IBL Shadows support to ShadowOnlyMaterial - [_New Feature_] by [raymondyfei](https://github.com/raymondyfei) ([#18873](https://github.com/BabylonJS/Babylon.js/pull/18873))
+
+### Node Render Graph Editor
+
+- Add object ID geometry textures - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18879](https://github.com/BabylonJS/Babylon.js/pull/18879))
+
+### Sandbox
+
+- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
+
 ## 9.25.0
 
 ### Core
@@ -256,10 +402,6 @@
 ### Loaders
 
 - build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
-
-### Lottie Player
-
-- Replace the Lottie player's sprite atlas with a stencil-then-cover vector renderer - by [VicenteCartas](https://github.com/VicenteCartas) ([#18743](https://github.com/BabylonJS/Babylon.js/pull/18743))
 
 ### Playground
 
@@ -685,10 +827,6 @@
 
 - Make smartAssetManager tree-shakeable - by [georginahalpern](https://github.com/georginahalpern) ([#18516](https://github.com/BabylonJS/Babylon.js/pull/18516))
 
-### Lottie Player
-
-- Updating worker name for webpack - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18519](https://github.com/BabylonJS/Babylon.js/pull/18519))
-
 ### Materials
 
 - feat(GridMaterial): Multi-scale LOD, horizon fade, depth compositing, and above/below color - by [raymondyfei](https://github.com/raymondyfei) ([#18509](https://github.com/BabylonJS/Babylon.js/pull/18509))
@@ -723,10 +861,6 @@
 - fix(GSplat): Multiple Critical Voxelization and Compound Bugs - by [raymondyfei](https://github.com/raymondyfei) ([#18496](https://github.com/BabylonJS/Babylon.js/pull/18496))
 - Fix opacity blending in OpenPBR - [_Bug Fix_] by [MiiBond](https://github.com/MiiBond) ([#18497](https://github.com/BabylonJS/Babylon.js/pull/18497))
 - Use SOG texture option - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18475](https://github.com/BabylonJS/Babylon.js/pull/18475))
-
-### Lottie Player
-
-- Add Lottie compatibility options for text and solid layers - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18507](https://github.com/BabylonJS/Babylon.js/pull/18507))
 
 ### Playground
 
@@ -827,10 +961,6 @@
 - OpenPBR - Support importing glTF surface tinting - by [MiiBond](https://github.com/MiiBond) ([#18430](https://github.com/BabylonJS/Babylon.js/pull/18430))
 - fix(splat): SPLATFileLoader constructor to merge with defaults instead of entirely replacing them - by [raymondyfei](https://github.com/raymondyfei) ([#18438](https://github.com/BabylonJS/Babylon.js/pull/18438))
 
-### Lottie Player
-
-- Fix Lottie worker in Vite dev host - by [RaananW](https://github.com/RaananW) ([#18446](https://github.com/BabylonJS/Babylon.js/pull/18446))
-
 ### Materials
 
 - Fix PBRCustomMaterial shader source cleanup on dispose - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18453](https://github.com/BabylonJS/Babylon.js/pull/18453))
@@ -850,10 +980,6 @@
 ### Core
 
 - Clean up observers when parsing Node Materials - [_Bug Fix_] by [abogartz](https://github.com/abogartz) ([#18435](https://github.com/BabylonJS/Babylon.js/pull/18435))
-
-### Lottie Player
-
-- Lottie: fix issue parsing font lists - by [VicenteCartas](https://github.com/VicenteCartas) ([#18436](https://github.com/BabylonJS/Babylon.js/pull/18436))
 
 ## 9.6.0
 
@@ -903,12 +1029,6 @@
 ### Loaders
 
 - Fix UMD Rollup namespace exports - by [RaananW](https://github.com/RaananW) ([#18414](https://github.com/BabylonJS/Babylon.js/pull/18414))
-
-### Lottie Player
-
-- So long webpack, and thanks for all the fish. Remove remaining webpack builds - by [RaananW](https://github.com/RaananW) ([#18415](https://github.com/BabylonJS/Babylon.js/pull/18415))
-- Lottie: add Babylon 8 text layer placement compatibility mode - by [VicenteCartas](https://github.com/VicenteCartas) ([#18400](https://github.com/BabylonJS/Babylon.js/pull/18400))
-- Lottie player: support solid layers, fix loop reset and layer-level decorators, modernize readme - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18402](https://github.com/BabylonJS/Babylon.js/pull/18402))
 
 ### Node Editor
 
@@ -990,11 +1110,6 @@
 ### Loaders
 
 - OpenPBR Thin-walled fixes - by [MiiBond](https://github.com/MiiBond) ([#18353](https://github.com/BabylonJS/Babylon.js/pull/18353))
-
-### Lottie Player
-
-- Lottie: auto-downscale oversized sprites to fit the atlas instead of clipping - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18375](https://github.com/BabylonJS/Babylon.js/pull/18375))
-- Lottie player: gradient stroke support, animated property fixes, and improved diagnostics - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18367](https://github.com/BabylonJS/Babylon.js/pull/18367))
 
 ### Materials
 
@@ -1082,10 +1197,6 @@
 - Inspector CLI: Require explicit session ID and rename autoStart to autoEnable - by [ryantrem](https://github.com/ryantrem) ([#18337](https://github.com/BabylonJS/Babylon.js/pull/18337))
 - chore: remove 8 unnecessary npm overrides - by [RaananW](https://github.com/RaananW) ([#18335](https://github.com/BabylonJS/Babylon.js/pull/18335))
 
-### Lottie Player
-
-- Lottie text layer: anchor-node parenting + layout-derived positioning - by [VicenteCartas](https://github.com/VicenteCartas) ([#18339](https://github.com/BabylonJS/Babylon.js/pull/18339))
-
 ### Playground
 
 - Inspector CLI: Require explicit session ID and rename autoStart to autoEnable - by [ryantrem](https://github.com/ryantrem) ([#18337](https://github.com/BabylonJS/Babylon.js/pull/18337))
@@ -1113,11 +1224,6 @@
 ### Loaders
 
 - feat(Gsplat): IBL shadows support for Gaussian Splats - by [raymondyfei](https://github.com/raymondyfei) ([#18331](https://github.com/BabylonJS/Babylon.js/pull/18331))
-
-### Lottie Player
-
-- Extract Lottie text layout module and align rendering with Lottie spec - by [VicenteCartas](https://github.com/VicenteCartas) ([#18333](https://github.com/BabylonJS/Babylon.js/pull/18333))
-- Refactor node interpolation into reusable static methods and add decomposeWorldMatrixAtFrame - by [VicenteCartas](https://github.com/VicenteCartas) ([#18322](https://github.com/BabylonJS/Babylon.js/pull/18322))
 
 ### Playground
 
@@ -1163,12 +1269,6 @@
 - fix (loaders/OBJ): fix a typo that cause the obj loader not loading v… - by [FairySunny](https://github.com/FairySunny) ([#18318](https://github.com/BabylonJS/Babylon.js/pull/18318))
 - feat(SPLAT): Extend with NianticLabs WASM implementation and enable 4-th order spherical harmonics - by [raymondyfei](https://github.com/raymondyfei) ([#18267](https://github.com/BabylonJS/Babylon.js/pull/18267))
 - Flow Graph Editor: Phase 2 glTF round-trip + review fixes - by [RaananW](https://github.com/RaananW) ([#18299](https://github.com/BabylonJS/Babylon.js/pull/18299))
-
-### Lottie Player
-
-- Lottie: Multi-page sprite atlas, z-order sort, and atlas bleed prevention - by [VicenteCartas](https://github.com/VicenteCartas) ([#18316](https://github.com/BabylonJS/Babylon.js/pull/18316))
-- Lottie: Refactor drawing methods to accept explicit canvas context parameter - by [VicenteCartas](https://github.com/VicenteCartas) ([#18304](https://github.com/BabylonJS/Babylon.js/pull/18304))
-- Adds support for Lottie ellipse shapes (`"el"`), which were previously ignored by the parser. - by [VicenteCartas](https://github.com/VicenteCartas) ([#18302](https://github.com/BabylonJS/Babylon.js/pull/18302))
 
 ### Viewer
 
@@ -1230,12 +1330,6 @@
 - Fix loader and gltfSerializer integration tests - by [ryantrem](https://github.com/ryantrem) ([#18287](https://github.com/BabylonJS/Babylon.js/pull/18287))
 - Fix transmission effect lost after MergeMeshes with MultiMaterial - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18240](https://github.com/BabylonJS/Babylon.js/pull/18240))
 - OpenPBR subsurface slab - [_New Feature_] by [MiiBond](https://github.com/MiiBond) ([#17848](https://github.com/BabylonJS/Babylon.js/pull/17848))
-
-### Lottie Player
-
-- Lottie: Fix crashes on animated vector and path properties - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18282](https://github.com/BabylonJS/Babylon.js/pull/18282))
-- Lottie: fix keyframe boundary and null layer opacity - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18273](https://github.com/BabylonJS/Babylon.js/pull/18273))
-- New lottie basic tests for regressions catching - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18258](https://github.com/BabylonJS/Babylon.js/pull/18258))
 
 ### Node Editor
 
@@ -1407,10 +1501,6 @@
 - Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
 
 ### Loaders
-
-- Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
-
-### Lottie Player
 
 - Migrate from Jest to Vitest - by [RaananW](https://github.com/RaananW) ([#18136](https://github.com/BabylonJS/Babylon.js/pull/18136))
 
@@ -1933,10 +2023,6 @@
 - Inspector v2: Scene explorer hotkeys + delete to dispose - by [ryantrem](https://github.com/ryantrem) ([#17843](https://github.com/BabylonJS/Babylon.js/pull/17843))
 - Inspector v2: Blur event resets key state to avoid 'stuck' keys - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17845](https://github.com/BabylonJS/Babylon.js/pull/17845))
 
-### Lottie Player
-
-- Fixed issue with animation rendering at small sizes - by [VicenteCartas](https://github.com/VicenteCartas) ([#17849](https://github.com/BabylonJS/Babylon.js/pull/17849))
-
 ### Playground
 
 - Fix an issue with static in old versions - by [VicenteCartas](https://github.com/VicenteCartas) ([#17850](https://github.com/BabylonJS/Babylon.js/pull/17850))
@@ -1968,10 +2054,6 @@
 - Create new NodeMaterial should use default template - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17832](https://github.com/BabylonJS/Babylon.js/pull/17832))
 - Inspector v2: Export new/additional components - by [ryantrem](https://github.com/ryantrem) ([#17830](https://github.com/BabylonJS/Babylon.js/pull/17830))
 - Feature: Inspector drag to reparent - by [marns](https://github.com/marns) ([#17796](https://github.com/BabylonJS/Babylon.js/pull/17796))
-
-### Lottie Player
-
-- Handling alpha better and updates on atlas size/dpr - by [VicenteCartas](https://github.com/VicenteCartas) ([#17825](https://github.com/BabylonJS/Babylon.js/pull/17825))
 
 ### Node Particle Editor
 
@@ -2258,10 +2340,6 @@
 
 - Inspector v2: Node Material input properties - by [ryantrem](https://github.com/ryantrem) ([#17685](https://github.com/BabylonJS/Babylon.js/pull/17685))
 - RenderingPipeline properties - by [georginahalpern](https://github.com/georginahalpern) ([#17687](https://github.com/BabylonJS/Babylon.js/pull/17687))
-
-### Lottie Player
-
-- SSR fix - by [VicenteCartas](https://github.com/VicenteCartas) ([#17689](https://github.com/BabylonJS/Babylon.js/pull/17689))
 
 ## 8.46.1
 
@@ -2617,10 +2695,6 @@
 ### Loaders
 
 - new feature: importing metadata for animations from gltf extras - by [qwiglydee](https://github.com/qwiglydee) ([#17257](https://github.com/BabylonJS/Babylon.js/pull/17257))
-
-### Lottie Player
-
-- Update eslint to 9.39.1 from 8.57.1 - by [docEdub](https://github.com/docEdub) ([#17529](https://github.com/BabylonJS/Babylon.js/pull/17529))
 
 ### Node Render Graph Editor
 
@@ -3225,10 +3299,6 @@
 - GPUPicker: BoxPicking Support + Some optimization - by [noname0310](https://github.com/noname0310) ([#17289](https://github.com/BabylonJS/Babylon.js/pull/17289))
 - FrameGraph: Add support for color correction, filter and tonemap post processes - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17290](https://github.com/BabylonJS/Babylon.js/pull/17290))
 
-### Lottie Player
-
-- Let the owner decide how to align the canvas - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17297](https://github.com/BabylonJS/Babylon.js/pull/17297))
-
 ### Node Render Graph Editor
 
 - FrameGraph: Add support for color correction, filter and tonemap post processes - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17290](https://github.com/BabylonJS/Babylon.js/pull/17290))
@@ -3238,11 +3308,6 @@
 ### Core
 
 - Render normals when no normal attribute - by [MiiBond](https://github.com/MiiBond) ([#17281](https://github.com/BabylonJS/Babylon.js/pull/17281))
-
-### Lottie Player
-
-- Lottie pixel clipping in some scenarios - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17284](https://github.com/BabylonJS/Babylon.js/pull/17284))
-- Lottie fixes - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17283](https://github.com/BabylonJS/Babylon.js/pull/17283))
 
 ## 8.31.1
 
@@ -3337,10 +3402,6 @@
 
 - FrameGraph: miscellaneous - by [Popov72](https://github.com/Popov72) ([#17242](https://github.com/BabylonJS/Babylon.js/pull/17242))
 
-### Lottie Player
-
-- Adding dispose for player - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17245](https://github.com/BabylonJS/Babylon.js/pull/17245))
-
 ### Serializers
 
 - glTF Exporter: Subset all indices arrays - by [alexchuber](https://github.com/alexchuber) ([#17244](https://github.com/BabylonJS/Babylon.js/pull/17244))
@@ -3385,10 +3446,6 @@
 ### Loaders
 
 - GS SOG - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17212](https://github.com/BabylonJS/Babylon.js/pull/17212))
-
-### Lottie Player
-
-- Adding support for text alignment attributes - by [VicenteCartas](https://github.com/VicenteCartas) ([#17224](https://github.com/BabylonJS/Babylon.js/pull/17224))
 
 ### Node Particle Editor
 
@@ -3540,10 +3597,6 @@
 
 - KTX2Container: Use ScriptBaseUrl for WasmBaseUrl - by [alexchuber](https://github.com/alexchuber) ([#17164](https://github.com/BabylonJS/Babylon.js/pull/17164))
 
-### Lottie Player
-
-- Fixing bug with text size calculation - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17163](https://github.com/BabylonJS/Babylon.js/pull/17163))
-
 ### Smart Filters
 
 - Smart Filter Debugger: Fix CSS issue when host has custom body tag styles, fix VSCode module resolution - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#17162](https://github.com/BabylonJS/Babylon.js/pull/17162))
@@ -3573,10 +3626,6 @@
 ### Loaders
 
 - Add import support for EXT_lights_area - by [MiiBond](https://github.com/MiiBond) ([#17146](https://github.com/BabylonJS/Babylon.js/pull/17146))
-
-### Lottie Player
-
-- Adding pre-warm to lottie player - by [VicenteCartas](https://github.com/VicenteCartas) ([#17155](https://github.com/BabylonJS/Babylon.js/pull/17155))
 
 ### Playground
 
@@ -3627,11 +3676,6 @@
 
 - Configurable default glTF loader options + expose function to load AssetContainer from serialized Babylon scene - by [ryantrem](https://github.com/ryantrem) ([#17117](https://github.com/BabylonJS/Babylon.js/pull/17117))
 
-### Lottie Player
-
-- Lottie fixes - by [VicenteCartas](https://github.com/VicenteCartas) ([#17136](https://github.com/BabylonJS/Babylon.js/pull/17136))
-- Adding visual tests using the devhost - by [VicenteCartas](https://github.com/VicenteCartas) ([#17124](https://github.com/BabylonJS/Babylon.js/pull/17124))
-
 ### Node Editor
 
 - Smart Filters Editor: Add Copy/Paste - by [AmoebaChant](https://github.com/AmoebaChant) ([#17119](https://github.com/BabylonJS/Babylon.js/pull/17119))
@@ -3677,10 +3721,6 @@
 - Material: Fix plugin classes not injected into BABYLON namespace - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17111](https://github.com/BabylonJS/Babylon.js/pull/17111))
 - geometry: Ensure GPU buffers upload for delay loaded geometries with multiple meshes - by [kzhsw](https://github.com/kzhsw) ([#17110](https://github.com/BabylonJS/Babylon.js/pull/17110))
 - Fix nullengine createRenderTargetTexture - by [sebavan](https://github.com/sebavan) ([#17108](https://github.com/BabylonJS/Babylon.js/pull/17108))
-
-### Lottie Player
-
-- Adding a wrapper over the worker to deal with CSP headers - by [VicenteCartas](https://github.com/VicenteCartas) ([#17115](https://github.com/BabylonJS/Babylon.js/pull/17115))
 
 ### Sandbox
 
@@ -3744,10 +3784,6 @@
 
 ## 8.25.0
 
-### Lottie Player
-
-- Adding support for the player to take a json object - by [VicenteCartas](https://github.com/VicenteCartas) ([#17078](https://github.com/BabylonJS/Babylon.js/pull/17078))
-
 ## 8.24.2
 
 ### Core
@@ -3785,12 +3821,6 @@
 - FrameGraph: improves support for the statistics pane in the inspector + add support for "Screenshots" and "Capture equirectangular" - by [Popov72](https://github.com/Popov72) ([#17060](https://github.com/BabylonJS/Babylon.js/pull/17060))
 - Inspector v2: Picking toolbar - by [ryantrem](https://github.com/ryantrem) ([#17058](https://github.com/BabylonJS/Babylon.js/pull/17058))
 - Inspector v2: Gizmo toolbar - by [ryantrem](https://github.com/ryantrem) ([#17052](https://github.com/BabylonJS/Babylon.js/pull/17052))
-
-### Lottie Player
-
-- Fixing test positioning Y issue - by [VicenteCartas](https://github.com/VicenteCartas) ([#17071](https://github.com/BabylonJS/Babylon.js/pull/17071))
-- Devhost improvements - by [VicenteCartas](https://github.com/VicenteCartas) ([#17070](https://github.com/BabylonJS/Babylon.js/pull/17070))
-- Moving lottie code to its own package and new features - by [VicenteCartas](https://github.com/VicenteCartas) ([#17059](https://github.com/BabylonJS/Babylon.js/pull/17059))
 
 ### Node Render Graph Editor
 

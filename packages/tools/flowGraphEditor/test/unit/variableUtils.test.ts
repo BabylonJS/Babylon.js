@@ -3,6 +3,7 @@ import { type Engine, NullEngine } from "core/Engines";
 import { type FlowGraph, type FlowGraphContext, FlowGraphCoordinator, FlowGraphGetVariableBlock } from "core/FlowGraph";
 import { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock";
 import { FlowGraphConstantBlock } from "core/FlowGraph/Blocks/Data/flowGraphConstantBlock";
+import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -23,6 +24,7 @@ import {
     GetDefaultValueForType,
     InferVariableType,
     InferVariableTypesFromBlocks,
+    SetVariableAuthoringValue,
     type VariableTypeName,
 } from "flow-graph-editor/variableUtils";
 import { CONSTRUCTOR_CONFIG } from "flow-graph-editor/graphSystem/properties/constructorConfigRegistry";
@@ -52,6 +54,128 @@ describe("Flow Graph Variable Utils", () => {
     afterEach(() => {
         scene.dispose();
         engine.dispose();
+    });
+
+    it("records explicit KHR variable edits separately from mutable runtime state", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "int" }],
+                    variables: [{ type: 0, value: [1] }],
+                },
+            },
+        };
+
+        flowGraphContext.setVariable("staticVariable_0", 2);
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toBeUndefined();
+
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "staticVariable_0", 3);
+        expect(flowGraphContext.getVariable("staticVariable_0")).toBe(3);
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toEqual({ 0: [3] });
+    });
+
+    it("preserves custom multi-component KHR variable edits as a flat array", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "custom" }],
+                    variables: [{ type: 0, value: [1, 2] }],
+                },
+            },
+        };
+        flowGraphContext.setVariable("staticVariable_0", [1, 2]);
+
+        const edited = ParseVariableValue(FormatVariableValue(flowGraphContext.getVariable("staticVariable_0")), flowGraphContext.getVariable("staticVariable_0"));
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "staticVariable_0", edited);
+
+        expect(edited).toEqual([1, 2]);
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toEqual({ 0: [1, 2] });
+    });
+
+    it("records explicit KHR variable type edits", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "int" }],
+                    variables: [{ type: 0, value: [1] }],
+                },
+            },
+        };
+        flowGraphContext.setVariableType("staticVariable_0", "number");
+
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "staticVariable_0", 2);
+
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableTypes).toEqual({ 0: "number" });
+    });
+
+    it("records scene-object edits for canonical ref variables", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "ref" }],
+                    variables: [{ type: 0, value: ["/nodes/0"] }],
+                },
+            },
+        };
+        const node = new TransformNode("selected", scene);
+        flowGraphContext.setVariableType("staticVariable_0", "TransformNode");
+
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "staticVariable_0", node);
+
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableTypes).toEqual({ 0: "TransformNode" });
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toEqual({ 0: [node] });
+    });
+
+    it("records an empty ref when a primitive KHR variable changes to a scene-object type", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "float" }],
+                    variables: [{ type: 0, value: [1] }],
+                },
+            },
+        };
+        flowGraphContext.setVariableType("staticVariable_0", "TransformNode");
+
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "staticVariable_0", undefined);
+
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableTypes).toEqual({ 0: "TransformNode" });
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toEqual({ 0: [""] });
+    });
+
+    it("records unsupported structural edits to imported KHR variables", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "float" }],
+                    variables: [{ type: 0, value: [1] }],
+                },
+            },
+        };
+        flowGraphContext.setVariable("staticVariable_0", 1);
+
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "newVariable", 0);
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged).toBe(true);
+
+        flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged = false;
+        RenameVariable(flowGraph, "staticVariable_0", "renamed");
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged).toBe(true);
+
+        flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged = false;
+        DeleteVariable(flowGraph, "renamed");
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged).toBe(true);
     });
 
     // --------------------------------------------------------
@@ -395,8 +519,18 @@ describe("Flow Graph Variable Utils", () => {
             expect(result.endsWith("...")).toBe(true);
         });
 
-        it("formats arrays via their toString", () => {
-            expect(FormatVariableValue([1, 2, 3])).toBe("1,2,3");
+        it("formats arrays as editable JSON", () => {
+            expect(FormatVariableValue([1, 2, 3])).toBe("[1,2,3]");
+        });
+
+        it("handles circular arrays gracefully", () => {
+            const array: any[] = [];
+            array.push(array);
+            expect(FormatVariableValue(array)).toBe("[object]");
+        });
+
+        it("handles arrays containing BigInt gracefully", () => {
+            expect(FormatVariableValue([1n])).toBe("[object]");
         });
 
         it("handles circular references gracefully", () => {

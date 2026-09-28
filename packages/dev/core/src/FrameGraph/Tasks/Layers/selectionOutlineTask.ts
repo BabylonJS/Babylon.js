@@ -32,6 +32,7 @@ export class FrameGraphSelectionOutlineLayerTask extends FrameGraphBaseLayerTask
         this._objectRendererForLayerTask.objectList = {
             meshes: this.layer._selection || [],
             particleSystems: [],
+            spriteManagers: [],
         };
     }
 

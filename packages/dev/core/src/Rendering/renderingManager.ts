@@ -210,7 +210,8 @@ export class RenderingManager {
         renderOpaqueMeshes: boolean = true,
         renderAlphaTestMeshes: boolean = true,
         renderTransparentMeshes: boolean = true,
-        customRenderTransparentSubMeshes?: (transparentSubMeshes: SmartArray<SubMesh>, renderingGroup?: RenderingGroup) => void
+        customRenderTransparentSubMeshes?: (transparentSubMeshes: SmartArray<SubMesh>, renderingGroup?: RenderingGroup) => void,
+        spriteManagers?: Nullable<ISpriteManager[]>
     ): void {
         // Update the observable context (not null as it only goes away on dispose)
         const info = this._renderingGroupInfo!;
@@ -219,9 +220,10 @@ export class RenderingManager {
         info.renderingManager = this;
 
         // Dispatch sprites
-        if (this._scene.spriteManagers && renderSprites) {
-            for (let index = 0; index < this._scene.spriteManagers.length; index++) {
-                const manager = this._scene.spriteManagers[index];
+        const spriteManagersToRender = spriteManagers ?? this._scene.spriteManagers;
+        if (spriteManagersToRender && renderSprites) {
+            for (let index = 0; index < spriteManagersToRender.length; index++) {
+                const manager = spriteManagersToRender[index];
                 this.dispatchSprites(manager);
             }
         }

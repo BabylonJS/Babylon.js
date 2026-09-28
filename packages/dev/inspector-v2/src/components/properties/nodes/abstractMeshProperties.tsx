@@ -12,6 +12,7 @@ import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Meshes/buffer";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
+import { MeshBlendingRadiusClass, PackMeshBlendingTag, UnpackMeshBlendingTag } from "core/Meshes/meshBlendingTag";
 import { Tools } from "core/Misc/tools";
 import { RenderingManager } from "core/Rendering/renderingManager";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
@@ -32,6 +33,13 @@ import { Constants } from "core/Engines/constants";
 import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
 import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
+
+const MeshBlendingRadiusClassOptions = [
+    { label: "Small", value: MeshBlendingRadiusClass.Small },
+    { label: "Medium", value: MeshBlendingRadiusClass.Medium },
+    { label: "Large", value: MeshBlendingRadiusClass.Large },
+    { label: "Extra Large", value: MeshBlendingRadiusClass.ExtraLarge },
+] as const satisfies readonly DropdownOption<number>[];
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -86,6 +94,9 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
 
 export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMesh }> = (props) => {
     const { mesh } = props;
+    const meshBlendingTarget = mesh instanceof InstancedMesh ? mesh.sourceMesh : mesh;
+    const meshBlendingTag = useProperty(meshBlendingTarget, "meshBlendingTag");
+    const { groupId: meshBlendingGroupId, radiusClass: meshBlendingRadiusClass } = UnpackMeshBlendingTag(meshBlendingTag);
 
     return (
         <>
@@ -108,6 +119,28 @@ export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMe
                 min={RenderingManager.MIN_RENDERINGGROUPS}
                 max={RenderingManager.MAX_RENDERINGGROUPS - 1}
                 step={1}
+            />
+            <NumberInputPropertyLine
+                label="Mesh Blending Group"
+                description="Logical group used for mesh blending. Zero disables mesh blending."
+                value={meshBlendingGroupId}
+                onChange={(value) => {
+                    meshBlendingTarget.meshBlendingTag = PackMeshBlendingTag(value, meshBlendingRadiusClass);
+                }}
+                min={0}
+                max={63}
+                step={1}
+                forceInt
+            />
+            <NumberDropdownPropertyLine
+                label="Mesh Blending Radius"
+                description="Radius class packed into the mesh-blending tag."
+                value={meshBlendingRadiusClass}
+                onChange={(value) => {
+                    meshBlendingTarget.meshBlendingTag = PackMeshBlendingTag(meshBlendingGroupId, value);
+                }}
+                options={MeshBlendingRadiusClassOptions}
+                disabled={meshBlendingGroupId === 0}
             />
             <BoundProperty component={HexPropertyLine} label="Layer Mask" target={mesh} propertyKey="layerMask" />
         </>

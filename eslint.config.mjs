@@ -1,14 +1,15 @@
 // @ts-check
 import js from "@eslint/js";
+import { defineConfig } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import eslintPluginPrettier from "eslint-plugin-prettier";
 import eslintConfigPrettier from "eslint-config-prettier";
 import eslintPluginVitest from "@vitest/eslint-plugin";
 import eslintPluginJsdoc from "eslint-plugin-jsdoc";
 import eslintPluginGithub from "eslint-plugin-github";
 import eslintPluginImport from "eslint-plugin-import";
 import babylonjsPlugin from "./packages/tools/eslintBabylonPlugin/dist/index.js";
+import { LintSourceFiles, LintTestFiles } from "./scripts/lint-globs.mjs";
 
 // Allowed abbreviations for naming conventions
 const abbreviations = [
@@ -118,7 +119,35 @@ const abbreviations = [
 // Join abbreviations into regex string for naming convention rules
 const allowedNonStrictAbbreviations = abbreviations.join("|");
 
-export default tseslint.config(
+const testSourceFiles = ["packages/tools/tests/**/src/**/*.{ts,tsx,js}"];
+const misusedPromiseOptions = {
+    checksConditionals: true,
+    checksVoidReturn: {
+        arguments: false,
+        attributes: false,
+    },
+};
+
+const restrictedRuntimeImports = [
+    {
+        selector: 'ImportExpression[source.type="Literal"][source.value=/\\/(index)?$/]',
+        message: "Use an explicit module path instead of an index or trailing-slash import",
+    },
+    {
+        selector: 'CallExpression[callee.name="require"][arguments.0.type="Literal"][arguments.0.value=/\\/(index)?$/]',
+        message: "Use an explicit module path instead of an index or trailing-slash import",
+    },
+    {
+        selector: 'TSImportEqualsDeclaration[moduleReference.type="TSExternalModuleReference"][moduleReference.expression.value=/\\/$/]',
+        message: "Do not import from trailing-slash module paths",
+    },
+    {
+        selector: 'TSImportEqualsDeclaration[importKind!="type"][moduleReference.expression.value=/\\/index$/]',
+        message: "Do not import values from index modules",
+    },
+];
+
+export default defineConfig(
     // ===========================================
     // Global ignores (replaces .eslintignore)
     // ===========================================
@@ -129,9 +158,6 @@ export default tseslint.config(
             "**/dist/**",
             ".snapshot/**",
 
-            // Test files (handled separately or not linted)
-            "**/tests/**",
-
             // Generated shader files
             "**/Shaders/**/*.ts",
             "**/ShadersWGSL/**/*.ts",
@@ -139,6 +165,8 @@ export default tseslint.config(
             "**/*.vertex.ts",
             "**/*.fragment.d.ts",
             "**/*.vertex.d.ts",
+            // Generated Smart Filter blocks
+            "packages/dev/smartFilterBlocks/src/**/*.block.ts",
 
             // Public packages (generated)
             "packages/public/**",
@@ -164,7 +192,6 @@ export default tseslint.config(
     // Base recommended configurations
     // ===========================================
     js.configs.recommended,
-    eslintConfigPrettier,
 
     // ===========================================
     // Global language options
@@ -184,11 +211,7 @@ export default tseslint.config(
                 },
             },
         },
-        plugins: {
-            prettier: eslintPluginPrettier,
-        },
         rules: {
-            "prettier/prettier": "error",
             "arrow-body-style": "off",
             "prefer-arrow-callback": "off",
         },
@@ -203,7 +226,6 @@ export default tseslint.config(
             jsdoc: eslintPluginJsdoc,
             github: eslintPluginGithub,
             import: eslintPluginImport,
-            vitest: eslintPluginVitest,
         },
         settings: {
             react: {
@@ -218,18 +240,14 @@ export default tseslint.config(
     },
 
     // ===========================================
-    // Vitest plugin config
-    // ===========================================
-    eslintPluginVitest.configs.recommended,
-
-    // ===========================================
-    // Global rules (apply to all matched files)
+    // Production source rules
     // ===========================================
     {
+        files: LintSourceFiles,
+        ignores: testSourceFiles,
         rules: {
             // No console except allowed methods
             "no-console": ["error", { allow: ["time", "timeEnd", "trace"] }],
-            "block-spacing": "error",
 
             // Import rules
             "import/no-unresolved": "off",
@@ -239,23 +257,22 @@ export default tseslint.config(
             // dependency graph and is the single most expensive rule in the config.
             // Circular dependencies are checked separately via `npm run lint:cycles`.
             "import/no-cycle": "off",
-            "import/no-internal-modules": [
+            "no-restricted-imports": [
                 "error",
                 {
-                    forbid: ["**/index", "**/"],
+                    patterns: [
+                        {
+                            regex: "/index$|/$",
+                            message: "Use an explicit module path instead of an index or trailing-slash import",
+                        },
+                    ],
                 },
             ],
+            "no-restricted-syntax": ["error", ...restrictedRuntimeImports],
 
             // General rules
             "no-unused-vars": "off",
             "no-empty": ["error", { allowEmptyCatch: true }],
-            "space-infix-ops": "error",
-            "template-curly-spacing": "error",
-            "template-tag-spacing": "error",
-
-            // Vitest rules
-            "vitest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
-            "vitest/valid-expect": "off",
 
             // Babylon.js custom rules
             "babylonjs/syntax": "warn",
@@ -284,9 +301,9 @@ export default tseslint.config(
             "no-useless-escape": "warn",
             "no-case-declarations": "warn",
             "no-prototype-builtins": "warn",
-            "no-loss-of-precision": "warn",
-            "no-fallthrough": "warn",
-            "no-async-promise-executor": "warn",
+            "no-loss-of-precision": "error",
+            "no-fallthrough": "error",
+            "no-async-promise-executor": "error",
 
             // Disabled rules
             "prefer-spread": "off",
@@ -294,7 +311,6 @@ export default tseslint.config(
 
             // Errors
             "no-throw-literal": "error",
-            curly: "error",
         },
     },
 
@@ -303,7 +319,8 @@ export default tseslint.config(
     // ===========================================
     {
         files: ["packages/**/src/**/*.ts", "packages/**/src/**/*.tsx"],
-        extends: [...tseslint.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
+        ignores: testSourceFiles,
+        extends: [tseslint.configs.recommendedTypeChecked],
         languageOptions: {
             parser: tseslint.parser,
             parserOptions: {
@@ -362,26 +379,19 @@ export default tseslint.config(
             "@typescript-eslint/no-unnecessary-type-constraint": "off",
             "@typescript-eslint/no-redundant-type-constituents": "off",
             "@typescript-eslint/no-namespace": "off",
-            "@typescript-eslint/no-array-delete": "off",
+            // Sparse device/delay tables intentionally preserve array indices.
+            // Audit these advisory findings before making either policy blocking.
+            "@typescript-eslint/no-array-delete": "warn",
             "@typescript-eslint/no-implied-eval": "off",
             "@typescript-eslint/no-duplicate-enum-values": "off",
             "@typescript-eslint/only-throw-error": "off",
-            "@typescript-eslint/no-for-in-array": "off",
+            "@typescript-eslint/no-for-in-array": "warn",
             "@typescript-eslint/no-deprecated": "off",
             "@typescript-eslint/no-unnecessary-type-assertion": "off",
 
             // Async/Promise rules
             "@typescript-eslint/promise-function-async": "error",
-            "@typescript-eslint/no-misused-promises": [
-                "error",
-                {
-                    checksConditionals: false,
-                    checksVoidReturn: {
-                        arguments: false,
-                        attributes: false,
-                    },
-                },
-            ],
+            "@typescript-eslint/no-misused-promises": ["error", misusedPromiseOptions],
             "@typescript-eslint/no-floating-promises": "error",
             "@typescript-eslint/return-await": ["error", "always"],
             "no-await-in-loop": "error",
@@ -398,6 +408,7 @@ export default tseslint.config(
             // Restricted syntax
             "no-restricted-syntax": [
                 "error",
+                ...restrictedRuntimeImports,
                 {
                     selector: "FunctionDeclaration[async=false][id.name=/Async$/]",
                     message: "Function ending in 'Async' must be declared async",
@@ -421,6 +432,7 @@ export default tseslint.config(
             ],
 
             // Import restrictions for TypeScript
+            "no-restricted-imports": "off",
             "@typescript-eslint/no-restricted-imports": [
                 "error",
                 {
@@ -430,14 +442,11 @@ export default tseslint.config(
                             message: "Do not import from index files",
                             allowTypeImports: true,
                         },
+                        {
+                            regex: "/$",
+                            message: "Do not import from trailing-slash module paths",
+                        },
                     ],
-                },
-            ],
-
-            "import/no-internal-modules": [
-                "error",
-                {
-                    forbid: ["**/"],
                 },
             ],
 
@@ -693,6 +702,79 @@ export default tseslint.config(
         },
     },
 
+    // These existing lazy Promise caches are typed as always present. Preserve
+    // the existing conditional policy until their declarations are corrected.
+    {
+        files: [
+            "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.pure.ts",
+            "packages/dev/core/src/Meshes/csg2.ts",
+            "packages/dev/loaders/src/glTF/glTFValidation.ts",
+            "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+            "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+            "packages/tools/ktx2Decoder/src/zstddec.ts",
+        ],
+        rules: {
+            "@typescript-eslint/no-misused-promises": ["error", { ...misusedPromiseOptions, checksConditionals: false }],
+        },
+    },
+    {
+        files: ["packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"],
+        rules: {
+            // Existing occlusion-texture exporter requires a separate runtime fix.
+            "no-async-promise-executor": "warn",
+        },
+    },
+
+    // Tests use syntax-only TypeScript linting; public API conventions and
+    // type-service startup costs belong to production source, not test fixtures.
+    {
+        files: [...LintTestFiles, ...testSourceFiles],
+        extends: [tseslint.configs.recommended],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+            // Introduce test-style policies as advisory without rewriting fixtures.
+            "@typescript-eslint/no-empty-object-type": "warn",
+            "@typescript-eslint/no-this-alias": "warn",
+            "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
+            "@typescript-eslint/no-require-imports": "warn",
+            "@typescript-eslint/no-unused-expressions": ["error", { allowShortCircuit: true }],
+            "prefer-const": "warn",
+            "no-var": "warn",
+            "no-useless-assignment": "warn",
+            "no-unassigned-vars": "warn",
+            // Playwright requires an object pattern for its fixture parameter.
+            "no-empty-pattern": ["error", { allowObjectPatternsAsParameters: true }],
+        },
+    },
+    {
+        files: ["packages/**/test/unit/**/*.{test,spec}.{ts,tsx,js}"],
+        extends: [eslintPluginVitest.configs.recommended],
+        languageOptions: {
+            globals: eslintPluginVitest.environments.env.globals,
+        },
+        rules: {
+            "vitest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
+            "vitest/valid-expect": ["error", { maxArgs: 2 }],
+            "vitest/no-conditional-expect": "warn",
+            "vitest/no-commented-out-tests": "warn",
+            "vitest/expect-expect": "warn",
+            "vitest/valid-title": "warn",
+        },
+    },
+    {
+        files: [
+            "packages/dev/addons/test/unit/atmosphere/sampling.test.ts",
+            "packages/dev/loaders/test/unit/USD/usdFileLoader.test.ts",
+            "packages/dev/loaders/test/unit/USD/usdSceneMaterializer.test.ts",
+        ],
+        rules: {
+            // The installed rule misses matchers behind TS casts and assertions
+            // stored in a variable then awaited after a cancellation is triggered.
+            "vitest/valid-expect": ["warn", { maxArgs: 2 }],
+        },
+    },
+
     // ===========================================
     // GUI Controls override
     // Requires context.save() before _applyStates()
@@ -707,7 +789,7 @@ export default tseslint.config(
         // Dev packages produce the public packages that use add-js-to-es6 post-processing,
         // which appends .js to imports. Directory imports like "core/Foo" become "core/Foo.js"
         // which fails if Foo is a directory. This rule catches those cases.
-        files: ["packages/dev/**/*.{ts,tsx}"],
+        files: ["packages/dev/**/src/**/*.{ts,tsx}"],
         rules: {
             "babylonjs/no-directory-barrel-imports": "error",
         },
@@ -720,6 +802,9 @@ export default tseslint.config(
         files: ["packages/dev/{core,gui,loaders,serializers}/src/**/*.pure.ts"],
         rules: {
             "babylonjs/require-pure-annotation": "error",
+            // Review newly discovered initializers before annotating them: an
+            // annotation on an actually effectful call would change bundling.
+            "babylonjs/require-nested-pure-annotation": "warn",
         },
     },
 
@@ -749,6 +834,15 @@ export default tseslint.config(
         ],
         rules: {
             "babylonjs/no-super-in-accessor": "error",
+        },
+    },
+    eslintConfigPrettier,
+    {
+        files: LintSourceFiles,
+        ignores: testSourceFiles,
+        // Requiring all braces is compatible with Prettier and remains a blocking policy.
+        rules: {
+            curly: ["error", "all"],
         },
     }
 );

@@ -3,6 +3,7 @@ import { type IPropertiesService, PropertiesServiceIdentity } from "./properties
 
 import { Bone } from "core/Bones/bone";
 import { TransformNode } from "core/Meshes/transformNode";
+import { TransformNodeHierarchyBoundingSizeProperties } from "../../../components/properties/nodes/transformNodeHierarchyBoundingSize";
 import { TransformProperties } from "../../../components/properties/transformProperties";
 
 export const TransformPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
@@ -21,9 +22,21 @@ export const TransformPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
             ],
         });
 
+        const hierarchyBoundingSizeRegistration = propertiesService.addSectionContent({
+            key: "Transform Node Hierarchy Bounding Size",
+            predicate: (entity: unknown): entity is TransformNode => entity instanceof TransformNode,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <TransformNodeHierarchyBoundingSizeProperties node={context} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 contentRegistration.dispose();
+                hierarchyBoundingSizeRegistration.dispose();
             },
         };
     },

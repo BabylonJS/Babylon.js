@@ -175,6 +175,21 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
+     * The packed mesh-blending tag of the source mesh.
+     */
+    public override get meshBlendingTag(): number {
+        return this._sourceMesh.meshBlendingTag;
+    }
+
+    public override set meshBlendingTag(value: number) {
+        if (!this._sourceMesh || value === this._sourceMesh.meshBlendingTag) {
+            return;
+        }
+
+        Logger.Warn("Setting meshBlendingTag on an instanced mesh has no effect");
+    }
+
+    /**
      * @returns the total number of vertices (integer).
      */
     public override getTotalVertices(): number {

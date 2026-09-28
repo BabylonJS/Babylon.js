@@ -17,12 +17,68 @@ interface ITestDescriptor {
     glbFileName: string;
     tests?: {
         entryPoints?: { delayedExecutionTime?: number }[];
+        requiredInteractions?: {
+            type: "hover" | "select";
+            expectation: "mustFire" | "mustNotFire";
+            targetNodeId: number;
+            targetNodeName: string;
+        }[];
         subTests?: {
             name: string;
             successResultVarId?: number;
             successResultVarName?: string;
         }[];
     }[];
+}
+
+async function _performRequiredInteractions(page: Page, descriptor: ITestDescriptor | undefined): Promise<void> {
+    const interactions = (descriptor?.tests ?? []).flatMap((test) => test.requiredInteractions ?? []);
+    if (!interactions.length) {
+        return;
+    }
+
+    await page.evaluate(async (requiredInteractions) => {
+        const scene = window.scene!;
+        const importResult = (BABYLON as any).GLTF2.Loader.Extensions.GetKHRInteractivityImportResult(scene);
+        for (const interaction of requiredInteractions) {
+            const glTFNode = importResult?.glTF.nodes?.[interaction.targetNodeId];
+            const transformNode = glTFNode?._babylonTransformNode;
+            const mesh = glTFNode?._primitiveBabylonMeshes?.[0] ?? transformNode?.getChildMeshes?.()[0] ?? transformNode;
+            if (!mesh) {
+                throw new Error(`Required interaction target "${interaction.targetNodeName}" (node ${interaction.targetNodeId}) was not loaded.`);
+            }
+            mesh.computeWorldMatrix(true);
+            const target = mesh.getBoundingInfo().boundingSphere.centerWorld;
+            const origin = scene.activeCamera?.globalPosition ?? target.subtract(BABYLON.Vector3.Forward());
+            const ray = new BABYLON.Ray(origin, target.subtract(origin).normalize());
+            const targetPredicate = (candidate: BABYLON.AbstractMesh) => candidate === mesh || candidate.isDescendantOf(mesh);
+            const pickInfo = scene.pickWithRay(
+                ray,
+                interaction.type === "hover"
+                    ? (candidate) => targetPredicate(candidate) && (candidate._isPointerMovePickable ?? candidate.isPickable)
+                    : (candidate) => targetPredicate(candidate) && candidate.isPickable
+            );
+            if (interaction.expectation === "mustNotFire") {
+                if (pickInfo?.hit) {
+                    throw new Error(`Expected ${interaction.type} target "${interaction.targetNodeName}" to be excluded from real ray picking.`);
+                }
+                continue;
+            }
+            if (!pickInfo?.hit || !pickInfo.pickedMesh) {
+                throw new Error(`Expected ${interaction.type} target "${interaction.targetNodeName}" to be hit by real ray picking.`);
+            }
+
+            if (interaction.type === "hover") {
+                scene.simulatePointerMove(pickInfo, { pointerId: 1 });
+                await new Promise<void>((resolve) => setTimeout(resolve, 0));
+                scene.simulatePointerMove(new BABYLON.PickingInfo(), { pointerId: 1 });
+            } else {
+                scene.simulatePointerDown(pickInfo, { pointerId: 1 });
+                scene.simulatePointerUp(pickInfo, { pointerId: 1 });
+            }
+            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        }
+    }, interactions);
 }
 
 interface IConsoleEntry {
@@ -201,7 +257,17 @@ async function _loadAsset(page: Page, assetUrl: string): Promise<{ success: bool
     await page.evaluate((url: string) => {
         const state = { done: false, success: false, error: undefined as string | undefined };
         (window as any).__khrAssetLoadState = state;
-        void BABYLON.SceneLoader.AppendAsync("", url, window.scene!).then(
+        void BABYLON.AppendSceneAsync(url, window.scene!, {
+            pluginOptions: {
+                gltf: {
+                    extensionOptions: {
+                        ["KHR_interactivity"]: {
+                            strictValidation: false,
+                        },
+                    },
+                },
+            },
+        }).then(
             () => {
                 state.done = true;
                 state.success = true;
@@ -336,7 +402,7 @@ const KnownFailingAssets: Record<string, string> = {
         "Pre-dates the importer work: it reproduces on the commit before it, and the standalone animation/start and pointer/interpolate assets both pass.",
 };
 
-test.describe("KHR_Interactivity all assets", () => {
+test.describe("Pinned Khronos pre-ratification KHR_interactivity compatibility corpus", () => {
     test.describe.configure({ mode: "parallel" });
     test.setTimeout(120000);
     test.skip(!HasAssetRepository, "Run `npm run test:khr-interactivity` to fetch and test the pinned Khronos assets.");
@@ -379,6 +445,7 @@ test.describe("KHR_Interactivity all assets", () => {
                 expect(pageCrashed, `${asset.relativePath} crashed the renderer process while loading`).toBe(false);
                 expect(loadResult.success, `${asset.relativePath} failed to load:\n${loadResult.error ?? "Unknown load failure"}`).toBe(true);
 
+                await _performRequiredInteractions(page, asset.descriptor);
                 const renderError = await _runFrames(page, _getRunDurationMs(asset));
                 expect(renderError, `${asset.relativePath} failed while rendering`).toBeUndefined();
 
@@ -434,8 +501,19 @@ test.describe("KHR_Interactivity all assets", () => {
                         const scene = window.scene!;
                         const coordinatorsByScene = (BABYLON as any).FlowGraphCoordinator.SceneCoordinators;
                         const before = new Set<any>(coordinatorsByScene.get(scene) ?? []);
-                        await BABYLON.SceneLoader.AppendAsync("", urlA, scene);
-                        await BABYLON.SceneLoader.AppendAsync("", urlB, scene);
+                        const options = {
+                            pluginOptions: {
+                                gltf: {
+                                    extensionOptions: {
+                                        ["KHR_interactivity"]: {
+                                            strictValidation: false,
+                                        },
+                                    },
+                                },
+                            },
+                        };
+                        await BABYLON.AppendSceneAsync(urlA, scene, options);
+                        await BABYLON.AppendSceneAsync(urlB, scene, options);
                         const created = (coordinatorsByScene.get(scene) ?? []).filter((coordinator: any) => !before.has(coordinator));
                         if (created.length !== 2) {
                             return { success: false, error: `Expected 2 coordinators, got ${created.length}` };

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention, jsdoc/require-param, jsdoc/require-returns */
-import { type FBXNode, findChildByName, getPropertyValue, cleanFBXName } from "../types/fbxTypes";
+import { getPropertyEntries } from "./propertyTemplates";
+import { type FBXNode, findChildByName, getPropertyValue, cleanFBXName, getNodeArray } from "../types/fbxTypes";
 
 import { type FBXObjectMap, getChildren } from "./connections";
 
@@ -92,19 +93,9 @@ function extractBlendShape(deformerId: number, _deformerNode: FBXNode, objectMap
 
         // Read DeformPercent from Properties70
         let deformPercent = 0;
-        const props70 = findChildByName(channelNode, "Properties70");
-        if (props70) {
-            for (const p of props70.children) {
-                if (p.name !== "P") {
-                    continue;
-                }
-                const pName = getPropertyValue<string>(p, 0);
-                if (pName === "DeformPercent") {
-                    const val = p.properties[4]?.value;
-                    if (typeof val === "number") {
-                        deformPercent = val;
-                    }
-                }
+        for (const entry of getPropertyEntries(channelNode)) {
+            if (entry.name === "DeformPercent" && typeof entry.values[0] === "number") {
+                deformPercent = entry.values[0];
             }
         }
 
@@ -153,7 +144,7 @@ function extractBlendShape(deformerId: number, _deformerNode: FBXNode, objectMap
 
 function extractFullWeights(channelNode: FBXNode): number[] | null {
     const fullWeightsNode = findChildByName(channelNode, "FullWeights");
-    const rawFullWeights = fullWeightsNode?.properties[0]?.value;
+    const rawFullWeights = getNodeArray(fullWeightsNode);
     if (!rawFullWeights) {
         return null;
     }
@@ -220,8 +211,8 @@ function extractShape(shapeNode: FBXNode): FBXShapeData | null {
         return null;
     }
 
-    const rawIndices = indexesNode.properties[0]?.value;
-    const rawVertices = verticesNode.properties[0]?.value;
+    const rawIndices = getNodeArray(indexesNode);
+    const rawVertices = getNodeArray(verticesNode);
 
     if (!rawIndices || !rawVertices) {
         return null;
@@ -246,7 +237,7 @@ function extractShape(shapeNode: FBXNode): FBXShapeData | null {
     let normals: Float64Array | null = null;
     const normalsNode = findChildByName(shapeNode, "Normals");
     if (normalsNode) {
-        const rawNormals = normalsNode.properties[0]?.value;
+        const rawNormals = getNodeArray(normalsNode);
         if (rawNormals instanceof Float64Array) {
             normals = rawNormals;
         } else if (rawNormals instanceof Float32Array) {

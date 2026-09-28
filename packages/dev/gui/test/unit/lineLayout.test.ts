@@ -5,7 +5,7 @@ import { Measure } from "../../src/2D/measure";
 
 class TestLine extends Line {
     public prepareMeasure(parentMeasure: Measure): void {
-        this._preMeasure(parentMeasure);
+        this._preMeasure(parentMeasure);
     }
 }
 

@@ -4,11 +4,19 @@ import { globSync } from "glob";
 import * as path from "path";
 import { checkArgs } from "./utils.js";
 
-function ValidateRelativeImport(file: string, specifier: string, message: string) {
-    if (specifier.startsWith(".") && !fs.existsSync(path.resolve(path.dirname(file), specifier))) {
-        console.log(file, path.resolve(path.dirname(file), specifier));
+function ValidateRelativeImport(file: string, specifier: string, message: string, validatedImports: Set<string>) {
+    if (!specifier.startsWith(".")) {
+        return;
+    }
+    const resolved = path.resolve(path.dirname(file), specifier);
+    if (validatedImports.has(resolved)) {
+        return;
+    }
+    if (!fs.existsSync(resolved)) {
+        console.log(file, resolved);
         throw new Error(message);
     }
+    validatedImports.add(resolved);
 }
 
 function ProcessSource(sourceCode: string, forceMJS: boolean) {
@@ -38,6 +46,7 @@ function ProcessSource(sourceCode: string, forceMJS: boolean) {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolean) {
     const isVerbose = checkArgs("--verbose", true);
+    const validatedImports = new Set<string>();
     files.forEach((file: string) => {
         isVerbose && console.log(`Processing ${file}`);
         const sourceCode = fs.readFileSync(file, "utf-8");
@@ -46,17 +55,19 @@ export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolea
         const regex = /(?:import|export)\s+(?:(?!;)[\s\S])*?\bfrom\s*["'](\..*?)["'];/g;
         let match;
         while ((match = regex.exec(processed)) !== null) {
-            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you importing from an index/directory?`);
+            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you importing from an index/directory?`, validatedImports);
         }
         const bareImportRegex = /import\s*["'](\..*?)["'];/g;
         while ((match = bareImportRegex.exec(processed)) !== null) {
-            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you side-effect importing from an index/directory?`);
+            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you side-effect importing from an index/directory?`, validatedImports);
         }
         const dynamicRegex = /import\(["'](\..*?)["']\)/g;
         while ((match = dynamicRegex.exec(processed)) !== null) {
-            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you dynamically importing from an index/directory?`);
+            ValidateRelativeImport(file, match[1], `File ${match[1]} does not exist. Are you dynamically importing from an index/directory?`, validatedImports);
         }
-        fs.writeFileSync(file, processed);
+        if (processed !== sourceCode) {
+            fs.writeFileSync(file, processed);
+        }
     });
 }
 

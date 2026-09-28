@@ -134,7 +134,12 @@ async function GetContextSnapshot(page: Page): Promise<{ selectedContextIndex: n
     });
 }
 
-async function GetCoordinatorSnapshot(page: Page): Promise<{ activeGraphIndex: number; graphs: { name: string; blockClassNames: string[]; totalConnections: number }[] }> {
+async function GetCoordinatorSnapshot(page: Page): Promise<{
+    activeGraphIndex: number;
+    dispatchEventsSynchronously: boolean;
+    hasHostResolver: boolean;
+    graphs: { name: string; blockClassNames: string[]; totalConnections: number }[];
+}> {
     return await page.evaluate(() => {
         const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
         const coordinator = state?.coordinator;
@@ -157,6 +162,8 @@ async function GetCoordinatorSnapshot(page: Page): Promise<{ activeGraphIndex: n
 
         return {
             activeGraphIndex: state.activeGraphIndex,
+            dispatchEventsSynchronously: coordinator.dispatchEventsSynchronously,
+            hasHostResolver: !!coordinator.config.hostResolver,
             graphs: coordinator.flowGraphs.map((graph: any) => {
                 const serializedGraph: any = {};
                 graph.serialize(serializedGraph);
@@ -189,6 +196,69 @@ async function GetSceneContextSnapshot(
             lightNames: scene.lights.map((light: any) => light.name),
         };
     });
+}
+
+async function StrictImportKhrInteractivityAsync(page: Page, fileName: string, bytes: Uint8Array): Promise<{ graphCount: number; errorCount: number }> {
+    return await page.evaluate(
+        async ({ name, data }) => {
+            const Babylon = (globalThis as any).BABYLON;
+            const key = name.toLowerCase();
+            const file = new File([new Uint8Array(data)], name, {
+                type: name.endsWith(".glb") ? "model/gltf-binary" : "model/gltf+json",
+            });
+            Babylon.FilesInputStore.FilesToLoad[key] = file;
+            const canvas = document.createElement("canvas");
+            const engine = new Babylon.Engine(canvas, false);
+            let scene: any = null;
+            try {
+                scene = await Babylon.LoadSceneAsync(name, engine, {
+                    rootUrl: "file:",
+                    pluginOptions: {
+                        gltf: {
+                            extensionOptions: {
+                                KHR_interactivity: {
+                                    autoStart: false,
+                                    parseOnly: true,
+                                    strictValidation: true,
+                                },
+                            },
+                        },
+                    },
+                });
+                const importResult = Babylon.GLTF2.Loader.Extensions.GetKHRInteractivityImportResult(scene);
+                if (!importResult) {
+                    throw new Error("Strict KHR_interactivity import result was not created.");
+                }
+                return {
+                    graphCount: importResult.graphs.length,
+                    errorCount: importResult.document.diagnostics.filter((diagnostic: { severity: string }) => diagnostic.severity === "error").length,
+                };
+            } finally {
+                scene?.dispose();
+                engine.dispose();
+                delete Babylon.FilesInputStore.FilesToLoad[key];
+            }
+        },
+        { name: fileName, data: Array.from(bytes) }
+    );
+}
+
+async function UndockRightSidePaneAsync(page: Page): Promise<Page> {
+    const menuButtons = page.locator('button[aria-haspopup="menu"]');
+    let rightmostMenuButton = -1;
+    let rightmostX = -1;
+    for (let index = 0; index < (await menuButtons.count()); index++) {
+        const box = await menuButtons.nth(index).boundingBox();
+        if (box && box.y < 120 && box.x > rightmostX) {
+            rightmostMenuButton = index;
+            rightmostX = box.x;
+        }
+    }
+    expect(rightmostMenuButton).toBeGreaterThanOrEqual(0);
+    const popupPromise = page.context().waitForEvent("page");
+    await menuButtons.nth(rightmostMenuButton).click();
+    await page.getByRole("menuitem", { name: "Undock", exact: true }).click();
+    return await popupPromise;
 }
 
 async function GetDefaultSceneBoxInfo(page: Page): Promise<{ sceneUid: string; source: string | null; boxX: number }> {
@@ -876,6 +946,11 @@ test.describe("Flow Graph Editor — Persistence and Scenes", () => {
         expect(originalScene).not.toBeNull();
         expect(originalScene!.meshNames).toContain("snippetBox");
 
+        const popup = await UndockRightSidePaneAsync(page);
+        await expect(popup.getByText("Scene Preview", { exact: true }).first()).toBeVisible();
+        await popup.close();
+        await expect.poll(async () => (await GetScenePreviewSnapshot(page, "snippetBox"))?.sceneUid).toBe(originalScene!.sceneUid);
+
         await fge.addBlockFromPalette("SceneReadyEvent");
         await fge.addBlockFromPalette("SetProperty");
 
@@ -1272,6 +1347,12 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await fge.addGraphTab();
         await RenameGraphTab(page, (await fge.getGraphNames())[1], "Scratch Graph");
         await expect.poll(async () => (await GetCoordinatorSnapshot(page)).activeGraphIndex).toBe(1);
+        await expect
+            .poll(async () => await GetCoordinatorSnapshot(page))
+            .toMatchObject({
+                dispatchEventsSynchronously: true,
+                hasHostResolver: false,
+            });
         await fge.addBlockFromPalette("Constant");
         await expect.poll(async () => await fge.getNodeCount()).toBe(1);
 
@@ -1342,6 +1423,235 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             });
     });
 
+    test("retains an imported graph when a graphless scene replaces its owning scene", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        const serializedGraph = JSON.parse(await fge.serializeGraph());
+
+        const graphBearingGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "graphBearingSceneNode" }],
+            extensionsUsed: ["BABYLON_flow_graph"],
+            extensions: { BABYLON_flow_graph: { flowGraph: serializedGraph } },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "graphBearingScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphBearingGltf);
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported flow graph from "graphBearingScene.gltf"');
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__graphBearingSceneState = {
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                scene: state.sceneContext.scene,
+            };
+        });
+
+        const graphlessGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "graphlessSceneNode" }],
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "graphlessScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphlessGltf);
+
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.transformNodeNames).toContain("graphlessSceneNode");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__graphBearingSceneState;
+                        const scene = state.sceneContext.scene;
+                        return {
+                            coordinatorRetained: state.coordinator === before.coordinator,
+                            graphRetained: state.flowGraph === before.flowGraph,
+                            graphMembership: state.coordinator.flowGraphs.includes(state.flowGraph),
+                            coordinatorScene: state.coordinator.config.scene === scene,
+                            graphScene: state.flowGraph.scene === scene,
+                            newSceneRegistered: (globalThis as any).BABYLON.FlowGraphCoordinator.SceneCoordinators.get(scene)?.includes(state.coordinator) ?? false,
+                            oldSceneCoordinatorCount: (globalThis as any).BABYLON.FlowGraphCoordinator.SceneCoordinators.get(before.scene)?.length,
+                            oldSceneDisposed: before.scene.isDisposed,
+                        };
+                    })
+            )
+            .toEqual({
+                coordinatorRetained: true,
+                graphRetained: true,
+                graphMembership: true,
+                coordinatorScene: true,
+                graphScene: true,
+                newSceneRegistered: true,
+                oldSceneCoordinatorCount: 0,
+                oldSceneDisposed: true,
+            });
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+    });
+
+    test("rejects graphless scene replacement while editing a borrowed live-host graph", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            state.hostScene = state.sceneContext.scene;
+            state.sceneSource = "host";
+            (globalThis as any).__borrowedHostStateBeforeGraphlessDrop = {
+                sceneContext: state.sceneContext,
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length,
+            };
+        });
+
+        const graphlessGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "rejectedHostReplacementNode" }],
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "hostGraphlessScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphlessGltf);
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Graphless scene replacement is unavailable while editing a borrowed live-host graph.");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__borrowedHostStateBeforeGraphlessDrop;
+                        return {
+                            sceneContext: state.sceneContext === before.sceneContext,
+                            coordinator: state.coordinator === before.coordinator,
+                            flowGraph: state.flowGraph === before.flowGraph,
+                            graphMembership: state.coordinator.flowGraphs.includes(state.flowGraph),
+                            running: state.flowGraph.state,
+                            engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length === before.engineCount,
+                            stagedNodePublished: !!state.sceneContext.scene.getTransformNodeByName("rejectedHostReplacementNode"),
+                        };
+                    })
+            )
+            .toEqual({
+                sceneContext: true,
+                coordinator: true,
+                flowGraph: true,
+                graphMembership: true,
+                running: 1,
+                engineCount: true,
+                stagedNodePublished: false,
+            });
+    });
+
+    test("rejects graphless scene replacement for KHR_interactivity runtime services", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        const khrGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "khrRuntimeNode" }],
+            extensionsUsed: ["KHR_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graphs: [{ name: "KHR Runtime", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+                },
+            },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "khrRuntimeScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, khrGltf);
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["KHR Runtime"]);
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__khrRuntimeStateBeforeGraphlessDrop = {
+                sceneContext: state.sceneContext,
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                hostResolver: state.coordinator.config.hostResolver,
+                engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length,
+            };
+        });
+
+        const graphlessGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "rejectedKhrReplacementNode" }],
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "khrGraphlessScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphlessGltf);
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(
+            "Graphless scene replacement is unavailable for KHR_interactivity imports because their runtime services belong to the current asset."
+        );
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__khrRuntimeStateBeforeGraphlessDrop;
+                        return {
+                            sceneContext: state.sceneContext === before.sceneContext,
+                            coordinator: state.coordinator === before.coordinator,
+                            flowGraph: state.flowGraph === before.flowGraph,
+                            graphMembership: state.coordinator.flowGraphs.includes(state.flowGraph),
+                            hostResolver: state.coordinator.config.hostResolver === before.hostResolver,
+                            synchronousDispatch: state.coordinator.dispatchEventsSynchronously,
+                            importScoped: state.hasImportScopedRuntime,
+                            engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length === before.engineCount,
+                            stagedNodePublished: !!state.sceneContext.scene.getTransformNodeByName("rejectedKhrReplacementNode"),
+                        };
+                    })
+            )
+            .toEqual({
+                sceneContext: true,
+                coordinator: true,
+                flowGraph: true,
+                graphMembership: true,
+                hostResolver: true,
+                synchronousDispatch: false,
+                importScoped: true,
+                engineCount: true,
+                stagedNodePublished: false,
+            });
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+    });
+
     test("loads flow graphs from glTF extension files and leaves the graph unchanged when the extension is absent", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto();
@@ -1381,6 +1691,574 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("No BABYLON_flow_graph extension found in this file");
         expect(await fge.getGraphTopology()).toEqual(topologyBeforeMissingExtension);
+    });
+
+    test("keeps the current scene and graph when a dropped KHR_interactivity file has no graphs", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__sceneGraphPairBeforeFailedFile = {
+                sceneContext: state.sceneContext,
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length,
+            };
+        });
+
+        const invalidKhrGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "failedKhrNode" }],
+            extensionsUsed: ["KHR_interactivity"],
+            extensions: { KHR_interactivity: { graphs: [] } },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "zeroKhrGraphs.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, invalidKhrGltf);
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("A Flow Graph coordinator must contain at least one graph.");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__sceneGraphPairBeforeFailedFile;
+                        return {
+                            sceneContext: state.sceneContext === before.sceneContext,
+                            coordinator: state.coordinator === before.coordinator,
+                            flowGraph: state.flowGraph === before.flowGraph,
+                            engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length === before.engineCount,
+                            failedNodePublished: !!state.sceneContext.scene.getTransformNodeByName("failedKhrNode"),
+                        };
+                    })
+            )
+            .toEqual({ sceneContext: true, coordinator: true, flowGraph: true, engineCount: true, failedNodePublished: false });
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+    });
+
+    test("rejects malformed BABYLON_flow_graph data without publishing its staged scene", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__sceneGraphPairBeforeMalformedCustomGraph = {
+                sceneContext: state.sceneContext,
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length,
+            };
+        });
+
+        const malformedCustomGraphGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "failedCustomGraphNode" }],
+            extensionsUsed: ["BABYLON_flow_graph"],
+            extensions: { BABYLON_flow_graph: { flowGraph: { _flowGraphs: [] } } },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "malformedCustomGraph.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, malformedCustomGraphGltf);
+
+        const log = page.getByRole("log", { name: "Flow graph log" });
+        await expect(log).toContainText("Failed to load file: A Flow Graph coordinator must contain at least one graph.");
+        await expect(log).not.toContainText('Loaded "malformedCustomGraph.gltf"');
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__sceneGraphPairBeforeMalformedCustomGraph;
+                        return {
+                            sceneContext: state.sceneContext === before.sceneContext,
+                            coordinator: state.coordinator === before.coordinator,
+                            flowGraph: state.flowGraph === before.flowGraph,
+                            engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length === before.engineCount,
+                            failedNodePublished: !!state.sceneContext.scene.getTransformNodeByName("failedCustomGraphNode"),
+                        };
+                    })
+            )
+            .toEqual({ sceneContext: true, coordinator: true, flowGraph: true, engineCount: true, failedNodePublished: false });
+    });
+
+    test("imports every KHR_interactivity graph, falls back from an invalid default, and preserves imported composites", async ({ page }) => {
+        test.setTimeout(60_000);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await expect(page.getByText("glTF: Interactivity Imported", { exact: true })).toHaveCount(0);
+
+        const graphGltf = {
+            asset: { version: "2.0", generator: "FGE KHR_interactivity Phase 1 test" },
+            extensionsUsed: ["KHR_interactivity", "EXT_vendor_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graph: 3,
+                    graphs: [
+                        {
+                            name: "Startup",
+                            declarations: [{ op: "event/onStart" }, { op: "flow/sequence" }],
+                            nodes: [
+                                { declaration: 0, values: {}, flows: { out: { node: 1 } } },
+                                { declaration: 1, flows: { "0": { node: 2 } } },
+                                { declaration: 1, flows: { "0": { node: 3 } } },
+                                { declaration: 1, flows: { "0": { node: 4 } } },
+                                { declaration: 1, flows: { "0": { node: 5 } } },
+                                { declaration: 1, flows: { "0": { node: 6 } } },
+                                { declaration: 1, flows: { "0": { node: 7 } } },
+                                { declaration: 1 },
+                            ],
+                        },
+                        {
+                            name: "Vendor behavior",
+                            types: [{ signature: "float" }],
+                            declarations: [
+                                {
+                                    op: "vendor/doThing",
+                                    extension: "EXT_vendor_interactivity",
+                                    inputValueSockets: { amount: { type: 0 } },
+                                    outputValueSockets: { result: { type: 0 } },
+                                },
+                            ],
+                            nodes: [{ declaration: 0, values: { amount: { type: 0, value: [2] } } }],
+                        },
+                        {
+                            name: "Composite",
+                            types: [{ signature: "ref" }, { signature: "float3" }],
+                            declarations: [{ op: "event/onStart" }, { op: "pointer/get" }, { op: "math/abs" }],
+                            nodes: [
+                                { declaration: 0 },
+                                {
+                                    declaration: 1,
+                                    configuration: { pointer: { value: ["/nodes/{target}/translation"] }, type: { value: [1] } },
+                                    values: { target: { type: 0, value: ["/nodes/0"] } },
+                                },
+                                {
+                                    declaration: 2,
+                                    values: { a: { node: 1, type: 1 } },
+                                },
+                            ],
+                        },
+                        {
+                            name: "Invalid core graph",
+                            declarations: [{ op: "core/doesNotExist" }],
+                            nodes: [{ declaration: 0 }],
+                        },
+                    ],
+                },
+            },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "khrInteractivityPhaseOne.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            const target = document.querySelector("canvas") ?? document.body;
+            target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphGltf);
+
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Startup", "Vendor behavior", "Composite", "Invalid core graph"]);
+        await expect
+            .poll(async () => await GetCoordinatorSnapshot(page))
+            .toMatchObject({
+                activeGraphIndex: 0,
+                dispatchEventsSynchronously: false,
+                hasHostResolver: true,
+            });
+
+        const saveButton = page.getByRole("button", { name: "Save", exact: true });
+        await expect(saveButton).toBeDisabled();
+        await saveButton.hover();
+        await expect(page.getByRole("tooltip")).toContainText("KHR_interactivity graphs use import-scoped runtime services");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(
+            "KHR_interactivity graphs use import-scoped runtime services; JSON save and reload are unavailable for this import."
+        );
+        await fge.selectGraphTab("Vendor behavior");
+        const unsupportedNode = fge.nodeOnCanvas("FlowGraphUnsupportedInteractivityBlock");
+        await expect(unsupportedNode).toBeVisible();
+        await expect(unsupportedNode).toContainText("amount");
+        await expect(unsupportedNode).toContainText("result");
+        await expect(unsupportedNode).toContainText("glTF");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Unknown core operation "core/doesNotExist"');
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("KHR_interactivity compatibility mode ignored 1 non-blocking source conformance issue(s)");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).not.toContainText('"values" must contain at least one property when present');
+
+        await fge.selectGraphTab("Composite");
+        const pointerFrameTitle = page.getByText("pointer/get · glTF node 1", { exact: true });
+        await expect(pointerFrameTitle).toBeVisible();
+        const pointerFrameComment = pointerFrameTitle.locator("..").locator("..").locator("[class*='frame-comments']");
+        await expect(pointerFrameComment).toContainText("/extensions/KHR_interactivity/graphs/2/nodes/1");
+        expect(
+            await pointerFrameComment.evaluate((comment) => {
+                const frameBounds = comment.parentElement!.getBoundingClientRect();
+                const commentBounds = comment.getBoundingClientRect();
+                return commentBounds.left >= frameBounds.left && commentBounds.right <= frameBounds.right;
+            })
+        ).toBe(true);
+        await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
+        await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
+        await expect(fge.nodeOnCanvas("FlowGraphAbsBlock")).toBeVisible();
+
+        const topologyBeforeSort = await fge.getGraphTopology();
+        const pointerParserBeforeSort = topologyBeforeSort.blocks.find((block) => block.className === "FlowGraphJsonPointerParserBlock")!;
+        expect(pointerParserBeforeSort.dataIns).toEqual([{ name: "target", connectedIds: [] }]);
+        expect(topologyBeforeSort.totalConnections).toBe(4);
+
+        await page.getByRole("button", { name: /Sort graph/ }).click();
+        await fge.selectGraphTab("Startup");
+        await fge.selectGraphTab("Composite");
+
+        expect(await fge.getGraphTopology()).toEqual(topologyBeforeSort);
+        const compositeFrame = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graph = state?.flowGraph;
+            const editorData = graph?._editorData;
+            const frame = editorData?.frames?.find((candidate: any) => candidate.name === "pointer/get · glTF node 1");
+            if (!graph || !frame) {
+                throw new Error("Imported pointer/get frame not found");
+            }
+            const blocks = graph.getAllBlocks();
+            const blockByFrameId = new Map(blocks.map((block: any) => [editorData.map[block.uniqueId], block]));
+            const locations = new Map(editorData.locations.map((location: any) => [location.blockId, location]));
+            const nextBlock = blocks.find((block: any) => block.getClassName() === "FlowGraphAbsBlock");
+            const nextBlockLocation: any = locations.get(nextBlock?.uniqueId);
+            return {
+                blockClassNames: frame.blocks.map((frameBlockId: number) => blockByFrameId.get(frameBlockId)?.getClassName()).sort(),
+                relativePositions: frame.blocks.map((frameBlockId: number) => {
+                    const block = blockByFrameId.get(frameBlockId);
+                    const location: any = locations.get(block?.uniqueId);
+                    return { x: location.x - frame.x, y: location.y - frame.y };
+                }),
+                width: frame.width,
+                height: frame.height,
+                right: frame.x + frame.width,
+                nextBlockX: nextBlockLocation.x,
+            };
+        });
+        expect(compositeFrame.blockClassNames).toEqual(["FlowGraphGetPropertyBlock", "FlowGraphJsonPointerParserBlock"]);
+        for (const position of compositeFrame.relativePositions) {
+            expect(position.x).toBeGreaterThanOrEqual(0);
+            expect(position.y).toBeGreaterThanOrEqual(0);
+            expect(position.x).toBeLessThan(compositeFrame.width);
+            expect(position.y).toBeLessThan(compositeFrame.height);
+        }
+        expect(compositeFrame.right).toBeLessThanOrEqual(compositeFrame.nextBlockX);
+        await expect(page.getByText("pointer/get · glTF node 1", { exact: true })).toBeVisible();
+        await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
+        await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
+
+        await fge.selectGraphTab("Startup");
+        const importedLeftPositions = await page
+            .locator("#graph-canvas-container")
+            .evaluate((container) =>
+                [...container.children].filter((element) => !element.className.includes("hidden")).map((element) => Math.round(element.getBoundingClientRect().left))
+            );
+        expect(new Set(importedLeftPositions).size).toBeGreaterThan(1);
+
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__khrCoordinatorBeforeFailedLoad = state?.coordinator;
+        });
+        const khrJson = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graphData: any = {};
+            state.flowGraph.serialize(graphData);
+            graphData.allBlocks[0].metadata = { khrInteractivity: { graphIndex: 0, nodeIndex: 0 } };
+            return { _flowGraphs: [graphData] };
+        });
+        const jsonInput = page.locator("input[type='file'][accept='.json']");
+        await jsonInput.setInputFiles({
+            name: "unsupported-khr-reload.json",
+            mimeType: "application/json",
+            buffer: Buffer.from(JSON.stringify(khrJson)),
+        });
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(
+            "Error loading flow graph: Error: KHR_interactivity graphs use import-scoped runtime services"
+        );
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        return state.coordinator === (globalThis as any).__khrCoordinatorBeforeFailedLoad && state.coordinator.flowGraphs.includes(state.flowGraph);
+                    })
+            )
+            .toBe(true);
+
+        await jsonInput.setInputFiles({
+            name: "empty-coordinator.json",
+            mimeType: "application/json",
+            buffer: Buffer.from(JSON.stringify({ _flowGraphs: [] })),
+        });
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("A Flow Graph coordinator must contain at least one graph.");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        return state.coordinator === (globalThis as any).__khrCoordinatorBeforeFailedLoad && state.coordinator.flowGraphs.includes(state.flowGraph);
+                    })
+            )
+            .toBe(true);
+
+        const malformedJson = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graphData: any = {};
+            state.flowGraph.serialize(graphData);
+            delete graphData.metadata;
+            graphData.allBlocks.forEach((block: any) => delete block.metadata);
+            graphData.allBlocks[0].signalOutputs.push({
+                uniqueId: "unmapped-output",
+                name: "unmappedOutput",
+                _connectionType: 1,
+                connectedPointIds: [],
+            });
+            return { _flowGraphs: [graphData] };
+        });
+        await jsonInput.setInputFiles({
+            name: "malformed-flow-graph.json",
+            mimeType: "application/json",
+            buffer: Buffer.from(JSON.stringify(malformedJson)),
+        });
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Could not find signal output with name unmappedOutput");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        return state.coordinator === (globalThis as any).__khrCoordinatorBeforeFailedLoad && state.coordinator.flowGraphs.includes(state.flowGraph);
+                    })
+            )
+            .toBe(true);
+
+        await page.getByRole("button", { name: "Enable Debug Mode" }).click();
+        await expect.poll(async () => (await GetDebugSnapshot(page)).isDebugMode).toBe(true);
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+        await ClickGraphControl(page, "Reset");
+        await WaitForGraphState(page, "Stopped");
+
+        await fge.selectGraphTab("Invalid core graph");
+        await expect.poll(async () => await fge.getNodeCount()).toBe(0);
+    });
+
+    test("exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics", async ({ page }) => {
+        test.setTimeout(90_000);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        const source = {
+            asset: { version: "2.0", generator: "FGE KHR export E2E" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "interactiveNode" }],
+            extensionsUsed: ["KHR_interactivity"],
+            extensionsRequired: ["KHR_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graphs: [
+                        {
+                            name: "Interaction",
+                            types: [{ signature: "float" }, { signature: "float2" }],
+                            variables: [{ type: 0, value: [1] }],
+                            declarations: [{ op: "event/onStart" }, { op: "variable/interpolate" }],
+                            nodes: [
+                                { declaration: 0, flows: { out: { node: 1 } } },
+                                {
+                                    declaration: 1,
+                                    configuration: { variable: { value: [0] }, useSlerp: { value: [false] } },
+                                    values: {
+                                        value: { type: 0, value: [5] },
+                                        duration: { type: 0, value: [1] },
+                                        p1: { type: 1, value: [0, 0] },
+                                        p2: { type: 1, value: [1, 1] },
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        };
+        await page.evaluate((gltf) => {
+            const file = new File([JSON.stringify(gltf)], "interaction.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, source);
+        await expect.poll(async () => await fge.getNodeCount()).toBe(6);
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const playAnimation = state?.flowGraph
+                            ?.getAllBlocks()
+                            .find((block: any) => block.metadata?.khrInteractivity?.operation === "variable/interpolate" && block.metadata?.khrInteractivity?.role === 2);
+                        return playAnimation?.metadata?.khrInteractivity?.generatedInputDefaults?.speed?.runtimeValueFingerprint;
+                    })
+            )
+            .toBeDefined();
+        const importedScene = await GetSceneContextSnapshot(page);
+        const snippetInput = page.getByPlaceholder("Playground ID or URL...");
+        await snippetInput.fill("ABC123");
+        await snippetInput.press("Enter");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Replace the KHR_interactivity file instead of changing its preview scene");
+        expect((await GetSceneContextSnapshot(page))?.sceneUid).toBe(importedScene?.sceneUid);
+
+        const gltfDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".gltf"));
+        await page.getByRole("button", { name: "Export KHR glTF", exact: true }).click();
+        const gltfDownload = await gltfDownloadPromise;
+        const gltfPath = await gltfDownload.path();
+        expect(gltfPath).not.toBeNull();
+        const exportedGltf = readFileSync(gltfPath!, "utf8");
+        const exportedJson = JSON.parse(exportedGltf);
+        expect(exportedJson.extensions.KHR_interactivity.graphs[0]).toEqual(source.extensions.KHR_interactivity.graphs[0]);
+        expect(exportedJson.extensionsUsed).toContain("KHR_interactivity");
+        expect(exportedJson.extensionsRequired).toContain("KHR_interactivity");
+        expect(await StrictImportKhrInteractivityAsync(page, "strictRoundTrip.gltf", Buffer.from(exportedGltf))).toEqual({ graphCount: 1, errorCount: 0 });
+
+        await page.evaluate((content) => {
+            const file = new File([content], "roundTrip.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, exportedGltf);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.gltf"');
+        await expect.poll(async () => await fge.getNodeCount()).toBe(6);
+
+        const glbDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".glb"));
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const glbDownload = await glbDownloadPromise;
+        const glbPath = await glbDownload.path();
+        expect(glbPath).not.toBeNull();
+        const exportedGlb = readFileSync(glbPath!);
+        expect(exportedGlb.subarray(0, 4).toString("utf8")).toBe("glTF");
+        expect(await StrictImportKhrInteractivityAsync(page, "strictRoundTrip.glb", exportedGlb)).toEqual({ graphCount: 1, errorCount: 0 });
+
+        await page.evaluate((bytes) => {
+            const file = new File([new Uint8Array(bytes)], "roundTrip.glb", { type: "model/gltf-binary" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, Array.from(exportedGlb));
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.glb"');
+        await expect.poll(async () => await fge.getNodeCount()).toBe(6);
+
+        const beforeUndock = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const canvas = state.sceneContext.scene.getEngine().getRenderingCanvas();
+            return { sceneUid: state.sceneContext.scene.uid, connected: canvas.isConnected, inMainDocument: canvas.ownerDocument === document };
+        });
+        expect(beforeUndock).toMatchObject({ connected: true, inMainDocument: true });
+
+        const popup = await UndockRightSidePaneAsync(page);
+        await expect(popup.getByText("Scene Preview", { exact: true }).first()).toBeVisible();
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                        const canvas = state.sceneContext.scene.getEngine().getRenderingCanvas();
+                        return { connected: canvas.isConnected, inMainDocument: canvas.ownerDocument === document };
+                    })
+            )
+            .toEqual({ connected: true, inMainDocument: false });
+        const beforeResize = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const canvas = state.sceneContext.scene.getEngine().getRenderingCanvas();
+            return { width: canvas.clientWidth, height: canvas.clientHeight };
+        });
+        await popup.setViewportSize({ width: 820, height: 620 });
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(
+                        ({ previousWidth, previousHeight }) => {
+                            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                            const engine = state.sceneContext.scene.getEngine();
+                            const canvas = engine.getRenderingCanvas();
+                            return (
+                                (canvas.clientWidth !== previousWidth || canvas.clientHeight !== previousHeight) &&
+                                Math.abs(engine.getRenderWidth() - canvas.clientWidth) <= 1 &&
+                                Math.abs(engine.getRenderHeight() - canvas.clientHeight) <= 1
+                            );
+                        },
+                        { previousWidth: beforeResize.width, previousHeight: beforeResize.height }
+                    )
+            )
+            .toBe(true);
+        const beforeRedockFrameId = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            return state.sceneContext.scene.getEngine().frameId;
+        });
+        await popup.close();
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                        return state.sceneContext.scene.getEngine().frameId;
+                    })
+            )
+            .toBeGreaterThan(beforeRedockFrameId);
+        const renderChainSample = await page.evaluate(async () => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const engine = state.sceneContext.scene.getEngine();
+            const startEngineFrame = engine.frameId;
+            const browserFrameCount = 12;
+            await new Promise<void>((resolve) => {
+                let currentFrame = 0;
+                const sampleFrame = () => {
+                    currentFrame++;
+                    if (currentFrame === browserFrameCount) {
+                        resolve();
+                    } else {
+                        requestAnimationFrame(sampleFrame);
+                    }
+                };
+                requestAnimationFrame(sampleFrame);
+            });
+            return { browserFrameCount, engineFrameCount: engine.frameId - startEngineFrame };
+        });
+        expect(renderChainSample.engineFrameCount).toBeGreaterThan(0);
+        expect(renderChainSample.engineFrameCount).toBeLessThanOrEqual(renderChainSample.browserFrameCount + 2);
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                        const canvas = state.sceneContext.scene.getEngine().getRenderingCanvas();
+                        return { sceneUid: state.sceneContext.scene.uid, connected: canvas.isConnected, inMainDocument: canvas.ownerDocument === document };
+                    })
+            )
+            .toEqual({ sceneUid: beforeUndock.sceneUid, connected: true, inMainDocument: true });
+
+        await fge.addBlockFromPalette("Constant");
+        await page.evaluate(() => {
+            (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState?.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        });
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("KHR_interactivity export error");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("has no KHR_interactivity inverse mapping");
     });
 });
 

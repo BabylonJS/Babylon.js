@@ -327,10 +327,8 @@ export function ReadBvh(text: string, scene: Scene, assetContainer: Nullable<Ass
 
     const { loopMode } = loadingOptions;
 
-    scene._blockEntityCollection = !!assetContainer;
-    const skeleton = new Skeleton("", "", scene);
+    const skeleton = scene._executeWithBlockedEntityCollection(!!assetContainer, () => new Skeleton("", "", scene));
     skeleton._parentContainer = assetContainer;
-    scene._blockEntityCollection = false;
 
     const context = new LoaderContext(skeleton);
     context.loopMode = loopMode;

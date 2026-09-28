@@ -119,7 +119,7 @@ export class WebGPUOcclusionQuery {
         const querySet = this._querySet;
         if (querySet) {
             // Wait a bit before disposing of the queryset, in case some queries are still running for it
-            setTimeout(() => querySet.dispose, 1000);
+            setTimeout(() => querySet.dispose(), 1000);
         }
     }
 

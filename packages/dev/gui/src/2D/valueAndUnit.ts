@@ -86,14 +86,12 @@ export class ValueAndUnit {
      * Gets value as pixel
      * @param host defines the root host
      * @param refValue defines the reference value for percentages
+     * @param fontSize defines the computed font size in pixels for em units
+     * @param rootFontSize defines the computed root font size in pixels for rem units
      * @returns the value as pixel
      */
-    public getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number {
-        if (this.isPixel) {
-            return this.getValue(host);
-        }
-
-        return this.getValue(host) * refValue;
+    public getValueInPixel(host: AdvancedDynamicTexture, refValue: number, fontSize?: number, rootFontSize?: number): number {
+        return this.getValue(host, fontSize, rootFontSize) * (this.isPercentage ? refValue : 1);
     }
 
     /**
@@ -115,10 +113,16 @@ export class ValueAndUnit {
 
     /**
      * Gets the value accordingly to its unit
-     * @param host  defines the root host
+     * @param host defines the root host
+     * @param fontSize defines the computed font size in pixels for em units
+     * @param rootFontSize defines the computed root font size in pixels for rem units
      * @returns the value
      */
-    public getValue(host: AdvancedDynamicTexture): number {
+    public getValue(host: AdvancedDynamicTexture, fontSize?: number, rootFontSize?: number): number {
+        if (this._unit === ValueAndUnit.UNITMODE_EM || this._unit === ValueAndUnit.UNITMODE_REM) {
+            const rootSize = rootFontSize ?? host?.rootContainer.fontSizeInPixels ?? 18;
+            return this._value * (this._unit === ValueAndUnit.UNITMODE_EM ? (fontSize ?? rootSize) : rootSize);
+        }
         if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
             let width: number = 0;
             let height: number = 0;
@@ -156,6 +160,9 @@ export class ValueAndUnit {
      */
     public toString(host: AdvancedDynamicTexture, decimals?: number): string {
         switch (this._unit) {
+            case ValueAndUnit.UNITMODE_EM:
+            case ValueAndUnit.UNITMODE_REM:
+                return (decimals === undefined ? this._value : this._value.toFixed(decimals)) + (this._unit === ValueAndUnit.UNITMODE_EM ? "em" : "rem");
             case ValueAndUnit.UNITMODE_PERCENTAGE: {
                 const percentage = this.getValue(host) * 100;
                 return (decimals ? percentage.toFixed(decimals) : percentage) + "%";
@@ -175,7 +182,7 @@ export class ValueAndUnit {
      * @returns true if the value was successfully parsed and updated
      */
     public fromString(source: string | number): boolean {
-        const match = ValueAndUnit._Regex.exec(source.toString());
+        const match = ValueAndUnit._Regex.exec(source.toString().trim());
 
         if (!match || match.length === 0) {
             return false;
@@ -183,6 +190,9 @@ export class ValueAndUnit {
 
         let sourceValue = parseFloat(match[1]);
         let sourceUnit = this._originalUnit;
+        if (!Number.isFinite(sourceValue)) {
+            return false;
+        }
 
         if (!this.negativeValueAllowed) {
             if (sourceValue < 0) {
@@ -190,8 +200,14 @@ export class ValueAndUnit {
             }
         }
 
-        if (match.length === 4) {
-            switch (match[3]) {
+        if (match.length === 3) {
+            switch (match[2]) {
+                case "em":
+                    sourceUnit = ValueAndUnit.UNITMODE_EM;
+                    break;
+                case "rem":
+                    sourceUnit = ValueAndUnit.UNITMODE_REM;
+                    break;
                 case "px":
                     sourceUnit = ValueAndUnit.UNITMODE_PIXEL;
                     break;
@@ -214,9 +230,19 @@ export class ValueAndUnit {
     }
 
     // Static
-    private static _Regex = /(^-?\d*(\.\d+)?)(%|px)?/;
+    private static _Regex = /^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)(%|px|rem|em)?$/;
     private static _UNITMODE_PERCENTAGE = 0;
     private static _UNITMODE_PIXEL = 1;
+
+    /**
+     * Font-relative units, resolved against the control's computed font size.
+     */
+    public static readonly UNITMODE_EM = 2;
+
+    /**
+     * Root-relative units, resolved against the GUI root container's computed font size.
+     */
+    public static readonly UNITMODE_REM = 3;
 
     /** UNITMODE_PERCENTAGE */
     public static get UNITMODE_PERCENTAGE(): number {

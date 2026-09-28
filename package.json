@@ -9,7 +9,7 @@
     "devDependencies": {
         "@babel/core": "^7.29.7",
         "@babel/preset-env": "^7.29.7",
-        "@babylonjs/lite": "1.24.0",
+        "@babylonjs/lite": "1.27.0",
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",
@@ -19,7 +19,7 @@
         "@typescript-eslint/parser": "^8.58.2",
         "@typescript-eslint/utils": "^8.58.2",
         "@vitejs/plugin-react": "^6.0.3",
-        "@vitest/coverage-v8": "^4.1.3",
+        "@vitest/coverage-v8": "^4.1.11",
         "@vitest/eslint-plugin": "^1.6.14",
         "ajv": "~8.18.0",
         "chokidar": "~3.6.0",
@@ -33,8 +33,6 @@
         "eslint-plugin-github": "^6.0.0",
         "eslint-plugin-import": "^2.32.0",
         "eslint-plugin-jsdoc": "^62.7.1",
-        "eslint-plugin-prettier": "^5.5.5",
-        "eslint-plugin-tsdoc": "^0.5.0",
         "glob": "^13.0.6",
         "globals": "^16.0.0",
         "jsdom": "^27.4.0",
@@ -50,8 +48,8 @@
         "typedoc": "^0.28.16",
         "typescript": "~6.0.2",
         "typescript-eslint": "^8.58.2",
-        "vite": "8.1.3",
-        "vitest": "^4.1.3"
+        "vite": "8.2.2",
+        "vitest": "^4.1.11"
     },
     "workspaces": [
         "packages/**/*"
@@ -113,27 +111,21 @@
         "catalog:static-helpers": "node ./scripts/treeshaking/catalogStaticHelpers.mjs",
         "prepare": "npm run build:tools && npm rebuild @dev/build-tools && npm run build:assets && npm run build:test-tools && node scripts/setupGitHooks.mjs",
         "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
-        "format": "npm run format:check && npm run format:fix",
-        "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
-        "format:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
+        "format": "npm run format:fix",
+        "format:check": "node scripts/format.mjs --check",
+        "format:fix": "node scripts/format.mjs --write",
         "lint": "npm run lint:check",
-        "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --cache && npm run check:treeshaking && npm run check:side-effects-sync",
+        "lint:check": "node scripts/lint.mjs --quiet --cache && npm run check:treeshaking && npm run check:side-effects-sync",
+        "lint:advisory": "node scripts/lint.mjs --no-cache",
         "lint:changed": "node scripts/lint-changed.mjs",
         "lint:changed:fix": "node scripts/lint-changed.mjs --fix",
         "precommit": "lint-staged --allow-empty",
-        "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops && npm run lint:cycles && npm run check:treeshaking && npm run check:side-effects-sync",
+        "lint:check-ci": "node scripts/lint.mjs --quiet --format azure-devops && npm run lint:cycles && npm run check:treeshaking && npm run check:side-effects-sync",
         "lint:cycles": "npx --yes dpdm -T --no-tree --exit-code circular:1 \"./packages/dev/core/src/**/*\"",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
         "start": "npx nx run-many --targets watch:dev:skip-compile serve --projects @babylonjs/root @tools/babylon-server --parallel 2 --skipNxCache true --outputStyle stream",
         "start:devhost": "npm run serve -w @tools/dev-host"
-    },
-    "lint-staged": {
-        "packages/**/src/**/*.{ts,tsx,js,json}": [
-            "prettier --write",
-            "eslint --quiet --cache --no-warn-ignored"
-        ],
-        "packages/**/src/**/*.{scss,css}": "prettier --write"
     },
     "engines": {
         "node": "^20.19.0 || >=22.13.0 <23.0.0 || >=24.0.0 <25.0.0",
@@ -156,16 +148,16 @@
         "rollup-plugin-postcss": {
             "cssnano": "^7.1.9"
         },
-        "eslint-plugin-tsdoc": {
-            "@typescript-eslint/utils": "^8.58.2"
-        },
+        "@puppeteer/browsers": "3.0.2",
+        "@humanfs/node": "0.16.8",
         "dompurify": "$dompurify",
         "monaco-editor": {
             "dompurify": "$dompurify"
         },
         "nx": {
             "axios": "^1.18.1",
-            "brace-expansion": "5.0.9"
+            "brace-expansion": "5.0.9",
+            "smol-toml": "1.7.1"
         }
     }
 }

@@ -1,0 +1,120 @@
+import { getRenderingContextKind, getRenderingContexts, type EngineContext, type TextLayer, type TextRenderer } from "@babylonjs/lite";
+import { type FunctionComponent } from "react";
+
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+
+import { BoundProperty, ComputedProperty, DerivedProperty } from "../../../../components/properties/boundProperty";
+import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
+import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
+import { GetRenderingLayerDisplayName } from "../../../renderingLayerUtils";
+
+const TextLayerDisplayNameGetters = new WeakMap<EngineContext, (layer: TextLayer) => string>();
+
+function GetTextLayerDisplayNameGetter(engine: EngineContext): (layer: TextLayer) => string {
+    let getter = TextLayerDisplayNameGetters.get(engine);
+    if (!getter) {
+        getter = (layer) => GetRenderingLayerDisplayName<TextLayer, TextRenderer>(engine, "text-renderer", layer, "Text Layer");
+        TextLayerDisplayNameGetters.set(engine, getter);
+    }
+    return getter;
+}
+
+function GetRunCount(layer: TextLayer): number {
+    return layer.data.runs.length;
+}
+
+function GetPositionX(layer: TextLayer): number {
+    return layer.positionPx.x;
+}
+
+function SetPositionX(layer: TextLayer, value: number): void {
+    layer.positionPx.x = value;
+}
+
+function GetPositionY(layer: TextLayer): number {
+    return layer.positionPx.y;
+}
+
+function SetPositionY(layer: TextLayer, value: number): void {
+    layer.positionPx.y = value;
+}
+
+function GetPosition(layer: TextLayer): TextLayer["positionPx"] {
+    return layer.positionPx;
+}
+
+function GetGlyphCount(layer: TextLayer): number {
+    return layer.data.runs.reduce((count, run) => count + run.glyphs.length, 0);
+}
+
+function IsRegisteredTextLayer(engine: EngineContext, entity: unknown): entity is TextLayer {
+    if (typeof entity !== "object" || entity === null) {
+        return false;
+    }
+
+    return engine.surfaces.some((surface) =>
+        getRenderingContexts(surface).some((context) => getRenderingContextKind(context) === "text-renderer" && (context as TextRenderer).layers.includes(entity as TextLayer))
+    );
+}
+
+const TextLayerProperties: FunctionComponent<{ engine: EngineContext; layer: TextLayer }> = (props) => {
+    const { engine, layer } = props;
+
+    return (
+        <>
+            <ComputedProperty component={TextPropertyLine} label="Name" target={layer} getValue={GetTextLayerDisplayNameGetter(engine)} />
+            <BoundProperty component={SwitchPropertyLine} label="Visible" target={layer} propertyKey="visible" />
+            <DerivedProperty
+                component={NumberInputPropertyLine}
+                label="Position X"
+                target={layer}
+                getValue={GetPositionX}
+                setValue={SetPositionX}
+                propertyPath="positionPx.x"
+                getPropertyOwner={GetPosition}
+                propertyKey="x"
+                step={1}
+                unit="px"
+            />
+            <DerivedProperty
+                component={NumberInputPropertyLine}
+                label="Position Y"
+                target={layer}
+                getValue={GetPositionY}
+                setValue={SetPositionY}
+                propertyPath="positionPx.y"
+                getPropertyOwner={GetPosition}
+                propertyKey="y"
+                step={1}
+                unit="px"
+            />
+            <BoundProperty component={NumberInputPropertyLine} label="Rotation" target={layer} propertyKey="rotationRad" step={0.01} unit="rad" />
+            <BoundProperty component={NumberInputPropertyLine} label="Scale" target={layer} propertyKey="scale" step={0.1} />
+            <BoundProperty component={NumberInputPropertyLine} label="Order" target={layer} propertyKey="order" />
+            <BoundProperty component={NumberInputPropertyLine} label="Opacity" target={layer} propertyKey="opacity" min={0} max={1} step={0.01} />
+            <BoundProperty component={NumberInputPropertyLine} label="Coverage Gamma" target={layer} propertyKey="coverageGamma" step={0.1} />
+            <ComputedProperty component={StringifiedPropertyLine} label="Run Count" target={layer} getValue={GetRunCount} />
+            <ComputedProperty component={StringifiedPropertyLine} label="Glyph Count" target={layer} getValue={GetGlyphCount} />
+        </>
+    );
+};
+
+export const TextLayerPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, IEngineContext]> = {
+    friendlyName: "Babylon Lite Text Layer Properties",
+    consumes: [PropertiesServiceIdentity, EngineContextIdentity],
+    factory: (propertiesService, engineContext) =>
+        propertiesService.addSectionContent({
+            key: "Babylon Lite Text Layer Properties",
+            predicate: (entity: unknown): entity is TextLayer => IsRegisteredTextLayer(engineContext.engine, entity),
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <TextLayerProperties engine={engineContext.engine} layer={context} />,
+                },
+            ],
+        }),
+};

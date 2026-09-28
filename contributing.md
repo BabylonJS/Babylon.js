@@ -44,6 +44,18 @@ You should read the [how to contribute documentation](https://doc.babylonjs.com/
 
 If you intend to only update the doc, this [documentation](https://doc.babylonjs.com/contribute/contributeToDocs/) would detail the process.
 
+### Building during development
+
+Start with `npm run build:dev` to process assets and shaders, compile the TypeScript projects, and generate the Babylon server's combined declarations.
+
+After that initial build, choose the command that matches your work:
+
+-   `npm run build:source` incrementally compiles the TypeScript projects once.
+-   `npm run watch:source:dev` continuously rebuilds those projects as their sources change.
+-   `npm run watch:dev` watches TypeScript sources, assets/shaders, and the server's combined declarations together.
+
+The source-only commands do not process assets/shaders or regenerate the server's combined declarations. Use `npm run build:dev` when you need those outputs refreshed, and keep the complete build as your final PR validation.
+
 To validate your PR, please follow these steps:
 
 -   Run `npm run build:dev` locally and make sure that no error is generated

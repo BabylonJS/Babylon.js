@@ -259,6 +259,14 @@ export const evaluatePlaywrightVisTests = async (
             });
             log(rendererData.renderer);
 
+            await page.evaluate((backgroundColor?: string) => {
+                if (backgroundColor) {
+                    window.canvas?.style.setProperty("background-color", backgroundColor, "important");
+                } else {
+                    window.canvas?.style.removeProperty("background-color");
+                }
+            }, testCase.canvasBackgroundColor);
+
             if (optionalStateChanges?.beforeScene) {
                 await optionalStateChanges.beforeScene(page);
             }

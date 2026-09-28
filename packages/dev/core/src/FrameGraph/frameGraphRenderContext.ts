@@ -125,14 +125,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     /**
-     * Clears the color attachments of the current render target
+     * Clears the color attachments of the current render target.
+     *
+     * Float, signed-integer, and unsigned-integer attachments can be mixed in the same layout.
      * @param color Defines the color to use
      * @param attachments The attachments to clear
      */
     public clearColorAttachments(color: Nullable<IColor4Like>, attachments: number[]): void {
         this._applyRenderTarget();
-        this._engine.bindAttachments(attachments);
-        this._engine.clear(color, true, false, false);
+        this._engine.clearAttachments(color, attachments, true, false, false);
     }
 
     /**
@@ -146,8 +147,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      */
     public clearAttachments(color: Nullable<IColor4Like>, attachments: number[], backBuffer: boolean, depth: boolean, stencil?: boolean, stencilClearValue = 0): void {
         this._applyRenderTarget();
-        this._engine.bindAttachments(attachments);
-        this._engine.clear(color, backBuffer, depth, stencil, stencilClearValue);
+        this._engine.clearAttachments(color, attachments, backBuffer, depth, stencil, stencilClearValue);
     }
 
     /**

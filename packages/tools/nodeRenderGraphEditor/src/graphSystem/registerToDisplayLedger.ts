@@ -23,6 +23,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["NodeRenderGraphExtractHighlightsPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphPassPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphPassCubePostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphMeshBlendingPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphSSRPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphClearBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphCopyTextureBlock"] = TextureDisplayManager;

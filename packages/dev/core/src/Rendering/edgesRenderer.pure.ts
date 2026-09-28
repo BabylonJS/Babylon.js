@@ -10,6 +10,7 @@ import { type Matrix } from "../Maths/math.vector";
 import { type IDisposable, type Scene } from "../scene.pure";
 import { type Observer } from "../Misc/observable.pure";
 import { Material } from "../Materials/material.pure";
+import { MaterialHelperGeometryRendering } from "../Materials/materialHelper.geometryrendering";
 import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
 import { Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
@@ -47,9 +48,10 @@ export interface IEdgesRenderer extends IDisposable {
 
     /**
      * Checks whether or not the edges renderer is ready to render.
+     * @param useInstances Defines whether the instanced shader variant should be checked. If omitted, the current rendering state is used.
      * @returns true if ready, otherwise false.
      */
-    isReady(): boolean;
+    isReady(useInstances?: boolean): boolean;
 
     /**
      * List of instances to render in case the source mesh has instances
@@ -862,10 +864,12 @@ export class EdgesRenderer implements IEdgesRenderer {
 
     /**
      * Checks whether or not the edges renderer is ready to render.
+     * @param useInstances Defines whether the instanced shader variant should be checked. If omitted, the current rendering state is used.
      * @returns true if ready, otherwise false.
      */
-    public isReady(): boolean {
-        return this._lineShader.isReady(this._source, (this._source.hasInstances && this.customInstances.length > 0) || this._source.hasThinInstances);
+    public isReady(useInstances?: boolean): boolean {
+        useInstances ??= (this._source.hasInstances && this.customInstances.length > 0) || this._source.hasThinInstances;
+        return this._lineShader.isReady(this._source, useInstances);
     }
 
     /**
@@ -873,6 +877,12 @@ export class EdgesRenderer implements IEdgesRenderer {
      */
     public render(): void {
         const scene = this._source.getScene();
+        if (!MaterialHelperGeometryRendering._BindColorAttachments(scene.getEngine())) {
+            if (!scene._activeMeshesFrozen) {
+                this.customInstances.reset();
+            }
+            return;
+        }
         const floatingOriginOffset = scene.floatingOriginOffset;
 
         const currentDrawWrapper = this._lineShader._getDrawWrapper();

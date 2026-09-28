@@ -19,6 +19,10 @@ uniform float rayleigh;
 uniform float mieCoefficient;
 uniform float mieDirectionalG;
 uniform vec3 sunPosition;
+uniform float cloudiness;
+#ifdef SKY_RAW_HDR_OUTPUT
+uniform float maxColorValue;
+#endif
 
 #ifdef LOGARITHMICDEPTH
 #extension GL_EXT_frag_depth : enable
@@ -50,6 +54,14 @@ const float sunAngularDiameterCos = 0.999956676946448443553574619906976478926848
 const float cutoffAngle = pi/1.95;
 const float steepness = 1.5;
 
+// Cloud model constants (used by cloudPhase and the cloudiness>0 branch in main). Values match
+// the Frostbite-lineage reference (WickedEngine VolumetricCloudParameters defaults); full
+// rationale + literature references are at the sun-disc branch below.
+const float CLOUD_TAU_MAX = 15.0;
+const float CLOUD_G = 0.5;
+const float CLOUD_G_BACK = -0.5;
+const float CLOUD_BACK_WEIGHT = 0.2;
+
 vec3 totalRayleigh(vec3 lambda)
 {
 	return (8.0 * pow(pi, 3.0) * pow(pow(n, 2.0) - 1.0, 2.0) * (6.0 + 3.0 * pn)) / (3.0 * N * pow(lambda, vec3(4.0)) * (6.0 - 7.0 * pn));
@@ -74,6 +86,14 @@ vec3 totalMie(vec3 lambda, vec3 K, float T)
 float hgPhase(float cosTheta, float g)
 {
 	return (1.0 / (4.0*pi)) * ((1.0 - pow(g, 2.0)) / pow(1.0 - 2.0*g*cosTheta + pow(g, 2.0), 1.5));
+}
+
+// Cloud scattering phase: a dual-lobe Henyey–Greenstein — a forward silver-lining lobe convex-
+// blended with a weak backward glory lobe. Each hgPhase integrates to 1 over the sphere and the
+// blend is convex, so cloudPhase integrates to 1 (energy-conserving) for any blend weight.
+float cloudPhase(float cosTheta, float gForward)
+{
+	return mix(hgPhase(cosTheta, gForward), hgPhase(cosTheta, CLOUD_G_BACK), CLOUD_BACK_WEIGHT);
 }
 
 float sunIntensity(float zenithAngleCos)
@@ -138,17 +158,58 @@ void main(void) {
 	vec2 uv = vec2(phi, theta) / vec2(2.0 * pi, pi) + vec2(0.5, 0.0);
 	vec3 L0 = vec3(0.1) * Fex;
 	
-	float sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta);
-	L0 += (sunE * 19000.0 * Fex) * sundisk;
+	// Sun disc. When cloudiness == 0 this is a sharp solar disc. When cloudiness > 0 a physically-
+	// based cloud model takes over:
+	// cloudiness in [0,1] maps to a cloud optical depth τ; the direct sun is attenuated by
+	// Beer–Lambert transmittance (cloudT) and the removed energy (1 − cloudT) is redistributed
+	// through cloudPhase() (a dual-lobe Henyey–Greenstein), with its forward asymmetry faded
+	// toward isotropic with depth (cloudG = CLOUD_G·cloudT). Thin cloud → tight silver-lining
+	// aureole; full overcast → a broad, directionless glow. Energy is conserved exactly: cloudPhase
+	// integrates to 1 over the sphere and cloudT + (1 − cloudT) = 1, so total sun flux equals the
+	// clear-sky disc flux (disc solid angle omegaSun) at any cloudiness.
+	//
+	// Chosen constants + references:
+	//   CLOUD_TAU_MAX = 15 — cloud optical depth at full overcast; mid-range for overcast
+	//     stratus/stratocumulus (τ ≈ 10–20), exp(−15) ≈ 3e-7 ⇒ the sun is fully hidden.
+	//     Ref: Petty, "A First Course in Atmospheric Radiation" (2006).
+	//   CLOUD_G = 0.5 / CLOUD_G_BACK = −0.5 / CLOUD_BACK_WEIGHT = 0.2 — dual-lobe HG forward / back /
+	//     blend, matching the Frostbite-lineage reference (WickedEngine VolumetricCloudParameters
+	//     phaseG / phaseG2 / phaseBlend). Artistic values, lower than the ~0.85 physical water-
+	//     droplet g of Hansen & Travis, "Light scattering in planetary atmospheres", Space Sci.
+	//     Rev. 16:527 (1974). A single scattering octave (Frostbite's games recommendation for
+	//     performance; Hillaire, "Physically Based Sky, Atmosphere and Cloud Rendering in
+	//     Frostbite", SIGGRAPH 2016) reduces the multiple-scattering sum to this dual-lobe HG.
+	//   HG phase function form: Henyey & Greenstein, Astrophys. J. 93:70 (1941).
+	//   Direct-beam attenuation: Beer–Lambert law.
+	float sundiskTerm;
+	if (cloudiness > 0.0) {
+		float cloudTau = cloudiness * CLOUD_TAU_MAX;
+		float cloudT = exp(-cloudTau);
+		float cloudG = CLOUD_G * cloudT;
+		float omegaSun = 2.0 * pi * (1.0 - sunAngularDiameterCos);
+		float sharpDisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta);
+		sundiskTerm = cloudT * sharpDisk + (1.0 - cloudT) * omegaSun * cloudPhase(cosTheta, cloudG);
+	} else {
+		sundiskTerm = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta);
+	}
+	L0 += (sunE * 19000.0 * Fex) * sundiskTerm;
 	
-	vec3 whiteScale = 1.0/Uncharted2Tonemap(vec3(W));
 	vec3 texColor = (Lin+L0);
 	texColor *= 0.04 ;
 	texColor += vec3(0.0,0.001,0.0025)*0.3;
 
+#ifdef SKY_RAW_HDR_OUTPUT
+	// Scene-referred linear HDR: `luminance` is a plain linear gain and no filmic tonemap is applied,
+	// so the sky and its bright sun disc keep their full dynamic range — required when this output is
+	// baked into an HDR (float / half-float) IBL environment. The value is clamped to maxColorValue
+	// (below) so a bright sun cannot overflow the target to +Inf, and the sRGB encode is left off.
+	vec3 retColor = texColor * luminance;
+#else
+	vec3 whiteScale = 1.0/Uncharted2Tonemap(vec3(W));
+
 	float g_fMaxLuminance = 1.0;
-	float fLumScaled = 0.1 / luminance;     
-	float fLumCompressed = (fLumScaled * (1.0 + (fLumScaled / (g_fMaxLuminance * g_fMaxLuminance)))) / (1.0 + fLumScaled); 
+	float fLumScaled = 0.1 / luminance;
+	float fLumCompressed = (fLumScaled * (1.0 + (fLumScaled / (g_fMaxLuminance * g_fMaxLuminance)))) / (1.0 + fLumScaled);
 
 	float ExposureBias = fLumCompressed;
 
@@ -159,6 +220,7 @@ void main(void) {
 	//vec3 retColor = pow(skyColor,vec3(1.0/(1.2+(1.2*sunfade))));
 
 	vec3 retColor = curr * whiteScale;
+#endif
 
 	/**
 	*--------------------------------------------------------------------------------------------------
@@ -182,7 +244,14 @@ void main(void) {
 #endif
 
 	// Composition
+#ifdef SKY_RAW_HDR_OUTPUT
+	// Clamp to the render target's max representable value (maxColorValue: 65504 for half-float, a
+	// huge finite for float, 1.0 for 8-bit LDR) so a bright HDR sun cannot store as +Inf and corrupt
+	// anything reading the texture back (e.g. an IBL CDF).
+	vec4 color = vec4(clamp(retColor.rgb, 0.0, maxColorValue), alpha);
+#else
 	vec4 color = clamp(vec4(retColor.rgb, alpha), 0.0, 1.0);
+#endif
 
 #include<logDepthFragment>
 
@@ -191,7 +260,9 @@ void main(void) {
 
 	gl_FragColor = color;
 
+#ifndef SKY_RAW_HDR_OUTPUT
 #include<imageProcessingCompatibility>
+#endif
 
 #define CUSTOM_FRAGMENT_MAIN_END
 }

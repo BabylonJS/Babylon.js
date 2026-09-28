@@ -15,6 +15,8 @@ import "loaders/glTF/2.0";
 import "loaders/FBX/fbxFileLoader";
 // Register the OBJ loader explicitly so local drag-and-drop uses the dev loader implementation.
 import "loaders/OBJ/objFileLoader";
+// Register the USD loader for local files, related file sets, and dropped folders.
+import "loaders/USD/usdFileLoader";
 // Register Scene animation extensions (e.g. getAllAnimatablesByTarget) used by the Inspector's animation panel.
 import "core/Animations/animatable";
 // glTF scenes can reference a single mesh from multiple nodes, which the loader
@@ -30,6 +32,7 @@ if (import.meta.env.DEV) {
     // then show immediately. The inspector index attaches Scene.debugLayer as a side effect.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
+        // eslint-disable-next-line no-restricted-syntax -- This entry point registers the dev Inspector's debug-layer side effects.
         await import("inspector/index");
         Sandbox.Show(HostElement, { version: "dev", bundles: [] });
     })();

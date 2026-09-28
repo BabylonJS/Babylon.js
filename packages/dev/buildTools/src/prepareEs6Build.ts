@@ -63,8 +63,9 @@ export const prepareES6Build = async (): Promise<void> => {
                     }
                 }
 
-                // Write back the modified source file
-                fs.writeFileSync(file, sourceCode);
+                if (sourceCode !== fileContent) {
+                    fs.writeFileSync(file, sourceCode);
+                }
             });
         }
     } catch (e) {

@@ -38,5 +38,7 @@ Exported NGE JSON can be consumed by the Scene MCP server through `add_node_geom
 ## Related Files
 
 - `src/index.ts`: MCP tool registration
-- `src/geometryGraph.ts`: graph manager and serialization logic
-- `src/blockRegistry.ts`: Node Geometry block catalog
+- `../ngeMcpCommon/src/geometryGraph.ts`: shared browser-safe graph manager and serialization logic
+- `../ngeMcpCommon/src/blockRegistry.ts`: shared Node Geometry block catalog
+- `../ngeMcpCommon/src/referenceData.ts`: shared enum and concepts reference data
+- `src/geometryGraph.ts` and `src/blockRegistry.ts`: compatibility re-exports

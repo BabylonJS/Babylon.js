@@ -71,7 +71,25 @@ describe("FlowGraphCoordinator", () => {
             coordinator.dispose();
 
             const registered = FlowGraphCoordinator.SceneCoordinators.get(scene);
+            expect(registered).toEqual([]);
             expect(registered).not.toContain(coordinator);
+        });
+
+        it("should move registration while retaining the old scene's empty coordinator list", () => {
+            const scene2 = new Scene(engine);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph = coordinator.createGraph();
+
+            coordinator._setScene(scene2, false);
+
+            expect(FlowGraphCoordinator.SceneCoordinators.get(scene)).toEqual([]);
+            expect(FlowGraphCoordinator.SceneCoordinators.get(scene2)).toEqual([coordinator]);
+
+            scene.dispose();
+            expect(coordinator.flowGraphs).toEqual([graph]);
+
+            coordinator.dispose();
+            scene2.dispose();
         });
 
         it("should only remove the disposed coordinator, leaving others intact", () => {

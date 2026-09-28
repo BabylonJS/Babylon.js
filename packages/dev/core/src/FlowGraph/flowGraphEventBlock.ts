@@ -42,6 +42,14 @@ export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
      * The type of the event
      */
     public readonly type: FlowGraphEventType = FlowGraphEventType.NoTrigger;
+
+    /**
+     * Stable key used to represent this event during propagation.
+     * Event blocks with equivalent event sources should return the same key.
+     */
+    public get eventKey(): string {
+        return (this.config as { eventKey?: string } | undefined)?.eventKey ?? this.type;
+    }
     /**
      * @internal
      */

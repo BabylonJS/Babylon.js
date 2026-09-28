@@ -1,0 +1,32 @@
+#usda 1.0
+(
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+class Xform "_Prototype"
+{
+    def Mesh "Triangle"
+    {
+        int[] faceVertexCounts = [3]
+        int[] faceVertexIndices = [0, 1, 2]
+        point3f[] points = [(-0.5, 0, 0), (0.5, 0, 0), (0, 1, 0)]
+        uniform token subdivisionScheme = "none"
+    }
+}
+
+def Xform "First" (
+    instanceable = true
+    prepend references = </_Prototype>
+)
+{
+}
+
+def Xform "Second" (
+    instanceable = true
+    prepend references = </_Prototype>
+)
+{
+    double3 xformOp:translate = (2, 0, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate"]
+}

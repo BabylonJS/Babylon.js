@@ -8,8 +8,8 @@ import { type IHardwareTextureWrapper } from "../../Materials/Textures/hardwareT
 
 /** @internal */
 export class WebGPUTextureHelper {
-    public static ComputeNumMipmapLevels(width: number, height: number) {
-        return ILog2(Math.max(width, height)) + 1;
+    public static ComputeNumMipmapLevels(width: number, height: number, depth = 1) {
+        return ILog2(Math.max(width, height, depth)) + 1;
     }
 
     public static GetTextureTypeFromFormat(format: GPUTextureFormat): number {

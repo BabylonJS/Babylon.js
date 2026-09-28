@@ -12,6 +12,8 @@ export class WebGPUSnapshotRendering {
     private _play = false;
     private _playBundleListIndex = 0;
     private _allBundleLists: WebGPUBundleList[] = [];
+    private _recordingInvalidated = false;
+    private _skipNextRenderPass = false;
     private _modeSaved: number;
     private _bundleList: WebGPUBundleList;
 
@@ -42,6 +44,8 @@ export class WebGPUSnapshotRendering {
         this._log("enabled", `activate=${activate}, mode=${this._mode}`);
 
         this._allBundleLists.length = 0;
+        this._recordingInvalidated = false;
+        this._skipNextRenderPass = false;
         if (this._record) {
             // A recording pass is in flight: _mode is temporarily SNAPSHOTRENDERING_STANDARD and is normally
             // restored to _modeSaved at the next endFrame(). Restore it now so that flipping _record off
@@ -69,6 +73,20 @@ export class WebGPUSnapshotRendering {
         }
     }
 
+    /** @internal */
+    public handleRenderPassRestart(): void {
+        if (!this._record) {
+            return;
+        }
+
+        if (this._bundleList.isEmpty) {
+            this._skipNextRenderPass = true;
+        } else {
+            this._allBundleLists.length = 0;
+            this._recordingInvalidated = true;
+        }
+    }
+
     public endRenderPass(currentRenderPass: GPURenderPassEncoder): boolean {
         if (!this._record && !this._play) {
             // Snapshot rendering mode is not enabled
@@ -79,9 +97,16 @@ export class WebGPUSnapshotRendering {
 
         if (this._record) {
             bundleList = this._bundleList.clone();
-            this._allBundleLists.push(bundleList);
             this._bundleList.reset();
-            this._log("endRenderPass", `bundleList recorded at position #${this._allBundleLists.length - 1}`);
+            if (this._skipNextRenderPass) {
+                this._skipNextRenderPass = false;
+                this._log("endRenderPass", "bundleList omitted for a restarted empty pass");
+            } else if (this._recordingInvalidated) {
+                this._log("endRenderPass", "bundleList discarded from an invalidated recording");
+            } else {
+                this._allBundleLists.push(bundleList);
+                this._log("endRenderPass", `bundleList recorded at position #${this._allBundleLists.length - 1}`);
+            }
         } else {
             // We are playing the snapshot
             if (this._playBundleListIndex >= this._allBundleLists.length) {
@@ -108,11 +133,17 @@ export class WebGPUSnapshotRendering {
 
     public endFrame(): void {
         if (this._record) {
-            // We stop recording and switch to replay mode for the next frames
-            this._record = false;
-            this._play = true;
-            this._mode = this._modeSaved;
-            this._log("endFrame", "bundles recorded, switching to play mode");
+            if (this._recordingInvalidated) {
+                this._recordingInvalidated = false;
+                this._allBundleLists.length = 0;
+                this._log("endFrame", "recording invalidated, recording the next frame");
+            } else {
+                // We stop recording and switch to replay mode for the next frames
+                this._record = false;
+                this._play = true;
+                this._mode = this._modeSaved;
+                this._log("endFrame", "bundles recorded, switching to play mode");
+            }
         }
 
         this._playBundleListIndex = 0;

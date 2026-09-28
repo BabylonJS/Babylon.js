@@ -1,0 +1,61 @@
+#usda 1.0
+(
+    defaultPrim = "Character"
+    startTimeCode = 0
+    endTimeCode = 24
+    timeCodesPerSecond = 24
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def SkelRoot "Character" (
+    prepend apiSchemas = ["SkelBindingAPI"]
+)
+{
+    rel skel:animationSource = <Animation>
+
+    def Mesh "Face" (
+        prepend apiSchemas = ["SkelBindingAPI"]
+    )
+    {
+        int[] faceVertexCounts = [3]
+        int[] faceVertexIndices = [0, 1, 2]
+        normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1)] (
+            interpolation = "vertex"
+        )
+        point3f[] points = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
+        uniform token[] skel:blendShapes = ["Smile", "Blink"]
+        rel skel:blendShapeTargets = [
+            <Smile>,
+            <Blink>
+        ]
+        uniform token subdivisionScheme = "none"
+
+        def BlendShape "Smile"
+        {
+            uniform vector3f[] offsets = [(0, 1, 0)]
+            uniform vector3f[] normalOffsets = [(0, 1, 0)]
+            uniform int[] pointIndices = [2]
+            uniform point3f[] inbetweens:half = [(0, 0.25, 0)] (
+                weight = 0.5
+            )
+            uniform point3f[] inbetweens:half:normalOffsets = [(0, 0.5, 0)]
+        }
+
+        def BlendShape "Blink"
+        {
+            uniform vector3f[] offsets = [(0, -0.5, 0)]
+            uniform int[] pointIndices = [0]
+        }
+    }
+
+    def SkelAnimation "Animation"
+    {
+        uniform token[] blendShapes = ["Blink", "Smile"]
+        float[] blendShapeWeights.timeSamples = {
+            0: [0, 0],
+            12: [0.2, 0.5],
+            24: [1, 1]
+        }
+    }
+}

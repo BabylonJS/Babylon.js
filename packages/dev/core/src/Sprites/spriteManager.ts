@@ -102,6 +102,13 @@ export interface ISpriteManager extends IDisposable {
     multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
 
     /**
+     * Checks whether this manager can render its sprites in the current render pass.
+     * Optional for custom sprite manager implementations.
+     * @returns true when the manager is ready to render
+     */
+    isReady?(): boolean;
+
+    /**
      * Renders the list of sprites on screen.
      */
     render(): void;
@@ -642,6 +649,22 @@ export class SpriteManager implements ISpriteManager {
         }
 
         return results;
+    }
+
+    /**
+     * Checks whether the sprite data, texture and current render-pass shader are ready.
+     * An empty sprite manager is ready without preparing rendering resources.
+     * @returns true when all required resources are ready
+     * @see https://playground.babylonjs.com/#PVK3RV#2
+     */
+    public isReady(): boolean {
+        if (this.sprites.length === 0) {
+            return true;
+        }
+        if (this._fromPacked && (!this._packedAndReady || !this._spriteMap || !this._cellData)) {
+            return false;
+        }
+        return this._spriteRenderer.isReady();
     }
 
     /**

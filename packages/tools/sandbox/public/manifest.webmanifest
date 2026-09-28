@@ -59,6 +59,8 @@
                 "model/gltf+json": [".gltf"],
                 "model/obj": [".obj"],
                 "model/stl": [".stl"],
+                "model/vnd.usd": [".usd", ".usda", ".usdc"],
+                "model/vnd.usdz+zip": [".usdz"],
                 "application/x-ply": [".ply"],
                 "application/octet-stream": [".splat", ".spz", ".babylon", ".bvh", ".sog", ".fbx", ".babylonproj"]
             },

@@ -27,6 +27,7 @@ export * from "./PostProcesses/fxaaPostProcessBlock.pure";
 export * from "./PostProcesses/grainPostProcessBlock.pure";
 export * from "./PostProcesses/imageProcessingPostProcessBlock.pure";
 export * from "./PostProcesses/motionBlurPostProcessBlock.pure";
+export * from "./PostProcesses/meshBlendingPostProcessBlock.pure";
 export * from "./PostProcesses/passPostProcessBlock.pure";
 export * from "./PostProcesses/sharpenPostProcessBlock.pure";
 export * from "./PostProcesses/screenSpaceCurvaturePostProcessBlock.pure";

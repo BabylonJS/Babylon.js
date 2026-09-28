@@ -29,6 +29,11 @@ export interface FBXProperty {
     type: FBXPropertyType;
     /** Parsed property value. */
     value: FBXPropertyValue;
+    /**
+     * Exact decimal text of an int64 whose magnitude exceeds 2^53; `value` then holds the rounded double. Object
+     * ids are the only int64 values where the last bits matter, and `resolveConnections` keys them by this text.
+     */
+    raw?: string;
 }
 
 /** A node in the FBX document tree */
@@ -73,18 +78,48 @@ export function getPropertyValue<T extends FBXPropertyValue>(node: FBXNode, inde
 }
 
 /**
- * Converts an FBX object ID value to a safe JavaScript number.
+ * Validates an FBX object ID value: IDs are 64-bit integers, so anything non-numeric, non-finite or fractional is
+ * rejected. IDs beyond 2^53 are carried losslessly through the property's `raw` text by `resolveConnections`.
  * @param value - Parsed FBX object ID value
- * @returns The object ID, or undefined when the value is not numeric
+ * @returns The object ID, or undefined when the value cannot be an ID
  */
 export function getSafeFBXObjectId(value: unknown): number | undefined {
-    if (typeof value !== "number") {
+    if (typeof value !== "number" || !Number.isFinite(value) || !Number.isInteger(value)) {
         return undefined;
     }
-    if (!Number.isSafeInteger(value)) {
-        throw new Error(`Unsafe FBX object ID ${value.toString()}: object IDs must be safe integers.`);
-    }
     return value;
+}
+
+/** Typed array payload types produced by the parsers. */
+export type FBXArrayValue = Float32Array | Float64Array | Int32Array | Uint8Array;
+
+/**
+ * Returns the array payload of a node.
+ * FBX 7.x stores arrays as a single array property. FBX 6.x (and some 7.x ASCII exporters) store them as a run of
+ * scalar properties, and a one-element array degenerates to a single scalar. All of these are coalesced here.
+ * @param node - Node whose properties hold the array
+ * @returns The array, or null when the node has no numeric payload
+ */
+export function getNodeArray(node: FBXNode | undefined | null): FBXArrayValue | null {
+    if (!node || node.properties.length === 0) {
+        return null;
+    }
+    const first = node.properties[0].value;
+    if (node.properties.length === 1 && (first instanceof Float32Array || first instanceof Float64Array || first instanceof Int32Array || first instanceof Uint8Array)) {
+        return first;
+    }
+    const out = new Float64Array(node.properties.length);
+    for (let i = 0; i < node.properties.length; i++) {
+        const v = node.properties[i].value;
+        if (typeof v === "number") {
+            out[i] = v;
+        } else if (typeof v === "boolean") {
+            out[i] = v ? 1 : 0;
+        } else {
+            return null;
+        }
+    }
+    return out;
 }
 
 /** Get the numeric ID from a node (first property is typically the int64 UID) */
@@ -103,16 +138,16 @@ export function getNodeId(node: FBXNode): number | undefined {
  *   - A binary null/control-character class suffix — strip it
  */
 export function cleanFBXName(fbxName: string): string {
-    // Strip \x00\x01 suffix (binary FBX name/class separator)
-    const nullIdx = fbxName.indexOf("\0");
-    if (nullIdx >= 0) {
-        fbxName = fbxName.substring(0, nullIdx);
+    // Binary FBX: "Name\x00\x01Class" — the name is everything before the separator and may itself contain "::".
+    const sepIdx = fbxName.indexOf("\0\x01");
+    if (sepIdx >= 0) {
+        return fbxName.substring(0, sepIdx);
     }
 
-    // Strip "ClassName::" prefix (ASCII FBX)
+    // ASCII FBX: "Class::Name" — strip only the leading class prefix ("Model::Cube::Model" -> "Cube::Model").
     const colonIdx = fbxName.indexOf("::");
     if (colonIdx >= 0) {
-        fbxName = fbxName.substring(colonIdx + 2);
+        return fbxName.substring(colonIdx + 2);
     }
 
     return fbxName;

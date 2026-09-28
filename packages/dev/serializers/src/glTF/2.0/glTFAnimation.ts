@@ -15,6 +15,7 @@ import { type Nullable } from "core/types";
 import { Vector3, Quaternion } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import { Animation } from "core/Animations/animation";
+import { type AnimationGroup } from "core/Animations/animationGroup";
 import { TransformNode } from "core/Meshes/transformNode";
 import { type Scene } from "core/scene";
 import { MorphTarget } from "core/Morph/morphTarget";
@@ -237,6 +238,8 @@ export class _GLTFAnimation {
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
+     * @param useRightHanded
+     * @param shouldExportAnimation
      */
     public static _CreateNodeAnimationFromNodeAnimations(
         babylonNode: Node,
@@ -301,6 +304,8 @@ export class _GLTFAnimation {
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
+     * @param useRightHanded
+     * @param shouldExportAnimation
      */
     public static _CreateMorphTargetAnimationFromMorphTargetAnimations(
         babylonNode: Node,
@@ -391,6 +396,9 @@ export class _GLTFAnimation {
      * @param bufferViews
      * @param accessors
      * @param animationSampleRate
+     * @param leftHandedNodes nodes that require right-handed conversion
+     * @param shouldExportAnimation optional animation filter
+     * @param animationGroupMap final glTF animation index for each exported Babylon animation group
      */
     public static _CreateNodeAndMorphAnimationFromAnimationGroups(
         babylonScene: Scene,
@@ -401,7 +409,8 @@ export class _GLTFAnimation {
         accessors: IAccessor[],
         animationSampleRate: number,
         leftHandedNodes: Set<Node>,
-        shouldExportAnimation?: (animation: Animation) => boolean
+        shouldExportAnimation?: (animation: Animation) => boolean,
+        animationGroupMap?: Map<AnimationGroup, number>
     ) {
         let glTFAnimation: IAnimation;
         if (babylonScene.animationGroups) {
@@ -547,6 +556,7 @@ export class _GLTFAnimation {
                     }
                 });
                 if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
+                    animationGroupMap?.set(animationGroup, glTFAnimations.length);
                     glTFAnimations.push(glTFAnimation);
                 }
             }

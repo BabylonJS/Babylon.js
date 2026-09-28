@@ -41,7 +41,9 @@ All public APIs exported from a package's root index file (except those prefixed
 Run these commands to verify code quality. All must pass before committing.
 
 - **Format**: `npm run format:check`
-- **Check (lint + typecheck + ratchets)**: `npm run lint:check`
+- **Check (lint + tree-shaking invariants)**: `npm run lint:check`
+- **Typecheck/build**: `npm run build:source` (typed ESLint rules do not replace TypeScript compiler diagnostics)
+- **Advisory lint rules**: `npm run lint:advisory` (includes warnings omitted by the normal quiet lint commands)
 - **Unit tests**: `npm run test:unit`
 
 ## Code review

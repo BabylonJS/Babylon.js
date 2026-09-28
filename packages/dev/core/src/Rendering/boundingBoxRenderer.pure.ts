@@ -12,6 +12,7 @@ import { SceneComponentConstants, type ISceneComponent } from "../sceneComponent
 import { BoundingBox } from "../Culling/boundingBox";
 import { type Effect } from "../Materials/effect.pure";
 import { Material } from "../Materials/material.pure";
+import { MaterialHelperGeometryRendering } from "../Materials/materialHelper.geometryrendering";
 import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Color3 } from "../Maths/math.color.pure";
@@ -326,7 +327,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * @param renderingGroupId defines the rendering group to render
      */
     public render(renderingGroupId: number): void {
-        if (this.renderList.length === 0 || !this.enabled) {
+        if (this.renderList.length === 0 || !this.enabled || !MaterialHelperGeometryRendering._BindColorAttachments(this.scene.getEngine())) {
             return;
         }
 

@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { Constants } from "core/Engines/constants";
 import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
 import { type WebGPUEngine } from "core/Engines/webgpuEngine";
-import { type WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList";
+import { WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList";
 
 describe("WebGPUSnapshotRendering", () => {
     let snapshot: WebGPUSnapshotRendering;
@@ -54,5 +54,36 @@ describe("WebGPUSnapshotRendering", () => {
         expect(snapshot.record).toBe(true);
         snapshot.endFrame();
         expect(snapshot.mode).toBe(Constants.SNAPSHOTRENDERING_FAST);
+    });
+
+    it("keeps bundle replay aligned after an empty recording pass is restarted", () => {
+        const engine = { frameId: 0, _reportDrawCall: vi.fn() } as unknown as WebGPUEngine;
+        const bundleList = new WebGPUBundleList({} as GPUDevice);
+        const drawBundle = {} as GPURenderBundle;
+        const restartedPass = {
+            executeBundles: vi.fn(),
+        } as unknown as GPURenderPassEncoder;
+        const recordedPass = {
+            executeBundles: vi.fn(),
+        } as unknown as GPURenderPassEncoder;
+        const playbackPass = {
+            executeBundles: vi.fn(),
+        } as unknown as GPURenderPassEncoder;
+        snapshot = new WebGPUSnapshotRendering(engine, Constants.SNAPSHOTRENDERING_FAST, bundleList);
+
+        snapshot.enabled = true;
+        snapshot.handleRenderPassRestart();
+        snapshot.endRenderPass(restartedPass);
+        bundleList.addBundle(drawBundle);
+        snapshot.endRenderPass(recordedPass);
+        snapshot.endFrame();
+
+        expect(snapshot.play).toBe(true);
+        expect(recordedPass.executeBundles).toHaveBeenCalledExactlyOnceWith([drawBundle]);
+
+        snapshot.endRenderPass(playbackPass);
+        snapshot.endFrame();
+
+        expect(playbackPass.executeBundles).toHaveBeenCalledExactlyOnceWith([drawBundle]);
     });
 });

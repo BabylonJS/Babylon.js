@@ -373,7 +373,7 @@ export class PreviewManager {
 
                 input.value = camera;
             } else if (input.isObjectList()) {
-                input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems };
+                input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems, spriteManagers: this._scene.spriteManagers };
             } else if (input.isShadowLight()) {
                 if (curLightIndex < directionalLights.length) {
                     input.value = directionalLights[curLightIndex++];

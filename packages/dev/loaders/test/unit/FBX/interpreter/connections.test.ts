@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveConnections } from "loaders/FBX/interpreter/connections";
+import { parseAsciiFBX } from "loaders/FBX/parsers/fbxAsciiParser";
 import { type FBXNode } from "loaders/FBX/types/fbxTypes";
 
 describe("resolveConnections", () => {
@@ -69,39 +70,72 @@ describe("resolveConnections", () => {
         expect(map.diagnostics.some((diagnostic) => diagnostic.reason === "duplicate-parent")).toBe(true);
     });
 
-    it("rejects unsafe numeric object IDs", () => {
-        expect(() =>
-            resolveConnections({
-                version: 7500,
-                nodes: [
-                    {
-                        name: "Objects",
-                        properties: [],
-                        children: [createObject("Model", Number.MAX_SAFE_INTEGER + 1, "Unsafe", "Null")],
-                    },
-                ],
-            })
-        ).toThrow("Unsafe FBX object ID");
+    it("keeps distinct object IDs beyond 2^53 distinct", () => {
+        // 2^53 and 2^53 + 1 round to the same double; the parsers keep the exact text so the ids stay apart.
+        const map = resolveConnections(
+            parseAsciiFBX(`; FBX 7.5.0 project file
+Objects: {
+    Model: 9007199254740993, "Model::A", "Null" {
+        Version: 232
+    }
+    Model: 9007199254740992, "Model::B", "Null" {
+        Version: 232
+    }
+}
+Connections: {
+    C: "OO", 9007199254740993, 0
+}`)
+        );
+
+        expect(map.objects.size).toBe(2);
+        const a = map.objectEntries.find((entry) => entry.node.properties[1].value === "Model::A")!;
+        const b = map.objectEntries.find((entry) => entry.node.properties[1].value === "Model::B")!;
+        expect(a.id).not.toBe(b.id);
+        expect(map.connections).toHaveLength(1);
+        expect(map.connections[0].childId).toBe(a.id);
+        expect(map.parentOf.get(a.id)?.id).toBe(0);
+        expect(map.parentOf.get(b.id)).toBeUndefined();
     });
 
-    it("rejects unsafe numeric connection endpoint IDs", () => {
-        expect(() =>
-            resolveConnections({
-                version: 7500,
-                nodes: [
-                    {
-                        name: "Objects",
-                        properties: [],
-                        children: [createObject("Model", 1, "Safe", "Null")],
-                    },
-                    {
-                        name: "Connections",
-                        properties: [],
-                        children: [createConnection("OO", Number.MAX_SAFE_INTEGER + 1, 0)],
-                    },
-                ],
-            })
-        ).toThrow("Unsafe FBX object ID");
+    it("rejects fractional and non-finite object IDs", () => {
+        const map = resolveConnections({
+            version: 7500,
+            nodes: [
+                {
+                    name: "Objects",
+                    properties: [],
+                    children: [createObject("Model", 1.5, "Fraction", "Null"), createObject("Model", NaN, "NotANumber", "Null"), createObject("Model", 2, "Ok", "Null")],
+                },
+            ],
+        });
+
+        expect(Array.from(map.objects.keys())).toEqual([2]);
+    });
+
+    it("keeps synthetic IDs clear of the IDs used by the file", () => {
+        // A 7.1 style geometry with an inline Shape gets a synthetic deformer, channel and shape geometry.
+        const geometry: FBXNode = {
+            ...createObject("Geometry", -1, "Geometry::Cube", "Mesh"),
+            children: [{ name: "Shape", properties: [{ type: "string", value: "Smile" }], children: [] }],
+        };
+        const map = resolveConnections({
+            version: 7100,
+            nodes: [
+                {
+                    name: "Objects",
+                    properties: [],
+                    children: [geometry, createObject("Model", -2, "Model::Cube", "Mesh"), createObject("Model", -3, "Model::Other", "Null")],
+                },
+                { name: "Connections", properties: [], children: [createConnection("OO", -1, -2)] },
+            ],
+        });
+
+        expect(map.objects.get(-1)?.name).toBe("Geometry");
+        expect(map.objects.get(-2)?.name).toBe("Model");
+        expect(map.objects.get(-3)?.name).toBe("Model");
+        const synthetic = map.objectEntries.filter((entry) => entry.synthetic);
+        expect(synthetic).toHaveLength(3);
+        expect(synthetic.every((entry) => entry.id !== -1 && entry.id !== -2 && entry.id !== -3)).toBe(true);
     });
 });
 

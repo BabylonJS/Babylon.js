@@ -7,6 +7,7 @@
         "composite": true,
         "paths": {
             "core/*": ["../../dev/core/dist/*"],
+            "loaders/*": ["../../dev/loaders/dist/*"],
             "shared-ui-components/*": ["../../dev/sharedUiComponents/dist/*"],
             "flow-graph-editor/*": ["../../tools/flowGraphEditor/src/*"],
             "@tools/snippet-loader": ["../../tools/snippetLoader/dist"]
@@ -16,6 +17,9 @@
     "references": [
         {
             "path": "../../dev/core/tsconfig.build.json"
+        },
+        {
+            "path": "../../dev/loaders/tsconfig.build.json"
         },
         {
             "path": "../snippetLoader/tsconfig.build.json"

@@ -31,10 +31,7 @@ function buildTransmissionGltf(): string {
         scene: 0,
         scenes: [{ nodes: [0, 1] }],
         nodes: [{ mesh: 0 }, { mesh: 1 }],
-        meshes: [
-            { primitives: [{ attributes: { POSITION: 0 }, material: 0 }] },
-            { primitives: [{ attributes: { POSITION: 0 }, material: 1 }] },
-        ],
+        meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }, { primitives: [{ attributes: { POSITION: 0 }, material: 1 }] }],
         materials: [
             { name: "opaque_mat", pbrMetallicRoughness: { baseColorFactor: [1, 0, 0, 1] } },
             {

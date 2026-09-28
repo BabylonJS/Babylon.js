@@ -287,6 +287,43 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         expect((compound as any)._tombstonedPartIndices.size).toBe(0);
     });
 
+    it("keeps a static part's retained data aligned when it follows a streaming region after compaction", () => {
+        // A reserved-empty streaming region carries no CPU splat data but still owns its atlas slot. When
+        // _retainMergedPartData rebuilds the retained _splatsData it must advance past that slot so a static part
+        // packed AFTER it lands at the offset its proxy._splatsDataOffset points to. If it doesn't, the static
+        // part's bytes sit at the stream's (zeroed) offset, and a later grow-rebuild reconstructs the part from
+        // zeros — its splats vanish. (Sizes are chosen so every step grows the atlas HEIGHT and takes the full
+        // rebuild path, which NullEngine supports — see the beforeEach note on sub-texture uploads.)
+        const compound = createCompound();
+        const streamA = compound.reserveStreamingPart(16); // part 0 (stream)
+        const streamB = compound.reserveStreamingPart(16); // part 1 (stream)
+        compound.addPart(createSource(48)); // part 2 (static; local splat k has position.x === k)
+
+        // Remove the first stream so the surviving layout is [stream B, static] — a stream BEFORE a static part.
+        compound.removePart(streamA.partIndex);
+        compound.compactAtlas();
+        expect(compound.partCount).toBe(2);
+        expect(streamB.partIndex).toBe(0);
+
+        const readX = (globalSplatIndex: number) => new Float32Array((compound as any)._splatsData)[globalSplatIndex * 8];
+        const staticOffset = (compound as any)._partProxies[1]._splatsDataOffset;
+        expect(staticOffset).toBe(16); // packed right after stream B's row-aligned 16-splat slot
+        // The static part's retained data must live at its proxy offset (local splat k => position.x === k), not at
+        // the stream's reclaimed slot (which must stay zeroed).
+        for (const k of [1, 20, 47]) {
+            expect(readX(staticOffset + k)).toBe(k);
+        }
+        expect(readX(1)).toBe(0); // stream B's reclaimed slot, not overwritten with the static part's data
+
+        // A later addPart grows the atlas and rebuilds every static part from the retained _splatsData. The static
+        // survivor must still carry its splats afterwards (before the fix it was reconstructed from zeros).
+        compound.addPart(createSource(80)); // part 2 (new static)
+        const staticOffsetAfter = (compound as any)._partProxies[1]._splatsDataOffset;
+        for (const k of [1, 20, 47]) {
+            expect(readX(staticOffsetAfter + k)).toBe(k);
+        }
+    });
+
     it("drops SH degree to 0 when the only SH streaming part is removed (non-SH stream survives, stays neutral)", () => {
         const compound = createCompound();
         // A SH streaming part (degree 3 => 3 packed-u32 SH textures) turns on the shared SH atlas at degree 3;

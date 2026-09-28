@@ -571,7 +571,7 @@ export class GLTFLoader implements IGLTFLoader {
                     promises.push(this._compileShadowGeneratorsAsync());
                 }
 
-                const resultPromise = Promise.all(promises).then(() => {
+                const resultPromise = Promise.all(promises).then(async () => {
                     if (this._rootBabylonMesh && this._rootBabylonMesh !== this._parent.customRootNode) {
                         this._rootBabylonMesh.setEnabled(true);
                     }
@@ -592,7 +592,7 @@ export class GLTFLoader implements IGLTFLoader {
                         this._completePromises.push(adapter.finalizeAsync(this));
                     }
 
-                    this._extensionsOnReady();
+                    await this._extensionsOnReadyAsync();
                     this._parent._setState(GLTFLoaderState.READY);
                     if (!this._skipStartAnimationStep) {
                         this._startAnimations();
@@ -747,11 +747,9 @@ export class GLTFLoader implements IGLTFLoader {
                 index: -1,
             };
         }
-        this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        const rootMesh = new Mesh("__root__", this._babylonScene);
+        const rootMesh = this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () => new Mesh("__root__", this._babylonScene));
         this._rootBabylonMesh = rootMesh;
         this._rootBabylonMesh._parentContainer = this._assetContainer;
-        this._babylonScene._blockEntityCollection = false;
         this._rootBabylonMesh.setEnabled(false);
 
         const rootNode: INode = {
@@ -998,10 +996,8 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (!hasMesh || hasSkin) {
             const nodeName = node.name || `node${node.index}`;
-            this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            const transformNode = new TransformNode(nodeName, this._babylonScene);
+            const transformNode = this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () => new TransformNode(nodeName, this._babylonScene));
             transformNode._parentContainer = this._assetContainer;
-            this._babylonScene._blockEntityCollection = false;
             if (node.mesh == undefined) {
                 node._babylonTransformNode = transformNode;
             } else {
@@ -1100,10 +1096,8 @@ export class GLTFLoader implements IGLTFLoader {
                 })
             );
         } else {
-            this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            node._babylonTransformNode = new TransformNode(name, this._babylonScene);
+            node._babylonTransformNode = this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () => new TransformNode(name, this._babylonScene));
             node._babylonTransformNode._parentContainer = this._assetContainer;
-            this._babylonScene._blockEntityCollection = false;
             node._primitiveBabylonMeshes = [];
             for (const primitive of primitives) {
                 promises.push(
@@ -1156,18 +1150,16 @@ export class GLTFLoader implements IGLTFLoader {
         let promise: Promise<unknown>;
 
         if (shouldInstance && primitive._instanceData) {
-            this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name);
+            babylonAbstractMesh = this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () =>
+                primitive._instanceData!.babylonSourceMesh.createInstance(name)
+            );
             babylonAbstractMesh._parentContainer = this._assetContainer;
-            this._babylonScene._blockEntityCollection = false;
             promise = primitive._instanceData.promise;
         } else {
             const promises = new Array<Promise<unknown>>();
 
-            this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            const babylonMesh = new Mesh(name, this._babylonScene);
+            const babylonMesh = this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () => new Mesh(name, this._babylonScene));
             babylonMesh._parentContainer = this._assetContainer;
-            this._babylonScene._blockEntityCollection = false;
             babylonMesh.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
@@ -1178,10 +1170,10 @@ export class GLTFLoader implements IGLTFLoader {
                             return;
                         }
 
-                        this._babylonScene._blockEntityCollection = !!this._assetContainer;
-                        babylonGeometry.applyToMesh(babylonMesh);
-                        babylonGeometry._parentContainer = this._assetContainer;
-                        this._babylonScene._blockEntityCollection = false;
+                        this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () => {
+                            babylonGeometry.applyToMesh(babylonMesh);
+                            babylonGeometry._parentContainer = this._assetContainer;
+                        });
                     });
                 })
             );
@@ -1325,10 +1317,8 @@ export class GLTFLoader implements IGLTFLoader {
 
         const targetNames = mesh.extras ? mesh.extras.targetNames : null;
 
-        this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        babylonMesh.morphTargetManager = new MorphTargetManager(this._babylonScene);
+        babylonMesh.morphTargetManager = this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () => new MorphTargetManager(this._babylonScene));
         babylonMesh.morphTargetManager._parentContainer = this._assetContainer;
-        this._babylonScene._blockEntityCollection = false;
 
         babylonMesh.morphTargetManager.areUpdatesFrozen = true;
 
@@ -1523,10 +1513,11 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const skeletonId = `skeleton${skin.index}`;
-        this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        const babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
+        const babylonSkeleton = this._babylonScene._executeWithBlockedEntityCollection(
+            !!this._assetContainer,
+            () => new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene)
+        );
         babylonSkeleton._parentContainer = this._assetContainer;
-        this._babylonScene._blockEntityCollection = false;
 
         this._loadBones(context, skin, babylonSkeleton);
         const promise = this._loadSkinInverseBindMatricesDataAsync(context, skin).then((inverseBindMatricesData) => {
@@ -1699,10 +1690,11 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context} ${camera.name || ""}`);
 
-        this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        const babylonCamera = new FreeCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false);
+        const babylonCamera = this._babylonScene._executeWithBlockedEntityCollection(
+            !!this._assetContainer,
+            () => new FreeCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false)
+        );
         babylonCamera._parentContainer = this._assetContainer;
-        this._babylonScene._blockEntityCollection = false;
         camera._babylonCamera = babylonCamera;
 
         // glTF cameras look towards the local -Z axis.
@@ -1793,10 +1785,11 @@ export class GLTFLoader implements IGLTFLoader {
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         return LazyAnimationGroupModulePromise.value.then(({ AnimationGroup }) => {
-            this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
+            const babylonAnimationGroup = this._babylonScene._executeWithBlockedEntityCollection(
+                !!this._assetContainer,
+                () => new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene)
+            );
             babylonAnimationGroup._parentContainer = this._assetContainer;
-            this._babylonScene._blockEntityCollection = false;
             animation._babylonAnimationGroup = babylonAnimationGroup;
 
             const promises = new Array<Promise<unknown>>();
@@ -2413,10 +2406,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createDefaultMaterial(name: string, babylonDrawMode: number, impl: Readonly<PBRMaterialImplementation>): Material {
-        this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        const babylonMaterial = new impl.materialClass(name, this._babylonScene);
+        const babylonMaterial = this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () => new impl.materialClass(name, this._babylonScene));
         babylonMaterial._parentContainer = this._assetContainer;
-        this._babylonScene._blockEntityCollection = false;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.transparencyMode = impl.materialClass.MATERIAL_OPAQUE;
         // Create the material adapter and set some default properties.
@@ -2607,7 +2598,13 @@ export class GLTFLoader implements IGLTFLoader {
     public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
         const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign);
         if (extensionPromise) {
-            return extensionPromise;
+            return extensionPromise.then((babylonTexture) => {
+                const texture = this._gltf.textures?.[textureInfo.index];
+                if (texture) {
+                    this._trackTexture(texture, babylonTexture);
+                }
+                return babylonTexture;
+            });
         }
 
         this.logOpen(`${context}`);
@@ -2635,7 +2632,11 @@ export class GLTFLoader implements IGLTFLoader {
      * @internal
      */
     public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
-        const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign);
+        const trackAndAssign = (babylonTexture: BaseTexture) => {
+            this._trackTexture(texture, babylonTexture);
+            assign(babylonTexture);
+        };
+        const extensionPromise = this._extensionsLoadTextureAsync(context, texture, trackAndAssign);
         if (extensionPromise) {
             return extensionPromise;
         }
@@ -2644,11 +2645,35 @@ export class GLTFLoader implements IGLTFLoader {
 
         const sampler = texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._gltf.samplers, texture.sampler);
         const image = ArrayItem.Get(`${context}/source`, this._gltf.images, texture.source);
-        const promise = this._createTextureAsync(context, sampler, image, assign, undefined, !texture._textureInfo.nonColorData);
+        const promise = this._createTextureAsync(context, sampler, image, trackAndAssign, undefined, !texture._textureInfo.nonColorData, texture);
 
         this.logClose();
 
         return promise;
+    }
+
+    private _trackTexture(texture: ITexture, babylonTexture: BaseTexture, imageIndex?: number, samplerIndex?: number): void {
+        texture._babylonTextures ||= [];
+        if (!texture._babylonTextures.includes(babylonTexture)) {
+            texture._babylonTextures.push(babylonTexture);
+        }
+        texture._babylonTextureSources ||= [];
+        const existing = texture._babylonTextureSources.find((source) => source.babylonTexture === babylonTexture);
+        const fallback = texture._babylonTextureSources[texture._babylonTextureSources.length - 1];
+        const resolvedImageIndex = imageIndex ?? existing?.imageIndex ?? fallback?.imageIndex;
+        if (resolvedImageIndex === undefined) {
+            return;
+        }
+        if (existing) {
+            existing.imageIndex = resolvedImageIndex;
+            existing.samplerIndex = samplerIndex ?? existing.samplerIndex ?? fallback?.samplerIndex;
+        } else {
+            texture._babylonTextureSources.push({
+                babylonTexture,
+                imageIndex: resolvedImageIndex,
+                samplerIndex: samplerIndex ?? fallback?.samplerIndex,
+            });
+        }
     }
 
     /**
@@ -2660,14 +2685,14 @@ export class GLTFLoader implements IGLTFLoader {
         image: IImage,
         assign: (babylonTexture: BaseTexture) => void = () => {},
         textureLoaderOptions?: unknown,
-        useSRGBBuffer?: boolean
+        useSRGBBuffer?: boolean,
+        sourceTexture?: ITexture
     ): Promise<BaseTexture> {
         const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
         const promises = new Array<Promise<unknown>>();
 
         const deferred = new Deferred<void>();
-        this._babylonScene._blockEntityCollection = !!this._assetContainer;
         const textureCreationOptions: ITextureCreationOptions = {
             noMipmap: samplerData.noMipMaps,
             invertY: false,
@@ -2686,9 +2711,11 @@ export class GLTFLoader implements IGLTFLoader {
             loaderOptions: textureLoaderOptions,
             useSRGBBuffer: !!useSRGBBuffer && this._parent.useSRGBBuffers,
         };
-        const babylonTexture = new Texture(null, this._babylonScene, textureCreationOptions);
+        const babylonTexture = this._babylonScene._executeWithBlockedEntityCollection(!!this._assetContainer, () => new Texture(null, this._babylonScene, textureCreationOptions));
+        if (sourceTexture) {
+            this._trackTexture(sourceTexture, babylonTexture, image.index, sampler.index >= 0 ? sampler.index : undefined);
+        }
         babylonTexture._parentContainer = this._assetContainer;
-        this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
 
         const nonBase64Uri = image.uri && !IsBase64DataUrl(image.uri) ? image.uri : undefined;
@@ -3044,8 +3071,13 @@ export class GLTFLoader implements IGLTFLoader {
         this._forEachExtensions((extension) => extension.onLoading && extension.onLoading());
     }
 
-    private _extensionsOnReady(): void {
-        this._forEachExtensions((extension) => extension.onReady && extension.onReady());
+    private async _extensionsOnReadyAsync(): Promise<void> {
+        for (const extension of this._extensions) {
+            if (extension.enabled && extension.onReady) {
+                // eslint-disable-next-line no-await-in-loop -- extension order can define readiness dependencies
+                await extension.onReady();
+            }
+        }
     }
 
     private _extensionsLoadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
