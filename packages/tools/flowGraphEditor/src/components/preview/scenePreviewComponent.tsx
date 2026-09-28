@@ -845,17 +845,15 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             if (/\.glb$/i.test(file.name)) {
                 try {
                     const document = ReadGlbDocument(new Uint8Array(await file.arrayBuffer()));
-                    if (Array.isArray(document.nodes)) {
-                        const hasAnimations = document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0);
-                        sourceGlb = {
-                            file,
-                            companionFiles,
-                            nodeCount: document.nodes.length,
-                            hasAnimations,
-                            authoredBehavior,
-                            externalResourceUris: GetGlbExternalResourceUris(document),
-                        };
-                    }
+                    const hasAnimations = document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0);
+                    sourceGlb = {
+                        file,
+                        companionFiles,
+                        nodeCount: Array.isArray(document.nodes) ? document.nodes.length : 0,
+                        hasAnimations,
+                        authoredBehavior,
+                        externalResourceUris: GetGlbExternalResourceUris(document),
+                    };
                 } catch {
                     // The preview can still load files outside this patcher's supported GLB framing.
                 }
@@ -1180,7 +1178,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const graph = coordinator?.flowGraphs[0];
         if (
             !globalState.sceneContext?.ownsScene ||
-            (globalState.sceneSource === "file" && (!globalState.sourceGlb || globalState.sourceGlb.authoredBehavior)) ||
+            (globalState.sceneSource === "file" && (!globalState.sourceGlb || globalState.sourceGlb.nodeCount === 0 || globalState.sourceGlb.authoredBehavior)) ||
             globalState.hasImportScopedRuntime ||
             !graph ||
             coordinator?.flowGraphs.length !== 1 ||

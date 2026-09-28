@@ -114,6 +114,41 @@ function BuildExistingGlbFixture(
     return { bytes, document, bin };
 }
 
+function BuildNodelessGlbFixture(withGraph: boolean, withEmptyNodes = false) {
+    const document: any = {
+        asset: { version: "2.0", generator: "node-free-source" },
+        scene: 0,
+        scenes: [{ name: "Empty scene" }],
+        extensionsUsed: ["EXT_vendor_meta"],
+        extensions: { EXT_vendor_meta: { stableAssetId: "scene-only-17" } },
+        extras: { sourceOnly: "keep this metadata" },
+    };
+    if (withEmptyNodes) {
+        document.nodes = [];
+    }
+    if (withGraph) {
+        document.extensionsUsed.push("KHR_interactivity");
+        document.extensionsRequired = ["KHR_interactivity"];
+        document.extensions.KHR_interactivity = {
+            graphs: [{ name: "Scene start", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+        };
+    }
+    const json = Buffer.from(JSON.stringify(document));
+    const jsonLength = Math.ceil(json.length / 4) * 4;
+    const vendor = Buffer.from([10, 20, 30, 40]);
+    const bytes = Buffer.alloc(20 + jsonLength + 8 + vendor.length, 0x20);
+    bytes.writeUInt32LE(0x46546c67, 0);
+    bytes.writeUInt32LE(2, 4);
+    bytes.writeUInt32LE(bytes.length, 8);
+    bytes.writeUInt32LE(jsonLength, 12);
+    bytes.writeUInt32LE(0x4e4f534a, 16);
+    json.copy(bytes, 20);
+    bytes.writeUInt32LE(vendor.length, 20 + jsonLength);
+    bytes.writeUInt32LE(0x31525458, 24 + jsonLength);
+    vendor.copy(bytes, 28 + jsonLength);
+    return { bytes, document };
+}
+
 // The FGE starts with an empty graph — no default blocks on the canvas.
 
 function CountSerializedConnections(serializedGraph: any): number {
@@ -2332,6 +2367,78 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: true, primitivePickable: true, primitiveHoverable: true });
         });
     }
+
+    test("retains a node-free KHR source GLB for source-preserving graph export", async ({ page }) => {
+        const { bytes, document } = BuildNodelessGlbFixture(true);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(
+            (data) => {
+                const file = new File([new Uint8Array(data)], "node-free-interaction.glb", { type: "model/gltf-binary" });
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            [...bytes]
+        );
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "node-free-interaction.glb"');
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Scene start"]);
+        await expect
+            .poll(async () =>
+                page.evaluate(() => {
+                    const source = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sourceGlb;
+                    return source ? { name: source.file.name, nodeCount: source.nodeCount } : null;
+                })
+            )
+            .toEqual({ name: "node-free-interaction.glb", nodeCount: 0 });
+        await expect(page.getByRole("button", { name: "Export KHR glTF", exact: true })).toBeDisabled();
+        await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeEnabled();
+        const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "node-free-interaction-edited.glb");
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const exportedBytes = readFileSync((await (await downloadPromise).path())!);
+        const jsonLength = exportedBytes.readUInt32LE(12);
+        const exportedDocument = JSON.parse(exportedBytes.subarray(20, 20 + jsonLength).toString("utf8"));
+        expect(exportedDocument.nodes).toBeUndefined();
+        expect(exportedDocument.asset).toEqual(document.asset);
+        expect(exportedDocument.extras).toEqual(document.extras);
+        expect(exportedDocument.extensions.EXT_vendor_meta).toEqual(document.extensions.EXT_vendor_meta);
+        expect(exportedDocument.extensions.KHR_interactivity.graphs[0].name).toBe("Scene start");
+        expect(exportedBytes.subarray(20 + jsonLength)).toEqual(bytes.subarray(20 + bytes.readUInt32LE(12)));
+    });
+
+    test("keeps mesh authoring disabled for a node-free graphless GLB", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        for (const [name, withEmptyNodes] of [
+            ["omitted-nodes.glb", false],
+            ["empty-nodes.glb", true],
+        ] as const) {
+            const { bytes } = BuildNodelessGlbFixture(false, withEmptyNodes);
+            await page.evaluate(
+                ({ data, fileName }) => {
+                    const file = new File([new Uint8Array(data)], fileName, { type: "model/gltf-binary" });
+                    const transfer = new DataTransfer();
+                    transfer.items.add(file);
+                    (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+                },
+                { data: [...bytes], fileName: name }
+            );
+
+            await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+            await expect
+                .poll(async () =>
+                    page.evaluate(() => {
+                        const source = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sourceGlb;
+                        return source ? { name: source.file.name, nodeCount: source.nodeCount } : null;
+                    })
+                )
+                .toEqual({ name, nodeCount: 0 });
+            await expect(page.getByRole("button", { name: "New behavior" })).toBeDisabled();
+        }
+    });
 
     test("adds a behavior to an existing GLB without reserializing its scene or resources", async ({ page }, testInfo) => {
         test.setTimeout(90_000);
