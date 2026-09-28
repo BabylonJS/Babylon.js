@@ -2095,103 +2095,132 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(async () => await fge.getNodeCount()).toBe(0);
     });
 
-    test("reset restores imported KHR node visibility, selectability, and hoverability defaults", async ({ page }) => {
-        const fge = new FlowGraphEditorPage(page);
-        await fge.goto({ local: true });
-        await fge.assertEditorReady();
+    for (const withExtensionObject of [true, false]) {
+        test(`reset restores imported KHR node defaults ${withExtensionObject ? "with" : "without"} extension objects`, async ({ page }) => {
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            await fge.assertEditorReady();
 
-        const positions = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
-        const source = {
-            asset: { version: "2.0" },
-            scene: 0,
-            scenes: [{ nodes: [0] }],
-            nodes: [{ name: "defaultVisibleNode", mesh: 0, extensions: { KHR_node_visibility: {}, KHR_node_selectability: {}, KHR_node_hoverability: {} } }],
-            meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
-            buffers: [{ byteLength: positions.length, uri: `data:application/octet-stream;base64,${positions.toString("base64")}` }],
-            bufferViews: [{ buffer: 0, byteLength: positions.length }],
-            accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
-            extensionsUsed: ["KHR_interactivity", "KHR_node_visibility", "KHR_node_selectability", "KHR_node_hoverability"],
-            extensionsRequired: ["KHR_interactivity", "KHR_node_visibility", "KHR_node_selectability", "KHR_node_hoverability"],
-            extensions: {
-                KHR_interactivity: {
-                    graph: 0,
-                    graphs: [
-                        {
-                            name: "Disable node on start",
-                            types: [{ signature: "bool" }],
-                            declarations: [{ op: "event/onStart" }, { op: "pointer/set" }],
-                            nodes: [
-                                { declaration: 0, flows: { out: { node: 1, socket: "in" } } },
-                                {
-                                    declaration: 1,
-                                    configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_visibility/visible"] }, type: { value: [0] } },
-                                    values: { value: { type: 0, value: [false] } },
-                                    flows: { out: { node: 2, socket: "in" } },
-                                },
-                                {
-                                    declaration: 1,
-                                    configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_selectability/selectable"] }, type: { value: [0] } },
-                                    values: { value: { type: 0, value: [false] } },
-                                    flows: { out: { node: 3, socket: "in" } },
-                                },
-                                {
-                                    declaration: 1,
-                                    configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_hoverability/hoverable"] }, type: { value: [0] } },
-                                    values: { value: { type: 0, value: [false] } },
-                                },
-                            ],
-                        },
-                    ],
+            const positions = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
+            const source = {
+                asset: { version: "2.0" },
+                scene: 0,
+                scenes: [{ nodes: [0, 1] }],
+                nodes: [
+                    {
+                        name: "defaultVisibleNode",
+                        mesh: 0,
+                        ...(withExtensionObject ? { extensions: { KHR_node_visibility: {}, KHR_node_selectability: {}, KHR_node_hoverability: {} } } : {}),
+                    },
+                    { name: "unrelatedNode", mesh: 0, translation: [2, 0, 0] },
+                ],
+                meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+                buffers: [{ byteLength: positions.length, uri: `data:application/octet-stream;base64,${positions.toString("base64")}` }],
+                bufferViews: [{ buffer: 0, byteLength: positions.length }],
+                accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
+                extensionsUsed: ["KHR_interactivity", "KHR_node_visibility", "KHR_node_selectability", "KHR_node_hoverability"],
+                extensionsRequired: ["KHR_interactivity", "KHR_node_visibility", "KHR_node_selectability", "KHR_node_hoverability"],
+                extensions: {
+                    KHR_interactivity: {
+                        graph: 0,
+                        graphs: [
+                            {
+                                name: "Disable node on start",
+                                types: [{ signature: "bool" }],
+                                declarations: [{ op: "event/onStart" }, { op: "pointer/set" }],
+                                nodes: [
+                                    { declaration: 0, flows: { out: { node: 1, socket: "in" } } },
+                                    {
+                                        declaration: 1,
+                                        configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_visibility/visible"] }, type: { value: [0] } },
+                                        values: { value: { type: 0, value: [false] } },
+                                        flows: { out: { node: 2, socket: "in" } },
+                                    },
+                                    {
+                                        declaration: 1,
+                                        configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_selectability/selectable"] }, type: { value: [0] } },
+                                        values: { value: { type: 0, value: [false] } },
+                                        flows: { out: { node: 3, socket: "in" } },
+                                    },
+                                    {
+                                        declaration: 1,
+                                        configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_hoverability/hoverable"] }, type: { value: [0] } },
+                                        values: { value: { type: 0, value: [false] } },
+                                    },
+                                ],
+                            },
+                        ],
+                    },
                 },
-            },
-        };
-        await page.evaluate((gltf) => {
-            const file = new File([JSON.stringify(gltf)], "default-visible.gltf", { type: "model/gltf+json" });
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
-        }, source);
-        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Disable node on start"]);
-        const nodeState = () =>
-            page.evaluate(() => {
-                const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
-                const node = state.khrInteractivityImportResult.glTF.nodes[0];
-                return {
-                    sceneUid: state.sceneContext.scene.uid,
-                    authoredVisible: node.extensions.KHR_node_visibility.visible,
-                    authoredSelectable: node.extensions.KHR_node_selectability.selectable,
-                    authoredHoverable: node.extensions.KHR_node_hoverability.hoverable,
-                    transformVisible: node._babylonTransformNode.isVisible,
-                    primitiveVisible: node._primitiveBabylonMeshes[0].isVisible,
-                    primitivePickable: node._primitiveBabylonMeshes[0].isPickable,
-                    primitiveHoverable: node._primitiveBabylonMeshes[0]._isPointerMovePickable,
-                };
-            });
-        const initial = await nodeState();
-        expect(initial).toMatchObject({ authoredVisible: undefined, authoredSelectable: undefined, authoredHoverable: undefined, transformVisible: true, primitiveVisible: true });
-        expect(initial.primitivePickable).toBe(true);
-        expect(initial.primitiveHoverable).toBe(true);
-
-        await ClickGraphControl(page, "Start");
-        await expect.poll(async () => await nodeState()).toMatchObject({ transformVisible: false, primitiveVisible: false, primitivePickable: false, primitiveHoverable: false });
-        await ClickGraphControl(page, "Reset");
-        await expect
-            .poll(async () => await nodeState())
-            .toMatchObject({
-                sceneUid: initial.sceneUid,
+            };
+            await page.evaluate((gltf) => {
+                const file = new File([JSON.stringify(gltf)], "default-visible.gltf", { type: "model/gltf+json" });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+            }, source);
+            await expect.poll(async () => await fge.getGraphNames()).toEqual(["Disable node on start"]);
+            const nodeState = () =>
+                page.evaluate(() => {
+                    const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                    const node = state.khrInteractivityImportResult.glTF.nodes[0];
+                    return {
+                        sceneUid: state.sceneContext.scene.uid,
+                        authoredVisible: node.extensions?.KHR_node_visibility?.visible,
+                        authoredSelectable: node.extensions?.KHR_node_selectability?.selectable,
+                        authoredHoverable: node.extensions?.KHR_node_hoverability?.hoverable,
+                        transformVisible: node._babylonTransformNode.isVisible,
+                        primitiveVisible: node._primitiveBabylonMeshes[0].isVisible,
+                        primitivePickable: node._primitiveBabylonMeshes[0].isPickable,
+                        primitiveHoverable: node._primitiveBabylonMeshes[0]._isPointerMovePickable,
+                        unrelatedVisible: state.khrInteractivityImportResult.glTF.nodes[1]._primitiveBabylonMeshes[0].isVisible,
+                        unrelatedPickable: state.khrInteractivityImportResult.glTF.nodes[1]._primitiveBabylonMeshes[0].isPickable,
+                        unrelatedHoverable: state.khrInteractivityImportResult.glTF.nodes[1]._primitiveBabylonMeshes[0]._isPointerMovePickable,
+                    };
+                });
+            const initial = await nodeState();
+            expect(initial).toMatchObject({
                 authoredVisible: undefined,
                 authoredSelectable: undefined,
                 authoredHoverable: undefined,
                 transformVisible: true,
                 primitiveVisible: true,
-                primitivePickable: true,
-                primitiveHoverable: true,
             });
-        await ClickGraphControl(page, "Start");
-        await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: false, primitivePickable: false, primitiveHoverable: false });
-        await ClickGraphControl(page, "Reset");
-        await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: true, primitivePickable: true, primitiveHoverable: true });
-    });
+            expect(initial.primitivePickable).toBe(true);
+            expect(initial.primitiveHoverable).toBe(true);
+            await page.evaluate(() => {
+                const mesh = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.khrInteractivityImportResult.glTF.nodes[1]._primitiveBabylonMeshes[0];
+                mesh.isVisible = false;
+                mesh.isPickable = false;
+                mesh._isPointerMovePickable = false;
+            });
+
+            await ClickGraphControl(page, "Start");
+            await expect
+                .poll(async () => await nodeState())
+                .toMatchObject({ transformVisible: false, primitiveVisible: false, primitivePickable: false, primitiveHoverable: false });
+            await ClickGraphControl(page, "Reset");
+            await expect
+                .poll(async () => await nodeState())
+                .toMatchObject({
+                    sceneUid: initial.sceneUid,
+                    authoredVisible: undefined,
+                    authoredSelectable: undefined,
+                    authoredHoverable: undefined,
+                    transformVisible: true,
+                    primitiveVisible: true,
+                    primitivePickable: true,
+                    primitiveHoverable: true,
+                    unrelatedVisible: false,
+                    unrelatedPickable: false,
+                    unrelatedHoverable: false,
+                });
+            await ClickGraphControl(page, "Start");
+            await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: false, primitivePickable: false, primitiveHoverable: false });
+            await ClickGraphControl(page, "Reset");
+            await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: true, primitivePickable: true, primitiveHoverable: true });
+        });
+    }
 
     test("authors a select-to-reveal KHR_interactivity graph from an empty scene", async ({ page }, testInfo) => {
         test.setTimeout(90_000);

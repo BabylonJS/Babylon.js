@@ -35,6 +35,7 @@ import { type ISerializedFlowGraphBlock } from "core/FlowGraph/typeDefinitions";
 import { IsFlowGraphEventBlockName } from "../../graphSystem/blockTypeColors";
 import { GetFlowGraphBlockNodeId } from "../../graphSystem/blockNodeData";
 import { CreateKhrSelectionRevealTemplate } from "../../khrSelectionRevealTemplate";
+import { TrackKhrNodeStateMutations } from "../../khrSceneReset";
 
 interface IScenePreviewComponentProps {
     globalState: GlobalState;
@@ -645,6 +646,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         if (!importResult) {
             return null;
         }
+        TrackKhrNodeStateMutations(importResult);
 
         const serializedGraphs = importResult.graphs.map((graphResult) => {
             const serializedFlowGraph = graphResult.serializedFlowGraph ?? {

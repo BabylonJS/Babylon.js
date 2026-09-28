@@ -1,7 +1,7 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Scene } from "core/scene";
-import { RestoreKhrNodeState } from "flow-graph-editor/khrSceneReset";
+import { RestoreKhrNodeState, TrackKhrNodeStateMutations } from "flow-graph-editor/khrSceneReset";
 import { GetInteractivityNodeState, InitializeInteractivityNodeState, SetInteractivityNodeState } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityNodeState";
 import { describe, expect, it } from "vitest";
 
@@ -21,6 +21,21 @@ function NodeStatePathConverter(nodes: any[]) {
 }
 
 describe("KHR node state scene reset", () => {
+    it("tracks actual pointer writes after conversion without treating reads as mutations", () => {
+        const node: any = {};
+        const importResult: any = { glTF: { nodes: [node] }, pathConverter: NodeStatePathConverter([node]) };
+        TrackKhrNodeStateMutations(importResult);
+        TrackKhrNodeStateMutations(importResult);
+
+        const selectable = importResult.pathConverter.convert("/nodes/0/extensions/KHR_node_selectability/selectable");
+        importResult.pathConverter.convert("/nodes/0/extensions/KHR_node_hoverability/hoverable");
+        expect(importResult.mutatedNodeProperties.size).toBe(0);
+
+        selectable.info.set(false, selectable.object);
+        expect(importResult.mutatedNodeProperties.get(0)).toEqual(new Set(["selectable"]));
+        expect(GetInteractivityNodeState(node, "selectable")).toBe(false);
+    });
+
     it("restores the default visible state when the extension omits visible", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
@@ -58,6 +73,45 @@ describe("KHR node state scene reset", () => {
         expect(unrelated.isVisible).toBe(false);
         scene.dispose();
         engine.dispose();
+    });
+
+    it("restores pointer-mutated defaults without touching unrelated nodes that lack extensions", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        try {
+            const target = CreateBox("pointer target", {}, scene);
+            const unrelated = CreateBox("unrelated", {}, scene);
+            const nodes: any[] = [
+                { _babylonTransformNode: target, _primitiveBabylonMeshes: [target] },
+                { _babylonTransformNode: unrelated, _primitiveBabylonMeshes: [unrelated] },
+            ];
+            InitializeInteractivityNodeState(nodes, "selectable", () => undefined);
+            InitializeInteractivityNodeState(nodes, "hoverable", () => undefined);
+            SetInteractivityNodeState(nodes[0], "selectable", false);
+            SetInteractivityNodeState(nodes[0], "hoverable", false);
+            target.isVisible = false;
+            target.inheritVisibility = false;
+            unrelated.isVisible = false;
+            unrelated.isPickable = false;
+            unrelated._isPointerMovePickable = false;
+            const mutatedNodeProperties = new Map([[0, new Set(["visible", "selectable", "hoverable"])]]);
+
+            RestoreKhrNodeState({ glTF: { nodes }, pathConverter: NodeStatePathConverter(nodes), mutatedNodeProperties } as any);
+
+            expect(target.isVisible).toBe(true);
+            expect(target.inheritVisibility).toBe(true);
+            expect(GetInteractivityNodeState(nodes[0], "selectable")).toBe(true);
+            expect(GetInteractivityNodeState(nodes[0], "hoverable")).toBe(true);
+            expect(target.isPickable).toBe(true);
+            expect(target._isPointerMovePickable).toBe(true);
+            expect(unrelated.isVisible).toBe(false);
+            expect(unrelated.isPickable).toBe(false);
+            expect(unrelated._isPointerMovePickable).toBe(false);
+            expect(mutatedNodeProperties.size).toBe(0);
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
     });
 
     it("restores omitted selectability and hoverability defaults after preview mutations", () => {
