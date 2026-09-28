@@ -3,7 +3,7 @@ import { Skeleton } from "core/Bones/skeleton";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
-import { GetGlbNodeIndex, PatchKhrSelectionRevealGlb, ReadGlbDocument, type IGlbDocument } from "flow-graph-editor/khrGlbBehaviorAuthoring";
+import { GetGlbExternalResourceUris, GetGlbNodeIndex, PatchKhrSelectionRevealGlb, ReadGlbDocument, type IGlbDocument } from "flow-graph-editor/khrGlbBehaviorAuthoring";
 import { CreateKHRInteractivityDocument } from "loaders/glTF/2.0/Extensions/KHR_interactivity/pure";
 import { describe, expect, it } from "vitest";
 
@@ -80,6 +80,14 @@ function RichSourceDocument(): RichDocument {
 }
 
 describe("lossless GLB selection behavior authoring", () => {
+    it("lists external image and buffer references while excluding embedded data and duplicate paths", () => {
+        const document = RichSourceDocument();
+        document.buffers = [{ uri: "geometry.bin" }, { uri: "data:application/octet-stream;base64,AA==" }] as any;
+        document.images = [{ uri: "textures/diffuse.png" }, { uri: "geometry.bin" }, { uri: "DATA:image/png;base64,AA==" }, { bufferView: 0 }] as any;
+
+        expect(GetGlbExternalResourceUris(document)).toEqual(["geometry.bin", "textures/diffuse.png"]);
+    });
+
     it("keeps untouched numeric and escaped JSON tokens exactly as authored", () => {
         const document = RichSourceDocument();
         document.nodes[2].extensions = { KHR_node_visibility: { visible: true, extras: { auditId: "audit-9" } } };

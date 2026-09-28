@@ -9,7 +9,8 @@ function BuildExistingGlbFixture(
     withAnimation = false,
     withSkin = false,
     withLosslessTokens = false,
-    withHiddenRevealParent = false
+    withHiddenRevealParent = false,
+    withExternalBuffer = false
 ) {
     const document: any = {
         asset: { version: "2.0", generator: "maintenance-asset-pipeline" },
@@ -63,6 +64,9 @@ function BuildExistingGlbFixture(
         ];
     }
     let bin = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
+    if (withExternalBuffer) {
+        document.buffers[0].uri = "geometry.bin";
+    }
     if (withSkin) {
         const joints = Buffer.alloc(12);
         const weights = Buffer.from(new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]).buffer);
@@ -81,7 +85,7 @@ function BuildExistingGlbFixture(
     const json = Buffer.from(jsonText);
     const jsonLength = Math.ceil(json.length / 4) * 4;
     const vendor = Buffer.from([10, 20, 30, 40]);
-    const bytes = Buffer.alloc(20 + jsonLength + 8 + bin.length + 8 + vendor.length, 0x20);
+    const bytes = Buffer.alloc(20 + jsonLength + (withExternalBuffer ? 0 : 8 + bin.length) + 8 + vendor.length, 0x20);
     bytes.writeUInt32LE(0x46546c67, 0);
     bytes.writeUInt32LE(2, 4);
     bytes.writeUInt32LE(bytes.length, 8);
@@ -89,14 +93,16 @@ function BuildExistingGlbFixture(
     bytes.writeUInt32LE(0x4e4f534a, 16);
     json.copy(bytes, 20);
     let offset = 20 + jsonLength;
-    bytes.writeUInt32LE(bin.length, offset);
-    bytes.writeUInt32LE(0x004e4942, offset + 4);
-    bin.copy(bytes, offset + 8);
-    offset += 8 + bin.length;
+    if (!withExternalBuffer) {
+        bytes.writeUInt32LE(bin.length, offset);
+        bytes.writeUInt32LE(0x004e4942, offset + 4);
+        bin.copy(bytes, offset + 8);
+        offset += 8 + bin.length;
+    }
     bytes.writeUInt32LE(vendor.length, offset);
     bytes.writeUInt32LE(0x31525458, offset + 4);
     vendor.copy(bytes, offset + 8);
-    return { bytes, document };
+    return { bytes, document, bin };
 }
 
 // The FGE starts with an empty graph — no default blocks on the canvas.
@@ -2412,6 +2418,68 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(revealVisible).toBe(true);
         await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeDisabled();
         await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authored.png"), fullPage: true });
+    });
+
+    test("warns that an authored GLB still needs its external buffer when downloaded and reopened", async ({ page, browser }, testInfo) => {
+        test.setTimeout(90_000);
+        const { bytes, bin } = BuildExistingGlbFixture(false, false, false, false, false, false, true);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(
+            ({ glb, buffer }) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([new Uint8Array(glb)], "external-assembly.glb", { type: "model/gltf-binary" }));
+                transfer.items.add(new File([new Uint8Array(buffer)], "geometry.bin"));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            { glb: [...bytes], buffer: [...bin] }
+        );
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await expect(page.getByTestId("external-resource-warning-dialog")).toContainText("geometry.bin");
+        await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
+        await page.getByRole("option", { name: /glTF node 2/ }).click();
+        await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-external-resource-warning.png"), fullPage: true });
+        const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "external-assembly-behavior.glb");
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        const download = await downloadPromise;
+        const authoredBytes = readFileSync((await download.path())!);
+        await expect(page.getByTestId("external-resource-warning-status")).toContainText("geometry.bin");
+        const jsonLength = authoredBytes.readUInt32LE(12);
+        expect(JSON.parse(authoredBytes.subarray(20, 20 + jsonLength).toString("utf8")).buffers[0].uri).toBe("geometry.bin");
+
+        const reopened = await browser.newContext();
+        try {
+            const reopenedPage = await reopened.newPage();
+            const reopenedEditor = new FlowGraphEditorPage(reopenedPage);
+            await reopenedEditor.goto({ local: true });
+            await reopenedEditor.assertEditorReady();
+            await reopenedPage.evaluate(
+                (glb) => {
+                    const transfer = new DataTransfer();
+                    transfer.items.add(new File([new Uint8Array(glb)], "external-assembly-behavior.glb", { type: "model/gltf-binary" }));
+                    (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+                },
+                [...authoredBytes]
+            );
+            await expect(reopenedPage.getByText(/Could not load|Unable to load|Failed to load/i).first()).toBeVisible();
+            await reopenedPage.evaluate(
+                ({ glb, buffer }) => {
+                    const transfer = new DataTransfer();
+                    transfer.items.add(new File([new Uint8Array(glb)], "external-assembly-behavior.glb", { type: "model/gltf-binary" }));
+                    transfer.items.add(new File([new Uint8Array(buffer)], "geometry.bin"));
+                    (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+                },
+                { glb: [...authoredBytes], buffer: [...bin] }
+            );
+            await expect.poll(async () => (await GetSceneContextSnapshot(reopenedPage))?.source).toBe("file");
+            await expect.poll(async () => await reopenedEditor.getGraphNames()).toEqual(["Select to reveal"]);
+        } finally {
+            await reopened.close();
+        }
     });
 
     test("does not offer a skinned mesh under its unrelated reparented assembly node", async ({ page }) => {

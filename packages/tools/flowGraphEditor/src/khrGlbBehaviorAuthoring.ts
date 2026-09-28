@@ -17,6 +17,10 @@ export interface IGlbDocument {
     nodes?: Array<{ children?: number[]; extensions?: Record<string, unknown>; [key: string]: unknown }>;
     /** A graph takes control of every glTF animation in the asset. */
     animations?: unknown;
+    /** Buffers may refer to external files instead of the GLB BIN chunk. */
+    buffers?: Array<{ uri?: string }>;
+    /** Images may refer to external files instead of embedded data. */
+    images?: Array<{ uri?: string }>;
     /** Root glTF extensions. */
     extensions?: Record<string, unknown>;
     /** Declared glTF extensions. */
@@ -24,6 +28,21 @@ export interface IGlbDocument {
     /** Required glTF extensions. */
     extensionsRequired?: string[];
     [key: string]: unknown;
+}
+
+/**
+ * Lists resources that will still be required after a source-preserving GLB download.
+ * @param document parsed source glTF document
+ * @returns external buffer and image URIs in first-reference order
+ */
+export function GetGlbExternalResourceUris(document: IGlbDocument): string[] {
+    const uris = new Set<string>();
+    for (const resource of [...(Array.isArray(document.buffers) ? document.buffers : []), ...(Array.isArray(document.images) ? document.images : [])]) {
+        if (typeof resource?.uri === "string" && !/^data:/i.test(resource.uri)) {
+            uris.add(resource.uri);
+        }
+    }
+    return [...uris];
 }
 
 function _ReadGlb(bytes: Uint8Array): { document: IGlbDocument; jsonText: string; suffixOffset: number } {

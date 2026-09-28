@@ -36,7 +36,7 @@ import { IsFlowGraphEventBlockName } from "../../graphSystem/blockTypeColors";
 import { GetFlowGraphBlockNodeId } from "../../graphSystem/blockNodeData";
 import { CreateKhrSelectionRevealTemplate } from "../../khrSelectionRevealTemplate";
 import { TrackKhrNodeStateMutations } from "../../khrSceneReset";
-import { GetGlbNodeIndex, PatchKhrSelectionRevealGlb, ReadGlbDocument } from "../../khrGlbBehaviorAuthoring";
+import { GetGlbExternalResourceUris, GetGlbNodeIndex, PatchKhrSelectionRevealGlb, ReadGlbDocument } from "../../khrGlbBehaviorAuthoring";
 
 interface IScenePreviewComponentProps {
     globalState: GlobalState;
@@ -833,7 +833,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 try {
                     const document = ReadGlbDocument(new Uint8Array(await file.arrayBuffer()));
                     if (Array.isArray(document.nodes)) {
-                        sourceGlb = { file, companionFiles, nodeCount: document.nodes.length, authoredBehavior };
+                        sourceGlb = { file, companionFiles, nodeCount: document.nodes.length, authoredBehavior, externalResourceUris: GetGlbExternalResourceUris(document) };
                     }
                 } catch {
                     // The preview can still load files outside this patcher's supported GLB framing.
@@ -1207,6 +1207,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 link.remove();
                 setTimeout(() => URL.revokeObjectURL(downloadUrl), 60_000);
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Downloaded source-preserving ${fileName}`, false));
+                if (sourceGlb.externalResourceUris.length > 0) {
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(
+                        new LogEntry(`The downloaded GLB still needs its external resources at their referenced paths: ${sourceGlb.externalResourceUris.join(", ")}`, false)
+                    );
+                }
                 return;
             }
             const serializer = (globalThis as any).BABYLON?.GLTF2Export;
@@ -1234,6 +1239,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const ctx = this.props.globalState.sceneContext;
         const isHostMode = this.props.globalState.sceneSource === "host";
         const sourceGlb = this.props.globalState.sourceGlb;
+        const externalResourceWarning = sourceGlb?.externalResourceUris.length
+            ? `This GLB references external resources: ${sourceGlb.externalResourceUris.join(", ")}. Keep them at their referenced paths when sharing or reopening the downloaded GLB.`
+            : "";
         const seenNodeIndices = new Set<number>();
         const meshes =
             ctx?.meshes.filter((mesh) => {
@@ -1289,6 +1297,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         )}
                     </div>
                     {error && <Body1 className={classes.error}>{error}</Body1>}
+                    {sourceGlb?.authoredBehavior && externalResourceWarning && <Body1 data-testid="external-resource-warning-status">{externalResourceWarning}</Body1>}
                     {ctx && (
                         <div className={classes.status}>
                             <Body1 className={classes.statusCount}>{sceneObjectCount}</Body1> objects in scene context
@@ -1331,6 +1340,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                                         ? "The source GLB is patched and downloaded. Its original scene data and binary chunks are retained."
                                         : "The preview scene is exported and reloaded as glTF; Babylon-only scene features may be omitted."}
                                 </Body1>
+                                {externalResourceWarning && <Body1 data-testid="external-resource-warning-dialog">{externalResourceWarning}</Body1>}
                                 <Label htmlFor="khr-trigger-mesh">Trigger mesh</Label>
                                 <Dropdown
                                     id="khr-trigger-mesh"
