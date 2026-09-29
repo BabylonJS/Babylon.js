@@ -119,6 +119,7 @@ describe("KHR_interactivity FlowGraph export", () => {
 
         const edited = plan.build(context);
         expect(edited.graphs[0].nodes![0].values!.a).toEqual({ type: 0, value: [9] });
+        expect(plan.buildWithSourceIndices()).toEqual(edited);
         expect(CreateKHRInteractivityDocument(edited).graphs[0].valid).toBe(true);
     });
 

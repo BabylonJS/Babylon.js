@@ -1,4 +1,5 @@
 import { type GlobalState } from "./globalState";
+import { PatchKhrInteractivityGlb } from "./khrGlbBehaviorAuthoring";
 import { type Nullable } from "core/types";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { GetFlowGraphBlockNodeId } from "./graphSystem/blockNodeData";
@@ -670,6 +671,18 @@ export class SerializationTools {
         const analysis = plan.analyze();
         if (!analysis.representable) {
             throw _CreateKhrExportError(analysis.diagnostics);
+        }
+        const sourceGlb = globalState.sourceGlb;
+        if (sourceGlb) {
+            if (format !== "glb") {
+                throw new Error("Source-preserving export of an imported GLB is available only as GLB.");
+            }
+            const extension = plan.buildWithSourceIndices();
+            const required = [...(plan.required ? ["KHR_interactivity"] : []), ...plan.additionalExtensionsRequired];
+            const bytes = PatchKhrInteractivityGlb(new Uint8Array(await sourceGlb.file.arrayBuffer()), extension, plan.additionalExtensionsUsed, required);
+            const fileName = sourceGlb.file.name.replace(/\.glb$/i, "-edited.glb");
+            SerializationTools._DownloadBlob(new Blob([new Uint8Array(bytes)], { type: "model/gltf-binary" }), fileName, globalState);
+            return analysis;
         }
         const serializer = (globalThis as any).BABYLON?.GLTF2Export;
         if (!serializer) {
