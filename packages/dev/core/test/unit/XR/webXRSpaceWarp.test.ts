@@ -223,6 +223,14 @@ describe("WebXRSpaceWarp", () => {
         expect(feature.detach()).toBe(true);
         expect(sessionManager.onXRFrameObservable.hasObservers()).toBe(false);
         expect(scene.onAfterRenderObservable.hasObservers()).toBe(false);
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
+
+        expect(feature.attach()).toBe(true);
+        scene.needsPreviousWorldMatrices = true;
+        expect(feature.detach()).toBe(true);
+        expect(scene.needsPreviousWorldMatrices).toBe(true);
+        scene.needsPreviousWorldMatrices = false;
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
     });
 
     it("keeps the native projection-layer sub-image provider behavior", () => {
