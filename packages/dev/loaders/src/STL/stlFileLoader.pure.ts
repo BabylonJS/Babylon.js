@@ -58,6 +58,9 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         if (typeof data !== "string") {
             if (this._isBinary(data)) {
                 // binary .stl
+                if (!this._isMeshRequested(meshesNames, "stlmesh")) {
+                    return true;
+                }
                 const babylonMesh = new Mesh("stlmesh", scene);
                 this._parseBinary(babylonMesh, data);
                 if (meshes) {
@@ -82,21 +85,12 @@ export class STLFileLoader implements ISceneLoaderPlugin {
                 return false;
             }
 
-            // check meshesNames
-            if (meshesNames && meshName) {
-                if (meshesNames instanceof Array) {
-                    if (!meshesNames.indexOf(meshName)) {
-                        continue;
-                    }
-                } else {
-                    if (meshName !== meshesNames) {
-                        continue;
-                    }
-                }
-            }
-
             // stl mesh name can be empty as well
             meshName = meshName || "stlmesh";
+
+            if (!this._isMeshRequested(meshesNames, meshName)) {
+                continue;
+            }
 
             const babylonMesh = new Mesh(meshName, scene);
             this._parseASCII(babylonMesh, matches[2]);
@@ -133,6 +127,16 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             this.importMesh(null, scene, data, rootUrl, container.meshes);
         });
         return container;
+    }
+
+    private _isMeshRequested(meshesNames: any, meshName: string): boolean {
+        if (!meshesNames) {
+            return true;
+        }
+        if (meshesNames instanceof Array) {
+            return meshesNames.indexOf(meshName) !== -1;
+        }
+        return meshesNames === meshName;
     }
 
     private _isBinary(data: any) {

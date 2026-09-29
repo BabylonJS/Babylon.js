@@ -202,6 +202,94 @@ describe("Interactivity event nodes", () => {
         expect(log).not.toHaveBeenCalledWith({ value: 7 });
     });
 
+    it.each([
+        ["event/onSelect", "KHR_node_selectability", "pickedMesh_0"],
+        ["event/onHoverIn", "KHR_node_hoverability", "targetMeshPointerOver_0"],
+        ["event/onHoverOut", "KHR_node_hoverability", "targetMeshPointerOut_0"],
+    ] as const)("%s binds a multi-primitive node rather than a same-named mesh", async (operation, extension, variableName) => {
+        const sameNamedMesh = new Mesh("part", scene);
+        const wrapper = new TransformNode("part", scene);
+        const firstPrimitive = new Mesh("part_primitive0", scene);
+        firstPrimitive.parent = wrapper;
+        const secondPrimitive = new Mesh("part_primitive1", scene);
+        secondPrimitive.parent = wrapper;
+        const gltf: any = {
+            nodes: [
+                { _babylonTransformNode: wrapper, _primitiveBabylonMeshes: [firstPrimitive, secondPrimitive] },
+                { _babylonTransformNode: sameNamedMesh, _primitiveBabylonMeshes: [sameNamedMesh] },
+            ],
+        };
+        const graph: IKHRInteractivity_Graph = {
+            declarations: [
+                { op: operation, extension },
+                { op: "flow/log", extension: "BABYLON" },
+            ],
+            types: [{ signature: "int" }],
+            nodes: [
+                { declaration: 0, configuration: { nodeIndex: { value: [0] } }, flows: { out: { node: 1, socket: "in" } } },
+                { declaration: 1, values: { message: { type: 0, value: [42] } } },
+            ],
+        };
+        const parser = new InteractivityGraphToFlowGraphParser(graph, gltf);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const runtimeGraph = await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
+        expect(runtimeGraph.getContext(0).userVariables[variableName]?.uniqueId).toBe(wrapper.uniqueId);
+        coordinator.start();
+
+        const emitForMesh = (mesh: Mesh, pointerId: number) => {
+            if (operation === "event/onSelect") {
+                const pickInfo = new PickingInfo();
+                pickInfo.hit = true;
+                pickInfo.pickedMesh = mesh;
+                scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, { pointerId } as any, pickInfo));
+            } else {
+                scene.setPointerOverMesh(mesh, pointerId);
+                if (operation === "event/onHoverOut") {
+                    scene.setPointerOverMesh(null, pointerId);
+                }
+            }
+        };
+
+        emitForMesh(firstPrimitive, 7);
+        emitForMesh(secondPrimitive, 8);
+        expect(log).toHaveBeenCalledTimes(2);
+        expect(log).toHaveBeenCalledWith({ value: 42 });
+
+        log.mockClear();
+        emitForMesh(sameNamedMesh, 9);
+        expect(log).not.toHaveBeenCalledWith({ value: 42 });
+    });
+
+    it.each(["event/onHoverIn", "event/onHoverOut"] as const)("%s does not repeat when a pointer crosses primitives of one glTF node", async (operation) => {
+        const wrapper = new TransformNode("part", scene);
+        const firstPrimitive = new Mesh("part_primitive0", scene);
+        firstPrimitive.parent = wrapper;
+        const secondPrimitive = new Mesh("part_primitive1", scene);
+        secondPrimitive.parent = wrapper;
+        const gltf: any = { nodes: [{ _babylonTransformNode: wrapper, _primitiveBabylonMeshes: [firstPrimitive, secondPrimitive] }] };
+        const graph: IKHRInteractivity_Graph = {
+            declarations: [
+                { op: operation, extension: "KHR_node_hoverability" },
+                { op: "flow/log", extension: "BABYLON" },
+            ],
+            types: [{ signature: "int" }],
+            nodes: [
+                { declaration: 0, configuration: { nodeIndex: { value: [0] } }, flows: { out: { node: 1, socket: "in" } } },
+                { declaration: 1, values: { message: { type: 0, value: [42] } } },
+            ],
+        };
+        const parser = new InteractivityGraphToFlowGraphParser(graph, gltf);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
+        coordinator.start();
+
+        scene.setPointerOverMesh(firstPrimitive, 7);
+        scene.setPointerOverMesh(secondPrimitive, 7);
+        expect(log).toHaveBeenCalledTimes(operation === "event/onHoverIn" ? 1 : 0);
+        scene.setPointerOverMesh(null, 7);
+        expect(log).toHaveBeenCalledTimes(1);
+    });
+
     it.each([undefined, -1, 9])("event/onSelect does not fire with defaulted nodeIndex %s", async (nodeIndex) => {
         const mesh = new Mesh("target", scene);
         const gltf: any = { nodes: [{ _babylonTransformNode: mesh }] };
