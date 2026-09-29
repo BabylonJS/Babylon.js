@@ -19,6 +19,19 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 	{
 		vec3 direction = lightData.xyz - vPositionW;
 
+#if defined(SKIP_OUT_OF_RANGE_LIGHTING) && !defined(NDOTL)
+		// Opt-in (StandardMaterial.skipOutOfRangeLighting): outside the light's range both color terms are zero, so
+		// skip them. Squared distances keep the sqrt and divide off the skipped path. NDOTL callers consume the
+		// unattenuated N dot L and keep the full path.
+		if (dot(direction, direction) >= range * range) {
+			result.diffuse = vec3(0.);
+#ifdef SPECULARTERM
+			result.specular = vec3(0.);
+#endif
+			return result;
+		}
+#endif
+
 		attenuation = max(0., 1.0 - length(direction) / range);
 		lightVectorW = normalize(direction);
 	}
@@ -75,6 +88,17 @@ lightingInfo basicSpotLighting(vec3 viewDirectionW, vec3 lightVectorW, vec3 vNor
 
 lightingInfo computeIESSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness, sampler2D iesLightSampler) {	
 	vec3 direction = lightData.xyz - vPositionW;
+#if defined(SKIP_OUT_OF_RANGE_LIGHTING) && !defined(NDOTL)
+	// Opt-in (StandardMaterial.skipOutOfRangeLighting): see computeLighting.
+	if (dot(direction, direction) >= range * range) {
+		lightingInfo result;
+		result.diffuse = vec3(0.);
+#ifdef SPECULARTERM
+		result.specular = vec3(0.);
+#endif
+		return result;
+	}
+#endif
 	vec3 lightVectorW = normalize(direction);
 	float attenuation = max(0., 1.0 - length(direction) / range);
 
@@ -102,6 +126,17 @@ lightingInfo computeIESSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 ligh
 
 lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec4 lightDirection, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
 	vec3 direction = lightData.xyz - vPositionW;
+#if defined(SKIP_OUT_OF_RANGE_LIGHTING) && !defined(NDOTL)
+	// Opt-in (StandardMaterial.skipOutOfRangeLighting): see computeLighting.
+	if (dot(direction, direction) >= range * range) {
+		lightingInfo result;
+		result.diffuse = vec3(0.);
+#ifdef SPECULARTERM
+		result.specular = vec3(0.);
+#endif
+		return result;
+	}
+#endif
 	vec3 lightVectorW = normalize(direction);
 	float attenuation = max(0., 1.0 - length(direction) / range);
 
