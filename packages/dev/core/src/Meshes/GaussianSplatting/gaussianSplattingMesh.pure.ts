@@ -336,6 +336,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     // Frame counter driving the temporal-upsampling jitter cycle (which full-res sub-cell to sample).
     private _pointFrameCounter = 0;
     private _pointResultReady = false;
+    // Counters of the most recent successful compute dispatch, surfaced by `pointSplattingProgress`. Kept as
+    // separate fields (rather than an object rebuilt every frame) to avoid a per-frame allocation.
+    private _pointProgressFrameCount = 0;
+    private _pointProgressGeneration = -1;
+    private _pointProgressCycleLength = 0;
     // Set once the streaming-unsupported warning has been emitted, so it is not repeated every frame.
     private _pointStreamingWarned = false;
     private _pointRenderer: Nullable<GaussianPointSplattingRenderer> = null;
@@ -696,9 +701,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return null;
         }
         return {
-            renderedFrameCount: this._pointRenderer.renderedFrameCount,
-            accumulationVersion: this._pointRenderer.accumulationVersion,
-            pixelCycleLength: this._pointRenderer.pixelCycleLength,
+            renderedFrameCount: this._pointProgressFrameCount,
+            accumulationVersion: this._pointProgressGeneration,
+            pixelCycleLength: this._pointProgressCycleLength,
         };
     }
 
@@ -1184,17 +1189,22 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 // best-effort target rather than a hard point-count cap.
                 const fullPoints = total * currentN * currentN;
                 const target = Math.max(1, Math.min(8, Math.ceil(Math.sqrt(fullPoints / this._pointBudget()))));
+                // The sample is stale when it came from the unculled reset frame (it over-counts) or when
+                // accumulation moved on mid-readback. Evaluate it before the reset below, which would
+                // otherwise make every sample look stale.
+                const stale = !freeze || renderer.accumulationVersion !== generation;
+                const factorChanged = target !== this._pointAutoN;
                 this._pointAutoN = target;
-                if (!freeze || renderer.accumulationVersion !== generation) {
-                    // The sample came from the unculled reset frame (it over-counts), or accumulation moved on
-                    // mid-readback. Keep it as a hint for the next frame, but leave the generation unmeasured so
-                    // the image that settles is always sized from a culled frame of its own generation.
-                    return;
-                }
-                if (target !== currentN) {
-                    // Frames so far used the provisional factor; restart so the converged image comes from
-                    // `target` alone rather than a mix of two render scales.
+                if (factorChanged) {
+                    // Frames so far used the previous factor; restart so the converged image comes from
+                    // `target` alone rather than a mix of two render scales. `pixelCycleLength` must never
+                    // change inside a generation, so this reset is required for a stale sample too.
                     renderer.resetAccumulation();
+                }
+                if (stale) {
+                    // Keep the factor as a hint for the next frame, but leave the generation unmeasured so the
+                    // image that settles is always sized from a culled frame of its own generation.
+                    return;
                 }
                 // Mark the now-current generation (the reset above created a new one) measured: re-measuring
                 // would only reproduce this estimate. Bounds the whole procedure to one corrective reset.
@@ -1275,6 +1285,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
         this._pointResultReady = true;
+        // Snapshot the counters of this successful dispatch: `pointSplattingProgress` must describe the frame
+        // that was actually rendered, not renderer state that a later accumulation reset has already moved on
+        // from (which would pair a brand-new generation with the previous generation's cycle length).
+        this._pointProgressFrameCount = this._pointRenderer.renderedFrameCount;
+        this._pointProgressGeneration = this._pointRenderer.accumulationVersion;
+        this._pointProgressCycleLength = this._pointRenderer.pixelCycleLength;
 
         // The frame that resets accumulation runs without Hi-Z occlusion culling and therefore emits far more
         // points than the frames that follow it, so its sample may only be used as a hint for the next frame.

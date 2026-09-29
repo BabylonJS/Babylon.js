@@ -60,11 +60,25 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         mesh["_pointMode"] = true;
         expect(mesh.pointSplattingProgress).toBeNull();
         mesh["_pointResultReady"] = true;
+        mesh["_pointProgressFrameCount"] = 12;
+        mesh["_pointProgressGeneration"] = 3;
+        mesh["_pointProgressCycleLength"] = 4;
         expect(mesh.pointSplattingProgress).toEqual({
             renderedFrameCount: 12,
             accumulationVersion: 3,
             pixelCycleLength: 4,
         });
+
+        // A reset that has not been rendered yet must not surface a new generation paired with the counters
+        // of the previous one, which would look like an already-advanced cycle to a polling caller.
+        mesh.pointSplattingRenderScale = 0.5;
+        expect(renderer.accumulationVersion).toBe(4);
+        expect(mesh.pointSplattingProgress).toEqual({
+            renderedFrameCount: 12,
+            accumulationVersion: 3,
+            pixelCycleLength: 4,
+        });
+
         mesh["_pointRenderer"] = null;
         scene.dispose();
         engine.dispose();
@@ -385,7 +399,10 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         await mesh["_pointConvergeAutoScaleAsync"](2, 4, false);
         expect(mesh["_pointAutoN"]).toBe(8);
         expect(mesh["_pointAutoMeasuredGeneration"]).toBe(-1);
-        expect(reset).not.toHaveBeenCalled();
+        // The factor still changed, and the jitter-cycle length may never change inside a generation, so the
+        // hint must restart accumulation even though it cannot fix N for the generation it came from.
+        expect(reset).toHaveBeenCalledTimes(1);
+        expect(renderer.accumulationVersion).toBe(5);
 
         mesh["_pointRenderer"] = null;
         scene.dispose();
@@ -408,11 +425,27 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         finish(1_000_000_000);
         await pending;
         expect(mesh["_pointAutoMeasuredGeneration"]).toBe(-1);
-        expect(renderer.accumulationVersion).toBe(5);
+        // The stale sample cannot fix N for the live generation, but adopting its factor still has to restart
+        // accumulation so the cycle length never changes mid-generation.
+        expect(mesh["_pointAutoN"]).toBe(8);
+        expect(renderer.accumulationVersion).toBe(6);
 
         mesh["_pointRenderer"] = null;
         scene.dispose();
         engine.dispose();
+    });
+
+    it("keeps the cached view-projection when accumulation restarts, so the next frame does not reset again", () => {
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_accumGeneration"] = 2;
+        renderer["_hasPrevVp"] = true;
+
+        renderer.resetAccumulation();
+
+        expect(renderer.accumulationVersion).toBe(3);
+        // `renderToBuffer` treats a missing previous view-projection as a camera move and resets again, which
+        // would mean the generation observed here is never actually rendered.
+        expect(renderer["_hasPrevVp"]).toBe(true);
     });
 
     it("restarts accumulation when the point render scale changes", () => {

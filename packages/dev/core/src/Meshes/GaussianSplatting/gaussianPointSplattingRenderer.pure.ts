@@ -408,10 +408,14 @@ export class GaussianPointSplattingRenderer {
 
     /** Restarts progressive accumulation (e.g. after a camera move, resize, or new data). Bumping the
      * generation invalidates every pixel's accumulated count with no buffer wipe, so each full-res pixel
-     * overwrites cleanly (t=1) on its next visit. */
+     * overwrites cleanly (t=1) on its next visit.
+     *
+     * The cached previous view-projection is deliberately left intact: it only drives camera-move
+     * detection, and clearing it would make the next {@link renderToBuffer} believe the camera moved and
+     * bump the generation a second time, so the generation observed by the caller right after this call
+     * would never actually be rendered. */
     public resetAccumulation(): void {
         this._accumGeneration = (this._accumGeneration + 1) & 0xffff;
-        this._hasPrevVp = false;
     }
 
     /**
