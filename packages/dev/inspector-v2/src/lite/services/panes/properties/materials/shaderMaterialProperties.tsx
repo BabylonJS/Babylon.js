@@ -276,7 +276,7 @@ function SummarizeConfiguration(material: ShaderMaterial): string {
 }
 
 /**
- * Displays Shader material inputs, sampler bindings, and configuration directly.
+ * Displays Shader material properties, sampler bindings, and configuration directly.
  * @param props The selected material section and instance services.
  * @returns Shader material property content.
  */

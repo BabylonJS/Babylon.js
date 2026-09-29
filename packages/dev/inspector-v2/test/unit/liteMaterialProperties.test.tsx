@@ -72,10 +72,10 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
 import { type Material, type SceneContext } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
 
-import { StandardMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/standardMaterialAdapter";
-import { PbrMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/pbrMaterialAdapter";
-import { ShaderMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/shaderMaterialAdapter";
-import { NodeMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/nodeMaterialAdapter";
+import { StandardMaterialAdapter } from "../../src/lite/services/panes/properties/materials/standardMaterialProperties";
+import { PbrMaterialAdapter } from "../../src/lite/services/panes/properties/materials/pbrMaterialProperties";
+import { ShaderMaterialAdapter } from "../../src/lite/services/panes/properties/materials/shaderMaterialProperties";
+import { NodeMaterialAdapter } from "../../src/lite/services/panes/properties/materials/nodeMaterialProperties";
 import { MaterialPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/materialPropertiesService";
 import { type ISceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";

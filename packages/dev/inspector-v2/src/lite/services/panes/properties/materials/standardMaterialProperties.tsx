@@ -127,7 +127,7 @@ const FieldStatus: FunctionComponent<{ label: string; state: DirectOperations["o
 };
 
 /**
- * Lazily loaded Standard material section adapter.
+ * Lazily loaded Standard material section properties.
  * @param props The selected material section and instance services.
  * @returns Standard material property content.
  */

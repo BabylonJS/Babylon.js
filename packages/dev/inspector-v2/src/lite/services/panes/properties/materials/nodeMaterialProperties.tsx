@@ -206,7 +206,7 @@ const NodeTextureField: FunctionComponent<MaterialAdapterProps & { name: string 
 };
 
 /**
- * Displays sorted Node value inputs and texture bindings directly.
+ * Displays sorted Node material properties and texture bindings directly.
  * @param props The selected material section and instance services.
  * @returns Node material property content.
  */

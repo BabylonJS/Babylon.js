@@ -28,8 +28,8 @@ describe("P4 Inspector import boundaries", () => {
         const families = ["standard", "pbr", "shader", "node"] as const;
 
         families.forEach((family) => {
-            expect(materialService).toContain(`import("./materialAdapters/${family}MaterialAdapter")`);
-            expect(materialService).not.toMatch(new RegExp(`^import .*materialAdapters/${family}MaterialAdapter`, "m"));
+            expect(materialService).toContain(`import("./materials/${family}MaterialProperties")`);
+            expect(materialService).not.toMatch(new RegExp(`^import .*materials/${family}MaterialProperties`, "m"));
         });
         expect(textureService).toContain('import("./textureMetadataAdapter")');
         expect(textureService).not.toMatch(/^import .*textureMetadataAdapter/m);
@@ -37,14 +37,14 @@ describe("P4 Inspector import boundaries", () => {
 
     it("keeps Lite lazy adapter sources free of Babylon.js implementation and preview/editor dependencies", () => {
         const sources = [
-            "lite/services/panes/properties/materialAdapters/standardMaterialAdapter.tsx",
-            "lite/services/panes/properties/materialAdapters/pbrMaterialAdapter.tsx",
-            "lite/services/panes/properties/materialAdapters/shaderMaterialAdapter.tsx",
-            "lite/services/panes/properties/materialAdapters/nodeMaterialAdapter.tsx",
-            "lite/services/panes/properties/materialAdapters/materialAdapterTypes.ts",
-            "lite/services/panes/properties/materialAdapters/useDirectMaterialOperations.ts",
-            "lite/services/panes/properties/materialAdapters/directTextureBinding.tsx",
-            "lite/services/panes/properties/materialAdapters/dynamicMaterialField.tsx",
+            "lite/services/panes/properties/materials/standardMaterialProperties.tsx",
+            "lite/services/panes/properties/materials/pbrMaterialProperties.tsx",
+            "lite/services/panes/properties/materials/shaderMaterialProperties.tsx",
+            "lite/services/panes/properties/materials/nodeMaterialProperties.tsx",
+            "lite/services/panes/properties/materials/materialAdapterTypes.ts",
+            "lite/services/panes/properties/materials/useDirectMaterialOperations.ts",
+            "lite/services/panes/properties/materials/directTextureBinding.tsx",
+            "lite/services/panes/properties/materials/dynamicMaterialField.tsx",
             "lite/services/panes/properties/textureMetadataAdapter.tsx",
             "lite/services/panes/properties/useLatestAsyncOperation.ts",
             "lite/services/panes/scene/materialTopologyBindings.ts",
@@ -66,7 +66,7 @@ describe("P4 Inspector import boundaries", () => {
         const materialService = ReadInspectorSource("lite/services/panes/properties/materialPropertiesService.tsx");
         const topology = ReadInspectorSource("lite/services/panes/scene/materialTopologyBindings.ts");
         expect(materialService).not.toMatch(/(?:descriptors\/|materialAdapterCore|directTextureBinding|dynamicMaterialField)/);
-        expect(topology).not.toMatch(/(?:descriptors\/|materialAdapters\/)/);
+        expect(topology).not.toMatch(/(?:descriptors\/|materials\/)/);
     });
 
     it("keeps shared material and texture cores runtime-neutral", () => {
@@ -88,9 +88,9 @@ describe("P4 Inspector import boundaries", () => {
         const textureRow = ReadInspectorSource("components/properties/materials/materialTextureDebugPropertyLine.tsx");
         const textureProperties = ReadInspectorSource("components/properties/textures/baseTextureProperties.tsx");
         const liteSource = ["standard", "pbr", "shader", "node"]
-            .map((family) => ReadInspectorSource(`lite/services/panes/properties/materialAdapters/${family}MaterialAdapter.tsx`))
+            .map((family) => ReadInspectorSource(`lite/services/panes/properties/materials/${family}MaterialProperties.tsx`))
             .join("\n");
-        const dynamicField = ReadInspectorSource("lite/services/panes/properties/materialAdapters/dynamicMaterialField.tsx");
+        const dynamicField = ReadInspectorSource("lite/services/panes/properties/materials/dynamicMaterialField.tsx");
         expect(source).toContain('component={Color3PropertyLine} label="Diffuse Color"');
         expect(source).toContain('component={SyncedSliderPropertyLine} label="Specular Power"');
         expect(source).not.toContain("MaterialPropertySection");

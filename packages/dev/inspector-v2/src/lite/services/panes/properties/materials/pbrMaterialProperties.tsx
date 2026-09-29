@@ -1159,7 +1159,7 @@ function TransmissionPlan(material: Pbr, patch: Partial<RefractionProps>): Plan 
 }
 
 /**
- * Renders PBR value rows and texture bindings directly from Lite.
+ * Renders PBR property rows and texture bindings directly from Lite.
  * @param props The selected PBR material, section, and instance services.
  * @returns The PBR property rows for the requested section.
  */

@@ -8,7 +8,7 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
-import { type MaterialAdapterProps } from "./materialAdapters/materialAdapterTypes";
+import { type MaterialAdapterProps } from "./materials/materialAdapterTypes";
 import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
 
 type SupportedMaterialFamily = "standard" | "pbr" | "shader" | "node";
@@ -19,16 +19,16 @@ type FamilyConfiguration = Readonly<{
     sections: readonly MaterialSection[];
 }>;
 
-const StandardMaterialAdapter = MakeLazyComponent(async () => (await import("./materialAdapters/standardMaterialAdapter")).StandardMaterialAdapter, {
+const StandardMaterialAdapter = MakeLazyComponent(async () => (await import("./materials/standardMaterialProperties")).StandardMaterialAdapter, {
     spinnerLabel: "Loading Standard material properties",
 });
-const PbrMaterialAdapter = MakeLazyComponent(async () => (await import("./materialAdapters/pbrMaterialAdapter")).PbrMaterialAdapter, {
+const PbrMaterialAdapter = MakeLazyComponent(async () => (await import("./materials/pbrMaterialProperties")).PbrMaterialAdapter, {
     spinnerLabel: "Loading PBR material properties",
 });
-const ShaderMaterialAdapter = MakeLazyComponent(async () => (await import("./materialAdapters/shaderMaterialAdapter")).ShaderMaterialAdapter, {
+const ShaderMaterialAdapter = MakeLazyComponent(async () => (await import("./materials/shaderMaterialProperties")).ShaderMaterialAdapter, {
     spinnerLabel: "Loading Shader material properties",
 });
-const NodeMaterialAdapter = MakeLazyComponent(async () => (await import("./materialAdapters/nodeMaterialAdapter")).NodeMaterialAdapter, {
+const NodeMaterialAdapter = MakeLazyComponent(async () => (await import("./materials/nodeMaterialProperties")).NodeMaterialAdapter, {
     spinnerLabel: "Loading Node material properties",
 });
 
