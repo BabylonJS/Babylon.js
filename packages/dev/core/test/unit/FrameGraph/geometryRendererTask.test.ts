@@ -382,6 +382,92 @@ describe("FrameGraphGeometryRendererTask attachment routing", () => {
     });
 });
 
+describe("FrameGraphGeometryRendererTask previous world matrices", () => {
+    let engine: NullEngine;
+    let scene: Scene;
+    let camera: FreeCamera;
+
+    beforeEach(() => {
+        engine = new NullEngine();
+        engine.getCaps().maxDrawBuffers = 8;
+        engine.getCaps().drawBuffersExtension = true;
+        vi.spyOn(engine, "buildTextureLayout").mockImplementation((enabled) => enabled.map((value, index) => (value ? index + 1 : 0)));
+        scene = new Scene(engine);
+        camera = new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
+    });
+
+    const createGraph = (textureTypes: number[]) => {
+        const frameGraph = new FrameGraph(scene);
+        const tasks = textureTypes.map((type, index) => {
+            const task = new FrameGraphGeometryRendererTask(`geometry${index}`, frameGraph, scene);
+            task.camera = camera;
+            task.objectList = { meshes: [], particleSystems: [] };
+            task.textureDescriptions = [{ type, textureType: Constants.TEXTURETYPE_HALF_FLOAT, textureFormat: Constants.TEXTUREFORMAT_RGBA }];
+            frameGraph.addTask(task);
+            vi.spyOn(task, "_initializePasses").mockImplementation(() => {});
+            return task;
+        });
+        vi.spyOn(frameGraph.textureManager, "_allocateTextures").mockImplementation(() => {});
+        return { frameGraph, tasks };
+    };
+
+    it.each([
+        [Constants.PREPASS_VELOCITY_TEXTURE_TYPE, Constants.PREPASS_NORMAL_TEXTURE_TYPE],
+        [Constants.PREPASS_NORMAL_TEXTURE_TYPE, Constants.PREPASS_VELOCITY_TEXTURE_TYPE],
+        [Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE, Constants.PREPASS_NORMAL_TEXTURE_TYPE],
+        [Constants.PREPASS_NORMAL_TEXTURE_TYPE, Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE],
+    ])("keeps previous matrices with texture types %i and %i", async (firstType, secondType) => {
+        const { frameGraph, tasks } = createGraph([firstType, secondType]);
+
+        await frameGraph.buildAsync(false);
+        expect(scene.needsPreviousWorldMatrices).toBe(true);
+
+        tasks[0].textureDescriptions[0].type = Constants.PREPASS_NORMAL_TEXTURE_TYPE;
+        tasks[1].textureDescriptions[0].type = Constants.PREPASS_NORMAL_TEXTURE_TYPE;
+        await frameGraph.buildAsync(false);
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
+    });
+
+    it("keeps previous matrices while another frame graph still requests velocity", async () => {
+        const { frameGraph: velocityGraph } = createGraph([Constants.PREPASS_VELOCITY_TEXTURE_TYPE]);
+        const { frameGraph: otherGraph } = createGraph([Constants.PREPASS_NORMAL_TEXTURE_TYPE]);
+
+        await velocityGraph.buildAsync(false);
+        await otherGraph.buildAsync(false);
+        expect(scene.needsPreviousWorldMatrices).toBe(true);
+
+        otherGraph.clear();
+        expect(scene.needsPreviousWorldMatrices).toBe(true);
+
+        velocityGraph.dispose();
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
+    });
+
+    it("clears previous matrix requests when the frame graph is cleared or fails to build", async () => {
+        const { frameGraph, tasks } = createGraph([Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE, Constants.PREPASS_NORMAL_TEXTURE_TYPE]);
+
+        await frameGraph.buildAsync(false);
+        expect(scene.needsPreviousWorldMatrices).toBe(true);
+
+        frameGraph.clear();
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
+
+        frameGraph.addTask(tasks[0]);
+        frameGraph.addTask(tasks[1]);
+        tasks[1].samples = 2;
+        tasks[1].textureDescriptions = [
+            { type: Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE, textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE, textureFormat: Constants.TEXTUREFORMAT_RGBA },
+        ];
+        await expect(frameGraph.buildAsync(false)).rejects.toThrow("object ID textures currently require samples to be 1");
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
+    });
+});
+
 describe("FrameGraphGeometryRendererTask mesh-blending tags", () => {
     let engine: NullEngine;
     let scene: Scene;

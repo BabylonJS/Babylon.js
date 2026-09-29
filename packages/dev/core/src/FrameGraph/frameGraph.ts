@@ -43,6 +43,7 @@ export class FrameGraph implements IDisposable {
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
     private _importPromise: Promise<void>;
+    private _needsPreviousWorldMatrices = false;
 
     /**
      * Name of the frame graph
@@ -190,6 +191,15 @@ export class FrameGraph implements IDisposable {
         this._initAsyncPromises.push(task.initAsync());
     }
 
+    /** @internal */
+    public _requestPreviousWorldMatrices(): void {
+        this._needsPreviousWorldMatrices = true;
+    }
+
+    private _updateSceneNeedsPreviousWorldMatrices(): void {
+        this._scene.needsPreviousWorldMatrices = this._scene.frameGraphs.some((graph) => graph._needsPreviousWorldMatrices);
+    }
+
     /**
      * Adds a pass to a task. This method can only be called during a Task.record execution.
      * @param name The name of the pass
@@ -267,6 +277,7 @@ export class FrameGraph implements IDisposable {
 
             await this._whenAsynchronousInitializationDoneAsync();
 
+            this._needsPreviousWorldMatrices = false;
             for (const task of this._tasks) {
                 task._reset();
 
@@ -278,6 +289,8 @@ export class FrameGraph implements IDisposable {
                 this.textureManager._isRecordingTask = false;
                 this._currentProcessedTask = null;
             }
+
+            this._updateSceneNeedsPreviousWorldMatrices();
 
             this.textureManager._allocateTextures(this.optimizeTextureAllocation ? this._tasks : undefined);
 
@@ -302,6 +315,8 @@ export class FrameGraph implements IDisposable {
             this._tasks.length = 0;
             this._currentProcessedTask = null;
             this.textureManager._isRecordingTask = false;
+            this._needsPreviousWorldMatrices = false;
+            this._updateSceneNeedsPreviousWorldMatrices();
             throw e;
         } finally {
             this.pausedExecution = false;
@@ -407,6 +422,8 @@ export class FrameGraph implements IDisposable {
         }
 
         this._tasks.length = 0;
+        this._needsPreviousWorldMatrices = false;
+        this._updateSceneNeedsPreviousWorldMatrices();
         this.textureManager._releaseTextures();
         this._currentProcessedTask = null;
     }
