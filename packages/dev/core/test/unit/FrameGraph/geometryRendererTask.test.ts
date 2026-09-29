@@ -4,6 +4,8 @@ import "core/Meshes/instancedMesh";
 import "core/Meshes/thinInstanceMesh";
 import "core/Shaders/default.fragment";
 import "core/Shaders/default.vertex";
+import "core/Shaders/geometry.fragment";
+import "core/Shaders/geometry.vertex";
 import { objectIdFunctions } from "core/Shaders/ShadersInclude/objectIdFunctions";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Constants } from "core/Engines/constants";
