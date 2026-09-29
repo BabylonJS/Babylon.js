@@ -338,7 +338,7 @@ export class PolygonMeshBuilder {
 
             const vcNorm = vc.normalizeToNew();
             let vpNorm = vp.normalizeToNew();
-            let vnNorm: Vector3;
+            let vnNorm = vn.normalizeToNew();
 
             const dotp = Vector3.Dot(vpNorm, vcNorm);
             if (dotp > smoothingThreshold) {
@@ -352,7 +352,7 @@ export class PolygonMeshBuilder {
                 vpNorm = vcNorm;
             }
 
-            const dotn = Vector3.Dot(vn, vc);
+            const dotn = Vector3.Dot(vnNorm, vcNorm);
             if (dotn > smoothingThreshold) {
                 if (dotn < Epsilon - 1) {
                     // back to back

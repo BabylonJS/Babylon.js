@@ -1707,7 +1707,7 @@ export abstract class AbstractEngine {
                 }
 
                 message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
-                texture.onErrorObservable.notifyObservers({ message, exception });
+                texture._setError(message, exception);
                 if (onError) {
                     onError(message, exception);
                 }
@@ -1996,14 +1996,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.27.0";
+        return "babylonjs@9.28.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.27.0";
+        return "9.28.0";
     }
 
     /**
@@ -2527,6 +2527,9 @@ export abstract class AbstractEngine {
     public _renderPassNames: string[] = ["main"];
 
     /** @internal */
+    public _onReleaseRenderPassObservable: Nullable<Observable<number>> = null;
+
+    /** @internal */
     public abstract _createHardwareTexture(): IHardwareTextureWrapper;
 
     /**
@@ -2835,6 +2838,8 @@ export abstract class AbstractEngine {
         // Observables
         this.onBeginFrameObservable.clear();
         this.onEndFrameObservable.clear();
+        this._onReleaseRenderPassObservable?.clear();
+        this._onReleaseRenderPassObservable = null;
     }
 
     /**

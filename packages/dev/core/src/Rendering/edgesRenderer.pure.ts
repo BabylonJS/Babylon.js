@@ -10,6 +10,7 @@ import { type Matrix } from "../Maths/math.vector";
 import { type IDisposable, type Scene } from "../scene.pure";
 import { type Observer } from "../Misc/observable.pure";
 import { Material } from "../Materials/material.pure";
+import { MaterialHelperGeometryRendering } from "../Materials/materialHelper.geometryrendering";
 import { ShaderMaterial } from "../Materials/shaderMaterial.pure";
 import { Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
@@ -876,6 +877,12 @@ export class EdgesRenderer implements IEdgesRenderer {
      */
     public render(): void {
         const scene = this._source.getScene();
+        if (!MaterialHelperGeometryRendering._BindColorAttachments(scene.getEngine())) {
+            if (!scene._activeMeshesFrozen) {
+                this.customInstances.reset();
+            }
+            return;
+        }
         const floatingOriginOffset = scene.floatingOriginOffset;
 
         const currentDrawWrapper = this._lineShader._getDrawWrapper();

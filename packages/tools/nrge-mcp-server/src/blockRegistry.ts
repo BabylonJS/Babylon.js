@@ -30,7 +30,7 @@
  *
  * Non-texture types:
  *   Camera       – a Babylon.js Camera object (provided by an InputBlock)
- *   ObjectList   – a set of meshes/particle-systems (provided by InputBlock or CullObjects)
+ *   ObjectList   – a set of meshes, particle systems, and sprite managers (provided by InputBlock or CullObjects)
  *   ShadowLight  – a shadow-casting light (provided by an InputBlock)
  *   ShadowGenerator – output of a shadow-generator block
  *   ResourceContainer – groups multiple texture handles for dependency tracking
@@ -104,6 +104,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             "The type is determined by `additionalConstructionParameters[0]` (a NodeRenderGraphBlockConnectionPointTypes enum value). " +
             "Common type values: Texture=1, TextureDepthStencilAttachment=8, Camera=0x01000000, ObjectList=0x02000000, ShadowLight=0x00400000. " +
             "Set `isExternal=true` so Babylon auto-fills the value from the scene at build time. " +
+            "For ObjectList values, omitted or null `spriteManagers` means all scene managers; an empty array means none. " +
             "For texture inputs you must provide `creationOptions` with size/format/samples; " +
             "use the `set_block_properties` tool to set these fields after adding the block.",
         inputs: [],
@@ -194,10 +195,11 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         className: "NodeRenderGraphObjectRendererBlock",
         category: "Rendering",
         description:
-            "Renders a list of scene objects (meshes, particles) to a colour target using a camera. " +
+            "Renders a list of scene objects (meshes, particle systems, and sprite managers) to a colour target using a camera. " +
             "This is the primary rasterisation block — almost every graph needs one. " +
             "Connect a cleared colour texture to `target`, a depth attachment to `depth`, " +
             "a Camera input to `camera`, and a (possibly culled) ObjectList to `objects`. " +
+            "When `ObjectList.spriteManagers` is omitted or null, all scene sprite managers are rendered; an empty array renders none. " +
             "Optional `shadowGenerators` port accepts a ShadowGenerator or ResourceContainer of shadow generators.",
         inputs: [
             { name: "target", type: "AutoDetect" },
@@ -232,6 +234,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         description:
             "Renders scene geometry into a multi-render target (G-Buffer), producing typed geometry textures " +
             "(view-depth, normals, albedo, reflectivity, positions, velocity, etc.). " +
+            "Supports Gaussian splats and optional sprite/particle geometry. Bounding boxes, edges, and outlines/overlays contribute only to colour. " +
+            "When `ObjectList.spriteManagers` is omitted or null, all scene sprite managers are rendered; an empty array renders none. " +
             "Use these outputs as inputs for deferred shading techniques such as SSR, SSAO, or custom deferred passes. " +
             "The `target` port for the colour attachment is OPTIONAL for this block.",
         inputs: [
@@ -267,6 +271,10 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             depthTest: "boolean",
             depthWrite: "boolean",
             width: "number – G-buffer width in pixels (or percentage when sizeInPercentage=true)",
+            renderParticles: "boolean - render particle systems and their geometry outputs (default: false)",
+            renderSprites: "boolean - render selected sprite managers and their geometry outputs (default: false)",
+            enableBoundingBoxRendering: "boolean - render bounding boxes into colour only (default: false)",
+            enableOutlineRendering: "boolean - render mesh outlines/overlays into colour only (default: false)",
             height: "number – G-buffer height",
             sizeInPercentage: "boolean – use width/height as screen percentage (default: true)",
             samples: "number – MSAA sample count (default: 1)",
@@ -354,7 +362,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "Culling",
         description:
             "Culls an ObjectList using a camera frustum and returns a reduced ObjectList " +
-            "containing only the visible objects. " +
+            "containing only the visible meshes while preserving its particle systems and sprite managers. " +
+            "An omitted or null `spriteManagers` selection means all scene managers; an empty array means none. " +
             "Use this before passing objects to an ObjectRendererBlock for better performance.",
         inputs: [
             { name: "camera", type: "Camera" },

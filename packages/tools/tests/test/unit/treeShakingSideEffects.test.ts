@@ -17,6 +17,7 @@
 
 import { writeFileSync, mkdirSync, readFileSync, rmSync, statSync, existsSync } from "fs";
 import { join, resolve } from "path";
+import { expect, it } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -118,6 +119,10 @@ function ensureDir(dir: string) {
     mkdirSync(dir, { recursive: true });
 }
 
+function normalizeModuleId(id: string): string {
+    return id.replace(/\\/g, "/");
+}
+
 function readBundleOutput(filePath: string): { content: string; size: number } {
     if (!existsSync(filePath)) {
         throw new Error(`Expected bundle output was not emitted: ${filePath}`);
@@ -141,19 +146,23 @@ async function bundleWithRollup(name: string, entryCode: string, distDir: string
     const entryPath = join(TMP_DIR, `${name}-entry.mjs`);
     const outPath = join(TMP_DIR, `${name}-rollup-out.mjs`);
     writeFileSync(entryPath, entryCode);
+    const entryId = normalizeModuleId(entryPath);
+    const moduleRoot = normalizeModuleId(distDir) + "/";
 
     const bundle = await rollup({
         input: entryPath,
         external: (id: string, importer?: string) => {
-            if (id === entryPath) return false;
-            if (id.startsWith(distDir)) return false;
+            id = normalizeModuleId(id);
+            if (id === entryId) return false;
+            if (id.startsWith(moduleRoot)) return false;
             // Relative imports (./  ../) from files inside distDir are internal
-            if ((id.startsWith("./") || id.startsWith("../")) && importer && importer.startsWith(distDir)) return false;
+            if ((id.startsWith("./") || id.startsWith("../")) && importer && normalizeModuleId(importer).startsWith(moduleRoot)) return false;
             // Allow following relative imports inside core dist
             return true;
         },
         treeshake: {
             moduleSideEffects: (id: string) => {
+                id = normalizeModuleId(id);
                 // Mirror package.json sideEffects: .pure.js and /pure.js and .functions.js are side-effect-free
                 if (id.endsWith(".pure.js")) return false;
                 if (id.endsWith("/pure.js")) return false;
@@ -626,11 +635,17 @@ const TEST_CASE_TEMPLATES: SideEffectTestCase[] = [
 
 /** Resolve %DIST% placeholders for a specific package. */
 function resolveTestCases(distDir: string): SideEffectTestCase[] {
+    const escapedModuleRoot = JSON.stringify(normalizeModuleId(distDir)).slice(1, -1);
     return TEST_CASE_TEMPLATES.map((t) => ({
         ...t,
-        entryCode: t.entryCode.replace(/%DIST%/g, distDir),
+        entryCode: t.entryCode.replace(/%DIST%/g, () => escapedModuleRoot),
     }));
 }
+
+it("preserves Windows module paths and replacement characters in generated fixtures", () => {
+    const testCase = resolveTestCases("D:\\work with spaces\\$&\\core")[0];
+    expect(testCase.entryCode).toContain('"D:/work with spaces/$&/core/');
+});
 
 // ---------------------------------------------------------------------------
 // Test suite

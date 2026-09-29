@@ -279,6 +279,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             label="Number of particle systems"
                             value={objectList.particleSystems ? "" + objectList.particleSystems.length : "Unknown (particle systems from the scene)"}
                         />
+                        <TextLineComponent
+                            label="Number of sprite managers"
+                            value={objectList.spriteManagers ? "" + objectList.spriteManagers.length : "Unknown (sprite managers from the scene)"}
+                        />
                     </>
                 );
             }

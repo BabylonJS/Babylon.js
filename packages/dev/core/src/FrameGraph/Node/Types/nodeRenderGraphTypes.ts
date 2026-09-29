@@ -113,7 +113,7 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     ShadowLight = 0x00400000,
     /** Camera */
     Camera = 0x01000000,
-    /** List of objects (meshes, particle systems, sprites) */
+    /** List of objects (meshes, particle systems, sprite managers) */
     ObjectList = 0x02000000,
 
     /** Detect type based on connection */

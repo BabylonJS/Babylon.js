@@ -732,6 +732,10 @@ function ProcessLateAnimationBindings(scene: Scene): void {
                             } else {
                                 finalValue = originalAnimation.currentValue * scale;
                             }
+                        } else if ((holder.animations.length > 1 || holder.additiveAnimations.length > 0) && originalAnimation.currentValue.clone) {
+                            // Copied rather than aliased: the entries that follow add into finalValue, and one of them
+                            // may be this very animation, whose current value must not add into itself.
+                            finalValue = originalAnimation.currentValue.clone();
                         } else {
                             finalValue = originalAnimation.currentValue;
                         }
@@ -894,6 +898,35 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
     }
 
     sceneClass.prototype._animate = function (customDeltaTime?: number): void {
+        // The records the last step's bindings processed have been read by now and must not outlive that step. Those
+        // made since - between steps, with bindings still pending - move to the front and stay.
+        //
+        // A direct write registered no binding: it is held over one step, to be read there in the order the bindings
+        // resolve, and released by the next. Without that bound a step that returns early - its animations disabled, or
+        // nothing active to animate - would hold every record it has while writes made between steps kept arriving, as
+        // they do from an animation group sampling a virtual timeline. A weighted write is held for as long as the
+        // binding it registered is pending, however many steps pass before one processes it.
+        const writes = this._animationWrites;
+        const count = this._animationWriteCount;
+        let kept = 0;
+        for (let index = this._animationStepWriteCount; index < count; index++) {
+            const write = writes[index];
+            if (write.carried && write.weight === -1) {
+                continue;
+            }
+            write.carried = true;
+            writes[index] = writes[kept];
+            writes[kept] = write;
+            kept++;
+        }
+        for (let index = kept; index < count; index++) {
+            const write = writes[index];
+            write.runtimeAnimation = null;
+            write.target = null;
+        }
+        this._animationWriteCount = kept;
+        this._animationStepWriteCount = 0;
+        this._animationStepEvaluated = false;
         if (!this.animationsEnabled) {
             return;
         }
@@ -917,6 +950,7 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
 
         this._animationTime += this.deltaTime;
         const animationTime = this._animationTime;
+        this._animationStepEvaluated = true;
 
         for (let index = 0; index < animatables.length; index++) {
             const animatable = animatables[index];
@@ -928,6 +962,7 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
 
         // Late animation bindings
         ProcessLateAnimationBindings(this);
+        this._animationStepWriteCount = this._animationWriteCount;
     };
 
     sceneClass.prototype.sortActiveAnimatables = function (): void {

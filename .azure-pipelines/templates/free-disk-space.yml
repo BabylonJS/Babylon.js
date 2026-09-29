@@ -4,10 +4,10 @@
 # The ubuntu-latest image ships with ~40 GB of preinstalled toolchains that a
 # JS/TS monorepo never uses (Android SDK, .NET, GHC/Haskell, CodeQL, Swift,
 # prebuilt Docker images, ...). Combined with a full-history checkout
-# (fetchDepth: 0) and the restored npm/Nx/Playwright caches, the OS disk (`/`)
-# can hit >95% usage BEFORE the build even starts. The first step that needs to
-# write a large file then dies with "No space left on device" — most visibly
-# the Cache@2 tasks, which fail while writing their tar archive.
+# (fetchDepth: 0), restored npm/Playwright caches, and build outputs, the OS
+# disk (`/`) can hit >95% usage. The first step that needs to write a large file
+# then dies with "No space left on device" — most visibly the Cache@2 tasks,
+# which fail while writing their tar archive.
 #
 # Deleting the unused toolchains up front frees ~25-40 GB and makes the caches
 # and build outputs fit. Every removal is best-effort (|| true) so a changed

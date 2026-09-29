@@ -6,7 +6,7 @@ import { type Observer, Observable } from "../Misc/observable.pure";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
 
-import { type Effect } from "../Materials/effect.pure";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect.pure";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { type IDisposable, type Scene } from "../scene.pure";
@@ -73,6 +73,7 @@ import {
     _ProcessVelocityGradients,
 } from "./thinParticleSystem.function";
 import { type _IExecutionQueueItem, _ConnectAfter, _ConnectBefore, _RemoveFromQueue } from "./Queue/executionQueue";
+import { MaterialHelperGeometryRendering } from "../Materials/materialHelper.geometryrendering";
 
 /**
  * This represents a thin particle system in Babylon.
@@ -191,6 +192,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _linesIndexBuffer: Nullable<DataBuffer>;
     private _linesIndexBufferUseInstancing: Nullable<DataBuffer>;
     private _drawWrappers: DrawWrapper[][]; // first index is render pass id, second index is blend mode
+    private _renderPassObserver: Nullable<Observer<number>> = null;
     /** @internal */
     public _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     /** @internal */
@@ -1868,6 +1870,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             defines.push("#define BLENDMULTIPLYMODE");
         }
 
+        if (this.isLocal) {
+            defines.push("#define LOCAL");
+        }
+
         if (this._useRampGradients) {
             defines.push("#define RAMPGRADIENT");
         }
@@ -1943,9 +1949,22 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         // Effect
         const currentRenderPassId = this._engine._features.supportRenderPasses ? this._engine.currentRenderPassId : Constants.RENDERPASS_MAIN;
+        const geometryRendering = MaterialHelperGeometryRendering._PrepareStringDefines(currentRenderPassId, defines);
+        const geometryRenderingConfiguration = geometryRendering ? MaterialHelperGeometryRendering.GetConfiguration(currentRenderPassId) : undefined;
         let drawWrappers = this._drawWrappers[currentRenderPassId];
         if (!drawWrappers) {
             drawWrappers = this._drawWrappers[currentRenderPassId] = [];
+            if (currentRenderPassId !== Constants.RENDERPASS_MAIN && !this._renderPassObserver) {
+                this._renderPassObserver = (this._engine._onReleaseRenderPassObservable ??= new Observable<number>()).add((id) => {
+                    const releasedWrappers = this._drawWrappers[id];
+                    if (releasedWrappers) {
+                        for (const wrapper of releasedWrappers) {
+                            wrapper?.dispose();
+                        }
+                        delete this._drawWrappers[id];
+                    }
+                });
+            }
         }
         let drawWrapper = drawWrappers[blendMode];
         if (!drawWrapper) {
@@ -1963,25 +1982,51 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             const samplers: Array<string> = [];
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
+            if (geometryRendering) {
+                effectCreationOption.push("cameraInfo", "objectId", "meshBlendTag", "geometryZeroAlphaDiscard");
+                if (this.isLocal && geometryRenderingConfiguration?.defines.PREPASS_LOCAL_POSITION_INDEX !== undefined) {
+                    effectCreationOption.push("inverseEmitterWM", "geometryWorldOffset");
+                }
+            }
 
             drawWrapper.setEffect(
                 this._engine.createEffect(
                     "particles",
-                    attributesNamesOrOptions,
-                    effectCreationOption,
-                    samplers,
-                    join,
-                    undefined,
-                    undefined,
-                    undefined,
-                    undefined,
-                    this._shaderLanguage
+                    <IEffectCreationOptions>{
+                        attributes: attributesNamesOrOptions,
+                        uniformsNames: effectCreationOption,
+                        samplers,
+                        defines: join,
+                        shaderLanguage: this._shaderLanguage,
+                        multiTarget: geometryRendering,
+                        indexParameters: geometryRendering ? { buffersCount: geometryRenderingConfiguration?._mrtCount ?? 0 } : undefined,
+                    },
+                    this._engine
                 ),
                 join
             );
         }
 
         return drawWrapper;
+    }
+
+    private _bindGeometryRendering(effect: Effect): void {
+        const renderPassId = this._engine._features.supportRenderPasses ? this._engine.currentRenderPassId : Constants.RENDERPASS_MAIN;
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(renderPassId);
+        if (!configuration?._defines) {
+            return;
+        }
+
+        effect.setFloat("objectId", 0);
+        effect.setInt("meshBlendTag", 0);
+
+        const camera = this._scene?.activeCamera;
+        effect.setFloat2("cameraInfo", camera?.minZ ?? 0, camera?.maxZ ?? 1);
+        if (this.isLocal && configuration.defines.PREPASS_LOCAL_POSITION_INDEX !== undefined) {
+            effect.setMatrix("inverseEmitterWM", this._emitterInverseWorldMatrix);
+            const renderOffset = this.worldOffset.subtractToRef(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly, TmpVectors.Vector3[0]);
+            effect.setVector3("geometryWorldOffset", renderOffset);
+        }
     }
 
     /**
@@ -2218,7 +2263,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         const viewMatrix = this.defaultViewMatrix ?? this._scene!.getViewMatrix();
         effect.setTexture("diffuseSampler", this.particleTexture);
         effect.setMatrix("view", viewMatrix);
-        effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
+        const projectionMatrix = this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix();
+        effect.setMatrix("projection", projectionMatrix);
 
         if (this._isAnimationSheetEnabled && this.particleTexture) {
             const baseSize = this.particleTexture.getBaseSize();
@@ -2256,6 +2302,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             effect.setMatrix("invView", TmpVectors.Matrix[0]);
         }
 
+        if (effect._multiTarget) {
+            this._bindGeometryRendering(effect);
+        }
+
         if (this._vertexArrayObject !== undefined) {
             if (this._scene?.forceWireframe) {
                 engine.bindBuffers(this._vertexBuffers, this._linesIndexBufferUseInstancing, effect);
@@ -2288,25 +2338,34 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         // Draw order
         this._setEngineBasedOnBlendMode(blendMode);
 
-        if (this._onBeforeDrawParticlesObservable) {
-            this._onBeforeDrawParticlesObservable.notifyObservers(effect);
+        if (effect._multiTarget) {
+            MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
+        }
+        let rendered = false;
+        try {
+            if (MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, effect)) {
+                if (this._onBeforeDrawParticlesObservable) {
+                    this._onBeforeDrawParticlesObservable.notifyObservers(effect);
+                }
+
+                if (this._useInstancing) {
+                    if (this._scene?.forceWireframe) {
+                        engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
+                    } else {
+                        engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
+                    }
+                } else if (this._scene?.forceWireframe) {
+                    engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 10);
+                } else {
+                    engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 6);
+                }
+                rendered = true;
+            }
+        } finally {
+            MaterialHelperGeometryRendering._RestoreAttachments(engine);
         }
 
-        if (this._useInstancing) {
-            if (this._scene?.forceWireframe) {
-                engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
-            } else {
-                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length);
-            }
-        } else {
-            if (this._scene?.forceWireframe) {
-                engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 10);
-            } else {
-                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (this._useFixedCapacityForSnapshot ? this._capacity : this._particles.length) * 6);
-            }
-        }
-
-        return this._particles.length;
+        return rendered ? this._particles.length : 0;
     }
 
     /**
@@ -2354,6 +2413,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * @param disposeEndSubEmitters defines if the end type sub-emitters must be disposed as well (false by default)
      */
     public dispose(disposeTexture = true, disposeAttachedSubEmitters = false, disposeEndSubEmitters = false): void {
+        this._engine._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
+        this._renderPassObserver = null;
         this.resetDrawCache();
 
         if (this._vertexBuffer) {

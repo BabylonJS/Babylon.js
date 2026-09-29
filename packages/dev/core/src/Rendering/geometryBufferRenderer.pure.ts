@@ -293,6 +293,7 @@ export class GeometryBufferRenderer {
 
         this._linkedWithPrePass = true;
         this._prePassRenderer = prePassRenderer;
+        this._scene._setPreviousWorldMatricesRequired(this, false);
 
         if (this._multiRenderTarget) {
             // prevents clearing of the RT since it's done by prepass
@@ -329,6 +330,7 @@ export class GeometryBufferRenderer {
         this._enableObjectId = false;
         this._enableMeshBlendTag = false;
         this._attachmentsFromPrePass = [];
+        this._scene._setPreviousWorldMatricesRequired(this, false);
     }
 
     /**
@@ -521,8 +523,6 @@ export class GeometryBufferRenderer {
             this.dispose();
             this._createRenderTargets();
         }
-
-        this._scene.needsPreviousWorldMatrices = enable;
     }
 
     /**
@@ -1259,6 +1259,7 @@ export class GeometryBufferRenderer {
      * Disposes the renderer and frees up associated resources.
      */
     public dispose(): void {
+        this._scene._setPreviousWorldMatricesRequired(this, false);
         if (this._resizeObserver) {
             const engine = this._scene.getEngine();
             engine.onResizeObservable.remove(this._resizeObserver);
@@ -1405,6 +1406,7 @@ export class GeometryBufferRenderer {
         if (!this.isSupported) {
             return;
         }
+        this._scene._setPreviousWorldMatricesRequired(this, !this._linkedWithPrePass && (this._enableVelocity || this._enableVelocityLinear));
         this._multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._multiRenderTarget.refreshRate = 1;

@@ -1142,6 +1142,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._material.backFaceCulling = false;
         this._material.cullBackFaces = false;
         value.resetDrawCache();
+        this._cameraViewInfos?.forEach((cameraViewInfo) => {
+            cameraViewInfo.mesh.material = value;
+        });
     }
 
     /**
@@ -1441,7 +1444,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
                 cameraMesh.doNotSerialize = true;
                 // not visible with inspector or the scene graph
-                cameraMesh.reservedDataStore = { hidden: true };
+                cameraMesh.reservedDataStore = { hidden: true, _gaussianSplattingSourceMesh: this };
                 cameraMesh.setEnabled(false);
                 cameraMesh.material = this.material;
                 if (cameraMesh.material && cameraMesh.material instanceof GaussianSplattingMaterial) {
@@ -2832,11 +2835,11 @@ export class GaussianSplattingMeshBase extends Mesh {
         const textureSize = this._getTextureSize(this._vertexCount);
         // Update the textures
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
         };
 
         const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
         const createEmptyTextureU32 = (width: number, height: number, format: number) => {
@@ -2844,7 +2847,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         };
 
         const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
         };
 
         const firstTime = this._covariancesATexture === null;
