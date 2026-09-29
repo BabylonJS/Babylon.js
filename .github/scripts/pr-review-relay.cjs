@@ -66,7 +66,7 @@ function makeDispatchPayload(eventName, event, pullRequest) {
         source_repository: SOURCE_REPOSITORY,
         pr_number: prNumber,
         kind,
-        event_id: subject.id,
+        event_id: kind === "review_comment" && positiveId(reviewId) ? `review:${reviewId}` : `${kind}:${subject.id}`,
         review_id: positiveId(reviewId) ? reviewId : null,
         source_comment_id: kind === "review" ? null : subject.id,
         head_sha: pullRequest.head.sha,

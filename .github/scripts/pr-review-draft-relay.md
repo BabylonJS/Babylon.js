@@ -10,4 +10,6 @@ Before merging/enabling the relay:
 
 The relay rejects bot and PR-author comments; the private worker must independently revalidate all event IDs, author identity, PR head SHA, review freshness, and publication state. Fork PR code must be treated as untrusted data, never executed in a privileged job. Missing credentials fail eligible events explicitly instead of producing a success-shaped result. Avoid posting draft replies, creating pending reviews, or changing the PR branch before the author manually approves and applies a proposal.
 
+The relay assigns the same `review:<review_id>` event ID to a submitted review and each of its inline comments, so the private worker can analyze the full review batch and avoid multiple notices for one submission. Standalone PR conversation comments use `issue_comment:<comment_id>`.
+
 References: [GitHub Actions review/comment events](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows), [repository dispatch permissions](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event), [Actions artifact access](https://docs.github.com/en/rest/actions/artifacts).

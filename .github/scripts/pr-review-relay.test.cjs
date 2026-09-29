@@ -25,7 +25,7 @@ test("relays an inline review comment without its body", () => {
         source_repository: SOURCE_REPOSITORY,
         pr_number: 42,
         kind: "review_comment",
-        event_id: 100,
+        event_id: "review:200",
         review_id: 200,
         source_comment_id: 100,
         head_sha: "a".repeat(40),
@@ -35,8 +35,20 @@ test("relays an inline review comment without its body", () => {
 test("relays a submitted review and top-level PR comment", () => {
     const review = { repository, sender, action: "submitted", pull_request: { number: 42 }, review: { id: 201, user: reviewer } };
     const comment = { repository, sender, action: "created", issue: { number: 42, pull_request: {} }, comment: { id: 301, user: reviewer } };
-    assert.equal(makeDispatchPayload("pull_request_review", review, pullRequest).review_id, 201);
-    assert.equal(makeDispatchPayload("issue_comment", comment, pullRequest).event_id, 301);
+    assert.equal(makeDispatchPayload("pull_request_review", review, pullRequest).event_id, "review:201");
+    assert.equal(makeDispatchPayload("issue_comment", comment, pullRequest).event_id, "issue_comment:301");
+});
+
+test("coalesces the submitted review and its inline comments under one event ID", () => {
+    const review = { repository, sender, action: "submitted", pull_request: { number: 42 }, review: { id: 200, user: reviewer } };
+    const comment = {
+        repository,
+        sender,
+        action: "created",
+        pull_request: { number: 42 },
+        comment: { id: 100, pull_request_review_id: 200, user: reviewer },
+    };
+    assert.equal(makeDispatchPayload("pull_request_review", review, pullRequest).event_id, makeDispatchPayload("pull_request_review_comment", comment, pullRequest).event_id);
 });
 
 test("ignores regular issue comments, own comments, bot comments, and unrelated events", () => {
