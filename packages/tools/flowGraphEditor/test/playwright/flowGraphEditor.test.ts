@@ -1592,7 +1592,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         const fileScene = await GetSceneContextSnapshot(page);
         expect(fileScene?.sceneUid).not.toBe(defaultScene?.sceneUid);
         await expect(page.getByRole("button", { name: "New behavior" })).toBeDisabled();
-        await expect(page.getByRole("button", { name: "New behavior" })).toHaveAttribute("title", /imported scene files/i);
+        await expect(page.getByRole("button", { name: "New behavior" })).toHaveAttribute("title", /drop a GLB.*without changing its source scene data/i);
 
         await ClickGraphControl(page, "Reset");
         await WaitForGraphState(page, "Stopped");
