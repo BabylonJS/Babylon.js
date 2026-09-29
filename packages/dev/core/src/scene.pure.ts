@@ -1453,10 +1453,36 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return !!this.prePassRenderer && this.prePassRenderer.defaultRT.enabled;
     }
 
+    private _needsPreviousWorldMatrices = false;
+    private _manualPreviousWorldMatrices = false;
+    private readonly _previousWorldMatricesOwners = new Set<object>();
+
     /**
-     * Flag indicating if we need to store previous matrices when rendering
+     * Flag indicating if we need to store previous matrices when rendering.
+     * Setting it directly controls the manual requirement; renderers can independently request previous matrices.
      */
-    public needsPreviousWorldMatrices = false;
+    public get needsPreviousWorldMatrices(): boolean {
+        return this._needsPreviousWorldMatrices;
+    }
+
+    public set needsPreviousWorldMatrices(value: boolean) {
+        this._manualPreviousWorldMatrices = value;
+        this._needsPreviousWorldMatrices = value || this._previousWorldMatricesOwners.size > 0;
+    }
+
+    /**
+     * @internal
+     * @param owner The renderer or frame graph requesting previous world matrices
+     * @param required Whether that owner still needs previous world matrices
+     */
+    public _setPreviousWorldMatricesRequired(owner: object, required: boolean): void {
+        if (required) {
+            this._previousWorldMatricesOwners.add(owner);
+        } else {
+            this._previousWorldMatricesOwners.delete(owner);
+        }
+        this._needsPreviousWorldMatrices = this._manualPreviousWorldMatrices || this._previousWorldMatricesOwners.size > 0;
+    }
 
     // Lights
     private _shadowsEnabled = true;

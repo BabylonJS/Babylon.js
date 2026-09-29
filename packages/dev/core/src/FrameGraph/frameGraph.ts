@@ -197,7 +197,7 @@ export class FrameGraph implements IDisposable {
     }
 
     private _updateSceneNeedsPreviousWorldMatrices(): void {
-        this._scene.needsPreviousWorldMatrices = this._scene.frameGraphs.some((graph) => graph._needsPreviousWorldMatrices);
+        this._scene._setPreviousWorldMatricesRequired(this, this._needsPreviousWorldMatrices);
     }
 
     /**
