@@ -31,8 +31,8 @@ describe("P4 Inspector import boundaries", () => {
             expect(materialService).toContain(`import("./materials/${family}MaterialProperties")`);
             expect(materialService).not.toMatch(new RegExp(`^import .*materials/${family}MaterialProperties`, "m"));
         });
-        expect(textureService).toContain('import("./textureMetadataAdapter")');
-        expect(textureService).not.toMatch(/^import .*textureMetadataAdapter/m);
+        expect(textureService).toContain('import("./textureMetadataProperties")');
+        expect(textureService).not.toMatch(/^import .*textureMetadataProperties/m);
     });
 
     it("keeps Lite lazy adapter sources free of Babylon.js implementation and preview/editor dependencies", () => {
@@ -45,7 +45,7 @@ describe("P4 Inspector import boundaries", () => {
             "lite/services/panes/properties/materials/useDirectMaterialOperations.ts",
             "lite/services/panes/properties/materials/directTextureBinding.tsx",
             "lite/services/panes/properties/materials/dynamicMaterialField.tsx",
-            "lite/services/panes/properties/textureMetadataAdapter.tsx",
+            "lite/services/panes/properties/textureMetadataProperties.tsx",
             "lite/services/panes/properties/useLatestAsyncOperation.ts",
             "lite/services/panes/scene/materialTopologyBindings.ts",
             "lite/services/panes/scene/sceneResources.ts",
@@ -74,7 +74,6 @@ describe("P4 Inspector import boundaries", () => {
             "fluent/hoc/propertyLines/colorPropertyLineCore.tsx",
             "fluent/hoc/propertyLines/vectorPropertyLineCore.tsx",
             "fluent/hoc/propertyLines/materialTextureBindingPropertyLine.tsx",
-            "fluent/hoc/propertyLines/textureMetadataProperties.tsx",
         ].map(ReadSharedSource);
 
         sources.forEach((source) => {

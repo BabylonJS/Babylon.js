@@ -8,7 +8,7 @@ import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
 import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
 
-const TextureMetadataAdapter = MakeLazyComponent(async () => (await import("./textureMetadataAdapter")).TextureMetadataAdapter, {
+const TextureMetadataProperties = MakeLazyComponent(async () => (await import("./textureMetadataProperties")).TextureMetadataProperties, {
     spinnerLabel: "Loading texture metadata",
 });
 
@@ -45,7 +45,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                     section: "General",
                     component: ((props) => {
                         const { context } = props;
-                        return createElement(TextureMetadataAdapter, { texture: context, resourceIndexService, selectionService });
+                        return createElement(TextureMetadataProperties, { texture: context, resourceIndexService, selectionService });
                     }) satisfies FunctionComponent<{ context: object }>,
                 },
             ],

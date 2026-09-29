@@ -13,16 +13,14 @@ import {
     type TextureMetadata,
     type TextureTransform,
 } from "@babylonjs/lite";
-import { Body1 } from "@fluentui/react-components";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
 import { type FunctionComponent, useCallback } from "react";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import {
-    TextureMetadataProperties,
-    type TextureMetadataConsumerLink,
-    type TextureMetadataModel,
-    type TextureMetadataRow,
-} from "shared-ui-components/fluent/hoc/propertyLines/textureMetadataProperties";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
+import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 import { type ISelectionService } from "../../../../services/selectionService";
@@ -31,11 +29,27 @@ import { type ISceneResourceIndexService } from "../scene/sceneResourceIndexServ
 import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../scene/sceneResources";
 import { useLatestAsyncOperation } from "./useLatestAsyncOperation";
 
-export type TextureMetadataAdapterProps = Readonly<{
+export type TextureMetadataPropertiesProps = Readonly<{
     texture: object;
     resourceIndexService: ISceneResourceIndexService;
     selectionService: ISelectionService;
 }>;
+
+type TextureMetadataRow = Readonly<{
+    id: string;
+    label: string;
+    value?: string | number | boolean | null;
+    units?: string;
+    description?: string;
+}>;
+
+const useStyles = makeStyles({
+    section: {
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalXS,
+    },
+});
 
 function OptionalRow(id: string, label: string, value: unknown, units?: string): TextureMetadataRow {
     return value === undefined
@@ -45,32 +59,6 @@ function OptionalRow(id: string, label: string, value: unknown, units?: string):
 
 function GetMaterialRecord(resourceIndexService: ISceneResourceIndexService, material: Material): IMaterialResourceRecord | undefined {
     return resourceIndexService.index.getMaterialRecord(material);
-}
-
-function GetConsumerLinks(
-    texture: object,
-    record: ITextureResourceRecord | undefined,
-    resourceIndexService: ISceneResourceIndexService,
-    selectionService: ISelectionService
-): readonly TextureMetadataConsumerLink[] {
-    return (record?.consumers ?? []).map((consumer, index) => {
-        const materialRecord = GetMaterialRecord(resourceIndexService, consumer.material);
-        return {
-            id: `consumer-${index}-${consumer.bindingId}`,
-            label: consumer.bindingId,
-            value: materialRecord?.displayName ?? "Unavailable material",
-            navigate: materialRecord
-                ? () => {
-                      const currentRecord = resourceIndexService.index.getTextureRecord(texture);
-                      const currentConsumer = currentRecord?.consumers.find((candidate) => candidate.material === consumer.material && candidate.bindingId === consumer.bindingId);
-                      const currentMaterialRecord = currentConsumer && GetMaterialRecord(resourceIndexService, currentConsumer.material);
-                      if (!resourceIndexService.isDisposed && currentMaterialRecord) {
-                          selectionService.selectedEntity = currentMaterialRecord.source;
-                      }
-                  }
-                : undefined,
-        };
-    });
 }
 
 function GetConsumerScenes(record: ITextureResourceRecord | undefined, resourceIndexService: ISceneResourceIndexService): readonly SceneContext[] {
@@ -179,12 +167,13 @@ const TextureTransformField: FunctionComponent<TextureTransformFieldProps> = (pr
 };
 
 /**
- * Lazily adapts one exact Lite texture wrapper to the runtime-neutral metadata component.
+ * Displays metadata properties for one exact Lite texture wrapper.
  * @param props - The exact texture, resource index, and selection service.
  * @returns The metadata-only texture properties UI.
  */
-export const TextureMetadataAdapter: FunctionComponent<TextureMetadataAdapterProps> = (props) => {
+export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropertiesProps> = (props) => {
     const { texture, resourceIndexService, selectionService } = props;
+    const classes = useStyles();
     const getSnapshot = useCallback(() => {
         const record = resourceIndexService.index.getTextureRecord(texture);
         try {
@@ -203,7 +192,11 @@ export const TextureMetadataAdapter: FunctionComponent<TextureMetadataAdapterPro
     );
 
     if (!snapshot) {
-        return <TextureMetadataProperties model={{ rows: [], error: "This texture is unavailable or malformed." }} />;
+        return (
+            <div className={classes.section} role="alert">
+                <TextPropertyLine label="Error" value="This texture is unavailable or malformed." />
+            </div>
+        );
     }
 
     const { metadata, record } = snapshot;
@@ -266,30 +259,63 @@ export const TextureMetadataAdapter: FunctionComponent<TextureMetadataAdapterPro
             getErrorMessage: (error) => (error instanceof Error ? error.message : "The texture transform change failed."),
         });
     };
-    const model: TextureMetadataModel = {
-        rows: GetMetadataRows(metadata, record?.ordinal, texture),
-        consumers: GetConsumerLinks(texture, record, resourceIndexService, selectionService),
-    };
     return (
-        <TextureMetadataProperties
-            model={model}
-            transform={
-                transform
-                    ? TransformFields.map((field) => {
-                          const id = `transform-${field[0]}`;
-                          return (
-                              <TextureTransformField
-                                  key={id}
-                                  transform={transform}
-                                  field={field}
-                                  pending={operations[id]?.pending}
-                                  error={operations[id]?.error}
-                                  commit={commitTransform}
-                              />
-                          );
-                      })
-                    : undefined
-            }
-        />
+        <div className={classes.section}>
+            {GetMetadataRows(metadata, record?.ordinal, texture).map((row) => {
+                return (
+                    <div key={row.id}>
+                        {typeof row.value === "boolean" ? (
+                            <BooleanBadgePropertyLine label={row.label} uniqueId={row.id} value={row.value} description={row.description} />
+                        ) : typeof row.value === "number" ? (
+                            <StringifiedPropertyLine label={row.label} uniqueId={row.id} value={row.value} units={row.units} description={row.description} />
+                        ) : (
+                            <TextPropertyLine label={row.label} uniqueId={row.id} value={row.value == null ? "Unavailable" : row.value} description={row.description} />
+                        )}
+                    </div>
+                );
+            })}
+            {transform
+                ? TransformFields.map((field) => {
+                      const id = `transform-${field[0]}`;
+                      return (
+                          <TextureTransformField
+                              key={id}
+                              transform={transform}
+                              field={field}
+                              pending={operations[id]?.pending}
+                              error={operations[id]?.error}
+                              commit={commitTransform}
+                          />
+                      );
+                  })
+                : undefined}
+            {record?.consumers.map((consumer, index) => {
+                const materialRecord = GetMaterialRecord(resourceIndexService, consumer.material);
+                const value = materialRecord?.displayName ?? "Unavailable material";
+                return (
+                    <LinkPropertyLine
+                        key={`consumer-${index}-${consumer.bindingId}`}
+                        label={consumer.bindingId}
+                        uniqueId={`consumer-${index}-${consumer.bindingId}`}
+                        value={value}
+                        onLink={
+                            materialRecord
+                                ? () => {
+                                      const currentRecord = resourceIndexService.index.getTextureRecord(texture);
+                                      const currentConsumer = currentRecord?.consumers.find(
+                                          (candidate) => candidate.material === consumer.material && candidate.bindingId === consumer.bindingId
+                                      );
+                                      const currentMaterialRecord = currentConsumer && GetMaterialRecord(resourceIndexService, currentConsumer.material);
+                                      if (!resourceIndexService.isDisposed && currentMaterialRecord) {
+                                          selectionService.selectedEntity = currentMaterialRecord.source;
+                                      }
+                                  }
+                                : undefined
+                        }
+                        aria-label={materialRecord ? `Open material ${value}, ${consumer.bindingId}` : undefined}
+                    />
+                );
+            })}
+        </div>
     );
 };

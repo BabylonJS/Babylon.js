@@ -11,7 +11,6 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingProps } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
-import { TextureMetadataProperties } from "shared-ui-components/fluent/hoc/propertyLines/textureMetadataProperties";
 
 vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -183,44 +182,12 @@ describe("material and texture parity cores", () => {
         expect(options.some((option) => option.textContent === "Filterable")).toBe(false);
     });
 
-    it("renders metadata-only rows and exposes row and snapshot errors accessibly", () => {
-        const navigate = vi.fn();
-        const container = Render(
-            <TextureMetadataProperties
-                model={{
-                    error: "Texture unavailable",
-                    pending: true,
-                    rows: [
-                        { id: "width", label: "Width", value: 128, units: "px" },
-                        { id: "cube", label: "Cube", value: true },
-                        { id: "format", label: "Format", error: "Unknown format" },
-                    ],
-                    consumers: [{ id: "consumer", label: "Reflection", value: "Sky material", navigate }],
-                }}
-                transform={<div>Read-only transform</div>}
-            />
-        );
-
-        expect(container.textContent).toContain("128 px");
-        expect(container.textContent).toContain("Texture unavailable");
-        expect(container.textContent).toContain("Unavailable");
-        expect(container.querySelectorAll('[role="alert"]')).toHaveLength(2);
-        expect(container.querySelector('[aria-label="Format: Unknown format"]')).not.toBeNull();
-        expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
-        const consumer = container.querySelector('[aria-label="Open material Sky material, Reflection"]');
-        act(() => consumer?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-        expect(navigate).toHaveBeenCalledOnce();
-        expect(container.querySelector("canvas")).toBeNull();
-        expect(container.querySelector('input[type="file"]')).toBeNull();
-    });
-
     it("keeps P4 shared cores isolated from Babylon runtimes and preview dependencies", () => {
         const root = resolve(import.meta.dirname, "../../..");
         const files = [
             "sharedUiComponents/src/fluent/hoc/propertyLines/colorPropertyLineCore.tsx",
             "sharedUiComponents/src/fluent/hoc/propertyLines/vectorPropertyLineCore.tsx",
             "sharedUiComponents/src/fluent/hoc/propertyLines/materialTextureBindingPropertyLine.tsx",
-            "sharedUiComponents/src/fluent/hoc/propertyLines/textureMetadataProperties.tsx",
         ];
 
         for (const file of files) {

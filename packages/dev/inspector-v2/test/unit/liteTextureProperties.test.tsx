@@ -32,7 +32,7 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
 import { type Material, type SceneContext, type TextureMetadata } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
 
-import { TextureMetadataAdapter } from "../../src/lite/services/panes/properties/textureMetadataAdapter";
+import { TextureMetadataProperties } from "../../src/lite/services/panes/properties/textureMetadataProperties";
 import { type ISceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";
 import { type ISelectionService } from "../../src/services/selectionService";
@@ -163,18 +163,20 @@ describe("Babylon Lite texture accessor metadata", () => {
             capabilities: { dynamicUpdate: false, renderAttachment: false, sampledDepth: false },
         };
         const services = MakeServices(metadata);
-        const container = Render(<TextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataProperties {...services} />);
         const text = (container.textContent ?? "").replaceAll(/\s/g, "");
 
         expect(text).toContain(expected);
         expect(text).toContain(`Kind${kind}`);
         expect(text).toContain("Formatrgba8unorm");
         expect(text).not.toMatch(/GPUTexture|GPUTextureView|GPUHandle/);
+        expect(container.querySelector("canvas")).toBeNull();
+        expect(container.querySelector('input[type="file"]')).toBeNull();
     });
 
     it("renders deterministic unknown and transient metadata states", () => {
         const services = MakeServices({ kind: "2d", width: 0, height: 0, capabilities: {} });
-        const text = (Render(<TextureMetadataAdapter {...services} />).textContent ?? "").replaceAll(/\s/g, "");
+        const text = (Render(<TextureMetadataProperties {...services} />).textContent ?? "").replaceAll(/\s/g, "");
 
         expect(text).toContain("NameUnavailable");
         expect(text).toContain("FormatUnavailable");
@@ -183,7 +185,7 @@ describe("Babylon Lite texture accessor metadata", () => {
 
     it("navigates to the exact source material consumer", () => {
         const services = MakeServices({ kind: "2d", capabilities: {} });
-        const container = Render(<TextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataProperties {...services} />);
         const link = container.querySelector('[aria-label^="Open material Material"]');
 
         expect(link).not.toBeNull();
@@ -193,7 +195,7 @@ describe("Babylon Lite texture accessor metadata", () => {
 
     it("commits transforms with complete consumer scope and refreshes applied metadata", async () => {
         const services = MakeServices({ kind: "2d", capabilities: {} });
-        const container = Render(<TextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataProperties {...services} />);
         const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
         const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
 
@@ -213,7 +215,7 @@ describe("Babylon Lite texture accessor metadata", () => {
     it("awaits rebuilds when enabling transform support changes the material pipeline", async () => {
         InspectionMocks.enableUv.mockReturnValue(true);
         const services = MakeServices({ kind: "2d", capabilities: {} });
-        const container = Render(<TextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataProperties {...services} />);
         const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
         const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
 
@@ -230,6 +232,28 @@ describe("Babylon Lite texture accessor metadata", () => {
         });
     });
 
+    it("announces a failed transform write without changing metadata rows", async () => {
+        InspectionMocks.setTransform.mockImplementation(() => {
+            throw new Error("Transform unavailable");
+        });
+        const services = MakeServices({ kind: "2d", width: 64, capabilities: {} });
+        const container = Render(<TextureMetadataProperties {...services} />);
+        const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
+
+        await act(async () => {
+            input.focus();
+            setter.call(input, "2");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
+        });
+
+        expect(container.querySelector('[role="alert"]')?.textContent).toContain("Transform unavailable");
+        expect(container.textContent).toContain("Width");
+        expect(container.textContent).toContain("64");
+        expect(services.refresh).not.toHaveBeenCalled();
+    });
+
     it("keeps stale and malformed wrappers accessible without throwing", () => {
         const selectionService = MakeSelectionService();
         const resourceIndexService = {
@@ -238,7 +262,7 @@ describe("Babylon Lite texture accessor metadata", () => {
             onDisposed: new Observable<void>(),
             isDisposed: false,
         } as unknown as ISceneResourceIndexService;
-        const container = Render(<TextureMetadataAdapter texture={{}} resourceIndexService={resourceIndexService} selectionService={selectionService} />);
+        const container = Render(<TextureMetadataProperties texture={{}} resourceIndexService={resourceIndexService} selectionService={selectionService} />);
 
         expect(container.textContent).toContain("This texture is unavailable or malformed.");
         expect(container.querySelector('[role="alert"]')).not.toBeNull();
@@ -246,7 +270,7 @@ describe("Babylon Lite texture accessor metadata", () => {
 
     it("does not offer transform editing for cube wrappers", () => {
         const services = MakeServices({ kind: "cube", capabilities: {} });
-        const container = Render(<TextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataProperties {...services} />);
         expect(container.querySelector("input")).toBeNull();
     });
 });
