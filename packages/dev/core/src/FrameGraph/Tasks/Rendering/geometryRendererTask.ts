@@ -407,7 +407,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             }
         }
 
-        this._scene.needsPreviousWorldMatrices = needPreviousWorldMatrices;
+        if (needPreviousWorldMatrices) {
+            this._frameGraph._requestPreviousWorldMatrices();
+        }
 
         return pass;
     }
