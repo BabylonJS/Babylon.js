@@ -11,7 +11,7 @@ import { type StorageBuffer } from "core/Buffers/storageBuffer";
  * triangle. The vertex shader passes clip-space positions straight through (camera-independent); the
  * fragment shader reads the resolved premultiplied color + coverage from a read-only storage buffer
  * (indexed by a resolution-independent screen UV) and premultiplied-alpha-blends it over the scene,
- * writing the resolved surface depth as fragDepth. WebGPU only.
+ * depth-testing against the resolved surface without writing color-pass depth. WebGPU only.
  */
 export class GaussianPointSplattingBlitMaterial extends ShaderMaterial {
     /**
@@ -33,11 +33,9 @@ export class GaussianPointSplattingBlitMaterial extends ShaderMaterial {
             }
         );
 
-        // Fullscreen pass: never cull. Premultiplied-alpha blend the accumulated coverage over the
-        // scene, and keep depth writes so the splats occlude scene geometry via the fragDepth output.
+        // Fullscreen pass: never cull. Premultiplied-alpha blend the accumulated coverage over the scene.
         this.backFaceCulling = false;
         this.alphaMode = Constants.ALPHA_PREMULTIPLIED;
-        this.forceDepthWrite = true;
     }
 
     /**

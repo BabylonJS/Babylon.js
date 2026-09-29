@@ -707,13 +707,20 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /** Tears down the shared compute once neither point-splatting mode needs it anymore. */
     private _pointReleaseComputeIfIdle(): void {
-        if (this._pointComputeActive) {
+        if (this._pointMode || this._pointDepthMode) {
             return;
         }
         if (this._pointComputeObserver) {
             this._scene.onBeforeRenderObservable.remove(this._pointComputeObserver);
             this._pointComputeObserver = null;
         }
+        this._pointRenderer?.dispose();
+        this._pointRenderer = null;
+        this._pointDecodedSplatsData = null;
+        this._pointResultReady = false;
+        this._pointBudgetReadPending = false;
+        this._pointFullPointsEma = 0;
+        this._pointAutoN = 2;
     }
 
     /** Builds the internal fullscreen compositor mesh used by a blit pass. It is an internal fullscreen
@@ -816,8 +823,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const rs = new Matrix();
         const pMin = new Float32Array(partCount * 3).fill(Infinity);
         const pMax = new Float32Array(partCount * 3).fill(-Infinity);
+        const activeRanges = this._activeSplatRanges;
+        const activeMask = activeRanges ? new Uint8Array(count) : null;
+        if (activeRanges && activeMask) {
+            for (let r = 0; r < activeRanges.length; r += 2) {
+                activeMask.fill(1, activeRanges[r], Math.min(count, activeRanges[r] + activeRanges[r + 1]));
+            }
+        }
 
         for (let i = 0; i < count; i++) {
+            const active = !activeMask || activeMask[i] !== 0;
             const mx = floats[8 * i + 0];
             const my = floats[8 * i + 1] * flipY;
             const mz = floats[8 * i + 2];
@@ -836,22 +851,22 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             means[4 * i + 2] = mz;
             means[4 * i + 3] = part;
             const b = part * 3;
-            if (mx < pMin[b]) {
+            if (active && mx < pMin[b]) {
                 pMin[b] = mx;
             }
-            if (my < pMin[b + 1]) {
+            if (active && my < pMin[b + 1]) {
                 pMin[b + 1] = my;
             }
-            if (mz < pMin[b + 2]) {
+            if (active && mz < pMin[b + 2]) {
                 pMin[b + 2] = mz;
             }
-            if (mx > pMax[b]) {
+            if (active && mx > pMax[b]) {
                 pMax[b] = mx;
             }
-            if (my > pMax[b + 1]) {
+            if (active && my > pMax[b + 1]) {
                 pMax[b + 1] = my;
             }
-            if (mz > pMax[b + 2]) {
+            if (active && mz > pMax[b + 2]) {
                 pMax[b + 2] = mz;
             }
 
@@ -876,7 +891,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             cov3d[4 * i + 3] = _U32Scratch[0];
 
             const cb = _GaussianSplattingBytesPerSplat * i + 24;
-            colorOpacity[i] = bytes[cb] | (bytes[cb + 1] << 8) | (bytes[cb + 2] << 16) | (bytes[cb + 3] << 24);
+            colorOpacity[i] = bytes[cb] | (bytes[cb + 1] << 8) | (bytes[cb + 2] << 16) | ((active ? bytes[cb + 3] : 0) << 24);
         }
 
         this._pointSplatCount = count;
@@ -1106,8 +1121,15 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     private async _pointConvergeAutoScaleAsync(currentN: number): Promise<void> {
+        const renderer = this._pointRenderer;
+        if (!renderer) {
+            return;
+        }
         try {
-            const total = await this._pointRenderer!.readPointCountAsync();
+            const total = await renderer.readPointCountAsync();
+            if (renderer !== this._pointRenderer || !this._pointComputeActive) {
+                return;
+            }
             if (total > 0) {
                 // Smooth the full-res point estimate (points ~ N^-2 -> fullPoints = measured * N^2). The EMA
                 // absorbs per-frame occlusion/Poisson noise (and the one-frame spike when a resize reseeds
@@ -1130,9 +1152,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 this._pointAutoN = Math.max(1, Math.min(8, target));
             }
         } catch (error) {
-            Logger.Error(`GaussianSplattingMesh: point-splatting budget readback failed: ${String(error)}`);
+            if (renderer === this._pointRenderer && this._pointComputeActive) {
+                Logger.Error(`GaussianSplattingMesh: point-splatting budget readback failed: ${String(error)}`);
+            }
         } finally {
-            this._pointBudgetReadPending = false;
+            if (renderer === this._pointRenderer) {
+                this._pointBudgetReadPending = false;
+            }
         }
     }
 
@@ -1314,6 +1340,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._pointDepthBlit?.dispose();
         this._pointDepthBlitMesh?.dispose();
         this._pointRenderer = null;
+        this._pointBudgetReadPending = false;
         this._pointBlit = null;
         this._pointBlitMesh = null;
         this._pointDepthBlit = null;
@@ -1648,6 +1675,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
         this._partSplatRanges[partIndex] = ranges ? ranges.map((r) => ({ offset: r.offset, count: r.count })) : null;
         this._refreshPartRangeUnion();
+    }
+
+    /** @inheritdoc */
+    public override setSplatIndexRanges(ranges: Nullable<readonly IGaussianSplattingSplatRange[]>): void {
+        const previous = this._activeSplatRanges;
+        super.setSplatIndexRanges(ranges);
+        if (previous !== this._activeSplatRanges) {
+            this._pointDecodedSplatsData = null;
+            this._pointRenderer?.resetAccumulation();
+        }
     }
 
     /**

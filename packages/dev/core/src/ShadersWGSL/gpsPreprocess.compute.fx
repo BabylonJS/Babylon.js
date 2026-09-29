@@ -208,6 +208,9 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let rgba = colorOpacity[g];
     let baseColor = vec3f(f32(rgba & 0xFFu), f32((rgba >> 8u) & 0xFFu), f32((rgba >> 16u) & 0xFFu)) / 255.0;
     let baseOpacity = f32((rgba >> 24u) & 0xFFu) / 255.0;
+    if (baseOpacity == 0.0) {
+        return;
+    }
 
     // Per-part debug knobs, mirroring the classic GaussianSplattingDebugger (dbgPartData). The rows are
     // pass-through defaults when debug is off, so opacity-scale / SH weights apply branchlessly; the

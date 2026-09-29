@@ -573,7 +573,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _splatSizeMin: number = Infinity;
     private _splatSizeMax: number = -Infinity;
     private _sortIsDirty = false;
-    private _activeSplatRanges: Nullable<Uint32Array> = null;
+    protected _activeSplatRanges: Nullable<Uint32Array> = null;
     private _activeSplatRangeKey = "";
     private _activeSplatRenderCount = 0;
 
