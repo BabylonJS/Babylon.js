@@ -1,7 +1,5 @@
-// Gaussian Point Splatting — preprocess kernel. One invocation per Gaussian: transform to view/clip
-// space, project the 3D covariance to a 2D screen-space covariance (EWA), frustum cull, and cache
-// the screen-space state the splat kernel needs (pixel mean, conic, Cholesky factor, color, opacity,
-// depth key). Emits a stochastic point count proportional to the Gaussian's screen-space mass.
+// Gaussian Point Splatting — preprocesses one Gaussian into screen-space state and emits its stochastic
+// point count.
 #include<gaussianPointSplatting>
 #include<gaussianSplattingShared>
 
@@ -24,9 +22,8 @@ fn gpsHiZLevelOffset(l : u32, baseW : u32, baseH : u32) -> u32 {
     return off;
 }
 
-// True if the Gaussian's screen footprint is fully behind nearer geometry in the previous frame's depth.
-// Picks the pyramid LOD where the footprint spans ~2 texels, takes the max (farthest occluder) over every
-// texel the footprint touches, and culls if that is still nearer than the Gaussian's center view depth.
+// True when the whole footprint is behind previous-frame geometry. Use the max depth touched by the
+// footprint so any miss/far sample prevents an unsafe cull.
 fn gpsHiZOccluded(center : vec2f, footR : f32, viewDepth : f32) -> bool {
     let baseW = u32(uniforms.hiZInfo.x);
     let baseH = u32(uniforms.hiZInfo.y);
@@ -47,10 +44,8 @@ fn gpsHiZOccluded(center : vec2f, footR : f32, viewDepth : f32) -> bool {
     let tx1 = min(u32(max(maxx, 0)) / tile, lw - 1u);
     let ty0 = min(u32(max(miny, 0)) / tile, lh - 1u);
     let ty1 = min(u32(max(maxy, 0)) / tile, lh - 1u);
-    // The LOD is chosen so the footprint covers at most two texel widths, which still straddles three
-    // texels once it is misaligned with the tile grid (e.g. pixels 3..10 at tile size 4 touch tiles 0,1,2).
-    // Sampling only the four AABB corners would skip the interior texel and under-report the farthest
-    // occluder, culling visible Gaussians, so walk every texel the footprint touches (at most 3x3).
+    // Misalignment can make a ~2-texel footprint touch 3x3 texels; sample all of them so the max depth
+    // remains conservative.
     var zMax = 0.0;
     for (var ty = ty0; ty <= ty1; ty = ty + 1u) {
         let row = off + ty * lw;
@@ -62,9 +57,7 @@ fn gpsHiZOccluded(center : vec2f, footR : f32, viewDepth : f32) -> bool {
 }
 
 #if SH_DEGREE > 0
-// Compile-time count of u32 words per Gaussian holding this degree's 8-bit SH coefficients (3 scalar
-// bytes per coeff, 4 bytes per word). Only the bands the asset has are compiled in (SH_DEGREE define),
-// mirroring the classic rasterizer's #if SH_DEGREE. Words = ceil(shDim*3 / 4).
+// u32 words per Gaussian for this degree's packed 8-bit SH coefficients; words = ceil(shDim*3 / 4).
 #if SH_DEGREE == 1
 const GPS_SH_WORDS : u32 = 3u;  // shDim 3  -> 9 bytes
 #elif SH_DEGREE == 2
@@ -100,10 +93,8 @@ const GPS_SH_DIM : u32 = 15u;
 const GPS_SH_DIM : u32 = 24u;
 #endif
 
-// View-dependent SH color delta. Assembles this Gaussian's coefficients from the packed buffer, then
-// evaluates them with the shared computeColorFromSHDegree (the identical basis math the classic
-// rasterizer uses). DC (coeffs[0]) stays zero — it is already baked into the base color, so only the
-// higher-order delta is returned. The per-band weights so1..so4 drive the SH-order debug toggles.
+// View-dependent SH delta. DC stays zero because it is already baked into baseColor; so1..so4 are the
+// SH-order debug weights.
 fn gpsEvalShDelta(g : u32, dir : vec3f, so1 : f32, so2 : f32, so3 : f32, so4 : f32) -> vec3f {
     let base = g * GPS_SH_WORDS;
     var coeffs : array<vec3<f32>, 25>;
@@ -124,8 +115,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     weights[g] = 0u;
 
     let mean = means[g].xyz;
-    // The part this splat belongs to (0 for a non-compound mesh). Its world matrix is applied here,
-    // per frame, so runtime transforms (gizmo, part add/remove) move the splats without re-baking.
+    // Apply the live per-part transform; non-compound meshes use part 0.
     let partIndex = u32(means[g].w);
     let pdata = parts[partIndex];
     let partWorld = pdata.world;
@@ -152,10 +142,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // EWA projection of the 3D covariance to 2D screen space (same construction as the classic
-    // rasterizer's gaussianSplatting()). The 6 unique Sigma components are stored as f16 pairs
-    // normalized by a per-splat factor (matching the classic's covA/covB + center.w scheme), so f16
-    // keeps full precision regardless of splat scale; rescale by the factor here.
+    // EWA projection setup. Sigma is stored as f16 pairs normalized by a per-splat factor, matching the
+    // classic covA/covB + center.w scheme; rescale before projection.
     let covFactor = bitcast<f32>(cov3d[4u * g + 3u]);
     let p0 = unpack2x16float(cov3d[4u * g + 0u]) * covFactor; // S00, S01
     let p1 = unpack2x16float(cov3d[4u * g + 1u]) * covFactor; // S02, S11
@@ -163,20 +151,14 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let covA = vec3f(p0.x, p0.y, p1.x); // S00, S01, S02
     let covB = vec3f(p1.y, p2.x, p2.y); // S11, S12, S22
 
-    // Fold the part's world transform into the projection (modelView = view * partWorld) and project to
-    // raw 2D screen space with the SHARED computeCov2D — the identical EWA math the classic rasterizer
-    // uses. Applying the world here (not baking A*Sigma*A^T on the CPU) lets parts move each frame.
-    // focal.w carries the orthographic-camera flag (selects the ortho Jacobian in computeCov2D).
+    // Project with the shared classic EWA math. Keeping partWorld live here lets parts move each frame.
+    // focal.w selects the orthographic Jacobian.
     let isOrtho = uniforms.focal.w > 0.5;
     let modelView = uniforms.view * partWorld;
     var cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, uniforms.focal.xy, isOrtho);
 
-    // The decode doubles the Gaussian scale to stay byte-for-byte identical to the classic `_makeSplat`
-    // (so `splatSizeRange` and the debug size cull agree across both paths), which makes Sigma — and
-    // therefore cov2d — 4x too large. The classic rasterizer cancels that doubling at render time via
-    // the quad's `invViewport` (1/width, i.e. half an NDC unit per pixel); this path rasterizes straight
-    // into pixel space with no quad, so undo it here instead. Must happen before detOrig and the
-    // low-pass kernel below, which are both expressed in true pixel units.
+    // `_makeSplat` doubles scale, making Sigma/cov2d 4x too large. The classic quad path cancels that
+    // with invViewport = 1/width; this pixel-space path cancels it before detOrig and the low-pass kernel.
     cov2d = cov2d * 0.25;
 
     // Determinant BEFORE the low-pass dilation, for the optional opacity compensation below.
@@ -195,9 +177,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // Hi-Z occlusion cull (uses the previous frame's pyramid): skip Gaussians whose whole screen
-    // footprint is behind nearer geometry — they'd only lose the atomicMin and waste points. weights[g]
-    // is already 0 here, so returning emits no points.
+    // Previous-frame Hi-Z cull; weights[g] is already 0, so returning emits no points.
     if (uniforms.hiZInfo.w > 0.5) {
         let mid = (a + cc) * 0.5;
         let rad = length(vec2f((a - cc) * 0.5, b));
@@ -227,9 +207,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // Per-part debug knobs, mirroring the classic GaussianSplattingDebugger (dbgPartData). The rows are
-    // pass-through defaults when debug is off, so opacity-scale / SH weights apply branchlessly; the
-    // clip / cull tests (which need extra work) are gated behind the debugActive flag (depthNorm.z).
+    // Per-part debug knobs mirror dbgPartData. Defaults are pass-through; extra clip/cull tests are
+    // gated by debugActive (depthNorm.z).
     if (uniforms.depthNorm.z > 0.5) {
         let clipMin = pdata.dbg0.xyz;
         let clipMax = vec3f(pdata.dbg0.w, pdata.dbg1.x, pdata.dbg1.y);
@@ -239,9 +218,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         if (baseOpacity < pdata.dbg1.z || baseOpacity > pdata.dbg1.w) {
             return;
         }
-        // Splat size = pow(|det(Sigma3d)|, 1/6), the geometric mean of the principal radii. Uses the raw
-        // (doubled) Sigma, NOT the 0.25-corrected cov2d, so these match the classic rasterizer and the
-        // thresholds the user reads off GaussianSplattingMeshBase.splatSizeRange.
+        // Use the raw doubled Sigma so the size metric matches classic splatSizeRange/debug thresholds.
         let det3d = p0.x * (p1.y * p2.y - p2.x * p2.x) - p0.y * (p0.y * p2.y - p2.x * p1.x) + p1.x * (p0.y * p2.x - p1.y * p1.x);
         let splatSize = pow(abs(det3d), 1.0 / 6.0);
         if (splatSize < pdata.dbg2.x || splatSize > pdata.dbg2.y) {
@@ -249,35 +226,24 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         }
     }
 
-    // Opacity scale (dbg2.z) and SH DC weight (dbg3.x) are 1.0 when debug is off. Part visibility folds
-    // into opacity too, matching the classic partVisibility path. Clamp to [0,1]: the debug opacity
-    // scale can exceed 1 (0-5 slider), and dilog/correctedBoxMuller below are only defined on [0,1] —
-    // the classic just lets alpha blending saturate, so clamping here is the stochastic equivalent.
+    // Clamp opacity after debug scaling/part visibility: debug opacity can exceed 1, while the sampling
+    // math below is defined on [0,1].
     var color = baseColor * pdata.dbg3.x;
     var opacity = clamp(baseOpacity * pdata.vis.x * pdata.dbg2.z * compensation, 0.0, 1.0);
     let saturate = pdata.dbg2.w > 0.5;
 
-    // View-dependent SH: add the higher-degree delta (DC is already baked into the base color). Only
-    // compiled in when the asset has SH (SH_DEGREE define), matching the classic rasterizer. The
-    // per-band weights (dbg3.yzw, dbg4.x) drive the SH-order debug toggles (all 1.0 when off).
+    // Add the higher-degree SH delta; DC is already baked into baseColor. Debug weights default to 1.
 #if SH_DEGREE > 0
     {
-        // SH coefficients live in the splat's local frame, so bring the world-space eye->splat
-        // direction into that frame with the inverse of the part's world rotation (matches the classic
-        // vertex shader's inverseMat3(worldRot)).
+        // SH coefficients are local, so match the classic inverseMat3(worldRot) direction transform.
         let worldRot = mat3x3f(partWorld[0].xyz, partWorld[1].xyz, partWorld[2].xyz);
         let dir = normalize(gpsInverseMat3(worldRot) * (worldPos - uniforms.camPosDeg.xyz));
         color += gpsEvalShDelta(g, dir, pdata.dbg3.y, pdata.dbg3.z, pdata.dbg3.w, pdata.dbg4.x);
     }
 #endif
 
-    // Point budget (expected sample count) that makes per-pixel coverage match the target.
-    // Normal (unbiased 2D splatting): coverage = opacity*gaussian, so importance = 2*pi*sqrt(det) *
-    //   dilog(opacity) (the integral of the density -ln(1 - opacity*gaussian)); samples are
-    //   Gaussian-distributed (correctedBoxMuller) in the splat kernel.
-    // Debug opacity-saturate: coverage = opacity FLAT across the footprint (a solid disk). That needs a
-    //   uniform density -ln(1 - opacity) over the Mahalanobis-R^2=8 ellipse (area = pi*R^2*sqrt(det) =
-    //   4*(2*pi)*sqrt(det)); the splat kernel then samples uniformly in that ellipse.
+    // Expected sample count. Normal mode integrates -ln(1 - opacity*gaussian); opacity-saturate uses
+    // uniform density -ln(1 - opacity) over the Mahalanobis R^2=8 ellipse.
     var importance : f32;
     if (saturate) {
         importance = 4.0 * GPS_TWO_PI * sqrt(det) * (-log(1.0 - min(opacity, 0.999))) * uniforms.params0.z;
@@ -303,13 +269,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     s.pmConicXY = vec4f(px, py, conic.x, conic.y);
     s.conicZChol = vec4f(conic.z, chol0, chol1, chol2);
     s.colorOp = vec4f(color, opacity);
-    // Depth key: order so the NEAREST sample has the smallest key (atomicMin keeps it). Normalize over
-    // the model's OWN depth span this frame (not the scene's [0,1]) — the scene far plane can be huge, so
-    // a full-range key would give the model only a handful of the 16-bit levels and collapse ordering.
-    // Normalize the linear VIEW-space depth over the model's [viewZMin, viewZMax]. Nearer = smaller
-    // viewDepth = smaller key, so atomicMin keeps the nearest sample (no reverse-Z handling needed here;
-    // view depth is always positive-forward). Robust to the camera being inside the model, unlike NDC-z
-    // whose near extent is lost when AABB corners fall behind the camera. resolve reconstructs ndc.z.
+    // Depth key for atomicMin: normalize positive view depth over this model's frame-local span, not the
+    // scene far plane, so the 16-bit key keeps useful ordering even for huge scenes.
     let dmin = uniforms.depthNorm.x;
     let dmax = uniforms.depthNorm.y;
     let dord = clamp((viewDepth - dmin) / max(dmax - dmin, 1e-6), 0.0, 1.0);

@@ -1,17 +1,14 @@
-// Shared math for Gaussian Point Splatting (WebGPU stochastic point splatting).
+// Shared math for Gaussian Point Splatting.
 //
-// Per-pixel visibility uses a single atomic<u32> packing [depth : high 16 bits | color : low 16
-// bits as RGB565]. atomicMin keeps the nearest sample (smallest depth key) with its color riding
-// along. A full-float accumulation buffer (see gpsResolve) plus per-sample color dithering (see
-// gpsSplat) recovers RGB565 precision across frames.
+// Visibility is packed as [depth:16 | RGB565:16]; atomicMin keeps the nearest sample. Temporal
+// accumulation plus RGB565 dithering recovers color precision over frames.
 
 const GPS_DEPTH_CLEAR : u32 = 0xFFFFFFFFu;
 const GPS_TWO_PI : f32 = 6.2831853071795864;
 const GPS_U32_TO_UNIT : f32 = 2.3283064365386963e-10; // 1 / 2^32
 
-// Point->Gaussian acceleration table resolution: partition[k] holds the Gaussian owning point
-// k*total/GPS_PARTITION_BUCKETS, so the splat kernel seeds its CDF binary search from a narrow range
-// instead of searching all Gaussians (see gpsPartition / gpsSplat). The table has BUCKETS+1 entries.
+// Bucketed CDF-search table size. partTable[k] stores the owner of floor(k*total/BUCKETS), clamped
+// to the last point for k == BUCKETS; gpsSplat widens the seed range by one bucket.
 const GPS_PARTITION_BUCKETS : u32 = 65536u;
 
 struct GpsUniforms {
@@ -26,14 +23,12 @@ struct GpsUniforms {
     misc : vec4f,       // xy = temporal-upsampling jitter (NDC); zw reserved
 };
 
-// One compound part's live transform. Kept out of the covariance (which is baked once, in local
-// space) because parts move at runtime: the world transform is applied per frame in the shader,
-// exactly like the classic rasterizer's per-part `partWorld`. A non-compound mesh is a single part.
+// Live per-part state. The world transform is applied per frame (covariance stays local), matching
+// the classic rasterizer's per-part `partWorld`; non-compound meshes use one part.
 struct GpsPart {
     world : mat4x4f, // part world matrix (local -> world), column-major
     vis : vec4f,     // x = part visibility (0..1); yzw unused ('meta' is a reserved WGSL keyword)
-    // Per-part debug LUT rows, mirroring the classic debugger's dbgPartData (pass-through defaults when
-    // debug is inactive). Consumed only when the debugActive flag is set.
+    // Per-part debug rows mirroring the classic debugger's dbgPartData; defaults are pass-through.
     dbg0 : vec4f,    // clipMin.xyz, clipMax.x
     dbg1 : vec4f,    // clipMax.y, clipMax.z, minOpacity, maxOpacity
     dbg2 : vec4f,    // minSize, maxSize, opacityScale, opacitySaturate
@@ -118,9 +113,7 @@ fn gpsBoxMuller(u1 : f32, u2 : f32) -> vec2f {
 }
 
 // --- Unbiased 2D splatting (paper's method) ---
-// Dilogarithm Li2(x) and its inverse (polynomial fits, from the reference), used to importance-sample
-// the Gaussian so that emitting all points and taking the atomicMin coverage yields exactly
-// opacity*gaussian per pixel (matching alpha blending), with no per-sample stochastic rejection.
+// Li2(x) and inverse polynomial fits used to sample coverage without per-sample alpha rejection.
 
 const GPS_LI2_MAX : f32 = 1.6449340668482264; // Li2(1) = pi^2 / 6
 
@@ -165,8 +158,7 @@ fn gpsCorrectedBoxMuller(u1 : f32, u2 : f32, alpha : f32) -> vec2f {
     return vec2f(r * cos(theta), r * sin(theta));
 }
 
-// Poisson sample via Giles' QN3 normal-asymptotic approximation (Algorithm 955, ACM TOMS 42(1),
-// 2016), for all lambda — matching the reference implementation.
+// Poisson sample via Giles' QN3 normal-asymptotic approximation (Algorithm 955, ACM TOMS 2016).
 fn gpsPoisson(seed : u32, lambda : f32) -> u32 {
     let st1 = gpsPcg(seed);
     let st2 = gpsPcg(st1);

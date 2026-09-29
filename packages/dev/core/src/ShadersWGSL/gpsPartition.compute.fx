@@ -1,7 +1,6 @@
-// Gaussian Point Splatting — acceleration-table build. One invocation per bucket (GPS_PARTITION_BUCKETS
-// + 1 entries): partTable[k] = the Gaussian that owns point k*total/BUCKETS. The splat kernel then seeds
-// its CDF binary search from partTable[bucket], turning ~log2(gaussianCount) divergent global reads per
-// point into a search over just the few Gaussians spanning one bucket. Runs after the scan, before splat.
+// Gaussian Point Splatting — builds the bucketed CDF search table, after the scan and before splat.
+// partTable[k] stores the owner of floor(k*total/BUCKETS), clamped to the last point for the sentinel
+// bucket, so gpsSplat searches only the Gaussians spanning one bucket instead of the whole CDF.
 #include<gaussianPointSplatting>
 
 @group(0) @binding(0) var<storage, read> cdf : array<u32>;
@@ -38,8 +37,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         partTable[k] = 0u;
         return;
     }
-    // Point at the start of bucket k. f32 avoids the u32 overflow of k*total; the splat kernel widens its
-    // seed range by +/-1 bucket, which absorbs the small f32 rounding here.
+    // f32 avoids k*total overflow; gpsSplat widens by +/-1 bucket to cover rounding.
     var pk = u32(f32(k) / f32(GPS_PARTITION_BUCKETS) * f32(total));
     if (pk > total - 1u) {
         pk = total - 1u;

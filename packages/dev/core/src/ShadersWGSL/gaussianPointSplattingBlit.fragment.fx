@@ -1,10 +1,5 @@
-// Composites the resolved Gaussian Point Splatting accumulation into the scene. accumBuffer holds
-// premultiplied color (rgb) and accumulated coverage (w); the material uses premultiplied-alpha
-// blending, so outputting (premultColor, coverage) composites the splats over the scene as
-// premultColor + scene * (1 - coverage) — soft, converged edges matching the classic alpha blend.
-// The buffer is indexed by a resolution-independent screen UV (from the fullscreen triangle) scaled
-// to the accumulation buffer's own resolution, so it works even when the render target's pixel size
-// differs from the compute resolution (high-DPI / scaled targets).
+// Composites the premultiplied accumulation buffer. Screen UV indexing keeps the storage-buffer lookup
+// independent of the current render target size (high-DPI / scaled targets).
 uniform resolution: vec2f;
 
 varying vScreenUv: vec2f;
@@ -29,8 +24,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     if (accumulated.w < 0.0015) {
         discard;
     }
-    // Premultiplied color + coverage as alpha. The material does not write color-pass depth; fragDepth
-    // is only the value used by the depth test, matching the classic transparent path.
+    // The color pass does not write depth; fragDepth is only the depth-test value.
     fragmentOutputs.color = vec4f(accumulated.rgb, accumulated.w);
     fragmentOutputs.fragDepth = accumDepth[idx];
 

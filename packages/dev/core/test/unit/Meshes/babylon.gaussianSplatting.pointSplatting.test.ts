@@ -226,11 +226,10 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         mesh["_pointDecode"](splat);
         const cov = upload.mock.calls[0][1];
 
-        // Sigma = (R*S)(R*S)^T with S built from `scale * 2`, exactly as the classic `_makeSplat` does, so
-        // the per-splat f16 factor is max((2*0.75)^2, ...) = 2.25 rather than 0.5625. Keeping both decodes
-        // identical is what makes `splatSizeRange` (derived from the classic covariance) line up with the
-        // point path's pow(|det(Sigma3d)|, 1/6) debug size cull. The resulting 4x on cov2d is cancelled in
-        // gpsPreprocess, mirroring how the classic vertex shader cancels it through `invViewport`.
+        // `_makeSplat` doubles source scale before building Sigma, so the f16 factor is
+        // max((2*0.75)^2, ...) = 2.25. Matching it keeps `splatSizeRange`/debug size units aligned with the
+        // point path; the resulting 4x on cov2d is cancelled in gpsPreprocess, mirroring how the classic
+        // vertex shader cancels it through `invViewport`.
         expect(new Float32Array(new Uint32Array([cov[3]]).buffer)[0]).toBeCloseTo(2.25, 3);
         // Normalized diagonal is scale-invariant: s00/factor = 1, s11/factor = 0.25, s22/factor = 0.0625.
         expect(FromHalfFloat(cov[0] & 0xffff)).toBeCloseTo(1, 3);
@@ -362,8 +361,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         await mesh["_pointConvergeAutoScaleAsync"](2, 0, true);
         expect(mesh["_pointAutoN"]).toBe(8);
         expect(mesh["_pointBudgetReadPending"]).toBe(false);
-        // The provisional factor was wrong, so accumulation restarts once and the new generation is marked
-        // measured, which bounds the correction to a single reset.
+        // Restart once for the corrected factor, then mark the new generation measured.
         expect(renderer.accumulationVersion).toBe(1);
         expect(mesh["_pointAutoMeasuredGeneration"]).toBe(1);
 

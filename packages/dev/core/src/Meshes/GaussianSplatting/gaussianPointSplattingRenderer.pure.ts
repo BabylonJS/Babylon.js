@@ -15,7 +15,8 @@ const ScanBlockSize = 512; // elements per scan workgroup (256 threads x 2)
 const MaxDispatchGroupsPerDimension = 65535;
 const DepthClearSentinel = 0xffffffff;
 // Point->Gaussian acceleration-table resolution; must match GPS_PARTITION_BUCKETS in the shaders. The
-// table has PartitionBuckets + 1 entries (partition[k] = Gaussian owning point k*total/PartitionBuckets).
+// table has PartitionBuckets + 1 entries (partTable[k] = Gaussian owning point k*total/PartitionBuckets),
+// so the splat kernel's CDF search is narrowed to the Gaussians spanning one bucket.
 const PartitionBuckets = 65536;
 
 /**
@@ -25,9 +26,11 @@ const PartitionBuckets = 65536;
  *
  * Per-frame pipeline (dispatched before the render pass):
  *   preprocess (1 thread/Gaussian: transform, cull, cache screen state, emit a point weight)
- *   then scan (Blelloch prefix sum of weights into a CDF + GPU-written indirect dispatch args)
- *   then splat (indirect, 1 thread/point: binary-search the CDF for its Gaussian, atomicMin its sample)
- *   then resolve (unpack the packed image buffer into the full-float accumulation buffer, reset it).
+ *   scan (Blelloch prefix sum of the weights into a CDF + GPU-written indirect dispatch args)
+ *   partition (bucketed point->Gaussian table that narrows the splat search)
+ *   splat (indirect, 1 thread/point: find its Gaussian in the CDF, atomicMin its sample)
+ *   resolve (accumulate the packed image buffer into the full-float buffer, reset it)
+ *   hi-Z build (max-reduce this frame's depth into next frame's occlusion pyramid)
  *
  * Per-Gaussian buffers are (re)built only on new splat data; per-pixel buffers only on resize.
  * Nothing reads back from the GPU on the render path — the point count reaches the splat dispatch via
@@ -142,7 +145,8 @@ export class GaussianPointSplattingRenderer {
     private _prevVp = new Float32Array(16);
     private _hasPrevVp = false;
 
-    /** Maximum number of frames blended into the accumulation buffer (clamped to 1..65535). */
+    /** Cap on each output pixel's accumulated sample count (clamped to 1..65535). Past the cap later
+     * samples blend in at 1/(cap+1), so the image keeps refreshing instead of freezing. */
     public maxAccumFrames = 255;
 
     /**
@@ -230,7 +234,7 @@ export class GaussianPointSplattingRenderer {
             3 * Uint32Array.BYTES_PER_ELEMENT,
             Constants.BUFFER_CREATIONFLAG_STORAGE | Constants.BUFFER_CREATIONFLAG_INDIRECT | Constants.BUFFER_CREATIONFLAG_WRITE
         );
-        // Point->Gaussian acceleration table (rebuilt each frame after the scan). Fixed size (independent
+        // Bucket->Gaussian acceleration table (rebuilt each frame after the scan). Fixed size (independent
         // of the Gaussian/point count), so it is allocated once.
         this._partition = new StorageBuffer(engine as WebGPUEngine, (PartitionBuckets + 1) * Uint32Array.BYTES_PER_ELEMENT);
     }
@@ -505,10 +509,8 @@ export class GaussianPointSplattingRenderer {
 
     private _ensurePixelBuffers(width: number, height: number, outWidth: number, outHeight: number): void {
         const engine = this._engine as WebGPUEngine;
-        // Render-res buffers (imageBuffer + Hi-Z) and output-res buffers (accum) are resized independently.
-        // Crucially, a render-res-only change (auto budget flipping the factor N) reallocates the low-res
-        // buffers but does NOT reset the accumulation — the full-res accum stays valid, so the auto scale can
-        // adapt without wiping the progressive result every frame.
+        // Render-res buffers (imageBuffer + Hi-Z) and output-res buffers (accum) resize independently, so a
+        // change of the factor N alone reallocates the low-res buffers without touching the full-res accum.
         const renderChanged = width !== this._width || height !== this._height || !this._imageBuffer;
         const outChanged = outWidth !== this._outWidth || outHeight !== this._outHeight || !this._accumBuffer;
 
@@ -616,9 +618,8 @@ export class GaussianPointSplattingRenderer {
             this._hasPrevVp = true;
         }
 
-        // "Moving" = something reset accumulation this frame (camera or part moved, via generation bump).
-        // While moving, resolve writes a COMPLETE upscaled frame instead of the sparse jittered scatter, so
-        // there is no motion trail from not-yet-revisited full-res pixels; static frames accumulate to full res.
+        // "Moving" = accumulation was reset this frame. Resolve then writes a COMPLETE upscaled frame instead
+        // of the sparse jittered scatter, so not-yet-revisited full-res pixels cannot leave a motion trail.
         const moving = this._accumGeneration !== this._lastRenderedGeneration;
         this._lastRenderedGeneration = this._accumGeneration;
 
@@ -684,7 +685,7 @@ export class GaussianPointSplattingRenderer {
         this._scanAddCs.setStorageBuffer("blockSums", this._blockSums!);
         this._scanAddCs.dispatch(Math.min(groupsG, MaxDispatchGroupsPerDimension), Math.ceil(groupsG / MaxDispatchGroupsPerDimension), 1);
 
-        // Build the point->Gaussian acceleration table from the finished CDF (one thread per bucket).
+        // Build the bucket->Gaussian acceleration table from the finished CDF (one thread per bucket).
         this._partitionCs.setStorageBuffer("cdf", this._cdf!);
         this._partitionCs.setStorageBuffer("pointCount", this._pointCount);
         this._partitionCs.setStorageBuffer("partTable", this._partition);
@@ -719,7 +720,6 @@ export class GaussianPointSplattingRenderer {
         }
 
         this._frameIndex++;
-        // Per-pixel active-frame counts live in _accumCount (capped in the resolve shader); no global counter.
         return true;
     }
 

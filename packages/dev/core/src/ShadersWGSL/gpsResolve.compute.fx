@@ -1,7 +1,5 @@
-// Gaussian Point Splatting — resolve + temporal upsample. Dispatched per RENDER (low-res) pixel. Reads the
-// per-pixel packed image buffer (this frame's nearest stochastic sample), writes the Hi-Z level 0 (low-res,
-// consumed by preprocess), reseeds the image buffer, and SCATTERS the result into the full-res accumulation
-// at this frame's jittered sub-cell position — so cheap low-res frames reconstruct full resolution over time.
+// Gaussian Point Splatting — resolves each low-res sample, seeds Hi-Z level 0 for the next frame, and
+// scatters into one full-res jitter cell for temporal upsampling.
 //
 // accumBuffer (OUTPUT res) holds PREMULTIPLIED color (rgb) + accumulated COVERAGE (w), a per-pixel running
 // mean over the frames that pixel was visited (accumCount tracks its own active-frame count + generation).
@@ -13,7 +11,7 @@ struct GpsResolveParams {
     depthNorm : vec2f,     // the model's view-space depth min/max this frame (matches the preprocess key)
     pad0 : vec2f,
     upsample : vec4f,      // x=N (upscale factor), y=jitterX, z=jitterY, w=generation
-    misc2 : vec4f,         // x=maxAccum
+    misc2 : vec4f,         // x=maxAccum, y=moving flag
     projZ : vec4f,         // projection z-row (m10 and m11 sign-adjusted for RH) to map positive view-z back to ndc.z
 };
 
@@ -44,11 +42,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         hit = 1.0;
         let dq = f32(raw >> 16u) / 65535.0;
         let vz = params.depthNorm.x + dq * (params.depthNorm.y - params.depthNorm.x);
-        // The preprocess key truncates (u32(dord * 65535.0)), so `vz` is the lower bound of the
-        // quantization bucket and is <= the sample's true view depth. Push the occluder depth to the
-        // upper bound of that bucket before it feeds the Hi-Z pyramid: a conservative (farther) value
-        // keeps a Gaussian from occluding itself against its own previous-frame sample, which would
-        // otherwise make it flicker in and out under `zMax < viewDepth` in gpsPreprocess.
+        // The key truncates depth, so `vz` is the bucket lower bound. Store the upper bound in Hi-Z to
+        // keep a Gaussian from self-occluding against its previous-frame sample.
         occlVz = vz + (params.depthNorm.y - params.depthNorm.x) / 65535.0;
         depth = (params.projZ.x * vz + params.projZ.z) / (params.projZ.y * vz + params.projZ.w);
     }
@@ -62,9 +57,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let premult = hitColor * hit;
 
     if (params.misc2.y > 0.5) {
-        // MOVING: write this low-res pixel's value to its whole N*N full-res block (nearest upscale, t=1) so
-        // the frame is COMPLETE — no trail from not-yet-revisited pixels. Blocky while moving, sharpens when
-        // static (below). Counts written as generation|1 so the next static frame keeps accumulating.
+        // Moving: nearest-upscale the whole N*N block so not-yet-revisited pixels leave no trails.
         for (var dy = 0u; dy < n; dy = dy + 1u) {
             for (var dx = 0u; dx < n; dx = dx + 1u) {
                 let ox2 = gid.x * n + dx;
@@ -80,8 +73,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // STATIC: scatter into the full-res accumulation at this frame's jittered sub-cell position. Render pixel
-    // (gid) maps to full-res (gid*N + jitter); over the N*N jitter offsets every full-res pixel is reconstructed.
+    // Static: scatter this render pixel into the current full-res jitter cell (gid*N + jitter).
     let ox = select(0u, u32(params.upsample.y), n > 1u);
     let oy = select(0u, u32(params.upsample.z), n > 1u);
     let outX = gid.x * n + ox;
@@ -91,8 +83,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     }
     let outIdx = outY * outRes.x + outX;
 
-    // Per-pixel running mean over this pixel's OWN visited frames. A stale generation resets the count to 0
-    // (first visit after a reset), so t = 1 overwrites cleanly with no ghosting from the old view.
+    // Per-pixel running mean. A stale generation resets count to 0, so t = 1 overwrites old views.
     let packed = accumCount[outIdx];
     let count = select(0u, packed & 0xFFFFu, (packed >> 16u) == gen);
     let t = select(1.0 / (f32(count) + 1.0), 1.0, count == 0u);

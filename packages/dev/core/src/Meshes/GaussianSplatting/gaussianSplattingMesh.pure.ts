@@ -325,11 +325,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     // Budget-driven auto scale state. The factor N is measured once per accumulation generation, from the
-    // first frame of that generation which has Hi-Z occlusion culling active, and is then frozen for the
-    // rest of the generation so a converged image is never a blend of two render scales.
-    // `_pointAutoMeasuredGeneration` is the generation N has already been fixed for (-1 = none), and
-    // `_pointLastRenderedGeneration` is the previous frame's generation, used to detect the frame that reset
-    // accumulation — that frame runs without occlusion culling and over-reports the emitted point count.
+    // first frame of that generation with Hi-Z occlusion culling active, then frozen for the rest of it so a
+    // converged image is never a blend of two render scales. `_pointAutoMeasuredGeneration` is the generation
+    // N is already fixed for (-1 = none); `_pointLastRenderedGeneration` is the previous frame's generation,
+    // used to spot the frame that reset accumulation — it runs unculled and over-reports the point count.
     private _pointAutoN = 2;
     private _pointAutoMeasuredGeneration = -1;
     private _pointLastRenderedGeneration = -1;
@@ -650,15 +649,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     /**
      * Whether the scene's DepthRenderer depth for this mesh comes from the WebGPU compute point-splatting
      * result (a per-pixel resolved nearest-surface depth matching the displayed point splats) instead of
-     * the classic rasterized ellipsoids. Note that this depth is opaque and converges to the nearest
-     * visible surface — not to the coverage-weighted average the classic path produces under
-     * `DepthRenderer.alphaBlendedDepth`. Off by default,
-     * and fully independent of
-     * {@link pointSplattingRenderMode}: both toggles consume the same shared compute, which runs whenever
-     * either one is on. Only the DepthRenderer pass is affected — shadows, prepass/geometry AOV and GPU
-     * picking still rasterize the classic geometry. Multiple active cameras use the classic depth path,
-     * as do meshes hosting streamed (GPU-decoded) parts.
-     * WebGPU only.
+     * the classic rasterized ellipsoids. This depth is opaque and converges to the nearest visible surface,
+     * not to the coverage-weighted average the classic path produces under `DepthRenderer.alphaBlendedDepth`.
+     * Off by default, and fully independent of {@link pointSplattingRenderMode}: both toggles consume the
+     * same shared compute, which runs whenever either one is on. Only the DepthRenderer pass is affected —
+     * shadows, prepass/geometry AOV and GPU picking still rasterize the classic geometry. Multiple active
+     * cameras use the classic depth path, as do meshes hosting streamed (GPU-decoded) parts. WebGPU only.
      */
     public get pointSplattingDepthRenderMode(): boolean {
         return this._pointDepthMode;
@@ -1183,28 +1179,25 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 return;
             }
             if (total > 0) {
-                // Points scale as N^-2, so the full-res estimate is measured * N^2. One sample is enough: the
-                // relative Poisson noise over millions of points is negligible, and nothing inside a generation
-                // can change the emitted count (camera, transforms, visibility and splat data all reset
-                // accumulation). N stays at most 8, so this is a best-effort target, not a hard point-count cap.
+                // Points scale as N^-2, so the full-res estimate is measured * N^2. One sample suffices: the
+                // relative Poisson noise over millions of points is negligible. N is capped at 8, so this is a
+                // best-effort target rather than a hard point-count cap.
                 const fullPoints = total * currentN * currentN;
                 const target = Math.max(1, Math.min(8, Math.ceil(Math.sqrt(fullPoints / this._pointBudget()))));
                 this._pointAutoN = target;
                 if (!freeze || renderer.accumulationVersion !== generation) {
-                    // Either the sample came from the uncculled frame that reset accumulation (it over-counts),
-                    // or accumulation moved on while the readback was in flight. Keep the value as a hint for
-                    // the next frame, but leave the generation unmeasured so the image that actually settles is
-                    // always sized from a culled frame of its own generation.
+                    // The sample came from the unculled reset frame (it over-counts), or accumulation moved on
+                    // mid-readback. Keep it as a hint for the next frame, but leave the generation unmeasured so
+                    // the image that settles is always sized from a culled frame of its own generation.
                     return;
                 }
                 if (target !== currentN) {
-                    // The frames accumulated so far used the provisional factor. Restart so the converged image
-                    // comes from `target` alone rather than a mix of two render scales.
+                    // Frames so far used the provisional factor; restart so the converged image comes from
+                    // `target` alone rather than a mix of two render scales.
                     renderer.resetAccumulation();
                 }
-                // Mark the generation that is now current (the corrective reset above created a new one) as
-                // measured: re-measuring it would only reproduce the same estimate. This bounds the whole
-                // procedure to at most one corrective reset per settle.
+                // Mark the now-current generation (the reset above created a new one) measured: re-measuring
+                // would only reproduce this estimate. Bounds the whole procedure to one corrective reset.
                 this._pointAutoMeasuredGeneration = renderer.accumulationVersion;
             }
         } catch (error) {

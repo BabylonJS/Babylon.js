@@ -7,11 +7,9 @@ import { Constants } from "core/Engines/constants";
 import { type StorageBuffer } from "core/Buffers/storageBuffer";
 
 /**
- * Composites the Gaussian Point Splatting accumulation buffer onto the target with a fullscreen
- * triangle. The vertex shader passes clip-space positions straight through (camera-independent); the
- * fragment shader reads the resolved premultiplied color + coverage from a read-only storage buffer
- * (indexed by a resolution-independent screen UV) and premultiplied-alpha-blends it over the scene,
- * depth-testing against the resolved surface without writing color-pass depth. WebGPU only.
+ * Composites the resolved Gaussian Point Splatting color over the scene with a fullscreen triangle.
+ * Samples premultiplied color/coverage and NDC depth from storage buffers and writes fragDepth so the
+ * result depth-tests against the scene, without writing color-pass depth itself. WebGPU only.
  */
 export class GaussianPointSplattingBlitMaterial extends ShaderMaterial {
     /**
@@ -33,7 +31,7 @@ export class GaussianPointSplattingBlitMaterial extends ShaderMaterial {
             }
         );
 
-        // Fullscreen pass: never cull. Premultiplied-alpha blend the accumulated coverage over the scene.
+        // Fullscreen pass; blend accumulated premultiplied coverage over the scene.
         this.backFaceCulling = false;
         this.alphaMode = Constants.ALPHA_PREMULTIPLIED;
     }

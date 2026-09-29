@@ -224,7 +224,7 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     return splat;
 }
 
-// Shared with the compute point-splatting renderer; see ShadersInclude/gaussianSplattingShared.fx.
+// Shared with the compute point-splatting renderer.
 #include<gaussianSplattingShared>
 
 fn decompose(value: u32) -> vec4f
@@ -393,11 +393,10 @@ fn gaussianSplatting(
         return vec4f(0.0, 0.0, 2.0, 1.0);
     }
 
-    // Detect if projection is orthographic (projectionMatrix[3][3] == 1.0). Kept here (not just inside
-    // computeCov2D) because the ortho flag is also used below for the quad's scale factor.
+    // isOrtho also controls the quad scale factor below.
     let isOrtho = abs(projectionMatrix[3][3] - 1.0) < 0.001;
 
-    // Raw (pre-dilation) 2D covariance, shared with the point-splatting compute path.
+    // Raw (pre-dilation) 2D covariance shared with the point-splatting compute path.
     var cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, focal, isOrtho);
 
 #if COMPENSATION

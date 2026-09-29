@@ -1612,11 +1612,10 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     /**
-     * Draws the camera-view color for one render pass. The default rasterizes the sorted-quad geometry
-     * via the inner per-camera mesh. Subclasses may override this to substitute an alternate color
-     * renderer (e.g. compute point splatting) for the main color pass only, leaving all other passes —
-     * shadow depth, GPU picking, IBL voxelization, prepass — to render the classic geometry unchanged.
-     * @param mesh the inner per-camera mesh carrying the sorted splat geometry
+     * Draws the inner per-camera mesh for one render pass. Subclasses may override selected passes
+     * (for example, point splatting for camera color or active-camera DepthRenderer) while leaving shadow
+     * depth, GPU picking, IBL voxelization and prepass on the classic geometry.
+     * @param mesh inner per-camera mesh carrying the sorted splat geometry
      * @param subMesh the submesh to draw
      * @param enableAlphaMode whether alpha mode can be changed
      * @param effectiveMeshReplacement optional mesh providing render info

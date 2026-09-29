@@ -1,8 +1,5 @@
-// Fullscreen triangle that composites the Gaussian Point Splatting accumulation buffer into the
-// scene. Positions arrive already in clip space, so the camera's view/projection is ignored here.
-// A screen-space UV is passed to the fragment so it can index the accumulation buffer independently
-// of the render target's pixel resolution (which may differ from the compute resolution, e.g. on a
-// high-DPI display or when the viewer renders through a scaled target).
+// Fullscreen triangle for the point-splatting blits. Positions are already clip-space; vScreenUv lets
+// the fragment index storage buffers independently of the render target size.
 attribute position: vec3f;
 
 varying vScreenUv: vec2f;

@@ -1,7 +1,6 @@
-// Gaussian Point Splatting — Hi-Z pyramid build. One dispatch per level: each destination texel is the
-// MAX view-space depth (farthest surface) of its 2x2 children in the finer source level. The finest level
-// (0, full resolution) is written by gpsResolve; this reduces it up. The occlusion test in gpsPreprocess
-// reads the resulting pyramid (from the previous frame) to skip Gaussians fully behind nearer geometry.
+// Gaussian Point Splatting — builds one Hi-Z level from the previous finer level. Level 0 (full res) is
+// written by gpsResolve; each destination texel here stores the max view-space depth over its source
+// footprint, for next-frame occlusion culling in gpsPreprocess.
 
 struct GpsHiZParams {
     src : vec4u, // x=srcOffset (floats), y=srcWidth, z=srcHeight, w=unused
@@ -23,10 +22,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let sx = gid.x * 2u;
     let sy = gid.y * 2u;
 
-    // Max over the 2x2 children. Destination extents are floor(src / 2), so when a source dimension is
-    // odd its trailing row/column has no destination texel of its own. The last destination texel must
-    // absorb it as a third child: silently dropping that source texel would under-report the farthest
-    // occluder and over-cull Gaussians that are actually visible. At most 3x3 children are read.
+    // Odd source dimensions fold their trailing row/column into the last destination texel; dropping
+    // them would under-report far depths and over-cull visible Gaussians. At most 3x3 children are read.
     let sxEnd = select(min(sx + 1u, srcW - 1u), srcW - 1u, gid.x == dstW - 1u);
     let syEnd = select(min(sy + 1u, srcH - 1u), srcH - 1u, gid.y == dstH - 1u);
     let base = params.src.x;

@@ -1,6 +1,5 @@
-// Gaussian Point Splatting — workload scan, level 2. A single workgroup exclusive-scans the block
-// sums in place, carrying a running offset across 512-wide chunks so it handles any number of
-// blocks. Also writes the grand total point count and the splat kernel's indirect dispatch args.
+// Gaussian Point Splatting — workload scan, level 2. One workgroup scans block sums in 512-wide chunks,
+// then writes the total point count and indirect splat dispatch args.
 #include<gaussianPointSplattingScan>
 
 @group(0) @binding(0) var<storage, read_write> blockSums : array<u32>;
@@ -54,10 +53,8 @@ fn main(@builtin(local_invocation_id) lid : vec3u) {
     }
 
     if (t == 0u) {
-        // Tile the point dispatch across a 2D workgroup grid so the total can exceed WebGPU's
-        // 65535-workgroups-per-dimension limit. A single row (groups > 65535) would either fail the
-        // dispatch or, if clamped, drop the CDF tail and make whole splats vanish when zoomed in
-        // (huge per-splat footprints -> enormous total point count). Y-tiling dispatches every point.
+        // Y-tile the point dispatch to exceed WebGPU's 65535-workgroups-per-dimension limit without
+        // dropping the CDF tail.
         let totalGroups = (wgCarry + 255u) / 256u;
         let gx = min(totalGroups, 65535u);
         let gy = (totalGroups + 65534u) / 65535u;

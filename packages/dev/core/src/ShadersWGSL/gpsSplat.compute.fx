@@ -1,8 +1,5 @@
-// Gaussian Point Splatting — splat kernel. Dispatched indirectly with one invocation per point (the
-// scanned total). Each invocation finds its owning Gaussian by binary-searching the CDF (no scatter
-// pass, no per-point index buffer), samples a stochastic offset in the Gaussian's covariance frame,
-// rejects it against the Gaussian's footprint, dithers the color, and writes it with a packed
-// atomicMin depth-min.
+// Gaussian Point Splatting — one invocation per emitted point. Finds the owning Gaussian through the
+// CDF, samples its covariance, quantizes color with dithering, and depth-tests with packed atomicMin.
 #include<gaussianPointSplatting>
 
 @group(0) @binding(0) var<storage, read> cdf : array<u32>;
@@ -10,11 +7,9 @@
 @group(0) @binding(2) var<storage, read_write> imageBuffer : array<atomic<u32>>;
 @group(0) @binding(3) var<uniform> uniforms : GpsUniforms;
 @group(0) @binding(4) var<storage, read> pointCount : array<u32>;
-@group(0) @binding(5) var<storage, read> partTable : array<u32>; // point->Gaussian acceleration table
+@group(0) @binding(5) var<storage, read> partTable : array<u32>; // bucket->Gaussian search table
 
-// Largest g in [loInit, hiInit) with cdf[g] <= p. Zero-weight Gaussians share a CDF value with the next
-// one, so picking the largest index always lands on the point's real owner. The [lo, hi) range is seeded
-// from the acceleration table so this searches only the Gaussians spanning one point-bucket.
+// Largest g in [loInit, hiInit) with cdf[g] <= p; choosing the largest handles zero-weight Gaussians.
 fn gpsFindGaussian(p : u32, loInit : u32, hiInit : u32) -> u32 {
     var lo = loInit;
     var hi = hiInit;
@@ -34,8 +29,7 @@ fn gpsFindGaussian(p : u32, loInit : u32, hiInit : u32) -> u32 {
 
 @compute @workgroup_size(256, 1, 1)
 fn main(@builtin(global_invocation_id) gid : vec3u) {
-    // Linear point index from the 2D dispatch grid: rows are tiled at the 65535-workgroup limit
-    // (65535 * 256 = 16776960 threads per row) so the total point count can exceed one dimension.
+    // Linear point index from a 2D grid tiled at WebGPU's 65535-workgroup-per-dimension limit.
     let p = gid.y * 65535u * 256u + gid.x;
     let total = pointCount[0];
     if (p >= total) {
@@ -43,8 +37,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     }
 
     let count = u32(uniforms.params0.x);
-    // Seed the CDF search from the acceleration table: bucket = p/total*BUCKETS, then search only the
-    // Gaussians spanning that bucket (widened +/-1 bucket to absorb the f32 rounding in the bucket index).
+    // Seed from the bucket table and widen +/-1 bucket to cover f32 bucket rounding.
     let bucket = min(u32(max(f32(p) / f32(total) * f32(GPS_PARTITION_BUCKETS), 0.0)), GPS_PARTITION_BUCKETS - 1u);
     let loB = select(bucket - 1u, 0u, bucket == 0u);
     let hiB = min(bucket + 2u, GPS_PARTITION_BUCKETS);
@@ -65,17 +58,15 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // Offset in the covariance frame (standard-normal / Mahalanobis units).
     var z : vec2f;
     if (s.depth.y == 1u) {
-        // Debug opacity-saturate: sample UNIFORMLY over the Mahalanobis R^2=8 ellipse (flat disk). r =
-        // sqrt(u1)*R gives a uniform areal distribution; r <= R, so no cutoff is needed.
+        // Debug opacity-saturate: uniform sample over the Mahalanobis R^2=8 disk; no cutoff needed.
         let r = sqrt(u1) * 2.8284271; // R = sqrt(8)
         let ang = GPS_TWO_PI * u2;
         z = vec2f(r * cos(ang), r * sin(ang));
     } else {
-        // Importance-sampled offset (unbiased 2D splatting): with the Poisson count in preprocess and no
-        // per-sample rejection, the atomicMin coverage converges to exactly opacity*gaussian.
+        // Importance-sampled offset; before the classic cutoff below, the estimator targets
+        // opacity*gaussian without per-sample alpha rejection.
         z = gpsCorrectedBoxMuller(u1, u2, opacity);
-        // Match the classic quad cutoff: meshPos in [-2,2] with a circular discard at |meshPos|>=2,
-        // i.e. mahalanobis 2*sqrt(2) sigma. Our z is in standard-normal (mahalanobis) units, so |z|<2.83.
+        // Match the classic quad cutoff: meshPos radius 2 => Mahalanobis radius 2*sqrt(2).
         if (dot(z, z) > 8.0) {
             return;
         }
@@ -93,9 +84,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // Hard-reject only fully-transparent tail samples (cleanup); the coverage is set by the sample
     // DENSITY (importance sampling), not by a per-sample stochastic emission.
     let d = pixelMean - pixel;
-    // Debug opacity-saturate (s.depth.y): drop the Gaussian falloff so the footprint reads as a flat
-    // disk. Approximate in the stochastic model (sample density is still Gaussian), but visibly fills
-    // the splat as the classic's flat-disk debug does.
+    // Debug opacity-saturate: flat alpha like the classic debug mode; sampling used a uniform disk above.
     let alpha = select(opacity * gpsGaussianValue(conic, d), opacity, s.depth.y == 1u);
     if (alpha < 0.00392) { // ~1/255
         return;

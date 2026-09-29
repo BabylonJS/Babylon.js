@@ -1,16 +1,13 @@
-// Writes the resolved Gaussian Point Splatting depth into a DepthRenderer map. accumBuffer holds the
-// accumulated coverage (w) used to reject pixels no point ever landed on; accumDepth holds the resolved
-// nearest-surface depth as NDC z (same projection convention the color blit feeds to fragDepth).
+// Writes resolved point-splatting depth into a DepthRenderer map. accumBuffer.w rejects empty pixels;
+// accumDepth stores the resolved nearest-surface NDC z.
 //
-// The DepthRenderer map stores a linear metric in its red channel: (clipZ + depthValues.x) / depthValues.y
-// (negated clipZ when a reverse depth buffer is used), exactly like the classic Gaussian Splatting depth
-// material. clipZ is recovered from the NDC z with the projection z-row (projZ = m10, m11, m14, m15):
+// DepthRenderer stores (clipZ + depthValues.x) / depthValues.y in red (negating clipZ for reverse depth),
+// matching the classic Gaussian Splatting depth material. Recover clipZ from NDC z with:
 //   ndc = (m10 * vz + m14) / (m11 * vz + m15)  =>  vz = (ndc * m15 - m14) / (m10 - ndc * m11)
 //   clipZ = m10 * vz + m14
-// which is valid for both perspective (m11 = +/-1, m15 = 0) and orthographic (m11 = 0, m15 = 1) cameras.
+// Valid for both perspective (m11 = +/-1, m15 = 0) and orthographic (m11 = 0, m15 = 1) cameras.
 //
-// fragDepth is written with the raw NDC z so the blit z-tests and composes against ordinary meshes already
-// rendered into the depth map, just like the color blit does against the main framebuffer.
+// fragDepth uses raw NDC z so the blit z-tests against ordinary meshes already in the depth map.
 uniform resolution: vec2f;
 uniform depthValues: vec2f;
 uniform projZ: vec4f;

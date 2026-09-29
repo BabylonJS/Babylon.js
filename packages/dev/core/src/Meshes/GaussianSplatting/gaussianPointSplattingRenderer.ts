@@ -1,5 +1,5 @@
 /**
- * Re-exports pure implementation and applies runtime side effects.
+ * Re-exports the pure implementation and imports required shaders/features for their runtime registration.
  * Import gaussianPointSplattingRenderer.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./gaussianPointSplattingRenderer.pure";

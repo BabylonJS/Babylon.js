@@ -7,26 +7,13 @@ import { Constants } from "core/Engines/constants";
 import { type StorageBuffer } from "core/Buffers/storageBuffer";
 
 /**
- * Writes the Gaussian Point Splatting resolved depth into a DepthRenderer's depth map with a fullscreen
- * triangle. It reuses the point-splatting blit vertex shader (camera-independent clip-space passthrough)
- * and reads the resolved coverage + NDC depth from read-only storage buffers, emitting the DepthRenderer's
- * linear depth metric in the red channel and the NDC depth as fragDepth. WebGPU only.
+ * Writes resolved Gaussian Point Splatting depth into a DepthRenderer map with a fullscreen triangle.
+ * Samples coverage and NDC depth from storage buffers, emits the DepthRenderer linear metric in red, and
+ * writes fragDepth for depth-test composition. WebGPU only.
  *
- * Note that this depth is OPAQUE and is NOT the alpha-blended depth the classic path produces under
- * `DepthRenderer.alphaBlendedDepth`. The classic material emits every overlapping ellipsoid with its
- * Gaussian opacity and alpha-composites them, so its value is a coverage-weighted average over the cloud
- * (pulled backwards by the farther Gaussians and by the residual-transmittance background term). The
- * compute instead resolves visibility with a per-pixel atomic depth-min, so each covered pixel carries the
- * depth of a single Gaussian — the nearest visible surface.
- *
- * Two consequences worth knowing for depth consumers:
- * - It converges to the nearest surface, not to the classic blend. The two differ by a few percent of the
- *   depth metric, and the difference is largest (not smallest) where a single opaque Gaussian dominates,
- *   because that is where the classic blend is most diluted by the background.
- * - The value never fully settles. The frame's winner is drawn with the alpha-compositing probabilities,
- *   so it keeps hopping between the depths of the Gaussians clustered at that surface (plus the 16-bit
- *   view-z key quantization). The residual jitter is roughly an order of magnitude smaller than the offset
- *   from the classic blend, which is fine for SSAO/DOF/AOV but not for exact depth equality.
+ * This is opaque nearest-surface depth, not the coverage-weighted `DepthRenderer.alphaBlendedDepth`
+ * result from the classic raster path. It can jitter between Gaussians at the visible surface, so it is
+ * suitable for SSAO/DOF/AOV but not exact depth equality.
  */
 export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
     /**
@@ -48,8 +35,7 @@ export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
             }
         );
 
-        // Fullscreen pass: never cull. The depth map is opaque (one resolved surface per pixel), and depth
-        // writes are kept so the blit z-tests/composes against ordinary meshes already in the depth map.
+        // Fullscreen pass; depth writes are kept so the blit composes against meshes already in the depth map.
         this.backFaceCulling = false;
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.forceDepthWrite = true;
