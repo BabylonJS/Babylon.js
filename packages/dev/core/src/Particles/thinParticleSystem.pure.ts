@@ -2,6 +2,7 @@
 
 import { type Immutable, type Nullable } from "../types";
 import { type FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
+import { Logger } from "../Misc/logger";
 import { type Observer, Observable } from "../Misc/observable.pure";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
@@ -183,6 +184,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     /** @internal */
     public _noiseTextureData: Nullable<Uint8Array> = null;
     private _noiseTextureFetchInFlight: Nullable<ProceduralTexture> = null;
+    private _noiseTextureFetchToken = 0;
+    private _noiseTextureReadbackFailureLogged = false;
     private _particles = new Array<Particle>();
     private _epsilon: number;
     private _capacity: number;
@@ -710,39 +713,45 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this.updateFunction = (particles: Particle[]): void => {
             const noiseTexture = this.noiseTexture;
             if (noiseTexture && this._noiseTextureFetchInFlight !== noiseTexture) {
-                // We need to get texture data back to CPU. Only issue a new readback for this texture
-                // while none of its previous readbacks is in flight to avoid piling up a promise per frame.
+                // One readback per texture in flight to avoid piling up a promise per frame.
                 const noiseContent = noiseTexture.getContent();
                 if (noiseContent) {
                     const textureSize = noiseTexture.getSize();
-                    // getSize() returns a shared cached object: snapshot the dimensions so a later resize
-                    // cannot mutate the pair published together with the buffer.
+                    // getSize() returns a shared object: snapshot it so a later resize cannot mutate the published pair.
                     const noiseSize = { width: textureSize.width, height: textureSize.height };
+                    // Gate completions on a per-request token: texture identity cannot tell two readbacks apart.
+                    const fetchToken = ++this._noiseTextureFetchToken;
                     this._noiseTextureFetchInFlight = noiseTexture;
                     // eslint-disable-next-line github/no-then
                     noiseContent.then(
                         (data) => {
-                            if (this._noiseTextureFetchInFlight === noiseTexture) {
-                                this._noiseTextureFetchInFlight = null;
+                            if (this._noiseTextureFetchToken !== fetchToken) {
+                                // Superseded by a newer readback.
+                                return;
                             }
+                            this._noiseTextureFetchInFlight = null;
+                            this._noiseTextureReadbackFailureLogged = false;
                             if (this.noiseTexture !== noiseTexture) {
-                                // The texture was replaced while the readback was pending: discard the stale buffer.
+                                // Replaced while pending: discard the stale buffer.
                                 return;
                             }
                             const buffer = data as Uint8Array;
                             if (buffer.length !== noiseSize.width * noiseSize.height * 4) {
-                                // The readback returned a buffer for another size (e.g. the texture was resized
-                                // while the cached readback was pending): discard it and retry on the next update.
+                                // Buffer for another size (texture resized while pending): retry on the next update.
                                 return;
                             }
-                            // Publish the buffer and the dimensions captured for this texture together.
                             this._noiseTextureSize = noiseSize;
                             this._noiseTextureData = buffer;
                         },
                         () => {
-                            // Allow a retry next frame.
-                            if (this._noiseTextureFetchInFlight === noiseTexture) {
-                                this._noiseTextureFetchInFlight = null;
+                            if (this._noiseTextureFetchToken !== fetchToken) {
+                                return;
+                            }
+                            // Retry on the next update, reporting the failure once per streak.
+                            this._noiseTextureFetchInFlight = null;
+                            if (!this._noiseTextureReadbackFailureLogged) {
+                                this._noiseTextureReadbackFailureLogged = true;
+                                Logger.Warn(`Noise texture readback failed for "${noiseTexture.name}"; it will be retried on the next update`);
                             }
                         }
                     );
