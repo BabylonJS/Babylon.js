@@ -25,7 +25,7 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [IEngineExp
             order: 200,
             predicate: IsSceneContext,
             getNodes: (scene) => {
-                const records = resourceIndexService.index.getSceneSnapshot(scene).textures;
+                const records = resourceIndexService.getSceneSnapshot(scene).textures;
                 const recordsByEntity = new Map(records.map((record) => [record.entity, record]));
                 return [
                     CreateSceneExplorerSectionNode(
@@ -37,7 +37,7 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [IEngineExp
                     ),
                 ];
             },
-            getSnapshot: (scene) => resourceIndexService.index.getSceneSnapshot(scene).textures.map((record) => record.entity),
+            getSnapshot: (scene) => resourceIndexService.getSceneSnapshot(scene).textures.map((record) => record.entity),
             onChanged: resourceIndexService.onChanged,
         }),
 };

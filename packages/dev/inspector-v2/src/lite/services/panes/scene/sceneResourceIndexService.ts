@@ -1,10 +1,11 @@
 import { type IReadonlyObservable } from "core/index";
+import { type Material, type SceneContext } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
 import { type ServiceDefinition, type IService } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
 import { type IWatcherService, WatcherServiceIdentity } from "../../../../services/watcherService";
-import { SceneResourceIndex } from "./sceneResources";
+import { SceneResourceIndex, type IMaterialResourceRecord, type ISceneResourceSnapshot, type ITextureResourceRecord } from "./sceneResources";
 
 /**
  * The unique identity for the Inspector-owned Lite scene resource index.
@@ -17,14 +18,18 @@ export const SceneResourceIndexServiceIdentity = Symbol("SceneResourceIndex");
  * @internal
  */
 export interface ISceneResourceIndexService extends IService<typeof SceneResourceIndexServiceIdentity> {
-    /** The index for the inspected engine. */
-    readonly index: SceneResourceIndex;
     /** Notifies after the index has applied a topology change. */
     readonly onChanged: IReadonlyObservable<void>;
     /** Notifies once while the service is being disposed. */
     readonly onDisposed: IReadonlyObservable<void>;
     /** Whether this service can still refresh and publish snapshots. */
     readonly isDisposed: boolean;
+    /** Returns resources reachable from the given scene. */
+    getSceneSnapshot(scene: SceneContext): ISceneResourceSnapshot;
+    /** Returns a source material record when it is reachable. */
+    getMaterialRecord(material: Material): IMaterialResourceRecord | undefined;
+    /** Returns an exact texture wrapper record when it is reachable. */
+    getTextureRecord(texture: object): ITextureResourceRecord | undefined;
     /** Rebuilds the index immediately and notifies mounted consumers. */
     refresh(): void;
 }
@@ -63,7 +68,9 @@ export const SceneResourceIndexServiceDefinition: ServiceDefinition<[ISceneResou
         );
 
         return {
-            index,
+            getSceneSnapshot: (scene) => index.getSceneSnapshot(scene),
+            getMaterialRecord: (material) => index.getMaterialRecord(material),
+            getTextureRecord: (texture) => index.getTextureRecord(texture),
             onChanged,
             onDisposed,
             get isDisposed() {

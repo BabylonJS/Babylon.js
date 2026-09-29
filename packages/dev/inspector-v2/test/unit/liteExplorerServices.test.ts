@@ -368,13 +368,14 @@ describe("Babylon Lite engine explorer service", () => {
 
             expect(SceneResourceIndexServiceDefinition.produces).toEqual([SceneResourceIndexServiceIdentity]);
             expect(SceneResourceIndexServiceDefinition.consumes).toEqual([EngineContextIdentity, WatcherServiceIdentity]);
-            expect(firstService.index.getTextureRecord(sharedTexture)?.ordinal).toBe(2);
-            expect(secondService.index.getTextureRecord(sharedTexture)?.ordinal).toBe(1);
+            expect("index" in firstService).toBe(false);
+            expect(firstService.getTextureRecord(sharedTexture)?.ordinal).toBe(2);
+            expect(secondService.getTextureRecord(sharedTexture)?.ordinal).toBe(1);
 
             firstService.dispose?.();
             expect(firstWatcher.dispose).toHaveBeenCalledOnce();
-            expect(firstService.index.getSceneSnapshot(sceneA)).toMatchObject({ materials: [], textures: [] });
-            expect(secondService.index.getTextureRecord(sharedTexture)?.entity).toBe(sharedTexture);
+            expect(firstService.getSceneSnapshot(sceneA)).toMatchObject({ materials: [], textures: [] });
+            expect(secondService.getTextureRecord(sharedTexture)?.entity).toBe(sharedTexture);
             secondService.dispose?.();
         });
     });
@@ -808,7 +809,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         const service = SceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine(scenes) } as IEngineContext, topologyWatcher.watcherService)!;
         const changed = vi.fn();
         service.onChanged.add(changed);
-        const firstTextureOrdinal = service.index.getTextureRecord(firstTexture)?.ordinal;
+        const firstTextureOrdinal = service.getTextureRecord(firstTexture)?.ordinal;
 
         (materialView as Material & { source: Material }).source = secondMaterial;
         topologyWatcher.notify();
@@ -816,26 +817,26 @@ describe("Babylon Lite scene resource explorer services", () => {
         await Promise.resolve();
 
         expect(changed).toHaveBeenCalledOnce();
-        expect(service.index.getSceneSnapshot(firstScene)).toMatchObject({
+        expect(service.getSceneSnapshot(firstScene)).toMatchObject({
             materials: [{ source: secondMaterial }],
             textures: [{ entity: secondTexture }],
         });
-        expect(service.index.getMaterialRecord(firstMaterial)).toBeUndefined();
-        expect(service.index.getTextureRecord(firstTexture)).toBeUndefined();
+        expect(service.getMaterialRecord(firstMaterial)).toBeUndefined();
+        expect(service.getTextureRecord(firstTexture)).toBeUndefined();
 
         (materialView as Material & { source: Material }).source = firstMaterial;
         await topologyWatcher.refresh();
-        expect(service.index.getMaterialRecord(firstMaterial)?.source).toBe(firstMaterial);
-        expect(service.index.getTextureRecord(firstTexture)?.entity).toBe(firstTexture);
-        expect(service.index.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
+        expect(service.getMaterialRecord(firstMaterial)?.source).toBe(firstMaterial);
+        expect(service.getTextureRecord(firstTexture)?.entity).toBe(firstTexture);
+        expect(service.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
 
         (firstMaterial as Material & { diffuseTexture: Texture2D | null }).diffuseTexture = secondTexture;
         await topologyWatcher.refresh();
-        expect(service.index.getSceneSnapshot(firstScene).textures[0].entity).toBe(secondTexture);
-        expect(service.index.getTextureRecord(firstTexture)).toBeUndefined();
+        expect(service.getSceneSnapshot(firstScene).textures[0].entity).toBe(secondTexture);
+        expect(service.getTextureRecord(firstTexture)).toBeUndefined();
         (firstMaterial as Material & { diffuseTexture: Texture2D | null }).diffuseTexture = firstTexture;
         await topologyWatcher.refresh();
-        expect(service.index.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
+        expect(service.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
 
         (firstTexture as Texture2D & { width: number }).width = 32;
         await topologyWatcher.refresh();
@@ -843,28 +844,28 @@ describe("Babylon Lite scene resource explorer services", () => {
 
         mesh.material = secondMaterial;
         await topologyWatcher.refresh();
-        expect(service.index.getSceneSnapshot(firstScene).materials[0].source).toBe(secondMaterial);
+        expect(service.getSceneSnapshot(firstScene).materials[0].source).toBe(secondMaterial);
         mesh.material = materialView;
         await topologyWatcher.refresh();
 
         firstMeshes.length = 0;
         secondMeshes.push(mesh);
         await topologyWatcher.refresh();
-        expect(service.index.getSceneSnapshot(firstScene)).toMatchObject({ materials: [], textures: [] });
-        expect(service.index.getSceneSnapshot(secondScene).materials[0].source).toBe(firstMaterial);
-        expect(service.index.getMaterialRecord(firstMaterial)?.source).toBe(firstMaterial);
-        expect(service.index.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
+        expect(service.getSceneSnapshot(firstScene)).toMatchObject({ materials: [], textures: [] });
+        expect(service.getSceneSnapshot(secondScene).materials[0].source).toBe(firstMaterial);
+        expect(service.getMaterialRecord(firstMaterial)?.source).toBe(firstMaterial);
+        expect(service.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
 
         secondMeshes.length = 0;
         await topologyWatcher.refresh();
-        expect(service.index.getSceneSnapshot(secondScene)).toMatchObject({ materials: [], textures: [] });
-        expect(service.index.getMaterialRecord(firstMaterial)).toBeUndefined();
-        expect(service.index.getTextureRecord(firstTexture)).toBeUndefined();
+        expect(service.getSceneSnapshot(secondScene)).toMatchObject({ materials: [], textures: [] });
+        expect(service.getMaterialRecord(firstMaterial)).toBeUndefined();
+        expect(service.getTextureRecord(firstTexture)).toBeUndefined();
 
         scenes.splice(scenes.indexOf(secondScene), 1);
         await topologyWatcher.refresh();
-        expect(service.index.getMaterialRecord(firstMaterial)).toBeUndefined();
-        expect(service.index.getTextureRecord(firstTexture)).toBeUndefined();
+        expect(service.getMaterialRecord(firstMaterial)).toBeUndefined();
+        expect(service.getTextureRecord(firstTexture)).toBeUndefined();
 
         service.dispose?.();
     });
@@ -890,8 +891,8 @@ describe("Babylon Lite scene resource explorer services", () => {
         expect(disposed).toHaveBeenCalledOnce();
         expect(service.isDisposed).toBe(true);
         expect(changed).not.toHaveBeenCalled();
-        expect(service.index.getMaterialRecord(material)).toBeUndefined();
-        expect(service.index.getTextureRecord(texture)).toBeUndefined();
+        expect(service.getMaterialRecord(material)).toBeUndefined();
+        expect(service.getTextureRecord(texture)).toBeUndefined();
     });
 
     it("keeps provider refresh and selection identities independent across Inspector instances", () => {

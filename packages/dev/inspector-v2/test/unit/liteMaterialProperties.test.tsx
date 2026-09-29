@@ -124,11 +124,9 @@ function MakeStandard(overrides: Record<string, unknown> = {}): Material {
 function MakeResourceService(records: readonly IMaterialResourceRecord[], textures: readonly ITextureResourceRecord[] = []): ISceneResourceIndexService {
     const onChanged = new Observable<void>();
     return {
-        index: {
-            getMaterialRecord: (material: Material) => records.find((record) => record.source === material),
-            getTextureRecord: (texture: object) => textures.find((record) => record.entity === texture),
-            getSceneSnapshot: (scene: SceneContext) => ({ scene, materials: records.filter((record) => record.scenes.includes(scene)), textures }),
-        },
+        getMaterialRecord: (material: Material) => records.find((record) => record.source === material),
+        getTextureRecord: (texture: object) => textures.find((record) => record.entity === texture),
+        getSceneSnapshot: (scene: SceneContext) => ({ scene, materials: records.filter((record) => record.scenes.includes(scene)), textures }),
         onChanged,
         onDisposed: new Observable<void>(),
         isDisposed: false,

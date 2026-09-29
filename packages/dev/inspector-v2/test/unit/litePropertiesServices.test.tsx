@@ -177,10 +177,8 @@ describe("Babylon Lite properties services", () => {
         } as unknown as IPropertiesService;
         const engineContext = { engine } as IEngineContext;
         const materialResourceIndexService = {
-            index: {
-                getMaterialRecord: (candidate: Material) => (candidate === material ? { source: material } : undefined),
-                getTextureRecord: (candidate: object) => (candidate === texture ? { entity: texture } : undefined),
-            },
+            getMaterialRecord: (candidate: Material) => (candidate === material ? { source: material } : undefined),
+            getTextureRecord: (candidate: object) => (candidate === texture ? { entity: texture } : undefined),
         } as unknown as ISceneResourceIndexService;
 
         const services = [

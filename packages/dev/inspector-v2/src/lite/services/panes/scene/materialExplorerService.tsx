@@ -26,13 +26,13 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [IEngineEx
                     CreateSceneExplorerSectionNode(
                         "materials",
                         "Materials",
-                        resourceIndexService.index.getSceneSnapshot(scene).materials.map((record) => record.source),
+                        resourceIndexService.getSceneSnapshot(scene).materials.map((record) => record.source),
                         (material) => CreateWatchedNameDisplayInfo(watcherService, material, () => GetMaterialDisplayName(material)),
                         () => <MaterialIcon color={tokens.colorPaletteMarigoldForeground2} />
                     ),
                 ];
             },
-            getSnapshot: (scene) => resourceIndexService.index.getSceneSnapshot(scene).materials.map((record) => record.source),
+            getSnapshot: (scene) => resourceIndexService.getSceneSnapshot(scene).materials.map((record) => record.source),
             onChanged: resourceIndexService.onChanged,
         }),
 };

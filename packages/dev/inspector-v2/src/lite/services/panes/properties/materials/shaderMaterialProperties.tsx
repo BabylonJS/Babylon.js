@@ -291,7 +291,7 @@ export const ShaderMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (p
         return <ShaderGeneral {...props} />;
     }
     if (section === "inputs") {
-        if (!resourceIndexService.index.getMaterialRecord(getMaterialSource(material))) {
+        if (!resourceIndexService.getMaterialRecord(getMaterialSource(material))) {
             return <TextPropertyLine label="Error" value="This material is no longer available in an inspected scene." />;
         }
         return (
@@ -303,13 +303,13 @@ export const ShaderMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (p
         );
     }
     if (section === "configuration") {
-        if (!resourceIndexService.index.getMaterialRecord(getMaterialSource(material))) {
+        if (!resourceIndexService.getMaterialRecord(getMaterialSource(material))) {
             return <TextPropertyLine label="Error" value="This material is no longer available in an inspected scene." />;
         }
         return <ComputedProperty component={TextPropertyLine} target={shader} getValue={SummarizeConfiguration} label="Configuration" />;
     }
     if (section === "textures") {
-        if (!resourceIndexService.index.getMaterialRecord(getMaterialSource(material))) {
+        if (!resourceIndexService.getMaterialRecord(getMaterialSource(material))) {
             return <TextPropertyLine label="Error" value="This material is no longer available in an inspected scene." />;
         }
         return (

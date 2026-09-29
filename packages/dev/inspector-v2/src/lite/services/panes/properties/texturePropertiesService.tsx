@@ -34,7 +34,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                 if (typeof entity !== "object" || entity === null) {
                     return false;
                 }
-                if (TryGetTextureMetadata(entity) || resourceIndexService.index.getTextureRecord(entity)) {
+                if (TryGetTextureMetadata(entity) || resourceIndexService.getTextureRecord(entity)) {
                     recognizedTextures.add(entity);
                     return true;
                 }

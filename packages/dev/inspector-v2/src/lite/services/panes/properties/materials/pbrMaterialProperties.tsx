@@ -1173,10 +1173,7 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
         }
     };
     const source = getSource();
-    const getRecord = useCallback(
-        () => (source && !resourceIndexService.isDisposed ? resourceIndexService.index.getMaterialRecord(source) : undefined),
-        [source, resourceIndexService]
-    );
+    const getRecord = useCallback(() => (source && !resourceIndexService.isDisposed ? resourceIndexService.getMaterialRecord(source) : undefined), [source, resourceIndexService]);
     const record = useObservableState(getRecord, resourceIndexService.onChanged);
     const isDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
     const [operations, runLatestOperation] = useLatestAsyncOperation(

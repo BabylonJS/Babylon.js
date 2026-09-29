@@ -58,7 +58,7 @@ function OptionalRow(id: string, label: string, value: unknown, units?: string):
 }
 
 function GetMaterialRecord(resourceIndexService: ISceneResourceIndexService, material: Material): IMaterialResourceRecord | undefined {
-    return resourceIndexService.index.getMaterialRecord(material);
+    return resourceIndexService.getMaterialRecord(material);
 }
 
 function GetConsumerScenes(record: ITextureResourceRecord | undefined, resourceIndexService: ISceneResourceIndexService): readonly SceneContext[] {
@@ -175,7 +175,7 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
     const { texture, resourceIndexService, selectionService } = props;
     const classes = useStyles();
     const getSnapshot = useCallback(() => {
-        const record = resourceIndexService.index.getTextureRecord(texture);
+        const record = resourceIndexService.getTextureRecord(texture);
         try {
             const metadata = getTextureMetadata(texture);
             return metadata ? { metadata, record } : undefined;
@@ -206,7 +206,7 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
         runLatestOperation({
             id,
             operationAsync: async () => {
-                const currentRecord = resourceIndexService.index.getTextureRecord(texture);
+                const currentRecord = resourceIndexService.getTextureRecord(texture);
                 if (!currentRecord) {
                     throw new Error("This texture is no longer available in an inspected scene.");
                 }
@@ -301,7 +301,7 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                         onLink={
                             materialRecord
                                 ? () => {
-                                      const currentRecord = resourceIndexService.index.getTextureRecord(texture);
+                                      const currentRecord = resourceIndexService.getTextureRecord(texture);
                                       const currentConsumer = currentRecord?.consumers.find(
                                           (candidate) => candidate.material === consumer.material && candidate.bindingId === consumer.bindingId
                                       );

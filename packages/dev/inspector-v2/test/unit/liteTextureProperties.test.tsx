@@ -87,11 +87,9 @@ function MakeServices(metadata: TextureMetadata, kind: "standard" | "pbr" = "sta
     let disposed = false;
     const refresh = vi.fn(() => onChanged.notifyObservers());
     const resourceIndexService = {
-        index: {
-            getTextureRecord: (entity: object) => (entity === texture ? textureRecord : undefined),
-            getMaterialRecord: (entity: Material) => (entity === material ? materialRecord : undefined),
-            getSceneSnapshot: () => ({ scene, materials: [materialRecord], textures: [textureRecord] }),
-        },
+        getTextureRecord: (entity: object) => (entity === texture ? textureRecord : undefined),
+        getMaterialRecord: (entity: Material) => (entity === material ? materialRecord : undefined),
+        getSceneSnapshot: () => ({ scene, materials: [materialRecord], textures: [textureRecord] }),
         onChanged,
         onDisposed,
         refresh,
@@ -257,7 +255,7 @@ describe("Babylon Lite texture accessor metadata", () => {
     it("keeps stale and malformed wrappers accessible without throwing", () => {
         const selectionService = MakeSelectionService();
         const resourceIndexService = {
-            index: { getTextureRecord: () => undefined },
+            getTextureRecord: () => undefined,
             onChanged: new Observable<void>(),
             onDisposed: new Observable<void>(),
             isDisposed: false,

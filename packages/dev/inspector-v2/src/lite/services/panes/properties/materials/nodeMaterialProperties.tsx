@@ -219,7 +219,7 @@ export const NodeMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (pro
         return <NodeGeneral {...props} />;
     }
     if (section === "inputs") {
-        if (!resourceIndexService.index.getMaterialRecord(getMaterialSource(material))) {
+        if (!resourceIndexService.getMaterialRecord(getMaterialSource(material))) {
             return <TextPropertyLine label="Error" value="This material is no longer available in an inspected scene." />;
         }
         return (

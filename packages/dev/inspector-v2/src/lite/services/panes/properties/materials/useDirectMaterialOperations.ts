@@ -53,7 +53,7 @@ function ValidateValue(id: string, value: unknown): void {
  */
 export function useDirectMaterialOperations(material: Material, resourceIndexService: ISceneResourceIndexService, selectionService: ISelectionService) {
     const source = getMaterialSource(material);
-    const record = resourceIndexService.index.getMaterialRecord(source);
+    const record = resourceIndexService.getMaterialRecord(source);
     const isDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
     const [operations, runLatestOperation] = useLatestAsyncOperation(
         material,
@@ -67,7 +67,7 @@ export function useDirectMaterialOperations(material: Material, resourceIndexSer
         runLatestOperation({
             id,
             operationAsync: async () => {
-                const currentRecord = resourceIndexService.index.getMaterialRecord(source);
+                const currentRecord = resourceIndexService.getMaterialRecord(source);
                 if (!currentRecord || resourceIndexService.isDisposed) {
                     throw new Error("This material is no longer available in an inspected scene.");
                 }

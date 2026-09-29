@@ -64,12 +64,12 @@ export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> 
         invalidate,
         apply,
     } = props;
-    const currentRecord = value ? resourceIndexService.index.getTextureRecord(value) : undefined;
+    const currentRecord = value ? resourceIndexService.getTextureRecord(value) : undefined;
     const unsupported = value && (!currentRecord || !acceptedKinds.includes(currentRecord.metadata.kind) || !AcceptsSampleType(currentRecord.metadata.sampleType, sampleCategory));
     const candidates: object[] = [];
     const seen = new Set<object>();
     for (const scene of record.scenes) {
-        for (const texture of resourceIndexService.index.getSceneSnapshot(scene).textures) {
+        for (const texture of resourceIndexService.getSceneSnapshot(scene).textures) {
             if (!seen.has(texture.entity)) {
                 seen.add(texture.entity);
                 candidates.push(texture.entity);
@@ -82,11 +82,11 @@ export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> 
             oldValue: value ?? null,
             newValue: texture,
             apply: (): void | Promise<void> => {
-                const current = resourceIndexService.index.getMaterialRecord(source)?.bindings.find((binding) => binding.id === id)?.entity;
+                const current = resourceIndexService.getMaterialRecord(source)?.bindings.find((binding) => binding.id === id)?.entity;
                 if ((current ?? null) !== (value ?? null)) {
                     throw new Error(`Texture binding "${id}" is stale.`);
                 }
-                const metadata = texture && resourceIndexService.index.getTextureRecord(texture)?.metadata;
+                const metadata = texture && resourceIndexService.getTextureRecord(texture)?.metadata;
                 if (texture && (!metadata || !acceptedKinds.includes(metadata.kind) || !AcceptsSampleType(metadata.sampleType, sampleCategory))) {
                     throw new TypeError(`Texture binding "${id}" does not accept this texture.`);
                 }
@@ -101,12 +101,12 @@ export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> 
             label={label}
             value={unsupported ? null : (value ?? null)}
             candidates={candidates}
-            getId={(texture) => String(resourceIndexService.index.getTextureRecord(texture)?.ordinal ?? candidates.indexOf(texture))}
-            getDisplayName={(texture) => GetTextureDisplayName(resourceIndexService.index.getTextureRecord(texture))}
-            getKind={(texture) => resourceIndexService.index.getTextureRecord(texture)?.metadata.kind ?? "unknown"}
+            getId={(texture) => String(resourceIndexService.getTextureRecord(texture)?.ordinal ?? candidates.indexOf(texture))}
+            getDisplayName={(texture) => GetTextureDisplayName(resourceIndexService.getTextureRecord(texture))}
+            getKind={(texture) => resourceIndexService.getTextureRecord(texture)?.metadata.kind ?? "unknown"}
             acceptedKinds={acceptedKinds}
             isCandidateAccepted={(texture) => {
-                const metadata = resourceIndexService.index.getTextureRecord(texture)?.metadata;
+                const metadata = resourceIndexService.getTextureRecord(texture)?.metadata;
                 return !!metadata && AcceptsSampleType(metadata.sampleType, sampleCategory);
             }}
             write={
@@ -120,7 +120,7 @@ export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> 
             navigate={
                 value && !unsupported
                     ? (texture) => {
-                          const binding = resourceIndexService.index.getMaterialRecord(source)?.bindings.find((candidate) => candidate.id === id);
+                          const binding = resourceIndexService.getMaterialRecord(source)?.bindings.find((candidate) => candidate.id === id);
                           if (!resourceIndexService.isDisposed && binding?.entity === texture) {
                               selectionService.selectedEntity = texture;
                           }

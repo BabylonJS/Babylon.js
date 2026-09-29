@@ -88,7 +88,7 @@ function TryDescribeMaterial(entity: unknown, resourceIndexService: ISceneResour
     try {
         const material = entity as Material;
         const source = getMaterialSource(material);
-        if (typeof source !== "object" || source === null || !resourceIndexService.index.getMaterialRecord(source)) {
+        if (typeof source !== "object" || source === null || !resourceIndexService.getMaterialRecord(source)) {
             return undefined;
         }
         const family = getMaterialFamily(source);
@@ -108,7 +108,7 @@ const UnknownMaterialProperties: FunctionComponent<{ material: Material; resourc
     const { material, resourceIndexService } = props;
     const getMaterialIdentity = useCallback(() => {
         const identity = TryDescribeMaterial(material, resourceIndexService);
-        const record = identity && resourceIndexService.index.getMaterialRecord(identity.source);
+        const record = identity && resourceIndexService.getMaterialRecord(identity.source);
         return record && identity ? identity : undefined;
     }, [material, resourceIndexService]);
     const identity = useObservableState(getMaterialIdentity, resourceIndexService.onChanged);
