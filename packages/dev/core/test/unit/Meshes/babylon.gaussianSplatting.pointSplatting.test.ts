@@ -354,13 +354,86 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_accumGeneration"] = 0;
         vi.spyOn(renderer, "readPointCountAsync").mockResolvedValue(1_000_000_000);
         mesh["_pointRenderer"] = renderer;
         mesh["_pointMode"] = true;
 
-        await mesh["_pointConvergeAutoScaleAsync"](2);
+        await mesh["_pointConvergeAutoScaleAsync"](2, 0, true);
         expect(mesh["_pointAutoN"]).toBe(8);
         expect(mesh["_pointBudgetReadPending"]).toBe(false);
+        // The provisional factor was wrong, so accumulation restarts once and the new generation is marked
+        // measured, which bounds the correction to a single reset.
+        expect(renderer.accumulationVersion).toBe(1);
+        expect(mesh["_pointAutoMeasuredGeneration"]).toBe(1);
+
+        mesh["_pointRenderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps the generation unmeasured when the sample came from the frame that reset accumulation", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_accumGeneration"] = 4;
+        vi.spyOn(renderer, "readPointCountAsync").mockResolvedValue(1_000_000_000);
+        const reset = vi.spyOn(renderer, "resetAccumulation");
+        mesh["_pointRenderer"] = renderer;
+        mesh["_pointMode"] = true;
+
+        // That frame runs without occlusion culling and over-counts, so it may only steer the next frame.
+        await mesh["_pointConvergeAutoScaleAsync"](2, 4, false);
+        expect(mesh["_pointAutoN"]).toBe(8);
+        expect(mesh["_pointAutoMeasuredGeneration"]).toBe(-1);
+        expect(reset).not.toHaveBeenCalled();
+
+        mesh["_pointRenderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("discards a measurement whose accumulation generation changed while the readback was in flight", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_accumGeneration"] = 4;
+        let finish!: (value: number) => void;
+        vi.spyOn(renderer, "readPointCountAsync").mockImplementation(() => new Promise<number>((resolve) => (finish = resolve)));
+        mesh["_pointRenderer"] = renderer;
+        mesh["_pointMode"] = true;
+
+        const pending = mesh["_pointConvergeAutoScaleAsync"](2, 4, true);
+        renderer.resetAccumulation();
+        finish(1_000_000_000);
+        await pending;
+        expect(mesh["_pointAutoMeasuredGeneration"]).toBe(-1);
+        expect(renderer.accumulationVersion).toBe(5);
+
+        mesh["_pointRenderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("restarts accumulation when the point render scale changes", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_accumGeneration"] = 7;
+        const reset = vi.spyOn(renderer, "resetAccumulation");
+        mesh["_pointRenderer"] = renderer;
+        mesh["_pointAutoMeasuredGeneration"] = 7;
+
+        mesh.pointSplattingRenderScale = 0.5;
+        expect(reset).toHaveBeenCalledTimes(1);
+        expect(mesh["_pointAutoMeasuredGeneration"]).toBe(-1);
+
+        // Re-assigning the same value is a no-op, so idle re-application cannot stall convergence.
+        mesh.pointSplattingRenderScale = 0.5;
+        expect(reset).toHaveBeenCalledTimes(1);
 
         mesh["_pointRenderer"] = null;
         scene.dispose();
@@ -372,21 +445,23 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
         const oldRenderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        oldRenderer["_accumGeneration"] = 0;
         let finishOld!: (value: number) => void;
         vi.spyOn(oldRenderer, "readPointCountAsync").mockImplementation(() => new Promise<number>((resolve) => (finishOld = resolve)));
         vi.spyOn(oldRenderer, "dispose").mockImplementation(() => {});
         mesh["_pointRenderer"] = oldRenderer;
         mesh["_pointMode"] = true;
-        mesh["_pointUpdateAutoScale"](2);
+        mesh["_pointUpdateAutoScale"](2, 0, true);
         mesh["_pointMode"] = false;
         mesh["_pointReleaseComputeIfIdle"]();
 
         const newRenderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        newRenderer["_accumGeneration"] = 0;
         let finishNew!: (value: number) => void;
         vi.spyOn(newRenderer, "readPointCountAsync").mockImplementation(() => new Promise<number>((resolve) => (finishNew = resolve)));
         mesh["_pointRenderer"] = newRenderer;
         mesh["_pointMode"] = true;
-        mesh["_pointUpdateAutoScale"](2);
+        mesh["_pointUpdateAutoScale"](2, 0, true);
         finishOld(1_000_000_000);
         await Promise.resolve();
         expect(mesh["_pointAutoN"]).toBe(2);

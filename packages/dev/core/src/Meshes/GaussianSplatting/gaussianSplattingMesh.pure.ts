@@ -300,16 +300,39 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _pointMode = false;
     private _pointDepthMode = false;
     private _pointScale = 1;
-    /** Internal render-resolution scale for point splatting. A number (1 = full) renders fewer pixels =
+    private _pointRenderScale: number | "auto" = "auto";
+    /**
+     * Internal render-resolution scale for point splatting. A number (1 = full) renders fewer pixels =
      * ~scale^2 fewer emitted points, with full resolution reconstructed over frames by jittered temporal
      * upsampling. `"auto"` (default) targets a device-tiered point budget: scale =
      * sqrt(budget / full-res point count). The integer upscale factor N = round(1/scale) is capped at 8,
-     * so particularly dense scenes can still exceed the budget. */
-    public pointSplattingRenderScale: number | "auto" = "auto";
-    // Budget-driven auto scale state: current integer factor N, an EMA of the full-res point estimate (to
-    // damp per-frame occlusion/Poisson noise so N doesn't churn), and an in-flight guard for the async readback.
+     * so particularly dense scenes can still exceed the budget.
+     *
+     * Setting it restarts progressive accumulation, so a converged image is always produced by a single
+     * render scale instead of a blend of two.
+     */
+    public get pointSplattingRenderScale(): number | "auto" {
+        return this._pointRenderScale;
+    }
+
+    public set pointSplattingRenderScale(value: number | "auto") {
+        if (value === this._pointRenderScale) {
+            return;
+        }
+        this._pointRenderScale = value;
+        this._pointAutoMeasuredGeneration = -1;
+        this._pointRenderer?.resetAccumulation();
+    }
+
+    // Budget-driven auto scale state. The factor N is measured once per accumulation generation, from the
+    // first frame of that generation which has Hi-Z occlusion culling active, and is then frozen for the
+    // rest of the generation so a converged image is never a blend of two render scales.
+    // `_pointAutoMeasuredGeneration` is the generation N has already been fixed for (-1 = none), and
+    // `_pointLastRenderedGeneration` is the previous frame's generation, used to detect the frame that reset
+    // accumulation — that frame runs without occlusion culling and over-reports the emitted point count.
     private _pointAutoN = 2;
-    private _pointFullPointsEma = 0;
+    private _pointAutoMeasuredGeneration = -1;
+    private _pointLastRenderedGeneration = -1;
     private _pointBudgetReadPending = false;
     // Frame counter driving the temporal-upsampling jitter cycle (which full-res sub-cell to sample).
     private _pointFrameCounter = 0;
@@ -660,9 +683,17 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /**
      * Progress of the point-splatting compute renderer after its most recent successful frame.
-     * Null while the compute pipeline is not ready or this mesh uses the classic renderer.
-     * Consumers can render a fixed number of samples per output pixel by multiplying their sample
-     * budget by pixelCycleLength, restarting whenever accumulationVersion changes.
+     * Returns null before the first successful compute frame, while the pipeline is not ready, or while
+     * this mesh is using the classic renderer (including the streamed-part fallback). This does not stop
+     * the scene render loop; it only reports counters from the latest dispatched frame.
+     *
+     * `renderedFrameCount` is the lifetime dispatch count and does not reset when samples are invalidated.
+     * Snapshot it whenever `accumulationVersion` changes. The first frame of a generation is a complete
+     * nearest upsample. Each following run of `pixelCycleLength` static frames adds one jittered sample to
+     * every output pixel. `pixelCycleLength` is fixed for the lifetime of a generation — under `"auto"`
+     * render scale the factor is measured once per generation and any correction resets accumulation — so
+     * watching `accumulationVersion` alone is enough to keep a sample budget valid.
+     * @returns the latest compute counters, or null when point splatting is not producing frames
      */
     public get pointSplattingProgress(): Nullable<{ renderedFrameCount: number; accumulationVersion: number; pixelCycleLength: number }> {
         if (!this._pointComputeActive || !this._pointResultReady || !this._pointRenderer) {
@@ -736,8 +767,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._pointDecodedSplatsData = null;
         this._pointResultReady = false;
         this._pointBudgetReadPending = false;
-        this._pointFullPointsEma = 0;
         this._pointAutoN = 2;
+        this._pointAutoMeasuredGeneration = -1;
+        this._pointLastRenderedGeneration = -1;
     }
 
     /** Builds the internal fullscreen compositor mesh used by a blit pass. It is an internal fullscreen
@@ -1126,19 +1158,21 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Kicks a throttled async readback of the current point count and converges the auto render factor N so
-     * the per-frame emitted points approach the device budget (scale = sqrt(budget / fullResPoints)).
+     * Kicks an async readback of the current point count and derives the auto render factor N so the
+     * per-frame emitted points approach the device budget (scale = sqrt(budget / fullResPoints)).
      * @param currentN the render factor N used for the frame being measured
+     * @param generation the accumulation generation the measured frame belongs to
+     * @param freeze whether the measured frame had occlusion culling active, so N may be fixed for `generation`
      */
-    private _pointUpdateAutoScale(currentN: number): void {
+    private _pointUpdateAutoScale(currentN: number, generation: number, freeze: boolean): void {
         if (this._pointBudgetReadPending || !this._pointRenderer) {
             return;
         }
         this._pointBudgetReadPending = true;
-        void this._pointConvergeAutoScaleAsync(currentN);
+        void this._pointConvergeAutoScaleAsync(currentN, generation, freeze);
     }
 
-    private async _pointConvergeAutoScaleAsync(currentN: number): Promise<void> {
+    private async _pointConvergeAutoScaleAsync(currentN: number, generation: number, freeze: boolean): Promise<void> {
         const renderer = this._pointRenderer;
         if (!renderer) {
             return;
@@ -1149,25 +1183,29 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 return;
             }
             if (total > 0) {
-                // Smooth the full-res point estimate (points ~ N^-2 -> fullPoints = measured * N^2). The EMA
-                // absorbs per-frame occlusion/Poisson noise (and the one-frame spike when a resize reseeds
-                // Hi-Z), so the factor N doesn't churn.
+                // Points scale as N^-2, so the full-res estimate is measured * N^2. One sample is enough: the
+                // relative Poisson noise over millions of points is negligible, and nothing inside a generation
+                // can change the emitted count (camera, transforms, visibility and splat data all reset
+                // accumulation). N stays at most 8, so this is a best-effort target, not a hard point-count cap.
                 const fullPoints = total * currentN * currentN;
-                this._pointFullPointsEma = this._pointFullPointsEma > 0 ? this._pointFullPointsEma * 0.8 + fullPoints * 0.2 : fullPoints;
-                // Raise N when over budget; step down only if the lower level still fits (0.9 margin).
-                // N stays at most 8, so this is a best-effort target rather than a hard point-count cap.
-                const budget = this._pointBudget();
-                const estAtCurrent = this._pointFullPointsEma / (currentN * currentN);
-                let target = currentN;
-                if (estAtCurrent > budget) {
-                    target = Math.ceil(Math.sqrt(this._pointFullPointsEma / budget)); // smallest N under budget
-                } else if (currentN > 1) {
-                    const lower = currentN - 1;
-                    if (this._pointFullPointsEma / (lower * lower) <= budget * 0.9) {
-                        target = lower;
-                    }
+                const target = Math.max(1, Math.min(8, Math.ceil(Math.sqrt(fullPoints / this._pointBudget()))));
+                this._pointAutoN = target;
+                if (!freeze || renderer.accumulationVersion !== generation) {
+                    // Either the sample came from the uncculled frame that reset accumulation (it over-counts),
+                    // or accumulation moved on while the readback was in flight. Keep the value as a hint for
+                    // the next frame, but leave the generation unmeasured so the image that actually settles is
+                    // always sized from a culled frame of its own generation.
+                    return;
                 }
-                this._pointAutoN = Math.max(1, Math.min(8, target));
+                if (target !== currentN) {
+                    // The frames accumulated so far used the provisional factor. Restart so the converged image
+                    // comes from `target` alone rather than a mix of two render scales.
+                    renderer.resetAccumulation();
+                }
+                // Mark the generation that is now current (the corrective reset above created a new one) as
+                // measured: re-measuring it would only reproduce the same estimate. This bounds the whole
+                // procedure to at most one corrective reset per settle.
+                this._pointAutoMeasuredGeneration = renderer.accumulationVersion;
             }
         } catch (error) {
             if (renderer === this._pointRenderer && this._pointComputeActive) {
@@ -1245,8 +1283,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
         this._pointResultReady = true;
 
-        if (scaleOpt === "auto") {
-            this._pointUpdateAutoScale(upsampleN);
+        // The frame that resets accumulation runs without Hi-Z occlusion culling and therefore emits far more
+        // points than the frames that follow it, so its sample may only be used as a hint for the next frame.
+        // Once culling is active, a single measurement fixes N for the whole generation.
+        const generation = this._pointRenderer.accumulationVersion;
+        const wasMoving = generation !== this._pointLastRenderedGeneration;
+        this._pointLastRenderedGeneration = generation;
+        if (scaleOpt === "auto" && this._pointAutoMeasuredGeneration !== generation) {
+            this._pointUpdateAutoScale(upsampleN, generation, !wasMoving);
         }
 
         const accum = this._pointRenderer.accumBuffer;

@@ -29,8 +29,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     if (accumulated.w < 0.0015) {
         discard;
     }
-    // Premultiplied color + coverage as alpha (material blends premultiplied). fragDepth lets the
-    // splats occlude and compose with other scene geometry.
+    // Premultiplied color + coverage as alpha. The material does not write color-pass depth; fragDepth
+    // is only the value used by the depth test, matching the classic transparent path.
     fragmentOutputs.color = vec4f(accumulated.rgb, accumulated.w);
     fragmentOutputs.fragDepth = accumDepth[idx];
 

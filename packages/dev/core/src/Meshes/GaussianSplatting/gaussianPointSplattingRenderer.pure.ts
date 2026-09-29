@@ -271,17 +271,31 @@ export class GaussianPointSplattingRenderer {
         return this._accumDepth;
     }
 
-    /** Number of compute frames successfully dispatched since this renderer was created. */
+    /**
+     * Number of compute frames successfully dispatched since this renderer was created.
+     * This does not reset when accumulated samples are invalidated.
+     * @returns the lifetime successful-dispatch count
+     */
     public get renderedFrameCount(): number {
         return this._frameIndex;
     }
 
-    /** Changes whenever the camera, part data, or output size invalidates accumulated samples. */
+    /**
+     * Changes when the camera, part transforms, splat data, density, or output size invalidates
+     * accumulated samples. {@link renderToBuffer} does not bump it for a change of the integer upscale
+     * factor alone; {@link GaussianSplattingMesh} resets accumulation itself whenever that factor changes,
+     * so for its callers a change of {@link pixelCycleLength} always comes with a change of this value.
+     * The value wraps at 65536.
+     * @returns the current accumulation generation
+     */
     public get accumulationVersion(): number {
         return this._accumGeneration;
     }
 
-    /** Number of frames required to visit every output pixel once at the current render scale. */
+    /**
+     * Number of frames required to visit every output pixel once at the current render scale.
+     * @returns the current jitter-cycle length, `N * N`
+     */
     public get pixelCycleLength(): number {
         return this._upsampleN * this._upsampleN;
     }
