@@ -317,7 +317,12 @@ export class TargetCamera extends Camera {
     public setTarget(target: Vector3): void {
         this.upVector.normalize();
 
-        this._initialFocalDistance = target.subtract(this.position).length();
+        const focalDistance = target.subtract(this.position).length();
+        if (focalDistance === 0) {
+            // Scaling the reference point to zero would prevent later targets from restoring the view direction.
+            return;
+        }
+        this._initialFocalDistance = focalDistance;
 
         if (this.position.z === target.z) {
             this.position.z += Epsilon;
