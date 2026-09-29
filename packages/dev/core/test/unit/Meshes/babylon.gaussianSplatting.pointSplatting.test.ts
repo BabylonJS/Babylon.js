@@ -46,6 +46,30 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it("exposes completed point-render progress without exposing renderer internals", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_frameIndex"] = 12;
+        renderer["_accumGeneration"] = 3;
+        renderer["_upsampleN"] = 2;
+
+        expect(mesh.pointSplattingProgress).toBeNull();
+        mesh["_pointRenderer"] = renderer;
+        mesh["_pointMode"] = true;
+        expect(mesh.pointSplattingProgress).toBeNull();
+        mesh["_pointResultReady"] = true;
+        expect(mesh.pointSplattingProgress).toEqual({
+            renderedFrameCount: 12,
+            accumulationVersion: 3,
+            pixelCycleLength: 4,
+        });
+        mesh["_pointRenderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("reuses debug part data until settings or part count change", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

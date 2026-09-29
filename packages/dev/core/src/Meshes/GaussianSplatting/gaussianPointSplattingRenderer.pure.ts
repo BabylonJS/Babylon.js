@@ -271,6 +271,21 @@ export class GaussianPointSplattingRenderer {
         return this._accumDepth;
     }
 
+    /** Number of compute frames successfully dispatched since this renderer was created. */
+    public get renderedFrameCount(): number {
+        return this._frameIndex;
+    }
+
+    /** Changes whenever the camera, part data, or output size invalidates accumulated samples. */
+    public get accumulationVersion(): number {
+        return this._accumGeneration;
+    }
+
+    /** Number of frames required to visit every output pixel once at the current render scale. */
+    public get pixelCycleLength(): number {
+        return this._upsampleN * this._upsampleN;
+    }
+
     /**
      * Reads back the total emitted point count from the last dispatched frame (async GPU readback). Used by
      * the budget-driven auto render-scale controller.

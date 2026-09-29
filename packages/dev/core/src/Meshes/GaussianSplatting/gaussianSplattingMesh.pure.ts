@@ -658,6 +658,23 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
     }
 
+    /**
+     * Progress of the point-splatting compute renderer after its most recent successful frame.
+     * Null while the compute pipeline is not ready or this mesh uses the classic renderer.
+     * Consumers can render a fixed number of samples per output pixel by multiplying their sample
+     * budget by pixelCycleLength, restarting whenever accumulationVersion changes.
+     */
+    public get pointSplattingProgress(): Nullable<{ renderedFrameCount: number; accumulationVersion: number; pixelCycleLength: number }> {
+        if (!this._pointComputeActive || !this._pointResultReady || !this._pointRenderer) {
+            return null;
+        }
+        return {
+            renderedFrameCount: this._pointRenderer.renderedFrameCount,
+            accumulationVersion: this._pointRenderer.accumulationVersion,
+            pixelCycleLength: this._pointRenderer.pixelCycleLength,
+        };
+    }
+
     /** True while either point-splatting mode is on, i.e. while the shared compute must run. */
     private get _pointComputeActive(): boolean {
         return (this._pointMode || this._pointDepthMode) && !this._pointStreamingUnsupported;
