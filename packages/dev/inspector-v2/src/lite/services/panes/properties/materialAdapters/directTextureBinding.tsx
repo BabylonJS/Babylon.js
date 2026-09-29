@@ -1,7 +1,7 @@
 import { type Material } from "@babylonjs/lite";
 import { type FunctionComponent } from "react";
 
-import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingModel } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
+import { MaterialTextureBindingPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
 
 import { type ISelectionService } from "../../../../../services/selectionService";
 import { type ISceneResourceIndexService } from "../../scene/sceneResourceIndexService";
@@ -95,36 +95,40 @@ export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> 
             invalidate,
         });
     };
-    const model: MaterialTextureBindingModel<object> = {
-        id,
-        label,
-        value: unsupported ? null : (value ?? null),
-        candidates,
-        getId: (texture) => String(resourceIndexService.index.getTextureRecord(texture)?.ordinal ?? candidates.indexOf(texture)),
-        getDisplayName: (texture) => GetTextureDisplayName(resourceIndexService.index.getTextureRecord(texture)),
-        getKind: (texture) => resourceIndexService.index.getTextureRecord(texture)?.metadata.kind ?? "unknown",
-        acceptedKinds,
-        isCandidateAccepted: (texture) => {
-            const metadata = resourceIndexService.index.getTextureRecord(texture)?.metadata;
-            return !!metadata && AcceptsSampleType(metadata.sampleType, sampleCategory);
-        },
-        write: unsupported
-            ? undefined
-            : {
-                  assign: (texture) => mutate(texture),
-                  clear: value && canClear ? () => mutate(null) : undefined,
-              },
-        navigate:
-            value && !unsupported
-                ? (texture) => {
-                      const binding = resourceIndexService.index.getMaterialRecord(source)?.bindings.find((candidate) => candidate.id === id);
-                      if (!resourceIndexService.isDisposed && binding?.entity === texture) {
-                          selectionService.selectedEntity = texture;
+    return (
+        <MaterialTextureBindingPropertyLine
+            id={id}
+            label={label}
+            value={unsupported ? null : (value ?? null)}
+            candidates={candidates}
+            getId={(texture) => String(resourceIndexService.index.getTextureRecord(texture)?.ordinal ?? candidates.indexOf(texture))}
+            getDisplayName={(texture) => GetTextureDisplayName(resourceIndexService.index.getTextureRecord(texture))}
+            getKind={(texture) => resourceIndexService.index.getTextureRecord(texture)?.metadata.kind ?? "unknown"}
+            acceptedKinds={acceptedKinds}
+            isCandidateAccepted={(texture) => {
+                const metadata = resourceIndexService.index.getTextureRecord(texture)?.metadata;
+                return !!metadata && AcceptsSampleType(metadata.sampleType, sampleCategory);
+            }}
+            write={
+                unsupported
+                    ? undefined
+                    : {
+                          assign: (texture) => mutate(texture),
+                          clear: value && canClear ? () => mutate(null) : undefined,
                       }
-                  }
-                : undefined,
-        pending: operations[id]?.pending,
-        error: operations[id]?.error ?? (unsupported ? `${label} contains an unsupported texture value.` : undefined),
-    };
-    return <MaterialTextureBindingPropertyLine model={model} />;
+            }
+            navigate={
+                value && !unsupported
+                    ? (texture) => {
+                          const binding = resourceIndexService.index.getMaterialRecord(source)?.bindings.find((candidate) => candidate.id === id);
+                          if (!resourceIndexService.isDisposed && binding?.entity === texture) {
+                              selectionService.selectedEntity = texture;
+                          }
+                      }
+                    : undefined
+            }
+            pending={operations[id]?.pending}
+            error={operations[id]?.error ?? (unsupported ? `${label} contains an unsupported texture value.` : undefined)}
+        />
+    );
 };

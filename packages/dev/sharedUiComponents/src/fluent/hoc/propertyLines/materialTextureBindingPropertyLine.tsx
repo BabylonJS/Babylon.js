@@ -14,8 +14,8 @@ export type TextureBindingWriteCapabilities<TextureT> = Readonly<{
     clear?: () => void;
 }>;
 
-/** Runtime-neutral presentation and mutation model for a material texture binding. */
-export type MaterialTextureBindingModel<TextureT> = Readonly<{
+/** Runtime-neutral presentation and mutation props for a material texture binding. */
+export type MaterialTextureBindingProps<TextureT> = Readonly<{
     id: string;
     label: string;
     value: TextureT | null;
@@ -50,52 +50,51 @@ const useStyles = makeStyles({
 
 /**
  * Displays a runtime-neutral, direction-aware material texture binding.
- * @param props The binding model. Missing assign, clear, or navigation callbacks remove those actions.
+ * @param props The binding props. Missing assign, clear, or navigation callbacks remove those actions.
  * @returns A texture binding property line.
  */
-export const MaterialTextureBindingPropertyLine = <TextureT,>(props: { model: MaterialTextureBindingModel<TextureT> }): JSX.Element => {
-    const { model } = props;
+export const MaterialTextureBindingPropertyLine = <TextureT,>(props: MaterialTextureBindingProps<TextureT>): JSX.Element => {
     const classes = useStyles();
     const [editing, setEditing] = useState(false);
     const candidates = useMemo(
-        () => model.candidates.filter((texture) => model.acceptedKinds.includes(model.getKind(texture)) && (model.isCandidateAccepted?.(texture) ?? true)),
-        [model.acceptedKinds, model.candidates, model.getKind, model.isCandidateAccepted]
+        () => props.candidates.filter((texture) => props.acceptedKinds.includes(props.getKind(texture)) && (props.isCandidateAccepted?.(texture) ?? true)),
+        [props.acceptedKinds, props.candidates, props.getKind, props.isCandidateAccepted]
     );
-    const getId = (texture: TextureT) => model.getId?.(texture) ?? String(model.candidates.indexOf(texture));
-    const options = candidates.map((texture) => ({ label: model.getDisplayName(texture), value: getId(texture) }));
+    const getId = (texture: TextureT) => props.getId?.(texture) ?? String(props.candidates.indexOf(texture));
+    const options = candidates.map((texture) => ({ label: props.getDisplayName(texture), value: getId(texture) }));
 
     const content = (
         <div className={classes.content}>
-            {model.value && !editing ? (
+            {props.value && !editing ? (
                 <>
                     <Link
                         className={classes.link}
-                        value={model.getDisplayName(model.value)}
-                        onLink={model.navigate ? () => model.navigate?.(model.value!) : undefined}
-                        aria-label={model.navigate ? `${model.label}: open ${model.getDisplayName(model.value)}` : undefined}
+                        value={props.getDisplayName(props.value)}
+                        onLink={props.navigate ? () => props.navigate?.(props.value!) : undefined}
+                        aria-label={props.navigate ? `${props.label}: open ${props.getDisplayName(props.value)}` : undefined}
                     />
-                    {model.write?.clear ? (
+                    {props.write?.clear ? (
                         <Tooltip content="Unlink">
-                            <Button icon={LinkDismissRegular} ariaLabel={`Clear ${model.label}`} disabled={model.pending} onClick={() => model.write?.clear?.()} />
+                            <Button icon={LinkDismissRegular} ariaLabel={`Clear ${props.label}`} disabled={props.pending} onClick={() => props.write?.clear?.()} />
                         </Tooltip>
                     ) : undefined}
-                    {model.write?.assign ? (
+                    {props.write?.assign ? (
                         <Tooltip content="Edit Link">
-                            <Button icon={LinkEditRegular} ariaLabel={`Change ${model.label}`} disabled={model.pending} onClick={() => setEditing(true)} />
+                            <Button icon={LinkEditRegular} ariaLabel={`Change ${props.label}`} disabled={props.pending} onClick={() => setEditing(true)} />
                         </Tooltip>
                     ) : undefined}
                 </>
-            ) : model.write?.assign ? (
+            ) : props.write?.assign ? (
                 <ComboBox
                     label=""
-                    ariaLabel={model.label}
-                    disabled={model.pending}
-                    value={model.value ? getId(model.value) : ""}
+                    ariaLabel={props.label}
+                    disabled={props.pending}
+                    value={props.value ? getId(props.value) : ""}
                     options={options}
                     onChange={(id) => {
                         const selected = candidates.find((texture) => getId(texture) === id);
                         if (selected) {
-                            model.write?.assign?.(selected);
+                            props.write?.assign?.(selected);
                             setEditing(false);
                         }
                     }}
@@ -103,18 +102,18 @@ export const MaterialTextureBindingPropertyLine = <TextureT,>(props: { model: Ma
             ) : (
                 <Link value="None" />
             )}
-            {model.pending ? <Body1 role="status">Applying…</Body1> : undefined}
+            {props.pending ? <Body1 role="status">Applying…</Body1> : undefined}
         </div>
     );
 
     return (
-        <div role={model.error ? "alert" : undefined} aria-label={model.error ? `${model.label}: ${model.error}` : undefined} aria-busy={model.pending}>
-            {model.expandedContent ? (
-                <PropertyLine label={model.label} uniqueId={model.id} description={model.error} expandedContent={model.expandedContent}>
+        <div role={props.error ? "alert" : undefined} aria-label={props.error ? `${props.label}: ${props.error}` : undefined} aria-busy={props.pending}>
+            {props.expandedContent ? (
+                <PropertyLine label={props.label} uniqueId={props.id} description={props.error} expandedContent={props.expandedContent}>
                     {content}
                 </PropertyLine>
             ) : (
-                <PropertyLine label={model.label} uniqueId={model.id} description={model.error}>
+                <PropertyLine label={props.label} uniqueId={props.id} description={props.error}>
                     {content}
                 </PropertyLine>
             )}

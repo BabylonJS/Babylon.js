@@ -10,7 +10,7 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingModel } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
+import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingProps } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
 import { TextureMetadataProperties } from "shared-ui-components/fluent/hoc/propertyLines/textureMetadataProperties";
 
 vi.hoisted(() => {
@@ -51,7 +51,7 @@ describe("material and texture parity cores", () => {
         const cube = { id: "cube", name: "Environment", kind: "cube" };
         const clear = vi.fn();
         const navigate = vi.fn();
-        const model: MaterialTextureBindingModel<typeof cube> = {
+        const bindingProps: MaterialTextureBindingProps<typeof cube> = {
             id: "reflection",
             label: "Reflection",
             value: cube,
@@ -64,7 +64,7 @@ describe("material and texture parity cores", () => {
             navigate,
             error: "Binding is stale",
         };
-        const container = Render(<MaterialTextureBindingPropertyLine model={model} />);
+        const container = Render(<MaterialTextureBindingPropertyLine {...bindingProps} />);
 
         expect(container.querySelector('[role="alert"]')?.getAttribute("aria-label")).toBe("Reflection: Binding is stale");
         const link = Array.from(container.querySelectorAll("button")).find((element) => element.textContent?.includes("Environment"));
@@ -87,17 +87,15 @@ describe("material and texture parity cores", () => {
         const assign = vi.fn();
         const container = Render(
             <MaterialTextureBindingPropertyLine
-                model={{
-                    id: "reflection",
-                    label: "Reflection",
-                    value: null,
-                    candidates: [texture2d, cube],
-                    getId: (texture) => texture.id,
-                    getDisplayName: (texture) => texture.name,
-                    getKind: (texture) => texture.kind,
-                    acceptedKinds: ["cube"],
-                    write: { assign },
-                }}
+                id="reflection"
+                label="Reflection"
+                value={null}
+                candidates={[texture2d, cube]}
+                getId={(texture) => texture.id}
+                getDisplayName={(texture) => texture.name}
+                getKind={(texture) => texture.kind}
+                acceptedKinds={["cube"]}
+                write={{ assign }}
             />
         );
 
@@ -117,18 +115,16 @@ describe("material and texture parity cores", () => {
         const replace = vi.fn();
         const container = Render(
             <MaterialTextureBindingPropertyLine
-                model={{
-                    id: "lightmap",
-                    label: "Lightmap",
-                    value: texture,
-                    candidates: [texture, replacement],
-                    getId: (candidate) => candidate.id,
-                    getDisplayName: (candidate) => candidate.name,
-                    getKind: (candidate) => candidate.kind,
-                    acceptedKinds: ["2d"],
-                    write: { assign: replace },
-                    pending: true,
-                }}
+                id="lightmap"
+                label="Lightmap"
+                value={texture}
+                candidates={[texture, replacement]}
+                getId={(candidate) => candidate.id}
+                getDisplayName={(candidate) => candidate.name}
+                getKind={(candidate) => candidate.kind}
+                acceptedKinds={["2d"]}
+                write={{ assign: replace }}
+                pending
             />
         );
 
@@ -145,16 +141,14 @@ describe("material and texture parity cores", () => {
         const navigate = vi.fn();
         const container = Render(
             <MaterialTextureBindingPropertyLine
-                model={{
-                    id: "readonly",
-                    label: "Read-only Texture",
-                    value: texture,
-                    candidates: [],
-                    getDisplayName: (candidate) => candidate.name,
-                    getKind: (candidate) => candidate.kind,
-                    acceptedKinds: ["2d"],
-                    navigate,
-                }}
+                id="readonly"
+                label="Read-only Texture"
+                value={texture}
+                candidates={[]}
+                getDisplayName={(candidate) => candidate.name}
+                getKind={(candidate) => candidate.kind}
+                acceptedKinds={["2d"]}
+                navigate={navigate}
             />
         );
 
@@ -169,18 +163,16 @@ describe("material and texture parity cores", () => {
         const depth = { id: "depth", name: "Depth", kind: "2d", sample: "depth" };
         const container = Render(
             <MaterialTextureBindingPropertyLine
-                model={{
-                    id: "shadow",
-                    label: "Shadow Texture",
-                    value: null,
-                    candidates: [filterable, depth],
-                    getId: (texture) => texture.id,
-                    getDisplayName: (texture) => texture.name,
-                    getKind: (texture) => texture.kind,
-                    acceptedKinds: ["2d"],
-                    isCandidateAccepted: (texture) => texture.sample === "depth",
-                    write: { assign: vi.fn() },
-                }}
+                id="shadow"
+                label="Shadow Texture"
+                value={null}
+                candidates={[filterable, depth]}
+                getId={(texture) => texture.id}
+                getDisplayName={(texture) => texture.name}
+                getKind={(texture) => texture.kind}
+                acceptedKinds={["2d"]}
+                isCandidateAccepted={(texture) => texture.sample === "depth"}
+                write={{ assign: vi.fn() }}
             />
         );
 
