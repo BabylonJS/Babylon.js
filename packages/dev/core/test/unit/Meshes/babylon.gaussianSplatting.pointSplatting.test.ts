@@ -8,10 +8,24 @@ import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplat
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { GaussianPointSplattingRenderer } from "core/Meshes/GaussianSplatting/gaussianPointSplattingRenderer";
+import { GaussianPointSplattingController } from "core/Meshes/GaussianSplatting/gaussianPointSplattingController";
 import { Matrix } from "core/Maths/math.vector";
 import { FromHalfFloat } from "core/Misc/halfFloat";
 import { Scene } from "core/scene";
 import { describe, expect, it, vi } from "vitest";
+
+/**
+ * Creates the point-splatting controller for a mesh and installs it, bypassing the lazy creation that
+ * normally happens when a point-splatting mode is first enabled. The GPS state under test lives on the
+ * controller, not on the mesh, so the tests can reach it without a WebGPU engine.
+ * @param mesh the mesh to attach a controller to
+ * @returns the installed controller
+ */
+function CreateController(mesh: GaussianSplattingMesh): GaussianPointSplattingController {
+    const controller = new GaussianPointSplattingController(mesh);
+    mesh["_pointController"] = controller;
+    return controller;
+}
 
 describe("GaussianSplattingMesh point-splatting settings", () => {
     it("registers the compute and blit shaders through the public mesh entry point", () => {
@@ -50,19 +64,20 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         renderer["_frameIndex"] = 12;
         renderer["_accumGeneration"] = 3;
         renderer["_upsampleN"] = 2;
 
         expect(mesh.pointSplattingProgress).toBeNull();
-        mesh["_pointRenderer"] = renderer;
-        mesh["_pointMode"] = true;
+        controller["_renderer"] = renderer;
+        controller["_colorMode"] = true;
         expect(mesh.pointSplattingProgress).toBeNull();
-        mesh["_pointResultReady"] = true;
-        mesh["_pointProgressFrameCount"] = 12;
-        mesh["_pointProgressGeneration"] = 3;
-        mesh["_pointProgressCycleLength"] = 4;
+        controller["_resultReady"] = true;
+        controller["_progressFrameCount"] = 12;
+        controller["_progressGeneration"] = 3;
+        controller["_progressCycleLength"] = 4;
         expect(mesh.pointSplattingProgress).toEqual({
             renderedFrameCount: 12,
             accumulationVersion: 3,
@@ -79,7 +94,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
             pixelCycleLength: 4,
         });
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -107,10 +122,11 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
 
         for (let n = 1; n <= 8; n++) {
             const total = n * n;
-            const stride = mesh["_pointCoprimeStride"](total);
+            const stride = controller["_coprimeStride"](total);
             expect(new Set(Array.from({ length: total }, (_, i) => (i * stride) % total)).size).toBe(total);
         }
 
@@ -122,16 +138,17 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const textures = Array.from({ length: 5 }, (_, t) => Uint8Array.from({ length: 32 }, (_, i) => t * 32 + i));
 
-        expect(mesh["_pointPackSh"](undefined, 0, 2)).toBeNull();
+        expect(controller["_packSh"](undefined, 0, 2)).toBeNull();
         for (const [degree, scalars] of [
             [1, 9],
             [2, 24],
             [3, 45],
             [4, 72],
         ]) {
-            const packed = mesh["_pointPackSh"](textures, degree, 2)!;
+            const packed = controller["_packSh"](textures, degree, 2)!;
             const bytes = new Uint8Array(packed.buffer);
             const stride = Math.ceil(scalars / 4) * 4;
             expect(bytes.length).toBe(stride * 2);
@@ -152,6 +169,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 16;
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingCompoundMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const data = new ArrayBuffer(32);
         const source = new GaussianSplattingMesh("source", null, scene);
         source.disableDepthSort = true;
@@ -162,13 +180,13 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         second.updateData(data);
         mesh.addParts([source, second]);
         mesh["_splatsData"] = data;
-        mesh["_pointDecodedSplatsData"] = data;
-        mesh["_pointSplatCount"] = 1;
-        mesh["_pointPartCount"] = 1;
-        mesh["_pointDecodedPartCount"] = 2;
+        controller["_decodedSplatsData"] = data;
+        controller["_splatCount"] = 1;
+        controller["_partCount"] = 1;
+        controller["_decodedPartCount"] = 2;
 
         expect(mesh.partCount).toBe(2);
-        expect(() => mesh["_pointSyncData"]()).not.toThrow();
+        expect(() => controller["_syncData"]()).not.toThrow();
 
         scene.dispose();
         engine.dispose();
@@ -178,17 +196,18 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
-        mesh["_pointPartLocalMin"] = new Float32Array([-1, -1, -1]);
-        mesh["_pointPartLocalMax"] = new Float32Array([1, 1, 1]);
-        mesh["_pointPartScratch"].set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 2, 1]);
+        const controller = CreateController(mesh);
+        controller["_partLocalMin"] = new Float32Array([-1, -1, -1]);
+        controller["_partLocalMax"] = new Float32Array([1, 1, 1]);
+        controller["_partScratch"].set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 2, 1]);
 
         const view = Matrix.Identity().m;
-        expect(mesh["_pointViewZSpan"](view, 0.5, 10)).toEqual([1, 3]);
-        mesh["_pointPartScratch"][14] = 0;
-        expect(mesh["_pointViewZSpan"](view, 0.5, 10)).toEqual([0.5, 1]);
+        expect(controller["_viewZSpan"](view, 0.5, 10)).toEqual([1, 3]);
+        controller["_partScratch"][14] = 0;
+        expect(controller["_viewZSpan"](view, 0.5, 10)).toEqual([0.5, 1]);
         scene.useRightHandedSystem = true;
-        mesh["_pointPartScratch"][14] = -2;
-        expect(mesh["_pointViewZSpan"](view, 0.5, 10)).toEqual([1, 3]);
+        controller["_partScratch"][14] = -2;
+        expect(controller["_viewZSpan"](view, 0.5, 10)).toEqual([1, 3]);
 
         scene.dispose();
         engine.dispose();
@@ -198,16 +217,17 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
-        mesh["_pointRenderer"] = renderer;
+        controller["_renderer"] = renderer;
         const splat = new ArrayBuffer(32);
         const floats = new Float32Array(splat);
         const bytes = new Uint8Array(splat);
         floats.set([1, 2, 3, 0, 0, 0]);
         bytes.set([10, 20, 30, 255, 255, 128, 128, 128], 24);
 
-        mesh["_pointDecode"](splat);
+        controller["_decode"](splat);
         const [means, cov, colors, sh, degree, count] = upload.mock.calls[0];
         expect(Array.from(means)).toEqual([1, 2, 3, 0]);
         expect(cov[3]).toBe(0x3f800000);
@@ -216,7 +236,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(degree).toBe(0);
         expect(count).toBe(1);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -225,9 +245,10 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
-        mesh["_pointRenderer"] = renderer;
+        controller["_renderer"] = renderer;
 
         const splat = new ArrayBuffer(32);
         const floats = new Float32Array(splat);
@@ -237,7 +258,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         // Rotation bytes decode as (b-127.5)/127.5, so 128 is the closest encodable value to identity.
         bytes.set([0, 128, 128, 128], 28);
 
-        mesh["_pointDecode"](splat);
+        controller["_decode"](splat);
         const cov = upload.mock.calls[0][1];
 
         // `_makeSplat` doubles source scale before building Sigma, so the f16 factor is
@@ -250,7 +271,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(FromHalfFloat(cov[1] >>> 16)).toBeCloseTo(0.25, 3);
         expect(FromHalfFloat(cov[2] >>> 16)).toBeCloseTo(0.0625, 3);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -259,6 +280,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         mesh.disableDepthSort = true;
         const data = new ArrayBuffer(3 * 32);
         const bytes = new Uint8Array(data);
@@ -270,28 +292,28 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
         vi.spyOn(renderer, "resetAccumulation").mockImplementation(() => {});
-        mesh["_pointRenderer"] = renderer;
+        controller["_renderer"] = renderer;
 
         mesh.setSplatIndexRanges([{ offset: 1, count: 1 }]);
-        mesh["_pointSyncData"]();
+        controller["_syncData"]();
         expect(Array.from(upload.mock.lastCall![2], (color) => color >>> 24)).toEqual([0, 255, 0]);
         mesh.setSplatIndexRanges([{ offset: 2, count: 1 }]);
-        mesh["_pointSyncData"]();
+        controller["_syncData"]();
         expect(Array.from(upload.mock.lastCall![2], (color) => color >>> 24)).toEqual([0, 0, 255]);
         mesh.setSplatIndexRanges([
             { offset: 2, count: 1 },
             { offset: 0, count: 1 },
         ]);
-        mesh["_pointSyncData"]();
+        controller["_syncData"]();
         expect(Array.from(upload.mock.lastCall![2], (color) => color >>> 24)).toEqual([255, 0, 255]);
         mesh.setSplatIndexRanges([]);
-        mesh["_pointSyncData"]();
+        controller["_syncData"]();
         expect(Array.from(upload.mock.lastCall![2], (color) => color >>> 24)).toEqual([0, 0, 0]);
         mesh.setSplatIndexRanges(null);
-        mesh["_pointSyncData"]();
+        controller["_syncData"]();
         expect(Array.from(upload.mock.lastCall![2], (color) => color >>> 24)).toEqual([255, 255, 255]);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -302,6 +324,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 16;
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingCompoundMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         mesh.disableDepthSort = true;
         const sources = ["first", "second"].map((name) => {
             const source = new GaussianSplattingMesh(name, null, scene);
@@ -315,16 +338,16 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
         vi.spyOn(renderer, "resetAccumulation").mockImplementation(() => {});
-        mesh["_pointRenderer"] = renderer;
+        controller["_renderer"] = renderer;
 
         mesh.setPartSplatRanges(1, []);
-        mesh["_pointSyncData"]();
+        controller["_syncData"]();
         expect(Array.from(upload.mock.lastCall![2], (color) => color >>> 24)).toEqual([255, 0]);
         mesh.setPartSplatRanges(1, null);
-        mesh["_pointSyncData"]();
+        controller["_syncData"]();
         expect(Array.from(upload.mock.lastCall![2], (color) => color >>> 24)).toEqual([255, 255]);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -333,20 +356,21 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         const dispose = vi.spyOn(renderer, "dispose").mockImplementation(() => {});
-        mesh["_pointRenderer"] = renderer;
-        mesh["_pointMode"] = true;
-        mesh["_pointDepthMode"] = true;
-        mesh["_pointComputeObserver"] = scene.onBeforeRenderObservable.add(() => {});
-        mesh["_pointMode"] = false;
-        mesh["_pointReleaseComputeIfIdle"]();
+        controller["_renderer"] = renderer;
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_computeObserver"] = scene.onBeforeRenderObservable.add(() => {});
+        controller["_colorMode"] = false;
+        controller["_releaseComputeIfIdle"]();
         expect(dispose).not.toHaveBeenCalled();
-        mesh["_pointDepthMode"] = false;
-        mesh["_pointReleaseComputeIfIdle"]();
+        controller["_depthMode"] = false;
+        controller["_releaseComputeIfIdle"]();
         expect(dispose).toHaveBeenCalledOnce();
-        expect(mesh["_pointRenderer"]).toBeNull();
-        expect(mesh["_pointComputeObserver"]).toBeNull();
+        expect(controller["_renderer"]).toBeNull();
+        expect(controller["_computeObserver"]).toBeNull();
 
         scene.dispose();
         engine.dispose();
@@ -366,20 +390,21 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         renderer["_accumGeneration"] = 0;
         vi.spyOn(renderer, "readPointCountAsync").mockResolvedValue(1_000_000_000);
-        mesh["_pointRenderer"] = renderer;
-        mesh["_pointMode"] = true;
+        controller["_renderer"] = renderer;
+        controller["_colorMode"] = true;
 
-        await mesh["_pointConvergeAutoScaleAsync"](2, 0, true);
-        expect(mesh["_pointAutoN"]).toBe(8);
-        expect(mesh["_pointBudgetReadPending"]).toBe(false);
+        await controller["_convergeAutoScaleAsync"](2, 0, true);
+        expect(controller["_autoN"]).toBe(8);
+        expect(controller["_budgetReadPending"]).toBe(false);
         // Restart once for the corrected factor, then mark the new generation measured.
         expect(renderer.accumulationVersion).toBe(1);
-        expect(mesh["_pointAutoMeasuredGeneration"]).toBe(1);
+        expect(controller["_autoMeasuredGeneration"]).toBe(1);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -388,23 +413,24 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         renderer["_accumGeneration"] = 4;
         vi.spyOn(renderer, "readPointCountAsync").mockResolvedValue(1_000_000_000);
         const reset = vi.spyOn(renderer, "resetAccumulation");
-        mesh["_pointRenderer"] = renderer;
-        mesh["_pointMode"] = true;
+        controller["_renderer"] = renderer;
+        controller["_colorMode"] = true;
 
         // That frame runs without occlusion culling and over-counts, so it may only steer the next frame.
-        await mesh["_pointConvergeAutoScaleAsync"](2, 4, false);
-        expect(mesh["_pointAutoN"]).toBe(8);
-        expect(mesh["_pointAutoMeasuredGeneration"]).toBe(-1);
+        await controller["_convergeAutoScaleAsync"](2, 4, false);
+        expect(controller["_autoN"]).toBe(8);
+        expect(controller["_autoMeasuredGeneration"]).toBe(-1);
         // The factor still changed, and the jitter-cycle length may never change inside a generation, so the
         // hint must restart accumulation even though it cannot fix N for the generation it came from.
         expect(reset).toHaveBeenCalledTimes(1);
         expect(renderer.accumulationVersion).toBe(5);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -413,24 +439,25 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         renderer["_accumGeneration"] = 4;
         let finish!: (value: number) => void;
         vi.spyOn(renderer, "readPointCountAsync").mockImplementation(() => new Promise<number>((resolve) => (finish = resolve)));
-        mesh["_pointRenderer"] = renderer;
-        mesh["_pointMode"] = true;
+        controller["_renderer"] = renderer;
+        controller["_colorMode"] = true;
 
-        const pending = mesh["_pointConvergeAutoScaleAsync"](2, 4, true);
+        const pending = controller["_convergeAutoScaleAsync"](2, 4, true);
         renderer.resetAccumulation();
         finish(1_000_000_000);
         await pending;
-        expect(mesh["_pointAutoMeasuredGeneration"]).toBe(-1);
+        expect(controller["_autoMeasuredGeneration"]).toBe(-1);
         // The stale sample cannot fix N for the live generation, but adopting its factor still has to restart
         // accumulation so the cycle length never changes mid-generation.
-        expect(mesh["_pointAutoN"]).toBe(8);
+        expect(controller["_autoN"]).toBe(8);
         expect(renderer.accumulationVersion).toBe(6);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -452,21 +479,22 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         renderer["_accumGeneration"] = 7;
         const reset = vi.spyOn(renderer, "resetAccumulation");
-        mesh["_pointRenderer"] = renderer;
-        mesh["_pointAutoMeasuredGeneration"] = 7;
+        controller["_renderer"] = renderer;
+        controller["_autoMeasuredGeneration"] = 7;
 
         mesh.pointSplattingRenderScale = 0.5;
         expect(reset).toHaveBeenCalledTimes(1);
-        expect(mesh["_pointAutoMeasuredGeneration"]).toBe(-1);
+        expect(controller["_autoMeasuredGeneration"]).toBe(-1);
 
         // Re-assigning the same value is a no-op, so idle re-application cannot stall convergence.
         mesh.pointSplattingRenderScale = 0.5;
         expect(reset).toHaveBeenCalledTimes(1);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -475,34 +503,35 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
         const oldRenderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         oldRenderer["_accumGeneration"] = 0;
         let finishOld!: (value: number) => void;
         vi.spyOn(oldRenderer, "readPointCountAsync").mockImplementation(() => new Promise<number>((resolve) => (finishOld = resolve)));
         vi.spyOn(oldRenderer, "dispose").mockImplementation(() => {});
-        mesh["_pointRenderer"] = oldRenderer;
-        mesh["_pointMode"] = true;
-        mesh["_pointUpdateAutoScale"](2, 0, true);
-        mesh["_pointMode"] = false;
-        mesh["_pointReleaseComputeIfIdle"]();
+        controller["_renderer"] = oldRenderer;
+        controller["_colorMode"] = true;
+        controller["_updateAutoScale"](2, 0, true);
+        controller["_colorMode"] = false;
+        controller["_releaseComputeIfIdle"]();
 
         const newRenderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         newRenderer["_accumGeneration"] = 0;
         let finishNew!: (value: number) => void;
         vi.spyOn(newRenderer, "readPointCountAsync").mockImplementation(() => new Promise<number>((resolve) => (finishNew = resolve)));
-        mesh["_pointRenderer"] = newRenderer;
-        mesh["_pointMode"] = true;
-        mesh["_pointUpdateAutoScale"](2, 0, true);
+        controller["_renderer"] = newRenderer;
+        controller["_colorMode"] = true;
+        controller["_updateAutoScale"](2, 0, true);
         finishOld(1_000_000_000);
         await Promise.resolve();
-        expect(mesh["_pointAutoN"]).toBe(2);
-        expect(mesh["_pointBudgetReadPending"]).toBe(true);
+        expect(controller["_autoN"]).toBe(2);
+        expect(controller["_budgetReadPending"]).toBe(true);
         finishNew(1_000_000_000);
         await Promise.resolve();
-        expect(mesh["_pointAutoN"]).toBe(8);
-        expect(mesh["_pointBudgetReadPending"]).toBe(false);
+        expect(controller["_autoN"]).toBe(8);
+        expect(controller["_budgetReadPending"]).toBe(false);
 
-        mesh["_pointRenderer"] = null;
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });

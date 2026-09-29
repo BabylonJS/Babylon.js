@@ -5,9 +5,8 @@ import { type Scene } from "core/scene.pure";
 import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Vector2 } from "core/Maths/math.vector";
-import { type Material } from "core/Materials/material.pure";
 import { type Effect } from "core/Materials/effect.pure";
-import { GetGaussianSplattingMaxPartCount, GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
+import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { GaussianSplattingMeshBase, AllocateShBuffers, type IGaussianSplattingSplatRange } from "./gaussianSplattingMeshBase.pure";
 import { GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -15,38 +14,76 @@ import { type MultiRenderTarget } from "core/Materials/Textures/multiRenderTarge
 import { Constants } from "core/Engines/constants";
 import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 import { Mesh } from "core/Meshes/mesh.pure";
-import { VertexData } from "core/Meshes/mesh.vertexData";
 import { Logger } from "core/Misc/logger";
-import { ToHalfFloat } from "core/Misc/textureTools";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh.pure";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type SubMesh } from "core/Meshes/subMesh.pure";
-import { GaussianPointSplattingRenderer } from "./gaussianPointSplattingRenderer.pure";
-import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.pure";
-import { GaussianPointSplattingDepthBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.pure";
-import { type GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
 
 export { IsGaussianSplattingClassName } from "./gaussianSplatting.functions";
 
-const _GaussianSplattingBytesPerSplat = 32;
-const _GaussianSplattingBytesPerShTexel = 16;
-
-// Scratch for bit-casting a float to its u32 bits (the point renderer's per-splat covariance factor).
-const _F32Scratch = /*#__PURE__*/ new Float32Array(1);
-const _U32Scratch = /*#__PURE__*/ new Uint32Array(_F32Scratch.buffer);
+/**
+ * Progress counters of the optional point-splatting compute renderer, as reported by
+ * {@link GaussianSplattingMesh.pointSplattingProgress}.
+ */
+export interface IGaussianPointSplattingProgress {
+    /** Lifetime count of successfully dispatched compute frames; never reset by an accumulation restart. */
+    renderedFrameCount: number;
+    /** Identifier of the current accumulation generation; changes whenever accumulated samples are invalidated. */
+    accumulationVersion: number;
+    /** Number of frames needed to visit every output pixel once; fixed for the lifetime of a generation. */
+    pixelCycleLength: number;
+}
 
 /**
- * Packs two floats as half-floats into one u32 (low 16 bits = a, high 16 bits = b), for the point
- * renderer's f16 covariance storage.
- * @param a value for the low 16 bits
- * @param b value for the high 16 bits
- * @returns the packed u32
+ * Contract between {@link GaussianSplattingMesh} and the optional WebGPU compute point-splatting
+ * implementation, so the mesh can drive it without importing it.
+ * @internal
  */
-function _Pack2HalfFloat(a: number, b: number): number {
-    return (ToHalfFloat(a) | (ToHalfFloat(b) << 16)) >>> 0;
+export interface IGaussianPointSplattingController {
+    /** Whether the main color pass is rendered by the compute path instead of the classic sorted quads. */
+    colorRenderMode: boolean;
+    /** Whether the active camera's DepthRenderer pass is fed by the compute path. */
+    depthRenderMode: boolean;
+    /** Density multiplier (higher = denser and slower). */
+    pointScale: number;
+    /** Internal render-resolution scale, or `"auto"` for the device-tiered point budget. */
+    renderScale: number | "auto";
+    /** Counters of the most recent successful compute frame, or null when no frame is available. */
+    readonly progress: Nullable<IGaussianPointSplattingProgress>;
+    /** Drops the decoded compute buffers so the next frame re-decodes them, and restarts accumulation. */
+    invalidateDecodedSplats(): void;
+    /**
+     * Draws the resolved compute result for the current render pass.
+     * @param enableAlphaMode whether the caller wants alpha mode applied
+     * @returns true when the compositor drew this pass and the classic geometry must be skipped
+     */
+    drawColorPass(enableAlphaMode: boolean): boolean;
+    /** Releases every GPU resource owned by the controller. */
+    dispose(): void;
 }
+
+/**
+ * Factory installed by the optional point-splatting module.
+ * @internal
+ */
+export type GaussianPointSplattingControllerFactory = (mesh: GaussianSplattingMesh) => IGaussianPointSplattingController;
+
+let _PointSplattingControllerFactory: Nullable<GaussianPointSplattingControllerFactory> = null;
+
+/**
+ * Installs the point-splatting controller factory. Called by the optional point-splatting module's
+ * registration; until then every point-splatting mode on {@link GaussianSplattingMesh} is a no-op.
+ * @param factory creates a controller for a given mesh
+ * @internal
+ */
+export function _SetGaussianPointSplattingControllerFactory(factory: GaussianPointSplattingControllerFactory): void {
+    _PointSplattingControllerFactory = factory;
+}
+
+const _GaussianSplattingBytesPerSplat = 32;
+const _GaussianSplattingBytesPerShTexel = 16;
 
 interface IGaussianSplattingPartSource {
     name: string;
@@ -290,17 +327,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     protected _partVisibility: number[] = [];
 
-    // --- Point-splatting render mode (WebGPU compute) ---
+    // --- Point-splatting render mode (optional WebGPU compute extension) ---
     // An alternate CAMERA-VIEW renderer for the same splat data: a stochastic, sort-free compute
     // pipeline that resolves visibility with a per-pixel atomic depth-min and converges over frames.
-    // The single compute produces BOTH a color buffer and a depth buffer, so the main color pass and the
-    // DepthRenderer pass are independently switchable (_pointMode / _pointDepthMode) on top of one shared
-    // compute. Passes that are not switched on — GPU picking, IBL voxelization, shadows and prepass — keep
-    // rasterizing the classic geometry, so the mesh stays a full shadow caster / depth occluder there.
-    private _pointMode = false;
-    private _pointDepthMode = false;
+    // All of its state and logic live in GaussianPointSplattingController so the classic path does not
+    // carry them; only the two settings below are retained here, because callers may configure them
+    // before (or without ever) enabling a point-splatting mode.
     private _pointScale = 1;
     private _pointRenderScale: number | "auto" = "auto";
+    private _pointController: Nullable<IGaussianPointSplattingController> = null;
+
     /**
      * Internal render-resolution scale for point splatting. A number (1 = full) renders fewer pixels =
      * ~scale^2 fewer emitted points, with full resolution reconstructed over frames by jittered temporal
@@ -320,44 +356,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
         this._pointRenderScale = value;
-        this._pointAutoMeasuredGeneration = -1;
-        this._pointRenderer?.resetAccumulation();
+        if (this._pointController) {
+            this._pointController.renderScale = value;
+        }
     }
-
-    // Budget-driven auto scale state. The factor N is measured once per accumulation generation, from the
-    // first frame of that generation with Hi-Z occlusion culling active, then frozen for the rest of it so a
-    // converged image is never a blend of two render scales. `_pointAutoMeasuredGeneration` is the generation
-    // N is already fixed for (-1 = none); `_pointLastRenderedGeneration` is the previous frame's generation,
-    // used to spot the frame that reset accumulation — it runs unculled and over-reports the point count.
-    private _pointAutoN = 2;
-    private _pointAutoMeasuredGeneration = -1;
-    private _pointLastRenderedGeneration = -1;
-    private _pointBudgetReadPending = false;
-    // Frame counter driving the temporal-upsampling jitter cycle (which full-res sub-cell to sample).
-    private _pointFrameCounter = 0;
-    private _pointResultReady = false;
-    // Counters of the most recent successful compute dispatch, surfaced by `pointSplattingProgress`. Kept as
-    // separate fields (rather than an object rebuilt every frame) to avoid a per-frame allocation.
-    private _pointProgressFrameCount = 0;
-    private _pointProgressGeneration = -1;
-    private _pointProgressCycleLength = 0;
-    // Set once the streaming-unsupported warning has been emitted, so it is not repeated every frame.
-    private _pointStreamingWarned = false;
-    private _pointRenderer: Nullable<GaussianPointSplattingRenderer> = null;
-    private _pointBlit: Nullable<GaussianPointSplattingBlitMaterial> = null;
-    private _pointBlitMesh: Nullable<Mesh> = null;
-    private _pointDepthBlit: Nullable<GaussianPointSplattingDepthBlitMaterial> = null;
-    private _pointDepthBlitMesh: Nullable<Mesh> = null;
-    private _pointComputeObserver: Nullable<Observer<Scene>> = null;
-    private _pointSplatCount = 0;
-    private _pointPartCount = 1;
-    private _pointDecodedPartCount = 0;
-    private _pointPartLocalMin = new Float32Array(3);
-    private _pointPartLocalMax = new Float32Array(3);
-    private _pointPartScratch = new Float32Array(40);
-    private _pointDecodedSplatsData: Nullable<ArrayBuffer> = null;
-    private readonly _pointVpMatrix = new Matrix();
-    private readonly _pointDepthSpan: [number, number] = [0, 0];
 
     /**
      * Per-part active source-splat range overrides, indexed by part index, in GLOBAL source-splat
@@ -586,7 +588,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partIndicesTexture = null;
         this._part0LocalMin = null;
         this._part0LocalMax = null;
-        this._disposePointMode();
+        this._pointController?.dispose();
+        this._pointController = null;
         super.dispose(doNotRecurse);
     }
 
@@ -617,8 +620,32 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     // ---------------------------------------------------------------------------
-    // Point-splatting render mode
+    // Point-splatting render mode (optional WebGPU compute extension)
+    //
+    // The implementation lives in gaussianPointSplattingController.pure.ts and is reached through a
+    // registered factory, so a bundle that only uses the classic rasterized path never pulls in the compute
+    // renderer, the blit materials, or the GPS compute shaders. The properties below are the public API and
+    // degrade to warn-and-ignore no-ops until that module is imported.
     // ---------------------------------------------------------------------------
+
+    /**
+     * Lazily creates this mesh's point-splatting controller, or null when the optional module is absent.
+     * @returns the controller, or null when point splatting has not been registered
+     */
+    private _ensurePointController(): Nullable<IGaussianPointSplattingController> {
+        if (!this._pointController) {
+            if (!_PointSplattingControllerFactory) {
+                Logger.Warn(
+                    'GaussianSplattingMesh: point splatting is not registered; import "@babylonjs/core/Meshes/GaussianSplatting/gaussianPointSplattingController" to enable it.'
+                );
+                return null;
+            }
+            this._pointController = _PointSplattingControllerFactory(this);
+            this._pointController.pointScale = this._pointScale;
+            this._pointController.renderScale = this._pointRenderScale;
+        }
+        return this._pointController;
+    }
 
     /**
      * Whether the camera-view color is rendered with the WebGPU compute point-splatting path instead of
@@ -628,26 +655,23 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * same compute result. With multiple active cameras, falls back to the classic renderer because the
      * compute result is camera-specific. Streamed (GPU-decoded) parts are not supported and also fall
      * back to the classic renderer for the whole mesh. WebGPU only.
+     *
+     * Requires the optional point-splatting module: import
+     * `@babylonjs/core/Meshes/GaussianSplatting/gaussianPointSplattingController` (already included when
+     * importing from `@babylonjs/core`). Without it, enabling this logs a warning and does nothing.
      * @see https://playground.babylonjs.com/#F39YWU#1
      */
     public get pointSplattingRenderMode(): boolean {
-        return this._pointMode;
+        return this._pointController?.colorRenderMode ?? false;
     }
     public set pointSplattingRenderMode(value: boolean) {
-        if (value === this._pointMode) {
+        if (value === this.pointSplattingRenderMode) {
             return;
         }
-        if (value && !this._scene.getEngine().isWebGPU) {
-            Logger.Warn("GaussianSplattingMesh: point-splatting render mode requires a WebGPU engine; ignoring.");
-            return;
-        }
-        this._pointMode = value;
-        if (value) {
-            this._pointEnsureCompute();
-            this._pointEnableColorBlit();
-        } else {
-            this._pointBlitMesh?.setEnabled(false);
-            this._pointReleaseComputeIfIdle();
+        // Turning the mode off before the optional module was ever loaded is already the current state.
+        const controller = value ? this._ensurePointController() : this._pointController;
+        if (controller) {
+            controller.colorRenderMode = value;
         }
     }
 
@@ -660,25 +684,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * same shared compute, which runs whenever either one is on. Only the DepthRenderer pass is affected —
      * shadows, prepass/geometry AOV and GPU picking still rasterize the classic geometry. Multiple active
      * cameras use the classic depth path, as do meshes hosting streamed (GPU-decoded) parts. WebGPU only.
+     *
+     * Requires the same optional point-splatting module as {@link pointSplattingRenderMode}.
      */
     public get pointSplattingDepthRenderMode(): boolean {
-        return this._pointDepthMode;
+        return this._pointController?.depthRenderMode ?? false;
     }
     public set pointSplattingDepthRenderMode(value: boolean) {
-        if (value === this._pointDepthMode) {
+        if (value === this.pointSplattingDepthRenderMode) {
             return;
         }
-        if (value && !this._scene.getEngine().isWebGPU) {
-            Logger.Warn("GaussianSplattingMesh: point-splatting depth render mode requires a WebGPU engine; ignoring.");
-            return;
-        }
-        this._pointDepthMode = value;
-        if (value) {
-            this._pointEnsureCompute();
-            this._pointEnableDepthBlit();
-        } else {
-            this._pointDepthBlitMesh?.setEnabled(false);
-            this._pointReleaseComputeIfIdle();
+        const controller = value ? this._ensurePointController() : this._pointController;
+        if (controller) {
+            controller.depthRenderMode = value;
         }
     }
 
@@ -696,20 +714,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * watching `accumulationVersion` alone is enough to keep a sample budget valid.
      * @returns the latest compute counters, or null when point splatting is not producing frames
      */
-    public get pointSplattingProgress(): Nullable<{ renderedFrameCount: number; accumulationVersion: number; pixelCycleLength: number }> {
-        if (!this._pointComputeActive || !this._pointResultReady || !this._pointRenderer) {
-            return null;
-        }
-        return {
-            renderedFrameCount: this._pointProgressFrameCount,
-            accumulationVersion: this._pointProgressGeneration,
-            pixelCycleLength: this._pointProgressCycleLength,
-        };
+    public get pointSplattingProgress(): Nullable<IGaussianPointSplattingProgress> {
+        return this._pointController?.progress ?? null;
     }
 
-    /** True while either point-splatting mode is on, i.e. while the shared compute must run. */
-    private get _pointComputeActive(): boolean {
-        return (this._pointMode || this._pointDepthMode) && !this._pointStreamingUnsupported;
+    /** Density multiplier for point splatting (higher = denser and slower). */
+    public get pointSplattingScale(): number {
+        return this._pointScale;
+    }
+    public set pointSplattingScale(value: number) {
+        this._pointScale = value;
+        if (this._pointController) {
+            this._pointController.pointScale = value;
+        }
     }
 
     /**
@@ -721,703 +738,29 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * such a mesh would therefore drop the streamed content entirely, so both point modes fall back to
      * the classic rasterized path for the whole mesh instead. Re-evaluated per frame, because a stream
      * can be reserved or removed after the mode was toggled on.
+     * @internal
      */
-    private get _pointStreamingUnsupported(): boolean {
+    public get _pointStreamingUnsupported(): boolean {
         return this._hasStreamingPart;
     }
 
-    /** Density multiplier for point splatting (higher = denser and slower). */
-    public get pointSplattingScale(): number {
-        return this._pointScale;
-    }
-    public set pointSplattingScale(value: number) {
-        this._pointScale = value;
-        if (this._pointRenderer) {
-            this._pointRenderer.pointScale = value;
-            this._pointRenderer.resetAccumulation();
-        }
-    }
-
-    /** Lazily builds the compute renderer, hooks the per-frame compute, and decodes the current splat
-     * data. Shared by the color and depth point-splatting modes (one compute produces both buffers), so
-     * it is idempotent and called from both setters. */
-    private _pointEnsureCompute(): void {
-        const engine = this._scene.getEngine();
-        if (!this._pointRenderer) {
-            this._pointRenderer = new GaussianPointSplattingRenderer(engine);
-            this._pointRenderer.pointScale = this._pointScale;
-        }
-        this._pointDecodedSplatsData = null; // force a decode
-        this._pointSyncData();
-        if (!this._pointComputeObserver) {
-            this._pointComputeObserver = this._scene.onBeforeRenderObservable.add(() => this._pointRunCompute());
-        }
-    }
-
-    /** Tears down the shared compute once neither point-splatting mode needs it anymore. */
-    private _pointReleaseComputeIfIdle(): void {
-        if (this._pointMode || this._pointDepthMode) {
-            return;
-        }
-        if (this._pointComputeObserver) {
-            this._scene.onBeforeRenderObservable.remove(this._pointComputeObserver);
-            this._pointComputeObserver = null;
-        }
-        this._pointRenderer?.dispose();
-        this._pointRenderer = null;
-        this._pointDecodedSplatsData = null;
-        this._pointResultReady = false;
-        this._pointBudgetReadPending = false;
-        this._pointAutoN = 2;
-        this._pointAutoMeasuredGeneration = -1;
-        this._pointLastRenderedGeneration = -1;
-    }
-
-    /** Builds the internal fullscreen compositor mesh used by a blit pass. It is an internal fullscreen
-     * triangle rendered manually from this mesh's own passes (see _drawColorPass), and is kept DISABLED
-     * so the scene never selects it as an active mesh — otherwise its raw clip-space geometry would leak
-     * into every geometry pass (depth renderer, IBL G-buffer) as a giant triangle.
-     * @param name the compositor mesh name
-     * @param material the blit material to render it with
-     * @returns the created compositor mesh
-     */
-    private _pointCreateBlitMesh(name: string, material: Material): Mesh {
-        const blitMesh = new Mesh(name, this._scene);
-        const vd = new VertexData();
-        // Fullscreen clip-space triangle; the blit vertex shader passes it through unchanged.
-        vd.positions = [-1, -1, 0, 3, -1, 0, -1, 3, 0];
-        vd.indices = [0, 1, 2];
-        vd.applyToMesh(blitMesh);
-        blitMesh.material = material;
-        blitMesh.doNotSerialize = true;
-        blitMesh.isPickable = false;
-        blitMesh.doNotSyncBoundingInfo = true;
-        // Disabled: rendered only via _drawColorPass, never selected by the scene (no depth/GBR leak).
-        blitMesh.setEnabled(false);
-        blitMesh.reservedDataStore = { hidden: true };
-        blitMesh.computeWorldMatrix(true);
-        return blitMesh;
-    }
-
-    /** Lazily builds the color blit material + compositor mesh (main color pass only). */
-    private _pointEnableColorBlit(): void {
-        if (!this._pointBlit) {
-            this._pointBlit = new GaussianPointSplattingBlitMaterial(this.name + "_pointBlit", this._scene);
-        }
-        if (!this._pointBlitMesh) {
-            this._pointBlitMesh = this._pointCreateBlitMesh(this.name + "_pointBlitMesh", this._pointBlit);
-        }
-    }
-
-    /** Lazily builds the depth blit material + compositor mesh (DepthRenderer pass only). */
-    private _pointEnableDepthBlit(): void {
-        if (!this._pointDepthBlit) {
-            this._pointDepthBlit = new GaussianPointSplattingDepthBlitMaterial(this.name + "_pointDepthBlit", this._scene);
-        }
-        if (!this._pointDepthBlitMesh) {
-            this._pointDepthBlitMesh = this._pointCreateBlitMesh(this.name + "_pointDepthBlitMesh", this._pointDepthBlit);
-        }
-    }
-
-    /** Re-decodes the compute buffers from this mesh's retained splat data when it changed (part
-     * add/remove or a reload). A no-op when nothing changed, so it is safe to call every frame. */
-    private _pointSyncData(): void {
-        const data = this._splatsData;
-        const vc = data ? (data.byteLength / _GaussianSplattingBytesPerSplat) | 0 : 0;
-        const pc = this.isCompound ? this.partCount : 1;
-        if (data === this._pointDecodedSplatsData && vc === this._pointSplatCount && pc === this._pointDecodedPartCount) {
-            return;
-        }
-        this._pointDecodedSplatsData = data;
-        this._pointDecodedPartCount = pc;
-        if (!data || vc === 0) {
-            this._pointSplatCount = 0;
-            return;
-        }
-        this._pointDecode(data);
-    }
-
     /**
-     * Decodes raw `.splat` bytes into the compute renderer's per-Gaussian buffers, in LOCAL space (the
-     * per-part world transform is applied per frame in the shader). Mirrors the classic `_makeSplat`
-     * decode exactly, including the `* 2` on the scale, so both paths produce the same Sigma and the
-     * same `splatSizeRange` units. The classic rasterizer cancels that doubling at render time through
-     * the quad's `invViewport`; this path has no quad, so `gpsPreprocess` cancels it on the projected
-     * cov2d instead. Part index is carried in means.w.
-     * @param splatsData raw `.splat` bytes for this mesh's splats
+     * Per-splat context the point-splatting controller needs when it CPU-decodes {@link _splatsData}. Kept
+     * here so the controller does not need access to protected base-class state. Only read on an actual
+     * decode (data/part-count/range change), never per frame.
+     * @returns the flip-Y convention, the per-splat part indices, and the active splat-range pairs
+     * @internal
      */
-    private _pointDecode(splatsData: ArrayBuffer): void {
-        const bytes = new Uint8Array(splatsData);
-        const floats = new Float32Array(splatsData);
-        const count = (bytes.length / _GaussianSplattingBytesPerSplat) | 0;
-        const flipY = this._flipY ? -1 : 1;
-        const partIndices = this.isCompound ? this._partIndices : null;
-
-        let partCount = this.isCompound ? this.partCount : 1;
-        if (partIndices) {
-            for (let i = 0; i < count; i++) {
-                if (partIndices[i] + 1 > partCount) {
-                    partCount = partIndices[i] + 1;
-                }
-            }
-        }
-
-        const means = new Float32Array(count * 4);
-        // 4 u32/Gaussian: 3 f16 pairs of (Sigma / factor) + the f32 factor (see the covariance write).
-        const cov3d = new Uint32Array(count * 4);
-        const colorOpacity = new Uint32Array(count);
-        const sh = this._pointPackSh(this._shData ?? undefined, this._shDegree, count);
-
-        const quaternion = new Quaternion();
-        const rotation = new Matrix();
-        const scale = new Matrix();
-        const rs = new Matrix();
-        const pMin = new Float32Array(partCount * 3).fill(Infinity);
-        const pMax = new Float32Array(partCount * 3).fill(-Infinity);
-        const activeRanges = this._activeSplatRanges;
-        const activeMask = activeRanges ? new Uint8Array(count) : null;
-        if (activeRanges && activeMask) {
-            for (let r = 0; r < activeRanges.length; r += 2) {
-                activeMask.fill(1, activeRanges[r], Math.min(count, activeRanges[r] + activeRanges[r + 1]));
-            }
-        }
-
-        for (let i = 0; i < count; i++) {
-            const active = !activeMask || activeMask[i] !== 0;
-            const mx = floats[8 * i + 0];
-            const my = floats[8 * i + 1] * flipY;
-            const mz = floats[8 * i + 2];
-
-            const qb = _GaussianSplattingBytesPerSplat * i + 28;
-            quaternion.set((bytes[qb + 1] - 127.5) / 127.5, (bytes[qb + 2] - 127.5) / 127.5, (bytes[qb + 3] - 127.5) / 127.5, -(bytes[qb + 0] - 127.5) / 127.5);
-            quaternion.normalize();
-            quaternion.toRotationMatrix(rotation);
-            Matrix.ScalingToRef(floats[8 * i + 3] * 2, floats[8 * i + 4] * 2, floats[8 * i + 5] * 2, scale);
-            rotation.multiplyToRef(scale, rs);
-            const m = rs.m;
-
-            const part = partIndices ? partIndices[i] : 0;
-            means[4 * i + 0] = mx;
-            means[4 * i + 1] = my;
-            means[4 * i + 2] = mz;
-            means[4 * i + 3] = part;
-            const b = part * 3;
-            if (active && mx < pMin[b]) {
-                pMin[b] = mx;
-            }
-            if (active && my < pMin[b + 1]) {
-                pMin[b + 1] = my;
-            }
-            if (active && mz < pMin[b + 2]) {
-                pMin[b + 2] = mz;
-            }
-            if (active && mx > pMax[b]) {
-                pMax[b] = mx;
-            }
-            if (active && my > pMax[b + 1]) {
-                pMax[b + 1] = my;
-            }
-            if (active && mz > pMax[b + 2]) {
-                pMax[b + 2] = mz;
-            }
-
-            // Local 3D covariance Sigma = (R*S)(R*S)^T, 6 unique components. Store as f16 normalized by
-            // a per-splat factor = max|component| so f16 keeps full precision at any splat scale (the
-            // shader rescales by the factor). Matches the classic covA/covB + center.w scheme.
-            const s00 = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
-            const s01 = m[0] * m[4] + m[1] * m[5] + m[2] * m[6];
-            const s02 = m[0] * m[8] + m[1] * m[9] + m[2] * m[10];
-            const s11 = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
-            const s12 = m[4] * m[8] + m[5] * m[9] + m[6] * m[10];
-            const s22 = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
-            let factor = Math.max(Math.abs(s00), Math.abs(s01), Math.abs(s02), Math.abs(s11), Math.abs(s12), Math.abs(s22));
-            if (!(factor > 0)) {
-                factor = 1;
-            }
-            const inv = 1 / factor;
-            cov3d[4 * i + 0] = _Pack2HalfFloat(s00 * inv, s01 * inv);
-            cov3d[4 * i + 1] = _Pack2HalfFloat(s02 * inv, s11 * inv);
-            cov3d[4 * i + 2] = _Pack2HalfFloat(s12 * inv, s22 * inv);
-            _F32Scratch[0] = factor;
-            cov3d[4 * i + 3] = _U32Scratch[0];
-
-            const cb = _GaussianSplattingBytesPerSplat * i + 24;
-            colorOpacity[i] = bytes[cb] | (bytes[cb + 1] << 8) | (bytes[cb + 2] << 16) | ((active ? bytes[cb + 3] : 0) << 24);
-        }
-
-        this._pointSplatCount = count;
-        this._pointPartCount = partCount;
-        this._pointPartLocalMin = pMin;
-        this._pointPartLocalMax = pMax;
-        if (this._pointPartScratch.length !== partCount * 40) {
-            this._pointPartScratch = new Float32Array(partCount * 40);
-        }
-        this._pointRenderer!.updateSplats(means, cov3d, colorOpacity, sh, this._shDegree, count);
-    }
-
-    /**
-     * Repacks the loader's 8-bit SH bytes tightly into u32 words (4 bytes/word, GPS_SH_WORDS per splat),
-     * keeping the classic's 8-bit quantization — the shader dequantizes (b*2/255 - 1) on read. This
-     * matches the classic's VRAM footprint instead of expanding to f32. Null when SH is absent.
-     * @param shData packed per-splat SH textures, one per 16 scalar components, or undefined
-     * @param shDegree spherical-harmonics degree (0-4)
-     * @param count number of splats
-     * @returns u32-packed SH bytes, or null when SH is absent
-     */
-    private _pointPackSh(shData: Uint8Array[] | undefined, shDegree: number, count: number): Nullable<Uint32Array> {
-        if (!shData || shData.length === 0 || shDegree < 1) {
-            return null;
-        }
-        const shDim = shDegree === 1 ? 3 : shDegree === 2 ? 8 : shDegree === 3 ? 15 : 24;
-        const scalars = shDim * 3;
-        const words = Math.ceil(scalars / 4);
-        // Zero-padded so each splat occupies exactly `words` u32; the padding bytes are never read.
-        const bytes = new Uint8Array(count * words * 4);
-        for (let i = 0; i < count; i++) {
-            const dst = i * words * 4;
-            for (let k = 0; k < scalars; k++) {
-                const tex = shData[(k / 16) | 0];
-                bytes[dst + k] = tex[i * 16 + (k % 16)];
-            }
-        }
-        return new Uint32Array(bytes.buffer);
-    }
-
-    /** Packs this frame's live per-part records (world matrix + visibility + debug-LUT rows) and uploads
-     * them to the renderer, mirroring the classic `partWorld` / `partVisibility` and the debugger's
-     * `dbgPartData`. Debug knobs are read live from the shared GaussianSplattingDebugMaterialPlugin (the
-     * same one the classic renderer and the viewer already drive), so point mode honors them identically. */
-    private _pointUploadParts(): void {
-        const count = this._pointPartCount;
-        if (this._pointPartScratch.length !== count * 40) {
-            this._pointPartScratch = new Float32Array(count * 40);
-        }
-        const scratch = this._pointPartScratch;
-        const compound = this.isCompound;
-
-        // Resolve debug state from the shared debug plugin on this mesh's material (if attached & active).
-        const plugin = this.material?.pluginManager?.getPlugin("GaussianSplattingDebug") as Nullable<GaussianSplattingDebugMaterialPlugin>;
-        const debugActive = !!plugin && plugin.isDebugActive;
-        let lut: Nullable<Float32Array> = null;
-        let lutStride = 0;
-        if (plugin && debugActive) {
-            const resolved = plugin.getResolvedPartData(count, this._scene.getEngine());
-            lut = resolved.data;
-            lutStride = resolved.maxPartCount;
-        }
-        this._pointRenderer!.debugActive = debugActive ? 1 : 0;
-
-        for (let i = 0; i < count; i++) {
-            const worldM = (compound ? this.getWorldMatrixForPart(i) : this.getWorldMatrix()).m;
-            const vis = compound ? this.getPartVisibility(i) : this.visibility;
-            const o = i * 40;
-            scratch.set(worldM, o);
-            scratch[o + 16] = vis;
-            scratch[o + 17] = 0;
-            scratch[o + 18] = 0;
-            scratch[o + 19] = 0;
-            // Debug rows 0..4 (o+20 .. o+39). LUT is row-major (row r, part i at (stride*r + i)*4).
-            if (lut) {
-                for (let r = 0; r < 5; r++) {
-                    const src = (lutStride * r + i) * 4;
-                    const dst = o + 20 + r * 4;
-                    scratch[dst] = lut[src];
-                    scratch[dst + 1] = lut[src + 1];
-                    scratch[dst + 2] = lut[src + 2];
-                    scratch[dst + 3] = lut[src + 3];
-                }
-            } else {
-                // Pass-through defaults: no clip, no cull, opacityScale 1, no saturate, SH weights all 1.
-                scratch[o + 20] = -1e9;
-                scratch[o + 21] = -1e9;
-                scratch[o + 22] = -1e9;
-                scratch[o + 23] = 1e9;
-                scratch[o + 24] = 1e9;
-                scratch[o + 25] = 1e9;
-                scratch[o + 26] = 0;
-                scratch[o + 27] = 1;
-                scratch[o + 28] = 0;
-                scratch[o + 29] = 1e9;
-                scratch[o + 30] = 1;
-                scratch[o + 31] = 0;
-                scratch[o + 32] = 1;
-                scratch[o + 33] = 1;
-                scratch[o + 34] = 1;
-                scratch[o + 35] = 1;
-                scratch[o + 36] = 1;
-                scratch[o + 37] = 0;
-                scratch[o + 38] = 0;
-                scratch[o + 39] = 0;
-            }
-        }
-        this._pointRenderer!.setPartData(scratch, count);
-    }
-
-    /**
-     * Computes the model's VIEW-SPACE depth extent this frame (each part's local AABB transformed by its
-     * live part matrix, then by the view matrix), clamped to the camera's [near, far]. The depth key is
-     * normalized linearly over this range — robust when the camera is inside/close to the model, unlike
-     * projecting to NDC-z (which drops the near extent because corners behind the camera can't be
-     * projected). The extreme view-z of an oriented AABB is always at a corner, so 8 corners suffice.
-     * @param viewM column-major view matrix (Matrix.m); row 2 (m[2],m[6],m[10],m[14]) gives view-space z
-     * @param near camera near plane
-     * @param far camera far plane
-     * @returns the model's [viewZMin, viewZMax] this frame, clamped to [near, far]
-     */
-    private _pointViewZSpan(viewM: ArrayLike<number>, near: number, far: number): [number, number] {
-        let vzMin = Infinity;
-        let vzMax = -Infinity;
-        const scratch = this._pointPartScratch;
-        for (let p = 0; p < this._pointPartCount; p++) {
-            const wb = p * 40;
-            const lb = p * 3;
-            const minx = this._pointPartLocalMin[lb];
-            if (!isFinite(minx)) {
-                continue;
-            }
-            const miny = this._pointPartLocalMin[lb + 1];
-            const minz = this._pointPartLocalMin[lb + 2];
-            const maxx = this._pointPartLocalMax[lb];
-            const maxy = this._pointPartLocalMax[lb + 1];
-            const maxz = this._pointPartLocalMax[lb + 2];
-            for (let c = 0; c < 8; c++) {
-                const lx = c & 1 ? maxx : minx;
-                const ly = c & 2 ? maxy : miny;
-                const lz = c & 4 ? maxz : minz;
-                const wx = scratch[wb + 0] * lx + scratch[wb + 4] * ly + scratch[wb + 8] * lz + scratch[wb + 12];
-                const wy = scratch[wb + 1] * lx + scratch[wb + 5] * ly + scratch[wb + 9] * lz + scratch[wb + 13];
-                const wz = scratch[wb + 2] * lx + scratch[wb + 6] * ly + scratch[wb + 10] * lz + scratch[wb + 14];
-                // View-space forward depth is positive for both handedness conventions.
-                const viewZ = viewM[2] * wx + viewM[6] * wy + viewM[10] * wz + viewM[14];
-                const vz = this._scene.useRightHandedSystem ? -viewZ : viewZ;
-                if (vz < vzMin) {
-                    vzMin = vz;
-                }
-                if (vz > vzMax) {
-                    vzMax = vz;
-                }
-            }
-        }
-        // Clamp to the visible frustum: when the camera is inside the model the nearest corner sits behind
-        // the near plane, so the nearest visible splats start at `near`.
-        vzMin = Math.max(near, vzMin);
-        vzMax = Math.min(far, vzMax);
-        if (!(vzMax > vzMin)) {
-            this._pointDepthSpan[0] = near;
-            this._pointDepthSpan[1] = far;
-        } else {
-            this._pointDepthSpan[0] = vzMin;
-            this._pointDepthSpan[1] = vzMax;
-        }
-        return this._pointDepthSpan;
-    }
-
-    /**
-     * A stride coprime to `total` near the golden ratio, so `i*stride % total` is a complete but decorrelated
-     * (blue-noise-ish) permutation of [0,total) — used to order the jitter sub-cell visits so partial frames
-     * are spread out rather than swept in raster order.
-     * @param total the cycle length (number of sub-cells, N*N)
-     * @returns a stride coprime to total
-     */
-    private _pointCoprimeStride(total: number): number {
-        if (total <= 2) {
-            return 1;
-        }
-        let s = Math.max(1, Math.round(total * 0.6180339887));
-        let a = s;
-        let b = total;
-        while (b !== 0) {
-            const remainder = a % b;
-            a = b;
-            b = remainder;
-        }
-        while (a !== 1) {
-            s++;
-            a = s;
-            b = total;
-            while (b !== 0) {
-                const remainder = a % b;
-                a = b;
-                b = remainder;
-            }
-        }
-        return s;
-    }
-
-    /** Device-tiered per-frame point target for the `"auto"` render scale: desktop 15M, iOS 9M, other
-     * mobile 6M. A fixed device-class heuristic (not derived from actual VRAM/GPU).
-     * @returns the target emitted-point count per frame */
-    private _pointBudget(): number {
-        const isMobile = !!this._scene.getEngine().hostInformation?.isMobile;
-        if (!isMobile) {
-            return 15_000_000;
-        }
-        if (typeof navigator !== "undefined" && navigator.userAgent && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
-            return 9_000_000;
-        }
-        return 6_000_000;
-    }
-
-    /**
-     * Kicks an async readback of the current point count and derives the auto render factor N so the
-     * per-frame emitted points approach the device budget (scale = sqrt(budget / fullResPoints)).
-     * @param currentN the render factor N used for the frame being measured
-     * @param generation the accumulation generation the measured frame belongs to
-     * @param freeze whether the measured frame had occlusion culling active, so N may be fixed for `generation`
-     */
-    private _pointUpdateAutoScale(currentN: number, generation: number, freeze: boolean): void {
-        if (this._pointBudgetReadPending || !this._pointRenderer) {
-            return;
-        }
-        this._pointBudgetReadPending = true;
-        void this._pointConvergeAutoScaleAsync(currentN, generation, freeze);
-    }
-
-    private async _pointConvergeAutoScaleAsync(currentN: number, generation: number, freeze: boolean): Promise<void> {
-        const renderer = this._pointRenderer;
-        if (!renderer) {
-            return;
-        }
-        try {
-            const total = await renderer.readPointCountAsync();
-            if (renderer !== this._pointRenderer || !this._pointComputeActive) {
-                return;
-            }
-            if (total > 0) {
-                // Points scale as N^-2, so the full-res estimate is measured * N^2. One sample suffices: the
-                // relative Poisson noise over millions of points is negligible. N is capped at 8, so this is a
-                // best-effort target rather than a hard point-count cap.
-                const fullPoints = total * currentN * currentN;
-                const target = Math.max(1, Math.min(8, Math.ceil(Math.sqrt(fullPoints / this._pointBudget()))));
-                // The sample is stale when it came from the unculled reset frame (it over-counts) or when
-                // accumulation moved on mid-readback. Evaluate it before the reset below, which would
-                // otherwise make every sample look stale.
-                const stale = !freeze || renderer.accumulationVersion !== generation;
-                const factorChanged = target !== this._pointAutoN;
-                this._pointAutoN = target;
-                if (factorChanged) {
-                    // Frames so far used the previous factor; restart so the converged image comes from
-                    // `target` alone rather than a mix of two render scales. `pixelCycleLength` must never
-                    // change inside a generation, so this reset is required for a stale sample too.
-                    renderer.resetAccumulation();
-                }
-                if (stale) {
-                    // Keep the factor as a hint for the next frame, but leave the generation unmeasured so the
-                    // image that settles is always sized from a culled frame of its own generation.
-                    return;
-                }
-                // Mark the now-current generation (the reset above created a new one) measured: re-measuring
-                // would only reproduce this estimate. Bounds the whole procedure to one corrective reset.
-                this._pointAutoMeasuredGeneration = renderer.accumulationVersion;
-            }
-        } catch (error) {
-            if (renderer === this._pointRenderer && this._pointComputeActive) {
-                Logger.Error(`GaussianSplattingMesh: point-splatting budget readback failed: ${String(error)}`);
-            }
-        } finally {
-            if (renderer === this._pointRenderer) {
-                this._pointBudgetReadPending = false;
-            }
-        }
-    }
-
-    /** Runs the compute pipeline before the render pass (compute cannot run inside an active pass) and
-     * binds the resolved buffers to the blit material for the color pass. */
-    private _pointRunCompute(): void {
-        this._pointResultReady = false;
-        if ((this._pointMode || this._pointDepthMode) && this._pointStreamingUnsupported && !this._pointStreamingWarned) {
-            this._pointStreamingWarned = true;
-            Logger.Warn(
-                "GaussianSplattingMesh: point splatting does not support streamed parts (their splats are GPU-decoded and never reach the retained CPU splat data); falling back to the classic renderer."
-            );
-        }
-        if (!this._pointComputeActive || !this.isEnabled() || !this._pointRenderer || (this._scene.activeCameras?.length ?? 0) > 1) {
-            return;
-        }
-        this._pointSyncData();
-        if (this._pointSplatCount === 0) {
-            return;
-        }
-        const camera = this._scene.activeCamera;
-        if (!camera) {
-            return;
-        }
-        const engine = this._scene.getEngine();
-        // Render the point pipeline at a reduced internal resolution (integer factor N = round(1/scale)):
-        // fewer pixels shrink each splat's footprint (~1/N^2 emitted points), the unbiased cost lever. Full
-        // resolution is reconstructed over N^2 frames by jittering the low-res grid across the full-res
-        // sub-cells and accumulating per full-res pixel (temporal upsampling). focalX/Y derive from the low
-        // dims so they scale too.
-        const fullW = engine.getRenderWidth();
-        const fullH = engine.getRenderHeight();
-        const scaleOpt = this.pointSplattingRenderScale;
-        const upsampleN = scaleOpt === "auto" ? this._pointAutoN : Math.max(1, Math.min(8, Math.round(1 / Math.max(scaleOpt, 1e-3))));
-        const width = Math.max(1, Math.ceil(fullW / upsampleN));
-        const height = Math.max(1, Math.ceil(fullH / upsampleN));
-        // This frame's sub-cell offset in [0,N)^2, cycled so N^2 frames cover every full-res pixel. A
-        // coprime-stride permutation decorrelates the visit order (blue-noise-ish) vs a raster sweep.
-        const total = upsampleN * upsampleN;
-        const j = ((this._pointFrameCounter % total) * this._pointCoprimeStride(total)) % total;
-        const jitterX = j % upsampleN;
-        const jitterY = Math.floor(j / upsampleN);
-        this._pointFrameCounter++;
-
-        const view = camera.getViewMatrix();
-        const projection = camera.getProjectionMatrix();
-        view.multiplyToRef(projection, this._pointVpMatrix);
-        const focalX = (width * projection.m[0]) / 2;
-        const focalY = (height * projection.m[5]) / 2;
-        const camPos = camera.globalPosition;
-        this._pointRenderer.rightHandedSystem = this._scene.useRightHandedSystem;
-        // Orthographic when projection[3][3] == 1 (matches the classic shader's isOrtho test).
-        this._pointRenderer.isOrthographic = Math.abs(projection.m[15] - 1) < 0.001;
-        // Antialiasing opacity compensation follows the source material's setting (classic COMPENSATION).
-        const gsMaterial = this.material as Nullable<GaussianSplattingMaterial>;
-        this._pointRenderer.compensation = gsMaterial?.compensation ?? GaussianSplattingMaterial.Compensation;
-
-        this._pointUploadParts();
-        const [vzMin, vzMax] = this._pointViewZSpan(view.m, camera.minZ, camera.maxZ);
-        this._pointRenderer.setCamera(view, this._pointVpMatrix, camera.minZ, camera.maxZ, focalX, focalY, camPos.x, camPos.y, camPos.z, vzMin, vzMax);
-        // Projection z-row (column-major m[10],m[11],m[14],m[15]) so resolve reconstructs ndc.z from the
-        // view-z key for fragDepth — it encodes the reverse-Z / half-Z convention automatically.
-        this._pointRenderer.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
-        if (!this._pointRenderer.renderToBuffer(width, height, fullW, fullH, upsampleN, jitterX, jitterY)) {
-            return;
-        }
-        this._pointResultReady = true;
-        // Snapshot the counters of this successful dispatch: `pointSplattingProgress` must describe the frame
-        // that was actually rendered, not renderer state that a later accumulation reset has already moved on
-        // from (which would pair a brand-new generation with the previous generation's cycle length).
-        this._pointProgressFrameCount = this._pointRenderer.renderedFrameCount;
-        this._pointProgressGeneration = this._pointRenderer.accumulationVersion;
-        this._pointProgressCycleLength = this._pointRenderer.pixelCycleLength;
-
-        // The frame that resets accumulation runs without Hi-Z occlusion culling and therefore emits far more
-        // points than the frames that follow it, so its sample may only be used as a hint for the next frame.
-        // Once culling is active, a single measurement fixes N for the whole generation.
-        const generation = this._pointRenderer.accumulationVersion;
-        const wasMoving = generation !== this._pointLastRenderedGeneration;
-        this._pointLastRenderedGeneration = generation;
-        if (scaleOpt === "auto" && this._pointAutoMeasuredGeneration !== generation) {
-            this._pointUpdateAutoScale(upsampleN, generation, !wasMoving);
-        }
-
-        const accum = this._pointRenderer.accumBuffer;
-        const accumDepth = this._pointRenderer.accumDepthBuffer;
-        if (accum && accumDepth) {
-            if (this._pointMode && this._pointBlit) {
-                this._pointBlit.setAccumBuffer(accum);
-                this._pointBlit.setAccumDepthBuffer(accumDepth);
-                this._pointBlit.setResolution(this._pointRenderer.outputWidth, this._pointRenderer.outputHeight);
-            }
-            if (this._pointDepthMode && this._pointDepthBlit) {
-                this._pointDepthBlit.setAccumBuffer(accum);
-                this._pointDepthBlit.setAccumDepthBuffer(accumDepth);
-                this._pointDepthBlit.setResolution(this._pointRenderer.outputWidth, this._pointRenderer.outputHeight);
-                // Same projection z-row the resolve used, so the blit inverts accumDepth back to clip-space z.
-                this._pointDepthBlit.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
-                // (minZ, minZ + maxZ) normalization, computed exactly as the classic Gaussian Splatting depth
-                // material does (GaussianSplattingMaterial._BindEffectUniforms), so both paths emit the same metric.
-                let minZ: number, maxZ: number;
-                if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
-                    minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
-                    maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
-                } else {
-                    minZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? camera.minZ : engine.isNDCHalfZRange ? 0 : camera.minZ;
-                    maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : camera.maxZ;
-                }
-                this._pointDepthBlit.setDepthValues(minZ, minZ + maxZ);
-                this._pointDepthBlit.setReverseDepth(engine.useReverseDepthBuffer);
-            }
-        }
-    }
-
-    /**
-     * True only for the main forward color pass (not depth/picking RTTs, which carry a render-pass
-     * material override, nor IBL voxelization, which uses its own renderList).
-     * @returns whether the current render pass is the camera's main forward color pass
-     */
-    private _isPointMainColorPass(): boolean {
-        const engine = this._scene.getEngine();
-        const cam = this._scene.activeCamera;
-        const mainId = cam?.outputRenderTarget?.renderPassId ?? cam?.renderPassId ?? Constants.RENDERPASS_MAIN;
-        return engine.currentRenderPassId === mainId && !this.getMaterialForRenderPass(engine.currentRenderPassId);
-    }
-
-    /**
-     * True only while rendering into an enabled DepthRenderer owned by the ACTIVE camera. The compute's
-     * accumDepth is only valid for the active camera, so depth renderers attached to any other camera (and
-     * DepthRenderers constructed directly, which are not registered in scene._depthRenderer) fall back to
-     * the classic rasterized depth.
-     * @returns whether the current render pass is the active camera's depth renderer pass
-     */
-    private _isPointDepthPass(): boolean {
-        const depthRenderers = this._scene._depthRenderer;
-        const camera = this._scene.activeCamera;
-        if (!depthRenderers || !camera) {
-            return false;
-        }
-        const renderer = depthRenderers[camera.uniqueId];
-        if (!renderer || !renderer.enabled) {
-            return false;
-        }
-        return renderer.getDepthMap().renderPassIds.indexOf(this._scene.getEngine().currentRenderPassId) !== -1;
+    public _getPointDecodeInputs(): { flipY: boolean; partIndices: Nullable<Uint8Array>; activeRanges: Nullable<Uint32Array> } {
+        return { flipY: this._flipY, partIndices: this._partIndices, activeRanges: this._activeSplatRanges };
     }
 
     protected override _drawColorPass(mesh: Mesh, subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
-        // In point mode, the internal compositor draws the camera-view color for the main color pass
-        // only; the classic quads are skipped. Every other pass (GPU picking, prepass, IBL voxelization —
-        // identified by a render-pass material override or a non-main render pass id) still rasterizes the
-        // classic geometry, so shadows are unaffected. The compositor is rendered here (not as an active
-        // scene mesh) so its geometry never leaks into those passes; its effect is prepared explicitly
-        // because the scene's active-mesh flow never touches it.
-        if (
-            this._pointMode &&
-            this._pointResultReady &&
-            this._pointBlitMesh &&
-            this._pointBlitMesh.subMeshes.length > 0 &&
-            this._pointBlit?.isReady(this._pointBlitMesh, false, this._pointBlitMesh.subMeshes[0]) &&
-            this._isPointMainColorPass()
-        ) {
-            const blitMesh = this._pointBlitMesh;
-            // Render in replacement mode so the disabled compositor still draws itself.
-            blitMesh.render(blitMesh.subMeshes[0], enableAlphaMode, blitMesh);
+        // When a point-splatting compositor drew this pass, the classic quads are skipped entirely.
+        if (this._pointController?.drawColorPass(enableAlphaMode)) {
             return mesh;
         }
-        // Independently of the color mode, the depth compositor writes the resolved point-splat depth into
-        // the active camera's depth map. Until its effect compiles we fall through to the classic depth
-        // rasterization rather than leaving a hole in the map.
-        if (this._pointDepthMode && this._pointResultReady && this._pointDepthBlitMesh && this._isPointDepthPass()) {
-            const depthBlitMesh = this._pointDepthBlitMesh;
-            if (depthBlitMesh.subMeshes.length > 0 && this._pointDepthBlit?.isReady(depthBlitMesh, false, depthBlitMesh.subMeshes[0])) {
-                // The depth renderer may have left ALPHA_COMBINE set (alphaBlendedDepth); the point-splat
-                // depth is a single resolved opaque surface, so blending must be off.
-                this._scene.getEngine().setAlphaMode(Constants.ALPHA_DISABLE);
-                depthBlitMesh.render(depthBlitMesh.subMeshes[0], false, depthBlitMesh);
-                return mesh;
-            }
-        }
         return super._drawColorPass(mesh, subMesh, enableAlphaMode, effectiveMeshReplacement);
-    }
-
-    private _disposePointMode(): void {
-        if (this._pointComputeObserver) {
-            this._scene.onBeforeRenderObservable.remove(this._pointComputeObserver);
-            this._pointComputeObserver = null;
-        }
-        this._pointRenderer?.dispose();
-        this._pointBlit?.dispose();
-        this._pointBlitMesh?.dispose();
-        this._pointDepthBlit?.dispose();
-        this._pointDepthBlitMesh?.dispose();
-        this._pointRenderer = null;
-        this._pointBudgetReadPending = false;
-        this._pointBlit = null;
-        this._pointBlitMesh = null;
-        this._pointDepthBlit = null;
-        this._pointDepthBlitMesh = null;
-        this._pointMode = false;
-        this._pointDepthMode = false;
     }
 
     /**
@@ -1753,8 +1096,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const previous = this._activeSplatRanges;
         super.setSplatIndexRanges(ranges);
         if (previous !== this._activeSplatRanges) {
-            this._pointDecodedSplatsData = null;
-            this._pointRenderer?.resetAccumulation();
+            this._pointController?.invalidateDecodedSplats();
         }
     }
 

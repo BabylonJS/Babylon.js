@@ -437,6 +437,7 @@
         "Meshes/Builders/torusBuilder.js",
         "Meshes/Builders/torusKnotBuilder.js",
         "Meshes/Builders/tubeBuilder.js",
+        "Meshes/GaussianSplatting/gaussianPointSplattingController.js",
         "Meshes/GaussianSplatting/gaussianPointSplattingRenderer.js",
         "Meshes/GaussianSplatting/gaussianSplattingCompoundMesh.js",
         "Meshes/GaussianSplatting/gaussianSplattingDebugger.js",

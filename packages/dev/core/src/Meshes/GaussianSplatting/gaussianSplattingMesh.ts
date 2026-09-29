@@ -9,6 +9,6 @@ RegisterGaussianSplattingMesh();
 
 import "../thinInstanceMesh";
 import "./gaussianSplattingPartProxyMesh";
-import "./gaussianPointSplattingRenderer";
-import "../../Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial";
-import "../../Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial";
+// Keeps point splatting available for legacy (non-pure) and @babylonjs/core root-index consumers.
+// Tree-shaking users import gaussianSplattingMesh.pure and opt in separately.
+import "./gaussianPointSplattingController";
