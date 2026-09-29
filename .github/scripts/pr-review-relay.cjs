@@ -1,5 +1,8 @@
-const SOURCE_REPOSITORY = "BabylonJS/Babylon.js";
-const DRAFT_REPOSITORY = "Popov72/pr-review-drafts";
+const SOURCE_REPOSITORY_ID = 11007313;
+const SOURCE_OWNER = "BabylonJS";
+const SOURCE_REPO = "Babylon.js";
+const SOURCE_REPOSITORY = `${SOURCE_OWNER}/${SOURCE_REPO}`;
+const DRAFT_REPOSITORY = "Popov72/pr-response-drafts";
 const AUTHOR_ID = 4152247;
 
 function positiveId(value) {
@@ -7,15 +10,13 @@ function positiveId(value) {
 }
 
 function makeDispatchPayload(eventName, event, pullRequest) {
-    if (event.repository?.full_name !== SOURCE_REPOSITORY || event.sender?.type === "Bot") {
+    if (event.repository?.id !== SOURCE_REPOSITORY_ID || event.repository.full_name !== SOURCE_REPOSITORY || event.sender?.type === "Bot") {
         return null;
     }
 
     let kind;
     let subject;
     let prNumber;
-    let reviewId = null;
-
     switch (eventName) {
         case "pull_request_review_comment":
             if (event.action !== "created") {
@@ -24,7 +25,6 @@ function makeDispatchPayload(eventName, event, pullRequest) {
             kind = "review_comment";
             subject = event.comment;
             prNumber = event.pull_request?.number;
-            reviewId = event.comment?.pull_request_review_id || null;
             break;
         case "pull_request_review":
             if (event.action !== "submitted") {
@@ -33,7 +33,6 @@ function makeDispatchPayload(eventName, event, pullRequest) {
             kind = "review";
             subject = event.review;
             prNumber = event.pull_request?.number;
-            reviewId = event.review?.id;
             break;
         case "issue_comment":
             if (event.action !== "created" || !event.issue?.pull_request) {
@@ -53,6 +52,8 @@ function makeDispatchPayload(eventName, event, pullRequest) {
         !positiveId(subject.user?.id) ||
         subject.user.type !== "User" ||
         subject.user?.id === AUTHOR_ID ||
+        (eventName === "pull_request_review" && (typeof subject.body !== "string" || !subject.body.trim())) ||
+        (typeof subject.body === "string" && subject.body.includes("<!-- pr-response-notice:")) ||
         pullRequest.number !== prNumber ||
         pullRequest.base?.repo?.full_name !== SOURCE_REPOSITORY ||
         pullRequest.user?.id !== AUTHOR_ID ||
@@ -63,13 +64,12 @@ function makeDispatchPayload(eventName, event, pullRequest) {
     }
 
     return {
-        source_repository: SOURCE_REPOSITORY,
+        source_repository_id: SOURCE_REPOSITORY_ID,
+        source_owner: SOURCE_OWNER,
+        source_repo: SOURCE_REPO,
         pr_number: prNumber,
         kind,
-        event_id: kind === "review_comment" && positiveId(reviewId) ? `review:${reviewId}` : `${kind}:${subject.id}`,
-        review_id: positiveId(reviewId) ? reviewId : null,
-        source_comment_id: kind === "review" ? null : subject.id,
-        head_sha: pullRequest.head.sha,
+        event_id: subject.id,
     };
 }
 

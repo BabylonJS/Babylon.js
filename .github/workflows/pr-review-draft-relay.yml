@@ -50,6 +50,6 @@ jobs:
                       await getOctokit(process.env.RELAY_TOKEN).rest.repos.createDispatchEvent({
                         owner,
                         repo,
-                        event_type: "pr_review_draft",
+                        event_type: "pr-response-request-v1",
                         client_payload: payload,
                       });
