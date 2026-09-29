@@ -143,11 +143,10 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     }
 
     /**
-     * Updates the state of the particles
+     * Updates the state of the particles. GPUParticleSystem does it in render(), which is replaced by a no-op while the system is rendered as a fluid
      */
     public override updateSimulation(): void {
         if (this._isGPUParticleSystem) {
-            // GPUParticleSystem emits and recycles particles in render(), which is replaced by a no-op while the system is rendered as a fluid
             this._originalRender(false, true);
         }
     }
