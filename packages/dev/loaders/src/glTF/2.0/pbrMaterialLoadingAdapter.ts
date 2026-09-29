@@ -800,8 +800,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The scatter coefficient * transmissionDepth as a Color3
      */
     public set transmissionScatter(value: Color3) {
-        // TODO convert from scatter coefficient to diffusion distance
-        this._material.subSurface.diffusionDistance = value;
+        this._material.subSurface.tintColor = value;
     }
 
     /**
@@ -816,7 +815,11 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public set transmissionScatterTexture(value: Nullable<BaseTexture>) {}
 
     /** @internal */
-    public set volumetricScatterStrengthFactor(value: Nullable<number>) {}
+    public set volumetricScatterStrengthFactor(value: Nullable<number>) {
+        this._material.subSurface.isTranslucencyEnabled = value !== null && value > 0;
+        this._material.subSurface.translucencyIntensity = value ?? 0;
+        this._material.subSurface.isRefractionEnabled = !this._material.subSurface.isTranslucencyEnabled;
+    }
 
     public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {}
 
@@ -950,6 +953,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public set subsurfaceWeight(value: number) {
         this._material.subSurface.isTranslucencyEnabled = value > 0;
         this._material.subSurface.translucencyIntensity = value;
+        this._material.subSurface.isRefractionEnabled = !this._material.subSurface.isTranslucencyEnabled;
     }
 
     /**
@@ -972,20 +976,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The subsurface tint color as a Color3
      */
     public set subsurfaceColor(value: Color3) {
-        // PBRMaterial does not have a direct equivalent for subsurface color,
-        // We could set the base color to this value, wherever subsurfaceWeight > 0
-        // When scatterAnisotropy is 1, I believe we can approximate the subsurface effect quite well with
-        // Translucency and a diffusion distance
-        const extinctionCoefficient = new Vector3(-Math.log(this.transmissionColor.r), -Math.log(this.transmissionColor.g), -Math.log(this.transmissionColor.b));
-        extinctionCoefficient.scaleInPlace(1 / Math.max(this.transmissionDepth, 0.001));
-        const absorptionCoeff = extinctionCoefficient;
-        const maxChannel = Math.max(absorptionCoeff.x, Math.max(absorptionCoeff.y, absorptionCoeff.z));
-        const attenuationDistance = maxChannel > 0 ? 1.0 / maxChannel : 1;
-        this._material.subSurface.diffusionDistance = new Color3(
-            Math.exp(-absorptionCoeff.x * attenuationDistance),
-            Math.exp(-absorptionCoeff.y * attenuationDistance),
-            Math.exp(-absorptionCoeff.z * attenuationDistance)
-        );
+        this._material.subSurface.tintColor = value;
     }
 
     /**

@@ -63,6 +63,8 @@ export const Samplers = [
     "diffuseSampler",
     "bumpSampler",
     "reflectivitySampler",
+    "metallicSampler",
+    "roughnessSampler",
     "albedoSampler",
     "morphTargets",
     "boneSampler",

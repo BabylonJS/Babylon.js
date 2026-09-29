@@ -1,4 +1,4 @@
-{
+﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -4633,6 +4633,24 @@
         {
             "title": "OpenPBR Subsurface Color Scaling - IBL",
             "playgroundId": "#YWXM7Z#0",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Anisotropy - glTF",
+            "playgroundId": "#GRQHVV#333",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Color Density - glTF",
+            "playgroundId": "#GRQHVV#332",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Strength Thin-Walled - glTF",
+            "playgroundId": "#GRQHVV#335",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
