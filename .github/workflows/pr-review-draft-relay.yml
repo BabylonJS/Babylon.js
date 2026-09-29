@@ -1,0 +1,55 @@
+name: Relay PR review feedback to private drafts
+
+on:
+    pull_request_review_comment:
+        types: [created]
+    pull_request_review:
+        types: [submitted]
+    issue_comment:
+        types: [created]
+
+permissions:
+    contents: read
+    pull-requests: read
+
+jobs:
+    relay:
+        runs-on: ubuntu-latest
+        if: github.event_name != 'issue_comment' || github.event.issue.pull_request
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: master
+                  persist-credentials: false
+                  sparse-checkout: .github/scripts/pr-review-relay.cjs
+                  sparse-checkout-cone-mode: false
+            - name: Validate event and dispatch IDs only
+              uses: actions/github-script@v8
+              env:
+                  RELAY_TOKEN: ${{ secrets.PR_REVIEW_DISPATCH_TOKEN }}
+              with:
+                  script: |
+                      const { SOURCE_REPOSITORY, DRAFT_REPOSITORY, makeDispatchPayload } = require("./.github/scripts/pr-review-relay.cjs");
+                      const event = context.payload;
+                      if (event.repository?.full_name !== SOURCE_REPOSITORY || event.sender?.type === "Bot") {
+                        return;
+                      }
+                      const number = context.eventName === "issue_comment" ? event.issue?.number : event.pull_request?.number;
+                      if (!Number.isSafeInteger(number) || number < 1) {
+                        return;
+                      }
+                      const { data: pullRequest } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: number });
+                      const payload = makeDispatchPayload(context.eventName, event, pullRequest);
+                      if (!payload) {
+                        return;
+                      }
+                      if (!process.env.RELAY_TOKEN) {
+                        throw new Error("PR_REVIEW_DISPATCH_TOKEN must be configured to dispatch eligible PR feedback");
+                      }
+                      const [owner, repo] = DRAFT_REPOSITORY.split("/");
+                      await getOctokit(process.env.RELAY_TOKEN).rest.repos.createDispatchEvent({
+                        owner,
+                        repo,
+                        event_type: "pr_review_draft",
+                        client_payload: payload,
+                      });
