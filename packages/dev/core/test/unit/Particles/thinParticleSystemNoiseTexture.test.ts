@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
+import { Logger } from "core/Misc/logger";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { Scene } from "core/scene";
@@ -269,5 +270,69 @@ describe("ThinParticleSystem noise texture readback", () => {
 
         expect(particleSystem._noiseTextureSize).toEqual({ width: 4, height: 4 });
         expect(particleSystem._noiseTextureData?.length).toBe(4 * 4 * 4);
+    });
+
+    it("does not let an older readback of the same texture clear the gate or publish stale pixels", async () => {
+        const noiseA = new ProceduralTexture("noiseA", 2, scene);
+        const noiseB = new ProceduralTexture("noiseB", 2, scene);
+        // Deferred readbacks for A so completions can be ordered manually (as an async GPU readback can).
+        const pendingA: Array<(data: Uint8Array) => void> = [];
+        vi.spyOn(noiseA, "readPixels").mockImplementation(() => new Promise((resolve) => pendingA.push(resolve)));
+        vi.spyOn(noiseB, "readPixels").mockImplementation(() => Promise.resolve(new Uint8Array(2 * 2 * 4)));
+        const inFlight = () => (particleSystem as unknown as { _noiseTextureFetchInFlight: ProceduralTexture | null })._noiseTextureFetchInFlight;
+
+        particleSystem.noiseTexture = noiseA;
+        particleSystem.updateFunction([]); // A1 is pending.
+        expect(pendingA.length).toBe(1);
+
+        particleSystem.noiseTexture = noiseB;
+        particleSystem.updateFunction([]); // B resolves and releases the gate.
+        await flushMicrotasks();
+        expect(particleSystem._noiseTextureData?.length).toBe(2 * 2 * 4);
+
+        noiseA.resize({ width: 2, height: 2 }, false); // Same size: lengths cannot tell A1 and A2 apart.
+        particleSystem.noiseTexture = noiseA;
+        particleSystem.updateFunction([]); // A2 is issued while A1 is still pending.
+        expect(pendingA.length).toBe(2);
+
+        // A1 is outdated now: it must not release A2's gate nor publish stale pixels.
+        pendingA[0]!(new Uint8Array(2 * 2 * 4));
+        await flushMicrotasks();
+        expect(particleSystem._noiseTextureData).toBeNull();
+        expect(inFlight()).toBe(noiseA);
+
+        // The gate is still held by A2: no additional readback is issued.
+        particleSystem.updateFunction([]);
+        expect(pendingA.length).toBe(2);
+
+        // A2 completes and publishes the current pixels.
+        pendingA[1]!(new Uint8Array(2 * 2 * 4));
+        await flushMicrotasks();
+        expect(particleSystem._noiseTextureData?.length).toBe(2 * 2 * 4);
+        expect(inFlight()).toBeNull();
+    });
+
+    it("warns once while a failing noise readback keeps retrying", async () => {
+        const texture: { calls: number; dispose: () => void; getContent: () => Promise<Uint8Array>; getSize: () => { width: number; height: number } } = {
+            calls: 0,
+            dispose: () => {},
+            getContent: () => {
+                texture.calls++;
+                return Promise.reject(new Error("readback failed"));
+            },
+            getSize: () => ({ width: 2, height: 2 }),
+        };
+        const warnSpy = vi.spyOn(Logger, "Warn");
+
+        particleSystem.noiseTexture = texture as unknown as ProceduralTexture;
+        particleSystem.updateFunction([]);
+        await flushMicrotasks();
+        particleSystem.updateFunction([]);
+        await flushMicrotasks();
+
+        // The readback is retried, but the failure is only reported once.
+        expect(texture.calls).toBe(2);
+        expect(warnSpy).toHaveBeenCalledTimes(1);
+        warnSpy.mockRestore();
     });
 });
