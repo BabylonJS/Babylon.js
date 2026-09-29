@@ -312,6 +312,35 @@ describe("ThinParticleSystem noise texture readback", () => {
         expect(inFlight()).toBeNull();
     });
 
+    it("discards a pending readback when the texture is reassigned without an update in between", async () => {
+        const noiseA = new ProceduralTexture("noiseA", 2, scene);
+        const noiseB = createDeferredTexture(2, 2);
+        const pendingA: Array<(data: Uint8Array) => void> = [];
+        vi.spyOn(noiseA, "readPixels").mockImplementation(() => new Promise((resolve) => pendingA.push(resolve)));
+
+        particleSystem.noiseTexture = noiseA;
+        particleSystem.updateFunction([]); // A1 is pending.
+        expect(pendingA.length).toBe(1);
+
+        // B is assigned but no update runs while it is assigned.
+        particleSystem.noiseTexture = noiseB as unknown as ProceduralTexture;
+        noiseA.resize({ width: 2, height: 2 }, false);
+        particleSystem.noiseTexture = noiseA;
+
+        // A2 must be issued even though A1 (from the old render target) is still pending.
+        particleSystem.updateFunction([]);
+        expect(pendingA.length).toBe(2);
+
+        // A1 belongs to the previous assignment and must be discarded.
+        pendingA[0]!(new Uint8Array(2 * 2 * 4));
+        await flushMicrotasks();
+        expect(particleSystem._noiseTextureData).toBeNull();
+
+        pendingA[1]!(new Uint8Array(2 * 2 * 4));
+        await flushMicrotasks();
+        expect(particleSystem._noiseTextureData?.length).toBe(2 * 2 * 4);
+    });
+
     it("warns once while a failing noise readback keeps retrying", async () => {
         const texture: { calls: number; dispose: () => void; getContent: () => Promise<Uint8Array>; getSize: () => { width: number; height: number } } = {
             calls: 0,

@@ -525,6 +525,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         // Invalidate the cached readback: a buffer and its dimensions must always come from the same texture.
         this._noiseTextureSize = null;
         this._noiseTextureData = null;
+        // A pending readback belongs to the previous assignment: discard its completion and free the gate.
+        this._noiseTextureFetchToken++;
+        this._noiseTextureFetchInFlight = null;
 
         if (!value) {
             _RemoveFromQueue(this._noiseCreation);
