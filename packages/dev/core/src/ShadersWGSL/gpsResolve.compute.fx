@@ -44,7 +44,12 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         hit = 1.0;
         let dq = f32(raw >> 16u) / 65535.0;
         let vz = params.depthNorm.x + dq * (params.depthNorm.y - params.depthNorm.x);
-        occlVz = vz;
+        // The preprocess key truncates (u32(dord * 65535.0)), so `vz` is the lower bound of the
+        // quantization bucket and is <= the sample's true view depth. Push the occluder depth to the
+        // upper bound of that bucket before it feeds the Hi-Z pyramid: a conservative (farther) value
+        // keeps a Gaussian from occluding itself against its own previous-frame sample, which would
+        // otherwise make it flicker in and out under `zMax < viewDepth` in gpsPreprocess.
+        occlVz = vz + (params.depthNorm.y - params.depthNorm.x) / 65535.0;
         depth = (params.projZ.x * vz + params.projZ.z) / (params.projZ.y * vz + params.projZ.w);
     }
     // Hi-Z level 0 at render (low) res; the pyramid feeds next frame's preprocess occlusion cull.

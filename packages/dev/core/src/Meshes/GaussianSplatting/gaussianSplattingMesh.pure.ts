@@ -790,9 +790,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     /**
      * Decodes raw `.splat` bytes into the compute renderer's per-Gaussian buffers, in LOCAL space (the
      * per-part world transform is applied per frame in the shader). Mirrors the classic `_makeSplat`
-     * decode: flipY negates only the mean's Y, and the covariance uses the net scale (no `* 2` — the
-     * classic doubling is cancelled at render by the quad's invViewport, which this path has no quad
-     * for). Part index is carried in means.w.
+     * decode exactly, including the `* 2` on the scale, so both paths produce the same Sigma and the
+     * same `splatSizeRange` units. The classic rasterizer cancels that doubling at render time through
+     * the quad's `invViewport`; this path has no quad, so `gpsPreprocess` cancels it on the projected
+     * cov2d instead. Part index is carried in means.w.
      * @param splatsData raw `.splat` bytes for this mesh's splats
      */
     private _pointDecode(splatsData: ArrayBuffer): void {
@@ -841,7 +842,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             quaternion.set((bytes[qb + 1] - 127.5) / 127.5, (bytes[qb + 2] - 127.5) / 127.5, (bytes[qb + 3] - 127.5) / 127.5, -(bytes[qb + 0] - 127.5) / 127.5);
             quaternion.normalize();
             quaternion.toRotationMatrix(rotation);
-            Matrix.ScalingToRef(floats[8 * i + 3], floats[8 * i + 4], floats[8 * i + 5], scale);
+            Matrix.ScalingToRef(floats[8 * i + 3] * 2, floats[8 * i + 4] * 2, floats[8 * i + 5] * 2, scale);
             rotation.multiplyToRef(scale, rs);
             const m = rs.m;
 

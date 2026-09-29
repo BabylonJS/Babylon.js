@@ -23,14 +23,20 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let sx = gid.x * 2u;
     let sy = gid.y * 2u;
 
-    // Max over the 2x2 children, clamping to source bounds for odd dimensions.
-    let sx1 = min(sx + 1u, srcW - 1u);
-    let sy1 = min(sy + 1u, srcH - 1u);
+    // Max over the 2x2 children. Destination extents are floor(src / 2), so when a source dimension is
+    // odd its trailing row/column has no destination texel of its own. The last destination texel must
+    // absorb it as a third child: silently dropping that source texel would under-report the farthest
+    // occluder and over-cull Gaussians that are actually visible. At most 3x3 children are read.
+    let sxEnd = select(min(sx + 1u, srcW - 1u), srcW - 1u, gid.x == dstW - 1u);
+    let syEnd = select(min(sy + 1u, srcH - 1u), srcH - 1u, gid.y == dstH - 1u);
     let base = params.src.x;
-    let a = hiZ[base + sy * srcW + sx];
-    let b = hiZ[base + sy * srcW + sx1];
-    let c = hiZ[base + sy1 * srcW + sx];
-    let d = hiZ[base + sy1 * srcW + sx1];
+    var m = 0.0;
+    for (var y = sy; y <= syEnd; y = y + 1u) {
+        let row = base + y * srcW;
+        for (var x = sx; x <= sxEnd; x = x + 1u) {
+            m = max(m, hiZ[row + x]);
+        }
+    }
 
-    hiZ[params.dst.x + gid.y * dstW + gid.x] = max(max(a, b), max(c, d));
+    hiZ[params.dst.x + gid.y * dstW + gid.x] = m;
 }

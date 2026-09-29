@@ -25,8 +25,8 @@ fn gpsHiZLevelOffset(l : u32, baseW : u32, baseH : u32) -> u32 {
 }
 
 // True if the Gaussian's screen footprint is fully behind nearer geometry in the previous frame's depth.
-// Picks the pyramid LOD where the footprint spans ~2 texels, samples the 4 AABB-corner texels, takes their
-// max (farthest occluder), and culls if that is still nearer than the Gaussian's center view depth.
+// Picks the pyramid LOD where the footprint spans ~2 texels, takes the max (farthest occluder) over every
+// texel the footprint touches, and culls if that is still nearer than the Gaussian's center view depth.
 fn gpsHiZOccluded(center : vec2f, footR : f32, viewDepth : f32) -> bool {
     let baseW = u32(uniforms.hiZInfo.x);
     let baseH = u32(uniforms.hiZInfo.y);
@@ -47,8 +47,17 @@ fn gpsHiZOccluded(center : vec2f, footR : f32, viewDepth : f32) -> bool {
     let tx1 = min(u32(max(maxx, 0)) / tile, lw - 1u);
     let ty0 = min(u32(max(miny, 0)) / tile, lh - 1u);
     let ty1 = min(u32(max(maxy, 0)) / tile, lh - 1u);
-    let zMax = max(max(hiZ[off + ty0 * lw + tx0], hiZ[off + ty0 * lw + tx1]),
-                   max(hiZ[off + ty1 * lw + tx0], hiZ[off + ty1 * lw + tx1]));
+    // The LOD is chosen so the footprint covers at most two texel widths, which still straddles three
+    // texels once it is misaligned with the tile grid (e.g. pixels 3..10 at tile size 4 touch tiles 0,1,2).
+    // Sampling only the four AABB corners would skip the interior texel and under-report the farthest
+    // occluder, culling visible Gaussians, so walk every texel the footprint touches (at most 3x3).
+    var zMax = 0.0;
+    for (var ty = ty0; ty <= ty1; ty = ty + 1u) {
+        let row = off + ty * lw;
+        for (var tx = tx0; tx <= tx1; tx = tx + 1u) {
+            zMax = max(zMax, hiZ[row + tx]);
+        }
+    }
     return zMax < viewDepth;
 }
 
@@ -162,12 +171,18 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let modelView = uniforms.view * partWorld;
     var cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, uniforms.focal.xy, isOrtho);
 
+    // The decode doubles the Gaussian scale to stay byte-for-byte identical to the classic `_makeSplat`
+    // (so `splatSizeRange` and the debug size cull agree across both paths), which makes Sigma — and
+    // therefore cov2d — 4x too large. The classic rasterizer cancels that doubling at render time via
+    // the quad's `invViewport` (1/width, i.e. half an NDC unit per pixel); this path rasterizes straight
+    // into pixel space with no quad, so undo it here instead. Must happen before detOrig and the
+    // low-pass kernel below, which are both expressed in true pixel units.
+    cov2d = cov2d * 0.25;
+
     // Determinant BEFORE the low-pass dilation, for the optional opacity compensation below.
     let detOrig = cov2d[0][0] * cov2d[1][1] - cov2d[0][1] * cov2d[0][1];
 
-    // Low-pass (antialiasing) dilation, matching the classic rasterizer's kernelSize. The screen-scale
-    // that cancels the classic quad's invViewport is baked into the covariance at load (see the mesh's
-    // updateData), so cov2d needs no per-frame scaling here.
+    // Low-pass (antialiasing) dilation, matching the classic rasterizer's kernelSize.
     let kernelSize = uniforms.params0.y;
     cov2d[0][0] += kernelSize;
     cov2d[1][1] += kernelSize;
@@ -224,7 +239,9 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         if (baseOpacity < pdata.dbg1.z || baseOpacity > pdata.dbg1.w) {
             return;
         }
-        // Splat size = pow(|det(Sigma3d)|, 1/6), the geometric mean of the principal radii.
+        // Splat size = pow(|det(Sigma3d)|, 1/6), the geometric mean of the principal radii. Uses the raw
+        // (doubled) Sigma, NOT the 0.25-corrected cov2d, so these match the classic rasterizer and the
+        // thresholds the user reads off GaussianSplattingMeshBase.splatSizeRange.
         let det3d = p0.x * (p1.y * p2.y - p2.x * p2.x) - p0.y * (p0.y * p2.y - p2.x * p1.x) + p1.x * (p0.y * p2.x - p1.y * p1.x);
         let splatSize = pow(abs(det3d), 1.0 / 6.0);
         if (splatSize < pdata.dbg2.x || splatSize > pdata.dbg2.y) {

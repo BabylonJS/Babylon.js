@@ -9,6 +9,7 @@ import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSpl
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { GaussianPointSplattingRenderer } from "core/Meshes/GaussianSplatting/gaussianPointSplattingRenderer";
 import { Matrix } from "core/Maths/math.vector";
+import { FromHalfFloat } from "core/Misc/halfFloat";
 import { Scene } from "core/scene";
 import { describe, expect, it, vi } from "vitest";
 
@@ -176,6 +177,41 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(sh).toBeNull();
         expect(degree).toBe(0);
         expect(count).toBe(1);
+
+        mesh["_pointRenderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("decodes the covariance exactly like the classic _makeSplat, including the scale doubling", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        mesh["_pointRenderer"] = renderer;
+
+        const splat = new ArrayBuffer(32);
+        const floats = new Float32Array(splat);
+        const bytes = new Uint8Array(splat);
+        floats.set([0, 0, 0, 0.75, 0.375, 0.1875]);
+        bytes.set([255, 255, 255, 255], 24);
+        // Rotation bytes decode as (b-127.5)/127.5, so 128 is the closest encodable value to identity.
+        bytes.set([0, 128, 128, 128], 28);
+
+        mesh["_pointDecode"](splat);
+        const cov = upload.mock.calls[0][1];
+
+        // Sigma = (R*S)(R*S)^T with S built from `scale * 2`, exactly as the classic `_makeSplat` does, so
+        // the per-splat f16 factor is max((2*0.75)^2, ...) = 2.25 rather than 0.5625. Keeping both decodes
+        // identical is what makes `splatSizeRange` (derived from the classic covariance) line up with the
+        // point path's pow(|det(Sigma3d)|, 1/6) debug size cull. The resulting 4x on cov2d is cancelled in
+        // gpsPreprocess, mirroring how the classic vertex shader cancels it through `invViewport`.
+        expect(new Float32Array(new Uint32Array([cov[3]]).buffer)[0]).toBeCloseTo(2.25, 3);
+        // Normalized diagonal is scale-invariant: s00/factor = 1, s11/factor = 0.25, s22/factor = 0.0625.
+        expect(FromHalfFloat(cov[0] & 0xffff)).toBeCloseTo(1, 3);
+        expect(FromHalfFloat(cov[1] >>> 16)).toBeCloseTo(0.25, 3);
+        expect(FromHalfFloat(cov[2] >>> 16)).toBeCloseTo(0.0625, 3);
 
         mesh["_pointRenderer"] = null;
         scene.dispose();
