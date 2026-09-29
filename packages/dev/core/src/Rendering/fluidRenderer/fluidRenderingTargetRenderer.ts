@@ -945,6 +945,11 @@ export class FluidRenderingTargetRenderer {
             this._engine.unBindFramebuffer(this._thicknessRenderTarget.renderTarget);
         }
 
+        // The diffuse pass updates the particles by rendering them, and updating last avoids drawing the particles in the frame their buffers are created
+        if (!this._diffuseRenderTarget?.renderTarget) {
+            fluidObject.updateSimulation();
+        }
+
         // Run the blur post processes
         this._depthRenderTarget?.applyBlurPostProcesses();
         this._diffuseRenderTarget?.applyBlurPostProcesses();
