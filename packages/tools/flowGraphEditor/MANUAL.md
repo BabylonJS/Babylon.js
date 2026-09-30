@@ -91,7 +91,7 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 **Importing a glTF with an interactive flow graph:**
 
 - Drag-and-drop a `.glb` or `.gltf` file with its companions, or a folder containing one scene, onto the scene preview pane. Nested folder paths are retained. Multiple scenes and unreadable entries report an error and keep the current scene intact.
-- Folder companions match paths relative to the original scene file, including sibling folders. Flat selections match a unique basename when no exact path is available. Known files in another folder are never substituted. Equivalent URI spellings can share a resource; distinct paths that collide in the loader's case-insensitive file store report an error.
+- Folder companions match paths relative to the original scene file, including sibling folders. Flat selections match a basename only when it identifies one file and one unresolved resource path. Otherwise, choose a file for each ambiguous path. Known files in another folder are never substituted. Equivalent URI spellings can share a resource; distinct paths that collide in the loader's case-insensitive file store report an error.
 - If a referenced buffer or image is missing, or several dropped files share the same name, **Complete glTF import** shows the exact resource path and lets you choose the correct file. Repeat for other unresolved resources. **Cancel import** keeps the current scene intact.
 - If the file contains a **KHR_interactivity** extension, the flow graph is automatically loaded into the editor.
 - If the file contains a **BABYLON_flow_graph** custom extension (created by this editor's export), the flow graph is restored as well.

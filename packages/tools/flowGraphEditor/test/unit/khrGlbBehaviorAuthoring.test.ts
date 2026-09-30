@@ -133,9 +133,16 @@ describe("lossless GLB selection behavior authoring", () => {
         expect(explicit.get("textures/red/diffuse.png")).toBe(red);
         expect(explicit.get("textures/blue/diffuse.png")).toBe(blue);
         expect(
-            ResolveGltfCompanionFiles(source, ["shared/diffuse.png", "alias/diffuse.png"], [red], source.webkitRelativePath, new Map([["alias/diffuse.png", red]])).get(
-                "alias/diffuse.png"
-            )
+            ResolveGltfCompanionFiles(
+                source,
+                ["shared/diffuse.png", "alias/diffuse.png"],
+                [red],
+                source.webkitRelativePath,
+                new Map([
+                    ["shared/diffuse.png", red],
+                    ["alias/diffuse.png", red],
+                ])
+            ).get("alias/diffuse.png")
         ).toBe(red);
         expect(GetGltfResourceKeys("./textures/red%20paint.png")).toEqual(["textures/red paint.png", "./textures/red paint.png"]);
         expect(

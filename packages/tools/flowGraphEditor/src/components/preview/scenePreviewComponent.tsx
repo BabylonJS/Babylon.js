@@ -813,7 +813,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             companionRetryFailed: false,
         });
 
-        const replacedFiles = new Map<string, File | undefined>();
+        const replacedFiles = new Map<string, PropertyDescriptor | undefined>();
         let stagedEngine: Engine | null = null;
         let stagedScene: Scene | null = null;
         let stagedSceneContext: SceneContext | null = null;
@@ -824,9 +824,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             const { FilesInputStore } = await import("core/Misc/filesInputStore");
             const registerFile = (key: string, resource: File) => {
                 if (!replacedFiles.has(key)) {
-                    replacedFiles.set(key, FilesInputStore.FilesToLoad[key]);
+                    replacedFiles.set(key, Object.getOwnPropertyDescriptor(FilesInputStore.FilesToLoad, key));
                 }
-                FilesInputStore.FilesToLoad[key] = resource;
+                // Filenames are data, including keys such as __proto__. Preserve
+                // own descriptors so a failed import restores the exact store.
+                Object.defineProperty(FilesInputStore.FilesToLoad, key, { value: resource, writable: true, enumerable: true, configurable: true });
             };
 
             const canvas = this.props.globalState.scenePreviewCanvas;
@@ -1032,7 +1034,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 const { FilesInputStore } = await import("core/Misc/filesInputStore");
                 for (const [key, previous] of replacedFiles) {
                     if (previous) {
-                        FilesInputStore.FilesToLoad[key] = previous;
+                        Object.defineProperty(FilesInputStore.FilesToLoad, key, previous);
                     } else {
                         delete FilesInputStore.FilesToLoad[key];
                     }
@@ -1844,7 +1846,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                                     <Body1>
                                         {this.state.companionIssue.kind === "missing"
                                             ? "The asset references a file that was not included:"
-                                            : "Multiple dropped files could match this resource:"}{" "}
+                                            : "The dropped files do not identify this resource unambiguously:"}{" "}
                                         <strong>{this.state.companionIssue.uri}</strong>. Choose the matching file to continue without dropping the asset again.
                                     </Body1>
                                 )}

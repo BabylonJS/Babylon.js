@@ -2714,7 +2714,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             await drop([reopened, bin, duplicate]);
             const dialog = page.getByRole("dialog", { name: "Complete glTF import" });
             await expect(dialog).toContainText("textures/diffuse.png");
-            await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Missing companion file for textures/diffuse.png");
+            await expect(page.getByRole("log", { name: "Flow graph log", includeHidden: true })).toContainText("Missing companion file for textures/diffuse.png");
             expect(await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid)).toBe(identity);
             expect(await loadedTexture(), "A failed import must retain the active scene's texture bytes").toEqual({ name: "reopened.gltf", pixel: [255, 0, 0, 255] });
             await dialog.getByLabel("Companion file for textures/diffuse.png").setInputFiles(texture);
@@ -3072,6 +3072,115 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         const authored = JSON.parse(readFileSync((await (await downloadPromise).path())!, "utf8"));
         expect(authored.images.map((image: { uri: string }) => image.uri)).toContain("textures/blue/diffuse.png");
         await expect(page.getByRole("button", { name: "Add reaction" })).toBeEnabled();
+    });
+
+    test("asks for both resource bindings when one flat image could belong to either path", async ({ page }) => {
+        const fixture = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        fixture.document.images = [{ uri: "red/diffuse.png" }, { uri: "blue/diffuse.png" }];
+        fixture.document.textures = [{ source: 0 }, { source: 1 }];
+        for (let index = 0; index < 2; index++) {
+            fixture.document.materials[index].pbrMetallicRoughness = { baseColorTexture: { index } };
+        }
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        const pngs = await page.evaluate(() =>
+            Object.fromEntries(
+                ["red", "blue"].map((color) => {
+                    const canvas = document.createElement("canvas");
+                    canvas.width = canvas.height = 1;
+                    const context = canvas.getContext("2d")!;
+                    context.fillStyle = color;
+                    context.fillRect(0, 0, 1, 1);
+                    return [color, canvas.toDataURL().split(",")[1]];
+                })
+            )
+        );
+        await page.evaluate(
+            ({ source, buffer, blue }) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([JSON.stringify(source)], "single-image.gltf"));
+                transfer.items.add(new File([new Uint8Array(buffer)], "geometry.bin"));
+                transfer.items.add(new File([Uint8Array.from(atob(blue), (character) => character.charCodeAt(0))], "diffuse.png", { type: "image/png" }));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            { source: fixture.document, buffer: [...fixture.bin], blue: pngs.blue }
+        );
+        const dialog = page.getByRole("dialog", { name: "Complete glTF import" });
+        await expect(dialog, "The importer must not assume that the lone flat file belongs to the first URI").toContainText("red/diffuse.png");
+        await dialog.getByLabel("Companion file for red/diffuse.png").setInputFiles({ name: "red-choice.png", mimeType: "image/png", buffer: Buffer.from(pngs.red, "base64") });
+        await dialog.getByRole("button", { name: "Use file and retry" }).click();
+        await expect(dialog).toContainText("blue/diffuse.png");
+        await dialog.getByLabel("Companion file for blue/diffuse.png").setInputFiles({ name: "blue-choice.png", mimeType: "image/png", buffer: Buffer.from(pngs.blue, "base64") });
+        await dialog.getByRole("button", { name: "Use file and retry" }).click();
+        const pixels = async () =>
+            await page.evaluate(async () => {
+                const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                if (!state.sourceGltf || state.sourceGltf.companionOverrides.size !== 2) {
+                    return null;
+                }
+                return await Promise.all(
+                    ["Base", "Service"].map(async (name) =>
+                        Array.from(await state.sceneContext.scene.materials.find((material: any) => material.name === name).albedoTexture.readPixels())
+                    )
+                );
+            });
+        await expect.poll(pixels).toEqual([
+            [255, 0, 0, 255],
+            [0, 0, 255, 255],
+        ]);
+        await expect(dialog).not.toBeVisible();
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
+        await page.getByRole("option", { name: /glTF node 2/ }).click();
+        const download = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        await download;
+        await expect.poll(pixels).toEqual([
+            [255, 0, 0, 255],
+            [0, 0, 255, 255],
+        ]);
+        await expect(page.getByRole("button", { name: "Add reaction" })).toBeEnabled();
+    });
+
+    test("keeps the resource store intact for a prototype-named companion", async ({ page }) => {
+        const fixture = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        fixture.document.buffers[0].uri = "__proto__";
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await page.evaluate(
+            ({ source, buffer }) => {
+                const store = (globalThis as any).BABYLON.FilesInputStore.FilesToLoad;
+                (globalThis as any).__fileStorePrototype = Object.getPrototypeOf(store);
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([JSON.stringify(source)], "reserved-name.gltf"));
+                transfer.items.add(new File([new Uint8Array(buffer)], "__proto__"));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            { source: fixture.document, buffer: [...fixture.bin] }
+        );
+        await expect.poll(async () => page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sourceGltf?.file.name)).toBe("reserved-name.gltf");
+        expect(
+            await page.evaluate(() => Object.getPrototypeOf((globalThis as any).BABYLON.FilesInputStore.FilesToLoad) === (globalThis as any).__fileStorePrototype),
+            "A companion filename must create a file entry without changing the resource store's prototype"
+        ).toBe(true);
+        expect(await page.evaluate(() => Object.hasOwn((globalThis as any).BABYLON.FilesInputStore.FilesToLoad, "__proto__"))).toBe(true);
+        const failed = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        failed.document.buffers[0].uri = "__proto__";
+        await page.evaluate((source) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([JSON.stringify(source)], "failed-reserved-name.gltf"));
+            transfer.items.add(new File([], "__proto__"));
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        }, failed.document);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Failed to load file");
+        expect(
+            await page.evaluate(() => ({
+                prototypeIntact: Object.getPrototypeOf((globalThis as any).BABYLON.FilesInputStore.FilesToLoad) === (globalThis as any).__fileStorePrototype,
+                bytes: (globalThis as any).BABYLON.FilesInputStore.FilesToLoad["__proto__"].size,
+            }))
+        ).toEqual({ prototypeIntact: true, bytes: fixture.bin.length });
     });
 
     test("lets the user replace an incorrect companion choice without dropping the asset again", async ({ page }) => {
