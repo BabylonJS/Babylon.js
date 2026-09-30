@@ -177,7 +177,6 @@ const NodeTextureField: FunctionComponent<MaterialAdapterProps & { name: string 
     }
     return (
         <DirectTextureBinding
-            source={source}
             record={record}
             resourceIndexService={resourceIndexService}
             selectionService={selectionService}
@@ -186,6 +185,10 @@ const NodeTextureField: FunctionComponent<MaterialAdapterProps & { name: string 
             id={id}
             label={name}
             value={texture}
+            read={() => {
+                const current = node.inputs[name];
+                return current?.type === "texture2d" ? current.texture : undefined;
+            }}
             acceptedKinds={["2d"]}
             invalidate="rebuild"
             apply={(nextTexture) => {

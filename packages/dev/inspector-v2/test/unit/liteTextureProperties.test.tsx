@@ -191,6 +191,21 @@ describe("Babylon Lite texture accessor metadata", () => {
         expect(services.selectionService.selectedEntity).toBe(services.material);
     });
 
+    it("navigates a view-only texture consumer to the selected MaterialView", () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} });
+        const view = Object.assign(Object.create(services.material), { source: services.material, _renderFeatures: { features: 0 }, name: "View" }) as Material;
+        vi.spyOn(services.resourceIndexService, "getTextureRecord").mockReturnValue({
+            ...services.textureRecord,
+            consumers: [{ material: view, bindingId: "standard.emissive" }],
+        });
+        const container = Render(<TextureMetadataProperties {...services} />);
+        const link = container.querySelector('[aria-label^="Open material View"]');
+
+        expect(link).not.toBeNull();
+        act(() => link?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+        expect(services.selectionService.selectedEntity).toBe(view);
+    });
+
     it("groups slots into one link per material and keeps identical names distinct", () => {
         const services = MakeServices({ kind: "2d", capabilities: {} });
         const otherMaterial = { name: "Material" } as unknown as Material;

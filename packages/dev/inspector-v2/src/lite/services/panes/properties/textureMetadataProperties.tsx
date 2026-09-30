@@ -1,5 +1,6 @@
 import {
     enableMaterialUvTransform,
+    getMaterialSource,
     getTextureCoordinateIndex,
     getTextureMetadata,
     getTextureTransform,
@@ -58,7 +59,7 @@ function OptionalRow(id: string, label: string, value: unknown, units?: string):
 }
 
 function GetMaterialRecord(resourceIndexService: ISceneResourceIndexService, material: Material): IMaterialResourceRecord | undefined {
-    return resourceIndexService.getMaterialRecord(material);
+    return resourceIndexService.getMaterialRecord(getMaterialSource(material));
 }
 
 function GetConsumerScenes(record: ITextureResourceRecord | undefined, resourceIndexService: ISceneResourceIndexService): readonly SceneContext[] {
@@ -300,7 +301,11 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                 : undefined}
             {[...consumersByMaterial].map(([material, slots], index) => {
                 const materialRecord = GetMaterialRecord(resourceIndexService, material);
-                const value = materialRecord?.displayName ?? "Unavailable material";
+                const value = materialRecord
+                    ? material === materialRecord.source
+                        ? materialRecord.displayName
+                        : material.name || materialRecord.displayName
+                    : "Unavailable material";
                 const slotNames = slots.join(", ");
                 return (
                     <LinkPropertyLine
@@ -315,7 +320,7 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                                       const stillConsumesTexture = currentRecord?.consumers.some((candidate) => candidate.material === material);
                                       const currentMaterialRecord = stillConsumesTexture && GetMaterialRecord(resourceIndexService, material);
                                       if (!resourceIndexService.isDisposed && currentMaterialRecord) {
-                                          selectionService.selectedEntity = currentMaterialRecord.source;
+                                          selectionService.selectedEntity = material;
                                       }
                                   }
                                 : undefined

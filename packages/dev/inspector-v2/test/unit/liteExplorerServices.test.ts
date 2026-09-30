@@ -324,6 +324,27 @@ describe("Babylon Lite engine explorer service", () => {
             expect(index.getTextureRecord(cloneTexture)?.entity).not.toBe(sharedTexture);
         });
 
+        it("indexes a MaterialView's exact texture override without duplicating its source material", () => {
+            const sourceTexture = CreateTexture(1);
+            const viewTexture = CreateTexture(2);
+            const source = CreateMaterial("standard", "Source", sourceTexture);
+            const view = CreateMaterialView(source);
+            (view as { diffuseTexture: Texture2D }).diffuseTexture = viewTexture;
+            const scene = { _kind: "scene", meshes: [CreateMesh("View", view)] } as SceneContext;
+            const index = new SceneResourceIndex(CreateResourceEngine([scene]));
+
+            expect(index.getSceneSnapshot(scene).materials.map(({ source: material }) => material)).toEqual([source]);
+            expect(index.getSceneSnapshot(scene).textures.map(({ entity }) => entity)).toEqual([sourceTexture, viewTexture]);
+            expect(index.getTextureRecord(viewTexture)?.entity).toBe(viewTexture);
+            expect(index.getTextureRecord(viewTexture)?.consumers).toEqual([{ material: view, bindingId: "standard.diffuse" }]);
+
+            const before = index.getTopologySnapshot();
+            (view as { diffuseTexture: Texture2D }).diffuseTexture = sourceTexture;
+            expect(SceneResourceIndex.AreTopologySnapshotsEqual(before, index.getTopologySnapshot())).toBe(false);
+            index.refresh();
+            expect(index.getTextureRecord(viewTexture)).toBeUndefined();
+        });
+
         it("retains ordinals across refresh while releasing unreachable strong records", () => {
             const firstTexture = CreateTexture(1);
             const secondTexture = CreateTexture(2);
@@ -819,10 +840,10 @@ describe("Babylon Lite scene resource explorer services", () => {
         expect(changed).toHaveBeenCalledOnce();
         expect(service.getSceneSnapshot(firstScene)).toMatchObject({
             materials: [{ source: secondMaterial }],
-            textures: [{ entity: secondTexture }],
+            textures: [{ entity: secondTexture }, { entity: firstTexture }],
         });
         expect(service.getMaterialRecord(firstMaterial)).toBeUndefined();
-        expect(service.getTextureRecord(firstTexture)).toBeUndefined();
+        expect(service.getTextureRecord(firstTexture)?.consumers).toEqual([{ material: materialView, bindingId: "standard.diffuse" }]);
 
         (materialView as Material & { source: Material }).source = firstMaterial;
         await topologyWatcher.refresh();

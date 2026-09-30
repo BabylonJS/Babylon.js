@@ -25,7 +25,7 @@ export interface IMaterialResourceRecord {
     readonly bindings: readonly IMaterialTopologyBinding[];
 }
 
-/** One canonical material binding that consumes a texture wrapper. @internal */
+/** One canonical binding on a source material or MaterialView that consumes a texture wrapper. @internal */
 export interface ITextureConsumerRecord {
     readonly material: Material;
     readonly bindingId: string;
@@ -68,11 +68,12 @@ function IsObject(value: unknown): value is object {
     return typeof value === "object" && value !== null;
 }
 
-function GetSceneMaterials(scene: SceneContext): readonly Material[] {
+function GetSceneMaterials(scene: SceneContext): { sources: readonly Material[]; views: readonly Material[] } {
     const sources = new Set<Material>();
     const materials: Material[] = [];
+    const views = new Set<Material>();
     if (!Array.isArray(scene.meshes)) {
-        return materials;
+        return { sources: materials, views: [] };
     }
 
     for (const mesh of scene.meshes) {
@@ -85,11 +86,14 @@ function GetSceneMaterials(scene: SceneContext): readonly Material[] {
                 sources.add(source);
                 materials.push(source);
             }
+            if (mesh.material !== source) {
+                views.add(mesh.material);
+            }
         } catch {
             // Stale or malformed materials are omitted until a later topology update.
         }
     }
-    return materials;
+    return { sources: materials, views: [...views] };
 }
 
 function AppendTextureState(snapshot: unknown[], texture: object): void {
@@ -154,12 +158,14 @@ export class SceneResourceIndex {
     public refresh(): void {
         const scenes = this._getScenes();
         const sceneMaterials = new Map<SceneContext, readonly Material[]>();
+        const sceneViews = new Map<SceneContext, readonly Material[]>();
         const materialDrafts = new Map<Material, MaterialDraft>();
 
         for (const scene of scenes) {
-            const materials = GetSceneMaterials(scene);
-            sceneMaterials.set(scene, materials);
-            for (const source of materials) {
+            const { sources, views } = GetSceneMaterials(scene);
+            sceneMaterials.set(scene, sources);
+            sceneViews.set(scene, views);
+            for (const source of sources) {
                 let draft = materialDrafts.get(source);
                 if (!draft) {
                     draft = {
@@ -180,9 +186,23 @@ export class SceneResourceIndex {
             materialRecords.set(draft.source, draft);
         }
 
+        const viewBindings = new Map<Material, readonly IMaterialTopologyBinding[]>();
+        for (const views of sceneViews.values()) {
+            for (const view of views) {
+                if (viewBindings.has(view)) {
+                    continue;
+                }
+                const sourceBindings = materialRecords.get(getMaterialSource(view))?.bindings ?? [];
+                viewBindings.set(
+                    view,
+                    GetMaterialTopologyBindings(view).filter((binding) => sourceBindings.find((candidate) => candidate.id === binding.id)?.entity !== binding.entity)
+                );
+            }
+        }
+
         const textureDrafts = new Map<object, TextureDraft>();
-        for (const material of materialRecords.values()) {
-            for (const binding of material.bindings) {
+        const addBindings = (material: Material, bindings: readonly IMaterialTopologyBinding[]) => {
+            for (const binding of bindings) {
                 let texture = textureDrafts.get(binding.entity);
                 if (!texture) {
                     try {
@@ -201,8 +221,14 @@ export class SceneResourceIndex {
                     }
                     textureDrafts.set(binding.entity, texture);
                 }
-                texture.consumers.push({ material: material.source, bindingId: binding.id });
+                texture.consumers.push({ material, bindingId: binding.id });
             }
+        };
+        for (const material of materialRecords.values()) {
+            addBindings(material.source, material.bindings);
+        }
+        for (const [view, bindings] of viewBindings) {
+            addBindings(view, bindings);
         }
 
         const textureRecords = new Map<object, ITextureResourceRecord>();
@@ -220,6 +246,15 @@ export class SceneResourceIndex {
             const textures: ITextureResourceRecord[] = [];
             for (const material of materials) {
                 for (const binding of material.bindings) {
+                    const record = textureRecords.get(binding.entity);
+                    if (record && !seenTextures.has(binding.entity)) {
+                        seenTextures.add(binding.entity);
+                        textures.push(record);
+                    }
+                }
+            }
+            for (const view of sceneViews.get(scene) ?? []) {
+                for (const binding of viewBindings.get(view) ?? []) {
                     const record = textureRecords.get(binding.entity);
                     if (record && !seenTextures.has(binding.entity)) {
                         seenTextures.add(binding.entity);
@@ -267,6 +302,14 @@ export class SceneResourceIndex {
                         for (const binding of bindings) {
                             snapshot.push(binding.id, binding.entity);
                             AppendTextureState(snapshot, binding.entity);
+                        }
+                        if (mesh.material !== source) {
+                            const viewBindings = GetMaterialTopologyBindings(mesh.material);
+                            snapshot.push(viewBindings.length);
+                            for (const binding of viewBindings) {
+                                snapshot.push(binding.id, binding.entity);
+                                AppendTextureState(snapshot, binding.entity);
+                            }
                         }
                     } catch {
                         snapshot.push("stale-material");

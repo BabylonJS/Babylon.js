@@ -71,7 +71,7 @@ type DirectOperations = ReturnType<typeof useDirectMaterialOperations>;
 
 const StandardTextureSlots = [
     { id: "standard.diffuse", label: "Diffuse Texture", kind: "2d", get: (material: StandardMaterial) => material.diffuseTexture },
-    { id: "standard.emissive", label: "Emissive Texture", kind: "2d", get: getStandardEmissiveTexture },
+    { id: "standard.emissive", label: "Emissive Texture", kind: "2d", get: getStandardEmissiveTexture, sampleCategory: "float-or-depth" },
     { id: "standard.bump", label: "Bump Texture", kind: "2d", get: getStandardBumpTexture },
     { id: "standard.specular", label: "Specular Texture", kind: "2d", get: getStandardSpecularTexture },
     { id: "standard.ambient", label: "Ambient Texture", kind: "2d", get: getStandardAmbientTexture },
@@ -148,14 +148,15 @@ export const StandardMaterialAdapter: FunctionComponent<MaterialAdapterProps> = 
                         key={slot.id}
                         id={slot.id}
                         label={slot.label}
-                        source={source}
                         record={record}
                         resourceIndexService={resourceIndexService}
                         selectionService={selectionService}
                         operations={operations}
                         commit={commit}
                         value={slot.get(standard)}
+                        read={() => slot.get(standard)}
                         acceptedKinds={[slot.kind]}
+                        sampleCategory={"sampleCategory" in slot ? slot.sampleCategory : undefined}
                         invalidate="rebuild"
                         apply={(texture) => SetStandardTexture(standard, slot.id, texture)}
                     />

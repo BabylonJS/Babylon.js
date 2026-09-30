@@ -1,4 +1,3 @@
-import { type Material } from "@babylonjs/lite";
 import { type FunctionComponent } from "react";
 
 import { MaterialTextureBindingPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
@@ -11,7 +10,6 @@ import { type useDirectMaterialOperations } from "./useDirectMaterialOperations"
 type DirectOperations = ReturnType<typeof useDirectMaterialOperations>;
 
 export type DirectTextureBindingProps = Readonly<{
-    source: Material;
     record: IMaterialResourceRecord;
     resourceIndexService: ISceneResourceIndexService;
     selectionService: ISelectionService;
@@ -20,8 +18,9 @@ export type DirectTextureBindingProps = Readonly<{
     id: string;
     label: string;
     value: object | null | undefined;
+    read: () => object | null | undefined;
     acceptedKinds: readonly string[];
-    sampleCategory?: "float" | "depth";
+    sampleCategory?: "float" | "depth" | "float-or-depth";
     canClear?: boolean;
     invalidate: "rebuild" | "owned";
     apply: (texture: object | null) => void | Promise<void>;
@@ -38,8 +37,11 @@ function GetTextureDisplayName(record: ITextureResourceRecord | undefined): stri
     return `${kind} Texture ${record.ordinal}`;
 }
 
-function AcceptsSampleType(sampleType: string | undefined, category: "float" | "depth"): boolean {
-    return category === "depth" ? sampleType === "depth" : sampleType === undefined || sampleType === "float" || sampleType === "unfilterable-float";
+function AcceptsSampleType(sampleType: string | undefined, category: "float" | "depth" | "float-or-depth"): boolean {
+    if (sampleType === "depth") {
+        return category !== "float";
+    }
+    return category !== "depth" && (sampleType === undefined || sampleType === "float" || sampleType === "unfilterable-float");
 }
 
 /**
@@ -49,7 +51,6 @@ function AcceptsSampleType(sampleType: string | undefined, category: "float" | "
  */
 export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> = (props) => {
     const {
-        source,
         record,
         resourceIndexService,
         selectionService,
@@ -58,6 +59,7 @@ export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> 
         id,
         label,
         value,
+        read,
         acceptedKinds,
         sampleCategory = "float",
         canClear = true,
@@ -82,8 +84,7 @@ export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> 
             oldValue: value ?? null,
             newValue: texture,
             apply: (): void | Promise<void> => {
-                const current = resourceIndexService.getMaterialRecord(source)?.bindings.find((binding) => binding.id === id)?.entity;
-                if ((current ?? null) !== (value ?? null)) {
+                if ((read() ?? null) !== (value ?? null)) {
                     throw new Error(`Texture binding "${id}" is stale.`);
                 }
                 const metadata = texture && resourceIndexService.getTextureRecord(texture)?.metadata;
@@ -120,8 +121,7 @@ export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> 
             navigate={
                 value && !unsupported
                     ? (texture) => {
-                          const binding = resourceIndexService.getMaterialRecord(source)?.bindings.find((candidate) => candidate.id === id);
-                          if (!resourceIndexService.isDisposed && binding?.entity === texture) {
+                          if (!resourceIndexService.isDisposed && read() === texture && resourceIndexService.getTextureRecord(texture)) {
                               selectionService.selectedEntity = texture;
                           }
                       }

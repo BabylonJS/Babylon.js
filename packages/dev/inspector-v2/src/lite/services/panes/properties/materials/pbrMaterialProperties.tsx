@@ -1292,13 +1292,13 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
                         key={slot.id}
                         id={slot.id}
                         label={slot.label}
-                        source={source}
                         record={record}
                         resourceIndexService={resourceIndexService}
                         selectionService={selectionService}
                         operations={operations}
                         commit={commitTexture}
                         value={value}
+                        read={() => slot.read(target)}
                         acceptedKinds={["2d"]}
                         canClear={!("canClear" in slot) || slot.canClear}
                         invalidate="rebuild"

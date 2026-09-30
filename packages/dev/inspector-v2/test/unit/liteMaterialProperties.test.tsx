@@ -241,6 +241,78 @@ describe("Babylon Lite material properties", () => {
         expect(InspectionMocks.setStandardReflectionCubeTexture).not.toHaveBeenCalled();
     });
 
+    it("navigates and edits the selected MaterialView's texture without changing the source binding", async () => {
+        const sourceTexture = { metadata: { kind: "2d", name: "Source Texture", sampleType: "float", capabilities: {} } };
+        const viewTexture = { metadata: { kind: "2d", name: "View Texture", sampleType: "float", capabilities: {} } };
+        const source = MakeStandard({ emissiveTexture: sourceTexture });
+        const view = Object.assign(Object.create(source), { source, name: "View", emissiveTexture: viewTexture }) as Material;
+        const scene = { meshes: [{ material: view }] } as SceneContext;
+        const record: IMaterialResourceRecord = {
+            source,
+            family: "standard",
+            displayName: "Source",
+            scenes: [scene],
+            bindings: [{ id: "standard.emissive", entity: sourceTexture }],
+        };
+        const resources = MakeResourceService(
+            [record],
+            [sourceTexture, viewTexture].map((entity, index) => ({
+                entity,
+                metadata: entity.metadata,
+                ordinal: index + 1,
+                consumers: [{ material: source, bindingId: "standard.emissive" }],
+            }))
+        );
+        const selection = MakeSelectionService();
+        const container = Render(<StandardMaterialAdapter material={view} section="textures" resourceIndexService={resources} selectionService={selection} />);
+
+        expect(container.querySelector('[aria-label^="Emissive Texture: open View Texture"]')).not.toBeNull();
+        act(() => container.querySelector<HTMLElement>('[aria-label^="Emissive Texture: open View Texture"]')?.click());
+        expect(selection.selectedEntity).toBe(viewTexture);
+        await act(async () => {
+            container.querySelector<HTMLButtonElement>('[aria-label="Clear Emissive Texture"]')?.click();
+            await Promise.resolve();
+        });
+        expect(InspectionMocks.setStandardEmissiveTexture).toHaveBeenCalledWith(view, null);
+        expect((source as { emissiveTexture: object }).emissiveTexture).toBe(sourceTexture);
+        expect(container.querySelector('[role="alert"]')).toBeNull();
+        const comboBox = container.querySelector<HTMLInputElement>('[role="combobox"][aria-label="Emissive Texture"]');
+        expect(comboBox).not.toBeNull();
+        const option = Array.from(document.querySelectorAll('[role="option"]')).find((element) => element.textContent === "View Texture");
+        expect(option).toBeDefined();
+        await act(async () => {
+            option?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+            await Promise.resolve();
+        });
+        expect(InspectionMocks.setStandardEmissiveTexture).toHaveBeenCalledWith(view, viewTexture);
+        expect((source as { emissiveTexture: object }).emissiveTexture).toBe(sourceTexture);
+        expect(container.querySelector('[role="alert"]')).toBeNull();
+    });
+
+    it("offers depth-sampled textures for Standard Emissive and supports clearing one", async () => {
+        const depth = { metadata: { kind: "2d", name: "Depth Texture", sampleType: "depth", capabilities: { sampledDepth: true } } };
+        const material = MakeStandard();
+        const scene = { meshes: [{ material }] } as SceneContext;
+        const record: IMaterialResourceRecord = { source: material, family: "standard", displayName: "Standard", scenes: [scene], bindings: [] };
+        const resources = MakeResourceService([record], [{ entity: depth, metadata: depth.metadata, ordinal: 1, consumers: [] }]);
+        const container = Render(<StandardMaterialAdapter material={material} section="textures" resourceIndexService={resources} selectionService={MakeSelectionService()} />);
+
+        act(() => container.querySelector<HTMLInputElement>('[role="combobox"][aria-label="Emissive Texture"]')?.click());
+        const option = Array.from(document.querySelectorAll('[role="option"]')).find((element) => element.textContent === "Depth Texture");
+        expect(option).toBeDefined();
+        await act(async () => {
+            option?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+            await Promise.resolve();
+        });
+        expect(InspectionMocks.setStandardEmissiveTexture).toHaveBeenCalledWith(material, depth);
+        expect(container.querySelector('[role="alert"]')).toBeNull();
+        await act(async () => {
+            container.querySelector<HTMLButtonElement>('[aria-label="Clear Emissive Texture"]')?.click();
+            await Promise.resolve();
+        });
+        expect(InspectionMocks.setStandardEmissiveTexture).toHaveBeenCalledWith(material, null);
+    });
+
     it("uses derived controls for writable fields and preserves per-field pending and errors", async () => {
         const material = MakeStandard();
         const scene = { meshes: [{ material }] } as SceneContext;

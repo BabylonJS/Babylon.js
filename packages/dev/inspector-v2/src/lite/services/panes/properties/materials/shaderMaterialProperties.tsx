@@ -207,7 +207,6 @@ const ShaderSamplerField: FunctionComponent<MaterialAdapterProps & { declaration
     }
     return (
         <DirectTextureBinding
-            source={source}
             record={record}
             resourceIndexService={resourceIndexService}
             selectionService={selectionService}
@@ -216,6 +215,7 @@ const ShaderSamplerField: FunctionComponent<MaterialAdapterProps & { declaration
             id={id}
             label={name}
             value={texture}
+            read={() => getShaderTexture(shader, name)}
             acceptedKinds={[expectedKind]}
             sampleCategory={expectedSample}
             invalidate="owned"
