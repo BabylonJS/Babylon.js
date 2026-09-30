@@ -202,6 +202,15 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
     const { metadata, record } = snapshot;
     const canEditTransform = SupportsTransform(record, resourceIndexService);
     const transform = canEditTransform ? getTextureTransform(texture as Texture2D) : undefined;
+    const consumersByMaterial = new Map<Material, string[]>();
+    for (const consumer of record?.consumers ?? []) {
+        const slots = consumersByMaterial.get(consumer.material);
+        if (slots) {
+            slots.push(consumer.bindingId);
+        } else {
+            consumersByMaterial.set(consumer.material, [consumer.bindingId]);
+        }
+    }
     const commitTransform = (id: string, transform: TextureTransform) => {
         runLatestOperation({
             id,
@@ -289,30 +298,29 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                       );
                   })
                 : undefined}
-            {record?.consumers.map((consumer, index) => {
-                const materialRecord = GetMaterialRecord(resourceIndexService, consumer.material);
+            {[...consumersByMaterial].map(([material, slots], index) => {
+                const materialRecord = GetMaterialRecord(resourceIndexService, material);
                 const value = materialRecord?.displayName ?? "Unavailable material";
+                const slotNames = slots.join(", ");
                 return (
                     <LinkPropertyLine
-                        key={`consumer-${index}-${consumer.bindingId}`}
-                        label={consumer.bindingId}
-                        uniqueId={`consumer-${index}-${consumer.bindingId}`}
+                        key={`consumer-${index}`}
+                        label={slotNames}
+                        uniqueId={`consumer-${index}`}
                         value={value}
                         onLink={
                             materialRecord
                                 ? () => {
                                       const currentRecord = resourceIndexService.getTextureRecord(texture);
-                                      const currentConsumer = currentRecord?.consumers.find(
-                                          (candidate) => candidate.material === consumer.material && candidate.bindingId === consumer.bindingId
-                                      );
-                                      const currentMaterialRecord = currentConsumer && GetMaterialRecord(resourceIndexService, currentConsumer.material);
+                                      const stillConsumesTexture = currentRecord?.consumers.some((candidate) => candidate.material === material);
+                                      const currentMaterialRecord = stillConsumesTexture && GetMaterialRecord(resourceIndexService, material);
                                       if (!resourceIndexService.isDisposed && currentMaterialRecord) {
                                           selectionService.selectedEntity = currentMaterialRecord.source;
                                       }
                                   }
                                 : undefined
                         }
-                        aria-label={materialRecord ? `Open material ${value}, ${consumer.bindingId}` : undefined}
+                        aria-label={materialRecord ? `Open material ${value}, slots ${slotNames}` : undefined}
                     />
                 );
             })}

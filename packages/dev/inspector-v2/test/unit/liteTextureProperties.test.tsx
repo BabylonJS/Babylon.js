@@ -191,6 +191,37 @@ describe("Babylon Lite texture accessor metadata", () => {
         expect(services.selectionService.selectedEntity).toBe(services.material);
     });
 
+    it("groups slots into one link per material and keeps identical names distinct", () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} });
+        const otherMaterial = { name: "Material" } as unknown as Material;
+        const otherRecord: IMaterialResourceRecord = { ...services.materialRecord, source: otherMaterial };
+        vi.spyOn(services.resourceIndexService, "getMaterialRecord").mockImplementation((material) =>
+            material === services.material ? services.materialRecord : material === otherMaterial ? otherRecord : undefined
+        );
+        const consumers = [
+            { material: services.material, bindingId: "standard.baseColor" },
+            { material: services.material, bindingId: "standard.bump" },
+            { material: otherMaterial, bindingId: "standard.diffuse" },
+        ];
+        const getTextureRecord = vi.spyOn(services.resourceIndexService, "getTextureRecord").mockReturnValue({ ...services.textureRecord, consumers });
+        const container = Render(<TextureMetadataProperties {...services} />);
+        const links = container.querySelectorAll('[aria-label^="Open material Material"]');
+
+        expect(links).toHaveLength(2);
+        expect(links[0].getAttribute("aria-label")).toContain("standard.baseColor, standard.bump");
+        expect(links[1].getAttribute("aria-label")).toContain("standard.diffuse");
+        expect(container.textContent).toContain("standard.baseColor, standard.bump");
+        act(() => links[1].dispatchEvent(new MouseEvent("click", { bubbles: true })));
+        expect(services.selectionService.selectedEntity).toBe(otherMaterial);
+
+        getTextureRecord.mockReturnValue({ ...services.textureRecord, consumers: consumers.slice(0, 2) });
+        act(() => {
+            services.selectionService.selectedEntity = services.material;
+        });
+        act(() => links[1].dispatchEvent(new MouseEvent("click", { bubbles: true })));
+        expect(services.selectionService.selectedEntity).toBe(services.material);
+    });
+
     it("commits transforms with complete consumer scope and refreshes applied metadata", async () => {
         const services = MakeServices({ kind: "2d", capabilities: {} });
         const container = Render(<TextureMetadataProperties {...services} />);
