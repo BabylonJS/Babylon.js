@@ -87,6 +87,9 @@ export class ThinMinMaxReducer {
     private _waitBufferFloat?: Float32Array;
     private _waitBufferUint8?: Uint8Array;
     private _waitMinMax?: { min: number; max: number };
+    private _defaultBufferFloat?: Float32Array;
+    private _defaultBufferUint8?: Uint8Array;
+    private _defaultMinMax?: { min: number; max: number };
     private _readbackPending = false;
     private _readbackGeneration = 0;
 
@@ -141,8 +144,9 @@ export class ThinMinMaxReducer {
     public readMinMax(texture: InternalTexture, fallbackToFullRange = true) {
         const isFloat = texture.type === Constants.TEXTURETYPE_FLOAT || texture.type === Constants.TEXTURETYPE_HALF_FLOAT;
         const engine = this._scene.getEngine();
+        const isWebGPU = engine.isWebGPU;
 
-        if (this.waitForReadback && engine.isWebGPU) {
+        if (this.waitForReadback && isWebGPU) {
             if (this._readbackPending) {
                 return;
             }
@@ -159,13 +163,18 @@ export class ThinMinMaxReducer {
             return;
         }
 
-        // WebGL readback updates the buffer synchronously. WebGPU's default path deliberately
-        // notifies with the previous values rather than waiting for its asynchronous readback.
-        const buffer = isFloat ? BufferFloat : BufferUint8;
+        // WebGL updates the buffer synchronously. WebGPU notifies with previous values, but
+        // still needs to submit this reduction before another graph task can reuse its texture.
+        let buffer: Float32Array | Uint8Array;
+        if (isWebGPU) {
+            buffer = isFloat ? (this._defaultBufferFloat ??= new Float32Array(4)) : (this._defaultBufferUint8 ??= new Uint8Array(4));
+        } else {
+            buffer = isFloat ? BufferFloat : BufferUint8;
+        }
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        engine._readTexturePixels(texture, 1, 1, -1, 0, buffer, false);
+        engine._readTexturePixels(texture, 1, 1, -1, 0, buffer, isWebGPU);
 
-        this._notifyMinMax(buffer, isFloat, fallbackToFullRange, MinMax);
+        this._notifyMinMax(buffer, isFloat, fallbackToFullRange, isWebGPU ? (this._defaultMinMax ??= { min: 0, max: 0 }) : MinMax);
     }
 
     private async _completeReadbackAsync(

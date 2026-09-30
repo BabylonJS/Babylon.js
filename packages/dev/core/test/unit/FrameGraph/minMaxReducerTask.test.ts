@@ -365,6 +365,68 @@ describe("FrameGraphMinMaxReducerTask", () => {
         output.dispose();
     });
 
+    it("submits default WebGPU reduction before copying and keeps reducer buffers separate", () => {
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+        const texture = new InternalTexture(engine, InternalTextureSource.RenderTarget);
+        texture.type = Constants.TEXTURETYPE_FLOAT;
+        const buffers: Float32Array[] = [];
+        const read = vi.fn((_texture: InternalTexture, _width: number, _height: number, _face: number, _level: number, buffer: ArrayBufferView | null, _flush: boolean) => {
+            buffers.push(buffer as Float32Array);
+            return Promise.resolve(buffer!);
+        });
+        engine._readTexturePixels = read;
+        const first = new ThinMinMaxReducer(scene, false);
+        const second = new ThinMinMaxReducer(scene, false);
+        const firstResults: { min: number; max: number }[] = [];
+        const secondResults: { min: number; max: number }[] = [];
+        first.onAfterReductionPerformed.add(({ min, max }) => firstResults.push({ min, max }));
+        second.onAfterReductionPerformed.add(({ min, max }) => secondResults.push({ min, max }));
+
+        try {
+            first.readMinMax(texture, false);
+            second.readMinMax(texture, false);
+            expect(buffers[0]).not.toBe(buffers[1]);
+            buffers[0].set([0.2, 0.4]);
+            buffers[1].set([0.6, 0.8]);
+
+            first.readMinMax(texture, false);
+            second.readMinMax(texture, false);
+
+            expect(firstResults.at(-1)).toEqual({ min: Math.fround(0.2), max: Math.fround(0.4) });
+            expect(secondResults.at(-1)).toEqual({ min: Math.fround(0.6), max: Math.fround(0.8) });
+            expect(read.mock.calls.map((call) => call[6])).toEqual([true, true, true, true]);
+        } finally {
+            first.dispose();
+            second.dispose();
+            texture.dispose();
+        }
+    });
+
+    it("retains immediate WebGL readback without forcing a flush", () => {
+        const texture = new InternalTexture(engine, InternalTextureSource.RenderTarget);
+        texture.type = Constants.TEXTURETYPE_FLOAT;
+        const read = vi.fn((_texture: InternalTexture, _width: number, _height: number, _face: number, _level: number, buffer: ArrayBufferView | null) => {
+            const values = buffer as Float32Array;
+            values[0] = 0.25;
+            values[1] = 0.75;
+            return Promise.resolve(values);
+        });
+        engine._readTexturePixels = read;
+        const reducer = new ThinMinMaxReducer(scene, false);
+        const results: { min: number; max: number }[] = [];
+        reducer.onAfterReductionPerformed.add(({ min, max }) => results.push({ min, max }));
+
+        try {
+            reducer.readMinMax(texture);
+
+            expect(results).toEqual([{ min: 0.25, max: 0.75 }]);
+            expect(read).toHaveBeenCalledWith(texture, 1, 1, -1, 0, expect.any(Float32Array), false);
+        } finally {
+            reducer.dispose();
+            texture.dispose();
+        }
+    });
+
     it("exposes optional readback waiting on the legacy MinMaxReducer", () => {
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
         const reducer = new MinMaxReducer(camera);
