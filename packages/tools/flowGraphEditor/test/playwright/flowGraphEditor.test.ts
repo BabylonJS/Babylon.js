@@ -2621,6 +2621,180 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authored.png"), fullPage: true });
     });
 
+    test("authors, saves and reopens real native flat companions with a bound texture", async ({ page, browserName }, testInfo) => {
+        test.skip(browserName !== "chromium", "Native drag injection requires Chromium's browser protocol.");
+        test.setTimeout(90_000);
+        const folder = mkdtempSync(join(tmpdir(), "fge-flat-drop-"));
+        try {
+            const fixture = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+            fixture.document.buffers[0].uri = "meshes/geometry.bin";
+            fixture.document.images = [{ uri: "textures/diffuse.png" }];
+            fixture.document.textures = [{ source: 0 }];
+            fixture.document.materials[0].pbrMetallicRoughness = { baseColorTexture: { index: 0 } };
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            const png = await page.evaluate(() => {
+                const canvas = document.createElement("canvas");
+                canvas.width = canvas.height = 1;
+                const context = canvas.getContext("2d")!;
+                context.fillStyle = "red";
+                context.fillRect(0, 0, 1, 1);
+                return canvas.toDataURL().split(",")[1];
+            });
+            const main = join(folder, "flat-assembly.gltf");
+            const bin = join(folder, "geometry.bin");
+            const texture = join(folder, "diffuse.png");
+            writeFileSync(main, JSON.stringify(fixture.document));
+            writeFileSync(bin, fixture.bin);
+            writeFileSync(texture, Buffer.from(png, "base64"));
+            const drop = async (files: string[]) => {
+                const canvas = (await page.locator("canvas").first().boundingBox())!;
+                const session = await page.context().newCDPSession(page);
+                for (const type of ["dragEnter", "dragOver", "drop"] as const) {
+                    await session.send("Input.dispatchDragEvent", {
+                        type,
+                        x: canvas.x + canvas.width / 2,
+                        y: canvas.y + canvas.height / 2,
+                        data: { items: [], files, dragOperationsMask: 1 },
+                    });
+                }
+                await session.detach();
+            };
+            await page.evaluate(() => {
+                window.addEventListener(
+                    "drop",
+                    (event) => {
+                        (globalThis as any).__nativeFlatPaths = Array.from(event.dataTransfer!.items).map((item) => item.webkitGetAsEntry()?.fullPath);
+                    },
+                    { once: true, capture: true }
+                );
+            });
+            await drop([main, bin, texture]);
+            expect(await page.evaluate(() => (globalThis as any).__nativeFlatPaths)).toEqual(["/flat-assembly.gltf", "/geometry.bin", "/diffuse.png"]);
+            const loadedTexture = async () =>
+                await page.evaluate(async () => {
+                    const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                    const texture = state.sceneContext.scene.materials.find((material: any) => material.name === "Base")?.albedoTexture;
+                    if (!texture || !texture.isReady()) {
+                        return null;
+                    }
+                    return { name: state.sourceGltf?.file.name, pixel: Array.from(await texture.readPixels()) };
+                });
+            await expect
+                .poll(loadedTexture, { message: "Native basename-only companions must load automatically, including the bound image" })
+                .toEqual({ name: "flat-assembly.gltf", pixel: [255, 0, 0, 255] });
+            await expect(page.getByRole("dialog", { name: "Complete glTF import" })).not.toBeVisible();
+            await page.getByRole("button", { name: "New behavior" }).click();
+            await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+            await page.getByRole("option", { name: /glTF node 1/ }).click();
+            await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
+            await page.getByRole("option", { name: /glTF node 2/ }).click();
+            const authoredDownload = page.waitForEvent("download", (download) => download.suggestedFilename() === "flat-assembly-behavior.gltf");
+            await page.getByRole("button", { name: "Create behavior" }).click();
+            await authoredDownload;
+            await expect.poll(loadedTexture).toEqual({ name: "flat-assembly-behavior.gltf", pixel: [255, 0, 0, 255] });
+            await expect(page.getByRole("button", { name: "Add reaction" })).toBeEnabled();
+            const exported = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith("-edited.gltf"));
+            await page.getByRole("button", { name: "Export KHR glTF" }).click();
+            const saved = readFileSync((await (await exported).path())!);
+            expect(JSON.parse(saved.toString()).images[0].uri).toBe("textures/diffuse.png");
+            const reopened = join(folder, "reopened.gltf");
+            writeFileSync(reopened, saved);
+            await page.reload();
+            await fge.assertEditorReady();
+            await drop([reopened, bin, texture]);
+            await expect.poll(loadedTexture).toEqual({ name: "reopened.gltf", pixel: [255, 0, 0, 255] });
+            await page.screenshot({ path: testInfo.outputPath("khr-native-flat-texture-reopened.png"), fullPage: true });
+
+            // A known wrong-directory image must ask the user, retaining the active asset.
+            const duplicate = join(folder, "other");
+            mkdirSync(duplicate);
+            writeFileSync(join(duplicate, "diffuse.png"), Buffer.from(png, "base64"));
+            const identity = await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid);
+            await drop([reopened, bin, duplicate]);
+            const dialog = page.getByRole("dialog", { name: "Complete glTF import" });
+            await expect(dialog).toContainText("textures/diffuse.png");
+            await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Missing companion file for textures/diffuse.png");
+            expect(await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid)).toBe(identity);
+            expect(await loadedTexture(), "A failed import must retain the active scene's texture bytes").toEqual({ name: "reopened.gltf", pixel: [255, 0, 0, 255] });
+            await dialog.getByLabel("Companion file for textures/diffuse.png").setInputFiles(texture);
+            await dialog.getByRole("button", { name: "Use file and retry" }).click();
+            await expect.poll(loadedTexture).toEqual({ name: "reopened.gltf", pixel: [255, 0, 0, 255] });
+        } finally {
+            rmSync(folder, { recursive: true, force: true });
+        }
+    });
+
+    for (const scenario of ["encoded image aliases and parent-directory buffers", "literal percent in the main filename"]) {
+        test(`loads bound textures with ${scenario}`, async ({ page }) => {
+            const fixture = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+            const aliases = scenario.startsWith("encoded");
+            fixture.document.buffers[0].uri = aliases ? "../meshes/geometry.bin" : "geometry.bin";
+            fixture.document.images = aliases
+                ? [{ uri: "../textures/%C3%89chantillon%20%231%2520.png" }, { uri: "../textures/./Échantillon%20%231%2520.png" }]
+                : [{ uri: "paint.png" }];
+            fixture.document.textures = fixture.document.images.map((_: unknown, source: number) => ({ source }));
+            for (let index = 0; index < fixture.document.textures.length; index++) {
+                fixture.document.materials[index].pbrMetallicRoughness = { baseColorTexture: { index } };
+            }
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            await page.evaluate(
+                ({ source, buffer, aliases }) => {
+                    const transfer = new DataTransfer();
+                    const add = (file: File, path: string) => {
+                        Object.defineProperty(file, "webkitRelativePath", { value: path });
+                        transfer.items.add(file);
+                    };
+                    const name = aliases ? "encoded.gltf" : "assembly %.gltf";
+                    add(new File([JSON.stringify(source)], name), `asset/scenes/${name}`);
+                    add(new File([new Uint8Array(buffer)], "geometry.bin"), aliases ? "asset/meshes/geometry.bin" : "asset/scenes/geometry.bin");
+                    const canvas = document.createElement("canvas");
+                    canvas.width = canvas.height = 1;
+                    const context = canvas.getContext("2d")!;
+                    context.fillStyle = "blue";
+                    context.fillRect(0, 0, 1, 1);
+                    const bytes = Uint8Array.from(atob(canvas.toDataURL().split(",")[1]), (char) => char.charCodeAt(0));
+                    const textureName = aliases ? "Échantillon #1%20.png" : "paint.png";
+                    add(new File([bytes], textureName, { type: "image/png" }), aliases ? `asset/textures/${textureName}` : `asset/scenes/${textureName}`);
+                    (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+                },
+                { source: fixture.document, buffer: [...fixture.bin], aliases }
+            );
+            await expect
+                .poll(
+                    async () =>
+                        page.evaluate(async () => {
+                            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                            if (!state.sourceGltf) {
+                                return null;
+                            }
+                            const textures = state.sceneContext.scene.materials
+                                .filter((material: any) => material.name === "Base" || material.name === "Service")
+                                .map((material: any) => material.albedoTexture);
+                            if (textures.some((texture: any) => texture && !texture.isReady())) {
+                                return null;
+                            }
+                            return {
+                                name: state.sourceGltf.file.name,
+                                pixels: await Promise.all(textures.filter(Boolean).map(async (texture: any) => Array.from(await texture.readPixels()))),
+                            };
+                        }),
+                    { message: "The actual buffer and image loaders must agree with companion matching" }
+                )
+                .toEqual({
+                    name: aliases ? "encoded.gltf" : "assembly %.gltf",
+                    pixels: aliases
+                        ? [
+                              [0, 0, 255, 255],
+                              [0, 0, 255, 255],
+                          ]
+                        : [[0, 0, 255, 255]],
+                });
+            await expect(page.getByRole("dialog", { name: "Complete glTF import" })).not.toBeVisible();
+        });
+    }
+
     test("imports a real nested folder drop with same-named textures", async ({ page, browserName }) => {
         test.skip(browserName !== "chromium", "Native directory drag injection requires Chromium's browser protocol.");
         const folder = mkdtempSync(join(tmpdir(), "fge-folder-drop-"));
@@ -2629,15 +2803,31 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             const fixture = BuildExistingGlbFixture(true, false, false, false, false, false, true);
             fixture.document.buffers[0].uri = "meshes/geometry.bin";
             fixture.document.images = [{ uri: "textures/red/diffuse.png" }, { uri: "textures/blue/diffuse.png" }];
+            fixture.document.textures = [{ source: 0 }, { source: 1 }];
+            for (let index = 0; index < 2; index++) {
+                fixture.document.materials[index].pbrMetallicRoughness = { baseColorTexture: { index } };
+            }
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            const pngs = await page.evaluate(() =>
+                Object.fromEntries(
+                    ["red", "blue"].map((color) => {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = canvas.height = 1;
+                        const context = canvas.getContext("2d")!;
+                        context.fillStyle = color;
+                        context.fillRect(0, 0, 1, 1);
+                        return [color, canvas.toDataURL().split(",")[1]];
+                    })
+                )
+            );
             mkdirSync(join(asset, "meshes"), { recursive: true });
             for (const color of ["red", "blue"]) {
                 mkdirSync(join(asset, "textures", color), { recursive: true });
-                writeFileSync(join(asset, "textures", color, "diffuse.png"), color);
+                writeFileSync(join(asset, "textures", color, "diffuse.png"), Buffer.from(pngs[color], "base64"));
             }
             writeFileSync(join(asset, "assembly.gltf"), JSON.stringify(fixture.document));
             writeFileSync(join(asset, "meshes", "geometry.bin"), fixture.bin);
-            const fge = new FlowGraphEditorPage(page);
-            await fge.goto({ local: true });
             await page.evaluate(() => {
                 window.addEventListener(
                     "drop",
@@ -2665,20 +2855,40 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                     files: await Promise.all(
                         source.companionFiles
                             .filter((file: File) => file.name === "diffuse.png")
-                            .map(async (file: File & { correctName: string }) => [file.webkitRelativePath, await file.text(), file.correctName])
+                            .map(async (file: File & { correctName: string }) => [file.webkitRelativePath, file.size, file.correctName])
                     ),
                 };
             });
             expect(paths.sourcePath).toBe("asset/assembly.gltf");
             expect(paths.files.map((entry: string[]) => entry[0])).toEqual(["", ""]);
-            expect(paths.files.map((entry: string[]) => entry[1]).sort()).toEqual(["blue", "red"]);
+            expect(paths.files.every((entry: (string | number)[]) => Number(entry[1]) > 0)).toBe(true);
+            expect(
+                await page.evaluate(async () => {
+                    const scene = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene;
+                    return await Promise.all(
+                        ["Base", "Service"].map(async (name) => Array.from(await scene.materials.find((material: any) => material.name === name).albedoTexture.readPixels()))
+                    );
+                })
+            ).toEqual([
+                [255, 0, 0, 255],
+                [0, 0, 255, 255],
+            ]);
             await expect(page.getByRole("dialog", { name: "Complete glTF import" })).not.toBeVisible();
             expect(paths.files.map((entry: string[]) => entry[2]).sort()).toEqual(["asset/textures/blue/diffuse.png", "asset/textures/red/diffuse.png"]);
             const identity = await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid);
             rmSync(join(asset, "textures", "blue", "diffuse.png"));
+            // A different drop root has the URI-shaped path, but is unrelated to asset/assembly.gltf.
+            const wrongRoot = join(folder, "textures");
+            mkdirSync(join(wrongRoot, "blue"), { recursive: true });
+            writeFileSync(join(wrongRoot, "blue", "diffuse.png"), Buffer.from(pngs.blue, "base64"));
             const retry = await page.context().newCDPSession(page);
             for (const type of ["dragEnter", "dragOver", "drop"] as const) {
-                await retry.send("Input.dispatchDragEvent", { type, x: canvas!.x + canvas!.width / 2, y: canvas!.y + canvas!.height / 2, data });
+                await retry.send("Input.dispatchDragEvent", {
+                    type,
+                    x: canvas!.x + canvas!.width / 2,
+                    y: canvas!.y + canvas!.height / 2,
+                    data: { ...data, files: [asset, wrongRoot] },
+                });
             }
             await retry.detach();
             await expect(page.getByRole("dialog", { name: "Complete glTF import" })).toContainText("textures/blue/diffuse.png");
