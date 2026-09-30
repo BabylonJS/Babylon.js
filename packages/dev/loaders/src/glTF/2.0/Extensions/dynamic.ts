@@ -277,7 +277,7 @@ export function registerBuiltInGLTFExtensions() {
 
     unregisterGLTFExtension("KHR_materials_scatter");
     registerGLTFExtension("KHR_materials_scatter", true, async (loader) => {
-        const { KHR_materials_scatter } = await import("./KHR_materials_scatter");
+        const { KHR_materials_scatter } = await import("./KHR_materials_scatter.pure");
         return new KHR_materials_scatter(loader);
     });
 }

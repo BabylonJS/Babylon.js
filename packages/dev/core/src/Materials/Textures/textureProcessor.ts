@@ -8,6 +8,7 @@ import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
 import { Color4 } from "core/Maths/math.color.pure";
+import { Logger } from "../../Misc/logger";
 
 const _ShaderName = "textureProcessor";
 
@@ -299,6 +300,23 @@ function _AllTransformsMatch(textures: BaseTexture[]): boolean {
         }
     }
     return true;
+}
+
+function _KeepMatchingCoordinates(name: string, operands: ITextureProcessOperand[]): ITextureProcessOperand[] {
+    const firstTexture = operands.find((operand) => operand.texture)?.texture;
+    if (!firstTexture || operands.every((operand) => !operand.texture || operand.texture.coordinatesIndex === firstTexture.coordinatesIndex)) {
+        return operands;
+    }
+
+    Logger.Warn(`Texture processor '${name}': input textures use different UV coordinates; keeping only the first texture.`);
+    let keptTexture = false;
+    return operands.map((operand) => {
+        if (!operand.texture || !keptTexture) {
+            keptTexture ||= !!operand.texture;
+            return operand;
+        }
+        return { ...operand, texture: null };
+    });
 }
 
 /**
@@ -603,6 +621,7 @@ export async function MultiplyTexturesAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
+    [a, b] = _KeepMatchingCoordinates(name, [a, b]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -681,6 +700,7 @@ export async function MaxTexturesAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
+    [a, b] = _KeepMatchingCoordinates(name, [a, b]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -755,6 +775,7 @@ export async function DivideTexturesAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
+    [a, b] = _KeepMatchingCoordinates(name, [a, b]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -837,6 +858,7 @@ export async function LerpTexturesAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
+    [a, b, t] = _KeepMatchingCoordinates(name, [a, b, t]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -1189,6 +1211,7 @@ export async function ThinWalledScatterWeightsAsync(
     scatter: ITextureProcessOperand,
     scene: Scene
 ): Promise<{ transmission: ITextureProcessOperand; subsurface: ITextureProcessOperand }> {
+    [transmission, scatter] = _KeepMatchingCoordinates(name, [transmission, scatter]);
     // Constant-only fast path — compute entirely on the CPU.
     if (!transmission.texture && !scatter.texture) {
         const transmissionFactor = _EvalConstant(transmission).r;

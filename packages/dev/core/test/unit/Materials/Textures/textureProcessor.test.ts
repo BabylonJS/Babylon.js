@@ -16,10 +16,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Color4 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
+import { Logger } from "core/Misc/logger";
 import {
     MultiplyTexturesAsync,
     MaxTexturesAsync,
+    DivideTexturesAsync,
     LerpTexturesAsync,
+    ThinWalledScatterWeightsAsync,
     InvertTextureAsync,
     ExtractMaxChannelAsync,
     ExtractChannelAsync,
@@ -756,6 +759,16 @@ describe("TextureProcessor", () => {
             expect(pt.getDefines()).toContain("OPERAND_B_MATRIX");
         });
 
+        it("matching UV sets keep both distinct textures without warning", async () => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            await MultiplyTexturesAsync("matching-uv", { texture: makeFakeTexture() }, { texture: makeFakeTexture() }, scene);
+
+            expect(warn).not.toHaveBeenCalled();
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_B_TEXTURE");
+            warn.mockRestore();
+        });
+
         it("single-texture operand: UV transform always propagated (InvertTextureAsync)", async () => {
             const tex = makeFakeTexture({ uOffset: 0.3 });
             await InvertTextureAsync("t", { texture: tex }, scene);
@@ -764,6 +777,59 @@ describe("TextureProcessor", () => {
             expect(pt.uOffset).toBeCloseTo(0.3);
             // Single operand → bakeTransform=false always, no MATRIX define
             expect(pt.getDefines()).not.toContain("OPERAND_A_MATRIX");
+        });
+
+        it.each([
+            ["Multiply", MultiplyTexturesAsync],
+            ["Max", MaxTexturesAsync],
+            ["Divide", DivideTexturesAsync],
+        ])("%s drops a texture using a different UV set and disposes the discarded operand", async (_operation, process) => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const first = makeFakeTexture();
+            const second = makeFakeTexture();
+            second!.coordinatesIndex = 1;
+            const dispose = vi.fn();
+
+            await process("uv-mismatch", { texture: first }, { texture: second, factor: new Color4(0.5, 0.5, 0.5, 1), dispose }, scene);
+
+            expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("uv-mismatch"));
+            expect(_capturedPTs[0].coordinatesIndex).toBe(0);
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).not.toContain("OPERAND_B_TEXTURE");
+            expect(dispose).toHaveBeenCalledOnce();
+            warn.mockRestore();
+        });
+
+        it("Lerp keeps only the first texture when any input uses a different UV set", async () => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const first = makeFakeTexture();
+            first!.coordinatesIndex = 2;
+            const second = makeFakeTexture();
+            second!.coordinatesIndex = 2;
+            const blend = makeFakeTexture();
+            blend!.coordinatesIndex = 1;
+
+            await LerpTexturesAsync("lerp-uv", { texture: first }, { texture: second }, { texture: blend }, scene);
+
+            expect(warn).toHaveBeenCalledOnce();
+            expect(_capturedPTs[0].coordinatesIndex).toBe(2);
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).not.toContain("OPERAND_B_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).not.toContain("LERP_T_TEXTURE");
+            warn.mockRestore();
+        });
+
+        it("ThinWalledScatterWeights warns once for mismatched UV sets", async () => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const transmission = makeFakeTexture();
+            const scatter = makeFakeTexture();
+            scatter!.coordinatesIndex = 1;
+
+            await ThinWalledScatterWeightsAsync("scatter-uv", { texture: transmission }, { texture: scatter }, scene);
+
+            expect(warn).toHaveBeenCalledOnce();
+            expect(_capturedPTs.every((pt) => pt.coordinatesIndex === 0)).toBe(true);
+            warn.mockRestore();
         });
     });
 });

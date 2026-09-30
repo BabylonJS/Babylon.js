@@ -6,7 +6,6 @@ import { Color3 } from "core/Maths/math.color.pure";
 import { Constants } from "core/Engines/constants";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 import { type GLTFLoader } from "./glTFLoader";
-import { Vector3 } from "core/Maths/math.vector.pure";
 
 /**
  * Material Loading Adapter for PBR materials that provides a unified OpenPBR-like interface.
