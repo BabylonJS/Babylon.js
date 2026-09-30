@@ -211,6 +211,55 @@ describe("Babylon Lite material properties", () => {
         expect(selection.selectedEntity).toBe(texture);
     });
 
+    it("refreshes Standard texture rows and candidates after an external binding change without cancelling a pending edit", async () => {
+        const oldTexture = { metadata: { kind: "2d", name: "Old Texture", sampleType: "float", capabilities: {} } as const };
+        const newTexture = { metadata: { kind: "2d", name: "New Texture", sampleType: "float", capabilities: {} } as const };
+        const material = MakeStandard({ diffuseTexture: oldTexture });
+        const scene = { meshes: [{ material }] } as SceneContext;
+        const record: IMaterialResourceRecord = {
+            source: material,
+            family: "standard",
+            displayName: "Standard",
+            scenes: [scene],
+            bindings: [{ id: "standard.diffuse", entity: oldTexture }],
+        };
+        const textures: ITextureResourceRecord[] = [{ entity: oldTexture, metadata: oldTexture.metadata, ordinal: 1, consumers: [{ material, bindingId: "standard.diffuse" }] }];
+        const resources = MakeResourceService([record], textures);
+        const selection = MakeSelectionService();
+        const container = Render(<StandardMaterialAdapter material={material} section="textures" resourceIndexService={resources} selectionService={selection} />);
+
+        expect(container.querySelector('[aria-label="Diffuse Texture: open Old Texture"]')).not.toBeNull();
+        (material as { diffuseTexture: object }).diffuseTexture = newTexture;
+        textures.splice(0, 1, { entity: newTexture, metadata: newTexture.metadata, ordinal: 2, consumers: [{ material, bindingId: "standard.diffuse" }] });
+        act(() => resources.refresh());
+
+        expect(container.querySelector('[aria-label="Diffuse Texture: open Old Texture"]')).toBeNull();
+        const open = container.querySelector<HTMLButtonElement>('[aria-label="Diffuse Texture: open New Texture"]');
+        expect(open).not.toBeNull();
+        act(() => open?.click());
+        expect(selection.selectedEntity).toBe(newTexture);
+
+        let resolveRebuild: () => void = () => {
+            throw new Error("Rebuild was not started.");
+        };
+        InspectionMocks.rebuild.mockImplementationOnce(() => new Promise<void>((resolve) => (resolveRebuild = resolve)));
+        act(() => container.querySelector<HTMLButtonElement>('[aria-label="Clear Diffuse Texture"]')?.click());
+        await act(async () => {
+            await Promise.resolve();
+        });
+        expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+        act(() => resources.refresh());
+        expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+        await act(async () => resolveRebuild());
+        expect((material as { diffuseTexture: object | null }).diffuseTexture).toBeNull();
+        expect(container.querySelector('[aria-busy="true"]')).toBeNull();
+        expect(container.querySelector('[role="alert"]')).toBeNull();
+        expect(container.querySelector('[role="combobox"][aria-label="Diffuse Texture"]')).not.toBeNull();
+        const options = Array.from(document.querySelectorAll('[role="option"]')).map((option) => option.textContent);
+        expect(options).toContain("New Texture");
+        expect(options).not.toContain("Old Texture");
+    });
+
     it("uses direct Standard texture slots for clear, rebuild, and cube navigation", async () => {
         const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
         const cube = { metadata: { kind: "cube", sampleType: "float", capabilities: {} } };

@@ -1,6 +1,8 @@
 import { getMaterialSource, markMaterialUboDirty, rebuildMaterial, type Material, type SceneContext } from "@babylonjs/lite";
 import { useCallback } from "react";
 
+import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+
 import { usePropertyChangedNotifier } from "../../../../../contexts/propertyContext";
 import { type ISelectionService } from "../../../../../services/selectionService";
 import { type ISceneResourceIndexService } from "../../scene/sceneResourceIndexService";
@@ -55,7 +57,8 @@ function ValidateValue(id: string, value: unknown): void {
  */
 export function useDirectMaterialOperations(material: Material, resourceIndexService: ISceneResourceIndexService, selectionService: ISelectionService) {
     const source = getMaterialSource(material);
-    const record = resourceIndexService.getMaterialRecord(source);
+    const getRecord = useCallback(() => ({ record: resourceIndexService.getMaterialRecord(source) }), [resourceIndexService, source]);
+    const { record } = useObservableState(getRecord, resourceIndexService.onChanged);
     const isDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
     const [operations, runLatestOperation] = useLatestAsyncOperation(material, [resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged], isDisposed);
     const notifyPropertyChanged = usePropertyChangedNotifier();
