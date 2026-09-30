@@ -228,6 +228,54 @@ describe("NodeParticleSystemSet", () => {
         expect(fetchSpy).toHaveBeenLastCalledWith(0, 0, 2, 2, pixels);
     });
 
+    it("keeps the newer noise readback when the old readback completes last after a same-size in-place resize", async () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        const pending: Array<(data: Uint8Array) => void> = [];
+        vi.spyOn(texture, "isReady").mockReturnValue(true);
+        const readPixelsSpy = vi.spyOn(texture, "readPixels").mockImplementation(() => new Promise((resolve) => pending.push(resolve)));
+        const frameIdSpy = vi.spyOn(scene, "getFrameId").mockReturnValue(0);
+        const textureBlock = new ParticleTextureSourceBlock("Noise Texture");
+        textureBlock.textureOutput._storedValue = texture;
+        vi.spyOn(textureBlock, "extractTextureContentAsync").mockResolvedValue(null);
+        const noiseBlock = new UpdateNoiseBlock("Noise Update");
+        textureBlock.textureOutput.connectTo(noiseBlock.noiseTexture);
+        const system = new ParticleSystem("noise", 10, scene);
+        vi.spyOn(noiseBlock.particle, "getConnectedValue").mockReturnValue(system);
+        const state = new NodeParticleBuildState();
+        noiseBlock._build(state);
+        await state.waitForBuildPromisesAsync();
+        const particle = new Particle(system);
+        particle._properties.randomNoiseCoordinates1 = Vector3.Zero();
+        particle._properties.randomNoiseCoordinates2 = Vector3.Zero();
+        let noiseProcessing = system._updateQueueStart!;
+        while (noiseProcessing.nextItem) {
+            noiseProcessing = noiseProcessing.nextItem;
+        }
+        const processNoise = noiseProcessing.process;
+        const fetchSpy = vi.spyOn(system, "_fetchR");
+
+        processNoise(particle, system);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(1);
+        texture.resize({ width: 2, height: 2 }, false);
+        frameIdSpy.mockReturnValue(1);
+        processNoise(particle, system);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+
+        const pixels = new Uint8Array(2 * 2 * 4).fill(2);
+        pending[1](pixels);
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        processNoise(particle, system);
+        expect(fetchSpy).toHaveBeenCalledTimes(3);
+        expect(fetchSpy).toHaveBeenLastCalledWith(0, 0, 2, 2, pixels);
+
+        pending[0](new Uint8Array(2 * 2 * 4).fill(1));
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        processNoise(particle, system);
+        expect(fetchSpy).toHaveBeenCalledTimes(6);
+        expect(fetchSpy).toHaveBeenLastCalledWith(0, 0, 2, 2, pixels);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+    });
+
     it("keeps extracted procedural texture dimensions paired with the buffer when resized while pending", async () => {
         const texture = new ProceduralTexture("noise", 2, null, scene);
         vi.spyOn(texture, "isReady").mockReturnValue(true);

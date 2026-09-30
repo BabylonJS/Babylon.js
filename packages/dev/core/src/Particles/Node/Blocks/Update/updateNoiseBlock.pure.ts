@@ -119,6 +119,7 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
             if (currentFrameId !== lastFrameId) {
                 lastFrameId = currentFrameId;
 
+                const internalTexture = texture.getInternalTexture();
                 const textureSize = texture.getSize();
                 // getSize() returns a shared cached object: snapshot the dimensions so a later resize
                 // cannot mutate the pair published together with the buffer.
@@ -127,6 +128,10 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
                 // eslint-disable-next-line github/no-then
                 texture.getContent()?.then(
                     (data) => {
+                        if (texture.getInternalTexture() !== internalTexture) {
+                            // Resized or switched to a fallback while pending: discard the obsolete readback.
+                            return;
+                        }
                         const buffer = data as Uint8Array;
                         if (buffer.length !== size.width * size.height * 4) {
                             // The readback returned a buffer for another size (e.g. the texture was resized

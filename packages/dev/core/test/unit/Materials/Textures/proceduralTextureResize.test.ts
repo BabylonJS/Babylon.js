@@ -25,7 +25,7 @@ describe("ProceduralTexture resize", () => {
     });
 
     it("invalidates the cached readback so getContent() reads the new size", async () => {
-        const texture = new ProceduralTexture("noise", 2, scene);
+        const texture = new ProceduralTexture("noise", 2, null, scene);
         const readPixelsSpy = vi.spyOn(texture, "readPixels").mockReturnValue(Promise.resolve(new Uint8Array(2 * 2 * 4)));
 
         // First readback is cached.
@@ -40,7 +40,7 @@ describe("ProceduralTexture resize", () => {
     });
 
     it("discards a refresh queued before the resize instead of reusing the old-sized buffer", async () => {
-        const texture = new ProceduralTexture("noise", 2, scene);
+        const texture = new ProceduralTexture("noise", 2, null, scene);
         const readPixelsSpy = vi.spyOn(texture, "readPixels").mockImplementation((_faceIndex?: number, _level?: number, buffer?: ArrayBufferView | null) => {
             if (buffer) {
                 // The engine reuses a supplied buffer as-is instead of reallocating it.
@@ -73,7 +73,7 @@ describe("ProceduralTexture resize", () => {
     });
 
     it("does not schedule a second readback when a refresh is already queued for the current frame", async () => {
-        const texture = new ProceduralTexture("noise", 2, scene);
+        const texture = new ProceduralTexture("noise", 2, null, scene);
         // Each readback returns a fresh promise, as both engines do.
         const readPixelsSpy = vi.spyOn(texture, "readPixels").mockImplementation(() => Promise.resolve(new Uint8Array(2 * 2 * 4)));
 
@@ -91,7 +91,7 @@ describe("ProceduralTexture resize", () => {
     });
 
     it("retries a rejected queued refresh without an unhandled rejection", async () => {
-        const texture = new ProceduralTexture("noise", 2, scene);
+        const texture = new ProceduralTexture("noise", 2, null, scene);
         const pixels = new Uint8Array(2 * 2 * 4);
         const readPixelsSpy = vi.spyOn(texture, "readPixels").mockResolvedValueOnce(pixels).mockRejectedValueOnce(new Error("readback failed")).mockResolvedValue(pixels);
 
@@ -106,7 +106,7 @@ describe("ProceduralTexture resize", () => {
     });
 
     it("does not let a rejected readback or its queued refresh clear the cache after a resize", async () => {
-        const texture = new ProceduralTexture("noise", 2, scene);
+        const texture = new ProceduralTexture("noise", 2, null, scene);
         let rejectReadback: (reason: Error) => void;
         const rejectedContent = new Promise<ArrayBufferView>((_resolve, reject) => (rejectReadback = reject));
         const pixels = new Uint8Array(4 * 4 * 4);

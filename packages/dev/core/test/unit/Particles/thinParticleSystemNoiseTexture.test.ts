@@ -241,7 +241,7 @@ describe("ThinParticleSystem noise texture readback", () => {
     });
 
     it("advances to the resized texture after a refresh queued before the resize is discarded", async () => {
-        const texture = new ProceduralTexture("noise", 2, scene);
+        const texture = new ProceduralTexture("noise", 2, null, scene);
         vi.spyOn(texture, "readPixels").mockImplementation((_faceIndex?: number, _level?: number, buffer?: ArrayBufferView | null) => {
             if (buffer) {
                 // The engine reuses a supplied buffer as-is instead of reallocating it.
@@ -276,8 +276,8 @@ describe("ThinParticleSystem noise texture readback", () => {
     });
 
     it("does not let an older readback of the same texture clear the gate or publish stale pixels", async () => {
-        const noiseA = new ProceduralTexture("noiseA", 2, scene);
-        const noiseB = new ProceduralTexture("noiseB", 2, scene);
+        const noiseA = new ProceduralTexture("noiseA", 2, null, scene);
+        const noiseB = new ProceduralTexture("noiseB", 2, null, scene);
         // Deferred readbacks for A so completions can be ordered manually (as an async GPU readback can).
         const pendingA: Array<(data: Uint8Array) => void> = [];
         vi.spyOn(noiseA, "readPixels").mockImplementation(() => new Promise((resolve) => pendingA.push(resolve)));
@@ -316,7 +316,7 @@ describe("ThinParticleSystem noise texture readback", () => {
     });
 
     it("discards a pending readback when the texture is reassigned without an update in between", async () => {
-        const noiseA = new ProceduralTexture("noiseA", 2, scene);
+        const noiseA = new ProceduralTexture("noiseA", 2, null, scene);
         const noiseB = createDeferredTexture(2, 2);
         const pendingA: Array<(data: Uint8Array) => void> = [];
         vi.spyOn(noiseA, "readPixels").mockImplementation(() => new Promise((resolve) => pendingA.push(resolve)));
@@ -345,7 +345,7 @@ describe("ThinParticleSystem noise texture readback", () => {
     });
 
     it("warns once while a failing noise readback keeps retrying", async () => {
-        const texture = new ProceduralTexture("noise", 2, scene);
+        const texture = new ProceduralTexture("noise", 2, null, scene);
         const readPixelsSpy = vi.spyOn(texture, "readPixels").mockRejectedValue(new Error("readback failed"));
         const warnSpy = vi.spyOn(Logger, "Warn");
 
@@ -391,7 +391,7 @@ describe("ThinParticleSystem noise texture readback", () => {
     });
 
     it("retries a rejected procedural texture readback and publishes the successful buffer", async () => {
-        const texture = new ProceduralTexture("noise", 2, scene);
+        const texture = new ProceduralTexture("noise", 2, null, scene);
         const pixels = new Uint8Array(2 * 2 * 4);
         const readPixelsSpy = vi.spyOn(texture, "readPixels").mockRejectedValueOnce(new Error("readback failed")).mockResolvedValue(pixels);
 
