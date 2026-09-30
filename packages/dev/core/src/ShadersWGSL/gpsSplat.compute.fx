@@ -49,27 +49,39 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let chol = gpsGetChol(s);
     let opacity = s.colorOp.w;
 
+    let saturate = (s.depth.y & GPS_FLAG_SATURATE) != 0u;
+
     var st = gpsHash2(p, u32(uniforms.params0.w));
     st = gpsPcg(st);
     let u1 = gpsUnit(st);
     st = gpsPcg(st);
     let u2 = gpsUnit(st);
-    var z : vec2f;
-    if (s.depth.y == 1u) {
-        // Debug opacity-saturate: uniform sample over the Mahalanobis R^2=8 disk; no cutoff needed.
-        let r = sqrt(u1) * 2.8284271; // R = sqrt(8)
-        let ang = GPS_TWO_PI * u2;
-        z = vec2f(r * cos(ang), r * sin(ang));
+    var offset : vec2f;
+    if ((s.depth.y & GPS_FLAG_SCREEN_RECT) != 0u) {
+        // Uniform over the on-screen rect, thinned to the local intensity (accepted with lambda(x) / lambdaMax)
+        // below; yields the same point process as the importance-sampled branch.
+        let rectMin = vec2f(f32(s.depth.z & 0xFFFFu), f32(s.depth.z >> 16u));
+        let rectMax = vec2f(f32(s.depth.w & 0xFFFFu), f32(s.depth.w >> 16u));
+        offset = mix(rectMin, rectMax, vec2f(u1, u2)) - pixelMean;
     } else {
-        // Importance-sampled offset; before the classic cutoff below, the estimator targets
-        // opacity*gaussian without per-sample alpha rejection.
-        z = gpsCorrectedBoxMuller(u1, u2, opacity);
-        // Match the classic quad cutoff: meshPos radius 2 => Mahalanobis radius 2*sqrt(2).
-        if (dot(z, z) > 8.0) {
-            return;
+        var z : vec2f;
+        if (saturate) {
+            // Debug opacity-saturate: uniform sample over the Mahalanobis R^2=8 disk.
+            let r = sqrt(u1) * 2.8284271; // R = sqrt(8)
+            let ang = GPS_TWO_PI * u2;
+            z = vec2f(r * cos(ang), r * sin(ang));
+        } else {
+            // Importance-sampled offset; the estimator targets opacity*gaussian without per-sample alpha rejection.
+            z = gpsCorrectedBoxMuller(u1, u2, opacity);
         }
+        offset = vec2f(chol.x * z.x, chol.y * z.x + chol.z * z.y);
     }
-    let offset = vec2f(chol.x * z.x, chol.y * z.x + chol.z * z.y);
+
+    // Match the classic quad cutoff: meshPos radius 2 => Mahalanobis radius 2*sqrt(2), i.e. d^T conic d <= 8.
+    let mahalanobis2 = conic.x * offset.x * offset.x + 2.0 * conic.y * offset.x * offset.y + conic.z * offset.y * offset.y;
+    if (mahalanobis2 > 8.0) {
+        return;
+    }
 
     let pixel = floor(pixelMean + offset);
     let x = i32(pixel.x);
@@ -79,12 +91,18 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
+    // Evaluate at the continuous sample, not the pixel corner, so subpixel splats keep their coverage.
+    // Debug opacity-saturate: flat alpha like the classic debug mode.
+    let alpha = select(opacity * exp(-0.5 * mahalanobis2), opacity, saturate);
     // Coverage comes from sample density; only fully transparent tail samples are rejected.
-    let d = pixelMean - pixel;
-    // Debug opacity-saturate: flat alpha like the classic debug mode; sampling used a uniform disk above.
-    let alpha = select(opacity * gpsGaussianValue(conic, d), opacity, s.depth.y == 1u);
     if (alpha < 0.00392) { // ~1/255
         return;
+    }
+    if ((s.depth.y & GPS_FLAG_SCREEN_RECT) != 0u) {
+        st = gpsPcg(st);
+        if (gpsUnit(st) * gpsPointIntensity(opacity) >= gpsPointIntensity(alpha)) {
+            return;
+        }
     }
 
     // Dither +/- 0.5 LSB so accumulation converges to the true color instead of banding.

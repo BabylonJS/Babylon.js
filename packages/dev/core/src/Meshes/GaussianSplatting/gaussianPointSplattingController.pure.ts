@@ -862,6 +862,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
                 this._blit.setAccumBuffer(accum);
                 this._blit.setAccumDepthBuffer(accumDepth);
                 this._blit.setResolution(this._renderer.outputWidth, this._renderer.outputHeight);
+                this._blit.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
+                // Match the classic material's log depth so the composite depth-tests like the classic path.
+                this._blit.setLogarithmicDepthConstant(gsMaterial?.useLogarithmicDepth ? 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2) : 0);
             }
             if (this._depthMode && this._depthBlit) {
                 this._depthBlit.setAccumBuffer(accum);

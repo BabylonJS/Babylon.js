@@ -794,6 +794,61 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it("composites with the classic material's logarithmic depth", async () => {
+        const engine = new NullEngine();
+        engine.getCaps().fragmentDepthSupported = true;
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        camera.maxZ = 1000;
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        const data = new ArrayBuffer(32);
+        new Float32Array(data)[2] = 20;
+        mesh.updateData(data);
+        const controller = CreateController(mesh);
+        controller["_colorMode"] = true;
+        controller["_renderScale"] = 1;
+        controller["_enableColorBlit"]();
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
+        vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        vi.spyOn(renderer, "resetAccumulation").mockImplementation(() => {});
+        vi.spyOn(renderer, "setPartData").mockImplementation(() => {});
+        vi.spyOn(renderer, "setProjectionZ").mockImplementation(() => {});
+        vi.spyOn(renderer, "setCamera").mockImplementation(() => {});
+        const renderToBuffer = vi.spyOn(renderer, "renderToBuffer").mockReturnValue(true);
+        vi.spyOn(renderer, "renderedFrameCount", "get").mockReturnValue(0);
+        vi.spyOn(renderer, "accumulationVersion", "get").mockReturnValue(0);
+        vi.spyOn(renderer, "pixelCycleLength", "get").mockReturnValue(1);
+        vi.spyOn(renderer, "outputWidth", "get").mockReturnValue(4);
+        vi.spyOn(renderer, "outputHeight", "get").mockReturnValue(4);
+        vi.spyOn(renderer, "accumBuffer", "get").mockReturnValue({} as never);
+        vi.spyOn(renderer, "accumDepthBuffer", "get").mockReturnValue({} as never);
+        controller["_renderer"] = renderer;
+        const blit = controller["_blit"]!;
+        vi.spyOn(blit, "setAccumBuffer").mockImplementation(() => {});
+        vi.spyOn(blit, "setAccumDepthBuffer").mockImplementation(() => {});
+        const setProjectionZ = vi.spyOn(blit, "setProjectionZ");
+        const setLogDepth = vi.spyOn(blit, "setLogarithmicDepthConstant");
+        controller["_ensureCompute"]();
+
+        await vi.waitFor(() => {
+            controller["_runCompute"]();
+            expect(renderToBuffer).toHaveBeenCalled();
+        });
+        expect(setLogDepth).toHaveBeenLastCalledWith(0);
+
+        (mesh.material as GaussianSplattingMaterial).useLogarithmicDepth = true;
+        controller["_runCompute"]();
+        expect(setLogDepth).toHaveBeenLastCalledWith(2 / Math.log2(1001));
+        const projection = camera.getProjectionMatrix();
+        expect(setProjectionZ).toHaveBeenLastCalledWith(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
+
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("reuses the same output size object across frames", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

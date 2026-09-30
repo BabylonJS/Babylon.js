@@ -240,20 +240,30 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
 
     // Expected sample count. Normal mode integrates -ln(1 - opacity*gaussian); opacity-saturate uses
     // uniform density -ln(1 - opacity) over the Mahalanobis R^2=8 ellipse.
+    let lambdaMax = gpsPointIntensity(opacity);
     var importance : f32;
     if (saturate) {
-        importance = 4.0 * GPS_TWO_PI * sqrt(det) * (-log(1.0 - min(opacity, 0.999))) * uniforms.params0.z;
+        importance = 4.0 * GPS_TWO_PI * sqrt(det) * lambdaMax * uniforms.params0.z;
     } else {
         importance = GPS_TWO_PI * sqrt(det) * gpsDilog(opacity) * uniforms.params0.z;
     }
+    // On-screen part of the R^2=8 ellipse's bounding box. The splat pass rejects samples outside it, so an
+    // empty rect emits nothing.
     let res = uniforms.resNearFar.xy;
-    if (importance < 1e-4) {
+    let halfExtent = sqrt(8.0 * vec2f(a, cc));
+    let rectMin = clamp(floor(vec2f(px, py) - halfExtent), vec2f(0.0), res);
+    let rectMax = clamp(ceil(vec2f(px, py) + halfExtent), vec2f(0.0), res);
+    let rectSize = rectMax - rectMin;
+    // Same Poisson intensity realized by thinning uniform rect samples; bounded by the screen area, so huge
+    // Gaussians stay cheap without the bias of capping their point count.
+    let rectImportance = lambdaMax * rectSize.x * rectSize.y * uniforms.params0.z;
+    let useRect = rectImportance < importance;
+    let chosen = select(importance, rectImportance, useRect);
+    if (chosen < 1e-4) {
         return;
     }
     let seed = gpsHash2(g, u32(uniforms.params0.w));
-    var numPoints = gpsPoisson(gpsPcg(seed), importance);
-    // Cap so a single huge Gaussian cannot dominate the point budget.
-    numPoints = min(numPoints, u32(res.x * res.y * 0.5));
+    let numPoints = gpsPoisson(gpsPcg(seed), chosen);
     if (numPoints == 0u) {
         return;
     }
@@ -266,8 +276,10 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let dmin = uniforms.depthNorm.x;
     let dmax = uniforms.depthNorm.y;
     let dord = clamp((viewDepth - dmin) / max(dmax - dmin, 1e-6), 0.0, 1.0);
-    // depth.y carries the debug opacity-saturate flag (flat disk instead of Gaussian falloff).
-    s.depth = vec4u(u32(dord * f32(GPS_DEPTH_MAX_CODE)), select(0u, 1u, saturate), 0u, 0u);
+    let flags = select(0u, GPS_FLAG_SATURATE, saturate) | select(0u, GPS_FLAG_SCREEN_RECT, useRect);
+    let rmin = vec2u(rectMin);
+    let rmax = vec2u(rectMax);
+    s.depth = vec4u(u32(dord * f32(GPS_DEPTH_MAX_CODE)), flags, rmin.x | (rmin.y << 16u), rmax.x | (rmax.y << 16u));
     gsData[g] = s;
 
     weights[g] = numPoints;

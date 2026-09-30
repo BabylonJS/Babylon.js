@@ -57,8 +57,20 @@ struct GpsScreen {
     pmConicXY : vec4f, // pixelMean.x, pixelMean.y, conic.x, conic.y
     conicZChol : vec4f, // conic.z, chol0, chol1, chol2
     colorOp : vec4f,   // linear color r, g, b, opacity
-    depth : vec4u,     // depthKey, opacitySaturate flag (debug), unused, unused
+    depth : vec4u,     // depthKey, GPS_FLAG_* bits, sample-rect min (x | y << 16), sample-rect max (x | y << 16)
 };
+
+// GpsScreen.depth.y flags.
+const GPS_FLAG_SATURATE : u32 = 1u; // debug opacity-saturate: flat disk instead of Gaussian falloff
+// Samples are uniform over the on-screen sample rect and thinned by the local intensity, instead of
+// importance-sampled over the whole footprint; chosen when that needs fewer points.
+const GPS_FLAG_SCREEN_RECT : u32 = 2u;
+
+// Largest per-pixel point intensity, -ln(1 - alpha), with alpha clamped so it stays finite.
+const GPS_MAX_ALPHA : f32 = 0.999;
+fn gpsPointIntensity(alpha : f32) -> f32 {
+    return -log(1.0 - min(alpha, GPS_MAX_ALPHA));
+}
 
 fn gpsGetPixelMean(s : GpsScreen) -> vec2f { return s.pmConicXY.xy; }
 fn gpsGetConic(s : GpsScreen) -> vec3f { return vec3f(s.pmConicXY.z, s.pmConicXY.w, s.conicZChol.x); }
