@@ -4,7 +4,6 @@ import {
     getTextureCoordinateIndex,
     getTextureMetadata,
     getTextureTransform,
-    hasTextureTransform,
     markMaterialUboDirty,
     rebuildMaterial,
     setTextureTransform,
@@ -77,7 +76,7 @@ function GetConsumerScenes(record: ITextureResourceRecord | undefined, resourceI
 }
 
 function SupportsTransform(record: ITextureResourceRecord | undefined, resourceIndexService: ISceneResourceIndexService): boolean {
-    if (!record || record.metadata.kind !== "2d" || !hasTextureTransform(record.entity as Texture2D)) {
+    if (!record || record.metadata.kind !== "2d" || getTextureTransform(record.entity as Texture2D) === undefined) {
         return false;
     }
     return record.consumers.some((consumer) => {

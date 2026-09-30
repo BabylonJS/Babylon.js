@@ -23,7 +23,10 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
         getTextureMetadata: (texture: Record<string, unknown>) => texture.metadata,
         getTextureTransform: (texture: Record<string, unknown>) => texture.transform,
         getTextureCoordinateIndex: (texture: Record<string, unknown>) => texture.coordinateIndex,
-        hasTextureTransform: (texture: Record<string, unknown>) => texture.transform !== undefined,
+        hasTextureTransform: (texture: { transform?: TextureTransform }) => {
+            const transform = texture.transform;
+            return transform !== undefined && (transform.uOffset !== 0 || transform.vOffset !== 0 || transform.uScale !== 1 || transform.vScale !== 1 || transform.uAng !== 0);
+        },
         setTextureTransform: InspectionMocks.setTransform,
         enableMaterialUvTransform: InspectionMocks.enableUv,
         markMaterialUboDirty: InspectionMocks.dirty,
@@ -31,7 +34,7 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
     };
 });
 
-import { type Material, type SceneContext, type TextureMetadata } from "@babylonjs/lite";
+import { hasTextureTransform, type Material, type SceneContext, type TextureMetadata, type TextureTransform } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
 
 import { PropertyContext, type PropertyChangeInfo } from "../../src/contexts/propertyContext";
@@ -224,6 +227,34 @@ describe("Babylon Lite texture accessor metadata", () => {
         const container = Render(<TextureMetadataProperties {...services} />);
         expect(container.textContent).toContain("U Scale");
         expect(container.querySelector<HTMLInputElement>('input[value="1"]')).not.toBeNull();
+    });
+
+    it("keeps transform controls after resetting a live texture to identity", async () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} });
+        const container = Render(<TextureMetadataProperties {...services} />);
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
+        const editScale = async (value: string) => {
+            const input = container.querySelector<HTMLInputElement>(`input[value="${value === "2" ? "1" : "2"}"]`)!;
+            await act(async () => {
+                input.focus();
+                setter.call(input, value);
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                input.blur();
+            });
+        };
+
+        expect(hasTextureTransform(services.texture)).toBe(false);
+        expect(container.textContent).toContain("U Scale");
+        expect(container.querySelector<HTMLInputElement>('input[value="1"]')).not.toBeNull();
+        await editScale("2");
+        expect(hasTextureTransform(services.texture)).toBe(true);
+        expect(InspectionMocks.setTransform).toHaveBeenCalledWith(services.texture, expect.objectContaining({ uScale: 2 }));
+        await editScale("1");
+        expect(hasTextureTransform(services.texture)).toBe(false);
+        expect(InspectionMocks.setTransform).toHaveBeenCalledWith(services.texture, expect.objectContaining({ uScale: 1 }));
+        expect(container.textContent).toContain("U Scale");
+        expect(container.querySelector<HTMLInputElement>('input[value="1"]')).not.toBeNull();
+        expect(services.refresh).toHaveBeenCalledTimes(2);
     });
 
     it("groups slots into one link per material and keeps identical names distinct", () => {
