@@ -2854,7 +2854,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
     test("offers a companion file chooser on a mobile viewport", async ({ browser }, testInfo) => {
         const { document, bin } = BuildExistingGlbFixture(true, false, false, false, false, false, true);
-        const context = await browser.newContext({ ...devices["Pixel 7"], acceptDownloads: true });
+        const context = await browser.newContext({ ...devices["Pixel 7"], isMobile: browser.browserType().name() !== "firefox", acceptDownloads: true });
         try {
             const page = await context.newPage();
             const fge = new FlowGraphEditorPage(page);
@@ -3253,7 +3253,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
     test("keeps two-step procedure authoring usable with touch on a narrow viewport", async ({ browser }, testInfo) => {
         test.setTimeout(90_000);
-        const context = await browser.newContext({ ...devices["Pixel 7"], acceptDownloads: true });
+        const context = await browser.newContext({ ...devices["Pixel 7"], isMobile: browser.browserType().name() !== "firefox", acceptDownloads: true });
         try {
             const page = await context.newPage();
             const fge = new FlowGraphEditorPage(page);
@@ -3302,7 +3302,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
     test("authors an existing GLB with touch input on a mobile viewport", async ({ browser }, testInfo) => {
         test.setTimeout(90_000);
-        const context = await browser.newContext({ ...devices["Pixel 7"], acceptDownloads: true });
+        const context = await browser.newContext({ ...devices["Pixel 7"], isMobile: browser.browserType().name() !== "firefox", acceptDownloads: true });
         try {
             const page = await context.newPage();
             const fge = new FlowGraphEditorPage(page);
@@ -3447,7 +3447,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
     test("authors the selection behavior with touch input on a mobile viewport", async ({ browser }, testInfo) => {
         test.setTimeout(90_000);
-        const context = await browser.newContext({ ...devices["Pixel 7"] });
+        const context = await browser.newContext({ ...devices["Pixel 7"], isMobile: browser.browserType().name() !== "firefox" });
         try {
             const page = await context.newPage();
             const fge = new FlowGraphEditorPage(page);
