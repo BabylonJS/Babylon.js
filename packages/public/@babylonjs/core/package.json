@@ -248,6 +248,7 @@
         "FrameGraph/Node/Blocks/Textures/clearBlock.js",
         "FrameGraph/Node/Blocks/Textures/copyTextureBlock.js",
         "FrameGraph/Node/Blocks/Textures/generateMipmapsBlock.js",
+        "FrameGraph/Node/Blocks/Textures/minMaxReducerBlock.js",
         "FrameGraph/Node/Blocks/computeShaderBlock.js",
         "FrameGraph/Node/Blocks/cullObjectsBlock.js",
         "FrameGraph/Node/Blocks/executeBlock.js",

@@ -51,3 +51,4 @@ export * from "./Teleport/teleportOutBlock";
 export * from "./Textures/clearBlock";
 export * from "./Textures/copyTextureBlock";
 export * from "./Textures/generateMipmapsBlock";
+export * from "./Textures/minMaxReducerBlock";
