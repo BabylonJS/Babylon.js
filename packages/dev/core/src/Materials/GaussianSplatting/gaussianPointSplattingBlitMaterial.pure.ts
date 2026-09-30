@@ -9,8 +9,7 @@ import { Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * Composites the resolved Gaussian Point Splatting color over the scene with a fullscreen triangle.
- * Samples premultiplied color/coverage and NDC depth from storage buffers and writes fragDepth so the
- * result depth-tests against the scene, without writing color-pass depth itself. WebGPU only.
+ * The result depth-tests against the scene without writing depth. WebGPU only.
  */
 export class GaussianPointSplattingBlitMaterial extends ShaderMaterial {
     // Reused per-frame uniform value; ShaderMaterial keeps a reference to it.
@@ -35,7 +34,6 @@ export class GaussianPointSplattingBlitMaterial extends ShaderMaterial {
             }
         );
 
-        // Fullscreen pass; blend accumulated premultiplied coverage over the scene.
         this.backFaceCulling = false;
         this.alphaMode = Constants.ALPHA_PREMULTIPLIED;
     }

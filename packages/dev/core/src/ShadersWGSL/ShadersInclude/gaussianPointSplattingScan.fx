@@ -1,14 +1,10 @@
-// Work-efficient (Blelloch) exclusive prefix scan of a 512-element block held in workgroup memory.
-// Shared by the block scan and the block-sums scan. 256 threads, 2 elements per thread.
-//
-// Callers fill gpsScanTemp[0..511] before calling, then read the exclusive results back from it. The
-// return value (the block's total sum) is valid on thread 0 only.
+// Blelloch exclusive scan of gpsScanTemp[0..511] in place (256 threads). The returned block total is
+// valid on thread 0 only.
 
 var<workgroup> gpsScanTemp : array<u32, 512>;
 
 fn gpsScanExclusive512(t : u32) -> u32 {
     var offset = 1u;
-    // Up-sweep (reduce): build partial sums up the tree.
     for (var d = 256u; d > 0u; d = d >> 1u) {
         workgroupBarrier();
         if (t < d) {
@@ -25,7 +21,6 @@ fn gpsScanExclusive512(t : u32) -> u32 {
         gpsScanTemp[511] = 0u; // clear the last element for the exclusive down-sweep
     }
 
-    // Down-sweep: distribute the partial sums back down the tree.
     for (var d = 1u; d < 512u; d = d << 1u) {
         offset = offset >> 1u;
         workgroupBarrier();

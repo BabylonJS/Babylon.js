@@ -1,5 +1,4 @@
-// Composites the premultiplied accumulation buffer. Screen UV indexing keeps the storage-buffer lookup
-// independent of the current render target size (high-DPI / scaled targets).
+// Screen UV indexing keeps the lookup independent of the render target size.
 uniform resolution: vec2f;
 
 varying vScreenUv: vec2f;
@@ -20,7 +19,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let idx = pixel.y * u32(res.x) + pixel.x;
     let accumulated = accumBuffer[idx];
 
-    // Negligible coverage -> nothing here; discard so the scene shows through with no depth write.
     if (accumulated.w < 0.0015) {
         discard;
     }

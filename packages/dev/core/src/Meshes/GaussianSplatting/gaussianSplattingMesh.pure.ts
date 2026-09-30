@@ -327,25 +327,15 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     protected _partVisibility: number[] = [];
 
-    // --- Point-splatting render mode (optional WebGPU compute extension) ---
-    // An alternate CAMERA-VIEW renderer for the same splat data: a stochastic, sort-free compute
-    // pipeline that resolves visibility with a per-pixel atomic depth-min and converges over frames.
-    // All of its state and logic live in GaussianPointSplattingController so the classic path does not
-    // carry them; only the two settings below are retained here, because callers may configure them
-    // before (or without ever) enabling a point-splatting mode.
+    // Point-splatting settings, kept here so they can be set before the controller exists.
     private _pointScale = 1;
     private _pointRenderScale: number | "auto" = "auto";
     private _pointController: Nullable<IGaussianPointSplattingController> = null;
 
     /**
-     * Internal render-resolution scale for point splatting. A number (1 = full) renders fewer pixels =
-     * ~scale^2 fewer emitted points, with full resolution reconstructed over frames by jittered temporal
-     * upsampling. `"auto"` (default) targets a device-tiered point budget: scale =
-     * sqrt(budget / full-res point count). The integer upscale factor N = round(1/scale) is capped at 8,
-     * so particularly dense scenes can still exceed the budget.
-     *
-     * Setting it restarts progressive accumulation, so a converged image is always produced by a single
-     * render scale instead of a blend of two.
+     * Internal render-resolution scale for point splatting (1 = full). Lower values emit ~scale^2 fewer
+     * points; full resolution is reconstructed over frames. `"auto"` (default) targets a device-tiered point
+     * budget, with the upscale factor capped at 8. Setting it restarts accumulation.
      */
     public get pointSplattingRenderScale(): number | "auto" {
         return this._pointRenderScale;
@@ -619,14 +609,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partIndices.set(partIndices);
     }
 
-    // ---------------------------------------------------------------------------
-    // Point-splatting render mode (optional WebGPU compute extension)
-    //
-    // The implementation lives in gaussianPointSplattingController.pure.ts and is reached through a
-    // registered factory, so a bundle that only uses the classic rasterized path never pulls in the compute
-    // renderer, the blit materials, or the GPS compute shaders. The properties below are the public API and
-    // degrade to warn-and-ignore no-ops until that module is imported.
-    // ---------------------------------------------------------------------------
+    // Point-splatting properties are no-ops until the controller module is registered.
 
     /**
      * Lazily creates this mesh's point-splatting controller, or null when the optional module is absent.
@@ -648,17 +631,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Whether the camera-view color is rendered with the WebGPU compute point-splatting path instead of
-     * the classic sorted quads. Off by default. The mesh keeps its geometry, textures and part data, so
-     * shadow depth, GPU picking, IBL voxelization and prepass are unaffected — only the main color pass
-     * changes. See {@link pointSplattingDepthRenderMode} to route the scene's DepthRenderer through the
-     * same compute result. With multiple active cameras, falls back to the classic renderer because the
-     * compute result is camera-specific. Streamed (GPU-decoded) parts are not supported and also fall
-     * back to the classic renderer for the whole mesh. WebGPU only.
+     * Whether the main color pass is rendered with the WebGPU compute point-splatting path instead of the
+     * classic sorted quads. Off by default; other passes (shadows, picking, prepass) are unaffected. Falls
+     * back to the classic path for multiple or rig cameras, clip planes and streamed parts. WebGPU only.
      *
-     * Requires the optional point-splatting module: import
-     * `@babylonjs/core/Meshes/GaussianSplatting/gaussianPointSplattingController` (already included when
-     * importing from `@babylonjs/core`). Without it, enabling this logs a warning and does nothing.
+     * Requires `@babylonjs/core/Meshes/GaussianSplatting/gaussianPointSplattingController` (included in
+     * `@babylonjs/core`); without it, enabling this logs a warning and does nothing.
      * @see https://playground.babylonjs.com/#F39YWU#1
      */
     public get pointSplattingRenderMode(): boolean {
@@ -668,7 +646,6 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (value === this.pointSplattingRenderMode) {
             return;
         }
-        // Turning the mode off before the optional module was ever loaded is already the current state.
         const controller = value ? this._ensurePointController() : this._pointController;
         if (controller) {
             controller.colorRenderMode = value;
@@ -676,16 +653,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Whether the scene's DepthRenderer depth for this mesh comes from the WebGPU compute point-splatting
-     * result (a per-pixel resolved nearest-surface depth matching the displayed point splats) instead of
-     * the classic rasterized ellipsoids. This depth is opaque and converges to the nearest visible surface,
-     * not to the coverage-weighted average the classic path produces under `DepthRenderer.alphaBlendedDepth`.
-     * Off by default, and fully independent of {@link pointSplattingRenderMode}: both toggles consume the
-     * same shared compute, which runs whenever either one is on. Only the DepthRenderer pass is affected —
-     * shadows, prepass/geometry AOV and GPU picking still rasterize the classic geometry. Multiple active
-     * cameras use the classic depth path, as do meshes hosting streamed (GPU-decoded) parts. WebGPU only.
-     *
-     * Requires the same optional point-splatting module as {@link pointSplattingRenderMode}.
+     * Whether the active camera's DepthRenderer depth for this mesh comes from the point-splatting compute
+     * (an opaque nearest-surface depth) instead of the classic path. Off by default and independent of
+     * {@link pointSplattingRenderMode}, with the same fallbacks and module requirement. WebGPU only.
      */
     public get pointSplattingDepthRenderMode(): boolean {
         return this._pointController?.depthRenderMode ?? false;
@@ -701,17 +671,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Progress of the point-splatting compute renderer after its most recent successful frame.
-     * Returns null before the first successful compute frame, while the pipeline is not ready, or while
-     * this mesh is using the classic renderer (including the streamed-part fallback). This does not stop
-     * the scene render loop; it only reports counters from the latest dispatched frame.
+     * Counters of the most recent point-splatting compute frame, or null while the classic path is used.
      *
-     * `renderedFrameCount` is the lifetime dispatch count and does not reset when samples are invalidated.
-     * Snapshot it whenever `accumulationVersion` changes. The first frame of a generation is a complete
-     * nearest upsample. Each following run of `pixelCycleLength` static frames adds one jittered sample to
-     * every output pixel. `pixelCycleLength` is fixed for the lifetime of a generation — under `"auto"`
-     * render scale the factor is measured once per generation and any correction resets accumulation — so
-     * watching `accumulationVersion` alone is enough to keep a sample budget valid.
+     * Snapshot `renderedFrameCount` whenever `accumulationVersion` changes: after the first frame of a
+     * generation, each further `pixelCycleLength` frames add one sample to every output pixel.
      * @returns the latest compute counters, or null when point splatting is not producing frames
      */
     public get pointSplattingProgress(): Nullable<IGaussianPointSplattingProgress> {
@@ -730,14 +693,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * True when this mesh hosts a streamed (GPU-decoded) region, which point splatting cannot render.
-     *
-     * A streaming engine decodes straight into the compound's shared GPU atlas and never populates the
-     * retained CPU `_splatsData` (the reserved region stays zeroed padding), but the point-splatting
-     * compute buffers are built exclusively by CPU-decoding `_splatsData`. Rendering point splats for
-     * such a mesh would therefore drop the streamed content entirely, so both point modes fall back to
-     * the classic rasterized path for the whole mesh instead. Re-evaluated per frame, because a stream
-     * can be reserved or removed after the mode was toggled on.
+     * True when this mesh hosts a streamed (GPU-decoded) region, which is absent from the CPU `_splatsData`
+     * that point splatting decodes.
      * @internal
      */
     public get _pointStreamingUnsupported(): boolean {
@@ -745,9 +702,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Brings every part proxy's world matrix up to date so its transform reaches the compound's part
-     * matrices before the point-splatting controller reads them this frame. Forced, because a non-forced
-     * call skips nodes already computed for the current render id; unchanged matrices are not re-posted.
+     * Force-computes every part proxy's world matrix (a non-forced call skips nodes already computed this frame).
      * @internal
      */
     public _syncPartProxyWorldMatrices(): void {
@@ -757,9 +712,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Per-splat context the point-splatting controller needs when it CPU-decodes {@link _splatsData}. Kept
-     * here so the controller does not need access to protected base-class state. Only read on an actual
-     * decode (data/part-count/range change), never per frame.
+     * Protected state the point-splatting controller needs to decode {@link _splatsData}.
      * @returns the flip-Y convention, the per-splat part indices, and the active splat-range pairs
      * @internal
      */
@@ -768,7 +721,6 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     protected override _drawColorPass(mesh: Mesh, subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
-        // When a point-splatting compositor drew this pass, the classic quads are skipped entirely.
         if (this._pointController?.drawColorPass(enableAlphaMode)) {
             return mesh;
         }

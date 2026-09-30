@@ -1,8 +1,6 @@
 // Shared math for Gaussian Point Splatting.
 //
 // Visibility is packed as [depth:16 | (RGB565 ^ frame mask):16]; atomicMin keeps the nearest sample.
-// The per-frame random mask keeps equal-depth ties from systematically favoring low RGB values. Temporal
-// accumulation plus RGB565 dithering recovers color precision over frames.
 
 const GPS_DEPTH_CLEAR : u32 = 0xFFFFFFFFu;
 // Largest valid depth code. 0xFFFF is reserved so no valid key can equal GPS_DEPTH_CLEAR.
@@ -27,8 +25,7 @@ struct GpsUniforms {
     pixelMap : vec4f,   // render px = (ndc * 0.5 + 0.5) * xy + zw (padded N-cell grid with this frame's jitter)
 };
 
-// Live per-part state. The world transform is applied per frame (covariance stays local), matching
-// the classic rasterizer's per-part `partWorld`; non-compound meshes use one part.
+// Live per-part state; non-compound meshes use one part.
 struct GpsPart {
     world : mat4x4f, // part world matrix (local -> world), column-major
     vis : vec4f,     // x = part visibility (0..1); yzw unused ('meta' is a reserved WGSL keyword)
@@ -40,9 +37,7 @@ struct GpsPart {
     dbg4 : vec4f,    // shOrder4, unused, unused, unused
 };
 
-// Inverse of a 3x3 matrix. Identical to core's helperFunctions inverseMat3 (kept local to avoid
-// pulling the whole include into a compute shader), so the SH view direction is brought into the
-// part's local frame exactly as the classic vertex shader does.
+// Same as helperFunctions' inverseMat3, kept local to avoid pulling in the whole include.
 fn gpsInverseMat3(inMatrix : mat3x3f) -> mat3x3f {
     let a00 = inMatrix[0][0]; let a01 = inMatrix[0][1]; let a02 = inMatrix[0][2];
     let a10 = inMatrix[1][0]; let a11 = inMatrix[1][1]; let a12 = inMatrix[1][2];
@@ -84,7 +79,6 @@ fn gpsUnpackRGB565(v : u32) -> vec3f {
     );
 }
 
-// Depth in the high 16 bits so atomicMin over the packed key resolves the nearest sample.
 fn gpsPackKey(depthKey : u32, colorKey : u32) -> u32 {
     return (depthKey << 16u) | (colorKey & 0xFFFFu);
 }
@@ -94,7 +88,6 @@ fn gpsKeyColor(key : u32, mask : u32) -> vec3f {
     return gpsUnpackRGB565((key ^ mask) & 0xFFFFu);
 }
 
-// --- Random sampling (PCG hash) ---
 
 fn gpsPcg(vIn : u32) -> u32 {
     let state = vIn * 747796405u + 2891336453u;
@@ -110,14 +103,12 @@ fn gpsUnit(state : u32) -> f32 {
     return f32(state) * GPS_U32_TO_UNIT;
 }
 
-// Standard normal pair from two uniforms.
 fn gpsBoxMuller(u1 : f32, u2 : f32) -> vec2f {
     let r = sqrt(-2.0 * log(max(1e-7, u1)));
     let theta = GPS_TWO_PI * u2;
     return vec2f(r * cos(theta), r * sin(theta));
 }
 
-// --- Unbiased 2D splatting (paper's method) ---
 // Li2(x) and inverse polynomial fits used to sample coverage without per-sample alpha rejection.
 
 const GPS_LI2_MAX : f32 = 1.6449340668482264; // Li2(1) = pi^2 / 6

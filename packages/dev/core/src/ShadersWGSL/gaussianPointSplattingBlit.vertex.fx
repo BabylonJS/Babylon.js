@@ -1,5 +1,4 @@
-// Fullscreen triangle for the point-splatting blits. Positions are already clip-space; vScreenUv lets
-// the fragment index storage buffers independently of the render target size.
+// Fullscreen triangle; positions are already in clip space.
 attribute position: vec3f;
 
 varying vScreenUv: vec2f;

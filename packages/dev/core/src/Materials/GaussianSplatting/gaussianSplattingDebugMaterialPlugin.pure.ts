@@ -134,7 +134,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     }
 
     /**
-     * True when any global or per-part debug feature is active, so alternate renderers can skip debug work when false.
+     * True when any global or per-part debug feature is active.
      * @returns true when debug work is needed
      */
     public get isDebugActive(): boolean {
@@ -142,10 +142,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     }
 
     /**
-     * Returns resolved per-part debug data in the classic `dbgPartData` layout (MAX_PART_COUNT x 5 RGBA
-     * rows) for alternate renderers. Row 0: clipMin.xyz, clipMax.x; row 1: clipMax.yz, minOpacity,
-     * maxOpacity; row 2: minSize, maxSize, opacityScale, opacitySaturate; row 3: shDc, shOrder1..3;
-     * row 4: shOrder4.
+     * Returns resolved per-part debug data in the classic `dbgPartData` layout (5 RGBA rows per part).
      * @param partCount current mesh part count
      * @param engine engine used to size the LUT if needed
      * @returns the resolved LUT floats and its per-row part-count stride

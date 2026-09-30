@@ -11,12 +11,10 @@ import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { type ComputeBindingMapping } from "core/Engines/Extensions/engine.computeShader.pure";
 
 const WorkgroupSize = 256;
-const ScanBlockSize = 512; // elements per scan workgroup (256 threads x 2)
+const ScanBlockSize = 512;
 const MaxDispatchGroupsPerDimension = 65535;
 const DepthClearSentinel = 0xffffffff;
-// Point->Gaussian acceleration-table resolution; must match GPS_PARTITION_BUCKETS in the shaders. The
-// table has PartitionBuckets + 1 entries (partTable[k] = Gaussian owning point k*total/PartitionBuckets),
-// so the splat kernel's CDF search is narrowed to the Gaussians spanning one bucket.
+// Must match GPS_PARTITION_BUCKETS in the shaders.
 const PartitionBuckets = 65536;
 
 /**
@@ -32,15 +30,10 @@ const PartitionBuckets = 65536;
  *   resolve (accumulate the packed image buffer into the full-float buffer, reset it)
  *   hi-Z build (max-reduce this frame's depth into next frame's occlusion pyramid)
  *
- * Per-Gaussian buffers are (re)built only on new splat data; per-pixel buffers only on resize.
- * Nothing reads back from the GPU on the render path — the point count reaches the splat dispatch via
- * a GPU-written indirect-args buffer.
  */
 export class GaussianPointSplattingRenderer {
     private readonly _engine: AbstractEngine;
 
-    // Preprocess is recompiled with a SH_DEGREE define so only the SH bands the asset has are evaluated
-    // (like the classic rasterizer's #if SH_DEGREE). Created in the constructor via _createPreprocessCs.
     private _preprocessCs!: ComputeShader;
     private _preprocessBindings!: ComputeBindingMapping;
     private _preprocessShDegree = -1;
@@ -55,7 +48,6 @@ export class GaussianPointSplattingRenderer {
     private _uniforms: UniformBuffer;
     private _resolveParams: UniformBuffer;
 
-    // Per-Gaussian buffers (rebuilt on updateSplats).
     private _means: Nullable<StorageBuffer> = null;
     private _colorOpacity: Nullable<StorageBuffer> = null;
     private _cov3d: Nullable<StorageBuffer> = null;
@@ -89,36 +81,30 @@ export class GaussianPointSplattingRenderer {
      */
     public occlusionCulling = false;
 
-    // Small GPU-resident scan outputs (allocated once).
     private _pointCount: StorageBuffer;
     private _indirectArgs: StorageBuffer;
     private _partition: StorageBuffer;
 
-    // Per-pixel buffers. imageBuffer + hiZ are at the (low) RENDER resolution; accum* are at the (full)
-    // OUTPUT resolution — temporal upsampling scatters each low-res result into a jittered full-res pixel.
+    // imageBuffer and hiZ are at render resolution; accum* are at output resolution.
     private _imageBuffer: Nullable<StorageBuffer> = null;
     private _accumBuffer: Nullable<StorageBuffer> = null;
     private _accumDepth: Nullable<StorageBuffer> = null;
-    // Per full-res pixel: (generation << 16) | active-frame count, for the per-pixel running mean.
+    // Per output pixel: (generation << 16) | sample count.
     private _accumCount: Nullable<StorageBuffer> = null;
-    // Hi-Z occlusion pyramid: all mip levels (max view-z) concatenated, level 0 = full res. Rebuilt on
-    // resize. _hiZLevels[l] = { offset (floats), w, h }; the build uniform carries src/dst per level.
+    // All max-view-z mip levels concatenated; level 0 = render resolution.
     private _hiZ: Nullable<StorageBuffer> = null;
     private _hiZLevels: { offset: number; w: number; h: number }[] = [];
-    // One uniform buffer per build level (src/dst are constant per resolution). Distinct buffers are
-    // required because all level dispatches record into one command encoder: a single shared buffer
-    // updated in the loop would leave every dispatch reading only the last-written src/dst.
+    // One buffer per level: all level dispatches share one command encoder, so a single buffer updated
+    // in the loop would leave every dispatch reading the last level's values.
     private _hiZBuildParams: UniformBuffer[] = [];
-    private _width = 0; // render (low) resolution
+    private _width = 0;
     private _height = 0;
-    private _outWidth = 0; // output (full) resolution = accum resolution
+    private _outWidth = 0;
     private _outHeight = 0;
-    // Temporal upsampling: integer upscale factor N and this frame's sub-cell offset (ox,oy) in [0,N).
     private _upsampleN = 1;
     private _jitterX = 0;
     private _jitterY = 0;
 
-    // Latest camera state, applied to the uniform buffer each frame.
     private _view: Nullable<Matrix> = null;
     private _viewProjection: Nullable<Matrix> = null;
     private _near = 0.1;
@@ -128,25 +114,19 @@ export class GaussianPointSplattingRenderer {
     private _camX = 0;
     private _camY = 0;
     private _camZ = 0;
-    // The model's view-space depth span this frame; the depth key is normalized linearly over it for
-    // full 16-bit ordering, robust to the camera being inside/close to the model.
+    // The 16-bit depth key is normalized over the model's view-depth span.
     private _viewZMin = 0.1;
     private _viewZMax = 1000;
-    // Projection z-row (m10, m11, m14, m15) so resolve reconstructs ndc.z from the positive-forward view-z key.
     private _projZ = new Float32Array([0, 1, 0, 0]);
     private _frameIndex = 0;
 
-    // Per-part live transforms (world matrix + visibility), uploaded each frame. A non-compound mesh
-    // is a single part. The GPU buffer is rebuilt only when the part count changes; a copy of the last
-    // uploaded values lets us restart accumulation when a part moves (otherwise stale frames ghost).
     private _parts: Nullable<StorageBuffer> = null;
     private _partCount = 0;
     private _prevPartData: Float32Array = new Float32Array(0);
 
-    // Progressive accumulation state. Generation is bumped on reset so per-pixel counts (in _accumCount,
-    // never cleared) are invalidated without a buffer wipe.
+    // Bumped on reset; invalidates the per-pixel counts in _accumCount without clearing it.
     private _accumGeneration = 0;
-    private _lastRenderedGeneration = -1; // generation at the previous render; a change means motion this frame
+    private _lastRenderedGeneration = -1;
     private _prevVp = new Float32Array(16);
     private _hasPrevVp = false;
 
@@ -223,38 +203,31 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.addUniform("pixelMap", 4); // NDC -> render-pixel scale (xy) and jittered offset (zw)
 
         this._resolveParams = new UniformBuffer(engine);
-        this._resolveParams.addUniform("resolution", 2); // render (low) res
-        this._resolveParams.addUniform("outResolution", 2); // output (full) res
-        this._resolveParams.addUniform("depthNorm", 2); // viewZMin, viewZMax
+        this._resolveParams.addUniform("resolution", 2);
+        this._resolveParams.addUniform("outResolution", 2);
+        this._resolveParams.addUniform("depthNorm", 2);
         this._resolveParams.addUniform("colorMask", 2); // x = color tie-break mask
         this._resolveParams.addUniform("upsample", 4); // N, jitterX, jitterY, generation
         this._resolveParams.addUniform("misc2", 4); // x = maxAccum, y = moving flag
-        this._resolveParams.addUniform("projZ", 4); // m10, m11, m14, m15
+        this._resolveParams.addUniform("projZ", 4);
 
-        // pointCount: [totalPoints, indirectGroups, ...]. indirectArgs: [gx, gy, gz] for dispatchIndirect.
         this._pointCount = new StorageBuffer(engine as WebGPUEngine, 4 * Uint32Array.BYTES_PER_ELEMENT);
-        // STORAGE (written by the scan) | INDIRECT (consumed by dispatchIndirect) | WRITE (CopyDst,
-        // so the buffer's initial zero-fill is valid). Never read back on the CPU.
+        // WRITE (CopyDst) makes the initial zero-fill valid.
         this._indirectArgs = new StorageBuffer(
             engine as WebGPUEngine,
             3 * Uint32Array.BYTES_PER_ELEMENT,
             Constants.BUFFER_CREATIONFLAG_STORAGE | Constants.BUFFER_CREATIONFLAG_INDIRECT | Constants.BUFFER_CREATIONFLAG_WRITE
         );
-        // Bucket->Gaussian acceleration table (rebuilt each frame after the scan). Fixed size (independent
-        // of the Gaussian/point count), so it is allocated once.
         this._partition = new StorageBuffer(engine as WebGPUEngine, (PartitionBuckets + 1) * Uint32Array.BYTES_PER_ELEMENT);
     }
 
     /**
-     * (Re)creates the preprocess compute shader with a SH_DEGREE define, so only the spherical-harmonics
-     * bands the asset actually has are compiled and evaluated (matching the classic rasterizer). Cheap
-     * and rare — called only when the loaded data's SH degree changes.
-     * @param shDegree the asset's SH degree (0 = view-independent color)
+     * (Re)creates the preprocess shader so only the asset's SH bands are compiled.
+     * @param shDegree the asset's SH degree
      */
     private _createPreprocessCs(shDegree: number): void {
         this._preprocessShDegree = shDegree;
-        // At SH_DEGREE 0 the shader #if's out all SH code, so binding 6 (sh) isn't in the compiled
-        // layout — drop it from the mapping so the bind group matches (it's bound only when degree > 0).
+        // SH_DEGREE 0 compiles out the sh binding.
         const bindings: ComputeBindingMapping = { ...this._preprocessBindings };
         if (shDegree <= 0) {
             delete bindings.sh;
@@ -291,11 +264,8 @@ export class GaussianPointSplattingRenderer {
     }
 
     /**
-     * Changes when the camera, part transforms, splat data, density, or output size invalidates
-     * accumulated samples. {@link renderToBuffer} does not bump it for a change of the integer upscale
-     * factor alone; {@link GaussianSplattingMesh} resets accumulation itself whenever that factor changes,
-     * so for its callers a change of {@link pixelCycleLength} always comes with a change of this value.
-     * The value wraps at 65536.
+     * Changes whenever accumulated samples are invalidated (camera, parts, data, density or output size).
+     * A change of the upscale factor alone does not bump it; callers must reset accumulation. Wraps at 65536.
      * @returns the current accumulation generation
      */
     public get accumulationVersion(): number {
@@ -375,7 +345,6 @@ export class GaussianPointSplattingRenderer {
         this._disposeGaussianBuffers();
         this._gaussianCount = count;
         this._shDegree = sh ? shDegree : 0;
-        // Recompile the preprocess shader if this asset's SH degree differs, so only its bands are built.
         if (this._shDegree !== this._preprocessShDegree) {
             this._createPreprocessCs(this._shDegree);
         }
@@ -388,11 +357,10 @@ export class GaussianPointSplattingRenderer {
         this._means = new StorageBuffer(engine, count * 4 * Float32Array.BYTES_PER_ELEMENT);
         this._means.update(means);
 
-        // 3D covariance: 4 u32 per Gaussian — 3 f16 pairs (Sigma / factor) + the f32 factor.
         this._cov3d = new StorageBuffer(engine, count * 4 * Uint32Array.BYTES_PER_ELEMENT);
         this._cov3d.update(cov3d);
 
-        // SH coefficients (view-dependent color). A tiny placeholder keeps the binding valid at degree 0.
+        // Placeholder keeps the binding valid at degree 0.
         if (sh && this._shDegree > 0) {
             this._sh = new StorageBuffer(engine, sh.byteLength);
             this._sh.update(sh);
@@ -406,20 +374,14 @@ export class GaussianPointSplattingRenderer {
         this._weights = new StorageBuffer(engine, count * Uint32Array.BYTES_PER_ELEMENT);
         this._cdf = new StorageBuffer(engine, count * Uint32Array.BYTES_PER_ELEMENT);
         this._blockSums = new StorageBuffer(engine, this._numBlocks * Uint32Array.BYTES_PER_ELEMENT);
-        // GpsScreen is 4 vec4 = 64 bytes per Gaussian.
+        // sizeof(GpsScreen)
         this._gsData = new StorageBuffer(engine, count * 64);
 
         this.resetAccumulation();
     }
 
-    /** Restarts progressive accumulation (e.g. after a camera move, resize, or new data). Bumping the
-     * generation invalidates every pixel's accumulated count with no buffer wipe, so each full-res pixel
-     * overwrites cleanly (t=1) on its next visit.
-     *
-     * The cached previous view-projection is deliberately left intact: it only drives camera-move
-     * detection, and clearing it would make the next {@link renderToBuffer} believe the camera moved and
-     * bump the generation a second time, so the generation observed by the caller right after this call
-     * would never actually be rendered. */
+    /** Restarts progressive accumulation; each output pixel is overwritten on its next visit. The cached
+     * view-projection is kept, otherwise the next {@link renderToBuffer} would detect a move and reset again. */
     public resetAccumulation(): void {
         this._accumGeneration = (this._accumGeneration + 1) & 0xffff;
     }
@@ -480,18 +442,13 @@ export class GaussianPointSplattingRenderer {
     }
 
     /**
-     * Uploads the live per-part records consumed by the preprocess shader. Each part contributes 40
-     * floats: 16 for its column-major world matrix, then [visibility,0,0,0], then 5 debug-LUT vec4 rows
-     * (see GpsPart). Called every frame so runtime transforms (gizmo), part visibility and debug knobs
-     * take effect without re-baking; the GPU buffer is only reallocated when the part count changes.
+     * Uploads the per-part records (see GpsPart) and restarts accumulation when they changed.
      * @param packed part records, `count * 40` floats (world matrix + visibility + 5 debug rows per part)
      * @param count number of parts (at least 1)
      */
     public setPartData(packed: Float32Array, count: number): void {
         const engine = this._engine as WebGPUEngine;
         const floats = count * 40;
-        // Restart accumulation whenever a part moved, changed visibility, or the part set changed —
-        // otherwise the progressive buffer blends pre-move frames into the new pose (a ghost trail).
         let changed = !this._parts || this._partCount !== count || this._prevPartData.length !== floats;
         if (!changed) {
             for (let i = 0; i < floats; i++) {
@@ -503,7 +460,6 @@ export class GaussianPointSplattingRenderer {
         }
         if (!this._parts || this._partCount !== count) {
             this._parts?.dispose();
-            // GpsPart is mat4x4f + vec4f + 5 vec4f debug rows = 160 bytes (40 floats) per part in std430.
             this._parts = new StorageBuffer(engine, floats * Float32Array.BYTES_PER_ELEMENT);
             this._partCount = count;
         }
@@ -519,8 +475,6 @@ export class GaussianPointSplattingRenderer {
 
     private _ensurePixelBuffers(width: number, height: number, outWidth: number, outHeight: number): void {
         const engine = this._engine as WebGPUEngine;
-        // Render-res buffers (imageBuffer + Hi-Z) and output-res buffers (accum) resize independently, so a
-        // change of the factor N alone reallocates the low-res buffers without touching the full-res accum.
         const renderChanged = width !== this._width || height !== this._height || !this._imageBuffer;
         const outChanged = outWidth !== this._outWidth || outHeight !== this._outHeight || !this._accumBuffer;
 
@@ -531,12 +485,11 @@ export class GaussianPointSplattingRenderer {
 
             this._imageBuffer?.dispose();
             this._imageBuffer = new StorageBuffer(engine, pixelCount * Uint32Array.BYTES_PER_ELEMENT);
-            // Seed the packed image buffer to the depth-clear sentinel; resolve keeps it seeded thereafter.
+            // Resolve re-clears it after each frame.
             const seed = new Uint32Array(pixelCount);
             seed.fill(DepthClearSentinel);
             this._imageBuffer.update(seed);
 
-            // Hi-Z occlusion pyramid at RENDER res (preprocess reads it in render-pixel space). Seed to FAR.
             this._hiZLevels = [];
             let hiZOffset = 0;
             const numLevels = Math.floor(Math.log2(Math.max(width, height))) + 1;
@@ -572,17 +525,14 @@ export class GaussianPointSplattingRenderer {
             this._outHeight = outHeight;
             const outCount = outWidth * outHeight;
 
-            // accum: premultiplied color (rgb) + accumulated coverage (w), at OUTPUT resolution.
+            // Premultiplied color + coverage.
             this._accumBuffer?.dispose();
             this._accumBuffer = new StorageBuffer(engine, outCount * 4 * Float32Array.BYTES_PER_ELEMENT);
-            // accumDepth: resolved surface depth (NDC z), one float per output pixel, for fragDepth compositing.
             this._accumDepth?.dispose();
             this._accumDepth = new StorageBuffer(engine, outCount * Float32Array.BYTES_PER_ELEMENT);
-            // accumCount: per output pixel (generation<<16 | active-frame count). Zero-initialized.
             this._accumCount?.dispose();
             this._accumCount = new StorageBuffer(engine, outCount * Uint32Array.BYTES_PER_ELEMENT);
 
-            // Only a genuine output-resolution change (window resize / first alloc) invalidates the accum.
             this.resetAccumulation();
         }
     }
@@ -612,8 +562,6 @@ export class GaussianPointSplattingRenderer {
             return false;
         }
 
-        // Restart accumulation when the view changed (camera move / projection change). A still view
-        // keeps converging; a moving one shows the current (noisy) frame without ghosting.
         const vp = this._viewProjection.m;
         let moved = !this._hasPrevVp;
         for (let k = 0; k < 16; k++) {
@@ -628,26 +576,21 @@ export class GaussianPointSplattingRenderer {
             this._hasPrevVp = true;
         }
 
-        // "Moving" = accumulation was reset this frame. Resolve then writes a COMPLETE upscaled frame instead
-        // of the sparse jittered scatter, so not-yet-revisited full-res pixels cannot leave a motion trail.
+        // On a reset frame resolve fills every output pixel, so unvisited pixels cannot trail.
         const moving = this._accumGeneration !== this._lastRenderedGeneration;
         this._lastRenderedGeneration = this._accumGeneration;
 
-        // Map NDC onto a grid of N-pixel output cells so render pixel (lx,ly) samples output pixel
-        // (lx*N+ox, ly*N+oy) exactly, even when the output size is not a multiple of N (the padded
-        // remainder is cropped by resolve).
+        // Render pixel (lx,ly) samples output pixel (lx*N+jitterX, ly*N+jitterY); resolve crops the padding.
         const n = this._upsampleN;
         const pixelOffsetX = (n / 2 - this._jitterX - 0.5) / n;
         const pixelOffsetY = (n / 2 - this._jitterY - 0.5) / n;
-        // Per-frame mask XORed into the packed color so equal-depth ties are not biased toward low RGB values.
+        // XORed into packed colors so equal-depth ties do not favor low RGB values.
         const colorMask = (Math.imul(this._frameIndex + 1, 0x9e3779b1) >>> 16) & 0xffff;
 
         this._uniforms.updateMatrix("view", this._view);
         this._uniforms.updateMatrix("viewProjection", this._viewProjection);
         this._uniforms.updateFloat4("resNearFar", width, height, this._near, this._far);
-        // frameSeed wraps to stay exact as a float and to vary the stochastic sampling each frame.
-        // The classic kernel is added to a covariance 4x the physical one in output pixels; preprocess works in
-        // physical render-pixel units, so convert by 1 / (4 * N^2).
+        // The classic kernel applies to a 4x covariance in output pixels; preprocess uses physical render pixels.
         this._uniforms.updateFloat4("params0", this._gaussianCount, (this.kernelSize * 0.25) / (n * n), this.pointScale, this._frameIndex % 65536);
         this._uniforms.updateFloat4("focal", this._focalX, this._focalY, this.rightHandedSystem ? 1 : 0, this.isOrthographic ? 1 : 0);
         this._uniforms.updateFloat4("camPosDeg", this._camX, this._camY, this._camZ, this._shDegree);
@@ -657,7 +600,7 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.updateFloat4("pixelMap", this._outWidth / n, this._outHeight / n, pixelOffsetX, pixelOffsetY);
         this._uniforms.update();
 
-        this._resolveParams.updateFloat2("resolution", width, height); // render (low) res
+        this._resolveParams.updateFloat2("resolution", width, height);
         this._resolveParams.updateFloat2("outResolution", this._outWidth, this._outHeight);
         this._resolveParams.updateFloat2("depthNorm", this._viewZMin, this._viewZMax);
         this._resolveParams.updateFloat2("colorMask", colorMask, 0);
@@ -675,9 +618,7 @@ export class GaussianPointSplattingRenderer {
         this._preprocessCs.setStorageBuffer("gsData", this._gsData!);
         this._preprocessCs.setUniformBuffer("uniforms", this._uniforms);
         this._preprocessCs.setStorageBuffer("cov3d", this._cov3d!);
-        // Only bind `sh` when the shader actually uses it (SH_DEGREE > 0). At degree 0 the SH code is
-        // #if'd out, so WebGPU's auto-layout omits binding 6; binding it anyway makes the bind group
-        // incompatible with the layout ("binding index 6 not present") and invalidates the whole pass.
+        // Binding an unused sh buffer would not match the auto-layout at degree 0.
         if (this._shDegree > 0) {
             this._preprocessCs.setStorageBuffer("sh", this._sh!);
         }
@@ -699,7 +640,6 @@ export class GaussianPointSplattingRenderer {
         this._scanAddCs.setStorageBuffer("blockSums", this._blockSums!);
         this._scanAddCs.dispatch(Math.min(groupsG, MaxDispatchGroupsPerDimension), Math.ceil(groupsG / MaxDispatchGroupsPerDimension), 1);
 
-        // Build the bucket->Gaussian acceleration table from the finished CDF (one thread per bucket).
         this._partitionCs.setStorageBuffer("cdf", this._cdf!);
         this._partitionCs.setStorageBuffer("pointCount", this._pointCount);
         this._partitionCs.setStorageBuffer("partTable", this._partition);
@@ -719,11 +659,9 @@ export class GaussianPointSplattingRenderer {
         this._resolveCs.setStorageBuffer("imageBuffer", this._imageBuffer!);
         this._resolveCs.setStorageBuffer("hiZ", this._hiZ!);
         this._resolveCs.setStorageBuffer("accumCount", this._accumCount!);
-        // Dispatched per RENDER (low) pixel; each scatters into a jittered full-res accum pixel.
         this._resolveCs.dispatch(Math.ceil(width / 8), Math.ceil(height / 8), 1);
 
-        // Build the Hi-Z pyramid from this frame's depth (level 0 written by resolve) for next frame's
-        // occlusion cull: max-reduce each level from the finer one below it.
+        // Level 0 is written by resolve; max-reduce the rest for next frame's cull.
         if (this.occlusionCulling) {
             for (let l = 1; l < this._hiZLevels.length; l++) {
                 const dst = this._hiZLevels[l];

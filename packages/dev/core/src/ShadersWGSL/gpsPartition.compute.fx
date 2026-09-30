@@ -1,6 +1,4 @@
-// Gaussian Point Splatting — builds the bucketed CDF search table, after the scan and before splat.
-// partTable[k] stores the owner of floor(k*total/BUCKETS), clamped to the last point for the sentinel
-// bucket, so gpsSplat searches only the Gaussians spanning one bucket instead of the whole CDF.
+// Gaussian Point Splatting — builds the bucketed CDF search table (see GPS_PARTITION_BUCKETS).
 #include<gaussianPointSplatting>
 
 @group(0) @binding(0) var<storage, read> cdf : array<u32>;

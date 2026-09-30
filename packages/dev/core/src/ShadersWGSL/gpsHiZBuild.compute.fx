@@ -1,6 +1,4 @@
-// Gaussian Point Splatting — builds one Hi-Z level from the previous finer level. Level 0 (full res) is
-// written by gpsResolve; each destination texel here stores the max view-space depth over its source
-// footprint, for next-frame occlusion culling in gpsPreprocess.
+// Gaussian Point Splatting — builds one max-depth Hi-Z level from the finer one.
 
 struct GpsHiZParams {
     src : vec4u, // x=srcOffset (floats), y=srcWidth, z=srcHeight, w=unused
@@ -22,8 +20,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let sx = gid.x * 2u;
     let sy = gid.y * 2u;
 
-    // Odd source dimensions fold their trailing row/column into the last destination texel; dropping
-    // them would under-report far depths and over-cull visible Gaussians. At most 3x3 children are read.
+    // Odd trailing rows/columns fold into the last texel; dropping them would over-cull.
     let sxEnd = select(min(sx + 1u, srcW - 1u), srcW - 1u, gid.x == dstW - 1u);
     let syEnd = select(min(sy + 1u, srcH - 1u), srcH - 1u, gid.y == dstH - 1u);
     let base = params.src.x;

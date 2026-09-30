@@ -9,12 +9,7 @@ import { Vector2, Vector4 } from "core/Maths/math.vector.pure";
 
 /**
  * Writes resolved Gaussian Point Splatting depth into a DepthRenderer map with a fullscreen triangle.
- * Samples coverage and NDC depth from storage buffers, emits the DepthRenderer linear metric in red, and
- * writes fragDepth for depth-test composition. WebGPU only.
- *
- * This is opaque nearest-surface depth, not the coverage-weighted `DepthRenderer.alphaBlendedDepth`
- * result from the classic raster path. It can jitter between Gaussians at the visible surface, so it is
- * suitable for SSAO/DOF/AOV but not exact depth equality.
+ * The depth is opaque nearest-surface depth, not the coverage-weighted `alphaBlendedDepth`. WebGPU only.
  */
 export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
     // Reused per-frame uniform values; ShaderMaterial keeps references to them.
@@ -41,7 +36,7 @@ export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
             }
         );
 
-        // Fullscreen pass; depth writes are kept so the blit composes against meshes already in the depth map.
+        // Depth writes stay on so the blit composes against meshes already in the map.
         this.backFaceCulling = false;
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.forceDepthWrite = true;

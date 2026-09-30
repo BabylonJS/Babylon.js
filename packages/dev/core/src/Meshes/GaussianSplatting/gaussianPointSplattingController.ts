@@ -1,6 +1,5 @@
 /**
- * Re-exports the pure implementation and registers the optional WebGPU compute point-splatting path on
- * GaussianSplattingMesh, pulling in the compute renderer, its shaders, and the blit materials.
+ * Re-exports the pure implementation and registers point splatting on GaussianSplattingMesh.
  * Import gaussianPointSplattingController.pure for tree-shakeable, side-effect-free usage.
  */
 export * from "./gaussianPointSplattingController.pure";

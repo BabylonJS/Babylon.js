@@ -1,13 +1,7 @@
-// Writes resolved point-splatting depth into a DepthRenderer map. accumBuffer.w rejects empty pixels;
-// accumDepth stores the resolved nearest-surface NDC z.
-//
-// DepthRenderer stores (clipZ + depthValues.x) / depthValues.y in red (negating clipZ for reverse depth),
-// matching the classic Gaussian Splatting depth material. Recover clipZ from NDC z with:
+// DepthRenderer stores (clipZ + depthValues.x) / depthValues.y (clipZ negated for reverse depth). From NDC z:
 //   ndc = (m10 * vz + m14) / (m11 * vz + m15)  =>  vz = (ndc * m15 - m14) / (m10 - ndc * m11)
 //   clipZ = m10 * vz + m14
-// Valid for both perspective (m11 = +/-1, m15 = 0) and orthographic (m11 = 0, m15 = 1) cameras.
-//
-// fragDepth uses raw NDC z so the blit z-tests against ordinary meshes already in the depth map.
+// Valid for perspective and orthographic cameras.
 uniform resolution: vec2f;
 uniform depthValues: vec2f;
 uniform projZ: vec4f;
@@ -30,8 +24,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let pixel = vec2u(uv * res);
     let idx = pixel.y * u32(res.x) + pixel.x;
 
-    // No coverage -> no surface here; discard so the map keeps whatever ordinary geometry wrote (the
-    // accumDepth miss value of 1.0 is meaningless and must never reach the map).
+    // accumDepth is meaningless without coverage.
     if (accumBuffer[idx].w < 0.0015) {
         discard;
     }

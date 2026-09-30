@@ -49,13 +49,11 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let chol = gpsGetChol(s);
     let opacity = s.colorOp.w;
 
-    // Stochastic sample: Box-Muller normal, transformed by the Cholesky factor of the 2D covariance.
     var st = gpsHash2(p, u32(uniforms.params0.w));
     st = gpsPcg(st);
     let u1 = gpsUnit(st);
     st = gpsPcg(st);
     let u2 = gpsUnit(st);
-    // Offset in the covariance frame (standard-normal / Mahalanobis units).
     var z : vec2f;
     if (s.depth.y == 1u) {
         // Debug opacity-saturate: uniform sample over the Mahalanobis R^2=8 disk; no cutoff needed.
@@ -81,8 +79,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // Hard-reject only fully-transparent tail samples (cleanup); the coverage is set by the sample
-    // DENSITY (importance sampling), not by a per-sample stochastic emission.
+    // Coverage comes from sample density; only fully transparent tail samples are rejected.
     let d = pixelMean - pixel;
     // Debug opacity-saturate: flat alpha like the classic debug mode; sampling used a uniform disk above.
     let alpha = select(opacity * gpsGaussianValue(conic, d), opacity, s.depth.y == 1u);
@@ -90,8 +87,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // Dither the color +/- 0.5 LSB (per 565 channel) before quantizing, so the full-float
-    // accumulation converges to the true color instead of banding.
+    // Dither +/- 0.5 LSB so accumulation converges to the true color instead of banding.
     st = gpsPcg(st);
     let dr = gpsUnit(st) - 0.5;
     st = gpsPcg(st);
@@ -100,13 +96,10 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let db = gpsUnit(st) - 0.5;
     let dithered = s.colorOp.rgb + vec3f(dr / 31.0, dg / 63.0, db / 31.0);
 
-    // XOR with the frame's random mask so equal-depth ties do not consistently favor low RGB values.
     let key = gpsPackKey(s.depth.x, gpsPackRGB565(dithered) ^ u32(uniforms.misc.z));
     let idx = u32(y) * u32(res.x) + u32(x);
 
-    // Depth pre-check: skip the atomicMin when this sample cannot beat the current nearest. In dense
-    // overlap most samples lose, so filtering them out cuts atomic contention enough to outweigh the
-    // load — keep this ahead of the write.
+    // Skipping losing samples before atomicMin cuts contention in dense overlap.
     if (atomicLoad(&imageBuffer[idx]) <= key) {
         return;
     }

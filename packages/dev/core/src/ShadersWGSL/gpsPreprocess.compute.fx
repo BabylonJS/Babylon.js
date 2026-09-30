@@ -68,21 +68,18 @@ const GPS_SH_WORDS : u32 = 12u; // shDim 15 -> 45 bytes
 const GPS_SH_WORDS : u32 = 18u; // shDim 24 -> 72 bytes
 #endif
 
-// One 8-bit SH scalar (byte `s` within the Gaussian's word range) dequantized to [-1, 1], matching the
-// classic decompose(): b * 2/255 - 1.
+// One 8-bit SH scalar dequantized to [-1, 1], as the classic decompose().
 fn gpsShByte(baseWord : u32, s : u32) -> f32 {
     let w = sh[baseWord + (s >> 2u)];
     let b = (w >> (8u * (s & 3u))) & 0xFFu;
     return f32(b) * (2.0 / 255.0) - 1.0;
 }
 
-// One SH coefficient (RGB = 3 consecutive bytes) for coefficient index `j`.
 fn gpsShCoeff(baseWord : u32, j : u32) -> vec3f {
     let s = j * 3u;
     return vec3f(gpsShByte(baseWord, s), gpsShByte(baseWord, s + 1u), gpsShByte(baseWord, s + 2u));
 }
 
-// Compile-time SH coefficient count (excluding DC) for this asset's degree.
 #if SH_DEGREE == 1
 const GPS_SH_DIM : u32 = 3u;
 #elif SH_DEGREE == 2
@@ -115,7 +112,6 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     weights[g] = 0u;
 
     let mean = means[g].xyz;
-    // Apply the live per-part transform; non-compound meshes use part 0.
     let partIndex = u32(means[g].w);
     let pdata = parts[partIndex];
     let partWorld = pdata.world;
@@ -143,8 +139,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let px = (ndc.x * 0.5 + 0.5) * uniforms.pixelMap.x + uniforms.pixelMap.z;
     let py = (ndc.y * 0.5 + 0.5) * uniforms.pixelMap.y + uniforms.pixelMap.w;
 
-    // EWA projection setup. Sigma is stored as f16 pairs normalized by a per-splat factor, matching the
-    // classic covA/covB + center.w scheme; rescale before projection.
+    // Sigma is stored as f16 divided by a per-splat factor.
     let covFactor = bitcast<f32>(cov3d[4u * g + 3u]);
     let p0 = unpack2x16float(cov3d[4u * g + 0u]) * covFactor; // S00, S01
     let p1 = unpack2x16float(cov3d[4u * g + 1u]) * covFactor; // S02, S11
@@ -152,8 +147,6 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let covA = vec3f(p0.x, p0.y, p1.x); // S00, S01, S02
     let covB = vec3f(p1.y, p2.x, p2.y); // S11, S12, S22
 
-    // Project with the shared classic EWA math. Keeping partWorld live here lets parts move each frame.
-    // focal.w selects the orthographic Jacobian.
     let isOrtho = uniforms.focal.w > 0.5;
     let modelView = uniforms.view * partWorld;
     var cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, uniforms.focal.xy, isOrtho);
@@ -162,11 +155,9 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // with invViewport = 1/width; this pixel-space path cancels it before detOrig and the low-pass kernel.
     cov2d = cov2d * 0.25;
 
-    // Determinant BEFORE the low-pass dilation, for the optional opacity compensation below.
     let detOrig = cov2d[0][0] * cov2d[1][1] - cov2d[0][1] * cov2d[0][1];
 
-    // Low-pass (antialiasing) dilation, matching the classic rasterizer's kernelSize (already converted to
-    // this pass's render-pixel covariance units on the CPU).
+    // Low-pass dilation; kernelSize is already in render-pixel covariance units.
     let kernelSize = uniforms.params0.y;
     cov2d[0][0] += kernelSize;
     cov2d[1][1] += kernelSize;
@@ -197,8 +188,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         }
     }
 
-    // Optional COMPENSATION (depthNorm.w): boost opacity by sqrt(detOrig/detBlur) so the low-pass
-    // dilation preserves each splat's total mass, matching the classic material's compensation.
+    // Optional COMPENSATION (depthNorm.w), as in the classic material.
     let compensation = select(1.0, sqrt(max(0.0, detOrig / det)), uniforms.depthNorm.w > 0.5);
 
     // Conic = inverse 2D covariance; Cholesky L (lower) so a sample = mean + L * N(0,1).
@@ -215,8 +205,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // Per-part debug knobs mirror dbgPartData. Defaults are pass-through; extra clip/cull tests are
-    // gated by debugActive (depthNorm.z).
+    // Clip/cull debug tests are gated by debugActive (depthNorm.z).
     if (uniforms.depthNorm.z > 0.5) {
         let clipMin = pdata.dbg0.xyz;
         let clipMax = vec3f(pdata.dbg0.w, pdata.dbg1.x, pdata.dbg1.y);
@@ -240,7 +229,6 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     var opacity = clamp(baseOpacity * pdata.vis.x * pdata.dbg2.z * compensation, 0.0, 1.0);
     let saturate = pdata.dbg2.w > 0.5;
 
-    // Add the higher-degree SH delta; DC is already baked into baseColor. Debug weights default to 1.
 #if SH_DEGREE > 0
     {
         // SH coefficients are local, so match the classic inverseMat3(worldRot) direction transform.
@@ -274,8 +262,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     s.pmConicXY = vec4f(px, py, conic.x, conic.y);
     s.conicZChol = vec4f(conic.z, chol0, chol1, chol2);
     s.colorOp = vec4f(color, opacity);
-    // Depth key for atomicMin: normalize positive view depth over this model's frame-local span, not the
-    // scene far plane, so the 16-bit key keeps useful ordering even for huge scenes.
+    // Normalize over the model's view-depth span, not the far plane, to keep 16-bit key precision.
     let dmin = uniforms.depthNorm.x;
     let dmax = uniforms.depthNorm.y;
     let dord = clamp((viewDepth - dmin) / max(dmax - dmin, 1e-6), 0.0, 1.0);

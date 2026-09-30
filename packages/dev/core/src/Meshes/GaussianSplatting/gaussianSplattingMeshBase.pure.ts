@@ -1614,9 +1614,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     /**
-     * Draws the inner per-camera mesh for one render pass. Subclasses may override selected passes
-     * (for example, point splatting for camera color or active-camera DepthRenderer) while leaving shadow
-     * depth, GPU picking, IBL voxelization and prepass on the classic geometry.
+     * Draws the inner per-camera mesh for one render pass. Subclasses may replace selected passes.
      * @param mesh inner per-camera mesh carrying the sorted splat geometry
      * @param subMesh the submesh to draw
      * @param enableAlphaMode whether alpha mode can be changed

@@ -53,8 +53,7 @@ fn main(@builtin(local_invocation_id) lid : vec3u) {
     }
 
     if (t == 0u) {
-        // Y-tile the point dispatch to exceed WebGPU's 65535-workgroups-per-dimension limit without
-        // dropping the CDF tail.
+        // Y-tile to exceed the 65535-workgroups-per-dimension limit.
         let totalGroups = (wgCarry + 255u) / 256u;
         let gx = min(totalGroups, 65535u);
         let gy = (totalGroups + 65534u) / 65535u;

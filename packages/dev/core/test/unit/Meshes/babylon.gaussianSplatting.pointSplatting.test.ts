@@ -18,9 +18,7 @@ import { Scene } from "core/scene";
 import { describe, expect, it, vi } from "vitest";
 
 /**
- * Creates the point-splatting controller for a mesh and installs it, bypassing the lazy creation that
- * normally happens when a point-splatting mode is first enabled. The GPS state under test lives on the
- * controller, not on the mesh, so the tests can reach it without a WebGPU engine.
+ * Installs a point-splatting controller on a mesh without enabling a mode (no WebGPU engine needed).
  * @param mesh the mesh to attach a controller to
  * @returns the installed controller
  */
@@ -111,8 +109,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
             pixelCycleLength: 4,
         });
 
-        // A reset that has not been rendered yet must not surface a new generation paired with the counters
-        // of the previous one, which would look like an already-advanced cycle to a polling caller.
+        // An unrendered reset must not pair a new generation with the previous counters.
         mesh.pointSplattingRenderScale = 0.5;
         expect(renderer.accumulationVersion).toBe(4);
         expect(mesh.pointSplattingProgress).toEqual({
@@ -290,10 +287,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_decode"](splat);
         const cov = upload.mock.calls[0][1];
 
-        // `_makeSplat` doubles source scale before building Sigma, so the f16 factor is
-        // max((2*0.75)^2, ...) = 2.25. Matching it keeps `splatSizeRange`/debug size units aligned with the
-        // point path; the resulting 4x on cov2d is cancelled in gpsPreprocess, mirroring how the classic
-        // vertex shader cancels it through `invViewport`.
+        // `_makeSplat` doubles the scale, so the factor is (2*0.75)^2 = 2.25.
         expect(new Float32Array(new Uint32Array([cov[3]]).buffer)[0]).toBeCloseTo(2.25, 3);
         // Normalized diagonal is scale-invariant: s00/factor = 1, s11/factor = 0.25, s22/factor = 0.0625.
         expect(FromHalfFloat(cov[0] & 0xffff)).toBeCloseTo(1, 3);
@@ -454,8 +448,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         await controller["_convergeAutoScaleAsync"](2, 4, false, 0);
         expect(controller["_autoN"]).toBe(8);
         expect(controller["_autoMeasuredGeneration"]).toBe(-1);
-        // The factor still changed, and the jitter-cycle length may never change inside a generation, so the
-        // hint must restart accumulation even though it cannot fix N for the generation it came from.
+        // The hint still changes N, so accumulation must restart.
         expect(reset).toHaveBeenCalledTimes(1);
         expect(renderer.accumulationVersion).toBe(5);
 
@@ -481,8 +474,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         finish(1_000_000_000);
         await pending;
         expect(controller["_autoMeasuredGeneration"]).toBe(-1);
-        // The stale sample cannot fix N for the live generation, but adopting its factor still has to restart
-        // accumulation so the cycle length never changes mid-generation.
+        // Adopting the stale factor still restarts accumulation.
         expect(controller["_autoN"]).toBe(8);
         expect(renderer.accumulationVersion).toBe(6);
 
@@ -499,8 +491,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         renderer.resetAccumulation();
 
         expect(renderer.accumulationVersion).toBe(3);
-        // `renderToBuffer` treats a missing previous view-projection as a camera move and resets again, which
-        // would mean the generation observed here is never actually rendered.
+        // Clearing the previous view-projection would make renderToBuffer reset again.
         expect(renderer["_hasPrevVp"]).toBe(true);
     });
 

@@ -1,8 +1,5 @@
-// Gaussian Point Splatting — resolves each low-res sample, seeds Hi-Z level 0 for the next frame, and
-// scatters into one full-res jitter cell for temporal upsampling.
-//
-// accumBuffer (OUTPUT res) holds PREMULTIPLIED color (rgb) + accumulated COVERAGE (w), a per-pixel running
-// mean over the frames that pixel was visited (accumCount tracks its own active-frame count + generation).
+// Gaussian Point Splatting — resolves each render pixel, seeds Hi-Z level 0, and accumulates a running
+// mean of premultiplied color + coverage into its output jitter cell.
 #include<gaussianPointSplatting>
 
 struct GpsResolveParams {
@@ -47,7 +44,6 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         occlVz = vz + (params.depthNorm.y - params.depthNorm.x) / f32(GPS_DEPTH_MAX_CODE);
         depth = (params.projZ.x * vz + params.projZ.z) / (params.projZ.y * vz + params.projZ.w);
     }
-    // Hi-Z level 0 at render (low) res; the pyramid feeds next frame's preprocess occlusion cull.
     hiZ[idx] = occlVz;
     atomicStore(&imageBuffer[idx], GPS_DEPTH_CLEAR);
 
@@ -57,7 +53,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let premult = hitColor * hit;
 
     if (params.misc2.y > 0.5) {
-        // Moving: nearest-upscale the whole N*N block so not-yet-revisited pixels leave no trails.
+        // Reset frame: fill the whole N*N block so unvisited pixels leave no trails.
         for (var dy = 0u; dy < n; dy = dy + 1u) {
             for (var dx = 0u; dx < n; dx = dx + 1u) {
                 let ox2 = gid.x * n + dx;
@@ -73,7 +69,6 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // Static: scatter this render pixel into the current full-res jitter cell (gid*N + jitter).
     let ox = select(0u, u32(params.upsample.y), n > 1u);
     let oy = select(0u, u32(params.upsample.z), n > 1u);
     let outX = gid.x * n + ox;
@@ -83,7 +78,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     }
     let outIdx = outY * outRes.x + outX;
 
-    // Per-pixel running mean. A stale generation resets count to 0, so t = 1 overwrites old views.
+    // A stale generation resets count to 0, so t = 1 overwrites old views.
     let packed = accumCount[outIdx];
     let count = select(0u, packed & 0xFFFFu, (packed >> 16u) == gen);
     let t = select(1.0 / (f32(count) + 1.0), 1.0, count == 0u);
