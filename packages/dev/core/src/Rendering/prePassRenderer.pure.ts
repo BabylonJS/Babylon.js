@@ -715,6 +715,7 @@ export class PrePassRenderer {
 
     private _disable() {
         this._setEnabled(false);
+        this._scene._setPreviousWorldMatricesRequired(this, false);
 
         for (let i = 0; i < this.renderTargets.length; i++) {
             this._setRenderTargetEnabled(this.renderTargets[i], false);
@@ -865,9 +866,6 @@ export class PrePassRenderer {
      * @param types
      */
     private _enableTextures(types: number[]) {
-        // For velocity : enable storage of previous matrices for instances
-        this._scene.needsPreviousWorldMatrices = false;
-
         for (let i = 0; i < types.length; i++) {
             const type = types[i];
 
@@ -882,7 +880,7 @@ export class PrePassRenderer {
             }
 
             if (type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE || type === Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE) {
-                this._scene.needsPreviousWorldMatrices = true;
+                this._scene._setPreviousWorldMatricesRequired(this, true);
             }
         }
     }
@@ -981,6 +979,7 @@ export class PrePassRenderer {
      * Disposes the prepass renderer.
      */
     public dispose() {
+        this._scene._setPreviousWorldMatricesRequired(this, false);
         for (let i = this.renderTargets.length - 1; i >= 0; i--) {
             this.renderTargets[i].dispose();
         }

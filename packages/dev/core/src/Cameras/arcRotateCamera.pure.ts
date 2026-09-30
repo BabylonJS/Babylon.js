@@ -704,6 +704,9 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public override movement: ArcRotateCameraMovement;
 
+    /** @internal */
+    protected override _processMovementAsTargetCamera = false;
+
     /**
      * Gets or sets whether ctrl+keyboard triggers panning.
      * Setting this updates the keyboard→pan inputMap entry.

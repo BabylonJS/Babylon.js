@@ -72,7 +72,8 @@ export class WebXREnterExitUIOptions {
     ignoreSessionGrantedEvent?: boolean;
 
     /**
-     * If defined, this function will be executed if the UI encounters an error when entering XR
+     * Called with the error from `enterXRAsync` when entering XR through the UI fails.
+     * The button still displays ERROR; the application decides whether to show a message or rebuild with WebGL.
      */
     onError?: (error: any) => void;
 }

@@ -146,6 +146,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
 
+// The depth pre-pass must discard the same texels as the colour pass, so it evaluates every alpha
+// contribution (not only the diffuse texture) before exiting.
+#ifdef DEPTHPREPASS
+#include<defaultFragmentAlpha>
+#endif
+
 #define DEPTHPREPASS_SKIP_EARLY_RETURN
 #include<depthPrePass>
 
@@ -306,39 +312,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 	refractionColor = vec4f(refractionColor.rgb * uniforms.refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * uniforms.refractionRightColor.rgb, refractionColor.a);
 #endif
 
-#ifdef OPACITY
-	var opacityMap: vec4f = TEXRD(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
-
-#ifdef OPACITYRGB
-	opacityMap = vec4f(opacityMap.rgb *  vec3f(0.3, 0.59, 0.11), opacityMap.a);
-	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* uniforms.vOpacityInfos.y;
-#else
-	alpha *= opacityMap.a * uniforms.vOpacityInfos.y;
-#endif
-
-#endif
-
-#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-	alpha *= fragmentInputs.vColor.a;
-#endif
-
-#ifdef OPACITYFRESNEL
-	var opacityFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, uniforms.opacityParts.z, uniforms.opacityParts.w);
-
-	alpha += uniforms.opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * uniforms.opacityParts.y;
-#endif
-
-#ifdef ALPHATEST
-    #ifdef ALPHATEST_AFTERALLALPHACOMPUTATIONS
-        if (alpha < uniforms.alphaCutOff) {
-            discard;
-		}
-    #endif
-    #ifndef ALPHABLEND
-        // Prevent to blend with the canvas.
-        alpha = 1.0;
-    #endif
-#endif
+#include<defaultFragmentAlpha>
 
 	// Emissive
 	var emissiveColor: vec3f = uniforms.vEmissiveColor;

@@ -651,6 +651,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         for (let index = 0; index < texturesCache.length; index++) {
             const texturesCacheEntry = texturesCache[index];
 
+            if (texturesCacheEntry._loadError && !texturesCacheEntry.isReady) {
+                continue;
+            }
+
             if (useSRGBBuffer === undefined || correctedUseSRGBBuffer === texturesCacheEntry._useSRGBBuffer) {
                 if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
                     if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {

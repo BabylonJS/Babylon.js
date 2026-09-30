@@ -43,6 +43,9 @@ export class TargetCamera extends Camera {
      */
     public movement: CameraMovement;
 
+    /** @internal */
+    protected _processMovementAsTargetCamera = true;
+
     private _targetInertia = 0.9;
 
     /**
@@ -314,7 +317,12 @@ export class TargetCamera extends Camera {
     public setTarget(target: Vector3): void {
         this.upVector.normalize();
 
-        this._initialFocalDistance = target.subtract(this.position).length();
+        const focalDistance = target.subtract(this.position).length();
+        if (focalDistance === 0) {
+            // Scaling the reference point to zero would prevent later targets from restoring the view direction.
+            return;
+        }
+        this._initialFocalDistance = focalDistance;
 
         if (this.position.z === target.z) {
             this.position.z += Epsilon;
@@ -385,6 +393,12 @@ export class TargetCamera extends Camera {
 
     /** @internal */
     public override _checkInputs(): void {
+        if (!this._processMovementAsTargetCamera) {
+            super._checkInputs();
+            return;
+        }
+
+        const movement = this.movement;
         // Fold this frame's raw input — written to `cameraDirection`/`cameraRotation` by the input
         // classes (and honored from direct external writes) — into the movement system, then let it
         // produce framerate-independent per-frame deltas (input plus inertial glide). The applied
@@ -393,7 +407,6 @@ export class TargetCamera extends Camera {
         // Both fields are reset to 0 at the end of this method (the inertial glide now lives in the
         // movement system's velocity, not in these fields), so external code polling them *after*
         // `_checkInputs()` reads 0 rather than the legacy residual glide value.
-        const movement = this.movement;
         // Capture whether there is raw input on the pan channel THIS frame, before it is folded into the
         // movement system. This gates the legacy panning cutoff below so it only ends a decaying inertial
         // tail and never discards a small but legitimate active-input delta.

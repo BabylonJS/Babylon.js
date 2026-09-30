@@ -1,0 +1,437 @@
+import { NullEngine } from "core/Engines/nullEngine";
+import { Skeleton } from "core/Bones/skeleton";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Scene } from "core/scene";
+import {
+    GetGlbExternalResourceUris,
+    GetGlbNodeIndex,
+    PatchKhrInteractivityGlb,
+    PatchKhrSelectionRevealGlb,
+    PatchKhrTwoStepProcedureGlb,
+    ReadGlbDocument,
+    type IGlbDocument,
+} from "flow-graph-editor/khrGlbBehaviorAuthoring";
+import { CreateKHRInteractivityDocument } from "loaders/glTF/2.0/Extensions/KHR_interactivity/pure";
+import { describe, expect, it } from "vitest";
+
+const JsonChunk = 0x4e4f534a;
+const BinChunk = 0x004e4942;
+
+function BuildGlb(document: Record<string, unknown> | string, chunks: Array<{ type: number; data: Uint8Array }> = []): Uint8Array {
+    const json = new TextEncoder().encode(typeof document === "string" ? document : JSON.stringify(document));
+    const paddedJson = new Uint8Array(Math.ceil(json.length / 4) * 4).fill(0x20);
+    paddedJson.set(json);
+    const totalLength = 12 + 8 + paddedJson.length + chunks.reduce((length, chunk) => length + 8 + chunk.data.length, 0);
+    const result = new Uint8Array(totalLength);
+    const view = new DataView(result.buffer);
+    view.setUint32(0, 0x46546c67, true);
+    view.setUint32(4, 2, true);
+    view.setUint32(8, totalLength, true);
+    view.setUint32(12, paddedJson.length, true);
+    view.setUint32(16, JsonChunk, true);
+    result.set(paddedJson, 20);
+    let offset = 20 + paddedJson.length;
+    for (const chunk of chunks) {
+        view.setUint32(offset, chunk.data.length, true);
+        view.setUint32(offset + 4, chunk.type, true);
+        result.set(chunk.data, offset + 8);
+        offset += 8 + chunk.data.length;
+    }
+    return result;
+}
+
+function SuffixAfterJson(glb: Uint8Array): Uint8Array {
+    const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
+    return glb.slice(20 + view.getUint32(12, true));
+}
+
+function JsonText(glb: Uint8Array): string {
+    const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
+    return new TextDecoder().decode(glb.subarray(20, 20 + view.getUint32(12, true)));
+}
+
+type RichDocument = IGlbDocument & {
+    asset: { version: string; generator: string };
+    nodes: NonNullable<IGlbDocument["nodes"]>;
+    extensionsUsed: string[];
+    extensionsRequired: string[];
+    extensions: Record<string, unknown>;
+};
+
+function RichSourceDocument(): RichDocument {
+    return {
+        asset: { version: "2.0", generator: "asset-pipeline" },
+        scene: 0,
+        scenes: [{ name: "Training assembly", nodes: [0] }],
+        nodes: [
+            { name: "assembly", children: [1, 2], extras: { stableId: "assembly-01" } },
+            { name: "part", mesh: 0, translation: [1, 2, 3], extras: { stableId: "trigger-17" }, extensions: { EXT_vendor_meta: { code: 17 } } },
+            { name: "part", mesh: 0, translation: [4, 5, 6], extras: { stableId: "target-23" } },
+        ],
+        meshes: [
+            {
+                name: "service part",
+                primitives: [{ attributes: { POSITION: 0 }, material: 0, extensions: { KHR_materials_variants: { mappings: [{ material: 1, variants: [0] }] } } }],
+            },
+        ],
+        buffers: [{ byteLength: 36 }],
+        bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36 }],
+        accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
+        materials: [{ name: "Base" }, { name: "Service" }],
+        images: [{ name: "untouched-image", uri: "data:image/png;base64,iVBORw0KGgo=" }],
+        extensionsUsed: ["KHR_materials_variants", "EXT_vendor_meta"],
+        extensionsRequired: ["KHR_materials_variants"],
+        extensions: { KHR_materials_variants: { variants: [{ name: "Service" }] }, EXT_vendor_meta: { opaque: [1, 2, 3] } },
+        extras: { stableAssetId: "maintenance-asset-9" },
+    };
+}
+
+describe("lossless GLB selection behavior authoring", () => {
+    it("lists external image and buffer references while excluding embedded data and duplicate paths", () => {
+        const document = RichSourceDocument();
+        document.buffers = [{ uri: "geometry.bin" }, { uri: "data:application/octet-stream;base64,AA==" }] as any;
+        document.images = [{ uri: "textures/diffuse.png" }, { uri: "geometry.bin" }, { uri: "DATA:image/png;base64,AA==" }, { bufferView: 0 }] as any;
+
+        expect(GetGlbExternalResourceUris(document)).toEqual(["geometry.bin", "textures/diffuse.png"]);
+    });
+
+    it("persists an edited graph in an authored GLB without rewriting unrelated JSON or chunks", () => {
+        const source = PatchKhrSelectionRevealGlb(
+            BuildGlb(JSON.stringify(RichSourceDocument()).replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993'), [
+                { type: BinChunk, data: new Uint8Array([1, 2, 3, 4]) },
+            ]),
+            1,
+            2
+        );
+        const extension = ReadGlbDocument(source).extensions!.KHR_interactivity as any;
+        extension.graphs[0].name = "Edited selection";
+
+        const result = PatchKhrInteractivityGlb(source, extension, ["KHR_node_visibility"], ["KHR_node_visibility"]);
+
+        expect(JsonText(result)).toContain('"stableAssetId":9007199254740993');
+        expect(SuffixAfterJson(result)).toEqual(SuffixAfterJson(source));
+        expect(ReadGlbDocument(result).extensions!.KHR_interactivity).toEqual(extension);
+        expect(ReadGlbDocument(source).extensions!.KHR_interactivity).not.toEqual(extension);
+    });
+
+    const procedure = { first: 1, second: 2, nextCue: 3, completionCue: 4, reset: 5 };
+    const ProcedureDocument = () => {
+        const document = RichSourceDocument();
+        document.nodes[0].children = [1, 2, 3, 4, 5];
+        document.nodes.push(
+            { name: "next step cue", mesh: 0, extras: { stableId: "cue-1" } },
+            { name: "completed cue", mesh: 0, extras: { stableId: "cue-2" } },
+            { name: "reset", mesh: 0, extras: { stableId: "reset-1" } }
+        );
+        return document;
+    };
+
+    it("preserves large JSON number tokens in both imported behavior templates", () => {
+        const document = ProcedureDocument();
+        document.nodes[4].extensions = { KHR_node_visibility: { visible: true, extras: { auditId: "audit-9" } } };
+        const raw = JSON.stringify(document)
+            .replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993')
+            .replace('"auditId":"audit-9"', '"auditId":9007199254740995')
+            .replace('"code":17', '"code":1e+2')
+            .replace('"generator":"asset-pipeline"', '"generator":"asset\\u002dpipeline"');
+        for (const authored of [PatchKhrSelectionRevealGlb(BuildGlb(raw), 1, 2), PatchKhrTwoStepProcedureGlb(BuildGlb(raw), procedure)]) {
+            const text = JsonText(authored);
+            expect(text).toContain('"stableAssetId":9007199254740993');
+            expect(text).toContain('"auditId":9007199254740995');
+            expect(text).toContain('"code":1e+2');
+            expect(text).toContain('"generator":"asset\\u002dpipeline"');
+        }
+    });
+
+    it("patches only procedure fields in an existing GLB and keeps its chunks and identities", () => {
+        const document = ProcedureDocument();
+        const source = BuildGlb(document, [{ type: BinChunk, data: new Uint8Array([1, 2, 3, 4]) }]);
+        const result = PatchKhrTwoStepProcedureGlb(source, procedure);
+        const authored = ReadGlbDocument(result);
+        const graph = authored.extensions!.KHR_interactivity as any;
+        const model = CreateKHRInteractivityDocument(graph, new Set(authored.extensionsUsed), authored.nodes!.length);
+
+        expect(model.diagnostics).toEqual([]);
+        expect(model.graphs[0].diagnostics).toEqual([]);
+        expect(model.graphs[0].valid).toBe(true);
+        expect(SuffixAfterJson(result)).toEqual(SuffixAfterJson(source));
+        expect(authored.nodes!.map((node) => ({ name: node.name, extras: node.extras, children: node.children }))).toEqual(
+            document.nodes.map((node) => ({ name: node.name, extras: node.extras, children: node.children }))
+        );
+        for (const index of [1, 2, 5]) {
+            expect(authored.nodes![index].extensions!.KHR_node_selectability).toEqual({ selectable: true });
+        }
+        for (const index of [3, 4]) {
+            expect(authored.nodes![index].extensions!.KHR_node_visibility).toEqual({ visible: false });
+        }
+        expect(authored.extensions!.EXT_vendor_meta).toEqual(document.extensions.EXT_vendor_meta);
+    });
+
+    it("rejects overlapping procedure roles, hidden controls, animated sources, and existing graphs", () => {
+        const document = ProcedureDocument();
+        const source = BuildGlb(document);
+        expect(() => PatchKhrTwoStepProcedureGlb(source, { ...procedure, second: 1 })).toThrow("different glTF nodes");
+        document.nodes[3].children = [5];
+        expect(() => PatchKhrTwoStepProcedureGlb(BuildGlb(document), procedure)).toThrow("ancestor");
+        delete document.nodes[3].children;
+        document.nodes[0].extensions = { KHR_node_selectability: { selectable: false } };
+        expect(() => PatchKhrTwoStepProcedureGlb(BuildGlb(document), procedure)).toThrow("selectability");
+        delete document.nodes[0].extensions;
+        document.animations = [{ name: "inspection", samplers: [], channels: [] }];
+        expect(() => PatchKhrTwoStepProcedureGlb(BuildGlb(document), procedure)).toThrow("animations from playing automatically");
+        delete document.animations;
+        document.extensions.KHR_interactivity = { graphs: [] };
+        expect(() => PatchKhrTwoStepProcedureGlb(BuildGlb(document), procedure)).toThrow("already has a behavior graph");
+    });
+
+    it("rejects a cue beneath a hidden ancestor instead of exporting a cue that cannot appear", () => {
+        const document = ProcedureDocument();
+        document.nodes[0].children = [1, 2, 4, 5, 6];
+        document.nodes.push({ name: "hidden cue parent", children: [3], extensions: { KHR_node_visibility: { visible: false } } });
+
+        expect(() => PatchKhrTwoStepProcedureGlb(BuildGlb(document), procedure)).toThrow("cue ancestor disables visibility");
+    });
+
+    it("rejects animated assets because a behavior graph would take control of their animations", () => {
+        const document = RichSourceDocument();
+        document.animations = [{ name: "inspection", samplers: [], channels: [] }];
+        const source = BuildGlb(document);
+
+        expect(() => PatchKhrSelectionRevealGlb(source, 1, 2)).toThrow("Adding a behavior graph would stop the source GLB's animations from playing automatically");
+        expect(ReadGlbDocument(source)).toEqual(document);
+    });
+
+    it("changes only the behavior fields and preserves names, IDs, hierarchy, materials, variants, resources, BIN, and unknown chunks", () => {
+        const sourceDocument = RichSourceDocument();
+        const bin = new Uint8Array(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
+        const vendorChunk = new Uint8Array([10, 20, 30, 40]);
+        const source = BuildGlb(sourceDocument, [
+            { type: BinChunk, data: bin },
+            { type: 0x31525458, data: vendorChunk },
+        ]);
+        const sourceCopy = source.slice();
+
+        const result = PatchKhrSelectionRevealGlb(source, 1, 2);
+        const authored = ReadGlbDocument(result);
+        const graph = authored.extensions!.KHR_interactivity as any;
+        const validation = CreateKHRInteractivityDocument(graph, new Set(authored.extensionsUsed), authored.nodes!.length);
+
+        expect(source).toEqual(sourceCopy);
+        expect(SuffixAfterJson(result)).toEqual(SuffixAfterJson(source));
+        expect(validation.diagnostics).toEqual([]);
+        expect(validation.graphs[0].valid).toBe(true);
+        expect(graph.graphs[0].nodes[0].configuration.nodeIndex.value).toEqual([1]);
+        expect(graph.graphs[0].nodes[1].configuration.pointer.value).toEqual(["/nodes/2/extensions/KHR_node_visibility/visible"]);
+        expect(authored.nodes![1].extensions!.KHR_node_selectability).toEqual({ selectable: true });
+        expect(authored.nodes![2].extensions!.KHR_node_visibility).toEqual({ visible: false });
+        expect(authored.extensionsUsed).toEqual([...sourceDocument.extensionsUsed, "KHR_interactivity", "KHR_node_selectability", "KHR_node_visibility"]);
+        expect(authored.extensionsRequired).toEqual([...sourceDocument.extensionsRequired, "KHR_interactivity", "KHR_node_selectability", "KHR_node_visibility"]);
+
+        delete authored.extensions!.KHR_interactivity;
+        delete authored.nodes![1].extensions!.KHR_node_selectability;
+        delete authored.nodes![2].extensions!.KHR_node_visibility;
+        delete authored.nodes![2].extensions;
+        authored.extensionsUsed = sourceDocument.extensionsUsed;
+        authored.extensionsRequired = sourceDocument.extensionsRequired;
+        expect(authored).toEqual(sourceDocument);
+    });
+
+    it("reuses valid companion extensions and preserves their nested data", () => {
+        const document = RichSourceDocument();
+        const triggerExtension = { extensions: { EXT_vendor_node: { trainingId: "trigger" } }, extras: { owner: "source" } };
+        const revealExtension = { visible: true, extensions: { EXT_vendor_node: { trainingId: "reveal" } }, extras: { owner: "source" } };
+        document.nodes[1].extensions = { ...document.nodes[1].extensions, KHR_node_selectability: triggerExtension };
+        document.nodes[2].extensions = { KHR_node_visibility: revealExtension };
+        document.extensionsUsed.push("KHR_node_selectability", "KHR_node_visibility", "EXT_vendor_node");
+        document.extensionsRequired.push("KHR_node_selectability");
+        const source = BuildGlb(document, [{ type: BinChunk, data: new Uint8Array([1, 2, 3, 4]) }]);
+
+        const result = PatchKhrSelectionRevealGlb(source, 1, 2);
+        const authored = ReadGlbDocument(result);
+
+        expect(authored.nodes![1].extensions!.KHR_node_selectability).toEqual(triggerExtension);
+        expect(authored.nodes![2].extensions!.KHR_node_visibility).toEqual({ ...revealExtension, visible: false });
+        expect(authored.nodes![1].extensions!.EXT_vendor_meta).toEqual(document.nodes[1].extensions!.EXT_vendor_meta);
+        expect(authored.extensionsUsed).toEqual([...document.extensionsUsed, "KHR_interactivity"]);
+        expect(authored.extensionsRequired).toEqual([...document.extensionsRequired, "KHR_interactivity", "KHR_node_visibility"]);
+        expect(SuffixAfterJson(result)).toEqual(SuffixAfterJson(source));
+        expect(ReadGlbDocument(source)).toEqual(document);
+    });
+
+    it("accepts explicit true selectability and already hidden reveal targets", () => {
+        const document = RichSourceDocument();
+        document.nodes[1].extensions = { KHR_node_selectability: { selectable: true } };
+        document.nodes[2].extensions = { KHR_node_visibility: { visible: false } };
+
+        const authored = ReadGlbDocument(PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2));
+
+        expect(authored.nodes![1].extensions!.KHR_node_selectability).toEqual({ selectable: true });
+        expect(authored.nodes![2].extensions!.KHR_node_visibility).toEqual({ visible: false });
+
+        document.nodes[2].extensions = { KHR_node_visibility: {} };
+        const omittedDefault = ReadGlbDocument(PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2));
+        expect(omittedDefault.nodes![2].extensions!.KHR_node_visibility).toEqual({ visible: false });
+    });
+
+    it.each([
+        ["selectability", { KHR_node_selectability: { selectable: false } }],
+        ["visibility", { KHR_node_visibility: { visible: false } }],
+        ["selectability", { KHR_node_selectability: { selectable: "no" } }],
+        ["visibility", { KHR_node_visibility: { visible: "no" } }],
+    ])("rejects a trigger beneath an ancestor with disabled or malformed %s", (state, extensions) => {
+        const document = RichSourceDocument();
+        document.nodes[0].extensions = extensions;
+
+        expect(() => PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2)).toThrow(state);
+    });
+
+    it("rejects a reveal target beneath a hidden strict ancestor without changing its source GLB", () => {
+        const document = RichSourceDocument();
+        document.nodes[0].children = [1, 3];
+        document.nodes[2].extensions = { KHR_node_visibility: { visible: true } };
+        document.nodes.push({ name: "hidden reveal parent", children: [2], extensions: { KHR_node_visibility: { visible: false } } });
+        const source = BuildGlb(document);
+        const original = source.slice();
+
+        expect(() => PatchKhrSelectionRevealGlb(source, 1, 2)).toThrow("A reveal ancestor disables visibility.");
+        expect(source).toEqual(original);
+    });
+
+    it("rejects malformed visibility on a reveal ancestor, including one beyond the immediate parent", () => {
+        const document = RichSourceDocument();
+        document.nodes[0].children = [1, 3];
+        document.nodes.push({ name: "outer reveal parent", children: [4], extensions: { KHR_node_visibility: { visible: "no" } } });
+        document.nodes.push({ name: "inner reveal parent", children: [2], extensions: { KHR_node_visibility: { visible: true } } });
+
+        expect(() => PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2)).toThrow("A reveal ancestor disables visibility.");
+    });
+
+    it("accepts visible reveal ancestors and ignores a hidden branch outside the reveal hierarchy", () => {
+        const document = RichSourceDocument();
+        document.nodes[0].children = [1, 3, 4];
+        document.nodes.push({ name: "visible reveal parent", children: [2], extensions: { KHR_node_visibility: { visible: true } } });
+        document.nodes.push({ name: "unrelated hidden part", extensions: { KHR_node_visibility: { visible: false } } });
+
+        const authored = ReadGlbDocument(PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2));
+
+        expect(authored.nodes![3]).toEqual(document.nodes[3]);
+        expect(authored.nodes![4]).toEqual(document.nodes[4]);
+        expect(authored.nodes![2].extensions!.KHR_node_visibility).toEqual({ visible: false });
+    });
+
+    it("rejects existing behavior data, conflicting node extensions, ancestor targets, and invalid indices", () => {
+        const document = RichSourceDocument();
+        const source = BuildGlb(document);
+        expect(() => PatchKhrSelectionRevealGlb(source, 1, 1)).toThrow("different glTF nodes");
+        expect(() => PatchKhrSelectionRevealGlb(source, 2, 0)).toThrow("ancestor");
+        expect(() => PatchKhrSelectionRevealGlb(source, 1, 99)).toThrow("outside");
+
+        const khrSource = BuildGlb({ ...document, extensions: { ...document.extensions, KHR_interactivity: { graphs: [] } } });
+        expect(() => PatchKhrSelectionRevealGlb(khrSource, 1, 2)).toThrow("already has a behavior graph");
+        const nullKhrSource = BuildGlb({ ...document, extensions: { ...document.extensions, KHR_interactivity: null } });
+        expect(() => PatchKhrSelectionRevealGlb(nullKhrSource, 1, 2)).toThrow("already has a behavior graph");
+        const customSource = BuildGlb({ ...document, extensions: { ...document.extensions, BABYLON_flow_graph: { flowGraph: {} } } });
+        expect(() => PatchKhrSelectionRevealGlb(customSource, 1, 2)).toThrow("already has a behavior graph");
+        const conflictingSource = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], { ...document.nodes[1], extensions: { KHR_node_selectability: { selectable: false } } }, document.nodes[2]],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(conflictingSource, 1, 2)).toThrow("selectability");
+        const malformedSelectability = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], { ...document.nodes[1], extensions: { KHR_node_selectability: { selectable: "yes" } } }, document.nodes[2]],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(malformedSelectability, 1, 2)).toThrow("selectability");
+        const nullSelectability = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], { ...document.nodes[1], extensions: { KHR_node_selectability: null } }, document.nodes[2]],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(nullSelectability, 1, 2)).toThrow("selectability");
+        const malformedVisibility = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], document.nodes[1], { ...document.nodes[2], extensions: { KHR_node_visibility: { visible: "no" } } }],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(malformedVisibility, 1, 2)).toThrow("visibility");
+        const arrayVisibility = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], document.nodes[1], { ...document.nodes[2], extensions: { KHR_node_visibility: [] } }],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(arrayVisibility, 1, 2)).toThrow("visibility");
+        expect(() => PatchKhrSelectionRevealGlb(BuildGlb({ ...document, extensionsUsed: "KHR_materials_variants" }), 1, 2)).toThrow("malformed");
+        expect(() => PatchKhrSelectionRevealGlb(BuildGlb({ ...document, nodes: [document.nodes[0], { ...document.nodes[1], extensions: [] }, document.nodes[2]] }), 1, 2)).toThrow(
+            "malformed"
+        );
+        expect(source).toEqual(BuildGlb(document));
+    });
+
+    it("rejects malformed GLB framing before writing output", () => {
+        const source = BuildGlb(RichSourceDocument());
+        const wrongLength = source.slice();
+        new DataView(wrongLength.buffer).setUint32(8, wrongLength.length + 4, true);
+        expect(() => ReadGlbDocument(wrongLength)).toThrow("length");
+        const wrongChunk = source.slice();
+        new DataView(wrongChunk.buffer).setUint32(16, BinChunk, true);
+        expect(() => ReadGlbDocument(wrongChunk)).toThrow("JSON chunk");
+        const truncated = source.subarray(0, 18);
+        expect(() => ReadGlbDocument(truncated)).toThrow("header");
+        const badTrailingChunk = BuildGlb(RichSourceDocument(), [{ type: 0x31525458, data: new Uint8Array([1, 2, 3, 4]) }]);
+        new DataView(badTrailingChunk.buffer).setUint32(badTrailingChunk.length - 12, 8, true);
+        expect(() => ReadGlbDocument(badTrailingChunk)).toThrow("chunk length");
+    });
+
+    it("resolves nested meshes by loader source pointers rather than names or Babylon IDs", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const parent = new TransformNode("part", scene);
+        const primitive = CreateBox("part", {}, scene);
+        primitive.parent = parent;
+        (parent as any)._internalMetadata = { gltf: { pointers: ["/nodes/2"] } };
+        (primitive as any)._internalMetadata = { gltf: { pointers: ["/meshes/0/primitives/0"] } };
+
+        expect(GetGlbNodeIndex(primitive, 3)).toBe(2);
+        (primitive as any)._internalMetadata.gltf.pointers.push("/nodes/1");
+        expect(GetGlbNodeIndex(primitive, 3)).toBe(1);
+        (primitive as any)._internalMetadata.gltf.pointers.push("/nodes/2");
+        expect(GetGlbNodeIndex(primitive, 3)).toBeUndefined();
+        expect(GetGlbNodeIndex(parent, 2)).toBeUndefined();
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not assign a skinned primitive to an unrelated pointer on its reparented ancestor", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const ancestor = new TransformNode("assembly", scene);
+        const skinnedPrimitive = CreateBox("skinned part", {}, scene);
+        skinnedPrimitive.parent = ancestor;
+        skinnedPrimitive.skeleton = new Skeleton("rig", "rig", scene);
+        (ancestor as any)._internalMetadata = { gltf: { pointers: ["/nodes/0"] } };
+        (skinnedPrimitive as any)._internalMetadata = { gltf: { pointers: ["/meshes/0/primitives/0"] } };
+
+        expect(GetGlbNodeIndex(skinnedPrimitive, 3)).toBeUndefined();
+        (skinnedPrimitive as any)._internalMetadata.gltf.pointers.push("/nodes/2");
+        expect(GetGlbNodeIndex(skinnedPrimitive, 3)).toBe(2);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not infer primitive ownership from a grandparent's glTF pointer", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const assembly = new TransformNode("assembly", scene);
+        const intermediary = new TransformNode("loader intermediary", scene);
+        const primitive = CreateBox("part", {}, scene);
+        intermediary.parent = assembly;
+        primitive.parent = intermediary;
+        (assembly as any)._internalMetadata = { gltf: { pointers: ["/nodes/0"] } };
+        (primitive as any)._internalMetadata = { gltf: { pointers: ["/meshes/0/primitives/0"] } };
+
+        expect(GetGlbNodeIndex(primitive, 3)).toBeUndefined();
+
+        scene.dispose();
+        engine.dispose();
+    });
+});
