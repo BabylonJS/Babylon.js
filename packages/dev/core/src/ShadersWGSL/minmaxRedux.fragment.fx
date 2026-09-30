@@ -1,24 +1,36 @@
 varying vUV: vec2f;
 
+#if defined(INITIAL) && defined(DEPTH_TEXTURE)
+var textureSampler: texture_depth_2d;
+#else
 var textureSampler: texture_2d<f32>;
+#endif
 
 #if defined(INITIAL)
 uniform texSize: vec2f;
+
+fn readSourceValue(coord: vec2i) -> f32 {
+    #ifdef DEPTH_TEXTURE
+    return textureLoad(textureSampler, coord, 0);
+    #else
+    return textureLoad(textureSampler, coord, 0).r;
+    #endif
+}
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
     let coord = vec2i(fragmentInputs.vUV * (uniforms.texSize - 1.0));
 
-    let f1 = textureLoad(textureSampler, coord, 0).r;
+    let f1 = readSourceValue(coord);
     #ifdef CLAMP_REDUCTION_COORDS
     let edge = vec2i(uniforms.texSize) - vec2i(1);
-    let f2 = textureLoad(textureSampler, min(coord + vec2i(1, 0), edge), 0).r;
-    let f3 = textureLoad(textureSampler, min(coord + vec2i(1, 1), edge), 0).r;
-    let f4 = textureLoad(textureSampler, min(coord + vec2i(0, 1), edge), 0).r;
+    let f2 = readSourceValue(min(coord + vec2i(1, 0), edge));
+    let f3 = readSourceValue(min(coord + vec2i(1, 1), edge));
+    let f4 = readSourceValue(min(coord + vec2i(0, 1), edge));
     #else
-    let f2 = textureLoad(textureSampler, coord + vec2i(1, 0), 0).r;
-    let f3 = textureLoad(textureSampler, coord + vec2i(1, 1), 0).r;
-    let f4 = textureLoad(textureSampler, coord + vec2i(0, 1), 0).r;
+    let f2 = readSourceValue(coord + vec2i(1, 0));
+    let f3 = readSourceValue(coord + vec2i(1, 1));
+    let f4 = readSourceValue(coord + vec2i(0, 1));
     #endif
 
      #ifdef DEPTH_REDUX

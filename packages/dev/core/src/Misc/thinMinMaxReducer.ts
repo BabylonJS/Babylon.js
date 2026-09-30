@@ -83,6 +83,7 @@ export class ThinMinMaxReducer {
 
     private _depthRedux: boolean;
     private _depthTextureType: DepthTextureType;
+    private _sourceIsDepthTexture = false;
     private _waitBufferFloat?: Float32Array;
     private _waitBufferUint8?: Uint8Array;
     private _waitMinMax?: { min: number; max: number };
@@ -122,14 +123,15 @@ export class ThinMinMaxReducer {
         this.reductionSteps = [];
     }
 
-    public setTextureDimensions(width: number, height: number, depthTextureType: DepthTextureType = DepthTextureType.NormalizedViewDepth) {
-        if (width === this._textureWidth && height === this._textureHeight && depthTextureType === this._depthTextureType) {
+    public setTextureDimensions(width: number, height: number, depthTextureType: DepthTextureType = DepthTextureType.NormalizedViewDepth, sourceIsDepthTexture = false) {
+        if (width === this._textureWidth && height === this._textureHeight && depthTextureType === this._depthTextureType && sourceIsDepthTexture === this._sourceIsDepthTexture) {
             return false;
         }
 
         this._textureWidth = width;
         this._textureHeight = height;
         this._depthTextureType = depthTextureType;
+        this._sourceIsDepthTexture = sourceIsDepthTexture;
 
         this._recreatePostProcesses();
 
@@ -148,7 +150,8 @@ export class ThinMinMaxReducer {
             const buffer = isFloat ? (this._waitBufferFloat ??= new Float32Array(4)) : (this._waitBufferUint8 ??= new Uint8Array(4));
             const result = (this._waitMinMax ??= { min: 0, max: 0 });
             const generation = this._readbackGeneration;
-            const readback = engine._readTexturePixels(texture, 1, 1, -1, 0, buffer, false);
+            // Submit the reduction before copying: the frame graph may reuse this texture later in the frame.
+            const readback = engine._readTexturePixels(texture, 1, 1, -1, 0, buffer, true);
             this._readbackPending = true;
 
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -229,6 +232,7 @@ export class ThinMinMaxReducer {
             scene.getEngine(),
             "#define INITIAL" +
                 (w === 1 || h === 1 ? "\n#define CLAMP_REDUCTION_COORDS" : "") +
+                (this._sourceIsDepthTexture ? "\n#define DEPTH_TEXTURE" : "") +
                 (this._depthRedux ? "\n#define DEPTH_REDUX" : "") +
                 (this._depthTextureType === DepthTextureType.ViewDepth ? "\n#define VIEW_DEPTH" : "")
         );

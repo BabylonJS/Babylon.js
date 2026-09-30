@@ -192,7 +192,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "Textures",
         description:
             "Reduces the red channel of a texture from an earlier task (such as geomNormViewDepth) to a 1x1 RG texture: red is minimum, green is maximum. " +
-            "Enable depthRedux and select the matching depthTextureType when connecting a geometry depth texture. " +
+            "Enable depthRedux and select the matching depthTextureType when connecting a geometry depth-as-color texture. " +
+            "On WebGPU, a single-sampled off-screen depth/stencil attachment can also be connected; its depth aspect is treated as screen depth automatically. " +
             "The task performs a CPU readback only if its onAfterReductionPerformed observable has subscribers. " +
             "Connect the output to a downstream texture input or a dependency on the final output block so the reducer executes.",
         inputs: [
@@ -201,8 +202,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         ],
         outputs: [{ name: "output", type: "Texture" }],
         properties: {
-            depthRedux: "boolean – ignore the depth clear value when reducing a depth color texture (default: false)",
-            depthTextureType: "number – depth encoding: 0=NormalizedViewDepth (default), 1=ViewDepth, 2=ScreenDepth",
+            depthRedux: "boolean – ignore the depth clear value for depth-as-color sources (default: false; automatic for depth/stencil attachments)",
+            depthTextureType: "number – depth-as-color encoding: 0=NormalizedViewDepth (default), 1=ViewDepth, 2=ScreenDepth; automatic for depth/stencil attachments",
             textureType: "number – intermediate and output type: TEXTURETYPE_HALF_FLOAT (default), TEXTURETYPE_FLOAT, or TEXTURETYPE_UNSIGNED_BYTE",
             waitForReadback: "boolean – wait for WebGPU readback before notifying observers, without blocking the render loop (default: false)",
         },

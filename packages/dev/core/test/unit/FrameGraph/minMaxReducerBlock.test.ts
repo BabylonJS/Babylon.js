@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import "core/Shaders/copyTextureToTexture.fragment";
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { FrameGraph } from "core/FrameGraph/frameGraph";
@@ -40,9 +41,10 @@ describe("NodeRenderGraphMinMaxReducerBlock", () => {
         expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal);
         expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureVelocity);
         expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition);
-        expect(block.source.excludedConnectionPointTypes).toContain(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+        expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
         expect(block.source.excludedConnectionPointTypes).toContain(NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag);
         expect(block.source.excludedConnectionPointTypes).toContain(NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+        expect(block.source.excludedConnectionPointTypes).toContain(NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment);
     });
 
     it("round-trips reducer properties without losing default values", () => {

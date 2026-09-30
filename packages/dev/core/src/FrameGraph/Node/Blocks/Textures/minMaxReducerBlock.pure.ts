@@ -11,7 +11,8 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRender
 
 /**
  * Block that reduces a color texture's red channel to its minimum and maximum values.
- * When using a geometry depth output, enable depthRedux and select the matching depthTextureType.
+ * When using a geometry depth-as-color output, enable depthRedux and select the matching depthTextureType.
+ * WebGPU depth/stencil attachments are reduced as screen depth automatically.
  * Connect the output to a downstream texture input or a dependency so the block is included in the graph.
  */
 export class NodeRenderGraphMinMaxReducerBlock extends NodeRenderGraphBlock {
@@ -38,15 +39,14 @@ export class NodeRenderGraphMinMaxReducerBlock extends NodeRenderGraphBlock {
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.Texture);
 
         this.source.addExcludedConnectionPointFromAllowedTypes(
-            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer &
-                ~(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag)
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer & ~NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag
         );
 
         this._frameGraphTask = new FrameGraphMinMaxReducerTask(name, frameGraph);
     }
 
-    /** Whether to ignore the depth clear value when reducing the source. */
-    @editableInPropertyPage("Depth reduction", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    /** Whether to ignore the depth clear value of a depth-as-color source. Depth/stencil attachments are handled automatically. */
+    @editableInPropertyPage("Depth-as-color reduction", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get depthRedux(): boolean {
         return this._frameGraphTask.depthRedux;
     }
@@ -55,8 +55,8 @@ export class NodeRenderGraphMinMaxReducerBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.depthRedux = value;
     }
 
-    /** The kind of depth values stored in the source texture when depth reduction is enabled. */
-    @editableInPropertyPage("Depth texture type", PropertyTypeForEdition.List, "PROPERTIES", {
+    /** The kind of depth values stored in a depth-as-color source when depth reduction is enabled. */
+    @editableInPropertyPage("Depth-as-color type", PropertyTypeForEdition.List, "PROPERTIES", {
         options: [
             { label: "Normalized view depth", value: DepthTextureType.NormalizedViewDepth },
             { label: "View depth", value: DepthTextureType.ViewDepth },

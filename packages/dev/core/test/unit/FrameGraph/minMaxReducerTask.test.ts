@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import "core/Shaders/copyTextureToTexture.fragment";
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { FrameGraph } from "core/FrameGraph/frameGraph";
@@ -60,14 +61,102 @@ describe("FrameGraphMinMaxReducerTask", () => {
         await expect(graph.buildAsync(false)).rejects.toThrow("sourceTexture must have positive integer dimensions");
     });
 
-    it.each([Constants.TEXTUREFORMAT_DEPTH32_FLOAT, Constants.TEXTUREFORMAT_RED_INTEGER])("rejects a source with format %i", async (format) => {
+    it("rejects integer color formats", async () => {
         task.sourceTexture = graph.textureManager.createRenderTargetTexture("invalid source", {
             size: { width: 4, height: 4 },
             sizeIsPercentage: false,
-            options: { createMipMaps: false, samples: 1, types: [Constants.TEXTURETYPE_FLOAT], formats: [format] },
+            options: { createMipMaps: false, samples: 1, types: [Constants.TEXTURETYPE_FLOAT], formats: [Constants.TEXTUREFORMAT_RED_INTEGER] },
         });
 
         await expect(graph.buildAsync(false)).rejects.toThrow("sourceTexture must have a non-integer color format");
+    });
+
+    const createDepthSource = (format: number, samples = 1) =>
+        graph.textureManager.createRenderTargetTexture("depth attachment", {
+            size: { width: 4, height: 4 },
+            sizeIsPercentage: false,
+            options: {
+                createMipMaps: false,
+                samples,
+                types: [Constants.TEXTURETYPE_FLOAT],
+                formats: [format],
+            },
+        });
+
+    it("rejects depth attachments on WebGL", async () => {
+        task.sourceTexture = createDepthSource(Constants.TEXTUREFORMAT_DEPTH24_STENCIL8);
+
+        await expect(graph.buildAsync(false)).rejects.toThrow("depth/stencil sources require WebGPU");
+    });
+
+    it.each([
+        Constants.TEXTUREFORMAT_DEPTH16,
+        Constants.TEXTUREFORMAT_DEPTH24,
+        Constants.TEXTUREFORMAT_DEPTH24_STENCIL8,
+        Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8,
+    ])("uses a depth-texture shader variant for WebGPU format %i", async (format) => {
+        task.sourceTexture = createDepthSource(format);
+        engine.useReverseDepthBuffer = true;
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+        const setDimensions = vi.spyOn(ThinMinMaxReducer.prototype, "setTextureDimensions");
+
+        await graph.buildAsync(false);
+
+        expect(task.passes.filter(FrameGraphRenderPass.IsRenderPass)).toHaveLength(2);
+        expect(setDimensions).toHaveBeenCalledWith(4, 4, DepthTextureType.ViewDepth, true);
+    });
+
+    it.each([Constants.TEXTUREFORMAT_STENCIL8, Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8])("rejects unsupported depth-aspect format %i", async (format) => {
+        task.sourceTexture = createDepthSource(format);
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+
+        await expect(graph.buildAsync(false)).rejects.toThrow("sourceTexture must have a supported depth aspect");
+    });
+
+    it("rejects multisampled depth attachments", async () => {
+        task.sourceTexture = createDepthSource(Constants.TEXTUREFORMAT_DEPTH32_FLOAT, 4);
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+
+        await expect(graph.buildAsync(false)).rejects.toThrow("depth/stencil sources must be single-sampled");
+    });
+
+    it("treats zero samples as a single-sampled depth attachment", async () => {
+        task.sourceTexture = createDepthSource(Constants.TEXTUREFORMAT_DEPTH32_FLOAT, 0);
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+
+        await graph.buildAsync(false);
+
+        expect(graph.textureManager.getTextureDescription(task.outputTexture).size).toEqual({ width: 1, height: 1 });
+    });
+
+    it("automatically treats the depth aspect as screen depth", async () => {
+        task.sourceTexture = createDepthSource(Constants.TEXTUREFORMAT_DEPTH24_STENCIL8);
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+        await graph.buildAsync(false);
+
+        const reducer = new ThinMinMaxReducer(scene);
+        try {
+            reducer.setTextureDimensions(4, 4, DepthTextureType.ScreenDepth, true);
+            expect(reducer.reductionSteps[0].options.defines).toContain("#define DEPTH_TEXTURE");
+            expect(reducer.reductionSteps[0].options.defines).toContain("#define DEPTH_REDUX");
+            expect(reducer.reductionSteps[1].options.defines).not.toContain("#define DEPTH_TEXTURE");
+
+            const initial = reducer.reductionSteps[0];
+            reducer.setTextureDimensions(4, 4, DepthTextureType.ScreenDepth, false);
+            expect(reducer.reductionSteps[0]).not.toBe(initial);
+            expect(reducer.reductionSteps[0].options.defines).not.toContain("#define DEPTH_TEXTURE");
+        } finally {
+            reducer.dispose();
+        }
+
+        const output = new InternalTexture(engine, InternalTextureSource.RenderTarget);
+        vi.spyOn(graph.textureManager, "getTextureFromHandle").mockReturnValue(output);
+        const read = vi.spyOn(ThinMinMaxReducer.prototype, "readMinMax").mockImplementation(() => {});
+        task.onAfterReductionPerformed.add(() => {});
+        task.passes[task.passes.length - 1]._execute();
+        expect(read).toHaveBeenCalledExactlyOnceWith(output, true);
+        output.dispose();
     });
 
     it.each([Constants.TEXTURE_CUBE_MAP, Constants.TEXTURE_2D_ARRAY, Constants.TEXTURE_3D])("rejects a non-2D source of type %i", async (targetType) => {
@@ -117,7 +206,7 @@ describe("FrameGraphMinMaxReducerTask", () => {
 
         await graph.buildAsync(false);
 
-        expect(setDimensions).toHaveBeenCalledWith(4, 4, DepthTextureType.ViewDepth);
+        expect(setDimensions).toHaveBeenCalledWith(4, 4, DepthTextureType.ViewDepth, false);
     });
 
     it("reuses the input handle and produces a 1x1 RG output without a depth renderer", async () => {
@@ -263,6 +352,7 @@ describe("FrameGraphMinMaxReducerTask", () => {
         readPass._execute();
         readPass._execute();
         expect(read).toHaveBeenCalledTimes(1);
+        expect(read).toHaveBeenCalledWith(output, 1, 1, -1, 0, expect.any(Float32Array), true);
         expect(results).toEqual([]);
 
         completeReadback();
