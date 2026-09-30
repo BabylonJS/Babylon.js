@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, forwardRef } from "react";
-import { Combobox as FluentComboBox, makeStyles, useComboboxFilter, useId, Option, type OptionOnSelectData, type SelectionEvents } from "@fluentui/react-components";
+import { Combobox as FluentComboBox, makeStyles, tokens, useComboboxFilter, useId, Option, type OptionOnSelectData, type SelectionEvents } from "@fluentui/react-components";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { CustomTokens } from "./utils";
 import { type PrimitiveProps } from "./primitive";
@@ -24,6 +24,11 @@ const useStyles = makeStyles({
         width: "fit-content",
         minWidth: "fit-content",
         maxWidth: "350px",
+    },
+    compactOption: {
+        fontSize: tokens.fontSizeBase200,
+        lineHeight: tokens.lineHeightBase200,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
     },
 });
 
@@ -88,7 +93,7 @@ export const ComboBox = forwardRef<HTMLInputElement, ComboBoxProps>((props, ref)
         optionToReactKey: (option) => option.value,
         optionToText: (option) => option.children,
         renderOption: (option) => (
-            <Option key={option.value} value={option.value} text={option.children}>
+            <Option key={option.value} value={option.value} text={option.children} className={size === "small" ? styles.compactOption : undefined}>
                 {option.children}
             </Option>
         ),

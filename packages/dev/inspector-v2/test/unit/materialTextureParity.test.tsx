@@ -11,6 +11,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingProps } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { EntitySelector } from "shared-ui-components/fluent/primitives/entitySelector";
 
 vi.hoisted(() => {
@@ -156,6 +157,36 @@ describe("material and texture parity cores", () => {
         expect(options).toHaveLength(2);
         act(() => options[1].dispatchEvent(new MouseEvent("click", { bubbles: true })));
         expect(onChange).toHaveBeenCalledWith(second);
+    });
+
+    it("sizes selector popup options with compact mode without changing normal mode", () => {
+        const texture = { uniqueId: 1, name: "Texture" };
+        const selector = <EntitySelector value={null} onChange={vi.fn()} onLink={vi.fn()} getEntities={() => [texture]} getName={(entity) => entity.name} />;
+        const container = Render(<ToolContext.Provider value={{ useFluent: true, disableCopy: false, toolName: "", size: "small" }}>{selector}</ToolContext.Provider>);
+
+        act(() => container.querySelector<HTMLInputElement>('[role="combobox"]')?.click());
+        const compactOption = document.querySelector<HTMLElement>('[role="option"]');
+        const compactOptionClass = compactOption?.className;
+        expect(compactOption).not.toBeNull();
+        expect(
+            Array.from(document.styleSheets).some((sheet) =>
+                Array.from(sheet.cssRules).some(
+                    (rule) => rule.cssText.includes("var(--fontSizeBase200)") && compactOptionClass?.split(" ").some((className) => rule.cssText.includes(`.${className}`))
+                )
+            )
+        ).toBe(true);
+
+        act(() =>
+            roots[roots.length - 1].render(
+                <FluentProvider theme={webLightTheme}>
+                    <ToolContext.Provider value={{ useFluent: true, disableCopy: false, toolName: "", size: "medium" }}>{selector}</ToolContext.Provider>
+                </FluentProvider>
+            )
+        );
+        const normalOption = document.querySelector<HTMLElement>('[role="option"]');
+        expect(normalOption).not.toBeNull();
+        expect(normalOption?.parentElement?.className).toBe(compactOption?.parentElement?.className);
+        expect(normalOption?.className).not.toBe(compactOptionClass);
     });
 
     it("offers accepted assignment candidates without exposing an unsupported clear direction", () => {
