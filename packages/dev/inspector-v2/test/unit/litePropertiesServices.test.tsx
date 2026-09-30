@@ -84,9 +84,14 @@ describe("Babylon Lite properties services", () => {
     });
 
     it("registers applicable content for every non-mesh Explorer entity", () => {
+        const material = {
+            name: "Material",
+            _buildGroup: { _materialFamily: "standard" },
+            _uboVersion: 0,
+        } as unknown as Material;
         const scene = {
             _kind: "scene",
-            meshes: [],
+            meshes: [{ material } as Mesh],
             lights: [],
             animationGroups: [],
             shadowGenerators: [],
@@ -152,11 +157,6 @@ describe("Babylon Lite properties services", () => {
         } as unknown as EngineContext;
         (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine, auxiliarySurface];
 
-        const material = {
-            name: "Material",
-            _buildGroup: { _materialFamily: "standard" },
-            _uboVersion: 0,
-        } as unknown as Material;
         const texture = {
             texture: {},
             view: {},
@@ -177,7 +177,7 @@ describe("Babylon Lite properties services", () => {
         } as unknown as IPropertiesService;
         const engineContext = { engine } as IEngineContext;
         const materialResourceIndexService = {
-            getMaterialRecord: (candidate: Material) => (candidate === material ? { source: material } : undefined),
+            getMaterialRecord: (candidate: Material) => (candidate === material ? { source: material, scenes: [scene] } : undefined),
             getTextureRecord: (candidate: object) => (candidate === texture ? { entity: texture } : undefined),
         } as unknown as ISceneResourceIndexService;
 
