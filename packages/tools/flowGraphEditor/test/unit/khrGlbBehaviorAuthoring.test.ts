@@ -7,12 +7,20 @@ import {
     GetGlbExternalResourceUris,
     GetGlbNodeIndex,
     PatchKhrInteractivityGlb,
+    PatchKhrInteractivityGltf,
+    ListKhrReactionEvents,
     PatchKhrSelectionRevealGlb,
+    PatchKhrSelectionRevealGltf,
+    PatchKhrVisibilityReactionGlb,
+    PatchKhrVisibilityReactionGltf,
     PatchKhrTwoStepProcedureGlb,
+    PatchKhrTwoStepProcedureGltf,
     ReadGlbDocument,
+    ReadGltfDocument,
     type IGlbDocument,
 } from "flow-graph-editor/khrGlbBehaviorAuthoring";
 import { CreateKHRInteractivityDocument } from "loaders/glTF/2.0/Extensions/KHR_interactivity/pure";
+import { GetGltfResourceKeys, ResolveGltfCompanionFiles } from "flow-graph-editor/khrGltfCompanionFiles";
 import { describe, expect, it } from "vitest";
 
 const JsonChunk = 0x4e4f534a;
@@ -88,6 +96,197 @@ function RichSourceDocument(): RichDocument {
 }
 
 describe("lossless GLB selection behavior authoring", () => {
+    it("matches nested split glTF resource paths and rejects ambiguous same-named companions", () => {
+        const file = (name: string, relativePath = "") => ({ name, webkitRelativePath: relativePath }) as File;
+        const source = file("assembly.gltf", "asset/assembly.gltf");
+        const mapped = ResolveGltfCompanionFiles(
+            source,
+            ["geometry.bin", "textures/red/diffuse.png", "textures/blue/diffuse.png"],
+            [file("geometry.bin", "asset/geometry.bin"), file("diffuse.png", "asset/textures/red/diffuse.png"), file("diffuse.png", "asset/textures/blue/diffuse.png")]
+        );
+        expect([...mapped.keys()]).toEqual(["geometry.bin", "textures/red/diffuse.png", "textures/blue/diffuse.png"]);
+        expect(mapped.get("textures/red/diffuse.png")?.webkitRelativePath).toBe("asset/textures/red/diffuse.png");
+        expect(
+            ResolveGltfCompanionFiles(
+                file("assembly-behavior.gltf"),
+                ["textures/red/diffuse.png", "textures/blue/diffuse.png"],
+                [file("diffuse.png", "asset/textures/red/diffuse.png"), file("diffuse.png", "asset/textures/blue/diffuse.png")],
+                source.webkitRelativePath
+            ).size
+        ).toBe(2);
+        expect(() => ResolveGltfCompanionFiles(source, ["textures/red/diffuse.png", "textures/blue/diffuse.png"], [file("diffuse.png"), file("diffuse.png")])).toThrow(
+            "Ambiguous companion file"
+        );
+        expect(() => ResolveGltfCompanionFiles(source, ["missing.bin"], [])).toThrow("Missing companion file");
+        expect(GetGltfResourceKeys("./textures/red%20paint.png")).toEqual(["textures/red paint.png", "./textures/red paint.png"]);
+        expect(
+            ResolveGltfCompanionFiles(
+                file("assembly.gltf", "asset/scenes/assembly.gltf"),
+                ["../textures/paint.png"],
+                [file("paint.png", "asset/textures/paint.png"), file("paint.png", "asset/other/paint.png")]
+            ).get("../textures/paint.png")?.webkitRelativePath
+        ).toBe("asset/textures/paint.png");
+        expect(() => ResolveGltfCompanionFiles(source, ["Red.png", "red.png"], [file("Red.png"), file("red.png")])).toThrow("Ambiguous companion file");
+    });
+    it("adds a selection behavior to split glTF without changing source tokens or companion references", () => {
+        const source = JSON.stringify(RichSourceDocument())
+            .replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993')
+            .replace('"code":17', '"code":1e+2')
+            .replace('"geometry.bin"', '"geometry.bin"');
+        const split = source.replace('"byteLength":36}', '"byteLength":36,"uri":"geometry.bin"}');
+        const result = PatchKhrSelectionRevealGltf(split, 1, 2);
+        const document = ReadGltfDocument(result);
+
+        expect(result).toContain('"stableAssetId":9007199254740993');
+        expect(result).toContain('"code":1e+2');
+        expect(GetGlbExternalResourceUris(document)).toContain("geometry.bin");
+        expect(document.nodes?.[1].name).toBe("part");
+        expect(document.extensions?.EXT_vendor_meta).toEqual({ opaque: [1, 2, 3] });
+        expect(CreateKHRInteractivityDocument(document.extensions!.KHR_interactivity, new Set(document.extensionsUsed), document.nodes!.length).diagnostics).toEqual([]);
+    });
+
+    it("adds a procedure to split glTF and preserves its source-only numbers", () => {
+        const source = JSON.stringify(ProcedureDocument()).replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993');
+        const result = PatchKhrTwoStepProcedureGltf(source, procedure);
+        expect(result).toContain('"stableAssetId":9007199254740993');
+        expect(ReadGltfDocument(result).nodes?.length).toBe(6);
+    });
+
+    it("extends a split glTF graph without rewriting its unrelated JSON", () => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()).replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993'), 1, 2);
+        const extension = ReadGltfDocument(source).extensions!.KHR_interactivity as any;
+        extension.graphs[0].name = "Edited selection";
+        const result = PatchKhrInteractivityGltf(source, extension, ["KHR_node_visibility"], ["KHR_node_visibility"]);
+        expect(result).toContain('"stableAssetId":9007199254740993');
+        expect(ReadGltfDocument(result).extensions!.KHR_interactivity).toEqual(extension);
+    });
+
+    it("adds a reaction after an occupied event flow and keeps the original action first", () => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        const result = PatchKhrVisibilityReactionGltf(source, 0, 1, false);
+        const document = ReadGltfDocument(result);
+        const extension = document.extensions!.KHR_interactivity as any;
+        const graph = extension.graphs[0];
+        const event = graph.nodes[0];
+        const sequence = graph.nodes[event.flows.out.node];
+        expect(graph.declarations[sequence.declaration].op).toBe("flow/sequence");
+        expect(sequence.flows["0"]).toEqual({ node: 2, socket: "in" });
+        expect(graph.declarations[graph.nodes[sequence.flows["1"].node].declaration].op).toBe("pointer/set");
+        expect(graph.nodes[sequence.flows["1"].node].configuration.pointer.value).toEqual(["/nodes/1/extensions/KHR_node_visibility/visible"]);
+        expect(graph.nodes[sequence.flows["1"].node].values.value.value).toEqual([false]);
+        expect(extension.graphs).toHaveLength(1);
+        const validation = CreateKHRInteractivityDocument(extension, new Set(document.extensionsUsed), document.nodes!.length);
+        expect(validation.diagnostics).toEqual([]);
+        expect(validation.graphs[0].valid).toBe(true);
+    });
+
+    it("appends a reaction to an empty event output in GLB without changing source chunks", () => {
+        const source = PatchKhrSelectionRevealGlb(BuildGlb(RichSourceDocument(), [{ type: BinChunk, data: new Uint8Array([1, 2, 3, 4]) }]), 1, 2);
+        const document = ReadGlbDocument(source);
+        const graph = (document.extensions!.KHR_interactivity as any).graphs[0];
+        delete graph.nodes[0].flows;
+        const disconnected = PatchKhrInteractivityGlb(source, document.extensions!.KHR_interactivity, [], []);
+        const result = PatchKhrVisibilityReactionGlb(disconnected, 0, 1, false);
+        expect(SuffixAfterJson(result)).toEqual(SuffixAfterJson(disconnected));
+        const extended = ReadGlbDocument(result);
+        const extendedGraph = (extended.extensions!.KHR_interactivity as any).graphs[0];
+        expect(extendedGraph.declarations[extendedGraph.nodes[extendedGraph.nodes[0].flows.out.node].declaration].op).toBe("pointer/set");
+    });
+
+    it("accepts a default input socket omitted by canonical graph export", () => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        const extension = ReadGltfDocument(source).extensions!.KHR_interactivity as any;
+        delete extension.graphs[0].nodes[0].flows.out.socket;
+        const exported = PatchKhrInteractivityGltf(source, extension, [], []);
+        const result = ReadGltfDocument(PatchKhrVisibilityReactionGltf(exported, 0, 1, false));
+        const graph = (result.extensions!.KHR_interactivity as any).graphs[0];
+        const sequence = graph.nodes[graph.nodes[0].flows.out.node];
+        expect(sequence.flows["0"]).toEqual({ node: 2 });
+    });
+
+    it("rejects ambiguous or invalid reaction sources without changing the original", () => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        expect(() => PatchKhrVisibilityReactionGltf(source, 1, 0, true)).toThrow("event");
+        expect(() => PatchKhrVisibilityReactionGltf(source, 0, 99, true)).toThrow("outside");
+        expect(() => PatchKhrVisibilityReactionGltf(source, 0, 1, true)).not.toThrow();
+    });
+
+    it("edits only the selected graph when a source contains isolated alternative graphs", () => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        const extension = ReadGltfDocument(source).extensions!.KHR_interactivity as any;
+        const untouched = structuredClone(extension.graphs[0]);
+        extension.graphs.push(structuredClone(extension.graphs[0]));
+        extension.graph = 1;
+        const multi = PatchKhrInteractivityGltf(source, extension, [], []);
+        const result = ReadGltfDocument(PatchKhrVisibilityReactionGltf(multi, 0, 1, false));
+        const graphs = (result.extensions!.KHR_interactivity as any).graphs;
+        expect(graphs[0]).toEqual(untouched);
+        expect(graphs[1].nodes).toHaveLength(4);
+        const validation = CreateKHRInteractivityDocument(result.extensions!.KHR_interactivity, new Set(result.extensionsUsed), result.nodes!.length);
+        expect(validation.graphs.map((graph) => graph.valid)).toEqual([true, true]);
+    });
+
+    it("retains backward value references while inserting a forward flow branch", () => {
+        const source = PatchKhrTwoStepProcedureGltf(JSON.stringify(ProcedureDocument()), procedure);
+        const events = ListKhrReactionEvents(ReadGltfDocument(source));
+        const result = ReadGltfDocument(PatchKhrVisibilityReactionGltf(source, events[0].nodeIndex, 3, true));
+        const validation = CreateKHRInteractivityDocument(result.extensions!.KHR_interactivity, new Set(result.extensionsUsed), result.nodes!.length);
+        expect(validation.diagnostics).toEqual([]);
+        expect(validation.graphs[0].valid).toBe(true);
+    });
+
+    it.each(["event/onHoverIn", "event/onHoverOut"])("extends an imported %s event without changing its hover declaration", (operation) => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        const document = ReadGltfDocument(source);
+        const graph = (document.extensions!.KHR_interactivity as any).graphs[0];
+        graph.declarations[0] = {
+            op: operation,
+            extension: "KHR_node_hoverability",
+            outputValueSockets: { hoveredNode: { type: 2 }, controllerIndex: { type: 1 }, event: { type: 2 } },
+        };
+        document.nodes![1].extensions!.KHR_node_hoverability = { hoverable: true };
+        document.extensionsUsed!.push("KHR_node_hoverability");
+        document.extensionsRequired!.push("KHR_node_hoverability");
+        const hoverSource = JSON.stringify(document);
+        const events = ListKhrReactionEvents(document);
+        expect(events[0].label).toContain(operation.replace("event/", ""));
+        const authored = ReadGltfDocument(PatchKhrVisibilityReactionGltf(hoverSource, events[0].nodeIndex, 2, true));
+        const extension = authored.extensions!.KHR_interactivity as any;
+        const validation = CreateKHRInteractivityDocument(extension, new Set(authored.extensionsUsed), authored.nodes!.length);
+        expect(validation.diagnostics).toEqual([]);
+        expect(validation.graphs[0].valid).toBe(true);
+        expect(extension.graphs[0].declarations[0]).toEqual(graph.declarations[0]);
+    });
+
+    it("refuses a show reaction beneath a hidden ancestor and keeps the source unchanged", () => {
+        const document = RichSourceDocument();
+        document.nodes![0].extensions = { KHR_node_visibility: { visible: false } };
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        const extension = ReadGltfDocument(source).extensions!.KHR_interactivity;
+        const hiddenSource = PatchKhrInteractivityGltf(
+            JSON.stringify({
+                ...document,
+                extensions: { ...document.extensions, KHR_interactivity: extension },
+                extensionsUsed: [...document.extensionsUsed!, "KHR_interactivity", "KHR_node_visibility"],
+            }),
+            extension,
+            [],
+            []
+        );
+        expect(() => PatchKhrVisibilityReactionGltf(hiddenSource, 0, 1, true)).toThrow("ancestor disables visibility");
+        expect(ReadGltfDocument(hiddenSource).nodes?.[0].extensions?.KHR_node_visibility).toEqual({ visible: false });
+    });
+
+    it("accepts an ancestor with an omitted default-visible value", () => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        const document = ReadGltfDocument(source);
+        document.nodes![0].extensions = { KHR_node_visibility: {} };
+        const result = PatchKhrVisibilityReactionGltf(JSON.stringify(document), 0, 1, true);
+        const authored = ReadGltfDocument(result);
+        const validation = CreateKHRInteractivityDocument(authored.extensions!.KHR_interactivity, new Set(authored.extensionsUsed), authored.nodes!.length);
+        expect(validation.graphs[0].valid).toBe(true);
+    });
+
     it("lists external image and buffer references while excluding embedded data and duplicate paths", () => {
         const document = RichSourceDocument();
         document.buffers = [{ uri: "geometry.bin" }, { uri: "data:application/octet-stream;base64,AA==" }] as any;
@@ -198,7 +397,7 @@ describe("lossless GLB selection behavior authoring", () => {
         document.animations = [{ name: "inspection", samplers: [], channels: [] }];
         const source = BuildGlb(document);
 
-        expect(() => PatchKhrSelectionRevealGlb(source, 1, 2)).toThrow("Adding a behavior graph would stop the source GLB's animations from playing automatically");
+        expect(() => PatchKhrSelectionRevealGlb(source, 1, 2)).toThrow("Adding a behavior graph would stop the source asset's animations from playing automatically");
         expect(ReadGlbDocument(source)).toEqual(document);
     });
 
