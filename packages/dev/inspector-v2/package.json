@@ -18,7 +18,7 @@
         "babylon-inspector": "node --no-warnings dist/cli/cli.js --bridge-script dist/cli/bridge.js"
     },
     "devDependencies": {
-        "@babylonjs/lite": "1.27.0",
+        "@babylonjs/lite": "1.32.0",
         "@dev/addons": "1.0.0",
         "@dev/core": "1.0.0",
         "@dev/gui": "1.0.0",
