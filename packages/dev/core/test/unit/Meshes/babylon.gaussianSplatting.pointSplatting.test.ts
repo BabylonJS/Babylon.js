@@ -9,6 +9,7 @@ import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSpl
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { GaussianPointSplattingRenderer } from "core/Meshes/GaussianSplatting/gaussianPointSplattingRenderer";
 import { GaussianPointSplattingController } from "core/Meshes/GaussianSplatting/gaussianPointSplattingController";
+import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Plane } from "core/Maths/math.plane";
 import { FreeCamera } from "core/Cameras/freeCamera";
@@ -30,6 +31,30 @@ function CreateController(mesh: GaussianSplattingMesh): GaussianPointSplattingCo
 }
 
 describe("GaussianSplattingMesh point-splatting settings", () => {
+    it("sizes accumulation to the first camera post-process target instead of the physical backbuffer", () => {
+        const engine = new NullEngine({ renderWidth: 400, renderHeight: 200 });
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        scene.activeCamera = camera;
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+
+        expect(controller["_getOutputSize"]()).toEqual({ width: 400, height: 200 });
+
+        const lowResScene = new PassPostProcess("lowResScene", 0.5, camera);
+        lowResScene.activate(camera);
+        expect(controller["_getOutputSize"]()).toEqual({ width: 200, height: 100 });
+
+        scene.postProcessesEnabled = false;
+        expect(controller["_getOutputSize"]()).toEqual({ width: 400, height: 200 });
+        scene.postProcessesEnabled = true;
+        lowResScene.dispose();
+        expect(controller["_getOutputSize"]()).toEqual({ width: 400, height: 200 });
+
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("registers the compute and blit shaders through the public mesh entry point", () => {
         expect(WebGPUEngine.prototype.createComputeContext).toBeTypeOf("function");
         for (const name of [

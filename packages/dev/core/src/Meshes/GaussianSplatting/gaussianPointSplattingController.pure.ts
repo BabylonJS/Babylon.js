@@ -719,6 +719,20 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
     }
 
+    /** Returns the size of the camera's color target. Compute runs before the first post-process
+     * target is bound, so engine.getRenderWidth() alone would use the full backbuffer even when
+     * the camera is rendering into a lower-resolution post-process target.
+     * @returns The color target dimensions in pixels.
+     */
+    private _getOutputSize(): { width: number; height: number } {
+        const engine = this._scene.getEngine();
+        const postProcess = this._scene.postProcessesEnabled ? this._scene.activeCamera?._getFirstPostProcess() : null;
+        return {
+            width: postProcess && postProcess.width > 0 ? postProcess.width : engine.getRenderWidth(true),
+            height: postProcess && postProcess.height > 0 ? postProcess.height : engine.getRenderHeight(true),
+        };
+    }
+
     /** Runs the compute pipeline before the render pass (compute cannot run inside an active pass) and
      * binds the resolved buffers to the blit material for the color pass. */
     private _runCompute(): void {
@@ -743,8 +757,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         // resolution is reconstructed over N^2 frames by jittering the low-res grid across the full-res
         // sub-cells and accumulating per full-res pixel (temporal upsampling). The low-res grid covers
         // ceil(full / N) cells of N output pixels, so focalX/Y are the full-res focal lengths divided by N.
-        const fullW = engine.getRenderWidth();
-        const fullH = engine.getRenderHeight();
+        const { width: fullW, height: fullH } = this._getOutputSize();
         const scaleOpt = this._renderScale;
         const upsampleN = scaleOpt === "auto" ? this._autoN : Math.max(1, Math.min(8, Math.round(1 / Math.max(scaleOpt, 1e-3))));
         const width = Math.max(1, Math.ceil(fullW / upsampleN));
