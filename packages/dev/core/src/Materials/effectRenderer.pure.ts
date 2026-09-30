@@ -284,6 +284,10 @@ export interface EffectWrapperCreationOptions {
      */
     onCompiled?: Nullable<(effect: Effect) => void>;
     /**
+     * Callback when there is an error compiling the effect
+     */
+    onError?: (effect: Effect, errors: string) => void;
+    /**
      * The friendly name of the effect (default: "effectWrapper")
      */
     name?: string;
@@ -430,6 +434,7 @@ export class EffectWrapper {
             blockCompilation: creationOptions.blockCompilation || false,
             shaderLanguage: creationOptions.shaderLanguage || ShaderLanguage.GLSL,
             onCompiled: creationOptions.onCompiled || (undefined as any),
+            onError: creationOptions.onError || (undefined as any),
             extraInitializations: creationOptions.extraInitializations || (undefined as any),
             extraInitializationsAsync: creationOptions.extraInitializationsAsync || (undefined as any),
             useAsPostProcess: creationOptions.useAsPostProcess ?? false,
@@ -600,7 +605,7 @@ export class EffectWrapper {
                     defines: defines !== null ? defines : "",
                     fallbacks: null,
                     onCompiled: onCompiled ?? this.options.onCompiled,
-                    onError: onError ?? null,
+                    onError: onError ?? this.options.onError,
                     indexParameters: indexParameters || this.options.indexParameters,
                     processCodeAfterIncludes: customShaderCodeProcessing?.processCodeAfterIncludes
                         ? (shaderType: string, code: string) => customShaderCodeProcessing.processCodeAfterIncludes!(this.name, shaderType, code)
@@ -623,7 +628,7 @@ export class EffectWrapper {
                 defines,
                 undefined,
                 onCompiled || this.options.onCompiled,
-                undefined,
+                onError ?? this.options.onError,
                 undefined,
                 undefined,
                 this.options.shaderLanguage,
