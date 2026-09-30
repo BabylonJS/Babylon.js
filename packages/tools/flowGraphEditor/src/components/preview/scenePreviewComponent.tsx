@@ -51,7 +51,7 @@ import {
     ReadGltfDocument,
     type IKhrReactionEvent,
 } from "../../khrGlbBehaviorAuthoring";
-import { GetGltfResourceKeys, GltfCompanionResolutionError, ResolveGltfCompanionFiles } from "../../khrGltfCompanionFiles";
+import { CollectGltfDropFilesAsync, GetGltfFilePath, GetGltfResourceKeys, GltfCompanionResolutionError, ResolveGltfCompanionFiles } from "../../khrGltfCompanionFiles";
 import { CreateKhrTwoStepProcedureTemplate, ValidateKhrTwoStepProcedureMeshes, type IKhrTwoStepProcedureNodes } from "../../khrTwoStepProcedureTemplate";
 
 interface IScenePreviewComponentProps {
@@ -305,6 +305,8 @@ export const ScenePreviewComponent: React.FunctionComponent<IScenePreviewCompone
 };
 
 class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps, IScenePreviewComponentState> {
+    private _dropGeneration = 0;
+    private _collectingDrop = false;
     private _pendingReactionSource: string | Uint8Array | null = null;
     private _pendingCompanionImport: { file: File; companionFiles: File[]; sourcePath: string; overrides: Map<string, File> } | null = null;
     private _canvasHostRef: React.RefObject<HTMLDivElement>;
@@ -409,7 +411,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
         // Listen for scene-file drops forwarded from the root editor (editor-wide drag-and-drop)
         this._onDropEventObserver = this.props.globalState.onDropEventReceivedObservable.add((e) => {
-            this._handleDrop(e);
+            void this._handleDropAsync(e);
         });
 
         // Reconcile the existing scene with the mounted pane. The canvas is retained and reparented
@@ -462,6 +464,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
     /** @internal */
     override componentWillUnmount() {
+        this._dropGeneration++;
         this._unbindCanvasResize();
         this._unwatchContext();
         this._onSceneContextChangedObserver?.remove();
@@ -793,7 +796,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         companionFiles?: File[],
         preparedByEditor = false,
         authoredBehavior = false,
-        sourcePath = file.webkitRelativePath || file.name,
+        sourcePath = GetGltfFilePath(file),
         companionOverrides: ReadonlyMap<string, File> = new Map()
     ): Promise<boolean> {
         if (this.state.isLoading && !preparedByEditor) {
@@ -1062,38 +1065,51 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         }
     }
 
-    private _handleDrop = (e: DragEvent | React.DragEvent) => {
+    private _handleDropAsync = async (e: DragEvent | React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (this.state.isLoading) {
+        if (this.state.isLoading || this._collectingDrop) {
             return; // Don't start a new load while one is in progress
         }
 
-        const files = e.dataTransfer?.files;
-        if (!files || files.length === 0) {
+        if (!e.dataTransfer) {
             return;
         }
-
-        // Find the first supported 3D file
-        const supportedExtensions = [".glb", ".gltf", ".babylon"];
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const name = file.name.toLowerCase();
-            if (supportedExtensions.some((ext) => name.endsWith(ext))) {
-                // Collect companion files (bin, textures) to register in the virtual FS
-                const companions: File[] = [];
-                for (let j = 0; j < files.length; j++) {
-                    if (j !== i) {
-                        companions.push(files[j]);
-                    }
-                }
-                void this._loadFileAsync(file, companions);
+        const generation = ++this._dropGeneration;
+        this._collectingDrop = true;
+        this.setState({ isLoading: true });
+        try {
+            const files = await CollectGltfDropFilesAsync(e.dataTransfer);
+            if (generation !== this._dropGeneration) {
                 return;
             }
+            const supported = files.filter((file) => /\.(glb|gltf|babylon)$/i.test(file.name));
+            if (supported.length !== 1) {
+                throw new Error(
+                    supported.length
+                        ? "Drop one scene file with its companion files. This folder contains multiple scenes."
+                        : "Unsupported file format. Drop a .glb, .gltf, or .babylon file."
+                );
+            }
+            const file = supported[0];
+            await new Promise<void>((resolve) => this.setState({ isLoading: false }, resolve));
+            if (generation !== this._dropGeneration) {
+                return;
+            }
+            await this._loadFileAsync(
+                file,
+                files.filter((companion) => companion !== file)
+            );
+        } catch (error) {
+            if (generation === this._dropGeneration) {
+                const message = error instanceof Error ? error.message : String(error);
+                this.setState({ isLoading: false, error: message });
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, true));
+            }
+        } finally {
+            this._collectingDrop = false;
         }
-
-        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unsupported file format. Drop a .glb, .gltf, or .babylon file.", true));
     };
 
     /**
@@ -1601,7 +1617,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         </div>
                     )}
                 </div>
-                <div className={classes.canvasContainer} onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDrop as React.DragEventHandler}>
+                <div className={classes.canvasContainer} onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDropAsync as React.DragEventHandler}>
                     <div ref={this._canvasHostRef} className={classes.canvasHost} data-testid="scene-preview-canvas-host" />
                     {isHostMode && (
                         <div

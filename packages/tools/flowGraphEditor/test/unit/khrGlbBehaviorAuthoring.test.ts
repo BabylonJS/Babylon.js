@@ -147,6 +147,19 @@ describe("lossless GLB selection behavior authoring", () => {
         ).toBe("asset/textures/paint.png");
         expect(() => ResolveGltfCompanionFiles(source, ["Red.png", "red.png"], [file("Red.png"), file("red.png")])).toThrow("Ambiguous companion file");
     });
+    it("does not substitute a known red texture for a missing blue texture", () => {
+        const main = { name: "assembly.gltf", webkitRelativePath: "asset/assembly.gltf" } as File;
+        const red = { name: "diffuse.png", webkitRelativePath: "asset/textures/red/diffuse.png" } as File;
+        expect(() => ResolveGltfCompanionFiles(main, ["textures/blue/diffuse.png"], [red])).toThrow("Missing companion file for textures/blue/diffuse.png");
+        const flat = { name: "diffuse.png", webkitRelativePath: "" } as File;
+        expect(ResolveGltfCompanionFiles(main, ["textures/blue/diffuse.png"], [red, flat]).get("textures/blue/diffuse.png")).toBe(flat);
+        expect(
+            ResolveGltfCompanionFiles(main, ["textures/blue/diffuse.png"], [red], main.webkitRelativePath, new Map([["textures/blue/diffuse.png", red]])).get(
+                "textures/blue/diffuse.png"
+            )
+        ).toBe(red);
+    });
+
     it("adds a selection behavior to split glTF without changing source tokens or companion references", () => {
         const source = JSON.stringify(RichSourceDocument())
             .replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993')
@@ -294,6 +307,49 @@ describe("lossless GLB selection behavior authoring", () => {
         );
         expect(() => PatchKhrVisibilityReactionGltf(hiddenSource, 0, 1, true)).toThrow("ancestor disables visibility");
         expect(ReadGltfDocument(hiddenSource).nodes?.[0].extensions?.KHR_node_visibility).toEqual({ visible: false });
+    });
+
+    it.each([false, "dynamic"])("rejects show beneath an ancestor written to %s by the existing flow", (value) => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        const document = ReadGltfDocument(source);
+        const graph = (document.extensions!.KHR_interactivity as any).graphs[0];
+        graph.nodes[1].configuration.pointer.value = ["/nodes/0/extensions/KHR_node_visibility/visible"];
+        if (value === "dynamic") {
+            graph.variables = [{ type: 0, value: [false] }];
+            graph.declarations.push({ op: "variable/get" });
+            graph.nodes.splice(1, 0, { declaration: graph.declarations.length - 1, configuration: { variable: { value: [0] } } });
+            graph.nodes[0].flows.out.node = 2;
+            graph.nodes[2].values.value = { node: 1, socket: "value" };
+        } else {
+            graph.nodes[1].values.value = { type: 0, value: [false] };
+        }
+        const text = JSON.stringify(document);
+        expect(() => PatchKhrVisibilityReactionGltf(text, 0, 1, true)).toThrow("Existing behavior may hide a reaction target ancestor");
+        expect(JSON.stringify(document)).toBe(text);
+    });
+
+    it.each(["/nodes/[parent]/extensions/KHR_node_visibility/visible", "/nodes/{parent}/extensions/KHR_node_visibility/visible"])(
+        "rejects ancestor hides through the pointer template %s",
+        (pointer) => {
+            const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+            const document = ReadGltfDocument(source);
+            const graph = (document.extensions!.KHR_interactivity as any).graphs[0];
+            graph.nodes[1].configuration.pointer.value = [pointer];
+            graph.nodes[1].values.parent = { type: pointer.includes("[") ? 1 : 2, value: [0] };
+            graph.nodes[1].values.value = { type: 0, value: [false] };
+            expect(() => PatchKhrVisibilityReactionGltf(JSON.stringify(document), 0, 1, true)).toThrow("Existing behavior may hide a reaction target ancestor");
+        }
+    );
+
+    it("allows constant true ancestor writes and hides on unrelated branches", () => {
+        const source = PatchKhrSelectionRevealGltf(JSON.stringify(RichSourceDocument()), 1, 2);
+        const document = ReadGltfDocument(source);
+        const graph = (document.extensions!.KHR_interactivity as any).graphs[0];
+        graph.nodes[1].configuration.pointer.value = ["/nodes/0/extensions/KHR_node_visibility/visible"];
+        expect(() => PatchKhrVisibilityReactionGltf(JSON.stringify(document), 0, 1, true)).not.toThrow();
+        graph.nodes[1].configuration.pointer.value = ["/nodes/2/extensions/KHR_node_visibility/visible"];
+        graph.nodes[1].values.value.value = [false];
+        expect(() => PatchKhrVisibilityReactionGltf(JSON.stringify(document), 0, 1, true)).not.toThrow();
     });
 
     it("accepts an ancestor with an omitted default-visible value", () => {

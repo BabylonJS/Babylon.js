@@ -2,6 +2,64 @@ function _NormalizePath(path: string): string {
     return path.replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\/+/, "").toLowerCase();
 }
 
+type FileWithDropPath = File & { correctName?: string };
+
+/**
+ * Get the path retained by a native folder drop or directory file picker.
+ * @param file selected file
+ * @returns source-relative path, falling back to the filename for flat selections
+ */
+export function GetGltfFilePath(file: File): string {
+    return (file as FileWithDropPath).correctName || file.webkitRelativePath || file.name;
+}
+
+/**
+ * Collect native drop entries, including every batch of nested directory contents.
+ * A read failure rejects the entire collection rather than silently omitting files.
+ * @param transfer drag data, read synchronously while the drop event is active
+ * @returns files with retained folder paths
+ */
+export async function CollectGltfDropFilesAsync(transfer: DataTransfer): Promise<File[]> {
+    const items = Array.from(transfer.items ?? []);
+    const fallback = Array.from(transfer.files ?? []);
+    const entries = items
+        .filter((item) => item.kind === "file")
+        .map((item) => ({
+            entry: (item as DataTransferItem & { getAsEntry?: () => FileSystemEntry | null }).getAsEntry?.() ?? item.webkitGetAsEntry?.(),
+            file: item.getAsFile(),
+        }));
+    const visitAsync = async (entry: FileSystemEntry, selectedFile?: File): Promise<File[]> => {
+        try {
+            if (entry.isFile) {
+                const file = selectedFile ?? (await new Promise<File>((resolve, reject) => (entry as FileSystemFileEntry).file(resolve, reject)));
+                (file as FileWithDropPath).correctName = file.webkitRelativePath || entry.fullPath.replace(/^\/+/, "");
+                return [file];
+            }
+            if (entry.isDirectory) {
+                const reader = (entry as FileSystemDirectoryEntry).createReader();
+                const files: File[] = [];
+                for (;;) {
+                    // Directory readers must be consumed one batch at a time.
+                    // eslint-disable-next-line no-await-in-loop
+                    const batch = await new Promise<FileSystemEntry[]>((resolve, reject) => reader.readEntries(resolve, reject));
+                    if (!batch.length) {
+                        return files;
+                    }
+                    // eslint-disable-next-line no-await-in-loop
+                    files.push(...(await Promise.all(batch.map(async (child) => await visitAsync(child)))).flat());
+                }
+            }
+            return [];
+        } catch (error) {
+            throw new Error(`Unable to read dropped entry ${entry.fullPath}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+        }
+    };
+    if (!entries.length) {
+        return fallback;
+    }
+    return (await Promise.all(entries.map(async ({ entry, file }) => (entry ? await visitAsync(entry, file ?? undefined) : file ? [file] : [])))).flat();
+}
+
 function _CanonicalPath(path: string): string {
     const parts: string[] = [];
     for (const part of _NormalizePath(path).split("/")) {
@@ -70,7 +128,7 @@ export function ResolveGltfCompanionFiles(
     mainFile: File,
     resourceUris: readonly string[],
     companions: readonly File[],
-    sourcePath = mainFile.webkitRelativePath || mainFile.name,
+    sourcePath = GetGltfFilePath(mainFile),
     overrides: ReadonlyMap<string, File> = new Map()
 ): Map<string, File> {
     const mainPath = _NormalizePath(sourcePath);
@@ -89,12 +147,16 @@ export function ResolveGltfCompanionFiles(
             throw new Error(`Ambiguous companion file for ${uri}. Resource paths differ only by case or a leading dot.`);
         }
         const exact = companions.filter((file) => {
-            const droppedPath = _CanonicalPath(file.webkitRelativePath || file.name);
+            const droppedPath = _CanonicalPath(GetGltfFilePath(file));
             return droppedPath === _CanonicalPath(path) || droppedPath === _CanonicalPath(mainDirectory + path);
         });
         const basename = path.slice(path.lastIndexOf("/") + 1);
         const explicit = overrides.get(uri);
-        const matches = explicit ? [explicit] : exact.length ? exact : companions.filter((file) => _NormalizePath(file.name) === basename);
+        const matches = explicit
+            ? [explicit]
+            : exact.length
+              ? exact
+              : companions.filter((file) => !(file as FileWithDropPath).correctName && !file.webkitRelativePath && _NormalizePath(file.name) === basename);
         if (matches.length > 1) {
             throw new GltfCompanionResolutionError("ambiguous", uri, `Ambiguous companion file for ${uri}. Choose the file that matches this resource path.`);
         }

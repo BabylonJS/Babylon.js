@@ -1653,6 +1653,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     // Files dropped on the canvas itself (block palette items) are handled by the
                     // inner pane below. This top-level handler only intercepts 3D scene files
                     // dropped anywhere in the central content.
+                    const hasDirectory = Array.from(evt.dataTransfer?.items ?? []).some(
+                        (item) =>
+                            item.kind === "file" &&
+                            ((item as DataTransferItem & { getAsEntry?: () => FileSystemEntry | null }).getAsEntry?.() ?? item.webkitGetAsEntry?.())?.isDirectory
+                    );
+                    if (hasDirectory) {
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                        this.props.globalState.onDropEventReceivedObservable.notifyObservers(evt.nativeEvent);
+                        return;
+                    }
                     const files = evt.dataTransfer?.files;
                     if (!files || files.length === 0) {
                         this.dropNewBlock(evt);

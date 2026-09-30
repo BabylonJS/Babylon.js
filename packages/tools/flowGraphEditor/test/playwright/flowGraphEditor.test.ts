@@ -1,5 +1,7 @@
 import { test, expect, devices, type Locator, type Page } from "@playwright/test";
-import { readFileSync } from "fs";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
 import { FlowGraphEditorPage } from "./fge.utils";
 import { AllFlowGraphBlocks } from "../../src/allBlockNames";
 
@@ -2617,6 +2619,73 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(reopened.extensions.KHR_interactivity.graphs[0].nodes[1].values.value.value).toEqual([true]);
         expect(reopenedBytes.subarray(20 + reopenedBytes.readUInt32LE(12))).toEqual(editedBytes.subarray(20 + editedBytes.readUInt32LE(12)));
         await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authored.png"), fullPage: true });
+    });
+
+    test("imports a real nested folder drop with same-named textures", async ({ page, browserName }) => {
+        test.skip(browserName !== "chromium", "Native directory drag injection requires Chromium's browser protocol.");
+        const folder = mkdtempSync(join(tmpdir(), "fge-folder-drop-"));
+        const asset = join(folder, "asset");
+        try {
+            const fixture = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+            fixture.document.buffers[0].uri = "meshes/geometry.bin";
+            fixture.document.images = [{ uri: "textures/red/diffuse.png" }, { uri: "textures/blue/diffuse.png" }];
+            mkdirSync(join(asset, "meshes"), { recursive: true });
+            for (const color of ["red", "blue"]) {
+                mkdirSync(join(asset, "textures", color), { recursive: true });
+                writeFileSync(join(asset, "textures", color, "diffuse.png"), color);
+            }
+            writeFileSync(join(asset, "assembly.gltf"), JSON.stringify(fixture.document));
+            writeFileSync(join(asset, "meshes", "geometry.bin"), fixture.bin);
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            await page.evaluate(() => {
+                window.addEventListener(
+                    "drop",
+                    (event) => {
+                        const entry = event.dataTransfer?.items[0].webkitGetAsEntry();
+                        (globalThis as any).__nativeFolderDrop = { directory: entry?.isDirectory, name: entry?.name };
+                    },
+                    { capture: true, once: true }
+                );
+            });
+            const canvas = await page.locator("canvas").first().boundingBox();
+            expect(canvas).not.toBeNull();
+            const session = await page.context().newCDPSession(page);
+            const data = { items: [], files: [asset], dragOperationsMask: 1 };
+            for (const type of ["dragEnter", "dragOver", "drop"] as const) {
+                await session.send("Input.dispatchDragEvent", { type, x: canvas!.x + canvas!.width / 2, y: canvas!.y + canvas!.height / 2, data });
+            }
+            await session.detach();
+            expect(await page.evaluate(() => (globalThis as any).__nativeFolderDrop)).toEqual({ directory: true, name: "asset" });
+            await expect.poll(async () => page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sourceGltf?.file.name)).toBe("assembly.gltf");
+            const paths = await page.evaluate(async () => {
+                const source = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sourceGltf;
+                return {
+                    sourcePath: source.sourcePath,
+                    files: await Promise.all(
+                        source.companionFiles
+                            .filter((file: File) => file.name === "diffuse.png")
+                            .map(async (file: File & { correctName: string }) => [file.webkitRelativePath, await file.text(), file.correctName])
+                    ),
+                };
+            });
+            expect(paths.sourcePath).toBe("asset/assembly.gltf");
+            expect(paths.files.map((entry: string[]) => entry[0])).toEqual(["", ""]);
+            expect(paths.files.map((entry: string[]) => entry[1]).sort()).toEqual(["blue", "red"]);
+            await expect(page.getByRole("dialog", { name: "Complete glTF import" })).not.toBeVisible();
+            expect(paths.files.map((entry: string[]) => entry[2]).sort()).toEqual(["asset/textures/blue/diffuse.png", "asset/textures/red/diffuse.png"]);
+            const identity = await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid);
+            rmSync(join(asset, "textures", "blue", "diffuse.png"));
+            const retry = await page.context().newCDPSession(page);
+            for (const type of ["dragEnter", "dragOver", "drop"] as const) {
+                await retry.send("Input.dispatchDragEvent", { type, x: canvas!.x + canvas!.width / 2, y: canvas!.y + canvas!.height / 2, data });
+            }
+            await retry.detach();
+            await expect(page.getByRole("dialog", { name: "Complete glTF import" })).toContainText("textures/blue/diffuse.png");
+            expect(await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid)).toBe(identity);
+        } finally {
+            rmSync(folder, { recursive: true, force: true });
+        }
     });
 
     test("authors and extends a split glTF while preserving JSON tokens and companion buffer paths", async ({ page, browser }, testInfo) => {

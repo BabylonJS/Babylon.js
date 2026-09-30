@@ -612,6 +612,7 @@ function _PatchKhrVisibilityReactionJson(jsonText: string, eventNodeIndex: numbe
     if (visibility !== undefined && (!_IsRecord(visibility) || (visibility.visible !== undefined && typeof visibility.visible !== "boolean"))) {
         throw new Error("The reaction target has malformed visibility.");
     }
+    const ancestors = new Set<number>();
     if (visible) {
         // A local visible=true cannot override a hidden parent. Avoid a seemingly successful but inert action.
         const parents = new Map<number, number[]>();
@@ -621,13 +622,12 @@ function _PatchKhrVisibilityReactionJson(jsonText: string, eventNodeIndex: numbe
             }
         }
         const pending = [...(parents.get(targetIndex) ?? [])];
-        const visited = new Set<number>();
         while (pending.length) {
             const index = pending.pop()!;
-            if (visited.has(index)) {
+            if (ancestors.has(index)) {
                 continue;
             }
-            visited.add(index);
+            ancestors.add(index);
             const ancestorVisibility = document.nodes[index]?.extensions?.KHR_node_visibility;
             if (ancestorVisibility !== undefined && (!_IsRecord(ancestorVisibility) || (ancestorVisibility.visible !== undefined && ancestorVisibility.visible !== true))) {
                 throw new Error("A reaction target ancestor disables visibility.");
@@ -642,6 +642,29 @@ function _PatchKhrVisibilityReactionJson(jsonText: string, eventNodeIndex: numbe
     }
     const graphNodes = graph.nodes as Array<Record<string, unknown>>;
     const declarations = graph.declarations as Array<Record<string, unknown>>;
+    if (visible && ancestors.size) {
+        // Other events and deferred branches can leave a parent hidden too. The guided
+        // action cannot prove their runtime ordering, so reject potential ancestor hides.
+        for (const node of graphNodes) {
+            if (declarations[node.declaration as number]?.op !== "pointer/set") {
+                continue;
+            }
+            const configuration = node.configuration as Record<string, { value?: unknown[] }> | undefined;
+            const values = node.values as Record<string, { node?: number; value?: unknown[] }> | undefined;
+            const pointer = configuration?.pointer?.value?.[0];
+            const match = typeof pointer === "string" ? /^\/nodes\/([^/]+)\/extensions\/KHR_node_visibility\/visible$/.exec(pointer) : null;
+            if (!match || (values?.value?.node === undefined && values?.value?.value?.[0] === true)) {
+                continue;
+            }
+            const segment = match[1];
+            const parameter = /^(?:\[([^\]]+)\]|\{([^}]+)\})$/.exec(segment);
+            const binding = parameter ? values?.[parameter[1] ?? parameter[2]] : undefined;
+            const index = parameter ? (binding?.node === undefined ? binding?.value?.[0] : undefined) : /^\d+$/.test(segment) ? Number(segment) : undefined;
+            if (index === undefined || (typeof index === "number" && ancestors.has(index))) {
+                throw new Error("Existing behavior may hide a reaction target ancestor. Edit the ancestor visibility in the graph before adding a show reaction.");
+            }
+        }
+    }
     const event = graphNodes[eventNodeIndex];
     const flows = _IsRecord(event.flows) ? event.flows : {};
     if (flows.out !== undefined && (!_IsRecord(flows.out) || !Number.isSafeInteger(flows.out.node) || (flows.out.socket !== undefined && typeof flows.out.socket !== "string"))) {
