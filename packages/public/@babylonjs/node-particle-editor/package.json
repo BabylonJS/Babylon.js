@@ -23,10 +23,10 @@
     "devDependencies": {
         "@dev/shared-ui-components": "1.0.0",
         "@tools/node-particle-editor": "1.0.0",
-        "@types/react": ">=16.7.3",
-        "@types/react-dom": ">=16.0.9",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "@types/react": ">=16.14.70",
+        "@types/react-dom": ">=16.9.25",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
     },
     "keywords": [
         "3D",
