@@ -628,7 +628,7 @@ export class EffectWrapper {
                 defines,
                 undefined,
                 onCompiled || this.options.onCompiled,
-                undefined,
+                onError ?? this.options.onError,
                 undefined,
                 undefined,
                 this.options.shaderLanguage,
