@@ -2529,6 +2529,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         serializationObject.disableDepthSort = this._disableDepthSort;
         serializationObject.viewUpdateThreshold = this.viewUpdateThreshold;
         serializationObject._flipY = this._flipY;
+        serializationObject.pointSplattingScale = this._pointScale;
+        serializationObject.pointSplattingRenderScale = this._pointRenderScale;
+        serializationObject.pointSplattingRenderMode = this.pointSplattingRenderMode;
+        serializationObject.pointSplattingDepthRenderMode = this.pointSplattingDepthRenderMode;
 
         if (this._splatsData) {
             serializationObject.splatsData = encoding === "base64" ? EncodeArrayBufferToBase64(this._splatsData) : this._splatsData;
@@ -2598,6 +2602,21 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (splatsData) {
             const flipY = parsedMesh._flipY ?? false;
             mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices, parsedMesh.shDegree);
+        }
+
+        // After updateData, which rebuilds the point-splatting state from the restored splats.
+        if (parsedMesh.pointSplattingScale !== undefined) {
+            mesh.pointSplattingScale = parsedMesh.pointSplattingScale;
+        }
+        if (parsedMesh.pointSplattingRenderScale !== undefined) {
+            mesh.pointSplattingRenderScale = parsedMesh.pointSplattingRenderScale;
+        }
+        // Only assign when enabled: the setters warn when the optional point-splatting module is absent.
+        if (parsedMesh.pointSplattingRenderMode) {
+            mesh.pointSplattingRenderMode = true;
+        }
+        if (parsedMesh.pointSplattingDepthRenderMode) {
+            mesh.pointSplattingDepthRenderMode = true;
         }
 
         if (parsedMesh.partProxies) {

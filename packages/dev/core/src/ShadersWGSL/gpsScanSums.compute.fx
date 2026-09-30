@@ -6,6 +6,15 @@
 @group(0) @binding(1) var<storage, read_write> pointCount : array<u32>;
 @group(0) @binding(2) var<storage, read_write> indirectArgs : array<u32>;
 
+// Ceiling on the global point count. Sums are saturated to it so a workload that would exceed 2^32 points
+// degrades into a clamped (still monotonic) CDF instead of wrapping around to zero and rendering nothing.
+const GpsMaxPointCount : u32 = 0xFFFFFF00u;
+
+fn gpsSaturatingAdd(a : u32, b : u32) -> u32 {
+    let sum = a + b;
+    return select(GpsMaxPointCount, sum, sum >= a && sum <= GpsMaxPointCount);
+}
+
 var<workgroup> wgCarry : u32;
 var<workgroup> wgChunkTotal : u32;
 
@@ -37,15 +46,17 @@ fn main(@builtin(local_invocation_id) lid : vec3u) {
         workgroupBarrier();
 
         if (i0 < n) {
-            blockSums[i0] = gpsScanTemp[2u * t] + wgCarry;
+            blockSums[i0] = gpsSaturatingAdd(gpsScanTemp[2u * t], wgCarry);
         }
         if (i1 < n) {
-            blockSums[i1] = gpsScanTemp[2u * t + 1u] + wgCarry;
+            blockSums[i1] = gpsSaturatingAdd(gpsScanTemp[2u * t + 1u], wgCarry);
         }
         workgroupBarrier();
 
         if (t == 0u) {
-            wgCarry = wgCarry + wgChunkTotal;
+            // The total must stay below the ceiling so the indirect dispatch and the prefix sums cannot
+            // wrap around to zero and silently drop the whole frame.
+            wgCarry = gpsSaturatingAdd(wgCarry, wgChunkTotal);
         }
         workgroupBarrier();
 
@@ -53,10 +64,11 @@ fn main(@builtin(local_invocation_id) lid : vec3u) {
     }
 
     if (t == 0u) {
-        // Y-tile to exceed the 65535-workgroups-per-dimension limit.
-        let totalGroups = (wgCarry + 255u) / 256u;
+        // Y-tile to exceed the 65535-workgroups-per-dimension limit. Divide first: wgCarry + 255u would
+        // itself overflow near the u32 maximum.
+        let totalGroups = wgCarry / 256u + select(0u, 1u, (wgCarry % 256u) != 0u);
         let gx = min(totalGroups, 65535u);
-        let gy = (totalGroups + 65534u) / 65535u;
+        let gy = totalGroups / 65535u + select(0u, 1u, (totalGroups % 65535u) != 0u);
         pointCount[0] = wgCarry; // actual total; the splat kernel bounds-checks its linear index against it
         pointCount[1] = totalGroups; // CPU-readable diagnostics (indirectArgs is GPU-only)
         indirectArgs[0] = gx;

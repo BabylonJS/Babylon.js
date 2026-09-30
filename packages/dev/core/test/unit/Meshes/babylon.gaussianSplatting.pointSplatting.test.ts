@@ -10,6 +10,7 @@ import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gau
 import { GaussianPointSplattingRenderer } from "core/Meshes/GaussianSplatting/gaussianPointSplattingRenderer";
 import { GaussianPointSplattingController } from "core/Meshes/GaussianSplatting/gaussianPointSplattingController";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Plane } from "core/Maths/math.plane";
 import { FreeCamera } from "core/Cameras/freeCamera";
@@ -673,6 +674,150 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         scene.clipPlane = null;
         camera._rigCameras.push(new FreeCamera("eye", Vector3.Zero(), scene));
         expect(controller["_hasUnsupportedView"]()).toBe(true);
+
+        scene.dispose();
+        engine.dispose();
+    });
+    it("renders at the camera output render target resolution and aspect", () => {
+        const engine = new NullEngine({ renderWidth: 400, renderHeight: 200 });
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        scene.activeCamera = camera;
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        camera.outputRenderTarget = new RenderTargetTexture("target", 200, scene);
+
+        expect(controller["_getOutputSize"]()).toEqual({ width: 200, height: 200 });
+        // The compute runs before the target is bound, so the camera's cached projection still uses the
+        // 2:1 backbuffer aspect while the square target needs a 1:1 one.
+        const backbufferProjection = camera.getProjectionMatrix().clone();
+        const projection = controller["_getProjectionMatrix"](camera, 200, 200);
+        expect(projection.m[0]).toBeCloseTo(projection.m[5], 5);
+        expect(projection.m[0]).toBeCloseTo(backbufferProjection.m[0] * 2, 5);
+        expect(projection.m[5]).toBeCloseTo(backbufferProjection.m[5], 5);
+
+        // Without a resolution change the camera's own projection is used as-is.
+        camera.outputRenderTarget.dispose();
+        camera.outputRenderTarget = null;
+        expect(controller["_getOutputSize"]()).toEqual({ width: 400, height: 200 });
+        expect(controller["_getProjectionMatrix"](camera, 400, 200)).toBe(camera.getProjectionMatrix());
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("reuses the same output size object across frames", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+
+        expect(controller["_getOutputSize"]()).toBe(controller["_getOutputSize"]());
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("widens a degenerate view-space depth span around the surface", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        // A single splat (or a plane facing the camera) has no depth extent at all.
+        controller["_partLocalMin"] = new Float32Array([0, 0, 0]);
+        controller["_partLocalMax"] = new Float32Array([0, 0, 0]);
+        controller["_partScratch"].set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 10, 1]);
+
+        const [spanMin, spanMax] = controller["_viewZSpan"](Matrix.Identity().m, 0.1, 0);
+        expect(spanMin).toBeLessThan(10);
+        expect(spanMax).toBeGreaterThan(10);
+        expect(spanMax - spanMin).toBeLessThan(1);
+
+        // Nothing visible at all still falls back to the camera interval.
+        controller["_partLocalMin"] = new Float32Array([NaN, NaN, NaN]);
+        expect(controller["_viewZSpan"](Matrix.Identity().m, 0.1, 5)).toEqual([0.1, 5]);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("rejects workloads that exceed the device storage buffer limits", () => {
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        Object.defineProperty(renderer, "_engine", { value: { currentLimits: { maxStorageBufferBindingSize: 134217728, maxBufferSize: 268435456 } } });
+
+        expect(renderer.supportsWorkload(1_000_000, 1920, 1080)).toBe(true);
+        // 64 bytes of screen data per Gaussian.
+        expect(renderer.supportsWorkload(3_000_000, 1920, 1080)).toBe(false);
+        // 16 bytes of accumulated color per output pixel.
+        expect(renderer.supportsWorkload(1_000_000, 5120, 2880)).toBe(false);
+    });
+
+    it("keeps accumulating when the point density is reapplied unchanged", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const reset = vi.spyOn(renderer, "resetAccumulation").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+
+        mesh.pointSplattingScale = 2;
+        expect(reset).toHaveBeenCalledTimes(1);
+        mesh.pointSplattingScale = 2;
+        expect(reset).toHaveBeenCalledTimes(1);
+
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("round-trips the point-splatting settings through serialization", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.pointSplattingScale = 2;
+        mesh.pointSplattingRenderScale = 0.5;
+
+        const parsed = GaussianSplattingMesh.Parse(mesh.serialize(), scene);
+        expect(parsed.pointSplattingScale).toBe(2);
+        expect(parsed.pointSplattingRenderScale).toBe(0.5);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps the internal compositors out of scene serialization", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+
+        controller["_enableColorBlit"]();
+        controller["_enableDepthBlit"]();
+        expect(controller["_blit"]!.doNotSerialize).toBe(true);
+        expect(controller["_depthBlit"]!.doNotSerialize).toBe(true);
+        expect(controller["_blitMesh"]!.doNotSerialize).toBe(true);
+        expect(controller["_depthBlitMesh"]!.doNotSerialize).toBe(true);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("rebuilds debug part data when a clipping box is mutated in place", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const material = new GaussianSplattingMaterial("splat", scene);
+        const debug = new GaussianSplattingDebugMaterialPlugin(material);
+        debug.clippingBox = { min: new Vector3(-1, -1, -1), max: new Vector3(1, 1, 1) };
+
+        const first = debug.getResolvedPartData(1, engine);
+        expect(first.data[0]).toBe(-1);
+
+        debug.clippingBox!.min.x = 5;
+        const updated = debug.getResolvedPartData(1, engine);
+        expect(updated).not.toBe(first);
+        expect(updated.data[0]).toBe(5);
+        expect(debug.getResolvedPartData(1, engine)).toBe(updated);
 
         scene.dispose();
         engine.dispose();

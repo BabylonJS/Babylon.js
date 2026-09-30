@@ -5,6 +5,7 @@ import { type Scene } from "core/scene.pure";
 import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion } from "core/Maths/math.vector.pure";
 import { type Material } from "core/Materials/material.pure";
+import { type Camera } from "core/Cameras/camera.pure";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { Constants } from "core/Engines/constants";
 import { Mesh } from "core/Meshes/mesh.pure";
@@ -107,6 +108,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _progressGeneration = -1;
     private _progressCycleLength = 0;
     private _streamingWarned = false;
+    private _workloadWarned = false;
     private _renderer: Nullable<GaussianPointSplattingRenderer> = null;
     private _blit: Nullable<GaussianPointSplattingBlitMaterial> = null;
     private _blitMesh: Nullable<Mesh> = null;
@@ -123,6 +125,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _partScratch = new Float32Array(40);
     private _decodedSplatsData: Nullable<ArrayBuffer> = null;
     private readonly _vpMatrix = new Matrix();
+    private readonly _projectionScratch = new Matrix();
+    private readonly _outputSize = { width: 1, height: 1 };
     private readonly _depthSpan: [number, number] = [0, 0];
 
     /** @inheritdoc */
@@ -191,6 +195,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         return this._scale;
     }
     public set pointScale(value: number) {
+        if (value === this._scale) {
+            return;
+        }
         this._scale = value;
         if (this._renderer) {
             this._renderer.pointScale = value;
@@ -260,6 +267,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _enableColorBlit(): void {
         if (!this._blit) {
             this._blit = new GaussianPointSplattingBlitMaterial(this._mesh.name + "_blit", this._scene);
+            // Internal compositor bound to storage buffers, which cannot round-trip through serialization.
+            this._blit.doNotSerialize = true;
         }
         if (!this._blitMesh) {
             this._blitMesh = this._createBlitMesh(this._mesh.name + "_blitMesh", this._blit);
@@ -270,6 +279,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _enableDepthBlit(): void {
         if (!this._depthBlit) {
             this._depthBlit = new GaussianPointSplattingDepthBlitMaterial(this._mesh.name + "_depthBlit", this._scene);
+            // Internal compositor bound to storage buffers, which cannot round-trip through serialization.
+            this._depthBlit.doNotSerialize = true;
         }
         if (!this._depthBlitMesh) {
             this._depthBlitMesh = this._createBlitMesh(this._mesh.name + "_depthBlitMesh", this._depthBlit);
@@ -553,10 +564,16 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
         vzMin = Math.max(near, vzMin);
         vzMax = Math.min(far > 0 ? far : Infinity, vzMax);
-        if (!(vzMax > vzMin)) {
+        if (!isFinite(vzMin) || vzMax < vzMin) {
             // Nothing visible; any finite span works.
             this._depthSpan[0] = near;
             this._depthSpan[1] = far > near ? far : near + 1;
+        } else if (vzMax === vzMin) {
+            // Flat or single-splat model: widen a band around the actual depth. Collapsing to [near, ...]
+            // instead would place the surface at the near plane and break the depth test and depth map.
+            const epsilon = Math.max(Math.abs(vzMin) * 1e-3, 1e-4);
+            this._depthSpan[0] = Math.max(near, vzMin - epsilon);
+            this._depthSpan[1] = vzMax + epsilon;
         } else {
             this._depthSpan[0] = vzMin;
             this._depthSpan[1] = vzMax;
@@ -660,16 +677,79 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
     }
 
-    /** Returns the size of the camera's color target, which may be a post-process target.
+    /** Returns the size of the camera's color target: the first post-process target, the camera's output
+     * render target, or the backbuffer. The returned object is reused between calls.
      * @returns The color target dimensions in pixels.
      */
     private _getOutputSize(): { width: number; height: number } {
         const engine = this._scene.getEngine();
-        const postProcess = this._scene.postProcessesEnabled ? this._scene.activeCamera?._getFirstPostProcess() : null;
-        return {
-            width: postProcess && postProcess.width > 0 ? postProcess.width : engine.getRenderWidth(true),
-            height: postProcess && postProcess.height > 0 ? postProcess.height : engine.getRenderHeight(true),
-        };
+        const camera = this._scene.activeCamera;
+        const postProcess = this._scene.postProcessesEnabled ? camera?._getFirstPostProcess() : null;
+        const outputRenderTarget = camera?.outputRenderTarget;
+        let width: number;
+        let height: number;
+        if (postProcess && postProcess.width > 0 && postProcess.height > 0) {
+            width = postProcess.width;
+            height = postProcess.height;
+        } else if (outputRenderTarget) {
+            width = outputRenderTarget.getRenderWidth();
+            height = outputRenderTarget.getRenderHeight();
+        } else {
+            width = engine.getRenderWidth(true);
+            height = engine.getRenderHeight(true);
+        }
+        this._outputSize.width = Math.max(1, width);
+        this._outputSize.height = Math.max(1, height);
+        return this._outputSize;
+    }
+
+    /**
+     * Returns the projection matrix the camera will use once its color target is bound.
+     *
+     * The compute runs before the camera binds that target, so the camera's cached projection may still be
+     * the one built for the backbuffer. When the resolved output size differs (a post-process target or a
+     * `camera.outputRenderTarget` of another resolution), the projection is rebuilt for that size instead.
+     * @param camera the active camera
+     * @param outWidth the resolved output width in pixels
+     * @param outHeight the resolved output height in pixels
+     * @returns the projection matrix matching the output target
+     */
+    private _getProjectionMatrix(camera: Camera, outWidth: number, outHeight: number): Matrix {
+        const engine = this._scene.getEngine();
+        // Oblique projections depend on camera-specific state the camera resolves itself; leave them alone.
+        if ((outWidth === engine.getRenderWidth(true) && outHeight === engine.getRenderHeight(true)) || camera.oblique) {
+            return camera.getProjectionMatrix();
+        }
+        const reverseDepth = engine.useReverseDepthBuffer;
+        const maxZ = camera.ignoreCameraMaxZ ? 0 : camera.maxZ;
+        const zNear = reverseDepth ? maxZ : camera.minZ;
+        const zFar = reverseDepth ? camera.minZ : maxZ;
+        const result = this._projectionScratch;
+        const rightHanded = this._scene.useRightHandedSystem;
+        if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+            const halfWidth = outWidth / 2;
+            const halfHeight = outHeight / 2;
+            const left = camera.orthoLeft ?? -halfWidth;
+            const right = camera.orthoRight ?? halfWidth;
+            const bottom = camera.orthoBottom ?? -halfHeight;
+            const top = camera.orthoTop ?? halfHeight;
+            if (rightHanded) {
+                Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, zNear, zFar, result, engine.isNDCHalfZRange);
+            } else {
+                Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, zNear, zFar, result, engine.isNDCHalfZRange);
+            }
+            return result;
+        }
+        // Same aspect convention as AbstractEngine.getAspectRatio.
+        const viewport = camera.viewport;
+        const aspectRatio = (outWidth * viewport.width) / (outHeight * viewport.height);
+        const isVerticalFovFixed = camera.fovMode === Constants.FOVMODE_VERTICAL_FIXED;
+        if (rightHanded) {
+            Matrix.PerspectiveFovRHToRef(camera.fov, aspectRatio, zNear, zFar, result, isVerticalFovFixed, engine.isNDCHalfZRange, camera.projectionPlaneTilt, reverseDepth);
+        } else {
+            Matrix.PerspectiveFovLHToRef(camera.fov, aspectRatio, zNear, zFar, result, isVerticalFovFixed, engine.isNDCHalfZRange, camera.projectionPlaneTilt, reverseDepth);
+        }
+        return result;
     }
 
     /** Runs the compute before the render pass and binds its output to the blit materials. */
@@ -692,6 +772,15 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const engine = this._scene.getEngine();
         // Render at 1/N resolution and reconstruct full resolution over N^2 jittered frames.
         const { width: fullW, height: fullH } = this._getOutputSize();
+        if (!this._renderer.supportsWorkload(this._splatCount, fullW, fullH)) {
+            if (!this._workloadWarned) {
+                this._workloadWarned = true;
+                Logger.Warn(
+                    `GaussianSplattingMesh: point splatting needs storage buffers larger than this device allows (${this._splatCount} splats at ${fullW}x${fullH}); falling back to the classic renderer.`
+                );
+            }
+            return;
+        }
         const scaleOpt = this._renderScale;
         const upsampleN = scaleOpt === "auto" ? this._autoN : Math.max(1, Math.min(8, Math.round(1 / Math.max(scaleOpt, 1e-3))));
         const width = Math.max(1, Math.ceil(fullW / upsampleN));
@@ -703,7 +792,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const jitterY = Math.floor(j / upsampleN);
 
         const view = camera.getViewMatrix();
-        const projection = camera.getProjectionMatrix();
+        const projection = this._getProjectionMatrix(camera, fullW, fullH);
         view.multiplyToRef(projection, this._vpMatrix);
         const focalX = (fullW * projection.m[0]) / (2 * upsampleN);
         const focalY = (fullH * projection.m[5]) / (2 * upsampleN);

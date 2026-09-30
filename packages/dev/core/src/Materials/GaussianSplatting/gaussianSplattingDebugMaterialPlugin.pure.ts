@@ -41,6 +41,9 @@ class GaussianSplattingDebugDefines extends MaterialDefines {
     GS_DBG_SH_ORDER4: number = 1;
 }
 
+// Clip box min/max (6) + opacity culling min/max (2) + size culling min/max (2) per snapshot slot.
+const _MutableValuesPerSlot = 10;
+
 /**
  * Per-part debug options for compound Gaussian splat meshes.
  * Each field is optional; unset fields fall back to the global setting on the plugin,
@@ -112,6 +115,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     private _textureDirty: boolean = false;
     private _maxPartCount: number = 0;
     private _resolvedPartData: Nullable<{ partCount: number; data: Float32Array; maxPartCount: number }> = null;
+    private _mutableValuesSnapshot: Nullable<Float32Array> = null;
 
     /**
      * Creates a new GaussianSplattingDebugMaterialPlugin.
@@ -151,10 +155,83 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
         if (!this._maxPartCount) {
             this._maxPartCount = GetGaussianSplattingMaxPartCount(engine);
         }
-        if (!this._resolvedPartData || this._resolvedPartData.partCount !== partCount) {
+        // Clip boxes and culling ranges are handed out by reference, so callers can change their values
+        // without going through a setter. Comparing the values catches that, like the classic non-compound
+        // path which reads them live at bind time.
+        const mutated = this._refreshMutableValuesSnapshot(partCount);
+        if (!this._resolvedPartData || this._resolvedPartData.partCount !== partCount || mutated) {
             this._resolvedPartData = { partCount, data: this._buildTextureData(partCount), maxPartCount: this._maxPartCount };
         }
         return this._resolvedPartData;
+    }
+
+    /**
+     * Stores the current values of every externally mutable debug setting and reports whether any changed.
+     * @param partCount current mesh part count
+     * @returns true when at least one value differs from the previous call
+     */
+    private _refreshMutableValuesSnapshot(partCount: number): boolean {
+        // One slot per part plus a trailing slot for the parts that resolve to the global settings.
+        const slotCount = partCount + 1;
+        let snapshot = this._mutableValuesSnapshot;
+        let changed = false;
+        if (!snapshot || snapshot.length !== slotCount * _MutableValuesPerSlot) {
+            snapshot = new Float32Array(slotCount * _MutableValuesPerSlot);
+            this._mutableValuesSnapshot = snapshot;
+            changed = true;
+        }
+        for (let i = 0; i < slotCount; i++) {
+            const offset = i * _MutableValuesPerSlot;
+            const box = i < partCount ? (this._partClippingBoxes[i] ?? this._clippingBox) : this._clippingBox;
+            if (this._diffMutableValue(snapshot, offset, box ? box.min.x : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 1, box ? box.min.y : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 2, box ? box.min.z : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 3, box ? box.max.x : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 4, box ? box.max.y : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 5, box ? box.max.z : 0)) {
+                changed = true;
+            }
+            const opacityCulling = i < partCount ? (this._partOpacityCullings[i] ?? this._opacityCulling) : this._opacityCulling;
+            if (this._diffMutableValue(snapshot, offset + 6, opacityCulling ? opacityCulling.min : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 7, opacityCulling ? opacityCulling.max : 0)) {
+                changed = true;
+            }
+            const sizeCulling = i < partCount ? (this._partSizeCullings[i] ?? this._sizeCulling) : this._sizeCulling;
+            if (this._diffMutableValue(snapshot, offset + 8, sizeCulling ? sizeCulling.min : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 9, sizeCulling ? sizeCulling.max : 0)) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Writes a value into the snapshot and reports whether it replaced a different one.
+     * @param snapshot the snapshot buffer
+     * @param index the slot index to write
+     * @param value the current value
+     * @returns true when the stored value changed
+     */
+    private _diffMutableValue(snapshot: Float32Array, index: number, value: number): boolean {
+        if (snapshot[index] === value) {
+            return false;
+        }
+        snapshot[index] = value;
+        return true;
     }
 
     private _isAnyFeatureActive(): boolean {

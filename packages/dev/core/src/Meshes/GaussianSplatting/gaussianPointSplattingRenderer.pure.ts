@@ -135,6 +135,35 @@ export class GaussianPointSplattingRenderer {
     public maxAccumFrames = 255;
 
     /**
+     * Largest storage buffer this device can allocate and bind, in bytes. Both the per-Gaussian screen
+     * data and the accumulation buffers scale linearly with the workload and can exceed it.
+     * @returns the effective storage buffer size limit in bytes
+     */
+    private _getMaxStorageBufferSize(): number {
+        // WebGPU's guaranteed minimum, used when the engine does not expose its device limits.
+        const defaultLimit = 134217728;
+        const limits = (this._engine as WebGPUEngine).currentLimits;
+        if (!limits) {
+            return defaultLimit;
+        }
+        return Math.min(limits.maxStorageBufferBindingSize || defaultLimit, limits.maxBufferSize || defaultLimit);
+    }
+
+    /**
+     * True when the storage buffers required by the given workload fit in the device limits. Callers must
+     * fall back to another renderer when it is false, otherwise buffer creation raises a validation error.
+     * @param gaussianCount number of Gaussians to render
+     * @param outWidth output (full) width in pixels
+     * @param outHeight output (full) height in pixels
+     * @returns whether the workload can be allocated on this device
+     */
+    public supportsWorkload(gaussianCount: number, outWidth: number, outHeight: number): boolean {
+        const limit = this._getMaxStorageBufferSize();
+        // sizeof(GpsScreen) per Gaussian, and premultiplied RGBA floats per output pixel.
+        return gaussianCount * 64 <= limit && outWidth * outHeight * 4 * Float32Array.BYTES_PER_ELEMENT <= limit;
+    }
+
+    /**
      * Creates a new Gaussian Point Splatting renderer.
      * @param engine the (WebGPU) engine to allocate compute resources on
      */
