@@ -5,6 +5,7 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
 import { type StorageBuffer } from "core/Buffers/storageBuffer";
+import { Vector2, Vector4 } from "core/Maths/math.vector.pure";
 
 /**
  * Writes resolved Gaussian Point Splatting depth into a DepthRenderer map with a fullscreen triangle.
@@ -16,6 +17,11 @@ import { type StorageBuffer } from "core/Buffers/storageBuffer";
  * suitable for SSAO/DOF/AOV but not exact depth equality.
  */
 export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
+    // Reused per-frame uniform values; ShaderMaterial keeps references to them.
+    private readonly _resolution = new Vector2();
+    private readonly _projZ = new Vector4();
+    private readonly _depthValues = new Vector2();
+
     /**
      * Creates a new depth blit material.
      * @param name material name
@@ -63,7 +69,7 @@ export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
      * @param height render height in pixels
      */
     public setResolution(width: number, height: number): void {
-        this.setVector2("resolution", { x: width, y: height });
+        this.setVector2("resolution", this._resolution.set(width, height));
     }
 
     /**
@@ -74,7 +80,7 @@ export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
      * @param m15 projection matrix element [15]
      */
     public setProjectionZ(m10: number, m11: number, m14: number, m15: number): void {
-        this.setVector4("projZ", { x: m10, y: m11, z: m14, w: m15 });
+        this.setVector4("projZ", this._projZ.set(m10, m11, m14, m15));
     }
 
     /**
@@ -83,7 +89,7 @@ export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
      * @param minZPlusMaxZ the depth metric divisor
      */
     public setDepthValues(minZ: number, minZPlusMaxZ: number): void {
-        this.setVector2("depthValues", { x: minZ, y: minZPlusMaxZ });
+        this.setVector2("depthValues", this._depthValues.set(minZ, minZPlusMaxZ));
     }
 
     /**

@@ -11,6 +11,15 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Point Splatting Scaled Depth",
+            "playgroundId": "#O4L9TF#0",
+            "referenceImage": "gsplat-point-scaled-depth.png",
+            "renderCount": 245,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "Meshes", "Rendering"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting GLTF",
             "playgroundId": "#WSAFDA#0",
             "referenceImage": "gsplat-splat-gltf.png",

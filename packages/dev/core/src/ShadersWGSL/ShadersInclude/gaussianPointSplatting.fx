@@ -1,9 +1,12 @@
 // Shared math for Gaussian Point Splatting.
 //
-// Visibility is packed as [depth:16 | RGB565:16]; atomicMin keeps the nearest sample. Temporal
+// Visibility is packed as [depth:16 | (RGB565 ^ frame mask):16]; atomicMin keeps the nearest sample.
+// The per-frame random mask keeps equal-depth ties from systematically favoring low RGB values. Temporal
 // accumulation plus RGB565 dithering recovers color precision over frames.
 
 const GPS_DEPTH_CLEAR : u32 = 0xFFFFFFFFu;
+// Largest valid depth code. 0xFFFF is reserved so no valid key can equal GPS_DEPTH_CLEAR.
+const GPS_DEPTH_MAX_CODE : u32 = 65534u;
 const GPS_TWO_PI : f32 = 6.2831853071795864;
 const GPS_U32_TO_UNIT : f32 = 2.3283064365386963e-10; // 1 / 2^32
 
@@ -16,11 +19,12 @@ struct GpsUniforms {
     viewProjection : mat4x4f,
     resNearFar : vec4f, // x=width, y=height, z=near, w=far
     params0 : vec4f,    // x=gaussianCount, y=kernelSize, z=pointScale, w=frameSeed
-    focal : vec4f,      // x,y = focal length in pixels; z unused; w = orthographic flag
+    focal : vec4f,      // x,y = focal length in render pixels; z = right-handed flag; w = orthographic flag
     camPosDeg : vec4f,  // xyz = camera world position, w = SH degree
     depthNorm : vec4f,  // x,y = the model's view-z min/max this frame; z = debugActive; w = compensation
     hiZInfo : vec4f,    // x=baseWidth, y=baseHeight, z=numLevels, w=occlusion enabled (Hi-Z pyramid)
-    misc : vec4f,       // xy = temporal-upsampling jitter (NDC); zw reserved
+    misc : vec4f,       // x = upscale factor N, y = minPixelSize (output px), z = color tie-break mask, w unused
+    pixelMap : vec4f,   // render px = (ndc * 0.5 + 0.5) * xy + zw (padded N-cell grid with this frame's jitter)
 };
 
 // Live per-part state. The world transform is applied per frame (covariance stays local), matching
@@ -85,8 +89,9 @@ fn gpsPackKey(depthKey : u32, colorKey : u32) -> u32 {
     return (depthKey << 16u) | (colorKey & 0xFFFFu);
 }
 
-fn gpsKeyColor(key : u32) -> vec3f {
-    return gpsUnpackRGB565(key & 0xFFFFu);
+// `mask` is the frame's color tie-break mask that was XORed into the key.
+fn gpsKeyColor(key : u32, mask : u32) -> vec3f {
+    return gpsUnpackRGB565((key ^ mask) & 0xFFFFu);
 }
 
 // --- Random sampling (PCG hash) ---
@@ -158,9 +163,29 @@ fn gpsCorrectedBoxMuller(u1 : f32, u2 : f32, alpha : f32) -> vec2f {
     return vec2f(r * cos(theta), r * sin(theta));
 }
 
-// Poisson sample via Giles' QN3 normal-asymptotic approximation (Algorithm 955, ACM TOMS 2016).
+// Below this mean, Poisson samples use exact inverse-CDF search; the asymptotic form diverges as lambda -> 0.
+const GPS_POISSON_SMALL_MEAN : f32 = 12.0;
+
+// Poisson sample: inverse-CDF search for small means, else Giles' QN3 normal-asymptotic approximation
+// (Algorithm 955, ACM TOMS 2016).
 fn gpsPoisson(seed : u32, lambda : f32) -> u32 {
     let st1 = gpsPcg(seed);
+    if (lambda < GPS_POISSON_SMALL_MEAN) {
+        let u = gpsUnit(st1);
+        var p = exp(-lambda);
+        var cdf = p;
+        var k = 0u;
+        // Stop once the remaining tail is negligible, so f32 CDF saturation cannot run away.
+        loop {
+            if (u < cdf || (f32(k) > lambda && p < 1e-7)) {
+                break;
+            }
+            k = k + 1u;
+            p = p * lambda / f32(k);
+            cdf = cdf + p;
+        }
+        return k;
+    }
     let st2 = gpsPcg(st1);
     let w = gpsBoxMuller(gpsUnit(st1), gpsUnit(st2)).x;
     let w2 = w * w;

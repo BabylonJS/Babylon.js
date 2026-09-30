@@ -590,6 +590,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     private static _PlyConversionBatchSize = 32768;
     /** @internal */
     public _shDegree = 0;
+    /** Incremented whenever `_updateData` replaces the splat data, even when it reuses the same buffer. @internal */
+    public _splatDataRevision = 0;
     protected _maxShDegree = 0;
 
     private static readonly _BatchSize = 16; // 16 splats per instance
@@ -3252,6 +3254,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._readyToDisplay = false;
         }
         this._flipY = flipY;
+        this._splatDataRevision++;
 
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);

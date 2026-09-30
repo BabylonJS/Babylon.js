@@ -5,6 +5,7 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
 import { type StorageBuffer } from "core/Buffers/storageBuffer";
+import { Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * Composites the resolved Gaussian Point Splatting color over the scene with a fullscreen triangle.
@@ -12,6 +13,9 @@ import { type StorageBuffer } from "core/Buffers/storageBuffer";
  * result depth-tests against the scene, without writing color-pass depth itself. WebGPU only.
  */
 export class GaussianPointSplattingBlitMaterial extends ShaderMaterial {
+    // Reused per-frame uniform value; ShaderMaterial keeps a reference to it.
+    private readonly _resolution = new Vector2();
+
     /**
      * Creates a new blit material.
      * @param name material name
@@ -58,6 +62,6 @@ export class GaussianPointSplattingBlitMaterial extends ShaderMaterial {
      * @param height render height in pixels
      */
     public setResolution(width: number, height: number): void {
-        this.setVector2("resolution", { x: width, y: height });
+        this.setVector2("resolution", this._resolution.set(width, height));
     }
 }

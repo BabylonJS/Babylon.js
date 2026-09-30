@@ -71,8 +71,10 @@ export class GaussianPointSplattingRenderer {
     /** Sample-density multiplier on the (importance-calibrated) point count. Keep at 1 for exact
      * coverage = opacity*gaussian; other values trade noise for cost but bias the alpha. */
     public pointScale = 1.0;
-    /** 2D covariance dilation (sub-pixel antialiasing kernel), in pixels^2. */
+    /** Low-pass antialiasing dilation, in the classic material's `kernelSize` units. */
     public kernelSize = 0.3;
+    /** Classic material's `minPixelSize`: splats whose projected diameter is below this many output pixels are skipped (0 = off). */
+    public minPixelSize = 0;
     /** Whether view-space forward is negative (right-handed scenes). */
     public rightHandedSystem = false;
     /** 1 when any per-part debug knob is active (drives the preprocess debug branch); 0 otherwise. */
@@ -81,8 +83,11 @@ export class GaussianPointSplattingRenderer {
     public isOrthographic = false;
     /** Whether the source material enables antialiasing opacity compensation (classic COMPENSATION). */
     public compensation = false;
-    /** Hi-Z occlusion culling: skip Gaussians fully behind nearer geometry (previous-frame depth pyramid). */
-    public occlusionCulling = true;
+    /**
+     * Hi-Z occlusion culling: skip Gaussians fully behind the previous frame's nearest samples. Off by default
+     * because those stochastic samples may be semi-transparent, so culling biases the converged image.
+     */
+    public occlusionCulling = false;
 
     // Small GPU-resident scan outputs (allocated once).
     private _pointCount: StorageBuffer;
@@ -214,15 +219,16 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.addUniform("camPosDeg", 4);
         this._uniforms.addUniform("depthNorm", 4);
         this._uniforms.addUniform("hiZInfo", 4);
-        this._uniforms.addUniform("misc", 4); // xy = temporal-upsampling jitter (NDC); zw reserved
+        this._uniforms.addUniform("misc", 4); // x = N, y = minPixelSize, z = color tie-break mask
+        this._uniforms.addUniform("pixelMap", 4); // NDC -> render-pixel scale (xy) and jittered offset (zw)
 
         this._resolveParams = new UniformBuffer(engine);
         this._resolveParams.addUniform("resolution", 2); // render (low) res
         this._resolveParams.addUniform("outResolution", 2); // output (full) res
         this._resolveParams.addUniform("depthNorm", 2); // viewZMin, viewZMax
-        this._resolveParams.addUniform("pad0", 2);
+        this._resolveParams.addUniform("colorMask", 2); // x = color tie-break mask
         this._resolveParams.addUniform("upsample", 4); // N, jitterX, jitterY, generation
-        this._resolveParams.addUniform("misc2", 4); // x = maxAccum; yzw reserved
+        this._resolveParams.addUniform("misc2", 4); // x = maxAccum, y = moving flag
         this._resolveParams.addUniform("projZ", 4); // m10, m11, m14, m15
 
         // pointCount: [totalPoints, indirectGroups, ...]. indirectArgs: [gx, gy, gz] for dispatchIndirect.
@@ -584,11 +590,11 @@ export class GaussianPointSplattingRenderer {
     /**
      * Runs the per-frame GPS compute pipeline for the given viewport, leaving the result in
      * {@link accumBuffer}. Allocates/resizes buffers on demand.
-     * @param width internal render (low) width in pixels
-     * @param height internal render (low) height in pixels
+     * @param width internal render (low) width in pixels; must be `ceil(outWidth / upsampleN)`
+     * @param height internal render (low) height in pixels; must be `ceil(outHeight / upsampleN)`
      * @param outWidth output (full) width the accumulation is reconstructed at
      * @param outHeight output (full) height
-     * @param upsampleN integer upscale factor (outWidth ~= width * N); 1 = no upsampling
+     * @param upsampleN integer upscale factor; 1 = no upsampling
      * @param jitterX this frame's sub-cell offset x in [0, N)
      * @param jitterY this frame's sub-cell offset y in [0, N)
      * @returns true if the pipeline dispatched, false if it was not ready / had nothing to draw
@@ -627,30 +633,34 @@ export class GaussianPointSplattingRenderer {
         const moving = this._accumGeneration !== this._lastRenderedGeneration;
         this._lastRenderedGeneration = this._accumGeneration;
 
-        // Jitter (NDC) so render pixel (lx,ly) samples full-res (lx*N+ox, ly*N+oy): shift the projected mean
-        // by the sub-cell offset relative to the cell center. Added to ndc.xy in preprocess (uniforms.misc).
+        // Map NDC onto a grid of N-pixel output cells so render pixel (lx,ly) samples output pixel
+        // (lx*N+ox, ly*N+oy) exactly, even when the output size is not a multiple of N (the padded
+        // remainder is cropped by resolve).
         const n = this._upsampleN;
-        const jitterNdcX = n > 1 ? (-2 * (this._jitterX + 0.5 - n / 2)) / this._outWidth : 0;
-        const jitterNdcY = n > 1 ? (-2 * (this._jitterY + 0.5 - n / 2)) / this._outHeight : 0;
+        const pixelOffsetX = (n / 2 - this._jitterX - 0.5) / n;
+        const pixelOffsetY = (n / 2 - this._jitterY - 0.5) / n;
+        // Per-frame mask XORed into the packed color so equal-depth ties are not biased toward low RGB values.
+        const colorMask = (Math.imul(this._frameIndex + 1, 0x9e3779b1) >>> 16) & 0xffff;
 
         this._uniforms.updateMatrix("view", this._view);
         this._uniforms.updateMatrix("viewProjection", this._viewProjection);
         this._uniforms.updateFloat4("resNearFar", width, height, this._near, this._far);
         // frameSeed wraps to stay exact as a float and to vary the stochastic sampling each frame.
-        // kernelSize is a fixed OUTPUT-pixel low-pass dilation; the covariance is in render (low) pixels, so
-        // scale it by the render-to-output area ratio — otherwise a low-res render dilates splats N^2x too much (blobby).
-        const renderAreaRatio = (this._width / this._outWidth) * (this._height / this._outHeight);
-        this._uniforms.updateFloat4("params0", this._gaussianCount, this.kernelSize * renderAreaRatio, this.pointScale, this._frameIndex % 65536);
-        this._uniforms.updateFloat4("focal", this._focalX, this._focalY, 0, this.isOrthographic ? 1 : 0);
+        // The classic kernel is added to a covariance 4x the physical one in output pixels; preprocess works in
+        // physical render-pixel units, so convert by 1 / (4 * N^2).
+        this._uniforms.updateFloat4("params0", this._gaussianCount, (this.kernelSize * 0.25) / (n * n), this.pointScale, this._frameIndex % 65536);
+        this._uniforms.updateFloat4("focal", this._focalX, this._focalY, this.rightHandedSystem ? 1 : 0, this.isOrthographic ? 1 : 0);
         this._uniforms.updateFloat4("camPosDeg", this._camX, this._camY, this._camZ, this._shDegree);
         this._uniforms.updateFloat4("depthNorm", this._viewZMin, this._viewZMax, this.debugActive, this.compensation ? 1 : 0);
         this._uniforms.updateFloat4("hiZInfo", width, height, this._hiZLevels.length, this.occlusionCulling && !moving ? 1 : 0);
-        this._uniforms.updateFloat4("misc", jitterNdcX, jitterNdcY, 0, 0); // xy = temporal-upsampling jitter (NDC)
+        this._uniforms.updateFloat4("misc", n, this.minPixelSize, colorMask, 0);
+        this._uniforms.updateFloat4("pixelMap", this._outWidth / n, this._outHeight / n, pixelOffsetX, pixelOffsetY);
         this._uniforms.update();
 
         this._resolveParams.updateFloat2("resolution", width, height); // render (low) res
         this._resolveParams.updateFloat2("outResolution", this._outWidth, this._outHeight);
         this._resolveParams.updateFloat2("depthNorm", this._viewZMin, this._viewZMax);
+        this._resolveParams.updateFloat2("colorMask", colorMask, 0);
         this._resolveParams.updateFloat4("upsample", n, this._jitterX, this._jitterY, this._accumGeneration);
         this._resolveParams.updateFloat4("misc2", Math.max(1, Math.min(65535, Math.floor(this.maxAccumFrames))), moving ? 1 : 0, 0, 0);
         const zSign = this.rightHandedSystem ? -1 : 1;

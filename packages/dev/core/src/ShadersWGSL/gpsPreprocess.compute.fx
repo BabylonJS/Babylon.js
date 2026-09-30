@@ -128,19 +128,20 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     if (clip.w <= 0.0) {
         return;
     }
-    // View-space forward distance, handedness-agnostic (LH: +z, RH: -z).
-    let viewDepth = abs(camspace.z);
-    if (viewDepth <= near) {
+    // Signed forward distance (LH: +z, RH: -z). Signed so behind-camera means are rejected for orthographic
+    // cameras too, whose clip.w is always 1. far <= 0 means an infinite far plane.
+    let viewDepth = select(camspace.z, -camspace.z, uniforms.focal.z > 0.5);
+    if (viewDepth <= near || (far > 0.0 && viewDepth >= far)) {
         return;
     }
-    var ndc = clip.xyz / clip.w;
-    // Temporal-upsampling jitter: sub-pixel NDC shift so this frame's low-res grid samples a different
-    // full-res sub-position (reconstructed in resolve). Zero when not upsampling.
-    ndc.x += uniforms.misc.x;
-    ndc.y += uniforms.misc.y;
+    let ndc = clip.xyz / clip.w;
     if (ndc.x < -1.3 || ndc.x > 1.3 || ndc.y < -1.3 || ndc.y > 1.3) {
         return;
     }
+    // Render-pixel position on the padded N-cell grid, shifted by this frame's jitter so render pixel p
+    // samples output pixel p * N + jitter (reconstructed in resolve).
+    let px = (ndc.x * 0.5 + 0.5) * uniforms.pixelMap.x + uniforms.pixelMap.z;
+    let py = (ndc.y * 0.5 + 0.5) * uniforms.pixelMap.y + uniforms.pixelMap.w;
 
     // EWA projection setup. Sigma is stored as f16 pairs normalized by a per-splat factor, matching the
     // classic covA/covB + center.w scheme; rescale before projection.
@@ -164,7 +165,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // Determinant BEFORE the low-pass dilation, for the optional opacity compensation below.
     let detOrig = cov2d[0][0] * cov2d[1][1] - cov2d[0][1] * cov2d[0][1];
 
-    // Low-pass (antialiasing) dilation, matching the classic rasterizer's kernelSize.
+    // Low-pass (antialiasing) dilation, matching the classic rasterizer's kernelSize (already converted to
+    // this pass's render-pixel covariance units on the CPU).
     let kernelSize = uniforms.params0.y;
     cov2d[0][0] += kernelSize;
     cov2d[1][1] += kernelSize;
@@ -177,14 +179,20 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    // Previous-frame Hi-Z cull; weights[g] is already 0, so returning emits no points.
+    let lambda1 = (a + cc) * 0.5 + length(vec2f((a - cc) * 0.5, b));
+
+    // Classic minPixelSize: its major-axis diameter 2*sqrt(2*lambda) uses 4x this covariance, in output
+    // pixels (N render pixels each), i.e. 4*N*sqrt(2*lambda1) here.
+    let minPixelSize = uniforms.misc.y;
+    if (minPixelSize > 0.0 && 4.0 * uniforms.misc.x * sqrt(2.0 * lambda1) < minPixelSize) {
+        return;
+    }
+
+    // Optional previous-frame Hi-Z cull (an approximation: stochastic winners are not proven opaque);
+    // weights[g] is already 0, so returning emits no points.
     if (uniforms.hiZInfo.w > 0.5) {
-        let mid = (a + cc) * 0.5;
-        let rad = length(vec2f((a - cc) * 0.5, b));
-        let footR = 3.0 * sqrt(max(mid + rad, 0.0)); // ~3-sigma footprint radius (px) from the max eigenvalue
-        let cx = (ndc.x * 0.5 + 0.5) * uniforms.resNearFar.x;
-        let cy = (ndc.y * 0.5 + 0.5) * uniforms.resNearFar.y;
-        if (gpsHiZOccluded(vec2f(cx, cy), footR, viewDepth)) {
+        let footR = 3.0 * sqrt(max(lambda1, 0.0)); // ~3-sigma footprint radius (px) from the max eigenvalue
+        if (gpsHiZOccluded(vec2f(px, py), footR, viewDepth)) {
             return;
         }
     }
@@ -262,9 +270,6 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         return;
     }
 
-    let px = (ndc.x * 0.5 + 0.5) * res.x;
-    let py = (ndc.y * 0.5 + 0.5) * res.y;
-
     var s : GpsScreen;
     s.pmConicXY = vec4f(px, py, conic.x, conic.y);
     s.conicZChol = vec4f(conic.z, chol0, chol1, chol2);
@@ -275,7 +280,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let dmax = uniforms.depthNorm.y;
     let dord = clamp((viewDepth - dmin) / max(dmax - dmin, 1e-6), 0.0, 1.0);
     // depth.y carries the debug opacity-saturate flag (flat disk instead of Gaussian falloff).
-    s.depth = vec4u(u32(dord * 65535.0), select(0u, 1u, saturate), 0u, 0u);
+    s.depth = vec4u(u32(dord * f32(GPS_DEPTH_MAX_CODE)), select(0u, 1u, saturate), 0u, 0u);
     gsData[g] = s;
 
     weights[g] = numPoints;

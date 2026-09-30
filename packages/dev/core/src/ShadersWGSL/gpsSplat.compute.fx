@@ -100,7 +100,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let db = gpsUnit(st) - 0.5;
     let dithered = s.colorOp.rgb + vec3f(dr / 31.0, dg / 63.0, db / 31.0);
 
-    let key = gpsPackKey(s.depth.x, gpsPackRGB565(dithered));
+    // XOR with the frame's random mask so equal-depth ties do not consistently favor low RGB values.
+    let key = gpsPackKey(s.depth.x, gpsPackRGB565(dithered) ^ u32(uniforms.misc.z));
     let idx = u32(y) * u32(res.x) + u32(x);
 
     // Depth pre-check: skip the atomicMin when this sample cannot beat the current nearest. In dense

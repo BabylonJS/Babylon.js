@@ -745,6 +745,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
+     * Brings every part proxy's world matrix up to date so its transform reaches the compound's part
+     * matrices before the point-splatting controller reads them this frame. Forced, because a non-forced
+     * call skips nodes already computed for the current render id; unchanged matrices are not re-posted.
+     * @internal
+     */
+    public _syncPartProxyWorldMatrices(): void {
+        for (const proxy of this._partProxies) {
+            proxy?.computeWorldMatrix(true);
+        }
+    }
+
+    /**
      * Per-splat context the point-splatting controller needs when it CPU-decodes {@link _splatsData}. Kept
      * here so the controller does not need access to protected base-class state. Only read on an actual
      * decode (data/part-count/range change), never per frame.

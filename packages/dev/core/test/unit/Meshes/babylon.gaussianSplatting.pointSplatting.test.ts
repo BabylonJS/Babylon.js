@@ -9,7 +9,9 @@ import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSpl
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { GaussianPointSplattingRenderer } from "core/Meshes/GaussianSplatting/gaussianPointSplattingRenderer";
 import { GaussianPointSplattingController } from "core/Meshes/GaussianSplatting/gaussianPointSplattingController";
-import { Matrix } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { Plane } from "core/Maths/math.plane";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { FromHalfFloat } from "core/Misc/halfFloat";
 import { Scene } from "core/scene";
 import { describe, expect, it, vi } from "vitest";
@@ -184,6 +186,8 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_splatCount"] = 1;
         controller["_partCount"] = 1;
         controller["_decodedPartCount"] = 2;
+        controller["_decodedRevision"] = mesh._splatDataRevision;
+        controller["_decodedShDegree"] = mesh._shDegree;
 
         expect(mesh.partCount).toBe(2);
         expect(() => controller["_syncData"]()).not.toThrow();
@@ -397,7 +401,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_renderer"] = renderer;
         controller["_colorMode"] = true;
 
-        await controller["_convergeAutoScaleAsync"](2, 0, true);
+        await controller["_convergeAutoScaleAsync"](2, 0, true, 0);
         expect(controller["_autoN"]).toBe(8);
         expect(controller["_budgetReadPending"]).toBe(false);
         // Restart once for the corrected factor, then mark the new generation measured.
@@ -421,8 +425,8 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_renderer"] = renderer;
         controller["_colorMode"] = true;
 
-        // That frame runs without occlusion culling and over-counts, so it may only steer the next frame.
-        await controller["_convergeAutoScaleAsync"](2, 4, false);
+        // The reset frame may over-count, so it may only steer the next frame.
+        await controller["_convergeAutoScaleAsync"](2, 4, false, 0);
         expect(controller["_autoN"]).toBe(8);
         expect(controller["_autoMeasuredGeneration"]).toBe(-1);
         // The factor still changed, and the jitter-cycle length may never change inside a generation, so the
@@ -447,7 +451,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_renderer"] = renderer;
         controller["_colorMode"] = true;
 
-        const pending = controller["_convergeAutoScaleAsync"](2, 4, true);
+        const pending = controller["_convergeAutoScaleAsync"](2, 4, true, 0);
         renderer.resetAccumulation();
         finish(1_000_000_000);
         await pending;
@@ -532,6 +536,128 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(controller["_budgetReadPending"]).toBe(false);
 
         controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("ignores an auto-scale readback issued before the render scale changed", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_accumGeneration"] = 0;
+        let finish!: (value: number) => void;
+        vi.spyOn(renderer, "readPointCountAsync").mockImplementation(() => new Promise<number>((resolve) => (finish = resolve)));
+        controller["_renderer"] = renderer;
+        controller["_colorMode"] = true;
+
+        controller["_updateAutoScale"](2, 0, true);
+        mesh.pointSplattingRenderScale = 0.5;
+        mesh.pointSplattingRenderScale = "auto";
+        expect(renderer.accumulationVersion).toBe(2);
+        finish(1_000_000_000);
+        await Promise.resolve();
+        await Promise.resolve();
+        // The obsolete sample neither adopts its factor nor restarts accumulation again.
+        expect(controller["_autoN"]).toBe(2);
+        expect(renderer.accumulationVersion).toBe(2);
+        expect(controller["_budgetReadPending"]).toBe(false);
+
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("re-decodes after an in-place data update or an SH degree change", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        mesh.disableDepthSort = true;
+        const data = new ArrayBuffer(32);
+        const bytes = new Uint8Array(data);
+        bytes[27] = 255;
+        bytes.fill(128, 28, 32);
+        mesh.updateData(data);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+
+        controller["_syncData"]();
+        controller["_syncData"]();
+        expect(upload).toHaveBeenCalledTimes(1);
+
+        bytes[27] = 64;
+        mesh.updateData(data);
+        expect(mesh._splatsData).toBe(controller["_decodedSplatsData"]);
+        controller["_syncData"]();
+        expect(upload).toHaveBeenCalledTimes(2);
+        expect(upload.mock.lastCall![2][0] >>> 24).toBe(64);
+
+        mesh._shDegree = 1;
+        controller["_syncData"]();
+        expect(upload).toHaveBeenCalledTimes(3);
+
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("uploads material alpha and the current proxy transform of each part", () => {
+        const engine = new NullEngine();
+        (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
+        (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 16;
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingCompoundMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        mesh.disableDepthSort = true;
+        const sources = ["first", "second"].map((name) => {
+            const source = new GaussianSplattingMesh(name, null, scene);
+            source.disableDepthSort = true;
+            const data = new ArrayBuffer(32);
+            new Uint8Array(data)[27] = 255;
+            source.updateData(data);
+            return source;
+        });
+        const proxies = mesh.addParts(sources);
+        mesh.computeWorldMatrix(true);
+        const material = new GaussianSplattingMaterial("material", scene);
+        material.alpha = 0.5;
+        mesh.material = material;
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        const setParts = vi.spyOn(renderer, "setPartData").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+        controller["_syncData"]();
+
+        proxies[1].position.x = 5;
+        controller["_uploadParts"]();
+        const parts = setParts.mock.lastCall![0];
+        expect(parts[40 + 12]).toBe(5);
+        expect(parts[16]).toBeCloseTo(0.5);
+        expect(parts[40 + 16]).toBeCloseTo(0.5);
+
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("falls back to the classic path for views the point path cannot reproduce", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        expect(controller["_hasUnsupportedView"]()).toBe(true);
+
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        expect(controller["_hasUnsupportedView"]()).toBe(false);
+        scene.clipPlane = new Plane(0, 1, 0, 0);
+        expect(controller["_hasUnsupportedView"]()).toBe(true);
+        scene.clipPlane = null;
+        camera._rigCameras.push(new FreeCamera("eye", Vector3.Zero(), scene));
+        expect(controller["_hasUnsupportedView"]()).toBe(true);
+
         scene.dispose();
         engine.dispose();
     });

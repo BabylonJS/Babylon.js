@@ -9,7 +9,7 @@ struct GpsResolveParams {
     resolution : vec2f,    // render (low) res
     outResolution : vec2f, // output (full) res = accum res
     depthNorm : vec2f,     // the model's view-space depth min/max this frame (matches the preprocess key)
-    pad0 : vec2f,
+    colorMask : vec2f,     // x = the frame's color tie-break mask (see gpsSplat); y unused
     upsample : vec4f,      // x=N (upscale factor), y=jitterX, z=jitterY, w=generation
     misc2 : vec4f,         // x=maxAccum, y=moving flag
     projZ : vec4f,         // projection z-row (m10 and m11 sign-adjusted for RH) to map positive view-z back to ndc.z
@@ -38,13 +38,13 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     var depth = 1.0;
     var occlVz = GPS_HIZ_FAR;
     if (raw != GPS_DEPTH_CLEAR) {
-        hitColor = gpsKeyColor(raw);
+        hitColor = gpsKeyColor(raw, u32(params.colorMask.x));
         hit = 1.0;
-        let dq = f32(raw >> 16u) / 65535.0;
+        let dq = f32(raw >> 16u) / f32(GPS_DEPTH_MAX_CODE);
         let vz = params.depthNorm.x + dq * (params.depthNorm.y - params.depthNorm.x);
         // The key truncates depth, so `vz` is the bucket lower bound. Store the upper bound in Hi-Z to
         // keep a Gaussian from self-occluding against its previous-frame sample.
-        occlVz = vz + (params.depthNorm.y - params.depthNorm.x) / 65535.0;
+        occlVz = vz + (params.depthNorm.y - params.depthNorm.x) / f32(GPS_DEPTH_MAX_CODE);
         depth = (params.projZ.x * vz + params.projZ.z) / (params.projZ.y * vz + params.projZ.w);
     }
     // Hi-Z level 0 at render (low) res; the pyramid feeds next frame's preprocess occlusion cull.
