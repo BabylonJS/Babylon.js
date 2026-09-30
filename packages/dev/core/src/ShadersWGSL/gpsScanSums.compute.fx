@@ -6,15 +6,6 @@
 @group(0) @binding(1) var<storage, read_write> pointCount : array<u32>;
 @group(0) @binding(2) var<storage, read_write> indirectArgs : array<u32>;
 
-// Ceiling on the global point count. Sums are saturated to it so a workload that would exceed 2^32 points
-// degrades into a clamped (still monotonic) CDF instead of wrapping around to zero and rendering nothing.
-const GpsMaxPointCount : u32 = 0xFFFFFF00u;
-
-fn gpsSaturatingAdd(a : u32, b : u32) -> u32 {
-    let sum = a + b;
-    return select(GpsMaxPointCount, sum, sum >= a && sum <= GpsMaxPointCount);
-}
-
 var<workgroup> wgCarry : u32;
 var<workgroup> wgChunkTotal : u32;
 

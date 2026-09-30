@@ -18,6 +18,20 @@ const DepthClearSentinel = 0xffffffff;
 const PartitionBuckets = 65536;
 
 /**
+ * Bytes per Gaussian of the u32-packed 8-bit SH coefficients for an SH degree.
+ * @param shDegree spherical-harmonics degree (0-4)
+ * @returns packed SH bytes per Gaussian (0 at degree 0)
+ * @internal
+ */
+export function _GetPackedShBytesPerSplat(shDegree: number): number {
+    if (shDegree < 1) {
+        return 0;
+    }
+    const shDim = shDegree === 1 ? 3 : shDegree === 2 ? 8 : shDegree === 3 ? 15 : 24;
+    return Math.ceil((shDim * 3) / 4) * 4;
+}
+
+/**
  * Owns the WebGPU compute pipeline and GPU buffers for Gaussian Point Splatting (the stochastic,
  * sort-free point-splatting technique). Engine-focused: it knows nothing about the scene graph
  * beyond the camera matrices and viewport size handed to it.
@@ -153,14 +167,16 @@ export class GaussianPointSplattingRenderer {
      * True when the storage buffers required by the given workload fit in the device limits. Callers must
      * fall back to another renderer when it is false, otherwise buffer creation raises a validation error.
      * @param gaussianCount number of Gaussians to render
+     * @param shDegree spherical-harmonics degree of the data (0-4)
      * @param outWidth output (full) width in pixels
      * @param outHeight output (full) height in pixels
      * @returns whether the workload can be allocated on this device
      */
-    public supportsWorkload(gaussianCount: number, outWidth: number, outHeight: number): boolean {
+    public supportsWorkload(gaussianCount: number, shDegree: number, outWidth: number, outHeight: number): boolean {
         const limit = this._getMaxStorageBufferSize();
-        // sizeof(GpsScreen) per Gaussian, and premultiplied RGBA floats per output pixel.
-        return gaussianCount * 64 <= limit && outWidth * outHeight * 4 * Float32Array.BYTES_PER_ELEMENT <= limit;
+        // Largest per-Gaussian buffer: sizeof(GpsScreen), or the packed SH bytes.
+        const perGaussian = Math.max(64, _GetPackedShBytesPerSplat(shDegree));
+        return gaussianCount * perGaussian <= limit && outWidth * outHeight * 4 * Float32Array.BYTES_PER_ELEMENT <= limit;
     }
 
     /**

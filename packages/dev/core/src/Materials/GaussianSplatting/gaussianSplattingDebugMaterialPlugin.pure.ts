@@ -115,7 +115,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     private _textureDirty: boolean = false;
     private _maxPartCount: number = 0;
     private _resolvedPartData: Nullable<{ partCount: number; data: Float32Array; maxPartCount: number }> = null;
-    private _mutableValuesSnapshot: Nullable<Float32Array> = null;
+    private _mutableValuesSnapshot: Nullable<Float64Array> = null;
 
     /**
      * Creates a new GaussianSplattingDebugMaterialPlugin.
@@ -176,7 +176,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
         let snapshot = this._mutableValuesSnapshot;
         let changed = false;
         if (!snapshot || snapshot.length !== slotCount * _MutableValuesPerSlot) {
-            snapshot = new Float32Array(slotCount * _MutableValuesPerSlot);
+            snapshot = new Float64Array(slotCount * _MutableValuesPerSlot);
             this._mutableValuesSnapshot = snapshot;
             changed = true;
         }
@@ -226,7 +226,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
      * @param value the current value
      * @returns true when the stored value changed
      */
-    private _diffMutableValue(snapshot: Float32Array, index: number, value: number): boolean {
+    private _diffMutableValue(snapshot: Float64Array, index: number, value: number): boolean {
         if (snapshot[index] === value) {
             return false;
         }

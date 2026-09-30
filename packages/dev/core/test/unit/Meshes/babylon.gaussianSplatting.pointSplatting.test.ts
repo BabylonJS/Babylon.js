@@ -15,6 +15,7 @@ import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Plane } from "core/Maths/math.plane";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { FromHalfFloat } from "core/Misc/halfFloat";
+import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { describe, expect, it, vi } from "vitest";
 
@@ -660,6 +661,28 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it("uploads the current world matrix of a non-compound mesh moved during the frame", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        mesh.computeWorldMatrix(true);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const setParts = vi.spyOn(renderer, "setPartData").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+        controller["_partCount"] = 1;
+
+        // Same render id: getWorldMatrix() alone would return the cached matrix.
+        mesh.getWorldMatrix();
+        mesh.position.y = 3;
+        controller["_uploadParts"]();
+        expect(setParts.mock.lastCall![0][13]).toBe(3);
+
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("falls back to the classic path for views the point path cannot reproduce", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
@@ -691,7 +714,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         // The compute runs before the target is bound, so the camera's cached projection still uses the
         // 2:1 backbuffer aspect while the square target needs a 1:1 one.
         const backbufferProjection = camera.getProjectionMatrix().clone();
-        const projection = controller["_getProjectionMatrix"](camera, 200, 200);
+        const projection = controller["_getProjectionMatrix"](camera);
         expect(projection.m[0]).toBeCloseTo(projection.m[5], 5);
         expect(projection.m[0]).toBeCloseTo(backbufferProjection.m[0] * 2, 5);
         expect(projection.m[5]).toBeCloseTo(backbufferProjection.m[5], 5);
@@ -700,8 +723,73 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         camera.outputRenderTarget.dispose();
         camera.outputRenderTarget = null;
         expect(controller["_getOutputSize"]()).toEqual({ width: 400, height: 200 });
-        expect(controller["_getProjectionMatrix"](camera, 400, 200)).toBe(camera.getProjectionMatrix());
+        expect(controller["_getProjectionMatrix"](camera)).toBe(camera.getProjectionMatrix());
 
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps the scene projection for post-process targets and frozen projections", () => {
+        const engine = new NullEngine({ renderWidth: 400, renderHeight: 200 });
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        scene.activeCamera = camera;
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+
+        // Post-process targets are bound after the scene computes the projection, so their aspect is ignored.
+        const square = new PassPostProcess("square", 1, camera);
+        square.activate(camera);
+        square.width = 200;
+        square.height = 200;
+        expect(controller["_getOutputSize"]()).toEqual({ width: 200, height: 200 });
+        expect(controller["_getProjectionMatrix"](camera)).toBe(camera.getProjectionMatrix());
+        square.dispose();
+
+        const custom = Matrix.PerspectiveFovLH(1, 3, 0.1, 10);
+        camera.freezeProjectionMatrix(custom);
+        camera.outputRenderTarget = new RenderTargetTexture("target", 200, scene);
+        expect(controller["_getProjectionMatrix"](camera)).toBe(custom);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("treats an ignored camera maxZ as an infinite far plane", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        camera.maxZ = 5;
+        camera.ignoreCameraMaxZ = true;
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        const data = new ArrayBuffer(32);
+        new Float32Array(data)[2] = 20;
+        mesh.updateData(data);
+        const controller = CreateController(mesh);
+        controller["_colorMode"] = true;
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
+        vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        vi.spyOn(renderer, "resetAccumulation").mockImplementation(() => {});
+        vi.spyOn(renderer, "setPartData").mockImplementation(() => {});
+        vi.spyOn(renderer, "setProjectionZ").mockImplementation(() => {});
+        vi.spyOn(renderer, "renderToBuffer").mockReturnValue(false);
+        vi.spyOn(renderer, "renderedFrameCount", "get").mockReturnValue(0);
+        const setCamera = vi.spyOn(renderer, "setCamera").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+        controller["_ensureCompute"]();
+
+        // The compute waits for its shaders to load.
+        await vi.waitFor(() => {
+            controller["_runCompute"]();
+            expect(setCamera).toHaveBeenCalled();
+        });
+        const [, , , far, , , , , , , vzMax] = setCamera.mock.lastCall!;
+        expect(far).toBe(0);
+        expect(vzMax).toBeGreaterThan(5);
+
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
@@ -745,11 +833,43 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         Object.defineProperty(renderer, "_engine", { value: { currentLimits: { maxStorageBufferBindingSize: 134217728, maxBufferSize: 268435456 } } });
 
-        expect(renderer.supportsWorkload(1_000_000, 1920, 1080)).toBe(true);
+        expect(renderer.supportsWorkload(1_000_000, 0, 1920, 1080)).toBe(true);
         // 64 bytes of screen data per Gaussian.
-        expect(renderer.supportsWorkload(3_000_000, 1920, 1080)).toBe(false);
+        expect(renderer.supportsWorkload(3_000_000, 0, 1920, 1080)).toBe(false);
         // 16 bytes of accumulated color per output pixel.
-        expect(renderer.supportsWorkload(1_000_000, 5120, 2880)).toBe(false);
+        expect(renderer.supportsWorkload(1_000_000, 0, 5120, 2880)).toBe(false);
+        // Degree-4 SH packs 72 bytes per Gaussian, more than the screen data.
+        expect(renderer.supportsWorkload(2_000_000, 3, 1920, 1080)).toBe(true);
+        expect(renderer.supportsWorkload(2_000_000, 4, 1920, 1080)).toBe(false);
+    });
+
+    it("checks the workload before decoding or allocating any buffer", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        mesh.updateData(new ArrayBuffer(64));
+        const controller = CreateController(mesh);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const supports = vi.spyOn(renderer, "supportsWorkload").mockReturnValue(false);
+        const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+        const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+        controller["_ensureCompute"]();
+        expect(supports).toHaveBeenCalledWith(2, 0, expect.any(Number), expect.any(Number));
+        expect(upload).not.toHaveBeenCalled();
+        expect(warn).toHaveBeenCalledTimes(1);
+
+        supports.mockReturnValue(true);
+        controller["_ensureCompute"]();
+        expect(upload).toHaveBeenCalledTimes(1);
+
+        warn.mockRestore();
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
     });
 
     it("keeps accumulating when the point density is reapplied unchanged", () => {
@@ -818,6 +938,12 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(updated).not.toBe(first);
         expect(updated.data[0]).toBe(5);
         expect(debug.getResolvedPartData(1, engine)).toBe(updated);
+
+        // Fractional values must compare equal to their own snapshot.
+        debug.clippingBox!.max.y = 0.1;
+        const fractional = debug.getResolvedPartData(1, engine);
+        expect(fractional).not.toBe(updated);
+        expect(debug.getResolvedPartData(1, engine)).toBe(fractional);
 
         scene.dispose();
         engine.dispose();

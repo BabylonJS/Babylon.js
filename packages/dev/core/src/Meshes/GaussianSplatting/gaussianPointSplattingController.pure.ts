@@ -12,7 +12,7 @@ import { Mesh } from "core/Meshes/mesh.pure";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { Logger } from "core/Misc/logger";
 import { ToHalfFloat } from "core/Misc/textureTools";
-import { GaussianPointSplattingRenderer } from "./gaussianPointSplattingRenderer.pure";
+import { GaussianPointSplattingRenderer, _GetPackedShBytesPerSplat } from "./gaussianPointSplattingRenderer.pure";
 import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.pure";
 import { GaussianPointSplattingDepthBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.pure";
 import { type GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
@@ -216,7 +216,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._renderer.pointScale = this._scale;
         }
         this._decodedSplatsData = null;
-        this._syncData();
+        if (this._isWorkloadSupported()) {
+            this._syncData();
+        }
         if (!this._computeObserver) {
             this._computeObserver = this._scene.onBeforeRenderObservable.add(() => this._runCompute());
         }
@@ -285,6 +287,28 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         if (!this._depthBlitMesh) {
             this._depthBlitMesh = this._createBlitMesh(this._mesh.name + "_depthBlitMesh", this._depthBlit);
         }
+    }
+
+    /**
+     * Checks the mesh's current data and output size against the device buffer limits, before anything is
+     * decoded or allocated. Warns once when they do not fit.
+     * @returns whether the workload fits
+     */
+    private _isWorkloadSupported(): boolean {
+        const data = this._mesh._splatsData;
+        const count = data ? (data.byteLength / _BytesPerSplat) | 0 : 0;
+        const shDegree = this._mesh._shData?.length ? this._mesh._shDegree : 0;
+        const { width, height } = this._getOutputSize();
+        if (this._renderer!.supportsWorkload(count, shDegree, width, height)) {
+            return true;
+        }
+        if (!this._workloadWarned) {
+            this._workloadWarned = true;
+            Logger.Warn(
+                `GaussianSplattingMesh: point splatting needs storage buffers larger than this device allows (${count} splats at ${width}x${height}); falling back to the classic renderer.`
+            );
+        }
+        return false;
     }
 
     /** Re-decodes the splat data if it changed since the last decode. */
@@ -437,12 +461,11 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         if (!shData || shData.length === 0 || shDegree < 1) {
             return null;
         }
-        const shDim = shDegree === 1 ? 3 : shDegree === 2 ? 8 : shDegree === 3 ? 15 : 24;
-        const scalars = shDim * 3;
-        const words = Math.ceil(scalars / 4);
-        const bytes = new Uint8Array(count * words * 4);
+        const stride = _GetPackedShBytesPerSplat(shDegree);
+        const scalars = (shDegree === 1 ? 3 : shDegree === 2 ? 8 : shDegree === 3 ? 15 : 24) * 3;
+        const bytes = new Uint8Array(count * stride);
         for (let i = 0; i < count; i++) {
-            const dst = i * words * 4;
+            const dst = i * stride;
             for (let k = 0; k < scalars; k++) {
                 const tex = shData[(k / 16) | 0];
                 bytes[dst + k] = tex[i * 16 + (k % 16)];
@@ -459,6 +482,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
         const scratch = this._partScratch;
         const compound = this._mesh.isCompound;
+        // Runs before the scene evaluates world matrices, so transforms changed this frame must be forced.
+        const meshWorld = this._mesh.computeWorldMatrix(true);
         if (compound) {
             this._mesh._syncPartProxyWorldMatrices();
         }
@@ -477,7 +502,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer!.debugActive = debugActive ? 1 : 0;
 
         for (let i = 0; i < count; i++) {
-            const worldM = (compound ? this._mesh.getWorldMatrixForPart(i) : this._mesh.getWorldMatrix()).m;
+            const worldM = (compound ? this._mesh.getWorldMatrixForPart(i) : meshWorld).m;
             const vis = compound ? this._mesh.getPartVisibility(i) : this._mesh.visibility;
             const o = i * 40;
             scratch.set(worldM, o);
@@ -704,20 +729,23 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     }
 
     /**
-     * Returns the projection matrix the camera will use once its color target is bound.
+     * Returns the projection matrix the camera will use once its framebuffer is bound.
      *
-     * The compute runs before the camera binds that target, so the camera's cached projection may still be
-     * the one built for the backbuffer. When the resolved output size differs (a post-process target or a
-     * `camera.outputRenderTarget` of another resolution), the projection is rebuilt for that size instead.
+     * The compute runs before the camera binds `camera.outputRenderTarget`, so the camera's cached projection
+     * may still be the one built for the backbuffer; it is rebuilt for the target's size instead. Post-process
+     * targets are bound after the projection is computed, so they never change it.
      * @param camera the active camera
-     * @param outWidth the resolved output width in pixels
-     * @param outHeight the resolved output height in pixels
-     * @returns the projection matrix matching the output target
+     * @returns the projection matrix the scene renders with
      */
-    private _getProjectionMatrix(camera: Camera, outWidth: number, outHeight: number): Matrix {
+    private _getProjectionMatrix(camera: Camera): Matrix {
         const engine = this._scene.getEngine();
-        // Oblique projections depend on camera-specific state the camera resolves itself; leave them alone.
-        if ((outWidth === engine.getRenderWidth(true) && outHeight === engine.getRenderHeight(true)) || camera.oblique) {
+        const target = camera.outputRenderTarget;
+        if (!target || camera.oblique || camera["_doNotComputeProjectionMatrix"]) {
+            return camera.getProjectionMatrix();
+        }
+        const outWidth = target.getRenderWidth();
+        const outHeight = target.getRenderHeight();
+        if (outWidth === engine.getRenderWidth(true) && outHeight === engine.getRenderHeight(true)) {
             return camera.getProjectionMatrix();
         }
         const reverseDepth = engine.useReverseDepthBuffer;
@@ -764,6 +792,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         if (!this._computeActive || !this._mesh.isEnabled() || !this._renderer || !_DependenciesReady || this._hasUnsupportedView()) {
             return;
         }
+        if (!this._isWorkloadSupported()) {
+            return;
+        }
         this._syncData();
         if (this._splatCount === 0) {
             return;
@@ -772,15 +803,6 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const engine = this._scene.getEngine();
         // Render at 1/N resolution and reconstruct full resolution over N^2 jittered frames.
         const { width: fullW, height: fullH } = this._getOutputSize();
-        if (!this._renderer.supportsWorkload(this._splatCount, fullW, fullH)) {
-            if (!this._workloadWarned) {
-                this._workloadWarned = true;
-                Logger.Warn(
-                    `GaussianSplattingMesh: point splatting needs storage buffers larger than this device allows (${this._splatCount} splats at ${fullW}x${fullH}); falling back to the classic renderer.`
-                );
-            }
-            return;
-        }
         const scaleOpt = this._renderScale;
         const upsampleN = scaleOpt === "auto" ? this._autoN : Math.max(1, Math.min(8, Math.round(1 / Math.max(scaleOpt, 1e-3))));
         const width = Math.max(1, Math.ceil(fullW / upsampleN));
@@ -792,7 +814,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const jitterY = Math.floor(j / upsampleN);
 
         const view = camera.getViewMatrix();
-        const projection = this._getProjectionMatrix(camera, fullW, fullH);
+        const projection = this._getProjectionMatrix(camera);
         view.multiplyToRef(projection, this._vpMatrix);
         const focalX = (fullW * projection.m[0]) / (2 * upsampleN);
         const focalY = (fullH * projection.m[5]) / (2 * upsampleN);
@@ -812,8 +834,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
 
         this._uploadParts();
-        const [vzMin, vzMax] = this._viewZSpan(view.m, camera.minZ, camera.maxZ);
-        this._renderer.setCamera(view, this._vpMatrix, camera.minZ, camera.maxZ, focalX, focalY, camPos.x, camPos.y, camPos.z, vzMin, vzMax);
+        const farZ = camera.ignoreCameraMaxZ ? 0 : camera.maxZ;
+        const [vzMin, vzMax] = this._viewZSpan(view.m, camera.minZ, farZ);
+        this._renderer.setCamera(view, this._vpMatrix, camera.minZ, farZ, focalX, focalY, camPos.x, camPos.y, camPos.z, vzMin, vzMax);
         // Projection z-row, so resolve reconstructs ndc.z under any depth convention.
         this._renderer.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
         if (!this._renderer.renderToBuffer(width, height, fullW, fullH, upsampleN, jitterX, jitterY)) {
