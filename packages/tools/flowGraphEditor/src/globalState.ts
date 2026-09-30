@@ -23,6 +23,8 @@ import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from 
 import { type HelpTopicId } from "./components/help/helpContent";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
+import { type ContactAudioRuntime } from "./contactAudioRuntime";
+import { type IContactAudioDocument } from "./contactAudio";
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -171,6 +173,13 @@ export class GlobalState {
 
     /** Canonical KHR_interactivity import associated with the active editor coordinator. */
     khrInteractivityImportResult: Nullable<IKHRInteractivityImportResult> = null;
+
+    /** Editor-owned contact cue bindings retained in the source asset. */
+    contactAudioData: Nullable<IContactAudioDocument> = null;
+    /** Scene-owned Audio V2 contact preview, disposed with its scene. */
+    contactAudioRuntime: Nullable<ContactAudioRuntime> = null;
+    /** Graph definitions captured at import, to preserve edits during contact audio authoring. */
+    contactAudioGraphBaseline: Nullable<{ definition: string; canonical: string | null }> = null;
 
     // ── Multi-Graph / Coordinator ──────────────────────────────────────
     /** The coordinator that owns all graphs in this editor session. */

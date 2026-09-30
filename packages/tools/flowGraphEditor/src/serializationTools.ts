@@ -104,6 +104,56 @@ export class SerializationTools {
     private static readonly _KhrPersistenceDisabledReason = "KHR_interactivity graphs use import-scoped runtime services and cannot be saved to or reloaded from Flow Graph JSON.";
 
     /**
+     * Capture graph definitions separately from transient execution contexts before source authoring.
+     * @param globalState editor state
+     * @returns stable definitions and canonical graph content when export is supported
+     */
+    public static CaptureSourceGraphState(globalState: GlobalState): { definition: string; canonical: string | null } {
+        const definitions = globalState.coordinator?.flowGraphs.map((graph) => {
+            const blocks = graph.getAllBlocks().map((block) => {
+                const value = {};
+                block.serialize(value);
+                return value;
+            });
+            return { name: graph.name, metadata: graph.metadata, blocks };
+        });
+        let canonical: string | null = null;
+        try {
+            const plan = _CreateKhrExportPlanForImport(globalState);
+            if (plan?.analyze().representable) {
+                canonical = JSON.stringify(plan.buildWithSourceIndices());
+            }
+        } catch {
+            /* A compatibility import can still retain its untouched source graph. */
+        }
+        return { definition: JSON.stringify(definitions), canonical };
+    }
+
+    /**
+     * Retain untouched source graph tokens, or include current graph edits before adding contact metadata.
+     * @param globalState editor state
+     * @param baseline graph definitions captured at source import
+     * @returns source document ready for an additive metadata patch
+     */
+    public static async BuildSourceForContactAudioAsync(
+        globalState: GlobalState,
+        baseline: ReturnType<typeof SerializationTools.CaptureSourceGraphState>
+    ): Promise<string | Uint8Array> {
+        const current = SerializationTools.CaptureSourceGraphState(globalState);
+        const changed = baseline.canonical !== null ? current.canonical !== baseline.canonical : current.definition !== baseline.definition || current.canonical !== null;
+        if (changed) {
+            return await SerializationTools.BuildKhrInteractivitySourceForReactionAsync(globalState);
+        }
+        if (globalState.sourceGlb) {
+            return new Uint8Array(await globalState.sourceGlb.file.arrayBuffer());
+        }
+        if (globalState.sourceGltf) {
+            return await globalState.sourceGltf.file.text();
+        }
+        throw new Error("Import a glTF or GLB scene first.");
+    }
+
+    /**
      * Gets the reason serialization is disabled for the current editor state.
      * @param globalState editor state to inspect
      * @returns the reason serialization is disabled, or null when serialization is supported

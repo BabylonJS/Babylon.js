@@ -137,6 +137,36 @@ export function ReadGlbDocument(bytes: Uint8Array): IGlbDocument {
 }
 
 /**
+ * Patch a named editor metadata field while retaining scene JSON tokens and all GLB chunks.
+ * @param bytes source GLB bytes
+ * @param key editor-owned metadata key
+ * @param value replacement metadata
+ * @returns patched GLB bytes
+ */
+export function PatchGlbExtras(bytes: Uint8Array, key: string, value: unknown): Uint8Array {
+    const { document, jsonText, suffixOffset } = _ReadGlb(bytes);
+    return _WriteGlb(bytes, _PatchExtras(document, jsonText, key, value), suffixOffset);
+}
+
+/**
+ * Patch a named editor metadata field while retaining scene JSON tokens and resource URIs.
+ * @param jsonText source glTF JSON
+ * @param key editor-owned metadata key
+ * @param value replacement metadata
+ * @returns patched glTF JSON
+ */
+export function PatchGltfExtras(jsonText: string, key: string, value: unknown): string {
+    return _PatchExtras(ReadGltfDocument(jsonText), jsonText, key, value);
+}
+
+function _PatchExtras(document: IGlbDocument, jsonText: string, key: string, value: unknown): string {
+    if (document.extras !== undefined && !_IsRecord(document.extras)) {
+        throw new Error("The source has non-object extras; contact audio cannot be added without replacing that metadata.");
+    }
+    return applyEdits(jsonText, modify(jsonText, ["extras", key], value, {}));
+}
+
+/**
  * Replaces an edited KHR_interactivity graph in its source GLB without reserializing the scene.
  * The extension must first pass export-plan validation against source indices.
  * @param bytes source GLB bytes

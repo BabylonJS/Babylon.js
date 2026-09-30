@@ -1,4 +1,5 @@
 import * as React from "react";
+import { flushSync } from "react-dom";
 import { type GlobalState } from "../../globalState";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
@@ -30,7 +31,8 @@ import {
     makeStyles,
     tokens,
 } from "@fluentui/react-components";
-import { CheckmarkRegular } from "@fluentui/react-icons";
+import { CheckmarkRegular, ZoomFitRegular } from "@fluentui/react-icons";
+import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { ComputeFlowGraphLayout, type IFlowLayoutNode } from "../../graphSystem/flowGraphLayout";
 import { type ISerializedFlowGraphBlock } from "core/FlowGraph/typeDefinitions";
 import { IsFlowGraphEventBlockName } from "../../graphSystem/blockTypeColors";
@@ -50,9 +52,17 @@ import {
     ReadGlbDocument,
     ReadGltfDocument,
     type IKhrReactionEvent,
+    type IGlbDocument,
+    PatchGlbExtras,
+    PatchGltfExtras,
 } from "../../khrGlbBehaviorAuthoring";
 import { CollectGltfDropFilesAsync, GetGltfFilePath, GetGltfResourceKeys, GltfCompanionResolutionError, ResolveGltfCompanionFiles } from "../../khrGltfCompanionFiles";
 import { CreateKhrTwoStepProcedureTemplate, ValidateKhrTwoStepProcedureMeshes, type IKhrTwoStepProcedureNodes } from "../../khrTwoStepProcedureTemplate";
+import { FlowGraphState } from "core/FlowGraph/flowGraph";
+import { PointerEventTypes, type PointerInfo } from "core/Events/pointerEvents";
+import { ContactAudioDialog } from "./contactAudioDialog";
+import { ContactAudioExtrasKey, ReadContactAudio, SetContactAudioReaction, RemoveContactAudioReaction, type IContactAudioAsset } from "../../contactAudio";
+import { AttachContactAudio, GetContactObjects } from "../../contactAudioRuntime";
 
 interface IScenePreviewComponentProps {
     globalState: GlobalState;
@@ -80,6 +90,10 @@ interface IScenePreviewComponentState {
     companionIssue: { kind: "missing" | "ambiguous"; uri: string } | null;
     selectedCompanionFile: File | null;
     companionRetryFailed: boolean;
+    showContactDialog: boolean;
+    selectedContactNode?: number;
+    soundBusy: boolean;
+    soundEnabled: boolean;
 }
 
 interface IStagedKhrInteractivityImport {
@@ -212,7 +226,7 @@ function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[], 
 const useStyles = makeStyles({
     container: {
         display: "grid",
-        gridTemplateRows: "auto 1fr auto",
+        gridTemplateRows: "auto minmax(0, 1fr) auto",
         height: "100%",
         width: "100%",
         overflow: "hidden",
@@ -228,6 +242,14 @@ const useStyles = makeStyles({
         padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS} ${tokens.spacingVerticalSNudge}`,
     },
     fillInput: { width: "100%" },
+    soundRow: { display: "flex", flexWrap: "wrap", gap: tokens.spacingHorizontalXS, padding: tokens.spacingHorizontalS },
+    resourceWarning: {
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        fontSize: tokens.fontSizeBase200,
+        padding: `0 ${tokens.spacingHorizontalS}`,
+    },
     error: {
         color: tokens.colorPaletteRedForeground1,
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS} ${tokens.spacingVerticalSNudge}`,
@@ -258,6 +280,8 @@ const useStyles = makeStyles({
     authoringDialog: { width: "min(420px, calc(100vw - 32px))", maxHeight: "calc(100dvh - 32px)", overflowY: "auto" },
     canvasContainer: {
         position: "relative",
+        minHeight: 0,
+        minWidth: 0,
         overflow: "hidden",
         borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     },
@@ -266,6 +290,8 @@ const useStyles = makeStyles({
         height: "100%",
     },
     canvas: {
+        position: "absolute",
+        inset: 0,
         display: "block",
         width: "100%",
         height: "100%",
@@ -277,7 +303,7 @@ const useStyles = makeStyles({
         borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
         padding: `${tokens.spacingVerticalXS} 0`,
         overflowY: "auto",
-        maxHeight: "120px",
+        maxHeight: "20px",
     },
     categoryItem: {
         display: "grid",
@@ -320,6 +346,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     private _resizeWindow: Nullable<Window> = null;
     private _resizeObserver: Nullable<ResizeObserver> = null;
     private _resizeHandler: Nullable<() => void> = null;
+    private _contactPickObserver: Nullable<Observer<PointerInfo>> = null;
 
     private _blockImportScopedSceneReplacement(): boolean {
         if (!this.props.globalState.hasImportScopedRuntime) {
@@ -354,6 +381,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             companionIssue: null,
             selectedCompanionFile: null,
             companionRetryFailed: false,
+            showContactDialog: false,
+            soundBusy: false,
+            soundEnabled: false,
         };
     }
 
@@ -384,6 +414,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     companionIssue: null,
                     selectedCompanionFile: null,
                     companionRetryFailed: false,
+                    showContactDialog: false,
+                    selectedContactNode: undefined,
+                    soundBusy: false,
+                    soundEnabled: false,
                 });
             }
         });
@@ -475,6 +509,14 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
     private _watchContext(ctx: SceneContext) {
         this._unwatchContext();
+        this._contactPickObserver = ctx.scene.onPointerObservable.add((info) => {
+            const source = this.props.globalState.sourceGlb ?? this.props.globalState.sourceGltf;
+            if (info.type !== PointerEventTypes.POINTERPICK || !source || this.props.globalState.flowGraph.state === FlowGraphState.Started) {
+                return;
+            }
+            const mesh = info.pickInfo?.pickedMesh;
+            this.setState({ selectedContactNode: mesh ? GetGlbNodeIndex(mesh, source.nodeCount) : undefined });
+        });
         this._onContextRefreshedObserver = ctx.onContextRefreshed.add(() => {
             this.setState({ sceneObjectCount: ctx.entries.length });
         });
@@ -482,6 +524,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     }
 
     private _unwatchContext() {
+        this._contactPickObserver?.remove();
+        this._contactPickObserver = null;
         if (this._onContextRefreshedObserver && this._watchedSceneContext) {
             this._watchedSceneContext.onContextRefreshed.remove(this._onContextRefreshedObserver);
             this._onContextRefreshedObserver = null;
@@ -809,6 +853,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             showAuthoringDialog: false,
             showReactionDialog: false,
             companionIssue: null,
+            showContactDialog: false,
             selectedCompanionFile: null,
             companionRetryFailed: false,
         });
@@ -836,7 +881,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 throw new Error("Preview canvas not available");
             }
 
-            const engine = new engineConstructor(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+            // Stage a separate WebGL context. Disposing the old engine must not delete resources
+            // cached by the new engine through a shared canvas context.
+            const stagedCanvas = canvas.cloneNode(false) as HTMLCanvasElement;
+            const engine = new engineConstructor(stagedCanvas, true, { preserveDrawingBuffer: true, stencil: true });
             stagedEngine = engine;
 
             // Register referenced companions by their glTF URI, including directory paths.
@@ -910,6 +958,23 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             if (scene.lights.length === 0) {
                 scene.createDefaultLight(true);
             }
+            if (!scene.environmentTexture && scene.materials.some((material) => material.getClassName().startsWith("PBR"))) {
+                const [{ RawCubeTexture }, { Constants }] = await Promise.all([import("core/Materials/Textures/rawCubeTexture"), import("core/Engines/constants")]);
+                // Neutral preview illumination for metallic assets, with no external HDR dependency.
+                const environment = new RawCubeTexture(
+                    scene,
+                    Array.from({ length: 6 }, () => new Uint8Array([180, 180, 180, 255])),
+                    1,
+                    Constants.TEXTUREFORMAT_RGBA,
+                    Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                    false,
+                    false,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE
+                );
+                environment.name = "Editor preview lighting";
+                environment.gammaSpace = false;
+                scene.environmentTexture = environment;
+            }
 
             await scene.whenReadyAsync(true);
 
@@ -944,11 +1009,13 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 }
             }
 
+            let sourceDocument: IGlbDocument | null = null;
             let sourceGlb: GlobalState["sourceGlb"] = null;
             let sourceGltf: GlobalState["sourceGltf"] = null;
             if (/\.glb$/i.test(file.name)) {
                 try {
                     const document = ReadGlbDocument(new Uint8Array(await file.arrayBuffer()));
+                    sourceDocument = document;
                     const hasAnimations = document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0);
                     sourceGlb = {
                         file,
@@ -966,6 +1033,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             } else if (/\.gltf$/i.test(file.name)) {
                 try {
                     const document = ReadGltfDocument(await file.text());
+                    sourceDocument = document;
                     sourceGltf = {
                         file,
                         companionFiles,
@@ -980,6 +1048,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     // The preview can still load files outside this patcher's glTF JSON subset.
                 }
             }
+            canvas.replaceWith(stagedCanvas);
+            this.props.globalState.scenePreviewCanvas = stagedCanvas;
             this._setupEngineRenderLoop(scene, engine);
             if (
                 !stagedGraphState &&
@@ -1000,6 +1070,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 stagedGraphState = null;
             }
             this.props.globalState.khrInteractivityImportResult = stagedKhrImport?.importResult ?? null;
+            this.props.globalState.contactAudioGraphBaseline = SerializationTools.CaptureSourceGraphState(this.props.globalState);
+            this._installContactAudio(scene, sourceDocument);
             this.props.globalState.onSceneContextChanged.notifyObservers(stagedSceneContext);
             this.setState({ sceneObjectCount: stagedSceneContext.entries.length });
             if (previousSceneContext && previousSceneContext !== stagedSceneContext) {
@@ -1018,7 +1090,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             stagedSceneContext = null;
             stagedScene = null;
             stagedEngine = null;
-            this.setState({ isLoading: false, snippetId: "" });
+            // Commit the external scene/coordinator swap before exposing save and playback controls.
+            flushSync(() => this.setState({ isLoading: false, snippetId: "" }));
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded "${file.name}" with ${sceneObjectCount} scene objects`, false));
             return true;
         } catch (err: any) {
@@ -1421,6 +1494,152 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         }
     }
 
+    private _installContactAudio(scene: Scene, document: IGlbDocument | null): void {
+        const globalState = this.props.globalState;
+        globalState.contactAudioRuntime?.dispose();
+        globalState.contactAudioRuntime = null;
+        globalState.contactAudioData = null;
+        if (!document) {
+            return;
+        }
+        try {
+            const data = ReadContactAudio(document);
+            const runtime = AttachContactAudio(
+                scene,
+                document,
+                () => globalState.coordinator?.flowGraphs.some((graph) => graph.state === FlowGraphState.Started) ?? false,
+                (message) => globalState.onToastNotification.notifyObservers({ message, severity: "error" })
+            );
+            const observers =
+                globalState.coordinator?.flowGraphs.map((graph) =>
+                    graph.onStateChangedObservable.add((state) => {
+                        if (state !== FlowGraphState.Started) {
+                            runtime.reset();
+                        }
+                    })
+                ) ?? [];
+            scene.onDisposeObservable.addOnce(() => observers.forEach((observer) => observer.remove()));
+            globalState.contactAudioData = data;
+            globalState.contactAudioRuntime = runtime;
+            this.setState({ soundEnabled: false });
+            if (data.rules.length) {
+                this._frameContactObjects(false);
+            }
+        } catch (error) {
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Contact audio unavailable: ${String(error)}`, true));
+            this.setState({ error: `Contact audio unavailable: ${String(error)}` });
+        }
+    }
+
+    private async _saveContactSoundAsync(objects: number[], partners: number[], asset: IContactAudioAsset | null, cue?: string): Promise<void> {
+        const globalState = this.props.globalState;
+        const sourceGlb = globalState.sourceGlb;
+        const source = sourceGlb ?? globalState.sourceGltf;
+        const ctx = globalState.sceneContext;
+        if (!source || !ctx) {
+            throw new Error("Import a glTF or GLB scene first.");
+        }
+        const baseline = globalState.contactAudioGraphBaseline;
+        if (!baseline) {
+            throw new Error("The scene is not ready for contact sound authoring.");
+        }
+        let prepared: string | Uint8Array;
+        try {
+            prepared = await SerializationTools.BuildSourceForContactAudioAsync(globalState, baseline);
+        } catch (error) {
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Contact sound export diagnostics: ${String(error)}`, true));
+            throw new Error(
+                "The current graph edits cannot be saved as glTF. Your scene and edits are retained. Review the graph export diagnostics before saving this reaction.",
+                {
+                    cause: error,
+                }
+            );
+        }
+        const document = typeof prepared === "string" ? ReadGltfDocument(prepared) : ReadGlbDocument(prepared);
+        const shapes = GetContactObjects(ctx.meshes, source.nodeCount).map((entry) => entry.shape);
+        const data = asset ? SetContactAudioReaction(document, objects, partners, shapes, asset, cue) : RemoveContactAudioReaction(document, cue!);
+        const patched = typeof prepared === "string" ? PatchGltfExtras(prepared, ContactAudioExtrasKey, data) : PatchGlbExtras(prepared, ContactAudioExtrasKey, data);
+        const name = source.file.name.replace(/(?:-sounds)?\.(glb|gltf)$/i, "-sounds.$1");
+        const file = new File([typeof patched === "string" ? patched : new Uint8Array(patched)], name, { type: sourceGlb ? "model/gltf-binary" : "model/gltf+json" });
+        if (!(await this._loadFileAsync(file, source.companionFiles, true, source.authoredBehavior, source.sourcePath, source.companionOverrides))) {
+            throw new Error("The edited scene could not be loaded. Your previous scene is retained.");
+        }
+        const url = URL.createObjectURL(file);
+        const ownerDocument = globalState.scenePreviewCanvas!.ownerDocument;
+        const link = ownerDocument.createElement("a");
+        link.href = url;
+        link.download = name;
+        ownerDocument.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        globalState.onToastNotification.notifyObservers({
+            message: "Sound reaction saved. Enable sound, then Start to test; Reset returns to the authored scene.",
+            severity: "success",
+        });
+    }
+
+    private async _loadPhysicsDemoAsync(): Promise<void> {
+        try {
+            const files = await Promise.all(
+                ["PhysicsMath.gltf", "PhysicsMath.bin"].map(async (name) => {
+                    const response = await fetch(`./samples/PhysicsMath/${name}`);
+                    if (!response.ok) {
+                        throw new Error("PhysicsMath demo files are unavailable.");
+                    }
+                    return new File([await response.arrayBuffer()], name);
+                })
+            );
+            if (await this._loadFileAsync(files[0], [files[1]])) {
+                this._frameContactObjects(false);
+            }
+        } catch (error) {
+            this.setState({ error: String(error) });
+        }
+    }
+
+    private async _enableContactSoundAsync(): Promise<void> {
+        const runtime = this.props.globalState.contactAudioRuntime;
+        if (!runtime) {
+            return;
+        }
+        this.setState({ soundBusy: true, error: "" });
+        try {
+            await runtime.enableAsync();
+            if (this.props.globalState.contactAudioRuntime === runtime) {
+                this.setState({ soundEnabled: runtime.ready });
+            }
+        } catch (error) {
+            if (this.props.globalState.contactAudioRuntime === runtime) {
+                this.setState({ error: String(error), soundEnabled: false });
+            }
+        } finally {
+            this.setState({ soundBusy: false });
+        }
+    }
+
+    private _frameContactObjects(useSelection = true): void {
+        const ctx = this.props.globalState.sceneContext;
+        const source = this.props.globalState.sourceGlb ?? this.props.globalState.sourceGltf;
+        const camera = ctx?.scene.activeCamera;
+        if (!source || !ctx || camera?.getClassName() !== "ArcRotateCamera") {
+            return;
+        }
+        const objects = GetContactObjects(ctx.meshes, source.nodeCount);
+        const selected = useSelection && objects.find((entry) => entry.shape.node === this.state.selectedContactNode);
+        const used = new Set(this.props.globalState.contactAudioData?.shapes.map((shape) => shape.node));
+        const meshes = (selected ? [selected] : used.size ? objects.filter((entry) => used.has(entry.shape.node)) : objects).map((entry) => entry.mesh);
+        if (!meshes.length) {
+            return;
+        }
+        // The default fit may include enormous skinned debug geometry. Frame only the rigid targets.
+        const orbit = camera as ArcRotateCamera;
+        orbit.lowerRadiusLimit = 0.01;
+        orbit.zoomOn(meshes);
+        orbit.minZ = Math.min(0.1, Math.max(0.001, orbit.radius * 0.001));
+        orbit.wheelPrecision = 100 / orbit.radius;
+    }
+
     private async _createKhrBehaviorAsync(): Promise<void> {
         const ctx = this.props.globalState.sceneContext;
         const trigger = ctx?.meshes.find((mesh) => String(mesh.uniqueId) === this.state.triggerMeshId);
@@ -1523,6 +1742,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const sourceGlb = this.props.globalState.sourceGlb;
         const sourceGltf = this.props.globalState.sourceGltf;
         const source = sourceGlb ?? sourceGltf;
+        const contactObjects = source && ctx ? GetContactObjects(ctx.meshes, source.nodeCount) : [];
+        const selectedContact = contactObjects.find((entry) => entry.shape.node === this.state.selectedContactNode);
         const externalResourceWarning = source?.externalResourceUris.length
             ? `This ${sourceGlb ? "GLB" : "glTF"} references external resources: ${source.externalResourceUris.join(", ")}. Keep them at their referenced paths when sharing or reopening the downloaded asset.`
             : "";
@@ -1590,18 +1811,22 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             <div className={classes.container}>
                 <div className={classes.loader}>
                     <div className={classes.inputRow}>
-                        <Input
-                            className={classes.fillInput}
-                            size="small"
-                            placeholder="Playground ID or URL..."
-                            value={snippetId}
-                            onChange={(_, data) => this.setState({ snippetId: data.value })}
-                            onKeyDown={this._handleKeyDown}
-                            disabled={isLoading}
-                        />
-                        <Button size="small" appearance="primary" onClick={() => void this.loadSnippetAsync()} disabled={isLoading || !snippetId}>
-                            {isLoading ? "..." : "Load"}
-                        </Button>
+                        {
+                            <>
+                                <Input
+                                    className={classes.fillInput}
+                                    size="small"
+                                    placeholder="Playground ID or URL..."
+                                    value={snippetId}
+                                    onChange={(_, data) => this.setState({ snippetId: data.value })}
+                                    onKeyDown={this._handleKeyDown}
+                                    disabled={isLoading}
+                                />
+                                <Button size="small" appearance="primary" onClick={() => void this.loadSnippetAsync()} disabled={isLoading || !snippetId}>
+                                    {isLoading ? "..." : "Load"}
+                                </Button>
+                            </>
+                        }
                         {ctx?.ownsScene && !this.props.globalState.hasImportScopedRuntime && (
                             <Button size="small" title={createTitle} onClick={() => this.setState({ showAuthoringDialog: true })} disabled={isLoading || !canOpenAuthoring}>
                                 New behavior
@@ -1619,13 +1844,59 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         )}
                     </div>
                     {error && !this.state.companionIssue && <Body1 className={classes.error}>{error}</Body1>}
-                    {externalResourceWarning && <Body1 data-testid="external-resource-warning-status">{externalResourceWarning}</Body1>}
+                    <div className={classes.soundRow}>
+                        {ctx?.ownsScene && !source && (
+                            <Button size="small" disabled={isLoading} onClick={() => void this._loadPhysicsDemoAsync()}>
+                                Load PhysicsMath demo
+                            </Button>
+                        )}
+                        {source && ctx?.ownsScene && (
+                            <Button
+                                size="small"
+                                disabled={isLoading || !this.props.globalState.contactAudioData || !contactObjects.some((entry) => entry.shape.type === "sphere")}
+                                onClick={() => this.setState({ showContactDialog: true })}
+                            >
+                                Add sound reaction
+                            </Button>
+                        )}
+                        {!!this.props.globalState.contactAudioData?.rules.length && (
+                            <Button size="small" disabled={isLoading || this.state.soundBusy} onClick={() => void this._enableContactSoundAsync()}>
+                                {this.state.soundBusy ? "Preparing sound…" : this.state.soundEnabled ? "Sound enabled" : "Enable sound"}
+                            </Button>
+                        )}
+                        {source && contactObjects.length > 0 && ctx?.scene.activeCamera?.getClassName() === "ArcRotateCamera" && (
+                            <Tooltip content="Frame the selected object or the contact objects" relationship="description">
+                                <Button
+                                    size="small"
+                                    aria-label="Frame contact objects"
+                                    icon={<ZoomFitRegular />}
+                                    disabled={isLoading}
+                                    onClick={() => this._frameContactObjects()}
+                                />
+                            </Tooltip>
+                        )}
+                    </div>
+                    {externalResourceWarning && (
+                        <Tooltip content={externalResourceWarning} relationship="description">
+                            <Body1 className={classes.resourceWarning} tabIndex={0} title={externalResourceWarning} data-testid="external-resource-warning-status">
+                                Keep companions: {source?.externalResourceUris.join(", ")}
+                            </Body1>
+                        </Tooltip>
+                    )}
                     {ctx && (
                         <div className={classes.status}>
-                            <Body1 className={classes.statusCount}>{sceneObjectCount}</Body1> objects in scene context
+                            {selectedContact ? (
+                                <Body1 data-testid="contact-selected-object">
+                                    Selected: {selectedContact.mesh.name} (node {selectedContact.shape.node})
+                                </Body1>
+                            ) : (
+                                <>
+                                    <Body1 className={classes.statusCount}>{sceneObjectCount}</Body1> scene objects
+                                </>
+                            )}
                             <Tooltip content="Flow graph execution contexts will resolve asset references from this scene" relationship="description">
                                 <Body1 className={classes.statusWired}>
-                                    <CheckmarkRegular /> wired to flow graph
+                                    <CheckmarkRegular /> wired
                                 </Body1>
                             </Tooltip>
                         </div>
@@ -1772,6 +2043,16 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         </DialogBody>
                     </DialogSurface>
                 </Dialog>
+                {this.state.showContactDialog && this.props.globalState.contactAudioRuntime && this.props.globalState.contactAudioData && (
+                    <ContactAudioDialog
+                        objects={contactObjects}
+                        data={this.props.globalState.contactAudioData}
+                        runtime={this.props.globalState.contactAudioRuntime}
+                        selectedNode={this.state.selectedContactNode}
+                        onClose={() => this.setState({ showContactDialog: false })}
+                        onSaveAsync={async (objects, partners, asset, cue) => await this._saveContactSoundAsync(objects, partners, asset, cue)}
+                    />
+                )}
                 <Dialog open={this.state.showReactionDialog} onOpenChange={(_, data) => this.setState({ showReactionDialog: data.open })}>
                     <DialogSurface className={classes.authoringDialog}>
                         <DialogBody>

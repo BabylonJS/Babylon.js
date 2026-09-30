@@ -80,6 +80,23 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 
 ### glTF Import / Export
 
+#### Contact sounds
+
+1. Choose **Load PhysicsMath demo**, or drop an existing `.glb` or `.gltf` with its companion files.
+2. With playback stopped, click a ball in Scene Preview, then choose **Add sound reaction**. Alternatively select balls from the **Balls** list. Names include the original glTF node index to distinguish duplicates. The demo frames its rigid targets automatically; **Frame contact objects** zooms to the selected object, or to the contact targets when nothing is selected.
+3. Choose **Each other** for ball-to-ball contacts, or **Other objects** and select platforms or other balls. Lists come from the imported meshes; they do not infer physical roles from names.
+4. Choose **Soft tap**, **Bright click**, or **Choose audio file** for MP3, AAC/M4A, or Ogg Opus. **Listen** auditions the clip. Files are limited to 10 MB, 30 seconds, and two channels; unsupported codecs and invalid files report an error in the chooser without replacing the scene. No microphone access is requested.
+5. **Save sound reaction** downloads the edited source asset with the original encoded audio embedded as a data URI. Existing graph edits are included when representable; unsupported edits report an error instead of being discarded. Keep existing companion files at their referenced paths. Reopening the asset restores its sound reactions. **Reaction** also lets you edit or remove an existing binding.
+6. Choose **Enable sound**, then **Start**. Contacts emit once on onset; sustained contact stays quiet. Stop, Pause, and Reset stop voices and clear contact history. Initial overlaps do not produce a cue.
+
+PhysicsMath implements collision simulation through graph math, with no engine physics bodies. Contact sounds use rigid sphere and oriented box bounds sampled after rendering; they do not alter the simulation. Boxes can enclose empty space and fast objects can cross between samples. Multi-primitive, skinned, morphing, sheared, singular, and nonuniformly scaled spherical objects are unavailable. The chooser names its proxy shapes explicitly. Each cue has four independent spatial voices, with a listener following the active camera; excess simultaneous voices are dropped.
+
+The versioned `extras.babylonContactAudio` metadata keeps encoded **audio**, playback **sources**, positional **emitters**, and document-local named cues separate. This follows the responsibilities proposed in [KHR_audio_emitter](https://github.com/KhronosGroup/glTF/pull/2137) and [KHR_audio_graph](https://github.com/KhronosGroup/glTF/pull/2632), without declaring either unratified extension or inventing standardized playback controls. Other viewers may ignore the sounds. Total encoded audio is capped at 20 MB, decoded preview buffers at 64 MB, and contact pairs at 256.
+
+Applications using the editor package can call `AttachContactAudio(scene, sourceDocument, isRunning, onError)` after their glTF load. Call the returned runtime's `enableAsync()` from a user gesture. `onCueObservable` exposes the named contact cues; `playCue(cue, worldPoint)` is the bridge for future graph and engine-physics adapters. Dispose the runtime, or dispose its scene, to release its observers and audio engine. This adapter is editor-owned behavior, not a portable Khronos audio implementation.
+
+The affordances draw on Dreams' Impact Sensor and spatial sound gadgets, LittleBigPlanet's labeled object triggers, UEFN's Audio Player targeting, and Reality Composer Pro's asset audition workflow. Recording, mesh-accurate collision callbacks, swept contacts, graph animation cues, and headset authoring are later steps.
+
 **Creating a KHR_interactivity behavior:**
 
 - Start with one empty graph and the default scene, a Playground scene, or an imported graphless `.glb` or `.gltf` with its companion files. Choose **New behavior** in Scene Preview and select **Select to reveal** or **Two-step procedure**.

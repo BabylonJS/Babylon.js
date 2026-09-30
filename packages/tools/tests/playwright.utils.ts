@@ -76,7 +76,7 @@ export function getBabylonServerTestsList() {
         },
         {
             name: "flowGraphEditor",
-            testMatch: "**/flowGraphEditor.test.ts",
+            testMatch: "packages/tools/flowGraphEditor/test/playwright/**/*.test.ts",
             use: getUseDefinition("Flow Graph Editor"),
         },
         {
