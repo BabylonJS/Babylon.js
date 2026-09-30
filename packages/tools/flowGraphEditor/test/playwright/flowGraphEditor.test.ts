@@ -1592,7 +1592,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         const fileScene = await GetSceneContextSnapshot(page);
         expect(fileScene?.sceneUid).not.toBe(defaultScene?.sceneUid);
         await expect(page.getByRole("button", { name: "New behavior" })).toBeDisabled();
-        await expect(page.getByRole("button", { name: "New behavior" })).toHaveAttribute("title", /drop a GLB.*without changing its source scene data/i);
+        await expect(page.getByRole("button", { name: "New behavior" })).toHaveAttribute("title", /drop a glTF or GLB.*without changing its source scene data/i);
 
         await ClickGraphControl(page, "Reset");
         await WaitForGraphState(page, "Stopped");
@@ -2408,6 +2408,37 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(exportedBytes.subarray(20 + jsonLength)).toEqual(bytes.subarray(20 + bytes.readUInt32LE(12)));
     });
 
+    test("retains a node-free split glTF graph for source-preserving export", async ({ page }) => {
+        const { document } = BuildNodelessGlbFixture(true);
+        const source = JSON.stringify(document);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate((json) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([json], "node-free-interaction.gltf", { type: "model/gltf+json" }));
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        }, source);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "node-free-interaction.gltf"');
+        await expect(page.getByRole("button", { name: "New behavior" })).not.toBeVisible();
+        await expect
+            .poll(async () =>
+                page.evaluate(() => {
+                    const source = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sourceGltf;
+                    return source ? { name: source.file.name, nodeCount: source.nodeCount } : null;
+                })
+            )
+            .toEqual({ name: "node-free-interaction.gltf", nodeCount: 0 });
+        await expect(page.getByRole("button", { name: "Export KHR glTF", exact: true })).toBeEnabled();
+        await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeDisabled();
+        const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "node-free-interaction-edited.gltf");
+        await page.getByRole("button", { name: "Export KHR glTF", exact: true }).click();
+        const exported = readFileSync((await (await downloadPromise).path())!, "utf8");
+        expect(JSON.parse(exported).nodes).toBeUndefined();
+        expect(JSON.parse(exported).extensions.EXT_vendor_meta).toEqual(document.extensions.EXT_vendor_meta);
+        expect(JSON.parse(exported).extensions.KHR_interactivity.graphs[0].name).toBe("Scene start");
+    });
+
     test("keeps mesh authoring disabled for a node-free graphless GLB", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
@@ -2575,6 +2606,134 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authored.png"), fullPage: true });
     });
 
+    test("authors and extends a split glTF while preserving JSON tokens and companion buffer paths", async ({ page, browser }, testInfo) => {
+        test.setTimeout(90_000);
+        const { document, bin } = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        document.buffers[0].uri = "meshes/geometry.bin";
+        document.images.push({ name: "red texture", uri: "textures/red/diffuse.png" }, { name: "blue texture", uri: "textures/blue/diffuse.png" });
+        const source = JSON.stringify(document).replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993');
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(
+            ({ json, buffer }) => {
+                const transfer = new DataTransfer();
+                const mainFile = new File([json], "split-assembly.gltf", { type: "model/gltf+json" });
+                const companion = new File([new Uint8Array(buffer)], "geometry.bin");
+                Object.defineProperty(mainFile, "webkitRelativePath", { value: "asset/split-assembly.gltf" });
+                Object.defineProperty(companion, "webkitRelativePath", { value: "asset/meshes/geometry.bin" });
+                transfer.items.add(mainFile);
+                transfer.items.add(companion);
+                for (const color of ["red", "blue"]) {
+                    const texture = new File(["texture"], "diffuse.png", { type: "image/png" });
+                    Object.defineProperty(texture, "webkitRelativePath", { value: `asset/textures/${color}/diffuse.png` });
+                    transfer.items.add(texture);
+                }
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            { json: source, buffer: [...bin] }
+        );
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        await expect(page.getByRole("button", { name: "New behavior" })).toBeEnabled();
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await expect(page.getByTestId("external-resource-warning-dialog")).toContainText("meshes/geometry.bin");
+        await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
+        await page.getByRole("option", { name: /glTF node 2/ }).click();
+        await page.screenshot({ path: testInfo.outputPath("khr-split-gltf-authoring.png"), fullPage: true });
+        const firstDownload = page.waitForEvent("download", (download) => download.suggestedFilename() === "split-assembly-behavior.gltf");
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        const authored = readFileSync((await (await firstDownload).path())!, "utf8");
+        expect(authored).toContain('"stableAssetId":9007199254740993');
+        expect(JSON.parse(authored).buffers[0].uri).toBe("meshes/geometry.bin");
+        await expect(page.getByRole("button", { name: "Add reaction" })).toBeEnabled();
+        await page.getByRole("button", { name: "Add reaction" }).click();
+        await page.getByRole("combobox", { name: "Event" }).click();
+        await page.getByRole("option", { name: /onSelect.*glTF node 1/ }).click();
+        await page.getByRole("combobox", { name: "Target mesh" }).click();
+        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await page.getByRole("combobox", { name: "Action" }).click();
+        await page.getByRole("option", { name: "Hide target" }).click();
+        await page.screenshot({ path: testInfo.outputPath("khr-split-gltf-add-reaction.png"), fullPage: true });
+        const secondDownload = page.waitForEvent("download", {
+            predicate: (download) => download.suggestedFilename() === "split-assembly-behavior-reaction.gltf",
+            timeout: 30_000,
+        });
+        await page.getByRole("dialog").getByRole("button", { name: "Add reaction" }).click();
+        const reacted = readFileSync((await (await secondDownload).path())!, "utf8");
+        const graph = JSON.parse(reacted).extensions.KHR_interactivity.graphs[0];
+        expect(reacted).toContain('"stableAssetId":9007199254740993');
+        expect(JSON.parse(reacted).buffers[0].uri).toBe("meshes/geometry.bin");
+        expect(graph.declarations[graph.nodes[graph.nodes[0].flows.out.node].declaration].op).toBe("flow/sequence");
+        await expect(page.getByRole("button", { name: "Export KHR glTF" })).toBeEnabled();
+        await expect(page.getByRole("button", { name: "Export KHR GLB" })).toBeDisabled();
+        const editedDownload = page.waitForEvent("download", (download) => download.suggestedFilename() === "split-assembly-behavior-reaction-edited.gltf");
+        await page.getByRole("button", { name: "Export KHR glTF" }).click();
+        const edited = readFileSync((await (await editedDownload).path())!, "utf8");
+        expect(edited).toContain('"stableAssetId":9007199254740993');
+        expect(JSON.parse(edited).buffers[0].uri).toBe("meshes/geometry.bin");
+        expect(JSON.parse(edited).images.map((image: { uri: string }) => image.uri)).toContain("textures/blue/diffuse.png");
+
+        const reopened = await browser.newContext();
+        try {
+            const reopenedPage = await reopened.newPage();
+            const reopenedEditor = new FlowGraphEditorPage(reopenedPage);
+            await reopenedEditor.goto({ local: true });
+            await reopenedEditor.assertEditorReady();
+            await reopenedPage.evaluate(
+                ({ json, buffer }) => {
+                    const transfer = new DataTransfer();
+                    const mainFile = new File([json], "reopened-split.gltf", { type: "model/gltf+json" });
+                    const companion = new File([new Uint8Array(buffer)], "geometry.bin");
+                    Object.defineProperty(mainFile, "webkitRelativePath", { value: "asset/reopened-split.gltf" });
+                    Object.defineProperty(companion, "webkitRelativePath", { value: "asset/meshes/geometry.bin" });
+                    transfer.items.add(mainFile);
+                    transfer.items.add(companion);
+                    for (const color of ["red", "blue"]) {
+                        const texture = new File(["texture"], "diffuse.png", { type: "image/png" });
+                        Object.defineProperty(texture, "webkitRelativePath", { value: `asset/textures/${color}/diffuse.png` });
+                        transfer.items.add(texture);
+                    }
+                    (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+                },
+                { json: edited, buffer: [...bin] }
+            );
+            await expect.poll(async () => (await GetSceneContextSnapshot(reopenedPage))?.source).toBe("file");
+            await expect(reopenedPage.getByRole("button", { name: "Add reaction" })).toBeEnabled();
+            await expect(reopenedPage.getByRole("log", { name: "Flow graph log" })).not.toContainText("Failed to load file");
+        } finally {
+            await reopened.close();
+        }
+    });
+
+    test("rejects missing or ambiguous split glTF companions without replacing the scene", async ({ page }) => {
+        const { document } = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        const originalScene = await GetSceneContextSnapshot(page);
+        await page.evaluate((source) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([JSON.stringify(source)], "missing-resource.gltf", { type: "model/gltf+json" }));
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        }, document);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Missing companion file for geometry.bin");
+        expect(await GetSceneContextSnapshot(page)).toEqual(originalScene);
+
+        document.images.push({ name: "red texture", uri: "textures/red/diffuse.png" });
+        await page.evaluate((source) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([JSON.stringify(source)], "ambiguous-resource.gltf", { type: "model/gltf+json" }));
+            transfer.items.add(new File(["buffer"], "geometry.bin"));
+            transfer.items.add(new File(["red"], "diffuse.png"));
+            transfer.items.add(new File(["blue"], "diffuse.png"));
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        }, document);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Ambiguous companion file for textures/red/diffuse.png");
+        expect(await GetSceneContextSnapshot(page)).toEqual(originalScene);
+    });
+
     test("warns that an authored GLB still needs its external buffer when downloaded and reopened", async ({ page, browser }, testInfo) => {
         test.setTimeout(90_000);
         const { bytes, bin } = BuildExistingGlbFixture(false, false, false, false, false, false, true);
@@ -2714,7 +2873,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         let downloads = 0;
         page.on("download", () => downloads++);
         await page.getByRole("button", { name: "New behavior" }).click();
-        await expect(page.getByText(/This GLB has animations.*explicit animation behavior/i)).toBeVisible();
+        await expect(page.getByText(/This asset has animations.*explicit animation behavior/i)).toBeVisible();
         await page.getByRole("combobox", { name: "Trigger mesh" }).click();
         await page.getByRole("option", { name: /glTF node 1/ }).click();
         await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
@@ -3027,6 +3186,23 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             await page.getByRole("button", { name: "Create behavior" }).tap();
             expect((await downloadPromise).suggestedFilename()).toBe("mobile-assembly-behavior.glb");
             await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+            await page.getByRole("button", { name: "Add reaction" }).tap();
+            const reactionDialog = page.getByRole("dialog", { name: "Add a reaction to an existing event" });
+            await expect(reactionDialog).toBeInViewport();
+            const bounds = await reactionDialog.boundingBox();
+            expect(bounds).not.toBeNull();
+            expect(bounds!.x).toBeGreaterThanOrEqual(0);
+            expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+            await page.getByRole("combobox", { name: "Event" }).tap();
+            await page.getByRole("option", { name: /onSelect.*glTF node 1/ }).tap();
+            await page.getByRole("combobox", { name: "Target mesh" }).tap();
+            await page.getByRole("option", { name: /glTF node 1/ }).tap();
+            await page.getByRole("combobox", { name: "Action" }).tap();
+            await page.getByRole("option", { name: "Hide target" }).tap();
+            await page.screenshot({ path: testInfo.outputPath("khr-add-reaction-touch.png"), fullPage: true });
+            const reactionDownload = page.waitForEvent("download", { timeout: 30_000 });
+            await reactionDialog.getByRole("button", { name: "Add reaction" }).tap();
+            expect((await reactionDownload).suggestedFilename()).toBe("mobile-assembly-behavior-reaction.glb");
         } finally {
             await context.close();
         }

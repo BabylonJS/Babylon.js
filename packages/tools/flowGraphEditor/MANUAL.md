@@ -82,9 +82,10 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 
 **Creating a KHR_interactivity behavior:**
 
-- Start with one empty graph and the default scene, a Playground scene, or an imported graphless `.glb`. Choose **New behavior** in Scene Preview and select **Select to reveal** or **Two-step procedure**.
+- Start with one empty graph and the default scene, a Playground scene, or an imported graphless `.glb` or `.gltf` with its companion files. Choose **New behavior** in Scene Preview and select **Select to reveal** or **Two-step procedure**.
 - **Select to reveal** uses a visible, pickable trigger mesh and a different enabled mesh to reveal. **Two-step procedure** uses five distinct roles: first part, second part, next-step cue, completion cue, and Reset control. Selecting the parts in order advances the cues; selecting Reset starts over.
-- **Create behavior** exports and reloads the preview as a GLB. For an imported `.glb`, it patches the source document without reserializing its scene or binary chunks and downloads the authored GLB. Keep any external buffer or image files at their referenced paths; the GLB download does not include them. For a default or Playground scene, Babylon-only features may be omitted during glTF export. Imported `.gltf` and `.babylon` files do not support **New behavior**.
+- **Create behavior** exports and reloads the preview. For an imported `.glb` or `.gltf`, it patches only behavior fields in the retained source document and downloads a file of the same format. Keep external buffer and image files at their referenced paths; the download contains only the edited main file. For a default or Playground scene, Babylon-only features may be omitted during glTF export. Imported `.babylon` files do not support **New behavior**.
+- For an imported asset with a representable `KHR_interactivity` graph, choose **Add reaction** to attach a show or hide action to an existing event in the selected graph. Choose the event, target mesh, and action. The editor preserves the event's existing flow and activates it first. A hidden ancestor can prevent a show action; the editor reports that instead of saving an inert reaction.
 - **Reset** replays the behavior without losing current graph edits. It restores source `KHR_node_visibility`, `KHR_node_selectability`, and `KHR_node_hoverability` values, including implicit defaults actually changed by pointer operations.
 
 **Importing a glTF with an interactive flow graph:**
@@ -93,7 +94,7 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 - If the file contains a **KHR_interactivity** extension, the flow graph is automatically loaded into the editor.
 - If the file contains a **BABYLON_flow_graph** custom extension (created by this editor's export), the flow graph is restored as well.
 - The scene from the file is loaded as the preview scene so block references to meshes, cameras, and lights can be resolved.
-- You can edit a representable imported KHR graph, then use **Export KHR GLB**. For an imported `.glb`, this patches the retained source GLB; unrelated scene data and chunks remain intact. Unsupported edits receive export diagnostics. **Export KHR glTF** and Babylon-specific scene export are unavailable for source-preserving GLB editing.
+- You can edit a representable imported KHR graph, then use **Export KHR GLB** for an imported `.glb` or **Export KHR glTF** for an imported `.gltf`. The editor patches the retained source document; unrelated scene data, resources, and GLB chunks remain intact. Unsupported edits receive export diagnostics. Babylon-specific scene export is unavailable for source-preserving editing.
 
 **Loading a glTF graph without a scene:**
 

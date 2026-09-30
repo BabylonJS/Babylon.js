@@ -37,7 +37,21 @@ import { IsFlowGraphEventBlockName } from "../../graphSystem/blockTypeColors";
 import { GetFlowGraphBlockNodeId } from "../../graphSystem/blockNodeData";
 import { CreateKhrSelectionRevealTemplate } from "../../khrSelectionRevealTemplate";
 import { TrackKhrNodeStateMutations } from "../../khrSceneReset";
-import { GetGlbExternalResourceUris, GetGlbNodeIndex, PatchKhrSelectionRevealGlb, PatchKhrTwoStepProcedureGlb, ReadGlbDocument } from "../../khrGlbBehaviorAuthoring";
+import {
+    GetGlbExternalResourceUris,
+    GetGlbNodeIndex,
+    ListKhrReactionEvents,
+    PatchKhrSelectionRevealGlb,
+    PatchKhrSelectionRevealGltf,
+    PatchKhrTwoStepProcedureGlb,
+    PatchKhrTwoStepProcedureGltf,
+    PatchKhrVisibilityReactionGlb,
+    PatchKhrVisibilityReactionGltf,
+    ReadGlbDocument,
+    ReadGltfDocument,
+    type IKhrReactionEvent,
+} from "../../khrGlbBehaviorAuthoring";
+import { GetGltfResourceKeys, ResolveGltfCompanionFiles } from "../../khrGltfCompanionFiles";
 import { CreateKhrTwoStepProcedureTemplate, ValidateKhrTwoStepProcedureMeshes, type IKhrTwoStepProcedureNodes } from "../../khrTwoStepProcedureTemplate";
 
 interface IScenePreviewComponentProps {
@@ -58,6 +72,11 @@ interface IScenePreviewComponentState {
     behaviorKind: "reveal" | "procedure";
     procedureMeshIds: IKhrTwoStepProcedureNodes<string>;
     showAuthoringDialog: boolean;
+    showReactionDialog: boolean;
+    reactionEventNodeIndex: string;
+    reactionTargetMeshId: string;
+    reactionVisible: boolean;
+    reactionEvents: IKhrReactionEvent[];
 }
 
 interface IStagedKhrInteractivityImport {
@@ -283,6 +302,7 @@ export const ScenePreviewComponent: React.FunctionComponent<IScenePreviewCompone
 };
 
 class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps, IScenePreviewComponentState> {
+    private _pendingReactionSource: string | Uint8Array | null = null;
     private _canvasHostRef: React.RefObject<HTMLDivElement>;
     private _onContextRefreshedObserver: Nullable<Observer<SceneContext>> = null;
     private _onSceneContextChangedObserver: Nullable<Observer<SceneContext>> = null;
@@ -320,6 +340,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             behaviorKind: "reveal",
             procedureMeshIds: { first: "", second: "", nextCue: "", completionCue: "", reset: "" },
             showAuthoringDialog: false,
+            showReactionDialog: false,
+            reactionEventNodeIndex: "",
+            reactionTargetMeshId: "",
+            reactionVisible: true,
+            reactionEvents: [],
         };
     }
 
@@ -341,6 +366,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     behaviorKind: "reveal",
                     procedureMeshIds: { first: "", second: "", nextCue: "", completionCue: "", reset: "" },
                     showAuthoringDialog: false,
+                    showReactionDialog: false,
+                    reactionEventNodeIndex: "",
+                    reactionTargetMeshId: "",
+                    reactionVisible: true,
+                    reactionEvents: [],
                 });
             }
         });
@@ -470,6 +500,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             this.props.globalState.sceneContext = null;
             this.props.globalState.sceneSource = null;
             this.props.globalState.sourceGlb = null;
+            this.props.globalState.sourceGltf = null;
         }
     }
 
@@ -534,6 +565,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         this.props.globalState.sceneContext = sceneContext;
         this.props.globalState.sceneSource = source;
         this.props.globalState.sourceGlb = null;
+        this.props.globalState.sourceGltf = null;
         this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
         this.setState({ sceneObjectCount: sceneContext.entries.length });
         return sceneContext;
@@ -741,13 +773,20 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
      * @param companionFiles - additional files dropped alongside (bin, textures)
      * @param preparedByEditor allows the editor's template preparation to hand off a pending load
      * @param authoredBehavior whether this file was patched by the source-preserving authoring action
+     * @param sourcePath original path of the imported file, retained through edited copies
      * @returns whether the file loaded successfully
      */
-    private async _loadFileAsync(file: File, companionFiles?: File[], preparedByEditor = false, authoredBehavior = false): Promise<boolean> {
+    private async _loadFileAsync(
+        file: File,
+        companionFiles?: File[],
+        preparedByEditor = false,
+        authoredBehavior = false,
+        sourcePath = file.webkitRelativePath || file.name
+    ): Promise<boolean> {
         if (this.state.isLoading && !preparedByEditor) {
             return false; // Prevent concurrent loads
         }
-        this.setState({ isLoading: true, error: "", showAuthoringDialog: false });
+        this.setState({ isLoading: true, error: "", showAuthoringDialog: false, showReactionDialog: false });
 
         const registeredFiles: string[] = [];
         let stagedEngine: Engine | null = null;
@@ -767,11 +806,33 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             const engine = new engineConstructor(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             stagedEngine = engine;
 
-            // Register the main file and any companion files in Babylon's virtual file system
+            // Register referenced companions by their glTF URI, including directory paths.
+            // A basename-only registration can silently load the wrong same-named texture.
+            let resourceUris: string[] | null = null;
+            if (/\.gltf$/i.test(file.name)) {
+                try {
+                    resourceUris = GetGlbExternalResourceUris(ReadGltfDocument(await file.text()));
+                } catch {
+                    // Let the loader report malformed or unsupported glTF input.
+                }
+            } else if (/\.glb$/i.test(file.name)) {
+                try {
+                    resourceUris = GetGlbExternalResourceUris(ReadGlbDocument(new Uint8Array(await file.arrayBuffer())));
+                } catch {
+                    // Let the loader report malformed or unsupported GLB input.
+                }
+            }
             const mainKey = file.name.toLowerCase();
             FilesInputStore.FilesToLoad[mainKey] = file;
             registeredFiles.push(mainKey);
-            if (companionFiles) {
+            if (resourceUris) {
+                for (const [uri, companion] of ResolveGltfCompanionFiles(file, resourceUris, companionFiles ?? [], sourcePath)) {
+                    for (const key of GetGltfResourceKeys(uri)) {
+                        FilesInputStore.FilesToLoad[key] = companion;
+                        registeredFiles.push(key);
+                    }
+                }
+            } else if (companionFiles) {
                 for (const companion of companionFiles) {
                     const key = companion.name.toLowerCase();
                     FilesInputStore.FilesToLoad[key] = companion;
@@ -842,6 +903,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             }
 
             let sourceGlb: GlobalState["sourceGlb"] = null;
+            let sourceGltf: GlobalState["sourceGltf"] = null;
             if (/\.glb$/i.test(file.name)) {
                 try {
                     const document = ReadGlbDocument(new Uint8Array(await file.arrayBuffer()));
@@ -849,6 +911,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     sourceGlb = {
                         file,
                         companionFiles,
+                        sourcePath,
                         nodeCount: Array.isArray(document.nodes) ? document.nodes.length : 0,
                         hasAnimations,
                         authoredBehavior,
@@ -856,6 +919,21 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     };
                 } catch {
                     // The preview can still load files outside this patcher's supported GLB framing.
+                }
+            } else if (/\.gltf$/i.test(file.name)) {
+                try {
+                    const document = ReadGltfDocument(await file.text());
+                    sourceGltf = {
+                        file,
+                        companionFiles,
+                        sourcePath,
+                        nodeCount: Array.isArray(document.nodes) ? document.nodes.length : 0,
+                        hasAnimations: document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0),
+                        authoredBehavior,
+                        externalResourceUris: GetGlbExternalResourceUris(document),
+                    };
+                } catch {
+                    // The preview can still load files outside this patcher's glTF JSON subset.
                 }
             }
             this._setupEngineRenderLoop(scene, engine);
@@ -871,6 +949,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             this.props.globalState.sceneContext = stagedSceneContext;
             this.props.globalState.sceneSource = "file";
             this.props.globalState.sourceGlb = sourceGlb;
+            this.props.globalState.sourceGltf = sourceGltf;
             this.props.globalState.snippetId = "";
             if (stagedGraphState) {
                 SerializationTools.ApplyDeserializedState(stagedGraphState, this.props.globalState);
@@ -1174,11 +1253,12 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
     private _canCreateKhrBehavior(): boolean {
         const globalState = this.props.globalState;
+        const source = globalState.sourceGlb ?? globalState.sourceGltf;
         const coordinator = globalState.coordinator;
         const graph = coordinator?.flowGraphs[0];
         if (
             !globalState.sceneContext?.ownsScene ||
-            (globalState.sceneSource === "file" && (!globalState.sourceGlb || globalState.sourceGlb.nodeCount === 0 || globalState.sourceGlb.authoredBehavior)) ||
+            (globalState.sceneSource === "file" && (!source || source.nodeCount === 0 || source.authoredBehavior)) ||
             globalState.hasImportScopedRuntime ||
             !graph ||
             coordinator?.flowGraphs.length !== 1 ||
@@ -1192,6 +1272,69 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             }
         }
         return true;
+    }
+
+    private async _openReactionDialogAsync(): Promise<void> {
+        try {
+            const source = await SerializationTools.BuildKhrInteractivitySourceForReactionAsync(this.props.globalState);
+            const document = typeof source === "string" ? ReadGltfDocument(source) : ReadGlbDocument(source);
+            const reactionEvents = ListKhrReactionEvents(document);
+            if (reactionEvents.length === 0) {
+                throw new Error("The selected graph has no supported event entry to extend.");
+            }
+            this._pendingReactionSource = source;
+            this.setState({ showReactionDialog: true, reactionEvents, reactionEventNodeIndex: "", reactionTargetMeshId: "", reactionVisible: true, error: "" });
+        } catch (err) {
+            const message = `Could not prepare a reaction: ${err instanceof Error ? err.message : String(err)}`;
+            this.setState({ error: message });
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, true));
+        }
+    }
+
+    private async _addKhrReactionAsync(): Promise<void> {
+        const source = this.props.globalState.sourceGlb ?? this.props.globalState.sourceGltf;
+        const prepared = this._pendingReactionSource;
+        const eventNodeIndex = Number(this.state.reactionEventNodeIndex);
+        const mesh = this.props.globalState.sceneContext?.meshes.find((candidate) => String(candidate.uniqueId) === this.state.reactionTargetMeshId);
+        const targetIndex = mesh && source ? GetGlbNodeIndex(mesh, source.nodeCount) : undefined;
+        if (
+            !source ||
+            prepared === null ||
+            this.state.reactionEventNodeIndex === "" ||
+            !this.state.reactionEvents.some((event) => event.nodeIndex === eventNodeIndex) ||
+            targetIndex === undefined
+        ) {
+            return;
+        }
+        this.setState({ isLoading: true, showReactionDialog: false, error: "" });
+        try {
+            const patched =
+                typeof prepared === "string"
+                    ? PatchKhrVisibilityReactionGltf(prepared, eventNodeIndex, targetIndex, this.state.reactionVisible)
+                    : PatchKhrVisibilityReactionGlb(prepared, eventNodeIndex, targetIndex, this.state.reactionVisible);
+            const name = source.file.name.replace(/\.(glb|gltf)$/i, "-reaction.$1");
+            const authoredFile = new File([typeof patched === "string" ? patched : new Uint8Array(patched)], name, {
+                type: typeof patched === "string" ? "model/gltf+json" : "model/gltf-binary",
+            });
+            if (!(await this._loadFileAsync(authoredFile, source.companionFiles, true, true, source.sourcePath))) {
+                throw new Error("The edited glTF asset could not be loaded for preview.");
+            }
+            const downloadUrl = URL.createObjectURL(authoredFile);
+            const link = this.props.globalState.scenePreviewCanvas!.ownerDocument.createElement("a");
+            link.href = downloadUrl;
+            link.download = name;
+            this.props.globalState.scenePreviewCanvas!.ownerDocument.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(downloadUrl), 60_000);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Downloaded source-preserving ${name}`, false));
+        } catch (err) {
+            const message = `Could not add reaction: ${err instanceof Error ? err.message : String(err)}`;
+            this.setState({ error: message, isLoading: false });
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, true));
+        } finally {
+            this._pendingReactionSource = null;
+        }
     }
 
     private async _createKhrBehaviorAsync(): Promise<void> {
@@ -1215,29 +1358,36 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 ValidateKhrTwoStepProcedureMeshes(procedureMeshes as IKhrTwoStepProcedureNodes<AbstractMesh>);
             }
             const sourceGlb = this.props.globalState.sourceGlb;
-            if (this.props.globalState.sceneSource === "file" && sourceGlb) {
-                const sourceBytes = new Uint8Array(await sourceGlb.file.arrayBuffer());
-                let authoredBytes: Uint8Array;
+            const sourceGltf = this.props.globalState.sourceGltf;
+            const source = sourceGlb ?? sourceGltf;
+            if (this.props.globalState.sceneSource === "file" && source) {
+                const sourceBytes = sourceGlb ? new Uint8Array(await sourceGlb.file.arrayBuffer()) : null;
+                const sourceText = sourceGltf ? await sourceGltf.file.text() : null;
+                let authoredContents: BlobPart;
                 if (isProcedure) {
                     const indices = Object.fromEntries(
-                        (["first", "second", "nextCue", "completionCue", "reset"] as const).map((role) => [role, GetGlbNodeIndex(procedureMeshes[role]!, sourceGlb.nodeCount)])
+                        (["first", "second", "nextCue", "completionCue", "reset"] as const).map((role) => [role, GetGlbNodeIndex(procedureMeshes[role]!, source.nodeCount)])
                     ) as unknown as IKhrTwoStepProcedureNodes<number | undefined>;
                     if (Object.values(indices).some((index) => index === undefined)) {
-                        throw new Error("All procedure meshes must resolve to nodes in the source GLB.");
+                        throw new Error("All procedure meshes must resolve to nodes in the source glTF asset.");
                     }
-                    authoredBytes = PatchKhrTwoStepProcedureGlb(sourceBytes, indices as IKhrTwoStepProcedureNodes<number>);
+                    authoredContents = sourceBytes
+                        ? new Uint8Array(PatchKhrTwoStepProcedureGlb(sourceBytes, indices as IKhrTwoStepProcedureNodes<number>))
+                        : PatchKhrTwoStepProcedureGltf(sourceText!, indices as IKhrTwoStepProcedureNodes<number>);
                 } else {
-                    const triggerIndex = GetGlbNodeIndex(trigger!, sourceGlb.nodeCount);
-                    const revealIndex = GetGlbNodeIndex(reveal!, sourceGlb.nodeCount);
+                    const triggerIndex = GetGlbNodeIndex(trigger!, source.nodeCount);
+                    const revealIndex = GetGlbNodeIndex(reveal!, source.nodeCount);
                     if (triggerIndex === undefined || revealIndex === undefined) {
-                        throw new Error("Both meshes must resolve to nodes in the source GLB.");
+                        throw new Error("Both meshes must resolve to nodes in the source glTF asset.");
                     }
-                    authoredBytes = PatchKhrSelectionRevealGlb(sourceBytes, triggerIndex, revealIndex);
+                    authoredContents = sourceBytes
+                        ? new Uint8Array(PatchKhrSelectionRevealGlb(sourceBytes, triggerIndex, revealIndex))
+                        : PatchKhrSelectionRevealGltf(sourceText!, triggerIndex, revealIndex);
                 }
-                const fileName = sourceGlb.file.name.replace(/\.glb$/i, "-behavior.glb");
-                const authoredFile = new File([new Uint8Array(authoredBytes)], fileName, { type: "model/gltf-binary" });
-                if (!(await this._loadFileAsync(authoredFile, sourceGlb.companionFiles, true, true))) {
-                    throw new Error("The authored GLB could not be loaded for preview.");
+                const fileName = source.file.name.replace(/\.(glb|gltf)$/i, "-behavior.$1");
+                const authoredFile = new File([authoredContents], fileName, { type: sourceGlb ? "model/gltf-binary" : "model/gltf+json" });
+                if (!(await this._loadFileAsync(authoredFile, source.companionFiles, true, true, source.sourcePath))) {
+                    throw new Error("The authored glTF asset could not be loaded for preview.");
                 }
                 const downloadUrl = URL.createObjectURL(authoredFile);
                 const link = this.props.globalState.scenePreviewCanvas!.ownerDocument.createElement("a");
@@ -1248,9 +1398,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 link.remove();
                 setTimeout(() => URL.revokeObjectURL(downloadUrl), 60_000);
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Downloaded source-preserving ${fileName}`, false));
-                if (sourceGlb.externalResourceUris.length > 0) {
+                if (source.externalResourceUris.length > 0) {
                     this.props.globalState.onLogRequiredObservable.notifyObservers(
-                        new LogEntry(`The downloaded GLB still needs its external resources at their referenced paths: ${sourceGlb.externalResourceUris.join(", ")}`, false)
+                        new LogEntry(`The downloaded glTF asset still needs its external resources at their referenced paths: ${source.externalResourceUris.join(", ")}`, false)
                     );
                 }
                 return;
@@ -1287,8 +1437,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const ctx = this.props.globalState.sceneContext;
         const isHostMode = this.props.globalState.sceneSource === "host";
         const sourceGlb = this.props.globalState.sourceGlb;
-        const externalResourceWarning = sourceGlb?.externalResourceUris.length
-            ? `This GLB references external resources: ${sourceGlb.externalResourceUris.join(", ")}. Keep them at their referenced paths when sharing or reopening the downloaded GLB.`
+        const sourceGltf = this.props.globalState.sourceGltf;
+        const source = sourceGlb ?? sourceGltf;
+        const externalResourceWarning = source?.externalResourceUris.length
+            ? `This ${sourceGlb ? "GLB" : "glTF"} references external resources: ${source.externalResourceUris.join(", ")}. Keep them at their referenced paths when sharing or reopening the downloaded asset.`
             : "";
         const seenNodeIndices = new Set<number>();
         const meshes =
@@ -1296,10 +1448,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 if (mesh.isDisposed() || mesh.getTotalVertices() === 0) {
                     return false;
                 }
-                if (this.props.globalState.sceneSource !== "file" || !sourceGlb) {
+                if (this.props.globalState.sceneSource !== "file" || !source) {
                     return true;
                 }
-                const index = GetGlbNodeIndex(mesh, sourceGlb.nodeCount);
+                const index = GetGlbNodeIndex(mesh, source.nodeCount);
                 if (index === undefined || seenNodeIndices.has(index)) {
                     return false;
                 }
@@ -1323,8 +1475,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             try {
                 ValidateKhrTwoStepProcedureMeshes(procedureMeshes as IKhrTwoStepProcedureNodes<AbstractMesh>);
                 procedureSelectionValid = true;
-                if (sourceGlb && this.props.globalState.sceneSource === "file") {
-                    const indices = Object.values(procedureMeshes).map((mesh) => GetGlbNodeIndex(mesh!, sourceGlb.nodeCount));
+                if (source && this.props.globalState.sceneSource === "file") {
+                    const indices = Object.values(procedureMeshes).map((mesh) => GetGlbNodeIndex(mesh!, source.nodeCount));
                     procedureSelectionValid = indices.every((index) => index !== undefined) && new Set(indices).size === indices.length;
                 }
             } catch {
@@ -1332,19 +1484,20 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             }
         }
         const meshLabel = (mesh: (typeof meshes)[number]) =>
-            sourceGlb && this.props.globalState.sceneSource === "file"
-                ? `${mesh.name || "Mesh"} (glTF node ${GetGlbNodeIndex(mesh, sourceGlb.nodeCount)})`
+            source && this.props.globalState.sceneSource === "file"
+                ? `${mesh.name || "Mesh"} (glTF node ${GetGlbNodeIndex(mesh, source.nodeCount)})`
                 : `${mesh.name || "Mesh"} (#${mesh.uniqueId})`;
-        const sourceHasAnimations = this.props.globalState.sceneSource === "file" && !!sourceGlb?.hasAnimations;
+        const reactionTarget = meshes.find((mesh) => String(mesh.uniqueId) === this.state.reactionTargetMeshId);
+        const sourceHasAnimations = this.props.globalState.sceneSource === "file" && !!source?.hasAnimations;
         const canOpenAuthoring = this._canCreateKhrBehavior();
         const canCreate = canOpenAuthoring && !sourceHasAnimations;
         const createTitle =
-            this.props.globalState.sceneSource === "file" && !sourceGlb
-                ? "Drop a GLB to add a behavior without changing its source scene data"
-                : sourceGlb?.authoredBehavior
-                  ? "This GLB already has an authored behavior"
+            this.props.globalState.sceneSource === "file" && !source
+                ? "Drop a glTF or GLB to add a behavior without changing its source scene data"
+                : source?.authoredBehavior
+                  ? "This asset already has an authored behavior; use Add reaction to extend it"
                   : sourceHasAnimations
-                    ? "Animated GLBs need explicit animation behavior"
+                    ? "Animated assets need explicit animation behavior"
                     : canCreate
                       ? "Create a glTF selection behavior"
                       : "Start with one empty graph to create a glTF behavior";
@@ -1368,6 +1521,16 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         {ctx?.ownsScene && !this.props.globalState.hasImportScopedRuntime && (
                             <Button size="small" title={createTitle} onClick={() => this.setState({ showAuthoringDialog: true })} disabled={isLoading || !canOpenAuthoring}>
                                 New behavior
+                            </Button>
+                        )}
+                        {ctx?.ownsScene && source && this.props.globalState.khrInteractivityImportResult && (
+                            <Button
+                                size="small"
+                                title="Add a show or hide action to an event in the existing glTF graph"
+                                onClick={() => void this._openReactionDialogAsync()}
+                                disabled={isLoading}
+                            >
+                                Add reaction
                             </Button>
                         )}
                     </div>
@@ -1427,11 +1590,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                                         : "Selecting the trigger will reveal the second mesh."}
                                 </Body1>
                                 {sourceHasAnimations && (
-                                    <Body1>This GLB has animations. Adding a graph would stop automatic playback; animated GLBs need explicit animation behavior.</Body1>
+                                    <Body1>This asset has animations. Adding a graph would stop automatic playback; animated assets need explicit animation behavior.</Body1>
                                 )}
                                 <Body1>
                                     {this.props.globalState.sceneSource === "file"
-                                        ? "The source GLB is patched and downloaded. Its original scene data and binary chunks are retained."
+                                        ? `The source ${sourceGlb ? "GLB" : "glTF JSON"} is patched and downloaded. Keep its companion files at their referenced paths.`
                                         : "The preview scene is exported and reloaded as glTF; Babylon-only scene features may be omitted."}
                                 </Body1>
                                 {externalResourceWarning && <Body1 data-testid="external-resource-warning-dialog">{externalResourceWarning}</Body1>}
@@ -1511,7 +1674,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                                               !reveal ||
                                               trigger === reveal ||
                                               trigger.isDescendantOf(reveal) ||
-                                              (!!sourceGlb && GetGlbNodeIndex(trigger, sourceGlb.nodeCount) === GetGlbNodeIndex(reveal, sourceGlb.nodeCount)) ||
+                                              (!!source && GetGlbNodeIndex(trigger, source.nodeCount) === GetGlbNodeIndex(reveal, source.nodeCount)) ||
                                               !trigger.isEnabled() ||
                                               !trigger.isVisible ||
                                               !trigger.isPickable ||
@@ -1520,6 +1683,71 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                                     onClick={() => void this._createKhrBehaviorAsync()}
                                 >
                                     Create behavior
+                                </Button>
+                            </DialogActions>
+                        </DialogBody>
+                    </DialogSurface>
+                </Dialog>
+                <Dialog open={this.state.showReactionDialog} onOpenChange={(_, data) => this.setState({ showReactionDialog: data.open })}>
+                    <DialogSurface className={classes.authoringDialog}>
+                        <DialogBody>
+                            <DialogTitle>Add a reaction to an existing event</DialogTitle>
+                            <DialogContent className={classes.authoring}>
+                                <Body1>The event's existing flow is activated first. The new action changes visibility on a glTF node in the same asset.</Body1>
+                                <Label htmlFor="khr-reaction-event">Event</Label>
+                                <Dropdown
+                                    id="khr-reaction-event"
+                                    aria-label="Event"
+                                    className={classes.authoringSelect}
+                                    placeholder="Choose an event"
+                                    value={this.state.reactionEvents.find((event) => String(event.nodeIndex) === this.state.reactionEventNodeIndex)?.label ?? ""}
+                                    selectedOptions={this.state.reactionEventNodeIndex ? [this.state.reactionEventNodeIndex] : []}
+                                    onOptionSelect={(_, data) => this.setState({ reactionEventNodeIndex: data.optionValue ?? "" })}
+                                >
+                                    {this.state.reactionEvents.map((event) => (
+                                        <Option key={event.nodeIndex} value={String(event.nodeIndex)} text={event.label}>
+                                            {event.label}
+                                        </Option>
+                                    ))}
+                                </Dropdown>
+                                <Label htmlFor="khr-reaction-target">Target mesh</Label>
+                                <Dropdown
+                                    id="khr-reaction-target"
+                                    aria-label="Target mesh"
+                                    className={classes.authoringSelect}
+                                    placeholder="Choose a mesh"
+                                    value={reactionTarget ? meshLabel(reactionTarget) : ""}
+                                    selectedOptions={this.state.reactionTargetMeshId ? [this.state.reactionTargetMeshId] : []}
+                                    onOptionSelect={(_, data) => this.setState({ reactionTargetMeshId: data.optionValue ?? "" })}
+                                >
+                                    {meshes.map((mesh) => (
+                                        <Option key={mesh.uniqueId} value={String(mesh.uniqueId)} text={meshLabel(mesh)}>
+                                            {meshLabel(mesh)}
+                                        </Option>
+                                    ))}
+                                </Dropdown>
+                                <Label htmlFor="khr-reaction-action">Action</Label>
+                                <Dropdown
+                                    id="khr-reaction-action"
+                                    aria-label="Action"
+                                    className={classes.authoringSelect}
+                                    value={this.state.reactionVisible ? "Show target" : "Hide target"}
+                                    selectedOptions={[this.state.reactionVisible ? "show" : "hide"]}
+                                    onOptionSelect={(_, data) => this.setState({ reactionVisible: data.optionValue !== "hide" })}
+                                >
+                                    <Option value="show">Show target</Option>
+                                    <Option value="hide">Hide target</Option>
+                                </Dropdown>
+                                {externalResourceWarning && <Body1>{externalResourceWarning}</Body1>}
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={() => this.setState({ showReactionDialog: false })}>Cancel</Button>
+                                <Button
+                                    appearance="primary"
+                                    disabled={isLoading || !this.state.reactionEventNodeIndex || !this.state.reactionTargetMeshId}
+                                    onClick={() => void this._addKhrReactionAsync()}
+                                >
+                                    Add reaction
                                 </Button>
                             </DialogActions>
                         </DialogBody>

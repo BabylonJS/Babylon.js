@@ -90,6 +90,24 @@ function _ReadGlb(bytes: Uint8Array): { document: IGlbDocument; jsonText: string
     return { document, jsonText, suffixOffset };
 }
 
+/**
+ * Parse a split glTF source without normalizing any JSON tokens.
+ * @param jsonText source glTF JSON
+ * @returns parsed document
+ */
+export function ReadGltfDocument(jsonText: string): IGlbDocument {
+    let document: IGlbDocument;
+    try {
+        document = JSON.parse(jsonText) as IGlbDocument;
+    } catch {
+        throw new Error("The glTF JSON is invalid.");
+    }
+    if (!document || typeof document !== "object" || Array.isArray(document) || document.asset?.version !== "2.0") {
+        throw new Error("The file must contain a glTF 2.0 document.");
+    }
+    return document;
+}
+
 function _WriteGlb(bytes: Uint8Array, jsonText: string, suffixOffset: number): Uint8Array {
     const encoded = new TextEncoder().encode(jsonText);
     const paddedLength = Math.ceil(encoded.length / 4) * 4;
@@ -129,8 +147,30 @@ export function ReadGlbDocument(bytes: Uint8Array): IGlbDocument {
  */
 export function PatchKhrInteractivityGlb(bytes: Uint8Array, extension: unknown, extensionsUsed: readonly string[], extensionsRequired: readonly string[]): Uint8Array {
     const { document, jsonText: sourceJsonText, suffixOffset } = _ReadGlb(bytes);
+    return _WriteGlb(bytes, _PatchKhrInteractivityJson(document, sourceJsonText, extension, extensionsUsed, extensionsRequired), suffixOffset);
+}
+
+/**
+ * Patch the graph in a split glTF document while retaining unrelated JSON tokens.
+ * @param jsonText source glTF JSON
+ * @param extension edited interactivity extension
+ * @param extensionsUsed other extensions referenced by the graph
+ * @param extensionsRequired other extensions required by the graph
+ * @returns patched glTF JSON
+ */
+export function PatchKhrInteractivityGltf(jsonText: string, extension: unknown, extensionsUsed: readonly string[], extensionsRequired: readonly string[]): string {
+    return _PatchKhrInteractivityJson(ReadGltfDocument(jsonText), jsonText, extension, extensionsUsed, extensionsRequired);
+}
+
+function _PatchKhrInteractivityJson(
+    document: IGlbDocument,
+    sourceJsonText: string,
+    extension: unknown,
+    extensionsUsed: readonly string[],
+    extensionsRequired: readonly string[]
+): string {
     if (!_IsRecord(document.extensions) || !_IsRecord(document.extensions.KHR_interactivity)) {
-        throw new Error("The source GLB has no KHR_interactivity graph to update.");
+        throw new Error("The source glTF asset has no KHR_interactivity graph to update.");
     }
     if (!_IsRecord(extension) || !Array.isArray(extension.graphs)) {
         throw new Error("The edited KHR_interactivity extension is malformed.");
@@ -139,7 +179,7 @@ export function PatchKhrInteractivityGlb(bytes: Uint8Array, extension: unknown, 
         (document.extensionsUsed !== undefined && (!Array.isArray(document.extensionsUsed) || document.extensionsUsed.some((name) => typeof name !== "string"))) ||
         (document.extensionsRequired !== undefined && (!Array.isArray(document.extensionsRequired) || document.extensionsRequired.some((name) => typeof name !== "string")))
     ) {
-        throw new Error("The source GLB has malformed extension declarations.");
+        throw new Error("The source glTF asset has malformed extension declarations.");
     }
     let jsonText = sourceJsonText;
     const write = (path: Array<string | number>, value: unknown, isArrayInsertion = false) => {
@@ -159,7 +199,7 @@ export function PatchKhrInteractivityGlb(bytes: Uint8Array, extension: unknown, 
             }
         }
     }
-    return _WriteGlb(bytes, jsonText, suffixOffset);
+    return jsonText;
 }
 
 /**
@@ -194,11 +234,11 @@ export function GetGlbNodeIndex(node: Node, nodeCount: number): number | undefin
 
 function _ValidateKhrSelectionRevealDocument(document: IGlbDocument, triggerIndex: number, revealIndex: number): void {
     if (document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0)) {
-        throw new Error("Adding a behavior graph would stop the source GLB's animations from playing automatically; animated GLBs need explicit animation behavior.");
+        throw new Error("Adding a behavior graph would stop the source asset's animations from playing automatically; animated assets need explicit animation behavior.");
     }
     const nodes = document.nodes;
     if (!Array.isArray(nodes)) {
-        throw new Error("The source GLB has no glTF nodes.");
+        throw new Error("The source glTF asset has no nodes.");
     }
     if (
         nodes.some(
@@ -212,7 +252,7 @@ function _ValidateKhrSelectionRevealDocument(document: IGlbDocument, triggerInde
         (document.extensionsUsed !== undefined && (!Array.isArray(document.extensionsUsed) || document.extensionsUsed.some((name) => typeof name !== "string"))) ||
         (document.extensionsRequired !== undefined && (!Array.isArray(document.extensionsRequired) || document.extensionsRequired.some((name) => typeof name !== "string")))
     ) {
-        throw new Error("The source GLB has malformed nodes or extension declarations.");
+        throw new Error("The source glTF asset has malformed nodes or extension declarations.");
     }
     if (
         !Number.isSafeInteger(triggerIndex) ||
@@ -247,7 +287,7 @@ function _ValidateKhrSelectionRevealDocument(document: IGlbDocument, triggerInde
         document.extensionsUsed?.includes("KHR_interactivity") ||
         document.extensionsUsed?.includes("BABYLON_flow_graph")
     ) {
-        throw new Error("The source GLB already has a behavior graph.");
+        throw new Error("The source glTF asset already has a behavior graph.");
     }
     const triggerSelectability = nodes[triggerIndex].extensions?.KHR_node_selectability;
     if (triggerSelectability !== undefined && (!_IsRecord(triggerSelectability) || (triggerSelectability.selectable !== undefined && triggerSelectability.selectable !== true))) {
@@ -322,15 +362,7 @@ function _ValidateKhrSelectionRevealDocument(document: IGlbDocument, triggerInde
     }
 }
 
-function _WriteBehaviorGlb(
-    bytes: Uint8Array,
-    document: IGlbDocument,
-    sourceJsonText: string,
-    suffixOffset: number,
-    graph: unknown,
-    selectableNodes: number[],
-    hiddenNodes: number[]
-): Uint8Array {
+function _WriteBehaviorJson(document: IGlbDocument, sourceJsonText: string, graph: unknown, selectableNodes: number[], hiddenNodes: number[]): string {
     // Only behavior-owned paths are edited. Serializing the parsed document would round large
     // numeric extras and rewrite unrelated source tokens.
     let jsonText = sourceJsonText;
@@ -366,7 +398,7 @@ function _WriteBehaviorGlb(
             write([key], names);
         }
     }
-    return _WriteGlb(bytes, jsonText, suffixOffset);
+    return jsonText;
 }
 
 /**
@@ -379,7 +411,20 @@ function _WriteBehaviorGlb(
 export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: number, revealIndex: number): Uint8Array {
     const { document, jsonText, suffixOffset } = _ReadGlb(bytes);
     _ValidateKhrSelectionRevealDocument(document, triggerIndex, revealIndex);
-    return _WriteBehaviorGlb(bytes, document, jsonText, suffixOffset, BuildKhrSelectionRevealGraph(triggerIndex, revealIndex), [triggerIndex], [revealIndex]);
+    return _WriteGlb(bytes, _WriteBehaviorJson(document, jsonText, BuildKhrSelectionRevealGraph(triggerIndex, revealIndex), [triggerIndex], [revealIndex]), suffixOffset);
+}
+
+/**
+ * Add a selection behavior to split glTF, retaining unrelated JSON and resource URIs.
+ * @param jsonText source glTF JSON
+ * @param triggerIndex source glTF node index of the trigger
+ * @param revealIndex source glTF node index of the reveal target
+ * @returns patched glTF JSON
+ */
+export function PatchKhrSelectionRevealGltf(jsonText: string, triggerIndex: number, revealIndex: number): string {
+    const document = ReadGltfDocument(jsonText);
+    _ValidateKhrSelectionRevealDocument(document, triggerIndex, revealIndex);
+    return _WriteBehaviorJson(document, jsonText, BuildKhrSelectionRevealGraph(triggerIndex, revealIndex), [triggerIndex], [revealIndex]);
 }
 
 /**
@@ -390,9 +435,23 @@ export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: numb
  */
 export function PatchKhrTwoStepProcedureGlb(bytes: Uint8Array, indices: IKhrTwoStepProcedureNodes<number>): Uint8Array {
     const { document, jsonText, suffixOffset } = _ReadGlb(bytes);
+    return _WriteGlb(bytes, _PatchKhrTwoStepProcedureJson(document, jsonText, indices), suffixOffset);
+}
+
+/**
+ * Add a two-step procedure to split glTF, retaining unrelated JSON and resource URIs.
+ * @param jsonText source glTF JSON
+ * @param indices source glTF node indices for procedure roles
+ * @returns patched glTF JSON
+ */
+export function PatchKhrTwoStepProcedureGltf(jsonText: string, indices: IKhrTwoStepProcedureNodes<number>): string {
+    return _PatchKhrTwoStepProcedureJson(ReadGltfDocument(jsonText), jsonText, indices);
+}
+
+function _PatchKhrTwoStepProcedureJson(document: IGlbDocument, jsonText: string, indices: IKhrTwoStepProcedureNodes<number>): string {
     const nodes = document.nodes;
     if (!Array.isArray(nodes)) {
-        throw new Error("The source GLB has no glTF nodes.");
+        throw new Error("The source glTF asset has no nodes.");
     }
     const roleIndices = [indices.first, indices.second, indices.nextCue, indices.completionCue, indices.reset];
     if (roleIndices.some((index) => !Number.isSafeInteger(index) || index < 0 || index >= nodes.length)) {
@@ -404,11 +463,11 @@ export function PatchKhrTwoStepProcedureGlb(bytes: Uint8Array, indices: IKhrTwoS
     const parents = Array.from({ length: nodes.length }, () => new Array<number>());
     for (const [index, node] of nodes.entries()) {
         if (!node || typeof node !== "object" || Array.isArray(node) || (node.children !== undefined && !Array.isArray(node.children))) {
-            throw new Error("The source GLB has malformed node hierarchy.");
+            throw new Error("The source glTF asset has malformed node hierarchy.");
         }
         for (const child of node.children ?? []) {
             if (!Number.isInteger(child) || child < 0 || child >= nodes.length) {
-                throw new Error("The source GLB has malformed node hierarchy.");
+                throw new Error("The source glTF asset has malformed node hierarchy.");
             }
             parents[child].push(index);
         }
@@ -479,13 +538,232 @@ export function PatchKhrTwoStepProcedureGlb(bytes: Uint8Array, indices: IKhrTwoS
 
     // Reuse the selection template's graph and animation guards before writing procedure fields.
     _ValidateKhrSelectionRevealDocument(document, indices.first, indices.completionCue);
-    return _WriteBehaviorGlb(
-        bytes,
-        document,
-        jsonText,
-        suffixOffset,
-        BuildKhrTwoStepProcedureGraph(indices),
-        [indices.first, indices.second, indices.reset],
-        [indices.nextCue, indices.completionCue]
-    );
+    return _WriteBehaviorJson(document, jsonText, BuildKhrTwoStepProcedureGraph(indices), [indices.first, indices.second, indices.reset], [indices.nextCue, indices.completionCue]);
+}
+
+/** An event in the selected KHR graph to which the guided editor can append an action. */
+export interface IKhrReactionEvent {
+    /** Source interactivity node index within the selected graph. */
+    nodeIndex: number;
+    /** Label including the stable glTF node index when the event refers to a scene node. */
+    label: string;
+}
+
+const _ReactionEventOperations = new Set(["event/onSelect", "event/onHoverIn", "event/onHoverOut", "event/onStart", "event/receive"]);
+
+function _SelectedKhrGraph(document: IGlbDocument): { extension: Record<string, unknown>; graph: Record<string, unknown>; graphIndex: number } {
+    const extension = document.extensions?.KHR_interactivity;
+    if (!_IsRecord(extension) || !Array.isArray(extension.graphs) || extension.graphs.length === 0) {
+        throw new Error("The source asset has no KHR_interactivity graph to extend.");
+    }
+    const graphIndex = extension.graph ?? 0;
+    if (
+        !Number.isSafeInteger(graphIndex) ||
+        (graphIndex as number) < 0 ||
+        (graphIndex as number) >= extension.graphs.length ||
+        !_IsRecord(extension.graphs[graphIndex as number])
+    ) {
+        throw new Error("The source asset has no valid selected KHR_interactivity graph.");
+    }
+    return { extension, graph: extension.graphs[graphIndex as number] as Record<string, unknown>, graphIndex: graphIndex as number };
+}
+
+/**
+ * List supported event entries in the selected graph, leaving alternate graphs untouched.
+ * @param document parsed source glTF document
+ * @returns events that can receive a guided reaction
+ */
+export function ListKhrReactionEvents(document: IGlbDocument): IKhrReactionEvent[] {
+    const { graph } = _SelectedKhrGraph(document);
+    const declarations = graph.declarations;
+    const nodes = graph.nodes;
+    if (!Array.isArray(declarations) || !Array.isArray(nodes)) {
+        return [];
+    }
+    return nodes.flatMap((node: unknown, nodeIndex: number) => {
+        if (!_IsRecord(node) || !Number.isSafeInteger(node.declaration) || !_IsRecord(declarations[node.declaration as number])) {
+            return [];
+        }
+        const operation = declarations[node.declaration as number].op;
+        if (typeof operation !== "string" || !_ReactionEventOperations.has(operation) || (node.flows !== undefined && !_IsRecord(node.flows))) {
+            return [];
+        }
+        const selectedNode = _IsRecord(node.configuration) && _IsRecord(node.configuration.nodeIndex) ? node.configuration.nodeIndex.value : undefined;
+        const targetIndex = Array.isArray(selectedNode) && Number.isSafeInteger(selectedNode[0]) ? (selectedNode[0] as number) : undefined;
+        const target = targetIndex !== undefined ? ` · glTF node ${targetIndex} (${String(document.nodes?.[targetIndex]?.name || "unnamed")})` : "";
+        const eventName = operation === "event/receive" ? "Custom event" : operation.replace("event/", "");
+        return [{ nodeIndex, label: `${eventName}${target} · graph node ${nodeIndex}` }];
+    });
+}
+
+function _PatchKhrVisibilityReactionJson(jsonText: string, eventNodeIndex: number, targetIndex: number, visible: boolean): string {
+    const document = ReadGltfDocument(jsonText);
+    if (!Array.isArray(document.nodes) || !Number.isSafeInteger(targetIndex) || targetIndex < 0 || targetIndex >= document.nodes.length) {
+        throw new Error("The reaction target glTF node index is outside the source document.");
+    }
+    if (typeof visible !== "boolean") {
+        throw new Error("The reaction visibility value must be boolean.");
+    }
+    const target = document.nodes[targetIndex];
+    if (!_IsRecord(target) || (target.extensions !== undefined && !_IsRecord(target.extensions))) {
+        throw new Error("The reaction target has malformed extensions.");
+    }
+    const visibility = target.extensions?.KHR_node_visibility;
+    if (visibility !== undefined && (!_IsRecord(visibility) || (visibility.visible !== undefined && typeof visibility.visible !== "boolean"))) {
+        throw new Error("The reaction target has malformed visibility.");
+    }
+    if (visible) {
+        // A local visible=true cannot override a hidden parent. Avoid a seemingly successful but inert action.
+        const parents = new Map<number, number[]>();
+        for (const [parentIndex, node] of document.nodes.entries()) {
+            for (const child of Array.isArray(node.children) ? node.children : []) {
+                parents.set(child, [...(parents.get(child) ?? []), parentIndex]);
+            }
+        }
+        const pending = [...(parents.get(targetIndex) ?? [])];
+        const visited = new Set<number>();
+        while (pending.length) {
+            const index = pending.pop()!;
+            if (visited.has(index)) {
+                continue;
+            }
+            visited.add(index);
+            const ancestorVisibility = document.nodes[index]?.extensions?.KHR_node_visibility;
+            if (ancestorVisibility !== undefined && (!_IsRecord(ancestorVisibility) || (ancestorVisibility.visible !== undefined && ancestorVisibility.visible !== true))) {
+                throw new Error("A reaction target ancestor disables visibility.");
+            }
+            pending.push(...(parents.get(index) ?? []));
+        }
+    }
+    const { graph, graphIndex } = _SelectedKhrGraph(document);
+    const events = ListKhrReactionEvents(document);
+    if (!events.some((event) => event.nodeIndex === eventNodeIndex)) {
+        throw new Error("Choose a supported event in the selected graph.");
+    }
+    const graphNodes = graph.nodes as Array<Record<string, unknown>>;
+    const declarations = graph.declarations as Array<Record<string, unknown>>;
+    const event = graphNodes[eventNodeIndex];
+    const flows = _IsRecord(event.flows) ? event.flows : {};
+    if (flows.out !== undefined && (!_IsRecord(flows.out) || !Number.isSafeInteger(flows.out.node) || (flows.out.socket !== undefined && typeof flows.out.socket !== "string"))) {
+        throw new Error("The event's existing output flow is malformed.");
+    }
+    const previousFlow = flows.out;
+    const typeIndex = Array.isArray(graph.types) ? graph.types.findIndex((type: unknown) => _IsRecord(type) && type.signature === "bool") : -1;
+    const boolTypeIndex = typeIndex < 0 ? (Array.isArray(graph.types) ? graph.types.length : 0) : typeIndex;
+    const existingPointerDeclaration = declarations.findIndex((declaration) => declaration.op === "pointer/set" && Object.keys(declaration).length === 1);
+    const pointerDeclarationIndex = existingPointerDeclaration >= 0 ? existingPointerDeclaration : declarations.length;
+    const existingSequenceDeclaration = declarations.findIndex((declaration) => declaration.op === "flow/sequence" && Object.keys(declaration).length === 1);
+    const sequenceDeclarationIndex = existingSequenceDeclaration >= 0 ? existingSequenceDeclaration : declarations.length + (existingPointerDeclaration >= 0 ? 0 : 1);
+    const pointerNodeIndex = graphNodes.length + (previousFlow ? 1 : 0);
+    const sequenceNodeIndex = eventNodeIndex + 1;
+    const pointerNode = {
+        declaration: pointerDeclarationIndex,
+        configuration: { pointer: { value: [`/nodes/${targetIndex}/extensions/KHR_node_visibility/visible`] }, type: { value: [boolTypeIndex] } },
+        values: { value: { type: boolTypeIndex, value: [visible] } },
+    };
+    let edited = jsonText;
+    const write = (path: Array<string | number>, value: unknown, isArrayInsertion = false) => {
+        edited = applyEdits(edited, modify(edited, path, value, { isArrayInsertion }));
+    };
+    const base = ["extensions", "KHR_interactivity", "graphs", graphIndex];
+    if (previousFlow) {
+        // KHR_interactivity requires every node connection to point forward. Inserting immediately
+        // after the event preserves that invariant and keeps the original branch before the new one.
+        for (const [index, node] of graphNodes.entries()) {
+            for (const key of ["flows", "values"] as const) {
+                const sockets = node[key];
+                if (!_IsRecord(sockets)) {
+                    continue;
+                }
+                for (const [socket, connection] of Object.entries(sockets)) {
+                    if (_IsRecord(connection) && Number.isSafeInteger(connection.node) && (connection.node as number) >= sequenceNodeIndex) {
+                        write([...base, "nodes", index, key, socket, "node"], (connection.node as number) + 1);
+                    }
+                }
+            }
+        }
+    }
+    if (typeIndex < 0) {
+        write([...base, "types", boolTypeIndex], { signature: "bool" }, true);
+    }
+    if (existingPointerDeclaration < 0) {
+        write([...base, "declarations", pointerDeclarationIndex], { op: "pointer/set" }, true);
+    }
+    if (previousFlow) {
+        if (existingSequenceDeclaration < 0) {
+            write([...base, "declarations", sequenceDeclarationIndex], { op: "flow/sequence" }, true);
+        }
+        const prior = previousFlow as { node: number; socket?: string };
+        write(
+            [...base, "nodes", sequenceNodeIndex],
+            {
+                declaration: sequenceDeclarationIndex,
+                flows: { ["0"]: { ...prior, node: prior.node >= sequenceNodeIndex ? prior.node + 1 : prior.node }, ["1"]: { node: pointerNodeIndex, socket: "in" } },
+            },
+            true
+        );
+    }
+    write([...base, "nodes", pointerNodeIndex], pointerNode, true);
+    write([...base, "nodes", eventNodeIndex, "flows", "out"], { node: previousFlow ? sequenceNodeIndex : pointerNodeIndex, socket: "in" });
+    if (visibility === undefined) {
+        write(["nodes", targetIndex, "extensions", "KHR_node_visibility"], { visible: true });
+    }
+    for (const key of ["extensionsUsed", "extensionsRequired"] as const) {
+        const names = document[key];
+        if (names !== undefined && (!Array.isArray(names) || names.some((name) => typeof name !== "string"))) {
+            throw new Error("The source asset has malformed extension declarations.");
+        }
+        if (!names?.includes("KHR_node_visibility")) {
+            write(names ? [key, names.length] : [key], names ? "KHR_node_visibility" : ["KHR_node_visibility"], !!names);
+        }
+    }
+    const authored = ReadGltfDocument(edited);
+    const authoredGraph = _SelectedKhrGraph(authored).graph;
+    const authoredNodes = authoredGraph.nodes as Array<Record<string, unknown>>;
+    for (const [index, node] of authoredNodes.entries()) {
+        for (const key of ["flows", "values"] as const) {
+            const sockets = node[key];
+            if (!_IsRecord(sockets)) {
+                continue;
+            }
+            for (const connection of Object.values(sockets)) {
+                if (
+                    _IsRecord(connection) &&
+                    connection.node !== undefined &&
+                    (!Number.isSafeInteger(connection.node) ||
+                        (connection.node as number) < 0 ||
+                        (connection.node as number) >= authoredNodes.length ||
+                        (key === "flows" ? (connection.node as number) <= index : (connection.node as number) >= index))
+                ) {
+                    throw new Error("The extended graph contains an invalid flow or value node connection.");
+                }
+            }
+        }
+    }
+    return edited;
+}
+
+/**
+ * Append a visibility action to an existing event in a source GLB.
+ * @param bytes source GLB bytes
+ * @param eventNodeIndex graph node index of the event
+ * @param targetIndex source glTF node index of the target
+ * @param visible visibility value to assign
+ * @returns patched GLB bytes
+ */
+export function PatchKhrVisibilityReactionGlb(bytes: Uint8Array, eventNodeIndex: number, targetIndex: number, visible: boolean): Uint8Array {
+    const { jsonText, suffixOffset } = _ReadGlb(bytes);
+    return _WriteGlb(bytes, _PatchKhrVisibilityReactionJson(jsonText, eventNodeIndex, targetIndex, visible), suffixOffset);
+}
+
+/**
+ * Append a visibility action to an existing event in split glTF.
+ * @param jsonText source glTF JSON
+ * @param eventNodeIndex graph node index of the event
+ * @param targetIndex source glTF node index of the target
+ * @param visible visibility value to assign
+ * @returns patched glTF JSON
+ */
+export function PatchKhrVisibilityReactionGltf(jsonText: string, eventNodeIndex: number, targetIndex: number, visible: boolean): string {
+    return _PatchKhrVisibilityReactionJson(jsonText, eventNodeIndex, targetIndex, visible);
 }

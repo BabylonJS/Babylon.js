@@ -1,5 +1,5 @@
 import { type GlobalState } from "./globalState";
-import { PatchKhrInteractivityGlb } from "./khrGlbBehaviorAuthoring";
+import { PatchKhrInteractivityGlb, PatchKhrInteractivityGltf } from "./khrGlbBehaviorAuthoring";
 import { type Nullable } from "core/types";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { GetFlowGraphBlockNodeId } from "./graphSystem/blockNodeData";
@@ -673,6 +673,7 @@ export class SerializationTools {
             throw _CreateKhrExportError(analysis.diagnostics);
         }
         const sourceGlb = globalState.sourceGlb;
+        const sourceGltf = globalState.sourceGltf;
         if (sourceGlb) {
             if (format !== "glb") {
                 throw new Error("Source-preserving export of an imported GLB is available only as GLB.");
@@ -682,6 +683,17 @@ export class SerializationTools {
             const bytes = PatchKhrInteractivityGlb(new Uint8Array(await sourceGlb.file.arrayBuffer()), extension, plan.additionalExtensionsUsed, required);
             const fileName = sourceGlb.file.name.replace(/\.glb$/i, "-edited.glb");
             SerializationTools._DownloadBlob(new Blob([new Uint8Array(bytes)], { type: "model/gltf-binary" }), fileName, globalState);
+            return analysis;
+        }
+        if (sourceGltf) {
+            if (format !== "gltf") {
+                throw new Error("Source-preserving export of an imported split glTF is available only as glTF JSON.");
+            }
+            const extension = plan.buildWithSourceIndices();
+            const required = [...(plan.required ? ["KHR_interactivity"] : []), ...plan.additionalExtensionsRequired];
+            const jsonText = PatchKhrInteractivityGltf(await sourceGltf.file.text(), extension, plan.additionalExtensionsUsed, required);
+            const fileName = sourceGltf.file.name.replace(/\.gltf$/i, "-edited.gltf");
+            SerializationTools._DownloadBlob(new Blob([jsonText], { type: "model/gltf+json" }), fileName, globalState);
             return analysis;
         }
         const serializer = (globalThis as any).BABYLON?.GLTF2Export;
@@ -694,6 +706,28 @@ export class SerializationTools {
                 : await serializer.GLTFAsync(scene, "flowGraphKHRInteractivity", { khrInteractivity: plan });
         data.downloadFiles();
         return analysis;
+    }
+
+    /**
+     * Serialize representable graph edits against the retained source before a guided reaction.
+     * @param globalState current editor state
+     * @returns source asset with current graph edits applied
+     */
+    public static async BuildKhrInteractivitySourceForReactionAsync(globalState: GlobalState): Promise<string | Uint8Array> {
+        const plan = _CreateKhrExportPlanForImport(globalState);
+        const analysis = plan?.analyze() ?? SerializationTools.AnalyzeKhrInteractivityExport(globalState);
+        if (!plan || !analysis.representable) {
+            throw _CreateKhrExportError(analysis.diagnostics);
+        }
+        const extension = plan.buildWithSourceIndices();
+        const required = [...(plan.required ? ["KHR_interactivity"] : []), ...plan.additionalExtensionsRequired];
+        if (globalState.sourceGlb) {
+            return PatchKhrInteractivityGlb(new Uint8Array(await globalState.sourceGlb.file.arrayBuffer()), extension, plan.additionalExtensionsUsed, required);
+        }
+        if (globalState.sourceGltf) {
+            return PatchKhrInteractivityGltf(await globalState.sourceGltf.file.text(), extension, plan.additionalExtensionsUsed, required);
+        }
+        throw new Error("An imported glTF source file is required to add a reaction.");
     }
 
     /**
