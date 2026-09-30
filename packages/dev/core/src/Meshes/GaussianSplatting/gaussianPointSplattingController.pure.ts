@@ -796,7 +796,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         if (!Number.isFinite(determinant) || determinant === 0) {
             if (!this._invalidProjectionWarned) {
                 this._invalidProjectionWarned = true;
-                Logger.Error("GaussianSplattingMesh: point splatting requires a finite, invertible projection matrix.");
+                Logger.Error("GaussianSplattingMesh: the camera projection matrix is not finite and invertible; point splatting skips the mesh.");
             }
             return;
         }
