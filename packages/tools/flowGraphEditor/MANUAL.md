@@ -91,6 +91,7 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 **Importing a glTF with an interactive flow graph:**
 
 - Drag-and-drop a `.glb` or `.gltf` file onto the scene preview pane.
+- If a referenced buffer or image is missing, or several dropped files share the same name, **Complete glTF import** shows the exact resource path and lets you choose the correct file. Repeat for other unresolved resources. **Cancel import** keeps the current scene intact.
 - If the file contains a **KHR_interactivity** extension, the flow graph is automatically loaded into the editor.
 - If the file contains a **BABYLON_flow_graph** custom extension (created by this editor's export), the flow graph is restored as well.
 - The scene from the file is loaded as the preview scene so block references to meshes, cameras, and lights can be resolved.

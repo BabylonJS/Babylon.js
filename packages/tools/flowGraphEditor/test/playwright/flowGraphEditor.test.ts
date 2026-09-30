@@ -3,6 +3,19 @@ import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
 import { AllFlowGraphBlocks } from "../../src/allBlockNames";
 
+function BuildJsonOnlyGlbFixture(document: object): Buffer {
+    const json = Buffer.from(JSON.stringify(document));
+    const jsonLength = Math.ceil(json.length / 4) * 4;
+    const bytes = Buffer.alloc(20 + jsonLength, 0x20);
+    bytes.writeUInt32LE(0x46546c67, 0);
+    bytes.writeUInt32LE(2, 4);
+    bytes.writeUInt32LE(bytes.length, 8);
+    bytes.writeUInt32LE(jsonLength, 12);
+    bytes.writeUInt32LE(0x4e4f534a, 16);
+    json.copy(bytes, 20);
+    return bytes;
+}
+
 function BuildExistingGlbFixture(
     withCompanionExtensions = false,
     withMultiPrimitiveTrigger = false,
@@ -1591,8 +1604,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             });
         const fileScene = await GetSceneContextSnapshot(page);
         expect(fileScene?.sceneUid).not.toBe(defaultScene?.sceneUid);
-        await expect(page.getByRole("button", { name: "New behavior" })).toBeDisabled();
-        await expect(page.getByRole("button", { name: "New behavior" })).toHaveAttribute("title", /drop a glTF or GLB.*without changing its source scene data/i);
+        await expect(page.getByRole("button", { name: "New behavior" })).toBeEnabled();
+        await expect(page.getByRole("button", { name: "New behavior" })).toHaveAttribute("title", /Create a glTF selection behavior/i);
 
         await ClickGraphControl(page, "Reset");
         await WaitForGraphState(page, "Stopped");
@@ -2718,8 +2731,14 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             transfer.items.add(new File([JSON.stringify(source)], "missing-resource.gltf", { type: "model/gltf+json" }));
             (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
         }, document);
-        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Missing companion file for geometry.bin");
+        const recoveryDialog = page.getByRole("dialog", { name: "Complete glTF import" });
+        await expect(recoveryDialog).toContainText("geometry.bin");
+        await expect(recoveryDialog).toContainText("Your current scene is still available");
+        await expect(recoveryDialog.getByRole("button", { name: "Use file and retry" })).toBeDisabled();
         expect(await GetSceneContextSnapshot(page)).toEqual(originalScene);
+        await recoveryDialog.getByRole("button", { name: "Cancel import" }).click();
+        await expect(recoveryDialog).not.toBeVisible();
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Missing companion file for geometry.bin");
 
         document.images.push({ name: "red texture", uri: "textures/red/diffuse.png" });
         await page.evaluate((source) => {
@@ -2730,8 +2749,134 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             transfer.items.add(new File(["blue"], "diffuse.png"));
             (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
         }, document);
-        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Ambiguous companion file for textures/red/diffuse.png");
+        await expect(recoveryDialog).toContainText("textures/red/diffuse.png");
         expect(await GetSceneContextSnapshot(page)).toEqual(originalScene);
+    });
+
+    test("recovers an ambiguous split glTF import by choosing each same-named texture", async ({ page }, testInfo) => {
+        const { document, bin } = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        document.images.push({ name: "red texture", uri: "textures/red/diffuse.png" }, { name: "blue texture", uri: "textures/blue/diffuse.png" });
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(
+            ({ source, buffer }) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([JSON.stringify(source)], "ambiguous-textures.gltf", { type: "model/gltf+json" }));
+                transfer.items.add(new File([new Uint8Array(buffer)], "geometry.bin"));
+                transfer.items.add(new File(["red"], "diffuse.png"));
+                transfer.items.add(new File(["blue"], "diffuse.png"));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            { source: document, buffer: [...bin] }
+        );
+        const dialog = page.getByRole("dialog", { name: "Complete glTF import" });
+        await expect(dialog).toContainText("textures/red/diffuse.png");
+        await page.waitForTimeout(400);
+        await page.screenshot({ path: testInfo.outputPath("khr-companion-recovery-desktop.png"), fullPage: true });
+        await dialog.getByLabel("Companion file for textures/red/diffuse.png").setInputFiles({ name: "diffuse.png", mimeType: "image/png", buffer: Buffer.from("red") });
+        await dialog.getByRole("button", { name: "Use file and retry" }).click();
+        await expect(dialog).toContainText("textures/blue/diffuse.png");
+        await dialog.getByLabel("Companion file for textures/blue/diffuse.png").setInputFiles({ name: "diffuse.png", mimeType: "image/png", buffer: Buffer.from("blue") });
+        await dialog.getByRole("button", { name: "Use file and retry" }).click();
+        await expect(dialog).not.toBeVisible();
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        await expect.poll(async () => page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sourceGltf?.companionOverrides?.size)).toBe(2);
+
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
+        await page.getByRole("option", { name: /glTF node 2/ }).click();
+        const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "ambiguous-textures-behavior.gltf");
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        const authored = JSON.parse(readFileSync((await (await downloadPromise).path())!, "utf8"));
+        expect(authored.images.map((image: { uri: string }) => image.uri)).toContain("textures/blue/diffuse.png");
+        await expect(page.getByRole("button", { name: "Add reaction" })).toBeEnabled();
+    });
+
+    test("lets the user replace an incorrect companion choice without dropping the asset again", async ({ page }) => {
+        const { document, bin } = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate((source) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([JSON.stringify(source)], "replace-companion.gltf", { type: "model/gltf+json" }));
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        }, document);
+        const dialog = page.getByRole("dialog", { name: "Complete glTF import" });
+        await expect(dialog).toContainText("geometry.bin");
+        await dialog.getByLabel("Companion file for geometry.bin").setInputFiles({ name: "geometry.bin", mimeType: "application/octet-stream", buffer: Buffer.alloc(0) });
+        await dialog.getByRole("button", { name: "Use file and retry" }).click();
+        await expect(dialog).toContainText("The selected file did not load");
+        await dialog.getByLabel("Companion file for geometry.bin").setInputFiles({ name: "geometry.bin", mimeType: "application/octet-stream", buffer: bin });
+        await dialog.getByRole("button", { name: "Use file and retry" }).click();
+        await expect(dialog).not.toBeVisible();
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+    });
+
+    test("keeps the active scene's resource mapping after a failed companion import", async ({ page }) => {
+        const { document, bin } = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(
+            ({ source, buffer }) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([JSON.stringify(source)], "active-source.gltf", { type: "model/gltf+json" }));
+                transfer.items.add(new File([new Uint8Array(buffer)], "geometry.bin"));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            { source: document, buffer: [...bin] }
+        );
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        await page.evaluate(() => {
+            (globalThis as any).__activeGeometryFile = (globalThis as any).BABYLON.FilesInputStore.FilesToLoad["geometry.bin"];
+        });
+        const activeScene = await GetSceneContextSnapshot(page);
+        document.images.push({ name: "red texture", uri: "textures/red/diffuse.png" });
+        await page.evaluate(
+            ({ source, buffer }) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([JSON.stringify(source)], "failed-source.gltf", { type: "model/gltf+json" }));
+                transfer.items.add(new File([new Uint8Array(buffer)], "geometry.bin"));
+                transfer.items.add(new File(["red"], "diffuse.png"));
+                transfer.items.add(new File(["blue"], "diffuse.png"));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            { source: document, buffer: [...bin] }
+        );
+        await expect(page.getByRole("dialog", { name: "Complete glTF import" })).toContainText("textures/red/diffuse.png");
+        expect(await GetSceneContextSnapshot(page)).toEqual(activeScene);
+        expect(await page.evaluate(() => (globalThis as any).BABYLON.FilesInputStore.FilesToLoad["geometry.bin"] === (globalThis as any).__activeGeometryFile)).toBe(true);
+    });
+
+    test("offers a companion file chooser on a mobile viewport", async ({ browser }, testInfo) => {
+        const { document, bin } = BuildExistingGlbFixture(true, false, false, false, false, false, true);
+        const context = await browser.newContext({ ...devices["Pixel 7"], acceptDownloads: true });
+        try {
+            const page = await context.newPage();
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            await fge.assertEditorReady();
+            await page.evaluate((source) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([JSON.stringify(source)], "mobile-split.gltf", { type: "model/gltf+json" }));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            }, document);
+            const dialog = page.getByRole("dialog", { name: "Complete glTF import" });
+            await expect(dialog).toContainText("geometry.bin");
+            await expect(dialog).toBeInViewport();
+            await page.waitForTimeout(400);
+            await page.screenshot({ path: testInfo.outputPath("khr-companion-recovery-touch.png"), fullPage: true });
+            await dialog.getByLabel("Companion file for geometry.bin").setInputFiles({ name: "geometry.bin", mimeType: "application/octet-stream", buffer: bin });
+            await dialog.getByRole("button", { name: "Use file and retry" }).tap();
+            await expect(dialog).not.toBeVisible();
+            await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        } finally {
+            await context.close();
+        }
     });
 
     test("warns that an authored GLB still needs its external buffer when downloaded and reopened", async ({ page, browser }, testInfo) => {
@@ -3508,6 +3653,18 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         }, exportedGltf);
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.gltf"');
         await expect.poll(async () => await fge.getNodeCount()).toBe(6);
+        await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeDisabled();
+
+        const sourceGlb = BuildJsonOnlyGlbFixture(source);
+        await page.evaluate((bytes) => {
+            const file = new File([new Uint8Array(bytes)], "interaction.glb", { type: "model/gltf-binary" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, Array.from(sourceGlb));
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "interaction.glb"');
+        await expect.poll(async () => await fge.getNodeCount()).toBe(6);
+        await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeEnabled();
 
         const glbDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".glb"));
         await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
