@@ -1479,13 +1479,26 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 return;
             }
             const oldBaseColorTexture = this.baseColorTexture;
-            oldBaseColorTexture?.dispose();
             this.baseColorTexture = newBaseColor.texture;
             this.baseColor = newBaseColor.factor ? new Color3(newBaseColor.factor.r, newBaseColor.factor.g, newBaseColor.factor.b) : Color3.White();
+            this._disposeTextureIfUnused(loader, oldBaseColorTexture);
 
             const oldSpecularColorTexture = this.specularColorTexture;
-            oldSpecularColorTexture?.dispose();
             this.specularColorTexture = null;
+            this._disposeTextureIfUnused(loader, oldSpecularColorTexture);
+        }
+    }
+
+    /**
+     * Disposes a texture that has been replaced on this material, unless another slot on this
+     * material (or on any other material created by the loader) still references it.
+     * Must be called after the texture has been removed from the slot being replaced.
+     * @param loader The glTF loader that created the materials
+     * @param texture The replaced texture
+     */
+    private _disposeTextureIfUnused(loader: GLTFLoader, texture: Nullable<BaseTexture>): void {
+        if (texture && !loader._isTextureUsedByMaterials(texture)) {
+            texture.dispose();
         }
     }
 
@@ -1515,6 +1528,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
         const origCoatWeightCol4 = new Color4(origCoatWeight, origCoatWeight, origCoatWeight, origCoatWeight);
         const weightCol4 = new Color4(weight, weight, weight, weight);
+
+        // Textures removed from material slots are collected here and disposed only at the end, because
+        // they may still be needed as inputs to later passes (e.g. origCoatWeightTexture, or a packed
+        // texture that is shared between several coat slots).
+        const replacedTextures = new Set<BaseTexture>();
+        if (origCoatWeightTexture) {
+            replacedTextures.add(origCoatWeightTexture);
+        }
 
         this.coatWeightTexture = null;
         this.coatWeight = 1.0;
@@ -1574,6 +1595,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this.coatColorTexture = null;
             this.coatColor.fromArray([newCoatColor.factor.r, newCoatColor.factor.g, newCoatColor.factor.b]);
         }
+        if (origCoatColorTexture) {
+            replacedTextures.add(origCoatColorTexture);
+        }
 
         const newCoatIor = await LerpTexturesAsync(
             "newCoatIor (" + this._material.name + ")",
@@ -1603,8 +1627,12 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             newCoatRoughness.texture?.dispose();
             return;
         }
+        const oldCoatRoughnessTexture = this.coatRoughnessTexture;
         this.coatRoughness = newCoatRoughness.factor ? newCoatRoughness.factor.r : 1.0;
         this.coatRoughnessTexture = newCoatRoughness.texture;
+        if (oldCoatRoughnessTexture) {
+            replacedTextures.add(oldCoatRoughnessTexture);
+        }
 
         const newCoatDarkening = await LerpTexturesAsync(
             "newCoatDarkening (" + this._material.name + ")",
@@ -1635,8 +1663,12 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 newSpecularRoughness.texture?.dispose();
                 return;
             }
+            const oldSpecularRoughnessTexture = this.specularRoughnessTexture;
             this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
             this.specularRoughnessTexture = newSpecularRoughness.texture;
+            if (oldSpecularRoughnessTexture) {
+                replacedTextures.add(oldSpecularRoughnessTexture);
+            }
         }
 
         if (origCoatNormalTexture || this.geometryNormalTexture) {
@@ -1657,7 +1689,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             }
             if (newCoatNormal.texture) {
                 this.geometryCoatNormalTexture = newCoatNormal.texture;
+                if (origCoatNormalTexture) {
+                    replacedTextures.add(origCoatNormalTexture);
+                }
             }
+        }
+
+        for (const texture of replacedTextures) {
+            this._disposeTextureIfUnused(loader, texture);
         }
     }
 }
