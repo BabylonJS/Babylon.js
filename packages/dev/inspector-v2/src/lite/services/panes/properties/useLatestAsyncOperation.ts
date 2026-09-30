@@ -26,13 +26,13 @@ type LatestAsyncOperationOptions<ResultT> = Readonly<{
  * Runs row operations with instance-local generations and invalidates them when their owner changes.
  * Rejections are always consumed, while only the latest mounted generation may publish state or success effects.
  * @param identity The exact entity represented by the mounted adapter.
- * @param invalidationSources Observables that invalidate snapshots or selection ownership.
+ * @param invalidationSources Disposal and selection changes that invalidate operation ownership.
  * @param isDisposed Returns whether the owning service has been disposed.
  * @returns The latest operation state for each row and a guarded operation runner.
  */
 export function useLatestAsyncOperation(
     identity: object,
-    invalidationSources: readonly [IReadonlyObservable<void>, IReadonlyObservable<void>, IReadonlyObservable<void>],
+    invalidationSources: readonly [IReadonlyObservable<void>, IReadonlyObservable<void>],
     isDisposed: () => boolean
 ): readonly [LatestAsyncOperationStates, <ResultT>(options: LatestAsyncOperationOptions<ResultT>) => void] {
     const [publishedStates, setPublishedStates] = useState<PublishedStates>({ epoch: -1, rows: {} });
@@ -47,7 +47,7 @@ export function useLatestAsyncOperation(
         rowGenerationsRef.current.clear();
     }
 
-    const [firstInvalidationSource, secondInvalidationSource, thirdInvalidationSource] = invalidationSources;
+    const [firstInvalidationSource, secondInvalidationSource] = invalidationSources;
 
     useEffect(() => {
         mountedRef.current = true;
@@ -58,7 +58,7 @@ export function useLatestAsyncOperation(
                 setPublishedStates({ epoch: epochRef.current, rows: {} });
             }
         };
-        const sources = [firstInvalidationSource, secondInvalidationSource, thirdInvalidationSource] as const;
+        const sources = [firstInvalidationSource, secondInvalidationSource] as const;
         const observers = sources.map((source) => source.add(invalidate));
         invalidate();
 
@@ -68,7 +68,7 @@ export function useLatestAsyncOperation(
             rowGenerationsRef.current.clear();
             observers.forEach((observer) => observer.remove());
         };
-    }, [identity, firstInvalidationSource, secondInvalidationSource, thirdInvalidationSource]);
+    }, [identity, firstInvalidationSource, secondInvalidationSource]);
 
     const run = useCallback(
         <ResultT>(options: LatestAsyncOperationOptions<ResultT>) => {

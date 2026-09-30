@@ -18,6 +18,8 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
     const original = await importOriginal<typeof import("@babylonjs/lite")>();
     return {
         ...original,
+        getMaterialSource: (material: { source?: object }) => material.source ?? material,
+        getMaterialFamily: (material: { source?: { family?: string }; family?: string }) => material.source?.family ?? material.family,
         getTextureMetadata: (texture: Record<string, unknown>) => texture.metadata,
         getTextureTransform: (texture: Record<string, unknown>) => texture.transform,
         getTextureCoordinateIndex: (texture: Record<string, unknown>) => texture.coordinateIndex,
@@ -32,6 +34,7 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
 import { type Material, type SceneContext, type TextureMetadata } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
 
+import { PropertyContext, type PropertyChangeInfo } from "../../src/contexts/propertyContext";
 import { TextureMetadataProperties } from "../../src/lite/services/panes/properties/textureMetadataProperties";
 import { type ISceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";
@@ -62,8 +65,8 @@ function MakeSelectionService(): ISelectionService {
 }
 
 function MakeServices(metadata: TextureMetadata, kind: "standard" | "pbr" = "standard") {
-    const scene = {} as SceneContext;
     const material = { family: kind, name: "Material" } as unknown as Material;
+    const scene = { meshes: [{ material }] } as SceneContext;
     const texture = {
         metadata,
         coordinateIndex: 1,
@@ -206,6 +209,23 @@ describe("Babylon Lite texture accessor metadata", () => {
         expect(services.selectionService.selectedEntity).toBe(view);
     });
 
+    it("offers transform controls for a texture bound only by a live PBR view", () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} }, "pbr");
+        const view = Object.assign(Object.create(services.material), {
+            source: services.material,
+            _renderFeatures: { features: 0 },
+            baseColorTexture: services.texture,
+        }) as Material;
+        services.scene.meshes[0].material = view;
+        vi.spyOn(services.resourceIndexService, "getTextureRecord").mockReturnValue({
+            ...services.textureRecord,
+            consumers: [{ material: view, bindingId: "pbr.baseColor" }],
+        });
+        const container = Render(<TextureMetadataProperties {...services} />);
+        expect(container.textContent).toContain("U Scale");
+        expect(container.querySelector<HTMLInputElement>('input[value="1"]')).not.toBeNull();
+    });
+
     it("groups slots into one link per material and keeps identical names distinct", () => {
         const services = MakeServices({ kind: "2d", capabilities: {} });
         const otherMaterial = { name: "Material" } as unknown as Material;
@@ -239,7 +259,14 @@ describe("Babylon Lite texture accessor metadata", () => {
 
     it("commits transforms with complete consumer scope and refreshes applied metadata", async () => {
         const services = MakeServices({ kind: "2d", capabilities: {} });
-        const container = Render(<TextureMetadataProperties {...services} />);
+        const changes = new Observable<PropertyChangeInfo>();
+        const events: PropertyChangeInfo[] = [];
+        changes.add((event) => events.push(event));
+        const container = Render(
+            <PropertyContext.Provider value={{ onPropertyChanged: changes }}>
+                <TextureMetadataProperties {...services} />
+            </PropertyContext.Provider>
+        );
         const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
         const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
 
@@ -254,6 +281,7 @@ describe("Babylon Lite texture accessor metadata", () => {
         expect(InspectionMocks.enableUv).toHaveBeenCalledWith(services.material);
         expect(InspectionMocks.dirty).toHaveBeenCalledWith(services.material);
         expect(services.refresh).toHaveBeenCalled();
+        expect(events).toContainEqual({ entity: services.texture, propertyKey: "uScale", oldValue: 1, newValue: 2 });
     });
 
     it("awaits rebuilds when enabling transform support changes the material pipeline", async () => {

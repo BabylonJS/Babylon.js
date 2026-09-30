@@ -50,6 +50,7 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 import { ComputedProperty, DerivedProperty } from "../../../../../components/properties/boundProperty";
 import { usePropertyChangedNotifier } from "../../../../../contexts/propertyContext";
 import { useLatestAsyncOperation, type LatestAsyncOperationStates } from "../useLatestAsyncOperation";
+import { GetMaterialOwningScenes } from "./materialReachability";
 import { DirectTextureBinding, type DirectTextureBindingProps } from "./directTextureBinding";
 import { type MaterialAdapterProps } from "./materialAdapterTypes";
 
@@ -1176,11 +1177,7 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
     const getRecord = useCallback(() => (source && !resourceIndexService.isDisposed ? resourceIndexService.getMaterialRecord(source) : undefined), [source, resourceIndexService]);
     const record = useObservableState(getRecord, resourceIndexService.onChanged);
     const isDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
-    const [operations, runLatestOperation] = useLatestAsyncOperation(
-        material,
-        [resourceIndexService.onChanged, resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged],
-        isDisposed
-    );
+    const [operations, runLatestOperation] = useLatestAsyncOperation(material, [resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged], isDisposed);
     const notifyPropertyChanged = usePropertyChangedNotifier();
     const target = material as Pbr;
     const commit: Commit = (id, read, value, prepare, validate) => {
@@ -1192,12 +1189,9 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
                 if (!current || current.family !== "pbr" || !source) {
                     throw new Error("This material is no longer available in an inspected scene.");
                 }
-                const scenes = [...current.scenes];
-                if (
-                    !scenes.length ||
-                    scenes.some((scene) => !Array.isArray(scene.meshes) || !scene.meshes.some((mesh) => mesh?.material && getMaterialSource(mesh.material) === source))
-                ) {
-                    throw new Error("Material is not reachable from every scene in the mutation scope.");
+                const scenes = GetMaterialOwningScenes(current, material);
+                if (!scenes.length) {
+                    throw new Error("This material is no longer reachable from an inspected scene.");
                 }
                 const oldValue = read(target);
                 const plan = prepare(target, value);
@@ -1218,7 +1212,8 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
             },
             onSuccess: ({ changed, oldValue }) => {
                 if (changed && source) {
-                    notifyPropertyChanged(source, id, oldValue, value);
+                    const key = id === "material.name" ? "name" : id.slice(id.lastIndexOf(".") + 1);
+                    notifyPropertyChanged(material, Reflect.has(material, key) ? key : id, oldValue, value);
                 }
                 resourceIndexService.refresh();
             },
@@ -1234,12 +1229,9 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
                 if (!current || current.family !== "pbr" || !source) {
                     throw new Error("This material is no longer available in an inspected scene.");
                 }
-                const scenes = [...current.scenes];
-                if (
-                    !scenes.length ||
-                    scenes.some((scene) => !Array.isArray(scene.meshes) || !scene.meshes.some((mesh) => mesh?.material && getMaterialSource(mesh.material) === source))
-                ) {
-                    throw new Error("Material is not reachable from every scene in the mutation scope.");
+                const scenes = GetMaterialOwningScenes(current, material);
+                if (!scenes.length) {
+                    throw new Error("This material is no longer reachable from an inspected scene.");
                 }
                 if (SameValue(oldValue as FieldValue, newValue as FieldValue)) {
                     return false;
@@ -1258,7 +1250,8 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
             },
             onSuccess: (changed) => {
                 if (changed && source) {
-                    notifyPropertyChanged(source, id, oldValue, newValue);
+                    const key = `${id.slice("pbr.".length)}Texture`;
+                    notifyPropertyChanged(material, id.startsWith("pbr.") && Reflect.has(material, key) ? key : id, oldValue, newValue);
                 }
                 resourceIndexService.refresh();
             },
@@ -1279,9 +1272,7 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
                 <>
                     <TextPropertyLine label="Family" value="pbr" />
                     <TextPropertyLine label="Selection" value={isMaterialView(material) ? "MaterialView" : "Material"} />
-                    {isMaterialView(material) ? (
-                        <TextPropertyLine label="Source" value={typeof target.name === "string" && target.name ? target.name : record.displayName} />
-                    ) : undefined}
+                    {isMaterialView(material) ? <TextPropertyLine label="Source" value={record.displayName} /> : undefined}
                 </>
             ) : undefined}
             <PbrRows target={target} section={section} operations={operations} commit={commit} />

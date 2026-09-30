@@ -170,7 +170,7 @@ export const StandardMaterialAdapter: FunctionComponent<MaterialAdapterProps> = 
             <>
                 <TextPropertyLine label="Family" value="standard" />
                 <TextPropertyLine label="Selection" value={source === material ? "Material" : "MaterialView"} />
-                {source !== material ? <TextPropertyLine label="Source" value={material.name || "Standard Material"} /> : undefined}
+                {source !== material ? <TextPropertyLine label="Source" value={record.displayName} /> : undefined}
                 <FieldStatus label="Name" state={operations["material.name"]}>
                     <DerivedProperty
                         component={TextInputPropertyLine}

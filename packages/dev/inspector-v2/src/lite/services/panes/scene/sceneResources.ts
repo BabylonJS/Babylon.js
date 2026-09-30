@@ -1,6 +1,13 @@
 import {
     getMaterialFamily,
     getMaterialSource,
+    getPbrAnisotropy,
+    getPbrClearCoat,
+    getPbrIridescence,
+    getPbrMetallicReflectance,
+    getPbrSheen,
+    getPbrSubsurface,
+    getPbrTransmission,
     getRenderingContextKind,
     getRenderingContexts,
     getTextureCoordinateIndex,
@@ -9,7 +16,10 @@ import {
     hasTextureTransform,
     type EngineContext,
     type Material,
+    type NodeMaterial,
+    type PbrMaterialProps,
     type SceneContext,
+    type ShaderMaterial,
     type Texture2D,
     type TextureMetadata,
 } from "@babylonjs/lite";
@@ -136,6 +146,48 @@ function AppendTextureState(snapshot: unknown[], texture: object): void {
         }
     } catch {
         snapshot.push("stale-texture");
+    }
+}
+
+function AppendMaterialStructure(snapshot: unknown[], material: Material, family: string | undefined): void {
+    if (family === "node") {
+        const inputs = Object.entries((material as NodeMaterial).inputs);
+        snapshot.push(inputs.length);
+        for (const [name, input] of inputs) {
+            snapshot.push(name, input.type);
+        }
+    } else if (family === "shader") {
+        const shader = material as ShaderMaterial;
+        snapshot.push(shader.attributes.length, ...shader.attributes, shader.uniformDecls.length);
+        for (const declaration of shader.uniformDecls) {
+            snapshot.push(declaration.name, declaration.type);
+        }
+        snapshot.push(shader.samplerDecls.length);
+        for (const declaration of shader.samplerDecls) {
+            snapshot.push(declaration.name, declaration.sampleType, declaration.viewDimension, declaration.comparison);
+        }
+        snapshot.push(shader.storageBufferDecls.length);
+        for (const declaration of shader.storageBufferDecls) {
+            snapshot.push(declaration.name, declaration.type);
+        }
+        snapshot.push(shader.defines.length);
+        for (const define of shader.defines) {
+            snapshot.push(define.name, define.value);
+        }
+    } else if (family === "pbr") {
+        const pbr = material as PbrMaterialProps;
+        const subsurface = getPbrSubsurface(pbr);
+        snapshot.push(
+            !!getPbrMetallicReflectance(pbr),
+            !!getPbrClearCoat(pbr),
+            !!getPbrSheen(pbr),
+            !!getPbrIridescence(pbr),
+            !!getPbrAnisotropy(pbr),
+            !!subsurface,
+            !!subsurface?.translucency,
+            !!subsurface?.thickness,
+            !!getPbrTransmission(pbr)
+        );
     }
 }
 
@@ -276,6 +328,25 @@ export class SceneResourceIndex {
      */
     public getTopologySnapshot(): SceneResourceTopologySnapshot {
         const snapshot: unknown[] = [];
+        const seenMaterials = new Set<Material>();
+        const seenTextures = new Set<object>();
+        const appendMaterial = (material: Material) => {
+            if (seenMaterials.has(material)) {
+                return;
+            }
+            seenMaterials.add(material);
+            const family = getMaterialFamily(material);
+            const bindings = GetMaterialTopologyBindings(material);
+            snapshot.push(family, material.name, bindings.length);
+            AppendMaterialStructure(snapshot, material, family);
+            for (const binding of bindings) {
+                snapshot.push(binding.id, binding.entity);
+                if (!seenTextures.has(binding.entity)) {
+                    seenTextures.add(binding.entity);
+                    AppendTextureState(snapshot, binding.entity);
+                }
+            }
+        };
         for (const surface of this._engine.surfaces) {
             snapshot.push(surface);
             for (const context of getRenderingContexts(surface)) {
@@ -297,19 +368,10 @@ export class SceneResourceIndex {
                     }
                     try {
                         const source = getMaterialSource(mesh.material);
-                        const bindings = GetMaterialTopologyBindings(source);
-                        snapshot.push(mesh.material, source, getMaterialFamily(source), source.name, bindings.length);
-                        for (const binding of bindings) {
-                            snapshot.push(binding.id, binding.entity);
-                            AppendTextureState(snapshot, binding.entity);
-                        }
+                        snapshot.push(mesh.material, source);
+                        appendMaterial(source);
                         if (mesh.material !== source) {
-                            const viewBindings = GetMaterialTopologyBindings(mesh.material);
-                            snapshot.push(viewBindings.length);
-                            for (const binding of viewBindings) {
-                                snapshot.push(binding.id, binding.entity);
-                                AppendTextureState(snapshot, binding.entity);
-                            }
+                            appendMaterial(mesh.material);
                         }
                     } catch {
                         snapshot.push("stale-material");

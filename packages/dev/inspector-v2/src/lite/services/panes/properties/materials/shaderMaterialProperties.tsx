@@ -46,7 +46,6 @@ const ShaderGeneral: FunctionComponent<MaterialAdapterProps> = (props) => {
         return <TextPropertyLine label="Error" value="This material is no longer available in an inspected scene." />;
     }
     const family = getMaterialFamily(source);
-    const displayName = name || `${family ? `${family[0].toUpperCase()}${family.slice(1)}` : "Shader"} Material`;
     const pending = operations["material.name"]?.pending;
     const error = operations["material.name"]?.error;
     return (
@@ -87,7 +86,7 @@ const ShaderGeneral: FunctionComponent<MaterialAdapterProps> = (props) => {
             </div>
             <TextPropertyLine label="Family" value={family ?? "shader"} />
             <TextPropertyLine label="Selection" value={isMaterialView(material) ? "MaterialView" : "Material"} />
-            {isMaterialView(material) ? <TextPropertyLine label="Source" value={displayName} /> : undefined}
+            {isMaterialView(material) ? <TextPropertyLine label="Source" value={record.displayName} /> : undefined}
         </>
     );
 };
@@ -150,6 +149,7 @@ const ShaderUniformField: FunctionComponent<MaterialAdapterProps & { declaration
         const newValue = typeof value === "number" ? value : [...value];
         commit({
             id,
+            propertyKey: name,
             oldValue,
             newValue,
             invalidate: "owned",

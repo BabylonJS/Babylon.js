@@ -6,9 +6,12 @@ import { type ISelectionService } from "../../../../../services/selectionService
 import { type ISceneResourceIndexService } from "../../scene/sceneResourceIndexService";
 import { type IMaterialResourceRecord } from "../../scene/sceneResources";
 import { useLatestAsyncOperation } from "../useLatestAsyncOperation";
+import { GetMaterialOwningScenes } from "./materialReachability";
 
 type MaterialChange = Readonly<{
     id: string;
+    propertyKey?: PropertyKey;
+    propertyOwner?: object;
     oldValue: unknown;
     newValue: unknown;
     apply: () => void | Promise<void>;
@@ -16,16 +19,15 @@ type MaterialChange = Readonly<{
     rebuildFrameGraph?: boolean;
 }>;
 
-function GetOwningScenes(record: IMaterialResourceRecord): readonly SceneContext[] {
+function GetOwningScenes(record: IMaterialResourceRecord, material: Material): readonly SceneContext[] {
     if (record.scenes.length === 0) {
         throw new Error("Material rebuild requires at least one owning scene.");
     }
-    for (const scene of record.scenes) {
-        if (!scene.meshes.some((mesh) => mesh?.material && getMaterialSource(mesh.material) === record.source)) {
-            throw new Error("Material is not reachable from every scene in the mutation scope.");
-        }
+    const scenes = GetMaterialOwningScenes(record, material);
+    if (!scenes.length) {
+        throw new Error("This material is no longer reachable from an inspected scene.");
     }
-    return record.scenes;
+    return scenes;
 }
 
 function SameValue(a: unknown, b: unknown): boolean {
@@ -55,15 +57,13 @@ export function useDirectMaterialOperations(material: Material, resourceIndexSer
     const source = getMaterialSource(material);
     const record = resourceIndexService.getMaterialRecord(source);
     const isDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
-    const [operations, runLatestOperation] = useLatestAsyncOperation(
-        material,
-        [resourceIndexService.onChanged, resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged],
-        isDisposed
-    );
+    const [operations, runLatestOperation] = useLatestAsyncOperation(material, [resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged], isDisposed);
     const notifyPropertyChanged = usePropertyChangedNotifier();
 
     const commit = (change: MaterialChange) => {
-        const { id, oldValue, newValue, apply, invalidate, rebuildFrameGraph } = change;
+        const { id, propertyOwner = material, oldValue, newValue, apply, invalidate, rebuildFrameGraph } = change;
+        const candidateKey = id === "material.name" ? "name" : id.slice(id.lastIndexOf(".") + 1);
+        const propertyKey = change.propertyKey ?? (Reflect.has(propertyOwner, candidateKey) ? candidateKey : id);
         runLatestOperation({
             id,
             operationAsync: async () => {
@@ -71,11 +71,12 @@ export function useDirectMaterialOperations(material: Material, resourceIndexSer
                 if (!currentRecord || resourceIndexService.isDisposed) {
                     throw new Error("This material is no longer available in an inspected scene.");
                 }
+                const owningScenes = GetOwningScenes(currentRecord, material);
                 if (SameValue(oldValue, newValue)) {
                     return false;
                 }
                 ValidateValue(id, newValue);
-                const scenes = invalidate === "rebuild" ? GetOwningScenes(currentRecord) : [];
+                const scenes = invalidate === "rebuild" ? owningScenes : [];
                 await apply();
                 if (invalidate === "ubo") {
                     markMaterialUboDirty(material);
@@ -86,7 +87,7 @@ export function useDirectMaterialOperations(material: Material, resourceIndexSer
             },
             onSuccess: (changed) => {
                 if (changed) {
-                    notifyPropertyChanged(source, id, oldValue, newValue);
+                    notifyPropertyChanged(propertyOwner, propertyKey, oldValue, newValue);
                     resourceIndexService.refresh();
                 }
             },

@@ -3,6 +3,7 @@ import {
     type EngineContext,
     type Material,
     type Mesh,
+    type NodeInputHandle,
     type RenderingContext,
     type SceneContext,
     type Sprite2DLayer,
@@ -11,6 +12,8 @@ import {
     type TextLayer,
     type TextRenderer,
     type Texture2D,
+    getPbrClearCoat,
+    getTextureMetadata,
 } from "@babylonjs/lite";
 import { tokens } from "@fluentui/react-components";
 import { createElement } from "react";
@@ -46,18 +49,18 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
         getStandardReflectionTexture: field("reflectionTexture"),
         getStandardReflectionCubeTexture: field("reflectionCubeTexture"),
         getPbrMetallicReflectance: field("metallicReflectance"),
-        getPbrClearCoat: field("clearCoat"),
+        getPbrClearCoat: vi.fn(field("clearCoat")),
         getPbrSheen: field("sheen"),
         getPbrIridescence: field("iridescence"),
         getPbrAnisotropy: field("anisotropy"),
         getPbrSubsurface: field("subsurface"),
         getPbrTransmission: (material: Record<string, any>) => material.subsurface?.refraction,
         getShaderTexture: (material: Record<string, any>, name: string) => material.textures?.[name],
-        getTextureMetadata: (texture: Record<string, any>) => ({
+        getTextureMetadata: vi.fn((texture: Record<string, any>) => ({
             ...texture.metadata,
             width: texture.width ?? texture.metadata?.width,
             height: texture.height ?? texture.metadata?.height,
-        }),
+        })),
         getTextureCoordinateIndex: (texture: Record<string, unknown>) => texture.coordinateIndex,
         hasTextureTransform: (texture: Record<string, unknown>) => texture.transform !== undefined,
         getTextureTransform: (texture: Record<string, unknown>) => texture.transform,
@@ -262,6 +265,87 @@ describe("Babylon Lite engine explorer service", () => {
     });
 
     describe("Babylon Lite scene resource index", () => {
+        it("detects texture-free Node input and Shader declaration changes without tracking uniform values", () => {
+            const node = Object.assign(CreateMaterial("node", "Node"), {
+                inputs: { strength: { type: "f32", value: 1 } } as Record<string, NodeInputHandle>,
+            });
+            const shader = Object.assign(CreateMaterial("shader", "Shader"), {
+                samplerDecls: [] as { name: string; sampleType?: "float" | "depth" }[],
+                uniformDecls: [] as { name: string; type: string }[],
+                storageBufferDecls: [] as { name: string; type: string }[],
+                attributes: [] as string[],
+                defines: [] as { name: string; value: number }[],
+            });
+            const scene = { _kind: "scene", meshes: [CreateMesh("Node", node), CreateMesh("Shader", shader)] } as SceneContext;
+            const index = new SceneResourceIndex(CreateResourceEngine([scene]));
+            const changed = (before: ReturnType<typeof index.getTopologySnapshot>) => !SceneResourceIndex.AreTopologySnapshotsEqual(before, index.getTopologySnapshot());
+
+            let before = index.getTopologySnapshot();
+            node.inputs.strength.value = 2;
+            expect(changed(before)).toBe(false);
+
+            before = index.getTopologySnapshot();
+            Object.assign(node.inputs, { tint: { type: "vec3f", value: [1, 0, 0] } });
+            expect(changed(before)).toBe(true);
+
+            before = index.getTopologySnapshot();
+            node.inputs.strength = { type: "vec2f", value: [1, 2] };
+            expect(changed(before)).toBe(true);
+
+            before = index.getTopologySnapshot();
+            shader.uniformDecls.push({ name: "tint", type: "vec4<f32>" });
+            expect(changed(before)).toBe(true);
+
+            before = index.getTopologySnapshot();
+            shader.uniformDecls[0].type = "f32";
+            expect(changed(before)).toBe(true);
+
+            before = index.getTopologySnapshot();
+            shader.samplerDecls.push({ name: "missing", sampleType: "depth" });
+            expect(changed(before)).toBe(true);
+
+            before = index.getTopologySnapshot();
+            shader.storageBufferDecls.push({ name: "data", type: "array<f32>" });
+            expect(changed(before)).toBe(true);
+
+            before = index.getTopologySnapshot();
+            shader.attributes.push("normal");
+            expect(changed(before)).toBe(true);
+
+            before = index.getTopologySnapshot();
+            shader.defines.push({ name: "USE_FOG", value: 1 });
+            expect(changed(before)).toBe(true);
+        });
+
+        it("detects PBR feature presence without a bound texture", () => {
+            const pbr = CreateMaterial("pbr", "PBR");
+            const scene = { _kind: "scene", meshes: [CreateMesh("PBR", pbr)] } as SceneContext;
+            const index = new SceneResourceIndex(CreateResourceEngine([scene]));
+            const before = index.getTopologySnapshot();
+
+            (pbr as unknown as { clearCoat: { isEnabled: boolean } }).clearCoat = { isEnabled: true };
+            expect(SceneResourceIndex.AreTopologySnapshotsEqual(before, index.getTopologySnapshot())).toBe(false);
+        });
+
+        it("discovers bindings and texture metadata once per shared source and view in a snapshot", () => {
+            const texture = CreateTexture(1);
+            const source = Object.assign(CreateMaterial("pbr", "PBR", texture), { clearCoat: { isEnabled: true } });
+            const view = CreateMaterialView(source);
+            const sceneA = { _kind: "scene", meshes: [CreateMesh("First", view), CreateMesh("Second", view)] } as SceneContext;
+            const sceneB = { _kind: "scene", meshes: [CreateMesh("Third", view), CreateMesh("Source", source)] } as SceneContext;
+            const index = new SceneResourceIndex(CreateResourceEngine([sceneA, sceneB]));
+            vi.mocked(getPbrClearCoat).mockClear();
+            vi.mocked(getTextureMetadata).mockClear();
+
+            const before = index.getTopologySnapshot();
+            expect(vi.mocked(getPbrClearCoat)).toHaveBeenCalledTimes(4);
+            expect(vi.mocked(getTextureMetadata)).toHaveBeenCalledOnce();
+            expect(SceneResourceIndex.AreTopologySnapshotsEqual(before, index.getTopologySnapshot())).toBe(true);
+
+            sceneB.meshes[0].material = source;
+            expect(SceneResourceIndex.AreTopologySnapshotsEqual(before, index.getTopologySnapshot())).toBe(false);
+        });
+
         it("indexes source materials, canonical bindings, exact wrappers, consumers, and owning scenes deterministically", () => {
             const sharedGpuTexture = { width: 8, height: 4, format: "rgba8unorm", mipLevelCount: 1 } as unknown as GPUTexture;
             const sharedTexture = CreateTexture(1, sharedGpuTexture);

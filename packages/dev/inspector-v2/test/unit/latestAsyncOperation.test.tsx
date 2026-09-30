@@ -29,7 +29,8 @@ function MakeDeferred<T>(): Deferred<T> {
 
 type HarnessProps = Readonly<{
     identity: object;
-    invalidations: readonly [Observable<void>, Observable<void>, Observable<void>];
+    invalidations: readonly [Observable<void>, Observable<void>];
+    refresh: Observable<void>;
     disposed: () => boolean;
     operations: Deferred<{ changed: boolean }>[];
     successes: string[];
@@ -82,7 +83,8 @@ describe("latest asynchronous operation generations", () => {
     function MakeProps(operations: Deferred<{ changed: boolean }>[], identity = {}): HarnessProps {
         return {
             identity,
-            invalidations: [new Observable<void>(), new Observable<void>(), new Observable<void>()],
+            invalidations: [new Observable<void>(), new Observable<void>()],
+            refresh: new Observable<void>(),
             disposed: () => false,
             operations,
             successes: [],
@@ -117,20 +119,20 @@ describe("latest asynchronous operation generations", () => {
         expect(container.textContent).toContain("idle");
     });
 
-    it("invalidates pending work on snapshot, selection, identity, and unmount changes", async () => {
+    it("preserves pending work across refresh and invalidates on disposal, selection, identity, and unmount", async () => {
         const deferreds = [MakeDeferred<{ changed: boolean }>(), MakeDeferred<{ changed: boolean }>(), MakeDeferred<{ changed: boolean }>()];
         const props = MakeProps([...deferreds]);
         const { container, root } = Render(props);
 
         act(() => {
             container.querySelector("button")!.click();
-            props.invalidations[0].notifyObservers();
+            props.refresh.notifyObservers();
         });
         await act(async () => {
             deferreds[0].resolve({ changed: true });
             await deferreds[0].promise;
         });
-        expect(props.successes).toEqual([]);
+        expect(props.successes).toEqual(["first:true"]);
         expect(container.textContent).toContain("idle");
 
         act(() => {
@@ -153,7 +155,7 @@ describe("latest asynchronous operation generations", () => {
             deferreds[2].resolve({ changed: true });
             await deferreds[2].promise;
         });
-        expect(props.successes).toEqual([]);
+        expect(props.successes).toEqual(["first:true"]);
     });
 
     it("clears obsolete errors on retry and suppresses completions after disposal", async () => {
@@ -176,7 +178,7 @@ describe("latest asynchronous operation generations", () => {
         expect(container.textContent).not.toContain("explicit failure");
         act(() => {
             isDisposed = true;
-            props.invalidations[2].notifyObservers();
+            props.invalidations[0].notifyObservers();
         });
         await act(async () => {
             disposed.resolve({ changed: true });

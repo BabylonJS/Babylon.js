@@ -26,8 +26,11 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 
 import { type ISelectionService } from "../../../../services/selectionService";
 import { DerivedProperty } from "../../../../components/properties/boundProperty";
+import { usePropertyChangedNotifier } from "../../../../contexts/propertyContext";
 import { type ISceneResourceIndexService } from "../scene/sceneResourceIndexService";
 import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../scene/sceneResources";
+import { GetMaterialTopologyBindings } from "../scene/materialTopologyBindings";
+import { GetMaterialOwningScenes } from "./materials/materialReachability";
 import { useLatestAsyncOperation } from "./useLatestAsyncOperation";
 
 export type TextureMetadataPropertiesProps = Readonly<{
@@ -65,7 +68,8 @@ function GetMaterialRecord(resourceIndexService: ISceneResourceIndexService, mat
 function GetConsumerScenes(record: ITextureResourceRecord | undefined, resourceIndexService: ISceneResourceIndexService): readonly SceneContext[] {
     const scenes = new Set<SceneContext>();
     for (const consumer of record?.consumers ?? []) {
-        for (const scene of GetMaterialRecord(resourceIndexService, consumer.material)?.scenes ?? []) {
+        const record = GetMaterialRecord(resourceIndexService, consumer.material);
+        for (const scene of record ? GetMaterialOwningScenes(record, consumer.material) : []) {
             scenes.add(scene);
         }
     }
@@ -82,7 +86,9 @@ function SupportsTransform(record: ITextureResourceRecord | undefined, resourceI
             (materialRecord?.family === "standard" || materialRecord?.family === "pbr") &&
             consumer.bindingId !== "standard.reflection2d" &&
             consumer.bindingId !== "standard.reflectionCube" &&
-            materialRecord.bindings.some((binding) => binding.id === consumer.bindingId && binding.entity === record.entity)
+            (consumer.material === materialRecord.source ? materialRecord.bindings : GetMaterialTopologyBindings(consumer.material)).some(
+                (binding) => binding.id === consumer.bindingId && binding.entity === record.entity
+            )
         );
     });
 }
@@ -174,6 +180,7 @@ const TextureTransformField: FunctionComponent<TextureTransformFieldProps> = (pr
  */
 export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropertiesProps> = (props) => {
     const { texture, resourceIndexService, selectionService } = props;
+    const notifyPropertyChanged = usePropertyChangedNotifier();
     const classes = useStyles();
     const getSnapshot = useCallback(() => {
         const record = resourceIndexService.getTextureRecord(texture);
@@ -186,11 +193,7 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
     }, [resourceIndexService, texture]);
     const snapshot = useObservableState(getSnapshot, resourceIndexService.onChanged);
     const isResourceIndexDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
-    const [operations, runLatestOperation] = useLatestAsyncOperation(
-        texture,
-        [resourceIndexService.onChanged, resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged],
-        isResourceIndexDisposed
-    );
+    const [operations, runLatestOperation] = useLatestAsyncOperation(texture, [resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged], isResourceIndexDisposed);
 
     if (!snapshot) {
         return (
@@ -221,7 +224,7 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                     throw new Error("This texture is no longer available in an inspected scene.");
                 }
                 const consumerRecords = currentRecord.consumers.map((consumer) => GetMaterialRecord(resourceIndexService, consumer.material));
-                if (consumerRecords.some((item) => item === undefined || item.scenes.length === 0)) {
+                if (currentRecord.consumers.some((consumer, index) => !consumerRecords[index] || !GetMaterialOwningScenes(consumerRecords[index]!, consumer.material).length)) {
                     throw new Error("The texture has an incomplete owning scene scope.");
                 }
                 const scenes = [...GetConsumerScenes(currentRecord, resourceIndexService)];
@@ -232,6 +235,7 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                     throw new Error("The texture has no complete owning scene scope.");
                 }
                 const currentTransform = getTextureTransform(texture as Texture2D);
+                const previousTransform = currentTransform ? { ...currentTransform } : undefined;
                 if (
                     currentTransform &&
                     currentTransform.uOffset === transform.uOffset &&
@@ -240,11 +244,11 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                     currentTransform.vScale === transform.vScale &&
                     currentTransform.uAng === transform.uAng
                 ) {
-                    return false;
+                    return undefined;
                 }
                 const changed = setTextureTransform(texture as Texture2D, transform);
                 if (!changed) {
-                    return false;
+                    return undefined;
                 }
                 await Promise.all(
                     materialRecords.flatMap((materialRecord) => {
@@ -263,9 +267,15 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                             : [];
                     })
                 );
-                return true;
+                return previousTransform;
             },
-            onSuccess: () => resourceIndexService.refresh(),
+            onSuccess: (oldTransform) => {
+                if (oldTransform) {
+                    const key = id.replace(/^transform-/, "") as keyof TextureTransform;
+                    notifyPropertyChanged(texture, key, oldTransform[key], transform[key]);
+                    resourceIndexService.refresh();
+                }
+            },
             getErrorMessage: (error) => (error instanceof Error ? error.message : "The texture transform change failed."),
         });
     };

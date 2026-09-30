@@ -9,6 +9,7 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
 import { type MaterialAdapterProps } from "./materials/materialAdapterTypes";
+import { GetMaterialOwningScenes } from "./materials/materialReachability";
 import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
 
 type SupportedMaterialFamily = "standard" | "pbr" | "shader" | "node";
@@ -88,7 +89,8 @@ function TryDescribeMaterial(entity: unknown, resourceIndexService: ISceneResour
     try {
         const material = entity as Material;
         const source = getMaterialSource(material);
-        if (typeof source !== "object" || source === null || !resourceIndexService.getMaterialRecord(source)) {
+        const record = typeof source === "object" && source !== null ? resourceIndexService.getMaterialRecord(source) : undefined;
+        if (!record || !GetMaterialOwningScenes(record, material).length) {
             return undefined;
         }
         const family = getMaterialFamily(source);
@@ -122,7 +124,7 @@ const UnknownMaterialProperties: FunctionComponent<{ material: Material; resourc
             <TextPropertyLine label="Name" value={identity.displayName} />
             <TextPropertyLine label="Family" value={identity.family ?? "Unknown"} />
             <TextPropertyLine label="Selection" value={identity.isView ? "MaterialView" : "Material"} />
-            {identity.isView ? <TextPropertyLine label="Source" value={identity.displayName} /> : undefined}
+            {identity.isView ? <TextPropertyLine label="Source" value={resourceIndexService.getMaterialRecord(identity.source)?.displayName ?? "Unavailable"} /> : undefined}
         </>
     );
 };

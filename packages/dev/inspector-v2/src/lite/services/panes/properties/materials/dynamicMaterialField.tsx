@@ -1,5 +1,5 @@
 import { Body1 } from "@fluentui/react-components";
-import { type FunctionComponent, useCallback, useEffect, useState } from "react";
+import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
@@ -76,13 +76,27 @@ const MatrixField: FunctionComponent<{
  */
 export const DynamicMaterialField: FunctionComponent<DynamicFieldProps> = (props) => {
     const { target, id, label, type, read, write, unavailable, pending, error, integer, min, max } = props;
+    const lastValue = useRef<{ target: object; value: DynamicFieldValue | undefined }>(undefined);
     const getValue = useCallback(() => {
         try {
-            return read();
+            const value = read();
+            const previous = lastValue.current;
+            const previousValue = previous?.value;
+            if (
+                previous?.target === target &&
+                Array.isArray(value) &&
+                Array.isArray(previousValue) &&
+                value.length === previousValue.length &&
+                value.every((component, index) => Object.is(component, previousValue[index]))
+            ) {
+                return previousValue;
+            }
+            lastValue.current = { target, value };
+            return value;
         } catch {
             return undefined;
         }
-    }, [read]);
+    }, [read, target]);
     const value = useWatchedValue(target, getValue);
     const common = { label, uniqueId: id, disabled: pending, description: error ? `Error: ${error}` : undefined };
     let control: React.ReactNode;

@@ -30,7 +30,6 @@ const NodeGeneral: FunctionComponent<MaterialAdapterProps> = (props) => {
         return <TextPropertyLine label="Error" value="This material is no longer available in an inspected scene." />;
     }
     const family = getMaterialFamily(source);
-    const displayName = name || `${family ? `${family[0].toUpperCase()}${family.slice(1)}` : "Node"} Material`;
     const pending = operations["material.name"]?.pending;
     const error = operations["material.name"]?.error;
     return (
@@ -71,7 +70,7 @@ const NodeGeneral: FunctionComponent<MaterialAdapterProps> = (props) => {
             </div>
             <TextPropertyLine label="Family" value={family ?? "node"} />
             <TextPropertyLine label="Selection" value={isMaterialView(material) ? "MaterialView" : "Material"} />
-            {isMaterialView(material) ? <TextPropertyLine label="Source" value={displayName} /> : undefined}
+            {isMaterialView(material) ? <TextPropertyLine label="Source" value={record.displayName} /> : undefined}
         </>
     );
 };
@@ -130,6 +129,8 @@ const NodeValueField: FunctionComponent<MaterialAdapterProps & { name: string; t
         const newValue = typeof value === "number" ? value : [...value];
         commit({
             id,
+            propertyOwner: node.inputs[name],
+            propertyKey: "value",
             oldValue,
             newValue,
             invalidate: "owned",

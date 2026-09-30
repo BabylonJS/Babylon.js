@@ -72,6 +72,10 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
 import { type Material, type SceneContext } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
 
+import { PropertyContext, type PropertyChangeInfo } from "../../src/contexts/propertyContext";
+import { WatcherContext } from "../../src/contexts/watcherContext";
+import { type IWatcherService } from "../../src/services/watcherService";
+import { DynamicMaterialField } from "../../src/lite/services/panes/properties/materials/dynamicMaterialField";
 import { StandardMaterialAdapter } from "../../src/lite/services/panes/properties/materials/standardMaterialProperties";
 import { PbrMaterialAdapter } from "../../src/lite/services/panes/properties/materials/pbrMaterialProperties";
 import { ShaderMaterialAdapter } from "../../src/lite/services/panes/properties/materials/shaderMaterialProperties";
@@ -334,6 +338,8 @@ describe("Babylon Lite material properties", () => {
             await Promise.resolve();
         });
         expect(InspectionMocks.rebuild).toHaveBeenCalledOnce();
+        act(() => resources.refresh());
+        expect(container.querySelector('[role="status"]')?.textContent).toContain("Back Face Culling");
         await act(async () => rejectRebuild(new Error("Rebuild failed")));
         expect(container.querySelector('[role="alert"]')?.textContent).toContain("Rebuild failed");
         expect(container.querySelectorAll('[aria-busy="true"]')).toHaveLength(0);
@@ -359,6 +365,127 @@ describe("Babylon Lite material properties", () => {
         expect((view as { alphaCutOff: number }).alphaCutOff).toBe(0.7);
         expect((source as { alphaCutOff: number }).alphaCutOff).toBe(0.4);
         expect(InspectionMocks.markDirty).toHaveBeenCalledWith(view);
+    });
+
+    it("reports the selected view and actual name property when editing its name", async () => {
+        const source = MakeStandard();
+        const view = Object.assign(Object.create(source), { source, name: "View" }) as Material;
+        const scene = { meshes: [{ material: view }] } as SceneContext;
+        const resources = MakeResourceService([{ source, family: "standard", displayName: "Standard source", scenes: [scene], bindings: [] }]);
+        const changes = new Observable<PropertyChangeInfo>();
+        const events: PropertyChangeInfo[] = [];
+        changes.add((event) => events.push(event));
+        const container = Render(
+            <PropertyContext.Provider value={{ onPropertyChanged: changes }}>
+                <StandardMaterialAdapter material={view} section="general" resourceIndexService={resources} selectionService={MakeSelectionService()} />
+            </PropertyContext.Provider>
+        );
+        expect(container.textContent).toContain("SourceStandard source");
+        const input = container.querySelector<HTMLInputElement>('input[value="View"]')!;
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+        await act(async () => {
+            input.focus();
+            setter.call(input, "Updated view");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
+        });
+        expect(events).toContainEqual({ entity: view, propertyKey: "name", oldValue: "View", newValue: "Updated view" });
+    });
+
+    it("shows indexed source names instead of view names for Shader and Node families", () => {
+        for (const family of ["shader", "node"] as const) {
+            const source = { family, name: `${family} source`, uniformDecls: [], samplerDecls: [], inputs: {} } as unknown as Material;
+            const view = Object.assign(Object.create(source), { source, name: `${family} view` }) as Material;
+            const scene = { meshes: [{ material: view }] } as SceneContext;
+            const resources = MakeResourceService([{ source, family, displayName: `${family} source`, scenes: [scene], bindings: [] }]);
+            const selection = MakeSelectionService();
+            const Adapter = family === "shader" ? ShaderMaterialAdapter : NodeMaterialAdapter;
+            const container = Render(<Adapter material={view} section="general" resourceIndexService={resources} selectionService={selection} />);
+            expect(container.textContent).toContain(`Source${family} source`);
+        }
+    });
+
+    it("rejects edits to a detached view even when its source remains indexed through another mesh", async () => {
+        const source = MakeStandard();
+        const view = Object.assign(Object.create(source), { source, alphaCutOff: 0.6 }) as Material;
+        const scene = { meshes: [{ material: view }, { material: source }] } as SceneContext;
+        const resources = MakeResourceService([{ source, family: "standard", displayName: "Standard source", scenes: [scene], bindings: [] }]);
+        const container = Render(<StandardMaterialAdapter material={view} section="transparency" resourceIndexService={resources} selectionService={MakeSelectionService()} />);
+        scene.meshes[0].material = source;
+        const input = container.querySelector<HTMLInputElement>('input[value="0.6"]')!;
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+        await act(async () => {
+            input.focus();
+            setter.call(input, "0.7");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
+        });
+        expect((view as { alphaCutOff: number }).alphaCutOff).toBe(0.6);
+        expect(container.querySelector('[role="alert"]')?.textContent).toContain("no longer reachable");
+    });
+
+    it("rejects PBR view edits after detachment while its source remains reachable", async () => {
+        const source = { family: "pbr", name: "PBR source", doubleSided: false } as unknown as Material;
+        const view = Object.assign(Object.create(source), { source, name: "PBR view", doubleSided: false }) as Material;
+        const scene = { meshes: [{ material: view }, { material: source }] } as SceneContext;
+        const resources = MakeResourceService([{ source, family: "pbr", displayName: "PBR source", scenes: [scene], bindings: [] }]);
+        const container = Render(<PbrMaterialAdapter material={view} section="general" resourceIndexService={resources} selectionService={MakeSelectionService()} />);
+        expect(container.textContent).toContain("SourcePBR source");
+        scene.meshes[0].material = source;
+        await act(async () => {
+            container.querySelector<HTMLInputElement>('input[type="checkbox"]')?.click();
+            await Promise.resolve();
+        });
+        expect((view as { doubleSided: boolean }).doubleSided).toBe(false);
+        expect(container.querySelector('[role="alert"]')?.textContent).toContain("no longer reachable");
+    });
+
+    it("attributes a PBR view's texture change to its public texture field", async () => {
+        const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
+        const source = { family: "pbr", name: "PBR source" } as unknown as Material;
+        const view = Object.assign(Object.create(source), { source, baseColorTexture: texture }) as Material;
+        const scene = { meshes: [{ material: view }] } as SceneContext;
+        const record: IMaterialResourceRecord = { source, family: "pbr", displayName: "PBR source", scenes: [scene], bindings: [] };
+        const resources = MakeResourceService([record], [{ entity: texture, metadata: texture.metadata, ordinal: 1, consumers: [{ material: view, bindingId: "pbr.baseColor" }] }]);
+        const changes = new Observable<PropertyChangeInfo>();
+        const events: PropertyChangeInfo[] = [];
+        changes.add((event) => events.push(event));
+        const container = Render(
+            <PropertyContext.Provider value={{ onPropertyChanged: changes }}>
+                <PbrMaterialAdapter material={view} section="textures" resourceIndexService={resources} selectionService={MakeSelectionService()} />
+            </PropertyContext.Provider>
+        );
+        await act(async () => {
+            container.querySelector<HTMLButtonElement>('[aria-label="Clear Base Color Texture"]')?.click();
+            await Promise.resolve();
+        });
+        expect(events).toContainEqual({ entity: view, propertyKey: "baseColorTexture", oldValue: texture, newValue: null });
+    });
+
+    it("does not publish unchanged dynamic vector snapshots on watcher refresh", () => {
+        const observers: Array<() => void> = [];
+        const onChanged = vi.fn();
+        const watcher = {
+            watchValue: <T,>(getValue: () => T, callback: (value: T) => void, equals: (left: T, right: T) => boolean = Object.is) => {
+                let previous = getValue();
+                observers.push(() => {
+                    const current = getValue();
+                    if (!equals(previous, current)) {
+                        previous = current;
+                        onChanged();
+                        callback(current);
+                    }
+                });
+                return { dispose: vi.fn() };
+            },
+        } as unknown as IWatcherService;
+        Render(
+            <WatcherContext.Provider value={watcher}>
+                <DynamicMaterialField target={{}} id="node.input:vector" label="Vector" type="vec2" read={() => [1, 2]} write={vi.fn()} unavailable="Missing" />
+            </WatcherContext.Provider>
+        );
+        act(() => observers.forEach((observer) => observer()));
+        expect(onChanged).not.toHaveBeenCalled();
     });
 
     it("rejects rebuild edits when the indexed material has no owning scene", async () => {
@@ -515,7 +642,13 @@ describe("Babylon Lite material properties", () => {
     it("registers lazy family predicates without importing family descriptors in the service", () => {
         const families = ["standard", "pbr", "shader", "node"] as const;
         const materials = families.map((family) => ({ family, name: family }) as unknown as Material);
-        const records = materials.map((source): IMaterialResourceRecord => ({ source, family: (source as any).family, displayName: source.name!, scenes: [], bindings: [] }));
+        const records = materials.map((source): IMaterialResourceRecord => ({
+            source,
+            family: (source as any).family,
+            displayName: source.name!,
+            scenes: [{ meshes: [{ material: source }] } as SceneContext],
+            bindings: [],
+        }));
         const registrations = new Map<string, Parameters<IPropertiesService["addSectionContent"]>[0]>();
         const propertiesService = {
             addSectionContent: vi.fn((content: Parameters<IPropertiesService["addSectionContent"]>[0]) => {
