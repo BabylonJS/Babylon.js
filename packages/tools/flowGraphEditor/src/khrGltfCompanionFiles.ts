@@ -4,6 +4,11 @@ function _NormalizePath(path: string): string {
 
 type FileWithDropPath = File & { correctName?: string };
 
+function _HasRecordedPath(file: File): boolean {
+    const correctName = (file as FileWithDropPath).correctName;
+    return !!file.webkitRelativePath || !!(correctName && _NormalizePath(correctName).includes("/"));
+}
+
 /**
  * Get the path retained by a native folder drop or directory file picker.
  * @param file selected file
@@ -100,6 +105,10 @@ function _ResourcePath(uri: string): string {
     }
 }
 
+function _ResourceIdentity(uri: string): string {
+    return (uri.startsWith("/") ? "/" : "") + _CanonicalPath(decodeURIComponent(uri), false);
+}
+
 /** A recoverable local resource that needs an explicit file choice. */
 export class GltfCompanionResolutionError extends Error {
     /** The referenced glTF resource URI. */
@@ -161,31 +170,37 @@ export function ResolveGltfCompanionFiles(
     const explicitPaths = new Map<string, File>();
     for (const [uri, file] of overrides) {
         _ResourcePath(uri);
-        const identity = _CanonicalPath(decodeURIComponent(uri), false);
+        const identity = _ResourceIdentity(uri);
         if (explicitPaths.has(identity) && explicitPaths.get(identity) !== file) {
             throw new Error(`Ambiguous companion file for ${uri}. Equivalent resource paths have different file choices.`);
         }
         explicitPaths.set(identity, file);
     }
-    for (const uri of resourceUris) {
-        // Network and data resources are resolved by the loader, not the drop target.
-        if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(uri)) {
-            continue;
-        }
-        const path = _ResourcePath(uri);
-        // URI aliases may share one resource. Distinct case-sensitive paths
-        // must not overwrite each other in the loader's virtual file store.
-        const identity = _CanonicalPath(decodeURIComponent(uri), false);
-        const keys = GetGltfResourceKeys(uri);
+    // Network and data resources are resolved by the loader, not the drop target.
+    const references = resourceUris
+        .filter((uri) => !/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(uri))
+        .map((uri) => {
+            const path = _ResourcePath(uri);
+            const identity = _ResourceIdentity(uri);
+            const keys = GetGltfResourceKeys(uri);
+            const expectedPath = _CanonicalPath(uri.startsWith("/") ? path : mainDirectory + path);
+            const exact = files.filter((file) => _HasRecordedPath(file) && _CanonicalPath(GetGltfFilePath(file)) === expectedPath);
+            return { uri, identity, keys, exact, basename: path.slice(path.lastIndexOf("/") + 1) };
+        });
+    const flatPaths = new Map<string, Set<string>>();
+    for (const { uri, identity, keys, exact, basename } of references) {
+        // Reject lookup collisions before offering choices that cannot fix them.
         if (keys.some((key) => assignedKeys.has(key) && assignedKeys.get(key) !== identity)) {
             throw new Error(`Ambiguous companion file for ${uri}. Distinct resource paths share a loader lookup key.`);
         }
-        const expectedPath = _CanonicalPath(mainDirectory + path);
-        const exact = files.filter((file) => {
-            const droppedPath = _CanonicalPath(GetGltfFilePath(file));
-            return droppedPath === expectedPath;
-        });
-        const basename = path.slice(path.lastIndexOf("/") + 1);
+        keys.forEach((key) => assignedKeys.set(key, identity));
+        if (!exact.length) {
+            const identities = flatPaths.get(basename) ?? new Set<string>();
+            identities.add(identity);
+            flatPaths.set(basename, identities);
+        }
+    }
+    for (const { uri, identity, exact, basename } of references) {
         const explicit = explicitPaths.get(identity);
         const matches = explicit
             ? [explicit]
@@ -193,7 +208,13 @@ export function ResolveGltfCompanionFiles(
               ? [assignedPaths.get(identity)!]
               : exact.length
                 ? exact
-                : files.filter((file) => !(file as FileWithDropPath).correctName && !file.webkitRelativePath && _NormalizePath(file.name) === basename);
+                : files.filter((file) => !_HasRecordedPath(file) && _NormalizePath(GetGltfFilePath(file)) === basename);
+        // A flat basename must identify both one file and one distinct resource.
+        // Keep this ambiguity across retries: choosing one path cannot identify
+        // which other path an original basename-only File belongs to.
+        if (matches.length && !explicit && !exact.length && (flatPaths.get(basename)?.size ?? 0) > 1) {
+            throw new GltfCompanionResolutionError("ambiguous", uri, `Ambiguous companion file for ${uri}. One file matches multiple resource paths. Choose a file for each path.`);
+        }
         if (matches.length > 1) {
             throw new GltfCompanionResolutionError("ambiguous", uri, `Ambiguous companion file for ${uri}. Choose the file that matches this resource path.`);
         }
@@ -209,7 +230,6 @@ export function ResolveGltfCompanionFiles(
         }
         assigned.add(match);
         assignedPaths.set(identity, match);
-        keys.forEach((key) => assignedKeys.set(key, identity));
         result.set(uri, match);
     }
     return result;

@@ -20,6 +20,29 @@ describe("glTF companion path identity", () => {
         expect(ResolveGltfCompanionFiles(main, ["paint.png"], [FileAt("paint.png"), right]).get("paint.png")).toBe(right);
     });
 
+    it.each(["paint.png", "/paint.png", "\\paint.png"])("does not infer a directory from a basename-only correctName (%s)", (correctName) => {
+        const paint = { ...FileAt("paint.png"), correctName } as File;
+        expect(ResolveGltfCompanionFiles(main, ["textures/paint.png"], [paint]).get("textures/paint.png")).toBe(paint);
+    });
+
+    it("uses a retained virtual basename when it differs from the physical filename", () => {
+        const paint = { ...FileAt("physical.png"), correctName: "virtual.png" } as File;
+        expect(ResolveGltfCompanionFiles(main, ["textures/virtual.png"], [paint]).get("textures/virtual.png")).toBe(paint);
+    });
+
+    it("distinguishes drop-root absolute paths from source-relative paths", () => {
+        const absolute = FileAt("paint.png", "textures/paint.png");
+        const relative = FileAt("paint.png", "asset/scenes/textures/paint.png");
+        const result = ResolveGltfCompanionFiles(main, ["/textures/paint.png", "textures/paint.png"], [absolute, relative]);
+        expect([...result.values()]).toEqual([absolute, relative]);
+    });
+
+    it("does not reinterpret an absent drop-root resource as a source-relative resource", () => {
+        expect(() => ResolveGltfCompanionFiles(main, ["/textures/paint.png"], [FileAt("paint.png", "asset/scenes/textures/paint.png")])).toThrow(
+            "Missing companion file for /textures/paint.png"
+        );
+    });
+
     it.each(["./textures/paint.png", "textures/./paint.png", "textures/unused/../paint.png", "textures/%70aint.png"])("allows the same resource through %s", (alias) => {
         const paint = FileAt("paint.png", "asset/scenes/textures/paint.png");
         const mapped = ResolveGltfCompanionFiles(main, ["textures/paint.png", alias], [paint]);
@@ -39,17 +62,43 @@ describe("glTF companion path identity", () => {
     it("does not silently reuse one flat file for two different directory paths", () => {
         const paint = FileAt("paint.png");
         expect(() => ResolveGltfCompanionFiles(main, ["red/paint.png", "blue/paint.png"], [paint])).toThrow("One file matches multiple resource paths");
-        const mapped = ResolveGltfCompanionFiles(main, ["red/paint.png", "blue/paint.png"], [paint], main.webkitRelativePath, new Map([["blue/paint.png", paint]]));
+        const choices = new Map([
+            ["red/paint.png", paint],
+            ["blue/paint.png", paint],
+        ]);
+        const mapped = ResolveGltfCompanionFiles(main, ["red/paint.png", "blue/paint.png"], [paint], main.webkitRelativePath, choices);
         expect([...mapped.values()]).toEqual([paint, paint]);
         expect([
-            ...ResolveGltfCompanionFiles(
-                main,
-                ["red/paint.png", "blue/paint.png", "./red/paint.png", "./blue/paint.png"],
-                [paint],
-                main.webkitRelativePath,
-                new Map([["blue/paint.png", paint]])
-            ).values(),
+            ...ResolveGltfCompanionFiles(main, ["red/paint.png", "blue/paint.png", "./red/paint.png", "./blue/paint.png"], [paint], main.webkitRelativePath, choices).values(),
         ]).toEqual([paint, paint, paint, paint]);
+    });
+
+    it.each([false, true])("requires an explicit choice for every ambiguous flat resource before guessing either binding (reverse: %s)", (reverse) => {
+        const uris = ["red/paint.png", "blue/paint.png"];
+        if (reverse) {
+            uris.reverse();
+        }
+        const paint = FileAt("paint.png");
+        let failure: unknown;
+        try {
+            ResolveGltfCompanionFiles(main, uris, [paint]);
+        } catch (error) {
+            failure = error;
+        }
+        expect(failure).toMatchObject({ kind: "ambiguous", uri: uris[0] });
+        let retryFailure: unknown;
+        try {
+            ResolveGltfCompanionFiles(main, uris, [paint], main.webkitRelativePath, new Map([[uris[0], FileAt("chosen.png")]]));
+        } catch (error) {
+            retryFailure = error;
+        }
+        expect(retryFailure).toMatchObject({ kind: "ambiguous", uri: uris[1] });
+    });
+
+    it("keeps a flat fallback unambiguous when the other same-basename resource has a known path", () => {
+        const known = FileAt("paint.png", "asset/scenes/red/paint.png");
+        const flat = FileAt("paint.png");
+        expect([...ResolveGltfCompanionFiles(main, ["red/paint.png", "blue/paint.png"], [known, flat]).values()]).toEqual([known, flat]);
     });
 
     it("rejects conflicting explicit choices for equivalent resource paths", () => {
