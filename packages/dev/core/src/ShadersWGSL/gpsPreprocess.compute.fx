@@ -127,7 +127,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // Signed forward distance (LH: +z, RH: -z). Signed so behind-camera means are rejected for orthographic
     // cameras too, whose clip.w is always 1. far <= 0 means an infinite far plane.
     let viewDepth = select(camspace.z, -camspace.z, uniforms.focal.z > 0.5);
-    if (viewDepth <= near || (far > 0.0 && viewDepth >= far)) {
+    let projectedDepth = (u32(uniforms.misc.w) & 2u) != 0u;
+    if (!projectedDepth && (viewDepth <= near || (far > 0.0 && viewDepth >= far))) {
         return;
     }
     let ndc = clip.xyz / clip.w;
@@ -149,7 +150,12 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
 
     let isOrtho = uniforms.focal.w > 0.5;
     let modelView = uniforms.view * partWorld;
-    var cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, uniforms.focal.xy, isOrtho);
+    var cov2d : mat3x3f;
+    if ((u32(uniforms.misc.w) & 1u) != 0u) {
+        cov2d = gpsCov2D(covA, covB, modelView, uniforms.projection, clip, uniforms.pixelMap.xy);
+    } else {
+        cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, uniforms.focal.xy, isOrtho);
+    }
 
     // `_makeSplat` doubles scale, making Sigma/cov2d 4x too large. The classic quad path cancels that
     // with invViewport = 1/width; this pixel-space path cancels it before detOrig and the low-pass kernel.
@@ -183,7 +189,21 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // weights[g] is already 0, so returning emits no points.
     if (uniforms.hiZInfo.w > 0.5) {
         let footR = 3.0 * sqrt(max(lambda1, 0.0)); // ~3-sigma footprint radius (px) from the max eigenvalue
-        if (gpsHiZOccluded(vec2f(px, py), footR, viewDepth)) {
+        var nearestDepth = viewDepth;
+        if (projectedDepth) {
+            let low = ((vec2f(px, py) - footR - uniforms.pixelMap.zw) / uniforms.pixelMap.xy) * 2.0 - 1.0;
+            let high = ((vec2f(px, py) + footR - uniforms.pixelMap.zw) / uniforms.pixelMap.xy) * 2.0 - 1.0;
+            var depths = vec4f(
+                gpsProjectedDepth(uniforms.inverseProjection, low, camspace.z).x,
+                gpsProjectedDepth(uniforms.inverseProjection, high, camspace.z).x,
+                gpsProjectedDepth(uniforms.inverseProjection, vec2f(low.x, high.y), camspace.z).x,
+                gpsProjectedDepth(uniforms.inverseProjection, vec2f(high.x, low.y), camspace.z).x);
+            if ((u32(uniforms.misc.w) & 4u) != 0u) {
+                depths = vec4f(1.0) - depths;
+            }
+            nearestDepth = min(min(depths.x, depths.y), min(depths.z, depths.w));
+        }
+        if (gpsHiZOccluded(vec2f(px, py), footR, nearestDepth)) {
             return;
         }
     }
@@ -279,7 +299,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let flags = select(0u, GPS_FLAG_SATURATE, saturate) | select(0u, GPS_FLAG_SCREEN_RECT, useRect);
     let rmin = vec2u(rectMin);
     let rmax = vec2u(rectMax);
-    s.depth = vec4u(u32(dord * f32(GPS_DEPTH_MAX_CODE)), flags, rmin.x | (rmin.y << 16u), rmax.x | (rmax.y << 16u));
+    let depthKey = select(u32(dord * f32(GPS_DEPTH_MAX_CODE)), bitcast<u32>(camspace.z), projectedDepth);
+    s.depth = vec4u(depthKey, flags, rmin.x | (rmin.y << 16u), rmax.x | (rmax.y << 16u));
     gsData[g] = s;
 
     weights[g] = numPoints;

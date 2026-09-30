@@ -3,6 +3,8 @@
 // w = m11 * vz + m15) and re-encoded like logDepthFragment. logarithmicDepthConstant <= 0 disables it.
 uniform resolution: vec2f;
 uniform projZ: vec4f;
+uniform inverseProjection: mat4x4f;
+uniform useInverseProjection: f32;
 uniform logarithmicDepthConstant: f32;
 
 varying vScreenUv: vec2f;
@@ -33,8 +35,15 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     fragmentOutputs.color = vec4f(accumulated.rgb, accumulated.w);
     var depth = accumDepth[idx];
     if (uniforms.logarithmicDepthConstant > 0.0) {
-        let vz = (depth * uniforms.projZ.w - uniforms.projZ.z) / (uniforms.projZ.x - depth * uniforms.projZ.y);
-        let clipW = uniforms.projZ.y * vz + uniforms.projZ.w;
+        var clipW : f32;
+        if (uniforms.useInverseProjection > 0.5) {
+            let ndcXY = (vec2f(pixel) + 0.5) / res * 2.0 - 1.0;
+            let unprojected = uniforms.inverseProjection * vec4f(ndcXY, depth, 1.0);
+            clipW = 1.0 / unprojected.w;
+        } else {
+            let vz = (depth * uniforms.projZ.w - uniforms.projZ.z) / (uniforms.projZ.x - depth * uniforms.projZ.y);
+            clipW = uniforms.projZ.y * vz + uniforms.projZ.w;
+        }
         depth = log2(max(0.000001, 1.0 + clipW)) * uniforms.logarithmicDepthConstant * 0.5;
     }
     fragmentOutputs.fragDepth = depth;

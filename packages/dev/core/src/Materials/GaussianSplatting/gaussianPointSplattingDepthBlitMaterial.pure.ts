@@ -5,7 +5,7 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
 import { type StorageBuffer } from "core/Buffers/storageBuffer";
-import { Vector2, Vector4 } from "core/Maths/math.vector.pure";
+import { type Matrix, Vector2, Vector4 } from "core/Maths/math.vector.pure";
 
 /**
  * Writes resolved Gaussian Point Splatting depth into a DepthRenderer map with a fullscreen triangle.
@@ -29,7 +29,7 @@ export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
             { vertex: "gaussianPointSplattingBlit", fragment: "gaussianPointSplattingDepthBlit" },
             {
                 attributes: ["position"],
-                uniforms: ["resolution", "depthValues", "projZ", "reverseDepth"],
+                uniforms: ["resolution", "depthValues", "projZ", "inverseProjection", "useInverseProjection", "reverseDepth"],
                 storageBuffers: ["accumBuffer", "accumDepth"],
                 shaderLanguage: ShaderLanguage.WGSL,
                 needAlphaBlending: false,
@@ -40,6 +40,7 @@ export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
         this.backFaceCulling = false;
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.forceDepthWrite = true;
+        this.setFloat("useInverseProjection", 0);
     }
 
     /**
@@ -76,6 +77,16 @@ export class GaussianPointSplattingDepthBlitMaterial extends ShaderMaterial {
      */
     public setProjectionZ(m10: number, m11: number, m14: number, m15: number): void {
         this.setVector4("projZ", this._projZ.set(m10, m11, m14, m15));
+        this.setFloat("useInverseProjection", 0);
+    }
+
+    /**
+     * Sets the inverse full projection to recover clip-space z for the depth metric.
+     * @param inverseProjection inverse camera projection matrix
+     */
+    public setInverseProjection(inverseProjection: Matrix): void {
+        this.setMatrix("inverseProjection", inverseProjection);
+        this.setFloat("useInverseProjection", 1);
     }
 
     /**

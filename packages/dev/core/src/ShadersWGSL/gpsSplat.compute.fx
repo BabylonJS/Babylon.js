@@ -114,7 +114,19 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let db = gpsUnit(st) - 0.5;
     let dithered = s.colorOp.rgb + vec3f(dr / 31.0, dg / 63.0, db / 31.0);
 
-    let key = gpsPackKey(s.depth.x, gpsPackRGB565(dithered) ^ u32(uniforms.misc.z));
+    var depthKey = s.depth.x;
+    if ((u32(uniforms.misc.w) & 2u) != 0u) {
+        let ndcXY = ((pixel + 0.5 - uniforms.pixelMap.zw) / uniforms.pixelMap.xy) * 2.0 - 1.0;
+        let projected = gpsProjectedDepth(uniforms.inverseProjection, ndcXY, bitcast<f32>(s.depth.x));
+        // Clip before selecting a winner, so a clipped foreground sample cannot hide a valid background one.
+        if (!(projected.x >= 0.0 && projected.x <= 1.0 && projected.y > 0.0)) {
+            return;
+        }
+        let ordered = select(projected.x, 1.0 - projected.x, (u32(uniforms.misc.w) & 4u) != 0u);
+        let normalized = clamp((ordered - uniforms.projectedDepth.x) / max(uniforms.projectedDepth.y - uniforms.projectedDepth.x, 1e-6), 0.0, 1.0);
+        depthKey = u32(normalized * f32(GPS_DEPTH_MAX_CODE));
+    }
+    let key = gpsPackKey(depthKey, gpsPackRGB565(dithered) ^ u32(uniforms.misc.z));
     let idx = u32(y) * u32(res.x) + u32(x);
 
     // Skipping losing samples before atomicMin cuts contention in dense overlap.

@@ -5,17 +5,17 @@ import { type Scene } from "core/scene.pure";
 import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion } from "core/Maths/math.vector.pure";
 import { type Material } from "core/Materials/material.pure";
-import { type Camera } from "core/Cameras/camera.pure";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { Constants } from "core/Engines/constants";
 import { Mesh } from "core/Meshes/mesh.pure";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { Logger } from "core/Misc/logger";
 import { ToHalfFloat } from "core/Misc/textureTools";
-import { GaussianPointSplattingRenderer, _GetPackedShBytesPerSplat } from "./gaussianPointSplattingRenderer.pure";
+import { GaussianPointSplattingRenderer, _GetPackedShBytesPerSplat, _HasGaussianPointSplattingProjectedDepth } from "./gaussianPointSplattingRenderer.pure";
 import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.pure";
 import { GaussianPointSplattingDepthBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.pure";
 import { type GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
+import { type GaussianSplattingSolidColorMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin.pure";
 import { RegisterEnginesWebGPUExtensionsEngineComputeShader } from "core/Engines/WebGPU/Extensions/engine.computeShader.pure";
 import {
     _SetGaussianPointSplattingControllerFactory,
@@ -103,12 +103,15 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _autoRequestId = 0;
     private _budgetReadPending = false;
     private _resultReady = false;
+    private _computedWidth = 0;
+    private _computedHeight = 0;
     // Counters of the last dispatch, surfaced by `progress`.
     private _progressFrameCount = 0;
     private _progressGeneration = -1;
     private _progressCycleLength = 0;
     private _streamingWarned = false;
     private _workloadWarned = false;
+    private _invalidProjectionWarned = false;
     private _renderer: Nullable<GaussianPointSplattingRenderer> = null;
     private _blit: Nullable<GaussianPointSplattingBlitMaterial> = null;
     private _blitMesh: Nullable<Mesh> = null;
@@ -125,11 +128,11 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _partScratch = new Float32Array(40);
     private _decodedSplatsData: Nullable<ArrayBuffer> = null;
     private readonly _vpMatrix = new Matrix();
-    private readonly _projectionScratch = new Matrix();
+    private readonly _inverseProjection = new Matrix();
     private readonly _outputSize = { width: 1, height: 1 };
     private readonly _depthSpan: [number, number] = [0, 0];
 
-    /** @inheritdoc */
+    /** {@inheritDoc IGaussianPointSplattingController.colorRenderMode} */
     public get colorRenderMode(): boolean {
         return this._colorMode;
     }
@@ -151,7 +154,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
     }
 
-    /** @inheritdoc */
+    /** {@inheritDoc IGaussianPointSplattingController.depthRenderMode} */
     public get depthRenderMode(): boolean {
         return this._depthMode;
     }
@@ -173,7 +176,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
     }
 
-    /** @inheritdoc */
+    /** {@inheritDoc IGaussianPointSplattingController.progress} */
     public get progress(): Nullable<IGaussianPointSplattingProgress> {
         if (!this._computeActive || !this._resultReady || !this._renderer) {
             return null;
@@ -190,7 +193,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         return (this._colorMode || this._depthMode) && !this._mesh._pointStreamingUnsupported;
     }
 
-    /** @inheritdoc */
+    /** {@inheritDoc IGaussianPointSplattingController.pointScale} */
     public get pointScale(): number {
         return this._scale;
     }
@@ -214,13 +217,15 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             RegisterEnginesWebGPUExtensionsEngineComputeShader();
             this._renderer = new GaussianPointSplattingRenderer(engine);
             this._renderer.pointScale = this._scale;
+            this._decodedSplatsData = null;
         }
-        this._decodedSplatsData = null;
-        if (this._isWorkloadSupported()) {
+        if (!this._mesh._pointStreamingUnsupported && this._isWorkloadSupported()) {
             this._syncData();
         }
         if (!this._computeObserver) {
-            this._computeObserver = this._scene.onBeforeRenderObservable.add(() => this._runCompute());
+            this._computeObserver = this._scene.onBeforeRenderObservable.add(() => {
+                this._resultReady = false;
+            });
         }
     }
 
@@ -547,13 +552,14 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     }
 
     /**
-     * Computes the model's view-depth span from its part AABB corners, clamped to [near, far].
+     * Computes the model's view-depth span from its part AABB corners.
      * @param viewM column-major view matrix
      * @param near camera near plane
      * @param far camera far plane; 0 means infinite
-     * @returns the model's [viewZMin, viewZMax] this frame, clamped to [near, far]
+     * @param clampToCamera whether to clamp the interval to the standard camera near/far planes
+     * @returns the model's [viewZMin, viewZMax] this frame
      */
-    private _viewZSpan(viewM: ArrayLike<number>, near: number, far: number): [number, number] {
+    private _viewZSpan(viewM: ArrayLike<number>, near: number, far: number, clampToCamera = true): [number, number] {
         let vzMin = Infinity;
         let vzMax = -Infinity;
         const scratch = this._partScratch;
@@ -587,8 +593,10 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
                 }
             }
         }
-        vzMin = Math.max(near, vzMin);
-        vzMax = Math.min(far > 0 ? far : Infinity, vzMax);
+        const minClip = clampToCamera ? near : -Infinity;
+        const maxClip = clampToCamera && far > 0 ? far : Infinity;
+        vzMin = Math.max(minClip, vzMin);
+        vzMax = Math.min(maxClip, vzMax);
         if (!isFinite(vzMin) || vzMax < vzMin) {
             // Nothing visible; any finite span works.
             this._depthSpan[0] = near;
@@ -597,7 +605,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             // Flat or single-splat model: widen a band around the actual depth. Collapsing to [near, ...]
             // instead would place the surface at the near plane and break the depth test and depth map.
             const epsilon = Math.max(Math.abs(vzMin) * 1e-3, 1e-4);
-            this._depthSpan[0] = Math.max(near, vzMin - epsilon);
+            this._depthSpan[0] = Math.max(minClip, vzMin - epsilon);
             this._depthSpan[1] = vzMax + epsilon;
         } else {
             this._depthSpan[0] = vzMin;
@@ -728,59 +736,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         return this._outputSize;
     }
 
-    /**
-     * Returns the projection matrix the camera will use once its framebuffer is bound.
-     *
-     * The compute runs before the camera binds `camera.outputRenderTarget`, so the camera's cached projection
-     * may still be the one built for the backbuffer; it is rebuilt for the target's size instead. Post-process
-     * targets are bound after the projection is computed, so they never change it.
-     * @param camera the active camera
-     * @returns the projection matrix the scene renders with
-     */
-    private _getProjectionMatrix(camera: Camera): Matrix {
-        const engine = this._scene.getEngine();
-        const target = camera.outputRenderTarget;
-        if (!target || camera.oblique || camera["_doNotComputeProjectionMatrix"]) {
-            return camera.getProjectionMatrix();
-        }
-        const outWidth = target.getRenderWidth();
-        const outHeight = target.getRenderHeight();
-        if (outWidth === engine.getRenderWidth(true) && outHeight === engine.getRenderHeight(true)) {
-            return camera.getProjectionMatrix();
-        }
-        const reverseDepth = engine.useReverseDepthBuffer;
-        const maxZ = camera.ignoreCameraMaxZ ? 0 : camera.maxZ;
-        const zNear = reverseDepth ? maxZ : camera.minZ;
-        const zFar = reverseDepth ? camera.minZ : maxZ;
-        const result = this._projectionScratch;
-        const rightHanded = this._scene.useRightHandedSystem;
-        if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
-            const halfWidth = outWidth / 2;
-            const halfHeight = outHeight / 2;
-            const left = camera.orthoLeft ?? -halfWidth;
-            const right = camera.orthoRight ?? halfWidth;
-            const bottom = camera.orthoBottom ?? -halfHeight;
-            const top = camera.orthoTop ?? halfHeight;
-            if (rightHanded) {
-                Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, zNear, zFar, result, engine.isNDCHalfZRange);
-            } else {
-                Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, zNear, zFar, result, engine.isNDCHalfZRange);
-            }
-            return result;
-        }
-        // Same aspect convention as AbstractEngine.getAspectRatio.
-        const viewport = camera.viewport;
-        const aspectRatio = (outWidth * viewport.width) / (outHeight * viewport.height);
-        const isVerticalFovFixed = camera.fovMode === Constants.FOVMODE_VERTICAL_FIXED;
-        if (rightHanded) {
-            Matrix.PerspectiveFovRHToRef(camera.fov, aspectRatio, zNear, zFar, result, isVerticalFovFixed, engine.isNDCHalfZRange, camera.projectionPlaneTilt, reverseDepth);
-        } else {
-            Matrix.PerspectiveFovLHToRef(camera.fov, aspectRatio, zNear, zFar, result, isVerticalFovFixed, engine.isNDCHalfZRange, camera.projectionPlaneTilt, reverseDepth);
-        }
-        return result;
-    }
-
-    /** Runs the compute before the render pass and binds its output to the blit materials. */
+    /** Runs compute immediately before a point compositor and binds the result to both blit materials. */
     private _runCompute(): void {
         this._resultReady = false;
         if ((this._colorMode || this._depthMode) && this._mesh._pointStreamingUnsupported && !this._streamingWarned) {
@@ -813,16 +769,26 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const jitterX = j % upsampleN;
         const jitterY = Math.floor(j / upsampleN);
 
-        const view = camera.getViewMatrix();
-        const projection = this._getProjectionMatrix(camera);
-        view.multiplyToRef(projection, this._vpMatrix);
+        const view = this._scene.getViewMatrix();
+        const projection = this._scene.getProjectionMatrix();
+        const determinant = projection.determinant();
+        if (!Number.isFinite(determinant) || determinant === 0) {
+            if (!this._invalidProjectionWarned) {
+                this._invalidProjectionWarned = true;
+                Logger.Error("GaussianSplattingMesh: point splatting requires a finite, invertible projection matrix.");
+            }
+            return;
+        }
+        this._invalidProjectionWarned = false;
+        projection.invertToRef(this._inverseProjection);
+        this._vpMatrix.copyFrom(this._scene.getTransformMatrix());
         const focalX = (fullW * projection.m[0]) / (2 * upsampleN);
         const focalY = (fullH * projection.m[5]) / (2 * upsampleN);
         const camPos = camera.globalPosition;
         this._renderer.rightHandedSystem = this._scene.useRightHandedSystem;
         this._renderer.isOrthographic = Math.abs(projection.m[15] - 1) < 0.001;
         const gsMaterial = this._mesh.material as Nullable<GaussianSplattingMaterial>;
-        const kernelSize = gsMaterial?.kernelSize || GaussianSplattingMaterial.KernelSize;
+        const kernelSize = gsMaterial?.kernelSize ?? GaussianSplattingMaterial.KernelSize;
         const minPixelSize = gsMaterial ? gsMaterial.minPixelSize : GaussianSplattingMaterial.MinPixelSize;
         const compensation = gsMaterial?.compensation ?? GaussianSplattingMaterial.Compensation;
         const renderer = this._renderer;
@@ -835,14 +801,15 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
         this._uploadParts();
         const farZ = camera.ignoreCameraMaxZ ? 0 : camera.maxZ;
-        const [vzMin, vzMax] = this._viewZSpan(view.m, camera.minZ, farZ);
+        const [vzMin, vzMax] = this._viewZSpan(view.m, camera.minZ, farZ, !_HasGaussianPointSplattingProjectedDepth(projection));
         this._renderer.setCamera(view, this._vpMatrix, camera.minZ, farZ, focalX, focalY, camPos.x, camPos.y, camPos.z, vzMin, vzMax);
-        // Projection z-row, so resolve reconstructs ndc.z under any depth convention.
-        this._renderer.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
+        this._renderer.setProjectionMatrix(projection, this._inverseProjection, engine.useReverseDepthBuffer);
         if (!this._renderer.renderToBuffer(width, height, fullW, fullH, upsampleN, jitterX, jitterY)) {
             return;
         }
         this._resultReady = true;
+        this._computedWidth = fullW;
+        this._computedHeight = fullH;
         // Snapshot now: a later reset would pair a new generation with the old cycle length.
         this._progressFrameCount = this._renderer.renderedFrameCount;
         this._progressGeneration = this._renderer.accumulationVersion;
@@ -862,7 +829,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
                 this._blit.setAccumBuffer(accum);
                 this._blit.setAccumDepthBuffer(accumDepth);
                 this._blit.setResolution(this._renderer.outputWidth, this._renderer.outputHeight);
-                this._blit.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
+                this._blit.setInverseProjection(this._inverseProjection);
                 // Match the classic material's log depth so the composite depth-tests like the classic path.
                 this._blit.setLogarithmicDepthConstant(gsMaterial?.useLogarithmicDepth ? 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2) : 0);
             }
@@ -870,7 +837,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
                 this._depthBlit.setAccumBuffer(accum);
                 this._depthBlit.setAccumDepthBuffer(accumDepth);
                 this._depthBlit.setResolution(this._renderer.outputWidth, this._renderer.outputHeight);
-                this._depthBlit.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
+                this._depthBlit.setInverseProjection(this._inverseProjection);
                 // Same normalization as GaussianSplattingMaterial._BindEffectUniforms.
                 let minZ: number, maxZ: number;
                 if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
@@ -888,16 +855,21 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /**
      * True when the frame renders a view the point path cannot reproduce: several active cameras, rig
-     * cameras (stereo, XR, multiview), or scene clip planes. The classic path renders those instead.
+     * cameras (stereo, XR, multiview), or scene/material clip planes.
+     * The classic path renders those instead.
      * @returns whether point splatting must fall back to the classic path this frame
      */
     private _hasUnsupportedView(): boolean {
         const scene = this._scene;
         const camera = scene.activeCamera;
+        if (!camera) {
+            return true;
+        }
+        const material = this._mesh.material;
         return (
-            !camera ||
             (scene.activeCameras?.length ?? 0) > 1 ||
             camera._rigCameras.length > 0 ||
+            !!(material?.clipPlane || material?.clipPlane2 || material?.clipPlane3 || material?.clipPlane4 || material?.clipPlane5 || material?.clipPlane6) ||
             !!(scene.clipPlane || scene.clipPlane2 || scene.clipPlane3 || scene.clipPlane4 || scene.clipPlane5 || scene.clipPlane6)
         );
     }
@@ -930,7 +902,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         return renderer.getDepthMap().renderPassIds.indexOf(this._scene.getEngine().currentRenderPassId) !== -1;
     }
 
-    /** @inheritdoc */
+    /** {@inheritDoc IGaussianPointSplattingController.dispose} */
     public dispose(): void {
         if (this._computeObserver) {
             this._scene.onBeforeRenderObservable.remove(this._computeObserver);
@@ -950,7 +922,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._colorMode = false;
         this._depthMode = false;
     }
-    /** @inheritdoc */
+    /** {@inheritDoc IGaussianPointSplattingController.renderScale} */
     public get renderScale(): number | "auto" {
         return this._renderScale;
     }
@@ -965,30 +937,47 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer?.resetAccumulation();
     }
 
-    /** @inheritdoc */
+    /** {@inheritDoc IGaussianPointSplattingController.invalidateDecodedSplats} */
     public invalidateDecodedSplats(): void {
         this._decodedSplatsData = null;
         this._renderer?.resetAccumulation();
     }
 
-    /** @inheritdoc */
+    /**
+     * Composites supported camera color or depth passes from the point-splatting result.
+     * The pass waits without drawing classic splats while compute or compositor shaders are compiling.
+     * @param enableAlphaMode whether the color compositor should enable alpha blending
+     * @returns whether the point path handled the current pass, including waiting for shader readiness
+     */
     public drawColorPass(enableAlphaMode: boolean): boolean {
-        // Only the main color pass is replaced; other passes (picking, prepass, shadows) rasterize classically.
-        if (
-            this._colorMode &&
-            this._resultReady &&
-            this._blitMesh &&
-            this._blitMesh.subMeshes.length > 0 &&
-            this._blit?.isReady(this._blitMesh, false, this._blitMesh.subMeshes[0]) &&
-            this._isMainColorPass()
-        ) {
+        const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
+        const colorPass = this._colorMode && !solidColor?.isEnabled && this._isMainColorPass();
+        const depthPass = this._depthMode && this._isDepthPass();
+        if ((!colorPass && !depthPass) || this._hasUnsupportedView()) {
+            return false;
+        }
+        if (!this._computeActive) {
+            this._runCompute();
+            return false;
+        }
+        if (this._renderer && !this._isWorkloadSupported()) {
+            return false;
+        }
+        const { width, height } = this._getOutputSize();
+        // Compute only after the pass has established its actual matrices. Matching color/depth passes share it.
+        if (!this._resultReady || !this._vpMatrix.equalsWithEpsilon(this._scene.getTransformMatrix(), 1e-5) || this._computedWidth !== width || this._computedHeight !== height) {
+            this._runCompute();
+        }
+        if (!this._resultReady) {
+            return true;
+        }
+        if (colorPass && this._blitMesh && this._blitMesh.subMeshes.length > 0 && this._blit?.isReady(this._blitMesh, false, this._blitMesh.subMeshes[0])) {
             const blitMesh = this._blitMesh;
             // Render in replacement mode so the disabled compositor still draws itself.
             blitMesh.render(blitMesh.subMeshes[0], enableAlphaMode, blitMesh);
             return true;
         }
-        // Falls back to classic depth until the depth blit effect is ready.
-        if (this._depthMode && this._resultReady && this._depthBlitMesh && this._isDepthPass()) {
+        if (depthPass && this._depthBlitMesh) {
             const depthBlitMesh = this._depthBlitMesh;
             if (depthBlitMesh.subMeshes.length > 0 && this._depthBlit?.isReady(depthBlitMesh, false, depthBlitMesh.subMeshes[0])) {
                 // The depth renderer may have left alpha blending on.
@@ -997,7 +986,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
                 return true;
             }
         }
-        return false;
+        return true;
     }
 }
 

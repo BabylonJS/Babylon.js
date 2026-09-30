@@ -18,6 +18,17 @@ const DepthClearSentinel = 0xffffffff;
 const PartitionBuckets = 65536;
 
 /**
+ * Whether projected depth depends on view-space x/y.
+ * @param projection the camera projection
+ * @returns whether depth must be evaluated separately at each sampled pixel
+ * @internal
+ */
+export function _HasGaussianPointSplattingProjectedDepth(projection: Matrix): boolean {
+    const m = projection.m;
+    return m[2] !== 0 || m[6] !== 0 || m[3] !== 0 || m[7] !== 0;
+}
+
+/**
  * Bytes per Gaussian of the u32-packed 8-bit SH coefficients for an SH degree.
  * @param shDegree spherical-harmonics degree (0-4)
  * @returns packed SH bytes per Gaussian (0 at degree 0)
@@ -39,7 +50,7 @@ export function _GetPackedShBytesPerSplat(shDegree: number): number {
  * Per-frame pipeline (dispatched before the render pass):
  *   preprocess (1 thread/Gaussian: transform, cull, cache screen state, emit a point weight)
  *   scan (Blelloch prefix sum of the weights into a CDF + GPU-written indirect dispatch args)
- *   partition (bucketed point->Gaussian table that narrows the splat search)
+ *   partition (bucketed point-to-Gaussian table that narrows the splat search)
  *   splat (indirect, 1 thread/point: find its Gaussian in the CDF, atomicMin its sample)
  *   resolve (accumulate the packed image buffer into the full-float buffer, reset it)
  *   hi-Z build (max-reduce this frame's depth into next frame's occlusion pyramid)
@@ -90,10 +101,10 @@ export class GaussianPointSplattingRenderer {
     /** Whether the source material enables antialiasing opacity compensation (classic COMPENSATION). */
     public compensation = false;
     /**
-     * Hi-Z occlusion culling: skip Gaussians fully behind the previous frame's nearest samples. Off by default
-     * because those stochastic samples may be semi-transparent, so culling biases the converged image.
+     * Hi-Z occlusion culling: skip Gaussians fully behind the previous frame's nearest samples. On by default;
+     * stochastic samples may be semi-transparent, so culling can bias the converged image.
      */
-    public occlusionCulling = false;
+    public occlusionCulling = true;
 
     private _pointCount: StorageBuffer;
     private _indirectArgs: StorageBuffer;
@@ -121,6 +132,11 @@ export class GaussianPointSplattingRenderer {
 
     private _view: Nullable<Matrix> = null;
     private _viewProjection: Nullable<Matrix> = null;
+    private _projection: Nullable<Matrix> = null;
+    private _inverseProjection: Nullable<Matrix> = null;
+    private _projectedDepth = false;
+    private _reverseDepth = false;
+    private readonly _projectedDepthSpan = new Float32Array([0, 1]);
     private _near = 0.1;
     private _far = 1000;
     private _focalX = 1000;
@@ -246,6 +262,9 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.addUniform("hiZInfo", 4);
         this._uniforms.addUniform("misc", 4); // x = N, y = minPixelSize, z = color tie-break mask
         this._uniforms.addUniform("pixelMap", 4); // NDC -> render-pixel scale (xy) and jittered offset (zw)
+        this._uniforms.addUniform("projection", 16);
+        this._uniforms.addUniform("inverseProjection", 16);
+        this._uniforms.addUniform("projectedDepth", 4);
 
         this._resolveParams = new UniformBuffer(engine);
         this._resolveParams.addUniform("resolution", 2);
@@ -255,6 +274,7 @@ export class GaussianPointSplattingRenderer {
         this._resolveParams.addUniform("upsample", 4); // N, jitterX, jitterY, generation
         this._resolveParams.addUniform("misc2", 4); // x = maxAccum, y = moving flag
         this._resolveParams.addUniform("projZ", 4);
+        this._resolveParams.addUniform("inverseProjection", 16);
 
         this._pointCount = new StorageBuffer(engine as WebGPUEngine, 4 * Uint32Array.BYTES_PER_ELEMENT);
         // WRITE (CopyDst) makes the initial zero-fill valid.
@@ -484,6 +504,58 @@ export class GaussianPointSplattingRenderer {
         this._projZ[1] = m11;
         this._projZ[2] = m14;
         this._projZ[3] = m15;
+        this._projection = null;
+        this._inverseProjection = null;
+        this._projectedDepth = false;
+    }
+
+    /**
+     * Sets the full projection for covariance, per-pixel depth and oblique clipping.
+     * @param projection camera projection matrix
+     * @param inverseProjection inverse of the projection matrix
+     * @param reverseDepth whether larger NDC depth values are nearer
+     */
+    public setProjectionMatrix(projection: Matrix, inverseProjection: Matrix, reverseDepth = false): void {
+        const m = projection.m;
+        this.setProjectionZ(m[10], m[11], m[14], m[15]);
+        this._projection = projection;
+        this._inverseProjection = inverseProjection;
+        this._projectedDepth = _HasGaussianPointSplattingProjectedDepth(projection);
+        this._reverseDepth = reverseDepth;
+    }
+
+    /** Bounds projected depth over the model's view-z interval and padded jitter grid, reusing the result.
+     * @param maxX maximum NDC x covered by the grid
+     * @param maxY maximum NDC y covered by the grid
+     * @returns the nearest-first projected depth range for quantization
+     */
+    private _getProjectedDepthSpan(maxX = 1, maxY = 1): Float32Array {
+        const m = this._inverseProjection!.m;
+        const sign = this.rightHandedSystem ? -1 : 1;
+        const z0 = sign * this._viewZMin;
+        const z1 = sign * this._viewZMax;
+        const d0 = m[10] - z0 * m[11];
+        const d1 = m[10] - z1 * m[11];
+        // A horizon within the interval can cover the entire clipped depth range.
+        if (d0 * d1 <= 0) {
+            this._projectedDepthSpan[0] = 0;
+            this._projectedDepthSpan[1] = 1;
+            return this._projectedDepthSpan;
+        }
+        let min = 1;
+        let max = 0;
+        for (let corner = 0; corner < 8; corner++) {
+            const x = corner & 1 ? maxX : -1;
+            const y = corner & 2 ? maxY : -1;
+            const z = corner & 4 ? z1 : z0;
+            const depth = (z * (m[3] * x + m[7] * y + m[15]) - (m[2] * x + m[6] * y + m[14])) / (m[10] - z * m[11]);
+            const ordered = Math.max(0, Math.min(1, this._reverseDepth ? 1 - depth : depth));
+            min = Math.min(min, ordered);
+            max = Math.max(max, ordered);
+        }
+        this._projectedDepthSpan[0] = min;
+        this._projectedDepthSpan[1] = Math.max(min + 1e-6, max);
+        return this._projectedDepthSpan;
     }
 
     /**
@@ -641,18 +713,36 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.updateFloat4("camPosDeg", this._camX, this._camY, this._camZ, this._shDegree);
         this._uniforms.updateFloat4("depthNorm", this._viewZMin, this._viewZMax, this.debugActive, this.compensation ? 1 : 0);
         this._uniforms.updateFloat4("hiZInfo", width, height, this._hiZLevels.length, this.occlusionCulling && !moving ? 1 : 0);
-        this._uniforms.updateFloat4("misc", n, this.minPixelSize, colorMask, 0);
+        const projectionMode = (this._projection ? 1 : 0) | (this._projectedDepth ? 2 : 0) | (this._reverseDepth ? 4 : 0);
+        const depthSpan = this._projectedDepth
+            ? this._getProjectedDepthSpan(Math.max(1, (2 * width * n) / this._outWidth - 1), Math.max(1, (2 * height * n) / this._outHeight - 1))
+            : null;
+        this._uniforms.updateFloat4("misc", n, this.minPixelSize, colorMask, projectionMode);
         this._uniforms.updateFloat4("pixelMap", this._outWidth / n, this._outHeight / n, pixelOffsetX, pixelOffsetY);
+        if (this._projection && this._inverseProjection) {
+            this._uniforms.updateMatrix("projection", this._projection);
+            this._uniforms.updateMatrix("inverseProjection", this._inverseProjection);
+        }
+        this._uniforms.updateFloat4("projectedDepth", depthSpan?.[0] ?? 0, depthSpan?.[1] ?? 1, 0, 0);
         this._uniforms.update();
 
         this._resolveParams.updateFloat2("resolution", width, height);
         this._resolveParams.updateFloat2("outResolution", this._outWidth, this._outHeight);
-        this._resolveParams.updateFloat2("depthNorm", this._viewZMin, this._viewZMax);
+        this._resolveParams.updateFloat2("depthNorm", depthSpan?.[0] ?? this._viewZMin, depthSpan?.[1] ?? this._viewZMax);
         this._resolveParams.updateFloat2("colorMask", colorMask, 0);
         this._resolveParams.updateFloat4("upsample", n, this._jitterX, this._jitterY, this._accumGeneration);
-        this._resolveParams.updateFloat4("misc2", Math.max(1, Math.min(65535, Math.floor(this.maxAccumFrames))), moving ? 1 : 0, 0, 0);
+        this._resolveParams.updateFloat4(
+            "misc2",
+            Math.max(1, Math.min(65535, Math.floor(this.maxAccumFrames))),
+            moving ? 1 : 0,
+            this._reverseDepth ? 1 : 0,
+            this._projectedDepth ? 1 : 0
+        );
         const zSign = this.rightHandedSystem ? -1 : 1;
         this._resolveParams.updateFloat4("projZ", this._projZ[0] * zSign, this._projZ[1] * zSign, this._projZ[2], this._projZ[3]);
+        if (this._inverseProjection) {
+            this._resolveParams.updateMatrix("inverseProjection", this._inverseProjection);
+        }
         this._resolveParams.update();
 
         const groupsG = Math.ceil(this._gaussianCount / WorkgroupSize);

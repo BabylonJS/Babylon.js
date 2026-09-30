@@ -8,8 +8,9 @@ struct GpsResolveParams {
     depthNorm : vec2f,     // the model's view-space depth min/max this frame (matches the preprocess key)
     colorMask : vec2f,     // x = the frame's color tie-break mask (see gpsSplat); y unused
     upsample : vec4f,      // x=N (upscale factor), y=jitterX, z=jitterY, w=generation
-    misc2 : vec4f,         // x=maxAccum, y=moving flag
+    misc2 : vec4f,         // x=maxAccum, y=moving, z=reverse depth, w=projected depth keys
     projZ : vec4f,         // projection z-row (m10 and m11 sign-adjusted for RH) to map positive view-z back to ndc.z
+    inverseProjection : mat4x4f,
 };
 
 @group(0) @binding(0) var<storage, read_write> accumBuffer : array<vec4f>;
@@ -34,6 +35,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     var hit = 0.0;
     var depth = 1.0;
     var occlVz = GPS_HIZ_FAR;
+    var viewZ = 0.0;
     if (raw != GPS_DEPTH_CLEAR) {
         hitColor = gpsKeyColor(raw, u32(params.colorMask.x));
         hit = 1.0;
@@ -43,6 +45,13 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         // keep a Gaussian from self-occluding against its previous-frame sample.
         occlVz = vz + (params.depthNorm.y - params.depthNorm.x) / f32(GPS_DEPTH_MAX_CODE);
         depth = (params.projZ.x * vz + params.projZ.z) / (params.projZ.y * vz + params.projZ.w);
+        if (params.misc2.w > 0.5) {
+            depth = select(vz, 1.0 - vz, params.misc2.z > 0.5);
+            let outputPixel = vec2f(gid.xy) * params.upsample.x + params.upsample.yz + 0.5;
+            let ndcXY = outputPixel / params.outResolution * 2.0 - 1.0;
+            let unprojected = params.inverseProjection * vec4f(ndcXY, depth, 1.0);
+            viewZ = unprojected.z / unprojected.w;
+        }
     }
     hiZ[idx] = occlVz;
     atomicStore(&imageBuffer[idx], GPS_DEPTH_CLEAR);
@@ -60,9 +69,17 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
                 let oy2 = gid.y * n + dy;
                 if (ox2 < outRes.x && oy2 < outRes.y) {
                     let oi = oy2 * outRes.x + ox2;
-                    accumBuffer[oi] = vec4f(premult, hit);
+                    var outputDepth = depth;
+                    var outputHit = hit;
+                    if (params.misc2.w > 0.5 && hit > 0.5) {
+                        let ndcXY = (vec2f(f32(ox2), f32(oy2)) + 0.5) / params.outResolution * 2.0 - 1.0;
+                        let projected = gpsProjectedDepth(params.inverseProjection, ndcXY, viewZ);
+                        outputDepth = projected.x;
+                        outputHit = select(0.0, hit, projected.x >= 0.0 && projected.x <= 1.0 && projected.y > 0.0);
+                    }
+                    accumBuffer[oi] = vec4f(hitColor * outputHit, outputHit);
                     accumCount[oi] = (gen << 16u) | 1u;
-                    accumDepth[oi] = select(1.0, depth, hit > 0.5);
+                    accumDepth[oi] = select(1.0, outputDepth, outputHit > 0.5);
                 }
             }
         }

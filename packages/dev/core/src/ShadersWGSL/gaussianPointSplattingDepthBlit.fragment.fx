@@ -5,6 +5,8 @@
 uniform resolution: vec2f;
 uniform depthValues: vec2f;
 uniform projZ: vec4f;
+uniform inverseProjection: mat4x4f;
+uniform useInverseProjection: f32;
 uniform reverseDepth: f32;
 
 varying vScreenUv: vec2f;
@@ -30,9 +32,16 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     }
 
     let ndc = accumDepth[idx];
-    let denom = uniforms.projZ.x - ndc * uniforms.projZ.y;
-    let vz = (ndc * uniforms.projZ.w - uniforms.projZ.z) / denom;
-    let clipZ = uniforms.projZ.x * vz + uniforms.projZ.z;
+    var clipZ : f32;
+    if (uniforms.useInverseProjection > 0.5) {
+        let ndcXY = (vec2f(pixel) + 0.5) / res * 2.0 - 1.0;
+        let unprojected = uniforms.inverseProjection * vec4f(ndcXY, ndc, 1.0);
+        clipZ = ndc / unprojected.w;
+    } else {
+        let denom = uniforms.projZ.x - ndc * uniforms.projZ.y;
+        let vz = (ndc * uniforms.projZ.w - uniforms.projZ.z) / denom;
+        clipZ = uniforms.projZ.x * vz + uniforms.projZ.z;
+    }
     let signedClipZ = select(clipZ, -clipZ, uniforms.reverseDepth > 0.5);
     let metric = (signedClipZ + uniforms.depthValues.x) / uniforms.depthValues.y;
 

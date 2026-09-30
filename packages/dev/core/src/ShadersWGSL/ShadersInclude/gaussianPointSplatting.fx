@@ -21,9 +21,33 @@ struct GpsUniforms {
     camPosDeg : vec4f,  // xyz = camera world position, w = SH degree
     depthNorm : vec4f,  // x,y = the model's view-z min/max this frame; z = debugActive; w = compensation
     hiZInfo : vec4f,    // x=baseWidth, y=baseHeight, z=numLevels, w=occlusion enabled (Hi-Z pyramid)
-    misc : vec4f,       // x = upscale factor N, y = minPixelSize (output px), z = color tie-break mask, w unused
+    misc : vec4f,       // x=N, y=minPixelSize, z=color mask, w=projection flags (full=1, projected depth=2, reverse=4)
     pixelMap : vec4f,   // render px = (ndc * 0.5 + 0.5) * xy + zw (padded N-cell grid with this frame's jitter)
+    projection : mat4x4f,
+    inverseProjection : mat4x4f,
+    projectedDepth : vec4f, // xy = nearest-first projected depth range for 16-bit keys
 };
+
+// Intersect the pixel's projective ray with a constant view-z plane. Returns NDC depth and clip w.
+fn gpsProjectedDepth(inverseProjection : mat4x4f, ndcXY : vec2f, viewZ : f32) -> vec2f {
+    let origin = inverseProjection * vec4f(ndcXY, 0.0, 1.0);
+    let direction = inverseProjection[2];
+    let depth = (viewZ * origin.w - origin.z) / (direction.z - viewZ * direction.w);
+    return vec2f(depth, 1.0 / (origin.w + depth * direction.w));
+}
+
+// Differential of the full homogeneous projection, including shear and x/y-dependent clip w.
+fn gpsCov2D(covA : vec3f, covB : vec3f, modelView : mat4x4f, projection : mat4x4f, clip : vec4f, pixelScale : vec2f) -> mat3x3f {
+    let rowW = vec3f(projection[0].w, projection[1].w, projection[2].w);
+    let rowX = vec3f(projection[0].x, projection[1].x, projection[2].x);
+    let rowY = vec3f(projection[0].y, projection[1].y, projection[2].y);
+    let jx = (rowX - clip.x / clip.w * rowW) * (0.5 * pixelScale.x / clip.w);
+    let jy = (rowY - clip.y / clip.w * rowW) * (0.5 * pixelScale.y / clip.w);
+    let J = mat3x3f(jx, jy, vec3f(0.0));
+    let T = transpose(mat3x3f(modelView[0].xyz, modelView[1].xyz, modelView[2].xyz)) * J;
+    let covariance = mat3x3f(covA.x, covA.y, covA.z, covA.y, covB.x, covB.y, covA.z, covB.y, covB.z);
+    return transpose(T) * covariance * T;
+}
 
 // Live per-part state; non-compound meshes use one part.
 struct GpsPart {

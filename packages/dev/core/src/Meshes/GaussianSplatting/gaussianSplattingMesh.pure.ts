@@ -55,9 +55,9 @@ export interface IGaussianPointSplattingController {
     /** Drops the decoded compute buffers so the next frame re-decodes them, and restarts accumulation. */
     invalidateDecodedSplats(): void;
     /**
-     * Draws the resolved compute result for the current render pass.
+     * Handles the point result for the current pass, including waiting for shader readiness without classic rendering.
      * @param enableAlphaMode whether the caller wants alpha mode applied
-     * @returns true when the compositor drew this pass and the classic geometry must be skipped
+     * @returns true when the point path handled this pass and the classic geometry must be skipped
      */
     drawColorPass(enableAlphaMode: boolean): boolean;
     /** Releases every GPU resource owned by the controller. */
@@ -633,7 +633,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     /**
      * Whether the main color pass is rendered with the WebGPU compute point-splatting path instead of the
      * classic sorted quads. Off by default; other passes (shadows, picking, prepass) are unaffected. Falls
-     * back to the classic path for multiple or rig cameras, clip planes and streamed parts. WebGPU only.
+     * back to the classic path for multiple or rig cameras, clip planes, and streamed parts.
+     * Tilted and custom projections are supported by the point path. Compute runs immediately
+     * before compositing with the pass's actual view; matching color and depth passes share one result.
+     * While point shaders compile, the pass waits without drawing classic splats. The color pass uses the classic path
+     * while the GaussianSplattingSolidColorMaterialPlugin override is enabled. WebGPU only.
      *
      * Limitation: each pixel's accumulated color is depth-tested as a whole against its latest sample's depth. Where
      * other geometry intersects the splats, occluded splats can bleed through or visible ones drop out, and the
@@ -676,7 +680,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Counters of the most recent point-splatting compute frame, or null while the classic path is used.
+     * Counters of the most recent point-splatting compute frame, or null when compute has no available result.
+     * Individual render passes may still use the classic path for unsupported configurations.
      *
      * Snapshot `renderedFrameCount` whenever `accumulationVersion` changes: after the first frame of a
      * generation, each further `pixelCycleLength` frames add one sample to every output pixel.
@@ -1060,7 +1065,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._refreshPartRangeUnion();
     }
 
-    /** @inheritdoc */
+    /**
+     * Sets the active splat ranges and invalidates decoded point-splatting data when they change.
+     * @param ranges global source-splat ranges to render, or null to render all splats
+     */
     public override setSplatIndexRanges(ranges: Nullable<readonly IGaussianSplattingSplatRange[]>): void {
         const previous = this._activeSplatRanges;
         super.setSplatIndexRanges(ranges);

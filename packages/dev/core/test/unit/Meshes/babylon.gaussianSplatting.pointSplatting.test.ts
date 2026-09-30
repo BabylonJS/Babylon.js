@@ -2,22 +2,26 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { ShaderStore } from "core/Engines/shaderStore";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
+import { GaussianSplattingSolidColorMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.pure";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingMeshBase } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { GaussianPointSplattingRenderer } from "core/Meshes/GaussianSplatting/gaussianPointSplattingRenderer";
 import { GaussianPointSplattingController } from "core/Meshes/GaussianSplatting/gaussianPointSplattingController";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import "core/Rendering/depthRendererSceneComponent";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
 import { Plane } from "core/Maths/math.plane";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { FromHalfFloat } from "core/Misc/halfFloat";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 
 /**
  * Installs a point-splatting controller on a mesh without enabling a mode (no WebGPU engine needed).
@@ -401,6 +405,56 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it("reuses decoded splats when the second point mode requests the shared compute", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        mesh.updateData(new ArrayBuffer(32));
+        const controller = CreateController(mesh);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
+        const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+
+        controller["_ensureCompute"]();
+        controller["_ensureCompute"]();
+        expect(upload).toHaveBeenCalledTimes(1);
+
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not decode reserved CPU padding when streamed parts require the classic fallback", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        mesh.updateData(new ArrayBuffer(32));
+        mesh["_hasStreamingPart"] = true;
+        const controller = CreateController(mesh);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const supports = vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
+        const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+
+        controller["_ensureCompute"]();
+        expect(supports).not.toHaveBeenCalled();
+        expect(upload).not.toHaveBeenCalled();
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        expect(controller["_computeActive"]).toBe(false);
+
+        mesh["_hasStreamingPart"] = false;
+        controller["_ensureCompute"]();
+        expect(upload).toHaveBeenCalledTimes(1);
+
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("does not force depth writes in the alpha-blended point color pass", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
@@ -691,65 +745,220 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(controller["_hasUnsupportedView"]()).toBe(true);
 
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        expect(controller["_hasUnsupportedView"]()).toBe(false);
+        camera.projectionPlaneTilt = 0.1;
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        expect(controller["_hasUnsupportedView"]()).toBe(false);
+        camera.projectionPlaneTilt = 0;
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
         expect(controller["_hasUnsupportedView"]()).toBe(false);
         scene.clipPlane = new Plane(0, 1, 0, 0);
         expect(controller["_hasUnsupportedView"]()).toBe(true);
         scene.clipPlane = null;
+        mesh.material!.clipPlane6 = new Plane(0, 1, 0, 0);
+        expect(controller["_hasUnsupportedView"]()).toBe(true);
+        mesh.material!.clipPlane6 = null;
+        expect(controller["_hasUnsupportedView"]()).toBe(false);
         camera._rigCameras.push(new FreeCamera("eye", Vector3.Zero(), scene));
         expect(controller["_hasUnsupportedView"]()).toBe(true);
 
         scene.dispose();
         engine.dispose();
     });
-    it("renders at the camera output render target resolution and aspect", () => {
+
+    it("computes at draw time, shares matching passes, and recomputes changed views without classic rendering", async () => {
         const engine = new NullEngine({ renderWidth: 400, renderHeight: 200 });
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
-        scene.activeCamera = camera;
         const mesh = new GaussianSplattingMesh("splat", null, scene);
         const controller = CreateController(mesh);
-        camera.outputRenderTarget = new RenderTargetTexture("target", 200, scene);
+        const depthRenderer = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_renderScale"] = 1;
+        controller["_enableColorBlit"]();
+        controller["_enableDepthBlit"]();
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
+        controller["_renderer"] = renderer;
+        const compute = vi.fn(() => {
+            controller["_vpMatrix"].copyFrom(scene.getTransformMatrix());
+            const { width, height } = controller["_getOutputSize"]();
+            controller["_computedWidth"] = width;
+            controller["_computedHeight"] = height;
+            controller["_resultReady"] = true;
+        });
+        controller["_runCompute"] = compute;
+        controller["_ensureCompute"]();
+        const colorMesh = controller["_blitMesh"]!;
+        const depthMesh = controller["_depthBlitMesh"]!;
+        vi.spyOn(controller["_blit"]!, "isReady").mockReturnValue(true);
+        vi.spyOn(controller["_depthBlit"]!, "isReady").mockReturnValue(true);
+        const colorDraw = vi.spyOn(colorMesh, "render").mockReturnValue(colorMesh);
+        const depthDraw = vi.spyOn(depthMesh, "render").mockReturnValue(depthMesh);
+        const originalClassic = GaussianSplattingMeshBase.prototype["_drawColorPass"];
+        const classic = vi.fn<typeof originalClassic>().mockReturnValue(mesh);
+        GaussianSplattingMeshBase.prototype["_drawColorPass"] = classic;
+        onTestFinished(() => {
+            GaussianSplattingMeshBase.prototype["_drawColorPass"] = originalClassic;
+        });
 
-        expect(controller["_getOutputSize"]()).toEqual({ width: 200, height: 200 });
-        // The compute runs before the target is bound, so the camera's cached projection still uses the
-        // 2:1 backbuffer aspect while the square target needs a 1:1 one.
-        const backbufferProjection = camera.getProjectionMatrix().clone();
-        const projection = controller["_getProjectionMatrix"](camera);
-        expect(projection.m[0]).toBeCloseTo(projection.m[5], 5);
-        expect(projection.m[0]).toBeCloseTo(backbufferProjection.m[0] * 2, 5);
-        expect(projection.m[5]).toBeCloseTo(backbufferProjection.m[5], 5);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(compute).not.toHaveBeenCalled();
+        // A late callback updates the camera before the first compositor draws.
+        camera.position.x = 1;
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
+        mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
+        expect(compute).toHaveBeenCalledTimes(1);
+        expect(controller["_vpMatrix"].equals(scene.getTransformMatrix())).toBe(true);
+        expect(depthDraw).toHaveBeenCalledTimes(1);
 
-        // Without a resolution change the camera's own projection is used as-is.
-        camera.outputRenderTarget.dispose();
-        camera.outputRenderTarget = null;
-        expect(controller["_getOutputSize"]()).toEqual({ width: 400, height: 200 });
-        expect(controller["_getProjectionMatrix"](camera)).toBe(camera.getProjectionMatrix());
+        engine.currentRenderPassId = camera.renderPassId;
+        mesh["_drawColorPass"](mesh, colorMesh.subMeshes[0], true);
+        expect(compute).toHaveBeenCalledTimes(1);
+        expect(colorDraw).toHaveBeenCalledTimes(1);
 
+        // A genuinely different target projection needs another point dispatch, not a classic pass.
+        scene.setTransformMatrix(camera.getViewMatrix(), Matrix.PerspectiveFovLH(camera.fov, 1, camera.minZ, camera.maxZ));
+        engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
+        mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
+        expect(compute).toHaveBeenCalledTimes(2);
+        expect(controller["_vpMatrix"].equals(scene.getTransformMatrix())).toBe(true);
+        expect(depthDraw).toHaveBeenCalledTimes(2);
+
+        camera.position.x = 2;
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
+        expect(compute).toHaveBeenCalledTimes(3);
+        expect(depthDraw).toHaveBeenCalledTimes(3);
+
+        camera.outputRenderTarget = new RenderTargetTexture("resized", 200, scene);
+        mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
+        expect(compute).toHaveBeenCalledTimes(4);
+        expect(controller["_computedWidth"]).toBe(200);
+        expect(controller["_computedHeight"]).toBe(200);
+
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(compute).toHaveBeenCalledTimes(4);
+        mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
+        expect(compute).toHaveBeenCalledTimes(5);
+        expect(classic).not.toHaveBeenCalled();
+
+        await vi.waitFor(() => expect(depthRenderer["_shadersLoaded"]).toBe(true));
+        controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
     });
 
-    it("keeps the scene projection for post-process targets and frozen projections", () => {
+    it("waits for compute and compositor readiness without inserting classic passes", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_enableColorBlit"]();
+        controller["_enableDepthBlit"]();
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        const compute = vi.fn(() => {});
+        controller["_runCompute"] = compute;
+        const colorMesh = controller["_blitMesh"]!;
+        const depthMesh = controller["_depthBlitMesh"]!;
+        const colorReady = vi.spyOn(controller["_blit"]!, "isReady").mockReturnValue(false);
+        const depthReady = vi.spyOn(controller["_depthBlit"]!, "isReady").mockReturnValue(false);
+        const colorDraw = vi.spyOn(colorMesh, "render").mockReturnValue(colorMesh);
+        const depthDraw = vi.spyOn(depthMesh, "render").mockReturnValue(depthMesh);
+        const originalClassic = GaussianSplattingMeshBase.prototype["_drawColorPass"];
+        const classic = vi.fn<typeof originalClassic>().mockReturnValue(mesh);
+        GaussianSplattingMeshBase.prototype["_drawColorPass"] = classic;
+        onTestFinished(() => {
+            GaussianSplattingMeshBase.prototype["_drawColorPass"] = originalClassic;
+        });
+
+        engine.currentRenderPassId = camera.renderPassId;
+        mesh["_drawColorPass"](mesh, colorMesh.subMeshes[0], true);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
+        expect(compute).toHaveBeenCalledTimes(2);
+        expect(colorDraw).not.toHaveBeenCalled();
+        expect(depthDraw).not.toHaveBeenCalled();
+
+        controller["_vpMatrix"].copyFrom(scene.getTransformMatrix());
+        controller["_computedWidth"] = engine.getRenderWidth();
+        controller["_computedHeight"] = engine.getRenderHeight();
+        controller["_resultReady"] = true;
+        engine.currentRenderPassId = camera.renderPassId;
+        mesh["_drawColorPass"](mesh, colorMesh.subMeshes[0], true);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
+        expect(compute).toHaveBeenCalledTimes(2);
+        expect(colorReady).toHaveBeenCalled();
+        expect(depthReady).toHaveBeenCalled();
+        expect(colorDraw).not.toHaveBeenCalled();
+        expect(depthDraw).not.toHaveBeenCalled();
+        expect(classic).not.toHaveBeenCalled();
+
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("preserves an enabled solid-color override without disabling point depth", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const plugin = new GaussianSplattingSolidColorMaterialPlugin(mesh.material as GaussianSplattingMaterial, [Color3.Red()]);
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_resultReady"] = true;
+        controller["_enableColorBlit"]();
+        controller["_enableDepthBlit"]();
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        controller["_vpMatrix"].copyFrom(scene.getTransformMatrix());
+        controller["_computedWidth"] = engine.getRenderWidth();
+        controller["_computedHeight"] = engine.getRenderHeight();
+        const colorMesh = controller["_blitMesh"]!;
+        const depthMesh = controller["_depthBlitMesh"]!;
+        vi.spyOn(controller["_blit"]!, "isReady").mockReturnValue(true);
+        vi.spyOn(controller["_depthBlit"]!, "isReady").mockReturnValue(true);
+        const colorDraw = vi.spyOn(colorMesh, "render").mockReturnValue(colorMesh);
+        const depthDraw = vi.spyOn(depthMesh, "render").mockReturnValue(depthMesh);
+
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(false);
+        expect(colorDraw).not.toHaveBeenCalled();
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(true);
+        expect(depthDraw).toHaveBeenCalledTimes(1);
+        plugin.isEnabled = false;
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(true);
+        expect(colorDraw).toHaveBeenCalledTimes(1);
+
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+    it("uses a shared color-target resolution without predicting a target projection", () => {
         const engine = new NullEngine({ renderWidth: 400, renderHeight: 200 });
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
         scene.activeCamera = camera;
         const mesh = new GaussianSplattingMesh("splat", null, scene);
         const controller = CreateController(mesh);
-
-        // Post-process targets are bound after the scene computes the projection, so their aspect is ignored.
-        const square = new PassPostProcess("square", 1, camera);
-        square.activate(camera);
-        square.width = 200;
-        square.height = 200;
-        expect(controller["_getOutputSize"]()).toEqual({ width: 200, height: 200 });
-        expect(controller["_getProjectionMatrix"](camera)).toBe(camera.getProjectionMatrix());
-        square.dispose();
-
-        const custom = Matrix.PerspectiveFovLH(1, 3, 0.1, 10);
-        camera.freezeProjectionMatrix(custom);
         camera.outputRenderTarget = new RenderTargetTexture("target", 200, scene);
-        expect(controller["_getProjectionMatrix"](camera)).toBe(custom);
+
+        expect(controller["_getOutputSize"]()).toEqual({ width: 200, height: 200 });
+        camera.outputRenderTarget.dispose();
+        camera.outputRenderTarget = null;
+        expect(controller["_getOutputSize"]()).toEqual({ width: 400, height: 200 });
 
         scene.dispose();
         engine.dispose();
@@ -761,6 +970,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
         camera.maxZ = 5;
         camera.ignoreCameraMaxZ = true;
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
         const mesh = new GaussianSplattingMesh("splat", null, scene);
         mesh.disableDepthSort = true;
         const data = new ArrayBuffer(32);
@@ -773,7 +983,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
         vi.spyOn(renderer, "resetAccumulation").mockImplementation(() => {});
         vi.spyOn(renderer, "setPartData").mockImplementation(() => {});
-        vi.spyOn(renderer, "setProjectionZ").mockImplementation(() => {});
+        vi.spyOn(renderer, "setProjectionMatrix").mockImplementation(() => {});
         vi.spyOn(renderer, "renderToBuffer").mockReturnValue(false);
         vi.spyOn(renderer, "renderedFrameCount", "get").mockReturnValue(0);
         const setCamera = vi.spyOn(renderer, "setCamera").mockImplementation(() => {});
@@ -800,6 +1010,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
         camera.maxZ = 1000;
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
         const mesh = new GaussianSplattingMesh("splat", null, scene);
         mesh.disableDepthSort = true;
         const data = new ArrayBuffer(32);
@@ -807,15 +1018,17 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         mesh.updateData(data);
         const controller = CreateController(mesh);
         controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
         controller["_renderScale"] = 1;
         controller["_enableColorBlit"]();
+        controller["_enableDepthBlit"]();
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
         vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
         vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
         vi.spyOn(renderer, "resetAccumulation").mockImplementation(() => {});
         vi.spyOn(renderer, "setPartData").mockImplementation(() => {});
-        vi.spyOn(renderer, "setProjectionZ").mockImplementation(() => {});
-        vi.spyOn(renderer, "setCamera").mockImplementation(() => {});
+        const setProjection = vi.spyOn(renderer, "setProjectionMatrix").mockImplementation(() => {});
+        const setCamera = vi.spyOn(renderer, "setCamera").mockImplementation(() => {});
         const renderToBuffer = vi.spyOn(renderer, "renderToBuffer").mockReturnValue(true);
         vi.spyOn(renderer, "renderedFrameCount", "get").mockReturnValue(0);
         vi.spyOn(renderer, "accumulationVersion", "get").mockReturnValue(0);
@@ -828,7 +1041,11 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const blit = controller["_blit"]!;
         vi.spyOn(blit, "setAccumBuffer").mockImplementation(() => {});
         vi.spyOn(blit, "setAccumDepthBuffer").mockImplementation(() => {});
-        const setProjectionZ = vi.spyOn(blit, "setProjectionZ");
+        const setInverseProjection = vi.spyOn(blit, "setInverseProjection");
+        const depthBlit = controller["_depthBlit"]!;
+        vi.spyOn(depthBlit, "setAccumBuffer").mockImplementation(() => {});
+        vi.spyOn(depthBlit, "setAccumDepthBuffer").mockImplementation(() => {});
+        const setDepthInverseProjection = vi.spyOn(depthBlit, "setInverseProjection");
         const setLogDepth = vi.spyOn(blit, "setLogarithmicDepthConstant");
         controller["_ensureCompute"]();
 
@@ -842,7 +1059,24 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_runCompute"]();
         expect(setLogDepth).toHaveBeenLastCalledWith(2 / Math.log2(1001));
         const projection = camera.getProjectionMatrix();
-        expect(setProjectionZ).toHaveBeenLastCalledWith(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
+        expect(setProjection.mock.lastCall![0]).toBe(projection);
+        expect(setInverseProjection.mock.lastCall![0].equals(Matrix.Invert(projection))).toBe(true);
+
+        (mesh.material as GaussianSplattingMaterial).kernelSize = 0;
+        controller["_runCompute"]();
+        expect(renderer.kernelSize).toBe(0);
+
+        const customProjection = Matrix.PerspectiveFovLH(camera.fov, 3, camera.minZ, camera.maxZ);
+        customProjection.setRowFromFloats(0, customProjection.m[0], customProjection.m[1], 0.03, 0.02);
+        customProjection.setRowFromFloats(1, customProjection.m[4], customProjection.m[5], -0.04, 0.1);
+        scene.setTransformMatrix(camera.getViewMatrix(), customProjection);
+        controller["_runCompute"]();
+        expect(setCamera.mock.lastCall![0]).toBe(scene.getViewMatrix());
+        expect(setCamera.mock.lastCall![1].equals(scene.getTransformMatrix())).toBe(true);
+        expect(setProjection.mock.lastCall![0]).toBe(customProjection);
+        expect(setInverseProjection.mock.lastCall![0].equals(Matrix.Invert(customProjection))).toBe(true);
+        expect(setDepthInverseProjection.mock.lastCall![0].equals(Matrix.Invert(customProjection))).toBe(true);
+        expect(setCamera.mock.lastCall![4]).toBeCloseTo((engine.getRenderWidth() * customProjection.m[0]) / 2);
 
         controller["_renderer"] = null;
         scene.dispose();
@@ -880,8 +1114,85 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_partLocalMin"] = new Float32Array([NaN, NaN, NaN]);
         expect(controller["_viewZSpan"](Matrix.Identity().m, 0.1, 5)).toEqual([0.1, 5]);
 
+        controller["_partLocalMin"] = new Float32Array([0, 0, -1]);
+        controller["_partLocalMax"] = new Float32Array([0, 0, 2]);
+        controller["_partScratch"].set(Matrix.Identity().m);
+        expect(controller["_viewZSpan"](Matrix.Identity().m, 0.1, 1, false)).toEqual([-1, 2]);
+
         scene.dispose();
         engine.dispose();
+    });
+
+    it.each([
+        { rightHanded: false, reverse: false, custom: false },
+        { rightHanded: true, reverse: false, custom: false },
+        { rightHanded: false, reverse: true, custom: false },
+        { rightHanded: true, reverse: true, custom: false },
+        { rightHanded: false, reverse: false, custom: true },
+        { rightHanded: true, reverse: false, custom: true },
+        { rightHanded: false, reverse: true, custom: true },
+        { rightHanded: true, reverse: true, custom: true },
+    ])("bounds projected depth with handedness=$rightHanded, reverse=$reverse, custom=$custom", ({ rightHanded, reverse, custom }) => {
+        const projection = Matrix.Identity();
+        const near = reverse ? 20 : 0.1;
+        const far = reverse ? 0.1 : 20;
+        if (rightHanded) {
+            Matrix.PerspectiveFovRHToRef(1, 1.5, near, far, projection, true, true, 0.2, reverse);
+        } else {
+            Matrix.PerspectiveFovLHToRef(1, 1.5, near, far, projection, true, true, 0.2, reverse);
+        }
+        if (custom) {
+            projection.setRowFromFloats(0, projection.m[0], projection.m[1], 0.07, 0.03);
+            projection.setRowFromFloats(1, projection.m[4], projection.m[5], -0.04, projection.m[7] - 0.05);
+        }
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_projZ"] = new Float32Array(4);
+        Object.defineProperty(renderer, "_projectedDepthSpan", { value: new Float32Array([0, 1]) });
+        renderer.rightHandedSystem = rightHanded;
+        renderer.setCamera(Matrix.Identity(), projection, 0.1, 20, 1, 1, 0, 0, 0, 2, 6);
+        renderer.setProjectionMatrix(projection, Matrix.Invert(projection), reverse);
+        expect(renderer["_projectedDepth"]).toBe(true);
+        const [min, max] = renderer["_getProjectedDepthSpan"]();
+        for (const z of [2, 4, 6]) {
+            for (const y of [-0.5, 0, 0.5]) {
+                const ndc = Vector3.TransformCoordinates(new Vector3(0.3, y, rightHanded ? -z : z), projection);
+                const depth = Math.max(0, Math.min(1, reverse ? 1 - ndc.z : ndc.z));
+                expect(depth).toBeGreaterThanOrEqual(min - 1e-6);
+                expect(depth).toBeLessThanOrEqual(max + 1e-6);
+            }
+        }
+        renderer.setProjectionZ(1, 1, -0.1, 0);
+        expect(renderer["_projectedDepth"]).toBe(false);
+        expect(renderer["_projection"]).toBeNull();
+    });
+
+    it("bounds padded jitter samples at non-divisible output sizes", () => {
+        const projection = Matrix.Identity();
+        Matrix.PerspectiveFovLHToRef(1, 1.5, 0.1, 20, projection, true, true, 0.2);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_projZ"] = new Float32Array(4);
+        Object.defineProperty(renderer, "_projectedDepthSpan", { value: new Float32Array(2) });
+        renderer.setCamera(Matrix.Identity(), projection, 0.1, 20, 1, 1, 0, 0, 0, 2, 6);
+        renderer.setProjectionMatrix(projection, Matrix.Invert(projection));
+        const maxY = (2 * Math.ceil(239 / 4) * 4) / 239 - 1;
+        const y = (maxY * 2) / (projection.m[5] - maxY * projection.m[7]);
+        const depth = Vector3.TransformCoordinates(new Vector3(0, y, 2), projection).z;
+        expect(depth).toBeGreaterThanOrEqual(renderer["_getProjectedDepthSpan"](1, maxY)[0] - 1e-6);
+    });
+
+    it("uses the complete depth range when a projected horizon crosses the model", () => {
+        const projection = Matrix.Identity();
+        projection.setRowFromFloats(0, 1, 0, 0.1, 0);
+        projection.setRowFromFloats(2, 0, 0, 1, -1);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_projZ"] = new Float32Array(4);
+        Object.defineProperty(renderer, "_projectedDepthSpan", { value: new Float32Array(2) });
+        renderer.setCamera(Matrix.Identity(), projection, 0.1, 20, 1, 1, 0, 0, 0, 0.5, 2);
+        renderer.setProjectionMatrix(projection, Matrix.Invert(projection));
+        expect(renderer["_projectedDepth"]).toBe(true);
+        const span = renderer["_getProjectedDepthSpan"]();
+        expect(Array.from(span)).toEqual([0, 1]);
+        expect(renderer["_getProjectedDepthSpan"]()).toBe(span);
     });
 
     it("rejects workloads that exceed the device storage buffer limits", () => {
