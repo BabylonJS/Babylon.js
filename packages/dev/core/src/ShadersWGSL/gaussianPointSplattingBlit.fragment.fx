@@ -23,6 +23,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         discard;
     }
     // The color pass does not write depth; fragDepth is only the depth-test value.
+    // Limitation: the whole accumulated mean is tested against the latest sample's depth, so samples that
+    // scene geometry occludes still contribute to it.
     fragmentOutputs.color = vec4f(accumulated.rgb, accumulated.w);
     fragmentOutputs.fragDepth = accumDepth[idx];
 
