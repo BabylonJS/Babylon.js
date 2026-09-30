@@ -18,6 +18,7 @@ export * from "./Tasks/Misc/computeShaderTask";
 export * from "./Tasks/Misc/cullObjectsTask";
 export * from "./Tasks/Misc/executeTask";
 export * from "./Tasks/Misc/lightingVolumeTask";
+export * from "./Tasks/Misc/minMaxReducerTask";
 
 export * from "./Tasks/PostProcesses/anaglyphTask";
 export * from "./Tasks/PostProcesses/blackAndWhiteTask";
