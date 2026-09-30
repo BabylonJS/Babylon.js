@@ -95,6 +95,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _depthMode = false;
     private _scale = 1;
     private _renderScale: number | "auto" = "auto";
+    private _occlusionCulling = false;
     // Auto scale: N is measured once per generation, on a non-reset frame (the reset frame has no Hi-Z cull
     // and over-counts), then frozen so a converged image never mixes two render scales.
     private _autoN = 2;
@@ -210,6 +211,21 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
     }
 
+    /** {@inheritDoc IGaussianPointSplattingController.occlusionCulling} */
+    public get occlusionCulling(): boolean {
+        return this._occlusionCulling;
+    }
+    public set occlusionCulling(value: boolean) {
+        if (value === this._occlusionCulling) {
+            return;
+        }
+        this._occlusionCulling = value;
+        if (this._renderer) {
+            this._renderer.occlusionCulling = value;
+            this._renderer.resetAccumulation();
+        }
+    }
+
     /** Lazily builds the compute shared by the color and depth modes. Idempotent. */
     private _ensureCompute(): void {
         const engine = this._scene.getEngine();
@@ -219,6 +235,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             RegisterEnginesWebGPUExtensionsEngineComputeShader();
             this._renderer = new GaussianPointSplattingRenderer(engine);
             this._renderer.pointScale = this._scale;
+            this._renderer.occlusionCulling = this._occlusionCulling;
             this._decodedSplatsData = null;
         }
         if (!this._mesh._pointStreamingUnsupported && this._isWorkloadSupported()) {

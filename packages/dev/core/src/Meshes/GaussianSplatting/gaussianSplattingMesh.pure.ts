@@ -50,6 +50,8 @@ export interface IGaussianPointSplattingController {
     pointScale: number;
     /** Internal render-resolution scale, or `"auto"` for the device-tiered point budget. */
     renderScale: number | "auto";
+    /** Whether the point renderer culls splats against previous-frame depth. */
+    occlusionCulling: boolean;
     /** Counters of the most recent successful compute frame, or null when no frame is available. */
     readonly progress: Nullable<IGaussianPointSplattingProgress>;
     /** Drops the decoded compute buffers so the next frame re-decodes them, and restarts accumulation. */
@@ -330,6 +332,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     // Point-splatting settings, kept here so they can be set before the controller exists.
     private _pointScale = 1;
     private _pointRenderScale: number | "auto" = "auto";
+    private _pointOcclusionCulling = false;
     private _pointController: Nullable<IGaussianPointSplattingController> = null;
 
     /**
@@ -348,6 +351,21 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._pointRenderScale = value;
         if (this._pointController) {
             this._pointController.renderScale = value;
+        }
+    }
+
+    /** Enables previous-frame Hi-Z culling in point mode. Off by default because translucent splats can be biased. */
+    public get pointSplattingOcclusionCulling(): boolean {
+        return this._pointOcclusionCulling;
+    }
+
+    public set pointSplattingOcclusionCulling(value: boolean) {
+        if (value === this._pointOcclusionCulling) {
+            return;
+        }
+        this._pointOcclusionCulling = value;
+        if (this._pointController) {
+            this._pointController.occlusionCulling = value;
         }
     }
 
@@ -626,6 +644,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._pointController = _PointSplattingControllerFactory(this);
             this._pointController.pointScale = this._pointScale;
             this._pointController.renderScale = this._pointRenderScale;
+            this._pointController.occlusionCulling = this._pointOcclusionCulling;
         }
         return this._pointController;
     }
@@ -2544,6 +2563,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         serializationObject._flipY = this._flipY;
         serializationObject.pointSplattingScale = this._pointScale;
         serializationObject.pointSplattingRenderScale = this._pointRenderScale;
+        serializationObject.pointSplattingOcclusionCulling = this._pointOcclusionCulling;
         serializationObject.pointSplattingRenderMode = this.pointSplattingRenderMode;
         serializationObject.pointSplattingDepthRenderMode = this.pointSplattingDepthRenderMode;
 
@@ -2623,6 +2643,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
         if (parsedMesh.pointSplattingRenderScale !== undefined) {
             mesh.pointSplattingRenderScale = parsedMesh.pointSplattingRenderScale;
+        }
+        if (parsedMesh.pointSplattingOcclusionCulling !== undefined) {
+            mesh.pointSplattingOcclusionCulling = parsedMesh.pointSplattingOcclusionCulling;
         }
         // Only assign when enabled: the setters warn when the optional point-splatting module is absent.
         if (parsedMesh.pointSplattingRenderMode) {

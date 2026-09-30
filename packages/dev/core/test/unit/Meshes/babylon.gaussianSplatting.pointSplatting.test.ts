@@ -1267,6 +1267,13 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(reset).toHaveBeenCalledTimes(1);
         mesh.pointSplattingScale = 2;
         expect(reset).toHaveBeenCalledTimes(1);
+        expect(mesh.pointSplattingOcclusionCulling).toBe(false);
+        mesh.pointSplattingOcclusionCulling = true;
+        expect(controller.occlusionCulling).toBe(true);
+        expect(renderer.occlusionCulling).toBe(true);
+        expect(reset).toHaveBeenCalledTimes(2);
+        mesh.pointSplattingOcclusionCulling = true;
+        expect(reset).toHaveBeenCalledTimes(2);
 
         controller["_renderer"] = null;
         scene.dispose();
@@ -1279,10 +1286,12 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const mesh = new GaussianSplattingMesh("splat", null, scene);
         mesh.pointSplattingScale = 2;
         mesh.pointSplattingRenderScale = 0.5;
+        mesh.pointSplattingOcclusionCulling = true;
 
         const parsed = GaussianSplattingMesh.Parse(mesh.serialize(), scene);
         expect(parsed.pointSplattingScale).toBe(2);
         expect(parsed.pointSplattingRenderScale).toBe(0.5);
+        expect(parsed.pointSplattingOcclusionCulling).toBe(true);
 
         scene.dispose();
         engine.dispose();
