@@ -23,8 +23,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         discard;
     }
     // The color pass does not write depth; fragDepth is only the depth-test value.
-    // Limitation: the whole accumulated mean is tested against the latest sample's depth, so samples that
-    // scene geometry occludes still contribute to it.
+    // Limitation: the whole accumulated mean is tested against the latest sample's depth, so where scene geometry
+    // intersects the splats, occluded splats can bleed through or visible ones drop out (see pointSplattingRenderMode).
+    // Mostly opaque splats show no visible artifacts.
     fragmentOutputs.color = vec4f(accumulated.rgb, accumulated.w);
     fragmentOutputs.fragDepth = accumDepth[idx];
 

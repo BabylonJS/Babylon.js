@@ -635,8 +635,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * classic sorted quads. Off by default; other passes (shadows, picking, prepass) are unaffected. Falls
      * back to the classic path for multiple or rig cameras, clip planes and streamed parts. WebGPU only.
      *
-     * Limitation: the accumulated color is depth-tested against the latest sample's depth only, so where other
-     * geometry intersects the splats, occluded samples can still contribute and edges may be inaccurate.
+     * Limitation: each pixel's accumulated color is depth-tested as a whole against its latest sample's depth. Where
+     * other geometry intersects the splats, occluded splats can bleed through or visible ones drop out, and the
+     * result can flicker as the latest sample changes. Non-intersecting geometry composites correctly, and mostly
+     * opaque splats show no visible artifacts.
      *
      * Requires `@babylonjs/core/Meshes/GaussianSplatting/gaussianPointSplattingController` (included in
      * `@babylonjs/core`); without it, enabling this logs a warning and does nothing.
