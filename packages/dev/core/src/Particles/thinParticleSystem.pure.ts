@@ -9,6 +9,7 @@ import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
 
 import { type Effect, type IEffectCreationOptions } from "../Materials/effect.pure";
 import { RawTexture } from "../Materials/Textures/rawTexture";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { type IDisposable, type Scene } from "../scene.pure";
 
@@ -184,6 +185,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     /** @internal */
     public _noiseTextureData: Nullable<Uint8Array> = null;
     private _noiseTextureFetchInFlight: Nullable<ProceduralTexture> = null;
+    private _noiseTextureFetchInternalTexture: Nullable<InternalTexture> = null;
     private _noiseTextureFetchToken = 0;
     private _noiseTextureReadbackFailureLogged = false;
     private _particles = new Array<Particle>();
@@ -528,6 +530,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         // A pending readback belongs to the previous assignment: discard its completion and free the gate.
         this._noiseTextureFetchToken++;
         this._noiseTextureFetchInFlight = null;
+        this._noiseTextureFetchInternalTexture = null;
 
         if (!value) {
             _RemoveFromQueue(this._noiseCreation);
@@ -715,8 +718,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         // Update
         this.updateFunction = (particles: Particle[]): void => {
             const noiseTexture = this.noiseTexture;
-            if (noiseTexture && this._noiseTextureFetchInFlight !== noiseTexture) {
-                // One readback per texture in flight to avoid piling up a promise per frame.
+            const noiseInternalTexture = noiseTexture?.getInternalTexture() ?? null;
+            if (noiseTexture && (this._noiseTextureFetchInFlight !== noiseTexture || this._noiseTextureFetchInternalTexture !== noiseInternalTexture)) {
+                // One readback per render target in flight to avoid piling up a promise per frame.
                 const noiseContent = noiseTexture.getContent();
                 if (noiseContent) {
                     const textureSize = noiseTexture.getSize();
@@ -725,6 +729,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                     // Gate completions on a per-request token: texture identity cannot tell two readbacks apart.
                     const fetchToken = ++this._noiseTextureFetchToken;
                     this._noiseTextureFetchInFlight = noiseTexture;
+                    this._noiseTextureFetchInternalTexture = noiseInternalTexture;
                     // eslint-disable-next-line github/no-then
                     noiseContent.then(
                         (data) => {
@@ -733,11 +738,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                                 return;
                             }
                             this._noiseTextureFetchInFlight = null;
-                            this._noiseTextureReadbackFailureLogged = false;
-                            if (this.noiseTexture !== noiseTexture) {
-                                // Replaced while pending: discard the stale buffer.
+                            this._noiseTextureFetchInternalTexture = null;
+                            if (this.noiseTexture !== noiseTexture || noiseTexture.getInternalTexture() !== noiseInternalTexture) {
+                                // Reassigned or resized while pending: discard the stale buffer.
                                 return;
                             }
+                            this._noiseTextureReadbackFailureLogged = false;
                             const buffer = data as Uint8Array;
                             if (buffer.length !== noiseSize.width * noiseSize.height * 4) {
                                 // Buffer for another size (texture resized while pending): retry on the next update.
@@ -750,8 +756,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                             if (this._noiseTextureFetchToken !== fetchToken) {
                                 return;
                             }
-                            // Retry on the next update, reporting the failure once per streak.
                             this._noiseTextureFetchInFlight = null;
+                            this._noiseTextureFetchInternalTexture = null;
+                            if (this.noiseTexture !== noiseTexture || noiseTexture.getInternalTexture() !== noiseInternalTexture) {
+                                return;
+                            }
+                            // Retry on the next update, reporting the failure once per streak.
                             if (!this._noiseTextureReadbackFailureLogged) {
                                 this._noiseTextureReadbackFailureLogged = true;
                                 Logger.Warn(`Noise texture readback failed for "${noiseTexture.name}"; it will be retried on the next update`);

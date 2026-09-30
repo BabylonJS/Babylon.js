@@ -14,6 +14,7 @@ type DeferredTexture = {
     calls: number;
     dispose: () => void;
     getContent: () => Promise<Uint8Array>;
+    getInternalTexture: () => null;
     getSize: () => { width: number; height: number };
     resolve: () => void;
 };
@@ -29,6 +30,7 @@ const createDeferredTexture = (width: number, height: number): DeferredTexture =
             return promise;
         },
         getSize: () => ({ width, height }),
+        getInternalTexture: () => null,
         resolve: () => resolvePromise(new Uint8Array(width * height * 4)),
     };
 
@@ -77,6 +79,7 @@ const createResizableDeferredTexture = (width: number, height: number): Resizabl
             return contentData;
         },
         getSize: () => cachedSize,
+        getInternalTexture: () => null,
         resolve: () => {
             const resolve = resolveReadback;
             resolveReadback = null;
@@ -358,6 +361,35 @@ describe("ThinParticleSystem noise texture readback", () => {
         warnSpy.mockRestore();
     });
 
+    it.each([false, true])("discards a readback after a same-size in-place resize (updated before completion: %s)", async (updatedBeforeCompletion) => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        const pending: Array<(data: Uint8Array) => void> = [];
+        vi.spyOn(texture, "readPixels").mockImplementation(() => new Promise((resolve) => pending.push(resolve)));
+        particleSystem.noiseTexture = texture;
+        particleSystem.updateFunction([]);
+        expect(pending.length).toBe(1);
+
+        texture.resize({ width: 2, height: 2 }, false);
+        if (updatedBeforeCompletion) {
+            particleSystem.updateFunction([]);
+        }
+        expect(pending.length).toBe(updatedBeforeCompletion ? 2 : 1);
+
+        pending[0](new Uint8Array(2 * 2 * 4).fill(1));
+        await flushMicrotasks();
+        expect(particleSystem._noiseTextureData).toBeNull();
+        expect(particleSystem._noiseTextureSize).toBeNull();
+
+        particleSystem.updateFunction([]);
+        expect(pending.length).toBe(2);
+        const pixels = new Uint8Array(2 * 2 * 4).fill(2);
+        pending[1](pixels);
+        await flushMicrotasks();
+
+        expect(particleSystem._noiseTextureData).toBe(pixels);
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 2, height: 2 });
+    });
+
     it("retries a rejected procedural texture readback and publishes the successful buffer", async () => {
         const texture = new ProceduralTexture("noise", 2, scene);
         const pixels = new Uint8Array(2 * 2 * 4);
@@ -374,5 +406,29 @@ describe("ThinParticleSystem noise texture readback", () => {
         expect(readPixelsSpy).toHaveBeenCalledTimes(2);
         expect(particleSystem._noiseTextureData).toBe(pixels);
         expect(particleSystem._noiseTextureSize).toEqual({ width: 2, height: 2 });
+    });
+
+    it("discards an outdated readback rejection after a same-size in-place resize", async () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        const pixels = new Uint8Array(2 * 2 * 4);
+        let rejectReadback: (error: Error) => void;
+        const readPixelsSpy = vi
+            .spyOn(texture, "readPixels")
+            .mockReturnValueOnce(new Promise((_resolve, reject) => (rejectReadback = reject)))
+            .mockResolvedValue(pixels);
+        const warnSpy = vi.spyOn(Logger, "Warn");
+        particleSystem.noiseTexture = texture;
+        particleSystem.updateFunction([]);
+
+        texture.resize({ width: 2, height: 2 }, false);
+        rejectReadback!(new Error("outdated readback failed"));
+        await flushMicrotasks();
+        expect(warnSpy).not.toHaveBeenCalled();
+
+        particleSystem.updateFunction([]);
+        await flushMicrotasks();
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+        expect(particleSystem._noiseTextureData).toBe(pixels);
+        warnSpy.mockRestore();
     });
 });
