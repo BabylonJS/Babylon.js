@@ -273,13 +273,15 @@ export function SetContactAudioReaction(
     const bindings = existing.rules
         .filter((rule) => rule.cue !== cue)
         .map((rule) => {
-            const source = existing.sources[existing.emitters[rule.emitter].sources[0]];
-            return { rule, asset: existing.audio[source.audio], gain: source.gain };
+            const emitter = existing.emitters[rule.emitter];
+            const source = existing.sources[emitter.sources[0]];
+            return { rule, asset: existing.audio[source.audio], source, emitter };
         });
     const newCue = cue ?? `contact.${RandomGUID()}`;
     const edited = existing.rules.find((rule) => rule.cue === cue);
-    const gain = edited ? existing.sources[existing.emitters[edited.emitter].sources[0]].gain : 1;
-    bindings.push({ rule: { cue: newCue, objects, partners, emitter: 0 }, asset, gain });
+    const emitter: IContactAudioDocument["emitters"][number] = edited ? existing.emitters[edited.emitter] : { type: "positional", sources: [0] };
+    const source: IContactAudioDocument["sources"][number] = edited ? existing.sources[emitter.sources[0]] : { audio: 0, gain: 1, loop: false, autoplay: false };
+    bindings.push({ rule: { cue: newCue, objects, partners, emitter: 0 }, asset, source, emitter });
     return _RebuildContactAudio(
         document,
         existing,
@@ -299,8 +301,9 @@ export function RemoveContactAudioReaction(document: IGlbDocument, cue: string):
     const bindings = existing.rules
         .filter((rule) => rule.cue !== cue)
         .map((rule) => {
-            const source = existing.sources[existing.emitters[rule.emitter].sources[0]];
-            return { rule, asset: existing.audio[source.audio], gain: source.gain };
+            const emitter = existing.emitters[rule.emitter];
+            const source = existing.sources[emitter.sources[0]];
+            return { rule, asset: existing.audio[source.audio], source, emitter };
         });
     return _RebuildContactAudio(document, existing, bindings, []);
 }
@@ -308,7 +311,7 @@ export function RemoveContactAudioReaction(document: IGlbDocument, cue: string):
 function _RebuildContactAudio(
     document: IGlbDocument,
     existing: IContactAudioDocument,
-    bindings: { rule: IContactAudioRule; asset: IContactAudioAsset; gain: number }[],
+    bindings: { rule: IContactAudioRule; asset: IContactAudioAsset; source: IContactAudioDocument["sources"][number]; emitter: IContactAudioDocument["emitters"][number] }[],
     shapes: IContactShape[]
 ): IContactAudioDocument {
     const data: IContactAudioDocument = { ...existing, audio: [], sources: [], emitters: [], shapes: [], rules: [] };
@@ -317,8 +320,8 @@ function _RebuildContactAudio(
         if (index < 0) {
             index = data.audio.push(binding.asset) - 1;
         }
-        const source = data.sources.push({ audio: index, gain: binding.gain, loop: false, autoplay: false }) - 1;
-        const emitter = data.emitters.push({ type: "positional", sources: [source] }) - 1;
+        const source = data.sources.push({ ...binding.source, audio: index }) - 1;
+        const emitter = data.emitters.push({ ...binding.emitter, sources: [source] }) - 1;
         data.rules.push({ ...binding.rule, emitter });
     }
     const usedNodes = new Set(data.rules.flatMap((rule) => [...rule.objects, ...rule.partners]));

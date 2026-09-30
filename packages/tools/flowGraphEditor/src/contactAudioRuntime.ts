@@ -224,6 +224,7 @@ export class ContactAudioRuntime {
     private readonly _buffers = new Map<string, AudioBuffer>();
     private readonly _voices = new Map<string, StaticSound[]>();
     private _audition: StaticSound | null = null;
+    private _auditionGeneration = 0;
     private _context: AudioContext | null = null;
     private _engine: AudioEngineV2 | null = null;
     private _enginePromise: Promise<AudioEngineV2> | null = null;
@@ -262,14 +263,21 @@ export class ContactAudioRuntime {
         }
         if (!this._enginePromise) {
             this._context = new AudioContext();
+            const context = this._context;
             this._enginePromise = (async () => {
-                const engine = await CreateAudioEngineAsync({ audioContext: this._context!, disableDefaultUI: true, resumeOnInteraction: false, resumeOnPause: false });
-                if (this._disposed) {
-                    engine.dispose();
-                    throw new Error("The preview scene has changed.");
+                try {
+                    const engine = await CreateAudioEngineAsync({ audioContext: context, disableDefaultUI: true, resumeOnInteraction: false, resumeOnPause: false });
+                    if (this._disposed) {
+                        engine.dispose();
+                        throw new Error("The preview scene has changed.");
+                    }
+                    this._engine = engine;
+                    return engine;
+                } catch (error) {
+                    this._enginePromise = null;
+                    await this._closeContextAsync(context);
+                    throw error;
                 }
-                this._engine = engine;
-                return engine;
             })();
         }
         // Call resume within the button/file-picker gesture, before any decoding awaits.
@@ -283,18 +291,38 @@ export class ContactAudioRuntime {
         return await this._enginePromise;
     }
 
-    private async _decodeAsync(asset: IContactAudioAsset): Promise<AudioBuffer> {
+    private async _closeContextAsync(context: AudioContext): Promise<void> {
+        if (context.state === "closed") {
+            return;
+        }
+        try {
+            await context.close();
+        } catch {
+            // Preserve the initialization error if the browser also rejects cleanup.
+        }
+    }
+
+    private _checkAuditionGeneration(generation?: number): void {
+        if (generation !== undefined && generation !== this._auditionGeneration) {
+            throw new Error("The sound chooser has closed or the audition has stopped.");
+        }
+    }
+
+    private async _decodeAsync(asset: IContactAudioAsset, generation?: number): Promise<AudioBuffer> {
         await this._getEngineAsync();
+        this._checkAuditionGeneration(generation);
         const cached = this._buffers.get(asset.uri);
         if (cached) {
             return cached;
         }
         const bytes = Uint8Array.from(atob(asset.uri.substring(asset.uri.indexOf(",") + 1)), (char) => char.charCodeAt(0));
         await _DurationAsync(bytes, asset.mimeType);
+        this._checkAuditionGeneration(generation);
         const buffer = await this._context!.decodeAudioData(bytes.buffer);
         if (this._disposed) {
             throw new Error("The preview scene has changed.");
         }
+        this._checkAuditionGeneration(generation);
         if (buffer.duration > MaxContactAudioSeconds || buffer.numberOfChannels > 2 || buffer.sampleRate > 192000) {
             throw new Error("Choose a mono or stereo sound of 30 seconds or less, at up to 192 kHz.");
         }
@@ -313,10 +341,11 @@ export class ContactAudioRuntime {
      * @returns the validated encoded resource
      */
     public async importAudioAsync(file: File): Promise<IContactAudioAsset> {
+        const generation = this._auditionGeneration;
         const header = new Uint8Array(await file.slice(0, 256).arrayBuffer());
         const mimeType = ValidateContactAudioFile(file.name, file.size, header);
         const asset = { name: file.name.substring(0, 200), mimeType, uri: ContactAudioDataUri(new Uint8Array(await file.arrayBuffer()), mimeType) };
-        await this._decodeAsync(asset);
+        await this._decodeAsync(asset, generation);
         return asset;
     }
 
@@ -325,11 +354,13 @@ export class ContactAudioRuntime {
      * @param asset encoded clip to audition
      */
     public async auditionAsync(asset: IContactAudioAsset): Promise<void> {
-        const buffer = await this._decodeAsync(asset);
-        const engine = await this._getEngineAsync();
         this.stopAudition();
+        const generation = this._auditionGeneration;
+        const buffer = await this._decodeAsync(asset, generation);
+        const engine = await this._getEngineAsync();
+        this._checkAuditionGeneration(generation);
         const voice = await engine.createSoundAsync("Contact audition", buffer, { autoplay: false, loop: false, maxInstances: 1 });
-        if (this._disposed) {
+        if (this._disposed || generation !== this._auditionGeneration) {
             voice.dispose();
             return;
         }
@@ -342,6 +373,7 @@ export class ContactAudioRuntime {
      * @param releaseUnsavedBuffers release decoded clips that were not saved into the scene
      */
     public stopAudition(releaseUnsavedBuffers = false): void {
+        this._auditionGeneration++;
         this._audition?.dispose();
         this._audition = null;
         if (releaseUnsavedBuffers) {
@@ -436,7 +468,7 @@ export class ContactAudioRuntime {
     public reset(): void {
         this._tracker.reset();
         this._voices.forEach((voices) => voices.forEach((voice) => voice.stop()));
-        this._audition?.stop();
+        this.stopAudition();
         this._wasRunning = false;
     }
 
@@ -491,5 +523,8 @@ export class ContactAudioRuntime {
         this._buffers.clear();
         this.onCueObservable.clear();
         this._engine?.dispose();
+        if (!this._engine && this._context) {
+            void this._closeContextAsync(this._context);
+        }
     }
 }

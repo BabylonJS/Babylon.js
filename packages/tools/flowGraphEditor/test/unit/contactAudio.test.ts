@@ -84,6 +84,22 @@ describe("contact audio authoring", () => {
         expect(ReadGlbDocument(output)).toEqual(doc);
         expect(() => PatchGltfExtras('{"asset":{"version":"2.0"},"extras":"opaque source data"}', "babylonContactAudio", value)).toThrow("non-object extras");
     });
+    it("retains source and emitter annotations through adding, editing, and removing other cues", () => {
+        const source = { asset: { version: "2.0" }, nodes: [{}, {}, {}] };
+        const shapes: IContactShape[] = [0, 1, 2].map((node) => ({ node, type: node === 2 ? "box" : "sphere", center: [0, 0, 0], halfSize: [0.5, 0.5, 0.5] }));
+        const [tap, click] = CreateContactAudioDefaults();
+        const first = SetContactAudioReaction(source, [0, 1], [0, 1], shapes, tap);
+        Object.assign(first.sources[0], { extras: { caption: "balls touching" } });
+        Object.assign(first.emitters[0], { extras: { label: "impact emitter" } });
+        const withCue = SetContactAudioReaction({ ...source, extras: { babylonContactAudio: first } }, [0], [2], shapes, click);
+        const edited = SetContactAudioReaction({ ...source, extras: { babylonContactAudio: withCue } }, [0, 1], [0, 1], shapes, click, first.rules[0].cue);
+        const removed = RemoveContactAudioReaction({ ...source, extras: { babylonContactAudio: withCue } }, withCue.rules[1].cue);
+        for (const data of [withCue, edited, removed]) {
+            const emitter = data.emitters[data.rules.find((rule) => rule.cue === first.rules[0].cue)!.emitter];
+            expect(data.sources[emitter.sources[0]], "an unrelated cue edit must retain source annotations").toMatchObject({ extras: { caption: "balls touching" } });
+            expect(emitter, "an unrelated cue edit must retain emitter annotations").toMatchObject({ extras: { label: "impact emitter" } });
+        }
+    });
     it("rejects oversized imports before a decoder is called", () => {
         expect(() => ValidateContactAudioFile("tap.mp3", MaxContactAudioBytes + 1, new Uint8Array([73, 68, 51]))).toThrow("Choose an audio file of 10 MB or less");
     });
