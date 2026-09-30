@@ -118,6 +118,25 @@ describe("lossless GLB selection behavior authoring", () => {
             "Ambiguous companion file"
         );
         expect(() => ResolveGltfCompanionFiles(source, ["missing.bin"], [])).toThrow("Missing companion file");
+        const red = file("diffuse.png");
+        const blue = file("diffuse.png");
+        const explicit = ResolveGltfCompanionFiles(
+            source,
+            ["textures/red/diffuse.png", "textures/blue/diffuse.png"],
+            [red, blue],
+            source.webkitRelativePath,
+            new Map([
+                ["textures/red/diffuse.png", red],
+                ["textures/blue/diffuse.png", blue],
+            ])
+        );
+        expect(explicit.get("textures/red/diffuse.png")).toBe(red);
+        expect(explicit.get("textures/blue/diffuse.png")).toBe(blue);
+        expect(
+            ResolveGltfCompanionFiles(source, ["shared/diffuse.png", "alias/diffuse.png"], [red], source.webkitRelativePath, new Map([["alias/diffuse.png", red]])).get(
+                "alias/diffuse.png"
+            )
+        ).toBe(red);
         expect(GetGltfResourceKeys("./textures/red%20paint.png")).toEqual(["textures/red paint.png", "./textures/red paint.png"]);
         expect(
             ResolveGltfCompanionFiles(

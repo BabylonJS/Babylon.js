@@ -468,7 +468,7 @@ export const HelpTopics: IHelpTopic[] = [
             },
             {
                 heading: "Importing from glTF",
-                html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
+                html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If a referenced buffer or image is missing or ambiguous, <strong>Complete glTF import</strong> names its resource path and lets you choose the matching file without dropping the asset again. You can cancel while keeping the current scene. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
 <p>Files that contain a <strong>BABYLON_flow_graph</strong> custom extension are also detected and imported on drop.</p>
 <p>Alternatively, use the <strong>Load glTF</strong> button in the FILE section to load only the flow graph (no scene).</p>`,
             },

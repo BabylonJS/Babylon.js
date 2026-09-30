@@ -25,6 +25,26 @@ function _ResourcePath(uri: string): string {
     }
 }
 
+/** A recoverable local resource that needs an explicit file choice. */
+export class GltfCompanionResolutionError extends Error {
+    /** The referenced glTF resource URI. */
+    public readonly uri: string;
+    /** Why automatic matching could not choose a file. */
+    public readonly kind: "missing" | "ambiguous";
+
+    /**
+     * @param kind matching failure
+     * @param uri referenced glTF resource URI
+     * @param message user-facing description
+     */
+    constructor(kind: "missing" | "ambiguous", uri: string, message: string) {
+        super(message);
+        this.name = "GltfCompanionResolutionError";
+        this.kind = kind;
+        this.uri = uri;
+    }
+}
+
 /**
  * Get the virtual file keys used by Babylon's buffer and image loaders.
  * @param uri local resource URI
@@ -43,13 +63,15 @@ export function GetGltfResourceKeys(uri: string): string[] {
  * @param resourceUris local or remote resource URIs referenced by the glTF
  * @param companions other dropped files
  * @param sourcePath original path of the main file, retained after an edited copy is made
+ * @param overrides files the user explicitly chose for resource URIs
  * @returns local resource URI to companion file mapping
  */
 export function ResolveGltfCompanionFiles(
     mainFile: File,
     resourceUris: readonly string[],
     companions: readonly File[],
-    sourcePath = mainFile.webkitRelativePath || mainFile.name
+    sourcePath = mainFile.webkitRelativePath || mainFile.name,
+    overrides: ReadonlyMap<string, File> = new Map()
 ): Map<string, File> {
     const mainPath = _NormalizePath(sourcePath);
     const mainDirectory = mainPath.includes("/") ? mainPath.slice(0, mainPath.lastIndexOf("/") + 1) : "";
@@ -71,16 +93,17 @@ export function ResolveGltfCompanionFiles(
             return droppedPath === _CanonicalPath(path) || droppedPath === _CanonicalPath(mainDirectory + path);
         });
         const basename = path.slice(path.lastIndexOf("/") + 1);
-        const matches = exact.length ? exact : companions.filter((file) => _NormalizePath(file.name) === basename);
+        const explicit = overrides.get(uri);
+        const matches = explicit ? [explicit] : exact.length ? exact : companions.filter((file) => _NormalizePath(file.name) === basename);
         if (matches.length > 1) {
-            throw new Error(`Ambiguous companion file for ${uri}. The dropped files need distinguishable relative folder paths.`);
+            throw new GltfCompanionResolutionError("ambiguous", uri, `Ambiguous companion file for ${uri}. Choose the file that matches this resource path.`);
         }
         if (!matches.length) {
-            throw new Error(`Missing companion file for ${uri}. Drop it alongside the glTF file.`);
+            throw new GltfCompanionResolutionError("missing", uri, `Missing companion file for ${uri}. Choose the referenced file to continue importing.`);
         }
         const match = matches[0];
-        if (assigned.has(match) && !result.has(uri)) {
-            throw new Error(`Ambiguous companion file for ${uri}. One dropped file matches multiple resource paths.`);
+        if (assigned.has(match) && !overrides.has(uri)) {
+            throw new GltfCompanionResolutionError("ambiguous", uri, `Ambiguous companion file for ${uri}. One file matches multiple resource paths.`);
         }
         assigned.add(match);
         keys.forEach((key) => assignedKeys.add(key));

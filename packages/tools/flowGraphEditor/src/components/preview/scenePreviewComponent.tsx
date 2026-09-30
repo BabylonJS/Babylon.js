@@ -51,7 +51,7 @@ import {
     ReadGltfDocument,
     type IKhrReactionEvent,
 } from "../../khrGlbBehaviorAuthoring";
-import { GetGltfResourceKeys, ResolveGltfCompanionFiles } from "../../khrGltfCompanionFiles";
+import { GetGltfResourceKeys, GltfCompanionResolutionError, ResolveGltfCompanionFiles } from "../../khrGltfCompanionFiles";
 import { CreateKhrTwoStepProcedureTemplate, ValidateKhrTwoStepProcedureMeshes, type IKhrTwoStepProcedureNodes } from "../../khrTwoStepProcedureTemplate";
 
 interface IScenePreviewComponentProps {
@@ -77,6 +77,9 @@ interface IScenePreviewComponentState {
     reactionTargetMeshId: string;
     reactionVisible: boolean;
     reactionEvents: IKhrReactionEvent[];
+    companionIssue: { kind: "missing" | "ambiguous"; uri: string } | null;
+    selectedCompanionFile: File | null;
+    companionRetryFailed: boolean;
 }
 
 interface IStagedKhrInteractivityImport {
@@ -303,6 +306,7 @@ export const ScenePreviewComponent: React.FunctionComponent<IScenePreviewCompone
 
 class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps, IScenePreviewComponentState> {
     private _pendingReactionSource: string | Uint8Array | null = null;
+    private _pendingCompanionImport: { file: File; companionFiles: File[]; sourcePath: string; overrides: Map<string, File> } | null = null;
     private _canvasHostRef: React.RefObject<HTMLDivElement>;
     private _onContextRefreshedObserver: Nullable<Observer<SceneContext>> = null;
     private _onSceneContextChangedObserver: Nullable<Observer<SceneContext>> = null;
@@ -345,6 +349,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             reactionTargetMeshId: "",
             reactionVisible: true,
             reactionEvents: [],
+            companionIssue: null,
+            selectedCompanionFile: null,
+            companionRetryFailed: false,
         };
     }
 
@@ -358,6 +365,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         }
         this._onSceneContextChangedObserver = this.props.globalState.onSceneContextChanged.add((ctx) => {
             if (ctx) {
+                this._pendingCompanionImport = null;
                 this._watchContext(ctx);
                 this.setState({
                     sceneObjectCount: ctx.entries.length,
@@ -371,6 +379,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     reactionTargetMeshId: "",
                     reactionVisible: true,
                     reactionEvents: [],
+                    companionIssue: null,
+                    selectedCompanionFile: null,
+                    companionRetryFailed: false,
                 });
             }
         });
@@ -774,6 +785,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
      * @param preparedByEditor allows the editor's template preparation to hand off a pending load
      * @param authoredBehavior whether this file was patched by the source-preserving authoring action
      * @param sourcePath original path of the imported file, retained through edited copies
+     * @param companionOverrides explicit resource choices made during an import retry
      * @returns whether the file loaded successfully
      */
     private async _loadFileAsync(
@@ -781,14 +793,24 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         companionFiles?: File[],
         preparedByEditor = false,
         authoredBehavior = false,
-        sourcePath = file.webkitRelativePath || file.name
+        sourcePath = file.webkitRelativePath || file.name,
+        companionOverrides: ReadonlyMap<string, File> = new Map()
     ): Promise<boolean> {
         if (this.state.isLoading && !preparedByEditor) {
             return false; // Prevent concurrent loads
         }
-        this.setState({ isLoading: true, error: "", showAuthoringDialog: false, showReactionDialog: false });
+        this._pendingCompanionImport = null;
+        this.setState({
+            isLoading: true,
+            error: "",
+            showAuthoringDialog: false,
+            showReactionDialog: false,
+            companionIssue: null,
+            selectedCompanionFile: null,
+            companionRetryFailed: false,
+        });
 
-        const registeredFiles: string[] = [];
+        const replacedFiles = new Map<string, File | undefined>();
         let stagedEngine: Engine | null = null;
         let stagedScene: Scene | null = null;
         let stagedSceneContext: SceneContext | null = null;
@@ -797,6 +819,12 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             const { Engine: engineConstructor } = await import("core/Engines/engine");
             const { LoadSceneAsync } = await import("core/Loading/sceneLoader");
             const { FilesInputStore } = await import("core/Misc/filesInputStore");
+            const registerFile = (key: string, resource: File) => {
+                if (!replacedFiles.has(key)) {
+                    replacedFiles.set(key, FilesInputStore.FilesToLoad[key]);
+                }
+                FilesInputStore.FilesToLoad[key] = resource;
+            };
 
             const canvas = this.props.globalState.scenePreviewCanvas;
             if (!canvas) {
@@ -823,20 +851,17 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 }
             }
             const mainKey = file.name.toLowerCase();
-            FilesInputStore.FilesToLoad[mainKey] = file;
-            registeredFiles.push(mainKey);
+            registerFile(mainKey, file);
             if (resourceUris) {
-                for (const [uri, companion] of ResolveGltfCompanionFiles(file, resourceUris, companionFiles ?? [], sourcePath)) {
+                for (const [uri, companion] of ResolveGltfCompanionFiles(file, resourceUris, companionFiles ?? [], sourcePath, companionOverrides)) {
                     for (const key of GetGltfResourceKeys(uri)) {
-                        FilesInputStore.FilesToLoad[key] = companion;
-                        registeredFiles.push(key);
+                        registerFile(key, companion);
                     }
                 }
             } else if (companionFiles) {
                 for (const companion of companionFiles) {
                     const key = companion.name.toLowerCase();
-                    FilesInputStore.FilesToLoad[key] = companion;
-                    registeredFiles.push(key);
+                    registerFile(key, companion);
                 }
             }
 
@@ -911,6 +936,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     sourceGlb = {
                         file,
                         companionFiles,
+                        companionOverrides: new Map(companionOverrides),
                         sourcePath,
                         nodeCount: Array.isArray(document.nodes) ? document.nodes.length : 0,
                         hasAnimations,
@@ -926,6 +952,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     sourceGltf = {
                         file,
                         companionFiles,
+                        companionOverrides: new Map(companionOverrides),
                         sourcePath,
                         nodeCount: Array.isArray(document.nodes) ? document.nodes.length : 0,
                         hasAnimations: document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0),
@@ -985,19 +1012,24 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 stagedScene?.dispose();
                 stagedEngine?.dispose();
             }
-            // Clean up registered files on failure
+            // Restore any files used by the active scene before this failed import.
             try {
                 const { FilesInputStore } = await import("core/Misc/filesInputStore");
-                for (const key of registeredFiles) {
-                    delete FilesInputStore.FilesToLoad[key];
+                for (const [key, previous] of replacedFiles) {
+                    if (previous) {
+                        FilesInputStore.FilesToLoad[key] = previous;
+                    } else {
+                        delete FilesInputStore.FilesToLoad[key];
+                    }
                 }
             } catch {
                 // FilesInputStore import may itself fail — nothing to clean up
             }
-            this.setState({
-                isLoading: false,
-                error: err.message || "Failed to load file",
-            });
+            const companionIssue = err instanceof GltfCompanionResolutionError && !preparedByEditor ? { kind: err.kind, uri: err.uri } : null;
+            if (companionIssue) {
+                this._pendingCompanionImport = { file, companionFiles: companionFiles ?? [], sourcePath, overrides: new Map(companionOverrides) };
+            }
+            this.setState({ isLoading: false, error: err.message || "Failed to load file", companionIssue, selectedCompanionFile: null, companionRetryFailed: false });
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Failed to load file: ${err.message}`, true));
             return false;
         }
@@ -1007,6 +1039,28 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         e.preventDefault();
         e.stopPropagation();
     };
+
+    private _dismissCompanionImport = () => {
+        this._pendingCompanionImport = null;
+        this.setState({ companionIssue: null, selectedCompanionFile: null, companionRetryFailed: false });
+    };
+
+    private async _retryCompanionImportAsync(): Promise<void> {
+        const pending = this._pendingCompanionImport;
+        const issue = this.state.companionIssue;
+        const chosenFile = this.state.selectedCompanionFile;
+        if (!pending || !issue || !chosenFile || this.state.isLoading) {
+            return;
+        }
+        const overrides = new Map(pending.overrides);
+        overrides.set(issue.uri, chosenFile);
+        const loaded = await this._loadFileAsync(pending.file, pending.companionFiles, false, false, pending.sourcePath, overrides);
+        if (!loaded && !this._pendingCompanionImport) {
+            // The chosen file may be the wrong one. Keep the original import available for another try.
+            this._pendingCompanionImport = pending;
+            this.setState({ companionIssue: issue, selectedCompanionFile: null, companionRetryFailed: true });
+        }
+    }
 
     private _handleDrop = (e: DragEvent | React.DragEvent) => {
         e.preventDefault();
@@ -1316,7 +1370,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             const authoredFile = new File([typeof patched === "string" ? patched : new Uint8Array(patched)], name, {
                 type: typeof patched === "string" ? "model/gltf+json" : "model/gltf-binary",
             });
-            if (!(await this._loadFileAsync(authoredFile, source.companionFiles, true, true, source.sourcePath))) {
+            if (!(await this._loadFileAsync(authoredFile, source.companionFiles, true, true, source.sourcePath, source.companionOverrides))) {
                 throw new Error("The edited glTF asset could not be loaded for preview.");
             }
             const downloadUrl = URL.createObjectURL(authoredFile);
@@ -1386,7 +1440,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 }
                 const fileName = source.file.name.replace(/\.(glb|gltf)$/i, "-behavior.$1");
                 const authoredFile = new File([authoredContents], fileName, { type: sourceGlb ? "model/gltf-binary" : "model/gltf+json" });
-                if (!(await this._loadFileAsync(authoredFile, source.companionFiles, true, true, source.sourcePath))) {
+                if (!(await this._loadFileAsync(authoredFile, source.companionFiles, true, true, source.sourcePath, source.companionOverrides))) {
                     throw new Error("The authored glTF asset could not be loaded for preview.");
                 }
                 const downloadUrl = URL.createObjectURL(authoredFile);
@@ -1534,7 +1588,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                             </Button>
                         )}
                     </div>
-                    {error && <Body1 className={classes.error}>{error}</Body1>}
+                    {error && !this.state.companionIssue && <Body1 className={classes.error}>{error}</Body1>}
                     {externalResourceWarning && <Body1 data-testid="external-resource-warning-status">{externalResourceWarning}</Body1>}
                     {ctx && (
                         <div className={classes.status}>
@@ -1748,6 +1802,39 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                                     onClick={() => void this._addKhrReactionAsync()}
                                 >
                                     Add reaction
+                                </Button>
+                            </DialogActions>
+                        </DialogBody>
+                    </DialogSurface>
+                </Dialog>
+                <Dialog open={!!this.state.companionIssue} onOpenChange={(_, data) => !data.open && this._dismissCompanionImport()}>
+                    <DialogSurface className={classes.authoringDialog} data-testid="companion-recovery-dialog">
+                        <DialogBody>
+                            <DialogTitle>Complete glTF import</DialogTitle>
+                            <DialogContent className={classes.authoring}>
+                                {this.state.companionIssue && (
+                                    <Body1>
+                                        {this.state.companionIssue.kind === "missing"
+                                            ? "The asset references a file that was not included:"
+                                            : "Multiple dropped files could match this resource:"}{" "}
+                                        <strong>{this.state.companionIssue.uri}</strong>. Choose the matching file to continue without dropping the asset again.
+                                    </Body1>
+                                )}
+                                <Body1>Import is paused. Your current scene is still available, and no part of this asset has been added yet.</Body1>
+                                {this.state.companionRetryFailed && <Body1 className={classes.error}>The selected file did not load. Choose another file for this path.</Body1>}
+                                <Body1>The downloaded glTF still references this path. Keep the selected file there when sharing the asset.</Body1>
+                                <Label htmlFor="khr-companion-file">Companion file</Label>
+                                <input
+                                    id="khr-companion-file"
+                                    type="file"
+                                    aria-label={`Companion file for ${this.state.companionIssue?.uri ?? "resource"}`}
+                                    onChange={(event) => this.setState({ selectedCompanionFile: event.currentTarget.files?.[0] ?? null })}
+                                />
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={this._dismissCompanionImport}>Cancel import</Button>
+                                <Button appearance="primary" disabled={!this.state.selectedCompanionFile || isLoading} onClick={() => void this._retryCompanionImportAsync()}>
+                                    Use file and retry
                                 </Button>
                             </DialogActions>
                         </DialogBody>

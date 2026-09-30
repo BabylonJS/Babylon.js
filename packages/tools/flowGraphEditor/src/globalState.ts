@@ -943,6 +943,7 @@ export class GlobalState {
     sourceGlb: {
         file: File;
         companionFiles?: File[];
+        companionOverrides?: ReadonlyMap<string, File>;
         sourcePath: string;
         nodeCount: number;
         hasAnimations: boolean;
@@ -953,6 +954,7 @@ export class GlobalState {
     sourceGltf: {
         file: File;
         companionFiles?: File[];
+        companionOverrides?: ReadonlyMap<string, File>;
         sourcePath: string;
         nodeCount: number;
         hasAnimations: boolean;
