@@ -30,6 +30,30 @@ function Drop(entries: FileSystemEntry[]): DataTransfer {
 }
 
 describe("glTF native folder collection", () => {
+    it("automatically matches unique native flat-file entries to nested resource URIs", async () => {
+        const files = await CollectGltfDropFilesAsync(Drop([FileEntry("/assembly.gltf"), FileEntry("/geometry.bin"), FileEntry("/diffuse.png")]));
+        const mapping = ResolveGltfCompanionFiles(files[0], ["meshes/geometry.bin", "textures/diffuse.png"], files.slice(1));
+        expect(mapping.get("meshes/geometry.bin"), "A native root entry provides a basename, not a recorded folder path").toBe(files[1]);
+        expect(mapping.get("textures/diffuse.png")).toBe(files[2]);
+    });
+
+    it("keeps duplicate native flat names ambiguous instead of selecting the first file", async () => {
+        const files = await CollectGltfDropFilesAsync(Drop([FileEntry("/assembly.gltf"), FileEntry("/diffuse.png"), FileEntry("/diffuse.png")]));
+        expect(() => ResolveGltfCompanionFiles(files[0], ["textures/diffuse.png"], files.slice(1))).toThrow("Ambiguous companion file for textures/diffuse.png");
+    });
+
+    it("does not fall back to a same-named file at the root of a dropped directory", async () => {
+        const files = await CollectGltfDropFilesAsync(Drop([FolderEntry("/asset", [[FileEntry("/asset/assembly.gltf"), FileEntry("/asset/diffuse.png")]])]));
+        expect(() => ResolveGltfCompanionFiles(files[0], ["textures/diffuse.png"], files.slice(1))).toThrow("Missing companion file for textures/diffuse.png");
+    });
+
+    it("uses only a flat companion for fallback in a mixed directory and file drop", async () => {
+        const files = await CollectGltfDropFilesAsync(
+            Drop([FolderEntry("/asset", [[FileEntry("/asset/assembly.gltf"), FileEntry("/asset/textures/red/diffuse.png")]]), FileEntry("/diffuse.png")])
+        );
+        expect(ResolveGltfCompanionFiles(files[0], ["textures/blue/diffuse.png"], files.slice(1)).get("textures/blue/diffuse.png")).toBe(files[2]);
+    });
+
     it("retains nested paths across directory batches and keeps same-named resources distinct", async () => {
         const files = await CollectGltfDropFilesAsync(
             Drop([
@@ -60,6 +84,18 @@ describe("glTF native folder collection", () => {
         expect(GetGltfFilePath(file)).toBe("asset/texture/diffuse.png");
         expect(await CollectGltfDropFilesAsync({ files: [file], items: [{ kind: "file", getAsFile: () => file }] } as unknown as DataTransfer)).toEqual([file]);
         expect(await CollectGltfDropFilesAsync(Drop([FolderEntry("/empty", [[]])]))).toEqual([]);
+    });
+
+    it("keeps the FileList fallback when item APIs cannot return files or entries", async () => {
+        const file = { name: "geometry.bin", webkitRelativePath: "" } as File;
+        const transfer = { files: [file], items: [{ kind: "file", getAsFile: () => null, webkitGetAsEntry: () => null }] } as unknown as DataTransfer;
+        expect(await CollectGltfDropFilesAsync(transfer)).toEqual([file]);
+    });
+
+    it("rejects an unreadable item in a mixed folder drop instead of silently omitting it", async () => {
+        const transfer = Drop([FolderEntry("/asset", [[FileEntry("/asset/assembly.gltf")]])]);
+        const items = [...transfer.items, { kind: "file", getAsFile: () => null, webkitGetAsEntry: () => null }];
+        await expect(CollectGltfDropFilesAsync({ files: [], items } as unknown as DataTransfer)).rejects.toThrow("Unable to read dropped file");
     });
 
     it("prefers a selected file's directory-picker path over a basename-only native entry", async () => {

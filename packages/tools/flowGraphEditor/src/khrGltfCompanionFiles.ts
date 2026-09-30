@@ -32,7 +32,12 @@ export async function CollectGltfDropFilesAsync(transfer: DataTransfer): Promise
         try {
             if (entry.isFile) {
                 const file = selectedFile ?? (await new Promise<File>((resolve, reject) => (entry as FileSystemFileEntry).file(resolve, reject)));
-                (file as FileWithDropPath).correctName = file.webkitRelativePath || entry.fullPath.replace(/^\/+/, "");
+                const path = file.webkitRelativePath || entry.fullPath.replace(/^\/+/, "");
+                // Native top-level file entries expose only /basename. A folder traversal
+                // or directory picker supplies an actual path, which must match strictly.
+                if (file.webkitRelativePath || path.includes("/")) {
+                    (file as FileWithDropPath).correctName = path;
+                }
                 return [file];
             }
             if (entry.isDirectory) {
@@ -54,15 +59,27 @@ export async function CollectGltfDropFilesAsync(transfer: DataTransfer): Promise
             throw new Error(`Unable to read dropped entry ${entry.fullPath}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
         }
     };
-    if (!entries.length) {
-        return fallback;
+    if (!entries.some(({ entry }) => entry)) {
+        return fallback.length ? fallback : entries.flatMap(({ file }) => (file ? [file] : []));
     }
-    return (await Promise.all(entries.map(async ({ entry, file }) => (entry ? await visitAsync(entry, file ?? undefined) : file ? [file] : [])))).flat();
+    return (
+        await Promise.all(
+            entries.map(async ({ entry, file }) => {
+                if (entry) {
+                    return await visitAsync(entry, file ?? undefined);
+                }
+                if (file) {
+                    return [file];
+                }
+                throw new Error("Unable to read dropped file. Select the file again to continue importing.");
+            })
+        )
+    ).flat();
 }
 
-function _CanonicalPath(path: string): string {
+function _CanonicalPath(path: string, ignoreCase = true): string {
     const parts: string[] = [];
-    for (const part of _NormalizePath(path).split("/")) {
+    for (const part of (ignoreCase ? _NormalizePath(path) : path.replace(/\\/g, "/")).split("/")) {
         if (part === "" || part === ".") {
             continue;
         }
@@ -109,8 +126,11 @@ export class GltfCompanionResolutionError extends Error {
  * @returns keys with and without an initial dot path segment when needed
  */
 export function GetGltfResourceKeys(uri: string): string[] {
-    const normalized = _ResourcePath(uri);
-    const decoded = decodeURIComponent(uri).replace(/\\/g, "/").toLowerCase();
+    // FileTools lowercases the URL before decoding, so an encoded capital can
+    // remain uppercase in its lookup key. Buffer loading alone strips one ./.
+    _ResourcePath(uri);
+    const decoded = decodeURIComponent(uri.toLowerCase());
+    const normalized = decoded.replace(/^\.\//, "");
     return normalized === decoded ? [normalized] : [normalized, decoded];
 }
 
@@ -134,29 +154,46 @@ export function ResolveGltfCompanionFiles(
     const mainPath = _NormalizePath(sourcePath);
     const mainDirectory = mainPath.includes("/") ? mainPath.slice(0, mainPath.lastIndexOf("/") + 1) : "";
     const result = new Map<string, File>();
+    const files = [...new Set(companions)];
     const assigned = new Set<File>();
-    const assignedKeys = new Set<string>();
+    const assignedKeys = new Map<string, string>();
+    const assignedPaths = new Map<string, File>();
+    const explicitPaths = new Map<string, File>();
+    for (const [uri, file] of overrides) {
+        _ResourcePath(uri);
+        const identity = _CanonicalPath(decodeURIComponent(uri), false);
+        if (explicitPaths.has(identity) && explicitPaths.get(identity) !== file) {
+            throw new Error(`Ambiguous companion file for ${uri}. Equivalent resource paths have different file choices.`);
+        }
+        explicitPaths.set(identity, file);
+    }
     for (const uri of resourceUris) {
         // Network and data resources are resolved by the loader, not the drop target.
         if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(uri)) {
             continue;
         }
         const path = _ResourcePath(uri);
+        // URI aliases may share one resource. Distinct case-sensitive paths
+        // must not overwrite each other in the loader's virtual file store.
+        const identity = _CanonicalPath(decodeURIComponent(uri), false);
         const keys = GetGltfResourceKeys(uri);
-        if (keys.some((key) => assignedKeys.has(key))) {
-            throw new Error(`Ambiguous companion file for ${uri}. Resource paths differ only by case or a leading dot.`);
+        if (keys.some((key) => assignedKeys.has(key) && assignedKeys.get(key) !== identity)) {
+            throw new Error(`Ambiguous companion file for ${uri}. Distinct resource paths share a loader lookup key.`);
         }
-        const exact = companions.filter((file) => {
+        const expectedPath = _CanonicalPath(mainDirectory + path);
+        const exact = files.filter((file) => {
             const droppedPath = _CanonicalPath(GetGltfFilePath(file));
-            return droppedPath === _CanonicalPath(path) || droppedPath === _CanonicalPath(mainDirectory + path);
+            return droppedPath === expectedPath;
         });
         const basename = path.slice(path.lastIndexOf("/") + 1);
-        const explicit = overrides.get(uri);
+        const explicit = explicitPaths.get(identity);
         const matches = explicit
             ? [explicit]
-            : exact.length
-              ? exact
-              : companions.filter((file) => !(file as FileWithDropPath).correctName && !file.webkitRelativePath && _NormalizePath(file.name) === basename);
+            : assignedPaths.has(identity)
+              ? [assignedPaths.get(identity)!]
+              : exact.length
+                ? exact
+                : files.filter((file) => !(file as FileWithDropPath).correctName && !file.webkitRelativePath && _NormalizePath(file.name) === basename);
         if (matches.length > 1) {
             throw new GltfCompanionResolutionError("ambiguous", uri, `Ambiguous companion file for ${uri}. Choose the file that matches this resource path.`);
         }
@@ -164,11 +201,15 @@ export function ResolveGltfCompanionFiles(
             throw new GltfCompanionResolutionError("missing", uri, `Missing companion file for ${uri}. Choose the referenced file to continue importing.`);
         }
         const match = matches[0];
-        if (assigned.has(match) && !overrides.has(uri)) {
+        if (assignedPaths.has(identity) && assignedPaths.get(identity) !== match) {
+            throw new Error(`Ambiguous companion file for ${uri}. Equivalent resource paths have different file choices.`);
+        }
+        if (assigned.has(match) && !assignedPaths.has(identity) && !explicit) {
             throw new GltfCompanionResolutionError("ambiguous", uri, `Ambiguous companion file for ${uri}. One file matches multiple resource paths.`);
         }
         assigned.add(match);
-        keys.forEach((key) => assignedKeys.add(key));
+        assignedPaths.set(identity, match);
+        keys.forEach((key) => assignedKeys.set(key, identity));
         result.set(uri, match);
     }
     return result;

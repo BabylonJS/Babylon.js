@@ -853,10 +853,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     // Let the loader report malformed or unsupported GLB input.
                 }
             }
-            const mainKey = file.name.toLowerCase();
-            registerFile(mainKey, file);
-            if (resourceUris) {
-                for (const [uri, companion] of ResolveGltfCompanionFiles(file, resourceUris, companionFiles ?? [], sourcePath, companionOverrides)) {
+            const resolvedCompanions = resourceUris ? ResolveGltfCompanionFiles(file, resourceUris, companionFiles ?? [], sourcePath, companionOverrides) : null;
+            if (resolvedCompanions) {
+                for (const [uri, companion] of resolvedCompanions) {
                     for (const key of GetGltfResourceKeys(uri)) {
                         registerFile(key, companion);
                     }
@@ -868,10 +867,23 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 }
             }
 
-            const scene = await LoadSceneAsync(file.name, engine, {
+            // Read the main File directly: its literal name may contain percent
+            // characters or overlap a companion's virtual lookup key.
+            const scene = await LoadSceneAsync(file, engine, {
                 rootUrl: "file:",
                 pluginOptions: {
                     gltf: {
+                        // Validated local companions can use parent-directory URIs.
+                        // Their bytes come only from the resolved file mapping;
+                        // preserve the loader's traversal guard for other URLs.
+                        preprocessUrlAsync: resolvedCompanions
+                            ? async (url) => {
+                                  if (!(url.startsWith("file:") && resolvedCompanions.has(url.slice(5))) && url.includes("..")) {
+                                      throw new Error(`Unresolved resource URL: ${url}`);
+                                  }
+                                  return url;
+                              }
+                            : undefined,
                         extensionOptions: {
                             ["KHR_interactivity"]: {
                                 autoStart: false,
