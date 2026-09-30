@@ -11,6 +11,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingProps } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
+import { EntitySelector } from "shared-ui-components/fluent/primitives/entitySelector";
 
 vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -74,10 +75,87 @@ describe("material and texture parity cores", () => {
         act(() => link?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })));
         expect(navigate).toHaveBeenCalledWith(cube);
 
-        const button = container.querySelector<HTMLButtonElement>("button[aria-describedby]");
+        const button = container.querySelector<HTMLButtonElement>('[aria-label="Clear Reflection"]');
         act(() => button?.click());
         expect(clear).toHaveBeenCalledOnce();
+        expect(container.querySelector('[aria-label="Change Reflection"]')).toBeNull();
         expect(container.textContent).not.toContain("Albedo");
+    });
+
+    it("offers one unlink action before selecting a new texture", () => {
+        const first = { id: "first", name: "First", kind: "2d" };
+        const second = { id: "second", name: "Second", kind: "2d" };
+        const assign = vi.fn();
+        const clear = vi.fn();
+        const props: MaterialTextureBindingProps<typeof first> = {
+            id: "diffuse",
+            label: "Diffuse",
+            value: first,
+            candidates: [first, second],
+            getId: (texture) => texture.id,
+            getDisplayName: (texture) => texture.name,
+            getKind: (texture) => texture.kind,
+            acceptedKinds: ["2d"],
+            write: { assign, clear },
+        };
+        const container = Render(<MaterialTextureBindingPropertyLine {...props} />);
+
+        expect(container.querySelector('[aria-label="Clear Diffuse"]')).not.toBeNull();
+        expect(container.querySelector('[aria-label="Change Diffuse"]')).toBeNull();
+        act(() => container.querySelector<HTMLButtonElement>('[aria-label="Clear Diffuse"]')?.click());
+        expect(clear).toHaveBeenCalledOnce();
+        act(() =>
+            roots[roots.length - 1].render(
+                <FluentProvider theme={webLightTheme}>
+                    <MaterialTextureBindingPropertyLine {...props} value={null} />
+                </FluentProvider>
+            )
+        );
+        const comboBox = container.querySelector<HTMLInputElement>('[role="combobox"]');
+        expect(comboBox?.getAttribute("aria-label")).toBe("Diffuse");
+        act(() => comboBox?.click());
+        const options = Array.from(document.querySelectorAll('[role="option"]'));
+        act(() => options.find((option) => option.textContent === "Second")?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+        expect(assign).toHaveBeenCalledWith(second);
+    });
+
+    it("keeps the Babylon entity selector's one-button unlink or edit behavior", () => {
+        const first = { uniqueId: 1, name: "Shared" };
+        const second = { uniqueId: 2, name: "Shared" };
+        const onChange = vi.fn();
+        const onLink = vi.fn();
+        const getEntities = () => [first, second];
+        const getName = (entity: typeof first) => entity.name;
+        const container = Render(<EntitySelector value={first} onChange={onChange} onLink={onLink} defaultValue={null} getEntities={getEntities} getName={getName} />);
+
+        expect(container.querySelector('[aria-label="Unlink"]')).not.toBeNull();
+        expect(container.querySelector('[aria-label="Edit Link"]')).toBeNull();
+        act(() => container.querySelector<HTMLButtonElement>('[aria-label="Unlink"]')?.click());
+        expect(onChange).toHaveBeenCalledWith(null);
+        act(() =>
+            roots[roots.length - 1].render(
+                <FluentProvider theme={webLightTheme}>
+                    <EntitySelector value={null} onChange={onChange} onLink={onLink} defaultValue={null} getEntities={getEntities} getName={getName} />
+                </FluentProvider>
+            )
+        );
+        expect(container.querySelector('[role="combobox"]')).not.toBeNull();
+
+        act(() =>
+            roots[roots.length - 1].render(
+                <FluentProvider theme={webLightTheme}>
+                    <EntitySelector value={first} onChange={onChange} onLink={onLink} getEntities={getEntities} getName={getName} />
+                </FluentProvider>
+            )
+        );
+        expect(container.querySelector('[aria-label="Unlink"]')).toBeNull();
+        expect(container.querySelector('[aria-label="Edit Link"]')).not.toBeNull();
+        act(() => container.querySelector<HTMLButtonElement>('[aria-label="Edit Link"]')?.click());
+        act(() => container.querySelector<HTMLInputElement>('[role="combobox"]')?.click());
+        const options = Array.from(document.querySelectorAll('[role="option"]'));
+        expect(options).toHaveLength(2);
+        act(() => options[1].dispatchEvent(new MouseEvent("click", { bubbles: true })));
+        expect(onChange).toHaveBeenCalledWith(second);
     });
 
     it("offers accepted assignment candidates without exposing an unsupported clear direction", () => {
@@ -188,6 +266,7 @@ describe("material and texture parity cores", () => {
             "sharedUiComponents/src/fluent/hoc/propertyLines/colorPropertyLineCore.tsx",
             "sharedUiComponents/src/fluent/hoc/propertyLines/vectorPropertyLineCore.tsx",
             "sharedUiComponents/src/fluent/hoc/propertyLines/materialTextureBindingPropertyLine.tsx",
+            "sharedUiComponents/src/fluent/primitives/resourceSelector.tsx",
         ];
 
         for (const file of files) {
