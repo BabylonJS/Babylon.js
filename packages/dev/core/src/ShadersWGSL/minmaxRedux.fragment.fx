@@ -10,9 +10,16 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let coord = vec2i(fragmentInputs.vUV * (uniforms.texSize - 1.0));
 
     let f1 = textureLoad(textureSampler, coord, 0).r;
+    #ifdef CLAMP_REDUCTION_COORDS
+    let edge = vec2i(uniforms.texSize) - vec2i(1);
+    let f2 = textureLoad(textureSampler, min(coord + vec2i(1, 0), edge), 0).r;
+    let f3 = textureLoad(textureSampler, min(coord + vec2i(1, 1), edge), 0).r;
+    let f4 = textureLoad(textureSampler, min(coord + vec2i(0, 1), edge), 0).r;
+    #else
     let f2 = textureLoad(textureSampler, coord + vec2i(1, 0), 0).r;
     let f3 = textureLoad(textureSampler, coord + vec2i(1, 1), 0).r;
     let f4 = textureLoad(textureSampler, coord + vec2i(0, 1), 0).r;
+    #endif
 
      #ifdef DEPTH_REDUX
         #ifdef VIEW_DEPTH

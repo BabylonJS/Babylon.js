@@ -3,6 +3,7 @@ import { Observable } from "./observable";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "core/Engines/engineStore";
 import { Constants } from "../Engines/constants";
+import { Logger } from "./logger";
 
 /**
  * @internal
@@ -34,6 +35,8 @@ export class ThinMinMaxReducerPostProcess extends EffectWrapper {
 
     public textureHeight = 0;
 
+    public useIntegerTextureSize = false;
+
     constructor(name: string, engine: Nullable<AbstractEngine> = null, defines = "", options?: EffectWrapperCreationOptions) {
         super({
             ...options,
@@ -52,7 +55,7 @@ export class ThinMinMaxReducerPostProcess extends EffectWrapper {
 
         const effect = this.drawWrapper.effect!;
 
-        if (this.textureWidth === 1 || this.textureHeight === 1) {
+        if (this.useIntegerTextureSize) {
             effect.setInt2("texSize", this.textureWidth, this.textureHeight);
         } else {
             effect.setFloat2("texSize", this.textureWidth, this.textureHeight);
@@ -72,8 +75,19 @@ export class ThinMinMaxReducer {
 
     public readonly reductionSteps: Array<ThinMinMaxReducerPostProcess>;
 
+    /**
+     * Wait for WebGPU readback before notifying observers (default: false).
+     * Notifications are asynchronous in this mode; WebGL readback remains synchronous.
+     */
+    public waitForReadback = false;
+
     private _depthRedux: boolean;
     private _depthTextureType: DepthTextureType;
+    private _waitBufferFloat?: Float32Array;
+    private _waitBufferUint8?: Uint8Array;
+    private _waitMinMax?: { min: number; max: number };
+    private _readbackPending = false;
+    private _readbackGeneration = 0;
 
     public get depthRedux() {
         return this._depthRedux;
@@ -122,35 +136,74 @@ export class ThinMinMaxReducer {
         return true;
     }
 
-    public readMinMax(texture: InternalTexture) {
-        // Note that we should normally await the call to _readTexturePixels!
-        // But because WebGL does the read synchronously, we know the values will be updated without waiting for the promise to be resolved, which will let us get the updated values
-        // in the current frame, whereas in WebGPU, the read is asynchronous and we should normally wait for the promise to be resolved to get the updated values.
-        // However, it's safe to avoid waiting for the promise to be resolved in WebGPU as well, because we will simply use the current values until "buffer" is updated later on.
-        // Note that it means we can suffer some rendering artifacts in WebGPU because we may use previous min/max values for the current frame.
+    public readMinMax(texture: InternalTexture, fallbackToFullRange = true) {
         const isFloat = texture.type === Constants.TEXTURETYPE_FLOAT || texture.type === Constants.TEXTURETYPE_HALF_FLOAT;
+        const engine = this._scene.getEngine();
+
+        if (this.waitForReadback && engine.isWebGPU) {
+            if (this._readbackPending) {
+                return;
+            }
+
+            const buffer = isFloat ? (this._waitBufferFloat ??= new Float32Array(4)) : (this._waitBufferUint8 ??= new Uint8Array(4));
+            const result = (this._waitMinMax ??= { min: 0, max: 0 });
+            const generation = this._readbackGeneration;
+            const readback = engine._readTexturePixels(texture, 1, 1, -1, 0, buffer, false);
+            this._readbackPending = true;
+
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._completeReadbackAsync(readback, buffer, isFloat, fallbackToFullRange, generation, result);
+            return;
+        }
+
+        // WebGL readback updates the buffer synchronously. WebGPU's default path deliberately
+        // notifies with the previous values rather than waiting for its asynchronous readback.
         const buffer = isFloat ? BufferFloat : BufferUint8;
-
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._scene.getEngine()._readTexturePixels(texture, 1, 1, -1, 0, buffer, false);
+        engine._readTexturePixels(texture, 1, 1, -1, 0, buffer, false);
 
-        MinMax.min = buffer[0];
-        MinMax.max = buffer[1];
+        this._notifyMinMax(buffer, isFloat, fallbackToFullRange, MinMax);
+    }
+
+    private async _completeReadbackAsync(
+        readback: Promise<ArrayBufferView>,
+        buffer: Float32Array | Uint8Array,
+        isFloat: boolean,
+        fallbackToFullRange: boolean,
+        generation: number,
+        result: { min: number; max: number }
+    ): Promise<void> {
+        try {
+            await readback;
+            if (generation === this._readbackGeneration && this.waitForReadback) {
+                this._notifyMinMax(buffer, isFloat, fallbackToFullRange, result);
+            }
+        } catch (error) {
+            Logger.Error(`ThinMinMaxReducer: Failed to complete min/max readback: ${error}`);
+        } finally {
+            this._readbackPending = false;
+        }
+    }
+
+    private _notifyMinMax(buffer: Float32Array | Uint8Array, isFloat: boolean, fallbackToFullRange: boolean, result: { min: number; max: number }) {
+        result.min = buffer[0];
+        result.max = buffer[1];
 
         if (!isFloat) {
-            MinMax.min = MinMax.min / 255.0;
-            MinMax.max = MinMax.max / 255.0;
+            result.min /= 255.0;
+            result.max /= 255.0;
         }
 
-        if (MinMax.min >= MinMax.max) {
-            MinMax.min = 0;
-            MinMax.max = 1;
+        if (fallbackToFullRange && result.min >= result.max) {
+            result.min = 0;
+            result.max = 1;
         }
 
-        this.onAfterReductionPerformed.notifyObservers(MinMax);
+        this.onAfterReductionPerformed.notifyObservers(result);
     }
 
     public dispose(disposeAll = true): void {
+        this._readbackGeneration++;
         if (disposeAll) {
             this.onAfterReductionPerformed.clear();
             this._textureWidth = 0;
@@ -174,7 +227,10 @@ export class ThinMinMaxReducer {
         const reductionInitial = new ThinMinMaxReducerPostProcess(
             "Initial reduction phase",
             scene.getEngine(),
-            "#define INITIAL" + (this._depthRedux ? "\n#define DEPTH_REDUX" : "") + (this._depthTextureType === DepthTextureType.ViewDepth ? "\n#define VIEW_DEPTH" : "")
+            "#define INITIAL" +
+                (w === 1 || h === 1 ? "\n#define CLAMP_REDUCTION_COORDS" : "") +
+                (this._depthRedux ? "\n#define DEPTH_REDUX" : "") +
+                (this._depthTextureType === DepthTextureType.ViewDepth ? "\n#define VIEW_DEPTH" : "")
         );
 
         reductionInitial.textureWidth = w;
@@ -197,6 +253,7 @@ export class ThinMinMaxReducer {
 
             reduction.textureWidth = w;
             reduction.textureHeight = h;
+            reduction.useIntegerTextureSize = w === 1 || h === 1;
 
             this.reductionSteps.push(reduction);
 
