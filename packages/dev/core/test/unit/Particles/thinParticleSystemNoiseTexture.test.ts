@@ -342,26 +342,37 @@ describe("ThinParticleSystem noise texture readback", () => {
     });
 
     it("warns once while a failing noise readback keeps retrying", async () => {
-        const texture: { calls: number; dispose: () => void; getContent: () => Promise<Uint8Array>; getSize: () => { width: number; height: number } } = {
-            calls: 0,
-            dispose: () => {},
-            getContent: () => {
-                texture.calls++;
-                return Promise.reject(new Error("readback failed"));
-            },
-            getSize: () => ({ width: 2, height: 2 }),
-        };
+        const texture = new ProceduralTexture("noise", 2, scene);
+        const readPixelsSpy = vi.spyOn(texture, "readPixels").mockRejectedValue(new Error("readback failed"));
         const warnSpy = vi.spyOn(Logger, "Warn");
 
-        particleSystem.noiseTexture = texture as unknown as ProceduralTexture;
+        particleSystem.noiseTexture = texture;
         particleSystem.updateFunction([]);
         await flushMicrotasks();
         particleSystem.updateFunction([]);
         await flushMicrotasks();
 
         // The readback is retried, but the failure is only reported once.
-        expect(texture.calls).toBe(2);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
         expect(warnSpy).toHaveBeenCalledTimes(1);
         warnSpy.mockRestore();
+    });
+
+    it("retries a rejected procedural texture readback and publishes the successful buffer", async () => {
+        const texture = new ProceduralTexture("noise", 2, scene);
+        const pixels = new Uint8Array(2 * 2 * 4);
+        const readPixelsSpy = vi.spyOn(texture, "readPixels").mockRejectedValueOnce(new Error("readback failed")).mockResolvedValue(pixels);
+
+        particleSystem.noiseTexture = texture;
+        particleSystem.updateFunction([]);
+        await flushMicrotasks();
+        expect(particleSystem._noiseTextureData).toBeNull();
+
+        particleSystem.updateFunction([]);
+        await flushMicrotasks();
+
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+        expect(particleSystem._noiseTextureData).toBe(pixels);
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 2, height: 2 });
     });
 });

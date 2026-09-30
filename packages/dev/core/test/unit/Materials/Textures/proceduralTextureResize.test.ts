@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
+import { type Effect } from "core/Materials/effect";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "core/scene";
 
@@ -87,5 +88,86 @@ describe("ProceduralTexture resize", () => {
 
         // Only one refresh runs: the second callback sees the replaced cache and bails.
         expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it("retries a rejected queued refresh without an unhandled rejection", async () => {
+        const texture = new ProceduralTexture("noise", 2, scene);
+        const pixels = new Uint8Array(2 * 2 * 4);
+        const readPixelsSpy = vi.spyOn(texture, "readPixels").mockResolvedValueOnce(pixels).mockRejectedValueOnce(new Error("readback failed")).mockResolvedValue(pixels);
+
+        await texture.getContent();
+        (texture as unknown as { _frameId: number })._frameId++;
+        await texture.getContent();
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+
+        expect(await texture.getContent()).toBe(pixels);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(3);
+    });
+
+    it("does not let a rejected readback or its queued refresh clear the cache after a resize", async () => {
+        const texture = new ProceduralTexture("noise", 2, scene);
+        let rejectReadback: (reason: Error) => void;
+        const rejectedContent = new Promise<ArrayBufferView>((_resolve, reject) => (rejectReadback = reject));
+        const pixels = new Uint8Array(4 * 4 * 4);
+        const readPixelsSpy = vi
+            .spyOn(texture, "readPixels")
+            .mockReturnValueOnce(rejectedContent)
+            .mockImplementation(() => Promise.resolve(pixels));
+
+        const content = texture.getContent();
+        (texture as unknown as { _frameId: number })._frameId++;
+        texture.getContent();
+        texture.resize({ width: 4, height: 4 }, false);
+        const resizedContent = texture.getContent();
+
+        rejectReadback!(new Error("readback failed"));
+        await expect(content).rejects.toThrow("readback failed");
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+        expect(texture.getContent()).toBe(resizedContent);
+        expect(await resizedContent).toBe(pixels);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it("invalidates the cached readback when shader compilation switches to a fallback texture", async () => {
+        const fallback = new ProceduralTexture("fallback", 4, null, scene);
+        const texture = new ProceduralTexture("noise", 2, "missing", scene, fallback);
+        const readPixelsSpy = vi.spyOn(texture, "readPixels").mockImplementation(() => {
+            const size = texture.getSize();
+            return Promise.resolve(new Uint8Array(size.width * size.height * 4));
+        });
+        await texture.getContent();
+
+        const createEffectSpy = vi.spyOn(engine, "createEffect").mockReturnValue({ isReady: () => false, dispose: () => {} } as unknown as Effect);
+        texture.isReady();
+        createEffectSpy.mock.calls[0][7]!(texture.getEffect(), "compilation failed");
+
+        const content = await texture.getContent();
+        expect(content!.byteLength).toBe(4 * 4 * 4);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+        expect(readPixelsSpy).toHaveBeenLastCalledWith(0, 0);
+    });
+
+    it("discards a refresh queued before switching to the fallback texture", async () => {
+        const fallback = new ProceduralTexture("fallback", 4, null, scene);
+        const texture = new ProceduralTexture("noise", 2, "missing", scene, fallback);
+        const readPixelsSpy = vi.spyOn(texture, "readPixels").mockImplementation((_faceIndex?: number, _level?: number, buffer?: ArrayBufferView | null) => {
+            const size = texture.getSize();
+            return Promise.resolve(buffer ?? new Uint8Array(size.width * size.height * 4));
+        });
+        await texture.getContent();
+        (texture as unknown as { _frameId: number })._frameId++;
+        texture.getContent();
+
+        const createEffectSpy = vi.spyOn(engine, "createEffect").mockReturnValue({ isReady: () => false, dispose: () => {} } as unknown as Effect);
+        texture.isReady();
+        createEffectSpy.mock.calls[0][7]!(texture.getEffect(), "compilation failed");
+        await Promise.resolve();
+        expect(readPixelsSpy).toHaveBeenCalledTimes(1);
+
+        const content = await texture.getContent();
+        expect(content!.byteLength).toBe(4 * 4 * 4);
+        expect(readPixelsSpy).toHaveBeenLastCalledWith(0, 0);
     });
 });
