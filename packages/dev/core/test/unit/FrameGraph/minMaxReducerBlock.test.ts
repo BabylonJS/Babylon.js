@@ -36,7 +36,13 @@ describe("NodeRenderGraphMinMaxReducerBlock", () => {
         expect(block.inputs.map((point) => point.name)).toEqual(["source", "dependencies"]);
         expect(block.output.type).toBe(NodeRenderGraphBlockConnectionPointTypes.Texture);
         expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth);
+        expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo);
+        expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal);
+        expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureVelocity);
+        expect(block.source.excludedConnectionPointTypes).not.toContain(NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition);
         expect(block.source.excludedConnectionPointTypes).toContain(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+        expect(block.source.excludedConnectionPointTypes).toContain(NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag);
+        expect(block.source.excludedConnectionPointTypes).toContain(NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
     });
 
     it("round-trips reducer properties without losing default values", () => {

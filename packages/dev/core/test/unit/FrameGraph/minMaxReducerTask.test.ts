@@ -9,6 +9,7 @@ import { MinMaxReducer } from "core/Misc/minMaxReducer.pure";
 import { Logger } from "core/Misc/logger";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { FreeCamera } from "core/Cameras/freeCamera";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 
@@ -68,6 +69,44 @@ describe("FrameGraphMinMaxReducerTask", () => {
 
         await expect(graph.buildAsync(false)).rejects.toThrow("sourceTexture must have a non-integer color format");
     });
+
+    it.each([Constants.TEXTURE_CUBE_MAP, Constants.TEXTURE_2D_ARRAY, Constants.TEXTURE_3D])("rejects a non-2D source of type %i", async (targetType) => {
+        task.sourceTexture = graph.textureManager.createRenderTargetTexture("non-2D source", {
+            size: { width: 4, height: 4 },
+            sizeIsPercentage: false,
+            options: {
+                createMipMaps: false,
+                samples: 1,
+                types: [Constants.TEXTURETYPE_HALF_FLOAT],
+                formats: [Constants.TEXTUREFORMAT_RED],
+                targetTypes: [targetType],
+            },
+        });
+
+        await expect(graph.buildAsync(false)).rejects.toThrow("sourceTexture must be a 2D texture");
+    });
+
+    it.each([Constants.TEXTURETYPE_BYTE, Constants.TEXTURETYPE_SHORT, Constants.TEXTURETYPE_UNSIGNED_SHORT, Constants.TEXTURETYPE_INT, Constants.TEXTURETYPE_UNSIGNED_INTEGER])(
+        "rejects unsupported reduction texture type %i",
+        async (type) => {
+            task.sourceTexture = createSource(4, 4);
+            task.textureType = type;
+
+            await expect(graph.buildAsync(false)).rejects.toThrow("textureType must be FLOAT, HALF_FLOAT, or UNSIGNED_BYTE");
+        }
+    );
+
+    it.each([Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_HALF_FLOAT, Constants.TEXTURETYPE_UNSIGNED_BYTE])(
+        "records a reduction with supported texture type %i",
+        async (type) => {
+            task.sourceTexture = createSource(4, 4);
+            task.textureType = type;
+
+            await graph.buildAsync(false);
+
+            expect(graph.textureManager.getTextureDescription(task.outputTexture).options.types).toEqual([type]);
+        }
+    );
 
     it("treats reverse screen depth's zero clear value as empty", async () => {
         engine.useReverseDepthBuffer = true;
@@ -243,6 +282,36 @@ describe("FrameGraphMinMaxReducerTask", () => {
             expect(reducer.waitForReadback).toBe(false);
             reducer.waitForReadback = true;
             expect(reducer.waitForReadback).toBe(true);
+        } finally {
+            reducer.dispose();
+        }
+    });
+
+    it("keeps a terminal reduction step for a single-pixel legacy render target", () => {
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const reducer = new MinMaxReducer(camera);
+        const source = new RenderTargetTexture("single-pixel", 1, scene);
+
+        try {
+            reducer.setSourceTexture(source, false);
+            reducer.activate();
+
+            expect(reducer.sourceTexture).toBe(source);
+            expect(reducer.activated).toBe(true);
+        } finally {
+            reducer.deactivate();
+            reducer.dispose();
+            source.dispose();
+        }
+    });
+
+    it("keeps the terminal step used by legacy and CSM reducers for a 1x1 texture", () => {
+        const reducer = new ThinMinMaxReducer(scene);
+        try {
+            reducer.setTextureDimensions(1, 1);
+
+            expect(reducer.reductionSteps).toHaveLength(2);
+            expect(reducer.reductionSteps[1].name).toBe("Reduction phase 1");
         } finally {
             reducer.dispose();
         }

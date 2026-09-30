@@ -38,10 +38,8 @@ export class NodeRenderGraphMinMaxReducerBlock extends NodeRenderGraphBlock {
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.Texture);
 
         this.source.addExcludedConnectionPointFromAllowedTypes(
-            NodeRenderGraphBlockConnectionPointTypes.Texture |
-                NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth |
-                NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth |
-                NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer &
+                ~(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag)
         );
 
         this._frameGraphTask = new FrameGraphMinMaxReducerTask(name, frameGraph);
@@ -74,7 +72,13 @@ export class NodeRenderGraphMinMaxReducerBlock extends NodeRenderGraphBlock {
     }
 
     /** The texture type used for the reduction steps and the 1x1 result. */
-    @editableInPropertyPage("Texture type", PropertyTypeForEdition.TextureType, "PROPERTIES")
+    @editableInPropertyPage("Texture type", PropertyTypeForEdition.List, "PROPERTIES", {
+        options: [
+            { label: "Half float", value: Constants.TEXTURETYPE_HALF_FLOAT },
+            { label: "Float", value: Constants.TEXTURETYPE_FLOAT },
+            { label: "Unsigned byte", value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
+        ],
+    })
     public get textureType(): number {
         return this._frameGraphTask.textureType;
     }

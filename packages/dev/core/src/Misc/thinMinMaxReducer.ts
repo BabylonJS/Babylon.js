@@ -241,7 +241,7 @@ export class ThinMinMaxReducer {
         let index = 1;
 
         // create the additional steps
-        while (w > 1 || h > 1) {
+        while (w > 1 || h > 1 || (w === 1 && h === 1 && index === 1)) {
             w = Math.max(Math.round(w / 2), 1);
             h = Math.max(Math.round(h / 2), 1);
 
