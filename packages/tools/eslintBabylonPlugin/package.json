@@ -21,7 +21,7 @@
     },
     "dependencies": {
         "@microsoft/tsdoc": "~0.16.0",
-        "@microsoft/tsdoc-config": "~0.18.2"
+        "@microsoft/tsdoc-config": "0.18.1"
     },
     "devDependencies": {
         "@types/eslint": "^9.6.1"
