@@ -101,10 +101,10 @@ export class GaussianPointSplattingRenderer {
     /** Whether the source material enables antialiasing opacity compensation (classic COMPENSATION). */
     public compensation = false;
     /**
-     * Hi-Z occlusion culling: skip Gaussians fully behind the previous frame's nearest samples. On by default;
-     * stochastic samples may be semi-transparent, so culling can bias the converged image.
+     * Hi-Z occlusion culling: skip Gaussians fully behind the previous frame's nearest samples. Off by default
+     * because those stochastic samples may be semi-transparent, so culling biases the converged image.
      */
-    public occlusionCulling = true;
+    public occlusionCulling = false;
 
     private _pointCount: StorageBuffer;
     private _indirectArgs: StorageBuffer;

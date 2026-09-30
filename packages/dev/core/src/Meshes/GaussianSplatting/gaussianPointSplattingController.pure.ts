@@ -103,6 +103,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _autoRequestId = 0;
     private _budgetReadPending = false;
     private _resultReady = false;
+    /** Whether the latest compute run succeeded; unlike `_resultReady`, not cleared at frame start. */
+    private _progressReady = false;
     private _computedWidth = 0;
     private _computedHeight = 0;
     // Counters of the last dispatch, surfaced by `progress`.
@@ -178,7 +180,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /** {@inheritDoc IGaussianPointSplattingController.progress} */
     public get progress(): Nullable<IGaussianPointSplattingProgress> {
-        if (!this._computeActive || !this._resultReady || !this._renderer) {
+        if (!this._computeActive || !this._progressReady || !this._renderer) {
             return null;
         }
         return {
@@ -242,6 +244,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer = null;
         this._decodedSplatsData = null;
         this._resultReady = false;
+        this._progressReady = false;
         this._budgetReadPending = false;
         this._autoN = 2;
         this._autoMeasuredGeneration = -1;
@@ -739,6 +742,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     /** Runs compute immediately before a point compositor and binds the result to both blit materials. */
     private _runCompute(): void {
         this._resultReady = false;
+        this._progressReady = false;
         if ((this._colorMode || this._depthMode) && this._mesh._pointStreamingUnsupported && !this._streamingWarned) {
             this._streamingWarned = true;
             Logger.Warn(
@@ -788,7 +792,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer.rightHandedSystem = this._scene.useRightHandedSystem;
         this._renderer.isOrthographic = Math.abs(projection.m[15] - 1) < 0.001;
         const gsMaterial = this._mesh.material as Nullable<GaussianSplattingMaterial>;
-        const kernelSize = gsMaterial?.kernelSize ?? GaussianSplattingMaterial.KernelSize;
+        const kernelSize = gsMaterial?.kernelSize || GaussianSplattingMaterial.KernelSize;
         const minPixelSize = gsMaterial ? gsMaterial.minPixelSize : GaussianSplattingMaterial.MinPixelSize;
         const compensation = gsMaterial?.compensation ?? GaussianSplattingMaterial.Compensation;
         const renderer = this._renderer;
@@ -808,6 +812,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             return;
         }
         this._resultReady = true;
+        this._progressReady = true;
         this._computedWidth = fullW;
         this._computedHeight = fullH;
         // Snapshot now: a later reset would pair a new generation with the old cycle length.
@@ -914,6 +919,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._depthBlit?.dispose();
         this._depthBlitMesh?.dispose();
         this._renderer = null;
+        this._resultReady = false;
+        this._progressReady = false;
         this._budgetReadPending = false;
         this._blit = null;
         this._blitMesh = null;

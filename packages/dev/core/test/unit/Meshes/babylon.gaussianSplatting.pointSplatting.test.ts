@@ -106,6 +106,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_colorMode"] = true;
         expect(mesh.pointSplattingProgress).toBeNull();
         controller["_resultReady"] = true;
+        controller["_progressReady"] = true;
         controller["_progressFrameCount"] = 12;
         controller["_progressGeneration"] = 3;
         controller["_progressCycleLength"] = 4;
@@ -124,7 +125,21 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
             pixelCycleLength: 4,
         });
 
+        // Frame start invalidates the compute result, but progress stays readable until the next compute runs.
+        const streaming = vi.spyOn(mesh, "_pointStreamingUnsupported", "get").mockReturnValue(true);
+        controller["_ensureCompute"]();
+        streaming.mockRestore();
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(controller["_resultReady"]).toBe(false);
+        expect(mesh.pointSplattingProgress).toEqual({
+            renderedFrameCount: 12,
+            accumulationVersion: 3,
+            pixelCycleLength: 4,
+        });
+
         controller["_renderer"] = null;
+        controller.dispose();
+        expect(controller["_progressReady"]).toBe(false);
         scene.dispose();
         engine.dispose();
     });
@@ -1062,9 +1077,10 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(setProjection.mock.lastCall![0]).toBe(projection);
         expect(setInverseProjection.mock.lastCall![0].equals(Matrix.Invert(projection))).toBe(true);
 
+        // Matches the classic material: a zero kernel size falls back to the default.
         (mesh.material as GaussianSplattingMaterial).kernelSize = 0;
         controller["_runCompute"]();
-        expect(renderer.kernelSize).toBe(0);
+        expect(renderer.kernelSize).toBe(GaussianSplattingMaterial.KernelSize);
 
         const customProjection = Matrix.PerspectiveFovLH(camera.fov, 3, camera.minZ, camera.maxZ);
         customProjection.setRowFromFloats(0, customProjection.m[0], customProjection.m[1], 0.03, 0.02);
