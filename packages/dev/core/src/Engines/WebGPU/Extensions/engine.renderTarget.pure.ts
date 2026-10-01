@@ -44,6 +44,7 @@ export function RegisterEnginesWebGPUExtensionsEngineRenderTarget(): void {
             fullOptions.label = options.label;
             fullOptions.format = options.format;
             fullOptions.type = options.type;
+            fullOptions.useSRGBBuffer = options.useSRGBBuffer;
         } else {
             fullOptions.generateMipMaps = options;
             fullOptions.generateDepthBuffer = true;
