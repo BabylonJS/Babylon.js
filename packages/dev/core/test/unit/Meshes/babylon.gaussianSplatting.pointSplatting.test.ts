@@ -902,6 +902,38 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it("preserves applicable fog in classic color while keeping point depth", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_runCompute"] = vi.fn();
+        engine.currentRenderPassId = camera.renderPassId;
+        scene.fogMode = Scene.FOGMODE_EXP;
+        expect(controller.drawColorPass(true)).toBe(false);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(true);
+        engine.currentRenderPassId = camera.renderPassId;
+        scene.fogEnabled = false;
+        expect(controller.drawColorPass(true)).toBe(true);
+        scene.fogEnabled = true;
+        mesh.applyFog = false;
+        expect(controller.drawColorPass(true)).toBe(true);
+        mesh.applyFog = true;
+        mesh.material!.fogEnabled = false;
+        expect(controller.drawColorPass(true)).toBe(true);
+        mesh.material!.fogEnabled = true;
+        scene.fogMode = Scene.FOGMODE_NONE;
+        expect(controller.drawColorPass(true)).toBe(true);
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("preserves an enabled solid-color override without disabling point depth", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { type Nullable } from "core/types";
-import { type Scene } from "core/scene.pure";
+import { Scene } from "core/scene.pure";
 import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion } from "core/Maths/math.vector.pure";
 import { type Material } from "core/Materials/material.pure";
@@ -1017,7 +1017,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
      */
     public drawColorPass(enableAlphaMode: boolean): boolean {
         const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
-        const colorPass = this._colorMode && !solidColor?.isEnabled && this._isMainColorPass();
+        const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
+        const colorPass = this._colorMode && !solidColor?.isEnabled && !fog && this._isMainColorPass();
         const depthPass = this._depthMode && this._isDepthPass();
         if ((!colorPass && !depthPass) || this._hasUnsupportedView()) {
             return false;
