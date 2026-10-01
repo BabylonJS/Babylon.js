@@ -29,6 +29,7 @@ const _BytesPerSplat = 32;
 // Loaded on demand to keep this module side-effect free; the wrapper imports them eagerly.
 let _DependenciesReady = false;
 let _DependenciesPromise: Nullable<Promise<void>> = null;
+let _DependenciesFailed = false;
 
 async function _LoadDependenciesAsync(): Promise<void> {
     try {
@@ -47,6 +48,7 @@ async function _LoadDependenciesAsync(): Promise<void> {
         ]);
         _DependenciesReady = true;
     } catch (error) {
+        _DependenciesFailed = true;
         _DependenciesPromise = null;
         Logger.Error(`GaussianSplattingMesh: failed to load point-splatting shaders: ${String(error)}`);
     }
@@ -54,6 +56,7 @@ async function _LoadDependenciesAsync(): Promise<void> {
 
 function _LoadDependencies(): void {
     if (!_DependenciesReady && !_DependenciesPromise) {
+        _DependenciesFailed = false;
         _DependenciesPromise = _LoadDependenciesAsync();
     }
 }
@@ -194,7 +197,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /** True while either point-splatting mode is on, i.e. while the shared compute must run. */
     private get _computeActive(): boolean {
-        return (this._colorMode || this._depthMode) && !this._mesh._pointStreamingUnsupported && !this._hasUnsupportedSource;
+        return (this._colorMode || this._depthMode) && !_DependenciesFailed && !this._mesh._pointStreamingUnsupported && !this._hasUnsupportedSource;
     }
 
     /** GPU-only SOG and standalone streams have no retained splats for the compute decoder. */
