@@ -191,6 +191,19 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
     swapChainFormat?: GPUTextureFormat;
 
     /**
+     * Defines the canvas presentation tone mapping. Default: `{ mode: "standard" }`.
+     * Extended mode allows HDR presentation with swapChainFormat: "rgba16float" on supported browsers and displays.
+     * This does not replace material or post-process tone mapping; the rendering pipeline must preserve values above 1 for HDR output.
+     */
+    canvasToneMapping?: GPUCanvasToneMapping;
+
+    /**
+     * Defines the canvas output color space. Default: "srgb".
+     * Selecting "display-p3" changes how output colors are interpreted; it does not convert the rendering pipeline's colors to Display P3.
+     */
+    canvasColorSpace?: PredefinedColorSpace;
+
+    /**
      * Defines whether we should generate debug markers in the gpu command lists (can be seen with PIX for eg). Default: false
      */
     enableGPUDebugMarkers?: boolean;
@@ -1182,6 +1195,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
             alphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasAlphaMode.Premultiplied : WebGPUConstants.CanvasAlphaMode.Opaque,
+            toneMapping: this._options.canvasToneMapping,
+            colorSpace: this._options.canvasColorSpace,
         });
     }
 
