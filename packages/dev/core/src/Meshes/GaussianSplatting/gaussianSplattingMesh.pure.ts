@@ -742,11 +742,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /**
      * Protected state the point-splatting controller needs to decode {@link _splatsData}.
-     * @returns the flip-Y convention, the per-splat part indices, and the active splat-range pairs
+     * @returns the decoded atlas positions, fallback flip-Y convention, part indices, and active splat-range pairs
      * @internal
      */
-    public _getPointDecodeInputs(): { flipY: boolean; partIndices: Nullable<Uint8Array>; activeRanges: Nullable<Uint32Array> } {
-        return { flipY: this._flipY, partIndices: this._partIndices, activeRanges: this._activeSplatRanges };
+    public _getPointDecodeInputs(): { positions: Nullable<Float32Array>; flipY: boolean; partIndices: Nullable<Uint8Array>; activeRanges: Nullable<Uint32Array> } {
+        return { positions: this._splatPositions, flipY: this._flipY, partIndices: this._partIndices, activeRanges: this._activeSplatRanges };
     }
 
     protected override _drawColorPass(mesh: Mesh, subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {

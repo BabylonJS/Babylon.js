@@ -345,6 +345,42 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it("uses the classic atlas means for appended parts with mixed Y conventions", () => {
+        const engine = new NullEngine();
+        vi.spyOn(engine, "updateTextureData").mockImplementation(() => {});
+        (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
+        (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 16;
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        const first = new ArrayBuffer(32);
+        new Float32Array(first).set([1, 2, 3, 1, 1, 1]);
+        new Uint8Array(first).fill(128, 24);
+        mesh.updateData(first);
+        const other = new GaussianSplattingMesh("other", null, scene);
+        other.disableDepthSort = true;
+        const second = new ArrayBuffer(32);
+        new Float32Array(second).set([4, 5, 6, 1, 1, 1]);
+        new Uint8Array(second).fill(128, 24);
+        other.updateData(second);
+        const proxy = mesh.addPart(other);
+        const controller = CreateController(mesh);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+        controller["_syncData"]();
+        const positions = mesh._getPointDecodeInputs().positions!;
+        const means = upload.mock.lastCall![0];
+        expect(Array.from(means.subarray(0, 3))).toEqual(Array.from(positions.subarray(0, 3)));
+        const offset = proxy._splatsDataOffset * 4;
+        expect(Array.from(means.subarray(offset, offset + 3))).toEqual([4, 5, 6]);
+        expect(Array.from(controller["_partLocalMin"].subarray(3, 6))).toEqual([4, 5, 6]);
+        controller["_renderer"] = null;
+        mesh["_partProxies"] = mesh["_partProxies"].filter((part) => !!part);
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("filters point opacity by source and compound part ranges", () => {
         const engine = new NullEngine();
         (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;

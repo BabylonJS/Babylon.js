@@ -418,6 +418,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const floats = new Float32Array(splatsData);
         const count = (bytes.length / _BytesPerSplat) | 0;
         const inputs = this._mesh._getPointDecodeInputs();
+        const positions = inputs.positions;
         const flipY = inputs.flipY ? -1 : 1;
         const partIndices = this._mesh.isCompound ? inputs.partIndices : null;
 
@@ -451,9 +452,10 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
         for (let i = 0; i < count; i++) {
             const active = !activeMask || activeMask[i] !== 0;
-            const mx = floats[8 * i + 0];
-            const my = floats[8 * i + 1] * flipY;
-            const mz = floats[8 * i + 2];
+            // Appended parts may use a different Y convention from the mesh's original updateData.
+            const mx = positions ? positions[4 * i] : floats[8 * i];
+            const my = positions ? positions[4 * i + 1] : floats[8 * i + 1] * flipY;
+            const mz = positions ? positions[4 * i + 2] : floats[8 * i + 2];
 
             const qb = _BytesPerSplat * i + 28;
             quaternion.set((bytes[qb + 1] - 127.5) / 127.5, (bytes[qb + 2] - 127.5) / 127.5, (bytes[qb + 3] - 127.5) / 127.5, -(bytes[qb + 0] - 127.5) / 127.5);
