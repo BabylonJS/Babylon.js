@@ -3,7 +3,7 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { type NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import { type VertexData } from "../../mesh.vertexData";
+import { VertexData } from "../../mesh.vertexData";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { CSG2, InitializeCSG2Async, IsCSG2Ready } from "core/Meshes/csg2";
@@ -122,32 +122,38 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
                 return null;
             }
 
-            // Ensure that all the fields are filled to avoid problems later on in the graph.
-            // Pads are zero-filled (a bare new Array(n) copies into CSG2 as NaN, which Manifold rejects)
-            // and sized per operand, since the two geometries rarely share a vertex count.
-            const pad = (length: number) => new Array<number>(length).fill(0);
+            // Make both operands expose the same attributes, since CSG2 refuses mismatched vertex layouts.
+            // Missing normals are computed from the geometry, missing colors default to white (as VertexData.merge does)
+            // and missing UVs to zero. Every pad is sized to its own operand.
+            const pad = (length: number, value: number) => new Array<number>(length).fill(value);
+            const computeNormals = (geometry: VertexData) => {
+                const normals: number[] = [];
+                VertexData.ComputeNormals(geometry.positions, geometry.indices, normals);
+                return normals;
+            };
             const vertexCount0 = vertexData0.positions!.length / 3;
             const vertexCount1 = vertexData1.positions!.length / 3;
             if (!vertexData0.normals && vertexData1.normals) {
-                vertexData0.normals = pad(vertexData0.positions!.length);
+                vertexData0.normals = computeNormals(vertexData0);
             }
             if (!vertexData1.normals && vertexData0.normals) {
-                vertexData1.normals = pad(vertexData1.positions!.length);
+                vertexData1.normals = computeNormals(vertexData1);
             }
-            // CSG2 counts every UV set present in the property layout, so all six channels must match.
-            for (const key of ["uvs", "uvs2", "uvs3", "uvs4", "uvs5", "uvs6"] as const) {
+            // The legacy engine only reads the first UV set; CSG2 counts every set present.
+            const uvSets = this.useOldCSGEngine ? (["uvs"] as const) : (["uvs", "uvs2", "uvs3", "uvs4", "uvs5", "uvs6"] as const);
+            for (const key of uvSets) {
                 if (!vertexData0[key] && vertexData1[key]) {
-                    vertexData0[key] = pad(vertexCount0 * 2);
+                    vertexData0[key] = pad(vertexCount0 * 2, 0);
                 }
                 if (!vertexData1[key] && vertexData0[key]) {
-                    vertexData1[key] = pad(vertexCount1 * 2);
+                    vertexData1[key] = pad(vertexCount1 * 2, 0);
                 }
             }
             if (!vertexData0.colors && vertexData1.colors) {
-                vertexData0.colors = pad(vertexCount0 * 4);
+                vertexData0.colors = pad(vertexCount0 * 4, 1);
             }
             if (!vertexData1.colors && vertexData0.colors) {
-                vertexData1.colors = pad(vertexCount1 * 4);
+                vertexData1.colors = pad(vertexCount1 * 4, 1);
             }
 
             let boolCSG: CSG | CSG2;
