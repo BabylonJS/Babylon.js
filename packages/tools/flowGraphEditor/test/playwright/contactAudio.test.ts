@@ -131,38 +131,76 @@ test("saves two different encoded impact sounds and reopens the playable Physics
     expect(errors).toEqual([]);
 });
 
-test("reports invalid and long audio in the chooser and accepts AAC without changing the scene", async ({ page }) => {
-    test.setTimeout(60000);
-    const fge = new FlowGraphEditorPage(page);
-    await fge.goto({ local: true });
-    await page.getByRole("button", { name: "Load PhysicsMath demo", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Add sound reaction", exact: true })).toBeEnabled({ timeout: 30000 });
-    const identity = await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid);
-    await page.getByRole("button", { name: "Add sound reaction", exact: true }).click();
-    const picker = page.getByLabel("Choose audio file", { exact: true });
-    await picker.setInputFiles({ name: "fake.mp3", mimeType: "audio/mpeg", buffer: Buffer.from("not audio") });
-    await expect(page.getByRole("alert")).toContainText("file contents do not match");
-    await picker.setInputFiles(AudioFixtures + "too-long.mp3");
-    await expect(page.getByRole("alert")).toContainText("30 seconds or less");
-    await picker.setInputFiles(AudioFixtures + "tap.m4a");
-    await expect(page.getByRole("combobox", { name: "Contact sound", exact: true })).toHaveText(/tap.m4a/);
-    await page.getByRole("button", { name: "Listen", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Listen", exact: true })).toBeEnabled();
-    await expect(page.getByRole("alert")).not.toBeVisible();
-    await page.evaluate(() => {
-        (globalThis as any).__auditionDisposed = false;
-        const runtime = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.contactAudioRuntime;
-        const voice = runtime._audition ?? runtime._voices.get("audition")?.[0];
-        voice.onDisposeObservable.add(() => ((globalThis as any).__auditionDisposed = true));
+for (const aacUnavailable of [false, true]) {
+    test(`reports invalid and long audio without changing the scene (${aacUnavailable ? "unavailable AAC" : "native codecs"})`, async ({ page }) => {
+        test.setTimeout(60000);
+        if (aacUnavailable) {
+            await page.addInitScript(() => {
+                const NativeAudio = window.Audio;
+                const setSrc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "src")!.set!;
+                (window as any).Audio = function () {
+                    const element = new NativeAudio();
+                    const canPlayType = element.canPlayType.bind(element);
+                    element.canPlayType = (type) => (type.includes("mp4") ? "" : canPlayType(type));
+                    Object.defineProperty(element, "src", {
+                        set(value: string) {
+                            void fetch(value)
+                                .then((response) => response.blob())
+                                .then((blob) => {
+                                    if (blob.type === "audio/mp4") {
+                                        element.dispatchEvent(new Event("error"));
+                                    } else {
+                                        setSrc.call(element, value);
+                                    }
+                                });
+                        },
+                    });
+                    return element;
+                };
+            });
+        }
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await page.getByRole("button", { name: "Load PhysicsMath demo", exact: true }).click();
+        await expect(page.getByRole("button", { name: "Add sound reaction", exact: true })).toBeEnabled({ timeout: 30000 });
+        const identity = await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid);
+        await page.getByRole("button", { name: "Add sound reaction", exact: true }).click();
+        const picker = page.getByLabel("Choose audio file", { exact: true });
+        await picker.setInputFiles({ name: "fake.mp3", mimeType: "audio/mpeg", buffer: Buffer.from("not audio") });
+        await expect(page.getByRole("alert")).toContainText("file contents do not match");
+        await picker.setInputFiles(AudioFixtures + "too-long.mp3");
+        await expect(page.getByRole("alert")).toContainText("30 seconds or less");
+        const canReadAAC = await page.evaluate(() => new Audio().canPlayType('audio/mp4; codecs="mp4a.40.2"') !== "");
+        await picker.setInputFiles(AudioFixtures + "tap.m4a");
+        const sound = page.getByRole("combobox", { name: "Contact sound", exact: true });
+        if (canReadAAC) {
+            await expect(sound).toHaveText(/tap.m4a/);
+        } else {
+            await expect(page.getByRole("alert")).toContainText("This browser cannot decode this audio file");
+            await expect(sound).not.toHaveText(/tap.m4a/);
+            expect(await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid)).toBe(identity);
+            // Keep the real audition and cleanup assertions active when this browser lacks AAC.
+            await picker.setInputFiles(AudioFixtures + "tap.mp3");
+            await expect(sound).toHaveText(/tap.mp3/);
+        }
+        await page.getByRole("button", { name: "Listen", exact: true }).click();
+        await expect(page.getByRole("button", { name: "Listen", exact: true })).toBeEnabled();
+        await expect(page.getByRole("alert")).not.toBeVisible();
+        await page.evaluate(() => {
+            (globalThis as any).__auditionDisposed = false;
+            const runtime = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.contactAudioRuntime;
+            const voice = runtime._audition ?? runtime._voices.get("audition")?.[0];
+            voice.onDisposeObservable.add(() => ((globalThis as any).__auditionDisposed = true));
+        });
+        await page.getByRole("button", { name: "Cancel", exact: true }).click();
+        expect(await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid)).toBe(identity);
+        expect(await page.evaluate(() => (globalThis as any).__auditionDisposed), "closing the chooser must release its audition voice").toBe(true);
+        expect(
+            await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.contactAudioRuntime._buffers.size),
+            "canceled clips must not consume the preview budget"
+        ).toBe(0);
     });
-    await page.getByRole("button", { name: "Cancel", exact: true }).click();
-    expect(await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene.uid)).toBe(identity);
-    expect(await page.evaluate(() => (globalThis as any).__auditionDisposed), "closing the chooser must release its audition voice").toBe(true);
-    expect(
-        await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.contactAudioRuntime._buffers.size),
-        "canceled clips must not consume the preview budget"
-    ).toBe(0);
-});
+}
 
 test("supports choosing contact sounds on a touch viewport", async ({ browser }, testInfo) => {
     test.setTimeout(90000);
