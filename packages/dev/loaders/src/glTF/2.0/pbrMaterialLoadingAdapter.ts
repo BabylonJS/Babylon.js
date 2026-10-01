@@ -811,15 +811,20 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         return this._material.subSurface.diffusionDistance;
     }
 
+    /**
+     * Sets the transmission scatter texture
+     */
     public set transmissionScatterTexture(value: Nullable<BaseTexture>) {}
 
     /** @internal */
     public set volumetricScatterStrengthFactor(value: Nullable<number>) {
         this._material.subSurface.isTranslucencyEnabled = value !== null && value > 0;
         this._material.subSurface.translucencyIntensity = value ?? 0;
-        this._material.subSurface.isRefractionEnabled = !this._material.subSurface.isTranslucencyEnabled;
     }
 
+    /**
+     * Sets the volumetric scatter texture
+     */
     public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {}
 
     /** @internal */
@@ -962,7 +967,6 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public set subsurfaceWeight(value: number) {
         this._material.subSurface.isTranslucencyEnabled = value > 0;
         this._material.subSurface.translucencyIntensity = value;
-        this._material.subSurface.isRefractionEnabled = !this._material.subSurface.isTranslucencyEnabled;
     }
 
     /**
