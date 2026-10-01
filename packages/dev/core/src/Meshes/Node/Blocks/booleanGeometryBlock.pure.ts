@@ -122,25 +122,32 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
                 return null;
             }
 
-            const vertexCount = vertexData0.positions!.length / 3;
-            // Ensure that all the fields are filled to avoid problems later on in the graph
+            // Ensure that all the fields are filled to avoid problems later on in the graph.
+            // Pads are zero-filled (a bare new Array(n) copies into CSG2 as NaN, which Manifold rejects)
+            // and sized per operand, since the two geometries rarely share a vertex count.
+            const pad = (length: number) => new Array<number>(length).fill(0);
+            const vertexCount0 = vertexData0.positions!.length / 3;
+            const vertexCount1 = vertexData1.positions!.length / 3;
             if (!vertexData0.normals && vertexData1.normals) {
-                vertexData0.normals = new Array<number>(vertexData0.positions!.length);
+                vertexData0.normals = pad(vertexData0.positions!.length);
             }
             if (!vertexData1.normals && vertexData0.normals) {
-                vertexData1.normals = new Array<number>(vertexData1.positions!.length);
+                vertexData1.normals = pad(vertexData1.positions!.length);
             }
-            if (!vertexData0.uvs && vertexData1.uvs) {
-                vertexData0.uvs = new Array<number>(vertexCount * 2);
-            }
-            if (!vertexData1.uvs && vertexData0.uvs) {
-                vertexData1.uvs = new Array<number>(vertexCount * 2);
+            // CSG2 counts every UV set present in the property layout, so all six channels must match.
+            for (const key of ["uvs", "uvs2", "uvs3", "uvs4", "uvs5", "uvs6"] as const) {
+                if (!vertexData0[key] && vertexData1[key]) {
+                    vertexData0[key] = pad(vertexCount0 * 2);
+                }
+                if (!vertexData1[key] && vertexData0[key]) {
+                    vertexData1[key] = pad(vertexCount1 * 2);
+                }
             }
             if (!vertexData0.colors && vertexData1.colors) {
-                vertexData0.colors = new Array<number>(vertexCount * 4);
+                vertexData0.colors = pad(vertexCount0 * 4);
             }
             if (!vertexData1.colors && vertexData0.colors) {
-                vertexData1.colors = new Array<number>(vertexCount * 4);
+                vertexData1.colors = pad(vertexCount1 * 4);
             }
 
             let boolCSG: CSG | CSG2;
