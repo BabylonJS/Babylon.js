@@ -1,3 +1,4 @@
+import { GetVariableAuthoringVersion } from "./variableUtils";
 import { type GlobalState } from "./globalState";
 import { PatchKhrInteractivityGlb, PatchKhrInteractivityGltf } from "./khrGlbBehaviorAuthoring";
 import { type Nullable } from "core/types";
@@ -101,6 +102,8 @@ export interface IFlowGraphEditorDeserializedState {
  * Provides serialization and deserialization utilities for the flow graph editor.
  */
 export class SerializationTools {
+    private static readonly _SourceGraphIdentities = new WeakMap<FlowGraph, number>();
+    private static _NextSourceGraphIdentity = 0;
     private static readonly _KhrPersistenceDisabledReason = "KHR_interactivity graphs use import-scoped runtime services and cannot be saved to or reloaded from Flow Graph JSON.";
 
     /**
@@ -109,13 +112,20 @@ export class SerializationTools {
      * @returns stable definitions and canonical graph content when export is supported
      */
     public static CaptureSourceGraphState(globalState: GlobalState): { definition: string; canonical: string | null } {
-        const definitions = globalState.coordinator?.flowGraphs.map((graph) => {
+        const graphs = globalState.coordinator ? globalState.coordinator.flowGraphs : globalState.flowGraph ? [globalState.flowGraph] : [];
+        const definitions = graphs.map((graph) => {
+            // A JSON reload may preserve the graph UUID while replacing its authored state.
+            let identity = SerializationTools._SourceGraphIdentities.get(graph);
+            if (identity === undefined) {
+                identity = SerializationTools._NextSourceGraphIdentity++;
+                SerializationTools._SourceGraphIdentities.set(graph, identity);
+            }
             const blocks = graph.getAllBlocks().map((block) => {
                 const value = {};
                 block.serialize(value);
                 return value;
             });
-            return { name: graph.name, metadata: graph.metadata, blocks };
+            return { identity, name: graph.name, metadata: graph.metadata, blocks, variableAuthoringVersion: GetVariableAuthoringVersion(graph) };
         });
         let canonical: string | null = null;
         try {

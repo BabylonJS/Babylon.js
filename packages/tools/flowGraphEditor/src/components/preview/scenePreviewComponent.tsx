@@ -27,6 +27,9 @@ import {
     Input,
     Label,
     Option,
+    Popover,
+    PopoverSurface,
+    PopoverTrigger,
     Tooltip,
     makeStyles,
     tokens,
@@ -226,7 +229,7 @@ function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[], 
 const useStyles = makeStyles({
     container: {
         display: "grid",
-        gridTemplateRows: "auto minmax(0, 1fr) auto",
+        gridTemplateRows: "auto minmax(0, 1fr)",
         height: "100%",
         width: "100%",
         overflow: "hidden",
@@ -256,6 +259,9 @@ const useStyles = makeStyles({
         fontSize: tokens.fontSizeBase300,
     },
     status: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS} ${tokens.spacingVerticalSNudge}`,
         fontSize: tokens.fontSizeBase300,
         color: tokens.colorNeutralForeground2,
@@ -298,22 +304,31 @@ const useStyles = makeStyles({
         outline: "none",
         padding: 0,
     },
-    summary: {
-        background: tokens.colorNeutralBackground2,
-        borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-        padding: `${tokens.spacingVerticalXS} 0`,
-        overflowY: "auto",
-        maxHeight: "20px",
+    statusDescription: { flex: 1, minWidth: 0 },
+    summaryToggle: {
+        minHeight: "44px",
+        maxWidth: "50%",
+        whiteSpace: "normal",
+        overflowWrap: "anywhere",
     },
+    summarySurface: {
+        maxWidth: "min(20rem, calc(100vw - 32px))",
+        maxHeight: "min(12rem, calc(100dvh - 64px))",
+        boxSizing: "border-box",
+        overflowY: "auto",
+    },
+    categoryList: { margin: 0 },
     categoryItem: {
         display: "grid",
-        gridTemplateColumns: "1fr auto",
+        gridTemplateColumns: "minmax(0, 1fr) auto",
+        columnGap: tokens.spacingHorizontalS,
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalM}`,
         fontSize: tokens.fontSizeBase300,
         ":hover": { background: tokens.colorNeutralBackground1Hover },
     },
-    categoryLabel: { color: tokens.colorNeutralForeground2 },
+    categoryLabel: { color: tokens.colorNeutralForeground2, overflowWrap: "anywhere" },
     categoryCount: {
+        margin: 0,
         color: tokens.colorPaletteGreenForeground1,
         fontWeight: tokens.fontWeightBold,
     },
@@ -1543,6 +1558,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         if (!baseline) {
             throw new Error("The scene is not ready for contact sound authoring.");
         }
+        const graphState = SerializationTools.CaptureSourceGraphState(globalState);
         let prepared: string | Uint8Array;
         try {
             prepared = await SerializationTools.BuildSourceForContactAudioAsync(globalState, baseline);
@@ -1554,6 +1570,13 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     cause: error,
                 }
             );
+        }
+        const currentGraphState = SerializationTools.CaptureSourceGraphState(globalState);
+        if (globalState.sceneContext !== ctx || (globalState.sourceGlb ?? globalState.sourceGltf) !== source) {
+            throw new Error("The preview scene changed while preparing the sound reaction. Your current scene is retained.");
+        }
+        if (currentGraphState.definition !== graphState.definition || currentGraphState.canonical !== graphState.canonical) {
+            throw new Error("The graph changed while preparing the sound reaction. Your edits are retained. Save the reaction again.");
         }
         const document = typeof prepared === "string" ? ReadGltfDocument(prepared) : ReadGlbDocument(prepared);
         const shapes = GetContactObjects(ctx.meshes, source.nodeCount).map((entry) => entry.shape);
@@ -1743,6 +1766,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const sourceGltf = this.props.globalState.sourceGltf;
         const source = sourceGlb ?? sourceGltf;
         const contactObjects = source && ctx ? GetContactObjects(ctx.meshes, source.nodeCount) : [];
+        const hasInstancedObjects =
+            !!source && !!ctx?.meshes.some((mesh) => GetGlbNodeIndex(mesh, source.nodeCount) !== undefined && (mesh.isAnInstance || mesh.hasInstances || mesh.hasThinInstances));
+        const sceneDetailsLabel = "Scene details";
         const selectedContact = contactObjects.find((entry) => entry.shape.node === this.state.selectedContactNode);
         const externalResourceWarning = source?.externalResourceUris.length
             ? `This ${sourceGlb ? "GLB" : "glTF"} references external resources: ${source.externalResourceUris.join(", ")}. Keep them at their referenced paths when sharing or reopening the downloaded asset.`
@@ -1876,6 +1902,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                             </Tooltip>
                         )}
                     </div>
+                    {hasInstancedObjects && (
+                        <Body1 role="status" data-testid="contact-instance-warning">
+                            Instanced objects are unavailable for contact sounds.
+                        </Body1>
+                    )}
                     {externalResourceWarning && (
                         <Tooltip content={externalResourceWarning} relationship="description">
                             <Body1 className={classes.resourceWarning} tabIndex={0} title={externalResourceWarning} data-testid="external-resource-warning-status">
@@ -1885,20 +1916,32 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     )}
                     {ctx && (
                         <div className={classes.status}>
-                            {selectedContact ? (
-                                <Body1 data-testid="contact-selected-object">
-                                    Selected: {selectedContact.mesh.name} (node {selectedContact.shape.node})
-                                </Body1>
-                            ) : (
-                                <>
-                                    <Body1 className={classes.statusCount}>{sceneObjectCount}</Body1> scene objects
-                                </>
-                            )}
-                            <Tooltip content="Flow graph execution contexts will resolve asset references from this scene" relationship="description">
-                                <Body1 className={classes.statusWired}>
-                                    <CheckmarkRegular /> wired
-                                </Body1>
-                            </Tooltip>
+                            <div className={classes.statusDescription}>
+                                {selectedContact ? (
+                                    <Body1 data-testid="contact-selected-object">
+                                        Selected: {selectedContact.mesh.name} (node {selectedContact.shape.node})
+                                    </Body1>
+                                ) : (
+                                    <>
+                                        <Body1 className={classes.statusCount}>{sceneObjectCount}</Body1> scene objects
+                                    </>
+                                )}
+                                <Tooltip content="Flow graph execution contexts will resolve asset references from this scene" relationship="description">
+                                    <Body1 className={classes.statusWired}>
+                                        <CheckmarkRegular /> wired
+                                    </Body1>
+                                </Tooltip>
+                            </div>
+                            <Popover positioning={{ position: "above", align: "end" }}>
+                                <PopoverTrigger disableButtonEnhancement>
+                                    <Button size="small" className={classes.summaryToggle}>
+                                        {sceneDetailsLabel}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverSurface role="region" aria-label={sceneDetailsLabel} className={classes.summarySurface}>
+                                    {this._renderCategorySummary(ctx)}
+                                </PopoverSurface>
+                            </Popover>
                         </div>
                     )}
                 </div>
@@ -1921,7 +1964,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         </div>
                     )}
                 </div>
-                {ctx && <div className={classes.summary}>{this._renderCategorySummary(ctx)}</div>}
+
                 <Dialog open={this.state.showAuthoringDialog} onOpenChange={(_, data) => this.setState({ showAuthoringDialog: data.open })}>
                     <DialogSurface className={classes.authoringDialog}>
                         <DialogBody>
@@ -2169,14 +2212,18 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         ].filter((c) => c.count > 0);
 
         return (
-            <div>
+            <dl className={classes.categoryList}>
                 {categories.map((c) => (
                     <div key={c.label} className={classes.categoryItem}>
-                        <Body1 className={classes.categoryLabel}>{c.label}</Body1>
-                        <Body1 className={classes.categoryCount}>{c.count}</Body1>
+                        <dt className={classes.categoryLabel}>
+                            <Body1>{c.label}</Body1>
+                        </dt>
+                        <dd className={classes.categoryCount}>
+                            <Body1>{c.count}</Body1>
+                        </dd>
                     </div>
                 ))}
-            </div>
+            </dl>
         );
     }
 }

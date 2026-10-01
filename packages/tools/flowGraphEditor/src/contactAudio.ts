@@ -362,6 +362,7 @@ export function ContactGap(a: ContactShape, b: ContactShape): { gap: number; poi
     for (let i = 0; i < 3; i++) {
         point.addInPlace(b.axes[i].scale(closest[i]));
     }
+    // Signed separation: containment is negative even when the nearest face is farther than the radius.
     return { gap: (inside ? -1 : 1) * Vector3.Distance(a.center, point) - a.radius, point };
 }
 /** Track contact onset, with hysteresis and no initial-overlap or resting-contact cues. */

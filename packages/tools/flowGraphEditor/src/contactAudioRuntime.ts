@@ -70,7 +70,7 @@ export function GetContactObjects(meshes: AbstractMesh[], nodeCount: number): IC
     const objects: IContactObject[] = [];
     for (const [node, group] of grouped) {
         const mesh = group[0];
-        if (group.length !== 1 || mesh.skeleton || mesh.morphTargetManager || mesh.hasInstances) {
+        if (group.length !== 1 || mesh.skeleton || mesh.morphTargetManager || mesh.isAnInstance || mesh.hasInstances || mesh.hasThinInstances) {
             continue;
         }
         const bounds = mesh.getBoundingInfo().boundingBox;
@@ -110,7 +110,15 @@ export function GetContactObjects(meshes: AbstractMesh[], nodeCount: number): IC
  * @returns world-space shape, or null when unavailable
  */
 export function WorldContactShape(mesh: AbstractMesh, shape: IContactShape, includeHidden = false): ContactShape | null {
-    if (mesh.isDisposed() || (!includeHidden && (!mesh.isEnabled() || !mesh.isVisible)) || mesh.skeleton || mesh.morphTargetManager) {
+    if (
+        mesh.isDisposed() ||
+        (!includeHidden && (!mesh.isEnabled() || !mesh.isVisible)) ||
+        mesh.skeleton ||
+        mesh.morphTargetManager ||
+        mesh.isAnInstance ||
+        mesh.hasInstances ||
+        mesh.hasThinInstances
+    ) {
         return null;
     }
     const world = mesh.computeWorldMatrix(true);
@@ -143,6 +151,12 @@ export function WorldContactShape(mesh: AbstractMesh, shape: IContactShape, incl
  * @returns embedded data URI
  */
 export function ContactAudioDataUri(bytes: Uint8Array, mimeType: string): string {
+    const nativeEncode = (bytes as Uint8Array & { toBase64?: () => string }).toBase64;
+    if (typeof nativeEncode === "function") {
+        return `data:${mimeType};base64,${nativeEncode.call(bytes)}`;
+    }
+    // Retain the bounded-chunk fallback for older browsers. Array joining and the
+    // shared encoder's JS fallback allocated more memory in local browser measurements.
     let binary = "";
     for (let offset = 0; offset < bytes.length; offset += 8192) {
         binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
@@ -219,6 +233,8 @@ export class ContactAudioRuntime {
     /** Contact diagnostics and a seam for future standardized graph event adapters. */
     public readonly onCueObservable = new Observable<{ cue: string; nodes: number[]; point: Vector3 }>();
     private readonly _tracker = new ContactTracker();
+    private readonly _pairs: [number, number][] = [];
+    private readonly _pairCues = new Map<string, string>();
     private readonly _observer: Observer<Scene>;
     private readonly _disposeObserver: Observer<Scene>;
     private readonly _buffers = new Map<string, AudioBuffer>();
@@ -241,7 +257,7 @@ export class ContactAudioRuntime {
     /**
      * Bind the runtime to a scene and its source-indexed meshes.
      * @param _scene preview scene
-     * @param _data validated contact bindings
+     * @param _data validated contact bindings; install a new runtime when bindings change
      * @param _meshes source node bindings
      * @param _isRunning whether contact events should dispatch
      * @param _onError playback error callback
@@ -253,6 +269,16 @@ export class ContactAudioRuntime {
         private readonly _isRunning: () => boolean,
         private readonly _onError: (message: string) => void
     ) {
+        // Bind topology once per installed document; eligibility and transforms remain live.
+        for (const rule of _data.rules) {
+            for (const pair of ContactPairs(rule)) {
+                const key = pair.join(":");
+                if (!this._pairCues.has(key)) {
+                    this._pairs.push(pair);
+                }
+                this._pairCues.set(key, rule.cue);
+            }
+        }
         this._observer = _scene.onAfterRenderObservable.add(() => this._update());
         this._disposeObserver = _scene.onDisposeObservable.add(() => this.dispose());
     }
@@ -491,16 +517,12 @@ export class ContactAudioRuntime {
                 shapes.set(shape.node, world);
             }
         }
-        const rules = this._data.rules.map((rule) => ({ rule, pairs: ContactPairs(rule) }));
-        for (const contact of this._tracker.update(
-            rules.flatMap((entry) => entry.pairs),
-            shapes
-        )) {
-            const binding = rules.find((entry) => entry.pairs.some(([a, b]) => a === contact.nodes[0] && b === contact.nodes[1]));
-            if (binding) {
-                this.onCueObservable.notifyObservers({ cue: binding.rule.cue, ...contact });
+        for (const contact of this._tracker.update(this._pairs, shapes)) {
+            const cue = this._pairCues.get(contact.nodes.join(":"));
+            if (cue) {
+                this.onCueObservable.notifyObservers({ cue, ...contact });
                 try {
-                    this.playCue(binding.rule.cue, contact.point);
+                    this.playCue(cue, contact.point);
                 } catch (error) {
                     this._onError(`Contact sound could not play: ${String(error)}`);
                 }

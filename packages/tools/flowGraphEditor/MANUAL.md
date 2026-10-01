@@ -80,6 +80,8 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 
 ### glTF Import / Export
 
+Scene Preview’s **Scene details** button opens a scrollable list of category counts. It supports keyboard and touch access without resizing the preview.
+
 #### Contact sounds
 
 1. Choose **Load PhysicsMath demo**, or drop an existing `.glb` or `.gltf` with its companion files.
@@ -89,7 +91,7 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 5. **Save sound reaction** downloads the edited source asset with the original encoded audio embedded as a data URI. Existing graph edits are included when representable; unsupported edits report an error instead of being discarded. Keep existing companion files at their referenced paths. Reopening the asset restores its sound reactions. **Reaction** also lets you edit or remove an existing binding.
 6. Choose **Enable sound**, then **Start**. Contacts emit once on onset; sustained contact stays quiet. Stop, Pause, and Reset stop voices and clear contact history. Initial overlaps do not produce a cue.
 
-PhysicsMath implements collision simulation through graph math, with no engine physics bodies. Contact sounds use rigid sphere and oriented box bounds sampled after rendering; they do not alter the simulation. Boxes can enclose empty space and fast objects can cross between samples. Multi-primitive, skinned, morphing, sheared, singular, and nonuniformly scaled spherical objects are unavailable. The chooser names its proxy shapes explicitly. Each cue has four independent spatial voices, with a listener following the active camera; excess simultaneous voices are dropped.
+PhysicsMath implements collision simulation through graph math, with no engine physics bodies. Contact sounds use rigid sphere and oriented box bounds sampled after rendering; they do not alter the simulation. Boxes can enclose empty space and fast objects can cross between samples. Instanced, multi-primitive, skinned, morphing, sheared, singular, and nonuniformly scaled spherical objects are unavailable. GPU instance groups share a source node; per-instance contact bindings are not supported. The chooser names its proxy shapes explicitly. Each cue has four independent spatial voices, with a listener following the active camera; excess simultaneous voices are dropped.
 
 The versioned `extras.babylonContactAudio` metadata keeps encoded **audio**, playback **sources**, positional **emitters**, and document-local named cues separate. This follows the responsibilities proposed in [KHR_audio_emitter](https://github.com/KhronosGroup/glTF/pull/2137) and [KHR_audio_graph](https://github.com/KhronosGroup/glTF/pull/2632), without declaring either unratified extension or inventing standardized playback controls. Other viewers may ignore the sounds. Total encoded audio is capped at 20 MB, decoded preview buffers at 64 MB, and contact pairs at 256.
 

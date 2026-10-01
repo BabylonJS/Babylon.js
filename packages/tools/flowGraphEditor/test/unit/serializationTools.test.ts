@@ -3,6 +3,7 @@ import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
+import { SetVariableAuthoringValue, RenameVariable, DeleteVariable } from "flow-graph-editor/variableUtils";
 import { GlobalState } from "flow-graph-editor/globalState";
 import { SerializationTools } from "flow-graph-editor/serializationTools";
 import { _RegisterKHRInteractivityRuntime } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
@@ -287,5 +288,140 @@ describe("SerializationTools coordinator ownership", () => {
         importedScene.dispose();
         replacementScene.dispose();
         engine.dispose();
+    });
+});
+
+describe("contact audio source graph baseline", () => {
+    it("detects a reparsed legacy graph even when its serialized graph ID and block definitions are unchanged", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const state = new GlobalState(scene);
+        const serialized = {
+            uniqueId: "same-graph-id",
+            name: "legacy",
+            rightHanded: true,
+            allBlocks: [],
+            executionContexts: [{ _userVariables: { speed: 1 }, _connectionValues: {} }],
+        };
+        const original = await SerializationTools.DeserializeToStateAsync(serialized, scene);
+        SerializationTools.ApplyDeserializedState(original, state);
+        const source = { file: new Blob(["original legacy source"]), nodeCount: 0 } as any;
+        state.sourceGlb = source;
+        const baseline = SerializationTools.CaptureSourceGraphState(state);
+        const replacement = await SerializationTools.DeserializeToStateAsync(
+            { ...serialized, executionContexts: [{ _userVariables: { speed: 2 }, _connectionValues: {} }] },
+            scene
+        );
+        SerializationTools.ApplyDeserializedState(replacement, state);
+        try {
+            expect(state.flowGraph.uniqueId).toBe("same-graph-id");
+            expect(state.sourceGlb).toBe(source);
+            await expect(SerializationTools.BuildSourceForContactAudioAsync(state, baseline), "reparsing must not erase the legacy edit guard").rejects.toThrow(
+                "canonical KHR_interactivity"
+            );
+            expect(state.flowGraph.getContext(0).getVariable("speed")).toBe(2);
+        } finally {
+            replacement.coordinator.dispose();
+            original.coordinator.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+    it("retains authored edit detection through playback context recreation", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const state = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        state.coordinator = coordinator;
+        state.flowGraph = coordinator.createGraph();
+        const context = state.flowGraph.createContext();
+        context.setVariable("speed", 1);
+        const baseline = SerializationTools.CaptureSourceGraphState(state);
+        SetVariableAuthoringValue(state.flowGraph, context, "speed", 2);
+        const authored = SerializationTools.CaptureSourceGraphState(state);
+        try {
+            state.flowGraph.start();
+            state.flowGraph.getContext(0).setVariable("speed", 99);
+            state.snapshotUserVariables();
+            state.flowGraph.stop();
+            state.restoreSavedContexts();
+            expect(SerializationTools.CaptureSourceGraphState(state), "stop/reset must not clear the explicit authored revision").toEqual(authored);
+            expect(authored).not.toEqual(baseline);
+        } finally {
+            coordinator.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+    it("captures an empty editor deterministically", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        try {
+            expect(SerializationTools.CaptureSourceGraphState(new GlobalState(scene))).toEqual({ definition: "[]", canonical: null });
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it.each(["value", "type", "add", "rename", "delete"])("retains a legacy source and rejects an unsupported %s-only edit", async (edit) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const state = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        state.coordinator = coordinator;
+        state.flowGraph = coordinator.createGraph();
+        const inactive = coordinator.createGraph();
+        inactive.createContext();
+        const context = inactive.createContext();
+        context.setVariable("speed", 1);
+        context.setVariableType("speed", "number");
+        const source = { file: new Blob(["original legacy graph"]), nodeCount: 0 } as any;
+        state.sourceGlb = source;
+        const baseline = SerializationTools.CaptureSourceGraphState(state);
+        expect(baseline.canonical).toBeNull();
+        if (edit === "value") SetVariableAuthoringValue(inactive, context, "speed", 2);
+        if (edit === "type") {
+            context.setVariableType("speed", "string");
+            SetVariableAuthoringValue(inactive, context, "speed", "1");
+        }
+        if (edit === "add") SetVariableAuthoringValue(inactive, context, "new", 3);
+        if (edit === "rename") RenameVariable(inactive, "speed", "velocity");
+        if (edit === "delete") DeleteVariable(inactive, "speed");
+        try {
+            await expect(
+                SerializationTools.BuildSourceForContactAudioAsync(state, baseline),
+                "legacy authored variables must not be silently replaced by source bytes"
+            ).rejects.toThrow("graph imported from a canonical KHR_interactivity glTF or GLB");
+            expect(state.sourceGlb).toBe(source);
+            expect(state.coordinator).toBe(coordinator);
+            expect(SerializationTools.CaptureSourceGraphState(state)).not.toEqual(baseline);
+        } finally {
+            coordinator.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+    it("tracks an active graph without a coordinator and ignores execution-only variable changes", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const state = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        state.flowGraph = coordinator.createGraph();
+        state.coordinator = null;
+        const context = state.flowGraph.createContext();
+        context.setVariable("speed", 1);
+        const baseline = SerializationTools.CaptureSourceGraphState(state);
+        try {
+            expect(typeof baseline.definition, "an active graph always has a deterministic string baseline").toBe("string");
+            context.setVariable("speed", 10);
+            expect(SerializationTools.CaptureSourceGraphState(state)).toEqual(baseline);
+            SetVariableAuthoringValue(state.flowGraph, context, "speed", 2);
+            expect(SerializationTools.CaptureSourceGraphState(state), "coordinator-less authoring must be detected").not.toEqual(baseline);
+        } finally {
+            coordinator.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
     });
 });

@@ -11,6 +11,22 @@ import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 
+// Editor-only revisions are deliberately separate from runtime variables and serialized graph metadata.
+const VariableAuthoringVersions = new WeakMap<FlowGraph, number>();
+
+/**
+ * Read the revision of explicit variable edits, independent of playback and reset.
+ * @param graph editor graph
+ * @returns authored revision, initially zero
+ */
+export function GetVariableAuthoringVersion(graph: FlowGraph): number {
+    return VariableAuthoringVersions.get(graph) ?? 0;
+}
+
+function RecordVariableAuthoring(graph: FlowGraph): void {
+    VariableAuthoringVersions.set(graph, GetVariableAuthoringVersion(graph) + 1);
+}
+
 /**
  * Sets a runtime variable and records an explicit editor-authored default when the variable
  * originates from a canonical KHR_interactivity graph.
@@ -20,6 +36,7 @@ import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
  * @param value authored value
  */
 export function SetVariableAuthoringValue(flowGraph: FlowGraph, context: FlowGraphContext, name: string, value: unknown): void {
+    RecordVariableAuthoring(flowGraph);
     context.setVariable(name, value);
     const match = /^staticVariable_(0|[1-9]\d*)$/.exec(name);
     const provenance = flowGraph.metadata?.khrInteractivity;
@@ -536,6 +553,7 @@ export function RenameVariable(fg: FlowGraph, oldName: string, newName: string):
     if (!newName || newName === oldName) {
         return;
     }
+    RecordVariableAuthoring(fg);
     if (fg.metadata?.khrInteractivity?.source) {
         fg.metadata.khrInteractivity.authoredVariableStructureChanged = true;
     }
@@ -584,6 +602,7 @@ export function RenameVariable(fg: FlowGraph, oldName: string, newName: string):
  * @param name - The variable name to delete.
  */
 export function DeleteVariable(fg: FlowGraph, name: string): void {
+    RecordVariableAuthoring(fg);
     if (fg.metadata?.khrInteractivity?.source) {
         fg.metadata.khrInteractivity.authoredVariableStructureChanged = true;
     }

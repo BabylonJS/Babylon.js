@@ -4,6 +4,9 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import "core/Meshes/thinInstanceMesh";
+import "core/Meshes/instancedMesh";
+import { Matrix } from "core/Maths/math.vector";
 import { TransformNode } from "core/Meshes/transformNode";
 import {
     ContactGap,
@@ -16,12 +19,31 @@ import {
     type ContactShape,
     type IContactShape,
 } from "flow-graph-editor/contactAudio";
-import { CreateContactAudioDefaults, GetContactObjects, WorldContactShape, ContactAudioRuntime } from "flow-graph-editor/contactAudioRuntime";
+import { ContactAudioDataUri, CreateContactAudioDefaults, GetContactObjects, WorldContactShape, ContactAudioRuntime } from "flow-graph-editor/contactAudioRuntime";
 import { PatchGltfExtras, PatchGlbExtras, ReadGlbDocument } from "flow-graph-editor/khrGlbBehaviorAuthoring";
 
 const Sphere = (x: number, y = 0): ContactShape => ({ type: "sphere", center: new Vector3(x, y, 0), radius: 0.5 });
 
 describe("contact audio authoring", () => {
+    it.each([0, 1, 2, 3, 8191, 8192, 8193, 10 * 1024 * 1024])("encodes the exact subarray and base64 padding at %s bytes with native and fallback APIs", (size) => {
+        const storage = Uint8Array.from({ length: size + 6 }, (_, index) => index % 256);
+        const bytes = storage.subarray(3, size + 3);
+        const expected = `data:audio/mpeg;base64,${Buffer.from(bytes).toString("base64")}`;
+        const original = Object.getOwnPropertyDescriptor(Uint8Array.prototype, "toBase64");
+        try {
+            const native = vi.fn(function (this: Uint8Array) {
+                return Buffer.from(this).toString("base64");
+            });
+            Object.defineProperty(Uint8Array.prototype, "toBase64", { configurable: true, value: native });
+            expect(ContactAudioDataUri(bytes, "audio/mpeg")).toBe(expected);
+            expect(native).toHaveBeenCalledOnce();
+            Object.defineProperty(Uint8Array.prototype, "toBase64", { configurable: true, value: undefined });
+            expect(ContactAudioDataUri(bytes, "audio/mpeg")).toBe(expected);
+        } finally {
+            if (original) Object.defineProperty(Uint8Array.prototype, "toBase64", original);
+            else Reflect.deleteProperty(Uint8Array.prototype, "toBase64");
+        }
+    });
     it("assigns cue identifiers when a self-hosted editor has no secure-context UUID API", () => {
         vi.stubGlobal("crypto", { randomUUID: undefined });
         try {
@@ -234,7 +256,144 @@ describe("rigid contact geometry and lifecycle", () => {
     });
 });
 
+describe("contact target workflow variants", () => {
+    it("keeps shared geometry independent when a clone's parent is rescaled or hidden", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        try {
+            const original = CreateSphere("ball", { diameter: 1 }, scene);
+            const copy = original.clone("ball")!;
+            const parent = new TransformNode("assembly", scene);
+            copy.parent = parent;
+            [original, copy].forEach((mesh, node) => {
+                mesh._internalMetadata = { gltf: { pointers: [`/nodes/${node}`] } };
+            });
+            const entries = GetContactObjects([original, copy], 2);
+            expect(entries).toHaveLength(2);
+            expect(original.geometry).toBe(copy.geometry);
+            parent.scaling.setAll(2);
+            expect(WorldContactShape(original, entries[0].shape)).toMatchObject({ radius: 0.5 });
+            expect(WorldContactShape(copy, entries[1].shape)).toMatchObject({ radius: 1 });
+            parent.setEnabled(false);
+            expect(WorldContactShape(copy, entries[1].shape)).toBeNull();
+            expect(GetContactObjects([original, copy], 2), "hidden authored targets remain in the chooser").toHaveLength(2);
+            parent.setEnabled(true);
+            parent.scaling.x = 3;
+            expect(WorldContactShape(copy, entries[1].shape), "a stretched parent must invalidate a spherical proxy").toBeNull();
+            expect(WorldContactShape(original, entries[0].shape)).not.toBeNull();
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+    it("routes separate pair cues across movement, hiding, reset, and runtime replacement", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        try {
+            const a = CreateSphere("ball", { diameter: 1 }, scene);
+            const b = CreateSphere("ball", { diameter: 1 }, scene);
+            const platform = CreateBox("platform", { size: 1 }, scene);
+            b.position.x = 3;
+            platform.position.x = 5;
+            const shapes: IContactShape[] = [0, 1, 2].map((node) => ({ node, type: node === 2 ? "box" : "sphere", center: [0, 0, 0], halfSize: [0.5, 0.5, 0.5] }));
+            const document = { nodes: [{}, {}, {}] };
+            const first = SetContactAudioReaction(document, [1], [0], shapes, CreateContactAudioDefaults()[0]);
+            const data = SetContactAudioReaction({ ...document, extras: { babylonContactAudio: first } }, [0], [2], shapes, CreateContactAudioDefaults()[1]);
+            const meshes = new Map([
+                [0, a],
+                [1, b],
+                [2, platform],
+            ]);
+            const observed: string[] = [];
+            const runtime = new ContactAudioRuntime(
+                scene,
+                data,
+                meshes,
+                () => true,
+                () => {}
+            );
+            runtime.onCueObservable.add((event) => observed.push(event.cue));
+            const frame = () => scene.onAfterRenderObservable.notifyObservers(scene);
+            frame();
+            b.position.x = 1;
+            frame();
+            platform.position.x = 1;
+            frame();
+            expect(observed).toEqual(data.rules.map((rule) => rule.cue));
+            b.isVisible = false;
+            frame();
+            b.isVisible = true;
+            frame();
+            expect(observed).toHaveLength(2);
+            runtime.reset();
+            frame();
+            expect(observed).toHaveLength(2);
+            b.position.x = 3;
+            platform.position.x = 5;
+            frame();
+            b.position.x = 1;
+            frame();
+            expect(observed).toHaveLength(3);
+            runtime.dispose();
+            const replacement = new ContactAudioRuntime(
+                scene,
+                first,
+                meshes,
+                () => true,
+                () => {}
+            );
+            replacement.onCueObservable.add((event) => observed.push(event.cue));
+            frame();
+            b.position.x = 3;
+            frame();
+            b.position.x = 1;
+            frame();
+            expect(observed).toHaveLength(4);
+            expect(observed[3]).toBe(first.rules[0].cue);
+            replacement.dispose();
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+});
+
+describe("instanced contact targets", () => {
+    it("excludes displaced thin instances from discovery and rechecks runtime eligibility", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = CreateSphere("ball", {}, scene);
+        mesh._internalMetadata = { gltf: { pointers: ["/nodes/0"] } };
+        const shape: IContactShape = { node: 0, type: "sphere", center: [0, 0, 0], halfSize: [0.5, 0.5, 0.5] };
+        try {
+            expect(GetContactObjects([mesh], 1)).toHaveLength(1);
+            mesh.thinInstanceSetBuffer("matrix", Float32Array.from(Matrix.Translation(20, 0, 0).asArray()), 16, true);
+            expect(mesh.hasThinInstances).toBe(true);
+            expect(GetContactObjects([mesh], 1), "thin instances have no per-instance source identity").toHaveLength(0);
+            expect(WorldContactShape(mesh, shape), "a newly instanced target must not use the base transform").toBeNull();
+            mesh.thinInstanceSetBuffer("matrix", null);
+            expect(WorldContactShape(mesh, shape)).not.toBeNull();
+            const instance = mesh.createInstance("copy");
+            instance._internalMetadata = { gltf: { pointers: ["/nodes/1"] } };
+            expect(GetContactObjects([mesh, instance], 2), "regular instances are unavailable even with distinct source node labels").toHaveLength(0);
+            expect(WorldContactShape(instance, { ...shape, node: 1 })).toBeNull();
+            expect(GetContactObjects([mesh], 1)).toHaveLength(0);
+            expect(WorldContactShape(mesh, shape)).toBeNull();
+            instance.dispose();
+            expect(GetContactObjects([mesh], 1)).toHaveLength(1);
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+});
+
 describe("scene contact cues", () => {
+    it.each([0, 0.99, 1, 1.01, 1.5, 1.51])("uses signed separation for a sphere at x=%s inside or outside a box", (x) => {
+        const box: ContactShape = { type: "box", center: Vector3.Zero(), axes: [Vector3.Right(), Vector3.Up(), Vector3.Forward()], halfSize: [1, 2, 3] };
+        expect(ContactGap(Sphere(x), box)?.gap).toBeCloseTo(x - 1.5);
+        expect(ContactGap(box, Sphere(x))?.gap).toBeCloseTo(x - 1.5);
+    });
     it("measures sphere-to-sphere distance and the spatial cue point", () => {
         const contact = ContactGap(Sphere(0), Sphere(1));
         expect(contact?.gap, "touching spheres have zero surface gap").toBeCloseTo(0);

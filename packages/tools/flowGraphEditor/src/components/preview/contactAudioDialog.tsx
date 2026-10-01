@@ -25,8 +25,12 @@ export function ContactAudioDialog(props: {
 }) {
     const styles = useStyles();
     const defaults = React.useMemo(CreateContactAudioDefaults, []);
-    const [assets, setAssets] = React.useState([...props.data.audio, ...defaults.filter((asset) => !props.data.audio.some((entry) => entry.uri === asset.uri))]);
-    const [assetIndex, setAssetIndex] = React.useState(0);
+    const [library, setLibrary] = React.useState({
+        assets: [...props.data.audio, ...defaults.filter((asset) => !props.data.audio.some((entry) => entry.uri === asset.uri))],
+        index: 0,
+    });
+    const { assets, index: assetIndex } = library;
+    const setAssetIndex = (index: number) => setLibrary((current) => ({ ...current, index }));
     const [objects, setObjects] = React.useState<number[]>(
         props.objects.some((entry) => entry.shape.node === props.selectedNode && entry.shape.type === "sphere") ? [props.selectedNode!] : []
     );
@@ -36,10 +40,14 @@ export function ContactAudioDialog(props: {
     const [busy, setBusy] = React.useState(false);
     const [error, setError] = React.useState("");
     const alive = React.useRef(true);
+    const pending = React.useRef(false);
+    const operation = React.useRef(0);
     React.useEffect(() => {
         alive.current = true;
         return () => {
             alive.current = false;
+            operation.current++;
+            pending.current = false;
             props.runtime.stopAudition(true);
         };
     }, [props.runtime]);
@@ -57,19 +65,30 @@ export function ContactAudioDialog(props: {
     } catch {
         /* The chooser explains the limit below. */
     }
-    const runAsync = async (action: () => Promise<void>) => {
+    const runAsync = async (action: (isCurrent: () => boolean) => Promise<void>) => {
+        // Guard synchronously: a second event can arrive before React disables the controls.
+        if (pending.current) {
+            return;
+        }
+        pending.current = true;
+        const id = ++operation.current;
+        const isCurrent = () => alive.current && id === operation.current;
+        const finish = () => {
+            if (isCurrent()) {
+                pending.current = false;
+                setBusy(false);
+            }
+        };
         setBusy(true);
         setError("");
         try {
-            await action();
+            await action(isCurrent);
         } catch (err) {
-            if (alive.current) {
+            if (isCurrent()) {
                 setError(err instanceof Error ? err.message : String(err));
             }
         } finally {
-            if (alive.current) {
-                setBusy(false);
-            }
+            finish();
         }
     };
     const selectRule = (value?: string) => {
@@ -208,18 +227,15 @@ export function ContactAudioDialog(props: {
                                         const file = event.currentTarget.files?.[0];
                                         event.currentTarget.value = "";
                                         if (file) {
-                                            void runAsync(async () => {
+                                            void runAsync(async (isCurrent) => {
                                                 const asset = await props.runtime.importAudioAsync(file);
-                                                if (!alive.current) {
+                                                if (!isCurrent()) {
                                                     return;
                                                 }
-                                                const existing = assets.findIndex((entry) => entry.uri === asset.uri);
-                                                if (existing >= 0) {
-                                                    setAssetIndex(existing);
-                                                } else {
-                                                    setAssets([...assets, asset]);
-                                                    setAssetIndex(assets.length);
-                                                }
+                                                setLibrary((current) => {
+                                                    const existing = current.assets.findIndex((entry) => entry.uri === asset.uri);
+                                                    return existing >= 0 ? { ...current, index: existing } : { assets: [...current.assets, asset], index: current.assets.length };
+                                                });
                                             });
                                         }
                                     }}
@@ -231,7 +247,7 @@ export function ContactAudioDialog(props: {
                             <summary>Contact limits</summary>
                             <Body1>
                                 Contacts use sphere and box bounds sampled once per rendered frame. Box bounds can extend beyond the visible surface; fast objects can pass through
-                                between frames. Skinned, multi-primitive, sheared, and stretched spherical objects are unavailable.
+                                between frames. Instanced, skinned, multi-primitive, sheared, and stretched spherical objects are unavailable.
                             </Body1>
                         </details>
                         <Body1>Sound reactions are supported by this editor. Other viewers can open the scene but may not play these sounds.</Body1>

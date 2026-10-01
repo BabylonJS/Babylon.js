@@ -390,3 +390,251 @@ test("preselects a ball clicked in the stopped scene preview", async ({ page }) 
     await ChooseBalls(page, [4]);
     await expect(page.getByText("1 distinct contact pair.", { exact: true })).toBeVisible();
 });
+
+test("scene details remain accessible with keyboard, long labels, and a narrow viewport", async ({ page }, testInfo) => {
+    const fge = new FlowGraphEditorPage(page);
+    await fge.goto({ local: true });
+    const summary = page.getByRole("button", { name: "Scene details", exact: true });
+    await expect(summary, "the scene summary must be a reachable disclosure").toBeVisible();
+    await summary.focus();
+    await expect(summary).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("region", { name: "Scene details", exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Scene details", exact: true }).getByText("Meshes", { exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(summary).toBeFocused();
+    await page.keyboard.press("Space");
+    await expect(page.getByRole("region", { name: "Scene details", exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("region", { name: "Scene details", exact: true })).not.toBeVisible();
+    await page.setViewportSize({ width: 640, height: 640 });
+    const previewHeight = (await page.getByTestId("scene-preview-canvas").boundingBox())!.height;
+    await summary.click();
+    await page
+        .getByRole("region", { name: "Scene details", exact: true })
+        .locator("dt")
+        .evaluateAll((labels) => {
+            labels.forEach((label) => {
+                label.textContent = "A very long translated scene category label with several words";
+            });
+        });
+    const layout = await page.getByRole("region", { name: "Scene details", exact: true }).evaluate((element) => ({
+        overflow: element.scrollWidth > element.clientWidth,
+        labels: element.querySelectorAll("dt").length > 0 && [...element.querySelectorAll("dt")].every((label) => label.getBoundingClientRect().height > 0),
+    }));
+    expect(layout, "category labels must wrap without hiding their counts").toEqual({ overflow: false, labels: true });
+    await expect(page.getByTestId("scene-preview-canvas")).toBeVisible();
+    expect((await page.getByTestId("scene-preview-canvas").boundingBox())!.height).toBeGreaterThanOrEqual(previewHeight - 1);
+    await page.screenshot({ path: testInfo.outputPath("scene-details-narrow.png"), fullPage: true, animations: "disabled" });
+});
+
+test("serializes same-turn audio imports and atomically deduplicates their selection", async ({ page }) => {
+    const fge = new FlowGraphEditorPage(page);
+    await fge.goto({ local: true });
+    await page.getByRole("button", { name: "Load PhysicsMath demo", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Add sound reaction", exact: true })).toBeEnabled({ timeout: 30000 });
+    await page.getByRole("button", { name: "Add sound reaction", exact: true }).click();
+    await page.evaluate(() => {
+        const runtime = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.contactAudioRuntime;
+        (globalThis as any).__imports = [];
+        runtime.importAudioAsync = (file: File) => new Promise((resolve, reject) => (globalThis as any).__imports.push({ name: file.name, resolve, reject }));
+        const input = document.querySelector<HTMLInputElement>('input[aria-label="Choose audio file"]')!;
+        for (const name of ["first.mp3", "second.mp3"]) {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File(["ID3"], name, { type: "audio/mpeg" }));
+            input.files = transfer.files;
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+    });
+    expect(await page.evaluate(() => (globalThis as any).__imports.length), "a synchronous guard must prevent overlapping decode operations").toBe(1);
+    await page.evaluate(() => (globalThis as any).__imports[0].resolve({ name: "first.mp3", mimeType: "audio/mpeg", uri: "data:audio/mpeg;base64,SUQz" }));
+    const sound = page.getByRole("combobox", { name: "Contact sound", exact: true });
+    await expect(sound).toHaveText("first.mp3");
+    await page.getByLabel("Choose audio file", { exact: true }).setInputFiles({ name: "duplicate.mp3", mimeType: "audio/mpeg", buffer: Buffer.from("ID3") });
+    await page.evaluate(() => (globalThis as any).__imports[1].resolve({ name: "duplicate.mp3", mimeType: "audio/mpeg", uri: "data:audio/mpeg;base64,SUQz" }));
+    await expect(page.getByRole("button", { name: "Listen", exact: true })).toBeEnabled();
+    await expect(sound).toHaveText("first.mp3");
+    await sound.click();
+    await expect(page.getByRole("option", { name: /first.mp3/ })).toHaveCount(1);
+    await expect(page.getByRole("option", { name: /duplicate.mp3/ })).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+});
+
+test("excludes real glTF GPU instances without hiding other contact targets", async ({ page }) => {
+    const source = JSON.parse(readFileSync("packages/tools/flowGraphEditor/public/samples/PhysicsMath/PhysicsMath.gltf", "utf8"));
+    delete source.extensions.KHR_interactivity;
+    source.extensionsUsed = source.extensionsUsed.filter((name: string) => name !== "KHR_interactivity");
+    const translations = Buffer.alloc(24);
+    translations.writeFloatLE(20, 12);
+    const buffer = source.buffers.length;
+    const bufferView = source.bufferViews.length;
+    const accessor = source.accessors.length;
+    source.buffers.push({ byteLength: 24, uri: `data:application/octet-stream;base64,${translations.toString("base64")}` });
+    source.bufferViews.push({ buffer, byteLength: 24 });
+    source.accessors.push({ bufferView, componentType: 5126, count: 2, type: "VEC3" });
+    source.nodes[3].extensions = { EXT_mesh_gpu_instancing: { attributes: { TRANSLATION: accessor } } };
+    source.extensionsUsed.push("EXT_mesh_gpu_instancing");
+    const fge = new FlowGraphEditorPage(page);
+    await fge.goto({ local: true });
+    await page.evaluate(
+        ({ json, bin }) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([json], "instances.gltf"));
+            transfer.items.add(new File([new Uint8Array(bin)], "PhysicsMath.bin"));
+            document.querySelector("canvas")!.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        },
+        { json: JSON.stringify(source), bin: [...readFileSync("packages/tools/flowGraphEditor/public/samples/PhysicsMath/PhysicsMath.bin")] }
+    );
+    await expect(page.getByTestId("contact-instance-warning")).toBeVisible({ timeout: 30000 });
+    expect(
+        await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.meshes.find((mesh: any) => mesh.hasThinInstances)?.thinInstanceCount)
+    ).toBe(2);
+    await page.getByRole("button", { name: "Add sound reaction", exact: true }).click();
+    await page.getByRole("combobox", { name: "Contact balls", exact: true }).click();
+    await expect(page.getByRole("menuitemcheckbox", { name: /Sphere-1/ })).toHaveCount(0);
+    await expect(page.getByRole("menuitemcheckbox", { name: /Sphere-2/ })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+});
+
+test("scene details support touch, text enlargement and right-to-left long labels", async ({ browser }, testInfo) => {
+    const context = await browser.newContext({ ...devices["iPhone 13"], isMobile: browser.browserType().name() !== "firefox", defaultBrowserType: undefined });
+    const page = await context.newPage();
+    try {
+        await new FlowGraphEditorPage(page).goto({ local: true });
+        const summary = page.getByRole("button", { name: "Scene details", exact: true });
+        await expect(summary).toBeVisible();
+        expect((await summary.boundingBox())!.height, "the disclosure needs a usable touch target (allowing browser subpixel rounding)").toBeGreaterThanOrEqual(43.99);
+        const previewHeight = (await page.getByTestId("scene-preview-canvas").boundingBox())!.height;
+        await summary.tap();
+        await expect(page.getByRole("region", { name: "Scene details", exact: true })).toBeVisible();
+        await page.getByRole("region", { name: "Scene details", exact: true }).evaluate((details) => {
+            details.querySelectorAll<HTMLElement>("dt, dd").forEach((item) => {
+                item.style.fontSize = "125%";
+            });
+            details.querySelectorAll<HTMLElement>("span").forEach((item) => {
+                item.style.fontSize = "inherit";
+            });
+            details.setAttribute("dir", "rtl");
+            details.querySelectorAll("dt").forEach((label) => {
+                label.textContent = "تصنيف طويل لتفاصيل عناصر المشهد للاختبار";
+            });
+        });
+        const summaryLayout = await page
+            .getByRole("region", { name: "Scene details", exact: true })
+            .evaluate((details) => ({ horizontalOverflow: details.scrollWidth > details.clientWidth, descriptions: details.querySelectorAll("dd").length }));
+        expect(summaryLayout.horizontalOverflow).toBe(false);
+        expect(summaryLayout.descriptions).toBeGreaterThan(0);
+        const lastCount = page.getByRole("region", { name: "Scene details", exact: true }).locator("dd").last();
+        await lastCount.scrollIntoViewIfNeeded();
+        await expect(lastCount).toBeVisible();
+        expect((await page.getByTestId("scene-preview-canvas").boundingBox())!.height).toBeGreaterThanOrEqual(previewHeight - 1);
+        await page.screenshot({ path: testInfo.outputPath("scene-details-touch-rtl.png"), fullPage: true, animations: "disabled" });
+        await summary.tap();
+        await expect(page.getByRole("region", { name: "Scene details", exact: true })).not.toBeVisible();
+    } finally {
+        await context.close();
+    }
+});
+
+test("retains a legacy GLB and value-only variable edits when a sound save is unsupported", async ({ page }) => {
+    const source = JSON.parse(readFileSync("packages/tools/flowGraphEditor/public/samples/PhysicsMath/PhysicsMath.gltf", "utf8"));
+    delete source.extensions.KHR_interactivity;
+    source.extensionsUsed = source.extensionsUsed.filter((name: string) => name !== "KHR_interactivity");
+    source.extensionsUsed.push("BABYLON_flow_graph");
+    source.extensions.BABYLON_flow_graph = {
+        flowGraph: {
+            rightHanded: true,
+            allBlocks: [],
+            executionContexts: [{ uniqueId: "authored-context", _userVariables: { label: "original" }, _variableTypes: { label: "string" }, _connectionValues: {} }],
+        },
+    };
+    delete source.buffers[0].uri;
+    const json = Buffer.from(JSON.stringify(source));
+    const jsonLength = Math.ceil(json.length / 4) * 4;
+    const bin = readFileSync("packages/tools/flowGraphEditor/public/samples/PhysicsMath/PhysicsMath.bin");
+    const glb = Buffer.alloc(28 + jsonLength + bin.length, 32);
+    glb.writeUInt32LE(0x46546c67, 0);
+    glb.writeUInt32LE(2, 4);
+    glb.writeUInt32LE(glb.length, 8);
+    glb.writeUInt32LE(jsonLength, 12);
+    glb.writeUInt32LE(0x4e4f534a, 16);
+    json.copy(glb, 20);
+    glb.writeUInt32LE(bin.length, 20 + jsonLength);
+    glb.writeUInt32LE(0x004e4942, 24 + jsonLength);
+    bin.copy(glb, 28 + jsonLength);
+    await new FlowGraphEditorPage(page).goto({ local: true });
+    await page.evaluate(
+        (bytes) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([new Uint8Array(bytes)], "legacy-physics.glb"));
+            document.querySelector("canvas")!.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        },
+        [...glb]
+    );
+    await expect(page.getByRole("button", { name: "Add sound reaction", exact: true })).toBeEnabled({ timeout: 30000 });
+    const identity = await page.evaluate(() => {
+        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+        (globalThis as any).__legacySource = state.sourceGlb;
+        (globalThis as any).__legacyScene = state.sceneContext.scene;
+        return state.sceneContext.scene.uid;
+    });
+    const card = page.locator("[class*='fui-Card']").filter({ hasText: "label" }).first();
+    await card.locator("input").last().fill("edited from the variables panel");
+    const downloads: string[] = [];
+    page.on("download", (download) => downloads.push(download.suggestedFilename()));
+    await page.getByRole("button", { name: "Add sound reaction", exact: true }).click();
+    await ChooseBalls(page, [3, 4]);
+    await page.getByRole("button", { name: "Save sound reaction", exact: true }).click();
+    await expect(page.getByRole("alert")).toContainText("Your scene and edits are retained");
+    expect(
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            return {
+                uid: state.sceneContext.scene.uid,
+                value: state.flowGraph.getContext(0).getVariable("label"),
+                sourceRetained: state.sourceGlb === (globalThis as any).__legacySource,
+                sceneRetained: state.sceneContext.scene === (globalThis as any).__legacyScene,
+            };
+        })
+    ).toEqual({ uid: identity, value: "edited from the variables panel", sourceRetained: true, sceneRetained: true });
+    expect(downloads).toEqual([]);
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+});
+
+test("retains edits made while a sound save is reading the source", async ({ page }) => {
+    await new FlowGraphEditorPage(page).goto({ local: true });
+    await page.getByRole("button", { name: "Load PhysicsMath demo", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Add sound reaction", exact: true })).toBeEnabled({ timeout: 30000 });
+    await page.evaluate(async () => {
+        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+        const file = state.sourceGltf.file;
+        const text = await file.text();
+        (globalThis as any).__savingScene = state.sceneContext.scene;
+        Object.defineProperty(file, "text", {
+            value: () =>
+                new Promise((resolve) => {
+                    (globalThis as any).__finishSourceRead = () => resolve(text);
+                }),
+        });
+    });
+    const downloads: string[] = [];
+    page.on("download", (download) => downloads.push(download.suggestedFilename()));
+    await page.getByRole("button", { name: "Add sound reaction", exact: true }).click();
+    await ChooseBalls(page, [3, 4]);
+    await page.getByRole("button", { name: "Save sound reaction", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Preparing…", exact: true })).toBeDisabled();
+    await page.evaluate(() => {
+        (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.flowGraph.name = "Edited during source read";
+        (globalThis as any).__finishSourceRead();
+    });
+    await expect(page.getByRole("alert")).toContainText("The graph changed while preparing the sound reaction");
+    expect(
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            return { name: state.flowGraph.name, retained: state.sceneContext.scene === (globalThis as any).__savingScene };
+        })
+    ).toEqual({ name: "Edited during source read", retained: true });
+    expect(downloads).toEqual([]);
+});
