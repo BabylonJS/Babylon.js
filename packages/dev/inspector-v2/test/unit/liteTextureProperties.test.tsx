@@ -315,6 +315,38 @@ describe("Babylon Lite texture accessor metadata", () => {
         expect(events).toContainEqual({ entity: services.texture, propertyKey: "uScale", oldValue: 1, newValue: 2 });
     });
 
+    it("merges a UV edit with the latest transform when another field changes before refresh", async () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} });
+        const changes = new Observable<PropertyChangeInfo>();
+        const events: PropertyChangeInfo[] = [];
+        changes.add((event) => events.push(event));
+        const container = Render(
+            <PropertyContext.Provider value={{ onPropertyChanged: changes }}>
+                <TextureMetadataProperties {...services} />
+            </PropertyContext.Provider>
+        );
+        const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
+
+        services.texture.transform = { ...services.texture.transform, uScale: 3, vOffset: 0.5 };
+        await act(async () => {
+            input.focus();
+            setter.call(input, "2");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
+        });
+
+        expect(InspectionMocks.setTransform).toHaveBeenCalledWith(services.texture, {
+            uOffset: 0,
+            vOffset: 0.5,
+            uScale: 2,
+            vScale: 1,
+            uAng: 0,
+        });
+        expect(services.texture.transform.vOffset).toBe(0.5);
+        expect(events).toContainEqual({ entity: services.texture, propertyKey: "uScale", oldValue: 3, newValue: 2 });
+    });
+
     it("awaits rebuilds when enabling transform support changes the material pipeline", async () => {
         InspectionMocks.enableUv.mockReturnValue(true);
         const services = MakeServices({ kind: "2d", capabilities: {} });

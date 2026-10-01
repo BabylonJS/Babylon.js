@@ -147,7 +147,7 @@ type TextureTransformFieldProps = Readonly<{
     field: (typeof TransformFields)[number];
     pending?: boolean;
     error?: string;
-    commit: (id: string, transform: TextureTransform) => void;
+    commit: (id: string, key: keyof TextureTransform, value: number) => void;
 }>;
 
 const TextureTransformField: FunctionComponent<TextureTransformFieldProps> = (props) => {
@@ -160,7 +160,7 @@ const TextureTransformField: FunctionComponent<TextureTransformFieldProps> = (pr
                 component={NumberInputPropertyLine}
                 target={transform}
                 getValue={(value) => value[key]}
-                setValue={(value, next) => commit(id, { ...value, [key]: next })}
+                setValue={(_, next) => commit(id, key, next)}
                 label={label}
                 uniqueId={id}
                 disabled={pending}
@@ -214,7 +214,7 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
             consumersByMaterial.set(consumer.material, [consumer.bindingId]);
         }
     }
-    const commitTransform = (id: string, transform: TextureTransform) => {
+    const commitTransform = (id: string, key: keyof TextureTransform, value: number) => {
         runLatestOperation({
             id,
             operationAsync: async () => {
@@ -234,18 +234,14 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                     throw new Error("The texture has no complete owning scene scope.");
                 }
                 const currentTransform = getTextureTransform(texture as Texture2D);
-                const previousTransform = currentTransform ? { ...currentTransform } : undefined;
-                if (
-                    currentTransform &&
-                    currentTransform.uOffset === transform.uOffset &&
-                    currentTransform.vOffset === transform.vOffset &&
-                    currentTransform.uScale === transform.uScale &&
-                    currentTransform.vScale === transform.vScale &&
-                    currentTransform.uAng === transform.uAng
-                ) {
+                if (!currentTransform) {
+                    throw new Error("This texture no longer supports UV transforms.");
+                }
+                if (currentTransform[key] === value) {
                     return undefined;
                 }
-                const changed = setTextureTransform(texture as Texture2D, transform);
+                const previousValue = currentTransform[key];
+                const changed = setTextureTransform(texture as Texture2D, { ...currentTransform, [key]: value });
                 if (!changed) {
                     return undefined;
                 }
@@ -266,12 +262,11 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                             : [];
                     })
                 );
-                return previousTransform;
+                return previousValue;
             },
-            onSuccess: (oldTransform) => {
-                if (oldTransform) {
-                    const key = id.replace(/^transform-/, "") as keyof TextureTransform;
-                    notifyPropertyChanged(texture, key, oldTransform[key], transform[key]);
+            onSuccess: (previousValue) => {
+                if (previousValue !== undefined) {
+                    notifyPropertyChanged(texture, key, previousValue, value);
                     resourceIndexService.refresh();
                 }
             },
