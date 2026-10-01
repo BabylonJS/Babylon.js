@@ -6,7 +6,7 @@ struct GpsResolveParams {
     resolution : vec2f,    // render (low) res
     outResolution : vec2f, // output (full) res = accum res
     depthNorm : vec2f,     // the model's view-space depth min/max this frame (matches the preprocess key)
-    colorMask : vec2f,     // x = the frame's color tie-break mask (see gpsSplat); y unused
+    colorMask : vec2f,     // x = the frame's color tie-break mask (see gpsSplat); y = radiance range
     upsample : vec4f,      // x=N (upscale factor), y=jitterX, z=jitterY, w=generation
     misc2 : vec4f,         // x=maxAccum, y=moving, z=reverse depth, w=projected depth keys
     projZ : vec4f,         // projection z-row (m10 and m11 sign-adjusted for RH) to map positive view-z back to ndc.z
@@ -37,7 +37,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     var occlVz = GPS_HIZ_FAR;
     var viewZ = 0.0;
     if (raw != GPS_DEPTH_CLEAR) {
-        hitColor = gpsKeyColor(raw, u32(params.colorMask.x));
+        hitColor = gpsKeyColor(raw, u32(params.colorMask.x)) * params.colorMask.y;
         hit = 1.0;
         let dq = f32(raw >> 16u) / f32(GPS_DEPTH_MAX_CODE);
         let vz = params.depthNorm.x + dq * (params.depthNorm.y - params.depthNorm.x);

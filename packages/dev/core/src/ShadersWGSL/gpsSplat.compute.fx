@@ -112,7 +112,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let dg = gpsUnit(st) - 0.5;
     st = gpsPcg(st);
     let db = gpsUnit(st) - 0.5;
-    let dithered = s.colorOp.rgb + vec3f(dr / 31.0, dg / 63.0, db / 31.0);
+    let dithered = s.colorOp.rgb / uniforms.projectedDepth.z + vec3f(dr / 31.0, dg / 63.0, db / 31.0);
 
     var depthKey = s.depth.x;
     if ((u32(uniforms.misc.w) & 2u) != 0u) {

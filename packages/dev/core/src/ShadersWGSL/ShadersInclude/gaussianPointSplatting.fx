@@ -25,7 +25,7 @@ struct GpsUniforms {
     pixelMap : vec4f,   // render px = (ndc * 0.5 + 0.5) * xy + zw (padded N-cell grid with this frame's jitter)
     projection : mat4x4f,
     inverseProjection : mat4x4f,
-    projectedDepth : vec4f, // xy = nearest-first projected depth range for 16-bit keys
+    projectedDepth : vec4f, // xy = nearest-first projected depth range; z = radiance range for RGB565
 };
 
 // Intersect the pixel's projective ray with a constant view-z plane. Returns NDC depth and clip w.

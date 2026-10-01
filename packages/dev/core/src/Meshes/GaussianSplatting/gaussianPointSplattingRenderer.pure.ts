@@ -703,6 +703,8 @@ export class GaussianPointSplattingRenderer {
         const pixelOffsetY = (n / 2 - this._jitterY - 0.5) / n;
         // XORed into packed colors so equal-depth ties do not favor low RGB values.
         const colorMask = (Math.imul(this._frameIndex + 1, 0x9e3779b1) >>> 16) & 0xffff;
+        // Quantized degree-4 SH has 24 coefficients in [-1,1]; the addition theorem bounds radiance below 8.
+        const colorRange = this._shDegree > 0 ? 8 : 1;
 
         this._uniforms.updateMatrix("view", this._view);
         this._uniforms.updateMatrix("viewProjection", this._viewProjection);
@@ -723,13 +725,13 @@ export class GaussianPointSplattingRenderer {
             this._uniforms.updateMatrix("projection", this._projection);
             this._uniforms.updateMatrix("inverseProjection", this._inverseProjection);
         }
-        this._uniforms.updateFloat4("projectedDepth", depthSpan?.[0] ?? 0, depthSpan?.[1] ?? 1, 0, 0);
+        this._uniforms.updateFloat4("projectedDepth", depthSpan?.[0] ?? 0, depthSpan?.[1] ?? 1, colorRange, 0);
         this._uniforms.update();
 
         this._resolveParams.updateFloat2("resolution", width, height);
         this._resolveParams.updateFloat2("outResolution", this._outWidth, this._outHeight);
         this._resolveParams.updateFloat2("depthNorm", depthSpan?.[0] ?? this._viewZMin, depthSpan?.[1] ?? this._viewZMax);
-        this._resolveParams.updateFloat2("colorMask", colorMask, 0);
+        this._resolveParams.updateFloat2("colorMask", colorMask, colorRange);
         this._resolveParams.updateFloat4("upsample", n, this._jitterX, this._jitterY, this._accumGeneration);
         this._resolveParams.updateFloat4(
             "misc2",
