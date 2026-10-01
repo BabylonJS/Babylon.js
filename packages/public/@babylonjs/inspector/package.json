@@ -43,8 +43,8 @@
         "@babylonjs/materials": "9.28.0",
         "@babylonjs/serializers": "9.28.0",
         "@dev/inspector-legacy": "1.0.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
     },
     "keywords": [
         "3D",
