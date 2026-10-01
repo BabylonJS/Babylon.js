@@ -7,7 +7,7 @@ declare const BABYLON: typeof import("core/index") & typeof import("serializers/
 
 interface Window {
     BABYLON: typeof BABYLON;
-    scene: typeof BABYLON.Scene | null;
+    scene: InstanceType<typeof BABYLON.Scene> | null;
 }
 declare const window: Window & typeof globalThis;
 
@@ -27,7 +27,7 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
 
     test.beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, { waitUntil: "load", timeout: 0 });
-        await page.evaluate(evaluateInitEngine);
+        await page.evaluate(evaluateInitEngine, {});
         await page.evaluate(evaluateCreateScene);
     });
 
@@ -65,12 +65,17 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
             const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
 
             const scene2 = new BABYLON.Scene(scene.getEngine());
+            let gltfLoader: { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> } | null = null;
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
                 if (loader.name === "gltf") {
-                    (loader as unknown as { useOpenPBR: boolean }).useOpenPBR = true;
+                    gltfLoader = loader as unknown as { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> };
+                    gltfLoader.useOpenPBR = true;
                 }
             });
             await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
+            // Material finalization (e.g. the thin-walled scatter weight conversion) runs before the
+            // loader's complete state, which is later than when AppendAsync resolves.
+            await gltfLoader!.whenCompleteAsync();
             URL.revokeObjectURL(url);
 
             const reMat = scene2.materials.find((m) => m.getClassName() === "OpenPBRMaterial") as any;
@@ -128,12 +133,17 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
             const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
 
             const scene2 = new BABYLON.Scene(scene.getEngine());
+            let gltfLoader: { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> } | null = null;
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
                 if (loader.name === "gltf") {
-                    (loader as unknown as { useOpenPBR: boolean }).useOpenPBR = true;
+                    gltfLoader = loader as unknown as { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> };
+                    gltfLoader.useOpenPBR = true;
                 }
             });
             await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
+            // Material finalization (e.g. the thin-walled scatter weight conversion) runs before the
+            // loader's complete state, which is later than when AppendAsync resolves.
+            await gltfLoader!.whenCompleteAsync();
             URL.revokeObjectURL(url);
 
             const reMat = scene2.materials.find((m) => m.getClassName() === "OpenPBRMaterial") as any;

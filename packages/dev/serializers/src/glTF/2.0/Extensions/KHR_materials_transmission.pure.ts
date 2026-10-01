@@ -8,7 +8,17 @@ import { Logger } from "core/Misc/logger";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { Color4 } from "core/Maths/math.color.pure";
 import { type Nullable } from "core/types";
-import { LerpTexturesAsync, CreateTextureWithFactorOperand, CreateFactorOperand, TextureChannel, TextureColorSpace } from "core/Materials/Textures/textureProcessor";
+import {
+    LerpTexturesAsync,
+    MultiplyTexturesAsync,
+    InvertTextureAsync,
+    CreateTextureWithFactorOperand,
+    CreateFactorOperand,
+    TextureChannel,
+    TextureColorSpace,
+    ChannelMask,
+    type ITextureProcessOperand,
+} from "core/Materials/Textures/textureProcessor";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 
 const NAME = "KHR_materials_transmission";
@@ -136,11 +146,33 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     TextureChannel.RGBA,
                     TextureColorSpace.SRGB
                 );
-                const transOp = CreateTextureWithFactorOperand(
+                let transOp: ITextureProcessOperand = CreateTextureWithFactorOperand(
                     transWeightResult.texture ?? null,
                     new Color4(transWeightResult.factor?.r ?? 1, transWeightResult.factor?.g ?? 1, transWeightResult.factor?.b ?? 1, 0.0), // alpha is 0 because we don't want to modify the base color alpha channel
                     TextureChannel.R
                 );
+                // The metal lobe sits on top of the dielectric (and its transmission) in both glTF and OpenPBR,
+                // and uses the base color as its F0. Only the dielectric fraction (1 - metalness) of the
+                // transmission should pull the base color toward the transmission tint, so scale the lerp
+                // weight by (1 - metalness). Fully metallic regions then keep their original base color.
+                const metalness = babylonMaterial.baseMetalness;
+                const metalnessTexture = babylonMaterial.baseMetalnessTexture;
+                if (metalness >= 1 && !metalnessTexture) {
+                    transOp = CreateFactorOperand(new Color4(0, 0, 0, 0));
+                } else if (metalness > 0) {
+                    const dielectricOp = await InvertTextureAsync(
+                        `dielectric weight (${babylonMaterial.name})`,
+                        CreateTextureWithFactorOperand(
+                            metalnessTexture,
+                            new Color4(metalness, metalness, metalness, 1.0),
+                            babylonMaterial._useMetallicFromMetallicTextureBlue ? TextureChannel.B : TextureChannel.R
+                        ),
+                        babylonMaterial.getScene(),
+                        ChannelMask.RGB
+                    );
+                    // transOp has no dispose, so the cached transmission weight texture survives this pass.
+                    transOp = await MultiplyTexturesAsync(`base color tint weight (${babylonMaterial.name})`, transOp, dielectricOp, babylonMaterial.getScene());
+                }
                 // glTF factors base color out of BOTH the diffuse and the transmission term, so the
                 // exported base color must lerp from base_color toward the transmission tint by the
                 // transmission weight (lerping toward a hardcoded white is only correct when that tint is
