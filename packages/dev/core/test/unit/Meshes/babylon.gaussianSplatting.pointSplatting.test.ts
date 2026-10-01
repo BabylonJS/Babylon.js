@@ -452,6 +452,51 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it("reuploads unchanged data and discards stale GPU state after device restoration", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        mesh.updateData(new ArrayBuffer(32));
+        const controller = CreateController(mesh);
+        const oldRenderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        vi.spyOn(oldRenderer, "supportsWorkload").mockReturnValue(true);
+        vi.spyOn(oldRenderer, "updateSplats").mockImplementation(() => {});
+        const dispose = vi.spyOn(oldRenderer, "dispose").mockImplementation(() => {});
+        controller["_renderer"] = oldRenderer;
+        controller["_colorMode"] = true;
+        controller["_ensureCompute"]();
+        const source = controller["_decodedSplatsData"];
+        const oldRequest = controller["_autoRequestId"];
+        controller["_resultReady"] = true;
+        controller["_progressReady"] = true;
+        controller["_budgetReadPending"] = true;
+        controller["_autoN"] = 8;
+        const newRenderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const upload = vi.spyOn(newRenderer, "updateSplats").mockImplementation(() => {});
+        controller["_ensureCompute"] = vi.fn(() => {
+            controller["_renderer"] = newRenderer;
+            controller["_syncData"]();
+        });
+
+        engine.onContextRestoredObservable.notifyObservers(engine);
+        expect(dispose).toHaveBeenCalledOnce();
+        expect(controller["_renderer"]).toBe(newRenderer);
+        expect(upload).toHaveBeenCalledOnce();
+        expect(controller["_decodedSplatsData"]).toBe(source);
+        expect(controller["_autoRequestId"]).toBeGreaterThan(oldRequest);
+        expect(controller["_resultReady"]).toBe(false);
+        expect(mesh.pointSplattingProgress).toBeNull();
+        expect(controller["_budgetReadPending"]).toBe(false);
+        expect(controller["_autoN"]).toBe(2);
+        const observer = controller["_restoreObserver"]!;
+        controller["_renderer"] = null;
+        controller.dispose();
+        await vi.waitFor(() => expect(engine.onContextRestoredObservable.observers).not.toContain(observer));
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("skips decoding for streamed parts and for workloads beyond the device limits", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

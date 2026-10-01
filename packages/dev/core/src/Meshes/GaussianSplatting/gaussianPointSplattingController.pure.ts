@@ -7,6 +7,7 @@ import { Matrix, Quaternion } from "core/Maths/math.vector.pure";
 import { type Material } from "core/Materials/material.pure";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { Constants } from "core/Engines/constants";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { Mesh } from "core/Meshes/mesh.pure";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { Logger } from "core/Misc/logger";
@@ -125,6 +126,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _depthBlit: Nullable<GaussianPointSplattingDepthBlitMaterial> = null;
     private _depthBlitMesh: Nullable<Mesh> = null;
     private _computeObserver: Nullable<Observer<Scene>> = null;
+    private _restoreObserver: Nullable<Observer<AbstractEngine>> = null;
     private _splatCount = 0;
     private _partCount = 1;
     private _decodedPartCount = 0;
@@ -255,6 +257,13 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
                 this._resultReady = false;
             });
         }
+        if (!this._restoreObserver) {
+            this._restoreObserver = engine.onContextRestoredObservable.add(() => {
+                // Rebuilt storage buffers are empty, including the image sentinel and cached splat uploads.
+                this._releaseComputeResources();
+                this._ensureCompute();
+            });
+        }
     }
 
     /** Tears down the shared compute once neither point-splatting mode needs it anymore. */
@@ -266,6 +275,15 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._scene.onBeforeRenderObservable.remove(this._computeObserver);
             this._computeObserver = null;
         }
+        if (this._restoreObserver) {
+            this._scene.getEngine().onContextRestoredObservable.remove(this._restoreObserver);
+            this._restoreObserver = null;
+        }
+        this._releaseComputeResources();
+    }
+
+    private _releaseComputeResources(): void {
+        this._autoRequestId++;
         this._renderer?.dispose();
         this._renderer = null;
         this._decodedSplatsData = null;
@@ -943,15 +961,15 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._scene.onBeforeRenderObservable.remove(this._computeObserver);
             this._computeObserver = null;
         }
-        this._renderer?.dispose();
+        if (this._restoreObserver) {
+            this._scene.getEngine().onContextRestoredObservable.remove(this._restoreObserver);
+            this._restoreObserver = null;
+        }
+        this._releaseComputeResources();
         this._blit?.dispose();
         this._blitMesh?.dispose();
         this._depthBlit?.dispose();
         this._depthBlitMesh?.dispose();
-        this._renderer = null;
-        this._resultReady = false;
-        this._progressReady = false;
-        this._budgetReadPending = false;
         this._blit = null;
         this._blitMesh = null;
         this._depthBlit = null;
