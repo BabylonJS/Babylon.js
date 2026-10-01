@@ -822,6 +822,16 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {}
 
+    /** @internal */
+    public set thinWalledScatterStrengthFactor(value: Nullable<number>) {
+        this.subsurfaceWeight = value ?? 0;
+    }
+
+    /** @internal */
+    public set thinWalledScatterStrengthTexture(value: Nullable<BaseTexture>) {
+        this.subsurfaceWeightTexture = value;
+    }
+
     /**
      * Sets the transmission scattering anisotropy.
      * @param value The anisotropy intensity value (-1 to 1)

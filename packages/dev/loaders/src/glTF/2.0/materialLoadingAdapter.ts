@@ -314,6 +314,20 @@ export interface IMaterialLoadingAdapter {
     volumetricScatterStrengthTexture: Nullable<BaseTexture>;
 
     /**
+     * Staging: the constant scatter strength for thin-walled mode.
+     * Set by KHR_materials_scatter and consumed by the OpenPBR adapter during finalization.
+     * Null means no thin-walled scatter has been staged.
+     */
+    thinWalledScatterStrengthFactor: Nullable<number>;
+
+    /**
+     * Staging: scatter strength texture for thin-walled mode.
+     * Set by KHR_materials_scatter when scatterStrengthTexture is present; combined with
+     * the transmission weight in finalizeAsync and then cleared.
+     */
+    thinWalledScatterStrengthTexture: Nullable<BaseTexture>;
+
+    /**
      * Sets the scattering anisotropy (-1 to 1)
      */
     transmissionScatterAnisotropy: number;

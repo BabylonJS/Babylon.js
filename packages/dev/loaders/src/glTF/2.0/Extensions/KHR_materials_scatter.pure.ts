@@ -67,11 +67,13 @@ export class KHR_materials_scatter implements IGLTFLoaderExtension {
         const scatterStrength = extension.scatterStrengthFactor ?? 0;
         const multiscatterColor = extension.multiscatterColorFactor !== undefined ? Color3.FromArray(extension.multiscatterColorFactor) : Color3.White();
         const scatterAnisotropy = extension.scatterAnisotropy ?? 0;
-        if (adapter.geometryThinWalled) {
-            // Stage scatter strength in subsurfaceWeight/Texture; finalizeAsync will convert
-            // both to final transmission_weight and subsurface_weight once all textures are loaded.
+        // Capture the mode once so the deferred texture callbacks stage into the same properties.
+        const thinWalled = adapter.geometryThinWalled;
+        if (thinWalled) {
+            // Stage scatter strength explicitly; finalizeAsync will convert it (with the transmission
+            // weight) to final transmission_weight and subsurface_weight once all textures are loaded.
             adapter.configureSubsurface();
-            adapter.subsurfaceWeight = scatterStrength;
+            adapter.thinWalledScatterStrengthFactor = scatterStrength;
             adapter.subsurfaceColor = multiscatterColor;
             adapter.subsurfaceScatterAnisotropy = scatterAnisotropy;
         } else {
@@ -88,7 +90,7 @@ export class KHR_materials_scatter implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/multiscatterColorTexture`, extension.multiscatterColorTexture).then((texture: BaseTexture) => {
                     texture.name = `${babylonMaterial.name} (Multiscatter Color)`;
-                    if (adapter.geometryThinWalled) {
+                    if (thinWalled) {
                         adapter.subsurfaceColorTexture = texture;
                     } else {
                         adapter.transmissionScatterTexture = texture;
@@ -101,8 +103,8 @@ export class KHR_materials_scatter implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/scatterStrengthTexture`, extension.scatterStrengthTexture).then((texture: BaseTexture) => {
                     texture.name = `${babylonMaterial.name} (Scatter Strength)`;
-                    if (adapter.geometryThinWalled) {
-                        adapter.subsurfaceWeightTexture = texture;
+                    if (thinWalled) {
+                        adapter.thinWalledScatterStrengthTexture = texture;
                     } else {
                         adapter.volumetricScatterStrengthTexture = texture;
                     }

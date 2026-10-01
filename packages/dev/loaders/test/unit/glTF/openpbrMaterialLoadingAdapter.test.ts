@@ -141,4 +141,36 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
         expect(material.coatColorTexture).not.toBe(coatColor);
         expect(isDisposed(coatColor)).toBe(false);
     });
+
+    describe("thin-walled scatter staging", () => {
+        it("preserves unstaged subsurface settings configured by user code", async () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const adapter = loader._getOrCreateMaterialAdapter(material) as OpenPBRMaterialLoadingAdapter;
+            // Simulates an onMaterialLoadedObservable handler on a material without KHR_materials_scatter.
+            material.geometryThinWalled = 1;
+            material.subsurfaceWeight = 1;
+            material.transmissionWeight = 0;
+
+            await adapter.finalizeAsync(loader);
+
+            expect(material.subsurfaceWeight).toBe(1);
+            expect(material.transmissionWeight).toBe(0);
+        });
+
+        it("converts staged thin-walled scatter strength into transmission and subsurface weights", async () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const adapter = loader._getOrCreateMaterialAdapter(material) as OpenPBRMaterialLoadingAdapter;
+            adapter.configureTransmission();
+            adapter.transmissionWeight = 1;
+            adapter.configureSubsurface();
+            adapter.thinWalledScatterStrengthFactor = 0.5;
+
+            await adapter.finalizeAsync(loader);
+
+            // transW = T*(1-S) = 0.5; ssW = T*S/(1-transW) = 1.
+            expect(material.transmissionWeight).toBeCloseTo(0.5);
+            expect(material.subsurfaceWeight).toBeCloseTo(1);
+            expect(adapter.thinWalledScatterStrengthFactor).toBeNull();
+        });
+    });
 });

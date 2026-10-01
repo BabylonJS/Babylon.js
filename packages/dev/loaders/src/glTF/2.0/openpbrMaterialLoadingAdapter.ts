@@ -778,6 +778,30 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         return this._volumetricScatterStrengthTexture;
     }
 
+    private _thinWalledScatterStrengthFactor: Nullable<number> = null;
+
+    /** @internal */
+    public set thinWalledScatterStrengthFactor(value: Nullable<number>) {
+        this._thinWalledScatterStrengthFactor = value;
+    }
+
+    /** @internal */
+    public get thinWalledScatterStrengthFactor(): Nullable<number> {
+        return this._thinWalledScatterStrengthFactor;
+    }
+
+    private _thinWalledScatterStrengthTexture: Nullable<BaseTexture> = null;
+
+    /** @internal */
+    public set thinWalledScatterStrengthTexture(value: Nullable<BaseTexture>) {
+        this._thinWalledScatterStrengthTexture = value;
+    }
+
+    /** @internal */
+    public get thinWalledScatterStrengthTexture(): Nullable<BaseTexture> {
+        return this._thinWalledScatterStrengthTexture;
+    }
+
     /**
      * Sets the transmission scattering anisotropy.
      * @param value The anisotropy intensity value (-1 to 1)
@@ -1289,15 +1313,26 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public async finalizeAsync(loader: GLTFLoader): Promise<void> {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
 
-        // Thin-walled scatter: subsurfaceWeight/Texture hold scatter strength S (staged by
-        // KHR_materials_scatter). Compute final transmission_weight = T*(1-S) and
-        // subsurface_weight = T*S/(1-T*(1-S)) now that all textures are loaded.
+        // Thin-walled scatter: KHR_materials_scatter explicitly stages scatter strength S. Only staged
+        // values are converted; live material values may have been changed by user code in
+        // onMaterialLoadedObservable, which fires before finalization.
         // This must run before the diffuse-transmission-tint block which reads subsurfaceWeight.
-        if (this.geometryThinWalled && this.subsurfaceWeight > 0 && this._diffuseTransmissionTint.equals(Color3.White())) {
+        const thinScatterStrength = this._thinWalledScatterStrengthFactor;
+        const thinScatterTex = this._thinWalledScatterStrengthTexture;
+        this._thinWalledScatterStrengthFactor = null;
+        this._thinWalledScatterStrengthTexture = null;
+        if (thinScatterStrength !== null && !this._diffuseTransmissionTint.equals(Color3.White())) {
+            // Tinted diffuse transmission: use the scatter strength directly as the subsurface weight.
+            this.subsurfaceWeight = thinScatterStrength;
+            if (thinScatterTex) {
+                this.subsurfaceWeightTexture = thinScatterTex;
+            }
+        } else if (thinScatterStrength !== null && (thinScatterStrength > 0 || thinScatterTex)) {
+            // Compute final transmission_weight = T*(1-S) and subsurface_weight = T*S/(1-T*(1-S)).
             const transmissionFactor = this.transmissionWeight;
             const transmissionTex = this.transmissionWeightTexture;
-            const scatterStrength = this.subsurfaceWeight;
-            const scatterTex = this.subsurfaceWeightTexture;
+            const scatterStrength = thinScatterStrength;
+            const scatterTex = thinScatterTex;
 
             const weights = await ThinWalledScatterWeightsAsync(
                 `${this._material.name}`,
@@ -1312,29 +1347,31 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 return;
             }
 
-            const oldTransmissionWeightTexture = this.transmissionWeightTexture;
-            oldTransmissionWeightTexture?.dispose();
             this.transmissionWeight = weights.transmission.factor?.r ?? transmissionFactor * (1.0 - scatterStrength);
             if (weights.transmission.texture) {
                 this.transmissionWeight = 1.0;
                 this.transmissionWeightTexture = weights.transmission.texture;
+                this._disposeTextureIfUnused(loader, transmissionTex);
             }
 
-            const oldSubsurfaceWeightTexture = this.subsurfaceWeightTexture;
-            oldSubsurfaceWeightTexture?.dispose();
             this.subsurfaceWeight = weights.subsurface.factor?.r ?? 0.0;
             if (weights.subsurface.texture) {
+                const oldSubsurfaceWeightTexture = this.subsurfaceWeightTexture;
                 this.subsurfaceWeight = 1.0;
                 this.subsurfaceWeightTexture = weights.subsurface.texture;
                 this._material._useSubsurfaceWeightFromTextureAlpha = false;
+                this._disposeTextureIfUnused(loader, oldSubsurfaceWeightTexture);
             }
+            this._disposeTextureIfUnused(loader, scatterTex);
+        } else {
+            this._disposeTextureIfUnused(loader, thinScatterTex);
         }
 
         // KHR_materials_scatter supplies multi-scatter albedo, while OpenPBR 1.1 expects the
         // scattering coefficient multiplied by transmission depth. Bake the nonlinear conversion
         // to single-scatter albedo into the texture, then keep extinctionCoefficient * depth in the
         // material factor so their product has the representation expected by OpenPBR.
-        if (!this.geometryThinWalled && this._volumetricScatterStrengthFactor !== null) {
+        if (this._volumetricScatterStrengthFactor !== null) {
             const colorTex = this.transmissionScatterTexture;
             const colorFactor = this.transmissionScatter;
             const strengthTex = this._volumetricScatterStrengthTexture;
@@ -1353,12 +1390,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             );
             if (loader._disposed) {
                 singleScatter.dispose?.();
-                colorTex?.dispose();
-                strengthTex?.dispose();
+                this._disposeTextureIfUnused(loader, strengthTex);
                 return;
             }
-            colorTex?.dispose();
-            strengthTex?.dispose();
             this._volumetricScatterStrengthFactor = null;
             this._volumetricScatterStrengthTexture = null;
 
@@ -1374,6 +1408,8 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                     extinctionTimesDepth.b * singleScatter.factor.b
                 );
             }
+            this._disposeTextureIfUnused(loader, colorTex);
+            this._disposeTextureIfUnused(loader, strengthTex);
         }
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
