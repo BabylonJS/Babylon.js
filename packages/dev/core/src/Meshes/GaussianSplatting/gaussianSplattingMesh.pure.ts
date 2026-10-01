@@ -54,6 +54,8 @@ export interface IGaussianPointSplattingController {
     occlusionCulling: boolean;
     /** Counters of the most recent successful compute frame, or null when no frame is available. */
     readonly progress: Nullable<IGaussianPointSplattingProgress>;
+    /** Whether compute owns the current pass, including pending shader compilation. */
+    readonly handlesCurrentPass: boolean;
     /** Drops the decoded compute buffers so the next frame re-decodes them, and restarts accumulation. */
     invalidateDecodedSplats(): void;
     /**
@@ -753,7 +755,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (this._pointController?.drawColorPass(enableAlphaMode)) {
             return mesh;
         }
+
         return super._drawColorPass(mesh, subMesh, enableAlphaMode, effectiveMeshReplacement);
+    }
+
+    protected override _isSortRequired(): boolean {
+        return !this._pointController?.handlesCurrentPass;
+    }
+
+    protected override _drawPointPass(enableAlphaMode: boolean): boolean {
+        return this._pointController?.drawColorPass(enableAlphaMode) ?? false;
     }
 
     /**

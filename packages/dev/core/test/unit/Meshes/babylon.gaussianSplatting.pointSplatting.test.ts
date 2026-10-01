@@ -57,6 +57,63 @@ function CreateAutoScaleSetup(generation: number): { mesh: GaussianSplattingMesh
 }
 
 describe("GaussianSplattingMesh point-splatting settings", () => {
+    it("renders compute-owned passes without waiting for or posting worker sorts", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -3), scene);
+        camera.setTarget(Vector3.Zero());
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        mesh.updateData(new ArrayBuffer(32));
+        const controller = CreateController(mesh);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
+        controller["_renderer"] = renderer;
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_runCompute"] = vi.fn();
+        mesh["_disableDepthSort"] = false;
+        mesh["_readyToDisplay"] = false;
+        const post = vi.fn();
+        mesh["_worker"] = { postMessage: post, terminate: vi.fn() } as Worker;
+        const before = vi.fn();
+        const after = vi.fn();
+        mesh.onBeforeRenderObservable.add(before);
+        mesh.onAfterRenderObservable.add(after);
+        const depth = scene.enableDepthRenderer(camera);
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(mesh.isReady(true)).toBe(true);
+        mesh["_cameraViewInfos"].get(camera.uniqueId)!.splatIndexBufferSet = false;
+        mesh["_canPostToWorker"] = false;
+        mesh.render(mesh.subMeshes[0], true);
+        camera.position.x = 1;
+        camera.computeWorldMatrix(true);
+        mesh._postToWorker(true);
+        expect(mesh.isReady(true)).toBe(true);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        mesh.render(mesh.subMeshes[0], false);
+        expect(post).not.toHaveBeenCalled();
+        expect(before).toHaveBeenCalledTimes(2);
+        expect(after).toHaveBeenCalledTimes(2);
+        expect(mesh["_hasRenderedOnce"]).toBe(false);
+
+        mesh.setMaterialForRenderPass(engine.currentRenderPassId, mesh.material!);
+        expect(controller.handlesCurrentPass).toBe(false);
+        mesh.setMaterialForRenderPass(engine.currentRenderPassId, undefined);
+
+        // Other passes retain the classic worker path and its first-sort readiness gate.
+        engine.currentRenderPassId = 12345;
+        expect(controller.handlesCurrentPass).toBe(false);
+        mesh._postToWorker(true);
+        expect(post).toHaveBeenCalledWith(expect.objectContaining({ command: "sort" }), expect.any(Array));
+        expect(mesh.isReady(false)).toBe(false);
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("registers the compute and blit shaders through the public mesh entry point", () => {
         expect(WebGPUEngine.prototype.createComputeContext).toBeTypeOf("function");
         for (const name of [

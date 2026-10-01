@@ -1260,11 +1260,15 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @returns true when ready
      */
     public override isReady(completeCheck = false): boolean {
-        if (!super.isReady(completeCheck, true)) {
+        const sortRequired = this._isSortRequired();
+        if (!super.isReady(sortRequired && completeCheck, true)) {
             return false;
         }
 
-        if (!this._readyToDisplay) {
+        if (!sortRequired && !this._geometry) {
+            this._postToWorker();
+        }
+        if (sortRequired && !this._readyToDisplay) {
             // mesh is ready when worker has done at least 1 sorting
             this._postToWorker(true);
             return false;
@@ -1273,7 +1277,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         // Before the first successful render, require an applied index buffer. A pending refresh can
         // use the latest completed buffer, otherwise a transform changed every frame would starve the
         // first render. Once rendered, the render loop continuously re-sorts as the camera/world changes.
-        if (!this._hasRenderedOnce && !this._disableDepthSort) {
+        if (sortRequired && !this._hasRenderedOnce && !this._disableDepthSort) {
             const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
             const canRenderWithPendingRefresh = this._scene._isInRenderingMeshEvaluation() && cameras.filter((camera) => camera !== null).length === 1;
             const worldMatrix = this.computeWorldMatrix(true);
@@ -1496,7 +1500,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         // null before any splat data has been committed) or the native binding throws on the conversion.
         const hasNativeSort = !!Native?.sortSplats && !!this._splatPositions && !!this._splatIndex;
         // When depth sort is disabled, no sort function must run: fall through to the no-sort path below.
-        const hasSortFunction = !this._disableDepthSort && (this._worker || hasNativeSort);
+        const sortRequired = this._isSortRequired();
+        const hasSortFunction = sortRequired && !this._disableDepthSort && (this._worker || hasNativeSort);
         if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             const worldMatrix = this.computeWorldMatrix(true);
             // view infos sorted by least recent updated frame id
@@ -1548,7 +1553,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                     }
                 }
             });
-        } else if (this._disableDepthSort) {
+        } else if (this._disableDepthSort || !sortRequired) {
             if (this._splatIndex) {
                 activeViewInfos.forEach((cameraViewInfos) => {
                     if (!cameraViewInfos.splatIndexBufferSet) {
@@ -1569,6 +1574,15 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @returns the current mesh
      */
     public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+        let beforeNotified = false;
+        if (!this._isSortRequired()) {
+            this.onBeforeRenderObservable.notifyObservers(this);
+            beforeNotified = true;
+            if (this._drawPointPass(enableAlphaMode)) {
+                this.onAfterRenderObservable.notifyObservers(this);
+                return this;
+            }
+        }
         this._postToWorker();
 
         // geometry used for shadows, bind the first found in the camera view infos
@@ -1579,10 +1593,13 @@ export class GaussianSplattingMeshBase extends Mesh {
         const cameraId = this._scene.activeCamera!.uniqueId;
         const cameraViewInfos = this._cameraViewInfos.get(cameraId);
         if (!cameraViewInfos || !cameraViewInfos.splatIndexBufferSet) {
+            if (beforeNotified) {
+                this.onAfterRenderObservable.notifyObservers(this);
+            }
             return this;
         }
 
-        if (this.onBeforeRenderObservable) {
+        if (!beforeNotified && this.onBeforeRenderObservable) {
             this.onBeforeRenderObservable.notifyObservers(this);
         }
         const mesh = cameraViewInfos.mesh;
@@ -1623,6 +1640,23 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     protected _drawColorPass(mesh: Mesh, subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         return mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+    }
+
+    /**
+     * Whether the current pass needs classic sorted splat geometry.
+     * @returns whether classic sorting is required
+     */
+    protected _isSortRequired(): boolean {
+        return true;
+    }
+
+    /**
+     * Handles a compute-owned pass before allocating or waiting for sorted geometry.
+     * @param _enableAlphaMode whether alpha mode can be changed
+     * @returns whether the pass was handled
+     */
+    protected _drawPointPass(_enableAlphaMode: boolean): boolean {
+        return false;
     }
 
     private static _TypeNameToEnum(name: string): PLYType {

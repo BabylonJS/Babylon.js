@@ -1011,6 +1011,18 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer?.resetAccumulation();
     }
 
+    /** {@inheritDoc IGaussianPointSplattingController.handlesCurrentPass} */
+    public get handlesCurrentPass(): boolean {
+        if (this._mesh.getMaterialForRenderPass(this._scene.getEngine().currentRenderPassId)) {
+            return false;
+        }
+        const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
+        const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
+        const colorPass = this._colorMode && !solidColor?.isEnabled && !fog && this._isMainColorPass();
+        const depthPass = this._depthMode && this._isDepthPass();
+        return (colorPass || depthPass) && this._computeActive && !this._hasUnsupportedView() && (!this._renderer || this._isWorkloadSupported());
+    }
+
     /**
      * Composites supported camera color or depth passes from the point-splatting result.
      * The pass waits without drawing classic splats while compute or compositor shaders are compiling.
@@ -1018,20 +1030,14 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
      * @returns whether the point path handled the current pass, including waiting for shader readiness
      */
     public drawColorPass(enableAlphaMode: boolean): boolean {
-        const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
-        const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
-        const colorPass = this._colorMode && !solidColor?.isEnabled && !fog && this._isMainColorPass();
+        if (!this.handlesCurrentPass) {
+            if (!this._computeActive) {
+                this._runCompute();
+            }
+            return false;
+        }
+        const colorPass = this._colorMode && this._isMainColorPass();
         const depthPass = this._depthMode && this._isDepthPass();
-        if ((!colorPass && !depthPass) || this._hasUnsupportedView()) {
-            return false;
-        }
-        if (!this._computeActive) {
-            this._runCompute();
-            return false;
-        }
-        if (this._renderer && !this._isWorkloadSupported()) {
-            return false;
-        }
         const { width, height } = this._getOutputSize();
         // Compute only after the pass has established its actual matrices. Matching color/depth passes share it.
         if (!this._resultReady || !this._vpMatrix.equalsWithEpsilon(this._scene.getTransformMatrix(), 1e-5) || this._computedWidth !== width || this._computedHeight !== height) {
