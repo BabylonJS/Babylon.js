@@ -261,7 +261,14 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._restoreObserver = engine.onContextRestoredObservable.add(() => {
                 // Rebuilt storage buffers are empty, including the image sentinel and cached splat uploads.
                 this._releaseComputeResources();
+                this._releaseBlitResources();
                 this._ensureCompute();
+                if (this._colorMode) {
+                    this._enableColorBlit();
+                }
+                if (this._depthMode) {
+                    this._enableDepthBlit();
+                }
             });
         }
     }
@@ -293,6 +300,17 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._autoN = 2;
         this._autoMeasuredGeneration = -1;
         this._lastRenderedGeneration = -1;
+    }
+
+    private _releaseBlitResources(): void {
+        this._blit?.dispose();
+        this._blitMesh?.dispose();
+        this._depthBlit?.dispose();
+        this._depthBlitMesh?.dispose();
+        this._blit = null;
+        this._blitMesh = null;
+        this._depthBlit = null;
+        this._depthBlitMesh = null;
     }
 
     /** Builds a fullscreen compositor triangle. It is disabled and drawn manually, so its clip-space
@@ -966,14 +984,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._restoreObserver = null;
         }
         this._releaseComputeResources();
-        this._blit?.dispose();
-        this._blitMesh?.dispose();
-        this._depthBlit?.dispose();
-        this._depthBlitMesh?.dispose();
-        this._blit = null;
-        this._blitMesh = null;
-        this._depthBlit = null;
-        this._depthBlitMesh = null;
+        this._releaseBlitResources();
         this._colorMode = false;
         this._depthMode = false;
     }

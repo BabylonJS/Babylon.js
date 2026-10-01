@@ -466,6 +466,11 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_renderer"] = oldRenderer;
         controller["_colorMode"] = true;
         controller["_ensureCompute"]();
+        controller["_enableColorBlit"]();
+        controller["_depthMode"] = true;
+        controller["_enableDepthBlit"]();
+        const oldBlit = controller["_blit"];
+        const oldDepthBlit = controller["_depthBlit"];
         const source = controller["_decodedSplatsData"];
         const oldRequest = controller["_autoRequestId"];
         controller["_resultReady"] = true;
@@ -482,6 +487,8 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.onContextRestoredObservable.notifyObservers(engine);
         expect(dispose).toHaveBeenCalledOnce();
         expect(controller["_renderer"]).toBe(newRenderer);
+        expect(controller["_blit"]).not.toBe(oldBlit);
+        expect(controller["_depthBlit"]).not.toBe(oldDepthBlit);
         expect(upload).toHaveBeenCalledOnce();
         expect(controller["_decodedSplatsData"]).toBe(source);
         expect(controller["_autoRequestId"]).toBeGreaterThan(oldRequest);
