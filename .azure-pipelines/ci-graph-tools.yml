@@ -164,12 +164,13 @@ jobs:
                 displayName: "Deploy SFE"
 
           - script: |
-                npx playwright install --with-deps
+                npx playwright install --with-deps chromium
                 npx playwright test --project=graphTools --project=flowGraphEditor
             displayName: "Test tools"
             env:
                 CI: "true"
                 BROWSER: "Chrome"
+                CIWORKERS: "2"
                 NME_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeEditor/"
                 NGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeGeometryEditor/"
                 NRGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/"
