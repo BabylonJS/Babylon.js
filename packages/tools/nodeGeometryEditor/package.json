@@ -18,8 +18,8 @@
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g"
     },
     "dependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -32,10 +32,10 @@
         "@tools/snippet-loader": "1.0.0",
         "@fortawesome/fontawesome-svg-core": "^7.3.1",
         "@fortawesome/free-solid-svg-icons": "^7.3.1",
-        "@fortawesome/react-fontawesome": "^3.3.1",
-        "@types/dagre": "^0.7.47",
-        "@types/react": "^18.0.0",
-        "@types/react-dom": "^18.0.0",
+        "@fortawesome/react-fontawesome": "^3.5.0",
+        "@types/dagre": "^0.7.54",
+        "@types/react": "^18.3.31",
+        "@types/react-dom": "^18.3.7",
         "dagre": "^0.8.5"
     },
     "sideEffects": true
