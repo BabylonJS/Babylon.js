@@ -490,6 +490,33 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it.each(["raw SOG", "standalone stream"] as const)("falls back in both passes for %s without CPU data", async (source) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        const mesh = new GaussianSplattingMesh("gpu-only", null, scene);
+        mesh["_useSog"] = source === "raw SOG";
+        mesh._vertexCount = 4;
+        const controller = CreateController(mesh);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        const depth = scene.enableDepthRenderer(camera);
+        const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(false);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(false);
+        expect(warn).toHaveBeenCalledOnce();
+        expect(controller["_computeActive"]).toBe(false);
+
+        warn.mockRestore();
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("caps the auto upsample factor at eight and only marks a generation measured after its reset frame", async () => {
         const { controller, renderer } = CreateAutoScaleSetup(0);
         vi.spyOn(renderer, "readPointCountAsync").mockResolvedValue(1_000_000_000);

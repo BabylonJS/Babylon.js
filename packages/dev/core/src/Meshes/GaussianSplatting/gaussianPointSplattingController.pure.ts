@@ -113,6 +113,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _progressGeneration = -1;
     private _progressCycleLength = 0;
     private _streamingWarned = false;
+    private _sourceWarned = false;
     private _workloadWarned = false;
     private _invalidProjectionWarned = false;
     private _renderer: Nullable<GaussianPointSplattingRenderer> = null;
@@ -193,7 +194,12 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /** True while either point-splatting mode is on, i.e. while the shared compute must run. */
     private get _computeActive(): boolean {
-        return (this._colorMode || this._depthMode) && !this._mesh._pointStreamingUnsupported;
+        return (this._colorMode || this._depthMode) && !this._mesh._pointStreamingUnsupported && !this._hasUnsupportedSource;
+    }
+
+    /** GPU-only SOG and standalone streams have no retained splats for the compute decoder. */
+    private get _hasUnsupportedSource(): boolean {
+        return this._mesh.useSog || (!this._mesh._splatsData && this._mesh.getTotalVertices() > 0);
     }
 
     /** {@inheritDoc IGaussianPointSplattingController.pointScale} */
@@ -238,7 +244,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._renderer.occlusionCulling = this._occlusionCulling;
             this._decodedSplatsData = null;
         }
-        if (!this._mesh._pointStreamingUnsupported && this._isWorkloadSupported()) {
+        if (!this._mesh._pointStreamingUnsupported && !this._hasUnsupportedSource && this._isWorkloadSupported()) {
             this._syncData();
         }
         if (!this._computeObserver) {
@@ -765,6 +771,10 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             Logger.Warn(
                 "GaussianSplattingMesh: point splatting does not support streamed parts (their splats are GPU-decoded and never reach the retained CPU splat data); falling back to the classic renderer."
             );
+        }
+        if ((this._colorMode || this._depthMode) && this._hasUnsupportedSource && !this._sourceWarned) {
+            this._sourceWarned = true;
+            Logger.Warn("GaussianSplattingMesh: point splatting requires retained CPU splat data; GPU-only SOG textures and streams use the classic renderer.");
         }
         if (!this._computeActive || !this._mesh.isEnabled() || !this._renderer || !_DependenciesReady || this._hasUnsupportedView()) {
             return;
