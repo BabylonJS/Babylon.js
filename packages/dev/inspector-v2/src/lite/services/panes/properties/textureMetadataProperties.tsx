@@ -4,6 +4,7 @@ import {
     getTextureCoordinateIndex,
     getTextureMetadata,
     getTextureTransform,
+    hasMaterialUvTransform,
     markMaterialUboDirty,
     rebuildMaterial,
     setTextureTransform,
@@ -247,9 +248,10 @@ export const TextureMetadataProperties: FunctionComponent<TextureMetadataPropert
                 }
                 await Promise.all(
                     materialRecords.flatMap((materialRecord) => {
-                        const requiresRebuild = enableMaterialUvTransform(materialRecord.source);
+                        const wasEnabled = hasMaterialUvTransform(materialRecord.source);
+                        enableMaterialUvTransform(materialRecord.source);
                         markMaterialUboDirty(materialRecord.source);
-                        return requiresRebuild
+                        return materialRecord.family === "standard" || !wasEnabled
                             ? materialRecord.scenes.map(
                                   async (scene) =>
                                       // The repository-pinned Lite declarations predate direct rebuild completion.

@@ -23,6 +23,7 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
         getTextureMetadata: (texture: Record<string, unknown>) => texture.metadata,
         getTextureTransform: (texture: Record<string, unknown>) => texture.transform,
         getTextureCoordinateIndex: (texture: Record<string, unknown>) => texture.coordinateIndex,
+        hasMaterialUvTransform: (material: { uvTransformEnabled?: boolean }) => material.uvTransformEnabled === true,
         hasTextureTransform: (texture: { transform?: TextureTransform }) => {
             const transform = texture.transform;
             return transform !== undefined && (transform.uOffset !== 0 || transform.vOffset !== 0 || transform.uScale !== 1 || transform.vScale !== 1 || transform.uAng !== 0);
@@ -124,7 +125,10 @@ describe("Babylon Lite texture accessor metadata", () => {
             return true;
         });
         InspectionMocks.enableUv.mockReset();
-        InspectionMocks.enableUv.mockReturnValue(false);
+        InspectionMocks.enableUv.mockImplementation((material) => {
+            material.uvTransformEnabled = true;
+            return material._renderFeatures === undefined;
+        });
         InspectionMocks.dirty.mockReset();
         InspectionMocks.rebuild.mockReset();
         InspectionMocks.rebuild.mockResolvedValue(undefined);
@@ -255,6 +259,7 @@ describe("Babylon Lite texture accessor metadata", () => {
         expect(container.textContent).toContain("U Scale");
         expect(container.querySelector<HTMLInputElement>('input[value="1"]')).not.toBeNull();
         expect(services.refresh).toHaveBeenCalledTimes(2);
+        expect(InspectionMocks.rebuild).toHaveBeenCalledTimes(2);
     });
 
     it("groups slots into one link per material and keeps identical names distinct", () => {
@@ -347,9 +352,9 @@ describe("Babylon Lite texture accessor metadata", () => {
         expect(events).toContainEqual({ entity: services.texture, propertyKey: "uScale", oldValue: 3, newValue: 2 });
     });
 
-    it("awaits rebuilds when enabling transform support changes the material pipeline", async () => {
-        InspectionMocks.enableUv.mockReturnValue(true);
-        const services = MakeServices({ kind: "2d", capabilities: {} });
+    it.each(["standard", "pbr"] as const)("rebuilds a compiled %s source when enabling its first UV transform", async (family) => {
+        const services = MakeServices({ kind: "2d", capabilities: {} }, family);
+        Object.assign(services.material, { _renderFeatures: { features: 0 } });
         const container = Render(<TextureMetadataProperties {...services} />);
         const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
         const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
@@ -361,10 +366,60 @@ describe("Babylon Lite texture accessor metadata", () => {
             input.blur();
         });
 
+        expect(InspectionMocks.enableUv).toHaveReturnedWith(false);
         expect(InspectionMocks.rebuild).toHaveBeenCalledWith(services.scene, services.material, {
             rebuildViews: true,
             rebuildFrameGraph: false,
         });
+    });
+
+    it("rebuilds a compiled view when enabling UV transforms on its uncompiled source", async () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} }, "pbr");
+        const view = Object.assign(Object.create(services.material), {
+            source: services.material,
+            _renderFeatures: { features: 0 },
+            baseColorTexture: services.texture,
+        }) as Material;
+        services.scene.meshes[0].material = view;
+        vi.spyOn(services.resourceIndexService, "getTextureRecord").mockReturnValue({
+            ...services.textureRecord,
+            consumers: [{ material: view, bindingId: "pbr.baseColor" }],
+        });
+        const container = Render(<TextureMetadataProperties {...services} />);
+        const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
+
+        await act(async () => {
+            input.focus();
+            setter.call(input, "3");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
+        });
+
+        expect(InspectionMocks.enableUv).toHaveReturnedWith(true);
+        expect(InspectionMocks.rebuild).toHaveBeenCalledWith(services.scene, services.material, {
+            rebuildViews: true,
+            rebuildFrameGraph: false,
+        });
+    });
+
+    it("updates an already-enabled PBR transform without rebuilding its pipeline", async () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} }, "pbr");
+        Object.assign(services.material, { uvTransformEnabled: true, _renderFeatures: { features: 0 } });
+        const container = Render(<TextureMetadataProperties {...services} />);
+        const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
+
+        await act(async () => {
+            input.focus();
+            setter.call(input, "3");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
+        });
+
+        expect(InspectionMocks.enableUv).toHaveReturnedWith(false);
+        expect(InspectionMocks.dirty).toHaveBeenCalledWith(services.material);
+        expect(InspectionMocks.rebuild).not.toHaveBeenCalled();
     });
 
     it("announces a failed transform write without changing metadata rows", async () => {
