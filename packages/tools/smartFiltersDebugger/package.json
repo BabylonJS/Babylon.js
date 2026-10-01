@@ -18,6 +18,9 @@
         "compile": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "watch": "rollup -c rollup.config.umd.mjs --watch"
     },
+    "dependencies": {
+        "@babylonjs/smart-filters-lite": "1.26.0"
+    },
     "devDependencies": {
         "@fortawesome/fontawesome-svg-core": "^7.3.1",
         "@fortawesome/free-solid-svg-icons": "^7.3.1",
