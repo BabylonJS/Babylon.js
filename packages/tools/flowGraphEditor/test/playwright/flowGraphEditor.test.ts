@@ -1036,7 +1036,7 @@ test.describe("Flow Graph Editor — Shell and Panels", () => {
             state.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Phase 3 dialog bridge");
         });
 
-        await expect(page.getByText("Phase 3 toast bridge", { exact: true })).toBeVisible();
+        await expect(page.locator(".fui-ToastTitle").filter({ hasText: "Phase 3 toast bridge" })).toBeVisible();
         await expect(page.getByText("Phase 3 dialog bridge", { exact: true })).toBeVisible();
         await page.getByRole("button", { name: "OK" }).click();
         await expect(page.getByText("Phase 3 dialog bridge", { exact: true })).not.toBeVisible();
@@ -1068,7 +1068,7 @@ test.describe("Flow Graph Editor — Persistence and Scenes", () => {
 
         await page.getByRole("button", { name: "Save to snippet server", exact: true }).click();
 
-        await expect(page.getByText("Graph saved - ID: FGESAVE#12 (copied to clipboard)", { exact: true }).last()).toBeVisible();
+        await expect(page.locator(".fui-ToastTitle").filter({ hasText: "Graph saved - ID: FGESAVE#12 (copied to clipboard)" })).toBeVisible();
         await expect.poll(async () => await page.evaluate(() => location.hash)).toBe("#FGESAVE#12");
         await expect.poll(async () => postedBody).not.toBeNull();
 
