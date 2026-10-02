@@ -8138,14 +8138,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns result input
      */
     public static LookDirectionLHToRef<T extends Matrix>(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: T): T {
-        const back = MathTmp.Vector3[0];
-        back.copyFrom(forward);
-        back.scaleInPlace(-1);
-        const left = MathTmp.Vector3[1];
-        Vector3.CrossToRef(up, back, left);
+        const right = MathTmp.Vector3[1];
+        Vector3.CrossToRef(up, forward, right);
 
         // Generate the rotation matrix.
-        Matrix.FromValuesToRef(left._x, left._y, left._z, 0.0, up._x, up._y, up._z, 0.0, back._x, back._y, back._z, 0.0, 0, 0, 0, 1.0, result);
+        Matrix.FromValuesToRef(right._x, right._y, right._z, 0.0, up._x, up._y, up._z, 0.0, forward._x, forward._y, forward._z, 0.0, 0, 0, 0, 1.0, result);
         return result;
     }
 
@@ -8173,11 +8170,14 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns result input
      */
     public static LookDirectionRHToRef<T extends Matrix>(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: T): T {
-        const right = MathTmp.Vector3[2];
-        Vector3.CrossToRef(up, forward, right);
+        const back = MathTmp.Vector3[0];
+        back.copyFrom(forward);
+        back.scaleInPlace(-1);
+        const left = MathTmp.Vector3[2];
+        Vector3.CrossToRef(up, back, left);
 
         // Generate the rotation matrix.
-        Matrix.FromValuesToRef(right._x, right._y, right._z, 0.0, up._x, up._y, up._z, 0.0, forward._x, forward._y, forward._z, 0.0, 0, 0, 0, 1.0, result);
+        Matrix.FromValuesToRef(left._x, left._y, left._z, 0.0, up._x, up._y, up._z, 0.0, back._x, back._y, back._z, 0.0, 0, 0, 0, 1.0, result);
         return result;
     }
 
