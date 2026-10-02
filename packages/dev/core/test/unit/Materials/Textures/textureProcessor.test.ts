@@ -800,7 +800,7 @@ describe("TextureProcessor", () => {
             warn.mockRestore();
         });
 
-        it("Lerp keeps only the first texture when any input uses a different UV set", async () => {
+        it("Lerp keeps all textures that share the first texture's UV set", async () => {
             const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
             const first = makeFakeTexture();
             first!.coordinatesIndex = 2;
@@ -814,8 +814,27 @@ describe("TextureProcessor", () => {
             expect(warn).toHaveBeenCalledOnce();
             expect(_capturedPTs[0].coordinatesIndex).toBe(2);
             expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
-            expect(_capturedPTs[0].getDefines()).not.toContain("OPERAND_B_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_B_TEXTURE");
             expect(_capturedPTs[0].getDefines()).not.toContain("LERP_T_TEXTURE");
+            warn.mockRestore();
+        });
+
+        it("Lerp keeps later textures that share the first texture's UV set and drops the mismatched one", async () => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const first = makeFakeTexture();
+            first!.coordinatesIndex = 1;
+            const second = makeFakeTexture();
+            second!.coordinatesIndex = 0;
+            const blend = makeFakeTexture();
+            blend!.coordinatesIndex = 1;
+
+            await LerpTexturesAsync("lerp-uv-later", { texture: first }, { texture: second }, { texture: blend }, scene);
+
+            expect(warn).toHaveBeenCalledOnce();
+            expect(_capturedPTs[0].coordinatesIndex).toBe(1);
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).not.toContain("OPERAND_B_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).toContain("LERP_T_TEXTURE");
             warn.mockRestore();
         });
 

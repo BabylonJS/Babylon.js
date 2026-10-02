@@ -308,15 +308,9 @@ function _KeepMatchingCoordinates(name: string, operands: ITextureProcessOperand
         return operands;
     }
 
-    Logger.Warn(`Texture processor '${name}': input textures use different UV coordinates; keeping only the first texture.`);
-    let keptTexture = false;
-    return operands.map((operand) => {
-        if (!operand.texture || !keptTexture) {
-            keptTexture ||= !!operand.texture;
-            return operand;
-        }
-        return { ...operand, texture: null };
-    });
+    const uvSet = firstTexture.coordinatesIndex;
+    Logger.Warn(`Texture processor '${name}': input textures use different UV coordinates; keeping only textures using UV set ${uvSet}.`);
+    return operands.map((operand) => (!operand.texture || operand.texture.coordinatesIndex === uvSet ? operand : { ...operand, texture: null }));
 }
 
 /**
