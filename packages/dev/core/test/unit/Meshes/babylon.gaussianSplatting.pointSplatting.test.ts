@@ -97,6 +97,8 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(before).toHaveBeenCalledTimes(2);
         expect(after).toHaveBeenCalledTimes(2);
         expect(mesh["_hasRenderedOnce"]).toBe(false);
+        // Compute passes leave the worker gate to the in-flight sort instead of reopening it.
+        expect(mesh["_canPostToWorker"]).toBe(false);
 
         mesh.setMaterialForRenderPass(engine.currentRenderPassId, mesh.material!);
         expect(controller.handlesCurrentPass).toBe(false);
@@ -111,11 +113,23 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_depthMode"] = true;
         mesh.setMaterialForRenderPass(engine.currentRenderPassId, undefined);
 
-        // Other passes retain the classic worker path and its first-sort readiness gate.
+        // Once the in-flight sort lands, a forced sort (new data or parts) requested during a compute-owned
+        // pass is deferred, not posted, and keeps the sort unsettled until a classic pass runs it.
+        mesh["_canPostToWorker"] = true;
+        mesh["_readyToDisplay"] = true;
+        expect(controller.handlesCurrentPass).toBe(true);
+        mesh._postToWorker(true);
+        expect(post).not.toHaveBeenCalled();
+        expect(mesh._isDepthSortSettled).toBe(false);
+
+        // Other passes retain the classic worker path; the deferred sort runs even without camera changes.
         engine.currentRenderPassId = 12345;
         expect(controller.handlesCurrentPass).toBe(false);
-        mesh._postToWorker(true);
+        mesh._postToWorker();
+        expect(post).toHaveBeenCalledTimes(1);
         expect(post).toHaveBeenCalledWith(expect.objectContaining({ command: "sort" }), expect.any(Array));
+        expect(mesh["_forcedSortPending"]).toBe(false);
+        mesh["_readyToDisplay"] = false;
         expect(mesh.isReady(false)).toBe(false);
         await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
         controller["_renderer"] = null;

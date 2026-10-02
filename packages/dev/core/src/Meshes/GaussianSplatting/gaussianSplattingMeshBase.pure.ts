@@ -573,6 +573,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _splatSizeMin: number = Infinity;
     private _splatSizeMax: number = -Infinity;
     private _sortIsDirty = false;
+    // A forced sort requested while no classic pass needed sorting; runs on the next classic pass.
+    private _forcedSortPending = false;
     protected _activeSplatRanges: Nullable<Uint32Array> = null;
     private _activeSplatRangeKey = "";
     private _activeSplatRenderCount = 0;
@@ -794,14 +796,15 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     /**
      * Whether the depth sort is settled: a sort computed for the current active ranges and camera has been
-     * applied to the rendered index buffer, and no further sort is pending or in flight. For a static camera
+     * applied to the rendered index buffer, and no further sort is pending or in flight (including a forced sort
+     * deferred until a classic pass needs it). For a static camera
      * and a fixed active set this becomes true once the final sort completes. Used by streaming subclasses to
      * detect when rendering is fully up to date (e.g. for deterministic screenshots) and by IBL shadows to
      * avoid voxelizing against an index buffer the worker has not finished (re)building yet.
      * @internal
      */
     public get _isDepthSortSettled(): boolean {
-        return this._readyToDisplay && !this._sortIsDirty && this._canPostToWorker;
+        return this._readyToDisplay && !this._sortIsDirty && !this._forcedSortPending && this._canPostToWorker;
     }
 
     // (Re)allocates the worker depth buffer to the given padded size. A fresh array is allocated when the
@@ -1502,6 +1505,13 @@ export class GaussianSplattingMeshBase extends Mesh {
         // When depth sort is disabled, no sort function must run: fall through to the no-sort path below.
         const sortRequired = this._isSortRequired();
         const hasSortFunction = sortRequired && !this._disableDepthSort && (this._worker || hasNativeSort);
+        // A forced sort (new data or parts) requested while no classic pass needs sorting (e.g. point
+        // splatting) is deferred to the next classic pass; the camera and world may be unchanged by then.
+        if (forced && !sortRequired && !this._disableDepthSort) {
+            this._forcedSortPending = true;
+        } else if (hasSortFunction && this._forcedSortPending) {
+            forced = true;
+        }
         if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             const worldMatrix = this.computeWorldMatrix(true);
             // view infos sorted by least recent updated frame id
@@ -1517,6 +1527,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                     cameraViewInfos.sortRequestId = ++this._sortRequestId;
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
+                    this._forcedSortPending = false;
                     if (this._worker) {
                         this._worker.postMessage(
                             {
@@ -1563,7 +1574,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                 });
                 this._readyToDisplay = true;
             }
-            this._canPostToWorker = true;
+            // With a worker, the gate is owned by in-flight sorts and rebuilds; their completion unlocks it.
+            if (this._disableDepthSort || !this._worker) {
+                this._canPostToWorker = true;
+            }
         }
     }
     /**
