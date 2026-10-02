@@ -102,6 +102,15 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(controller.handlesCurrentPass).toBe(false);
         mesh.setMaterialForRenderPass(engine.currentRenderPassId, undefined);
 
+        // The depth renderer's own classic GS depth material does not displace the point depth path.
+        depth["_ensureGaussianSplattingDepthMaterial"](mesh, engine.currentRenderPassId);
+        expect(mesh.getMaterialForRenderPass(engine.currentRenderPassId)).toBeTruthy();
+        expect(controller.handlesCurrentPass).toBe(true);
+        controller["_depthMode"] = false;
+        expect(controller.handlesCurrentPass).toBe(false);
+        controller["_depthMode"] = true;
+        mesh.setMaterialForRenderPass(engine.currentRenderPassId, undefined);
+
         // Other passes retain the classic worker path and its first-sort readiness gate.
         engine.currentRenderPassId = 12345;
         expect(controller.handlesCurrentPass).toBe(false);

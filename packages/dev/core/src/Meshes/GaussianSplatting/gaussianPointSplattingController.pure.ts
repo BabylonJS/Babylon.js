@@ -5,6 +5,7 @@ import { Scene } from "core/scene.pure";
 import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion } from "core/Maths/math.vector.pure";
 import { type Material } from "core/Materials/material.pure";
+import { type DepthRenderer } from "core/Rendering/depthRenderer.pure";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { Constants } from "core/Engines/constants";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
@@ -959,20 +960,28 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     }
 
     /**
-     * True only while rendering the active camera's scene depth renderer; other depth passes use the classic path.
-     * @returns whether the current render pass is the active camera's depth renderer pass
+     * The active camera's scene depth renderer while it is rendering; other depth passes use the classic path.
+     * @returns the depth renderer owning the current render pass, or null
      */
-    private _isDepthPass(): boolean {
+    private _getCurrentDepthRenderer(): Nullable<DepthRenderer> {
         const depthRenderers = this._scene._depthRenderer;
         const camera = this._scene.activeCamera;
         if (!depthRenderers || !camera) {
-            return false;
+            return null;
         }
         const renderer = depthRenderers[camera.uniqueId];
         if (!renderer || !renderer.enabled) {
-            return false;
+            return null;
         }
-        return renderer.getDepthMap().renderPassIds.indexOf(this._scene.getEngine().currentRenderPassId) !== -1;
+        return renderer.getDepthMap().renderPassIds.indexOf(this._scene.getEngine().currentRenderPassId) !== -1 ? renderer : null;
+    }
+
+    /**
+     * True only while rendering the active camera's scene depth renderer.
+     * @returns whether the current render pass is the active camera's depth renderer pass
+     */
+    private _isDepthPass(): boolean {
+        return !!this._getCurrentDepthRenderer();
     }
 
     /** {@inheritDoc IGaussianPointSplattingController.dispose} */
@@ -1013,13 +1022,17 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /** {@inheritDoc IGaussianPointSplattingController.handlesCurrentPass} */
     public get handlesCurrentPass(): boolean {
-        if (this._mesh.getMaterialForRenderPass(this._scene.getEngine().currentRenderPassId)) {
+        const passMaterial = this._mesh.getMaterialForRenderPass(this._scene.getEngine().currentRenderPassId);
+        const depthRenderer = this._depthMode ? this._getCurrentDepthRenderer() : null;
+        const depthPass = !!depthRenderer;
+        // The depth renderer always installs its own classic GS depth material for its pass; only a
+        // user override set through setMaterialForRendering keeps the classic path.
+        if (passMaterial && !depthRenderer?._isGaussianSplattingDepthMaterial(passMaterial)) {
             return false;
         }
         const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
         const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
         const colorPass = this._colorMode && !solidColor?.isEnabled && !fog && this._isMainColorPass();
-        const depthPass = this._depthMode && this._isDepthPass();
         return (colorPass || depthPass) && this._computeActive && !this._hasUnsupportedView() && (!this._renderer || this._isWorkloadSupported());
     }
 
