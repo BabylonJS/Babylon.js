@@ -45,7 +45,9 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
     // consumed in postExportMaterialAsync). Texture is disposed in dispose().
     private _transmissionOperands = new Map<Material, { factor: Nullable<Color4>; texture: Nullable<BaseTexture> }>();
 
-    private _baseColorOperands = new Map<Material, { factor: Nullable<Color4>; texture: Nullable<BaseTexture> }>();
+    // ownsTexture is false when the texture is the material's own base color texture (UV mismatch path),
+    // which must not be disposed.
+    private _baseColorOperands = new Map<Material, { factor: Nullable<Color4>; texture: Nullable<BaseTexture>; ownsTexture: boolean }>();
 
     constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
@@ -58,7 +60,9 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
         }
         this._transmissionOperands.clear();
         for (const operand of this._baseColorOperands.values()) {
-            operand.texture?.dispose();
+            if (operand.ownsTexture) {
+                operand.texture?.dispose();
+            }
         }
         this._baseColorOperands.clear();
     }
@@ -119,11 +123,13 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 }
 
                 // glTF applies the base color as a tint on transmission while OpenPBR does not, so we lerp
-                // the base color toward white by the transmission weight. Because this overwrites the
-                // material's base color, we must re-bake geometryOpacity here the same way the OpenPBR
-                // material exporter does: the scalar opacity goes into the base color factor alpha, and the
-                // opacity texture is packed into the base color texture alpha. The lerp keeps that alpha
-                // untouched (transOp alpha is 0), so it survives into the exported base color.
+                // the base color toward the transmission tint by the transmission weight (see below). The
+                // material exporter skips the base color texture when this extension is enabled, so the base
+                // color is always written from here, and geometryOpacity has to be packed the same way that
+                // exporter does: the scalar opacity goes into the base color factor alpha, and the opacity
+                // texture is packed into the base color texture alpha. This is done on the lerp's input
+                // rather than its output; the lerp weight's alpha is 0, so the input alpha passes through
+                // unchanged into the exported base color.
                 const geometryOpacity = babylonMaterial.geometryOpacity;
                 let baseColorTexture = babylonMaterial.baseColorTexture;
                 if (babylonMaterial.geometryOpacityTexture) {
@@ -138,6 +144,29 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                         ),
                         babylonMaterial.getScene()
                     );
+                }
+
+                // The lerp combines the base color with the transmission weight (and the metalness and
+                // transmission color textures). If any of those use a different UV set from the base color,
+                // the texture processor would have to drop one of them, which can wash out the base color
+                // entirely. In that case, export the base color (with opacity packed) without the lerp.
+                const metalness = babylonMaterial.baseMetalness;
+                const metalnessTexture = babylonMaterial.baseMetalnessTexture;
+                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
+                if (baseColorTexture) {
+                    const otherTextures = [transWeightResult.texture, metalness > 0 ? metalnessTexture : null, usesVolume ? null : babylonMaterial.transmissionColorTexture];
+                    if (otherTextures.some((texture) => texture && texture.coordinatesIndex !== baseColorTexture!.coordinatesIndex)) {
+                        Logger.Warn(
+                            `${context}: The base color and transmission textures of material '${babylonMaterial.name}' use different UV sets; the base color will not be adjusted for KHR_materials_transmission.`
+                        );
+                        this._baseColorOperands.set(babylonMaterial, {
+                            factor: new Color4(babylonMaterial.baseColor.r, babylonMaterial.baseColor.g, babylonMaterial.baseColor.b, geometryOpacity),
+                            texture: baseColorTexture,
+                            ownsTexture: !!babylonMaterial.geometryOpacityTexture,
+                        });
+                        additionalTextures.push(baseColorTexture);
+                        return additionalTextures;
+                    }
                 }
 
                 const colorOp = CreateTextureWithFactorOperand(
@@ -155,8 +184,6 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 // and uses the base color as its F0. Only the dielectric fraction (1 - metalness) of the
                 // transmission should pull the base color toward the transmission tint, so scale the lerp
                 // weight by (1 - metalness). Fully metallic regions then keep their original base color.
-                const metalness = babylonMaterial.baseMetalness;
-                const metalnessTexture = babylonMaterial.baseMetalnessTexture;
                 if (metalness >= 1 && !metalnessTexture) {
                     transOp = CreateFactorOperand(new Color4(0, 0, 0, 0));
                 } else if (metalness > 0) {
@@ -183,7 +210,6 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 //   - Thin-walled / no depth: the surface base color IS the transmission tint, so lerp
                 //     toward transmission_color (which equals base_color for a thin-walled round-trip,
                 //     leaving the base color unchanged).
-                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
                 const tintTargetOp = usesVolume
                     ? CreateFactorOperand(new Color4(1, 1, 1, 1))
                     : CreateTextureWithFactorOperand(
@@ -206,7 +232,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     baseColorTexture.dispose();
                 }
 
-                this._baseColorOperands.set(babylonMaterial, { factor: baseColorResult.factor ?? null, texture: baseColorResult.texture ?? null });
+                this._baseColorOperands.set(babylonMaterial, { factor: baseColorResult.factor ?? null, texture: baseColorResult.texture ?? null, ownsTexture: true });
                 if (baseColorResult.texture) {
                     additionalTextures.push(baseColorResult.texture);
                 }
