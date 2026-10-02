@@ -302,13 +302,13 @@ export interface IMaterialLoadingAdapter {
 
     /**
      * Staging: the constant scatter strength for volumetric mode.
-     * Set by KHR_materials_scatter and consumed by the OpenPBR adapter during finalization.
+     * Set by KHR_materials_scatter and consumed by the adapter during finalization.
      */
     volumetricScatterStrengthFactor: Nullable<number>;
 
     /**
      * Staging: scatter strength texture for volumetric mode (non-thin-walled).
-     * Set by KHR_materials_scatter when scatterStrengthTexture is present; combined with
+     * Set by KHR_materials_scatter when scatterStrengthTexture is present; applied together with
      * transmissionScatterTexture in finalizeAsync and then cleared.
      */
     volumetricScatterStrengthTexture: Nullable<BaseTexture>;

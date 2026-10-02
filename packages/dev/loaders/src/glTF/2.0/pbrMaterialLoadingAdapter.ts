@@ -13,6 +13,10 @@ import { type GLTFLoader } from "./glTFLoader";
 export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: PBRMaterial;
     private _specWorkflow: boolean = false;
+    private _volumetricScatterStrengthFactor: Nullable<number> = null;
+    private _volumetricScatterStrengthTexture: Nullable<BaseTexture> = null;
+    private _transmissionScatterTexture: Nullable<BaseTexture> = null;
+    private _subsurfaceColorTexture: Nullable<BaseTexture> = null;
     /**
      * Creates a new instance of the PBRMaterialLoadingAdapter.
      * @param material - The PBR material to adapt.
@@ -30,10 +34,61 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * No-op: PBRMaterial has no deferred finalization.
-     * @param _loader Unused.
+     * Finalizes material properties after all loading is complete.
+     * @param loader The glTF loader that created the material.
      */
-    public async finalizeAsync(_loader: GLTFLoader): Promise<void> {}
+    public async finalizeAsync(loader: GLTFLoader): Promise<void> {
+        // Volumetric KHR_materials_scatter maps to PBR translucency. The shader already multiplies
+        // translucencyIntensity by the alpha of translucencyIntensityTexture and the translucency tint by
+        // translucencyColorTexture, so the staged textures don't need to be combined; they're applied here
+        // so they deterministically replace any KHR_materials_diffuse_transmission textures, whose async
+        // loads can otherwise resolve after these, matching how the scatter factors replace its factors.
+        // The subsurface color texture (thin-walled KHR_materials_scatter, KHR_materials_volume_scatter)
+        // tints translucency in the same way and is applied here for the same reason.
+        const strengthTex = this._volumetricScatterStrengthTexture;
+        const transmissionScatterTex = this._transmissionScatterTexture;
+        const subsurfaceColorTex = this._subsurfaceColorTexture;
+        const staged = this._volumetricScatterStrengthFactor !== null;
+        this._volumetricScatterStrengthFactor = null;
+        this._volumetricScatterStrengthTexture = null;
+        this._transmissionScatterTexture = null;
+        this._subsurfaceColorTexture = null;
+        const appliedStrengthTex = staged ? strengthTex : null;
+        const colorTex = (staged ? transmissionScatterTex : null) ?? subsurfaceColorTex;
+
+        const subSurface = this._material.subSurface;
+        if (appliedStrengthTex && subSurface.translucencyIntensityTexture !== appliedStrengthTex) {
+            const oldIntensityTexture = subSurface.translucencyIntensityTexture;
+            subSurface.translucencyIntensityTexture = appliedStrengthTex;
+            subSurface.useGltfStyleTextures = true;
+            this._disposeTextureIfUnused(loader, oldIntensityTexture);
+        }
+        if (colorTex && subSurface.translucencyColorTexture !== colorTex) {
+            const oldColorTexture = subSurface.translucencyColorTexture;
+            subSurface.translucencyColorTexture = colorTex;
+            this._disposeTextureIfUnused(loader, oldColorTexture);
+        }
+
+        // Dispose staged textures that weren't applied.
+        for (const texture of [strengthTex, transmissionScatterTex, subsurfaceColorTex]) {
+            if (texture !== appliedStrengthTex && texture !== colorTex) {
+                this._disposeTextureIfUnused(loader, texture);
+            }
+        }
+    }
+
+    /**
+     * Disposes a texture that has been replaced on this material, unless another slot on this
+     * material (or on any other material created by the loader) still references it.
+     * Must be called after the texture has been removed from the slot being replaced.
+     * @param loader The glTF loader that created the materials
+     * @param texture The replaced texture
+     */
+    private _disposeTextureIfUnused(loader: GLTFLoader, texture: Nullable<BaseTexture>): void {
+        if (texture && !loader._isTextureUsedByMaterials(texture)) {
+            texture.dispose();
+        }
+    }
 
     /**
      * Whether the material should be treated as unlit
@@ -812,20 +867,50 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the transmission scatter texture
+     * Sets the transmission scatter texture.
+     * Staged and applied to subSurface.translucencyColorTexture in finalizeAsync.
+     * @param value The multiscatter color texture or null
      */
-    public set transmissionScatterTexture(value: Nullable<BaseTexture>) {}
+    public set transmissionScatterTexture(value: Nullable<BaseTexture>) {
+        this._transmissionScatterTexture = value;
+    }
+
+    /**
+     * Gets the staged transmission scatter texture.
+     * @returns The staged multiscatter color texture or null
+     */
+    public get transmissionScatterTexture(): Nullable<BaseTexture> {
+        return this._transmissionScatterTexture;
+    }
 
     /** @internal */
     public set volumetricScatterStrengthFactor(value: Nullable<number>) {
+        this._volumetricScatterStrengthFactor = value;
         this._material.subSurface.isTranslucencyEnabled = value !== null && value > 0;
         this._material.subSurface.translucencyIntensity = value ?? 0;
     }
 
+    /** @internal */
+    public get volumetricScatterStrengthFactor(): Nullable<number> {
+        return this._volumetricScatterStrengthFactor;
+    }
+
     /**
-     * Sets the volumetric scatter texture
+     * Sets the volumetric scatter strength texture.
+     * Staged and applied to subSurface.translucencyIntensityTexture in finalizeAsync.
+     * @param value The scatter strength texture (alpha channel) or null
      */
-    public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {}
+    public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {
+        this._volumetricScatterStrengthTexture = value;
+    }
+
+    /**
+     * Gets the staged volumetric scatter strength texture.
+     * @returns The staged scatter strength texture or null
+     */
+    public get volumetricScatterStrengthTexture(): Nullable<BaseTexture> {
+        return this._volumetricScatterStrengthTexture;
+    }
 
     /** @internal */
     public set thinWalledScatterStrengthFactor(value: Nullable<number>) {
@@ -994,10 +1079,19 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Sets the subsurface color texture.
+     * Staged and applied to subSurface.translucencyColorTexture in finalizeAsync.
      * @param value The subsurface tint texture or null
      */
     public set subsurfaceColorTexture(value: Nullable<BaseTexture>) {
-        // PBRMaterial does not have a direct equivalent for subsurface color texture,
+        this._subsurfaceColorTexture = value;
+    }
+
+    /**
+     * Gets the staged subsurface color texture.
+     * @returns The staged subsurface tint texture or null
+     */
+    public get subsurfaceColorTexture(): Nullable<BaseTexture> {
+        return this._subsurfaceColorTexture;
     }
 
     /**
