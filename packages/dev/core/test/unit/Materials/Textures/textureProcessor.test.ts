@@ -16,13 +16,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Color4 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
+import { Logger } from "core/Misc/logger";
 import {
     MultiplyTexturesAsync,
     MaxTexturesAsync,
+    DivideTexturesAsync,
     LerpTexturesAsync,
+    ThinWalledScatterWeightsAsync,
     InvertTextureAsync,
     ExtractMaxChannelAsync,
     ExtractChannelAsync,
+    MultiScatterToSingleScatterAlbedoAsync,
+    SingleScatterToMultiScatterAlbedoAsync,
     CreateFactorOperand,
     ChannelMask,
     TextureChannel,
@@ -126,6 +131,7 @@ function _makeFakePTClass() {
         setTexture(_name: string, _tex: unknown) {}
         setColor4(_name: string, _val: unknown) {}
         setMatrix(_name: string, _mat: unknown) {}
+        setFloat(_name: string, _val: number) {}
 
         /**
          * Parse the #define block into a plain string array for convenient assertions.
@@ -365,6 +371,78 @@ describe("TextureProcessor", () => {
             expect(r.factor?.g).toBeCloseTo(0.9);
             expect(r.factor?.b).toBeCloseTo(0.9);
             expect(r.factor?.a).toBeCloseTo(0.9);
+        });
+
+        it("MultiScatterToSingleScatterAlbedo: converts RGB and preserves alpha", async () => {
+            const r = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(new Color4(0, 0.5, 1, 0.75)), scene);
+
+            expect(r.texture).toBeNull();
+            expect(r.factor?.r).toBeCloseTo(0, 4);
+            expect(r.factor?.g).toBeCloseTo(0.9117088547, 5);
+            expect(r.factor?.b).toBeCloseTo(1, 5);
+            expect(r.factor?.a).toBeCloseTo(0.75);
+        });
+
+        it("MultiScatterToSingleScatterAlbedo: clamps RGB before conversion", async () => {
+            const r = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(new Color4(-1, 2, 0, 1)), scene);
+
+            expect(r.factor?.r).toBeCloseTo(0, 4);
+            expect(r.factor?.g).toBeCloseTo(1, 5);
+            expect(r.factor?.b).toBeCloseTo(0, 4);
+        });
+
+        it("SingleScatterToMultiScatterAlbedo: converts RGB and preserves alpha", async () => {
+            const r = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(new Color4(0, 0.9117088547, 1, 0.75)), scene);
+
+            expect(r.texture).toBeNull();
+            expect(r.factor?.r).toBeCloseTo(0, 5);
+            expect(r.factor?.g).toBeCloseTo(0.5, 4);
+            expect(r.factor?.b).toBeCloseTo(1, 5);
+            expect(r.factor?.a).toBeCloseTo(0.75);
+        });
+
+        it("SingleScatterToMultiScatterAlbedo: clamps RGB before conversion", async () => {
+            const r = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(new Color4(-1, 2, 0, 1)), scene);
+
+            expect(r.factor?.r).toBeCloseTo(0, 5);
+            expect(r.factor?.g).toBeCloseTo(1, 5);
+            expect(r.factor?.b).toBeCloseTo(0, 5);
+        });
+
+        it("SingleScatterToMultiScatterAlbedo: is the inverse of MultiScatterToSingleScatterAlbedo", async () => {
+            const multi = new Color4(0.1, 0.42, 0.87, 1);
+            const single = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene);
+            const roundTrip = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(single.factor!), scene);
+
+            expect(roundTrip.factor?.r).toBeCloseTo(multi.r, 3);
+            expect(roundTrip.factor?.g).toBeCloseTo(multi.g, 3);
+            expect(roundTrip.factor?.b).toBeCloseTo(multi.b, 3);
+        });
+
+        it("MultiScatterToSingleScatterAlbedo: anisotropy divides by (1 - aniso*s^2)", async () => {
+            const multi = new Color4(0.3, 0.3, 0.3, 1);
+            const iso = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene);
+            const aniso = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene, 0.5);
+
+            // rho_ss = 1 - s^2 (isotropic); the anisotropic result is that divided by (1 - aniso*s^2),
+            // so with s^2 = 1 - iso: aniso_result = iso / (1 - 0.5*(1 - iso)).
+            const s2 = 1 - iso.factor!.r;
+            const expected = iso.factor!.r / (1 - 0.5 * s2);
+            expect(aniso.factor?.r).toBeCloseTo(expected, 6);
+            // aniso = 0 must match the isotropic overload exactly.
+            const aniso0 = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene, 0);
+            expect(aniso0.factor?.r).toBeCloseTo(iso.factor!.r, 6);
+        });
+
+        it("SingleScatterToMultiScatterAlbedo: is the inverse of MultiScatterToSingleScatterAlbedo with anisotropy", async () => {
+            const multi = new Color4(0.1, 0.42, 0.87, 1);
+            const aniso = -0.3;
+            const single = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene, aniso);
+            const roundTrip = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(single.factor!), scene, aniso);
+
+            expect(roundTrip.factor?.r).toBeCloseTo(multi.r, 3);
+            expect(roundTrip.factor?.g).toBeCloseTo(multi.g, 3);
+            expect(roundTrip.factor?.b).toBeCloseTo(multi.b, 3);
         });
 
         describe("outputChannelMask", () => {
@@ -620,6 +698,13 @@ describe("TextureProcessor", () => {
             expect(_capturedPTs[0].getDefines()).toContain("CHANNEL_MAX_INCLUDE_ALPHA");
         });
 
+        it("MultiScatterToSingleScatterAlbedoAsync emits its conversion define", async () => {
+            const tex = makeFakeTexture();
+            await MultiScatterToSingleScatterAlbedoAsync("t", { texture: tex }, scene);
+
+            expect(_capturedPTs[0].getDefines()).toContain("OP_MULTI_SCATTER_TO_SINGLE_SCATTER");
+        });
+
         it("auto-disposes intermediate texture when result is consumed as operand", async () => {
             const tex = makeFakeTexture();
 
@@ -674,6 +759,16 @@ describe("TextureProcessor", () => {
             expect(pt.getDefines()).toContain("OPERAND_B_MATRIX");
         });
 
+        it("matching UV sets keep both distinct textures without warning", async () => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            await MultiplyTexturesAsync("matching-uv", { texture: makeFakeTexture() }, { texture: makeFakeTexture() }, scene);
+
+            expect(warn).not.toHaveBeenCalled();
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_B_TEXTURE");
+            warn.mockRestore();
+        });
+
         it("single-texture operand: UV transform always propagated (InvertTextureAsync)", async () => {
             const tex = makeFakeTexture({ uOffset: 0.3 });
             await InvertTextureAsync("t", { texture: tex }, scene);
@@ -682,6 +777,78 @@ describe("TextureProcessor", () => {
             expect(pt.uOffset).toBeCloseTo(0.3);
             // Single operand → bakeTransform=false always, no MATRIX define
             expect(pt.getDefines()).not.toContain("OPERAND_A_MATRIX");
+        });
+
+        it.each([
+            ["Multiply", MultiplyTexturesAsync],
+            ["Max", MaxTexturesAsync],
+            ["Divide", DivideTexturesAsync],
+        ])("%s drops a texture using a different UV set and disposes the discarded operand", async (_operation, process) => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const first = makeFakeTexture();
+            const second = makeFakeTexture();
+            second!.coordinatesIndex = 1;
+            const dispose = vi.fn();
+
+            await process("uv-mismatch", { texture: first }, { texture: second, factor: new Color4(0.5, 0.5, 0.5, 1), dispose }, scene);
+
+            expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("uv-mismatch"));
+            expect(_capturedPTs[0].coordinatesIndex).toBe(0);
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).not.toContain("OPERAND_B_TEXTURE");
+            expect(dispose).toHaveBeenCalledOnce();
+            warn.mockRestore();
+        });
+
+        it("Lerp keeps all textures that share the first texture's UV set", async () => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const first = makeFakeTexture();
+            first!.coordinatesIndex = 2;
+            const second = makeFakeTexture();
+            second!.coordinatesIndex = 2;
+            const blend = makeFakeTexture();
+            blend!.coordinatesIndex = 1;
+
+            await LerpTexturesAsync("lerp-uv", { texture: first }, { texture: second }, { texture: blend }, scene);
+
+            expect(warn).toHaveBeenCalledOnce();
+            expect(_capturedPTs[0].coordinatesIndex).toBe(2);
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_B_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).not.toContain("LERP_T_TEXTURE");
+            warn.mockRestore();
+        });
+
+        it("Lerp keeps later textures that share the first texture's UV set and drops the mismatched one", async () => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const first = makeFakeTexture();
+            first!.coordinatesIndex = 1;
+            const second = makeFakeTexture();
+            second!.coordinatesIndex = 0;
+            const blend = makeFakeTexture();
+            blend!.coordinatesIndex = 1;
+
+            await LerpTexturesAsync("lerp-uv-later", { texture: first }, { texture: second }, { texture: blend }, scene);
+
+            expect(warn).toHaveBeenCalledOnce();
+            expect(_capturedPTs[0].coordinatesIndex).toBe(1);
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_A_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).not.toContain("OPERAND_B_TEXTURE");
+            expect(_capturedPTs[0].getDefines()).toContain("LERP_T_TEXTURE");
+            warn.mockRestore();
+        });
+
+        it("ThinWalledScatterWeights warns once for mismatched UV sets", async () => {
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const transmission = makeFakeTexture();
+            const scatter = makeFakeTexture();
+            scatter!.coordinatesIndex = 1;
+
+            await ThinWalledScatterWeightsAsync("scatter-uv", { texture: transmission }, { texture: scatter }, scene);
+
+            expect(warn).toHaveBeenCalledOnce();
+            expect(_capturedPTs.every((pt) => pt.coordinatesIndex === 0)).toBe(true);
+            warn.mockRestore();
         });
     });
 });

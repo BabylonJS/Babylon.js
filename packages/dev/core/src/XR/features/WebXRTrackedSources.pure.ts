@@ -122,7 +122,7 @@ export class WebXRTrackedSources extends WebXRAbstractFeature {
             return;
         }
 
-        for (let index = 0; index < this._trackedSources.length;) {
+        for (let index = 0; index < this._trackedSources.length; ) {
             const trackedSource = this._trackedSources[index];
             let isStillTracked = false;
             for (const nativeTrackedSource of session.trackedSources) {

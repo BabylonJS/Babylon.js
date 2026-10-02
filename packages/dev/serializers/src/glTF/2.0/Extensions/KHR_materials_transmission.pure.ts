@@ -6,7 +6,20 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Logger } from "core/Misc/logger";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
-import { Color3 } from "core/Maths/math.color.pure";
+import { Color4 } from "core/Maths/math.color.pure";
+import { type Nullable } from "core/types";
+import {
+    LerpTexturesAsync,
+    MultiplyTexturesAsync,
+    InvertTextureAsync,
+    CreateTextureWithFactorOperand,
+    CreateFactorOperand,
+    TextureChannel,
+    TextureColorSpace,
+    ChannelMask,
+    type ITextureProcessOperand,
+} from "core/Materials/Textures/textureProcessor";
+import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 
 const NAME = "KHR_materials_transmission";
 
@@ -28,12 +41,31 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
     private _wasUsed = false;
 
+    // Caches the lerp result per material (computed in postExportMaterialAdditionalTexturesAsync,
+    // consumed in postExportMaterialAsync). Texture is disposed in dispose().
+    private _transmissionOperands = new Map<Material, { factor: Nullable<Color4>; texture: Nullable<BaseTexture> }>();
+
+    // ownsTexture is false when the texture is the material's own base color texture (UV mismatch path),
+    // which must not be disposed.
+    private _baseColorOperands = new Map<Material, { factor: Nullable<Color4>; texture: Nullable<BaseTexture>; ownsTexture: boolean }>();
+
     constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
     }
 
     /** Dispose */
-    public dispose() {}
+    public dispose() {
+        for (const operand of this._transmissionOperands.values()) {
+            operand.texture?.dispose();
+        }
+        this._transmissionOperands.clear();
+        for (const operand of this._baseColorOperands.values()) {
+            if (operand.ownsTexture) {
+                operand.texture?.dispose();
+            }
+        }
+        this._baseColorOperands.clear();
+    }
 
     /** @internal */
     public get wasUsed() {
@@ -58,14 +90,152 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 return additionalTextures;
             }
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
-            if (babylonMaterial.transmissionWeight > 0 && babylonMaterial.transmissionWeightTexture) {
-                additionalTextures.push(babylonMaterial.transmissionWeightTexture);
-                if (babylonMaterial.transmissionColorTexture) {
-                    additionalTextures.push(babylonMaterial.transmissionColorTexture);
+            if (this._isExtensionEnabled(babylonMaterial)) {
+                const subsurfaceWeight = babylonMaterial.subsurfaceWeight;
+                const transmissionWeight = babylonMaterial.transmissionWeight;
+                const subsurfaceChannel = babylonMaterial._useSubsurfaceWeightFromTextureAlpha ? TextureChannel.A : TextureChannel.R;
+
+                // OpenPBR can have surface transmission in either transmission_weight or subsurface_weight,
+                // and we need to combine them into a single transmission weight for glTF.
+                // The final transmission weight is computed as a linear interpolation of the two weights.
+                // lerp(subsurface_weight, 1, transmission_weight)
+                const sOp = CreateTextureWithFactorOperand(
+                    babylonMaterial.subsurfaceWeightTexture,
+                    new Color4(subsurfaceWeight, subsurfaceWeight, subsurfaceWeight, 1.0),
+                    subsurfaceChannel
+                );
+                const tOp = CreateTextureWithFactorOperand(
+                    babylonMaterial.transmissionWeightTexture,
+                    new Color4(transmissionWeight, transmissionWeight, transmissionWeight, 1.0),
+                    TextureChannel.R
+                );
+                const transWeightResult = await LerpTexturesAsync(
+                    `transmission weight (${babylonMaterial.name})`,
+                    sOp,
+                    CreateFactorOperand(new Color4(1, 1, 1, 1)),
+                    tOp,
+                    babylonMaterial.getScene()
+                );
+                this._transmissionOperands.set(babylonMaterial, { factor: transWeightResult.factor ?? null, texture: transWeightResult.texture ?? null });
+
+                if (transWeightResult.texture) {
+                    additionalTextures.push(transWeightResult.texture);
                 }
-            }
-            if (babylonMaterial.subsurfaceWeight > 0 && babylonMaterial.subsurfaceWeightTexture) {
-                additionalTextures.push(babylonMaterial.subsurfaceWeightTexture);
+
+                // glTF applies the base color as a tint on transmission while OpenPBR does not, so we lerp
+                // the base color toward the transmission tint by the transmission weight (see below). The
+                // material exporter skips the base color texture when this extension is enabled, so the base
+                // color is always written from here, and geometryOpacity has to be packed the same way that
+                // exporter does: the scalar opacity goes into the base color factor alpha, and the opacity
+                // texture is packed into the base color texture alpha. This is done on the lerp's input
+                // rather than its output; the lerp weight's alpha is 0, so the input alpha passes through
+                // unchanged into the exported base color.
+                const geometryOpacity = babylonMaterial.geometryOpacity;
+                let baseColorTexture = babylonMaterial.baseColorTexture;
+                if (babylonMaterial.geometryOpacityTexture) {
+                    // Pack base color RGB and the opacity texture into a single RGBA texture (mirrors GLTFMaterialExporter).
+                    baseColorTexture = await MergeTexturesAsync(
+                        `base color opacity (${babylonMaterial.name})`,
+                        CreateRGBAConfiguration(
+                            babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 0) : CreateConstantInput(1.0),
+                            babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 1) : CreateConstantInput(1.0),
+                            babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 2) : CreateConstantInput(1.0),
+                            CreateTextureInput(babylonMaterial.geometryOpacityTexture, 0)
+                        ),
+                        babylonMaterial.getScene()
+                    );
+                }
+
+                // The lerp combines the base color with the transmission weight (and the metalness and
+                // transmission color textures). If any of those use a different UV set from the base color,
+                // the texture processor would have to drop one of them, which can wash out the base color
+                // entirely. In that case, export the base color (with opacity packed) without the lerp.
+                const metalness = babylonMaterial.baseMetalness;
+                const metalnessTexture = babylonMaterial.baseMetalnessTexture;
+                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
+                if (baseColorTexture) {
+                    const otherTextures = [transWeightResult.texture, metalness > 0 ? metalnessTexture : null, usesVolume ? null : babylonMaterial.transmissionColorTexture];
+                    if (otherTextures.some((texture) => texture && texture.coordinatesIndex !== baseColorTexture!.coordinatesIndex)) {
+                        Logger.Warn(
+                            `${context}: The base color and transmission textures of material '${babylonMaterial.name}' use different UV sets; the base color will not be adjusted for KHR_materials_transmission.`
+                        );
+                        this._baseColorOperands.set(babylonMaterial, {
+                            factor: new Color4(babylonMaterial.baseColor.r, babylonMaterial.baseColor.g, babylonMaterial.baseColor.b, geometryOpacity),
+                            texture: baseColorTexture,
+                            ownsTexture: !!babylonMaterial.geometryOpacityTexture,
+                        });
+                        additionalTextures.push(baseColorTexture);
+                        return additionalTextures;
+                    }
+                }
+
+                const colorOp = CreateTextureWithFactorOperand(
+                    baseColorTexture,
+                    new Color4(babylonMaterial.baseColor.r, babylonMaterial.baseColor.g, babylonMaterial.baseColor.b, geometryOpacity),
+                    TextureChannel.RGBA,
+                    TextureColorSpace.SRGB
+                );
+                let transOp: ITextureProcessOperand = CreateTextureWithFactorOperand(
+                    transWeightResult.texture ?? null,
+                    new Color4(transWeightResult.factor?.r ?? 1, transWeightResult.factor?.g ?? 1, transWeightResult.factor?.b ?? 1, 0.0), // alpha is 0 because we don't want to modify the base color alpha channel
+                    TextureChannel.R
+                );
+                // The metal lobe sits on top of the dielectric (and its transmission) in both glTF and OpenPBR,
+                // and uses the base color as its F0. Only the dielectric fraction (1 - metalness) of the
+                // transmission should pull the base color toward the transmission tint, so scale the lerp
+                // weight by (1 - metalness). Fully metallic regions then keep their original base color.
+                if (metalness >= 1 && !metalnessTexture) {
+                    transOp = CreateFactorOperand(new Color4(0, 0, 0, 0));
+                } else if (metalness > 0) {
+                    const dielectricOp = await InvertTextureAsync(
+                        `dielectric weight (${babylonMaterial.name})`,
+                        CreateTextureWithFactorOperand(
+                            metalnessTexture,
+                            new Color4(metalness, metalness, metalness, 1.0),
+                            babylonMaterial._useMetallicFromMetallicTextureBlue ? TextureChannel.B : TextureChannel.R
+                        ),
+                        babylonMaterial.getScene(),
+                        ChannelMask.RGB
+                    );
+                    // transOp has no dispose, so the cached transmission weight texture survives this pass.
+                    transOp = await MultiplyTexturesAsync(`base color tint weight (${babylonMaterial.name})`, transOp, dielectricOp, babylonMaterial.getScene());
+                }
+                // glTF factors base color out of BOTH the diffuse and the transmission term, so the
+                // exported base color must lerp from base_color toward the transmission tint by the
+                // transmission weight (lerping toward a hardcoded white is only correct when that tint is
+                // white, and otherwise washes base_color out for 0 < T < 1).
+                //   - Volumetric transmission (KHR_materials_volume active): the tint is carried by the
+                //     volume attenuationColor, so neutralize the surface tint toward white to avoid
+                //     double-tinting.
+                //   - Thin-walled / no depth: the surface base color IS the transmission tint, so lerp
+                //     toward transmission_color (which equals base_color for a thin-walled round-trip,
+                //     leaving the base color unchanged).
+                const tintTargetOp = usesVolume
+                    ? CreateFactorOperand(new Color4(1, 1, 1, 1))
+                    : CreateTextureWithFactorOperand(
+                          babylonMaterial.transmissionColorTexture,
+                          new Color4(babylonMaterial.transmissionColor.r, babylonMaterial.transmissionColor.g, babylonMaterial.transmissionColor.b, 1.0),
+                          TextureChannel.RGBA,
+                          TextureColorSpace.SRGB
+                      );
+                const baseColorResult = await LerpTexturesAsync(
+                    `base color (${babylonMaterial.name})`,
+                    colorOp,
+                    tintTargetOp,
+                    transOp,
+                    babylonMaterial.getScene(),
+                    TextureColorSpace.SRGB
+                );
+
+                // Dispose the intermediate merged texture; LerpTexturesAsync does not own raw operand textures.
+                if (babylonMaterial.geometryOpacityTexture && baseColorTexture) {
+                    baseColorTexture.dispose();
+                }
+
+                this._baseColorOperands.set(babylonMaterial, { factor: baseColorResult.factor ?? null, texture: baseColorResult.texture ?? null, ownsTexture: true });
+                if (baseColorResult.texture) {
+                    additionalTextures.push(baseColorResult.texture);
+                }
             }
         }
 
@@ -124,43 +294,33 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
             this._wasUsed = true;
 
-            const subsurfaceFractionOfDielectric = (1.0 - babylonMaterial.transmissionWeight) * babylonMaterial.subsurfaceWeight;
-            const transmissionFactor = subsurfaceFractionOfDielectric + babylonMaterial.transmissionWeight;
+            const operand = this._transmissionOperands.get(babylonMaterial);
+            const bakedTexture = this._exporter._materialExporter.getTextureInfo(operand?.texture ?? null);
+            const bakedFactor = operand?.factor ?? null;
 
             const transmissionInfo: IKHRMaterialsTransmission = {
-                transmissionFactor: transmissionFactor,
+                transmissionFactor: bakedTexture ? 1.0 : (bakedFactor?.r ?? 0.0),
             };
 
-            if (babylonMaterial.transmissionWeightTexture) {
+            if (bakedTexture) {
                 this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-                const transmissionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionWeightTexture);
-                if (transmissionTexture) {
-                    transmissionInfo.transmissionTexture = transmissionTexture;
-                }
-            } else if (babylonMaterial.subsurfaceWeightTexture) {
-                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-                const subsurfaceTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.subsurfaceWeightTexture);
-                if (subsurfaceTexture) {
-                    transmissionInfo.transmissionTexture = subsurfaceTexture;
-                }
+                transmissionInfo.transmissionTexture = bakedTexture;
             }
 
-            if (babylonMaterial.transmissionDepth == 0.0 && (!babylonMaterial.transmissionColor.equals(Color3.White()) || babylonMaterial.transmissionColorTexture)) {
-                if (node.pbrMetallicRoughness) {
-                    if (!node.pbrMetallicRoughness.baseColorFactor) {
-                        node.pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1];
-                    }
-                    node.pbrMetallicRoughness.baseColorFactor[0] *= babylonMaterial.transmissionColor.r;
-                    node.pbrMetallicRoughness.baseColorFactor[1] *= babylonMaterial.transmissionColor.g;
-                    node.pbrMetallicRoughness.baseColorFactor[2] *= babylonMaterial.transmissionColor.b;
-                    if (babylonMaterial.transmissionColorTexture && !node.pbrMetallicRoughness.baseColorTexture) {
-                        const transmissionColorTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionColorTexture);
-                        if (transmissionColorTexture) {
-                            node.pbrMetallicRoughness.baseColorTexture = transmissionColorTexture;
-                            this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-                        }
-                    }
-                }
+            const baseColorOperand = this._baseColorOperands.get(babylonMaterial);
+            const baseColorBakedTexture = this._exporter._materialExporter.getTextureInfo(baseColorOperand?.texture ?? null);
+            const baseColorBakedFactor = baseColorOperand?.factor ?? null;
+
+            if (!node.pbrMetallicRoughness) {
+                node.pbrMetallicRoughness = {};
+            }
+            node.pbrMetallicRoughness.baseColorFactor = baseColorBakedFactor
+                ? [baseColorBakedFactor.r, baseColorBakedFactor.g, baseColorBakedFactor.b, baseColorBakedFactor.a]
+                : [1, 1, 1, 1];
+
+            if (baseColorBakedTexture) {
+                node.pbrMetallicRoughness.baseColorTexture = baseColorBakedTexture;
+                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
             }
 
             node.extensions ||= {};

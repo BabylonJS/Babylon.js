@@ -538,6 +538,7 @@ export class GLTFMaterialExporter {
      * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
      * @param glTFPbrMetallicRoughness glTF PBR Metallic Roughness interface
      * @param hasUVs specifies if texture coordinates are present on the submesh to determine if textures should be applied
+     * @param skipBaseColorTexture when true, do not generate/assign the base color texture (an extension will own it)
      * @returns glTF PBR Metallic Roughness factors
      */
     private async _convertMetalRoughFactorsToMetallicRoughnessAsync(
@@ -549,7 +550,8 @@ export class GLTFMaterialExporter {
         roughnessTexture: Nullable<BaseTexture>,
         babylonPBRMaterial: PBRBaseMaterial | OpenPBRMaterial,
         glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness,
-        hasUVs: boolean
+        hasUVs: boolean,
+        skipBaseColorTexture: boolean = false
     ): Promise<IPBRMetallicRoughness> {
         const promises: Promise<void>[] = [];
 
@@ -561,45 +563,50 @@ export class GLTFMaterialExporter {
 
         if (hasUVs) {
             if (babylonPBRMaterial instanceof OpenPBRMaterial) {
-                if (babylonPBRMaterial.geometryOpacityTexture) {
-                    // Merge baseColor and opacity
-                    const albedoId = albedoTexture && albedoTexture.getInternalTexture() ? albedoTexture.getInternalTexture()!.uniqueId : 0;
-                    const opacityId =
-                        babylonPBRMaterial.geometryOpacityTexture && babylonPBRMaterial.geometryOpacityTexture.getInternalTexture()
-                            ? babylonPBRMaterial.geometryOpacityTexture.getInternalTexture()!.uniqueId
-                            : 0;
-                    const mergedId = Number(`${albedoId}${opacityId}`);
-                    const glTFTexture = this._textureMap.get(mergedId);
-                    if (glTFTexture) {
-                        glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                // Skip base color texture generation when an extension (e.g. KHR_materials_transmission)
+                // will overwrite the base color anyway; otherwise the texture/image baked here would be
+                // orphaned in the output. The extension re-bakes base color (including opacity) itself.
+                if (!skipBaseColorTexture) {
+                    if (babylonPBRMaterial.geometryOpacityTexture) {
+                        // Merge baseColor and opacity
+                        const albedoId = albedoTexture && albedoTexture.getInternalTexture() ? albedoTexture.getInternalTexture()!.uniqueId : 0;
+                        const opacityId =
+                            babylonPBRMaterial.geometryOpacityTexture && babylonPBRMaterial.geometryOpacityTexture.getInternalTexture()
+                                ? babylonPBRMaterial.geometryOpacityTexture.getInternalTexture()!.uniqueId
+                                : 0;
+                        const mergedId = Number(`${albedoId}${opacityId}`);
+                        const glTFTexture = this._textureMap.get(mergedId);
+                        if (glTFTexture) {
+                            glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                        } else {
+                            promises.push(
+                                MergeTexturesAsync(
+                                    "baseColorOpacityTexture",
+                                    CreateRGBAConfiguration(
+                                        albedoTexture ? CreateTextureInput(albedoTexture, 0) : CreateConstantInput(1.0),
+                                        albedoTexture ? CreateTextureInput(albedoTexture, 1) : CreateConstantInput(1.0),
+                                        albedoTexture ? CreateTextureInput(albedoTexture, 2) : CreateConstantInput(1.0),
+                                        CreateTextureInput(babylonPBRMaterial.geometryOpacityTexture, 0)
+                                    ),
+                                    babylonPBRMaterial.getScene()
+                                ).then(async (mergedTexture) => {
+                                    const glTFTexture = await this.exportTextureAsync(mergedTexture, mergedId);
+                                    if (glTFTexture) {
+                                        glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                                    }
+                                })
+                            );
+                        }
                     } else {
-                        promises.push(
-                            MergeTexturesAsync(
-                                "baseColorOpacityTexture",
-                                CreateRGBAConfiguration(
-                                    albedoTexture ? CreateTextureInput(albedoTexture, 0) : CreateConstantInput(1.0),
-                                    albedoTexture ? CreateTextureInput(albedoTexture, 1) : CreateConstantInput(1.0),
-                                    albedoTexture ? CreateTextureInput(albedoTexture, 2) : CreateConstantInput(1.0),
-                                    CreateTextureInput(babylonPBRMaterial.geometryOpacityTexture, 0)
-                                ),
-                                babylonPBRMaterial.getScene()
-                            ).then(async (mergedTexture) => {
-                                const glTFTexture = await this.exportTextureAsync(mergedTexture, mergedId);
-                                if (glTFTexture) {
-                                    glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
-                                }
-                            })
-                        );
-                    }
-                } else {
-                    if (albedoTexture) {
-                        promises.push(
-                            this.exportTextureAsync(albedoTexture).then((glTFTexture) => {
-                                if (glTFTexture) {
-                                    glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
-                                }
-                            })
-                        );
+                        if (albedoTexture) {
+                            promises.push(
+                                this.exportTextureAsync(albedoTexture).then((glTFTexture) => {
+                                    if (glTFTexture) {
+                                        glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                                    }
+                                })
+                            );
+                        }
                     }
                 }
                 if (babylonPBRMaterial._useMetallicFromMetallicTextureBlue && metallicTexture) {
@@ -971,6 +978,14 @@ export class GLTFMaterialExporter {
             glTFPbrMetallicRoughness.baseColorFactor = [albedoColor.r, albedoColor.g, albedoColor.b, alpha];
         }
 
+        // KHR_materials_transmission overwrites the base color for OpenPBR materials with surface
+        // transmission/subsurface (glTF tints transmission by base color, OpenPBR does not). When that
+        // extension is active, let it own the base color texture so we don't bake an orphaned one here.
+        const skipBaseColorTexture =
+            this._exporter.isExtensionEnabled("KHR_materials_transmission") &&
+            !babylonOpenPBRMaterial.unlit &&
+            (babylonOpenPBRMaterial.transmissionWeight > 0 || babylonOpenPBRMaterial.subsurfaceWeight > 0);
+
         const metallicRoughness = await this._convertMetalRoughFactorsToMetallicRoughnessAsync(
             babylonOpenPBRMaterial.baseColor,
             babylonOpenPBRMaterial.baseMetalness,
@@ -980,7 +995,8 @@ export class GLTFMaterialExporter {
             babylonOpenPBRMaterial.specularRoughnessTexture,
             babylonOpenPBRMaterial,
             glTFPbrMetallicRoughness,
-            hasUVs
+            hasUVs,
+            skipBaseColorTexture
         );
 
         await this._setMetallicRoughnessPbrMaterialAsync(metallicRoughness, babylonOpenPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, hasUVs);

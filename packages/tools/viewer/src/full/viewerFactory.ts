@@ -9,7 +9,9 @@ import { SuspendRenderingWhenOffscreen } from "../offscreenRenderingSuspension";
  * Options for creating a Viewer instance that is bound to an HTML canvas.
  */
 export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) => void } & (
-        ({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions) | ({ engine: "WebGPU" } & WebGPUEngineOptions)
+        | ({ engine?: undefined } & AbstractEngineOptions)
+        | ({ engine: "WebGL" } & EngineOptions)
+        | ({ engine: "WebGPU" } & WebGPUEngineOptions)
     );
 
 const DefaultCanvasViewerOptions = {

@@ -13,7 +13,13 @@ export interface FBXUVSet {
 export interface FBXGeometryDiagnostic {
     /** Diagnostic category. */
     type:
-        "degenerate-polygon" | "triangulation-fallback" | "layer-index-out-of-bounds" | "layer-data-too-short" | "nurbs-invalid" | "nurbs-trim-ignored" | "nurbs-deformer-ignored";
+        | "degenerate-polygon"
+        | "triangulation-fallback"
+        | "layer-index-out-of-bounds"
+        | "layer-data-too-short"
+        | "nurbs-invalid"
+        | "nurbs-trim-ignored"
+        | "nurbs-deformer-ignored";
     /** Human-readable diagnostic message. */
     message: string;
     /** Polygon index associated with the diagnostic, if applicable. */
