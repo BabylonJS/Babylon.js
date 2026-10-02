@@ -285,6 +285,7 @@ const FORBIDDEN = {
     shadows: ["class ShadowGenerator {"],
     layers: ["class GlowLayer extends", "class HighlightLayer extends"],
     gaussianSplatting: ["class GaussianSplattingMesh extends", "class GaussianSplattingMeshBase extends"],
+    gaussianPointSplatting: ["class GaussianPointSplattingController ", "class GaussianPointSplattingRenderer "],
 } as const;
 
 /** Combine multiple forbidden sets into one flat array. */
@@ -356,6 +357,13 @@ const TEST_CASE_TEMPLATES: SideEffectTestCase[] = [
         entryCode: `import { Vector3 } from "%DIST%/pure.js";\nconsole.log(Vector3);\n`,
         forbiddenStrings: ['RegisterClass("BABYLON.Vector3"'],
         description: "Named import of Vector3 from root pure barrel should not contain Vector3 RegisterClass",
+    },
+    {
+        name: "gaussian-splatting-mesh-no-point-splatting",
+        entryCode: `import { GaussianSplattingMesh } from "%DIST%/Meshes/GaussianSplatting/gaussianSplattingMesh.pure.js";\nconsole.log(GaussianSplattingMesh);\n`,
+        forbiddenStrings: forbidden("gaussianPointSplatting"),
+        requiredStrings: ["class GaussianSplattingMesh extends"],
+        description: "Named import of GaussianSplattingMesh should not pull in the opt-in WebGPU compute point-splatting path",
     },
     {
         name: "depth-renderer-no-gaussian-implementation",
