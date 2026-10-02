@@ -2975,6 +2975,23 @@
             "dependsOn": ["Rendering", "Particles"]
         },
         {
+            "title": "Fluid rendering GPU particle system without diffuse texture",
+            "playgroundId": "#NAW8JS#0",
+            "referenceImage": "fluidGpuParticleSystemWithoutDiffuseTexture.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system with diffuse texture",
+            "playgroundId": "#NAW8JS#0",
+            "replace": "var generateDiffuseTexture = false;, var generateDiffuseTexture = true;",
+            "referenceImage": "fluidGpuParticleSystemWithDiffuseTexture.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
             "title": "Export GLTF Extension KHR_texture_transform",
             "playgroundId": "#20OAV9#15148",
             "referenceImage": "exportGltfKHRTextureTransform.png",

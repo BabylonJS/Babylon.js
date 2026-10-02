@@ -945,6 +945,10 @@ export class FluidRenderingTargetRenderer {
             this._engine.unBindFramebuffer(this._thicknessRenderTarget.renderTarget);
         }
 
+        if (!this._diffuseRenderTarget?.renderTarget) {
+            fluidObject.updateSimulation();
+        }
+
         // Run the blur post processes
         this._depthRenderTarget?.applyBlurPostProcesses();
         this._diffuseRenderTarget?.applyBlurPostProcesses();
