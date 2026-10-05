@@ -130,4 +130,59 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
         expect(result.baseColorFactor![1]).toBeCloseTo(0.6, 3);
         expect(result.baseColorFactor![2]).toBeCloseTo(0.2, 3);
     });
+
+    // The subsurface and transmission weights are baked into one glTF transmission texture, which can only
+    // use one UV set. With mismatched UV sets, the export keeps the transmission weight mask (and its UV set)
+    // and falls back to the subsurface weight factor, instead of silently keeping whichever comes first.
+    test("keeps the transmission weight texture when the subsurface and transmission weight textures use different UV sets", async () => {
+        const result = await page.evaluate(async () => {
+            const scene = window.scene!;
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+            const mat = new BABYLON.OpenPBRMaterial("mixedWeightUV", scene);
+            const pixels = new Uint8Array([255, 128, 64, 255, 255, 128, 64, 255, 255, 128, 64, 255, 255, 128, 64, 255]);
+            const baseColorTexture = BABYLON.RawTexture.CreateRGBATexture(pixels, 2, 2, scene);
+            baseColorTexture.name = "baseColor";
+            mat.baseColorTexture = baseColorTexture;
+            const subsurfaceTexture = BABYLON.RawTexture.CreateRGBATexture(new Uint8Array(pixels), 2, 2, scene);
+            subsurfaceTexture.name = "subsurface";
+            mat.subsurfaceWeight = 0.5;
+            mat.subsurfaceWeightTexture = subsurfaceTexture;
+            const transmissionTexture = BABYLON.RawTexture.CreateRGBATexture(new Uint8Array(pixels), 2, 2, scene);
+            transmissionTexture.name = "transmission";
+            transmissionTexture.coordinatesIndex = 1;
+            mat.transmissionWeight = 1;
+            mat.transmissionWeightTexture = transmissionTexture;
+            box.material = mat;
+
+            const errors: string[] = [];
+            const previousOnNewCacheEntry = BABYLON.Logger.OnNewCacheEntry;
+            BABYLON.Logger.OnNewCacheEntry = (entry: string) => {
+                if (entry.includes("different UV sets")) {
+                    errors.push(entry);
+                }
+                previousOnNewCacheEntry?.(entry);
+            };
+            try {
+                const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "mixed");
+                const json = JSON.parse(gltf.files["mixed.gltf"] as string);
+                const exported = json.materials[0];
+                const transmission = exported.extensions?.KHR_materials_transmission;
+                return {
+                    errorCount: errors.length,
+                    hasTransmissionTexture: !!transmission?.transmissionTexture,
+                    transmissionTexCoord: (transmission?.transmissionTexture?.texCoord ?? 0) as number,
+                    hasBaseColorTexture: !!exported.pbrMetallicRoughness.baseColorTexture,
+                    baseColorTexCoord: (exported.pbrMetallicRoughness.baseColorTexture?.texCoord ?? 0) as number,
+                };
+            } finally {
+                BABYLON.Logger.OnNewCacheEntry = previousOnNewCacheEntry;
+            }
+        });
+        // One error for the weight textures; the base color guard then warns too, since the transmission mask is on UV1.
+        expect(result.errorCount).toBeGreaterThanOrEqual(1);
+        expect(result.hasTransmissionTexture).toBe(true);
+        expect(result.transmissionTexCoord).toBe(1);
+        expect(result.hasBaseColorTexture).toBe(true);
+        expect(result.baseColorTexCoord).toBe(0);
+    });
 });

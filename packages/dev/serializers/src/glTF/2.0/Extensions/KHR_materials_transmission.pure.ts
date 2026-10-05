@@ -95,15 +95,25 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 const transmissionWeight = babylonMaterial.transmissionWeight;
                 const subsurfaceChannel = babylonMaterial._useSubsurfaceWeightFromTextureAlpha ? TextureChannel.A : TextureChannel.R;
 
+                // The weight bake below can only sample one UV set. If the two weight textures use different
+                // UV sets, the texture processor would otherwise silently keep whichever comes first. Keep the
+                // transmission weight mask instead (it is the lerp weight, so dropping it changes the result
+                // the most) and fall back to the subsurface weight factor, logging an error since the exported
+                // material will differ.
+                const transmissionWeightTexture = babylonMaterial.transmissionWeightTexture;
+                let subsurfaceWeightTexture = babylonMaterial.subsurfaceWeightTexture;
+                if (subsurfaceWeightTexture && transmissionWeightTexture && subsurfaceWeightTexture.coordinatesIndex !== transmissionWeightTexture.coordinatesIndex) {
+                    Logger.Error(
+                        `${context}: subsurfaceWeightTexture (UV${subsurfaceWeightTexture.coordinatesIndex}) and transmissionWeightTexture (UV${transmissionWeightTexture.coordinatesIndex}) of material '${babylonMaterial.name}' use different UV sets and cannot be combined into a single KHR_materials_transmission texture. Ignoring subsurfaceWeightTexture.`
+                    );
+                    subsurfaceWeightTexture = null;
+                }
+
                 // OpenPBR can have surface transmission in either transmission_weight or subsurface_weight,
                 // and we need to combine them into a single transmission weight for glTF.
                 // The final transmission weight is computed as a linear interpolation of the two weights.
                 // lerp(subsurface_weight, 1, transmission_weight)
-                const sOp = CreateTextureWithFactorOperand(
-                    babylonMaterial.subsurfaceWeightTexture,
-                    new Color4(subsurfaceWeight, subsurfaceWeight, subsurfaceWeight, 1.0),
-                    subsurfaceChannel
-                );
+                const sOp = CreateTextureWithFactorOperand(subsurfaceWeightTexture, new Color4(subsurfaceWeight, subsurfaceWeight, subsurfaceWeight, 1.0), subsurfaceChannel);
                 const tOp = CreateTextureWithFactorOperand(
                     babylonMaterial.transmissionWeightTexture,
                     new Color4(transmissionWeight, transmissionWeight, transmissionWeight, 1.0),
