@@ -200,15 +200,16 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
 
     private async _exportKhrInteractivityAsync(format: "gltf" | "glb") {
         try {
-            const analysis = await SerializationTools.ExportKhrInteractivityAsync(this.props.globalState, format);
             const retainedSource = this.props.globalState.sourceGlb ?? this.props.globalState.sourceGltf;
             const sourceFile = retainedSource?.file;
             const fileName = sourceFile ? sourceFile.name.replace(/\.(glb|gltf)$/i, `-edited.${format}`) : `flowGraphKHRInteractivity.${format}`;
+            const externalResourceUris = retainedSource?.externalResourceUris.slice() ?? [];
+            const analysis = await SerializationTools.ExportKhrInteractivityAsync(this.props.globalState, format);
             const message = `Exported ${analysis.nodes.length} KHR_interactivity node(s) as ${fileName}.`;
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, false));
-            if (retainedSource?.externalResourceUris.length) {
+            if (externalResourceUris.length) {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(
-                    new LogEntry(`The exported asset still needs external resources at their referenced paths: ${retainedSource.externalResourceUris.join(", ")}`, false)
+                    new LogEntry(`The exported asset still needs external resources at their referenced paths: ${externalResourceUris.join(", ")}`, false)
                 );
             }
             ShowToast(this.props.globalState, message, "success");

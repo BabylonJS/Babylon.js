@@ -1,6 +1,6 @@
 import { type Node } from "core/node";
 import { EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
-import { applyEdits, modify } from "jsonc-parser";
+import { applyEdits, findNodeAtLocation, modify, parseTree } from "jsonc-parser";
 import { BuildKhrSelectionRevealGraph } from "./khrSelectionRevealTemplate";
 import { BuildKhrTwoStepProcedureGraph, type IKhrTwoStepProcedureNodes } from "./khrTwoStepProcedureTemplate";
 
@@ -163,9 +163,43 @@ export function PatchKhrInteractivityDocument(sourceJsonText: string, extension:
     const write = (path: Array<string | number>, value: unknown, isArrayInsertion = false) => {
         jsonText = applyEdits(jsonText, modify(jsonText, path, value, { isArrayInsertion }));
     };
-    if (JSON.stringify(document.extensions.KHR_interactivity) !== JSON.stringify(extension)) {
-        write(["extensions", "KHR_interactivity"], extension);
-    }
+    const update = (path: Array<string | number>, sourceValue: unknown, editedValue: unknown) => {
+        if (JSON.stringify(sourceValue) === JSON.stringify(editedValue)) {
+            return;
+        }
+        if (_IsRecord(sourceValue) && _IsRecord(editedValue)) {
+            for (const key of Object.keys(sourceValue)) {
+                update([...path, key], sourceValue[key], Object.prototype.hasOwnProperty.call(editedValue, key) ? editedValue[key] : undefined);
+            }
+            for (const key of Object.keys(editedValue)) {
+                if (!Object.prototype.hasOwnProperty.call(sourceValue, key)) {
+                    write([...path, key], editedValue[key]);
+                }
+            }
+        } else if (Array.isArray(sourceValue) && Array.isArray(editedValue)) {
+            for (let index = 0; index < Math.min(sourceValue.length, editedValue.length); index++) {
+                update([...path, index], sourceValue[index], editedValue[index]);
+            }
+            for (let index = sourceValue.length - 1; index >= editedValue.length; index--) {
+                // jsonc-parser can consume the closing bracket when removing the final array element.
+                const tree = parseTree(jsonText);
+                const array = tree && findNodeAtLocation(tree, path);
+                const entry = array?.children?.[index];
+                const previous = array?.children?.[index - 1];
+                if (!entry || (index > 0 && !previous)) {
+                    throw new Error("The source interactivity array could not be updated.");
+                }
+                const offset = previous ? previous.offset + previous.length : entry.offset;
+                jsonText = applyEdits(jsonText, [{ offset, length: entry.offset + entry.length - offset, content: "" }]);
+            }
+            for (let index = sourceValue.length; index < editedValue.length; index++) {
+                write([...path, index], editedValue[index], true);
+            }
+        } else {
+            write(path, editedValue);
+        }
+    };
+    update(["extensions", "KHR_interactivity"], document.extensions.KHR_interactivity, extension);
     for (const [key, names] of [
         ["extensionsUsed", ["KHR_interactivity", ...extensionsUsed]],
         ["extensionsRequired", extensionsRequired],

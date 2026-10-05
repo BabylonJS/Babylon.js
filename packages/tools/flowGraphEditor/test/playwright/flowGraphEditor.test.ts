@@ -3317,6 +3317,32 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         const reopenedDownload = page.waitForEvent("download");
         await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
         expect(readFileSync((await (await reopenedDownload).path())!)).toEqual(editedBytes);
+
+        await page.evaluate(async () => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const retained = state.sourceGlb;
+            const bytes = await retained.file.arrayBuffer();
+            retained.externalResourceUris = ["original.bin"];
+            Object.defineProperty(retained.file, "arrayBuffer", {
+                value: async () => {
+                    state.sourceGlb = {
+                        ...retained,
+                        file: new File([], "replacement.glb"),
+                        externalResourceUris: ["replacement.bin"],
+                    };
+                    retained.externalResourceUris.push("mutated.bin");
+                    return bytes;
+                },
+            });
+        });
+        const raceDownload = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        expect((await raceDownload).suggestedFilename()).toBe("compatibility-edited-edited.glb");
+        const log = page.getByRole("log", { name: "Flow graph log" });
+        await expect(log).toContainText("as compatibility-edited-edited.glb.");
+        await expect(log).toContainText("referenced paths: original.bin");
+        await expect(log).not.toContainText("replacement.bin");
+        await expect(log).not.toContainText("mutated.bin");
     });
 
     test("exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics", async ({ page }) => {

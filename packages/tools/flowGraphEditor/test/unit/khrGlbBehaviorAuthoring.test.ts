@@ -132,6 +132,33 @@ describe("lossless GLB selection behavior authoring", () => {
         expect(result.extensions.KHR_interactivity).toEqual(extension);
     });
 
+    it("patches only edited leaves inside the interactivity extension", () => {
+        const source =
+            '{"asset":{"version":"2.0"},"extensionsUsed":["KHR_interactivity"],"extensions":{"KHR_interactivity":{"extras":{"id":9007199254740993},"graphs":[{"name":"Edited","extras":{"value":1e+2},"nodes":[{"declaration":0,"values":{"a":{"value":[5]}}}]},{"name":"Untouched","extras":{"id":9007199254740995,"value":2e+2}}]}}}';
+        const edited = JSON.parse(source).extensions.KHR_interactivity;
+        edited.graphs[0].nodes[0].values.a.value[0] = 9;
+        const expected = source.replace('"value":[5]', '"value":[9]');
+        const patched = PatchKhrInteractivityDocument(source, edited, [], []);
+        expect(patched).toBe(expected);
+        expect(JsonText(ExportKhrInteractivityAsset(BuildGlb(source), "glb", "glb", edited)).trim()).toBe(expected);
+        expect(PatchKhrInteractivityDocument(patched, edited, [], [])).toBe(expected);
+    });
+
+    it.each([0, 1])("preserves untouched array elements when adding fields and reducing nodes to %i", (nodeCount) => {
+        const source =
+            '{"asset":{"version":"2.0"},"extensionsUsed":["KHR_interactivity"],"extensions":{"KHR_interactivity":{"graphs":[{"types":[{"signature":"float","extras":{"id":9007199254740993}}],"extras":{"keep":1e+2,"remove":true},"nodes":[{"declaration":0},{"declaration":1}]}]}}}';
+        const edited = JSON.parse(source).extensions.KHR_interactivity;
+        edited.graphs[0].types.push({ signature: "int" });
+        edited.graphs[0].nodes.length = nodeCount;
+        delete edited.graphs[0].extras.remove;
+        edited.graphs[0].extras.add = { enabled: true };
+        const patched = PatchKhrInteractivityDocument(source, edited, [], []);
+        expect(patched).toContain('"id":9007199254740993');
+        expect(patched).toContain('"keep":1e+2');
+        expect(JSON.parse(patched).extensions.KHR_interactivity).toEqual(edited);
+        expect(PatchKhrInteractivityDocument(patched, edited, [], [])).toBe(patched);
+    });
+
     it("rejects GLB conversion that would discard unknown or duplicate binary chunks", () => {
         for (const type of [0x12345678, BinChunk]) {
             const source = BuildGlb(AssetDocument({ buffers: [{ byteLength: 4 }] }), [
