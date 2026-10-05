@@ -48,12 +48,7 @@ export interface FBXConnectionEntry {
 
 /** Reason a connection produced a diagnostic. */
 export type FBXConnectionDiagnosticReason =
-    | "unsupported-connection-type"
-    | "missing-connection-endpoint"
-    | "unresolved-legacy-endpoint"
-    | "unresolved-object-reference"
-    | "duplicate-parent"
-    | "self-loop";
+    "unsupported-connection-type" | "missing-connection-endpoint" | "unresolved-legacy-endpoint" | "unresolved-object-reference" | "duplicate-parent" | "self-loop";
 
 /** Recoverable connection graph issue. */
 export interface FBXConnectionDiagnostic {

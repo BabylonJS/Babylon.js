@@ -232,7 +232,7 @@ export class GreasedLineTools {
     public static GetPointsCountInfo(points: number[][]): { total: number; counts: number[] } {
         const counts = new Array(points.length);
         let total = 0;
-        for (let n = points.length; n--; ) {
+        for (let n = points.length; n--;) {
             counts[n] = points[n].length / 3;
             total += counts[n];
         }
