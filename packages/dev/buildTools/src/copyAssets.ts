@@ -44,9 +44,20 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
     console.log(`Processing assets from ${globDirectory}`);
 
     if (checkArgs("--watch", true)) {
+        const matchesAsset = (file: string) => {
+            const segments = file.replace(/\\/g, "/").split("/");
+            return (!global || segments.includes("src")) && extensions.includes(path.extname(file).slice(1));
+        };
         // support windows path with "\\" instead of "/"
         chokidar
-            .watch(globDirectory, {
+            .watch(global ? "./packages" : pathPrefix + "src", {
+                ignored: (file, stats) => {
+                    const segments = file.replace(/\\/g, "/").split("/");
+                    if (!segments.includes("src") && (segments.includes("node_modules") || segments.includes("dist"))) {
+                        return true;
+                    }
+                    return !!stats?.isFile() && !matchesAsset(file);
+                },
                 ignoreInitial: false,
                 awaitWriteFinish: {
                     stabilityThreshold: 1000,
@@ -58,7 +69,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
             })
             .on("all", (event, file) => {
                 // don't track directory changes
-                if (event === "addDir" || event === "unlinkDir" || event === "unlink") {
+                if ((event !== "add" && event !== "change") || !matchesAsset(file)) {
                     return;
                 }
                 let verb: string;
@@ -81,11 +92,11 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
                     }
                 }
             })
-            .on("error", (error: NodeJS.ErrnoException) => {
-                if (error.code === "ENOENT") {
-                    verbose && console.log(`Watcher target no longer exists: ${error.path}`);
+            .on("error", (error: unknown) => {
+                if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+                    verbose && console.log(`Watcher target no longer exists: ${"path" in error ? error.path : error.message}`);
                 } else {
-                    console.error("Watcher error:", error.message);
+                    console.error("Watcher error:", error instanceof Error ? error.message : error);
                 }
             });
         console.log("watching for asset changes...");

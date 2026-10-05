@@ -56,6 +56,10 @@ After that initial build, choose the command that matches your work:
 
 The source-only commands do not process assets/shaders or regenerate the server's combined declarations. Use `npm run build:dev` when you need those outputs refreshed, and keep the complete build as your final PR validation.
 
+Watchers use Chokidar 4: watch directories and filter file types rather than passing glob patterns. This keeps newly added files and subdirectories discoverable.
+
+After building the UMD bundles, `npm run test:escheck` checks their ES2015 script syntax with the shared Acorn-based `scripts/checkEcmaVersion.mjs` checker. A missing bundle or unsupported syntax fails the check.
+
 To validate your PR, please follow these steps:
 
 -   Run `npm run build:dev` locally and make sure that no error is generated

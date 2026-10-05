@@ -13,10 +13,14 @@ let running = false;
 let interval = null;
 compile();
 chokidar
-    .watch("../../../dev/core/src/**/*.ts", {
+    .watch("../../../dev/core/src", {
+        ignored: (file, stats) => !!stats?.isFile() && !file.endsWith(".ts"),
         ignoreInitial: true,
     })
     .on("all", (event, path) => {
+        if (!path.endsWith(".ts") || (event !== "add" && event !== "change" && event !== "unlink")) {
+            return;
+        }
         if (!running) {
             compile();
         } else {
