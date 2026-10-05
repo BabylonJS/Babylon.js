@@ -1021,7 +1021,7 @@ test.describe("Flow Graph Editor — Shell and Panels", () => {
             state.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Phase 3 dialog bridge");
         });
 
-        await expect(page.getByText("Phase 3 toast bridge", { exact: true })).toBeVisible();
+        await expect(page.locator(".fui-ToastTitle").filter({ hasText: /^Phase 3 toast bridge$/ })).toBeVisible();
         await expect(page.getByText("Phase 3 dialog bridge", { exact: true })).toBeVisible();
         await page.getByRole("button", { name: "OK" }).click();
         await expect(page.getByText("Phase 3 dialog bridge", { exact: true })).not.toBeVisible();
