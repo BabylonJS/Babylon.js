@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.28.0",
+    "version": "9.29.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -248,6 +248,7 @@
         "FrameGraph/Node/Blocks/Textures/clearBlock.js",
         "FrameGraph/Node/Blocks/Textures/copyTextureBlock.js",
         "FrameGraph/Node/Blocks/Textures/generateMipmapsBlock.js",
+        "FrameGraph/Node/Blocks/Textures/minMaxReducerBlock.js",
         "FrameGraph/Node/Blocks/computeShaderBlock.js",
         "FrameGraph/Node/Blocks/cullObjectsBlock.js",
         "FrameGraph/Node/Blocks/executeBlock.js",

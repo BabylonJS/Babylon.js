@@ -20,9 +20,9 @@
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g"
     },
     "dependencies": {
-        "jsonc-parser": "^3.2.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "jsonc-parser": "^3.3.1",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -30,12 +30,12 @@
         "@dev/loaders": "1.0.0",
         "@dev/shared-ui-components": "1.0.0",
         "@fluentui-contrib/react-resize-handle": "^0.8.4",
-        "@fluentui/react-components": "^9.70.0",
-        "@fluentui/react-icons": "^2.0.310",
-        "@fluentui/react-positioning": "^9.22.0",
+        "@fluentui/react-components": "^9.74.9",
+        "@fluentui/react-icons": "^2.0.341",
+        "@fluentui/react-positioning": "^9.23.3",
         "@tools/snippet-loader": "1.0.0",
-        "@types/react": "^18.0.0",
-        "@types/react-dom": "^18.0.0"
+        "@types/react": "^18.3.31",
+        "@types/react-dom": "^18.3.7"
     },
     "sideEffects": true
 }

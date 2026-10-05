@@ -21,7 +21,7 @@
     },
     "sideEffects": true,
     "dependencies": {
-        "@memlab/core": "^2.0.2",
-        "memlab": "^2.0.2"
+        "@memlab/core": "^2.0.5",
+        "memlab": "^2.0.5"
     }
 }

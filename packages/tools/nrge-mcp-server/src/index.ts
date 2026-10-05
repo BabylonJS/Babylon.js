@@ -249,6 +249,7 @@ server.registerResource("concepts", "nrg://concepts", {}, async (uri) => ({
                 "    optional depth clear.  Usually the first block that processes a texture.",
                 "  • **NodeRenderGraphCopyTextureBlock** — copies one texture to another.",
                 "  • **NodeRenderGraphGenerateMipmapsBlock** — generates mipmaps for sampled textures.",
+                "  • **NodeRenderGraphMinMaxReducerBlock** — reduces a texture's red channel to a 1x1 min/max RG texture.",
                 "",
                 "### Rendering  (draw calls)",
                 "  • **NodeRenderGraphObjectRendererBlock** — the standard forward-rendering block.",

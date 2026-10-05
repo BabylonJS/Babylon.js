@@ -1,6 +1,6 @@
 {
     "name": "create-babylonjs",
-    "version": "9.28.0",
+    "version": "9.29.0",
     "description": "Scaffold a new Babylon.js project with your choice of module format, language, and bundler.",
     "bin": {
         "create-babylonjs": "./dist/index.js"
@@ -17,7 +17,7 @@
     },
     "devDependencies": {
         "@types/prompts": "^2.4.9",
-        "typescript": "^5.4.0"
+        "typescript": "^5.9.3"
     },
     "keywords": [
         "babylonjs",

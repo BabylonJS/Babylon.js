@@ -26,6 +26,18 @@ export class MinMaxReducer {
         return this._thinMinMaxReducer.onAfterReductionPerformed;
     }
 
+    /**
+     * Wait for WebGPU texture readback before notifying observers (default: false).
+     * This delays the notification; it does not block the render loop.
+     */
+    public get waitForReadback(): boolean {
+        return this._thinMinMaxReducer.waitForReadback;
+    }
+
+    public set waitForReadback(value: boolean) {
+        this._thinMinMaxReducer.waitForReadback = value;
+    }
+
     protected readonly _camera: Camera;
     protected readonly _thinMinMaxReducer: ThinMinMaxReducer;
     protected _sourceTexture: Nullable<RenderTargetTexture>;

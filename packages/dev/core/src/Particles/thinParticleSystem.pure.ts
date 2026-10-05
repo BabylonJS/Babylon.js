@@ -2,12 +2,14 @@
 
 import { type Immutable, type Nullable } from "../types";
 import { type FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
+import { Logger } from "../Misc/logger";
 import { type Observer, Observable } from "../Misc/observable.pure";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import { VertexBuffer, Buffer } from "../Buffers/buffer.pure";
 
 import { type Effect, type IEffectCreationOptions } from "../Materials/effect.pure";
 import { RawTexture } from "../Materials/Textures/rawTexture";
+import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { type IDisposable, type Scene } from "../scene.pure";
 
@@ -98,6 +100,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
     /** @internal */
     public _emitterWorldMatrix: Matrix;
+
+    /** Owned translation matrix for the vector-emitter path, so a live mesh world matrix is never overwritten in place */
+    private _emitterTranslationMatrix: Matrix;
     /** @internal */
     public _emitterInverseWorldMatrix: Matrix = Matrix.Identity();
 
@@ -179,6 +184,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public _noiseTextureSize: Nullable<ISize> = null;
     /** @internal */
     public _noiseTextureData: Nullable<Uint8Array> = null;
+    private _noiseTextureFetchInFlight: Nullable<ProceduralTexture> = null;
+    private _noiseTextureFetchInternalTexture: Nullable<InternalTexture> = null;
+    private _noiseTextureFetchToken = 0;
+    private _noiseTextureReadbackFailureLogged = false;
     private _particles = new Array<Particle>();
     private _epsilon: number;
     private _capacity: number;
@@ -515,6 +524,14 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         this._noiseTexture = value;
 
+        // Invalidate the cached readback: a buffer and its dimensions must always come from the same texture.
+        this._noiseTextureSize = null;
+        this._noiseTextureData = null;
+        // A pending readback belongs to the previous assignment: discard its completion and free the gate.
+        this._noiseTextureFetchToken++;
+        this._noiseTextureFetchInFlight = null;
+        this._noiseTextureFetchInternalTexture = null;
+
         if (!value) {
             _RemoveFromQueue(this._noiseCreation);
             _RemoveFromQueue(this._noiseProcessing);
@@ -700,13 +717,58 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
-            if (this.noiseTexture) {
-                // We need to get texture data back to CPU
-                this._noiseTextureSize = this.noiseTexture.getSize();
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                this.noiseTexture.getContent()?.then((data) => {
-                    this._noiseTextureData = data as Uint8Array;
-                });
+            const noiseTexture = this.noiseTexture;
+            const noiseInternalTexture = noiseTexture?.getInternalTexture() ?? null;
+            if (noiseTexture && (this._noiseTextureFetchInFlight !== noiseTexture || this._noiseTextureFetchInternalTexture !== noiseInternalTexture)) {
+                // One readback per render target in flight to avoid piling up a promise per frame.
+                const noiseContent = noiseTexture.getContent();
+                if (noiseContent) {
+                    const textureSize = noiseTexture.getSize();
+                    // getSize() returns a shared object: snapshot it so a later resize cannot mutate the published pair.
+                    const noiseSize = { width: textureSize.width, height: textureSize.height };
+                    // Gate completions on a per-request token: texture identity cannot tell two readbacks apart.
+                    const fetchToken = ++this._noiseTextureFetchToken;
+                    this._noiseTextureFetchInFlight = noiseTexture;
+                    this._noiseTextureFetchInternalTexture = noiseInternalTexture;
+                    // eslint-disable-next-line github/no-then
+                    noiseContent.then(
+                        (data) => {
+                            if (this._noiseTextureFetchToken !== fetchToken) {
+                                // Superseded by a newer readback.
+                                return;
+                            }
+                            this._noiseTextureFetchInFlight = null;
+                            this._noiseTextureFetchInternalTexture = null;
+                            if (this.noiseTexture !== noiseTexture || noiseTexture.getInternalTexture() !== noiseInternalTexture) {
+                                // Reassigned or resized while pending: discard the stale buffer.
+                                return;
+                            }
+                            this._noiseTextureReadbackFailureLogged = false;
+                            const buffer = data as Uint8Array;
+                            if (buffer.length !== noiseSize.width * noiseSize.height * 4) {
+                                // Buffer for another size (texture resized while pending): retry on the next update.
+                                return;
+                            }
+                            this._noiseTextureSize = noiseSize;
+                            this._noiseTextureData = buffer;
+                        },
+                        () => {
+                            if (this._noiseTextureFetchToken !== fetchToken) {
+                                return;
+                            }
+                            this._noiseTextureFetchInFlight = null;
+                            this._noiseTextureFetchInternalTexture = null;
+                            if (this.noiseTexture !== noiseTexture || noiseTexture.getInternalTexture() !== noiseInternalTexture) {
+                                return;
+                            }
+                            // Retry on the next update, reporting the failure once per streak.
+                            if (!this._noiseTextureReadbackFailureLogged) {
+                                this._noiseTextureReadbackFailureLogged = true;
+                                Logger.Warn(`Noise texture readback failed for "${noiseTexture.name}"; it will be retried on the next update`);
+                            }
+                        }
+                    );
+                }
             }
 
             const sameParticleArray = particles === this._particles;
@@ -750,7 +812,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                     // Recycle by swapping with last particle
                     this._emitFromParticle(particle);
                     if (particle._properties.attachedSubEmitters) {
-                        for (const subEmitter of particle._properties.attachedSubEmitters) {
+                        const attachedSubEmitters = particle._properties.attachedSubEmitters;
+                        for (let subEmitterIndex = 0; subEmitterIndex < attachedSubEmitters.length; subEmitterIndex++) {
+                            const subEmitter = attachedSubEmitters[subEmitterIndex];
                             subEmitter.particleSystem.disposeOnStop = true;
                             subEmitter.particleSystem.stop();
                         }
@@ -1791,7 +1855,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
         } else {
             const emitterPosition = <Vector3>this.emitter;
-            this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
+            // Owned matrix: _emitterWorldMatrix may alias a live mesh world matrix after an emitter switch.
+            if (!this._emitterTranslationMatrix) {
+                this._emitterTranslationMatrix = new Matrix();
+            }
+            Matrix.TranslationToRef(emitterPosition.x, emitterPosition.y, emitterPosition.z, this._emitterTranslationMatrix);
+            this._emitterWorldMatrix = this._emitterTranslationMatrix;
         }
 
         this._emitterWorldMatrix.invertToRef(this._emitterInverseWorldMatrix);

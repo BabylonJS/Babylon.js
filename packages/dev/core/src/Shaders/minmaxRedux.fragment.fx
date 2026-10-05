@@ -10,9 +10,16 @@ void main(void)
     ivec2 coord = ivec2(vUV * (texSize - 1.0));
 
     float f1 = texelFetch(textureSampler, coord, 0).r;
+    #ifdef CLAMP_REDUCTION_COORDS
+    ivec2 edge = ivec2(texSize) - ivec2(1);
+    float f2 = texelFetch(textureSampler, min(coord + ivec2(1, 0), edge), 0).r;
+    float f3 = texelFetch(textureSampler, min(coord + ivec2(1, 1), edge), 0).r;
+    float f4 = texelFetch(textureSampler, min(coord + ivec2(0, 1), edge), 0).r;
+    #else
     float f2 = texelFetch(textureSampler, coord + ivec2(1, 0), 0).r;
     float f3 = texelFetch(textureSampler, coord + ivec2(1, 1), 0).r;
     float f4 = texelFetch(textureSampler, coord + ivec2(0, 1), 0).r;
+    #endif
 
     #ifdef DEPTH_REDUX
         #ifdef VIEW_DEPTH
