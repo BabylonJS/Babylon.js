@@ -1,8 +1,10 @@
 import { type Nullable } from "core/types";
+import { useCallback } from "react";
 import { type ImmutablePrimitiveProps, type PrimitiveProps } from "./primitive";
 import { ResourceSelector } from "./resourceSelector";
 
 type Entity = { uniqueId: number };
+const GetEntityId = (entity: Entity) => entity.uniqueId.toString();
 
 /**
  * Props for the EntitySelector component
@@ -39,13 +41,14 @@ export type EntitySelectorProps<T extends Entity> = (PrimitiveProps<Nullable<T>>
 export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>): JSX.Element {
     const { value, onLink, getEntities, getName, filter, defaultValue, disabled } = props;
     const onChange = (props as PrimitiveProps<Nullable<T>>).onChange as PrimitiveProps<Nullable<T>>["onChange"] | undefined;
+    const filterEntity = useCallback((entity: T) => entity.uniqueId !== undefined && (!filter || filter(entity)), [filter]);
     return (
         <ResourceSelector
             value={value}
             getEntities={getEntities}
             getName={getName}
-            getId={(entity) => entity.uniqueId.toString()}
-            filter={(entity) => entity.uniqueId !== undefined && (!filter || filter(entity))}
+            getId={GetEntityId}
+            filter={filterEntity}
             onSelect={onChange}
             onClear={onChange && defaultValue !== undefined ? () => onChange(defaultValue) : undefined}
             onLink={onLink}

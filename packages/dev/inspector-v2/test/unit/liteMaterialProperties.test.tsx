@@ -71,6 +71,7 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
 
 import { type Material, type SceneContext } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
+import { Color3PropertyLine } from "shared-ui-components/lite/fluent/hoc/propertyLines/colorPropertyLine";
 
 import { PropertyContext, type PropertyChangeInfo } from "../../src/contexts/propertyContext";
 import { WatcherContext } from "../../src/contexts/watcherContext";
@@ -560,6 +561,86 @@ describe("Babylon Lite material properties", () => {
         const transform = Render(<StandardMaterialAdapter material={material} section="transform" resourceIndexService={resources} selectionService={selection} />);
         expect(transform.textContent).toContain("UV Scale");
         expect(transform.textContent).toContain("[1.00, 1.00]");
+    });
+
+    it("disables every expanded UV component while the Standard rebuild is pending", async () => {
+        const material = MakeStandard();
+        const scene = { meshes: [{ material }] } as SceneContext;
+        const resources = MakeResourceService([{ source: material, family: "standard", displayName: "Standard", scenes: [scene], bindings: [] }]);
+        let resolveRebuild: () => void = () => {
+            throw new Error("Rebuild was not started.");
+        };
+        InspectionMocks.rebuild.mockImplementationOnce(() => new Promise<void>((resolve) => (resolveRebuild = resolve)));
+        const container = Render(<StandardMaterialAdapter material={material} section="transform" resourceIndexService={resources} selectionService={MakeSelectionService()} />);
+        const rows = Array.from(container.querySelectorAll<HTMLElement>("[aria-busy]"));
+        const scaleRow = rows.find((row) => row.textContent?.includes("UV Scale"))!;
+        const offsetRow = rows.find((row) => row.textContent?.includes("UV Offset"))!;
+        act(() => {
+            scaleRow.querySelector<HTMLButtonElement>('[aria-label="Expand/Collapse property"]')?.click();
+            offsetRow.querySelector<HTMLButtonElement>('[aria-label="Expand/Collapse property"]')?.click();
+        });
+        expect(scaleRow.querySelectorAll("input")).toHaveLength(2);
+        expect(offsetRow.querySelectorAll("input")).toHaveLength(2);
+        const input = scaleRow.querySelector<HTMLInputElement>("input")!;
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+        await act(async () => {
+            input.focus();
+            setter.call(input, "2");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
+            await Promise.resolve();
+        });
+        expect(InspectionMocks.rebuild).toHaveBeenCalledOnce();
+        expect(Array.from(scaleRow.querySelectorAll<HTMLInputElement>("input")).every((component) => component.disabled)).toBe(true);
+        expect(Array.from(offsetRow.querySelectorAll<HTMLInputElement>("input")).every((component) => !component.disabled)).toBe(true);
+        await act(async () => resolveRebuild());
+        expect(Array.from(scaleRow.querySelectorAll<HTMLInputElement>("input")).every((component) => !component.disabled)).toBe(true);
+    });
+
+    it("disables every expanded color slider and input when the row is disabled", () => {
+        const onChange = vi.fn();
+        const renderColor = (disabled: boolean) => (
+            <FluentProvider theme={webLightTheme}>
+                <Color3PropertyLine label="Color" value={[1, 0.5, 0.25]} onChange={onChange} disabled={disabled} expandByDefault />
+            </FluentProvider>
+        );
+        const container = Render(<Color3PropertyLine label="Color" value={[1, 0.5, 0.25]} onChange={onChange} disabled expandByDefault />);
+        const inputs = container.querySelectorAll<HTMLInputElement>("input");
+        expect(inputs.length).toBeGreaterThanOrEqual(3);
+        expect(Array.from(inputs).every((input) => input.disabled)).toBe(true);
+        act(() => roots[roots.length - 1].render(renderColor(false)));
+        expect(Array.from(container.querySelectorAll<HTMLInputElement>("input")).every((input) => !input.disabled)).toBe(true);
+    });
+
+    it("rejects fractional Standard stencil masks without rebuilding", async () => {
+        const material = MakeStandard({ stencil: { readMask: 255, writeMask: 255 } });
+        const scene = { meshes: [{ material }] } as SceneContext;
+        const resources = MakeResourceService([{ source: material, family: "standard", displayName: "Standard", scenes: [scene], bindings: [] }]);
+        const container = Render(<StandardMaterialAdapter material={material} section="stencil" resourceIndexService={resources} selectionService={MakeSelectionService()} />);
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+        for (const label of ["Stencil Read Mask", "Stencil Write Mask"]) {
+            const row = Array.from(container.querySelectorAll<HTMLElement>("[aria-busy]")).find((element) => element.textContent?.includes(label))!;
+            const input = row.querySelector<HTMLInputElement>("input")!;
+            await act(async () => {
+                input.focus();
+                setter.call(input, "0.5");
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                input.blur();
+            });
+            expect((material as { stencil: { readMask: number; writeMask: number } }).stencil[label === "Stencil Read Mask" ? "readMask" : "writeMask"]).toBe(255);
+        }
+        expect(InspectionMocks.rebuild).not.toHaveBeenCalled();
+        const readRow = Array.from(container.querySelectorAll<HTMLElement>("[aria-busy]")).find((element) => element.textContent?.includes("Stencil Read Mask"))!;
+        const readInput = readRow.querySelector<HTMLInputElement>("input")!;
+        await act(async () => {
+            readInput.focus();
+            setter.call(readInput, "254");
+            readInput.dispatchEvent(new Event("input", { bubbles: true }));
+            readInput.blur();
+            await Promise.resolve();
+        });
+        expect((material as { stencil: { readMask: number } }).stencil.readMask).toBe(254);
+        expect(InspectionMocks.rebuild).toHaveBeenCalledOnce();
     });
 
     it("renders PBR fields directly and keeps one-way modes read-only", async () => {

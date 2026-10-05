@@ -159,6 +159,34 @@ describe("material and texture parity cores", () => {
         expect(onChange).toHaveBeenCalledWith(second);
     });
 
+    it("preserves entity search text across unchanged parent renders", () => {
+        const entities = [
+            { uniqueId: 1, name: "Alpha" },
+            { uniqueId: 2, name: "Beta" },
+        ];
+        const getEntities = () => entities;
+        const getName = (entity: (typeof entities)[number]) => entity.name;
+        const filter = (entity: (typeof entities)[number]) => entity.uniqueId > 0;
+        const onChange = vi.fn();
+        const onLink = vi.fn();
+        const renderSelector = () => (
+            <FluentProvider theme={webLightTheme}>
+                <EntitySelector value={null} onChange={onChange} onLink={onLink} getEntities={getEntities} getName={getName} filter={filter} />
+            </FluentProvider>
+        );
+        const container = Render(<EntitySelector value={null} onChange={onChange} onLink={onLink} getEntities={getEntities} getName={getName} filter={filter} />);
+        const comboBox = container.querySelector<HTMLInputElement>('[role="combobox"]')!;
+        act(() => {
+            comboBox.focus();
+            const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+            setter.call(comboBox, "Bet");
+            comboBox.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        expect(comboBox.value).toBe("Bet");
+        act(() => roots[roots.length - 1].render(renderSelector()));
+        expect(container.querySelector<HTMLInputElement>('[role="combobox"]')?.value).toBe("Bet");
+    });
+
     it("sizes selector popup options with compact mode without changing normal mode", () => {
         const texture = { uniqueId: 1, name: "Texture" };
         const selector = <EntitySelector value={null} onChange={vi.fn()} onLink={vi.fn()} getEntities={() => [texture]} getName={(entity) => entity.name} />;

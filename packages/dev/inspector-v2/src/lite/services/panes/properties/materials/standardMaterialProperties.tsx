@@ -530,6 +530,9 @@ export const StandardMaterialAdapter: FunctionComponent<MaterialAdapterProps> = 
                 oldValue: current?.[key],
                 newValue: value,
                 apply: () => {
+                    if ((key === "readMask" || key === "writeMask") && (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 0xffffffff)) {
+                        throw new RangeError(`Property "${id}" requires an integer mask between 0 and 4294967295.`);
+                    }
                     enableMaterialStencil();
                     standard.stencil = { ...current, [key]: value };
                 },
@@ -565,6 +568,7 @@ export const StandardMaterialAdapter: FunctionComponent<MaterialAdapterProps> = 
                             min={0}
                             max={0xffffffff}
                             step={1}
+                            forceInt
                             disabled={operations[id]?.pending}
                             description={operations[id]?.error}
                         />
