@@ -2393,7 +2393,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                 })
             )
             .toEqual({ name: "node-free-interaction.glb", nodeCount: 0 });
-        await expect(page.getByRole("button", { name: "Export KHR glTF", exact: true })).toBeDisabled();
+        await expect(page.getByRole("button", { name: "Export KHR glTF", exact: true })).toBeEnabled();
         await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeEnabled();
         const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "node-free-interaction-edited.glb");
         await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
@@ -2406,6 +2406,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(exportedDocument.extensions.EXT_vendor_meta).toEqual(document.extensions.EXT_vendor_meta);
         expect(exportedDocument.extensions.KHR_interactivity.graphs[0].name).toBe("Scene start");
         expect(exportedBytes.subarray(20 + jsonLength)).toEqual(bytes.subarray(20 + bytes.readUInt32LE(12)));
+        await page.getByRole("button", { name: "Export KHR glTF", exact: true }).click();
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("binary chunks that cannot be preserved as glTF");
     });
 
     test("keeps mesh authoring disabled for a node-free graphless GLB", async ({ page }) => {
@@ -3245,6 +3247,76 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                     }, exportedIdentity.revealIndex)
             )
             .toBe(true);
+    });
+
+    test("preserves compatibility graphs and opaque source data while editing and changing formats", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        const source = {
+            asset: { version: "2.0", generator: "source-preservation-test" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "originalNode", extras: { untouched: true } }],
+            extras: { preciseId: "precision-token" },
+            extensionsUsed: ["KHR_interactivity", "EXT_vendor_meta"],
+            extensions: {
+                EXT_vendor_meta: { opaque: [1, 2, 3] },
+                KHR_interactivity: {
+                    graphs: [
+                        {
+                            types: [{ signature: "float" }, { signature: "float2" }],
+                            variables: [{ type: 0, value: [0] }],
+                            declarations: [{ op: "math/extract2" }, { op: "variable/set" }],
+                            nodes: [
+                                { declaration: 0, values: { a: { type: 1, value: [1, 2] } } },
+                                { declaration: 1, configuration: { variables: { value: [0] } }, values: { "0": { type: 0, value: [5] } }, flows: { out: { node: 2 } } },
+                                { declaration: 1, configuration: { variables: { value: [0] } }, values: { "0": { type: 0, value: [7] } } },
+                            ],
+                        },
+                    ],
+                },
+            },
+        };
+        const sourceText = JSON.stringify(source).replace('"precision-token"', "9007199254740993");
+        await page.evaluate((text) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([text], "compatibility.gltf", { type: "model/gltf+json" }));
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        }, sourceText);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "compatibility.gltf"');
+        const unchangedDownload = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Export KHR glTF", exact: true }).click();
+        expect(readFileSync((await (await unchangedDownload).path())!, "utf8")).toBe(sourceText);
+
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const setter = state.flowGraph.getAllBlocks().find((block: any) => block.metadata?.khrInteractivity?.nodeIndex === 1);
+            setter.dataInputs[0]._defaultValue = 9;
+        });
+        const editedDownload = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const editedBytes = readFileSync((await (await editedDownload).path())!);
+        const editedText = editedBytes.subarray(20, 20 + editedBytes.readUInt32LE(12)).toString("utf8");
+        expect(editedText).toContain('"preciseId":9007199254740993');
+        const edited = JSON.parse(editedText);
+        expect(edited.nodes).toEqual(source.nodes);
+        expect(edited.extensions.EXT_vendor_meta).toEqual(source.extensions.EXT_vendor_meta);
+        const expectedGraph = structuredClone(source.extensions.KHR_interactivity.graphs[0]);
+        expectedGraph.nodes[1].values!["0"]!.value = [9];
+        expect(edited.extensions.KHR_interactivity.graphs[0]).toEqual(expectedGraph);
+
+        await page.evaluate(
+            (data) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([new Uint8Array(data)], "compatibility-edited.glb", { type: "model/gltf-binary" }));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            [...editedBytes]
+        );
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "compatibility-edited.glb"');
+        const reopenedDownload = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        expect(readFileSync((await (await reopenedDownload).path())!)).toEqual(editedBytes);
     });
 
     test("exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics", async ({ page }) => {

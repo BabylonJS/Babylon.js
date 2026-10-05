@@ -60,7 +60,7 @@ describe("KHR_interactivity FlowGraph export", () => {
         engine.dispose();
     });
 
-    async function CreatePlan(extension: IKHRInteractivity, sourceGLTF: any = {}) {
+    async function CreatePlan(extension: IKHRInteractivity, sourceGLTF: any = {}, preserveSourceDocument = false) {
         const document = CreateKHRInteractivityDocument(
             extension,
             new Set(["KHR_node_selectability", "KHR_node_hoverability", "EXT_vendor_interactivity", "BABYLON"]),
@@ -72,19 +72,19 @@ describe("KHR_interactivity FlowGraph export", () => {
         for (const graph of document.graphs) {
             expect(graph.valid, JSON.stringify(graph.diagnostics)).toBe(true);
             const serialized = new InteractivityGraphToFlowGraphParser(
-                graph.effectiveSource,
+                preserveSourceDocument ? graph.source : graph.effectiveSource,
                 sourceGLTF,
                 60,
                 graph.index,
                 undefined,
-                graph.declarations,
+                preserveSourceDocument ? undefined : graph.declarations,
                 graph.source
             ).serializeToFlowGraph();
             const flowGraph = await ParseFlowGraphAsync(serialized, { coordinator, pathConverter });
             _CaptureKHRInteractivityRuntimeInputDefaults(flowGraph);
             flowGraphs.push(flowGraph);
         }
-        return CreateKHRInteractivityExportPlan(flowGraphs, { document, sourceGLTF });
+        return CreateKHRInteractivityExportPlan(flowGraphs, { document, sourceGLTF, preserveSourceDocument });
     }
 
     const context: IKHRInteractivitySerializerContext = {
@@ -95,6 +95,78 @@ describe("KHR_interactivity FlowGraph export", () => {
         getMaterialIndex: () => undefined,
         setNodeExtension: () => {},
     };
+
+    it.each([2, 3, 4])("round-trips math/extract%i with vector inputs and scalar outputs", async (size) => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: `float${size}` }],
+            declarations: [{ op: `math/extract${size}` }],
+            nodes: [{ declaration: 0, values: { a: { type: 0, value: Array.from({ length: size }, (_, index) => index + 1) } } }],
+        };
+        const plan = await CreatePlan({ graphs: [graph] });
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.build(context).graphs[0]).toEqual(graph);
+    });
+
+    it("exports edits to source-backed graphs with compatibility flows and texture-transform pointers", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }, { signature: "float2" }, { signature: "ref" }],
+            variables: [{ type: 0, value: [0] }],
+            declarations: [{ op: "variable/set" }, { op: "pointer/set" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { variables: { value: [0] } },
+                    values: { "0": { type: 0, value: [9] } },
+                    flows: { out: { node: 1 } },
+                },
+                {
+                    declaration: 1,
+                    configuration: {
+                        pointer: { value: ["/materials/{materialRef}/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/offset"] },
+                        type: { value: [1] },
+                    },
+                    values: { materialRef: { type: 2, value: ["/materials/0"] }, value: { type: 1, value: [0, 0] } },
+                },
+            ],
+        };
+        const sourceGLTF = {
+            materials: [{ pbrMetallicRoughness: { baseColorTexture: { index: 0, extensions: { KHR_texture_transform: { offset: [0, 0] } } } } }],
+            nodes: [{ extensions: { KHR_node_visibility: { visible: false } } }],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, sourceGLTF, true);
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.buildWithSourceIndices().graphs[0]).toEqual(graph);
+        const setter = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.nodeIndex === 0)!;
+        (setter.dataInputs[0] as any)._defaultValue = 7;
+        const edited = plan.buildWithSourceIndices().graphs[0];
+        expect(edited.nodes![0].values!["0"]).toEqual({ type: 0, value: [7] });
+        expect(edited.nodes![0].flows).toEqual(graph.nodes![0].flows);
+        expect(edited.nodes![1]).toEqual(graph.nodes![1]);
+        expect(() => plan.build(context)).toThrow("must use buildWithSourceIndices");
+        setter.dataInputs[0].metadata = undefined;
+        expect(plan.analyze().representable).toBe(false);
+    });
+
+    it("does not preserve references outside the retained source collection", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }],
+            variables: [{ type: 0, value: ["/materials/1"] }],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, { materials: [{}] }, true);
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: expect.arrayContaining([expect.objectContaining({ code: "REFERENCE_UNRESOLVED" })]),
+        });
+    });
+
+    it("preserves explicit default socket names in a source-backed graph", async () => {
+        const graph = CreateCoreGraph();
+        graph.nodes![1].flows!.out.socket = "in";
+        graph.nodes![2].values!.n = { node: 0, socket: "value" };
+        const plan = await CreatePlan({ graphs: [graph] }, {}, true);
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.buildWithSourceIndices().graphs[0]).toEqual(graph);
+    });
 
     it("round-trips canonical graphs deterministically and preserves a representable literal edit", async () => {
         const extension: IKHRInteractivity = {
@@ -1103,6 +1175,45 @@ describe("KHR_interactivity FlowGraph export", () => {
         );
     });
 
+    it("retains a compatibility selection declaration lowered to executable blocks", async () => {
+        _RegisterKHRNodeSelectabilityRuntime();
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }, { signature: "float3" }, { signature: "int" }],
+            declarations: [
+                {
+                    op: "event/onSelect",
+                    extension: "KHR_node_selectability",
+                    outputValueSockets: {
+                        selectedNode: { type: 0 },
+                        selectionRayOrigin: { type: 1 },
+                        selectionPoint: { type: 1 },
+                        controllerIndex: { type: 2 },
+                    },
+                },
+            ],
+            nodes: [{ declaration: 0, configuration: { nodeIndex: { value: [0] } } }],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, { nodes: [{}] }, true);
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.buildWithSourceIndices().graphs[0]).toEqual(graph);
+        coordinator.flowGraphs[0].getAllBlocks()[0].metadata = undefined;
+        expect(plan.analyze().representable).toBe(false);
+    });
+
+    it("retains source extension collection indices but rejects out-of-range edits", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }],
+            variables: [{ type: 0, value: ["/extensions/KHR_lights_punctual/lights/0"] }],
+        };
+        const source = { extensions: { KHR_lights_punctual: { lights: [{}] } } };
+        const plan = await CreatePlan({ graphs: [graph] }, source, true);
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.buildWithSourceIndices().graphs[0]).toEqual(graph);
+        source.extensions.KHR_lights_punctual.lights.length = 0;
+        expect(plan.analyze().representable).toBe(false);
+        expect(plan.analyze().diagnostics).toContainEqual(expect.objectContaining({ code: "REFERENCE_UNRESOLVED" }));
+    });
+
     it("rejects multi-gate output-count edits that change runtime behavior", async () => {
         const graph: IKHRInteractivity_Graph = {
             declarations: [{ op: "flow/multiGate" }],
@@ -1711,6 +1822,17 @@ describe("KHR_interactivity FlowGraph export", () => {
             ],
         });
         expect(() => plan.build(context)).toThrowError(KHRInteractivityExportError);
+    });
+
+    it("retains pre-ratification Babylon operations only when patching their source document", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "flow/log", extension: "BABYLON" }],
+            nodes: [{ declaration: 0, values: { message: { type: 0, value: [1] } } }],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, {}, true);
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.buildWithSourceIndices().graphs[0]).toEqual(graph);
     });
 
     it("rejects pre-ratification Babylon compatibility operations", async () => {

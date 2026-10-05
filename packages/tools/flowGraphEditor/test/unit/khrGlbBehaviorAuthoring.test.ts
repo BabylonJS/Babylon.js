@@ -4,9 +4,11 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
 import {
+    ExportKhrInteractivityAsset,
     GetGlbExternalResourceUris,
     GetGlbNodeIndex,
     PatchKhrInteractivityGlb,
+    PatchKhrInteractivityDocument,
     PatchKhrSelectionRevealGlb,
     PatchKhrTwoStepProcedureGlb,
     ReadGlbDocument,
@@ -88,6 +90,69 @@ function RichSourceDocument(): RichDocument {
 }
 
 describe("lossless GLB selection behavior authoring", () => {
+    const extension = { graphs: [{ name: "Imported", types: [{ signature: "float" }] }] };
+    const AssetDocument = (fields: Record<string, unknown>) => ({
+        asset: { version: "2.0" },
+        extensions: { KHR_interactivity: extension },
+        ...fields,
+    });
+
+    it("keeps an unchanged GLB byte-identical, including unknown chunks", () => {
+        const source = BuildGlb({ asset: { version: "2.0" }, extensionsUsed: ["KHR_interactivity"], extensions: { KHR_interactivity: extension } }, [
+            { type: 0x12345678, data: new Uint8Array([1, 2, 3, 4]) },
+        ]);
+        expect(ExportKhrInteractivityAsset(source, "glb", "glb", extension)).toEqual(source);
+    });
+
+    it("patches glTF graph edits without rewriting precision-sensitive source tokens", () => {
+        const source =
+            '{"asset":{"version":"2.0"},"extensions":{"KHR_interactivity":{"graphs":[]}},"extras":{"id":9007199254740993,"value":1e+2},"buffers":[{"uri":"mesh.bin","byteLength":4}]}';
+        const result = PatchKhrInteractivityDocument(source, extension, [], ["KHR_interactivity"]);
+        expect(result).toContain('"id":9007199254740993');
+        expect(result).toContain('"value":1e+2');
+        expect(JSON.parse(result)).toMatchObject({
+            extensions: { KHR_interactivity: extension },
+            extensionsUsed: ["KHR_interactivity"],
+            extensionsRequired: ["KHR_interactivity"],
+            buffers: [{ uri: "mesh.bin", byteLength: 4 }],
+        });
+        expect(PatchKhrInteractivityDocument(result, extension, [], ["KHR_interactivity"])).toBe(result);
+        const glb = ExportKhrInteractivityAsset(new TextEncoder().encode(result), "gltf", "glb", extension);
+        expect(JsonText(glb).trim()).toBe(result);
+        expect(SuffixAfterJson(glb)).toHaveLength(0);
+        const gltf = ExportKhrInteractivityAsset(new TextEncoder().encode(result), "gltf", "gltf", extension);
+        expect(new TextDecoder().decode(gltf)).toBe(result);
+    });
+
+    it("converts a GLB buffer to embedded glTF data without its padding", () => {
+        const source = BuildGlb(AssetDocument({ buffers: [{ byteLength: 3 }], images: [{ uri: "texture.png" }] }), [{ type: BinChunk, data: new Uint8Array([1, 2, 3, 0]) }]);
+        const result = JSON.parse(new TextDecoder().decode(ExportKhrInteractivityAsset(source, "glb", "gltf", extension)));
+        expect(result.buffers).toEqual([{ byteLength: 3, uri: "data:application/octet-stream;base64,AQID" }]);
+        expect(result.images).toEqual([{ uri: "texture.png" }]);
+        expect(result.extensions.KHR_interactivity).toEqual(extension);
+    });
+
+    it("rejects GLB conversion that would discard unknown or duplicate binary chunks", () => {
+        for (const type of [0x12345678, BinChunk]) {
+            const source = BuildGlb(AssetDocument({ buffers: [{ byteLength: 4 }] }), [
+                { type: BinChunk, data: new Uint8Array(4) },
+                { type, data: new Uint8Array(4) },
+            ]);
+            expect(() => ExportKhrInteractivityAsset(source, "glb", "gltf", extension)).toThrow("cannot be preserved as glTF");
+            expect(SuffixAfterJson(ExportKhrInteractivityAsset(source, "glb", "glb", extension))).toEqual(SuffixAfterJson(source));
+        }
+    });
+
+    it.each([undefined, -1, 0, 1.5, 5])("rejects a GLB BIN chunk with invalid buffer length %s", (byteLength) => {
+        const source = BuildGlb(AssetDocument({ buffers: [{ byteLength }] }), [{ type: BinChunk, data: new Uint8Array(4) }]);
+        expect(() => ExportKhrInteractivityAsset(source, "glb", "gltf", extension)).toThrow("does not match its source buffer");
+    });
+
+    it("rejects conversion when the source embedded buffer is missing", () => {
+        const source = BuildGlb(AssetDocument({ buffers: [{ byteLength: 4 }] }));
+        expect(() => ExportKhrInteractivityAsset(source, "glb", "gltf", extension)).toThrow("missing its embedded buffer");
+    });
+
     it("lists external image and buffer references while excluding embedded data and duplicate paths", () => {
         const document = RichSourceDocument();
         document.buffers = [{ uri: "geometry.bin" }, { uri: "data:application/octet-stream;base64,AA==" }] as any;
