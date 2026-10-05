@@ -3345,6 +3345,80 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect(log).not.toContainText("mutated.bin");
     });
 
+    test("preserves computed pointer roots in unchanged and edited source-backed glTF and GLB exports", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        const source = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0, 1] }],
+            nodes: [
+                { name: "first", translation: [1, 0, 0] },
+                { name: "second", translation: [2, 0, 0] },
+            ],
+            extensionsUsed: ["KHR_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graphs: [
+                        {
+                            types: [{ signature: "ref" }, { signature: "float3" }],
+                            variables: [{ type: 0, value: ["/nodes"] }],
+                            declarations: [{ op: "variable/get" }, { op: "pointer/get" }],
+                            nodes: [
+                                { declaration: 0, configuration: { variable: { value: [0] } } },
+                                {
+                                    declaration: 1,
+                                    configuration: { pointer: { value: ["/{root}/{target}/translation"] }, type: { value: [1] } },
+                                    values: { root: { node: 0 }, target: { type: 0, value: ["/nodes/0"] } },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        };
+        const sourceText = JSON.stringify(source);
+        await page.evaluate((text) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([text], "computed-root.gltf", { type: "model/gltf+json" }));
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+        }, sourceText);
+        const log = page.getByRole("log", { name: "Flow graph log" });
+        await expect(log).toContainText('Imported 1 KHR_interactivity graph(s) from "computed-root.gltf"');
+        for (const format of ["glTF", "GLB"]) {
+            const download = page.waitForEvent("download");
+            await page.getByRole("button", { name: `Export KHR ${format}`, exact: true }).click();
+            const bytes = readFileSync((await (await download).path())!);
+            const text =
+                format === "glTF"
+                    ? bytes.toString("utf8")
+                    : bytes
+                          .subarray(20, 20 + bytes.readUInt32LE(12))
+                          .toString("utf8")
+                          .trimEnd();
+            expect(text).toBe(sourceText);
+        }
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const pointer = state.flowGraph.getAllBlocks().find((block: any) => block.metadata?.khrInteractivity?.nodeIndex === 1 && block.getDataInput("target"));
+            pointer.getDataInput("target")._defaultValue = "/nodes/1";
+        });
+        const expected = structuredClone(source);
+        expected.extensions.KHR_interactivity.graphs[0].nodes[1].values!.target.value = ["/nodes/1"];
+        for (const format of ["glTF", "GLB"]) {
+            const download = page.waitForEvent("download");
+            await page.getByRole("button", { name: `Export KHR ${format}`, exact: true }).click();
+            const bytes = readFileSync((await (await download).path())!);
+            const text = format === "glTF" ? bytes.toString("utf8") : bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString("utf8");
+            expect(JSON.parse(text)).toEqual(expected);
+            expect(await StrictImportKhrInteractivityAsync(page, `computed-root-edited.${format === "glTF" ? "gltf" : "glb"}`, bytes)).toEqual({
+                graphCount: 1,
+                errorCount: 0,
+            });
+        }
+        await expect(log).not.toContainText("REFERENCE_UNRESOLVED");
+    });
+
     test("exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics", async ({ page }) => {
         test.setTimeout(90_000);
         const fge = new FlowGraphEditorPage(page);

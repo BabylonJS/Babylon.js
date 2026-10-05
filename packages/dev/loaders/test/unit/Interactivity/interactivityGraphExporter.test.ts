@@ -168,6 +168,77 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(plan.buildWithSourceIndices().graphs[0]).toEqual(graph);
     });
 
+    it.each(["literal", "variable"])("preserves a %s reference behind a computed source pointer root and validates edits", async (targetKind) => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }, { signature: "float3" }],
+            variables: [
+                { type: 0, value: ["/nodes"] },
+                { type: 0, value: ["/nodes/0"] },
+            ],
+            declarations: [{ op: "variable/get" }, { op: "pointer/get" }],
+            nodes: [
+                { declaration: 0, configuration: { variable: { value: [0] } } },
+                { declaration: 0, configuration: { variable: { value: [1] } } },
+                {
+                    declaration: 1,
+                    configuration: { pointer: { value: ["/{root}/{target}/translation"] }, type: { value: [1] } },
+                    values: { root: { node: 0 }, target: targetKind === "literal" ? { type: 0, value: ["/nodes/0"] } : { node: 1 } },
+                },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, { nodes: [{}, {}] }, true);
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.buildWithSourceIndices().graphs[0]).toEqual(graph);
+        const pointerBlock = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.nodeIndex === 2 && block.getDataInput("target"))!;
+        const setReference = (reference: string) => {
+            if (targetKind === "literal") {
+                Reflect.set(pointerBlock.getDataInput("target")!, "_defaultValue", reference);
+            } else {
+                coordinator.flowGraphs[0].metadata.khrInteractivity.authoredVariableValues = { 1: [reference] };
+            }
+        };
+        setReference("/nodes/1");
+        expect(plan.analyze().diagnostics).toEqual([]);
+        const edited = plan.buildWithSourceIndices().graphs[0];
+        expect(edited.nodes![2].values!.root).toEqual({ node: 0 });
+        if (targetKind === "literal") {
+            expect(edited.nodes![2].values!.target).toEqual({ type: 0, value: ["/nodes/1"] });
+        } else {
+            expect(edited.variables![1].value).toEqual(["/nodes/1"]);
+        }
+        setReference("/nodes/2");
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: expect.arrayContaining([expect.objectContaining({ code: "REFERENCE_UNRESOLVED" })]),
+        });
+        setReference("/nodes/1");
+        pointerBlock.getDataInput("target")!.metadata = undefined;
+        expect(plan.analyze().representable).toBe(false);
+    });
+
+    it("still rejects computed pointer roots in serializer mode", async () => {
+        const sourceNode = new TransformNode("source", scene);
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }, { signature: "float3" }],
+            variables: [{ type: 0, value: ["/nodes"] }],
+            declarations: [{ op: "variable/get" }, { op: "pointer/get" }],
+            nodes: [
+                { declaration: 0, configuration: { variable: { value: [0] } } },
+                {
+                    declaration: 1,
+                    configuration: { pointer: { value: ["/{root}/{target}/translation"] }, type: { value: [1] } },
+                    values: { root: { node: 0 }, target: { type: 0, value: ["/nodes/0"] } },
+                },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, { nodes: [{ index: 0, _babylonTransformNode: sourceNode }] });
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: expect.arrayContaining([expect.objectContaining({ code: "REFERENCE_UNRESOLVED", socket: "target" })]),
+        });
+        expect(() => plan.build(context)).toThrow(KHRInteractivityExportError);
+    });
+
     it("round-trips canonical graphs deterministically and preserves a representable literal edit", async () => {
         const extension: IKHRInteractivity = {
             extras: { authoringTool: "test" },

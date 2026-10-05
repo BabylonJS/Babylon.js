@@ -2502,7 +2502,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             for (const [socket, value] of Object.entries(node.values ?? {})) {
                 if (!("node" in value) && graph.types?.[value.type]?.signature === "ref" && value.value) {
                     const pointerCollection = this._getPointerReferenceCollection(node, mapping, socket);
-                    if (pointerCollection === null) {
+                    if (pointerCollection === null && !(this._options.preserveSourceDocument && typeof value.value[0] === "string")) {
                         _PushDiagnostic(diagnostics, {
                             code: "REFERENCE_UNRESOLVED",
                             graphIndex,
