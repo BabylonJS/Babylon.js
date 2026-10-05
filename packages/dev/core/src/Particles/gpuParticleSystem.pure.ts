@@ -2251,9 +2251,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
-        if (this._scene?.forceWireframe) {
-            this._engine.unbindInstanceAttributes();
-        }
+        // bindDrawBuffers() binds onto the default VAO whenever the render effect differs from the one
+        // the render VAO was recorded with. Reset the instance divisors so the next non-instanced draw
+        // (e.g. the post-process quad) does not inherit them.
+        this._engine.unbindInstanceAttributes();
 
         return rendered ? this._currentActiveCount : 0;
     }
