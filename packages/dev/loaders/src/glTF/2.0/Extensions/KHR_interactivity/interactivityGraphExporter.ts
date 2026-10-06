@@ -189,7 +189,7 @@ export interface IKHRInteractivityExportProvider {
     /**
      * Builds the canonical extension after glTF entity indices are finalized.
      * @param context final serializer remapping context
-     * @returns ratified KHR_interactivity extension payload
+     * @returns KHR_interactivity extension payload
      */
     build(context: IKHRInteractivitySerializerContext): IKHRInteractivity;
 }
@@ -202,6 +202,12 @@ export interface IKHRInteractivityExportOptions {
     document?: IKHRInteractivityDocument;
     /** Loader glTF tree used to resolve original entity references. */
     sourceGLTF?: IGLTF;
+    /**
+     * Whether export patches the retained source document instead of reserializing the scene.
+     * Preserves source entity indices, extension-backed pointers, and imported compatibility flow sockets.
+     * Requires sourceGLTF and buildWithSourceIndices; runtime scene changes are not exported.
+     */
+    preserveSourceDocument?: boolean;
     /** Root default graph index. Defaults to the canonical document selection or zero. */
     defaultGraphIndex?: number;
     /** Target animation frame rate used by imported animation composites. Defaults to 60. */
@@ -689,6 +695,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     private _additionalExtensionsUsed: string[] = [];
     private readonly _rootDiagnostics: IKHRInteractivityExportDiagnostic[] = [];
     private _isPreflight = false;
+    private _sourceIndexContext?: IKHRInteractivitySerializerContext;
 
     /** Whether KHR_interactivity is required in the exported asset. */
     public readonly required: boolean;
@@ -709,6 +716,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         private readonly _flowGraphs: readonly FlowGraph[],
         private readonly _options: IKHRInteractivityExportOptions = {}
     ) {
+        if (_options.preserveSourceDocument && !_options.sourceGLTF) {
+            throw new Error("Source-preserving interactivity export requires the source glTF document.");
+        }
         this.required = _options.required ?? true;
         this.additionalExtensionsRequired = Array.from(new Set(_options.additionalExtensionsRequired ?? [])).sort();
         this._refreshAnalysis();
@@ -782,6 +792,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
      * @returns canonical KHR_interactivity payload
      */
     public build(context: IKHRInteractivitySerializerContext): IKHRInteractivity {
+        if (this._options.preserveSourceDocument && context !== this._sourceIndexContext) {
+            throw new Error("Source-preserving interactivity export must use buildWithSourceIndices().");
+        }
         this._refreshAnalysis();
         if (!this._analysis.representable) {
             throw new KHRInteractivityExportError(this._analysis.diagnostics);
@@ -832,9 +845,12 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     }
 
     private _createSourceIndexContext(): IKHRInteractivitySerializerContext {
+        if (this._sourceIndexContext) {
+            return this._sourceIndexContext;
+        }
         const sourceGLTF = this._options.sourceGLTF;
         const indexOrUndefined = (index: number | undefined): number | undefined => (index !== undefined && index >= 0 ? index : undefined);
-        return {
+        return (this._sourceIndexContext = {
             getNodeCount: () => sourceGLTF?.nodes?.length ?? 0,
             getNodeIndex: (node) => indexOrUndefined(sourceGLTF?.nodes?.findIndex((candidate) => candidate._babylonTransformNode === node)),
             getAnimationIndex: (animation) => indexOrUndefined(sourceGLTF?.animations?.findIndex((candidate) => candidate._babylonAnimationGroup === animation)),
@@ -843,7 +859,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 indexOrUndefined(sourceGLTF?.materials?.findIndex((candidate) => Object.values(candidate._data ?? {}).some((entry) => entry.babylonMaterial === material))),
             getRootIndex: (collection, entity) => this._getSourceRootIndex(collection, entity),
             setNodeExtension: () => {},
-        };
+        });
     }
 
     private _validateBuildWithSourceIndices(): IKHRInteractivityExportDiagnostic[] {
@@ -984,8 +1000,10 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             const declaration = source.declarations?.[sourceNode.declaration];
             const declarationModel = this._options.document?.graphs[graphIndex]?.declarations[sourceNode.declaration];
             const operation = declaration ? _FullOperationName(declaration.op, declaration.extension) : "";
-            const mapping = declaration && declarationModel?.support !== "unsupported-extension" ? getMappingForDeclaration(declaration, false) : undefined;
             const blocks = groups.get(nodeIndex) ?? [];
+            const hasCompatibilityRuntime = this._options.preserveSourceDocument && blocks.some((block) => block.getClassName() !== _UnsupportedBlockClassName);
+            const mapping =
+                declaration && (declarationModel?.support !== "unsupported-extension" || hasCompatibilityRuntime) ? getMappingForDeclaration(declaration, false) : undefined;
             const diagnostics: IKHRInteractivityExportDiagnostic[] = [];
             let classification: KHRInteractivityExportClassification = mapping && mapping.blocks.length > 1 ? "inverse-composite" : "exact";
             if (!declaration) {
@@ -997,7 +1015,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                     path: `/graphs/${graphIndex}/nodes/${nodeIndex}/declaration`,
                     message: `Declaration index ${sourceNode.declaration} is unavailable.`,
                 });
-            } else if (declaration.extension === "BABYLON") {
+            } else if (declaration.extension === "BABYLON" && !this._options.preserveSourceDocument) {
                 classification = "unsupported";
                 _PushDiagnostic(diagnostics, {
                     code: "BLOCK_UNSUPPORTED",
@@ -1388,7 +1406,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 });
             }
         }
-        return graph;
+        return this._options.preserveSourceDocument && _JsonEquivalent(graph, analysis.source) ? CloneKHRInteractivityGraph(analysis.source) : graph;
     }
 
     private _rebuildNode(
@@ -1564,7 +1582,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 ? _CloneJson(sourceNode.flows[socket])
                 : ({ node: provenance.nodeIndex } as NonNullable<IKHRInteractivity_Node["flows"]>[string]);
             rebuiltFlow.node = provenance.nodeIndex;
-            if (provenance.socket === "in") {
+            if (provenance.socket === "in" && !(this._options.preserveSourceDocument && rebuiltFlow.socket === "in")) {
                 delete rebuiltFlow.socket;
             } else {
                 rebuiltFlow.socket = provenance.socket;
@@ -1572,7 +1590,13 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             _SetOwnProperty(rebuiltFlows, socket, rebuiltFlow);
         }
         if (Object.keys(rebuiltFlows).length > 0) {
-            node.flows = rebuiltFlows;
+            node.flows = this._options.preserveSourceDocument
+                ? Object.fromEntries(
+                      [...new Set([...Object.keys(sourceNode.flows ?? {}), ...Object.keys(rebuiltFlows)])]
+                          .filter((socket) => Object.prototype.hasOwnProperty.call(rebuiltFlows, socket))
+                          .map((socket) => [socket, rebuiltFlows[socket]])
+                  )
+                : rebuiltFlows;
         } else {
             delete node.flows;
         }
@@ -1710,7 +1734,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             return Object.prototype.hasOwnProperty.call(node.flows ?? {}, socket);
         }
         const fixed = _GetOwn(mappings, socket);
-        if (fixed && !fixed.compatibilityOnly) {
+        if (fixed && (!fixed.compatibilityOnly || (this._options.preserveSourceDocument && Object.prototype.hasOwnProperty.call(node.flows ?? {}, socket)))) {
             return true;
         }
         if (!Object.keys(mappings ?? {}).some((key) => key.startsWith("[") && key.endsWith("]"))) {
@@ -1900,7 +1924,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             const rebuiltReference = _CloneJson(sourceValue) as IKHRInteractivity_OutputSocketReference & { value?: unknown };
             delete rebuiltReference.value;
             rebuiltReference.node = provenance.nodeIndex;
-            if (provenance.socket === "value") {
+            if (provenance.socket === "value" && !(this._options.preserveSourceDocument && rebuiltReference.socket === "value")) {
                 delete rebuiltReference.socket;
             } else {
                 rebuiltReference.socket = provenance.socket;
@@ -2111,8 +2135,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 _JsonEquivalent(_GetConfigurationBlock(logicalNode, property)?.config?.[property.name], provenance.runtimeValue) &&
                 !_IsValidConfigurationValue(provenance.sourceValue, property, graph, this._options.sourceGLTF?.nodes?.length);
             if (!preservesFallback && property.indexSource === "assetNodes" && current.length === 1 && typeof current[0] === "number") {
-                const sourceNode = this._options.sourceGLTF?.nodes?.[current[0]]?._babylonTransformNode;
-                const remapped = sourceNode ? context.getNodeIndex(sourceNode) : undefined;
+                const remapped = this._getRemappedRootIndex("nodes", current[0], context);
                 if (remapped === undefined) {
                     _PushDiagnostic(diagnostics, {
                         code: "REFERENCE_UNRESOLVED",
@@ -2163,6 +2186,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 const rootMatch = typeof rootReference === "string" ? /^\/([^/]+)$/.exec(rootReference) : undefined;
                 collection = rootMatch?.[1] ?? "";
                 if (!_KnownIndexedRootCollections.has(collection)) {
+                    if (this._options.preserveSourceDocument) {
+                        continue;
+                    }
                     _PushDiagnostic(diagnostics, {
                         code: "REFERENCE_UNRESOLVED",
                         graphIndex,
@@ -2197,6 +2223,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 const socket = node.values?.[indexPlaceholder[1]];
                 const path = `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/values/${indexPlaceholder[1]}`;
                 if (!socket || "node" in socket) {
+                    if (socket && this._options.preserveSourceDocument) {
+                        continue;
+                    }
                     _PushDiagnostic(diagnostics, {
                         code: "REFERENCE_UNRESOLVED",
                         graphIndex,
@@ -2473,7 +2502,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             for (const [socket, value] of Object.entries(node.values ?? {})) {
                 if (!("node" in value) && graph.types?.[value.type]?.signature === "ref" && value.value) {
                     const pointerCollection = this._getPointerReferenceCollection(node, mapping, socket);
-                    if (pointerCollection === null) {
+                    if (pointerCollection === null && !(this._options.preserveSourceDocument && typeof value.value[0] === "string")) {
                         _PushDiagnostic(diagnostics, {
                             code: "REFERENCE_UNRESOLVED",
                             graphIndex,
@@ -2571,6 +2600,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     }
 
     private _getRemappedRootIndex(collection: KhrInteractivityRootCollection, sourceIndex: number, context: IKHRInteractivitySerializerContext): number | undefined {
+        if (this._options.preserveSourceDocument) {
+            return this._options.sourceGLTF?.[collection]?.[sourceIndex] ? sourceIndex : undefined;
+        }
         const indices = new Set(
             this._getSourceRootObjects(collection, sourceIndex)
                 .map((target) => this._getExportedObjectIndex(collection, target, context))
@@ -2674,13 +2706,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         if (!match || !_KnownIndexedRootCollections.has(match[1])) {
             return this._remapReference(reference, context, diagnostics, graphIndex, nodeIndex);
         }
-        const targets = this._getSourceRootObjects(targetCollection as KhrInteractivityRootCollection, parseInt(match[2], 10));
-        const targetIndices = new Set(
-            targets
-                .map((target) => this._getExportedObjectIndex(targetCollection as KhrInteractivityRootCollection, target, context))
-                .filter((index): index is number => index !== undefined)
-        );
-        const targetIndex = targetIndices.size === 1 ? targetIndices.values().next().value : undefined;
+        const targetIndex = this._getRemappedRootIndex(targetCollection as KhrInteractivityRootCollection, parseInt(match[2], 10), context);
         if (targetIndex === undefined) {
             _PushDiagnostic(diagnostics, {
                 code: "REFERENCE_UNRESOLVED",
@@ -2704,8 +2730,22 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         if (!reference || reference.startsWith("/extensions/KHR_interactivity/events/") || reference.startsWith("/extensions/KHR_interactivity/delays/")) {
             return reference;
         }
-        const extensionCollection = /^\/extensions\/([^/]+)\/[^/]+\/(0|[1-9]\d*)(?:\/|$)/.exec(reference);
+        const extensionCollection = /^\/extensions\/([^/]+)\/([^/]+)\/(0|[1-9]\d*)(?:\/|$)/.exec(reference);
         if (extensionCollection && extensionCollection[1] !== "KHR_interactivity") {
+            if (this._options.preserveSourceDocument) {
+                const collection = this._options.sourceGLTF?.extensions?.[extensionCollection[1]]?.[extensionCollection[2]];
+                if (!Array.isArray(collection) || collection[Number(extensionCollection[3])] === undefined) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "REFERENCE_UNRESOLVED",
+                        graphIndex,
+                        nodeIndex,
+                        path: `/graphs/${graphIndex}${nodeIndex === undefined ? "" : `/nodes/${nodeIndex}`}`,
+                        message: `Reference "${reference}" does not identify an entry in the retained source document.`,
+                    });
+                    return reference;
+                }
+                return reference;
+            }
             _PushDiagnostic(diagnostics, {
                 code: "REFERENCE_UNRESOLVED",
                 graphIndex,
@@ -2747,7 +2787,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         path = `/graphs/${graphIndex}${nodeIndex === undefined ? "" : `/nodes/${nodeIndex}`}`
     ): boolean {
         const nestedExtensions = _GetPointerExtensionNames(reference).filter((extension) => extension !== "KHR_interactivity");
-        if (nestedExtensions.length === 0 || _CanPreserveNestedExtensionPointer(reference, resolvedCollection)) {
+        if (this._options.preserveSourceDocument || nestedExtensions.length === 0 || _CanPreserveNestedExtensionPointer(reference, resolvedCollection)) {
             return true;
         }
         _PushDiagnostic(diagnostics, {
@@ -2849,6 +2889,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     }
 
     private _writeCompanionNodeExtensions(context: IKHRInteractivitySerializerContext, diagnostics: IKHRInteractivityExportDiagnostic[]): void {
+        if (this._options.preserveSourceDocument) {
+            return;
+        }
         for (let sourceIndex = 0; sourceIndex < (this._options.sourceGLTF?.nodes?.length ?? 0); sourceIndex++) {
             const sourceNode = this._options.sourceGLTF!.nodes![sourceIndex];
             for (const extensionName of _CompanionNodeExtensions) {

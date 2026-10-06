@@ -33,6 +33,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ClearBlock: "Clears a texture",
         CopyTextureBlock: "Copies a texture to another texture",
         GenerateMipmapsBlock: "Generates mipmaps for a texture",
+        MinMaxReducerBlock: "Reduces a texture's red channel to min/max. WebGPU also supports single-sampled off-screen depth/stencil attachments.",
         BlackAndWhiteBlock: "Applies a black and white post process",
         BloomBlock: "Applies a bloom post process",
         BlurBlock: "Applies a blur post process",
@@ -219,7 +220,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "IblShadowsRendererBlock",
                 "UtilityLayerRendererBlock",
             ],
-            Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
+            Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock", "MinMaxReducerBlock"],
         };
 
         const customBlockDescriptions = this.props.globalState.customBlockDescriptions;
