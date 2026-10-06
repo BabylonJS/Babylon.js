@@ -160,13 +160,14 @@ vi.mock("core/Materials/Textures/Procedurals/proceduralTexture.pure", () => ({
 
 /**
  * Minimal scene stub required by _CreateProcessorTexture.
- * Only `scene.getEngine().isWebGPU` is accessed before the ProceduralTexture
- * constructor (which is mocked), so this is the only thing we need.
+ * Only `scene.getEngine().isWebGPU` and `scene.getEngine().getCaps()` are accessed before the
+ * ProceduralTexture constructor (which is mocked), so these are the only things we need.
+ * @param caps - Optional engine caps returned by `getCaps()`
  * @returns Minimal scene-like object
  */
-function makeFakeScene() {
+function makeFakeScene(caps: Record<string, unknown> = {}) {
     return {
-        getEngine: () => ({ isWebGPU: false }),
+        getEngine: () => ({ isWebGPU: false, getCaps: () => caps }),
     } as any;
 }
 
@@ -849,6 +850,31 @@ describe("TextureProcessor", () => {
             expect(warn).toHaveBeenCalledOnce();
             expect(_capturedPTs.every((pt) => pt.coordinatesIndex === 0)).toBe(true);
             warn.mockRestore();
+        });
+
+        it("ThinWalledScatterWeights keeps intermediates in float and quantizes only the outputs", async () => {
+            const floatScene = makeFakeScene({ textureFloatRender: true });
+            const result = await ThinWalledScatterWeightsAsync("scatter-float", { texture: makeFakeTexture() }, { texture: makeFakeTexture() }, floatScene);
+
+            const typeOf = (pt: (typeof _capturedPTs)[number]) => (pt.options as { type: number }).type;
+            const outputs = [result.transmission.texture, result.subsurface.texture];
+            const intermediates = _capturedPTs.filter((pt) => !outputs.includes(pt as any));
+
+            expect(_capturedPTs).toHaveLength(6);
+            expect(outputs.every((pt) => typeOf(pt as any) === Constants.TEXTURETYPE_UNSIGNED_BYTE)).toBe(true);
+            expect(intermediates).toHaveLength(4);
+            expect(intermediates.every((pt) => typeOf(pt) === Constants.TEXTURETYPE_FLOAT)).toBe(true);
+            expect(intermediates.every((pt) => pt.disposed)).toBe(true);
+            expect(outputs.some((pt) => (pt as any).disposed)).toBe(false);
+        });
+
+        it("ThinWalledScatterWeights falls back to half-float intermediates", async () => {
+            const halfScene = makeFakeScene({ textureHalfFloatRender: true });
+            const result = await ThinWalledScatterWeightsAsync("scatter-half", { texture: makeFakeTexture() }, { texture: makeFakeTexture() }, halfScene);
+
+            const outputs = [result.transmission.texture, result.subsurface.texture];
+            const intermediates = _capturedPTs.filter((pt) => !outputs.includes(pt as any));
+            expect(intermediates.every((pt) => (pt.options as { type: number }).type === Constants.TEXTURETYPE_HALF_FLOAT)).toBe(true);
         });
     });
 });

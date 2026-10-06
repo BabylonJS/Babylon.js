@@ -1189,8 +1189,9 @@ export async function SingleScatterToMultiScatterAlbedoAsync(name: string, input
  * scattered (subsurface) transmission while keeping the total translucency constant.
  *
  * When both operands are constants the computation is performed entirely on the CPU.
- * When either operand has a texture the result is computed via five composable GPU passes:
- * `invert`, `multiply`, `multiply`, `invert`, `divide` (see {@link DivideTexturesAsync}).
+ * When either operand has a texture the result is computed via composable GPU passes. Intermediate
+ * passes render to floating-point targets (when the engine supports it) so only the two final
+ * outputs are quantized; this avoids amplifying 8-bit rounding in the final division near T = 1.
  *
  * @param name - Base name for any procedural textures created
  * @param transmission - T operand (transmissionFactor × optional transmissionTexture, R channel)
@@ -1221,23 +1222,30 @@ export async function ThinWalledScatterWeightsAsync(
         };
     }
 
-    // GPU path — five composable passes:
-    //   1. invertedS    = 1 - S                         (invert)
-    //   2. transW       = T * (1 - S)                   (multiply)
-    //   3. tTimesS      = T * S                         (multiply)
-    //   4. oneMinusTransW = 1 - transW                  (invert, no-dispose ref so transW survives)
-    //   5. ssW          = T*S / (1 - transW)            (divide)
-    // T and S are each consumed by two passes, so feed the passes no-dispose copies and release the
-    // real inputs only after every pass has run — otherwise an input that is itself a processor result
+    // GPU path. Intermediates stay in floating point so only the two final outputs are quantized:
+    //   1. invertedS      = 1 - S               (invert, intermediate)
+    //   2. transWFloat    = T * (1 - S)         (multiply, intermediate)
+    //   3. transW         = T * (1 - S)         (multiply, output)
+    //   4. tTimesS        = T * S               (multiply, intermediate)
+    //   5. oneMinusTransW = 1 - transWFloat     (invert, intermediate)
+    //   6. ssW            = T*S / (1 - transW)  (divide, output)
+    // T, S and invertedS are each consumed by two passes, so feed the passes no-dispose copies and release
+    // them only after every pass has run — otherwise an input that is itself a processor result
     // (i.e. carries a dispose) would be freed by the first pass and sampled disposed by a later one.
+    const caps = scene.getEngine().getCaps();
+    const intermediateOptions: ITextureProcessorOutputOptions = {
+        textureType: caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+    };
     const transmissionIn: ITextureProcessOperand = { ...transmission, dispose: undefined };
     const scatterIn: ITextureProcessOperand = { ...scatter, dispose: undefined };
 
-    const invertedS = await InvertTextureAsync(`${name}/1-S`, scatterIn, scene);
+    const invertedS = await InvertTextureAsync(`${name}/1-S`, scatterIn, scene, undefined, undefined, undefined, intermediateOptions);
+    const invertedSIn: ITextureProcessOperand = { ...invertedS, dispose: undefined };
+    const transWFloat = await MultiplyTexturesAsync(`${name}/T*(1-S)`, transmissionIn, invertedSIn, scene, undefined, undefined, intermediateOptions);
     const transW = await MultiplyTexturesAsync(`${name}_transWeight`, transmissionIn, invertedS, scene);
-    const tTimesS = await MultiplyTexturesAsync(`${name}/T*S`, transmissionIn, scatterIn, scene);
-    // Pass transW without its dispose so transW.texture survives for the return value.
-    const oneMinusTransW = await InvertTextureAsync(`${name}/1-transW`, { texture: transW.texture }, scene);
+    const tTimesS = await MultiplyTexturesAsync(`${name}/T*S`, transmissionIn, scatterIn, scene, undefined, undefined, intermediateOptions);
+    const oneMinusTransW = await InvertTextureAsync(`${name}/1-transW`, transWFloat, scene, undefined, undefined, undefined, intermediateOptions);
     const ssW = await DivideTexturesAsync(`${name}_subWeight`, tTimesS, oneMinusTransW, scene);
 
     transmission.dispose?.();
