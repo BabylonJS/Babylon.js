@@ -1652,6 +1652,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                     contextLost: gl.isContextLost(),
                     connected: canvas.isConnected,
                     engineCount: Babylon.EngineStore.Instances.length,
+                    coordinatorSceneUid: Babylon.FlowGraphEditor._CurrentState.coordinator?.config.scene?.uid ?? null,
                     rgba: [...rgba],
                     x: point.x / engine.getRenderWidth(),
                     y: point.y / engine.getRenderHeight(),
@@ -1698,6 +1699,38 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(/Failed to load file:.*brokenPreview\.gltf/);
         await expect(preview).toHaveCount(1);
         expect(await pixelsAsync()).toEqual(beforeFailure);
+
+        await page.evaluate(() => {
+            const state = globalThis as typeof globalThis & {
+                BABYLON: typeof import("core/index") & { FlowGraphEditor: { _CurrentState: import("../../src/globalState").GlobalState } };
+                __previewLoadPaused?: boolean;
+                __resumePreviewLoad?: () => void;
+            };
+            const currentScene = state.BABYLON.FlowGraphEditor._CurrentState.sceneContext!.scene;
+            const whenReadyAsync = state.BABYLON.Scene.prototype.whenReadyAsync;
+            state.BABYLON.Scene.prototype.whenReadyAsync = async function (...args) {
+                await whenReadyAsync.apply(this, args);
+                if (this !== currentScene) {
+                    state.BABYLON.Scene.prototype.whenReadyAsync = whenReadyAsync;
+                    await new Promise<void>((resolve) => {
+                        state.__resumePreviewLoad = resolve;
+                        state.__previewLoadPaused = true;
+                    });
+                }
+            };
+        });
+        await dropAsync("pendingPreview.gltf", JSON.stringify(source));
+        await expect.poll(async () => await page.evaluate(() => (globalThis as typeof globalThis & { __previewLoadPaused?: boolean }).__previewLoadPaused)).toBe(true);
+        const popup = await UndockRightSidePaneAsync(page);
+        await expect(popup.getByText("Scene Preview", { exact: true }).first()).toBeVisible();
+        await popup.close();
+        await expect(preview).toBeVisible();
+        await page.evaluate(() => (globalThis as typeof globalThis & { __resumePreviewLoad?: () => void }).__resumePreviewLoad!());
+        await expect
+            .poll(async () => await page.evaluate(() => (globalThis as typeof globalThis & { BABYLON: typeof import("core/index") }).BABYLON.EngineStore.Instances.length))
+            .toBe(engineCount);
+        expect(await pixelsAsync()).toEqual(beforeFailure);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Scene preview pane moved while loading");
 
         await dropAsync("cameraLessPreview.gltf", JSON.stringify({ ...source, cameras: undefined, scenes: [{ nodes: [0] }], nodes: [source.nodes[0]] }));
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Loaded "cameraLessPreview.gltf"');

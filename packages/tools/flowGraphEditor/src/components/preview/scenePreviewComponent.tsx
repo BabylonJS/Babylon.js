@@ -869,6 +869,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     // The preview can still load files outside this patcher's supported GLB framing.
                 }
             }
+            if (!this._canvasHostRef.current) {
+                throw new Error("Scene preview pane moved while loading. Drop the file again in the current preview.");
+            }
             if (
                 !stagedGraphState &&
                 previousSceneContext &&
