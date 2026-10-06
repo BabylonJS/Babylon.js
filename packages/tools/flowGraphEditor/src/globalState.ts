@@ -941,6 +941,8 @@ export class GlobalState {
     sceneSource: "default" | "snippet" | "file" | "host" | null = null;
     /** Original GLB for source-preserving behavior authoring; cleared when the preview source changes. */
     sourceGlb: { file: File; companionFiles?: File[]; nodeCount: number; hasAnimations: boolean; authoredBehavior: boolean; externalResourceUris: string[] } | null = null;
+    /** Retained glTF file used to apply behavior edits without serializing the preview scene. */
+    sourceGltf: { file: File; externalResourceUris: string[] } | null = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */
     onSceneContextChanged = new Observable<Nullable<SceneContext>>();
 

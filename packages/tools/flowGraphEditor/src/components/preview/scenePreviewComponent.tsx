@@ -470,6 +470,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             this.props.globalState.sceneContext = null;
             this.props.globalState.sceneSource = null;
             this.props.globalState.sourceGlb = null;
+            this.props.globalState.sourceGltf = null;
         }
     }
 
@@ -534,6 +535,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         this.props.globalState.sceneContext = sceneContext;
         this.props.globalState.sceneSource = source;
         this.props.globalState.sourceGlb = null;
+        this.props.globalState.sourceGltf = null;
         this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
         this.setState({ sceneObjectCount: sceneContext.entries.length });
         return sceneContext;
@@ -854,7 +856,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         authoredBehavior,
                         externalResourceUris: GetGlbExternalResourceUris(document),
                     };
-                } catch {
+                } catch (error) {
+                    if (stagedKhrImport) {
+                        throw error;
+                    }
                     // The preview can still load files outside this patcher's supported GLB framing.
                 }
             }
@@ -871,6 +876,16 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             this.props.globalState.sceneContext = stagedSceneContext;
             this.props.globalState.sceneSource = "file";
             this.props.globalState.sourceGlb = sourceGlb;
+            this.props.globalState.sourceGltf =
+                stagedKhrImport && /\.gltf$/i.test(file.name)
+                    ? {
+                          file,
+                          externalResourceUris: GetGlbExternalResourceUris({
+                              buffers: stagedKhrImport.importResult.glTF.buffers,
+                              images: stagedKhrImport.importResult.glTF.images,
+                          }),
+                      }
+                    : null;
             this.props.globalState.snippetId = "";
             if (stagedGraphState) {
                 SerializationTools.ApplyDeserializedState(stagedGraphState, this.props.globalState);
