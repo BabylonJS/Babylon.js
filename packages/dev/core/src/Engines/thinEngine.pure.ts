@@ -2156,7 +2156,13 @@ export class ThinEngine extends AbstractEngine {
         // assure the state object is correct
         stateObject._contextWasLost = this._contextWasLost;
         stateObject.validateShaderPrograms = this.validateShaderPrograms;
-        return createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context || this._gl, transformFeedbackVaryings);
+        this.onBeforeShaderCompilationObservable.notifyObservers(this);
+
+        const program = createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context || this._gl, transformFeedbackVaryings);
+
+        this.onAfterShaderCompilationObservable.notifyObservers(this);
+
+        return program;
     }
 
     /**
