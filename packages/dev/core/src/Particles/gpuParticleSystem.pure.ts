@@ -2251,10 +2251,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
-        if (this._scene?.forceWireframe) {
-            this._engine.unbindInstanceAttributes();
-        }
-
         return rendered ? this._currentActiveCount : 0;
     }
 
@@ -2562,6 +2558,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 outparticles = this._render(this.blendMode, emitterWM);
             }
 
+            // bindDrawBuffers() binds onto the default VAO whenever the render effect differs from the one
+            // the render VAO was recorded with. Reset the instance divisors once all passes are drawn, so the
+            // next non-instanced draw (e.g. the post-process quad) does not inherit them. Resetting between
+            // the MULTIPLYADD passes would break the second pass: bindBuffers() skips rebinding when its
+            // buffers and effect are unchanged, so it would draw with divisor 0.
+            this._engine.unbindInstanceAttributes();
             this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
