@@ -72,11 +72,14 @@ function IsConstantInput(input: ChannelInput): input is IConstantChannelInput {
 
 /**
  * @internal
- * Copy texture transformation properties from one texture to another
+ * Copy sampling metadata (UV set, wrap modes and texture transform) from one texture to another
  * @param source The source texture
  * @param destination The destination texture
  */
-function CopyTextureTransform(source: Texture, destination: Texture) {
+function CopyTextureMetadata(source: Texture, destination: Texture) {
+    destination.coordinatesIndex = source.coordinatesIndex;
+    destination.wrapU = source.wrapU;
+    destination.wrapV = source.wrapV;
     destination.uOffset = source.uOffset;
     destination.vOffset = source.vOffset;
     destination.uScale = source.uScale;
@@ -193,7 +196,7 @@ export async function MergeTexturesAsync(name: string, config: ITextureMergeConf
 
     // Set up texture inputs
     for (let i = 0; i < textureInputs.length; i++) {
-        CopyTextureTransform(textureInputs[i] as Texture, proceduralTexture);
+        CopyTextureMetadata(textureInputs[i] as Texture, proceduralTexture);
         proceduralTexture.setTexture(`inputTexture${i}`, textureInputs[i]);
     }
 
