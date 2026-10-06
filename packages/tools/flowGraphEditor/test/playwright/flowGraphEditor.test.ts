@@ -1605,6 +1605,112 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             });
     });
 
+    test("renders successive file previews on fresh canvases and preserves imported cameras", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("default");
+        const engineCount = await page.evaluate(() => (globalThis as typeof globalThis & { BABYLON: typeof import("core/index") }).BABYLON.EngineStore.Instances.length);
+        const preview = page.locator('[data-testid="scene-preview-canvas"]');
+        const pageErrors: string[] = [];
+        page.on("pageerror", (error) => pageErrors.push(error.message));
+
+        const dropAsync = async (name: string, source: string) => {
+            await preview.evaluate(
+                (canvas, file) => {
+                    const transfer = new DataTransfer();
+                    transfer.items.add(new File([file.source], file.name, { type: "model/gltf+json" }));
+                    canvas.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+                },
+                { name, source }
+            );
+        };
+        const pixelsAsync = async () =>
+            await page.evaluate(() => {
+                const { BABYLON: Babylon } = globalThis as typeof globalThis & {
+                    BABYLON: typeof import("core/index") & { FlowGraphEditor: { _CurrentState: import("../../src/globalState").GlobalState } };
+                };
+                const { scene, engine } = Babylon.FlowGraphEditor._CurrentState.sceneContext!;
+                const canvas = engine.getRenderingCanvas()!;
+                const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+                if (!gl) {
+                    throw new Error("Preview WebGL context unavailable");
+                }
+                scene.render();
+                const point = Babylon.Vector3.Project(
+                    scene.getMeshByName("previewTriangle")!.getBoundingInfo().boundingBox.centerWorld,
+                    Babylon.Matrix.Identity(),
+                    scene.getTransformMatrix(),
+                    scene.activeCamera!.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight())
+                );
+                const rgba = new Uint8Array(4);
+                gl.readPixels(Math.floor(point.x), engine.getRenderHeight() - Math.floor(point.y) - 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, rgba);
+                return {
+                    sceneUid: scene.uid,
+                    cameraNames: scene.cameras.map((camera) => camera.name),
+                    activeCamera: scene.activeCamera!.name,
+                    contextLost: gl.isContextLost(),
+                    connected: canvas.isConnected,
+                    engineCount: Babylon.EngineStore.Instances.length,
+                    rgba: [...rgba],
+                    x: point.x / engine.getRenderWidth(),
+                    y: point.y / engine.getRenderHeight(),
+                };
+            });
+        const positions = Buffer.from(new Float32Array([-1, -1, 0, 1, -1, 0, 0, 1, 0]).buffer);
+        const source = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0, 1] }],
+            nodes: [
+                { name: "previewTriangle", mesh: 0 },
+                { name: "Imported preview camera", camera: 0, translation: [0, 0, 5] },
+            ],
+            cameras: [{ name: "Imported preview camera", type: "perspective", perspective: { yfov: 0.8, znear: 0.1, zfar: 100 } }],
+            meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
+            materials: [{ pbrMetallicRoughness: { baseColorFactor: [1, 0, 0, 1] }, doubleSided: true, extensions: { KHR_materials_unlit: {} } }],
+            extensionsUsed: ["KHR_materials_unlit"],
+            buffers: [{ byteLength: positions.length, uri: `data:application/octet-stream;base64,${positions.toString("base64")}` }],
+            bufferViews: [{ buffer: 0, byteLength: positions.length }],
+            accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [-1, -1, 0], max: [1, 1, 0] }],
+        };
+        let previousUid = (await GetSceneContextSnapshot(page))!.sceneUid;
+        for (const name of ["firstPreview.gltf", "secondPreview.gltf"]) {
+            await dropAsync(name, JSON.stringify(source));
+            await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(`Loaded "${name}"`);
+            await expect(preview).toHaveCount(1);
+            const snapshot = await pixelsAsync();
+            expect(snapshot.sceneUid).not.toBe(previousUid);
+            expect(snapshot).toMatchObject({
+                cameraNames: ["Imported preview camera"],
+                activeCamera: "Imported preview camera",
+                contextLost: false,
+                connected: true,
+                engineCount,
+            });
+            expect(snapshot.rgba[0]).toBeGreaterThan(200);
+            expect(snapshot.rgba[1]).toBeLessThan(40);
+            expect(snapshot.rgba[2]).toBeLessThan(40);
+            previousUid = snapshot.sceneUid;
+        }
+        const beforeFailure = await pixelsAsync();
+        await dropAsync("brokenPreview.gltf", "not JSON");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(/Failed to load file:.*brokenPreview\.gltf/);
+        await expect(preview).toHaveCount(1);
+        expect(await pixelsAsync()).toEqual(beforeFailure);
+
+        await dropAsync("cameraLessPreview.gltf", JSON.stringify({ ...source, cameras: undefined, scenes: [{ nodes: [0] }], nodes: [source.nodes[0]] }));
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Loaded "cameraLessPreview.gltf"');
+        await expect(preview).toHaveCount(1);
+        const fallback = await pixelsAsync();
+        expect(fallback.sceneUid).not.toBe(previousUid);
+        expect(fallback.cameraNames).toHaveLength(1);
+        expect(fallback.activeCamera).not.toBe("Imported preview camera");
+        expect(fallback).toMatchObject({ contextLost: false, connected: true, engineCount });
+        expect(fallback.rgba[0]).toBeGreaterThan(200);
+        expect(pageErrors).toEqual([]);
+    });
+
     test("retains an imported graph when a graphless scene replaces its owning scene", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
