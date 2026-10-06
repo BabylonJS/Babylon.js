@@ -854,7 +854,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The scatter coefficient * transmissionDepth as a Color3
      */
     public set transmissionScatter(value: Color3) {
-        this._material.subSurface.tintColor = value;
+        this._material.subSurface.translucencyColor = value;
     }
 
     /**
@@ -862,8 +862,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns The scatter coefficient * transmissionDepth as a Color3
      */
     public get transmissionScatter(): Color3 {
-        // TODO convert from diffusion distance to scatter coefficient
-        return this._material.subSurface.diffusionDistance;
+        return this._material.subSurface.translucencyColor ? this._material.subSurface.translucencyColor : this._material.subSurface.tintColor;
     }
 
     /**
@@ -1074,7 +1073,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The subsurface tint color as a Color3
      */
     public set subsurfaceColor(value: Color3) {
-        this._material.subSurface.tintColor = value;
+        this._material.subSurface.translucencyColor = value;
     }
 
     /**
