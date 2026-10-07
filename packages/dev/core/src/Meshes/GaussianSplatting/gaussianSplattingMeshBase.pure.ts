@@ -592,7 +592,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private static _PlyConversionBatchSize = 32768;
     /** @internal */
     public _shDegree = 0;
-    /** Incremented when `_updateData` publishes splat data and when its decoded atlas is complete. @internal */
+    /** Incremented whenever `_updateData` replaces the splat data, even when it reuses the same buffer. @internal */
     public _splatDataRevision = 0;
     protected _maxShDegree = 0;
 
@@ -3447,8 +3447,6 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._cachedBoundingMin = minimum.clone();
         this._cachedBoundingMax = maximum.clone();
 
-        // A point draw during an async yield may have cached the unfinished atlas.
-        this._splatDataRevision++;
         this._postToWorker(true);
     }
 
