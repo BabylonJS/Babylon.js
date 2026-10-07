@@ -568,6 +568,67 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it.each([false, true])("refreshes point positions after an async reload with an intervening render (progressive: %s)", async (progressive) => {
+        vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+        let now = 0;
+        const clock = vi.spyOn(performance, "now").mockImplementation(() => (now += 30));
+        const previousProgressiveAmount = GaussianSplattingMeshBase.ProgressiveUpdateAmount;
+        const engine = new NullEngine();
+        vi.spyOn(engine, "updateTextureData").mockImplementation(() => {});
+        (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 16;
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -3), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        const count = 17;
+        const data = new ArrayBuffer(count * 32);
+        const floats = new Float32Array(data);
+        const bytes = new Uint8Array(data);
+        for (let i = 0; i < count; i++) {
+            floats.set([1, i + 1, 3, 0.1, 0.1, 0.1], i * 8);
+            bytes.fill(128, i * 32 + 24, i * 32 + 32);
+        }
+        mesh.updateData(data, undefined, { flipY: false });
+        const controller = CreateController(mesh);
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
+        const upload = vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
+        controller["_renderer"] = renderer;
+        controller["_colorMode"] = true;
+        controller["_runCompute"] = vi.fn(() => controller["_syncData"]());
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        engine.currentRenderPassId = camera.renderPassId;
+        onTestFinished(() => {
+            GaussianSplattingMeshBase.ProgressiveUpdateAmount = previousProgressiveAmount;
+            controller["_renderer"] = null;
+            scene.dispose();
+            engine.dispose();
+            clock.mockRestore();
+            vi.useRealTimers();
+        });
+
+        mesh.render(mesh.subMeshes[0], true);
+        expect(upload).toHaveBeenCalledOnce();
+        for (let i = 0; i < count; i++) {
+            floats[i * 8] = 2;
+        }
+        GaussianSplattingMeshBase.ProgressiveUpdateAmount = progressive ? 1 : undefined;
+        const reload = mesh.updateDataAsync(data);
+        await vi.advanceTimersToNextTimerAsync();
+        expect(mesh._getPointDecodeInputs().positions![4 * (count - 1)]).toBe(0);
+        mesh.render(mesh.subMeshes[0], true);
+        expect(upload).toHaveBeenCalledTimes(2);
+        expect(upload.mock.lastCall![0][4 * (count - 1)]).toBe(0);
+
+        await vi.runAllTimersAsync();
+        await reload;
+        mesh.render(mesh.subMeshes[0], true);
+        expect(upload).toHaveBeenCalledTimes(3);
+        expect(Array.from(upload.mock.lastCall![0].subarray(4 * (count - 1), 4 * (count - 1) + 3))).toEqual([2, count, 3]);
+        mesh.render(mesh.subMeshes[0], true);
+        expect(upload).toHaveBeenCalledTimes(3);
+    });
+
     it("reuploads unchanged data and discards stale GPU state after device restoration", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
