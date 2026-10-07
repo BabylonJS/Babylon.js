@@ -568,7 +568,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
-    it.each([false, true])("refreshes point positions after an async reload with an intervening render (progressive: %s)", async (progressive) => {
+    it.each([false, true])("keeps the last complete point data during an async reload and refreshes it afterwards (progressive: %s)", async (progressive) => {
         vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
         let now = 0;
         const clock = vi.spyOn(performance, "now").mockImplementation(() => (now += 30));
@@ -617,16 +617,18 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         await vi.advanceTimersToNextTimerAsync();
         expect(mesh._getPointDecodeInputs().positions![4 * (count - 1)]).toBe(0);
         mesh.render(mesh.subMeshes[0], true);
-        expect(upload).toHaveBeenCalledTimes(2);
-        expect(upload.mock.lastCall![0][4 * (count - 1)]).toBe(0);
+        // The unfinished atlas is not decoded, so the live splats remain the last complete set.
+        expect(upload).toHaveBeenCalledOnce();
+        expect(Array.from(upload.mock.lastCall![0].subarray(4 * (count - 1), 4 * (count - 1) + 3))).toEqual([1, count, 3]);
+        expect(upload.mock.lastCall![2].every((color) => color >>> 24 === 128)).toBe(true);
 
         await vi.runAllTimersAsync();
         await reload;
         mesh.render(mesh.subMeshes[0], true);
-        expect(upload).toHaveBeenCalledTimes(3);
+        expect(upload).toHaveBeenCalledTimes(2);
         expect(Array.from(upload.mock.lastCall![0].subarray(4 * (count - 1), 4 * (count - 1) + 3))).toEqual([2, count, 3]);
         mesh.render(mesh.subMeshes[0], true);
-        expect(upload).toHaveBeenCalledTimes(3);
+        expect(upload).toHaveBeenCalledTimes(2);
     });
 
     it("reuploads unchanged data and discards stale GPU state after device restoration", async () => {

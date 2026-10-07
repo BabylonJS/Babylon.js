@@ -384,6 +384,10 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /** Re-decodes the splat data if it changed since the last decode. */
     private _syncData(): void {
+        // A partially filled atlas would decode unfinished entries as opaque splats at the origin.
+        if (this._mesh._splatDataPending) {
+            return;
+        }
         const data = this._mesh._splatsData;
         const vc = data ? (data.byteLength / _BytesPerSplat) | 0 : 0;
         const pc = this._mesh.isCompound ? this._mesh.partCount : 1;
