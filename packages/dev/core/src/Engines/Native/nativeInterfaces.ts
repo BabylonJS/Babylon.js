@@ -124,9 +124,12 @@ export interface INativeEngine {
         height: number,
         buffer: Nullable<ArrayBuffer>,
         bufferOffset: number,
-        bufferLength: number
+        bufferLength: number,
+        faceIndex: number
     ): Promise<ArrayBuffer>;
 
+    /** Optional float-preserving readback; readTexture retains its RGBA8 contract. */
+    readTexture2?: INativeEngine["readTexture"];
     createImageBitmap(data: ArrayBuffer | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
@@ -403,7 +406,9 @@ interface INativeEngineConstructor {
     readonly COMMAND_DRAW: NativeData;
     readonly COMMAND_DRAWINSTANCED: NativeData;
     readonly COMMAND_CLEAR: NativeData;
+    readonly COMMAND_CLEAR2?: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
+    readonly COMMAND_SETSTENCIL2?: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;
     readonly COMMAND_SETSCISSOR: NativeData;
     readonly COMMAND_COPYTEXTURE: NativeData;

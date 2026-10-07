@@ -210,6 +210,11 @@ class CommandBufferEncoder {
 
 const remappedAttributesNames: string[] = [];
 
+/**
+ * Sentinel for "no attachment masking": every color attachment of the bound framebuffer takes part in
+ * the clear. Native treats this value specially and skips the bgfx color-palette clear path.
+ */
+const _AllAttachmentsMask = 0xff;
 /** @internal */
 export class ThinNativeEngine extends ThinEngine {
     // This must match the protocol version in NativeEngine.cpp
@@ -228,6 +233,11 @@ export class ThinNativeEngine extends ThinEngine {
     private _commandBufferEncoder: CommandBufferEncoder;
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
+    /**
+     * Bit i is set when color attachment i is selected by the last bindAttachments() call.
+     * Only used to mask clears (see bindAttachments).
+     */
+    private _clearAttachmentMask: number;
     private _currentDepthTest: number;
     private _depthTestEnabled: boolean;
     private _stencilTest: boolean;
@@ -293,6 +303,7 @@ export class ThinNativeEngine extends ThinEngine {
             loadingUIText: "",
         };
         this._boundBuffersVertexArray = null;
+        this._clearAttachmentMask = _AllAttachmentsMask;
         this._currentDepthTest = _native.Engine.DEPTH_TEST_LEQUAL;
         this._depthTestEnabled = true;
         this._stencilTest = false;
@@ -621,6 +632,10 @@ export class ThinNativeEngine extends ThinEngine {
             }
 
             this._currentFramebuffer = framebuffer;
+
+            // drawBuffers state is per-framebuffer on WebGL, so a framebuffer switch resets the
+            // attachment selection back to "every attachment".
+            this._clearAttachmentMask = _AllAttachmentsMask;
         }
     }
 
@@ -631,6 +646,7 @@ export class ThinNativeEngine extends ThinEngine {
     public override getHostDocument(): Nullable<Document> {
         return null;
     }
+
 
     public override clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, stencilClearValue = 0): void {
         if (depth && this.useReverseDepthBuffer) {
@@ -645,16 +661,24 @@ export class ThinNativeEngine extends ThinEngine {
             this.setDepthFunction(Constants.GEQUAL);
         }
 
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_CLEAR);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(backBuffer && color ? 1 : 0);
+        const clear2 = _native.Engine.COMMAND_CLEAR2;
+        this._commandBufferEncoder.startEncodingCommand(clear2 ?? _native.Engine.COMMAND_CLEAR);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(backBuffer && color && this._clearAttachmentMask !== 0 ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.r : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.g : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.b : 0);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.a : 1);
+        // Playgrounds often assign Color3 to scene.clearColor; Color3 has no .a, so
+        // `color.a` is undefined and was encoded as 0 → transparent clear. PNG
+        // screenshots then show black sky on dark HTML backgrounds while RGB still
+        // matches (pixel compare ignores alpha). Default missing alpha to opaque.
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? (color.a ?? 1) : 1);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(depth ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(depth && this.useReverseDepthBuffer ? 0 : 1);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilClearValue);
+        if (clear2) {
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(this._clearAttachmentMask);
+        }
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -1307,6 +1331,7 @@ export class ThinNativeEngine extends ThinEngine {
         return this._colorWrite;
     }
 
+
     private applyStencil(): void {
         this._setStencil(
             this._stencilMask,
@@ -1314,18 +1339,27 @@ export class ThinNativeEngine extends ThinEngine {
             getNativeStencilDepthFail(this._stencilOpDepthFail),
             getNativeStencilDepthPass(this._stencilOpStencilDepthPass),
             getNativeStencilFunc(this._stencilFunc),
-            this._stencilFuncRef
+            this._stencilFuncRef,
+            this._stencilFuncMask
         );
     }
 
-    private _setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number) {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTENCIL);
+    private _setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number, funcMask: number = 0xff) {
+        const setStencil2 = _native.Engine.COMMAND_SETSTENCIL2;
+        this._commandBufferEncoder.startEncodingCommand(setStencil2 ?? _native.Engine.COMMAND_SETSTENCIL);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(mask);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilOpFail);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(depthOpFail);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(depthOpPass);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(func);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(ref);
+        // Stencil function mask (gl.stencilFunc mask / BGFX_STENCIL_FUNC_RMASK). Required for
+        // HighlightLayer, which compares only the glowing-mesh reference bits while ignoring
+        // lower reserved bits. Without this, Native always used 0xFF and the outer/inner glow
+        // stencil tests matched the wrong fragments.
+        if (setStencil2) {
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(funcMask & 0xff);
+        }
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -1402,11 +1436,12 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     /**
-     * Sets the current stencil mask
-     * @param mask defines the new stencil mask to use
+     * Sets the current stencil function mask
+     * @param mask defines the new stencil function mask to use
      */
     public override setStencilFunctionMask(mask: number) {
         this._stencilFuncMask = mask;
+        this.applyStencil();
     }
 
     /**
@@ -2871,9 +2906,25 @@ export class ThinNativeEngine extends ThinEngine {
         // so this is a no-op on Native.
     }
 
-    public override bindAttachments(_attachments: number[]): void {
-        // No-op on Native: bgfx renders to every color attachment of the bound framebuffer, so there is
-        // no gl.drawBuffers equivalent to select a subset.
+    public override bindAttachments(attachments: number[]): void {
+        // bgfx has no gl.drawBuffers equivalent, so draw calls always write to every color attachment of
+        // the bound framebuffer. Clears, however, can be masked per attachment (bgfx clear color palette),
+        // and code such as PrePassRenderer._clear() / ThinDepthPeelingRenderer relies on that.
+        //
+        // attachments[i] is the attachment index to enable, or -1 to skip (see buildTextureLayout).
+        // Do NOT promote "every entry in this array is enabled" to 0xff: OIT passes layout [0] (only
+        // the depth attachment) as a length-1 array, and treating that as "all attachments" would
+        // clear the shared front/back color MRTs with the depth clear value (-99999).
+        let mask = 0;
+        for (let i = 0; i < attachments.length; i++) {
+            const attachmentIndex = attachments[i];
+            if (attachmentIndex >= 0) {
+                mask |= 1 << attachmentIndex;
+            }
+        }
+
+        // An empty layout disables color clears; it must not clear every attachment instead.
+        this._clearAttachmentMask = mask;
     }
 
     public override clearAttachments(
@@ -2889,8 +2940,7 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     public override buildTextureLayout(textureStatus: boolean[], _backBufferLayout = false): number[] {
-        // Native has no gl draw-buffer enums; return a per-attachment index list (consumers only use the
-        // length/order, and bindAttachments is a no-op).
+        // Native layouts use attachment indices instead of WebGL draw-buffer enums.
         const result: number[] = [];
         for (let i = 0; i < textureStatus.length; i++) {
             result.push(textureStatus[i] ? i : -1);
@@ -2899,11 +2949,13 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     public override restoreSingleAttachment(): void {
-        // No-op on Native (see bindAttachments).
+        // Back to the single-attachment back buffer: no masking (see bindAttachments).
+        this._clearAttachmentMask = _AllAttachmentsMask;
     }
 
     public override restoreSingleAttachmentForRenderTarget(): void {
-        // No-op on Native (see bindAttachments).
+        // Back to a single-attachment render target: no masking (see bindAttachments).
+        this._clearAttachmentMask = _AllAttachmentsMask;
     }
 
     public override generateMipMapsMultiFramebuffer(_texture: RenderTargetWrapper): void {
@@ -3436,13 +3488,14 @@ export class ThinNativeEngine extends ThinEngine {
         x?: number,
         y?: number
     ): Promise<ArrayBufferView> {
-        if (faceIndex !== undefined && faceIndex !== -1) {
-            throw new Error(`Reading cubemap faces is not supported, but faceIndex is ${faceIndex}.`);
+        if (faceIndex !== undefined && faceIndex !== -1 && (faceIndex < 0 || faceIndex > 5)) {
+            throw new Error(`Invalid cubemap face index ${faceIndex}; expected 0-5 or -1.`);
         }
 
         return (
-            this._engine
-                .readTexture(
+            (this._engine.readTexture2 ?? this._engine.readTexture)
+                .call(
+                    this._engine,
                     texture._hardwareTexture?.underlyingResource,
                     level ?? 0,
                     x ?? 0,
@@ -3451,12 +3504,14 @@ export class ThinNativeEngine extends ThinEngine {
                     height,
                     buffer?.buffer ?? null,
                     buffer?.byteOffset ?? 0,
-                    buffer?.byteLength ?? 0
+                    buffer?.byteLength ?? 0,
+                    faceIndex ?? -1
                 )
                 // eslint-disable-next-line github/no-then
                 .then((rawBuffer) => {
                     if (!buffer) {
-                        buffer = new Uint8Array(rawBuffer);
+                        // Legacy readTexture returns RGBA8; readTexture2 preserves float sources as RGBA32F.
+                        buffer = rawBuffer.byteLength === 16 * width * height ? new Float32Array(rawBuffer) : new Uint8Array(rawBuffer);
                     }
 
                     return buffer;
