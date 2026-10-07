@@ -1,5 +1,4 @@
 import { NullEngine } from "core/Engines/nullEngine";
-import { StorageBuffer } from "core/Buffers/storageBuffer";
 import { ShaderStore } from "core/Engines/shaderStore";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
@@ -955,12 +954,18 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_enableColorBlit"]();
         controller["_enableDepthBlit"]();
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
-        const parts = Object.create(StorageBuffer.prototype) as StorageBuffer;
-        vi.spyOn(parts, "update").mockImplementation(() => {});
+        // Queue writes are visible to every dispatch in the frame, so only each buffer's final contents matter.
+        const partContents = new Map<object, Float32Array>();
+        Object.assign(engine, {
+            _storageBuffers: [],
+            createStorageBuffer: () => ({}),
+            updateStorageBuffer: (buffer: object, data: Float32Array) => partContents.set(buffer, data.slice()),
+        });
         renderer["_engine"] = engine;
-        renderer["_parts"] = parts;
-        renderer["_partCount"] = 1;
-        renderer["_prevPartData"] = new Float32Array(40);
+        renderer["_partBuffers"] = [];
+        renderer["_partWriteFrames"] = [];
+        renderer["_partSlot"] = 0;
+        renderer["_prevPartData"] = new Float32Array(0);
         renderer["_accumGeneration"] = 0;
         renderer.kernelSize = GaussianSplattingMaterial.KernelSize;
         renderer.minPixelSize = GaussianSplattingMaterial.MinPixelSize;
@@ -968,9 +973,11 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
         vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
         controller["_renderer"] = renderer;
+        const dispatchedParts: object[] = [];
         const compute = vi.fn(() => {
             controller["_syncData"]();
             controller["_uploadParts"]();
+            dispatchedParts.push(renderer["_parts"]!.getBuffer());
             controller["_progressGeneration"] = renderer.accumulationVersion;
             controller["_vpMatrix"].copyFrom(scene.getTransformMatrix());
             const { width, height } = controller["_getOutputSize"]();
@@ -1049,6 +1056,8 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         mesh.render(mesh.subMeshes[0], true);
         expect(compute).toHaveBeenCalledTimes(7);
         mesh.onBeforeRenderObservable.remove(before);
+        expect(partContents.get(dispatchedParts[5])![12]).toBe(1);
+        expect(partContents.get(dispatchedParts[6])![12]).toBe(2);
 
         await vi.waitFor(() => expect(depthRenderer["_shadersLoaded"]).toBe(true));
         controller["_renderer"] = null;

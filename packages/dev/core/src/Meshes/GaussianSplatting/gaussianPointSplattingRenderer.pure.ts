@@ -151,6 +151,10 @@ export class GaussianPointSplattingRenderer {
     private _frameIndex = 0;
 
     private _parts: Nullable<StorageBuffer> = null;
+    // Queue writes land before the frame's commands run, so each differing upload in a frame gets its own slot.
+    private _partBuffers: StorageBuffer[] = [];
+    private _partWriteFrames: number[] = [];
+    private _partSlot = 0;
     private _partCount = 0;
     private _prevPartData: Float32Array = new Float32Array(0);
 
@@ -575,19 +579,46 @@ export class GaussianPointSplattingRenderer {
                 }
             }
         }
-        if (!this._parts || this._partCount !== count) {
-            this._parts?.dispose();
-            this._parts = new StorageBuffer(engine, floats * Float32Array.BYTES_PER_ELEMENT);
+        if (this._partCount !== count) {
+            this._disposePartBuffers();
             this._partCount = count;
         }
-        if (changed) {
-            if (this._prevPartData.length !== floats) {
-                this._prevPartData = new Float32Array(floats);
-            }
-            this._prevPartData.set(packed);
-            this.resetAccumulation();
+        // The current slot already holds unchanged data.
+        if (!changed) {
+            return;
         }
+        if (this._prevPartData.length !== floats) {
+            this._prevPartData = new Float32Array(floats);
+        }
+        this._prevPartData.set(packed);
+        this.resetAccumulation();
+
+        // A slot written this frame may be bound by a dispatch that has not been submitted yet.
+        const frameId = engine.frameId;
+        if (!this._parts || this._partWriteFrames[this._partSlot] === frameId) {
+            let slot = 0;
+            while (slot < this._partBuffers.length && this._partWriteFrames[slot] === frameId) {
+                slot++;
+            }
+            if (slot === this._partBuffers.length) {
+                this._partBuffers.push(new StorageBuffer(engine, floats * Float32Array.BYTES_PER_ELEMENT));
+                this._partWriteFrames.push(-1);
+            }
+            this._partSlot = slot;
+            this._parts = this._partBuffers[slot];
+        }
+        this._partWriteFrames[this._partSlot] = frameId;
         this._parts.update(packed);
+    }
+
+    private _disposePartBuffers(): void {
+        for (const buffer of this._partBuffers) {
+            buffer.dispose();
+        }
+        this._partBuffers.length = 0;
+        this._partWriteFrames.length = 0;
+        this._partSlot = 0;
+        this._parts = null;
     }
 
     private _ensurePixelBuffers(width: number, height: number, outWidth: number, outHeight: number): void {
@@ -851,8 +882,7 @@ export class GaussianPointSplattingRenderer {
             ub.dispose();
         }
         this._hiZBuildParams = [];
-        this._parts?.dispose();
-        this._parts = null;
+        this._disposePartBuffers();
         this._partCount = 0;
         this._pointCount.dispose();
         this._indirectArgs.dispose();
