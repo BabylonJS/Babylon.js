@@ -430,8 +430,12 @@ export class ThinNativeEngine extends ThinEngine {
         this._features = {
             forceBitmapOverHTMLImageElement: true,
             supportRenderAndCopyToLodForFloatTextures: false,
-            supportDepthStencilTexture: false,
-            supportShadowSamplers: false,
+            // Native can attach an explicit depth/stencil texture to a render target (see
+            // _createDepthStencilTexture) and sample it afterwards. Hardware comparison samplers are
+            // available through bgfx BGFX_SAMPLER_COMPARE_* (set via updateTextureComparisonFunction),
+            // which is what ShadowGenerator needs for FILTER_PCF / FILTER_PCSS (incl. cascaded shadows).
+            supportDepthStencilTexture: true,
+            supportShadowSamplers: true,
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: false,
             trackUbosInFrame: false,
@@ -2659,6 +2663,21 @@ export class ThinNativeEngine extends ThinEngine {
         }
     }
 
+    /**
+     * Creates a depth/stencil texture for a render target wrapper.
+     * @param size The size of the depth texture
+     * @param options The options defining the depth texture
+     * @param rtWrapper The render target wrapper the depth texture belongs to
+     * @returns The depth/stencil texture
+     */
+    public override createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+        // AbstractEngine routes cube render targets (point-light shadow maps) to _createDepthStencilCubeTexture,
+        // which only exists on the WebGL engine and drives gl.TEXTURE_CUBE_MAP directly. Native already handles
+        // cube and 2D-array targets in _createDepthStencilTexture through the wrapper's per-face framebuffers,
+        // so route every request there instead of throwing on an undefined GL context.
+        return this._createDepthStencilTexture(size, options, rtWrapper);
+    }
+
     public override _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         // TODO: handle other options?
         const generateStencil = options.generateStencil || false;
@@ -2682,6 +2701,7 @@ export class ThinNativeEngine extends ThinEngine {
         texture.width = width;
         texture.height = height;
         texture.is2DArray = layers > 0;
+        texture.isCube = !!options.isCube;
         texture.depth = layers || depth;
         texture.isReady = true;
         texture.samples = samples;
@@ -2695,32 +2715,72 @@ export class ThinNativeEngine extends ThinEngine {
             // (see createRenderTargetTexture / createRenderTargetCubeTexture). When the color RTT was built
             // without a depth buffer (e.g. cascaded shadow maps create the RTT with generateDepthBuffer=false
             // and then call createDepthStencilTexture), rebuild each per-layer framebuffer so it carries a
-            // depth/stencil attachment for the depth test. A single shared _framebufferDepthStencil would be
-            // ignored because bindFramebuffer selects _framebuffers[layer] first.
+            // *shared sampleable* depth/stencil array attachment. PCF binds the whole array as
+            // sampler2DArrayShadow; each cascade layer framebuffer writes into its own depth slice.
+            // A single shared _framebufferDepthStencil would be ignored because bindFramebuffer selects
+            // _framebuffers[layer] first.
             const colorTexture = rtWrapper.texture;
             if (colorTexture && colorTexture._hardwareTexture) {
+                const nativeColor = colorTexture._hardwareTexture.underlyingResource;
+                const nativeDepth = texture._hardwareTexture!.underlyingResource;
+                const layerCount = nativeRTWrapper._framebuffers.length;
+                const framebuffers: NativeFramebuffer[] = [];
+                for (let layer = 0; layer < layerCount; layer++) {
+                    // First call creates the multi-layer sampleable depth and aliases it into nativeDepth;
+                    // subsequent calls borrow the same depth array and attach the matching layer.
+                    framebuffers.push(this._engine.createMultiFrameBuffer([nativeColor], width, height, generateStencil, true, samples, [layer], nativeDepth));
+                }
                 // The _framebuffers setter releases the previous handles.
-                nativeRTWrapper._framebuffers = this._createLayerFramebuffers(
-                    colorTexture._hardwareTexture.underlyingResource,
-                    width,
-                    height,
-                    nativeRTWrapper._framebuffers.length,
-                    generateStencil,
-                    true,
-                    samples
-                );
+                nativeRTWrapper._framebuffers = framebuffers;
+                this._setTextureSampling(nativeDepth, getNativeSamplingMode(texture.samplingMode));
+                this.updateTextureComparisonFunction(texture, texture._comparisonFunction);
             }
             return texture;
         }
 
-        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
+        // Plain 2D render target: build a framebuffer that carries BOTH the render target's color attachment
+        // and the standalone depth/stencil texture. bindFramebuffer prefers _framebufferDepthStencil over
+        // _framebuffer, so attaching depth alone would silently drop the color target -- shadow maps would
+        // render their packed depth into nothing. The depth texture's bgfx handle is still invalid at this
+        // point, which is how CreateFrameBufferImpl recognizes a request for a readable depth attachment that
+        // it aliases back into the supplied texture so it can be sampled afterwards.
+        const colorResource = rtWrapper.texture?._hardwareTexture?.underlyingResource;
+        const nativeDepth = texture._hardwareTexture!.underlyingResource;
+        const framebuffer = this._engine.createMultiFrameBuffer(colorResource ? [colorResource] : [], width, height, generateStencil, true, samples, undefined, nativeDepth);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
+        this._setTextureSampling(nativeDepth, getNativeSamplingMode(texture.samplingMode));
+        this.updateTextureComparisonFunction(texture, texture._comparisonFunction);
         return texture;
     }
 
     /**
-     * @internal
+     * Updates a depth texture Comparison Mode and Function.
+     * @param texture The texture to set the comparison function for
+     * @param comparisonFunction The comparison function to set, 0 if no comparison required
      */
+    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
+        texture._comparisonFunction = comparisonFunction;
+        // Drive bgfx BGFX_SAMPLER_COMPARE_* so PCF/PCSS shaders (sampler2DShadow / sampler2DArrayShadow)
+        // get hardware depth compares. Engine-agnostic callers (LightingVolume) also toggle this around
+        // a copy and expect the recorded value to stay in sync even when the hardware texture is missing.
+        const nativeTexture = texture._hardwareTexture?.underlyingResource;
+        if (nativeTexture && this._engine.setTextureComparisonFunction) {
+            this._engine.setTextureComparisonFunction(nativeTexture, comparisonFunction);
+        }
+    }
+
+    /**
+     * Generates mipmaps for the given texture.
+     * @param _texture The texture to generate the mipmaps for.
+     */
+    public override generateMipmaps(_texture: InternalTexture): void {
+        // The WebGL implementation binds the texture and calls gl.generateMipmap; there is no equivalent
+        // standalone command on Babylon Native, and none is needed: a render target whose mip chain must be
+        // rebuilt is attached to its framebuffer with BGFX_RESOLVE_AUTO_GEN_MIPS (see CreateFrameBufferImpl),
+        // so bgfx regenerates the chain when the view resolves. Without this override the inherited WebGL path
+        // dereferenced a non-existent GL context (frame graph tasks call generateMipMaps explicitly).
+    }
+
     /**
      * Creates one framebuffer per layer (or cube face) of a native texture.
      * @internal
@@ -2754,6 +2814,9 @@ export class ThinNativeEngine extends ThinEngine {
         };
     }
 
+    /**
+     * @internal
+     */
     public _releaseFramebufferObjects(framebuffer: Nullable<NativeFramebuffer>): void {
         if (framebuffer) {
             // Frame graph framebuffers are shared across several render-target wrappers (see
