@@ -414,7 +414,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         canvas.className = this.props.classes.canvas;
         canvas.tabIndex = 0;
         canvas.dataset.testid = "scene-preview-canvas";
-        host.appendChild(canvas);
+        host.replaceChildren(canvas);
         this.props.globalState.scenePreviewCanvas = canvas;
         return movedAcrossDocuments;
     }
@@ -470,6 +470,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             this.props.globalState.sceneContext = null;
             this.props.globalState.sceneSource = null;
             this.props.globalState.sourceGlb = null;
+            this.props.globalState.sourceGltf = null;
         }
     }
 
@@ -534,6 +535,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         this.props.globalState.sceneContext = sceneContext;
         this.props.globalState.sceneSource = source;
         this.props.globalState.sourceGlb = null;
+        this.props.globalState.sourceGltf = null;
         this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
         this.setState({ sceneObjectCount: sceneContext.entries.length });
         return sceneContext;
@@ -759,11 +761,16 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             const { LoadSceneAsync } = await import("core/Loading/sceneLoader");
             const { FilesInputStore } = await import("core/Misc/filesInputStore");
 
-            const canvas = this.props.globalState.scenePreviewCanvas;
-            if (!canvas) {
+            const previousCanvas = this.props.globalState.scenePreviewCanvas;
+            if (!previousCanvas) {
                 throw new Error("Preview canvas not available");
             }
 
+            // Concurrent engines on one canvas share a WebGL context; disposing the old engine
+            // would invalidate the staged scene's GPU resources.
+            const canvas = previousCanvas.ownerDocument.createElement("canvas");
+            canvas.width = previousCanvas.width;
+            canvas.height = previousCanvas.height;
             const engine = new engineConstructor(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             stagedEngine = engine;
 
@@ -801,8 +808,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 throw new Error("Failed to load scene from file");
             }
 
-            // If the loaded scene has no camera, create a default one
-            scene.createDefaultCamera(true, true, true);
+            scene.activeCamera ??= scene.cameras[0] ?? null;
+            scene.createDefaultCamera(true, false, true);
+            scene.activeCamera?.attachControl(canvas, true);
             // Add a default light if the scene has none
             if (scene.lights.length === 0) {
                 scene.createDefaultLight(true);
@@ -854,11 +862,16 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         authoredBehavior,
                         externalResourceUris: GetGlbExternalResourceUris(document),
                     };
-                } catch {
+                } catch (error) {
+                    if (stagedKhrImport) {
+                        throw error;
+                    }
                     // The preview can still load files outside this patcher's supported GLB framing.
                 }
             }
-            this._setupEngineRenderLoop(scene, engine);
+            if (!this._canvasHostRef.current) {
+                throw new Error("Scene preview pane moved while loading. Drop the file again in the current preview.");
+            }
             if (
                 !stagedGraphState &&
                 previousSceneContext &&
@@ -869,8 +882,20 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 retainedCoordinator._setScene(scene, false);
             }
             this.props.globalState.sceneContext = stagedSceneContext;
+            this._attachPreviewCanvas();
+            this._setupEngineRenderLoop(scene, engine);
             this.props.globalState.sceneSource = "file";
             this.props.globalState.sourceGlb = sourceGlb;
+            this.props.globalState.sourceGltf =
+                stagedKhrImport && /\.gltf$/i.test(file.name)
+                    ? {
+                          file,
+                          externalResourceUris: GetGlbExternalResourceUris({
+                              buffers: stagedKhrImport.importResult.glTF.buffers,
+                              images: stagedKhrImport.importResult.glTF.images,
+                          }),
+                      }
+                    : null;
             this.props.globalState.snippetId = "";
             if (stagedGraphState) {
                 SerializationTools.ApplyDeserializedState(stagedGraphState, this.props.globalState);

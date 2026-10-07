@@ -1,5 +1,5 @@
 import { type GlobalState } from "./globalState";
-import { PatchKhrInteractivityGlb } from "./khrGlbBehaviorAuthoring";
+import { ExportKhrInteractivityAsset } from "./khrGlbBehaviorAuthoring";
 import { type Nullable } from "core/types";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { GetFlowGraphBlockNodeId } from "./graphSystem/blockNodeData";
@@ -57,6 +57,7 @@ function _CreateKhrExportPlanForImport(globalState: GlobalState): KHRInteractivi
     const options: Parameters<typeof CreateKHRInteractivityExportPlan>[1] = {
         document: importResult.document,
         sourceGLTF: importResult.glTF,
+        preserveSourceDocument: !!(globalState.sourceGlb || globalState.sourceGltf),
         defaultGraphIndex: importResult.document.defaultGraphIndex,
         required: importResult.glTF.extensionsRequired?.includes("KHR_interactivity") ?? false,
     };
@@ -617,7 +618,8 @@ export class SerializationTools {
     }
 
     /**
-     * Analyzes whether the active coordinator can be exported as ratified KHR_interactivity.
+     * Analyzes whether the active coordinator can be exported as KHR_interactivity.
+     * Retained assets preserve imported compatibility data instead of requiring a ratified scene re-export.
      * @param globalState editor state containing canonical import provenance
      * @returns detached representability analysis
      */
@@ -655,7 +657,8 @@ export class SerializationTools {
     }
 
     /**
-     * Exports the active canonical graph set through the Babylon glTF serializer.
+     * Exports the active graph set, patching retained imported assets without reserializing their scenes.
+     * Graphs without a retained asset use the Babylon glTF serializer.
      * The live editor graphs are analyzed and read without mutation.
      * @param globalState editor state
      * @param format glTF JSON or binary GLB
@@ -672,16 +675,14 @@ export class SerializationTools {
         if (!analysis.representable) {
             throw _CreateKhrExportError(analysis.diagnostics);
         }
-        const sourceGlb = globalState.sourceGlb;
-        if (sourceGlb) {
-            if (format !== "glb") {
-                throw new Error("Source-preserving export of an imported GLB is available only as GLB.");
-            }
+        const sourceFile = globalState.sourceGlb?.file ?? globalState.sourceGltf?.file;
+        if (sourceFile) {
+            const sourceFormat = globalState.sourceGlb ? "glb" : "gltf";
             const extension = plan.buildWithSourceIndices();
             const required = [...(plan.required ? ["KHR_interactivity"] : []), ...plan.additionalExtensionsRequired];
-            const bytes = PatchKhrInteractivityGlb(new Uint8Array(await sourceGlb.file.arrayBuffer()), extension, plan.additionalExtensionsUsed, required);
-            const fileName = sourceGlb.file.name.replace(/\.glb$/i, "-edited.glb");
-            SerializationTools._DownloadBlob(new Blob([new Uint8Array(bytes)], { type: "model/gltf-binary" }), fileName, globalState);
+            const bytes = ExportKhrInteractivityAsset(new Uint8Array(await sourceFile.arrayBuffer()), sourceFormat, format, extension, plan.additionalExtensionsUsed, required);
+            const fileName = sourceFile.name.replace(/\.(glb|gltf)$/i, `-edited.${format}`);
+            SerializationTools._DownloadBlob(new Blob([new Uint8Array(bytes)], { type: format === "glb" ? "model/gltf-binary" : "model/gltf+json" }), fileName, globalState);
             return analysis;
         }
         const serializer = (globalThis as any).BABYLON?.GLTF2Export;

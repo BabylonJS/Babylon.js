@@ -965,7 +965,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.ExtractVector2],
         inputs: {
             values: {
-                a: { name: "input", gltfType: "number" },
+                a: { name: "input", gltfType: "float2" },
             },
         },
         outputs: {
@@ -979,7 +979,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.ExtractVector3],
         inputs: {
             values: {
-                a: { name: "input", gltfType: "number" },
+                a: { name: "input", gltfType: "float3" },
             },
         },
         outputs: {
@@ -994,7 +994,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.ExtractVector4],
         inputs: {
             values: {
-                a: { name: "input", gltfType: "number" },
+                a: { name: "input", gltfType: "float4" },
             },
         },
         outputs: {

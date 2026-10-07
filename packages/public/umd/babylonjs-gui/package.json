@@ -13,7 +13,7 @@
         "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist && rimraf babylon*.* -g",
-        "test:escheck": "es-check es6 ./babylon.gui.js"
+        "test:escheck": "node ../../../../scripts/checkEcmaVersion.mjs es6 ./babylon.gui.js"
     },
     "dependencies": {
         "babylonjs": "9.29.0"
