@@ -108,4 +108,58 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         scene.dispose();
         engine.dispose();
     });
+
+    it("settles the depth sort after synchronous native sorting", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.updateData(createSplatData(4));
+
+        sortSplats.mockClear();
+        mesh.position.x = 1;
+        mesh._postToWorker(true);
+
+        expect(sortSplats).toHaveBeenCalledOnce();
+        expect(mesh._isDepthSortSettled).toBe(true);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("uploads updated splat data immediately when there is no sort worker", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.updateData(createSplatData(4));
+
+        const updateSubTextures = vi.spyOn(mesh as any, "_updateSubTextures");
+        mesh.updateData(createSplatData(4));
+
+        expect(updateSubTextures).toHaveBeenCalledOnce();
+        expect((mesh as any)._delayedTextureUpdate).toBeNull();
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("uploads updated splat data that adds spherical harmonics when there is no sort worker", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.updateData(createSplatData(4));
+        expect((mesh as any)._shTextures).toBeNull();
+
+        const textureSize = (mesh as any)._getTextureSize(4);
+        const sh = [new Uint8Array(textureSize.x * textureSize.y * 16)];
+        expect(() => mesh.updateData(createSplatData(4), sh, { flipY: true }, undefined, 1)).not.toThrow();
+
+        expect((mesh as any)._shTextures).toHaveLength(1);
+        expect((mesh as any)._delayedTextureUpdate).toBeNull();
+
+        scene.dispose();
+        engine.dispose();
+    });
 });
