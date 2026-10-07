@@ -126,6 +126,11 @@ export interface INativeEngine {
     getTextureWidth(texture: NativeTexture): number;
     getTextureHeight(texture: NativeTexture): number;
     getTextureLayerCount?(texture: NativeTexture): number;
+    /**
+     * Sets hardware depth-compare sampling on a depth texture (PCF/PCSS shadow maps).
+     * comparisonFunction is a Babylon/GL compare enum (Constants.LESS etc.); 0 disables compare mode.
+     */
+    setTextureComparisonFunction?(texture: NativeTexture, comparisonFunction: number): void;
     deleteTexture(texture: NativeTexture): void;
     readTexture(
         texture: NativeTexture,
