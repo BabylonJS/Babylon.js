@@ -21,13 +21,13 @@
     "devDependencies": {
         "@fortawesome/fontawesome-svg-core": "^7.3.1",
         "@fortawesome/free-solid-svg-icons": "^7.3.1",
-        "@fortawesome/react-fontawesome": "^3.3.1",
-        "@types/chrome": "^0.0.268",
-        "@types/react": "^18.0.0",
-        "@types/react-dom": "^18.0.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "sass": "^1.62.1",
+        "@fortawesome/react-fontawesome": "^3.5.0",
+        "@types/chrome": "^0.0.332",
+        "@types/react": "^18.3.31",
+        "@types/react-dom": "^18.3.7",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "sass": "^1.105.0",
         "@tools/smart-filters-editor-control": "^1.0.0"
     }
 }

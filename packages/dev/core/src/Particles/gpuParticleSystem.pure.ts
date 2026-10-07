@@ -233,6 +233,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public readonly maxAttractors: number;
 
+    /** Precomputed per-slot uniform names, avoiding per-attractor string concatenation every frame. */
+    private readonly _attractorUniformNames: string[] = [];
+
     /**
      * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
      * @param attractor - The attractor to add to the particle system
@@ -1144,6 +1147,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
         this.emitRateControl = !!options.emitRateControl;
         this.maxAttractors = options.maxAttractors ?? 8;
+        for (let attractorIndex = 0; attractorIndex < this.maxAttractors; attractorIndex++) {
+            this._attractorUniformNames.push("attractorPositionAndStrength[" + attractorIndex + "]");
+        }
 
         this.particleEmitterType = new BoxParticleEmitter();
 
@@ -2245,10 +2251,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
-        if (this._scene?.forceWireframe) {
-            this._engine.unbindInstanceAttributes();
-        }
-
         return rendered ? this._currentActiveCount : 0;
     }
 
@@ -2329,7 +2331,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             for (let i = 0; i < this._attractors.length; i++) {
                 const attractor = this._attractors[i];
-                const name = "attractorPositionAndStrength[" + i + "]";
+                const name = this._attractorUniformNames[i];
                 if (invWorld) {
                     const localPos = TmpVectors.Vector3[0];
                     Vector3.TransformCoordinatesToRef(attractor.position, invWorld, localPos);
@@ -2556,6 +2558,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 outparticles = this._render(this.blendMode, emitterWM);
             }
 
+            // bindDrawBuffers() binds onto the default VAO whenever the render effect differs from the one
+            // the render VAO was recorded with. Reset the instance divisors once all passes are drawn, so the
+            // next non-instanced draw (e.g. the post-process quad) does not inherit them. Resetting between
+            // the MULTIPLYADD passes would break the second pass: bindBuffers() skips rebinding when its
+            // buffers and effect are unchanged, so it would draw with divisor 0.
+            this._engine.unbindInstanceAttributes();
             this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 

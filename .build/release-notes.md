@@ -1,16 +1,67 @@
 
 ### Addons
 
-- Atmosphere: only attach the PBR material plugin to materials in the atmosphere's scene - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18934](https://github.com/BabylonJS/Babylon.js/pull/18934))
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+- MSDF Text: release TextRenderer VAO when instance buffers are resized - by [marns](https://github.com/marns) ([#18938](https://github.com/BabylonJS/Babylon.js/pull/18938))
 
 ### Core
 
-- StandardMaterial: depth pre-pass honours every alpha source, and alphaCutOff is bound for all alpha-tested materials - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18936](https://github.com/BabylonJS/Babylon.js/pull/18936))
-- Complete cube / prefiltered texture load contract - [_Bug Fix_] by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#18874](https://github.com/BabylonJS/Babylon.js/pull/18874))
-- Add root motion for animation groups: RootMotionClip and RootMotionController - by [Pryme8](https://github.com/Pryme8) ([#18908](https://github.com/BabylonJS/Babylon.js/pull/18908))
-- Use nearest sampling for Gaussian Splatting data textures - by [luokn](https://github.com/luokn) ([#18933](https://github.com/BabylonJS/Babylon.js/pull/18933))
-- Fix WGSL vPartIndex redefinition when combining Gaussian Splatting material plugins - by [raymondyfei](https://github.com/raymondyfei) ([#18931](https://github.com/BabylonJS/Babylon.js/pull/18931))
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+- Add frame graph min/max reducer and NRGE block - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18958](https://github.com/BabylonJS/Babylon.js/pull/18958))
+- perf(particles): eliminate per-frame allocations in cpu particles - by [LisovskiyIvan](https://github.com/LisovskiyIvan) ([#18946](https://github.com/BabylonJS/Babylon.js/pull/18946))
+- Add on error on EffectWrapper - by [sebavan](https://github.com/sebavan) ([#18955](https://github.com/BabylonJS/Babylon.js/pull/18955))
+- Fix previous world matrix tracking for frame graph velocity outputs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18952](https://github.com/BabylonJS/Babylon.js/pull/18952))
+- Skip point-light shading outside the light range - by [matthargett](https://github.com/matthargett) ([#18884](https://github.com/BabylonJS/Babylon.js/pull/18884))
+- Prevent TargetCamera view collapse after a coincident target - by [Shedletsky](https://github.com/Shedletsky) ([#18950](https://github.com/BabylonJS/Babylon.js/pull/18950))
+- Fix WebGPU 3D texture mipmap generation - by [RaananW](https://github.com/RaananW) ([#18941](https://github.com/BabylonJS/Babylon.js/pull/18941))
+- Fix ExtrudePolygon smoothing threshold - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18943](https://github.com/BabylonJS/Babylon.js/pull/18943))
+- Fix ArcRotateCamera movement processing twice per frame - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18942](https://github.com/BabylonJS/Babylon.js/pull/18942))
+- Fix cached texture retries and scope loader entity collection - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18939](https://github.com/BabylonJS/Babylon.js/pull/18939))
+- Document default XR entry errors for WebGPU recovery - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18940](https://github.com/BabylonJS/Babylon.js/pull/18940))
+
+### GUI
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+
+### Inspector
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
 
 ### Loaders
 
-- OBJFileLoader: Fix AssetContainer handling and add opt-in texture loading waits - by [noname0310](https://github.com/noname0310) ([#18895](https://github.com/BabylonJS/Babylon.js/pull/18895))
+- Fix STL loader mesh name filter when names are passed as an array - by [Arthur031221](https://github.com/Arthur031221) ([#18949](https://github.com/BabylonJS/Babylon.js/pull/18949))
+- Add resettable two-step glTF procedure authoring - by [matthargett](https://github.com/matthargett) ([#18947](https://github.com/BabylonJS/Babylon.js/pull/18947))
+- Fix cached texture retries and scope loader entity collection - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18939](https://github.com/BabylonJS/Babylon.js/pull/18939))
+
+### Node Editor
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+
+### Node Geometry Editor
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+
+### Node Particle Editor
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+
+### Node Render Graph Editor
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+- Add frame graph min/max reducer and NRGE block - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18958](https://github.com/BabylonJS/Babylon.js/pull/18958))
+
+### Playground
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+
+### Sandbox
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+
+### Smart Filters
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))
+
+### Viewer
+
+- chore(deps): refresh supported versions and clear security audit - by [RaananW](https://github.com/RaananW) ([#18961](https://github.com/BabylonJS/Babylon.js/pull/18961))

@@ -20,14 +20,15 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let s = textureSample(fontAtlas, fontAtlasSampler, input.atlasUV).rgb;
     let sigDist = median(s) - 0.5 + uniforms.thickness;
 
-    let afwidth = length(vec2<f32>(dpdx(sigDist), dpdy(sigDist)));
+    // The derivative length is 0 where the distance field is flat (beyond the atlas distance range), and dividing by 0 is undefined.
+    let afwidth = max(length(vec2<f32>(dpdx(sigDist), dpdy(sigDist))), 1e-5);
     let alpha = clamp(sigDist / afwidth + 0.5, 0.0, 1.0);
 
     let sigDistOutset = sigDist + uniforms.uStrokeOutsetWidth * 0.5;
     let sigDistInset = sigDist - uniforms.uStrokeInsetWidth * 0.5;
 
-    let afwidthOutset = length(vec2<f32>(dpdx(sigDistOutset), dpdy(sigDistOutset)));
-    let afwidthInset = length(vec2<f32>(dpdx(sigDistInset), dpdy(sigDistInset)));
+    let afwidthOutset = max(length(vec2<f32>(dpdx(sigDistOutset), dpdy(sigDistOutset))), 1e-5);
+    let afwidthInset = max(length(vec2<f32>(dpdx(sigDistInset), dpdy(sigDistInset))), 1e-5);
 
     let outset = clamp(sigDistOutset / afwidthOutset + 0.5, 0.0, 1.0);
     let inset = 1.0 - clamp(sigDistInset / afwidthInset + 0.5, 0.0, 1.0);
