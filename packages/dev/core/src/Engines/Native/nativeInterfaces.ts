@@ -59,9 +59,10 @@ export interface INativeEngine {
         instanceDivisor: number
     ): void;
     updateDynamicVertexBuffer(vertexBuffer: NativeData, dataBuffer: ArrayBufferLike, dataByteOffset: number, dataByteLength: number, vertexByteOffset?: number): void;
+    readTransformFeedbackBuffer?(vertexBuffer: NativeData, dataBuffer: ArrayBufferLike, dataByteOffset: number, dataByteLength: number): void;
 
-    createProgram(vertexShader: string, fragmentShader: string): NativeProgram;
-    createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: (error: Error) => void): NativeProgram;
+    createProgram(vertexShader: string, fragmentShader: string, transformFeedbackVaryings?: string[]): NativeProgram;
+    createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: (error: Error) => void, transformFeedbackVaryings?: string[]): NativeProgram;
     getUniforms(shaderProgram: NativeProgram, uniformsNames: string[]): WebGLUniformLocation[];
     getAttributes(shaderProgram: NativeProgram, attributeNames: string[]): number[];
 
@@ -443,6 +444,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETVIEWPORT: NativeData;
     readonly COMMAND_SETSCISSOR: NativeData;
     readonly COMMAND_COPYTEXTURE: NativeData;
+    readonly COMMAND_DRAWTRANSFORMFEEDBACK?: NativeData;
 }
 
 /** @internal */
