@@ -2,13 +2,15 @@ import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Texture } from "core/Materials/Textures/texture";
+import { Color3 } from "core/Maths/math.color";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader";
 import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialLoadingAdapter";
 
 // The texture processor renders on the GPU, which NullEngine can't do. Replace the async passes
 // with stubs that return a fresh output texture, matching the real (non-pass-through) contract.
-// The stubs also fail if any input texture has already been disposed.
+// The stubs also fail if any input texture has already been disposed. Passes with only constant
+// operands run on the CPU, so those are delegated to the real implementation.
 vi.mock("core/Materials/Textures/textureProcessor", async (importOriginal) => {
     const actual = await importOriginal<typeof import("core/Materials/Textures/textureProcessor")>();
     const makeResult = async (name: string, ...args: any[]) => {
@@ -28,7 +30,12 @@ vi.mock("core/Materials/Textures/textureProcessor", async (importOriginal) => {
         ExtractChannelAsync: vi.fn(makeResult),
         ExtractMaxChannelAsync: vi.fn(makeResult),
         LerpTexturesAsync: vi.fn(makeResult),
-        MultiplyTexturesAsync: vi.fn(makeResult),
+        MultiplyTexturesAsync: vi.fn(async (name: string, a: any, b: any, ...rest: any[]) =>
+            a.texture || b.texture ? await makeResult(name, a, b, ...rest) : await actual.MultiplyTexturesAsync(name, a, b, ...(rest as [any]))
+        ),
+        MultiScatterToSingleScatterAlbedoAsync: vi.fn(async (name: string, input: any, ...rest: any[]) =>
+            input.texture ? await makeResult(name, input, ...rest) : await actual.MultiScatterToSingleScatterAlbedoAsync(name, input, ...(rest as [any]))
+        ),
     };
 });
 
@@ -171,6 +178,50 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
             expect(material.transmissionWeight).toBeCloseTo(0.5);
             expect(material.subsurfaceWeight).toBeCloseTo(1);
             expect(adapter.thinWalledScatterStrengthFactor).toBeNull();
+        });
+    });
+
+    // The scattering coefficient is derived from -log(attenuationColor), which is infinite for a zero
+    // channel. The coefficients must stay finite so they don't produce NaNs when rendering.
+    describe("volumetric scatter with a zero attenuation color channel", () => {
+        function createVolumetricScatterAdapter(): { material: OpenPBRMaterial; adapter: OpenPBRMaterialLoadingAdapter } {
+            const material = new OpenPBRMaterial("mat", scene);
+            const adapter = loader._getOrCreateMaterialAdapter(material) as OpenPBRMaterialLoadingAdapter;
+            adapter.configureTransmission();
+            adapter.transmissionWeight = 1;
+            adapter.configureVolume();
+            adapter.transmissionDepth = 1;
+            adapter.transmissionColor = new Color3(0, 0.5, 1);
+            adapter.transmissionScatter = new Color3(0.5, 0.5, 0.5);
+            adapter.volumetricScatterStrengthFactor = 1;
+            return { material, adapter };
+        }
+
+        const expectFinite = (color: Color3) => {
+            for (const value of color.asArray()) {
+                expect(Number.isFinite(value)).toBe(true);
+            }
+        };
+
+        it("produces finite constant scatter coefficients", async () => {
+            const { material, adapter } = createVolumetricScatterAdapter();
+
+            await adapter.finalizeAsync(loader);
+
+            expect(material.transmissionScatterTexture).toBeNull();
+            expectFinite(material.transmissionScatter);
+            expect(material.transmissionScatter.r).toBeGreaterThan(0);
+        });
+
+        it("produces finite textured scatter coefficients", async () => {
+            const { material, adapter } = createVolumetricScatterAdapter();
+            adapter.transmissionScatterTexture = new Texture(null, scene);
+
+            await adapter.finalizeAsync(loader);
+
+            expect(material.transmissionScatterTexture).not.toBeNull();
+            expectFinite(material.transmissionScatter);
+            expect(material.transmissionScatter.r).toBeGreaterThan(0);
         });
     });
 });
