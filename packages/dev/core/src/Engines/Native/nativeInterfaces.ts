@@ -76,7 +76,8 @@ export interface INativeEngine {
         srgb: boolean,
         samples: number,
         isCube?: boolean,
-        numLayers?: number
+        numLayers?: number,
+        is3D?: boolean
     ): void;
     loadTexture(texture: NativeTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: NativeTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean, srgb: boolean): void;
@@ -141,6 +142,7 @@ export interface INativeEngine {
 
     /** Optional float-preserving readback; readTexture retains its RGBA8 contract. */
     readTexture2?: INativeEngine["readTexture"];
+
     createImageBitmap(data: ArrayBuffer | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
@@ -151,15 +153,20 @@ export interface INativeEngine {
         generateStencilBuffer: boolean,
         generateDepthBuffer: boolean,
         samples: number,
-        layer?: number
+        layer?: number,
+        mip?: number,
+        autoGenerateMips?: boolean
     ): NativeFramebuffer;
-    createMultiFrameBuffer?(
-        textures: NativeTexture[],
+
+    createMultiFrameBuffer(
+        colorTextures: NativeTexture[],
         width: number,
         height: number,
         generateStencilBuffer: boolean,
         generateDepthBuffer: boolean,
-        samples: number
+        samples: number,
+        layers?: number[],
+        explicitDepthTexture?: NativeTexture
     ): NativeFramebuffer;
 
     getRenderWidth(): number;
@@ -343,6 +350,7 @@ interface INativeEngineConstructor {
     readonly ALPHA_EQUATION_MAX?: number;
     readonly ALPHA_EQUATION_MIN?: number;
     readonly ALPHA_EQUATION_DARKEN?: number;
+
     readonly STENCIL_TEST_LESS: number;
     readonly STENCIL_TEST_LEQUAL: number;
     readonly STENCIL_TEST_EQUAL: number;
