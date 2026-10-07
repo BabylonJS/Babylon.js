@@ -21,6 +21,11 @@ export type NativeFrameStats = {
 
 /** @internal */
 export interface INativeEngine {
+    /**
+     * True when the runtime expands line-loop and triangle-fan draws, which modern rendering APIs lack.
+     */
+    readonly supportsPrimitiveModeExpansion?: boolean;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
