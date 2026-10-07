@@ -437,7 +437,11 @@ export class ThinNativeEngine extends ThinEngine {
             supportDepthStencilTexture: true,
             supportShadowSamplers: true,
             uniformBufferHardCheckMatrix: false,
-            allowTexturePrefiltering: false,
+            // Native supports GPU cube prefiltering (HDRFiltering / HDRIrradianceFiltering): the render path
+            // binds a specific cube-face + mip via bindFramebuffer(faceIndex, lodLevel) and convolves the
+            // environment per-roughness. Required so OpenPBR/PBR IBL scenes get real prefiltered radiance
+            // (and irradiance) instead of black/energy-lossy CPU-SH fallbacks.
+            allowTexturePrefiltering: true,
             trackUbosInFrame: false,
             checkUbosContentBeforeUpload: false,
             // Cascaded shadow maps render into 2D-array render targets, one framebuffer per layer.
