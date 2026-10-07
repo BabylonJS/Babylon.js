@@ -1056,6 +1056,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public set subsurfaceWeight(value: number) {
         this._material.subSurface.isTranslucencyEnabled = value > 0;
         this._material.subSurface.translucencyIntensity = value;
+        this._material.subSurface.refractionIntensity = 1.0 - value;
     }
 
     /**
