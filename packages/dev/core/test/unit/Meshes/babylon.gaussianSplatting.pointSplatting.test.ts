@@ -1,4 +1,5 @@
 import { NullEngine } from "core/Engines/nullEngine";
+import { StorageBuffer } from "core/Buffers/storageBuffer";
 import { ShaderStore } from "core/Engines/shaderStore";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
@@ -944,6 +945,8 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
         const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        mesh.updateData(new ArrayBuffer(32));
         const controller = CreateController(mesh);
         const depthRenderer = scene.enableDepthRenderer(camera);
         controller["_colorMode"] = true;
@@ -952,9 +955,23 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         controller["_enableColorBlit"]();
         controller["_enableDepthBlit"]();
         const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        const parts = Object.create(StorageBuffer.prototype) as StorageBuffer;
+        vi.spyOn(parts, "update").mockImplementation(() => {});
+        renderer["_engine"] = engine;
+        renderer["_parts"] = parts;
+        renderer["_partCount"] = 1;
+        renderer["_prevPartData"] = new Float32Array(40);
+        renderer["_accumGeneration"] = 0;
+        renderer.kernelSize = GaussianSplattingMaterial.KernelSize;
+        renderer.minPixelSize = GaussianSplattingMaterial.MinPixelSize;
+        renderer.compensation = GaussianSplattingMaterial.Compensation;
         vi.spyOn(renderer, "supportsWorkload").mockReturnValue(true);
+        vi.spyOn(renderer, "updateSplats").mockImplementation(() => {});
         controller["_renderer"] = renderer;
         const compute = vi.fn(() => {
+            controller["_syncData"]();
+            controller["_uploadParts"]();
+            controller["_progressGeneration"] = renderer.accumulationVersion;
             controller["_vpMatrix"].copyFrom(scene.getTransformMatrix());
             const { width, height } = controller["_getOutputSize"]();
             controller["_computedWidth"] = width;
@@ -1017,6 +1034,21 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
         expect(compute).toHaveBeenCalledTimes(5);
         expect(classic).not.toHaveBeenCalled();
+
+        const before = mesh.onBeforeRenderObservable.add(() => {
+            mesh.position.x = engine.currentRenderPassId === depthRenderer.getDepthMap().renderPassId ? 1 : 2;
+        });
+        engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
+        mesh.render(mesh.subMeshes[0], false);
+        expect(compute).toHaveBeenCalledTimes(6);
+        expect(renderer["_prevPartData"][12]).toBe(1);
+        engine.currentRenderPassId = camera.outputRenderTarget.renderPassId;
+        mesh.render(mesh.subMeshes[0], true);
+        expect(compute).toHaveBeenCalledTimes(7);
+        expect(renderer["_prevPartData"][12]).toBe(2);
+        mesh.render(mesh.subMeshes[0], true);
+        expect(compute).toHaveBeenCalledTimes(7);
+        mesh.onBeforeRenderObservable.remove(before);
 
         await vi.waitFor(() => expect(depthRenderer["_shadersLoaded"]).toBe(true));
         controller["_renderer"] = null;
