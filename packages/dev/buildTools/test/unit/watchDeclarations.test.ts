@@ -82,7 +82,7 @@ describe("declaration directory watchers", () => {
     });
 
     it.each(["ts", "tsx"])(
-        "rebuilds declaration inputs for added, changed and removed nested %s sources",
+        "rebuilds declaration inputs for added, changed and removed nested %s source events",
         async (extension) => {
             externalArgs.push("--watch-inputs");
             fs.mkdirSync("packages/fixture/src/nested");
@@ -92,9 +92,25 @@ describe("declaration directory watchers", () => {
                 vi.mocked(watch).mock.results.map((result) => (result.type === "return" ? new Promise<void>((resolve) => result.value.once("ready", resolve)) : Promise.resolve()))
             );
             expect(spawn).not.toHaveBeenCalled();
+            const sourceWatcherResult = vi.mocked(watch).mock.results[1];
+            if (sourceWatcherResult.type !== "return") {
+                throw new Error("Source watcher was not created");
+            }
+            const sourceWatcher = sourceWatcherResult.value;
+            const sourceWatcherOptions = vi.mocked(watch).mock.calls[1][1];
+            expect(sourceWatcherOptions?.ignoreInitial).toBe(true);
+            const ignored = sourceWatcherOptions?.ignored;
+            if (typeof ignored !== "function") {
+                throw new Error("Source watcher must use a file filter");
+            }
+            const fileStats = fs.statSync(`packages/fixture/src/existing.${extension}`);
+            const sourceFile = path.join(tempDir, `packages/fixture/src/nested/new.${extension}`);
+            expect(ignored(sourceFile, fileStats)).toBe(false);
+            expect(ignored(path.join(tempDir, "packages/fixture/src/nested/ignored.json"), fileStats)).toBe(true);
+            expect(ignored(path.join(tempDir, "packages/fixture/src/nested"), fs.statSync("packages/fixture/src/nested"))).toBe(false);
 
-            const expectBuild = async (count: number) => {
-                await vi.waitFor(() => expect(spawn).toHaveBeenCalledTimes(count), { timeout: 5000 });
+            const expectBuild = (count: number) => {
+                expect(spawn).toHaveBeenCalledTimes(count);
                 expect(spawn).toHaveBeenLastCalledWith(
                     "npx",
                     ["tsc", "-b", "packages/fixture/tsconfig.build.json", "--emitDeclarationOnly", "--pretty", "false"],
@@ -105,14 +121,16 @@ describe("declaration directory watchers", () => {
                     result.value.emit("close", 0);
                 }
             };
-            const sourceFile = `packages/fixture/src/nested/new.${extension}`;
-            fs.writeFileSync("packages/fixture/src/nested/ignored.json", "{}");
-            fs.writeFileSync(sourceFile, "export class Example {}");
-            await expectBuild(1);
-            fs.writeFileSync(sourceFile, "export class Changed { value: number; }");
-            await expectBuild(2);
-            fs.unlinkSync(sourceFile);
-            await expectBuild(3);
+            sourceWatcher.emit("all", "add", path.join(tempDir, "packages/fixture/src/nested/ignored.json"));
+            sourceWatcher.emit("all", "addDir", sourceFile);
+            expect(spawn).not.toHaveBeenCalled();
+            // Test event handling independently of filesystem polling startup.
+            sourceWatcher.emit("all", "add", sourceFile);
+            expectBuild(1);
+            sourceWatcher.emit("all", "change", sourceFile);
+            expectBuild(2);
+            sourceWatcher.emit("all", "unlink", sourceFile);
+            expectBuild(3);
             expect(vi.mocked(watch).mock.calls[1][0]).toEqual([path.join(tempDir, "packages/fixture/src")]);
         },
         15000
