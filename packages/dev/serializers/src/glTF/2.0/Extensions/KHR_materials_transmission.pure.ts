@@ -179,11 +179,15 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     }
                 }
 
+                // Choose the color space from the source base color texture rather than baseColorTexture: the merged
+                // texture copies the sampled values unchanged, so it keeps the source's encoding (linear when the
+                // source uses a hardware sRGB buffer) even though its own gammaSpace flag does not reflect that.
+                const baseColorSpace = babylonMaterial.baseColorTexture?.gammaSpace ? TextureColorSpace.SRGB : TextureColorSpace.Linear;
                 const colorOp = CreateTextureWithFactorOperand(
                     baseColorTexture,
                     new Color4(babylonMaterial.baseColor.r, babylonMaterial.baseColor.g, babylonMaterial.baseColor.b, geometryOpacity),
                     TextureChannel.RGBA,
-                    TextureColorSpace.SRGB
+                    baseColorSpace
                 );
                 let transOp: ITextureProcessOperand = CreateTextureWithFactorOperand(
                     transWeightResult.texture ?? null,
@@ -226,7 +230,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                           babylonMaterial.transmissionColorTexture,
                           new Color4(babylonMaterial.transmissionColor.r, babylonMaterial.transmissionColor.g, babylonMaterial.transmissionColor.b, 1.0),
                           TextureChannel.RGBA,
-                          TextureColorSpace.SRGB
+                          babylonMaterial.transmissionColorTexture?.gammaSpace ? TextureColorSpace.SRGB : TextureColorSpace.Linear
                       );
                 const baseColorResult = await LerpTexturesAsync(
                     `base color (${babylonMaterial.name})`,

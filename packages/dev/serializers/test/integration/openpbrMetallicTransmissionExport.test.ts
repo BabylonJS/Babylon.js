@@ -185,4 +185,69 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
         expect(result.hasBaseColorTexture).toBe(true);
         expect(result.baseColorTexCoord).toBe(0);
     });
+
+    // The rebaked base color must decode the source base color according to its gammaSpace. A texture in a
+    // hardware sRGB buffer is already linear when sampled, so decoding it again would darken the export.
+    // With an opacity texture, the base color is first merged into an intermediate texture that keeps the
+    // source encoding, so that path must use the source texture's color space too.
+    for (const useSRGBBuffer of [false, true]) {
+        for (const withOpacityTexture of [false, true]) {
+            test(`rebaked base color texels are correct (sRGB buffer: ${useSRGBBuffer}, opacity texture: ${withOpacityTexture})`, async () => {
+                const result = await page.evaluate(
+                    async ({ useSRGBBuffer, withOpacityTexture }) => {
+                        const scene = window.scene!;
+                        const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                        const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                        const UNSIGNED_BYTE = BABYLON.Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                        const solid = (value: number, srgb: boolean) =>
+                            new BABYLON.RawTexture(new Uint8Array(16).fill(value), 2, 2, RGBA, scene, false, false, NEAREST, UNSIGNED_BYTE, undefined, srgb);
+
+                        const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                        const mat = new BABYLON.OpenPBRMaterial("srgbBaseColor", scene);
+                        mat.geometryThinWalled = 1;
+                        mat.baseColor = BABYLON.Color3.White();
+                        const baseColorTexture = solid(128, useSRGBBuffer);
+                        baseColorTexture.name = "baseColor";
+                        mat.baseColorTexture = baseColorTexture;
+                        if (withOpacityTexture) {
+                            const opacityTexture = solid(255, false);
+                            opacityTexture.name = "opacity";
+                            mat.geometryOpacityTexture = opacityTexture;
+                        }
+                        mat.transmissionWeight = 0.5;
+                        mat.transmissionColor = BABYLON.Color3.White();
+                        box.material = mat;
+
+                        const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "srgb");
+                        const json = JSON.parse(gltf.files["srgb.gltf"] as string);
+                        const baseColorInfo = json.materials[0].pbrMetallicRoughness.baseColorTexture;
+                        const uri = json.images[json.textures[baseColorInfo.index].source].uri as string;
+                        const bitmap = await createImageBitmap(gltf.files[uri] as Blob, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+                        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                        const context = canvas.getContext("2d")!;
+                        context.drawImage(bitmap, 0, 0);
+                        const texel = Array.from(context.getImageData(0, 0, 1, 1).data);
+                        return {
+                            supportsSRGBBuffers: !!scene.getEngine().getCaps().supportSRGBBuffers,
+                            gammaSpace: baseColorTexture.gammaSpace,
+                            texel,
+                        };
+                    },
+                    { useSRGBBuffer, withOpacityTexture }
+                );
+
+                if (useSRGBBuffer) {
+                    expect(result.supportsSRGBBuffers).toBe(true);
+                }
+                expect(result.gammaSpace).toBe(!useSRGBBuffer);
+                // lerp(decode(128), white, 0.5), encoded as sRGB.
+                const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+                const toSRGB = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+                const expected = toSRGB(toLinear(128 / 255) * 0.5 + 0.5) * 255;
+                for (let i = 0; i < 3; i++) {
+                    expect(Math.abs(result.texel[i] - expected)).toBeLessThanOrEqual(2);
+                }
+            });
+        }
+    }
 });

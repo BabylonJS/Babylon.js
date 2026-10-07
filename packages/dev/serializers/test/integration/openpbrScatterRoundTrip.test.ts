@@ -169,4 +169,66 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
         const maxScatter = Math.max(result.transmissionScatter![0], result.transmissionScatter![1], result.transmissionScatter![2]);
         expect(maxScatter).toBeGreaterThan(0);
     });
+
+    // The importer decodes the multi-scatter color texture before converting it to single-scatter albedo.
+    // With hardware sRGB buffers the sampled texture is already linear, so decoding it again would darken
+    // the scattering. Both loader settings must reproduce the original per-texel transmission scatter.
+    for (const useSRGBBuffers of [false, true]) {
+        test(`volumetric scatter texels round-trip (useSRGBBuffers: ${useSRGBBuffers})`, async () => {
+            const result = await page.evaluate(async (useSRGBBuffers) => {
+                const scene = window.scene!;
+                const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+
+                const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                const mat = new BABYLON.OpenPBRMaterial("volScatter", scene);
+                mat.geometryThinWalled = 0;
+                mat.transmissionWeight = 1;
+                mat.subsurfaceWeight = 0;
+                mat.transmissionDepth = 1.0;
+                mat.geometryThickness = 1.0;
+                mat.transmissionColor = new BABYLON.Color3(0.9, 0.7, 0.5);
+                mat.transmissionScatter = new BABYLON.Color3(0.08, 0.12, 0.2);
+                mat.transmissionScatterTexture = new BABYLON.RawTexture(new Uint8Array(16).fill(160), 2, 2, RGBA, scene, false, false, NEAREST);
+                box.material = mat;
+
+                const glb = await BABYLON.GLTF2Export.GLBAsync(scene, "rt");
+                const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
+
+                const scene2 = new BABYLON.Scene(scene.getEngine());
+                type GLTFFileLoader = { useOpenPBR: boolean; useSRGBBuffers: boolean; whenCompleteAsync: () => Promise<void> };
+                let gltfLoader: GLTFFileLoader | null = null;
+                BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
+                    if (loader.name === "gltf") {
+                        gltfLoader = loader as unknown as GLTFFileLoader;
+                        gltfLoader.useOpenPBR = true;
+                        gltfLoader.useSRGBBuffers = useSRGBBuffers;
+                    }
+                });
+                await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
+                await gltfLoader!.whenCompleteAsync();
+                URL.revokeObjectURL(url);
+
+                const reMat = scene2.materials.find((m) => m.getClassName() === "OpenPBRMaterial") as any;
+                const texture = reMat.transmissionScatterTexture as InstanceType<typeof BABYLON.BaseTexture> | null;
+                const pixels = texture ? ((await texture.readPixels()) as Uint8Array) : null;
+                return {
+                    supportsSRGBBuffers: !!scene.getEngine().getCaps().supportSRGBBuffers,
+                    texel: pixels ? Array.from(pixels.slice(0, 3)) : null,
+                };
+            }, useSRGBBuffers);
+
+            if (useSRGBBuffers) {
+                expect(result.supportsSRGBBuffers).toBe(true);
+            }
+            expect(result.texel).not.toBeNull();
+            // The imported texture holds the single-scatter albedo: scatter / extinction, where the
+            // extinction is -log(transmissionColor) and the original scatter is the factor times the texel.
+            const extinction = [0.9, 0.7, 0.5].map((c) => -Math.log(c));
+            const albedo = [0.08, 0.12, 0.2].map((s, i) => (s * 160) / 255 / extinction[i]);
+            for (let i = 0; i < 3; i++) {
+                expect(Math.abs(result.texel![i] - albedo[i] * 255)).toBeLessThanOrEqual(3);
+            }
+        });
+    }
 });

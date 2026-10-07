@@ -20,6 +20,17 @@ import {
 } from "core/Materials/Textures/textureProcessor";
 
 /**
+ * Returns the color space to sample a color texture in. Textures loaded with hardware sRGB buffers
+ * already return linear values (gammaSpace is false), so they must not be decoded a second time.
+ * Only use this for color textures; data textures report gammaSpace as true but are linear.
+ * @param texture The color texture to be sampled
+ * @returns The texture color space to use for the operand
+ */
+function GetColorTextureSpace(texture: Nullable<BaseTexture>): TextureColorSpace {
+    return texture?.gammaSpace ? TextureColorSpace.SRGB : TextureColorSpace.Linear;
+}
+
+/**
  * Material Loading Adapter for OpenPBR materials that provides a unified OpenPBR-like interface.
  */
 export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
@@ -1379,7 +1390,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             const scaledMultiScatter = await MultiplyTexturesAsync(
                 `multi-scatter (${this._material.name})`,
                 CreateTextureWithFactorOperand(strengthTex, new Color4(scatterStrength, scatterStrength, scatterStrength, 1.0), TextureChannel.A),
-                CreateTextureWithFactorOperand(colorTex, colorFactor.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
+                CreateTextureWithFactorOperand(colorTex, colorFactor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(colorTex)),
                 this._material.getScene()
             );
             const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(
@@ -1479,13 +1490,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this.specularRoughnessTexture = newRoughnessTexture.texture;
             this.specularRoughness = newRoughnessTexture.factor ? newRoughnessTexture.factor.r : 1.0;
 
-            // Metallic = max(linearize(specular).rgb). The specular texture is sRGB so we must
-            // linearize it first (TextureColorSpace.SRGB). The factor is already linear per convention.
+            // Metallic = max(linearize(specular).rgb). The specular texture is sRGB so we must linearize it
+            // first, unless it was loaded into an sRGB buffer. The factor is already linear per convention.
             // We store metallic as linear (no outputColorSpace) because it is a data/scalar value;
             // encoding it as sRGB would corrupt it when it is used as the lerp t below.
             const newMetallic = await ExtractMaxChannelAsync(
                 "metallicTexture (" + this._material.name + ")",
-                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
+                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(this.specularColorTexture)),
                 this._material.getScene(),
                 false,
                 TextureColorSpace.SRGB,
@@ -1503,8 +1514,8 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             // material (baseMetalnessTexture) and must not be released after the lerp pass.
             const newBaseColor = await LerpTexturesAsync(
                 "newBaseColor (" + this._material.name + ")",
-                CreateTextureWithFactorOperand(this.baseColorTexture, this.baseColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
-                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
+                CreateTextureWithFactorOperand(this.baseColorTexture, this.baseColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(this.baseColorTexture)),
+                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(this.specularColorTexture)),
                 { ...newMetallic, dispose: undefined, colorSpace: TextureColorSpace.Linear },
                 this._material.getScene(),
                 TextureColorSpace.SRGB,
@@ -1580,7 +1591,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             LerpTexturesAsync(
                 "lerpExistingCoat",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
-                CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
+                CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(origCoatColorTexture)),
                 CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
                 this._material.getScene(),
                 TextureColorSpace.SRGB
@@ -1588,7 +1599,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             LerpTexturesAsync(
                 "lerpSurfaceColor",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
-                CreateTextureWithFactorOperand(colorTexture, color.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
+                CreateTextureWithFactorOperand(colorTexture, color.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(colorTexture)),
                 CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
                 this._material.getScene(),
                 TextureColorSpace.SRGB
