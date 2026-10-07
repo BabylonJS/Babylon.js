@@ -328,11 +328,6 @@ function _DetectDataCycles(allBlocks: FlowGraphBlock[], addIssue: (issue: IFlowG
         color.set(block.uniqueId, white);
     }
 
-    const blockMap = new Map<string, FlowGraphBlock>();
-    for (const block of allBlocks) {
-        blockMap.set(block.uniqueId, block);
-    }
-
     const reportedCycleBlocks = new Set<string>();
 
     function dfs(block: FlowGraphBlock): boolean {
