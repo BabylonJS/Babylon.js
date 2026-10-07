@@ -65,6 +65,11 @@ export const HelpTopics: IHelpTopic[] = [
 <p>If the playground builds its flow graph from a snippet (e.g. <code>ParseFlowGraphCoordinatorFromSnippetAsync</code>), that flow graph is automatically opened in the editor for editing. Saving it to the snippet server then publishes a new version of that same snippet.</p>`,
             },
             {
+                heading: "Loading a Scene from File",
+                html: `<p>Drop a <code>.glb</code>, <code>.gltf</code>, or <code>.babylon</code> file onto the <strong>Scene Preview</strong> pane. For files that reference separate buffers or textures, drop all files together.</p>
+<p>The preview preserves the scene's active camera, or selects its first imported camera if none is active. A default orbit camera is created only when the scene has no camera. If loading fails, the previous preview remains available.</p>`,
+            },
+            {
                 heading: "Saving and Loading Graphs",
                 html: `<ul>
 <li><b>Save to file</b> — Downloads a <code>flowGraph.json</code> file to your machine.</li>
