@@ -804,6 +804,26 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         return this._outputSize;
     }
 
+    /** Refreshes inputs baked into the point result, including changes made by per-pass mesh callbacks. */
+    private _syncRenderInputs(): void {
+        this._syncData();
+        if (this._splatCount === 0) {
+            return;
+        }
+        const material = this._mesh.material as Nullable<GaussianSplattingMaterial>;
+        const kernelSize = material?.kernelSize || GaussianSplattingMaterial.KernelSize;
+        const minPixelSize = material ? material.minPixelSize : GaussianSplattingMaterial.MinPixelSize;
+        const compensation = material?.compensation ?? GaussianSplattingMaterial.Compensation;
+        const renderer = this._renderer!;
+        if (renderer.kernelSize !== kernelSize || renderer.minPixelSize !== minPixelSize || renderer.compensation !== compensation) {
+            renderer.kernelSize = kernelSize;
+            renderer.minPixelSize = minPixelSize;
+            renderer.compensation = compensation;
+            renderer.resetAccumulation();
+        }
+        this._uploadParts();
+    }
+
     /** Runs compute immediately before a point compositor and binds the result to both blit materials. */
     private _runCompute(): void {
         this._resultReady = false;
@@ -824,7 +844,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         if (!this._isWorkloadSupported()) {
             return;
         }
-        this._syncData();
+        this._syncRenderInputs();
         if (this._splatCount === 0) {
             return;
         }
@@ -861,18 +881,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer.rightHandedSystem = this._scene.useRightHandedSystem;
         this._renderer.isOrthographic = Math.abs(projection.m[15] - 1) < 0.001;
         const gsMaterial = this._mesh.material as Nullable<GaussianSplattingMaterial>;
-        const kernelSize = gsMaterial?.kernelSize || GaussianSplattingMaterial.KernelSize;
-        const minPixelSize = gsMaterial ? gsMaterial.minPixelSize : GaussianSplattingMaterial.MinPixelSize;
-        const compensation = gsMaterial?.compensation ?? GaussianSplattingMaterial.Compensation;
-        const renderer = this._renderer;
-        if (renderer.kernelSize !== kernelSize || renderer.minPixelSize !== minPixelSize || renderer.compensation !== compensation) {
-            renderer.kernelSize = kernelSize;
-            renderer.minPixelSize = minPixelSize;
-            renderer.compensation = compensation;
-            renderer.resetAccumulation();
-        }
 
-        this._uploadParts();
         const farZ = camera.ignoreCameraMaxZ ? 0 : camera.maxZ;
         const [vzMin, vzMax] = this._viewZSpan(view.m, camera.minZ, farZ, !_HasGaussianPointSplattingProjectedDepth(projection));
         this._renderer.setCamera(view, this._vpMatrix, camera.minZ, farZ, focalX, focalY, camPos.x, camPos.y, camPos.z, vzMin, vzMax);
@@ -1052,6 +1061,12 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const colorPass = this._colorMode && this._isMainColorPass();
         const depthPass = this._depthMode && this._isDepthPass();
         const { width, height } = this._getOutputSize();
+        if (this._resultReady && this._renderer) {
+            this._syncRenderInputs();
+            if (this._renderer.accumulationVersion !== this._progressGeneration) {
+                this._resultReady = false;
+            }
+        }
         // Compute only after the pass has established its actual matrices. Matching color/depth passes share it.
         if (!this._resultReady || !this._vpMatrix.equalsWithEpsilon(this._scene.getTransformMatrix(), 1e-5) || this._computedWidth !== width || this._computedHeight !== height) {
             this._runCompute();
