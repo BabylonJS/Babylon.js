@@ -67,6 +67,47 @@ export function getNativeTextureFormat(format: number, type: number): number {
         case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
             return _native.Engine.TEXTURE_FORMAT_ETC2A;
 
+        case Constants.TEXTUREFORMAT_R16_UNORM:
+            if (type === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
+                return _native.Engine.TEXTURE_FORMAT_R16;
+            }
+            break;
+        case Constants.TEXTUREFORMAT_RG16_UNORM:
+            if (type === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
+                return _native.Engine.TEXTURE_FORMAT_RG16;
+            }
+            break;
+        case Constants.TEXTUREFORMAT_RGB16_UNORM:
+            if (type === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
+                return _native.Engine.TEXTURE_FORMAT_RGBA16;
+            }
+            break;
+        case Constants.TEXTUREFORMAT_RGBA16_UNORM:
+            if (type === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
+                return _native.Engine.TEXTURE_FORMAT_RGBA16;
+            }
+            break;
+        case Constants.TEXTUREFORMAT_R16_SNORM:
+            if (type === Constants.TEXTURETYPE_SHORT) {
+                return _native.Engine.TEXTURE_FORMAT_R16S;
+            }
+            break;
+        case Constants.TEXTUREFORMAT_RG16_SNORM:
+            if (type === Constants.TEXTURETYPE_SHORT) {
+                return _native.Engine.TEXTURE_FORMAT_RG16S;
+            }
+            break;
+        case Constants.TEXTUREFORMAT_RGB16_SNORM:
+            if (type === Constants.TEXTURETYPE_SHORT) {
+                return _native.Engine.TEXTURE_FORMAT_RGBA16S;
+            }
+            break;
+        case Constants.TEXTUREFORMAT_RGBA16_SNORM:
+            if (type === Constants.TEXTURETYPE_SHORT) {
+                return _native.Engine.TEXTURE_FORMAT_RGBA16S;
+            }
+            break;
+
         case Constants.TEXTUREFORMAT_RGB: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_BYTE:
@@ -77,6 +118,16 @@ export function getNativeTextureFormat(format: number, type: number): number {
                     return _native.Engine.TEXTURE_FORMAT_RGB8I;
                 case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
                     return _native.Engine.TEXTURE_FORMAT_RGB8U;
+                // Like ANGLE on D3D, RGB float formats are stored as RGBA; Native widens uploads.
+                case Constants.TEXTURETYPE_FLOAT:
+                    return _native.Engine.TEXTURE_FORMAT_RGBA32F;
+                case Constants.TEXTURETYPE_HALF_FLOAT:
+                    return _native.Engine.TEXTURE_FORMAT_RGBA16F;
+                // Basis fallback path (LoadTextureFromTranscodeResult) uploads RGB565.
+                // WebGL RGB565 packs R in the high bits; on D3D/bgfx that layout
+                // matches B5G6R5 (R5G6B5 swaps R/B → yellow becomes cyan).
+                case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return _native.Engine.TEXTURE_FORMAT_B5G6R5;
             }
             break;
         }
@@ -204,7 +255,12 @@ export function getNativeAddressMode(wrapMode: number): number {
         case Constants.TEXTURE_MIRROR_ADDRESSMODE:
             return _native.Engine.ADDRESS_MODE_MIRROR;
         default:
-            throw new Error("Unexpected wrap mode: " + wrapMode + ".");
+            // Match the WebGL engine, whose _getTextureWrapMode defaults any unrecognized value to REPEAT
+            // (it never throws). Babylon sometimes leaves a non-numeric wrap value on a texture's third
+            // (wrapR/W) axis, which WebGL only reads for 3D/2D-array textures and otherwise ignores; Native
+            // reads all three axes, so throwing here would crash render paths (e.g. prepass/geometry buffer)
+            // that WebGL renders fine. Default to WRAP for parity instead.
+            return _native.Engine.ADDRESS_MODE_WRAP;
     }
 }
 

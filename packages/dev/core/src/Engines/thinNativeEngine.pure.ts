@@ -7,6 +7,8 @@ import { type Scene } from "../scene.pure";
 import { type VertexBuffer } from "../Buffers/buffer.pure";
 import { RegisterBufferAlign } from "../Buffers/buffer.align.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { type IInternalTextureLoader } from "../Materials/Textures/Loaders/internalTextureLoader";
+import { _IESTextureLoader } from "../Materials/Textures/Loaders/iesTextureLoader";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type VideoTexture } from "../Materials/Textures/videoTexture.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
@@ -215,6 +217,7 @@ const remappedAttributesNames: string[] = [];
  * the clear. Native treats this value specially and skips the bgfx color-palette clear path.
  */
 const _AllAttachmentsMask = 0xff;
+
 /** @internal */
 export class ThinNativeEngine extends ThinEngine {
     // This must match the protocol version in NativeEngine.cpp
@@ -411,7 +414,7 @@ export class ThinNativeEngine extends ThinEngine {
             texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
             disableMorphTargetTexture: false,
             parallelShaderCompile: { COMPLETION_STATUS_KHR: 0 },
-            textureNorm16: false,
+            textureNorm16: true,
             blendParametersPerTarget: false,
             dualSourceBlending: false,
             supportReadWriteStorageTextures: false,
@@ -2041,6 +2044,75 @@ export class ThinNativeEngine extends ThinEngine {
         return texture;
     }
 
+    public override createRawTexture3D(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
+    ): InternalTexture {
+        const texture = new InternalTexture(this, InternalTextureSource.Raw3D);
+
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.baseDepth = depth;
+        texture.width = width;
+        texture.height = height;
+        texture.depth = depth;
+        texture.format = format;
+        texture.type = textureType;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.is3D = true;
+
+        if (texture._hardwareTexture) {
+            const nativeTexture = texture._hardwareTexture.underlyingResource;
+            this._engine.loadRawTexture3D(nativeTexture, data, width, height, depth, getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
+
+            const filter = getNativeSamplingMode(samplingMode);
+            this._setTextureSampling(nativeTexture, filter);
+        }
+
+        texture.isReady = true;
+
+        this._internalTexturesCache.push(texture);
+        return texture;
+    }
+
+    public override updateRawTexture3D(
+        texture: Nullable<InternalTexture>,
+        bufferView: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression: Nullable<string> = null,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
+    ): void {
+        if (!texture) {
+            return;
+        }
+
+        if (bufferView && texture._hardwareTexture) {
+            const nativeTexture = texture._hardwareTexture.underlyingResource;
+            this._engine.loadRawTexture3D(
+                nativeTexture,
+                bufferView,
+                texture.width,
+                texture.height,
+                texture.depth,
+                getNativeTextureFormat(format, textureType),
+                texture.generateMipMaps,
+                invertY
+            );
+        }
+
+        texture.isReady = true;
+    }
+
     public override updateRawTexture(
         texture: Nullable<InternalTexture>,
         bufferView: Nullable<ArrayBufferView>,
@@ -2063,10 +2135,130 @@ export class ThinNativeEngine extends ThinEngine {
                 texture.height,
                 getNativeTextureFormat(format, type),
                 texture.generateMipMaps,
-                texture.invertY
+                texture.invertY,
+                useSRGBBuffer
             );
         }
 
+        texture.isReady = true;
+    }
+
+    /**
+     * Creates a raw cube texture on the native engine.
+     *
+     * The WebGL implementation (engine.rawTexture) drives the whole upload through `this._gl`, which is null
+     * on Native, so loading an HDR/`.env` cube via `createRawCubeTextureFromUrl` used to throw
+     * `Cannot read properties of undefined (reading 'FLOAT')`. This override allocates a native cube texture
+     * and uploads its faces through the bgfx `updateTextureData` path instead.
+     *
+     * Native has no 3-component float texture format, so an RGB float/half-float source (what HDRCubeTexture
+     * requests) is allocated and uploaded as RGBA; the per-face RGB->RGBA expansion happens in
+     * `updateRawCubeTexture`.
+     * @param data defines the data used to create the texture (6 faces, +X +Y +Z -X -Y -Z) or null
+     * @param size defines the size of the textures (each face is size x size)
+     * @param format defines the format of the data
+     * @param type defines the type of the data
+     * @param generateMipMaps defines if the engine should generate the mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compression used (null by default)
+     * @returns the cube texture as an InternalTexture
+     */
+    public override createRawCubeTexture(
+        data: Nullable<ArrayBufferView[]>,
+        size: number,
+        format: number,
+        type: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null
+    ): InternalTexture {
+        const texture = new InternalTexture(this, InternalTextureSource.CubeRaw);
+        texture.isCube = true;
+        texture.format = format;
+        texture.type = type;
+        texture.width = size;
+        texture.height = size;
+        texture.baseWidth = size;
+        texture.baseHeight = size;
+        texture.invertY = invertY;
+        texture._compression = compression;
+
+        // Match the WebGL raw-cube path and createRenderTargetCubeTexture: float/half-float formats that the
+        // platform cannot linearly filter fall back to NEAREST and drop mip generation.
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            generateMipMaps = false;
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            generateMipMaps = false;
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+
+        const nativeTexture = texture._hardwareTexture!.underlyingResource;
+        this._engine.initializeTexture(
+            nativeTexture,
+            size,
+            size,
+            generateMipMaps,
+            getNativeTextureFormat(format, type),
+            /*renderTarget*/ false,
+            /*srgb*/ false,
+            /*samples*/ 1,
+            /*isCube*/ true
+        );
+        this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
+
+        if (data) {
+            this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
+        } else {
+            texture.isReady = true;
+        }
+
+        this._internalTexturesCache.push(texture);
+        return texture;
+    }
+
+    /**
+     * Updates a raw cube texture on the native engine.
+     * @param texture defines the texture to update
+     * @param data defines the data to store (6 faces, +X +Y +Z -X -Y -Z)
+     * @param format defines the data format
+     * @param type defines the type of the data
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the compression used (null by default)
+     * @param level defines which mip level of the texture to update (0 by default)
+     */
+    public override updateRawCubeTexture(
+        texture: InternalTexture,
+        data: ArrayBufferView[],
+        format: number,
+        type: number,
+        invertY: boolean,
+        compression: Nullable<string> = null,
+        level: number = 0
+    ): void {
+        // NativeEngine.updateTextureData honors invertY directly on cubes (no D3D origin
+        // compensation). That matches WebGL: HDRCubeTexture uploads with invertY=false and
+        // UNPACK_FLIP_Y_WEBGL=false. Forcing invertY here double-flipped float/half faces and
+        // made the -Y cubemap a hard brown cap on OpenPBR IBL (513/514). Byte RGBD .env
+        // uploads already pass invertY=true and are unchanged.
+        texture.format = format;
+        texture.type = type;
+        texture.invertY = invertY;
+        texture._compression = compression;
+
+        // Data are in +X +Y +Z -X -Y -Z order, which matches the bgfx cube sides. Like gl.generateMipmap in the
+        // WebGL path, Native rebuilds the rest of each face's mip chain from a full level 0 upload.
+        const width = Math.max(1, texture.width >> level);
+        const height = Math.max(1, texture.height >> level);
+        const generateMipMaps = level === 0 && texture.generateMipMaps;
+        for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
+            this.updateTextureData(texture, data[faceIndex], 0, 0, width, height, faceIndex, level, generateMipMaps);
+        }
         texture.isReady = true;
     }
 
@@ -2129,9 +2321,14 @@ export class ThinNativeEngine extends ThinEngine {
 
         // some formats are already supported by bimg, no need to try to load them with JS
         // leaving TextureLoader extension check for future use
-        let loaderPromise = null;
-        if (extension.endsWith(".basis") || extension.endsWith(".ktx") || extension.endsWith(".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2") {
-            loaderPromise = AbstractEngine.GetCompatibleTextureLoader(extension);
+        let loaderPromise: Nullable<Promise<IInternalTextureLoader>> = null;
+        if (extension.endsWith(".ies")) {
+            // The UMD/global build (used by Babylon Native) stubs dynamic import(), so
+            // AbstractEngine.GetCompatibleTextureLoader cannot resolve the loader module. Instantiate the
+            // statically-bundled IES loader directly instead.
+            loaderPromise = Promise.resolve(new _IESTextureLoader());
+        } else if (extension.endsWith(".basis") || extension.endsWith(".ktx") || extension.endsWith(".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2") {
+            loaderPromise = AbstractEngine.GetCompatibleTextureLoader(extension, mimeType);
         }
 
         if (scene) {
@@ -2185,7 +2382,79 @@ export class ThinNativeEngine extends ThinEngine {
 
         // processing for non-image formats
         if (loaderPromise) {
-            throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
+            // These formats (e.g. .ies) are decoded on the JS side by an IInternalTextureLoader and then
+            // uploaded to the native texture as raw pixel data. bimg cannot decode them directly.
+            const texLoaderPromise = loaderPromise;
+            const callbackAsync = async (data: ArrayBufferView) => {
+                const loader = await texLoaderPromise;
+                loader.loadData(
+                    data,
+                    texture,
+                    (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => {
+                        if (loadFailed) {
+                            onInternalError("TextureLoader failed to load data");
+                            return;
+                        }
+
+                        texture.baseWidth = width;
+                        texture.baseHeight = height;
+                        texture.width = width;
+                        texture.height = height;
+                        texture.isReady = true;
+
+                        // The loader-supplied done() performs the actual GPU upload (e.g. via
+                        // _uploadDataToTextureDirectly), so texture dimensions must be set beforehand.
+                        done();
+
+                        if (texture._hardwareTexture) {
+                            const filter = getNativeSamplingMode(samplingMode);
+                            this._setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
+                        }
+
+                        if (scene) {
+                            scene.removePendingData(texture);
+                        }
+
+                        texture.onLoadedObservable.notifyObservers(texture);
+                        texture.onLoadedObservable.clear();
+                    },
+                    loaderOptions
+                );
+            };
+
+            if (buffer) {
+                const processBufferAsync = async (data: ArrayBufferView) => {
+                    try {
+                        await callbackAsync(data);
+                    } catch (reason) {
+                        onInternalError("Failed to parse texture data", reason);
+                    }
+                };
+                if (buffer instanceof ArrayBuffer) {
+                    void processBufferAsync(new Uint8Array(buffer));
+                } else if (ArrayBuffer.isView(buffer)) {
+                    void processBufferAsync(buffer);
+                } else if (onError) {
+                    onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
+                }
+            } else {
+                this._loadFile(
+                    url,
+                    async (data) => {
+                        try {
+                            await callbackAsync(new Uint8Array(data as ArrayBuffer));
+                        } catch (reason) {
+                            onInternalError("Failed to parse texture data", reason);
+                        }
+                    },
+                    undefined,
+                    undefined,
+                    true,
+                    (request?: IWebRequest, exception?: any) => {
+                        onInternalError("Unable to load " + (request ? request.responseURL : url), exception);
+                    }
+                );
+            }
         } else {
             const onload = (data: ArrayBufferView) => {
                 if (!texture._hardwareTexture) {
@@ -3388,6 +3657,15 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     /**
+     * @internal
+     */
+    public override _bindTextureDirectly(_target: number, _texture: Nullable<InternalTexture>, _forTextureDataUpdate = false, _force = false): boolean {
+        // Generic texture loaders use this WebGL-shaped method around direct uploads. Native upload commands
+        // already receive the destination texture explicitly, so there is no bind operation to perform.
+        return false;
+    }
+
+    /**
      * Unbind all textures
      */
     public override unbindAllTextures(): void {
@@ -3485,9 +3763,21 @@ export class ThinNativeEngine extends ThinEngine {
 
         // bgfx updates the requested sub-rectangle of the existing texture (faceIndex selects the cube
         // face / array layer, lod selects the mip level). invertY is forwarded so the native side can match
-        // the vertical orientation the base texture upload uses. Mip regeneration after a partial update is
-        // not supported on Native, so generateMipMaps is ignored (consistent with the other raw-texture paths).
-        this._engine.updateTextureData(texture._hardwareTexture.underlyingResource, imageData, xOffset, yOffset, width, height, faceIndex, lod, texture.invertY);
+        // the vertical orientation the base texture upload uses. Native rebuilds mips from a full level only, so
+        // generateMipMaps is ignored for partial updates.
+        const fullLevel = xOffset === 0 && yOffset === 0 && width === Math.max(1, texture.width >> lod) && height === Math.max(1, texture.height >> lod);
+        this._engine.updateTextureData(
+            texture._hardwareTexture.underlyingResource,
+            imageData,
+            xOffset,
+            yOffset,
+            width,
+            height,
+            faceIndex,
+            lod,
+            texture.invertY,
+            generateMipMaps && fullLevel
+        );
     }
 
     /**
@@ -3509,7 +3799,26 @@ export class ThinNativeEngine extends ThinEngine {
      * @internal
      */
     public override _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
-        throw new Error("_uploadDataToTextureDirectly not implemented.");
+        if (!texture._hardwareTexture) {
+            return;
+        }
+
+        // Upload raw pixel data (e.g. the decoded IES profile: a single-channel FLOAT texture) into the
+        // native texture. Mirrors updateRawTexture; face/lod sub-uploads are not supported on Native.
+        // Like texImage2D, Native reads only the texels it needs from a larger buffer.
+        const underlyingResource = texture._hardwareTexture.underlyingResource;
+        this._engine.loadRawTexture(
+            underlyingResource,
+            imageData,
+            texture.width,
+            texture.height,
+            getNativeTextureFormat(texture.format, texture.type),
+            texture.generateMipMaps,
+            texture.invertY,
+            texture._useSRGBBuffer
+        );
+
+        texture.isReady = true;
     }
 
     /**
