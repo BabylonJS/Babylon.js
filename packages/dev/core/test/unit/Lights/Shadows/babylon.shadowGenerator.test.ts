@@ -1,24 +1,25 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
+import { Constants } from "core/Engines/constants";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { type Engine } from "core/Engines/engine";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { PointLight } from "core/Lights/pointLight";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Logger } from "core/Misc/logger";
-import { FreeCamera } from "core/Cameras/freeCamera";
 import { type Camera } from "core/Cameras/camera";
 import { type Effect } from "core/Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { MirrorTexture } from "core/Materials/Textures/mirrorTexture";
-import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Plane } from "core/Maths/math.plane";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { type Nullable } from "core/types";
-import { vi } from "vitest";
 
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
@@ -31,6 +32,39 @@ import "core/Shaders/depthBoxBlur.fragment";
 import "core/Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 
 describe("ShadowGenerator", () => {
+    describe("cascaded filter selection", () => {
+        let engine: NullEngine;
+        let scene: Scene;
+
+        beforeEach(() => {
+            engine = new NullEngine();
+            engine._features.supportCSM = true;
+            engine._features.supportShadowSamplers = true;
+            scene = new Scene(engine);
+            new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+            vi.spyOn(RenderTargetTexture.prototype, "createDepthStencilTexture").mockImplementation(() => {});
+        });
+
+        afterEach(() => {
+            engine.dispose();
+            vi.restoreAllMocks();
+        });
+
+        it("preserves requested filters and sampler modes", () => {
+            const light = new DirectionalLight("directional", new Vector3(1, -2, 1), scene);
+            const generator = new CascadedShadowGenerator(32, light);
+            expect(generator.filter).toBe(ShadowGenerator.FILTER_PCF);
+
+            for (const filter of [ShadowGenerator.FILTER_NONE, ShadowGenerator.FILTER_PCF, ShadowGenerator.FILTER_PCSS, ShadowGenerator.FILTER_NONE]) {
+                generator.filter = filter;
+                expect(generator.filter).toBe(filter);
+                expect(generator.getShadowMap()!.samplingMode).toBe(
+                    filter === ShadowGenerator.FILTER_PCF ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE
+                );
+            }
+        });
+    });
+
     describe("instantiate", () => {
         let subject: Engine;
 
