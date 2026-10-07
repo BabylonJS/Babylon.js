@@ -313,6 +313,7 @@ export class ClusteredLightContainer extends Light {
         // Ensure space for atleast 1 batch
         const batches = Math.max(Math.ceil(this._sortedLights.length / this._batchSize), 1);
         if (this._tileMaskBatches >= batches) {
+            this._tileMaskTexture.activeCamera = camera;
             this._proxyMesh.thinInstanceCount = this._sortedLights.length;
             return this._tileMaskTexture;
         }
@@ -352,6 +353,7 @@ export class ClusteredLightContainer extends Light {
         this._tileMaskTexture.renderParticles = false;
         this._tileMaskTexture.renderSprites = false;
         this._tileMaskTexture.noPrePassRenderer = true;
+        this._tileMaskTexture.activeCamera = camera;
         this._tileMaskTexture.renderList = [this._proxyMesh];
 
         let currentRenderTarget: Nullable<RenderTargetWrapper> = null;
