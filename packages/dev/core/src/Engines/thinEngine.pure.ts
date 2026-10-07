@@ -2161,11 +2161,12 @@ export class ThinEngine extends AbstractEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
+        this.onBeforeShaderCompilationObservable.notifyObservers(this);
+
         const stateObject = getStateObject(this._gl);
         // assure the state object is correct
         stateObject._contextWasLost = this._contextWasLost;
         stateObject.validateShaderPrograms = this.validateShaderPrograms;
-        this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         const program = createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context || this._gl, transformFeedbackVaryings);
 
