@@ -236,6 +236,8 @@ export class ThinNativeEngine extends ThinEngine {
     private _commandBufferEncoder: CommandBufferEncoder;
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
+    private _transformFeedbackBuffer: Nullable<NativeDataBuffer> = null;
+    private _transformFeedbackActive = false;
     /**
      * Bit i is set when color attachment i is selected by the last bindAttachments() call.
      * Only used to mask clears (see bindAttachments).
@@ -416,7 +418,7 @@ export class ThinNativeEngine extends ThinEngine {
             canUseGLVertexID: true,
             supportComputeShaders: false,
             supportSRGBBuffers: true,
-            supportTransformFeedbacks: false,
+            supportTransformFeedbacks: !!_native.Engine.COMMAND_DRAWTRANSFORMFEEDBACK,
             textureMaxLevel: false,
             texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
             disableMorphTargetTexture: false,
@@ -460,7 +462,7 @@ export class ThinNativeEngine extends ThinEngine {
             needShaderCodeInlining: true,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
-            supportSpriteInstancing: false,
+            supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
         };
@@ -802,6 +804,9 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
+    /** @internal Native vertex arrays capture their buffers when recorded; there is no bound array buffer. */
+    public override bindArrayBuffer(_buffer: Nullable<DataBuffer>): void {}
+
     public override releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject) {
         this._deleteVertexArray(vertexArray as NativeVertexArrayObject);
     }
@@ -877,6 +882,21 @@ export class ThinNativeEngine extends ThinEngine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public override drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+        if (this._transformFeedbackActive) {
+            // The native engine runs the transform feedback program over the bound vertex array
+            // and writes the captured varyings into the bound feedback buffer.
+            const target = this._transformFeedbackBuffer?.nativeVertexBuffer;
+            if (!target) {
+                throw new Error("Transform feedback requires a bound native vertex buffer.");
+            }
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWTRANSFORMFEEDBACK!);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(target);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+            this._commandBufferEncoder.finishEncodingCommand();
+            return;
+        }
+
         if (!this._checkSupportedFillMode(fillMode)) {
             return;
         }
@@ -899,6 +919,50 @@ export class ThinNativeEngine extends ThinEngine {
 
         this._commandBufferEncoder.finishEncodingCommand();
     }
+
+    /** @internal Transform feedback objects are implicit on native; state lives on the engine. */
+    public createTransformFeedback(): WebGLTransformFeedback {
+        return {} as WebGLTransformFeedback;
+    }
+
+    /** @internal */
+    public deleteTransformFeedback(_value: WebGLTransformFeedback): void {}
+
+    /** @internal */
+    public bindTransformFeedback(_value: Nullable<WebGLTransformFeedback>): void {}
+
+    /** @internal */
+    public bindTransformFeedbackBuffer(value: Nullable<DataBuffer>): void {
+        this._transformFeedbackBuffer = value as Nullable<NativeDataBuffer>;
+    }
+
+    /** @internal Varyings are passed to the native program when it is created. */
+    public setTranformFeedbackVaryings(_program: WebGLProgram, _value: string[]): void {}
+
+    /** @internal */
+    public beginTransformFeedback(_usePoints: boolean = true): void {
+        this._transformFeedbackActive = true;
+    }
+
+    /** @internal */
+    public endTransformFeedback(): void {
+        this._transformFeedbackActive = false;
+    }
+
+    /** @internal */
+    public readTransformFeedbackBuffer(target: ArrayBufferView): void {
+        const buffer = this._transformFeedbackBuffer?.nativeVertexBuffer;
+        if (!buffer) {
+            throw new Error("Reading transform feedback requires a bound native vertex buffer.");
+        }
+        if (!this._engine.readTransformFeedbackBuffer) {
+            throw new Error("This native engine build does not support reading transform feedback buffers.");
+        }
+        this._engine.readTransformFeedbackBuffer(buffer, target.buffer, target.byteOffset, target.byteLength);
+    }
+
+    /** @internal Transform feedback draws never rasterize on native. */
+    public setRasterizerState(_value: boolean): void {}
 
     public override createPipelineContext(shaderProcessingContext: Nullable<_IShaderProcessingContext>): IPipelineContext {
         const isAsync = !!this._caps.parallelShaderCompile;
@@ -927,14 +991,14 @@ export class ThinNativeEngine extends ThinEngine {
         _rawFragmentSourceCode: string,
         _rebuildRebind: any,
         defines: Nullable<string>,
-        _transformFeedbackVaryings: Nullable<string[]>,
+        transformFeedbackVaryings: Nullable<string[]>,
         _key: string,
         onReady: () => void
     ) {
         if (createAsRaw) {
             this.createRawShaderProgram();
         } else {
-            this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
+            this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines, undefined, transformFeedbackVaryings);
         }
 
         onReady();
@@ -974,7 +1038,19 @@ export class ThinNativeEngine extends ThinEngine {
         throw new Error("Not Supported");
     }
 
-    public override createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
+    public override createShaderProgram(
+        pipelineContext: IPipelineContext,
+        vertexCode: string,
+        fragmentCode: string,
+        defines: Nullable<string>,
+        _context?: WebGLRenderingContext,
+        transformFeedbackVaryings: Nullable<string[]> = null
+    ): WebGLProgram {
+        const varyings = transformFeedbackVaryings?.length ? transformFeedbackVaryings : undefined;
+        if (varyings && !_native.Engine.COMMAND_DRAWTRANSFORMFEEDBACK) {
+            throw new Error("This native engine build does not support transform feedback.");
+        }
+
         const nativePipelineContext = pipelineContext as NativePipelineContext;
 
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
@@ -997,12 +1073,18 @@ export class ThinNativeEngine extends ThinEngine {
         };
 
         if (pipelineContext.isAsync) {
-            nativePipelineContext.program = this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, (error: Error) => {
-                nativePipelineContext.compilationError = error;
-            });
+            nativePipelineContext.program = this._engine.createProgramAsync(
+                vertexCode,
+                fragmentCode,
+                onSuccess,
+                (error: Error) => {
+                    nativePipelineContext.compilationError = error;
+                },
+                varyings
+            );
         } else {
             try {
-                nativePipelineContext.program = this._engine.createProgram(vertexCode, fragmentCode);
+                nativePipelineContext.program = this._engine.createProgram(vertexCode, fragmentCode, varyings);
                 onSuccess();
             } catch (e) {
                 const message = e?.message;
