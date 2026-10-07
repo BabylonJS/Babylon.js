@@ -779,12 +779,15 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     /**
-     * Triangle Fan and Line Loop are not supported by modern rendering API
+     * Check whether the runtime can expand primitive modes unavailable in modern rendering APIs.
      * @param fillMode  defines the primitive to use
      * @returns true if supported
      */
     private _checkSupportedFillMode(fillMode: number): boolean {
         if (fillMode == Constants.MATERIAL_LineLoopDrawMode || fillMode == Constants.MATERIAL_TriangleFanDrawMode) {
+            if (this._engine.supportsPrimitiveModeExpansion) {
+                return true;
+            }
             if (!this._fillModeWarningDisplayed) {
                 Logger.Warn("Line Loop and Triangle Fan are not supported fill modes with Babylon Native. Elements with these fill mode will not be visible.");
                 this._fillModeWarningDisplayed = true;
