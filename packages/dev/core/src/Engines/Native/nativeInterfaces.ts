@@ -326,6 +326,12 @@ interface INativeEngineConstructor {
     readonly ALPHA_SCREENMODE: number;
     readonly ALPHA_REPLACE_COLOR?: number;
 
+    readonly ALPHA_EQUATION_ADD?: number;
+    readonly ALPHA_EQUATION_SUBTRACT?: number;
+    readonly ALPHA_EQUATION_REVERSE_SUBTRACT?: number;
+    readonly ALPHA_EQUATION_MAX?: number;
+    readonly ALPHA_EQUATION_MIN?: number;
+    readonly ALPHA_EQUATION_DARKEN?: number;
     readonly STENCIL_TEST_LESS: number;
     readonly STENCIL_TEST_LEQUAL: number;
     readonly STENCIL_TEST_EQUAL: number;
@@ -394,6 +400,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETDEPTHWRITE: NativeData;
     readonly COMMAND_SETCOLORWRITE: NativeData;
     readonly COMMAND_SETBLENDMODE: NativeData;
+    readonly COMMAND_SETBLENDEQUATION?: NativeData;
     readonly COMMAND_SETFLOAT: NativeData;
     readonly COMMAND_SETFLOAT2: NativeData;
     readonly COMMAND_SETFLOAT3: NativeData;

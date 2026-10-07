@@ -1213,23 +1213,18 @@ export class ThinNativeEngine extends ThinEngine {
         // Unlike the WebGL engine, the native engine does not call applyStates() before
         // a draw, so depth-test toggles made directly on engine.depthCullingState are
         // flushed here to match the cross-engine contract.
+        // Reconcile the depth compare function too: features that set it directly on
+        // depthCullingState (e.g. reverse depth buffer -> GEQUAL) never go through
+        // setDepthFunction, so push any divergence to the native side here. setDepthFunction
+        // also re-encodes the depth-test enable, so no separate enable flush is needed after.
+        const targetFunc = this._depthCullingState.depthFunc;
+        if (targetFunc && targetFunc !== this.getDepthFunction()) {
+            this.setDepthFunction(targetFunc);
+            return;
+        }
         if (this._depthCullingState.depthTest !== this._depthTestEnabled) {
             this._encodeDepthTest(this._depthCullingState.depthTest);
         }
-    }
-
-    public override applyStates(): void {
-        // The base ThinEngine.applyStates() drives the WebGL context (this._gl) directly, which is null on
-        // Native. Flush the depth-culling state through the native command path instead, so callers that
-        // mutate engine.depthCullingState directly and then call applyStates() (e.g. the depth-peeling / OIT
-        // renderer) take effect. Alpha and stencil state are applied on Native via their dedicated setters
-        // (setAlphaMode / setStencil*), which encode their commands when called.
-        const depthCullingState = this._depthCullingState;
-        if (depthCullingState.depthFunc !== null && depthCullingState.depthFunc !== undefined) {
-            this.setDepthFunction(depthCullingState.depthFunc);
-        }
-        this.setDepthBuffer(depthCullingState.depthTest);
-        this.setDepthWrite(depthCullingState.depthMask);
     }
 
     /**
@@ -1263,6 +1258,10 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     public override setDepthFunction(depthFunc: number) {
+        // Keep the shared depth-culling state in sync (the base impl sets this) so the
+        // per-draw reconcile in _flushDepthTestState treats material-driven changes as a
+        // no-op and only pushes divergences that bypass this method (e.g. reverse depth).
+        this._depthCullingState.depthFunc = depthFunc;
         let nativeDepthFunc = 0;
         switch (depthFunc) {
             case Constants.NEVER:
@@ -1307,6 +1306,13 @@ export class ThinNativeEngine extends ThinEngine {
      */
     public override setDepthWrite(enable: boolean): void {
         this._depthWrite = enable;
+        // Keep depthCullingState.depthMask in sync. applyStates() reconciles native depth write
+        // from depthMask; if it stays true after setDepthWrite(false), the next applyStates()
+        // (e.g. during particle/material draws) silently turns WRITE_Z back on. Coplanar
+        // triangle-strip particle quads then lose the second tri to DEPTH_LESS.
+        if (this._depthCullingState) {
+            this._depthCullingState.depthMask = enable;
+        }
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHWRITE);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
         this._commandBufferEncoder.finishEncodingCommand();
@@ -1331,6 +1337,28 @@ export class ThinNativeEngine extends ThinEngine {
         return this._colorWrite;
     }
 
+    /**
+     * Apply the currently pending engine states.
+     *
+     * The base ThinEngine.applyStates() flushes state by calling
+     * this._depthCullingState.apply(this._gl) (and similar for alpha/stencil), but the
+     * native engine has no WebGL context (_gl is undefined), so inheriting that path
+     * throws "Cannot read properties of undefined (reading 'depthMask')". Callers such
+     * as the depth-peeling (OIT) renderer mutate engine.depthCullingState directly and
+     * then call applyStates() expecting the change to be flushed, so reconcile the shared
+     * depth-culling state into the native command buffer here instead. Alpha and stencil
+     * states are already encoded immediately on the native side (setAlphaMode /
+     * setStencil* emit commands directly), so only the depth state needs reconciling.
+     */
+    public override applyStates(): void {
+        // Depth test (the native command conflates enable + compare function).
+        this._flushDepthTestState();
+
+        // Depth write (depthMask).
+        if (this._depthCullingState.depthMask !== this._depthWrite) {
+            this.setDepthWrite(this._depthCullingState.depthMask);
+        }
+    }
 
     private applyStencil(): void {
         this._setStencil(
@@ -1544,6 +1572,33 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         this._alphaMode[targetIndex] = mode;
+    }
+
+    /**
+     * Sets the current alpha blend equation (ADD / SUB / MAX / MIN / ...).
+     * Dual depth peeling (OIT) requires ALPHA_EQUATION_MAX so peel passes accumulate
+     * farthest/nearest depths. Native previously only wired blend *factors*; equations
+     * stayed at bgfx's default ADD and transparent peels never wrote useful depth.
+     * @param equation one of Constants.ALPHA_EQUATION_*
+     * @param targetIndex MRT attachment index (Native applies equation globally; kept for API parity)
+     */
+    public override setAlphaEquation(equation: number, targetIndex: number = 0): void {
+        if (this._alphaEquation[targetIndex] === equation) {
+            return;
+        }
+
+        this._alphaEquation[targetIndex] = equation;
+
+        const command = _native.Engine.COMMAND_SETBLENDEQUATION;
+        if (!command) {
+            // Older Babylon Native binaries predating blend-equation support.
+            return;
+        }
+
+        this._commandBufferEncoder.startEncodingCommand(command);
+        // Pass the Babylon Constants.ALPHA_EQUATION_* value; NativeEngine::SetBlendEquation maps it to bgfx.
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(equation);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public override setInt(uniform: WebGLUniformLocation, int: number): boolean {
