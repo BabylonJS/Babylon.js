@@ -5,6 +5,8 @@ import { Texture } from "core/Materials/Textures/texture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader";
 import { PBRMaterialLoadingAdapter } from "loaders/glTF/2.0/pbrMaterialLoadingAdapter";
+import { ImportMeshAsync } from "core/Loading";
+import "loaders/glTF";
 
 describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
     let engine: NullEngine;
@@ -126,5 +128,47 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
             expect(material.subSurface.translucencyColorTexture).toBe(scatterColor);
             expect(isDisposed(scatterColor)).toBe(false);
         });
+    });
+
+    // The legacy KHR_materials_volume_scatter loader writes the scattering coefficient in place through the
+    // transmissionScatter getter. That must not alias (and overwrite) the attenuation color.
+    it("preserves attenuationColor when importing KHR_materials_volume_scatter", async () => {
+        const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(positions.buffer)));
+        const gltf = {
+            asset: { version: "2.0" },
+            extensionsUsed: ["KHR_materials_transmission", "KHR_materials_volume", "KHR_materials_volume_scatter"],
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ mesh: 0 }],
+            meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
+            materials: [
+                {
+                    name: "legacyScatter",
+                    extensions: {
+                        KHR_materials_transmission: { transmissionFactor: 1 },
+                        KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 2, attenuationColor: [0.9, 0.6, 0.3] },
+                        KHR_materials_volume_scatter: { multiscatterColorFactor: [0.5, 0.5, 0.5], scatterAnisotropy: 0 },
+                    },
+                },
+            ],
+            accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", max: [1, 1, 0], min: [0, 0, 0] }],
+            bufferViews: [{ buffer: 0, byteLength: 36 }],
+            buffers: [{ byteLength: 36, uri: `data:application/octet-stream;base64,${base64}` }],
+        };
+
+        await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene);
+
+        const material = scene.materials.find((m) => m.name === "legacyScatter") as PBRMaterial;
+        expect(material).toBeInstanceOf(PBRMaterial);
+        const tint = material.subSurface.tintColor;
+        expect(tint.r).toBeCloseTo(0.9, 5);
+        expect(tint.g).toBeCloseTo(0.6, 5);
+        expect(tint.b).toBeCloseTo(0.3, 5);
+        const scatter = material.subSurface.translucencyColor!;
+        expect(scatter).not.toBe(tint);
+        // Scattering coefficient * depth = -log(attenuationColor) * singleScatterAlbedo, which is non-zero here.
+        expect(scatter.r).toBeGreaterThan(0);
+        expect(scatter.r).not.toBeCloseTo(0.9, 2);
     });
 });

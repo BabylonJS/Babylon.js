@@ -862,7 +862,12 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns The scatter coefficient * transmissionDepth as a Color3
      */
     public get transmissionScatter(): Color3 {
-        return this._material.subSurface.translucencyColor ? this._material.subSurface.translucencyColor : this._material.subSurface.tintColor;
+        // Callers may mutate the result in place, so never return the attenuation tint itself. Until a scatter
+        // color is set, the renderer falls back to the tint, so start from a copy of it to keep the same look.
+        if (!this._material.subSurface.translucencyColor) {
+            this._material.subSurface.translucencyColor = this._material.subSurface.tintColor.clone();
+        }
+        return this._material.subSurface.translucencyColor;
     }
 
     /**
