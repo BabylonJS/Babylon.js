@@ -1571,6 +1571,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                         cameraViewInfos.sortAppliedId = cameraViewInfos.sortRequestId;
                         this._canPostToWorker = true;
                         this._readyToDisplay = true;
+                        this._sortIsDirty = false;
                     }
                 }
             });
@@ -2981,6 +2982,12 @@ export class GaussianSplattingMeshBase extends Mesh {
                     this._shTextures!.push(shTexture);
                     this._updateShTextureData(shTexture, sh[textureIndex], textureSize.x, 0, textureSize.y);
                 }
+            }
+
+            if (!this._worker) {
+                // No sort-worker reply will flush the delayed upload (Native / no-worker path). Commit it after
+                // the SH textures exist, since the upload writes them.
+                this._commitDelayedTextureUpdate();
             }
 
             if (this._needsRotationScaleTextures && this._rotationDataA) {
