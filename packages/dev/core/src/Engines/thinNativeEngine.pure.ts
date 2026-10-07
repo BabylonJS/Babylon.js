@@ -24,7 +24,7 @@ import { type IMultiRenderTargetOptions } from "../Materials/Textures/multiRende
 import { type IColor3Like, type IColor4Like, type IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
-import { AbstractEngine, type ISceneLike } from "./abstractEngine.pure";
+import { AbstractEngine, type AbstractEngineOptions, type ISceneLike } from "./abstractEngine.pure";
 import { ThinEngine } from "./thinEngine.pure";
 import { type IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { EngineStore } from "./engineStore";
@@ -128,7 +128,7 @@ class NativeDataBuffer extends DataBuffer {
 /**
  * Options to create the Native engine
  */
-export interface ThinNativeEngineOptions {
+export interface ThinNativeEngineOptions extends AbstractEngineOptions {
     /**
      * defines whether to adapt to the device's viewport characteristics (default: false)
      */
@@ -254,7 +254,7 @@ export class ThinNativeEngine extends ThinEngine {
     private _int4Scratch: Int32Array;
 
     public constructor(options: ThinNativeEngineOptions = {}) {
-        super(null, false, undefined, options.adaptToDeviceRatio);
+        super(null, false, options, options.adaptToDeviceRatio);
         this._initializeNativeEngine(options.adaptToDeviceRatio ?? false);
     }
     //////////////////////////////////////////////////////////////////////
@@ -278,6 +278,20 @@ export class ThinNativeEngine extends ThinEngine {
         this._camera = _native.Camera ? new _native.Camera() : null;
         this._commandBufferEncoder = new CommandBufferEncoder(this._engine);
         this._frameStats = { gpuTimeNs: Number.NaN };
+        // There is no DOM canvas to draw the default loading screen into, so install a no-op one; this keeps
+        // the loading-UI accessors (loadingUIText, loadingUIBackgroundColor, display/hide) usable on native.
+        let loadingScreenWarningDisplayed = false;
+        this._loadingScreen = {
+            displayLoadingUI: () => {
+                if (!loadingScreenWarningDisplayed) {
+                    Logger.Warn("NativeEngine is unable to display the loading screen UI.");
+                    loadingScreenWarningDisplayed = true;
+                }
+            },
+            hideLoadingUI: () => {},
+            loadingUIBackgroundColor: "",
+            loadingUIText: "",
+        };
         this._boundBuffersVertexArray = null;
         this._currentDepthTest = _native.Engine.DEPTH_TEST_LEQUAL;
         this._depthTestEnabled = true;
