@@ -725,9 +725,23 @@ export class _IblShadowsVoxelRenderer {
                     continue;
                 }
                 for (const mesh of renderList) {
-                    if (_IsGaussianSplattingMesh(mesh) && !(mesh as GaussianSplattingMesh)._isDepthSortSettled) {
-                        gsSortPending = true;
-                        break;
+                    if (_IsGaussianSplattingMesh(mesh)) {
+                        const splatMesh = mesh as GaussianSplattingMesh;
+                        if (!splatMesh._isDepthSortSettled) {
+                            // Point color passes defer classic sorts. Request the voxel pass's index
+                            // preparation before waiting, otherwise no classic consumer can release the wait.
+                            const renderPassId = this._engine.currentRenderPassId;
+                            this._engine.currentRenderPassId = this._renderTargets[i].renderPassId;
+                            try {
+                                splatMesh._postToWorker();
+                            } finally {
+                                this._engine.currentRenderPassId = renderPassId;
+                            }
+                            if (!splatMesh._isDepthSortSettled) {
+                                gsSortPending = true;
+                                break;
+                            }
+                        }
                     }
                 }
             }
