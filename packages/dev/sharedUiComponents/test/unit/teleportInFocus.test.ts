@@ -239,8 +239,17 @@ describe("Teleport reference focus", () => {
         const endpoint = {};
         const target = canvas.appendNode(createNodeData(endpoint));
         const frame = new GraphFrame(null, canvas, true);
+        frame.width = 400;
+        frame.height = 200;
+        Object.defineProperties(target.rootElement, {
+            clientWidth: { value: 200, configurable: true },
+            clientHeight: { value: 80, configurable: true },
+        });
+        target.x = 100;
+        target.y = 60;
         canvas.frames.push(frame);
         frame.nodes.push(target);
+        target.enclosingFrameId = frame.id;
         frame.isCollapsed = true;
         expect(target.isVisible).toBe(false);
 
@@ -248,6 +257,8 @@ describe("Teleport reference focus", () => {
 
         expect(frame.isCollapsed).toBe(false);
         expect(target.isVisible).toBe(true);
+        expect(target.x).toBe(100);
+        expect(target.y).toBe(60);
         expect(canvas.x + (target.x + target.width / 2) * canvas.zoom).toBe(400);
         expect(canvas.y + (target.y + target.height / 2) * canvas.zoom).toBe(300);
     });
