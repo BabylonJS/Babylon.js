@@ -4,7 +4,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Vector3 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -116,5 +116,76 @@ describe("GaussianSplattingMaterial", () => {
         const expectedFocal = eyeWidth / 2 / Math.tan(rigCamera.fov / 2);
         expect(setFloat2).toHaveBeenCalledWith("invViewport", 1 / (eyeWidth / 2), 1 / engine.getRenderHeight());
         expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(expectedFocal, 4), expect.closeTo(expectedFocal, 4));
+    });
+});
+
+describe("GaussianSplattingMaterial compensation", () => {
+    let engine: NullEngine;
+    let scene: Scene;
+    let mesh: GaussianSplattingMesh;
+
+    const createSplatData = (count: number) => {
+        const data = new ArrayBuffer(count * 32);
+        const floats = new Float32Array(data);
+        const bytes = new Uint8Array(data);
+        for (let i = 0; i < count; i++) {
+            floats[i * 8 + 0] = i;
+            floats[i * 8 + 3] = 0.5;
+            floats[i * 8 + 4] = 0.5;
+            floats[i * 8 + 5] = 0.5;
+            bytes.fill(255, i * 32 + 24, i * 32 + 28);
+            bytes.fill(128, i * 32 + 29, i * 32 + 32);
+        }
+        return data;
+    };
+
+    // Runs isReadyForSubMesh like a render would and reports whether the effect has COMPENSATION.
+    const isCompensationCompiledAsync = async () => {
+        const material = mesh.material!;
+        const subMesh = mesh.subMeshes[0];
+        scene.incrementRenderId();
+        material.isReadyForSubMesh(mesh, subMesh);
+        await subMesh.effect!.whenCompiledAsync();
+        scene.incrementRenderId();
+        expect(material.isReadyForSubMesh(mesh, subMesh)).toBe(true);
+        return subMesh.effect!.defines.includes("#define COMPENSATION");
+    };
+
+    beforeEach(() => {
+        engine = new NullEngine();
+        (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
+        scene = new Scene(engine);
+        scene.activeCamera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        mesh = new GaussianSplattingMesh("gs", null, scene);
+        // No sort worker in Node.
+        mesh.disableDepthSort = true;
+        mesh.updateData(createSplatData(4));
+    });
+
+    afterEach(() => {
+        GaussianSplattingMaterial.Compensation = false;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("recompiles when compensation is turned on and back off", async () => {
+        const material = mesh.material as GaussianSplattingMaterial;
+        expect(await isCompensationCompiledAsync()).toBe(false);
+
+        material.compensation = true;
+        expect(await isCompensationCompiledAsync()).toBe(true);
+
+        material.compensation = false;
+        expect(await isCompensationCompiledAsync()).toBe(false);
+    });
+
+    it("lets a material turn compensation off when the static default is on", async () => {
+        GaussianSplattingMaterial.Compensation = true;
+        mesh = new GaussianSplattingMesh("gsDefaultOn", null, scene);
+        mesh.disableDepthSort = true;
+        mesh.updateData(createSplatData(4));
+        (mesh.material as GaussianSplattingMaterial).compensation = false;
+
+        expect(await isCompensationCompiledAsync()).toBe(false);
     });
 });
