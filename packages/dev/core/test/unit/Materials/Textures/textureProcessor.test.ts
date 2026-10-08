@@ -32,6 +32,7 @@ import {
     ChannelMask,
     TextureChannel,
     TextureColorSpace,
+    TransmissionFractionAsync,
     type ITextureProcessOperand,
 } from "core/Materials/Textures/textureProcessor";
 
@@ -262,6 +263,18 @@ describe("TextureProcessor", () => {
             expect(r.factor?.g).toBeCloseTo(0.8);
             expect(r.factor?.b).toBeCloseTo(0.9);
             expect(r.factor?.a).toBeCloseTo(0.5);
+        });
+
+        it("TransmissionFraction: computes T / (T + S(1 - T)) without cancelling small weights", async () => {
+            const t = CreateFactorOperand(new Color4(0.001, 0.4, 0, 1));
+            const s = CreateFactorOperand(new Color4(0.001, 0.6, 0, 0.5));
+            const r = await TransmissionFractionAsync("t", t, s, scene);
+
+            expect(r.texture).toBeNull();
+            expect(r.factor?.r).toBeCloseTo(0.001 / (0.001 + 0.001 * 0.999), 6);
+            expect(r.factor?.g).toBeCloseTo(0.4 / (0.4 + 0.6 * 0.6), 6);
+            expect(r.factor?.b).toBe(0); // T = S = 0 is guarded rather than NaN
+            expect(r.factor?.a).toBeCloseTo(1);
         });
 
         it("Lerp: t=0 returns a", async () => {
@@ -706,6 +719,16 @@ describe("TextureProcessor", () => {
             expect(_capturedPTs[0].getDefines()).toContain("OP_MULTI_SCATTER_TO_SINGLE_SCATTER");
         });
 
+        it("TransmissionFractionAsync fuses the fraction into one pass with the requested output type", async () => {
+            await TransmissionFractionAsync("t", { texture: makeFakeTexture() }, { texture: makeFakeTexture() }, scene, undefined, undefined, {
+                textureType: Constants.TEXTURETYPE_FLOAT,
+            });
+
+            expect(_capturedPTs).toHaveLength(1);
+            expect(_capturedPTs[0].getDefines()).toContain("OP_TRANSMISSION_FRACTION");
+            expect(_capturedPTs[0].options).toMatchObject({ type: Constants.TEXTURETYPE_FLOAT });
+        });
+
         it("auto-disposes intermediate texture when result is consumed as operand", async () => {
             const tex = makeFakeTexture();
 
@@ -784,6 +807,7 @@ describe("TextureProcessor", () => {
             ["Multiply", MultiplyTexturesAsync],
             ["Max", MaxTexturesAsync],
             ["Divide", DivideTexturesAsync],
+            ["TransmissionFraction", TransmissionFractionAsync],
         ])("%s drops a texture using a different UV set and disposes the discarded operand", async (_operation, process) => {
             const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
             const first = makeFakeTexture();

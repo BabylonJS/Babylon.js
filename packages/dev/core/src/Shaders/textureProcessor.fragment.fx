@@ -18,6 +18,7 @@
 //   OP_LERP                - use mix(a, b, t) instead of a * b
 //   OP_MAX                 - use max(a, b) instead of a * b
 //   OP_DIVIDE              - component-wise safe division: result = a / max(b, 0.00001)
+//   OP_TRANSMISSION_FRACTION - component-wise result = a / max(a + b * (1 - a), 0.00001) in a single pass
 //   OP_INVERT              - unary: invert selected channels of operand A (operand B is ignored)
 //   INVERT_R               - invert the red channel (used with OP_INVERT)
 //   INVERT_G               - invert the green channel (used with OP_INVERT)
@@ -197,6 +198,8 @@ void main() {
     vec4 result = max(a, b);
     #elif defined(OP_DIVIDE)
     vec4 result = a / max(b, vec4(0.00001));
+    #elif defined(OP_TRANSMISSION_FRACTION)
+    vec4 result = a / max(a + b * (vec4(1.0) - a), vec4(0.00001));
     #else
     vec4 result = a * b;
     #endif

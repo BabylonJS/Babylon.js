@@ -1,6 +1,6 @@
 // Texture processing fragment shader (WGSL)
 // Supports multiply, max, lerp, and invert operations with texture/constant/combined operands.
-// See GLSL counterpart for define documentation (OPERAND_A/B_SRGB, OPERAND_A/B_CHANNEL_R/G/B/A, LERP_T_SRGB, LERP_T_CHANNEL_R/G/B/A, OUTPUT_SRGB, OP_INVERT, and INVERT_R/G/B/A also apply).
+// See GLSL counterpart for define documentation (OPERAND_A/B_SRGB, OPERAND_A/B_CHANNEL_R/G/B/A, LERP_T_SRGB, LERP_T_CHANNEL_R/G/B/A, OUTPUT_SRGB, OP_INVERT, INVERT_R/G/B/A, and OP_TRANSMISSION_FRACTION also apply).
 
 #ifdef OPERAND_A_TEXTURE
 var textureASampler: sampler;
@@ -159,6 +159,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var result: vec4f = max(a, b);
     #elif defined(OP_DIVIDE)
     var result: vec4f = a / max(b, vec4f(0.00001));
+    #elif defined(OP_TRANSMISSION_FRACTION)
+    var result: vec4f = a / max(a + b * (vec4f(1.0) - a), vec4f(0.00001));
     #else
     var result: vec4f = a * b;
     #endif

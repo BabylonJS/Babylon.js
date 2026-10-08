@@ -8,20 +8,41 @@ import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { type Nullable } from "core/types";
 import {
     type ITextureProcessOperand,
+    type ITextureProcessorOutputOptions,
     ChannelMask,
     CreateFactorOperand,
     CreateTextureWithFactorOperand,
     DivideTexturesAsync,
     InvertTextureAsync,
     LerpTexturesAsync,
-    MultiplyTexturesAsync,
     SingleScatterToMultiScatterAlbedoAsync,
     TextureChannel,
     TextureColorSpace,
+    TransmissionFractionAsync,
 } from "core/Materials/Textures/textureProcessor";
+import { Constants } from "core/Engines/constants";
+import { type Scene } from "core/scene";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput } from "core/Materials/Textures/textureMerger";
 
 const NAME = "KHR_materials_scatter";
+
+// Lower bound on transmission color channels before taking -log(), matching the renderer's `Epsilon`
+// (openpbrVolumeFunctions) and the glTF loader, so a zero channel maps to a finite extinction.
+const MinTransmissionColor = 1e-7;
+
+/**
+ * Render-target options for intermediate passes: floating point when the engine can render to it, so
+ * only the final exported textures are quantized to 8 bits.
+ * @param scene the scene whose engine renders the passes
+ * @returns output options for an intermediate texture processor pass
+ */
+function IntermediateOutputOptions(scene: Scene): ITextureProcessorOutputOptions {
+    const caps = scene.getEngine().getCaps();
+    return {
+        textureType: caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+    };
+}
 
 // Scatter result cached per material between postExportMaterialAdditionalTexturesAsync (where it is
 // baked) and postExportMaterialAsync (where it is referenced). `ownedTextures` holds the textures this
@@ -123,10 +144,12 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
     }
 
     /**
-     * Per-pixel transmission fraction operand `T / (1 - (1 - T)(1 - S))` from the (possibly textured)
-     * transmission weight `T` and subsurface weight `S`. Folds to a constant when neither weight has a
-     * texture. The subsurface fraction is `1 - transmissionFraction`. Weights are read from the
-     * glTF-convention channels (transmission R; subsurface A when packed in alpha, otherwise R).
+     * Per-pixel transmission fraction operand `T / (T + S(1 - T))` (= `T / (1 - (1 - T)(1 - S))`) from the
+     * (possibly textured) transmission weight `T` and subsurface weight `S`. Folds to a constant when
+     * neither weight has a texture. The subsurface fraction is `1 - transmissionFraction`. Weights are read
+     * from the glTF-convention channels (transmission R; subsurface A when packed in alpha, otherwise R).
+     * The fraction is computed in one fused pass into a floating-point target (when supported), so small
+     * weights don't cancel out in 8-bit intermediates; callers quantize only their final output.
      * @param mat the OpenPBR material whose weights drive the fraction
      * @returns an operand carrying the transmission fraction (constant or baked texture)
      */
@@ -135,16 +158,26 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
         const transmissionWeight = mat.transmissionWeight;
         const subsurfaceWeight = mat.subsurfaceWeight;
         const subsurfaceChannel = mat._useSubsurfaceWeightFromTextureAlpha ? TextureChannel.A : TextureChannel.R;
-        const makeTransmissionWeightOp = () =>
-            CreateTextureWithFactorOperand(mat.transmissionWeightTexture, new Color4(transmissionWeight, transmissionWeight, transmissionWeight, 1.0), TextureChannel.R);
-        const makeSubsurfaceWeightOp = () =>
-            CreateTextureWithFactorOperand(mat.subsurfaceWeightTexture, new Color4(subsurfaceWeight, subsurfaceWeight, subsurfaceWeight, 1.0), subsurfaceChannel);
+        const transmissionWeightOp = CreateTextureWithFactorOperand(
+            mat.transmissionWeightTexture,
+            new Color4(transmissionWeight, transmissionWeight, transmissionWeight, 1.0),
+            TextureChannel.R
+        );
+        const subsurfaceWeightOp = CreateTextureWithFactorOperand(
+            mat.subsurfaceWeightTexture,
+            new Color4(subsurfaceWeight, subsurfaceWeight, subsurfaceWeight, 1.0),
+            subsurfaceChannel
+        );
 
-        const oneMinusT = await InvertTextureAsync(`scatter 1-T (${mat.name})`, makeTransmissionWeightOp(), scene, ChannelMask.RGB);
-        const oneMinusS = await InvertTextureAsync(`scatter 1-S (${mat.name})`, makeSubsurfaceWeightOp(), scene, ChannelMask.RGB);
-        const oneMinusProduct = await MultiplyTexturesAsync(`scatter (1-T)(1-S) (${mat.name})`, oneMinusT, oneMinusS, scene);
-        const denominator = await InvertTextureAsync(`scatter denom (${mat.name})`, oneMinusProduct, scene, ChannelMask.RGB);
-        return await DivideTexturesAsync(`scatter transmission fraction (${mat.name})`, makeTransmissionWeightOp(), denominator, scene);
+        return await TransmissionFractionAsync(
+            `scatter transmission fraction (${mat.name})`,
+            transmissionWeightOp,
+            subsurfaceWeightOp,
+            scene,
+            undefined,
+            undefined,
+            IntermediateOutputOptions(scene)
+        );
     }
 
     /**
@@ -190,9 +223,31 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
             const scatter = mat.transmissionScatter;
             const transmissionScatterOp = CreateTextureWithFactorOperand(mat.transmissionScatterTexture, new Color4(scatter.r, scatter.g, scatter.b, 1.0));
             const color = mat.transmissionColor;
-            const extinctionTimesDepth = CreateFactorOperand(new Color4(-Math.log(color.r), -Math.log(color.g), -Math.log(color.b), 1.0));
-            const singleScatterOp = await DivideTexturesAsync(`scatter single-scatter (${mat.name})`, transmissionScatterOp, extinctionTimesDepth, scene);
-            transmissionMultiOp = await SingleScatterToMultiScatterAlbedoAsync(`scatter multi-scatter (${mat.name})`, singleScatterOp, scene, mat.transmissionScatterAnisotropy);
+            const extinctionTimesDepth = CreateFactorOperand(
+                new Color4(
+                    -Math.log(Math.max(color.r, MinTransmissionColor)),
+                    -Math.log(Math.max(color.g, MinTransmissionColor)),
+                    -Math.log(Math.max(color.b, MinTransmissionColor)),
+                    1.0
+                )
+            );
+            const intermediateOptions = IntermediateOutputOptions(scene);
+            const singleScatterOp = await DivideTexturesAsync(
+                `scatter single-scatter (${mat.name})`,
+                transmissionScatterOp,
+                extinctionTimesDepth,
+                scene,
+                undefined,
+                undefined,
+                intermediateOptions
+            );
+            transmissionMultiOp = await SingleScatterToMultiScatterAlbedoAsync(
+                `scatter multi-scatter (${mat.name})`,
+                singleScatterOp,
+                scene,
+                mat.transmissionScatterAnisotropy,
+                intermediateOptions
+            );
         } else {
             transmissionMultiOp = CreateFactorOperand(new Color4(0, 0, 0, 1.0));
         }

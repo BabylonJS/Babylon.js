@@ -231,4 +231,157 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
             }
         });
     }
+
+    // A zero transmission color channel is valid (full attenuation). The exporter must clamp it to the same
+    // positive bound as the renderer and importer before taking -log(), otherwise the extinction is infinite,
+    // the single-scatter albedo collapses to zero and a finite scattering coefficient exports as black.
+    for (const textured of [false, true]) {
+        test(`volumetric scatter with a zero attenuation channel preserves the scattering coefficient (${textured ? "textured" : "constant"})`, async () => {
+            const result = await page.evaluate(async (textured) => {
+                const scene = window.scene!;
+                const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+
+                const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                const mat = new BABYLON.OpenPBRMaterial("zeroAttenuation", scene);
+                mat.geometryThinWalled = 0;
+                mat.transmissionWeight = 1;
+                mat.subsurfaceWeight = 0;
+                mat.transmissionDepth = 1.0;
+                mat.geometryThickness = 1.0;
+                mat.transmissionColor = new BABYLON.Color3(0.9, 0, 0.5);
+                mat.transmissionScatter = new BABYLON.Color3(0.08, 2.0, 0.2);
+                if (textured) {
+                    mat.transmissionScatterTexture = new BABYLON.RawTexture(new Uint8Array(16).fill(255), 2, 2, RGBA, scene, false, false, NEAREST);
+                }
+                box.material = mat;
+
+                const glb = await BABYLON.GLTF2Export.GLBAsync(scene, "rt");
+                const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
+                const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
+                const exported = JSON.parse(gltf.files["rt.gltf"] as string).materials[0].extensions;
+
+                const scene2 = new BABYLON.Scene(scene.getEngine());
+                let gltfLoader: { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> } | null = null;
+                BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
+                    if (loader.name === "gltf") {
+                        gltfLoader = loader as unknown as { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> };
+                        gltfLoader.useOpenPBR = true;
+                    }
+                });
+                await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
+                await gltfLoader!.whenCompleteAsync();
+                URL.revokeObjectURL(url);
+
+                const reMat = scene2.materials.find((m) => m.getClassName() === "OpenPBRMaterial") as any;
+                const factor = reMat.transmissionScatter.asArray() as number[];
+                const texture = reMat.transmissionScatterTexture as InstanceType<typeof BABYLON.BaseTexture> | null;
+                let texel = [1, 1, 1];
+                if (texture) {
+                    const pixels = await texture.readPixels();
+                    texel = pixels instanceof Uint8Array ? Array.from(pixels.slice(0, 3)).map((v) => v / 255) : Array.from((pixels as Float32Array).slice(0, 3));
+                }
+                const depth = reMat.transmissionDepth as number;
+                return {
+                    attenuationColor: exported.KHR_materials_volume.attenuationColor as number[],
+                    attenuationDistance: exported.KHR_materials_volume.attenuationDistance as number,
+                    multiscatterColor: (exported.KHR_materials_scatter.multiscatterColorFactor as number[]) ?? null,
+                    hasMultiscatterTexture: !!exported.KHR_materials_scatter.multiscatterColorTexture,
+                    transmissionColor: reMat.transmissionColor.asArray() as number[],
+                    hasTexture: !!texture,
+                    // Scattering coefficient = transmission_scatter / transmission_depth (factor times texel).
+                    scatterCoefficient: factor.map((f, i) => (f * texel[i]) / depth),
+                };
+            }, textured);
+
+            // The exported volume is finite, and the zero channel remains the most strongly attenuated one.
+            expect(result.attenuationDistance).toBeGreaterThan(0);
+            expect(result.attenuationColor.every((c) => Number.isFinite(c))).toBe(true);
+            expect(result.transmissionColor[1]).toBeLessThan(Math.min(result.transmissionColor[0], result.transmissionColor[2]));
+            expect(result.hasMultiscatterTexture).toBe(textured);
+            if (!textured) {
+                // The multi-scatter color for the fully attenuated channel is not black.
+                expect(result.multiscatterColor[1]).toBeGreaterThan(0.01);
+            }
+            expect(result.hasTexture).toBe(textured);
+            // The scattering coefficient (scatter / depth, with depth 1 originally) is preserved per channel,
+            // including the fully attenuated one, rather than exporting as zero albedo.
+            const expected = [0.08, 2.0, 0.2];
+            const tolerance = textured ? 0.06 : 0.02;
+            for (let i = 0; i < 3; i++) {
+                expect(Math.abs(result.scatterCoefficient[i] - expected[i]) / expected[i], `channel ${i}: ${result.scatterCoefficient[i]}`).toBeLessThanOrEqual(tolerance);
+            }
+        });
+    }
+
+    // The weight fraction T / (1 - (1-T)(1-S)) cancels catastrophically for small weights if its intermediates
+    // are quantized: with T = S = 0.001 both inverted weights round to 1 in 8 bits and the fraction saturates.
+    // Exporting textured weights must produce the same per-texel values as the constant-only export.
+    for (const thinWalled of [true, false]) {
+        test(`${thinWalled ? "thin-walled" : "volumetric"} scatter with small textured weights matches the constant export`, async () => {
+            const result = await page.evaluate(async (thinWalled) => {
+                const scene = window.scene!;
+                const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                const white = () => new BABYLON.RawTexture(new Uint8Array(16).fill(255), 2, 2, RGBA, scene, false, false, NEAREST);
+
+                const exportAsync = async (textured: boolean) => {
+                    const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                    const mat = new BABYLON.OpenPBRMaterial("smallWeights", scene);
+                    mat.geometryThinWalled = thinWalled ? 1 : 0;
+                    mat.transmissionWeight = 0.001;
+                    mat.subsurfaceWeight = 0.001;
+                    mat.subsurfaceColor = new BABYLON.Color3(0.8, 0.3, 0.2);
+                    if (!thinWalled) {
+                        mat.transmissionDepth = 1.0;
+                        mat.geometryThickness = 1.0;
+                        mat.transmissionColor = new BABYLON.Color3(0.9, 0.7, 0.5);
+                        mat.transmissionScatter = new BABYLON.Color3(0.08, 0.12, 0.2);
+                    }
+                    if (textured) {
+                        mat.transmissionWeightTexture = white();
+                        mat.subsurfaceWeightTexture = white();
+                    }
+                    box.material = mat;
+
+                    const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
+                    const json = JSON.parse(gltf.files["rt.gltf"] as string);
+                    const scatter = json.materials[0].extensions.KHR_materials_scatter;
+                    const textureInfo = thinWalled ? scatter.scatterStrengthTexture : scatter.multiscatterColorTexture;
+                    let texel: number[] | null = null;
+                    if (textureInfo) {
+                        const uri = json.images[json.textures[textureInfo.index].source].uri as string;
+                        const bitmap = await createImageBitmap(gltf.files[uri] as Blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+                        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                        const context = canvas.getContext("2d")!;
+                        context.drawImage(bitmap, 0, 0);
+                        texel = Array.from(context.getImageData(0, 0, 1, 1).data);
+                    }
+
+                    box.dispose();
+                    mat.dispose(true, true);
+                    return { strengthFactor: scatter.scatterStrengthFactor as number, colorFactor: scatter.multiscatterColorFactor as number[], texel };
+                };
+
+                return { textured: await exportAsync(true), constant: await exportAsync(false) };
+            }, thinWalled);
+
+            expect(result.constant.texel).toBeNull();
+            expect(result.textured.texel).not.toBeNull();
+            const texel = result.textured.texel!;
+            if (thinWalled) {
+                // The strength is the subsurface fraction 1 - T / (T + S(1 - T)), stored in alpha.
+                const expected = 1 - 0.001 / (0.001 + 0.001 * 0.999);
+                expect(result.constant.strengthFactor).toBeCloseTo(expected, 5);
+                expect(result.textured.strengthFactor).toBe(1);
+                expect(Math.abs(texel[3] / 255 - result.constant.strengthFactor)).toBeLessThanOrEqual(1 / 255);
+            } else {
+                // The baked color texture is sRGB-encoded; compare against the encoded constant color.
+                const toSRGB = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+                for (let i = 0; i < 3; i++) {
+                    expect(Math.abs(texel[i] - toSRGB(result.constant.colorFactor[i]) * 255), `channel ${i}`).toBeLessThanOrEqual(1.5);
+                }
+            }
+        });
+    }
 });
