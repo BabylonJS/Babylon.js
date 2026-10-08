@@ -1045,7 +1045,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
         const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
         const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
-        const colorPass = this._colorMode && !solidColor?.isEnabled && !fog && this._isMainColorPass();
+        const colorPass = this._colorMode && this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE && !solidColor?.isEnabled && !fog && this._isMainColorPass();
         return (colorPass || depthPass) && this._computeActive && !this._hasUnsupportedView() && (!this._renderer || this._isWorkloadSupported());
     }
 

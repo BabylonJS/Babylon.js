@@ -658,7 +658,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Tilted and custom projections are supported by the point path. Compute runs immediately
      * before compositing with the pass's actual view; matching color and depth passes share one result.
      * While point shaders compile, the pass waits without drawing classic splats. The color pass uses the classic path
-     * while the GaussianSplattingSolidColorMaterialPlugin override is enabled. WebGPU only.
+     * while the GaussianSplattingSolidColorMaterialPlugin override is enabled or the source material's
+     * alpha mode is not ALPHA_COMBINE. WebGPU only.
      *
      * Limitation: each pixel's accumulated color is depth-tested as a whole against its latest sample's depth. Where
      * other geometry intersects the splats, occluded splats can bleed through or visible ones drop out, and the
@@ -685,7 +686,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     /**
      * Whether the active camera's DepthRenderer depth for this mesh comes from the point-splatting compute
      * (an opaque nearest-surface depth) instead of the classic path. Off by default and independent of
-     * {@link pointSplattingRenderMode}, with the same fallbacks and module requirement. WebGPU only.
+     * {@link pointSplattingRenderMode}, with the same camera, clip-plane, data fallbacks and module requirement.
+     * Color-only material fallbacks do not disable point depth. WebGPU only.
      */
     public get pointSplattingDepthRenderMode(): boolean {
         return this._pointController?.depthRenderMode ?? false;

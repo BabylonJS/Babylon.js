@@ -1196,6 +1196,34 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it.each([Constants.ALPHA_ADD, Constants.ALPHA_MULTIPLY, Constants.ALPHA_PREMULTIPLIED])(
+        "falls back for unsupported source blending (%s) without disabling point depth",
+        async (alphaMode) => {
+            const engine = new NullEngine();
+            const scene = new Scene(engine);
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            const mesh = new GaussianSplattingMesh("splat", null, scene);
+            const controller = CreateController(mesh);
+            const depth = scene.enableDepthRenderer(camera);
+            controller["_colorMode"] = true;
+            controller["_depthMode"] = true;
+            controller["_runCompute"] = vi.fn();
+            engine.currentRenderPassId = camera.renderPassId;
+            mesh.material!.alphaMode = alphaMode;
+            expect(controller.drawColorPass(true)).toBe(false);
+            engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+            expect(controller.drawColorPass(false)).toBe(true);
+            engine.currentRenderPassId = camera.renderPassId;
+            mesh.material!.alphaMode = Constants.ALPHA_COMBINE;
+            expect(controller.drawColorPass(true)).toBe(true);
+            mesh.material!.alphaMode = alphaMode;
+            expect(controller.drawColorPass(true)).toBe(false);
+            await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+            scene.dispose();
+            engine.dispose();
+        }
+    );
+
     it("preserves applicable fog in classic color while keeping point depth", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
