@@ -24,7 +24,7 @@ export class ButtonLineComponent extends React.Component<IButtonLineComponentPro
         return (
             <div className={"buttonLine" + (this.props.isDisabled ? " disabled" : "")}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
-                <button onClick={() => this.props.onClick()}>{this.props.label}</button>
+                <button disabled={this.props.isDisabled} onClick={() => this.props.onClick()}>{this.props.label}</button>
             </div>
         );
     }

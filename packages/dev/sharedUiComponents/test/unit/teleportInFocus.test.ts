@@ -4,20 +4,11 @@ import * as React from "react";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { type IButtonLineComponentProps } from "../../src/lines/buttonLineComponent";
 import { GraphCanvasComponent } from "../../src/nodeGraphSystem/graphCanvas";
 import { GraphFrame } from "../../src/nodeGraphSystem/graphFrame";
 import { type INodeData } from "../../src/nodeGraphSystem/interfaces/nodeData";
 import { StateManager } from "../../src/nodeGraphSystem/stateManager";
 import { TeleportInPropertyComponent } from "../../src/nodeGraphSystem/teleportInPropertyComponent";
-
-vi.mock("../../src/lines/buttonLineComponent", () => {
-    const ButtonLineComponent: React.FunctionComponent<IButtonLineComponentProps> = (props) => {
-        const { label, isDisabled, onClick } = props;
-        return React.createElement("button", { disabled: isDisabled, onClick }, label);
-    };
-    return { ButtonLineComponent };
-});
 
 function createNodeData(data: object = {}, endpoints?: object[]): INodeData {
     return {
@@ -100,6 +91,10 @@ describe("Teleport reference focus", () => {
         stateManager.onFocusNodeObservable.add(focused);
         stateManager.onSelectionChangedObservable.add(selected);
         renderControl(createNodeData({}, endpoints));
+        const button = getButton();
+        expect(button.disabled).toBe(false);
+        button.focus();
+        expect(document.activeElement).toBe(button);
 
         for (let i = 0; i < 4; i++) {
             getButton().click();
@@ -121,6 +116,19 @@ describe("Teleport reference focus", () => {
         endpoints.length = 0;
         flushSync(() => stateManager.onUpdateRequiredObservable.notifyObservers(null));
         expect(getButton().disabled).toBe(true);
+    });
+
+    it("exposes the real legacy button as disabled and prevents keyboard focus when there are no references", () => {
+        const focused = vi.fn();
+        stateManager.onFocusNodeObservable.add(focused);
+        renderControl(createNodeData({}, []));
+        const button = getButton();
+
+        expect(button.hasAttribute("disabled")).toBe(true);
+        button.focus();
+        expect(document.activeElement).not.toBe(button);
+        button.click();
+        expect(focused).not.toHaveBeenCalled();
     });
 
     it("can repeatedly focus a single reference", () => {
