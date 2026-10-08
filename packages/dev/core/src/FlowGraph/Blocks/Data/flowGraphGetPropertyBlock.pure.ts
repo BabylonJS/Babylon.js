@@ -9,6 +9,43 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 import { RegisterClass } from "core/Misc/typeStore";
 
+function CloneInvalidValue(value: unknown, copies?: Map<object, unknown>): unknown {
+    if (value === null || (typeof value !== "object" && typeof value !== "function")) {
+        return value;
+    }
+    const clonedValues = copies ?? new Map<object, unknown>();
+    if (clonedValues.has(value)) {
+        return clonedValues.get(value);
+    }
+    const clone = (value as { clone?: () => unknown }).clone;
+    if (typeof clone === "function") {
+        const result = clone.call(value);
+        clonedValues.set(value, result);
+        return result;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) {
+        const result: unknown = structuredClone(value);
+        clonedValues.set(value, result);
+        return result;
+    }
+    const result: object = Array.isArray(value) ? new Array(value.length) : Object.create(prototype);
+    clonedValues.set(value, result);
+    for (const key of Reflect.ownKeys(value)) {
+        const descriptor = Object.getOwnPropertyDescriptor(value, key)!;
+        if ("value" in descriptor) {
+            descriptor.value = CloneInvalidValue(descriptor.value, clonedValues);
+        } else {
+            descriptor.value = CloneInvalidValue(Reflect.get(value, key), clonedValues);
+            delete descriptor.get;
+            delete descriptor.set;
+            descriptor.writable = true;
+        }
+        Object.defineProperty(result, key, descriptor);
+    }
+    return result;
+}
+
 /**
  * Configuration for the FlowGraphGetPropertyBlock.
  */
@@ -28,7 +65,11 @@ export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAsse
      */
     resetToDefaultWhenUndefined?: boolean;
 
-    /** Optional value returned alongside isValid=false when property resolution fails. */
+    /**
+     * Optional value copied for each failed resolution and returned alongside isValid=false.
+     * Scalars are retained, cloneable values use clone(), and arrays/plain records are copied recursively.
+     * Other objects must support structured cloning.
+     */
     invalidValue?: unknown;
 }
 
@@ -105,9 +146,7 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
 
     protected override _getInvalidOutputValue(context: FlowGraphContext): P {
         if (Object.prototype.hasOwnProperty.call(this.config, "invalidValue")) {
-            const value = this.config.invalidValue as P;
-            const clone = (value as { clone?: () => P })?.clone;
-            return typeof clone === "function" ? clone.call(value) : value;
+            return CloneInvalidValue(this.config.invalidValue) as P;
         }
         return super._getInvalidOutputValue(context);
     }
