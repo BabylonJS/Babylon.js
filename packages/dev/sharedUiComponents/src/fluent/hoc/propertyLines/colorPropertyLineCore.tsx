@@ -51,7 +51,7 @@ export const ControlledColorPropertyLine = <ValueT,>(props: ControlledColorPrope
 
     const color = adapter.getColor(currentValue);
     return (
-        <PropertyLine ref={propertyLineRef} {...props} expandedContent={<ColorSliders color={color} onSliderChange={onSliderChange} />}>
+        <PropertyLine ref={propertyLineRef} {...props} expandedContent={<ColorSliders color={color} onSliderChange={onSliderChange} disabled={props.disabled} />}>
             {createElement(adapter.picker, {
                 value: currentValue,
                 onChange: handleChange,
@@ -67,19 +67,20 @@ export const ControlledColorPropertyLine = <ValueT,>(props: ControlledColorPrope
 
 type ColorSlidersProps = Readonly<{
     color: StructuralColor;
+    disabled?: boolean;
     onSliderChange: (value: number, component: keyof StructuralColor) => void;
 }>;
 
 const ColorSliders: FunctionComponent<ColorSlidersProps> = (props) => {
-    const { color, onSliderChange } = props;
+    const { color, disabled, onSliderChange } = props;
 
     return (
         <>
-            <SyncedSliderPropertyLine label="R" value={color.r * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "r")} />
-            <SyncedSliderPropertyLine label="G" value={color.g * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "g")} />
-            <SyncedSliderPropertyLine label="B" value={color.b * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "b")} />
+            <SyncedSliderPropertyLine label="R" value={color.r * 255} min={0} max={255} disabled={disabled} onChange={(value) => onSliderChange(value, "r")} />
+            <SyncedSliderPropertyLine label="G" value={color.g * 255} min={0} max={255} disabled={disabled} onChange={(value) => onSliderChange(value, "g")} />
+            <SyncedSliderPropertyLine label="B" value={color.b * 255} min={0} max={255} disabled={disabled} onChange={(value) => onSliderChange(value, "b")} />
             {color.a === undefined ? undefined : (
-                <SyncedSliderPropertyLine label="A" value={color.a} min={0} max={1} step={0.01} onChange={(value) => onSliderChange(value, "a")} />
+                <SyncedSliderPropertyLine label="A" value={color.a} min={0} max={1} step={0.01} disabled={disabled} onChange={(value) => onSliderChange(value, "a")} />
             )}
         </>
     );

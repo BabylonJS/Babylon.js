@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
@@ -90,5 +90,31 @@ describe("FluidRenderingObjectParticleSystem", () => {
         expect(depthEffect.getAttributesNames()).not.toContain("size");
         expect(depthEffect.defines).not.toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
         expect(depthEffect.defines).toContain("FLUIDRENDERING_CENTERED_OFFSET");
+    });
+
+    it("updates a GPUParticleSystem without rendering it", () => {
+        const ps = new GPUParticleSystem("test", { capacity: 100 }, scene);
+        const fluidRenderer = scene.enableFluidRenderer()!;
+        const { object } = fluidRenderer.addParticleSystem(ps, false) as { object: FluidRenderingObjectParticleSystem };
+
+        const originalRender = vi.fn();
+        (object as any)._originalRender = originalRender;
+
+        object.updateSimulation();
+
+        expect(originalRender).toHaveBeenCalledWith(false, true);
+    });
+
+    it("does not update a CPU ParticleSystem, which is updated by its animate method", () => {
+        const ps = new ParticleSystem("test", 100, scene);
+        const fluidRenderer = scene.enableFluidRenderer()!;
+        const { object } = fluidRenderer.addParticleSystem(ps, false) as { object: FluidRenderingObjectParticleSystem };
+
+        const originalRender = vi.fn();
+        (object as any)._originalRender = originalRender;
+
+        object.updateSimulation();
+
+        expect(originalRender).not.toHaveBeenCalled();
     });
 });
