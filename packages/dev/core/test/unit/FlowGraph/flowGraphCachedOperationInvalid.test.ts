@@ -1,12 +1,14 @@
 import { type Engine, NullEngine } from "core/Engines";
 import { type FlowGraph, type FlowGraphContext, FlowGraphCoordinator } from "core/FlowGraph";
 import { FlowGraphNormalizeBlock } from "core/FlowGraph/Blocks/Data/Math/flowGraphVectorMathBlocks";
-import { FlowGraphInvertMatrixBlock, FlowGraphMatrixDecomposeBlock } from "core/FlowGraph/Blocks/Data/Math/flowGraphMatrixMathBlocks";
+import { FlowGraphInvertMatrixBlock, FlowGraphMatrixDecomposeBlock, FlowGraphTransposeBlock } from "core/FlowGraph/Blocks/Data/Math/flowGraphMatrixMathBlocks";
+import { FlowGraphNegationBlock } from "core/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.pure";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 import { FlowGraphGetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock.pure";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { type FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -106,6 +108,39 @@ describe("FlowGraphCachedOperationBlock invalid results", () => {
             expect(second.values.get("key")!.count).toBe(1);
             expect(fallback.date.getTime()).toBe(123);
             expect(fallback.values.get("key")!.count).toBe(1);
+        });
+
+        it("preserves integer fallbacks through downstream negation", () => {
+            const fallback = new FlowGraphInteger(7);
+            const block = new FlowGraphGetPropertyBlock<FlowGraphInteger, FlowGraphAssetType.Mesh>({ invalidValue: fallback });
+            const negation = new FlowGraphNegationBlock();
+            block.value.connectTo(negation.a);
+            const first = block.value.getValue(context);
+            expect(first).toBeInstanceOf(FlowGraphInteger);
+            expect(first).not.toBe(fallback);
+            const result = negation.value.getValue(context);
+            expect(result).toBeInstanceOf(FlowGraphInteger);
+            expect(result).toEqual(new FlowGraphInteger(-7));
+            expect(block.value.getValue(context)).not.toBe(first);
+        });
+
+        it.each([
+            [FlowGraphTypes.Matrix2D, new FlowGraphMatrix2D([1, 2, 3, 4]), FlowGraphMatrix2D, [1, 3, 2, 4]],
+            [FlowGraphTypes.Matrix3D, new FlowGraphMatrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9]), FlowGraphMatrix3D, [1, 4, 7, 2, 5, 8, 3, 6, 9]],
+        ] as const)("preserves %s fallbacks through downstream transpose", (matrixType, fallback, matrixClass, expected) => {
+            const block = new FlowGraphGetPropertyBlock<typeof fallback, FlowGraphAssetType.Mesh>({ invalidValue: fallback });
+            const transpose = new FlowGraphTransposeBlock({ matrixType });
+            block.value.connectTo(transpose.a);
+            const first = block.value.getValue(context);
+            expect(first).toBeInstanceOf(matrixClass);
+            expect(first).not.toBe(fallback);
+            expect(first.m).not.toBe(fallback.m);
+            const result = transpose.value.getValue(context);
+            expect(result).toBeInstanceOf(matrixClass);
+            expect(Array.from(result.m)).toEqual(expected);
+            first.m[0] = 99;
+            expect(block.value.getValue(context).m[0]).toBe(1);
+            expect(fallback.m[0]).toBe(1);
         });
     });
 

@@ -13,6 +13,7 @@ import { PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
 import { PickingInfo } from "core/Collisions/pickingInfo";
 import { registerBuiltInLoaders } from "../../../src/dynamic";
 import { GetKHRInteractivityImportResult, RegisterKHR_interactivity } from "../../../src/glTF/2.0/Extensions/KHR_interactivity.pure";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 
 function asset(graph: IKHRInteractivity_Graph, extensionsUsed: string[] = ["KHR_interactivity"]): string {
     return `data:${JSON.stringify({
@@ -302,10 +303,35 @@ describe("KHR_interactivity minimal public loader imports", () => {
         const get = graph.getAllBlocks().find((block) => block.getClassName() === "FlowGraphGetPropertyBlock")!;
         const value = get.getDataOutput("value")!.getValue(context);
         if (signature === "int") {
+            expect(value).toBeInstanceOf(FlowGraphInteger);
             expect(value.value).toBe(expected);
         } else {
             expect(value).toBe(expected);
         }
         expect(get.getDataOutput("isValid")!.getValue(context)).toBe(false);
+    });
+
+    it("preserves an invalid integer pointer-read default through a connected math operation", async () => {
+        await AppendSceneAsync(
+            asset({
+                types: [{ signature: "int" }],
+                variables: [{ type: 0, value: [-1] }],
+                declarations: [{ op: "pointer/get" }, { op: "math/neg" }, { op: "event/onStart" }, { op: "variable/set" }],
+                nodes: [
+                    {
+                        declaration: 0,
+                        configuration: { pointer: { value: ["/extensions/KHR_interactivity/asset/extensions/EXT_unknown/enabled"] }, type: { value: [0] } },
+                    },
+                    { declaration: 1, values: { a: { node: 0 } } },
+                    { declaration: 2, flows: { out: { node: 3 } } },
+                    { declaration: 3, configuration: { variables: { value: [0] } }, values: { "0": { node: 1 } } },
+                ],
+            }),
+            scene
+        );
+        const graph = GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!;
+        const value = graph.getContext(0).getVariable("staticVariable_0");
+        expect(value).toBeInstanceOf(FlowGraphInteger);
+        expect(value).toEqual(new FlowGraphInteger(0));
     });
 });
