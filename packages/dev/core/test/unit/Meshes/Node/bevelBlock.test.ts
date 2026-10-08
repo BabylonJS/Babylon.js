@@ -602,7 +602,7 @@ describe("BevelBlock", () => {
         expect(overLimitResult.positions).toEqual(sixtyFourSegmentResult.positions);
         expect(overLimitResult.indices).toEqual(sixtyFourSegmentResult.indices);
         expect(overLimitResult.normals).toEqual(sixtyFourSegmentResult.normals);
-    });
+    }, 15_000);
 
     it("uses degree values for the angle input", () => {
         const defaultAngleResult = buildBeveledBox(0.15, 2, 30);

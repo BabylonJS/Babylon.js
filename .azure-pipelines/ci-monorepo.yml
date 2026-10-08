@@ -553,7 +553,7 @@ jobs:
             inputs:
                 version: $(NodeVersion)
 
-          - script: npm install --global npm@11.18.0
+          - script: npx --yes npm@11.18.0 install --global npm@11.18.0
             displayName: "Use npm 11.18.0"
 
           - template: templates/cache-steps.yml
