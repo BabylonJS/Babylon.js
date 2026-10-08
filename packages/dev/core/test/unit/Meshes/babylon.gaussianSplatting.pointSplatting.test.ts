@@ -965,7 +965,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         });
         renderer["_engine"] = engine;
         renderer["_partBuffers"] = [];
-        renderer["_partWriteFrames"] = [];
+        renderer["_partUseFrames"] = [];
         renderer["_partSlot"] = 0;
         renderer["_prevPartData"] = new Float32Array(0);
         renderer["_accumGeneration"] = 0;
@@ -1044,8 +1044,10 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(compute).toHaveBeenCalledTimes(5);
         expect(classic).not.toHaveBeenCalled();
 
+        let depthX = 1;
+        let colorX = 2;
         const before = mesh.onBeforeRenderObservable.add(() => {
-            mesh.position.x = engine.currentRenderPassId === depthRenderer.getDepthMap().renderPassId ? 1 : 2;
+            mesh.position.x = engine.currentRenderPassId === depthRenderer.getDepthMap().renderPassId ? depthX : colorX;
         });
         engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
         mesh.render(mesh.subMeshes[0], false);
@@ -1057,9 +1059,22 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(renderer["_prevPartData"][12]).toBe(2);
         mesh.render(mesh.subMeshes[0], true);
         expect(compute).toHaveBeenCalledTimes(7);
-        mesh.onBeforeRenderObservable.remove(before);
         expect(partContents.get(dispatchedParts[5])![12]).toBe(1);
         expect(partContents.get(dispatchedParts[6])![12]).toBe(2);
+
+        // Next frame: depth reuses the unchanged parts while color changes them; the depth run must keep them.
+        engine["_frameId"]++;
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        depthX = 2;
+        colorX = 3;
+        engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
+        mesh.render(mesh.subMeshes[0], false);
+        engine.currentRenderPassId = camera.outputRenderTarget.renderPassId;
+        mesh.render(mesh.subMeshes[0], true);
+        expect(compute).toHaveBeenCalledTimes(9);
+        expect(partContents.get(dispatchedParts[7])![12]).toBe(2);
+        expect(partContents.get(dispatchedParts[8])![12]).toBe(3);
+        mesh.onBeforeRenderObservable.remove(before);
 
         await vi.waitFor(() => expect(depthRenderer["_shadersLoaded"]).toBe(true));
         controller["_renderer"] = null;

@@ -151,9 +151,9 @@ export class GaussianPointSplattingRenderer {
     private _frameIndex = 0;
 
     private _parts: Nullable<StorageBuffer> = null;
-    // Queue writes land before the frame's commands run, so each differing upload in a frame gets its own slot.
+    // Queue writes land before the frame's commands run, so a slot used this frame is never rewritten in it.
     private _partBuffers: StorageBuffer[] = [];
-    private _partWriteFrames: number[] = [];
+    private _partUseFrames: number[] = [];
     private _partSlot = 0;
     private _partCount = 0;
     private _prevPartData: Float32Array = new Float32Array(0);
@@ -583,8 +583,12 @@ export class GaussianPointSplattingRenderer {
             this._disposePartBuffers();
             this._partCount = count;
         }
-        // The current slot already holds unchanged data.
+        const frameId = engine.frameId;
+        // The current slot already holds unchanged data; the upcoming dispatch binds it.
         if (!changed) {
+            if (this._parts) {
+                this._partUseFrames[this._partSlot] = frameId;
+            }
             return;
         }
         if (this._prevPartData.length !== floats) {
@@ -593,21 +597,20 @@ export class GaussianPointSplattingRenderer {
         this._prevPartData.set(packed);
         this.resetAccumulation();
 
-        // A slot written this frame may be bound by a dispatch that has not been submitted yet.
-        const frameId = engine.frameId;
-        if (!this._parts || this._partWriteFrames[this._partSlot] === frameId) {
+        // A slot used this frame may be bound by a dispatch that has not been submitted yet.
+        if (!this._parts || this._partUseFrames[this._partSlot] === frameId) {
             let slot = 0;
-            while (slot < this._partBuffers.length && this._partWriteFrames[slot] === frameId) {
+            while (slot < this._partBuffers.length && this._partUseFrames[slot] === frameId) {
                 slot++;
             }
             if (slot === this._partBuffers.length) {
                 this._partBuffers.push(new StorageBuffer(engine, floats * Float32Array.BYTES_PER_ELEMENT));
-                this._partWriteFrames.push(-1);
+                this._partUseFrames.push(-1);
             }
             this._partSlot = slot;
             this._parts = this._partBuffers[slot];
         }
-        this._partWriteFrames[this._partSlot] = frameId;
+        this._partUseFrames[this._partSlot] = frameId;
         this._parts.update(packed);
     }
 
@@ -616,7 +619,7 @@ export class GaussianPointSplattingRenderer {
             buffer.dispose();
         }
         this._partBuffers.length = 0;
-        this._partWriteFrames.length = 0;
+        this._partUseFrames.length = 0;
         this._partSlot = 0;
         this._parts = null;
     }
@@ -791,6 +794,7 @@ export class GaussianPointSplattingRenderer {
             this._preprocessCs.setStorageBuffer("sh", this._sh!);
         }
         this._preprocessCs.setStorageBuffer("parts", this._parts!);
+        this._partUseFrames[this._partSlot] = this._engine.frameId;
         this._preprocessCs.setStorageBuffer("hiZ", this._hiZ!);
         this._preprocessCs.dispatch(Math.min(groupsG, MaxDispatchGroupsPerDimension), Math.ceil(groupsG / MaxDispatchGroupsPerDimension), 1);
 
