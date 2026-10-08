@@ -6,7 +6,7 @@ const { exec } = require("child_process");
  * This is a relatively slow process, mainly because of the postcompile script that prepares the package for NPM
  * Note that this will not directly watch changes in shaders, but will recompile the package if a shader is changed using the dev watcher
  *
- * This was kept as a commonjs script to maintain support for older versions of node.
+ * Node 22.22.2 and Node 24.15.0 support loading Chokidar's synchronous ESM entry with require().
  */
 
 let running = false;
