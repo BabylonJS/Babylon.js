@@ -1037,7 +1037,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     public get handlesCurrentPass(): boolean {
         const passMaterial = this._mesh.getMaterialForRenderPass(this._scene.getEngine().currentRenderPassId);
         const depthRenderer = this._depthMode ? this._getCurrentDepthRenderer() : null;
-        const depthPass = !!depthRenderer;
+        const viewport = this._scene.activeCamera?.viewport;
+        const fullViewport = !!viewport && viewport.x === 0 && viewport.y === 0 && viewport.width === 1 && viewport.height === 1;
+        const depthPass = !!depthRenderer && (fullViewport || depthRenderer.getDepthMap().ignoreCameraViewport);
         // The depth renderer always installs its own classic GS depth material for its pass; only a
         // user override set through setMaterialForRendering keeps the classic path.
         if (passMaterial && !depthRenderer?._isGaussianSplattingDepthMaterial(passMaterial)) {
@@ -1045,7 +1047,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
         const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
         const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
-        const colorPass = this._colorMode && this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE && !solidColor?.isEnabled && !fog && this._isMainColorPass();
+        const colorPass =
+            this._colorMode && fullViewport && this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE && !solidColor?.isEnabled && !fog && this._isMainColorPass();
         return (colorPass || depthPass) && this._computeActive && !this._hasUnsupportedView() && (!this._renderer || this._isWorkloadSupported());
     }
 

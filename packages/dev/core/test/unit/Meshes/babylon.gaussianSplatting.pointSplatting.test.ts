@@ -1224,6 +1224,41 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         }
     );
 
+    it("falls back for partial viewports while retaining full-viewport point depth", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_runCompute"] = vi.fn();
+        camera.viewport.width = 0.5;
+        camera.viewport.height = 0.5;
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(false);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(true);
+        depth.getDepthMap().ignoreCameraViewport = false;
+        expect(controller.drawColorPass(false)).toBe(false);
+        depth.getDepthMap().ignoreCameraViewport = true;
+        expect(controller.drawColorPass(false)).toBe(true);
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(false);
+        camera.viewport.width = 1;
+        camera.viewport.height = 1;
+        expect(controller.drawColorPass(true)).toBe(true);
+        camera.viewport.x = 0.25;
+        expect(controller.drawColorPass(true)).toBe(false);
+        camera.viewport.x = 0;
+        camera.viewport.y = 0.25;
+        expect(controller.drawColorPass(true)).toBe(false);
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("preserves applicable fog in classic color while keeping point depth", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
