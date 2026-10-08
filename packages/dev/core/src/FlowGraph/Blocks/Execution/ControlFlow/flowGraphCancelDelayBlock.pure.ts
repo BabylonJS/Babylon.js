@@ -14,6 +14,14 @@ import { MarkDelayInactive } from "core/FlowGraph/flowGraphDelayRegistry";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
+ * Configuration for the cancel delay block.
+ */
+export interface IFlowGraphCancelDelayBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /** Whether invalid delay indices are ignored while still activating out. Defaults to false. */
+    ignoreInvalidDelay?: boolean;
+}
+
+/**
  * This block cancels a delay that was previously scheduled.
  */
 export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSignal {
@@ -22,7 +30,11 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
      */
     public readonly delayIndex: FlowGraphDataConnection<FlowGraphInteger>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    /**
+     * Creates a delay cancellation block.
+     * @param config optional invalid-index handling
+     */
+    constructor(config?: IFlowGraphCancelDelayBlockConfiguration) {
         super(config);
         this.delayIndex = this.registerDataInput("delayIndex", RichTypeFlowGraphInteger);
     }
@@ -30,6 +42,10 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const delayIndex = getNumericValue(this.delayIndex.getValue(context));
         if (delayIndex < 0 || isNaN(delayIndex) || !isFinite(delayIndex)) {
+            if (this.config?.ignoreInvalidDelay) {
+                this.out._activateSignal(context);
+                return;
+            }
             return this._reportError(context, "Invalid delay index");
         }
         const timers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);

@@ -22,6 +22,9 @@ export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAsse
      * The target asset from which the property will be retrieved
      */
     target?: AssetType<O>;
+
+    /** Whether a failed write activates only error, without also activating out. Defaults to false. */
+    stopOnError?: boolean;
 }
 
 /**
@@ -74,7 +77,9 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
             const value = this.value.getValue(context);
             const propertyName = this.propertyName.getValue(context);
 
-            this._stopRunningAnimations(context, target, propertyName);
+            if (!this.config.stopOnError) {
+                this._stopRunningAnimations(context, target, propertyName);
+            }
 
             const setFunction = this.customSetFunction.getValue(context);
             if (setFunction) {
@@ -82,8 +87,14 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
             } else {
                 this._setPropertyValue(target, propertyName, value);
             }
+            if (this.config.stopOnError) {
+                this._stopRunningAnimations(context, target, propertyName);
+            }
         } catch (e) {
             this._reportError(context, e);
+            if (this.config.stopOnError) {
+                return;
+            }
         }
         this.out._activateSignal(context);
     }

@@ -430,6 +430,7 @@ function _CreateLengthAccessor<GLTFTargetType, BabylonTargetType>(
 ): IObjectAccessor<GLTFTargetType, BabylonTargetType, FlowGraphInteger> {
     return {
         type: FlowGraphTypes.Integer,
+        isReadOnly: true,
         get: (target: GLTFTargetType) => {
             const length = getLength(target);
             return length === undefined ? undefined : FlowGraphInteger.FromValue(length);

@@ -9,7 +9,8 @@ import { AnimationGroup } from "core/Animations/animationGroup.pure";
 import { type Animation } from "core/Animations/animation.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { type Observer } from "core/Misc/observable.pure";
+import { RemoveFlowGraphAnimationGroupObservers, type IFlowGraphAnimationObserverSet } from "../../../flowGraphAnimationHelpers";
+export { RemoveFlowGraphAnimationGroupObservers } from "../../../flowGraphAnimationHelpers";
 
 /**
  * Configuration for playing an animation.
@@ -19,35 +20,6 @@ export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlo
      * Whether animation-group playback uses the unbounded KHR_interactivity timeline.
      */
     useVirtualTimeline?: boolean;
-}
-
-type AnimationObserverSet = {
-    block: FlowGraphPlayAnimationBlock;
-    groupEnd: Observer<AnimationGroup>;
-    animationEnd: Observer<any>;
-    animationLoop: Observer<any>;
-    groupLoop: Observer<AnimationGroup>;
-};
-
-/**
- * Removes observers owned by the play block that started an animation group.
- * @param context active FlowGraph context
- * @param animationGroup animation group being replaced or stopped
- * @returns the owning play block, when one was registered
- */
-export function RemoveFlowGraphAnimationGroupObservers(context: FlowGraphContext, animationGroup: AnimationGroup): FlowGraphPlayAnimationBlock | undefined {
-    const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, AnimationObserverSet>()) as Map<number, AnimationObserverSet>;
-    const observers = observerSets.get(animationGroup.uniqueId);
-    if (!observers) {
-        return undefined;
-    }
-    animationGroup.onAnimationGroupEndObservable.remove(observers.groupEnd);
-    animationGroup.onAnimationEndObservable.remove(observers.animationEnd);
-    animationGroup.onAnimationLoopObservable.remove(observers.animationLoop);
-    animationGroup.onAnimationGroupLoopObservable.remove(observers.groupLoop);
-    observerSets.delete(animationGroup.uniqueId);
-    context._setGlobalContextVariable("animationGroupObserverSets", observerSets);
-    return observers.block;
 }
 
 /**
@@ -159,10 +131,20 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @returns whether the animation was prepared and started successfully
      */
     private _tryPreparePendingTasks(context: FlowGraphContext): boolean {
-        const ag = this.animationGroup.getValue(context);
-        const animation = this.animation.getValue(context);
+        let ag: AnimationGroup;
+        let animation: Animation | Animation[];
+        try {
+            ag = this.animationGroup.getValue(context);
+            animation = this.animation.getValue(context);
+        } catch (error) {
+            this._reportError(context, error);
+            return false;
+        }
         if (!ag && !animation) {
             this._reportError(context, "No animation or animation group provided");
+            return false;
+        } else if (!ag && Array.isArray(animation) && animation.length === 0) {
+            this._reportError(context, "Animation array is empty");
             return false;
         } else if (ag && ag.targetedAnimations.length === 0) {
             this._reportError(context, "Animation group has no targeted animations");
@@ -287,14 +269,14 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 } else {
                     animationGroupToUse.start(loop, speed, from, to);
                 }
-                const observers: AnimationObserverSet = {
+                const observers: IFlowGraphAnimationObserverSet = {
                     block: this,
                     groupEnd: animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context, animationGroupToUse)),
                     animationEnd: animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context)),
                     animationLoop: animationGroupToUse.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context)),
                     groupLoop: animationGroupToUse.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context)),
                 };
-                const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, AnimationObserverSet>()) as Map<number, AnimationObserverSet>;
+                const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, IFlowGraphAnimationObserverSet>());
                 observerSets.set(animationGroupToUse.uniqueId, observers);
                 context._setGlobalContextVariable("animationGroupObserverSets", observerSets);
                 currentlyRunningAnimationGroups.push(animationGroupToUse.uniqueId);

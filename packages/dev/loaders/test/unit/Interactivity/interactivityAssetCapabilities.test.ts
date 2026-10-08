@@ -43,12 +43,12 @@ describe("KHR_interactivity asset-capability accessors", () => {
             expect(get(createConverter(), "/extensions/KHR_interactivity/asset/extensions/KHR_interactivity/enabled")).toBe(true);
         });
 
-        it("resolves successfully but reports false for an unknown extension", () => {
-            expect(get(createConverter(), "/extensions/KHR_interactivity/asset/extensions/KHR_this_extension_does_not_exist/enabled")).toBe(false);
+        it("does not create a virtual property for an unknown extension", () => {
+            expect(() => createConverter().convert("/extensions/KHR_interactivity/asset/extensions/KHR_this_extension_does_not_exist/enabled")).toThrow();
         });
 
-        it("resolves successfully but reports false for an extension that is not enabled", () => {
-            expect(get(createConverter(), "/extensions/KHR_interactivity/asset/extensions/KHR_materials_unlit/enabled")).toBe(false);
+        it("does not create a virtual property for an extension that is not enabled", () => {
+            expect(() => createConverter().convert("/extensions/KHR_interactivity/asset/extensions/KHR_materials_unlit/enabled")).toThrow();
         });
     });
 

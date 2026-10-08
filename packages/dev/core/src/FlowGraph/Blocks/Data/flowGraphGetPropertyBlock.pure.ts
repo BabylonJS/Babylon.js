@@ -27,6 +27,9 @@ export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAsse
      * If true, the block will reset the output to the default value when the target asset is undefined.
      */
     resetToDefaultWhenUndefined?: boolean;
+
+    /** Optional value returned alongside isValid=false when property resolution fails. */
+    invalidValue?: unknown;
 }
 
 /**
@@ -98,6 +101,15 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
             }
         }
         return value as P;
+    }
+
+    protected override _getInvalidOutputValue(context: FlowGraphContext): P {
+        if (Object.prototype.hasOwnProperty.call(this.config, "invalidValue")) {
+            const value = this.config.invalidValue as P;
+            const clone = (value as { clone?: () => P })?.clone;
+            return typeof clone === "function" ? clone.call(value) : value;
+        }
+        return super._getInvalidOutputValue(context);
     }
 
     /**

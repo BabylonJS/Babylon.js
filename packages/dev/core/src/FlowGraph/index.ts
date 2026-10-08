@@ -15,6 +15,7 @@ export * from "./flowGraphPathConverter";
 export * from "./flowGraphPathConverterComponent";
 export * from "./flowGraphHostResolver";
 export * from "./flowGraphDelayRegistry";
+export * from "./flowGraphAnimationHelpers";
 export * from "./flowGraphLogger";
 export * from "./flowGraphValidator";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports

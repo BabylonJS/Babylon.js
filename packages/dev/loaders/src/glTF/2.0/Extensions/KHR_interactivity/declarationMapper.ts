@@ -133,7 +133,7 @@ export interface IGLTFToFlowGraphMappingObject {
     invalidUsesDefault?: boolean;
 
     /**
-     * Allowed KHR type signatures for a type-index configuration.
+     * Allowed KHR type signatures for a type-index configuration or an input value socket.
      */
     allowedSignatures?: readonly ("bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom")[];
 
@@ -199,6 +199,11 @@ export interface IGLTFToFlowGraphMapping {
         inputValueSockets: Record<string, "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom">;
         outputValueSockets: Record<string, "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom">;
     };
+    /**
+     * Additional exact declaration contracts supported for published legacy socket layouts.
+     * Other mismatched declarations still lower to typed no-ops.
+     */
+    declarationSchemaVariants?: IGLTFToFlowGraphMapping["declarationSchema"][];
     /**
      * The inputs of the glTF node mapped to the FlowGraph block.
      */
@@ -557,6 +562,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 out: { name: "done" },
             },
         },
+        extraProcessor(_node, _declaration, _mapping, _parser, blocks) {
+            blocks[0].config.useFirstTickAsStart = true;
+            return blocks;
+        },
     },
     "event/send": {
         blocks: [FlowGraphBlockNames.SendCustomEvent],
@@ -840,7 +849,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/sin": getSimpleInputMapping(FlowGraphBlockNames.Sin),
+    "math/sin": getSimpleInputMapping(FlowGraphBlockNames.Sin, ["a"], false, ["float", "float2", "float3", "float4"]),
     "math/cos": getSimpleInputMapping(FlowGraphBlockNames.Cos),
     "math/tan": getSimpleInputMapping(FlowGraphBlockNames.Tan),
     "math/asin": getSimpleInputMapping(FlowGraphBlockNames.Asin),
@@ -1006,10 +1015,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/transpose": getSimpleInputMapping(FlowGraphBlockNames.Transpose),
-    "math/determinant": getSimpleInputMapping(FlowGraphBlockNames.Determinant),
+    "math/transpose": getSimpleInputMapping(FlowGraphBlockNames.Transpose, ["a"], false, ["float2x2", "float3x3", "float4x4"]),
+    "math/determinant": getSimpleInputMapping(FlowGraphBlockNames.Determinant, ["a"], false, ["float2x2", "float3x3", "float4x4"]),
     "math/inverse": {
-        ...getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
+        ...getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix, ["a"], false, ["float2x2", "float3x3", "float4x4"]),
         outputs: {
             values: {
                 value: { name: "value", typeSourceInput: "a" },
@@ -1017,7 +1026,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/matMul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
+    "math/matMul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"], true, ["float2x2", "float3x3", "float4x4"]),
     "math/matCompose": {
         blocks: [FlowGraphBlockNames.MatrixCompose],
         inputs: {
@@ -1049,7 +1058,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.MatrixDecompose],
         inputs: {
             values: {
-                a: { name: "input", gltfType: "number" },
+                a: { name: "input", gltfType: "float4x4" },
             },
         },
         outputs: {
@@ -1275,7 +1284,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {},
         inputs: {
             values: {
-                a: { name: "input", gltfType: "number" },
+                a: { name: "input", gltfType: "float4x4" },
             },
         },
         outputs: {
@@ -1454,8 +1463,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         inputs: {
             values: {
-                selection: { name: "case" },
-                default: { name: "default" },
+                selection: { name: "case", gltfType: "int" },
             },
         },
         outputs: {
@@ -1481,11 +1489,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             }
             return { valid: true };
         },
-        extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects) {
+        extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             // convert all names of output flow to out_$1 apart from "default"
-            if (declaration.op !== "flow/switch" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
-                throw new Error("Switch should have a single configuration object, the cases array");
-            }
             const serializedObject = serializedObjects[0];
             serializedObject.signalOutputs.forEach((output) => {
                 if (output.name !== "default") {
@@ -1677,9 +1682,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 lastRemainingTime: { name: "lastRemainingTime", gltfType: "number" },
             },
         },
+        extraProcessor(_node, _declaration, _mapping, _parser, blocks) {
+            blocks[0].config.allowZeroDuration = true;
+            return blocks;
+        },
     },
     "flow/setDelay": {
-        blocks: [FlowGraphBlockNames.SetDelay],
+        blocks: [FlowGraphBlockNames.SetDelay, "KHR_interactivity/FlowGraphDelayReferenceBlock"],
         inputs: {
             values: {
                 duration: { name: "duration", gltfType: "number" },
@@ -1695,19 +1704,25 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 done: { name: "done" },
             },
             values: {
-                // New spec renames this output to `lastDelay` (ref). Internally we still produce a
-                // FlowGraphInteger; the index is unique per delay so it acts as the opaque handle.
-                lastDelay: { name: "lastDelayIndex" },
+                lastDelay: { name: "value", toBlock: "KHR_interactivity/FlowGraphDelayReferenceBlock" },
                 lastDelayIndex: { name: "lastDelayIndex", compatibilityOnly: true },
             },
         },
+        interBlockConnectors: [{ input: "input", output: "lastDelayIndex", inputBlockIndex: 1, outputBlockIndex: 0, isVariable: true }],
     },
     "flow/cancelDelay": {
-        blocks: [FlowGraphBlockNames.CancelDelay],
+        blocks: [FlowGraphBlockNames.CancelDelay, "KHR_interactivity/FlowGraphDelayReferenceBlock"],
         inputs: {
             values: {
-                delay: { name: "delayIndex", gltfType: "ref" },
+                delay: { name: "input", gltfType: "ref", toBlock: "KHR_interactivity/FlowGraphDelayReferenceBlock" },
+                delayIndex: { name: "input", compatibilityOnly: true, toBlock: "KHR_interactivity/FlowGraphDelayReferenceBlock" },
             },
+        },
+        interBlockConnectors: [{ input: "delayIndex", output: "value", inputBlockIndex: 0, outputBlockIndex: 1, isVariable: true }],
+        extraProcessor(_node, _declaration, _mapping, _parser, blocks) {
+            blocks[0].config.ignoreInvalidDelay = true;
+            blocks[1].config.decode = true;
+            return blocks;
         },
         outputs: {
             flows: {
@@ -1771,12 +1786,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             flows: {
-                out: { name: "out", compatibilityOnly: true },
+                out: { name: "out" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, parser, serializedObjects) {
             // variable/get configuration
             const serializedGetVariable = serializedObjects[0];
+            serializedGetVariable.config.cancelVariableAnimations = true;
             serializedGetVariable.dataInputs.forEach((input) => {
                 input.name = parser.getVariableName(+input.name);
             });
@@ -1818,8 +1834,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value_1" },
                 duration: { name: "duration_1", gltfType: "number" },
-                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.BezierCurveEasing },
-                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
+                p1: { name: "controlPoint1", gltfType: "float2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
+                p2: { name: "controlPoint2", gltfType: "float2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
             },
             flows: {
                 in: { name: "in", toBlock: FlowGraphBlockNames.PlayAnimation },
@@ -1935,6 +1951,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+            const configuredType = gltfBlock.configuration?.type?.value?.[0];
+            if (typeof configuredType === "number" && parser.arrays.types[configuredType]) {
+                serializedObjects[0].config.invalidValue = parser.getTypeDefault(configuredType);
+            }
             serializedObjects.forEach((serializedObject) => {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
@@ -1968,7 +1988,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             flows: {
                 err: { name: "error" },
-                out: { name: "out", compatibilityOnly: true },
+                out: { name: "out" },
             },
         },
         interBlockConnectors: [
@@ -1995,11 +2015,17 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+            const typeIndex = gltfBlock.configuration?.type?.value?.[0];
             serializedObjects.forEach((serializedObject) => {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
                     serializedObject.config ||= {};
                     serializedObject.config.outputValue = true;
+                    if (typeof typeIndex === "number") {
+                        serializedObject.config.valueType = parser.arrays.types[typeIndex].flowGraphType;
+                    }
+                } else if (serializedObject.className === FlowGraphBlockNames.SetProperty) {
+                    serializedObject.config.stopOnError = true;
                 }
             });
             return serializedObjects;
@@ -2025,8 +2051,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 value: { name: "value_1" },
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
                 duration: { name: "duration_1", gltfType: "number" /*, inOptions: true */ },
-                p1: { name: "controlPoint1", toBlock: FlowGraphBlockNames.BezierCurveEasing },
-                p2: { name: "controlPoint2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
+                p1: { name: "controlPoint1", gltfType: "float2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
+                p2: { name: "controlPoint2", gltfType: "float2", toBlock: FlowGraphBlockNames.BezierCurveEasing },
             },
             flows: {
                 in: { name: "in", toBlock: FlowGraphBlockNames.PlayAnimation },
@@ -2084,11 +2110,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
+            const typeIndex = gltfBlock.configuration?.type?.value?.[0];
             serializedObjects.forEach((serializedObject) => {
                 // check if it is the json pointer block
                 if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
                     serializedObject.config ||= {};
                     serializedObject.config.outputValue = true;
+                    if (typeof typeIndex === "number") {
+                        serializedObject.config.valueType = parser.arrays.types[typeIndex].flowGraphType;
+                    }
                 } else if (serializedObject.className === FlowGraphBlockNames.ValueInterpolation) {
                     serializedObject.config ||= {};
                     Object.keys(gltfBlock.values || []).forEach((key) => {
@@ -2357,16 +2387,21 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
 };
 
-function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a"], inferType?: boolean): IGLTFToFlowGraphMapping {
+function getSimpleInputMapping(
+    type: FlowGraphBlockNames,
+    inputs: string[] = ["a"],
+    inferType?: boolean,
+    allowedSignatures?: IGLTFToFlowGraphMappingObject["allowedSignatures"]
+): IGLTFToFlowGraphMapping {
     return {
         blocks: [type],
         inputs: {
             values: inputs.reduce(
                 (acc, input) => {
-                    acc[input] = { name: input };
+                    acc[input] = { name: input, allowedSignatures };
                     return acc;
                 },
-                {} as { [key: string]: { name: string } }
+                {} as { [key: string]: IGLTFToFlowGraphMappingObject }
             ),
         },
         outputs: {

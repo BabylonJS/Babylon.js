@@ -61,6 +61,7 @@ export interface IFlowGraphBlockTypeInfo {
  * They require source-asset metadata and have no meaningful standalone construction contract.
  */
 export const FlowGraphImportOnlyBlockClassNames = [
+    "KHR_interactivity/FlowGraphDelayReferenceBlock",
     "FlowGraphEventReferenceBlock",
     "FlowGraphGLTFDataProvider",
     "FlowGraphObjectReferenceBlock",
@@ -112,6 +113,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
                 description: "KHR_interactivity event reference for this lifecycle event (stable string ref usable with ref/extractProperty and event equality)",
             },
         ],
+        config: { useFirstTickAsStart: "boolean — start elapsed time at the first tick and leave its delta NaN (default: false)" },
     },
 
     MeshPickEvent: {
@@ -406,6 +408,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         config: {
             propertyName: "string — the property name to set",
             target: "any — default target object",
+            stopOnError: "boolean — activate only error on a failed write (default: false)",
         },
     },
 
@@ -420,6 +423,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         config: {
             variable: "string — the variable name to set (mutually exclusive with 'variables')",
             variables: "string[] — multiple variable names to set (creates one input per name)",
+            cancelVariableAnimations: "boolean — cancel animations targeting the user-variable dictionary without firing done (default: false)",
         },
     },
 
@@ -532,6 +536,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         signalOutputs: [{ name: "out" }, { name: "error" }],
         dataInputs: [{ name: "delayIndex", type: "FlowGraphInteger", description: "Index of the delay to cancel" }],
         dataOutputs: [],
+        config: { ignoreInvalidDelay: "boolean — ignore invalid indices while still activating out (default: false)" },
     },
 
     CallCounter: {
@@ -562,6 +567,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         signalOutputs: [{ name: "out" }, { name: "error" }],
         dataInputs: [{ name: "duration", type: "number", description: "Minimum time between executions (seconds)" }],
         dataOutputs: [{ name: "lastRemainingTime", type: "number", description: "Time remaining until next allowed execution" }],
+        config: { allowZeroDuration: "boolean — accept a zero duration and always activate out (default: false)" },
     },
 
     DoN: {
@@ -739,6 +745,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             propertyName: "string — property path to read",
             object: "any — default target object",
             resetToDefaultWhenUndefined: "boolean — reset to default when undefined",
+            invalidValue: "any — optional value returned with isValid=false when property resolution fails",
         },
     },
 
@@ -804,7 +811,10 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "getFunction", type: "any", description: "Getter function for the resolved property" },
             { name: "generateAnimationsFunction", type: "any", description: "Builds animation property info for the resolved property" },
         ],
-        config: { jsonPointer: "string — the JSON pointer path" },
+        config: {
+            jsonPointer: "string — the JSON pointer path",
+            valueType: "string — require a writable accessor with this value type when setting a property",
+        },
     },
 
     DataSwitch: {

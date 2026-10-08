@@ -63,7 +63,7 @@ function GetEffectiveGltfVersion(version: string | undefined): { major: number; 
  *    presented with.
  *  - `/extensions/KHR_interactivity/asset/extensions/<EXTENSION_NAME>/enabled` — whether the extension is both
  *    listed in `extensionsUsed` and supported by this loader. Reading an extension that is not used or not
- *    supported resolves successfully and yields `false`, so a behavior graph can branch on extension support.
+ *    supported does not create a virtual property, so `pointer/get` reports `isValid = false`.
  *  - `/extensions/KHR_interactivity/limits/<LIMIT_NAME>` — the implementation-specific runtime limits.
  *
  * All of these are read-only.
@@ -104,7 +104,10 @@ export class InteractivityAssetPathToObjectConverter implements IPathToObjectCon
         const segments = capability.split("/");
         if (segments.length === 3 && segments[0] === "extensions" && segments[2] === "enabled") {
             const extensionName = segments[1];
-            return this._createAccessor("boolean", () => this._isExtensionEnabled(extensionName));
+            if (this._isExtensionEnabled(extensionName)) {
+                return this._createAccessor("boolean", () => true);
+            }
+            throw new Error(`Path ${path} is invalid`);
         }
 
         throw new Error(`Path ${path} is invalid`);

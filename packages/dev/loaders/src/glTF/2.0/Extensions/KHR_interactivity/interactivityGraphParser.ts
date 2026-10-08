@@ -29,6 +29,7 @@ import {
     type IKHRInteractivitySocketProvenance,
 } from "./interactivityGraphModel";
 import { DelayReferencePrefix, EventReferencePrefix } from "./interactivityReferences";
+import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 
 /**
  * Description of a KHR_interactivity custom event, as parsed from the
@@ -169,9 +170,20 @@ export class InteractivityGraphToFlowGraphParser {
         canonicalGraph?: IKHRInteractivity_Graph
     ) {
         this._canonicalGraph = CloneKHRInteractivityGraph(canonicalGraph ?? interactivityGraph);
-        this._interactivityGraph = this._declarationModels
-            ? CreateEffectiveKHRInteractivityGraph(interactivityGraph, this._declarationModels, this._gltf.nodes?.length ?? 0)
-            : CloneKHRInteractivityGraph(interactivityGraph);
+        const declarations =
+            this._declarationModels ??
+            (interactivityGraph.declarations ?? []).map((source, index): IKHRInteractivityDeclarationModel => ({
+                index,
+                source,
+                operation: source.extension ? `${source.op}:${source.extension}` : source.op,
+                support: getMappingForDeclaration(source, false) ? (source.extension ? "extension" : "core") : source.extension ? "unsupported-extension" : "unknown-core",
+            }));
+        this._interactivityGraph = CreateEffectiveKHRInteractivityGraph(interactivityGraph, declarations, this._gltf?.nodes?.length ?? 0, !this._declarationModels);
+        if (declarations.some((declaration) => declaration.operation === "flow/setDelay" || declaration.operation === "flow/cancelDelay")) {
+            addToBlockFactory("KHR_interactivity", "FlowGraphDelayReferenceBlock", async () => {
+                return (await import("./flowGraphDelayReferenceBlock")).FlowGraphDelayReferenceBlock;
+            });
+        }
         // start with types
         this._parseTypes();
         // continue with declarations
@@ -456,7 +468,8 @@ export class InteractivityGraphToFlowGraphParser {
                 throw new Error("Error parsing nodes");
             }
             if (mapping.flowGraphMapping.validation) {
-                const validationResult = mapping.flowGraphMapping.validation(node, this._interactivityGraph, this._gltf);
+                const validationNode = this._strictValidation ? node : _CloneMetadataValue(this._canonicalGraph.nodes![nodeIndex]);
+                const validationResult = mapping.flowGraphMapping.validation(validationNode, this._interactivityGraph, this._gltf);
                 if (!validationResult.valid) {
                     throw new Error(`Error validating interactivity node ${this._interactivityGraph.declarations?.[node.declaration].op} - ${validationResult.error}`);
                 }
@@ -817,7 +830,7 @@ export class InteractivityGraphToFlowGraphParser {
                 // value is supplied by a connection, the seconds→frames `dataTransformer` cannot run
                 // (it is parse-time only), so the raw connected value is scaled by a runtime multiply.
                 const convertConnectedTimeToFrames = !!valueMapping?.convertConnectedTimeToFrames;
-                if ((value as IKHRInteractivity_Variable).value !== undefined) {
+                if ((value as IKHRInteractivity_OutputSocketReference).node === undefined && value.type !== undefined) {
                     const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable, valueMapping && valueMapping.dataTransformer);
                     context._connectionValues[socketIn.uniqueId] = convertedValue;
                     socketIn.defaultValue = convertedValue;
@@ -1114,6 +1127,15 @@ export class InteractivityGraphToFlowGraphParser {
      */
     public getVariableName(index: number) {
         return "staticVariable_" + index;
+    }
+
+    /**
+     * Gets the serialized type-default value for a graph type.
+     * @param type graph-local type index
+     * @returns serialized runtime value
+     */
+    public getTypeDefault(type: number) {
+        return this._parseVariable({ type });
     }
 
     /**
