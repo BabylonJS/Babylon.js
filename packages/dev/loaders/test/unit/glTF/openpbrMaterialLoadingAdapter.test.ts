@@ -2,7 +2,7 @@ import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color3 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader";
 import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialLoadingAdapter";
@@ -182,7 +182,7 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
     });
 
     // The scattering coefficient is derived from -log(attenuationColor), which is infinite for a zero
-    // channel. The coefficients must stay finite so they don't produce NaNs when rendering.
+    // channel. The adapter clamps attenuationColor to 1e-7 so the coefficients stay finite.
     describe("volumetric scatter with a zero attenuation color channel", () => {
         function createVolumetricScatterAdapter(): { material: OpenPBRMaterial; adapter: OpenPBRMaterialLoadingAdapter } {
             const material = new OpenPBRMaterial("mat", scene);
@@ -197,9 +197,14 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
             return { material, adapter };
         }
 
-        const expectFinite = (color: Color3) => {
-            for (const value of color.asArray()) {
-                expect(Number.isFinite(value)).toBe(true);
+        // extinctionCoefficient * depth for attenuationColor (0, 0.5, 1) and depth 1.
+        const expectedExtinction = [0, 0.5, 1].map((c) => -Math.log(Math.max(c, 1e-7)));
+
+        const expectCoefficients = (color: Color3, expected: number[]) => {
+            const actual = color.asArray();
+            for (let i = 0; i < 3; i++) {
+                expect(Number.isFinite(actual[i])).toBe(true);
+                expect(actual[i]).toBeCloseTo(expected[i], 5);
             }
         };
 
@@ -208,9 +213,16 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
 
             await adapter.finalizeAsync(loader);
 
+            const processor = await vi.importActual<typeof import("core/Materials/Textures/textureProcessor")>("core/Materials/Textures/textureProcessor");
+            const singleScatter = await processor.MultiScatterToSingleScatterAlbedoAsync(
+                "expected",
+                processor.CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 1)),
+                scene,
+                material.transmissionScatterAnisotropy
+            );
+            const albedo = singleScatter.factor!;
             expect(material.transmissionScatterTexture).toBeNull();
-            expectFinite(material.transmissionScatter);
-            expect(material.transmissionScatter.r).toBeGreaterThan(0);
+            expectCoefficients(material.transmissionScatter, [expectedExtinction[0] * albedo.r, expectedExtinction[1] * albedo.g, expectedExtinction[2] * albedo.b]);
         });
 
         it("produces finite textured scatter coefficients", async () => {
@@ -219,9 +231,9 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
 
             await adapter.finalizeAsync(loader);
 
+            // The single-scatter albedo is baked into the texture, leaving extinction * depth in the factor.
             expect(material.transmissionScatterTexture).not.toBeNull();
-            expectFinite(material.transmissionScatter);
-            expect(material.transmissionScatter.r).toBeGreaterThan(0);
+            expectCoefficients(material.transmissionScatter, expectedExtinction);
         });
     });
 });

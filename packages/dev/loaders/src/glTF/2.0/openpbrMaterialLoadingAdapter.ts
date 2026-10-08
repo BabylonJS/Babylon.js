@@ -1409,9 +1409,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
             // OpenPBR transmission_scatter is scatterCoefficient * depth which is equivalent to extinctionCoefficient * ssAlbedo * depth.
             const extinctionTimesDepth = new Color3(
-                -Math.log(Math.max(this.transmissionColor.r, Number.EPSILON)),
-                -Math.log(Math.max(this.transmissionColor.g, Number.EPSILON)),
-                -Math.log(Math.max(this.transmissionColor.b, Number.EPSILON))
+                -Math.log(Math.max(this.transmissionColor.r, 1e-7)),
+                -Math.log(Math.max(this.transmissionColor.g, 1e-7)),
+                -Math.log(Math.max(this.transmissionColor.b, 1e-7))
             );
             if (singleScatter.texture) {
                 this.transmissionScatter = extinctionTimesDepth;
