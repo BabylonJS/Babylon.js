@@ -16,6 +16,7 @@ import { type IEditablePropertyListOption, type IPropertyDescriptionForEdition, 
 import { Constants } from "core/Engines/constants";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { TeleportInPropertyComponent } from "shared-ui-components/nodeGraphSystem/teleportInPropertyComponent";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const samplingModeList = [
@@ -131,6 +132,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                             onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                         />
                     )}
+                    {this.props.nodeData.invisibleEndpoints && <TeleportInPropertyComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />}
                 </LineContainerComponent>
             </>
         );

@@ -15,6 +15,7 @@ import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums
 import { type NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { type NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { TeleportInPropertyComponent } from "shared-ui-components/nodeGraphSystem/teleportInPropertyComponent";
 
 /**
  *
@@ -117,6 +118,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
                         throttlePropertyChangedNotification={true}
                     />
+                    {this.props.nodeData.invisibleEndpoints && <TeleportInPropertyComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />}
                 </LineContainerComponent>
                 {nonConnectedInputs.filter(
                     (p) => projectedProperties.indexOf(p.type) === -1 && (!p._defaultConnectionPointType || projectedProperties.indexOf(p._defaultConnectionPointType) !== -1)
