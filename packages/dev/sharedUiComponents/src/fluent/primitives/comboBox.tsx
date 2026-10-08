@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, forwardRef } from "react";
-import { Combobox as FluentComboBox, makeStyles, useComboboxFilter, useId, Option, type OptionOnSelectData, type SelectionEvents } from "@fluentui/react-components";
+import { Combobox as FluentComboBox, makeStyles, tokens, useComboboxFilter, useId, Option, type OptionOnSelectData, type SelectionEvents } from "@fluentui/react-components";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { CustomTokens } from "./utils";
 import { type PrimitiveProps } from "./primitive";
@@ -25,6 +25,11 @@ const useStyles = makeStyles({
         minWidth: "fit-content",
         maxWidth: "350px",
     },
+    compactOption: {
+        fontSize: tokens.fontSizeBase200,
+        lineHeight: tokens.lineHeightBase200,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalS}`,
+    },
 });
 
 /**
@@ -46,6 +51,10 @@ export type ComboBoxProps = PrimitiveProps<string> & {
      * Label for the ComboBox
      */
     label: string;
+    /**
+     * Accessible name used when the visible label is supplied by a containing property line.
+     */
+    ariaLabel?: string;
     /**
      * Options to display as label/value pairs
      */
@@ -84,7 +93,7 @@ export const ComboBox = forwardRef<HTMLInputElement, ComboBoxProps>((props, ref)
         optionToReactKey: (option) => option.value,
         optionToText: (option) => option.children,
         renderOption: (option) => (
-            <Option key={option.value} value={option.value} text={option.children}>
+            <Option key={option.value} value={option.value} text={option.children} className={size === "small" ? styles.compactOption : undefined}>
                 {option.children}
             </Option>
         ),
@@ -101,12 +110,14 @@ export const ComboBox = forwardRef<HTMLInputElement, ComboBoxProps>((props, ref)
             <FluentComboBox
                 ref={ref}
                 defaultOpen={props.defaultOpen}
+                disabled={props.disabled}
                 size={size}
                 root={{ className: styles.comboBox }}
                 input={{ className: styles.input }}
                 listbox={{ className: styles.listbox }}
                 onOptionSelect={onOptionSelect}
-                aria-labelledby={comboId}
+                aria-label={props.ariaLabel}
+                aria-labelledby={props.ariaLabel ? undefined : comboId}
                 placeholder="Search.."
                 onChange={(ev) => setQuery(ev.target.value)}
                 value={query}

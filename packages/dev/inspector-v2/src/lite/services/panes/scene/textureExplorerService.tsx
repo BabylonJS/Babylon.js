@@ -1,32 +1,43 @@
-import { type Texture2D } from "@babylonjs/lite";
 import { tokens } from "@fluentui/react-components";
 import { ImageRegular } from "@fluentui/react-icons";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../../../engineExplorerService";
 import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
-import { GetSceneTextures } from "./sceneResources";
+import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "./sceneResourceIndexService";
+import { type ITextureResourceRecord } from "./sceneResources";
 
-function GetTextureDisplayName(texture: Texture2D, index: number): string {
-    return `Texture ${index + 1} (${texture.width} x ${texture.height})`;
+function GetTextureDisplayName(record: ITextureResourceRecord): string {
+    if (record.metadata.kind === "cube") {
+        return `Texture ${record.ordinal} (Cube)`;
+    }
+
+    return typeof record.metadata.width === "number" && typeof record.metadata.height === "number"
+        ? `Texture ${record.ordinal} (${record.metadata.width} x ${record.metadata.height})`
+        : `Texture ${record.ordinal}`;
 }
 
-export const TextureExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService]> = {
+export const TextureExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, ISceneResourceIndexService]> = {
     friendlyName: "Babylon Lite Texture Explorer",
-    consumes: [EngineExplorerServiceIdentity],
-    factory: (engineExplorerService) =>
+    consumes: [EngineExplorerServiceIdentity, SceneResourceIndexServiceIdentity],
+    factory: (engineExplorerService, resourceIndexService) =>
         engineExplorerService.addRenderingContextNodeProvider({
             order: 200,
             predicate: IsSceneContext,
-            getNodes: (scene) => [
-                CreateSceneExplorerSectionNode(
-                    "textures",
-                    "Textures",
-                    GetSceneTextures(scene),
-                    (texture, index) => ({ name: GetTextureDisplayName(texture, index) }),
-                    () => <ImageRegular color={tokens.colorPaletteGrapeForeground2} />
-                ),
-            ],
-            getSnapshot: GetSceneTextures,
+            getNodes: (scene) => {
+                const records = resourceIndexService.getSceneSnapshot(scene).textures;
+                const recordsByEntity = new Map(records.map((record) => [record.entity, record]));
+                return [
+                    CreateSceneExplorerSectionNode(
+                        "textures",
+                        "Textures",
+                        records.map((record) => record.entity),
+                        (texture) => ({ name: GetTextureDisplayName(recordsByEntity.get(texture)!) }),
+                        () => <ImageRegular color={tokens.colorPaletteGrapeForeground2} />
+                    ),
+                ];
+            },
+            getSnapshot: (scene) => resourceIndexService.getSceneSnapshot(scene).textures.map((record) => record.entity),
+            onChanged: resourceIndexService.onChanged,
         }),
 };
