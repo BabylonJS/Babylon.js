@@ -2,10 +2,18 @@ import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type Material } from "core/Materials/material";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
-import { Color3 } from "core/Maths/math.color.pure";
+import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { Constants } from "core/Engines/constants";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 import { type GLTFLoader } from "./glTFLoader";
+import {
+    CreateFactorOperand,
+    CreateTextureWithFactorOperand,
+    ExtractMaxChannelAsync,
+    type ITextureProcessOperand,
+    TextureChannel,
+    ThinWalledScatterWeightsAsync,
+} from "core/Materials/Textures/textureProcessor";
 
 /**
  * Material Loading Adapter for PBR materials that provides a unified OpenPBR-like interface.
@@ -15,6 +23,8 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _specWorkflow: boolean = false;
     private _volumetricScatterStrengthFactor: Nullable<number> = null;
     private _volumetricScatterStrengthTexture: Nullable<BaseTexture> = null;
+    private _thinWalledScatterStrengthFactor: Nullable<number> = null;
+    private _thinWalledScatterStrengthTexture: Nullable<BaseTexture> = null;
     private _transmissionScatterTexture: Nullable<BaseTexture> = null;
     private _subsurfaceColorTexture: Nullable<BaseTexture> = null;
     /**
@@ -38,6 +48,21 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param loader The glTF loader that created the material.
      */
     public async finalizeAsync(loader: GLTFLoader): Promise<void> {
+        // Thin-walled KHR_materials_scatter stages its scatter strength S; convert it together with the
+        // transmission T only now that every texture has loaded.
+        const thinScatterStrength = this._thinWalledScatterStrengthFactor;
+        const thinScatterTex = this._thinWalledScatterStrengthTexture;
+        this._thinWalledScatterStrengthFactor = null;
+        this._thinWalledScatterStrengthTexture = null;
+        if (thinScatterStrength !== null && (thinScatterStrength > 0 || thinScatterTex)) {
+            await this._applyThinWalledScatterAsync(loader, thinScatterStrength, thinScatterTex);
+            if (loader._disposed) {
+                return;
+            }
+        } else {
+            this._disposeTextureIfUnused(loader, thinScatterTex);
+        }
+
         // Volumetric KHR_materials_scatter maps to PBR translucency. The shader already multiplies
         // translucencyIntensity by the alpha of translucencyIntensityTexture and the translucency tint by
         // translucencyColorTexture, so the staged textures don't need to be combined; they're applied here
@@ -75,6 +100,78 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 this._disposeTextureIfUnused(loader, texture);
             }
         }
+    }
+
+    /**
+     * Converts thin-walled scatter strength S into PBR refraction and translucency intensities.
+     * S turns a fraction of the transmission T into diffuse transmission, so per texel the coherent
+     * transmission is T * (1 - S). PBR applies translucency to the surface left over by refraction, so
+     * the translucency intensity is T * S / (1 - T * (1 - S)), which keeps the diffusely transmitted
+     * light at T * S and the reflected diffuse at 1 - T.
+     * @param loader The glTF loader that created the material
+     * @param scatterStrength The scatter strength factor
+     * @param scatterTex The scatter strength texture (alpha channel) or null
+     */
+    private async _applyThinWalledScatterAsync(loader: GLTFLoader, scatterStrength: number, scatterTex: Nullable<BaseTexture>): Promise<void> {
+        const subSurface = this._material.subSurface;
+        const transmissionFactor = this.transmissionWeight;
+        if (transmissionFactor <= 0) {
+            // Nothing to convert; keep any independently configured diffuse transmission.
+            this._disposeTextureIfUnused(loader, scatterTex);
+            return;
+        }
+        const transmissionTex = subSurface.refractionIntensityTexture;
+        const scene = this._material.getScene();
+        const name = this._material.name;
+
+        // The weights are computed per channel, and PBR reads refraction intensity from red and
+        // translucency intensity from alpha, so broadcast T and S to all four channels.
+        let transmission: ITextureProcessOperand;
+        if (transmissionTex) {
+            transmission = await ExtractMaxChannelAsync(
+                `${name} (transmission)`,
+                CreateTextureWithFactorOperand(transmissionTex, new Color4(transmissionFactor, transmissionFactor, transmissionFactor, 0), TextureChannel.R),
+                scene,
+                true
+            );
+            if (loader._disposed) {
+                transmission.dispose?.();
+                return;
+            }
+        } else {
+            transmission = CreateFactorOperand(new Color4(transmissionFactor, transmissionFactor, transmissionFactor, transmissionFactor));
+        }
+        const weights = await ThinWalledScatterWeightsAsync(
+            name,
+            transmission,
+            CreateTextureWithFactorOperand(scatterTex, new Color4(scatterStrength, scatterStrength, scatterStrength, scatterStrength), TextureChannel.A),
+            scene
+        );
+        if (loader._disposed) {
+            weights.transmission.dispose?.();
+            weights.subsurface.dispose?.();
+            return;
+        }
+
+        if (weights.transmission.texture) {
+            this.transmissionWeight = 1.0;
+            subSurface.refractionIntensityTexture = weights.transmission.texture;
+            subSurface.useGltfStyleTextures = true;
+            this._disposeTextureIfUnused(loader, transmissionTex);
+        } else {
+            this.transmissionWeight = weights.transmission.factor?.r ?? 0;
+        }
+
+        if (weights.subsurface.texture) {
+            const oldTranslucencyTexture = subSurface.translucencyIntensityTexture;
+            this.subsurfaceWeight = 1.0;
+            subSurface.translucencyIntensityTexture = weights.subsurface.texture;
+            subSurface.useGltfStyleTextures = true;
+            this._disposeTextureIfUnused(loader, oldTranslucencyTexture);
+        } else {
+            this.subsurfaceWeight = weights.subsurface.factor?.r ?? 0;
+        }
+        this._disposeTextureIfUnused(loader, scatterTex);
     }
 
     /**
@@ -916,14 +1013,32 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         return this._volumetricScatterStrengthTexture;
     }
 
-    /** @internal */
+    /**
+     * Sets the thin-walled scatter strength.
+     * Staged and converted, together with the transmission weight, in finalizeAsync.
+     * @internal
+     */
     public set thinWalledScatterStrengthFactor(value: Nullable<number>) {
-        this.subsurfaceWeight = value ?? 0;
+        this._thinWalledScatterStrengthFactor = value;
     }
 
     /** @internal */
+    public get thinWalledScatterStrengthFactor(): Nullable<number> {
+        return this._thinWalledScatterStrengthFactor;
+    }
+
+    /**
+     * Sets the thin-walled scatter strength texture (alpha channel).
+     * Staged and converted, together with the transmission weight, in finalizeAsync.
+     * @internal
+     */
     public set thinWalledScatterStrengthTexture(value: Nullable<BaseTexture>) {
-        this.subsurfaceWeightTexture = value;
+        this._thinWalledScatterStrengthTexture = value;
+    }
+
+    /** @internal */
+    public get thinWalledScatterStrengthTexture(): Nullable<BaseTexture> {
+        return this._thinWalledScatterStrengthTexture;
     }
 
     /**
@@ -1056,7 +1171,6 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public set subsurfaceWeight(value: number) {
         this._material.subSurface.isTranslucencyEnabled = value > 0;
         this._material.subSurface.translucencyIntensity = value;
-        this._material.subSurface.refractionIntensity = 1.0 - value;
     }
 
     /**

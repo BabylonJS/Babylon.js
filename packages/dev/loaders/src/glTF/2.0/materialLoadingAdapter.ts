@@ -315,7 +315,7 @@ export interface IMaterialLoadingAdapter {
 
     /**
      * Staging: the constant scatter strength for thin-walled mode.
-     * Set by KHR_materials_scatter and consumed by the OpenPBR adapter during finalization.
+     * Set by KHR_materials_scatter and consumed by the material adapter during finalization.
      * Null means no thin-walled scatter has been staged.
      */
     thinWalledScatterStrengthFactor: Nullable<number>;
