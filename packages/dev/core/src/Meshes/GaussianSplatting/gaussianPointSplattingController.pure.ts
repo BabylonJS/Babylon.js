@@ -1080,6 +1080,30 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
         if (colorPass && this._blitMesh && this._blitMesh.subMeshes.length > 0 && this._blit?.isReady(this._blitMesh, false, this._blitMesh.subMeshes[0])) {
             const blitMesh = this._blitMesh;
+            const material = this._mesh.material;
+            if (material) {
+                this._blit.disableColorWrite = material.disableColorWrite;
+                this._blit.disableDepthWrite = material.disableDepthWrite;
+                this._blit.forceDepthWrite = material.forceDepthWrite;
+                this._blit.depthFunction = material.depthFunction;
+                this._blit.zOffset = material.zOffset;
+                this._blit.zOffsetUnits = material.zOffsetUnits;
+                // Copy directly to avoid SerializationHelper allocations in each color draw.
+                const source = material.stencil;
+                const stencil = this._blit.stencil;
+                stencil.enabled = source.enabled;
+                stencil.mask = source.mask;
+                stencil.func = source.func;
+                stencil.funcRef = source.funcRef;
+                stencil.funcMask = source.funcMask;
+                stencil.opStencilFail = source.opStencilFail;
+                stencil.opDepthFail = source.opDepthFail;
+                stencil.opStencilDepthPass = source.opStencilDepthPass;
+                stencil.backFunc = source.backFunc;
+                stencil.backOpStencilFail = source.backOpStencilFail;
+                stencil.backOpDepthFail = source.backOpDepthFail;
+                stencil.backOpStencilDepthPass = source.backOpStencilDepthPass;
+            }
             // Render in replacement mode so the disabled compositor still draws itself.
             blitMesh.render(blitMesh.subMeshes[0], enableAlphaMode, blitMesh);
             return true;

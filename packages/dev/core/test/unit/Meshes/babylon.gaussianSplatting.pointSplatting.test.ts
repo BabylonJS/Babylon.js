@@ -1,4 +1,5 @@
 import { NullEngine } from "core/Engines/nullEngine";
+import { Constants } from "core/Engines/constants";
 import { ShaderStore } from "core/Engines/shaderStore";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
@@ -57,6 +58,64 @@ function CreateAutoScaleSetup(generation: number): { mesh: GaussianSplattingMesh
 }
 
 describe("GaussianSplattingMesh point-splatting settings", () => {
+    it("copies current source draw state to the color compositor on every draw", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const material = mesh.material!;
+        const controller = CreateController(mesh);
+        controller["_colorMode"] = true;
+        controller["_enableColorBlit"]();
+        controller["_runCompute"] = () => {
+            controller["_resultReady"] = true;
+        };
+        engine.currentRenderPassId = camera.renderPassId;
+        const blit = controller["_blit"]!;
+        const blitMesh = controller["_blitMesh"]!;
+        vi.spyOn(blit, "isReady").mockReturnValue(true);
+        const draw = vi.spyOn(blitMesh, "render").mockImplementation(() => {
+            expect(blit.disableColorWrite).toBe(material.disableColorWrite);
+            expect(blit.disableDepthWrite).toBe(material.disableDepthWrite);
+            expect(blit.forceDepthWrite).toBe(material.forceDepthWrite);
+            expect(blit.depthFunction).toBe(material.depthFunction);
+            expect(blit.zOffset).toBe(material.zOffset);
+            expect(blit.zOffsetUnits).toBe(material.zOffsetUnits);
+            expect(blit.stencil.serialize()).toEqual(material.stencil.serialize());
+            return blitMesh;
+        });
+        material.stencil.enabled = true;
+        material.stencil.func = Constants.EQUAL;
+        material.stencil.funcRef = 7;
+        material.stencil.funcMask = 0x0f;
+        material.stencil.mask = 0xf0;
+        material.stencil.opStencilFail = Constants.ZERO;
+        material.stencil.opDepthFail = Constants.INCR;
+        material.stencil.opStencilDepthPass = Constants.KEEP;
+        material.stencil.backFunc = Constants.NOTEQUAL;
+        material.stencil.backOpStencilFail = Constants.REPLACE;
+        material.stencil.backOpDepthFail = Constants.DECR;
+        material.stencil.backOpStencilDepthPass = Constants.INVERT;
+        material.disableColorWrite = true;
+        material.disableDepthWrite = true;
+        material.forceDepthWrite = true;
+        material.depthFunction = Constants.GREATER;
+        material.zOffset = 2;
+        material.zOffsetUnits = 3;
+        expect(controller.drawColorPass(true)).toBe(true);
+        material.stencil.reset();
+        material.disableColorWrite = false;
+        material.disableDepthWrite = false;
+        material.forceDepthWrite = false;
+        material.depthFunction = 0;
+        material.zOffset = 0;
+        material.zOffsetUnits = 0;
+        expect(controller.drawColorPass(true)).toBe(true);
+        expect(draw).toHaveBeenCalledTimes(2);
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("renders compute-owned passes without waiting for or posting worker sorts", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
