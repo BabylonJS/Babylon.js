@@ -179,6 +179,19 @@ describe("GaussianSplattingMaterial compensation", () => {
         expect(await isCompensationCompiledAsync()).toBe(false);
     });
 
+    it("keeps the pending rebuild when the same value is assigned twice before rendering", async () => {
+        const material = mesh.material as GaussianSplattingMaterial;
+        expect(await isCompensationCompiledAsync()).toBe(false);
+
+        material.compensation = true;
+        material.compensation = true;
+        expect(await isCompensationCompiledAsync()).toBe(true);
+
+        material.compensation = false;
+        material.compensation = false;
+        expect(await isCompensationCompiledAsync()).toBe(false);
+    });
+
     it("lets a material turn compensation off when the static default is on", async () => {
         GaussianSplattingMaterial.Compensation = true;
         mesh = new GaussianSplattingMesh("gsDefaultOn", null, scene);
