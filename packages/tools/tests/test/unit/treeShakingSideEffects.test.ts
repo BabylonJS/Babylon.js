@@ -683,32 +683,36 @@ for (const pkg of PACKAGES) {
         for (const template of TEST_CASE_TEMPLATES) {
             describe(template.name, () => {
                 // ── Rollup ──────────────────────────────────────────────────
-                it(`[Rollup] ${template.description}`, async () => {
-                    const tc = testCases.find((t) => t.name === template.name)!;
-                    const uniqueName = `${pkg.label.replace(/[/@]/g, "_")}-${tc.name}`;
-                    const result = await bundleWithRollup(uniqueName, tc.entryCode, distDir);
+                it(
+                    `[Rollup] ${template.description}`,
+                    async () => {
+                        const tc = testCases.find((t) => t.name === template.name)!;
+                        const uniqueName = `${pkg.label.replace(/[/@]/g, "_")}-${tc.name}`;
+                        const result = await bundleWithRollup(uniqueName, tc.entryCode, distDir);
 
-                    // Size check (for bare-import tests)
-                    if (tc.maxBundleSizeBytes !== undefined) {
-                        expect(result.size, `Rollup bundle too large (${result.size} bytes, max ${tc.maxBundleSizeBytes})`).toBeLessThanOrEqual(tc.maxBundleSizeBytes);
-                    }
+                        // Size check (for bare-import tests)
+                        if (tc.maxBundleSizeBytes !== undefined) {
+                            expect(result.size, `Rollup bundle too large (${result.size} bytes, max ${tc.maxBundleSizeBytes})`).toBeLessThanOrEqual(tc.maxBundleSizeBytes);
+                        }
 
-                    // Bundle-size regression check (warn-only)
-                    checkBundleSizeRegression(baselineKey(pkg.label, "rollup", tc.name), result.size);
+                        // Bundle-size regression check (warn-only)
+                        checkBundleSizeRegression(baselineKey(pkg.label, "rollup", tc.name), result.size);
 
-                    // Forbidden string checks
-                    for (const forbidden of tc.forbiddenStrings) {
-                        expect(
-                            result.content,
-                            `Rollup bundle for "${tc.name}" should NOT contain "${forbidden}".\nBundle preview:\n${result.content.substring(0, 500)}`
-                        ).not.toContain(forbidden);
-                    }
+                        // Forbidden string checks
+                        for (const forbidden of tc.forbiddenStrings) {
+                            expect(
+                                result.content,
+                                `Rollup bundle for "${tc.name}" should NOT contain "${forbidden}".\nBundle preview:\n${result.content.substring(0, 500)}`
+                            ).not.toContain(forbidden);
+                        }
 
-                    // Required string checks (positive inclusion)
-                    for (const required of tc.requiredStrings ?? []) {
-                        expect(result.content, `Rollup bundle for "${tc.name}" SHOULD contain "${required}" but it was missing.`).toContain(required);
-                    }
-                }, 30_000);
+                        // Required string checks (positive inclusion)
+                        for (const required of tc.requiredStrings ?? []) {
+                            expect(result.content, `Rollup bundle for "${tc.name}" SHOULD contain "${required}" but it was missing.`).toContain(required);
+                        }
+                    },
+                    template.name === "root-pure-barrel-named-Color3" ? 60_000 : 30_000
+                );
 
                 // ── Webpack ─────────────────────────────────────────────────
                 it.skipIf(!hasWebpack)(

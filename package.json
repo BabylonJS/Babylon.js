@@ -7,8 +7,8 @@
         "url": "https://github.com/BabylonJS/bjs-monorepo"
     },
     "devDependencies": {
-        "@babel/core": "^7.29.7",
-        "@babel/preset-env": "^7.29.7",
+        "@babel/core": "^8.0.6",
+        "@babel/preset-env": "^8.0.6",
         "@babylonjs/lite": "1.32.0",
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
@@ -19,25 +19,25 @@
         "@typescript-eslint/parser": "^8.69.0",
         "@typescript-eslint/utils": "^8.69.0",
         "@vitejs/plugin-react": "^6.1.1",
-        "@vitest/coverage-v8": "^4.1.11",
+        "@vitest/coverage-v8": "^5.0.3",
         "@vitest/eslint-plugin": "^1.6.27",
         "acorn": "^8.18.0",
         "ajv": "~8.20.0",
-        "chokidar": "~4.0.3",
+        "chokidar": "~5.0.0",
         "dompurify": "3.4.16",
-        "dotenv": "~16.6.1",
+        "dotenv": "~18.0.5",
         "esbuild": "^0.28.2",
         "eslint": "^10.11.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-formatter-azure-devops": "^1.2.1",
         "eslint-plugin-github": "^6.1.2",
         "eslint-plugin-import": "^2.32.0",
-        "eslint-plugin-jsdoc": "^62.9.0",
+        "eslint-plugin-jsdoc": "^65.0.1",
         "glob": "^13.0.6",
-        "globals": "^16.5.0",
-        "jsdom": "^27.4.0",
-        "lint-staged": "^16.4.0",
-        "nx": "^22.7.12",
+        "globals": "^17.13.0",
+        "jsdom": "^30.1.1",
+        "lint-staged": "^17.6.0",
+        "nx": "^23.2.1",
         "prettier": "^3.9.9",
         "rimraf": "^6.1.3",
         "rollup-plugin-dts": "^6.5.1",
@@ -49,7 +49,7 @@
         "typescript": "~6.0.3",
         "typescript-eslint": "^8.69.0",
         "vite": "8.3.0",
-        "vitest": "^4.1.11"
+        "vitest": "^5.0.3"
     },
     "workspaces": [
         "packages/**/*"
@@ -128,7 +128,7 @@
         "start:devhost": "npm run serve -w @tools/dev-host"
     },
     "engines": {
-        "node": "^20.19.0 || >=22.13.0 <23.0.0 || >=24.0.0 <25.0.0",
+        "node": ">=22.22.2 <23.0.0 || >=24.15.0 <25.0.0",
         "npm": ">=11.18.0"
     },
     "changelog": {
@@ -142,11 +142,11 @@
         "eslint-plugin-import": {
             "eslint": "^10.0.0"
         },
-        "@rollup/plugin-commonjs": {
-            "glob": "^13.0.6"
-        },
         "rollup-plugin-postcss": {
             "cssnano": "^7.1.9"
+        },
+        "serve": {
+            "compression": "1.8.2"
         },
         "@puppeteer/browsers": "3.0.2",
         "@humanfs/node": "0.16.8",
@@ -157,7 +157,7 @@
         "nx": {
             "axios": "^1.18.1",
             "brace-expansion": "5.0.12",
-            "smol-toml": "1.7.1"
+            "smol-toml": "1.9.0"
         }
     }
 }
