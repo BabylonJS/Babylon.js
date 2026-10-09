@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import { deflateSync } from "zlib";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import { type GLTFFileLoader } from "loaders/glTF";
 import {
@@ -29,6 +30,51 @@ declare global {
 }
 
 type GLTFOptions = NonNullable<ConstructorParameters<typeof GLTFFileLoader>[0]>;
+
+/**
+ * Encodes an RGBA8 image as a PNG data URI.
+ * @param width The image width
+ * @param height The image height
+ * @param rgba The pixel data, 4 bytes per pixel
+ * @returns The PNG data URI
+ */
+function createPngDataUri(width: number, height: number, rgba: number[]): string {
+    const crcTable = Array.from({ length: 256 }, (_, n) => {
+        let c = n;
+        for (let k = 0; k < 8; k++) {
+            c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        }
+        return c >>> 0;
+    });
+    const chunk = (type: string, data: Buffer) => {
+        const typeAndData = Buffer.concat([Buffer.from(type, "ascii"), data]);
+        let crc = 0xffffffff;
+        for (const byte of typeAndData) {
+            crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+        }
+        const length = Buffer.alloc(4);
+        length.writeUInt32BE(data.length);
+        const crcBytes = Buffer.alloc(4);
+        crcBytes.writeUInt32BE((crc ^ 0xffffffff) >>> 0);
+        return Buffer.concat([length, typeAndData, crcBytes]);
+    };
+    const header = Buffer.alloc(13);
+    header.writeUInt32BE(width, 0);
+    header.writeUInt32BE(height, 4);
+    header[8] = 8; // bit depth
+    header[9] = 6; // RGBA
+    const rows = [];
+    for (let y = 0; y < height; y++) {
+        rows.push(Buffer.from([0]), Buffer.from(rgba.slice(y * width * 4, (y + 1) * width * 4)));
+    }
+    const png = Buffer.concat([
+        Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        chunk("IHDR", header),
+        chunk("IDAT", deflateSync(Buffer.concat(rows))),
+        chunk("IEND", Buffer.alloc(0)),
+    ]);
+    return `data:image/png;base64,${png.toString("base64")}`;
+}
 
 /**
  * Describes the test suite.
@@ -928,6 +974,116 @@ test.describe("Babylon Scene Loader", function () {
             expect(assertionData["materialGltfMetadata"]).toBe(true);
             expect(assertionData["materialExtras"]).toBe(true);
             expect(assertionData["materialExtrasKind"]).toBe("materialProp");
+        });
+
+        // Thin-walled KHR_materials_scatter turns a fraction S of the transmission T into diffuse transmission.
+        // On a PBRMaterial each texel must get refraction T * (1 - S) and translucency T * S / (1 - T * (1 - S)).
+        test.describe("KHR_materials_scatter thin-walled on PBRMaterial", () => {
+            // Imports a one-triangle glTF using KHR_materials_transmission and thin-walled KHR_materials_scatter.
+            // Returns the refraction (red) and translucency (alpha) intensity texels as 0-1 values.
+            const loadThinWalledScatterAsync = async (transmissionTexels: number[] | null, scatterTexels: number[]) => {
+                const images = [
+                    createPngDataUri(
+                        scatterTexels.length,
+                        1,
+                        scatterTexels.flatMap((s) => [255, 255, 255, s])
+                    ),
+                ];
+                const transmission: Record<string, unknown> = { transmissionFactor: 1 };
+                if (transmissionTexels) {
+                    images.push(
+                        createPngDataUri(
+                            transmissionTexels.length,
+                            1,
+                            transmissionTexels.flatMap((t) => [t, 0, 0, 255])
+                        )
+                    );
+                    transmission.transmissionTexture = { index: 1 };
+                }
+                const positions = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
+                const gltf = {
+                    asset: { version: "2.0" },
+                    extensionsUsed: ["KHR_materials_transmission", "KHR_materials_scatter"],
+                    scene: 0,
+                    scenes: [{ nodes: [0] }],
+                    nodes: [{ mesh: 0 }],
+                    meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
+                    materials: [
+                        {
+                            name: "thinScatter",
+                            extensions: {
+                                KHR_materials_transmission: transmission,
+                                KHR_materials_scatter: { scatterStrengthFactor: 1, scatterStrengthTexture: { index: 0 } },
+                            },
+                        },
+                    ],
+                    samplers: [{ magFilter: 9728, minFilter: 9728 }],
+                    images: images.map((uri) => ({ uri })),
+                    textures: images.map((_, i) => ({ source: i, sampler: 0 })),
+                    accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", max: [1, 1, 0], min: [0, 0, 0] }],
+                    bufferViews: [{ buffer: 0, byteLength: positions.length }],
+                    buffers: [{ byteLength: positions.length, uri: `data:application/octet-stream;base64,${positions.toString("base64")}` }],
+                };
+
+                return await page.evaluate(async (gltfJson) => {
+                    let gltfLoader: GLTFFileLoader | null = null;
+                    BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
+                        gltfLoader = loader as unknown as GLTFFileLoader;
+                    });
+                    await BABYLON.SceneLoader.AppendAsync("", `data:${gltfJson}`, window.scene, undefined, ".gltf");
+                    await gltfLoader!.whenCompleteAsync();
+                    const material = window.scene!.getMaterialByName("thinScatter") as InstanceType<typeof BABYLON.PBRMaterial>;
+                    const subSurface = material.subSurface;
+                    const readChannelAsync = async (texture: InstanceType<typeof BABYLON.BaseTexture> | null, channel: number) =>
+                        texture ? Array.from((await texture.readPixels()) as Uint8Array).filter((_, i) => i % 4 === channel) : null;
+                    return {
+                        className: material.getClassName(),
+                        refractionIntensity: subSurface.isRefractionEnabled ? subSurface.refractionIntensity : 0,
+                        translucencyIntensity: subSurface.isTranslucencyEnabled ? subSurface.translucencyIntensity : 0,
+                        refraction: await readChannelAsync(subSurface.refractionIntensityTexture, 0),
+                        translucency: await readChannelAsync(subSurface.translucencyIntensityTexture, 3),
+                    };
+                }, JSON.stringify(gltf));
+            };
+
+            const expectTexels = (actual: number[] | null, expected: number[]) => {
+                expect(actual).not.toBeNull();
+                expect(actual!.length).toBe(expected.length);
+                for (let i = 0; i < expected.length; i++) {
+                    expect(Math.abs(actual![i] - expected[i] * 255)).toBeLessThanOrEqual(2);
+                }
+            };
+
+            test("converts a constant transmission with a scatter strength texture per texel", async () => {
+                const scatter = [0, 255, 128];
+                const result = await loadThinWalledScatterAsync(null, scatter);
+
+                expect(result.className).toBe("PBRMaterial");
+                expect(result.refractionIntensity).toBe(1);
+                expect(result.translucencyIntensity).toBe(1);
+                // T = 1: an S = 0 texel keeps all of its coherent transmission, and any S > 0 leaves only diffuse transmission.
+                expectTexels(
+                    result.refraction,
+                    scatter.map((s) => 1 - s / 255)
+                );
+                expectTexels(result.translucency, [0, 1, 1]);
+            });
+
+            test("converts textured transmission and scatter strength per texel", async () => {
+                const transmission = [255, 255, 64, 0];
+                const scatter = [0, 255, 128, 255];
+                const result = await loadThinWalledScatterAsync(transmission, scatter);
+
+                expect(result.className).toBe("PBRMaterial");
+                const t = transmission.map((v) => v / 255);
+                const s = scatter.map((v) => v / 255);
+                const refraction = t.map((ti, i) => ti * (1 - s[i]));
+                expectTexels(result.refraction, refraction);
+                expectTexels(
+                    result.translucency,
+                    t.map((ti, i) => (refraction[i] < 1 ? (ti * s[i]) / (1 - refraction[i]) : 0))
+                );
+            });
         });
     });
     test.describe("#OBJ", () => {

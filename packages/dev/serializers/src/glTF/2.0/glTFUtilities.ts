@@ -14,6 +14,8 @@ import { type ShadowLight } from "core/Lights/shadowLight";
 import { Epsilon } from "core/Maths/math.constants";
 import { ConvertHandednessMatrix } from "../../exportUtils";
 import { type AreaLight } from "core/Lights/areaLight";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type Texture } from "core/Materials/Textures/texture";
 
 // Default values for comparison.
 export const DefaultTranslation = Vector3.ZeroReadOnly;
@@ -391,6 +393,29 @@ export function OmitDefaultValues<T extends object>(object: T, defaultValues: Pa
         }
     }
     return object;
+}
+
+/**
+ * Copies the sampling parameters (UV set, wrap modes and UV transform) used to reference a texture in glTF.
+ * @param from The texture to copy the sampling parameters from
+ * @param to The texture to copy the sampling parameters to
+ */
+export function CopyTextureSampling(from: BaseTexture, to: Texture): void {
+    const source = from as Texture;
+    to.coordinatesIndex = from.coordinatesIndex;
+    to.wrapU = from.wrapU;
+    to.wrapV = from.wrapV;
+    to.uOffset = source.uOffset ?? 0;
+    to.vOffset = source.vOffset ?? 0;
+    to.uScale = source.uScale ?? 1;
+    to.vScale = source.vScale ?? 1;
+    to.uAng = source.uAng ?? 0;
+    to.vAng = source.vAng ?? 0;
+    to.wAng = source.wAng ?? 0;
+    to.uRotationCenter = source.uRotationCenter ?? 0.5;
+    to.vRotationCenter = source.vRotationCenter ?? 0.5;
+    to.wRotationCenter = source.wRotationCenter ?? 0.5;
+    to.homogeneousRotationInUVTransform = source.homogeneousRotationInUVTransform ?? false;
 }
 
 function AreArraysEqual(array1: unknown[], array2: unknown[]): boolean {

@@ -1,4 +1,4 @@
-{
+﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -4739,6 +4739,24 @@
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
+            "title": "OpenPBR Subsurface Scatter Anisotropy - glTF",
+            "playgroundId": "#GRQHVV#333",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Color Density - glTF",
+            "playgroundId": "#GRQHVV#332",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Strength Thin-Walled - glTF",
+            "playgroundId": "#GRQHVV#335",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
             "playgroundId": "#BY1IOY#0",
             "excludedEngines": ["webgl1"],
@@ -4786,6 +4804,18 @@
             "playgroundId": "#URIA5X#0",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Volume Blending with Textures",
+            "playgroundId": "#SXXR4T#3",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Thin-walled Blending with Textures",
+            "playgroundId": "#SXXR4T#4",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface SSS Frame Graph - Shadows - IBL",

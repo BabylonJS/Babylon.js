@@ -30,6 +30,7 @@ export * from "./KHR_materials_volume.pure";
 export * from "./KHR_materials_volume_scatter.pure";
 export * from "./KHR_materials_dispersion.pure";
 export * from "./KHR_materials_diffuse_roughness.pure";
+export * from "./KHR_materials_scatter.pure";
 export * from "./KHR_mesh_quantization.pure";
 export * from "./KHR_texture_basisu.pure";
 export * from "./KHR_texture_transform.pure";

@@ -10,6 +10,10 @@ import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 
 const NAME = "KHR_materials_volume";
 
+// Lower bound on transmission color channels before taking -log(), matching the renderer's `Epsilon`
+// (openpbrVolumeFunctions) and the glTF loader, so a zero channel maps to a finite extinction.
+const MinTransmissionColor = 1e-7;
+
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_volume/README.md)
  */
@@ -137,9 +141,9 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                     if (transmissionVolume && babylonMaterial.transmissionDepth > 0) {
                         const invDepth = 1.0 / babylonMaterial.transmissionDepth;
                         let transmissionExtinctionCoefficient = new Vector3(
-                            -Math.log(babylonMaterial.transmissionColor.r) * invDepth,
-                            -Math.log(babylonMaterial.transmissionColor.g) * invDepth,
-                            -Math.log(babylonMaterial.transmissionColor.b) * invDepth
+                            -Math.log(Math.max(babylonMaterial.transmissionColor.r, MinTransmissionColor)) * invDepth,
+                            -Math.log(Math.max(babylonMaterial.transmissionColor.g, MinTransmissionColor)) * invDepth,
+                            -Math.log(Math.max(babylonMaterial.transmissionColor.b, MinTransmissionColor)) * invDepth
                         );
                         const transmissionScatteringCoefficient = new Vector3(
                             babylonMaterial.transmissionScatter.r * invDepth,
