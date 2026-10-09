@@ -160,7 +160,8 @@ export const PickingServiceDefinition: ServiceDefinition<[], [IEngineContext, IS
                 });
             }
             const activeScenes = enabled ? scenes : [];
-            const canvases = new Set(activeScenes.map((scene) => scene.surface.canvas).filter((canvas): canvas is HTMLCanvasElement => canvas instanceof HTMLCanvasElement));
+            // DOM canvas constructors differ across windows; offscreen canvases have no ownerDocument.
+            const canvases = new Set(activeScenes.map((scene) => scene.surface.canvas).filter((canvas): canvas is HTMLCanvasElement => "ownerDocument" in canvas));
             const documents = new Set([...canvases].map((canvas) => canvas.ownerDocument));
             for (const [canvas, unbind] of canvasBindings) {
                 if (!canvases.has(canvas)) {

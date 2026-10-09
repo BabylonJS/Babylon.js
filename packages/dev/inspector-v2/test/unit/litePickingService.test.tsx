@@ -51,8 +51,8 @@ function Result(mesh: Mesh | null = null): PickingInfo {
     return { hit: !!mesh, pickedMesh: mesh } as PickingInfo;
 }
 
-function MakeCanvas() {
-    const canvas = document.createElement("canvas");
+function MakeCanvas(ownerDocument = document) {
+    const canvas = ownerDocument.createElement("canvas");
     canvas.width = 800;
     canvas.height = 600;
     Object.defineProperties(canvas, {
@@ -60,7 +60,7 @@ function MakeCanvas() {
         clientHeight: { value: 300 },
     });
     vi.spyOn(canvas, "getBoundingClientRect").mockReturnValue({ left: 100, top: 50, width: 200, height: 150 } as DOMRect);
-    document.body.appendChild(canvas);
+    ownerDocument.body.appendChild(canvas);
     return canvas;
 }
 
@@ -166,8 +166,8 @@ describe("Babylon Lite picking service", () => {
         );
 
         const toggle = () => act(() => container.querySelector("button")!.click());
-        const auxiliary = () => {
-            const auxiliaryCanvas = MakeCanvas();
+        const auxiliary = (ownerDocument = document) => {
+            const auxiliaryCanvas = MakeCanvas(ownerDocument);
             const surface = { canvas: auxiliaryCanvas, engine } as SurfaceContext;
             surfaces.push(surface);
             const auxiliaryMesh = { name: "Auxiliary Mesh" } as Mesh;
@@ -385,6 +385,47 @@ describe("Babylon Lite picking service", () => {
         expect(h.container.querySelector("button")?.getAttribute("aria-pressed")).toBe("false");
         expect(auxiliary.canvas.style.cursor).toBe("");
         expect(h.canvas.style.cursor).toBe("");
+    });
+
+    it.each(["Escape", "toggle", "dispose"] as const)("picks an auxiliary canvas created in a child document and cleans up on %s", async (exit) => {
+        const h = MakeHarness();
+        h.toggle();
+        const frame = document.createElement("iframe");
+        document.body.appendChild(frame);
+        const auxiliaryDocument = frame.contentDocument!;
+        const auxiliary = h.auxiliary(auxiliaryDocument);
+        expect(auxiliary.canvas.ownerDocument).toBe(auxiliaryDocument);
+        expect(auxiliary.canvas).not.toBeInstanceOf(HTMLCanvasElement);
+        auxiliary.canvas.style.cursor = "grab";
+        const addListener = vi.spyOn(auxiliaryDocument, "addEventListener");
+        const removeListener = vi.spyOn(auxiliaryDocument, "removeEventListener");
+
+        act(() => h.refresh());
+        expect(auxiliary.canvas.style.cursor).toBe("crosshair");
+        Pick.mockResolvedValueOnce(Result(auxiliary.mesh));
+        await act(async () => Tap(auxiliary.canvas));
+        expect(CreatePicker).toHaveBeenCalledTimes(1);
+        // Avoid serializing the child-window DOM in Chai's mock argument formatter.
+        expect(CreatePicker.mock.calls[0][0] === auxiliary.scene).toBe(true);
+        expect(Pick).toHaveBeenCalledWith(expect.anything(), 100, 50, expect.anything());
+        expect(h.selection.selectedEntity).toBe(auxiliary.mesh);
+
+        const handler = addListener.mock.calls.find(([name]) => name === "keydown")?.[1];
+        expect(handler).toBeDefined();
+        act(() => {
+            if (exit === "Escape") {
+                auxiliaryDocument.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+            } else if (exit === "toggle") {
+                h.toggle();
+            } else {
+                h.service.dispose?.();
+            }
+        });
+        expect(auxiliary.canvas.style.cursor).toBe("grab");
+        expect(removeListener).toHaveBeenCalledWith("keydown", handler);
+        expect(DisposePicker).toHaveBeenCalledTimes(1);
+        Tap(auxiliary.canvas);
+        expect(Pick).toHaveBeenCalledTimes(1);
     });
 
     it.each(["Escape", "toggle", "dispose"] as const)("invalidates pending results on %s and defers GPU disposal until readback finishes", async (exit) => {
