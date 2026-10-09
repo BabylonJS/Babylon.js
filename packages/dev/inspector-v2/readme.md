@@ -17,7 +17,9 @@ polling or manual watch mode.
 
 Target rows show the public path, target name, and node index, and link to the runtime
 target when Lite exposes one. An entity's Animation section links to groups that
-directly target it or its scene-node transform values. Name-only targets remain
+directly target it or its scene-node transform values, including groups added after
+a non-node target is selected. Objects with no matching groups show "No Animations".
+Name-only targets remain
 inspectable without inventing a runtime target. Standalone animation managers are not
 engine-discoverable; their groups must also be exposed in a registered scene's
 `animationGroups` to appear here. Weight edits do not implicitly enable an optional
@@ -36,6 +38,8 @@ Start the app with `npm run serve -w @dev/inspector`, then set
 These tests are skipped when `INSPECTOR_TEST_PORT` is unset so other integration suites
 do not require an Inspector server. On a GPU-less machine, set
 `CUSTOM_FLAGS=--use-webgpu-adapter=swiftshader` to use Chrome's software WebGPU adapter.
+These tests explicitly select Chromium with the Chrome channel even when the
+integration project's default browser is Firefox.
 
 ## Modularity
 

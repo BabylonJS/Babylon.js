@@ -42,9 +42,12 @@ vi.hoisted(() => {
 
 import { Observable } from "core/Misc/observable";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { SettingsStoreContext } from "shared-ui-components/modularTool/contexts/settingsContext";
+import { SettingsStore } from "shared-ui-components/modularTool/services/settingsStore";
+import { type IShellService } from "shared-ui-components/modularTool/services/shellService";
 import { BuildExplorerTree } from "../../src/components/explorer/explorerModel";
 import { WatcherContext } from "../../src/contexts/watcherContext";
-import { type IPropertiesService } from "../../src/services/panes/properties/propertiesService";
+import { type IPropertiesService, PropertiesServiceDefinition } from "../../src/services/panes/properties/propertiesService";
 import { CreateExplorerService } from "../../src/services/panes/explorer/explorerService";
 import { type ISelectionService } from "../../src/services/selectionService";
 import { type IWatcherService } from "../../src/services/watcherService";
@@ -345,6 +348,8 @@ describe("Babylon Lite animation services", () => {
         expect(registrations[1].predicate({ ...target })).toBe(false);
         expect(registrations[2].predicate(node)).toBe(true);
         expect(registrations[2].predicate(group)).toBe(false);
+        expect(registrations[2].predicate(target)).toBe(false);
+        expect(registrations[2].predicate({ value: 0 })).toBe(true);
         expect(registrations[2].predicate(null)).toBe(false);
         service.dispose?.();
         expect(disposals.every((dispose) => dispose.mock.calls.length === 1)).toBe(true);
@@ -379,6 +384,57 @@ describe("Babylon Lite animation properties", () => {
         expect(button).toBeDefined();
         act(() => button!.click());
     }
+
+    it("discovers a non-node target's first group through the properties service without reselection", async () => {
+        const target = { value: 0 };
+        const group = CreateGroup([{ target, path: "value" }], "Late Animation");
+        const { engine, scene } = CreateEngine();
+        const selection = CreateSelection();
+        selection.selectedEntity = target;
+        const addSidePane = vi.fn<IShellService["addSidePane"]>().mockReturnValue({ dispose: vi.fn() });
+        const shell: IShellService = {
+            addSidePane,
+            addToolbarItem: vi.fn(() => ({ dispose: vi.fn() })),
+            addCentralContent: vi.fn(() => ({ dispose: vi.fn() })),
+            leftSidePaneContainer: null,
+            rightSidePaneContainer: null,
+            sidePanes: [],
+        };
+        const properties = PropertiesServiceDefinition.factory(shell, selection);
+        const service = AnimationPropertiesServiceDefinition.factory(properties, { engine }, selection)!;
+        const PropertiesContent = addSidePane.mock.calls[0][0].content;
+        const { watcher, checks } = CreateWatcher();
+        const settingsStore = new SettingsStore("LiteAnimationRelationshipRegression");
+        const container = Render(
+            <SettingsStoreContext.Provider value={settingsStore}>
+                <PropertiesContent />
+            </SettingsStoreContext.Provider>,
+            watcher
+        );
+        await act(async () => {
+            await vi.dynamicImportSettled();
+        });
+        expect(container.textContent).toContain("No Animations");
+
+        act(() => {
+            scene.animationGroups.push(group);
+            watcher.refresh();
+        });
+        expect(container.textContent).toContain("Late Animation");
+        expect(selection.selectedEntity).toBe(target);
+
+        act(() => {
+            scene.animationGroups.length = 0;
+            watcher.refresh();
+        });
+        expect(container.textContent).toContain("No Animations");
+        expect(container.textContent).not.toContain("Late Animation");
+        expect(selection.selectedEntity).toBe(target);
+        act(() => roots.pop()!.unmount());
+        expect(checks.size).toBe(0);
+        service.dispose?.();
+        properties.dispose?.();
+    });
 
     it("supports playback, completion updates, and stopping with manual refresh", () => {
         const manager = createAnimationManager();

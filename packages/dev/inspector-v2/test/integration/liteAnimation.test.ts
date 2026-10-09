@@ -15,6 +15,7 @@ test.skip(!process.env.INSPECTOR_TEST_PORT, "Set INSPECTOR_TEST_PORT to a runnin
 
 // Lite requires WebGPU. CUSTOM_FLAGS can select Dawn's software adapter on GPU-less hosts.
 test.use({
+    browserName: "chromium",
     channel: "chrome",
     launchOptions: {
         args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", ...(process.env.CUSTOM_FLAGS?.split(" ") ?? [])],

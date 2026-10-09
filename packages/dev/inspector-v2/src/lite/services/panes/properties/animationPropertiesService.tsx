@@ -6,9 +6,8 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { MetadataProperties } from "../../../../components/properties/metadataProperties";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
-import { GetEntityAnimationGroups, IsAnimationGroup, IsTargetedAnimation } from "../../../animationUtils";
+import { IsAnimationGroup, IsTargetedAnimation } from "../../../animationUtils";
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
-import { IsCamera, IsLight, IsSceneNode } from "../../../sceneEntityUtils";
 
 const AnimationGroupControlProperties = MakeLazyComponent(async () => (await import("../../../components/properties/animationProperties")).AnimationGroupControlProperties);
 const AnimationGroupInfoProperties = MakeLazyComponent(async () => (await import("../../../components/properties/animationProperties")).AnimationGroupInfoProperties);
@@ -50,11 +49,7 @@ export const AnimationPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
         });
         const entityRegistration = propertiesService.addSectionContent({
             key: "Babylon Lite Entity Animation Properties",
-            predicate: (entity): entity is object =>
-                IsSceneNode(entity) ||
-                IsCamera(entity) ||
-                IsLight(entity) ||
-                (typeof entity === "object" && entity !== null && GetEntityAnimationGroups(engine, entity).length > 0),
+            predicate: (entity): entity is object => typeof entity === "object" && entity !== null && !IsAnimationGroup(engine, entity) && !IsTargetedAnimation(engine, entity),
             content: [
                 {
                     section: "Animation",
