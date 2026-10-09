@@ -3,6 +3,7 @@
  */
 
 import { type EngineContext, type GpuPicker, type Mesh, type PickingInfo, type PickOptions, type SceneContext, type SurfaceContext } from "@babylonjs/lite";
+import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -94,7 +95,7 @@ describe("Babylon Lite picking service", () => {
         vi.restoreAllMocks();
     });
 
-    function MakeHarness(withScene = true) {
+    function MakeHarness(withScene = true, toolbarDocument = document) {
         const canvas = MakeCanvas();
         const engine = { canvas, surfaces: [] } as unknown as EngineContext;
         const surfaces: SurfaceContext[] = [engine];
@@ -117,14 +118,20 @@ describe("Babylon Lite picking service", () => {
             onSelectedEntityChanged,
         };
 
-        const container = document.createElement("div");
-        document.body.appendChild(container);
+        const container = toolbarDocument.createElement("div");
+        toolbarDocument.body.appendChild(container);
         const root: Root = createRoot(container);
         const toolbarDispose = vi.fn(() => root.render(null));
         const shell = {
             addToolbarItem: vi.fn((options: Parameters<IShellService["addToolbarItem"]>[0]) => {
                 const Toolbar = options.component;
-                act(() => root.render(<Toolbar />));
+                act(() =>
+                    root.render(
+                        <FluentProvider theme={webLightTheme} targetDocument={toolbarDocument}>
+                            <Toolbar />
+                        </FluentProvider>
+                    )
+                );
                 return { dispose: toolbarDispose };
             }),
         } as unknown as IShellService;
@@ -172,6 +179,7 @@ describe("Babylon Lite picking service", () => {
         return {
             canvas,
             engine,
+            surfaces,
             scene,
             mesh,
             selection,
@@ -340,6 +348,45 @@ describe("Babylon Lite picking service", () => {
         expect(h.selection.selectedEntity).toBe(h.mesh);
     });
 
+    it("exits picking on Escape from an undocked toolbar document and cleans up its listener", () => {
+        const frame = document.createElement("iframe");
+        document.body.appendChild(frame);
+        const toolbarDocument = frame.contentDocument!;
+        const addListener = vi.spyOn(toolbarDocument, "addEventListener");
+        const removeListener = vi.spyOn(toolbarDocument, "removeEventListener");
+        const h = MakeHarness(true, toolbarDocument);
+        h.canvas.style.cursor = "grab";
+        h.toggle();
+        const button = h.container.querySelector("button")!;
+        button.focus();
+        expect(button.getAttribute("aria-pressed")).toBe("true");
+        expect(h.canvas.ownerDocument).not.toBe(toolbarDocument);
+
+        act(() => button.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+        expect(button.getAttribute("aria-pressed")).toBe("false");
+        expect(h.canvas.style.cursor).toBe("grab");
+
+        const handler = addListener.mock.calls.filter(([name, , options]) => name === "keydown" && options === undefined).pop()?.[1];
+        expect(handler).toBeDefined();
+        act(() => h.service.dispose?.());
+        expect(removeListener).toHaveBeenCalledWith("keydown", handler);
+    });
+
+    it("retains Escape handling for auxiliary canvas documents", () => {
+        const h = MakeHarness();
+        const auxiliary = h.auxiliary();
+        const auxiliaryDocument = document.implementation.createHTMLDocument("Auxiliary canvas");
+        auxiliaryDocument.body.appendChild(auxiliary.canvas);
+        act(() => h.refresh());
+        h.toggle();
+        expect(auxiliary.canvas.style.cursor).toBe("crosshair");
+
+        act(() => auxiliaryDocument.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })));
+        expect(h.container.querySelector("button")?.getAttribute("aria-pressed")).toBe("false");
+        expect(auxiliary.canvas.style.cursor).toBe("");
+        expect(h.canvas.style.cursor).toBe("");
+    });
+
     it.each(["Escape", "toggle", "dispose"] as const)("invalidates pending results on %s and defers GPU disposal until readback finishes", async (exit) => {
         const h = MakeHarness();
         const deferred = Deferred<PickingInfo>();
@@ -480,7 +527,7 @@ describe("Babylon Lite picking service", () => {
         const auxiliary = h.auxiliary();
         h.setScenes(auxiliary.surface, [{ _kind: "sprite-renderer" }]);
         const offscreen = { canvas: {}, engine: h.engine } as SurfaceContext;
-        h.engine.surfaces.push(offscreen);
+        h.surfaces.push(offscreen);
         h.setScenes(offscreen, [{ _kind: "scene", surface: offscreen, camera: {}, meshes: [h.mesh] }]);
         h.scene.camera = null;
         h.toggle();

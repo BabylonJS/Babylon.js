@@ -419,11 +419,16 @@ const ActionCommand: FunctionComponent<{ command: ExplorerCommand<"inline", "act
 const ToggleCommand: FunctionComponent<{ command: ExplorerCommand<"inline", "toggle"> }> = (props) => {
     const { command } = props;
 
+    const readCommandState = useCallback(() => [command.icon, command.isEnabled] as const, [command]);
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const [Icon, isEnabled] = useObservableState(
-        useCallback(() => [command.icon, command.isEnabled] as const, [command]),
-        command.onChange
-    );
+    const [[Icon, isEnabled], setCommandState] = useState(readCommandState);
+
+    useEffect(() => {
+        const observer = command.onChange?.add(() => setCommandState(readCommandState()));
+        setCommandState(readCommandState());
+        return () => observer?.remove();
+    }, [command, readCommandState]);
 
     // TODO-iv2: Consolidate icon prop passing approach for inspector and shared components
     return (
@@ -433,7 +438,10 @@ const ToggleCommand: FunctionComponent<{ command: ExplorerCommand<"inline", "tog
             titlePositioning="after"
             checkedIcon={Icon as FluentIcon}
             value={isEnabled}
-            onChange={(val: boolean) => (command.isEnabled = val)}
+            onChange={(value: boolean) => {
+                command.isEnabled = value;
+                setCommandState(readCommandState());
+            }}
         />
     );
 };

@@ -4,6 +4,7 @@ import { type FunctionComponent } from "react";
 
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
+import { useKeyListener } from "shared-ui-components/fluent/hooks/keyboardHooks";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
@@ -207,6 +208,13 @@ export const PickingServiceDefinition: ServiceDefinition<[], [IEngineContext, IS
         };
         const pickingToolbar: FunctionComponent = () => {
             const pickingEnabled = useObservableState(() => enabled, onChanged);
+            useKeyListener({
+                onKeyDown: (event) => {
+                    if (event.key === "Escape") {
+                        setEnabled(false);
+                    }
+                },
+            });
             return (
                 <ToggleButton
                     title={`${pickingEnabled ? "Disable" : "Enable"} Picking`}

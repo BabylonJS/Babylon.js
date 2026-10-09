@@ -4,7 +4,7 @@ This document covers the high level aspects of the Inspector V2 architecture. No
 
 ## Babylon Lite Picking
 
-The Lite Inspector's **Enable Picking** toolbar toggle is available only while the engine has a registered scene context. It selects a mesh by tapping its scene canvas. Picks update the Explorer, Properties pane, and `debugNode` through the shared selection service. Camera drags and empty-space taps leave the selection unchanged. Press **Escape** or toggle picking off to exit; pending GPU results cannot change selection after exiting. Removing the last scene also exits picking and removes the toggle; registering another scene restores it with picking disabled.
+The Lite Inspector's **Enable Picking** toolbar toggle is available only while the engine has a registered scene context. It selects a mesh by tapping its scene canvas. Picks update the Explorer, Properties pane, and `debugNode` through the shared selection service. Camera drags and empty-space taps leave the selection unchanged. Press **Escape**, including from an undocked toolbar, or toggle picking off to exit; pending GPU results cannot change selection after exiting. Removing the last scene also exits picking and removes the toggle; registering another scene restores it with picking disabled.
 
 Picking supports registered scenes on the engine's primary and auxiliary HTML canvases, including scenes added while picking is active. Non-scene rendering contexts, offscreen canvases, and non-mesh pick contributors are not selected. Selection visuals and transform gizmos are not included.
 
