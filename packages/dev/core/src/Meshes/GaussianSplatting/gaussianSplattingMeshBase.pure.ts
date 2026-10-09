@@ -1135,9 +1135,10 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _loadingPromise: Promise<void> | null = null;
 
     /**
-     * set rendering material
+     * Sets the rendering material and updates camera views. Notifies material-change observers when the material changes.
      */
     public override set material(value: Nullable<Material>) {
+        const previous = this._material;
         this._material = value;
         if (value) {
             value.backFaceCulling = false;
@@ -1147,6 +1148,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._cameraViewInfos?.forEach((cameraViewInfo) => {
             cameraViewInfo.mesh.material = value;
         });
+        if (previous !== value && this.onMaterialChangedObservable.hasObservers()) {
+            this.onMaterialChangedObservable.notifyObservers(this);
+        }
     }
 
     /**

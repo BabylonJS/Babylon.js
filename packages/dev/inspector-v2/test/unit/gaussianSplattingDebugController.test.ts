@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
@@ -97,11 +97,57 @@ describe("Inspector Gaussian splat debug ownership", () => {
 
     it("does not overwrite an external material replacement", () => {
         controller.setMode(mesh, "size");
+        const temporary = mesh.material as GaussianSplattingMaterial;
+        const depth = temporary.shadowDepthWrapper!.baseMaterial;
+        const onModeChanged = vi.fn();
+        controller.onModeChangedObservable.add(onModeChanged);
         const replacement = new GaussianSplattingMaterial("replacement", scene);
         mesh.material = replacement;
-        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(controller.getPlugins(mesh)).toBeUndefined();
+        expect(scene.materials).not.toContain(temporary);
+        expect(scene.materials).not.toContain(depth);
+        expect(onModeChanged).toHaveBeenCalledTimes(1);
+        expect(onModeChanged.mock.calls[0][0]).toBe(mesh);
         controller.dispose();
         expect(mesh.material).toBe(replacement);
+        expect(onModeChanged).toHaveBeenCalledTimes(1);
+    });
+
+    it("releases the temporary material immediately when the application assigns null without rendering", () => {
+        const renderObserverCount = scene.onBeforeRenderObservable.observers.length;
+        controller.setMode(mesh, "overdraw");
+        const temporary = mesh.material as GaussianSplattingMaterial;
+        const depth = temporary.shadowDepthWrapper!.baseMaterial;
+        expect(scene.onBeforeRenderObservable.observers.length).toBe(renderObserverCount);
+        const onModeChanged = vi.fn();
+        controller.onModeChangedObservable.add(onModeChanged);
+
+        mesh.material = null;
+
+        expect(controller.getPlugins(mesh)).toBeUndefined();
+        expect(mesh.material).toBeNull();
+        expect(scene.materials).not.toContain(temporary);
+        expect(scene.materials).not.toContain(depth);
+        expect(onModeChanged).toHaveBeenCalledTimes(1);
+        expect(onModeChanged.mock.calls[0][0]).toBe(mesh);
+    });
+
+    it("does not activate a disposed entry when another material observer replaces the initial temporary", () => {
+        const replacement = new GaussianSplattingMaterial("replacement", scene);
+        mesh.onMaterialChangedObservable.add(() => {
+            if (mesh.material !== original) {
+                mesh.material = replacement;
+            }
+        });
+        const onModeChanged = vi.fn();
+        controller.onModeChangedObservable.add(onModeChanged);
+
+        controller.setMode(mesh, "size");
+
+        expect(mesh.material).toBe(replacement);
+        expect(controller.getPlugins(mesh)).toBeUndefined();
+        expect(onModeChanged).toHaveBeenCalledTimes(1);
+        expect(onModeChanged.mock.calls[0][0]).toBe(mesh);
     });
 
     it("releases entries on mesh disposal without resurrecting materials", () => {
@@ -142,7 +188,6 @@ describe("Inspector Gaussian splat debug ownership", () => {
             const depth = temporary.shadowDepthWrapper!.baseMaterial;
             if (release === "replacement") {
                 target.material = original;
-                scene.onBeforeRenderObservable.notifyObservers(scene);
             } else if (release === "mesh") {
                 target.dispose();
             } else {

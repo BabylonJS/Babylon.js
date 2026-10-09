@@ -4,6 +4,7 @@ import { GaussianSplattingOverdrawMaterialPlugin } from "core/Materials/Gaussian
 import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { type Material } from "core/Materials/material";
 import { type ShadowDepthWrapper } from "core/Materials/shadowDepthWrapper";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Observable, type Observer } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 import { type Node } from "core/node";
@@ -21,7 +22,7 @@ type DebugEntry = {
     mode: GaussianSplattingDebugMode;
     meshObserver: Observer<Node>;
     sceneObserver: Observer<Scene>;
-    renderObserver: Observer<Scene>;
+    materialObserver: Observer<AbstractMesh>;
 };
 
 /** Owns Inspector-only per-mesh visualization materials for the lifetime of the properties service. */
@@ -134,7 +135,7 @@ export class GaussianSplattingDebugController {
                 mode: "normal",
                 meshObserver: mesh.onDisposeObservable.add(() => this._release(mesh, false)),
                 sceneObserver: scene.onDisposeObservable.add(() => this._release(mesh, false)),
-                renderObserver: scene.onBeforeRenderObservable.add(() => {
+                materialObserver: mesh.onMaterialChangedObservable.add(() => {
                     if (mesh.material !== temporary) {
                         this._release(mesh, false);
                     }
@@ -142,6 +143,9 @@ export class GaussianSplattingDebugController {
             };
             this._entries.set(mesh, entry);
             mesh.material = temporary;
+            if (this._entries.get(mesh) !== entry) {
+                return;
+            }
         }
         entry.size.isEnabled = mode === "size";
         entry.overdraw.isEnabled = mode === "overdraw";
@@ -161,7 +165,7 @@ export class GaussianSplattingDebugController {
         entry.original.onDisposeObservable.remove(entry.originalObserver);
         const scene = mesh.getScene();
         scene.onDisposeObservable.remove(entry.sceneObserver);
-        scene.onBeforeRenderObservable.remove(entry.renderObserver);
+        mesh.onMaterialChangedObservable.remove(entry.materialObserver);
         if (restore && !mesh.isDisposed() && mesh.material === entry.temporary) {
             mesh.material = entry.originalDisposed ? null : entry.original;
         }

@@ -89,10 +89,10 @@ describe("Inspector Gaussian splat mode control", () => {
         const replacement = new GaussianSplattingMaterial("replacement", scene);
         act(() => {
             mesh.material = replacement;
-            scene.onBeforeRenderObservable.notifyObservers(scene);
         });
-        expect(controller.getMode(mesh)).toBe("normal");
         expect(container.querySelector('[role="combobox"]')?.textContent).toContain("Normal");
+        expect(controller.getPlugins(mesh)).toBeUndefined();
+        expect(controller.getMode(mesh)).toBe("normal");
         expect(mesh.material).toBe(replacement);
         controller.setMode(mesh, "normal");
         expect(mesh.material).toBe(replacement);
