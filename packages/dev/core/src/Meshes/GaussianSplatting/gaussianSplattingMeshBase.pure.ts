@@ -694,6 +694,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _disableDepthSort = false;
     /**
      * If true, disables depth sorting of the splats (default: false)
+     * Disabling sorting also discards deferred forced-sort requests.
      */
     public get disableDepthSort() {
         return this._disableDepthSort;
@@ -703,6 +704,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._worker?.terminate();
             this._worker = null;
             this._disableDepthSort = true;
+            this._forcedSortPending = false;
         } else if (this._disableDepthSort && !value) {
             this._disableDepthSort = false;
             this._sortIsDirty = true;

@@ -196,6 +196,54 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it("clears a deferred compound sort when depth sorting is disabled without masking readiness", () => {
+        const engine = new NullEngine();
+        engine.getCaps().maxVertexUniformVectors = 256;
+        engine.getCaps().maxTextureSize = 16;
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -3), scene);
+        const source = new GaussianSplattingMesh("source", null, scene);
+        source.disableDepthSort = true;
+        source.updateData(new ArrayBuffer(32));
+        const mesh = new GaussianSplattingCompoundMesh("compound", null, scene);
+        mesh.disableDepthSort = true;
+        const proxy = mesh.addPart(source);
+        proxy.computeWorldMatrix(true);
+        const controller = CreateController(mesh);
+        controller["_colorMode"] = true;
+        mesh["_disableDepthSort"] = false;
+        mesh["_readyToDisplay"] = true;
+        mesh["_sortIsDirty"] = false;
+        mesh["_canPostToWorker"] = true;
+        mesh["_forcedSortPending"] = false;
+        const post = vi.fn();
+        const terminate = vi.fn();
+        mesh["_worker"] = { postMessage: post, terminate } as Worker;
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(mesh._isDepthSortSettled).toBe(true);
+        proxy.position.x = 1;
+        proxy.computeWorldMatrix(true);
+        expect(mesh["_forcedSortPending"]).toBe(true);
+        expect(mesh._isDepthSortSettled).toBe(false);
+        expect(post.mock.calls.some(([message]) => message.command === "sort")).toBe(false);
+        mesh.disableDepthSort = true;
+        expect(terminate).toHaveBeenCalledOnce();
+        expect(mesh["_forcedSortPending"]).toBe(false);
+        expect(mesh._isDepthSortSettled).toBe(true);
+        mesh._postToWorker(true);
+        expect(mesh._isDepthSortSettled).toBe(true);
+        mesh["_readyToDisplay"] = false;
+        expect(mesh._isDepthSortSettled).toBe(false);
+        mesh["_readyToDisplay"] = true;
+        mesh["_sortIsDirty"] = true;
+        expect(mesh._isDepthSortSettled).toBe(false);
+        mesh["_sortIsDirty"] = false;
+        mesh["_canPostToWorker"] = false;
+        expect(mesh._isDepthSortSettled).toBe(false);
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("registers the compute and blit shaders through the public mesh entry point", () => {
         expect(WebGPUEngine.prototype.createComputeContext).toBeTypeOf("function");
         for (const name of [
