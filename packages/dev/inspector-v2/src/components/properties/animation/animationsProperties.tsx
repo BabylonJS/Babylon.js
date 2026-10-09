@@ -45,10 +45,9 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
 
     // Track animations array changes via property interception
     const trackedAnimations = useProperty(entity as IAnimatable, "animations");
-    const animations = trackedAnimations ?? [];
     const ranges = entity.getAnimationRanges?.()?.filter((range) => !!range) ?? [];
     const childAnimatablesAnimations = entity.getAnimatables?.().flatMap((animatable) => animatable.animations ?? []) ?? [];
-    animations.concat(childAnimatablesAnimations);
+    const animations = (trackedAnimations ?? []).concat(childAnimatablesAnimations);
 
     const lastFrom = useRef(0);
     const lastTo = useRef(0);
