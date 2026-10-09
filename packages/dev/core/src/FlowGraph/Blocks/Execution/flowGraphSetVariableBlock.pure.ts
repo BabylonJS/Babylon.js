@@ -7,6 +7,7 @@ import { type FlowGraphSignalConnection } from "../../flowGraphSignalConnection.
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { RegisterClass } from "core/Misc/typeStore";
+import { RemoveFlowGraphAnimationGroupObservers } from "../../flowGraphAnimationHelpers";
 
 /**
  * The configuration of the FlowGraphGetVariableBlock.
@@ -21,6 +22,9 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
      * The name of the variables to set.
      */
     variables?: string[];
+
+    /** Whether writes cancel animations targeting the user-variable dictionary without firing done. Defaults to false. */
+    cancelVariableAnimations?: boolean;
 }
 
 /**
@@ -63,11 +67,17 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                 // check if there is a target animation that has the target set to be the context
                 for (const targetAnimation of animationGroup.targetedAnimations) {
                     // check if the target property is the variable we are setting
-                    if (targetAnimation.target === context) {
+                    if (targetAnimation.target === context || (this.config?.cancelVariableAnimations && targetAnimation.target === context.userVariables)) {
                         // check the variable name
                         if (targetAnimation.animation.targetProperty === variableName) {
                             // stop the animation
-                            animationGroup.stop();
+                            if (this.config?.cancelVariableAnimations) {
+                                RemoveFlowGraphAnimationGroupObservers(context, animationGroup)?._cleanupAfterExternalStop(context, animationGroup);
+                                animationGroup.stop(true);
+                                animationGroup.dispose();
+                            } else {
+                                animationGroup.stop();
+                            }
                             // remove the animation from the currently running animations
                             const index = currentlyRunningAnimationGroups.indexOf(animationUniqueId);
                             if (index > -1) {

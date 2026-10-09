@@ -423,7 +423,11 @@ function _getDeclarationMapping(
     const extensionEnabled = !declaration.extension || !supportedExtensions || supportedExtensions.has(declaration.extension);
     const mapping = extensionEnabled ? getMappingForDeclaration(declaration, false) : undefined;
     if (mapping) {
-        if (declaration.extension && mapping.declarationSchema && !_isCompatibleExtensionDeclaration(declaration, graph, mapping.declarationSchema)) {
+        if (
+            declaration.extension &&
+            mapping.declarationSchema &&
+            ![mapping.declarationSchema, ...(mapping.declarationSchemaVariants ?? [])].some((schema) => schema && _isCompatibleExtensionDeclaration(declaration, graph, schema))
+        ) {
             return { mapping: undefined, support: "unsupported-extension" };
         }
         return { mapping, support: declaration.extension ? "extension" : "core" };
@@ -533,12 +537,14 @@ function _isEffectiveConfigurationValue(
  * @param graph source graph
  * @param declarations canonical declarations
  * @param assetNodeCount number of glTF nodes in the containing asset
+ * @param preserveCompatibilityConfiguration allow independent optional configuration properties and legacy fractional for-loop initial indices
  * @returns normalized executable graph
  */
 export function CreateEffectiveKHRInteractivityGraph(
     graph: IKHRInteractivity_Graph,
     declarations: readonly IKHRInteractivityDeclarationModel[],
-    assetNodeCount?: number
+    assetNodeCount?: number,
+    preserveCompatibilityConfiguration: boolean = false
 ): IKHRInteractivity_Graph {
     const effective = CloneKHRInteractivityGraph(graph);
     for (let nodeIndex = 0; nodeIndex < (effective.nodes?.length ?? 0); nodeIndex++) {
@@ -554,11 +560,23 @@ export function CreateEffectiveKHRInteractivityGraph(
         const groupedValidity = new Map<string, boolean>();
         for (const [key, property] of Object.entries(mapping.configuration)) {
             if (property.configurationGroup) {
-                const valid = _isEffectiveConfigurationValue(node.configuration?.[key], property, effective, assetNodeCount);
+                const valid =
+                    (preserveCompatibilityConfiguration && node.configuration?.[key] === undefined) ||
+                    _isEffectiveConfigurationValue(node.configuration?.[key], property, effective, assetNodeCount);
                 groupedValidity.set(property.configurationGroup, (groupedValidity.get(property.configurationGroup) ?? true) && valid);
             }
         }
         for (const [key, property] of Object.entries(mapping.configuration)) {
+            if (
+                preserveCompatibilityConfiguration &&
+                declaration.operation === "flow/for" &&
+                key === "initialIndex" &&
+                node.configuration?.[key]?.value?.length === 1 &&
+                typeof node.configuration[key].value![0] === "number" &&
+                Number.isFinite(node.configuration[key].value![0])
+            ) {
+                continue;
+            }
             const valid =
                 (!property.configurationGroup || groupedValidity.get(property.configurationGroup) === true) &&
                 _isEffectiveConfigurationValue(node.configuration?.[key], property, effective, assetNodeCount);
@@ -852,6 +870,9 @@ function _validateNode(
     }
 
     for (const [key, property] of Object.entries(mapping.inputs?.values ?? {})) {
+        if (property.compatibilityOnly) {
+            continue;
+        }
         if (!key.startsWith("[") && !node.values?.[key]) {
             _addError(diagnostics, `${path}/values/${key}`, `Required input value socket "${key}" is missing.`);
         }
@@ -869,11 +890,35 @@ function _validateNode(
         }
         const expectedSignature = property.gltfType === "number" ? "float" : property.gltfType === "boolean" ? "bool" : property.gltfType;
         const source = node.values?.[key];
+        if (source && property.allowedSignatures) {
+            const typeIndex = _resolveValueTypeIndex(source, graph, declarations);
+            const signature = typeIndex !== undefined ? graph.types?.[typeIndex]?.signature : undefined;
+            if (signature !== undefined && !property.allowedSignatures.includes(signature)) {
+                _addError(diagnostics, `${path}/values/${key}/type`, `Input value socket "${key}" must have one of the types ${property.allowedSignatures.join(", ")}.`);
+            }
+        }
         if (source && expectedSignature && expectedSignature in gltfTypeToBabylonType) {
             const typeIndex = _resolveValueTypeIndex(source, graph, declarations);
             if (typeIndex !== undefined && graph.types?.[typeIndex]?.signature !== expectedSignature) {
                 _addError(diagnostics, `${path}/values/${key}/type`, `Input value socket "${key}" must have type "${expectedSignature}".`);
             }
+        }
+    }
+    if (["variable/interpolate", "pointer/interpolate", "pointer/set"].includes(declarationModel.operation)) {
+        const configuredIndex = node.configuration?.[declarationModel.operation === "variable/interpolate" ? "variable" : "type"]?.value?.[0];
+        const targetType =
+            typeof configuredIndex === "number" ? (declarationModel.operation === "variable/interpolate" ? graph.variables?.[configuredIndex]?.type : configuredIndex) : undefined;
+        const signature = targetType !== undefined ? graph.types?.[targetType]?.signature : undefined;
+        if (declarationModel.operation === "variable/interpolate") {
+            if (signature === "int" || signature === "bool") {
+                _addError(diagnostics, `${path}/configuration/variable`, `Variables of type "${signature}" cannot be interpolated.`);
+            }
+            if (node.configuration?.useSlerp?.value?.[0] === true && signature !== "float4") {
+                _addError(diagnostics, `${path}/configuration/useSlerp`, "Spherical interpolation requires a float4 variable.");
+            }
+        }
+        if (targetType !== undefined && node.values?.value && _resolveValueTypeIndex(node.values.value, graph, declarations) !== targetType) {
+            _addError(diagnostics, `${path}/values/value/type`, "Input value type must match the configured variable or pointer type.");
         }
     }
     if (mapping.validation) {
@@ -913,6 +958,10 @@ function _validateNode(
             }
             if (value.type !== undefined) {
                 _validateTypeIndex(value.type, graph, diagnostics, `${path}/values/${key}/type`);
+            }
+            if (value.socket !== undefined && typeof value.socket !== "string") {
+                _addError(diagnostics, `${path}/values/${key}/socket`, "Socket id must be a string.");
+                continue;
             }
             const sourceNode = graph.nodes![value.node];
             if (_isValidIndex(sourceNode.declaration, declarations.length)) {
@@ -969,6 +1018,9 @@ function _validateNode(
         if (!_isValidIndex(flow.node, graph.nodes?.length ?? 0)) {
             _addError(diagnostics, `${path}/flows/${key}/node`, `Node index ${String(flow.node)} is out of range.`);
             continue;
+        }
+        if (flow.socket !== undefined && typeof flow.socket !== "string") {
+            _addError(diagnostics, `${path}/flows/${key}/socket`, "Socket id must be a string.");
         }
         if (flow.node <= nodeIndex) {
             _addError(diagnostics, `${path}/flows/${key}/node`, "Flow connections must reference a later node.");
@@ -1033,6 +1085,12 @@ export function CreateKHRInteractivityGraphModel(
     }
     for (let declarationIndex = 0; declarationIndex < (graph.declarations?.length ?? 0); declarationIndex++) {
         const declaration = graph.declarations![declarationIndex];
+        if (typeof declaration.op !== "string") {
+            _addError(diagnostics, `${path}/declarations/${declarationIndex}/op`, '"op" must be a string.');
+        }
+        if (declaration.extension !== undefined && typeof declaration.extension !== "string") {
+            _addError(diagnostics, `${path}/declarations/${declarationIndex}/extension`, '"extension" must be a string when present.');
+        }
         for (const key of ["inputValueSockets", "outputValueSockets"] as const) {
             if (declaration[key] !== undefined && !_isRecord(declaration[key])) {
                 _addError(diagnostics, `${path}/declarations/${declarationIndex}/${key}`, `"${key}" must be an object when present.`);
@@ -1109,10 +1167,18 @@ export function CreateKHRInteractivityGraphModel(
     }
 
     for (let variableIndex = 0; variableIndex < (graph.variables?.length ?? 0); variableIndex++) {
+        if (graph.variables![variableIndex].name !== undefined && typeof graph.variables![variableIndex].name !== "string") {
+            _addError(diagnostics, `${path}/variables/${variableIndex}/name`, '"name" must be a string when present.');
+        }
         _validateValue(graph.variables![variableIndex], graph, diagnostics, `${path}/variables/${variableIndex}`);
     }
     for (let eventIndex = 0; eventIndex < (graph.events?.length ?? 0); eventIndex++) {
         const eventId = graph.events![eventIndex].id;
+        for (const key of ["id", "name"] as const) {
+            if (graph.events![eventIndex][key] !== undefined && typeof graph.events![eventIndex][key] !== "string") {
+                _addError(diagnostics, `${path}/events/${eventIndex}/${key}`, `"${key}" must be a string when present.`);
+            }
+        }
         if (eventId !== undefined && graph.events!.slice(0, eventIndex).some((event) => event.id === eventId)) {
             _addError(diagnostics, `${path}/events/${eventIndex}/id`, `Duplicate event id "${eventId}".`);
         }
@@ -1151,8 +1217,11 @@ export function CreateKHRInteractivityGraphModel(
  * @returns the canonical document
  */
 export function CreateKHRInteractivityDocument(extension: IKHRInteractivity, supportedExtensions?: ReadonlySet<string>, assetNodeCount?: number): IKHRInteractivityDocument {
-    const source = _cloneJson(extension);
     const diagnostics: IKHRInteractivityDiagnostic[] = [];
+    const source = _isRecord(extension) ? _cloneJson(extension) : { graphs: [] };
+    if (!_isRecord(extension)) {
+        _addError(diagnostics, "/extensions/KHR_interactivity", "Extension must be an object.");
+    }
     if (!Array.isArray(source.graphs)) {
         _addError(diagnostics, "/extensions/KHR_interactivity/graphs", '"graphs" must be an array.');
         source.graphs = [];

@@ -33,6 +33,12 @@ export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGrap
      * Whether to output the value of the property.
      */
     outputValue?: boolean;
+
+    /**
+     * Expected property value type for writes. When provided, writes require a mutable accessor
+     * with the matching type; vector/color and vector4/quaternion representations are equivalent.
+     */
+    valueType?: string;
 }
 
 /**
@@ -107,6 +113,12 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     private _setPropertyValue(_target: O, _propertyName: string, value: P, context: FlowGraphContext): void {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
         const type = accessorContainer.info.type;
+        if (this.config.valueType !== undefined) {
+            const valueType = type === "Color3" ? "Vector3" : type === "Color4" || type === "Quaternion" ? "Vector4" : type;
+            if (valueType !== this.config.valueType || accessorContainer.info.isReadOnly || !accessorContainer.info.set) {
+                throw new Error(`Property is not writable with value type ${this.config.valueType}`);
+            }
+        }
         if (type.startsWith("Color")) {
             value = ToColor(value as Vector4, type) as unknown as P;
         }
@@ -135,6 +147,13 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         context: FlowGraphContext
     ): (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => Animation[] {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        if (this.config.valueType !== undefined) {
+            const type = accessorContainer.info.type;
+            const valueType = type === "Color3" ? "Vector3" : type === "Color4" || type === "Quaternion" ? "Vector4" : type;
+            if (valueType !== this.config.valueType || accessorContainer.info.isReadOnly || !accessorContainer.info.interpolation?.length) {
+                throw new Error(`Property is not interpolatable with value type ${this.config.valueType}`);
+            }
+        }
         return (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => {
             const animations: Animation[] = [];
             // make sure keys are of the right type (in case of float3 color/vector)

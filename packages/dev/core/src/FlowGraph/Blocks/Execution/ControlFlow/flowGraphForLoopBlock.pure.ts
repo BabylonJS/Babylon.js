@@ -100,6 +100,9 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         const maxIterations = (this.config as IFlowGraphForLoopBlockConfiguration | undefined)?.maxLoopIterations ?? FlowGraphForLoopBlock.MaxLoopIterations;
         let iterations = 0;
         let truncated = false;
+        if (this.config?.incrementIndexWhenLoopDone) {
+            this.index.setValue(new FlowGraphInteger(index), context);
+        }
         for (let i = index; i < endIndex; i += step) {
             this.index.setValue(new FlowGraphInteger(i), context);
             this.executionFlow._activateSignal(context);
@@ -120,7 +123,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
             Logger.Warn(`FlowGraphForLoopBlock: loop stopped after reaching the ${maxIterations}-iteration safety cap before its range completed.`);
         }
 
-        if (this.config?.incrementIndexWhenLoopDone) {
+        if (this.config?.incrementIndexWhenLoopDone && iterations > 0) {
             this.index.setValue(new FlowGraphInteger(getNumericValue(this.index.getValue(context)) + step), context);
         }
 
