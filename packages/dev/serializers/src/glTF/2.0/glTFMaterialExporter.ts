@@ -38,6 +38,8 @@ import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper"
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 import { GetCachedImageAsync, GetFileExtensionFromMimeType } from "../../exportImageUtils";
+import { CopyTextureSampling } from "./glTFUtilities";
+import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 
 const Epsilon = 1e-6;
 const DielectricSpecular = new Color3(0.04, 0.04, 0.04) as DeepImmutable<Color3>;
@@ -162,6 +164,49 @@ function ConvertPixelArrayToFloat32(pixels: ArrayBufferView): Float32Array {
     } else {
         throw new Error("Unsupported pixel format!");
     }
+}
+
+/**
+ * Packs occlusion (R), roughness (G) and metallic (B) into one texture.
+ * glTF requires metallic and roughness to share sampling, but occlusion is referenced separately with its own
+ * UV set and transform, so occlusion is packed raw in a second, independent merge.
+ * The returned texture carries the metallic-roughness sampling parameters.
+ * @param occlusionTexture The ambient occlusion texture (red channel), if any
+ * @param roughnessTexture The roughness texture (channel 0), if any
+ * @param metallicTexture The metallic texture (channel 0), if any
+ * @param scene The scene used to create the merged textures
+ * @returns The packed texture
+ */
+async function CreateOcclusionMetallicRoughnessTextureAsync(
+    occlusionTexture: Nullable<BaseTexture>,
+    roughnessTexture: Nullable<BaseTexture>,
+    metallicTexture: Nullable<BaseTexture>,
+    scene: Scene
+): Promise<ProceduralTexture> {
+    const metallicRoughness = await MergeTexturesAsync(
+        "MetalRoughTexture",
+        {
+            ...CreateRGBAConfiguration(
+                CreateConstantInput(1.0),
+                roughnessTexture ? CreateTextureInput(roughnessTexture, 0) : CreateConstantInput(1.0),
+                metallicTexture ? CreateTextureInput(metallicTexture, 0) : CreateConstantInput(1.0)
+            ),
+            sharedSampling: true,
+        },
+        scene
+    );
+    if (!occlusionTexture) {
+        return metallicRoughness;
+    }
+
+    const packed = await MergeTexturesAsync(
+        "OcclusionMetalRoughTexture",
+        CreateRGBAConfiguration(CreateTextureInput(occlusionTexture, 0), CreateTextureInput(metallicRoughness, 1), CreateTextureInput(metallicRoughness, 2)),
+        scene
+    );
+    CopyTextureSampling(metallicRoughness, packed);
+    metallicRoughness.dispose();
+    return packed;
 }
 
 /**
@@ -582,12 +627,15 @@ export class GLTFMaterialExporter {
                             promises.push(
                                 MergeTexturesAsync(
                                     "baseColorOpacityTexture",
-                                    CreateRGBAConfiguration(
-                                        albedoTexture ? CreateTextureInput(albedoTexture, 0) : CreateConstantInput(1.0),
-                                        albedoTexture ? CreateTextureInput(albedoTexture, 1) : CreateConstantInput(1.0),
-                                        albedoTexture ? CreateTextureInput(albedoTexture, 2) : CreateConstantInput(1.0),
-                                        CreateTextureInput(babylonPBRMaterial.geometryOpacityTexture, 0)
-                                    ),
+                                    {
+                                        ...CreateRGBAConfiguration(
+                                            albedoTexture ? CreateTextureInput(albedoTexture, 0) : CreateConstantInput(1.0),
+                                            albedoTexture ? CreateTextureInput(albedoTexture, 1) : CreateConstantInput(1.0),
+                                            albedoTexture ? CreateTextureInput(albedoTexture, 2) : CreateConstantInput(1.0),
+                                            CreateTextureInput(babylonPBRMaterial.geometryOpacityTexture, 0)
+                                        ),
+                                        sharedSampling: true,
+                                    },
                                     babylonPBRMaterial.getScene()
                                 ).then(async (mergedTexture) => {
                                     const glTFTexture = await this.exportTextureAsync(mergedTexture, mergedId);
@@ -626,13 +674,10 @@ export class GLTFMaterialExporter {
                         glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
                     } else {
                         promises.push(
-                            MergeTexturesAsync(
-                                "MetalRoughTexture",
-                                CreateRGBAConfiguration(
-                                    babylonPBRMaterial.ambientOcclusionTexture ? CreateTextureInput(babylonPBRMaterial.ambientOcclusionTexture, 0) : CreateConstantInput(1.0),
-                                    roughnessTexture ? CreateTextureInput(roughnessTexture, 0) : CreateConstantInput(1.0),
-                                    metallicTexture ? CreateTextureInput(metallicTexture, 0) : CreateConstantInput(1.0)
-                                ),
+                            CreateOcclusionMetallicRoughnessTextureAsync(
+                                babylonPBRMaterial.ambientOcclusionTexture,
+                                roughnessTexture,
+                                metallicTexture,
                                 babylonPBRMaterial.getScene()
                             ).then(async (mergedTexture) => {
                                 const glTFTexture = await this.exportTextureAsync(mergedTexture, mergedId);

@@ -5,18 +5,30 @@
 #ifdef USE_TEXTURE0
 var inputTexture0Sampler: sampler;
 var inputTexture0: texture_2d<f32>;
+#ifdef TEXTURE0_MATRIX
+uniform inputTexture0Matrix: mat4x4f;
+#endif
 #endif
 #ifdef USE_TEXTURE1
 var inputTexture1Sampler: sampler;
 var inputTexture1: texture_2d<f32>;
+#ifdef TEXTURE1_MATRIX
+uniform inputTexture1Matrix: mat4x4f;
+#endif
 #endif
 #ifdef USE_TEXTURE2
 var inputTexture2Sampler: sampler;
 var inputTexture2: texture_2d<f32>;
+#ifdef TEXTURE2_MATRIX
+uniform inputTexture2Matrix: mat4x4f;
+#endif
 #endif
 #ifdef USE_TEXTURE3
 var inputTexture3Sampler: sampler;
 var inputTexture3: texture_2d<f32>;
+#ifdef TEXTURE3_MATRIX
+uniform inputTexture3Matrix: mat4x4f;
+#endif
 #endif
 
 // Channel configuration uniforms (only for texture-based channels)
@@ -57,22 +69,38 @@ fn sampleTexture(textureIndex: i32, uv: vec2f) -> vec4f {
     switch (textureIndex) {
         #ifdef USE_TEXTURE0
         case 0: {
+            #ifdef TEXTURE0_MATRIX
+            return textureSample(inputTexture0, inputTexture0Sampler, (uniforms.inputTexture0Matrix * vec4f(uv, 1.0, 0.0)).xy);
+            #else
             return textureSample(inputTexture0, inputTexture0Sampler, uv);
+            #endif
         }
         #endif
         #ifdef USE_TEXTURE1
         case 1: {
+            #ifdef TEXTURE1_MATRIX
+            return textureSample(inputTexture1, inputTexture1Sampler, (uniforms.inputTexture1Matrix * vec4f(uv, 1.0, 0.0)).xy);
+            #else
             return textureSample(inputTexture1, inputTexture1Sampler, uv);
+            #endif
         }
         #endif
         #ifdef USE_TEXTURE2
         case 2: {
+            #ifdef TEXTURE2_MATRIX
+            return textureSample(inputTexture2, inputTexture2Sampler, (uniforms.inputTexture2Matrix * vec4f(uv, 1.0, 0.0)).xy);
+            #else
             return textureSample(inputTexture2, inputTexture2Sampler, uv);
+            #endif
         }
         #endif
         #ifdef USE_TEXTURE3
         case 3: {
+            #ifdef TEXTURE3_MATRIX
+            return textureSample(inputTexture3, inputTexture3Sampler, (uniforms.inputTexture3Matrix * vec4f(uv, 1.0, 0.0)).xy);
+            #else
             return textureSample(inputTexture3, inputTexture3Sampler, uv);
+            #endif
         }
         #endif
         default: {

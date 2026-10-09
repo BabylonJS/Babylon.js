@@ -5,7 +5,8 @@ import { type BaseTexture } from "./baseTexture";
 import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
-import { type Texture } from "./texture";
+import { Logger } from "../../Misc/logger";
+import { _AllTransformsMatch, _CopyTextureMetadata, _HasNonIdentityTransform, _KeepMatchingCoordinates } from "./textureSampling.functions";
 
 /**
  * Configuration for a texture input source
@@ -46,6 +47,17 @@ export interface ITextureMergeConfiguration {
     outputSize?: TextureSize;
     /** Whether to generate mipmaps for the output texture */
     generateMipMaps?: boolean;
+    /**
+     * Whether the output texture is sampled as a single texture with one set of sampling parameters.
+     * When true, every input texture must use the same UV set as the first input texture (inputs on other
+     * UV sets are replaced by a constant 1.0 and a warning is logged), the output takes its UV set and wrap
+     * modes from the first input texture, and input UV transforms are either propagated (when they all match)
+     * or baked into the output.
+     * When false (default), each output channel is a raw copy of its input texels, so channels can be referenced
+     * separately with their own sampling parameters. The output copies the UV set, wrap modes and UV transform
+     * of the input textures only when they all agree; otherwise it keeps default sampling parameters.
+     */
+    sharedSampling?: boolean;
 }
 
 const _ShaderName = "textureMerger";
@@ -72,27 +84,6 @@ function IsConstantInput(input: ChannelInput): input is IConstantChannelInput {
 
 /**
  * @internal
- * Copy sampling metadata (UV set, wrap modes and texture transform) from one texture to another
- * @param source The source texture
- * @param destination The destination texture
- */
-function CopyTextureMetadata(source: Texture, destination: Texture) {
-    destination.coordinatesIndex = source.coordinatesIndex;
-    destination.wrapU = source.wrapU;
-    destination.wrapV = source.wrapV;
-    destination.uOffset = source.uOffset;
-    destination.vOffset = source.vOffset;
-    destination.uScale = source.uScale;
-    destination.vScale = source.vScale;
-    destination.uAng = source.uAng;
-    destination.vAng = source.vAng;
-    destination.wAng = source.wAng;
-    destination.uRotationCenter = source.uRotationCenter;
-    destination.vRotationCenter = source.vRotationCenter;
-}
-
-/**
- * @internal
  * Merge multiple texture channels into a single texture
  * @param name Name for the resulting texture
  * @param config Merge configuration
@@ -100,7 +91,15 @@ function CopyTextureMetadata(source: Texture, destination: Texture) {
  * @returns The merged texture
  */
 export async function MergeTexturesAsync(name: string, config: ITextureMergeConfiguration, scene: Scene): Promise<ProceduralTexture> {
-    const channels = [config.red, config.green, config.blue, config.alpha];
+    let channels = [config.red, config.green, config.blue, config.alpha];
+    if (config.sharedSampling) {
+        channels = _KeepMatchingCoordinates(
+            `Texture merger '${name}'`,
+            channels,
+            (channel) => (channel && IsTextureInput(channel) ? channel.texture : null),
+            () => ({ value: 1.0 })
+        );
+    }
     const textureInputs: BaseTexture[] = [];
     const textureInputMap: number[] = []; // Maps channel index to texture input index (-1 for constants)
 
@@ -171,6 +170,19 @@ export async function MergeTexturesAsync(name: string, config: ITextureMergeConf
         defines.push(`USE_TEXTURE${textureIndex}`);
     });
 
+    // With shared sampling, propagate the UV transform when all inputs agree; otherwise bake each one
+    const transformsMatch = _AllTransformsMatch(textureInputs);
+    const propagateTransform = !config.sharedSampling || transformsMatch;
+    const bakedTransforms = new Set<number>();
+    if (!propagateTransform) {
+        for (let i = 0; i < textureInputs.length; i++) {
+            if (_HasNonIdentityTransform(textureInputs[i])) {
+                bakedTransforms.add(i);
+                defines.push(`TEXTURE${i}_MATRIX`);
+            }
+        }
+    }
+
     // Create the procedural texture
     const outputTextureOptions: IProceduralTextureCreationOptions = {
         type: Constants.TEXTURETYPE_HALF_FLOAT,
@@ -196,8 +208,23 @@ export async function MergeTexturesAsync(name: string, config: ITextureMergeConf
 
     // Set up texture inputs
     for (let i = 0; i < textureInputs.length; i++) {
-        CopyTextureMetadata(textureInputs[i] as Texture, proceduralTexture);
         proceduralTexture.setTexture(`inputTexture${i}`, textureInputs[i]);
+        if (bakedTransforms.has(i)) {
+            proceduralTexture.setMatrix(`inputTexture${i}Matrix`, textureInputs[i].getTextureMatrix());
+        }
+    }
+
+    if (textureInputs.length > 0) {
+        const reference = textureInputs[0];
+        const wrapModesMatch = textureInputs.every((texture) => texture.wrapU === reference.wrapU && texture.wrapV === reference.wrapV);
+        if (config.sharedSampling) {
+            if (!wrapModesMatch) {
+                Logger.Warn(`Texture merger '${name}': input textures use different wrap modes; using the wrap modes of the first input texture.`);
+            }
+            _CopyTextureMetadata(reference, proceduralTexture, transformsMatch);
+        } else if (wrapModesMatch && transformsMatch && textureInputs.every((texture) => texture.coordinatesIndex === reference.coordinatesIndex)) {
+            _CopyTextureMetadata(reference, proceduralTexture, true);
+        }
     }
 
     // Set up channel configuration

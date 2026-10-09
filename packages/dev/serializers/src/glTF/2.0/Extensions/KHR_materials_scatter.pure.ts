@@ -11,8 +11,10 @@ import {
     type ITextureProcessorOutputOptions,
     ChannelMask,
     CreateFactorOperand,
+    CreateTextureOperand,
     CreateTextureWithFactorOperand,
     DivideTexturesAsync,
+    ExtractChannelAsync,
     InvertTextureAsync,
     LerpTexturesAsync,
     SingleScatterToMultiScatterAlbedoAsync,
@@ -22,7 +24,10 @@ import {
 } from "core/Materials/Textures/textureProcessor";
 import { Constants } from "core/Engines/constants";
 import { type Scene } from "core/scene";
-import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput } from "core/Materials/Textures/textureMerger";
+import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
+import { Texture } from "core/Materials/Textures/texture.pure";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { CopyTextureSampling } from "../glTFUtilities";
 
 const NAME = "KHR_materials_scatter";
 
@@ -42,6 +47,23 @@ function IntermediateOutputOptions(scene: Scene): ITextureProcessorOutputOptions
         textureType: caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE,
         samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
     };
+}
+
+/**
+ * Creates a texture that references an existing internal texture with the sampling parameters of another texture,
+ * so several glTF texture references can share one image while keeping their own UV set and transform.
+ * @param name the name of the new texture
+ * @param internalTexture the internal texture to reference
+ * @param samplingSource the texture to copy the UV set, wrap modes and transform from
+ * @returns the new texture, which must be disposed by the caller
+ */
+function CreateTextureReference(name: string, internalTexture: InternalTexture, samplingSource: BaseTexture): Texture {
+    const reference = new Texture(null, samplingSource.getScene());
+    reference.name = name;
+    reference._texture = internalTexture;
+    internalTexture.incrementReferences();
+    CopyTextureSampling(samplingSource, reference);
+    return reference;
 }
 
 // Scatter result cached per material between postExportMaterialAdditionalTexturesAsync (where it is
@@ -307,33 +329,64 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
         const subsurfaceFractionOp = await InvertTextureAsync(`scatter strength (${mat.name})`, transmissionFractionOp, scene, ChannelMask.RGB);
 
         const ownedTextures: BaseTexture[] = [];
-        let strengthFactor = subsurfaceFractionOp.factor?.r ?? 0;
+        const strengthFactor = subsurfaceFractionOp.texture ? 1.0 : (subsurfaceFractionOp.factor?.r ?? 0);
         let strengthTexture: Nullable<BaseTexture> = null;
+        // multiscatterColor is subsurface_color directly (factor and/or the raw material texture, not owned).
+        let colorTexture: Nullable<BaseTexture> = mat.subsurfaceColorTexture;
         if (subsurfaceFractionOp.texture) {
-            // KHR_materials_scatter stores scatterStrengthTexture in the alpha channel, but the texture
-            // processor produces the fraction in RGB, so route it (R -> A) via a channel merge.
-            strengthTexture = await MergeTexturesAsync(
-                `scatter strength (${mat.name})`,
+            // KHR_materials_scatter reads scatterStrengthTexture from the alpha channel and multiscatterColorTexture
+            // from RGB, so pack both into one image. They are referenced separately, so each keeps its own sampling.
+            const fractionTexture = subsurfaceFractionOp.texture;
+            let colorSource: Nullable<BaseTexture> = colorTexture;
+            if (colorSource?.getInternalTexture()?._useSRGBBuffer) {
+                // Sampling an sRGB buffer yields linear values; re-encode so the packed RGB stays sRGB.
+                colorSource = (
+                    await ExtractChannelAsync(
+                        `scatter color (${mat.name})`,
+                        CreateTextureOperand(colorSource),
+                        TextureChannel.RGBA,
+                        scene,
+                        TextureColorSpace.SRGB,
+                        ChannelMask.RGB,
+                        IntermediateOutputOptions(scene)
+                    )
+                ).texture;
+            }
+            const packed = await MergeTexturesAsync(
+                `scatter color and strength (${mat.name})`,
                 CreateRGBAConfiguration(
-                    CreateTextureInput(subsurfaceFractionOp.texture, 0),
-                    CreateTextureInput(subsurfaceFractionOp.texture, 0),
-                    CreateTextureInput(subsurfaceFractionOp.texture, 0),
-                    CreateTextureInput(subsurfaceFractionOp.texture, 0)
+                    colorSource ? CreateTextureInput(colorSource, 0) : CreateConstantInput(1.0),
+                    colorSource ? CreateTextureInput(colorSource, 1) : CreateConstantInput(1.0),
+                    colorSource ? CreateTextureInput(colorSource, 2) : CreateConstantInput(1.0),
+                    CreateTextureInput(fractionTexture, 0)
                 ),
                 scene
             );
-            subsurfaceFractionOp.texture.dispose(); // intermediate; the merged texture replaces it
-            strengthFactor = 1.0;
-            ownedTextures.push(strengthTexture);
+            if (colorSource && colorSource !== colorTexture) {
+                colorSource.dispose();
+            }
+            ownedTextures.push(packed);
+
+            const packedInternal = packed.getInternalTexture();
+            if (colorTexture && packedInternal) {
+                // Keep the source color filtering rather than the merger's nearest sampling.
+                scene.getEngine().updateTextureSamplingMode(colorTexture.samplingMode, packedInternal);
+                const colorReference = CreateTextureReference(`scatter color (${mat.name})`, packedInternal, colorTexture);
+                strengthTexture = CreateTextureReference(`scatter strength (${mat.name})`, packedInternal, fractionTexture);
+                ownedTextures.push(colorReference, strengthTexture);
+                colorTexture = colorReference;
+            } else {
+                strengthTexture = packed;
+            }
+            fractionTexture.dispose(); // intermediate; the packed texture replaces it
         }
 
         const color = mat.subsurfaceColor;
         return {
             strengthFactor,
             strengthTexture,
-            // multiscatterColor is subsurface_color directly (factor and/or the raw material texture, not owned).
             colorFactor: [color.r, color.g, color.b],
-            colorTexture: mat.subsurfaceColorTexture,
+            colorTexture,
             anisotropy: mat.subsurfaceScatterAnisotropy,
             ownedTextures,
         };

@@ -8,7 +8,7 @@ import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
 import { Color4 } from "core/Maths/math.color.pure";
-import { Logger } from "../../Misc/logger";
+import { _AllTransformsMatch, _CopyTextureMetadata, _HasNonIdentityTransform, _KeepMatchingCoordinates } from "./textureSampling.functions";
 
 const _ShaderName = "textureProcessor";
 
@@ -276,62 +276,13 @@ function _ResolveOutputSize(operands: ITextureProcessOperand[]): TextureSize {
     return result;
 }
 
-/**
- * @internal
- * Returns true when the texture has a non-identity UV transform (offset, scale, or rotation).
- */
-function _HasNonIdentityTransform(texture: BaseTexture): boolean {
-    return !texture.getTextureMatrix().isIdentity();
-}
-
-/**
- * @internal
- * Returns true when every texture in the list shares the same UV transform matrix.
- * A single texture (or empty list) trivially satisfies this.
- */
-function _AllTransformsMatch(textures: BaseTexture[]): boolean {
-    if (textures.length <= 1) {
-        return true;
-    }
-    const ref = textures[0].getTextureMatrix();
-    for (let i = 1; i < textures.length; i++) {
-        if (!ref.equals(textures[i].getTextureMatrix())) {
-            return false;
-        }
-    }
-    return true;
-}
-
-function _KeepMatchingCoordinates(name: string, operands: ITextureProcessOperand[]): ITextureProcessOperand[] {
-    const firstTexture = operands.find((operand) => operand.texture)?.texture;
-    if (!firstTexture || operands.every((operand) => !operand.texture || operand.texture.coordinatesIndex === firstTexture.coordinatesIndex)) {
-        return operands;
-    }
-
-    const uvSet = firstTexture.coordinatesIndex;
-    Logger.Warn(`Texture processor '${name}': input textures use different UV coordinates; keeping only textures using UV set ${uvSet}.`);
-    return operands.map((operand) => (!operand.texture || operand.texture.coordinatesIndex === uvSet ? operand : { ...operand, texture: null }));
-}
-
-/**
- * @internal
- * Copy sampling metadata from a source texture onto the output ProceduralTexture.
- * `coordinatesIndex` and wrap modes are always copied.
- * When `includeTransform` is true the UV offset/scale/rotation are also copied
- * (used when all inputs share the same transform and it is propagated rather than baked).
- */
-function _CopyTextureMetadata(from: BaseTexture, to: ProceduralTexture, includeTransform: boolean): void {
-    to.coordinatesIndex = from.coordinatesIndex;
-    to.wrapU = from.wrapU;
-    to.wrapV = from.wrapV;
-    if (includeTransform) {
-        const src = from as Texture;
-        to.uOffset = src.uOffset ?? 0;
-        to.vOffset = src.vOffset ?? 0;
-        to.uScale = src.uScale ?? 1;
-        to.vScale = src.vScale ?? 1;
-        to.wAng = src.wAng ?? 0;
-    }
+function _KeepMatchingOperandCoordinates(name: string, operands: ITextureProcessOperand[]): ITextureProcessOperand[] {
+    return _KeepMatchingCoordinates(
+        `Texture processor '${name}'`,
+        operands,
+        (operand) => operand.texture,
+        (operand) => ({ ...operand, texture: null })
+    );
 }
 
 /**
@@ -615,7 +566,7 @@ export async function MultiplyTexturesAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
-    [a, b] = _KeepMatchingCoordinates(name, [a, b]);
+    [a, b] = _KeepMatchingOperandCoordinates(name, [a, b]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -694,7 +645,7 @@ export async function MaxTexturesAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
-    [a, b] = _KeepMatchingCoordinates(name, [a, b]);
+    [a, b] = _KeepMatchingOperandCoordinates(name, [a, b]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -771,7 +722,7 @@ export async function DivideTexturesAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
-    [a, b] = _KeepMatchingCoordinates(name, [a, b]);
+    [a, b] = _KeepMatchingOperandCoordinates(name, [a, b]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -855,7 +806,7 @@ export async function TransmissionFractionAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
-    [a, b] = _KeepMatchingCoordinates(name, [a, b]);
+    [a, b] = _KeepMatchingOperandCoordinates(name, [a, b]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -938,7 +889,7 @@ export async function LerpTexturesAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
     }
 
-    [a, b, t] = _KeepMatchingCoordinates(name, [a, b, t]);
+    [a, b, t] = _KeepMatchingOperandCoordinates(name, [a, b, t]);
     const allTextures: BaseTexture[] = [];
     if (a.texture) {
         allTextures.push(a.texture);
@@ -1299,7 +1250,7 @@ export async function ThinWalledScatterWeightsAsync(
     scatter: ITextureProcessOperand,
     scene: Scene
 ): Promise<{ transmission: ITextureProcessOperand; subsurface: ITextureProcessOperand }> {
-    [transmission, scatter] = _KeepMatchingCoordinates(name, [transmission, scatter]);
+    [transmission, scatter] = _KeepMatchingOperandCoordinates(name, [transmission, scatter]);
     // Constant-only fast path — compute entirely on the CPU.
     if (!transmission.texture && !scatter.texture) {
         const transmissionFactor = _EvalConstant(transmission).r;

@@ -146,12 +146,15 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     // Pack base color RGB and the opacity texture into a single RGBA texture (mirrors GLTFMaterialExporter).
                     baseColorTexture = await MergeTexturesAsync(
                         `base color opacity (${babylonMaterial.name})`,
-                        CreateRGBAConfiguration(
-                            babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 0) : CreateConstantInput(1.0),
-                            babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 1) : CreateConstantInput(1.0),
-                            babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 2) : CreateConstantInput(1.0),
-                            CreateTextureInput(babylonMaterial.geometryOpacityTexture, 0)
-                        ),
+                        {
+                            ...CreateRGBAConfiguration(
+                                babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 0) : CreateConstantInput(1.0),
+                                babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 1) : CreateConstantInput(1.0),
+                                babylonMaterial.baseColorTexture ? CreateTextureInput(babylonMaterial.baseColorTexture, 2) : CreateConstantInput(1.0),
+                                CreateTextureInput(babylonMaterial.geometryOpacityTexture, 0)
+                            ),
+                            sharedSampling: true,
+                        },
                         babylonMaterial.getScene()
                     );
                 }
