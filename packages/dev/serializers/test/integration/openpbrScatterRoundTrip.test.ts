@@ -39,6 +39,78 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
         await page.close();
     });
 
+    // A glTF KHR_texture_transform rotates around (0, 0), unlike the (0.5, 0.5) default of a new texture, so the
+    // processed scatter strength texture must carry the rotation centers along with the rotation.
+    for (const withColorTexture of [false, true]) {
+        test(`thin-walled scatter strength keeps a rotated glTF texture transform${withColorTexture ? " when packed with the color texture" : ""}`, async () => {
+            const result = await page.evaluate(async (withColorTexture) => {
+                const scene = window.scene!;
+                const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                const data = new Uint8Array(4 * 4 * 4);
+                for (let i = 0; i < 16; i++) {
+                    const value = 32 + (i % 4) * 64;
+                    data.set([value, value, value, 255], i * 4);
+                }
+
+                const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                const mat = new BABYLON.OpenPBRMaterial("rotatedScatter", scene);
+                mat.geometryThinWalled = 1;
+                mat.transmissionWeight = 0.5;
+                mat.subsurfaceWeight = 1;
+                // Configured as the glTF loader does for rotation = pi/4, offset = [0.1, 0.2], scale = [2, 1].
+                const weight = new BABYLON.RawTexture(data, 4, 4, RGBA, scene, false, false, NEAREST);
+                weight.wrapU = weight.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+                weight.uRotationCenter = 0;
+                weight.vRotationCenter = 0;
+                weight.wAng = -Math.PI / 4;
+                weight.uOffset = 0.1;
+                weight.vOffset = 0.2;
+                weight.uScale = 2;
+                mat.subsurfaceWeightTexture = weight;
+                if (withColorTexture) {
+                    mat.subsurfaceColorTexture = new BABYLON.RawTexture(new Uint8Array(64).fill(200), 4, 4, RGBA, scene, false, false, NEAREST);
+                }
+                box.material = mat;
+                const sourceMatrix = Array.from(weight.getTextureMatrix().asArray());
+
+                const glb = await BABYLON.GLTF2Export.GLBAsync(scene, "rt");
+                const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
+                const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
+                const json = JSON.parse(gltf.files["rt.gltf"] as string);
+                const exportedTransform = json.materials[0].extensions.KHR_materials_scatter.scatterStrengthTexture?.extensions?.KHR_texture_transform ?? null;
+
+                const scene2 = new BABYLON.Scene(scene.getEngine());
+                let gltfLoader: { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> } | null = null;
+                BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
+                    if (loader.name === "gltf") {
+                        gltfLoader = loader as unknown as { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> };
+                        gltfLoader.useOpenPBR = true;
+                    }
+                });
+                await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
+                await gltfLoader!.whenCompleteAsync();
+                URL.revokeObjectURL(url);
+
+                const reMat = scene2.materials.find((m) => m.getClassName() === "OpenPBRMaterial") as InstanceType<typeof BABYLON.OpenPBRMaterial> | undefined;
+                const reWeight = reMat?.subsurfaceWeightTexture as InstanceType<typeof BABYLON.Texture> | null | undefined;
+                return {
+                    sourceMatrix,
+                    exportedTransform,
+                    reimportedMatrix: reWeight ? Array.from(reWeight.getTextureMatrix().asArray()) : null,
+                };
+            }, withColorTexture);
+
+            expect(result.exportedTransform).not.toBeNull();
+            expect(result.exportedTransform.rotation).toBeCloseTo(Math.PI / 4, 5);
+            expect(result.exportedTransform.offset[0]).toBeCloseTo(0.1, 5);
+            expect(result.exportedTransform.offset[1]).toBeCloseTo(0.2, 5);
+            expect(result.exportedTransform.scale[0]).toBeCloseTo(2, 5);
+            expect(result.reimportedMatrix).not.toBeNull();
+            result.reimportedMatrix!.forEach((value, i) => expect(value).toBeCloseTo(result.sourceMatrix[i], 5));
+        });
+    }
+
     // Thin-walled: scatter strength is baked from the (textured) weights, multi-scatter color is the
     // subsurface color/texture, and anisotropy is the subsurface scatter anisotropy. No volume extension
     // is written, so the material re-imports as thin-walled.

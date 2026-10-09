@@ -84,5 +84,6 @@ export function _CopyTextureMetadata(from: BaseTexture, to: Texture, includeTran
         to.uRotationCenter = src.uRotationCenter ?? 0.5;
         to.vRotationCenter = src.vRotationCenter ?? 0.5;
         to.wRotationCenter = src.wRotationCenter ?? 0.5;
+        to.homogeneousRotationInUVTransform = src.homogeneousRotationInUVTransform ?? false;
     }
 }

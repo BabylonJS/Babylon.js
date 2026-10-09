@@ -415,6 +415,7 @@ export function CopyTextureSampling(from: BaseTexture, to: Texture): void {
     to.uRotationCenter = source.uRotationCenter ?? 0.5;
     to.vRotationCenter = source.vRotationCenter ?? 0.5;
     to.wRotationCenter = source.wRotationCenter ?? 0.5;
+    to.homogeneousRotationInUVTransform = source.homogeneousRotationInUVTransform ?? false;
 }
 
 function AreArraysEqual(array1: unknown[], array2: unknown[]): boolean {
