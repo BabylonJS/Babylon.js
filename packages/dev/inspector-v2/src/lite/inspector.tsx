@@ -12,6 +12,7 @@ import { MakeWatcherServiceDefinitions } from "../services/watcherService";
 import { type IEngineContext, EngineContextIdentity } from "./engineContext";
 import { EngineExplorerServiceDefinition } from "./engineExplorerService";
 import { EngineSelectionServiceDefinition } from "./engineSelectionService";
+import { PickingServiceDefinition } from "./services/pickingService";
 import { EnginePropertiesServiceDefinition } from "./services/panes/properties/enginePropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
@@ -103,6 +104,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 watcherRefreshToolbarServiceDefinition,
                 SelectionServiceDefinition,
                 EngineSelectionServiceDefinition,
+                PickingServiceDefinition,
             ];
 
             return {
