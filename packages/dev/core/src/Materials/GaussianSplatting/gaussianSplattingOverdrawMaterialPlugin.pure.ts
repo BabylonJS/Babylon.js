@@ -129,6 +129,7 @@ export class GaussianSplattingOverdrawMaterialPlugin extends MaterialPluginBase 
     }
 
     /**
+     * Binds the overdraw visualization uniforms for the rendered submesh.
      * @param _uniformBuffer Unused
      * @param _scene Current scene
      * @param _engine Current engine
