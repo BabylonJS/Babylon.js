@@ -1,6 +1,6 @@
 // Texture processing fragment shader (WGSL)
 // Supports multiply, max, lerp, and invert operations with texture/constant/combined operands.
-// See GLSL counterpart for define documentation (OPERAND_A/B_SRGB, OPERAND_A/B_CHANNEL_R/G/B/A, LERP_T_SRGB, LERP_T_CHANNEL_R/G/B/A, OUTPUT_SRGB, OP_INVERT, INVERT_R/G/B/A, and OP_TRANSMISSION_FRACTION also apply).
+// See GLSL counterpart for define documentation (OPERAND_A/B_SRGB, OPERAND_A/B_CHANNEL_R/G/B/A, LERP_T_SRGB, LERP_T_CHANNEL_R/G/B/A, OUTPUT_SRGB, OP_INVERT, INVERT_R/G/B/A, OP_TRANSMISSION_FRACTION, and OP_TRANSMISSION_SCATTER_ALBEDO also apply).
 
 #ifdef OPERAND_A_TEXTURE
 var textureASampler: sampler;
@@ -161,6 +161,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var result: vec4f = a / max(b, vec4f(0.00001));
     #elif defined(OP_TRANSMISSION_FRACTION)
     var result: vec4f = a / max(a + b * (vec4f(1.0) - a), vec4f(0.00001));
+    #elif defined(OP_TRANSMISSION_SCATTER_ALBEDO)
+    var _extinction: vec3f = -log(max(a.rgb, vec3f(0.0000001)));
+    let _absorption: vec3f = _extinction - b.rgb;
+    _extinction -= vec3f(min(min(min(_absorption.r, _absorption.g), _absorption.b), 0.0));
+    var result: vec4f = vec4f(b.rgb / max(_extinction, vec3f(0.00001)), b.a);
     #else
     var result: vec4f = a * b;
     #endif

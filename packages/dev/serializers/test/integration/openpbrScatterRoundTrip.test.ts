@@ -304,86 +304,99 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
         });
     }
 
-    // A zero transmission color channel is valid (full attenuation). The exporter must clamp it to the same
-    // positive bound as the renderer and importer before taking -log(), otherwise the extinction is infinite,
-    // the single-scatter albedo collapses to zero and a finite scattering coefficient exports as black.
-    for (const textured of [false, true]) {
-        test(`volumetric scatter with a zero attenuation channel preserves the scattering coefficient (${textured ? "textured" : "constant"})`, async () => {
-            const result = await page.evaluate(async (textured) => {
-                const scene = window.scene!;
-                const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
-                const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+    // Volumetric cases whose scattering coefficient must survive export/reimport.
+    //  - zero attenuation channel: a zero transmission color channel is valid (full attenuation). The exporter
+    //    must clamp it to the same positive bound as the renderer and importer before taking -log(), otherwise
+    //    the extinction is infinite and a finite scattering coefficient exports as black.
+    //  - negative absorption: -log(0.5) - (1, 0.5, 0.5) has a negative red absorption, which the renderer shifts
+    //    out of every channel, giving an extinction of (1, 1, 1) and albedo (1, 0.5, 0.5). Dividing by -log(0.5)
+    //    alone would recover (1.443, 0.721, 0.721) and inflate the green and blue coefficients by about 44%.
+    const volumetricCases = [
+        { label: "a zero attenuation channel", color: [0.9, 0, 0.5], scatter: [0.08, 2.0, 0.2], zeroChannel: true },
+        { label: "negative absorption", color: [0.5, 0.5, 0.5], scatter: [1.0, 0.5, 0.5], zeroChannel: false },
+    ];
+    for (const { label, color, scatter, zeroChannel } of volumetricCases) {
+        for (const textured of [false, true]) {
+            test(`volumetric scatter with ${label} preserves the scattering coefficient (${textured ? "textured" : "constant"})`, async () => {
+                const result = await page.evaluate(
+                    async ({ textured, color, scatter }) => {
+                        const scene = window.scene!;
+                        const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                        const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
 
-                const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
-                const mat = new BABYLON.OpenPBRMaterial("zeroAttenuation", scene);
-                mat.geometryThinWalled = 0;
-                mat.transmissionWeight = 1;
-                mat.subsurfaceWeight = 0;
-                mat.transmissionDepth = 1.0;
-                mat.geometryThickness = 1.0;
-                mat.transmissionColor = new BABYLON.Color3(0.9, 0, 0.5);
-                mat.transmissionScatter = new BABYLON.Color3(0.08, 2.0, 0.2);
-                if (textured) {
-                    mat.transmissionScatterTexture = new BABYLON.RawTexture(new Uint8Array(16).fill(255), 2, 2, RGBA, scene, false, false, NEAREST);
-                }
-                box.material = mat;
+                        const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                        const mat = new BABYLON.OpenPBRMaterial("zeroAttenuation", scene);
+                        mat.geometryThinWalled = 0;
+                        mat.transmissionWeight = 1;
+                        mat.subsurfaceWeight = 0;
+                        mat.transmissionDepth = 1.0;
+                        mat.geometryThickness = 1.0;
+                        mat.transmissionColor = BABYLON.Color3.FromArray(color);
+                        mat.transmissionScatter = BABYLON.Color3.FromArray(scatter);
+                        if (textured) {
+                            mat.transmissionScatterTexture = new BABYLON.RawTexture(new Uint8Array(16).fill(255), 2, 2, RGBA, scene, false, false, NEAREST);
+                        }
+                        box.material = mat;
 
-                const glb = await BABYLON.GLTF2Export.GLBAsync(scene, "rt");
-                const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
-                const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
-                const exported = JSON.parse(gltf.files["rt.gltf"] as string).materials[0].extensions;
+                        const glb = await BABYLON.GLTF2Export.GLBAsync(scene, "rt");
+                        const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
+                        const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
+                        const exported = JSON.parse(gltf.files["rt.gltf"] as string).materials[0].extensions;
 
-                const scene2 = new BABYLON.Scene(scene.getEngine());
-                let gltfLoader: { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> } | null = null;
-                BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
-                    if (loader.name === "gltf") {
-                        gltfLoader = loader as unknown as { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> };
-                        gltfLoader.useOpenPBR = true;
+                        const scene2 = new BABYLON.Scene(scene.getEngine());
+                        let gltfLoader: { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> } | null = null;
+                        BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
+                            if (loader.name === "gltf") {
+                                gltfLoader = loader as unknown as { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> };
+                                gltfLoader.useOpenPBR = true;
+                            }
+                        });
+                        await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
+                        await gltfLoader!.whenCompleteAsync();
+                        URL.revokeObjectURL(url);
+
+                        const reMat = scene2.materials.find((m) => m.getClassName() === "OpenPBRMaterial") as any;
+                        const factor = reMat.transmissionScatter.asArray() as number[];
+                        const texture = reMat.transmissionScatterTexture as InstanceType<typeof BABYLON.BaseTexture> | null;
+                        let texel = [1, 1, 1];
+                        if (texture) {
+                            const pixels = await texture.readPixels();
+                            texel = pixels instanceof Uint8Array ? Array.from(pixels.slice(0, 3)).map((v) => v / 255) : Array.from((pixels as Float32Array).slice(0, 3));
+                        }
+                        const depth = reMat.transmissionDepth as number;
+                        return {
+                            attenuationColor: exported.KHR_materials_volume.attenuationColor as number[],
+                            attenuationDistance: exported.KHR_materials_volume.attenuationDistance as number,
+                            multiscatterColor: (exported.KHR_materials_scatter.multiscatterColorFactor as number[]) ?? null,
+                            hasMultiscatterTexture: !!exported.KHR_materials_scatter.multiscatterColorTexture,
+                            transmissionColor: reMat.transmissionColor.asArray() as number[],
+                            hasTexture: !!texture,
+                            // Scattering coefficient = transmission_scatter / transmission_depth (factor times texel).
+                            scatterCoefficient: factor.map((f, i) => (f * texel[i]) / depth),
+                        };
+                    },
+                    { textured, color, scatter }
+                );
+
+                // The exported volume is finite.
+                expect(result.attenuationDistance).toBeGreaterThan(0);
+                expect(result.attenuationColor.every((c) => Number.isFinite(c))).toBe(true);
+                expect(result.hasMultiscatterTexture).toBe(textured);
+                expect(result.hasTexture).toBe(textured);
+                if (zeroChannel) {
+                    // The zero channel remains the most strongly attenuated one, and its multi-scatter color is not black.
+                    expect(result.transmissionColor[1]).toBeLessThan(Math.min(result.transmissionColor[0], result.transmissionColor[2]));
+                    if (!textured) {
+                        expect(result.multiscatterColor[1]).toBeGreaterThan(0.01);
                     }
-                });
-                await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
-                await gltfLoader!.whenCompleteAsync();
-                URL.revokeObjectURL(url);
-
-                const reMat = scene2.materials.find((m) => m.getClassName() === "OpenPBRMaterial") as any;
-                const factor = reMat.transmissionScatter.asArray() as number[];
-                const texture = reMat.transmissionScatterTexture as InstanceType<typeof BABYLON.BaseTexture> | null;
-                let texel = [1, 1, 1];
-                if (texture) {
-                    const pixels = await texture.readPixels();
-                    texel = pixels instanceof Uint8Array ? Array.from(pixels.slice(0, 3)).map((v) => v / 255) : Array.from((pixels as Float32Array).slice(0, 3));
                 }
-                const depth = reMat.transmissionDepth as number;
-                return {
-                    attenuationColor: exported.KHR_materials_volume.attenuationColor as number[],
-                    attenuationDistance: exported.KHR_materials_volume.attenuationDistance as number,
-                    multiscatterColor: (exported.KHR_materials_scatter.multiscatterColorFactor as number[]) ?? null,
-                    hasMultiscatterTexture: !!exported.KHR_materials_scatter.multiscatterColorTexture,
-                    transmissionColor: reMat.transmissionColor.asArray() as number[],
-                    hasTexture: !!texture,
-                    // Scattering coefficient = transmission_scatter / transmission_depth (factor times texel).
-                    scatterCoefficient: factor.map((f, i) => (f * texel[i]) / depth),
-                };
-            }, textured);
-
-            // The exported volume is finite, and the zero channel remains the most strongly attenuated one.
-            expect(result.attenuationDistance).toBeGreaterThan(0);
-            expect(result.attenuationColor.every((c) => Number.isFinite(c))).toBe(true);
-            expect(result.transmissionColor[1]).toBeLessThan(Math.min(result.transmissionColor[0], result.transmissionColor[2]));
-            expect(result.hasMultiscatterTexture).toBe(textured);
-            if (!textured) {
-                // The multi-scatter color for the fully attenuated channel is not black.
-                expect(result.multiscatterColor[1]).toBeGreaterThan(0.01);
-            }
-            expect(result.hasTexture).toBe(textured);
-            // The scattering coefficient (scatter / depth, with depth 1 originally) is preserved per channel,
-            // including the fully attenuated one, rather than exporting as zero albedo.
-            const expected = [0.08, 2.0, 0.2];
-            const tolerance = textured ? 0.06 : 0.02;
-            for (let i = 0; i < 3; i++) {
-                expect(Math.abs(result.scatterCoefficient[i] - expected[i]) / expected[i], `channel ${i}: ${result.scatterCoefficient[i]}`).toBeLessThanOrEqual(tolerance);
-            }
-        });
+                // The scattering coefficient (scatter / depth, with depth 1 originally) is preserved per channel.
+                const tolerance = textured ? 0.06 : 0.02;
+                for (let i = 0; i < 3; i++) {
+                    expect(Math.abs(result.scatterCoefficient[i] - scatter[i]) / scatter[i], `channel ${i}: ${result.scatterCoefficient[i]}`).toBeLessThanOrEqual(tolerance);
+                }
+            });
+        }
     }
 
     // The weight fraction T / (1 - (1-T)(1-S)) cancels catastrophically for small weights if its intermediates

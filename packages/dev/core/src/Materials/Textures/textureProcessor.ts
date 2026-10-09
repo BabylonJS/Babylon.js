@@ -848,6 +848,94 @@ export async function TransmissionFractionAsync(
     return result;
 }
 
+/** @internal */
+function _TransmissionScatterAlbedoConstant(transmissionColor: Color4, transmissionScatter: Color4): Color4 {
+    const extinction = [transmissionColor.r, transmissionColor.g, transmissionColor.b].map((value) => -Math.log(Math.max(value, 0.0000001)));
+    const scatter = [transmissionScatter.r, transmissionScatter.g, transmissionScatter.b];
+    const shift = Math.min(0, ...extinction.map((value, i) => value - scatter[i]));
+    const albedo = scatter.map((value, i) => value / Math.max(extinction[i] - shift, 0.00001));
+    return new Color4(albedo[0], albedo[1], albedo[2], transmissionScatter.a);
+}
+
+/**
+ * Recover the single-scatter albedo of an OpenPBR 1.1 transmission volume, `scatter / extinction`, using the
+ * renderer's extinction: the absorption `-log(transmissionColor) - transmissionScatter` is shifted so its
+ * smallest channel is non-negative, and the extinction is recomputed from it. The transmission depth cancels
+ * out of the ratio, so both operands are given per unit depth. The result alpha is taken from the scatter operand.
+ *
+ * If both operands are constant (no textures), the operation is performed on the CPU and
+ * the result is returned as a factor-only operand with no texture allocated.
+ *
+ * When operands are results of previous operations (i.e. they carry a `dispose` function),
+ * their intermediate textures are automatically released after the GPU pass completes.
+ *
+ * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
+ * @param transmissionColor - Linear transmission color operand
+ * @param transmissionScatter - Transmission scatter operand
+ * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
+ * @param outputColorSpace - Optional output color space.
+ * @param outputChannelMask - Optional bitmask of channels to write.
+ * @param outputOptions - Optional render-target type, sampling, and mipmap settings.
+ * @returns An operand whose `texture` holds the GPU result, or whose `factor` holds the CPU-folded constant
+ */
+export async function TransmissionScatterToSingleScatterAlbedoAsync(
+    name: string,
+    transmissionColor: ITextureProcessOperand,
+    transmissionScatter: ITextureProcessOperand,
+    scene: Scene,
+    outputColorSpace?: TextureColorSpace,
+    outputChannelMask?: ChannelMask,
+    outputOptions?: ITextureProcessorOutputOptions
+): Promise<ITextureProcessOperand> {
+    let a = transmissionColor;
+    let b = transmissionScatter;
+    if (!a.texture && !b.texture) {
+        const factor = _TransmissionScatterAlbedoConstant(_EvalConstant(a), _EvalConstant(b));
+        return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
+    }
+
+    [a, b] = _KeepMatchingOperandCoordinates(name, [a, b]);
+    const allTextures: BaseTexture[] = [];
+    if (a.texture) {
+        allTextures.push(a.texture);
+    }
+    if (b.texture) {
+        allTextures.push(b.texture);
+    }
+    const canPropagate = _AllTransformsMatch(allTextures);
+    const bakeTransform = !canPropagate;
+
+    const defines = [
+        "OP_TRANSMISSION_SCATTER_ALBEDO",
+        ..._BuildOperandDefines(a, "A", bakeTransform),
+        ..._BuildOperandDefines(b, "B", bakeTransform),
+        ...(outputChannelMask ? _BuildOutputChannelMaskDefines(outputChannelMask) : []),
+    ];
+    if (outputColorSpace) {
+        defines.push("OUTPUT_SRGB");
+    }
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b]), scene, outputColorSpace, outputOptions);
+    _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform);
+    _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform);
+    try {
+        await _RenderAsync(pt);
+    } catch (error) {
+        a.dispose?.();
+        b.dispose?.();
+        throw error;
+    }
+
+    a.dispose?.();
+    b.dispose?.();
+
+    _CopyTextureMetadata(allTextures[0], pt, canPropagate);
+    const result: ITextureProcessOperand = { texture: pt, dispose: () => pt.dispose() };
+    if (outputColorSpace) {
+        result.colorSpace = outputColorSpace;
+    }
+    return result;
+}
+
 /**
  * Linearly interpolate between two texture operands: `result = mix(a, b, t)`.
  *

@@ -19,6 +19,8 @@
 //   OP_MAX                 - use max(a, b) instead of a * b
 //   OP_DIVIDE              - component-wise safe division: result = a / max(b, 0.00001)
 //   OP_TRANSMISSION_FRACTION - component-wise result = a / max(a + b * (1 - a), 0.00001) in a single pass
+//   OP_TRANSMISSION_SCATTER_ALBEDO - single-scatter albedo from transmission color A and transmission scatter B, using the
+//                            renderer's extinction (absorption shifted to be non-negative); alpha is taken from B
 //   OP_INVERT              - unary: invert selected channels of operand A (operand B is ignored)
 //   INVERT_R               - invert the red channel (used with OP_INVERT)
 //   INVERT_G               - invert the green channel (used with OP_INVERT)
@@ -200,6 +202,12 @@ void main() {
     vec4 result = a / max(b, vec4(0.00001));
     #elif defined(OP_TRANSMISSION_FRACTION)
     vec4 result = a / max(a + b * (vec4(1.0) - a), vec4(0.00001));
+    #elif defined(OP_TRANSMISSION_SCATTER_ALBEDO)
+    // Matches openpbrVolumeFunctions; the transmission depth cancels out of scatter / extinction.
+    vec3 _extinction = -log(max(a.rgb, vec3(0.0000001)));
+    vec3 _absorption = _extinction - b.rgb;
+    _extinction -= vec3(min(min(min(_absorption.r, _absorption.g), _absorption.b), 0.0));
+    vec4 result = vec4(b.rgb / max(_extinction, vec3(0.00001)), b.a);
     #else
     vec4 result = a * b;
     #endif

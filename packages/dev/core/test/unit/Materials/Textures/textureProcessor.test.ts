@@ -33,6 +33,7 @@ import {
     TextureChannel,
     TextureColorSpace,
     TransmissionFractionAsync,
+    TransmissionScatterToSingleScatterAlbedoAsync,
     type ITextureProcessOperand,
 } from "core/Materials/Textures/textureProcessor";
 
@@ -275,6 +276,29 @@ describe("TextureProcessor", () => {
             expect(r.factor?.g).toBeCloseTo(0.4 / (0.4 + 0.6 * 0.6), 6);
             expect(r.factor?.b).toBe(0); // T = S = 0 is guarded rather than NaN
             expect(r.factor?.a).toBeCloseTo(1);
+        });
+
+        it("TransmissionScatterToSingleScatterAlbedo: shifts negative absorption like the renderer", async () => {
+            const color = CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 1));
+            const scatter = CreateFactorOperand(new Color4(1, 0.5, 0.5, 0.25));
+            const r = await TransmissionScatterToSingleScatterAlbedoAsync("t", color, scatter, scene);
+
+            // Absorption -log(0.5) - scatter is negative in red, so every channel shifts and the extinction is 1.
+            expect(r.texture).toBeNull();
+            expect(r.factor?.r).toBeCloseTo(1, 6);
+            expect(r.factor?.g).toBeCloseTo(0.5, 6);
+            expect(r.factor?.b).toBeCloseTo(0.5, 6);
+            expect(r.factor?.a).toBeCloseTo(0.25);
+        });
+
+        it("TransmissionScatterToSingleScatterAlbedo: divides by -log(color) without negative absorption, clamping zero", async () => {
+            const color = CreateFactorOperand(new Color4(0.5, 0, 0.9, 1));
+            const scatter = CreateFactorOperand(new Color4(0.2, 2, 0.05, 1));
+            const r = await TransmissionScatterToSingleScatterAlbedoAsync("t", color, scatter, scene);
+
+            expect(r.factor?.r).toBeCloseTo(0.2 / Math.LN2, 6);
+            expect(r.factor?.g).toBeCloseTo(2 / -Math.log(1e-7), 6);
+            expect(r.factor?.b).toBeCloseTo(0.05 / -Math.log(0.9), 6);
         });
 
         it("Lerp: t=0 returns a", async () => {
@@ -729,6 +753,14 @@ describe("TextureProcessor", () => {
             expect(_capturedPTs[0].options).toMatchObject({ type: Constants.TEXTURETYPE_FLOAT });
         });
 
+        it("TransmissionScatterToSingleScatterAlbedoAsync fuses the albedo recovery into one pass", async () => {
+            await TransmissionScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 1)), { texture: makeFakeTexture() }, scene);
+
+            expect(_capturedPTs).toHaveLength(1);
+            expect(_capturedPTs[0].getDefines()).toContain("OP_TRANSMISSION_SCATTER_ALBEDO");
+            expect(_capturedPTs[0].getDefines()).toContain("OPERAND_B_TEXTURE");
+        });
+
         it("auto-disposes intermediate texture when result is consumed as operand", async () => {
             const tex = makeFakeTexture();
 
@@ -808,6 +840,7 @@ describe("TextureProcessor", () => {
             ["Max", MaxTexturesAsync],
             ["Divide", DivideTexturesAsync],
             ["TransmissionFraction", TransmissionFractionAsync],
+            ["TransmissionScatterToSingleScatterAlbedo", TransmissionScatterToSingleScatterAlbedoAsync],
         ])("%s drops a texture using a different UV set and disposes the discarded operand", async (_operation, process) => {
             const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
             const first = makeFakeTexture();

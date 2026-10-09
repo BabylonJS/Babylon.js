@@ -13,7 +13,6 @@ import {
     CreateFactorOperand,
     CreateTextureOperand,
     CreateTextureWithFactorOperand,
-    DivideTexturesAsync,
     ExtractChannelAsync,
     InvertTextureAsync,
     LerpTexturesAsync,
@@ -21,6 +20,7 @@ import {
     TextureChannel,
     TextureColorSpace,
     TransmissionFractionAsync,
+    TransmissionScatterToSingleScatterAlbedoAsync,
 } from "core/Materials/Textures/textureProcessor";
 import { Constants } from "core/Engines/constants";
 import { type Scene } from "core/scene";
@@ -30,10 +30,6 @@ import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { CopyTextureSampling } from "../glTFUtilities";
 
 const NAME = "KHR_materials_scatter";
-
-// Lower bound on transmission color channels before taking -log(), matching the renderer's `Epsilon`
-// (openpbrVolumeFunctions) and the glTF loader, so a zero channel maps to a finite extinction.
-const MinTransmissionColor = 1e-7;
 
 /**
  * Render-target options for intermediate passes: floating point when the engine can render to it, so
@@ -220,9 +216,10 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
      * subsurface slabs, with `scatterStrength = 1`.
      *
      * OpenPBR represents the two slabs as:
-     *  - The transmission slab stores `transmission_scatter = -log(transmissionColor) * singleScatterAlbedo`
-     *    (OpenPBR 1.1). We recover the single-scatter albedo by dividing out `-log(transmissionColor)`,
-     *    then convert it to a multi-scatter albedo (the quantity KHR_materials_scatter stores).
+     *  - The transmission slab stores `transmission_scatter = extinction * singleScatterAlbedo` (OpenPBR 1.1),
+     *    where the renderer's extinction is `-log(transmissionColor)` with the absorption shifted to be
+     *    non-negative. We recover the single-scatter albedo by dividing out that extinction, then convert it
+     *    to a multi-scatter albedo (the quantity KHR_materials_scatter stores).
      *  - The subsurface slab stores `subsurface_color`, which is already a multi-scatter albedo.
      *
      * The two are blended by `lerp(subsurface, transmission, transmissionFraction)` (the two fractions
@@ -230,7 +227,7 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
      * and folds to a constant factor when none do.
      *
      * TODO: OpenPBR 1.2 will define `transmission_scatter` as the single-scatter albedo directly,
-     * which removes the `-log(transmissionColor)` division below.
+     * which removes the extinction division below.
      * @param mat the OpenPBR material to bake volumetric scatter data for
      * @returns scatter strength (always 1), the blended multi-scatter color, and blended anisotropy
      */
@@ -245,19 +242,12 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
             const scatter = mat.transmissionScatter;
             const transmissionScatterOp = CreateTextureWithFactorOperand(mat.transmissionScatterTexture, new Color4(scatter.r, scatter.g, scatter.b, 1.0));
             const color = mat.transmissionColor;
-            const extinctionTimesDepth = CreateFactorOperand(
-                new Color4(
-                    -Math.log(Math.max(color.r, MinTransmissionColor)),
-                    -Math.log(Math.max(color.g, MinTransmissionColor)),
-                    -Math.log(Math.max(color.b, MinTransmissionColor)),
-                    1.0
-                )
-            );
             const intermediateOptions = IntermediateOutputOptions(scene);
-            const singleScatterOp = await DivideTexturesAsync(
+            // Uses the renderer's extinction, which shifts negative absorption (per texel when textured).
+            const singleScatterOp = await TransmissionScatterToSingleScatterAlbedoAsync(
                 `scatter single-scatter (${mat.name})`,
+                CreateFactorOperand(new Color4(color.r, color.g, color.b, 1.0)),
                 transmissionScatterOp,
-                extinctionTimesDepth,
                 scene,
                 undefined,
                 undefined,
