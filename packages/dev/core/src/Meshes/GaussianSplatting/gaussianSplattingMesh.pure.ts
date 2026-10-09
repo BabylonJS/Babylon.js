@@ -656,6 +656,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * classic sorted quads. Off by default; other passes (shadows, picking, prepass) are unaffected. Falls
      * back to the classic path for multiple or rig cameras, clip planes, and streamed parts.
      * Color rendering also falls back when the camera viewport does not cover the full target.
+     * Clipping and depth quantization use the supplied projection's planes, including frozen projections.
      * Tilted and custom projections are supported by the point path. Compute runs immediately
      * before compositing with the pass's actual view; matching color and depth passes share one result.
      * While point shaders compile, the pass waits without drawing classic splats. The color pass uses the classic path

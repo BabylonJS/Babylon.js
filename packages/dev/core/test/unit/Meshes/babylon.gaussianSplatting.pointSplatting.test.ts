@@ -1406,6 +1406,16 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(setDepthInverseProjection.mock.lastCall![0].equals(Matrix.Invert(customProjection))).toBe(true);
         expect(setCamera.mock.lastCall![4]).toBeCloseTo((engine.getRenderWidth() * customProjection.m[0]) / 2);
 
+        camera.minZ = 1;
+        camera.maxZ = 5;
+        camera.freezeProjectionMatrix(Matrix.PerspectiveFovLH(camera.fov, 1, 0.1, 50));
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        controller["_runCompute"]();
+        expect(setCamera.mock.lastCall![2]).toBeCloseTo(0.1);
+        expect(setCamera.mock.lastCall![3]).toBeCloseTo(50, 2);
+        expect(setCamera.mock.lastCall![10]).toBeGreaterThan(5);
+        camera.unfreezeProjectionMatrix();
+
         // An ignored camera maxZ is an infinite far plane, so a splat beyond maxZ stays in the depth span.
         camera.maxZ = 5;
         camera.ignoreCameraMaxZ = true;
@@ -1416,6 +1426,48 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(vzMax).toBeGreaterThan(5);
 
         controller["_renderer"] = null;
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it.each([
+        { rightHanded: false, reverse: false, halfZ: false },
+        { rightHanded: true, reverse: false, halfZ: false },
+        { rightHanded: false, reverse: false, halfZ: true },
+        { rightHanded: true, reverse: false, halfZ: true },
+        { rightHanded: false, reverse: true, halfZ: true },
+        { rightHanded: true, reverse: true, halfZ: true },
+    ])("reads projection clipping planes with $rightHanded handedness, reverse=$reverse, halfZ=$halfZ", ({ rightHanded, reverse, halfZ }) => {
+        const engine = new NullEngine();
+        engine.isNDCHalfZRange = halfZ;
+        engine.useReverseDepthBuffer = reverse;
+        const scene = new Scene(engine);
+        scene.useRightHandedSystem = rightHanded;
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        const projection = Matrix.Identity();
+        if (rightHanded) {
+            Matrix.PerspectiveFovRHToRef(1, 1, reverse ? 20 : 0.1, reverse ? 0.1 : 20, projection, true, halfZ, 0, reverse);
+        } else {
+            Matrix.PerspectiveFovLHToRef(1, 1, reverse ? 20 : 0.1, reverse ? 0.1 : 20, projection, true, halfZ, 0, reverse);
+        }
+        const interval = controller["_getProjectionClipRange"](projection)!;
+        expect(interval[0]).toBeCloseTo(0.1);
+        expect(interval[1]).toBeCloseTo(20, 2);
+        if (rightHanded) {
+            Matrix.PerspectiveFovRHToRef(1, 1, reverse ? 0 : 0.1, reverse ? 0.1 : 0, projection, true, halfZ, 0, reverse);
+        } else {
+            Matrix.PerspectiveFovLHToRef(1, 1, reverse ? 0 : 0.1, reverse ? 0.1 : 0, projection, true, halfZ, 0, reverse);
+        }
+        expect(controller["_getProjectionClipRange"](projection)![0]).toBeCloseTo(0.1);
+        expect(controller["_getProjectionClipRange"](projection)![1]).toBe(0);
+        if (rightHanded) {
+            Matrix.OrthoOffCenterRHToRef(-1, 1, -1, 1, reverse ? 30 : 0.2, reverse ? 0.2 : 30, projection, halfZ);
+        } else {
+            Matrix.OrthoOffCenterLHToRef(-1, 1, -1, 1, reverse ? 30 : 0.2, reverse ? 0.2 : 30, projection, halfZ);
+        }
+        expect(controller["_getProjectionClipRange"](projection)![0]).toBeCloseTo(0.2);
+        expect(controller["_getProjectionClipRange"](projection)![1]).toBeCloseTo(30, 2);
         scene.dispose();
         engine.dispose();
     });

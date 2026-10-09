@@ -98,6 +98,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     private _colorMode = false;
     private _depthMode = false;
+    private readonly _projectionClipRange = new Float64Array(2);
     private _scale = 1;
     private _renderScale: number | "auto" = "auto";
     private _occlusionCulling = false;
@@ -624,6 +625,28 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     }
 
     /**
+     * Reads the forward clipping interval of a projection whose depth is independent of x/y.
+     * @param projection the supplied projection matrix
+     * @returns the reused near/far interval (zero far means infinite), or null for unsupported intervals
+     */
+    private _getProjectionClipRange(projection: Matrix): Nullable<Float64Array> {
+        const engine = this._scene.getEngine();
+        const m = projection.m;
+        const nearDepth = engine.useReverseDepthBuffer ? 1 : engine.isNDCHalfZRange ? 0 : -1;
+        const farDepth = engine.useReverseDepthBuffer ? (engine.isNDCHalfZRange ? 0 : -1) : 1;
+        const sign = this._scene.useRightHandedSystem ? -1 : 1;
+        const near = (sign * (m[14] - nearDepth * m[15])) / (nearDepth * m[11] - m[10]);
+        const farDenominator = farDepth * m[11] - m[10];
+        const far = farDenominator === 0 ? Infinity : (sign * (m[14] - farDepth * m[15])) / farDenominator;
+        if (!Number.isFinite(near) || !(far > near) || !(far > 0)) {
+            return null;
+        }
+        this._projectionClipRange[0] = near;
+        this._projectionClipRange[1] = far === Infinity ? 0 : far;
+        return this._projectionClipRange;
+    }
+
+    /**
      * Computes the model's view-depth span from its part AABB corners.
      * @param viewM column-major view matrix
      * @param near camera near plane
@@ -886,9 +909,12 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer.isOrthographic = Math.abs(projection.m[15] - 1) < 0.001;
         const gsMaterial = this._mesh.material as Nullable<GaussianSplattingMaterial>;
 
-        const farZ = camera.ignoreCameraMaxZ ? 0 : camera.maxZ;
-        const [vzMin, vzMax] = this._viewZSpan(view.m, camera.minZ, farZ, !_HasGaussianPointSplattingProjectedDepth(projection));
-        this._renderer.setCamera(view, this._vpMatrix, camera.minZ, farZ, focalX, focalY, camPos.x, camPos.y, camPos.z, vzMin, vzMax);
+        const projectedDepth = _HasGaussianPointSplattingProjectedDepth(projection);
+        const clipRange = projectedDepth ? null : this._getProjectionClipRange(projection);
+        const nearZ = clipRange?.[0] ?? camera.minZ;
+        const farZ = clipRange?.[1] ?? (camera.ignoreCameraMaxZ ? 0 : camera.maxZ);
+        const [vzMin, vzMax] = this._viewZSpan(view.m, nearZ, farZ, !projectedDepth);
+        this._renderer.setCamera(view, this._vpMatrix, nearZ, farZ, focalX, focalY, camPos.x, camPos.y, camPos.z, vzMin, vzMax);
         this._renderer.setProjectionMatrix(projection, this._inverseProjection, engine.useReverseDepthBuffer);
         if (!this._renderer.renderToBuffer(width, height, fullW, fullH, upsampleN, jitterX, jitterY)) {
             return;
@@ -942,7 +968,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /**
      * True when the frame renders a view the point path cannot reproduce: several active cameras, rig
-     * cameras (stereo, XR, multiview), or scene/material clip planes.
+     * cameras (stereo, XR, multiview), unsupported projection clipping intervals, or scene/material clip planes.
      * The classic path renders those instead.
      * @returns whether point splatting must fall back to the classic path this frame
      */
@@ -950,6 +976,10 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const scene = this._scene;
         const camera = scene.activeCamera;
         if (!camera) {
+            return true;
+        }
+        const projection = camera.getProjectionMatrix();
+        if (!_HasGaussianPointSplattingProjectedDepth(projection) && !this._getProjectionClipRange(projection)) {
             return true;
         }
         const material = this._mesh.material;
