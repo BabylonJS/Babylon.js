@@ -18,11 +18,13 @@ import {
 import { GaussianSplattingDisplayProperties } from "../../../components/properties/nodes/gaussianSplattingProperties";
 import { MeshDisplayProperties, MeshGeneralProperties, MeshMorphTargetsProperties } from "../../../components/properties/nodes/meshProperties";
 import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
+import { GaussianSplattingDebugController } from "./gaussianSplattingDebugController";
 
 export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
     factory: (propertiesService, selectionService) => {
+        const gaussianDebugController = new GaussianSplattingDebugController();
         const nodeContentRegistration = propertiesService.addSectionContent({
             key: "Node Properties",
             predicate: (entity: unknown) => entity instanceof Node,
@@ -95,13 +97,14 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
             content: [
                 {
                     section: "Gaussian Splatting",
-                    component: ({ context }) => <GaussianSplattingDisplayProperties mesh={context} />,
+                    component: ({ context }) => <GaussianSplattingDisplayProperties mesh={context} debugController={gaussianDebugController} />,
                 },
             ],
         });
 
         return {
             dispose: () => {
+                gaussianDebugController.dispose();
                 nodeContentRegistration.dispose();
                 abstractMeshContentRegistration.dispose();
                 meshContentRegistration.dispose();
