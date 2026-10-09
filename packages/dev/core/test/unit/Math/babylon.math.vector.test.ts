@@ -2410,4 +2410,53 @@ describe("Babylon Vector tests", () => {
             });
         });
     });
+
+    describe("Matrix", () => {
+        describe("LookDirectionLHToRef / LookDirectionRHToRef", () => {
+            it("LH: transforms the local forward axis to the requested world forward direction", () => {
+                const forward = new Vector3(1, 2, 3).normalize();
+                const up = Vector3.Up();
+                const result = new Matrix();
+                Matrix.LookDirectionLHToRef(forward, up, result);
+
+                const worldForward = Vector3.TransformNormal(Vector3.Forward(false), result);
+                expect(worldForward.x).toBeCloseTo(forward.x);
+                expect(worldForward.y).toBeCloseTo(forward.y);
+                expect(worldForward.z).toBeCloseTo(forward.z);
+            });
+
+            it("RH: transforms the local forward axis to the requested world forward direction", () => {
+                const forward = new Vector3(1, 2, 3).normalize();
+                const up = Vector3.Up();
+                const result = new Matrix();
+                Matrix.LookDirectionRHToRef(forward, up, result);
+
+                const worldForward = Vector3.TransformNormal(Vector3.Forward(true), result);
+                expect(worldForward.x).toBeCloseTo(forward.x);
+                expect(worldForward.y).toBeCloseTo(forward.y);
+                expect(worldForward.z).toBeCloseTo(forward.z);
+            });
+
+            it("agrees with the equivalent LookAt*ToRef result (eye at origin, target = forward)", () => {
+                const forward = new Vector3(1, 2, 3).normalize();
+                const up = Vector3.Up();
+
+                const lookDirLH = new Matrix();
+                Matrix.LookDirectionLHToRef(forward, up, lookDirLH);
+                const lookAtLH = new Matrix();
+                Matrix.LookAtLHToRef(Vector3.Zero(), forward, up, lookAtLH);
+                for (let i = 0; i < 16; i++) {
+                    expect(lookDirLH.m[i]).toBeCloseTo(lookAtLH.m[i]);
+                }
+
+                const lookDirRH = new Matrix();
+                Matrix.LookDirectionRHToRef(forward, up, lookDirRH);
+                const lookAtRH = new Matrix();
+                Matrix.LookAtRHToRef(Vector3.Zero(), forward, up, lookAtRH);
+                for (let i = 0; i < 16; i++) {
+                    expect(lookDirRH.m[i]).toBeCloseTo(lookAtRH.m[i]);
+                }
+            });
+        });
+    });
 });
