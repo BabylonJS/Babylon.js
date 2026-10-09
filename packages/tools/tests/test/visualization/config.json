@@ -125,6 +125,18 @@
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
         },
         {
+            "title": "Gaussian Splatting Projected Size",
+            "playgroundId": "#8FOB3C#0",
+            "referenceImage": "gsplat-debug-projected-size.png",
+            "dependsOn": ["GaussianSplatting", "Materials", "Loaders", "SPLATLoader"]
+        },
+        {
+            "title": "Gaussian Splatting Overdraw",
+            "playgroundId": "#D4U720#1",
+            "referenceImage": "gsplat-debug-overdraw.png",
+            "dependsOn": ["GaussianSplatting", "Materials", "Loaders", "SPLATLoader"]
+        },
+        {
             "title": "Gaussian Splatting SPZ SH No WASM",
             "playgroundId": "##XSNFXP#12",
             "referenceImage": "gsplat-spz-sh.png",
@@ -3004,6 +3016,23 @@
             "playgroundId": "#M9FSIH#6",
             "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
             "referenceImage": "fluidGpuParticleSystemUniformSizeAsymmetricScale.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system without diffuse texture",
+            "playgroundId": "#NAW8JS#0",
+            "referenceImage": "fluidGpuParticleSystemWithoutDiffuseTexture.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system with diffuse texture",
+            "playgroundId": "#NAW8JS#0",
+            "replace": "var generateDiffuseTexture = false;, var generateDiffuseTexture = true;",
+            "referenceImage": "fluidGpuParticleSystemWithDiffuseTexture.png",
             "renderCount": 60,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Rendering", "Particles"]

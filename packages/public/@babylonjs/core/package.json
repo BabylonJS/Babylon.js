@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.29.0",
+    "version": "9.30.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -280,6 +280,8 @@
         "Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.js",
         "Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin.js",
         "Materials/GaussianSplatting/gaussianSplattingMaterial.js",
+        "Materials/GaussianSplatting/gaussianSplattingOverdrawMaterialPlugin.js",
+        "Materials/GaussianSplatting/gaussianSplattingSizeMaterialPlugin.js",
         "Materials/GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin.js",
         "Materials/GreasedLine/greasedLinePluginMaterial.js",
         "Materials/Node/Blocks/Dual/clipPlanesBlock.js",

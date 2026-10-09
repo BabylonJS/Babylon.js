@@ -599,24 +599,6 @@ export class Engine extends ThinEngine {
         super._deletePipelineContext(pipelineContext);
     }
 
-    public override createShaderProgram(
-        pipelineContext: IPipelineContext,
-        vertexCode: string,
-        fragmentCode: string,
-        defines: Nullable<string>,
-        context?: WebGLRenderingContext,
-        transformFeedbackVaryings: Nullable<string[]> = null
-    ): WebGLProgram {
-        context = context || this._gl;
-
-        this.onBeforeShaderCompilationObservable.notifyObservers(this);
-
-        const program = super.createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context, transformFeedbackVaryings);
-        this.onAfterShaderCompilationObservable.notifyObservers(this);
-
-        return program;
-    }
-
     protected override _createShaderProgram(
         pipelineContext: WebGLPipelineContext,
         vertexShader: WebGLShader,

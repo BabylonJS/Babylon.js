@@ -1,6 +1,243 @@
 {
-    "fromTag": "9.28.0",
+    "fromTag": "9.29.0",
     "changelog": {
+        "9.30.0": [
+            {
+                "pr": "18981",
+                "title": "chore(deps): npm audit fix — 20261007",
+                "description": "Automated by the morning-dev-briefing skill.\n\n## Summary\n`npm audit fix` reduced the audit findings from 51 to 10:\n- Critical: 1 resolved (0 remaining)\n- High: 32 resolved (3 remaining)\n- Moderate: 7 resolved (7 remaining)\n- Low: 1 resolved (0 remaining)\n\nThe remaining 3 high and 7 moderate findings require breaking-change updates and were intentionally not forced.\n\n## Verification\n- [x] `npm install --no-audit --no-fund`\n- [x] `npm audit` confirms 10 remaining findings\n- [ ] CI green\n- [ ] No runtime regressions in dev host\n- [ ] Lockfile diff reviewed\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/buildTools/test/unit/watchDeclarations.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18968",
+                "title": "Fix AndOrNotEvaluator returning false for \"a || b && c\" when only a is true",
+                "description": "Anyone using `Tags.MatchesQuery`, `scene.getMeshesByTags` or `AndOrNotEvaluator.Eval` directly with a query like `\"player || enemy && alive\"` gets `false` for an object that only has the `player` tag, so the object is silently left out of the result.\n\nIn `_HandleParenthesisContent`, the early exit for a true `||` operand ran after the next operand's `&&` chain had already overwritten `result`. When a true operand was followed by an `&&` chain that evaluated to false, the true was lost. The loop now stops as soon as an earlier operand has evaluated to true.\n\nBefore the change, with only `a` true:\n\n```\nEval(\"a || b && c\", [\"a\"])           -> false (expected true)\nEval(\"a || b && c || d\", [\"a\"])      -> false (expected true)\n```\n\n`a || b`, `a && b || c` and `(a || b) && c` were already correct and are covered by the new test as well.\n\nTest: `packages/dev/core/test/unit/Misc/babylon.andOrNotEvaluator.test.ts`. Two of its three tests fail on the previous `andOrNotEvaluator.ts` and all three pass with this change.\n",
+                "author": {
+                    "name": "Arthur031221",
+                    "url": "https://github.com/Arthur031221"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/andOrNotEvaluator.ts",
+                    "packages/dev/core/test/unit/Misc/babylon.andOrNotEvaluator.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18980",
+                "title": "Remove unused blockMap in flow graph data cycle detection",
+                "description": "`_DetectDataCycles` in `flowGraphValidator.ts` builds a `blockMap` from `allBlocks`, but nothing reads it. The DFS uses `_connectedPoint[i]._ownerBlock` directly. This removes the map and the loop that fills it.\n\nNo behavior change.\n\nhttps://claude.ai/code/session_01W9Mk18mBNfkPfgg3hYweKq",
+                "author": {
+                    "name": "irontaek",
+                    "url": "https://github.com/irontaek"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/flowGraphValidator.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18979",
+                "title": "Fix Flow Graph Editor file preview replacement and preserve imported cameras",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nFix normal Flow Graph Editor file-import issues, independently of any roundtrip demo:\n\n- Stage imported scenes on a fresh preview canvas. Engines sharing one canvas share a WebGL context, so disposing the old engine could invalidate the new scene's GPU resources and leave the preview blank.\n- Replace the displayed canvas only after successful loading, attach it before binding resize/render handling, and keep only one preview canvas.\n- Preserve the loaded scene's active camera, or select its first imported camera. Create a default orbit camera only when no camera exists, and attach preview controls.\n- Reject a pending import if its preview pane unmounted during undock/redock, before changing the retained coordinator or publishing its staged context. Preserve the working preview and log how to retry in the mounted pane.\n- Update the editor manual and in-app help to describe camera selection and failed-load preservation.\n\nThis PR contains **only editor fixes, standalone editor regression coverage, and editor documentation**. It excludes the roundtrip demo, Calculator integration, export-event plumbing, default-scene extraction, dependencies, and engine/loader/framework changes. Source-preserving interactivity export remains the implementation already merged in #18976.\n\n## Validation\n\n- Standalone browser regression uses a tiny embedded glTF triangle, not a demo or external asset. It verifies rendered pixels after successive imports, camera preservation/fallback, stable engine counts, and preservation of the prior preview after a malformed import.\n- The same regression pauses an import across undock/redock, verifies preservation of the old scene/coordinator/pixels and disposal of staged resources, then confirms a subsequent import succeeds.\n- Negative controls: the original shared-canvas behavior fails the pixel assertion (red channel 51 instead of >200); omitting the stale-pane guard reproduces a null `globalState.sceneContext`.\n- Nine focused editor browser tests pass, including file/reset, graph ownership, KHR import failure, malformed graph, and popup/redock coverage.\n- Full unit suite after the review fix: 429 test files pass; 6,382 passing tests, one expected failure, 32 skipped (`npm run test:unit -- --maxWorkers=2`).\n- Format, lint/tree-shaking, advisory lint, and source build pass. Advisory lint still reports existing repository warnings.\n\nThe earlier full-suite runs encountered stale generated shader outputs and resource-contention timeouts. Regenerating the existing ignored shader outputs and bounding unit workers resolved these without tracked changes outside the editor.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/flowGraphEditor/MANUAL.md",
+                    "packages/tools/flowGraphEditor/src/components/help/helpContent.ts",
+                    "packages/tools/flowGraphEditor/src/components/preview/scenePreviewComponent.tsx",
+                    "packages/tools/flowGraphEditor/test/playwright/flowGraphEditor.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18975",
+                "title": "Fix GPUParticleSystem leaving instance attribute divisors bound",
+                "description": "`GPUParticleSystem._render()` only called `engine.unbindInstanceAttributes()` when `scene.forceWireframe` was set. In the regular path the per-instance divisors set by `bindDrawBuffers()` stayed active, so the next non-instanced draw that uses the same attribute locations inherited divisor 1.\r\n\r\nThis path is taken whenever the render effect no longer matches the one the render VAO was recorded with (e.g. a define such as fog or a clip plane changed after initialization), because `WebGL2ParticleSystem.bindDrawBuffers()` then falls back to `engine.bindBuffers()` on the default VAO. The visible symptom: the post-process fullscreen quad degenerates (location 0 `position` with divisor 1) and the whole scene renders black whenever a GPU particle system is the last instanced draw before the post-process chain.\r\n\r\nThis change always resets the instance attributes after drawing, matching `ThinParticleSystem`, `SpriteRenderer` and `Mesh`. In the VAO path the call is a no-op: `recordVertexArrayObject()` does not track instance locations, so the particle VAO is left untouched.\r\n\r\nAdded `gpuParticleSystemInstanceUnbind.test.ts`, which renders once without `forceWireframe` and expects `unbindInstanceAttributes()` to be called (fails on the previous code).\r\n\r\nRepro: https://playground.babylonjs.com/#0N0OJA (fog is enabled after 30 frames → black; toggles `APPLY_WORKAROUND` / `ADD_CPU_PARTICLES` restore the image)\r\n\r\nForum thread: https://forum.babylonjs.com/t/gpuparticlesystem-leaves-instance-attribute-divisors-bound-following-post-process-renders-black/64237\r\n",
+                "author": {
+                    "name": "redstair",
+                    "url": "https://github.com/redstair"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.pure.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.pure.ts",
+                    "packages/dev/core/test/unit/Particles/gpuParticleSystemInstanceUnbind.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18976",
+                "title": "Fix source-backed interactivity export in Flow Graph Editor",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Problem\n\nComplex imported interactivity assets such as the Khronos Calculator GLB were producing export diagnostics without any graph edits. Compatibility imports were being validated against strict serializer-export rules, including compatibility-only flow sockets, older selection declarations, and pointers into material extensions. Vector extraction mappings also incorrectly declared vector inputs as scalar numbers.\n\n## Changes\n\n- Use one source-backed graph export path for retained glTF and GLB imports, with either output format. Representable graph edits patch the original document instead of reserializing the preview scene.\n- Preserve original entity indices, unrelated JSON tokens, material extensions, imported compatibility connections, and GLB binary chunks. An unchanged Calculator GLB exports byte-identically.\n- Correct `math/extract2/3/4` input types and reconcile executable compatibility mappings without relaxing ordinary standards/serializer export.\n- Keep provenance, composite integrity, and reference bounds validation. Unsupported edits produce actionable diagnostics rather than silently discarding behavior.\n- Embed the BIN buffer when converting GLB to glTF, excluding alignment padding. Reject conversion when unknown/duplicate binary chunks would be lost. glTF-to-GLB conversion preserves existing resource URIs rather than packing companion files.\n- Retain glTF source files across the editor import lifecycle, enable both format choices, and document the graph-only export scope and external-resource requirements.\n\nThis exports **graph edits**, not preview geometry, material, or hierarchy changes. Imported multi-block operations must remain structurally intact.\n\n## Validation\n\n- Actual Khronos Calculator: no export diagnostics or engine/page errors; unchanged GLB byte-identical; edited literal survives GLB and glTF export/reimport; unrelated scene JSON and BIN data preserved.\n- Five focused browser regressions passed, covering source-backed compatibility edits and existing strict export/behavior authoring paths.\n- Full unit suite: 429 files passed, 6,376 tests passed, one expected failure, 32 skipped.\n- Focused export suites: 121 tests passed.\n- `format:check`, `lint:check` (including all-package tree-shaking and side-effect manifest checks), `build:source`, and `lint:advisory` passed. Advisory lint reports repository warnings but zero errors. Full lint required a local npm Node heap override after the default 8 GB heap was exhausted; no repository configuration changed.\n\n<details>\n<summary>Local review (agnostic and repository-instructions lenses)</summary>\n\n| Surface | Intent and representative inputs | Result / coverage |\n|---|---|---|\n| Export-plan construction/build/source context | Retained sources vs ordinary serializer contexts; missing source; repeated builds | Source-mode context is identity-guarded and cached per plan; ordinary strict mode remains isolated. Source/strict regressions cover these paths. |\n| Imported-node analysis and graph reconstruction | Compatibility selection composites, Babylon operations, unchanged graphs, literal edits, removed provenance | Compatibility mappings remain executable and structurally validated; unchanged graph shape and explicit default socket spelling are retained. Covered by exporter and Calculator roundtrips. |\n| Flow/value connections and pointer remapping | Existing compatibility outputs, ordinary sockets, dynamic templates, material extensions, valid/out-of-range root references | Existing compatibility sockets are retained only in source mode; preserved root arrays make remapping unnecessary while static reference bounds remain checked. Exporter regressions cover compatibility, extension, and bounds cases. |\n| Document patching and asset conversion | All four format combinations; unchanged/edited JSON; precision-sensitive tokens; BIN padding; unknown/duplicate/missing chunks | Unrelated tokens/chunks remain intact or conversion fails explicitly. Unit and browser roundtrips cover the required cases. |\n| Import lifecycle and editor actions | Replaced/disposed previews; glTF/GLB imports; asynchronous file reads | Retained source state clears with preview ownership. Both format actions use the retained asset. Review caught a source-format race during asynchronous reads, now fixed and regression-tested. |\n\n| File | Lens | Severity | Finding | Fix |\n|---|---|---|---|---|\n| `serializationTools.ts` | Both | Warning | Changing the preview while an export awaited its source file could select the replacement asset's format. | Capture the source format before awaiting the file, alongside its already captured source file; add a regression that replaces glTF with GLB during the read. |\n\nNo unresolved local review findings.\n</details>",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphExporter.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityGraphExporter.test.ts",
+                    "packages/tools/flowGraphEditor/src/components/help/helpContent.ts",
+                    "packages/tools/flowGraphEditor/src/components/preview/scenePreviewComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/globalState.ts",
+                    "packages/tools/flowGraphEditor/src/khrGlbBehaviorAuthoring.ts",
+                    "packages/tools/flowGraphEditor/src/serializationTools.ts",
+                    "packages/tools/flowGraphEditor/test/playwright/flowGraphEditor.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/khrGlbBehaviorAuthoring.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/serializationTools.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "18973",
+                "title": "fix(flowGraphEditor): scope toast assertion to visible title",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nScope the Flow Graph Editor shell test's toast visibility assertion to `.fui-ToastTitle`, keeping exact message matching.\n\nFluent renders the toast message twice: once in its screen-reader live region and once in the visible toast title. The previous global `getByText(..., { exact: true })` locator intermittently matched both elements and failed with a Playwright strict-mode violation. This changes only the test locator; toast rendering and accessibility behavior are unchanged.\n\nThe test was introduced in #18478. The same failure has affected multiple unrelated branches, including #18957 and #18956. [Latest failing CI run](https://dev.azure.com/babylonjs/243fb099-542d-4655-b246-4dfd67131bd4/_build/results?buildId=60386).\n\n## Validation\n\n- Affected Playwright test passed against the exact failing #18957 CI snapshot.\n- All three shell/panel tests passed across three repetitions, without retries: **9 passed**.\n- `npm run format:check`\n- `npm run lint:check` (including tree-shaking and side-effects checks)\n- `npm run build:source`\n- `npm run lint:advisory` (0 errors; existing repository warnings)\n- `npm run test:unit`: **424 files passed; 6,338 tests passed**.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/flowGraphEditor/test/playwright/flowGraphEditor.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18974",
+                "title": "chore(deps): remove vulnerable braces tooling dependencies",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nRemove the unpatched vulnerable `braces` dependency paths without suppressions or new overrides:\n\n- Upgrade Chokidar `3.6.0 → 4.0.3` and its readdirp dependency `3.6.0 → 4.1.2`. Migrate asset, declaration, and core build watchers from globs to directories with explicit file/event filtering. Chokidar 4 preserves CommonJS compatibility; v5 is ESM-only.\n- Replace `es-check` with a shared direct Acorn ES2015 script checker for all eight UMD packages. Declare the already-resolved `acorn@8.18.0` directly; missing files and incompatible syntax fail the gate.\n- Refresh transitive Hono `4.13.5 → 4.13.10` through normal npm resolution.\n- Add filesystem watcher, CommonJS rebuild, and syntax-checker regression coverage, and document the tooling changes.\n- Preserve the Babylon server source watcher's dependency/Git exclusions with a cross-platform directory-boundary regular expression instead of unsupported ignored glob strings.\n\nScope is the approved focused security migration, not unrelated routine major upgrades. Three resolved package versions are updated, `es-check` is removed, and Acorn is promoted from transitive to direct tooling dependency. No public engine APIs change.\n\n## Security audit\n\nCommand: `npx --yes --package=npm@11.18.0 npm audit --json` (all dependencies, including dev dependencies; all severities).\n\n| Severity | Before | After |\n| --- | ---: | ---: |\n| Critical | 0 | 0 |\n| High | 5 | 0 |\n| Moderate | 1 | 0 |\n| Low | 0 | 0 |\n| Informational | 0 | 0 |\n| **Total** | **6** | **0** |\n\nRemoves both `chokidar → braces` and `es-check → fast-glob → micromatch → braces` paths for [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), which has no patched braces release. The Hono update fixes [GHSA-hxh3-vqpv-xpqv](https://github.com/advisories/GHSA-hxh3-vqpv-xpqv). Final audit was repeated after validation and reports numeric zero at every severity. Existing repository overrides are unchanged.\n\n## Seven-day release-age policy\n\nImmutable run time: **2026-10-05T09:55:22.614Z**. Cutoff: **2026-09-28T09:55:22.614Z**.\n\nCompared every resolved registry `name@version` against the original lockfile, irrespective of installation path. All three newly introduced exact registry versions were checked against npm publication timestamps after validation:\n\n| Package | Resolved version | Published (UTC) | Eligible |\n| --- | --- | --- | --- |\n| chokidar | 4.0.3 | 2024-12-18T22:21:34.451Z | Yes |\n| hono | 4.13.10 | 2026-09-28T08:24:32.197Z | Yes |\n| readdirp | 4.1.2 | 2025-02-14T17:27:21.994Z | Yes |\n\nAcorn `8.18.0` was already resolved in the baseline, but its publication timestamp was also verified: **2026-07-28T06:47:49.255Z** (eligible). Hono narrowly meets the original cutoff; the cutoff was not advanced during this run.\n\n## Under-seven-day security exceptions\n\nNone.\n\n## Deferred recent releases\n\nHono `4.13.11` (2026-09-29), `4.13.12` (2026-09-30), and `4.13.13` (2026-10-04) are newer than the immutable cutoff and were not selected. Other unrelated upgrades remain outside this migration's approved scope.\n\n## Validation\n\n- Supported npm `ci` install/lockfile consistency check.\n- `npm run build:dev`, including `build:source`, asset processing, and server declarations.\n- All eight affected UMD `build:dev` targets and root `npm run test:escheck`.\n- `npm run format:check`.\n- Full `npm run lint:check`, including tree-shaking and side-effect invariants.\n- Full `npm run lint:advisory`: 0 errors, 13,717 advisory warnings. Both full lint commands used a 16 GiB Node heap after the default 8 GiB exhausted memory; no rules or thresholds were weakened.\n- `REUSE_BROWSER=1 npm run test:unit -- --maxWorkers=4`: **429 files passed; 6,356 tests passed, 1 expected failure, 32 skipped**.\n- TypeScript compiler validation of the Babylon server configuration and its new regression test using repository compiler options.\n\nThe server-ignore regression exercises the actual Vite plugin and Chokidar 4 in an isolated filesystem fixture. It fails with the old ignore globs and passes with the fix, proving nested `node_modules` and `.git` trees are pruned while `node_modules-source` and `.github` remain watched; POSIX and Windows matcher paths are covered. Required builds, formatting, lint, the full unit suite, all eight ES2015 gates, full audit, and the original exact-version age policy were rechecked before the follow-up commit.\n\nSelf-review traced local/global/prefixed asset discovery, ignored files, newly created source roots, declaration add/edit/unlink/same-size recreation, `.ts`/`.tsx` input events, CommonJS rebuild filtering, and ES2015/missing-file rejection. Additional prefix, CommonJS, and source edit/delete coverage was added before the final full-suite run. No remaining correctness findings. Test-generated example fixture changes were cleaned up and excluded from the commit.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "contributing.md",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/buildTools/test/unit/checkEcmaVersion.test.ts",
+                    "packages/dev/buildTools/test/unit/copyAssets.test.ts",
+                    "packages/dev/buildTools/test/unit/coreWatcher.test.ts",
+                    "packages/dev/buildTools/test/unit/watchDeclarations.test.ts",
+                    "packages/public/@babylonjs/core/watcher.cjs",
+                    "packages/public/umd/babylonjs-addons/package.json",
+                    "packages/public/umd/babylonjs-gui/package.json",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/tools/babylonServer/test/unit/sourceWatcher.test.ts",
+                    "packages/tools/babylonServer/vite.config.ts",
+                    "scripts/checkEcmaVersion.mjs"
+                ],
+                "tags": [
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18972",
+                "title": "SubMesh Draw Wrapper Caching Per Pass",
+                "description": "When using a mutli-material in combination with separate materials per render pass, subMesh was disposing of its drawWrappers for every each time a new pass with a different material was rendered. This update modifies subMesh to keeps its drawWrappers cached per pass, such that there is only a reset when the material changes for that pass specifically.\r\nSee full breakdown, prototypes, and discussion here\r\nhttps://forum.babylonjs.com/t/allow-submesh-to-preserve-the-draw-cache-of-other-pass-ids/64188/8",
+                "author": {
+                    "name": "tholub99",
+                    "url": "https://github.com/tholub99"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.pure.ts",
+                    "packages/dev/core/src/Meshes/subMesh.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.subMesh.drawWrapperCache.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18971",
+                "title": "fix: support image source dimensions on WebGL1",
+                "description": "`ImageSourceBlock.dimensions` generates a `textureSize()` call, which is unavailable in WebGL1 and causes shader compilation to fail.\r\n\r\nPass the texture dimensions through a `vec2` uniform on WebGL1, populated from `texture.getSize()` when binding. WebGL2 and WebGPU keep their existing shader queries. No public API changes.\r\n\r\nRepro: https://playground.babylonjs.com/#5GEY12#0\r\n\r\nSelect **WebGL** in the engine menu. Before the fix, the shader fails to compile. After the fix, the plane renders brown: RGB `(0.5, 0.25, 0)` from the 256 × 128 texture dimensions.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/imageSourceBlock.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Node/Blocks/textureBlock.test.ts",
+                    "packages/tools/tests/test/playwright/interaction.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18970",
+                "title": "MSDF Text: guard fwidth() denominators in the fragment shaders",
+                "description": "### Issue\n\nWith SwiftShader, which headless Chrome uses by default, `TextRenderer` draws every glyph quad opaque and every glyph interior transparent, so each letter shows as an outlined ring on a solid cell. The result is deterministic on SwiftShader. NVIDIA through ANGLE (GL and Vulkan) renders correctly.\n\n### Cause\n\nThe fragment shader computes coverage as `clamp(sigDist / fwidth(sigDist) + 0.5, 0.0, 1.0)`. Wherever the sampled distance field is flat, `fwidth()` is 0. That covers the padding around each glyph and the inside of strokes wider than the atlas distance range. GLSL leaves division by zero unspecified, and WGSL lets implementations assume there are no infinities at runtime, so the result depends on the implementation. SwiftShader's `fwidth()` returns `-0` there. The quad background then evaluates to `-0.5 / -0 = +inf` (alpha 1), and the glyph interior evaluates to `+0.5 / -0 = -inf` (alpha 0). The stroke outset and inset terms use the same division, as do the three divisions in the WGSL shader.\n\n### Fix\n\nClamp each derivative denominator to `1e-5` in both the GLSL and WGSL fragment shaders. On real edges the derivative is far above that, so antialiasing is unchanged. In flat regions the ratio is now a large finite value that clamps to fully inside or fully outside. A unit test checks that every derivative denominator in both shaders stays guarded. It fails without the fix and passes with it.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "marns",
+                    "url": "https://github.com/marns"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/shaders/msdf.fragment.fx",
+                    "packages/dev/addons/src/msdfText/shadersWGSL/msdf.fragment.fx",
+                    "packages/dev/addons/test/unit/msdfText/msdfShaders.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18966",
+                "title": "Fix WebGPU render target sRGB option forwarding",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nFix WebGPU `createRenderTargetTexture` silently ignoring `useSRGBBuffer: true`. The single-target implementation rebuilt the creation options without copying this flag, so `_createInternalTexture` defaulted to a linear buffer. The MRT implementation already preserved its corresponding `useSRGBBuffers` option.\n\n- Forward `useSRGBBuffer` into the internal texture creation options.\n- Add five regression cases covering explicit true/false, omitted values, supplied color attachments, and no-color targets.\n- Preserve existing defaults and avoid changing or reallocating supplied attachments.\n\n## Validation\n\n- Confirmed the sRGB regression fails without the forwarding assignment.\n- Full unit suite: 421 files passed; 6,316 tests passed, one expected failure, and 32 skipped.\n- Browser/devhost: verified eight actual GPU allocation cases covering RGBA/BGRA sRGB and linear formats, one-target MRT parity, and legacy boolean defaults. Temporary validation scenes and the server were cleaned up.\n- Source build and focused test typecheck passed.\n- Repository-wide formatting, lint, tree-shaking invariants, and side-effects synchronization passed.\n- Advisory lint completed with zero errors and existing repository warnings; the changed files are warning-free.\n\nSelf-review under both the repository-instructions and general-engineering lenses found no issues.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.pure.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/Extensions/engine.renderTarget.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18967",
+                "title": "Expose WebGPU canvas tone mapping and color space options",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nExpose optional `canvasToneMapping?: GPUCanvasToneMapping` and `canvasColorSpace?: PredefinedColorSpace` settings on `WebGPUEngineOptions`, and forward them to `GPUCanvasContext.configure()`.\n\nExisting callers retain the browser's standard tone-mapping and sRGB defaults. Device, swap-chain format, texture usage and alpha-mode configuration are unchanged. The options are also reused whenever the engine initializes its canvas context again.\n\nPublic API comments explain that these are canvas presentation controls, not a complete HDR/wide-gamut rendering pipeline. Extended HDR output needs `rgba16float`, compatible browser/display support, and rendering that preserves values above 1. Selecting Display P3 interprets output pixels in that color space; it does not automatically convert Babylon's rendering output.\n\n```ts\nconst engine = new WebGPUEngine(canvas, {\n    swapChainFormat: \"rgba16float\",\n    canvasToneMapping: { mode: \"extended\" },\n    canvasColorSpace: \"display-p3\",\n});\nawait engine.initAsync();\n```\n\n## Validation\n\n- Eight unit tests cover default configuration, both tone-mapping modes, an empty tone-mapping dictionary, both color spaces, independent options, requested swap-chain format/alpha mode, and repeated configuration.\n- Full unit suite: 421 files passed, 6,319 tests passed, one expected failure and 32 skipped (`--testTimeout=20000 --maxWorkers=8` used to avoid unrelated runner timing issues).\n- `build:source`, repository formatting, tree-shaking invariants and side-effects synchronization passed.\n- Full lint/advisory scope passed in 50 memory-bounded package batches using the repository's existing `LintFiles` and `runEslint` helpers. Single-process full lint exhausted both 8 GB and 16 GB heaps; existing advisory warnings were left unchanged.\n- A temporary devhost clear-only scene verified actual WebGPU canvas configuration for default SDR/sRGB, SDR/Display P3 and extended HDR/Display P3/`rgba16float`, including resize, in Chromium with SwiftShader and without browser/GPU errors. This checks configuration and rendering startup, not physical HDR display brightness. Temporary scenes and the server were removed.\n- Local self-review used both agnostic and repository-instruction lenses; no outstanding source issues.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/webgpuEngine.canvasConfiguration.test.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            }
+        ],
         "9.29.0": [
             {
                 "pr": "18961",

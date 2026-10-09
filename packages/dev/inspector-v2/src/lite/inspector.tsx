@@ -12,7 +12,9 @@ import { MakeWatcherServiceDefinitions } from "../services/watcherService";
 import { type IEngineContext, EngineContextIdentity } from "./engineContext";
 import { EngineExplorerServiceDefinition } from "./engineExplorerService";
 import { EngineSelectionServiceDefinition } from "./engineSelectionService";
+import { PickingServiceDefinition } from "./services/pickingService";
 import { EnginePropertiesServiceDefinition } from "./services/panes/properties/enginePropertiesService";
+import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesService";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
@@ -24,9 +26,11 @@ import { SpriteLayerPropertiesServiceDefinition } from "./services/panes/propert
 import { TextLayerPropertiesServiceDefinition } from "./services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { CameraExplorerServiceDefinition } from "./services/panes/scene/cameraExplorerService";
+import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
 import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
+import { SceneResourceIndexServiceDefinition } from "./services/panes/scene/sceneResourceIndexService";
 import { ShadowGeneratorExplorerServiceDefinition } from "./services/panes/scene/shadowGeneratorExplorerService";
 import { SpriteLayerExplorerServiceDefinition } from "./services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textLayerExplorerService";
@@ -71,6 +75,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 engineContextServiceDefinition,
                 watcherServiceDefinition,
                 EngineExplorerServiceDefinition,
+                SceneResourceIndexServiceDefinition,
                 MeshExplorerServiceDefinition,
                 CameraExplorerServiceDefinition,
                 LightExplorerServiceDefinition,
@@ -79,6 +84,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TextureExplorerServiceDefinition,
                 TextLayerExplorerServiceDefinition,
                 SpriteLayerExplorerServiceDefinition,
+                AnimationGroupExplorerServiceDefinition,
                 PropertiesServiceDefinition,
                 EnginePropertiesServiceDefinition,
                 RenderingContextPropertiesServiceDefinition,
@@ -91,12 +97,14 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TexturePropertiesServiceDefinition,
                 TextLayerPropertiesServiceDefinition,
                 SpriteLayerPropertiesServiceDefinition,
+                AnimationPropertiesServiceDefinition,
                 SettingsServiceDefinition,
                 watcherSettingsServiceDefinition,
                 ShellSettingsServiceDefinition,
                 watcherRefreshToolbarServiceDefinition,
                 SelectionServiceDefinition,
                 EngineSelectionServiceDefinition,
+                PickingServiceDefinition,
             ];
 
             return {

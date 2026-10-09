@@ -42,6 +42,11 @@ export class StateManager {
     onGridSizeChanged = new Observable<void>();
     onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean; smartAdd?: boolean }>();
     onHighlightNodeObservable = new Observable<{ data: any; active: boolean }>();
+    /**
+     * Requests centering on the graph node associated with the supplied underlying block data.
+     * The current selection and zoom are preserved.
+     */
+    onFocusNodeObservable = new Observable<unknown>();
     onPreviewCommandActivated = new Observable<boolean>();
 
     exportData: (data: any, frame?: Nullable<GraphFrame>) => string;

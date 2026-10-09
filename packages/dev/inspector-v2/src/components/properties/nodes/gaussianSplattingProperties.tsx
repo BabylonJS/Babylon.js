@@ -1,4 +1,4 @@
-import { type FunctionComponent } from "react";
+import { type FunctionComponent, useEffect, useState } from "react";
 
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
@@ -7,9 +7,11 @@ import { type GaussianSplattingMesh } from "core/index";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { type GaussianSplattingDebugController, type GaussianSplattingDebugMode } from "../../../services/panes/properties/gaussianSplattingDebugController";
 import { BoundProperty, ComputedProperty } from "../boundProperty";
 
 const ShDegreeOptions = [
@@ -77,12 +79,76 @@ const GaussianSplattingStreamDiagnostics: FunctionComponent<{ stream: GaussianSp
     );
 };
 
-export const GaussianSplattingDisplayProperties: FunctionComponent<{ mesh: GaussianSplattingMesh }> = (props) => {
-    const { mesh } = props;
+const DebugModeOptions: DropdownOption<GaussianSplattingDebugMode>[] = [
+    { label: "Normal", value: "normal" },
+    { label: "Projected size", value: "size" },
+    { label: "Overdraw", value: "overdraw" },
+];
+
+type GaussianSplattingDisplayPropertiesProps = {
+    /** The selected mesh. */
+    mesh: GaussianSplattingMesh;
+    /** Owns the temporary debug materials independently of this component. */
+    debugController: GaussianSplattingDebugController;
+};
+
+/**
+ * Displays Gaussian mesh diagnostics and per-mesh debug rendering controls.
+ * @param props Selected mesh and Inspector-owned debug controller
+ * @returns Gaussian splat property lines
+ */
+export const GaussianSplattingDisplayProperties: FunctionComponent<GaussianSplattingDisplayPropertiesProps> = (props) => {
+    const { mesh, debugController } = props;
+    const [mode, setMode] = useState<GaussianSplattingDebugMode>(() => debugController.getMode(mesh));
+    useEffect(() => {
+        const observer = debugController.onModeChangedObservable.add((changedMesh) => {
+            if (changedMesh === mesh) {
+                setMode(debugController.getMode(mesh));
+            }
+        });
+        setMode(debugController.getMode(mesh));
+        return () => {
+            debugController.onModeChangedObservable.remove(observer);
+        };
+    }, [mesh, debugController]);
+    const plugins = debugController.getPlugins(mesh);
     const stream = mesh.getClassName() === "GaussianSplattingStream" ? (mesh as GaussianSplattingStreamLike) : null;
 
     return (
         <>
+            <StringDropdownPropertyLine
+                label="Debug Rendering"
+                description={
+                    debugController.canDebug(mesh)
+                        ? "Per-mesh visualization; Normal restores the original material unless it was disposed."
+                        : "Unavailable: this mesh uses a non-Gaussian material."
+                }
+                options={DebugModeOptions}
+                value={mode}
+                disabled={!debugController.canDebug(mesh)}
+                onChange={(value) => {
+                    debugController.setMode(mesh, value as GaussianSplattingDebugMode);
+                    setMode(debugController.getMode(mesh));
+                }}
+            />
+            <Collapse visible={mode === "size" && !!plugins}>
+                {plugins && (
+                    <BoundProperty component={SyncedSliderPropertyLine} label="Size Scale (pixels)" target={plugins.size} propertyKey="sizeScale" min={0.5} max={128} step={0.5} />
+                )}
+            </Collapse>
+            <Collapse visible={mode === "overdraw" && !!plugins}>
+                {plugins && (
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="Overdraw Intensity"
+                        target={plugins.overdraw}
+                        propertyKey="intensity"
+                        min={0.001}
+                        max={0.25}
+                        step={0.001}
+                    />
+                )}
+            </Collapse>
             <ComputedProperty component={StringifiedPropertyLine} label="Splat Count" description={SplatCountDescription} target={mesh} getValue={GetSplatCount} />
             <BoundProperty component={NumberDropdownPropertyLine} label="SH Degree" options={ShDegreeOptions} target={mesh} propertyKey="shDegree" />
             <StringifiedPropertyLine label="Max SH Degree" value={mesh.maxShDegree} />
@@ -94,6 +160,10 @@ export const GaussianSplattingDisplayProperties: FunctionComponent<{ mesh: Gauss
                 description="Discard splats projected smaller than this many pixels. 0 = disabled."
                 target={mesh}
                 propertyKey="minPixelSize"
+                convertFrom={(value) => {
+                    debugController.setMinPixelSize(mesh, value);
+                    return value;
+                }}
                 min={0}
                 max={20}
                 step={0.5}

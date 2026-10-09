@@ -43,6 +43,8 @@ export * from "./GaussianSplatting/gaussianSplattingMaterial.pure";
 export * from "./GaussianSplatting/gaussianPointSplattingBlitMaterial.pure";
 export * from "./GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.pure";
 export * from "./GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin.pure";
+export * from "./GaussianSplatting/gaussianSplattingSizeMaterialPlugin.pure";
+export * from "./GaussianSplatting/gaussianSplattingOverdrawMaterialPlugin.pure";
 export * from "./GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin.pure";
 export * from "./GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
 export * from "./materialHelper.functions";

@@ -1,4 +1,4 @@
-import { eulerToQuat, quatToEulerXYZ, type Quat, type Vec2, type Vec3, type Vec4 } from "@babylonjs/lite";
+import { eulerXYZToQuatTuple, quatToEulerXYZTuple, type Quat, type Vec2, type Vec3, type Vec4 } from "@babylonjs/lite";
 import { type FunctionComponent } from "react";
 
 import {
@@ -96,7 +96,7 @@ const QuaternionTensorAdapter: TensorValueAdapter<QuaternionValue> = {
  */
 export function CreateQuaternionFromEuler(value: Vector3Value, source: QuaternionValue): QuaternionValue {
     const [x, y, z] = "x" in value ? [value.x, value.y, value.z] : value;
-    const quaternion = eulerToQuat(x, y, z);
+    const quaternion = eulerXYZToQuatTuple(x, y, z);
     return "x" in source ? { x: quaternion[0], y: quaternion[1], z: quaternion[2], w: quaternion[3] } : quaternion;
 }
 
@@ -106,7 +106,7 @@ const QuaternionAdapter: QuaternionValueAdapter<QuaternionValue, Vector3Value> =
     fromEuler: CreateQuaternionFromEuler,
     toEuler: (value) => {
         const [x, y, z, w] = "x" in value ? [value.x, value.y, value.z, value.w] : value;
-        return quatToEulerXYZ(x, y, z, w);
+        return quatToEulerXYZTuple(x, y, z, w);
     },
 };
 

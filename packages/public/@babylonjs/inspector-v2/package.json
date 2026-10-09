@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "9.29.0",
+    "version": "9.30.0",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -40,7 +40,7 @@
         "@babylonjs/core": "^9.0.0",
         "@babylonjs/gui": "^9.0.0",
         "@babylonjs/gui-editor": "^9.0.0",
-        "@babylonjs/lite": "^1.27.0",
+        "@babylonjs/lite": "^1.32.0",
         "@babylonjs/loaders": "^9.0.0",
         "@babylonjs/materials": "^9.0.0",
         "@babylonjs/node-editor": "^9.0.0",
@@ -64,7 +64,7 @@
         }
     },
     "devDependencies": {
-        "@babylonjs/lite": "1.27.0",
+        "@babylonjs/lite": "1.32.0",
         "@dev/build-tools": "^1.0.0",
         "@dev/inspector": "1.0.0",
         "@rollup/plugin-alias": "^5.1.1",

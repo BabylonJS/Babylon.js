@@ -42,6 +42,8 @@ export * from "./GaussianSplatting/gaussianSplattingMaterial";
 export * from "./GaussianSplatting/gaussianPointSplattingBlitMaterial";
 export * from "./GaussianSplatting/gaussianPointSplattingDepthBlitMaterial";
 export * from "./GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin";
+export * from "./GaussianSplatting/gaussianSplattingSizeMaterialPlugin";
+export * from "./GaussianSplatting/gaussianSplattingOverdrawMaterialPlugin";
 export * from "./GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin";
 export * from "./GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
 export * from "./materialHelper.functions";
