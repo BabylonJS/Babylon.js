@@ -326,6 +326,20 @@ describe("Babylon Lite picking service", () => {
         expect(filter?.(h.mesh)).toBe(false);
     });
 
+    it("clears a gesture when the pointer leaves the canvas and still accepts the next tap", async () => {
+        const h = MakeHarness();
+        h.toggle();
+        Pointer(h.canvas, "pointerdown");
+        Pointer(h.canvas, "pointerleave");
+        Pointer(h.canvas, "pointerup");
+        expect(Pick).not.toHaveBeenCalled();
+
+        Pick.mockResolvedValueOnce(Result(h.mesh));
+        await act(async () => Tap(h.canvas));
+        expect(Pick).toHaveBeenCalledTimes(1);
+        expect(h.selection.selectedEntity).toBe(h.mesh);
+    });
+
     it.each(["Escape", "toggle", "dispose"] as const)("invalidates pending results on %s and defers GPU disposal until readback finishes", async (exit) => {
         const h = MakeHarness();
         const deferred = Deferred<PickingInfo>();

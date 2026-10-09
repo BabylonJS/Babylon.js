@@ -132,11 +132,13 @@ export const PickingServiceDefinition: ServiceDefinition<[], [IEngineContext, IS
             canvas.addEventListener("pointermove", onPointerMove);
             canvas.addEventListener("pointerup", onPointerUp);
             canvas.addEventListener("pointercancel", onPointerCancel);
+            canvas.addEventListener("pointerleave", onPointerCancel);
             return () => {
                 canvas.removeEventListener("pointerdown", onPointerDown);
                 canvas.removeEventListener("pointermove", onPointerMove);
                 canvas.removeEventListener("pointerup", onPointerUp);
                 canvas.removeEventListener("pointercancel", onPointerCancel);
+                canvas.removeEventListener("pointerleave", onPointerCancel);
                 canvas.style.cursor = originalCursor;
             };
         };
