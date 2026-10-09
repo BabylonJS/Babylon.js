@@ -6,6 +6,37 @@ One of the goals of the Inspector V2 architecture is to allow new functionality 
 1. **Modularity**: In code, using `Inspector.Show`. For example, the Sandbox might want to include additional features in the Inspector that make sense in the context of the Sandbox.
 2. **Extensibility**: By the end user opting into optional features by installing extensions from the Inspector UI. For example, we might have an extension for advanced skeleton diagnostics, which a user would only care about if they are heavily working with skeletal animations. In the future, we can open up extensibility to make it possible for the community to publish their own extensions to a community extension feed. This makes it possible to drastically extend the power of Inspector without overwhelming all users with every single potential capability of the Inspector.
 
+## Babylon Lite animations
+
+The `@babylonjs/inspector/lite` entrypoint lists each registered scene's public
+`animationGroups` in Explorer, including their targeted animations. Group properties
+provide play/pause, stop, speed, looping, weight, frame scrubbing, clip information,
+and metadata. Scrubbing applies the pose through Lite's `goToFrame` API and preserves
+the group's playing/paused state. Values and hierarchy changes follow the preferred
+polling or manual watch mode.
+
+Target rows show the public path, target name, and node index, and link to the runtime
+target when Lite exposes one. An entity's Animation section links to groups that
+directly target it or its scene-node transform values. Name-only targets remain
+inspectable without inventing a runtime target. Standalone animation managers are not
+engine-discoverable; their groups must also be exposed in a registered scene's
+`animationGroups` to appear here. Weight edits do not implicitly enable an optional
+animation mixer.
+
+Lite's public target descriptions do not expose editable keyframe curves, per-target
+animation ranges, blending overrides, or additive state, so the Lite Inspector does
+not load Babylon.js animation implementations or the native curve editor. The test
+app's `?experience=lite` scene includes two property-animation groups for exercising
+these controls.
+
+The browser tests use the Inspector test app rather than the CDN scene-test harness.
+Start the app with `npm run serve -w @dev/inspector`, then set
+`INSPECTOR_TEST_PORT=9001` and run
+`npx playwright test --config playwright.config.ts --project=integration -g "Lite Inspector"`.
+These tests are skipped when `INSPECTOR_TEST_PORT` is unset so other integration suites
+do not require an Inspector server. On a GPU-less machine, set
+`CUSTOM_FLAGS=--use-webgpu-adapter=swiftshader` to use Chrome's software WebGPU adapter.
+
 ## Modularity
 
 Modularity is hierarchical. For example, Scene Explorer is an extension of the tool Shell (the basic top/bottom tool bar + left/right side panes + primary content layout), and Audio Engine Explorer is an extension of Scene Explorer. Since this creates a dependency graph of components, a "service" architecture is leveraged, where each service can consume other services, and produce services that can be consumed by other services.
