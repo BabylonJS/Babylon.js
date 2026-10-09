@@ -3,6 +3,7 @@ import { GaussianSplattingSizeMaterialPlugin } from "core/Materials/GaussianSpla
 import { GaussianSplattingOverdrawMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingOverdrawMaterialPlugin";
 import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { type Material } from "core/Materials/material";
+import { type ShadowDepthWrapper } from "core/Materials/shadowDepthWrapper";
 import { Observable, type Observer } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 import { type Node } from "core/node";
@@ -14,6 +15,7 @@ type DebugEntry = {
     originalDisposed: boolean;
     originalObserver: Observer<Material>;
     temporary: GaussianSplattingMaterial;
+    shadow: ShadowDepthWrapper;
     size: GaussianSplattingSizeMaterialPlugin;
     overdraw: GaussianSplattingOverdrawMaterialPlugin;
     mode: GaussianSplattingDebugMode;
@@ -92,7 +94,10 @@ export class GaussianSplattingDebugController {
             }
             const scene = mesh.getScene();
             const temporary = new GaussianSplattingMaterial(`${mesh.name}_inspectorDebug`, scene);
+            const shadow = temporary.shadowDepthWrapper!;
             temporary.doNotSerialize = true;
+            temporary.reservedDataStore = { hidden: true };
+            shadow.baseMaterial.reservedDataStore = { hidden: true };
             temporary.setSourceMesh(mesh);
             temporary.kernelSize = original.kernelSize;
             temporary.minPixelSize = original.minPixelSize;
@@ -102,6 +107,13 @@ export class GaussianSplattingDebugController {
             temporary.depthFunction = original.depthFunction;
             temporary.disableDepthWrite = original.disableDepthWrite;
             temporary.forceDepthWrite = original.forceDepthWrite;
+            temporary.clipPlane = original.clipPlane;
+            temporary.clipPlane2 = original.clipPlane2;
+            temporary.clipPlane3 = original.clipPlane3;
+            temporary.clipPlane4 = original.clipPlane4;
+            temporary.clipPlane5 = original.clipPlane5;
+            temporary.clipPlane6 = original.clipPlane6;
+            temporary.useLogarithmicDepth = original.useLogarithmicDepth;
             const size = new GaussianSplattingSizeMaterialPlugin(temporary);
             const overdraw = new GaussianSplattingOverdrawMaterialPlugin(temporary);
             size.isEnabled = false;
@@ -116,6 +128,7 @@ export class GaussianSplattingDebugController {
                     }
                 }),
                 temporary,
+                shadow,
                 size,
                 overdraw,
                 mode: "normal",
@@ -152,6 +165,8 @@ export class GaussianSplattingDebugController {
         if (restore && !mesh.isDisposed() && mesh.material === entry.temporary) {
             mesh.material = entry.originalDisposed ? null : entry.original;
         }
+        entry.shadow.dispose();
+        entry.shadow.baseMaterial.dispose(false, false);
         entry.temporary.dispose(false, false);
         this.onModeChangedObservable.notifyObservers(mesh);
     }

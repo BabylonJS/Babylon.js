@@ -101,6 +101,115 @@ describe("Gaussian splat visualization plugins", () => {
         }
     });
 
+    it("preserves material changes made while overdraw is disabled through clone, parse, and copyTo", () => {
+        material.alphaMode = Constants.ALPHA_COMBINE;
+        material.disableDepthWrite = false;
+        material.forceDepthWrite = true;
+        const overdraw = new GaussianSplattingOverdrawMaterialPlugin(material);
+        overdraw.isEnabled = false;
+        material.alphaMode = Constants.ALPHA_ONEONE;
+        material.disableDepthWrite = true;
+        material.forceDepthWrite = false;
+        const clone = material.clone("changedWhileDisabled");
+        const parsed = GaussianSplattingMaterial.Parse(material.serialize(), scene, "");
+        const destination = new GaussianSplattingMaterial("copyTo", scene);
+        destination.alphaMode = Constants.ALPHA_ONEONE;
+        destination.disableDepthWrite = true;
+        destination.forceDepthWrite = false;
+        const target = new GaussianSplattingOverdrawMaterialPlugin(destination);
+        target.isEnabled = false;
+        overdraw.copyTo(target);
+        for (const [copy, plugin] of [
+            [clone, clone.pluginManager?.getPlugin(overdraw.name)],
+            [parsed, parsed.pluginManager?.getPlugin(overdraw.name)],
+            [destination, target],
+        ] as const) {
+            const copied = plugin as GaussianSplattingOverdrawMaterialPlugin;
+            expect(copied.isEnabled).toBe(false);
+            expect(copy.alphaMode).toBe(Constants.ALPHA_ONEONE);
+            expect(copy.disableDepthWrite).toBe(true);
+            expect(copy.forceDepthWrite).toBe(false);
+            copied.isEnabled = true;
+            copied.isEnabled = false;
+            expect(copy.alphaMode).toBe(Constants.ALPHA_ONEONE);
+            expect(copy.disableDepthWrite).toBe(true);
+            expect(copy.forceDepthWrite).toBe(false);
+        }
+    });
+
+    it("keeps the destination blend state when copying disabled overdraw into an enabled plugin", () => {
+        const source = new GaussianSplattingOverdrawMaterialPlugin(material);
+        source.isEnabled = false;
+        material.alphaMode = Constants.ALPHA_ONEONE;
+        material.disableDepthWrite = true;
+        material.forceDepthWrite = false;
+
+        const destination = new GaussianSplattingMaterial("enabledDestination", scene);
+        destination.alphaMode = Constants.ALPHA_COMBINE;
+        destination.disableDepthWrite = false;
+        destination.forceDepthWrite = true;
+        const target = new GaussianSplattingOverdrawMaterialPlugin(destination);
+        source.copyTo(target);
+
+        expect(target.isEnabled).toBe(false);
+        expect(destination.alphaMode).toBe(Constants.ALPHA_COMBINE);
+        expect(destination.disableDepthWrite).toBe(false);
+        expect(destination.forceDepthWrite).toBe(true);
+        target.isEnabled = true;
+        target.isEnabled = false;
+        expect(destination.alphaMode).toBe(Constants.ALPHA_COMBINE);
+        expect(destination.disableDepthWrite).toBe(false);
+        expect(destination.forceDepthWrite).toBe(true);
+    });
+
+    it("keeps the destination blend state when parsing disabled overdraw into existing plugins", () => {
+        const source = new GaussianSplattingOverdrawMaterialPlugin(material);
+        source.isEnabled = false;
+        material.alphaMode = Constants.ALPHA_ONEONE;
+        material.disableDepthWrite = true;
+        material.forceDepthWrite = false;
+
+        for (const initiallyEnabled of [true, false]) {
+            const destination = new GaussianSplattingMaterial("parsedDestination", scene);
+            destination.alphaMode = Constants.ALPHA_COMBINE;
+            destination.disableDepthWrite = false;
+            destination.forceDepthWrite = true;
+            const target = new GaussianSplattingOverdrawMaterialPlugin(destination);
+            if (!initiallyEnabled) {
+                target.isEnabled = false;
+            }
+            target.parse(source.serialize(), scene, "");
+            expect(target.isEnabled).toBe(false);
+            expect(destination.alphaMode).toBe(Constants.ALPHA_COMBINE);
+            expect(destination.disableDepthWrite).toBe(false);
+            expect(destination.forceDepthWrite).toBe(true);
+            target.isEnabled = true;
+            target.isEnabled = false;
+            expect(destination.alphaMode).toBe(Constants.ALPHA_COMBINE);
+            expect(destination.disableDepthWrite).toBe(false);
+            expect(destination.forceDepthWrite).toBe(true);
+        }
+    });
+
+    it("restores the saved pre-enable settings when parsing enabled overdraw into an existing plugin", () => {
+        material.alphaMode = Constants.ALPHA_COMBINE;
+        material.disableDepthWrite = false;
+        material.forceDepthWrite = true;
+        const source = new GaussianSplattingOverdrawMaterialPlugin(material);
+        const destination = new GaussianSplattingMaterial("existing", scene);
+        const target = new GaussianSplattingOverdrawMaterialPlugin(destination);
+        target.isEnabled = false;
+        target.parse(source.serialize(), scene, "");
+        expect(target.isEnabled).toBe(true);
+        expect(destination.alphaMode).toBe(Constants.ALPHA_ONEONE);
+        expect(destination.disableDepthWrite).toBe(true);
+        expect(destination.forceDepthWrite).toBe(false);
+        target.isEnabled = false;
+        expect(destination.alphaMode).toBe(Constants.ALPHA_COMBINE);
+        expect(destination.disableDepthWrite).toBe(false);
+        expect(destination.forceDepthWrite).toBe(true);
+    });
+
     it("applies color overrides before size and overdraw, then GPU picking last", () => {
         const picking = new GaussianSplattingGpuPickingMaterialPlugin(material);
         const overdraw = new GaussianSplattingOverdrawMaterialPlugin(material);

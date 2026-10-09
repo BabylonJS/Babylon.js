@@ -3,6 +3,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { Mesh } from "core/Meshes/mesh";
+import { Plane } from "core/Maths/math.plane";
 import { Scene } from "core/scene";
 import { GaussianSplattingDebugController } from "../../src/services/panes/properties/gaussianSplattingDebugController";
 
@@ -107,5 +108,109 @@ describe("Inspector Gaussian splat debug ownership", () => {
         controller.setMode(mesh, "overdraw");
         mesh.dispose();
         expect(controller.getPlugins(mesh)).toBeUndefined();
+    });
+
+    it("releases Inspector-owned shadow resources and observers across repeated mode changes", () => {
+        const materialCount = scene.materials.length;
+        const renderObserverCount = scene.onBeforeRenderObservable.observers.length;
+        const sceneObserverCount = scene.onDisposeObservable.observers.length;
+        const meshObserverCount = mesh.onDisposeObservable.observers.length;
+        for (let i = 0; i < 3; i++) {
+            controller.setMode(mesh, i % 2 ? "overdraw" : "size");
+            const temporary = mesh.material as GaussianSplattingMaterial;
+            const shadow = temporary.shadowDepthWrapper!;
+            const depth = shadow.baseMaterial;
+            expect(temporary.reservedDataStore.hidden).toBe(true);
+            expect(depth.reservedDataStore.hidden).toBe(true);
+            expect(scene.materials).toContain(depth);
+            controller.setMode(mesh, "normal");
+            expect(scene.materials).not.toContain(temporary);
+            expect(scene.materials).not.toContain(depth);
+            expect(depth.onEffectCreatedObservable.observers).toHaveLength(0);
+            expect(scene.materials).toHaveLength(materialCount);
+            expect(scene.onBeforeRenderObservable.observers.filter((observer) => !observer._willBeUnregistered)).toHaveLength(renderObserverCount);
+            expect(scene.onDisposeObservable.observers.filter((observer) => !observer._willBeUnregistered)).toHaveLength(sceneObserverCount);
+            expect(mesh.onDisposeObservable.observers.filter((observer) => !observer._willBeUnregistered)).toHaveLength(meshObserverCount);
+        }
+    });
+
+    it("releases owned shadow resources on external replacement, mesh disposal, and Inspector close", () => {
+        for (const release of ["replacement", "mesh", "close"] as const) {
+            const target = release === "mesh" ? new GaussianSplattingMesh("other", null, scene) : mesh;
+            controller.setMode(target, "size");
+            const temporary = target.material as GaussianSplattingMaterial;
+            const depth = temporary.shadowDepthWrapper!.baseMaterial;
+            if (release === "replacement") {
+                target.material = original;
+                scene.onBeforeRenderObservable.notifyObservers(scene);
+            } else if (release === "mesh") {
+                target.dispose();
+            } else {
+                controller.dispose();
+            }
+            expect(scene.materials).not.toContain(temporary);
+            expect(scene.materials).not.toContain(depth);
+            expect(depth.onEffectCreatedObservable.observers).toHaveLength(0);
+        }
+    });
+
+    it("releases owned shadow resources during scene disposal", () => {
+        controller.setMode(mesh, "overdraw");
+        const temporary = mesh.material as GaussianSplattingMaterial;
+        const depth = temporary.shadowDepthWrapper!.baseMaterial;
+        scene.dispose();
+        expect(depth.onEffectCreatedObservable.observers).toHaveLength(0);
+        expect(controller.getPlugins(mesh)).toBeUndefined();
+    });
+
+    it("releases only Inspector-owned shadow resources when the source material is disposed", () => {
+        controller.setMode(mesh, "size");
+        const temporary = mesh.material as GaussianSplattingMaterial;
+        const depth = temporary.shadowDepthWrapper!.baseMaterial;
+        const originalDepth = original.shadowDepthWrapper!.baseMaterial;
+        original.dispose();
+        controller.setMode(mesh, "normal");
+        expect(scene.materials).not.toContain(depth);
+        expect(scene.materials).toContain(originalDepth);
+        expect(mesh.material).toBeNull();
+    });
+
+    it("does not dispose the source wrapper if the application replaces the temporary's shadow wrapper", () => {
+        controller.setMode(mesh, "size");
+        const temporary = mesh.material as GaussianSplattingMaterial;
+        const depth = temporary.shadowDepthWrapper!.baseMaterial;
+        const sourceWrapper = original.shadowDepthWrapper!;
+        temporary.shadowDepthWrapper = sourceWrapper;
+        controller.setMode(mesh, "normal");
+        expect(scene.materials).not.toContain(depth);
+        expect(scene.materials).toContain(sourceWrapper.baseMaterial);
+        expect(sourceWrapper.baseMaterial.onEffectCreatedObservable.hasObservers()).toBe(true);
+    });
+
+    it("preserves source clip planes and supported logarithmic depth in both visualizations", () => {
+        engine.getCaps().fragmentDepthSupported = true;
+        const planes = Array.from({ length: 6 }, (_, i) => new Plane(1, 0, 0, i));
+        original.clipPlane = planes[0];
+        original.clipPlane2 = planes[1];
+        original.clipPlane3 = planes[2];
+        original.clipPlane4 = planes[3];
+        original.clipPlane5 = planes[4];
+        original.clipPlane6 = planes[5];
+        original.useLogarithmicDepth = true;
+        const supportedLogDepth = original.useLogarithmicDepth;
+        expect(supportedLogDepth).toBe(true);
+        for (const mode of ["size", "overdraw"] as const) {
+            controller.setMode(mesh, mode);
+            const temporary = mesh.material as GaussianSplattingMaterial;
+            expect([temporary.clipPlane, temporary.clipPlane2, temporary.clipPlane3, temporary.clipPlane4, temporary.clipPlane5, temporary.clipPlane6]).toEqual(planes);
+            expect(temporary.clipPlane).toBe(original.clipPlane);
+            planes[0].d = 42;
+            expect(temporary.clipPlane?.d).toBe(42);
+            expect(temporary.useLogarithmicDepth).toBe(supportedLogDepth);
+            controller.setMode(mesh, "normal");
+            expect(mesh.material).toBe(original);
+            expect(original.clipPlane).toBe(planes[0]);
+            expect(original.useLogarithmicDepth).toBe(supportedLogDepth);
+        }
     });
 });

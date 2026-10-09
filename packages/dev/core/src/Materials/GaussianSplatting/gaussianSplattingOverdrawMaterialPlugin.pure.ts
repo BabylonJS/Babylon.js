@@ -162,6 +162,9 @@ export class GaussianSplattingOverdrawMaterialPlugin extends MaterialPluginBase 
      */
     public override parse(source: any, scene: Scene, rootUrl: string): void {
         super.parse(source, scene, rootUrl);
+        if (!this._isEnabled) {
+            return;
+        }
         this._originalAlphaMode = source.originalAlphaMode ?? this._originalAlphaMode;
         this._originalDisableDepthWrite = source.originalDisableDepthWrite ?? this._originalDisableDepthWrite;
         this._originalForceDepthWrite = source.originalForceDepthWrite ?? this._originalForceDepthWrite;
@@ -173,8 +176,11 @@ export class GaussianSplattingOverdrawMaterialPlugin extends MaterialPluginBase 
      * @param plugin Destination plugin
      */
     public override copyTo(plugin: MaterialPluginBase): void {
-        super.copyTo(plugin);
         const target = plugin as GaussianSplattingOverdrawMaterialPlugin;
+        super.copyTo(plugin);
+        if (!target._isEnabled) {
+            return;
+        }
         target._originalAlphaMode = this._originalAlphaMode;
         target._originalDisableDepthWrite = this._originalDisableDepthWrite;
         target._originalForceDepthWrite = this._originalForceDepthWrite;
