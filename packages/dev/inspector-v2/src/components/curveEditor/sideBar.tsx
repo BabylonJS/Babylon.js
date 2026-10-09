@@ -9,6 +9,7 @@ import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { useCurveEditor } from "./curveEditorContext";
+import { RemoveAnimationFromOwner } from "./animatableAnimations";
 import { AnimationList } from "./sideBar/animationList";
 import { AddAnimationPanel } from "./sideBar/addAnimationPanel";
 import { LoadAnimationPanel } from "./sideBar/loadAnimationPanel";
@@ -104,10 +105,10 @@ export const SideBar: FunctionComponent = () => {
             // Remove from active animations
             actions.setActiveAnimations((prev) => prev.filter((a) => a !== animation));
 
-            // Update target if exists
+            // Remove from whichever animatable owns it: the target or one of its child animatables (e.g. a bone of a skeleton)
             const target = targetRef.current;
-            if (target && target.animations) {
-                target.animations = target.animations.filter((a: Animation) => a !== animation);
+            if (target) {
+                RemoveAnimationFromOwner(target, animation);
             }
 
             // Also update state.animations if it's an array we can filter

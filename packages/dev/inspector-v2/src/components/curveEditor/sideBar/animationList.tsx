@@ -8,6 +8,7 @@ import { ChevronDownRegular, ChevronRightRegular, SettingsRegular, DeleteRegular
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { useCurveEditor } from "../curveEditorContext";
+import { GetAnimationsWithChildren } from "../animatableAnimations";
 import { ChannelColors, ColorChannelColors } from "../curveEditorColors";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { EditAnimationPanel } from "./editAnimationPanel";
@@ -259,8 +260,9 @@ export const AnimationList: FunctionComponent = () => {
         observables.onActiveAnimationChanged
     );
 
-    // Get animations from target if available (for dynamically added animations), otherwise from state
-    const animations = state.target?.animations ?? state.animations;
+    // Read from the target if available (for dynamically added animations), including its child animatables'
+    // animations (e.g. a skeleton's bones), so the list matches the animations pane. Otherwise use state.
+    const animations = state.target && !state.useTargetAnimations ? GetAnimationsWithChildren(state.target) : state.animations;
 
     return (
         <div className={styles.root}>
