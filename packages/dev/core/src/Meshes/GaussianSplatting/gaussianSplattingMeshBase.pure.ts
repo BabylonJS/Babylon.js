@@ -1137,11 +1137,13 @@ export class GaussianSplattingMeshBase extends Mesh {
     /**
      * set rendering material
      */
-    public override set material(value: Material) {
+    public override set material(value: Nullable<Material>) {
         this._material = value;
-        this._material.backFaceCulling = false;
-        this._material.cullBackFaces = false;
-        value.resetDrawCache();
+        if (value) {
+            value.backFaceCulling = false;
+            value.cullBackFaces = false;
+            value.resetDrawCache();
+        }
         this._cameraViewInfos?.forEach((cameraViewInfo) => {
             cameraViewInfo.mesh.material = value;
         });

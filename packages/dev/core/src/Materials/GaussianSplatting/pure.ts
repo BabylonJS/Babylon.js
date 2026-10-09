@@ -2,4 +2,6 @@
 export * from "./gaussianSplattingDebugMaterialPlugin.pure";
 export * from "./gaussianSplattingGpuPickingMaterialPlugin.pure";
 export * from "./gaussianSplattingMaterial.pure";
+export * from "./gaussianSplattingOverdrawMaterialPlugin.pure";
+export * from "./gaussianSplattingSizeMaterialPlugin.pure";
 export * from "./gaussianSplattingSolidColorMaterialPlugin.pure";
