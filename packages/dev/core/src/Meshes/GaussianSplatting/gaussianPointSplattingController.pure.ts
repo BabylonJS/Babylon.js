@@ -18,6 +18,7 @@ import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplat
 import { GaussianPointSplattingDepthBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.pure";
 import { type GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
 import { type GaussianSplattingSolidColorMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin.pure";
+import { type GaussianSplattingSizeMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSizeMaterialPlugin.pure";
 import { RegisterEnginesWebGPUExtensionsEngineComputeShader } from "core/Engines/WebGPU/Extensions/engine.computeShader.pure";
 import {
     _SetGaussianPointSplattingControllerFactory,
@@ -1080,9 +1081,16 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             return false;
         }
         const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
+        const projectedSize = this._mesh.material?.pluginManager?.getPlugin("GaussianSplattingSize") as Nullable<GaussianSplattingSizeMaterialPlugin>;
         const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
         const colorPass =
-            this._colorMode && fullViewport && this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE && !solidColor?.isEnabled && !fog && this._isMainColorPass();
+            this._colorMode &&
+            fullViewport &&
+            this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE &&
+            !solidColor?.isEnabled &&
+            !projectedSize?.isEnabled &&
+            !fog &&
+            this._isMainColorPass();
         return (colorPass || depthPass) && this._computeActive && !this._hasUnsupportedView() && (!this._renderer || this._isWorkloadSupported());
     }
 

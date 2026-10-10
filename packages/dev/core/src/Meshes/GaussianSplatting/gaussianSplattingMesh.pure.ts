@@ -655,7 +655,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Whether the main color pass is rendered with the WebGPU compute point-splatting path instead of the
      * classic sorted quads. Off by default; other passes (shadows, picking, prepass) are unaffected. Falls
      * back to the classic path for multiple or rig cameras, clip planes, and streamed parts.
-     * Color rendering also falls back when the camera viewport does not cover the full target.
+     * Color rendering also falls back when the camera viewport does not cover the full target or projected-size visualization is enabled.
      * Clipping and depth quantization use the supplied projection's planes, including frozen projections.
      * Tilted and custom projections are supported by the point path. Compute runs immediately
      * before compositing with the pass's actual view and target dimensions; matching color and depth passes share one result.
