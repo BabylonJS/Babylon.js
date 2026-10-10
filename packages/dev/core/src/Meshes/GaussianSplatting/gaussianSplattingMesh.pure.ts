@@ -658,7 +658,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Color rendering also falls back when the camera viewport does not cover the full target.
      * Clipping and depth quantization use the supplied projection's planes, including frozen projections.
      * Tilted and custom projections are supported by the point path. Compute runs immediately
-     * before compositing with the pass's actual view; matching color and depth passes share one result.
+     * before compositing with the pass's actual view and target dimensions; matching color and depth passes share one result.
      * While point shaders compile, the pass waits without drawing classic splats. The color pass uses the classic path
      * while the GaussianSplattingSolidColorMaterialPlugin override is enabled or the source material's
      * alpha mode is not ALPHA_COMBINE. WebGPU only.

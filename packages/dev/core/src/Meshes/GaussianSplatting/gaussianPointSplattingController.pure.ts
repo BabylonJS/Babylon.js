@@ -805,9 +805,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
     }
 
-    /** Returns the size of the camera's color target: the first post-process target, the camera's output
-     * render target, or the backbuffer. The returned object is reused between calls.
-     * @returns The color target dimensions in pixels.
+    /** Returns the current depth map's size, or the camera's color target size for other passes.
+     * The returned object is reused between calls.
+     * @returns The current target dimensions in pixels.
      */
     private _getOutputSize(): { width: number; height: number } {
         const engine = this._scene.getEngine();
@@ -816,7 +816,11 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const outputRenderTarget = camera?.outputRenderTarget;
         let width: number;
         let height: number;
-        if (postProcess && postProcess.width > 0 && postProcess.height > 0) {
+        const depthMap = this._depthMode ? this._getCurrentDepthRenderer()?.getDepthMap() : null;
+        if (depthMap) {
+            width = depthMap.getRenderWidth();
+            height = depthMap.getRenderHeight();
+        } else if (postProcess && postProcess.width > 0 && postProcess.height > 0) {
             width = postProcess.width;
             height = postProcess.height;
         } else if (outputRenderTarget) {
