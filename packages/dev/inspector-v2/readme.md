@@ -49,6 +49,31 @@ do not require an Inspector server. On a GPU-less machine, set
 These tests explicitly select Chromium with the Chrome channel even when the
 integration project's default browser is Firefox.
 
+## Babylon Lite statistics and performance
+
+The Lite **Statistics** pane reports the runtime version, latest engine draw count,
+registered surfaces and rendering contexts, and distinct scene meshes, lights,
+source materials, reachable texture wrappers, animation groups, and shadow generators.
+Standalone text and sprite layers are counted too. Counts span all registered
+surfaces and deduplicate shared entities; scene texture counts are not a census of
+every GPU allocation. Telemetry refreshes independently of Preferred Watch Mode.
+
+**Profile GPU Tasks** explicitly enables Lite's lazy timestamp-query profiler.
+The pane shows unsupported, disabled, pending, available, and error states, the
+GPU task span, individual task durations, and dropped-task counts. Overlapping task
+durations are not summed. Profiling and its bounded history survive tab switches;
+closing Inspector stops only profiling Inspector enabled. Profiling already enabled
+by the application is read-only and remains enabled on close.
+
+The graph retains up to 120 distinct asynchronous GPU readbacks sampled at most
+four times per second. **Export GPU Samples to CSV** exports that retained window,
+not every rendered frame. GPU frame indices refer to readbacks; draw counts refer to
+the latest CPU-side render and may be from a different frame. System Info lists
+timestamp-query support, precision settings, and each surface's live dimensions,
+format, and MSAA sample count. The published Lite runtime has no public device-limit,
+driver-information, engine FPS, or CPU frame-step instrumentation APIs,
+so this pane does not substitute browser refresh rate or synthetic CPU durations.
+
 ## Modularity
 
 Modularity is hierarchical. For example, Scene Explorer is an extension of the tool Shell (the basic top/bottom tool bar + left/right side panes + primary content layout), and Audio Engine Explorer is an extension of Scene Explorer. Since this creates a dependency graph of components, a "service" architecture is leveraged, where each service can consume other services, and produce services that can be consumed by other services.
