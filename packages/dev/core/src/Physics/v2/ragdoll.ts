@@ -5,7 +5,14 @@ import { PhysicsAggregate } from "./physicsAggregate";
 import { PhysicsConstraint } from "./physicsConstraint";
 import { type Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "../../Maths/math.axis";
-import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "./IPhysicsEnginePlugin";
+import {
+    PhysicsShapeType,
+    PhysicsConstraintType,
+    PhysicsMotionType,
+    PhysicsConstraintAxis,
+    PhysicsConstraintAxisLimitMode,
+    type IPhysicsEnginePluginV2,
+} from "./IPhysicsEnginePlugin";
 import { type Nullable } from "../../types";
 import { type Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
@@ -42,11 +49,11 @@ export class RagdollBoneProperties {
      */
     rotationAxis?: Vector3;
     /**
-     * Minimum rotation angle value
+     * Minimum rotation angle around `rotationAxis`, in radians. Used by hinge and ball and socket joints.
      */
     min?: number;
     /**
-     * Maximum rotation angle value
+     * Maximum rotation angle around `rotationAxis`, in radians. Used by hinge and ball and socket joints.
      */
     max?: number;
     /**
@@ -91,8 +98,6 @@ export class Ragdoll {
 
     private _putBoxesInBoneCenter: boolean;
     private _defaultJoint: number = PhysicsConstraintType.HINGE;
-    private _defaultJointMin: number = -90;
-    private _defaultJointMax: number = 90;
 
     /**
      * Construct a new Ragdoll object. Once ready, it can be made dynamic by calling `Ragdoll` method
@@ -163,8 +168,8 @@ export class Ragdoll {
                 // Define the rest of the box properties.
                 currentRagdollBoneProperties.joint = config[i].joint !== undefined ? config[i].joint : this._defaultJoint;
                 currentRagdollBoneProperties.rotationAxis = config[i].rotationAxis !== undefined ? config[i].rotationAxis : Axis.X;
-                currentRagdollBoneProperties.min = config[i].min !== undefined ? config[i].min : this._defaultJointMin;
-                currentRagdollBoneProperties.max = config[i].max !== undefined ? config[i].max : this._defaultJointMax;
+                currentRagdollBoneProperties.min = config[i].min;
+                currentRagdollBoneProperties.max = config[i].max;
 
                 // Offset value.
                 let boxOffset = 0;
@@ -250,6 +255,16 @@ export class Ragdoll {
             );
 
             this._aggregates[boneParentIndex].body.addConstraint(this._aggregates[i].body, constraint);
+
+            // min and max limit the rotation around rotationAxis, which is the constraint X axis.
+            const { min, max } = this._boxConfigs[i];
+            const isLimitable = constraintType === PhysicsConstraintType.HINGE || constraintType === PhysicsConstraintType.BALL_AND_SOCKET;
+            if (isLimitable && (min !== undefined || max !== undefined)) {
+                const plugin = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as IPhysicsEnginePluginV2;
+                plugin.setAxisMode(constraint, PhysicsConstraintAxis.ANGULAR_X, PhysicsConstraintAxisLimitMode.LIMITED);
+                plugin.setAxisMinLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, min ?? -Math.PI);
+                plugin.setAxisMaxLimit(constraint, PhysicsConstraintAxis.ANGULAR_X, max ?? Math.PI);
+            }
             constraint.isEnabled = false;
             this._constraints.push(constraint);
         }
