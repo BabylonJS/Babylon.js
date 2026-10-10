@@ -84,7 +84,9 @@ export function useDirectMaterialOperations(material: Material, resourceIndexSer
                 if (invalidate === "ubo") {
                     markMaterialUboDirty(material);
                 } else if (invalidate === "rebuild") {
-                    await Promise.all(scenes.map(async (scene) => await rebuildMaterial(scene, material, { rebuildViews: true, rebuildFrameGraph: rebuildFrameGraph === true })));
+                    await Promise.all(
+                        scenes.map(async (scene) => await Promise.resolve(rebuildMaterial(scene, material, { rebuildViews: true, rebuildFrameGraph: rebuildFrameGraph === true })))
+                    );
                 }
                 return true;
             },

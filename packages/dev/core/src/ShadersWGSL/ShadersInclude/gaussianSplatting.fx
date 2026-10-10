@@ -224,90 +224,8 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     return splat;
 }
 
-fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>, _so1: f32, _so2: f32, _so3: f32, _so4: f32) -> vec3f
-{
-    let SH_C0: f32 = 0.28209479;
-    let SH_C1: f32 = 0.48860251;
-    var SH_C2: array<f32, 5> = array<f32, 5>(
-        1.092548430,
-        -1.09254843,
-        0.315391565,
-        -1.09254843,
-        0.546274215
-    );
-
-    var SH_C3: array<f32, 7> = array<f32, 7>(
-        -0.59004358,
-        2.890611442,
-        -0.45704579,
-        0.373176332,
-        -0.45704579,
-        1.445305721,
-        -0.59004358
-    );
-
-    var SH_C4: array<f32, 9> = array<f32, 9>(
-         2.5033429418,
-        -1.7701307698,
-         0.9461746958,
-        -0.6690465436,
-         0.1057855469,
-        -0.6690465436,
-         0.4730873479,
-        -1.7701307698,
-         0.6258357354
-    );
-
-	var result: vec3f = /*SH_C0 * */sh[0];
-
-#if SH_DEGREE > 0
-    let x: f32 = dir.x;
-    let y: f32 = dir.y;
-    let z: f32 = dir.z;
-
-    result += _so1 * (-SH_C1 * y * sh[1] + SH_C1 * z * sh[2] - SH_C1 * x * sh[3]);
-#if SH_DEGREE > 1
-    let xx: f32 = x * x;
-    let yy: f32 = y * y;
-    let zz: f32 = z * z;
-    let xy: f32 = x * y;
-    let yz: f32 = y * z;
-    let xz: f32 = x * z;
-    result += _so2 * (
-        SH_C2[0] * xy * sh[4] +
-        SH_C2[1] * yz * sh[5] +
-        SH_C2[2] * (2.0f * zz - xx - yy) * sh[6] +
-        SH_C2[3] * xz * sh[7] +
-        SH_C2[4] * (xx - yy) * sh[8]);
-
-#if SH_DEGREE > 2
-    result += _so3 * (
-        SH_C3[0] * y * (3.0f * xx - yy) * sh[9] +
-        SH_C3[1] * xy * z * sh[10] +
-        SH_C3[2] * y * (4.0f * zz - xx - yy) * sh[11] +
-        SH_C3[3] * z * (2.0f * zz - 3.0f * xx - 3.0f * yy) * sh[12] +
-        SH_C3[4] * x * (4.0f * zz - xx - yy) * sh[13] +
-        SH_C3[5] * z * (xx - yy) * sh[14] +
-        SH_C3[6] * x * (xx - 3.0f * yy) * sh[15]);
-
-#if SH_DEGREE > 3
-    result += _so4 * (
-        SH_C4[0] * x * y * (xx - yy) * sh[16] +
-        SH_C4[1] * y * z * (3.0f * xx - yy) * sh[17] +
-        SH_C4[2] * x * y * (7.0f * zz - 1.0f) * sh[18] +
-        SH_C4[3] * y * z * (7.0f * zz - 3.0f) * sh[19] +
-        SH_C4[4] * (zz * (35.0f * zz - 30.0f) + 3.0f) * sh[20] +
-        SH_C4[5] * x * z * (7.0f * zz - 3.0f) * sh[21] +
-        SH_C4[6] * (xx - yy) * (7.0f * zz - 1.0f) * sh[22] +
-        SH_C4[7] * x * z * (xx - 3.0f * yy) * sh[23] +
-        SH_C4[8] * (xx * (xx - 3.0f * yy) - yy * (3.0f * xx - yy)) * sh[24]);
-#endif
-#endif
-#endif
-#endif
-
-    return result;
-}
+// Shared with the compute point-splatting renderer.
+#include<gaussianSplattingShared>
 
 fn decompose(value: u32) -> vec4f
 {
@@ -475,38 +393,11 @@ fn gaussianSplatting(
         return vec4f(0.0, 0.0, 2.0, 1.0);
     }
 
-    let Vrk = mat3x3<f32>(
-        covA.x, covA.y, covA.z, 
-        covA.y, covB.x, covB.y,
-        covA.z, covB.y, covB.z
-    );
-
-    // Detect if projection is orthographic (projectionMatrix[3][3] == 1.0)
+    // isOrtho also controls the quad scale factor below.
     let isOrtho = abs(projectionMatrix[3][3] - 1.0) < 0.001;
-    
-    var J: mat3x3<f32>;
-    if (isOrtho) {
-        // Orthographic projection: no perspective division needed
-        // Just the focal/scale terms without z-dependence
-        J = mat3x3<f32>(
-            focal.x, 0.0, 0.0,
-            0.0, focal.y, 0.0,
-            0.0, 0.0, 0.0
-        );
-    } else {
-        // Perspective projection: original Jacobian with z-dependence
-        J = mat3x3<f32>(
-            focal.x / camspace.z, 0.0, -(focal.x * camspace.x) / (camspace.z * camspace.z),
-            0.0, focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z),
-            0.0, 0.0, 0.0
-        );
-    }
 
-    let T = transpose(mat3x3<f32>(
-        modelView[0].xyz,
-        modelView[1].xyz,
-        modelView[2].xyz)) * J;
-    var cov2d = transpose(T) * Vrk * T;
+    // Raw (pre-dilation) 2D covariance shared with the point-splatting compute path.
+    var cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, focal, isOrtho);
 
 #if COMPENSATION
     let c00: f32 = cov2d[0][0];

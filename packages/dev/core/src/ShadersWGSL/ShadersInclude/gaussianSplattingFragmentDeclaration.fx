@@ -7,13 +7,13 @@ fn gaussianColor(inColor: vec4f, inPosition: vec2f) -> vec4f
 
     #include<logDepthFragment>
 
-        var color: vec3f = inColor.rgb;
+        var color: vec4f = vec4f(inColor.rgb, B);
 
     #ifdef FOG
         #include<fogFragment>
     #endif
 
-        return vec4f(color, B);
+        return color;
     } else {
         return vec4f(0.0);
     }

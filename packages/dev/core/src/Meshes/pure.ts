@@ -41,6 +41,7 @@ export * from "./GaussianSplatting/gaussianSplattingMeshBase.pure";
 export * from "./GaussianSplatting/gaussianSplattingMesh.pure";
 export * from "./GaussianSplatting/gaussianSplattingCompoundMesh.pure";
 export * from "./GaussianSplatting/gaussianSplattingDebugger.pure";
+export * from "./GaussianSplatting/gaussianPointSplattingRenderer.pure";
 export * from "./abstractMesh.decalMap.pure";
 export * from "./GaussianSplatting/pure";
 export * from "./GreasedLine/pure";
