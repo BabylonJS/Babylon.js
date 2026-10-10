@@ -96,9 +96,14 @@ export const SideBar: FunctionComponent = () => {
         };
     }, [observables]);
 
-    // Subscribe to delete animation request - use ref to access current state.target
+    // Subscribe to delete animation request - use refs to access the current state.target and state.animations.
+    // The animations pane passes a new aggregate array on every render, so the mount-time array goes stale.
     const targetRef = useRef(state.target);
     targetRef.current = state.target;
+    const animationsRef = useRef(state.animations);
+    animationsRef.current = state.animations;
+    const useTargetAnimationsRef = useRef(state.useTargetAnimations);
+    useTargetAnimationsRef.current = state.useTargetAnimations;
 
     useEffect(() => {
         const observer = observables.onDeleteAnimation.add((animation: Animation) => {
@@ -113,13 +118,14 @@ export const SideBar: FunctionComponent = () => {
 
             // Also update state.animations if it's an array we can filter
             // This mutates the array in place since we can't setState on a prop
-            if (state.animations) {
-                const index = state.animations.findIndex((a) => {
-                    const anim = state.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
+            const animations = animationsRef.current;
+            if (animations) {
+                const index = animations.findIndex((a) => {
+                    const anim = useTargetAnimationsRef.current ? (a as TargetedAnimation).animation : (a as Animation);
                     return anim === animation;
                 });
                 if (index !== -1) {
-                    state.animations.splice(index, 1);
+                    animations.splice(index, 1);
                 }
             }
 
