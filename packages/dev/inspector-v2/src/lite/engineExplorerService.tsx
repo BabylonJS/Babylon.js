@@ -3,7 +3,7 @@ import { tokens } from "@fluentui/react-components";
 import { EngineRegular, GlobeRegular, PersonSquareRegular, TextFieldRegular, WindowRegular } from "@fluentui/react-icons";
 import { createElement, type ComponentType, type FunctionComponent } from "react";
 
-import { type IDisposable } from "core/index";
+import { type IDisposable, type IReadonlyObservable } from "core/index";
 import { Observable } from "core/Misc/observable";
 
 import { type ExplorerDisplayInfo, type ExplorerNodeDescription } from "../components/explorer/explorerModel";
@@ -37,6 +37,8 @@ export type RenderingContextNodeProvider<T extends RenderingContext> = Readonly<
     getNodes: (context: T) => readonly ExplorerNodeDescription[];
     /** Gets the object identities used to detect changes in the contributed nodes. */
     getSnapshot: (context: T) => readonly object[];
+    /** Optionally notifies when the nodes returned by this provider may have changed. */
+    onChanged?: IReadonlyObservable<unknown>;
 }>;
 
 /**
@@ -94,6 +96,7 @@ function UntypeRenderingContextNodeProvider<T extends RenderingContext>(provider
         predicate: (context): context is RenderingContext => provider.predicate(context),
         getNodes: (context) => (provider.predicate(context) ? provider.getNodes(context) : []),
         getSnapshot: (context) => (provider.predicate(context) ? provider.getSnapshot(context) : []),
+        onChanged: provider.onChanged,
     };
 }
 
@@ -364,6 +367,7 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
                     predicate: (parent): parent is RenderingContext =>
                         typeof parent === "object" && parent !== null && isRenderingContext(parent) && untypedProvider.predicate(parent),
                     getNodes: untypedProvider.getNodes,
+                    onChanged: untypedProvider.onChanged,
                 });
                 let isRegistered = true;
                 return {

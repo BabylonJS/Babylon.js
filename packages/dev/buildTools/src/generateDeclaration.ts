@@ -633,7 +633,8 @@ export function generateDeclaration() {
             return camelize(lib).replace(/@/g, "");
         });
         const directoriesToWatch = sourceDirs.map((dir: string) => path.join(rootDir, "packages", `${dir}/dist/**/*.d.ts`));
-        const sourceDirectoriesToWatch = sourceDirs.map((dir: string) => path.join(rootDir, "packages", `${dir}/src/**/*.{ts,tsx}`));
+        const declarationDirectories = sourceDirs.map((dir: string) => path.join(rootDir, "packages", dir, "dist"));
+        const sourceDirectoriesToWatch = sourceDirs.map((dir: string) => path.join(rootDir, "packages", dir, "src"));
         const declarationInputProjects = sourceDirs
             .map((dir: string) => path.join("packages", dir, "tsconfig.build.json"))
             .filter((project: string) => fs.existsSync(path.join(rootDir, project)));
@@ -751,7 +752,8 @@ ${looseDeclarationsString || ""}`
         if (checkArgs("--watch")) {
             const watchSize: { [path: string]: number } = {};
             chokidar
-                .watch(directoriesToWatch, {
+                .watch(declarationDirectories, {
+                    ignored: (file, stats) => !!stats?.isFile() && !file.endsWith(".d.ts"),
                     ignoreInitial: false,
                     awaitWriteFinish: {
                         stabilityThreshold: 300,
@@ -760,6 +762,12 @@ ${looseDeclarationsString || ""}`
                     alwaysStat: true,
                 })
                 .on("all", (e, p, stats) => {
+                    if (!p.endsWith(".d.ts") || (e !== "add" && e !== "change" && e !== "unlink")) {
+                        return;
+                    }
+                    if (e === "unlink") {
+                        delete watchSize[p];
+                    }
                     if (stats) {
                         if (watchSize[p] === stats.size) {
                             return;
@@ -771,13 +779,17 @@ ${looseDeclarationsString || ""}`
             if (watchInputs) {
                 chokidar
                     .watch(sourceDirectoriesToWatch, {
+                        ignored: (file, stats) => !!stats?.isFile() && !/\.(ts|tsx)$/.test(file),
                         ignoreInitial: true,
                         awaitWriteFinish: {
                             stabilityThreshold: 300,
                             pollInterval: 100,
                         },
                     })
-                    .on("all", () => {
+                    .on("all", (event, file) => {
+                        if (!/\.(ts|tsx)$/.test(file) || (event !== "add" && event !== "change" && event !== "unlink")) {
+                            return;
+                        }
                         buildDeclarationInputs();
                     });
             }

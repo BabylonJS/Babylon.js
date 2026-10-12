@@ -274,17 +274,37 @@ export class ProceduralTexture extends Texture {
         }
 
         if (this._contentData) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-            this._contentData.then((buffer) => {
-                this._contentData = this.readPixels(0, 0, buffer);
-                this._contentUpdateId = this._frameId;
-            });
+            const contentData = this._contentData;
+            /* eslint-disable github/no-then */
+            contentData
+                .then((buffer) => {
+                    if (this._contentData !== contentData) {
+                        // Resized or replaced by a newer refresh: do not reuse the stale buffer nor repopulate the cache.
+                        return;
+                    }
+                    this._readContent(buffer);
+                })
+                .catch(() => {});
+            /* eslint-enable github/no-then */
         } else {
-            this._contentData = this.readPixels(0, 0);
-            this._contentUpdateId = this._frameId;
+            this._readContent();
         }
 
         return this._contentData;
+    }
+
+    private _readContent(buffer?: ArrayBufferView): void {
+        const contentData = buffer ? this.readPixels(0, 0, buffer) : this.readPixels(0, 0);
+        this._contentData = contentData;
+        this._contentUpdateId = this._frameId;
+        // eslint-disable-next-line github/no-then
+        contentData?.catch(() => {
+            // An older rejection must not clear a newer readback.
+            if (this._contentData === contentData) {
+                this._contentData = null;
+                this._contentUpdateId = -1;
+            }
+        });
     }
 
     private _createIndexBuffer(): void {
@@ -402,6 +422,8 @@ export class ProceduralTexture extends Texture {
                 () => {
                     this._rtWrapper?.dispose();
                     this._rtWrapper = this._texture = null;
+                    this._contentData = null;
+                    this._contentUpdateId = -1;
 
                     if (this._fallbackTexture) {
                         this._texture = this._fallbackTexture._texture;
@@ -523,6 +545,10 @@ export class ProceduralTexture extends Texture {
         // Update properties
         this._size = size;
         this._generateMipMaps = generateMipMaps;
+
+        // The cached readback belongs to the previous size: drop it so getContent() reads the new texture.
+        this._contentData = null;
+        this._contentUpdateId = -1;
     }
 
     private _checkUniform(uniformName: string): void {

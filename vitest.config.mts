@@ -34,7 +34,7 @@ const aliases = convertPathsToAliases();
 // modules that reference this package.
 const gltf2InterfaceStub = path.resolve(__dirname, "packages/public/glTF2Interface/babylonjs-gltf2interface.stub.ts");
 
-// Tabster 8.8.0 has an ESM entry but no exports map, so Vitest 4.1.11 otherwise loads its CommonJS entry as ESM.
+// Tabster has an ESM entry but no exports map, so Vitest otherwise loads its CommonJS entry as ESM.
 const tabsterEsmEntry = createRequire(import.meta.url).resolve("tabster/dist/esm/index.js");
 
 const createProjectConfig = (type: string) => {
@@ -105,21 +105,17 @@ export default defineConfig({
     },
     test: {
         globals: true,
+        clearMocks: false,
         environment: "node",
         reporters: process.env.CI ? ["default", "junit"] : ["default"],
         outputFile: process.env.CI ? { junit: "./junit.xml" } : undefined,
         projects: [
             {
-                oxc: false,
-                plugins: [esbuildDecoratorPlugin],
                 test: createProjectConfig("unit"),
                 resolve: {
                     alias: {
-                        ...aliases,
-                        "babylonjs-gltf2interface": gltf2InterfaceStub,
                         tabster: tabsterEsmEntry,
                     },
-                    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
                 },
                 environments: {
                     ssr: {

@@ -312,6 +312,13 @@ export abstract class FluidRenderingObject {
     }
 
     /**
+     * Updates the state of the particles when this update is not performed by the diffuse texture rendering. Called after the depth and thickness passes
+     */
+    public updateSimulation(): void {
+        // do nothing by default
+    }
+
+    /**
      * Releases the resources used by the class
      */
     public dispose(): void {

@@ -28,4 +28,5 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["NodeRenderGraphClearBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphCopyTextureBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphGenerateMipmapsBlock"] = TextureDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphMinMaxReducerBlock"] = TextureDisplayManager;
 };

@@ -794,6 +794,8 @@ export function commonUMDRollupConfiguration(options) {
         : [
               typescript({
                   tsconfig: "tsconfig.build.json",
+                  // Rollup owns the bundle output; do not inherit the standalone tsc emit directory.
+                  outDir: undefined,
                   declaration: false,
                   declarationMap: false,
                   sourceMap: true,
@@ -926,6 +928,7 @@ export function commonUMDRollupConfiguration(options) {
                 : [
                       typescript({
                           tsconfig: "tsconfig.build.json",
+                          outDir: undefined,
                           declaration: false,
                           declarationMap: false,
                           sourceMap: true,

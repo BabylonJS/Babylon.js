@@ -47,6 +47,7 @@ export * from "./Teleport/teleportOutBlock.pure";
 export * from "./Textures/clearBlock.pure";
 export * from "./Textures/copyTextureBlock.pure";
 export * from "./Textures/generateMipmapsBlock.pure";
+export * from "./Textures/minMaxReducerBlock.pure";
 export * from "./allBlocks.pure";
 export * from "./Layers/pure";
 export * from "./PostProcesses/pure";

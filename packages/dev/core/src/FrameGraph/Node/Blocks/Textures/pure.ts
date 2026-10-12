@@ -2,3 +2,4 @@
 export * from "./clearBlock.pure";
 export * from "./copyTextureBlock.pure";
 export * from "./generateMipmapsBlock.pure";
+export * from "./minMaxReducerBlock.pure";

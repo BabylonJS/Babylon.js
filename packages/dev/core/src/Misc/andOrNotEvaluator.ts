@@ -41,6 +41,10 @@ export class AndOrNotEvaluator {
         const or = parenthesisContent.split("||");
 
         for (const i in or) {
+            if (result) {
+                // an earlier operand of the 'or' chain is already true, so the remaining operands cannot change the outcome
+                break;
+            }
             if (Object.prototype.hasOwnProperty.call(or, i)) {
                 let ori = AndOrNotEvaluator._SimplifyNegation(or[i].trim());
                 const and = ori.split("&&");

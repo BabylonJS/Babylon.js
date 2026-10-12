@@ -15,6 +15,7 @@ import { NodeRenderGraphExtractHighlightsPostProcessBlock } from "core/FrameGrap
 import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/Textures/clearBlock";
 import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/Textures/copyTextureBlock";
 import { NodeRenderGraphGenerateMipmapsBlock } from "core/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock";
+import { NodeRenderGraphMinMaxReducerBlock } from "core/FrameGraph/Node/Blocks/Textures/minMaxReducerBlock";
 import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/cullObjectsBlock";
@@ -103,6 +104,9 @@ export class BlockTools {
             }
             case "GenerateMipmapsBlock": {
                 return new NodeRenderGraphGenerateMipmapsBlock("Generate mipmaps", frameGraph, scene);
+            }
+            case "MinMaxReducerBlock": {
+                return new NodeRenderGraphMinMaxReducerBlock("Min/max reducer", frameGraph, scene);
             }
             case "BlackAndWhiteBlock": {
                 return new NodeRenderGraphBlackAndWhitePostProcessBlock("Black and White", frameGraph, scene);

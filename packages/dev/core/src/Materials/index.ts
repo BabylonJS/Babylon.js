@@ -40,6 +40,8 @@ export * from "./GreasedLine/greasedLineMaterialDefaults";
 export * from "./meshDebugPluginMaterial";
 export * from "./GaussianSplatting/gaussianSplattingMaterial";
 export * from "./GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin";
+export * from "./GaussianSplatting/gaussianSplattingSizeMaterialPlugin";
+export * from "./GaussianSplatting/gaussianSplattingOverdrawMaterialPlugin";
 export * from "./GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin";
 export * from "./GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
 export * from "./materialHelper.functions";

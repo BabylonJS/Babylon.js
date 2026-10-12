@@ -44,6 +44,7 @@ import { RegisterFrameGraphNodeBlocksTeleportTeleportOutBlock } from "./Teleport
 import { RegisterClearBlock } from "./Textures/clearBlock.pure";
 import { RegisterCopyTextureBlock } from "./Textures/copyTextureBlock.pure";
 import { RegisterGenerateMipmapsBlock } from "./Textures/generateMipmapsBlock.pure";
+import { RegisterMinMaxReducerBlock } from "./Textures/minMaxReducerBlock.pure";
 
 // Root-level blocks
 import { RegisterComputeShaderBlock } from "./computeShaderBlock.pure";
@@ -120,6 +121,7 @@ export function RegisterNodeRenderGraphTexturesBlocks(): void {
     RegisterClearBlock();
     RegisterCopyTextureBlock();
     RegisterGenerateMipmapsBlock();
+    RegisterMinMaxReducerBlock();
 }
 
 /**

@@ -1,12 +1,17 @@
 // @vitest-environment jsdom
 
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
+import { TargetRegular } from "@fluentui/react-icons";
 import { act, type FunctionComponent, type ReactElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Observable } from "core/Misc/observable";
+import { type IReactContextService } from "shared-ui-components/modularTool/services/reactContextService";
+import { SettingsStore } from "shared-ui-components/modularTool/services/settingsStore";
 import { Explorer } from "../../src/components/explorer/explorer";
-import { type ExplorerCommandProvider, type ExplorerNodeDescription } from "../../src/components/explorer/explorerModel";
+import { type ExplorerCommand, type ExplorerCommandProvider, type ExplorerNodeDescription } from "../../src/components/explorer/explorerModel";
+import { MakeWatcherServiceDefinitions } from "../../src/services/watcherService";
 
 vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -118,6 +123,16 @@ function RenderSelectionExplorer(root: Root, nodes: readonly ExplorerNodeDescrip
         root.render(
             <FluentProvider theme={webLightTheme}>
                 <Explorer getNodes={() => nodes} itemCommandProviders={[]} groupCommandProviders={[]} selectedEntity={selectedEntity} setSelectedEntity={setSelectedEntity} />
+            </FluentProvider>
+        )
+    );
+}
+
+function RenderCommandExplorer(root: Root, entity: object, provider: ExplorerCommandProvider<object>): void {
+    act(() =>
+        root.render(
+            <FluentProvider theme={webLightTheme}>
+                <Explorer getNodes={() => [{ id: "target", entity, getDisplayInfo: () => ({ name: "Target" }) }]} itemCommandProviders={[provider]} groupCommandProviders={[]} />
             </FluentProvider>
         )
     );
@@ -270,5 +285,84 @@ describe("Explorer root node", () => {
         render([], []);
         expect(itemDispose).toHaveBeenCalledOnce();
         expect(groupDispose).toHaveBeenCalledOnce();
+    });
+
+    it.each(["isVisible", "showBoundingBox"] as const)("toggles a watcher-backed %s command twice in manual watch mode without Refresh", (propertyKey) => {
+        const target = { isVisible: true, showBoundingBox: false };
+        const reactContextService: IReactContextService = {
+            addContext: () => ({ updateValue: () => {}, dispose: () => {} }),
+        };
+        const watcher = MakeWatcherServiceDefinitions({ defaultSettings: { mode: "manual" } }).watcherServiceDefinition.factory(
+            new SettingsStore("Explorer command tests"),
+            reactContextService
+        );
+        const refresh = vi.spyOn(watcher, "refresh");
+        const onChange = new Observable<void>();
+        const changed = vi.fn();
+        onChange.add(changed);
+        const registration = watcher.watchProperty(target, propertyKey, () => onChange.notifyObservers());
+        const command = {
+            type: "toggle",
+            displayName: `Toggle ${propertyKey}`,
+            icon: TargetRegular,
+            get isEnabled() {
+                return propertyKey === "isVisible" ? !target.isVisible : target.showBoundingBox;
+            },
+            set isEnabled(value: boolean) {
+                target[propertyKey] = propertyKey === "isVisible" ? !value : value;
+            },
+            onChange,
+            dispose: () => registration.dispose(),
+        } satisfies ExplorerCommand<"inline", "toggle">;
+
+        try {
+            RenderCommandExplorer(root, target, { predicate: (entity): entity is object => entity === target, getCommand: () => command });
+            Hover(GetTreeItem(container, "Target"));
+            const button = GetTreeItem(container, "Target").querySelector<HTMLButtonElement>("button[aria-pressed]")!;
+            expect(button.getAttribute("aria-pressed")).toBe("false");
+
+            Click(button);
+            expect(command.isEnabled).toBe(true);
+            expect(button.getAttribute("aria-pressed")).toBe("true");
+            Click(button);
+            expect(command.isEnabled).toBe(false);
+            expect(button.getAttribute("aria-pressed")).toBe("false");
+            expect(refresh).not.toHaveBeenCalled();
+            expect(changed).not.toHaveBeenCalled();
+
+            command.isEnabled = true;
+            expect(button.getAttribute("aria-pressed")).toBe("false");
+            act(() => watcher.refresh());
+            expect(button.getAttribute("aria-pressed")).toBe("true");
+            expect(changed).toHaveBeenCalledOnce();
+        } finally {
+            act(() => root.render(<TestExplorer />));
+            watcher.dispose?.();
+        }
+    });
+
+    it("renders the accepted command state when its setter rejects a toggle", () => {
+        const target = {};
+        const request = vi.fn<(value: boolean) => void>();
+        RenderCommandExplorer(root, target, {
+            predicate: (entity): entity is object => entity === target,
+            getCommand: () => ({
+                type: "toggle",
+                displayName: "Rejected Toggle",
+                icon: TargetRegular,
+                get isEnabled() {
+                    return false;
+                },
+                set isEnabled(value: boolean) {
+                    request(value);
+                },
+            }),
+        });
+        Hover(GetTreeItem(container, "Target"));
+        const button = GetTreeItem(container, "Target").querySelector<HTMLButtonElement>("button[aria-pressed]")!;
+        Click(button);
+        Click(button);
+        expect(request.mock.calls).toEqual([[true], [true]]);
+        expect(button.getAttribute("aria-pressed")).toBe("false");
     });
 });

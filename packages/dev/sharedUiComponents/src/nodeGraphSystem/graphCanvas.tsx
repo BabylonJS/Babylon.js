@@ -2,6 +2,7 @@ import * as React from "react";
 import { GraphNode } from "./graphNode";
 import * as dagre from "dagre";
 import { type Nullable } from "core/types";
+import { type Observer } from "core/Misc/observable";
 import { NodeLink } from "./nodeLink";
 import { NodePort } from "./nodePort";
 import { Vector2 } from "core/Maths/math.vector";
@@ -92,6 +93,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _keyUpHandler: (() => void) | null = null;
     private _keyDownHandler: ((evt: KeyboardEvent) => void) | null = null;
     private _blurHandler: (() => void) | null = null;
+    private _onFocusNodeObserver: Nullable<Observer<unknown>> = null;
 
     public _frameIsMoving = false;
     public _isLoading = false;
@@ -1009,11 +1011,21 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._selectionContainer = this._selectionContainerRef.current!;
         this._frameContainer = this._frameContainerRef.current!;
 
+        this._onFocusNodeObserver = this.stateManager.onFocusNodeObservable.add((data) => {
+            const node = this.findNodeFromData(data);
+            if (!node) {
+                this.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("The referenced node is not available in the graph.");
+                return;
+            }
+            this.zoomToNode(node);
+        });
+
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
     }
 
     override componentWillUnmount() {
+        this.stateManager.onFocusNodeObservable.remove(this._onFocusNodeObserver);
         const doc = this.props.stateManager.hostDocument;
         if (this._keyUpHandler) {
             doc.removeEventListener("keyup", this._keyUpHandler);
@@ -1352,14 +1364,18 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     /**
-     * Pans the canvas so the given node is visible and roughly centered.
+     * Reveals and centers the given node without changing selection or zoom.
      * @param node - the node to bring into view
      */
     zoomToNode(node: GraphNode) {
-        const containerWidth = this._rootContainer.clientWidth;
-        const containerHeight = this._rootContainer.clientHeight;
-        this.x = -node.x + containerWidth / (2 * this.zoom) - 100;
-        this.y = -node.y + containerHeight / (2 * this.zoom) - 20;
+        for (const frame of this.frames) {
+            if (frame.isCollapsed && frame.nodes.includes(node)) {
+                frame.isCollapsed = false;
+            }
+        }
+
+        this.x = this._hostCanvas.clientWidth / 2 - (node.x + node.width / 2) * this.zoom;
+        this.y = this._hostCanvas.clientHeight / 2 - (node.y + node.height / 2) * this.zoom;
     }
 
     processCandidatePort() {

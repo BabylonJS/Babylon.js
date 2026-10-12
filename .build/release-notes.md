@@ -1,16 +1,18 @@
 
 ### Addons
 
-- Atmosphere: only attach the PBR material plugin to materials in the atmosphere's scene - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18934](https://github.com/BabylonJS/Babylon.js/pull/18934))
+- MSDF Text: guard fwidth() denominators in the fragment shaders - [_Bug Fix_] by [marns](https://github.com/marns) ([#18970](https://github.com/BabylonJS/Babylon.js/pull/18970))
 
 ### Core
 
-- StandardMaterial: depth pre-pass honours every alpha source, and alphaCutOff is bound for all alpha-tested materials - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18936](https://github.com/BabylonJS/Babylon.js/pull/18936))
-- Complete cube / prefiltered texture load contract - [_Bug Fix_] by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#18874](https://github.com/BabylonJS/Babylon.js/pull/18874))
-- Add root motion for animation groups: RootMotionClip and RootMotionController - by [Pryme8](https://github.com/Pryme8) ([#18908](https://github.com/BabylonJS/Babylon.js/pull/18908))
-- Use nearest sampling for Gaussian Splatting data textures - by [luokn](https://github.com/luokn) ([#18933](https://github.com/BabylonJS/Babylon.js/pull/18933))
-- Fix WGSL vPartIndex redefinition when combining Gaussian Splatting material plugins - by [raymondyfei](https://github.com/raymondyfei) ([#18931](https://github.com/BabylonJS/Babylon.js/pull/18931))
+- Fix AndOrNotEvaluator returning false for "a || b && c" when only a is true - by [Arthur031221](https://github.com/Arthur031221) ([#18968](https://github.com/BabylonJS/Babylon.js/pull/18968))
+- Remove unused blockMap in flow graph data cycle detection - by [irontaek](https://github.com/irontaek) ([#18980](https://github.com/BabylonJS/Babylon.js/pull/18980))
+- Fix GPUParticleSystem leaving instance attribute divisors bound - by [redstair](https://github.com/redstair) ([#18975](https://github.com/BabylonJS/Babylon.js/pull/18975))
+- SubMesh Draw Wrapper Caching Per Pass - by [tholub99](https://github.com/tholub99) ([#18972](https://github.com/BabylonJS/Babylon.js/pull/18972))
+- fix: support image source dimensions on WebGL1 - [_Bug Fix_] by [alexchuber](https://github.com/alexchuber) ([#18971](https://github.com/BabylonJS/Babylon.js/pull/18971))
+- Fix WebGPU render target sRGB option forwarding - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18966](https://github.com/BabylonJS/Babylon.js/pull/18966))
+- Expose WebGPU canvas tone mapping and color space options - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18967](https://github.com/BabylonJS/Babylon.js/pull/18967))
 
 ### Loaders
 
-- OBJFileLoader: Fix AssetContainer handling and add opt-in texture loading waits - by [noname0310](https://github.com/noname0310) ([#18895](https://github.com/BabylonJS/Babylon.js/pull/18895))
+- Fix source-backed interactivity export in Flow Graph Editor - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18976](https://github.com/BabylonJS/Babylon.js/pull/18976))
