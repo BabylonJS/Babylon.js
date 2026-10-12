@@ -9,7 +9,7 @@ import { type GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
 import { _CaptureKHRInteractivityRuntimeInputDefaults, InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
-import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
+import { Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene";
 import { type Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
@@ -270,6 +270,8 @@ export function _AddInteractivityObjectModel(scene: Scene, targetFps: number, ma
                 if (!scene.useRightHandedSystem) {
                     quat.w *= -1; // glTF uses right-handed system, while babylon uses left-handed
                     quat.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
+                    // Left-handed cameras look along +Z; glTF camera identity looks along -Z.
+                    quat.multiplyInPlace(TmpVectors.Quaternion[0].set(0, 1, 0, 0));
                 }
                 return quat;
             },

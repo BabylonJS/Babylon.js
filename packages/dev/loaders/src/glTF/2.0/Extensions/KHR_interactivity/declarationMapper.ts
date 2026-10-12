@@ -2121,16 +2121,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                     }
                 } else if (serializedObject.className === FlowGraphBlockNames.ValueInterpolation) {
                     serializedObject.config ||= {};
-                    Object.keys(gltfBlock.values || []).forEach((key) => {
-                        const value = gltfBlock.values?.[key];
-                        if (key === "value" && value) {
-                            // get the type of the value
-                            const type = value.type;
-                            if (type !== undefined) {
-                                serializedObject.config.animationType = parser.arrays.types[type].flowGraphType;
-                            }
-                        }
-                    });
+                    if (typeof typeIndex === "number") {
+                        serializedObject.config.animationType = parser.arrays.types[typeIndex].flowGraphType;
+                    }
                 }
             });
             return serializedObjects;

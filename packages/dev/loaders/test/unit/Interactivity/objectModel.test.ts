@@ -1,8 +1,10 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { Vector3 } from "core/Maths";
+import { Matrix, Quaternion, Vector3 } from "core/Maths";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import "core/Culling/ray";
 import { Logger } from "core/Misc";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
@@ -17,6 +19,9 @@ import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { type IGLTF } from "loaders/glTF/2.0/glTFLoaderInterfaces";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Color3 } from "core/Maths/math.color";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * These tests will check the connection between interactivity's object model and pointers to the flow graph.
@@ -740,7 +745,7 @@ describe("glTF interactivity Object Model", () => {
                     declaration: 0,
                     configuration: {
                         pointer: { value: ["/extensions/KHR_interactivity/activeCamera/rotation"] },
-                        type: { value: [1] },
+                        type: { value: [0] },
                     },
                 },
             ],
@@ -748,11 +753,47 @@ describe("glTF interactivity Object Model", () => {
         );
 
         const lastCallValue = log.mock.calls[log.mock.calls.length - 1][0];
-        // should be 0,1,0,0
         expect(lastCallValue.x).toBeCloseTo(0);
-        expect(lastCallValue.y).toBeCloseTo(1);
+        expect(lastCallValue.y).toBeCloseTo(0);
         expect(lastCallValue.z).toBeCloseTo(0);
-        expect(lastCallValue.w).toBeCloseTo(0);
+        expect(Math.abs(lastCallValue.w)).toBeCloseTo(1);
+    });
+
+    it.each([false, true])("active camera rotation preserves glTF forward and up directions (right handed: %s)", async (rightHanded) => {
+        scene.useRightHandedSystem = rightHanded;
+        const parent = new TransformNode("cameraParent", scene);
+        parent.rotationQuaternion = Quaternion.RotationYawPitchRoll(0.3, -0.4, 0.2);
+        const camera = new FreeCamera("active", new Vector3(2, 3, 4), scene);
+        camera.parent = parent;
+        camera.rotationQuaternion = Quaternion.RotationYawPitchRoll(-0.7, 0.5, -0.6);
+        scene.activeCamera = camera;
+        await generateSimpleNodeGraph(
+            { extensions: { KHR_interactivity: {} } },
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                { declaration: 1, values: { message: { node: 1, socket: "value" } } },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/extensions/KHR_interactivity/activeCamera/rotation"] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float4" }]
+        );
+        const rotation: Quaternion = log.mock.calls[log.mock.calls.length - 1][0];
+        const matrix = Matrix.FromQuaternionToRef(rotation, Matrix.Identity());
+        const forward = Vector3.TransformNormal(new Vector3(0, 0, -1), matrix);
+        const up = Vector3.TransformNormal(Vector3.Up(), matrix);
+        const expectedForward = camera.getForwardRay().direction;
+        const expectedUp = Vector3.TransformNormal(Vector3.Up(), camera.getWorldMatrix()).normalize();
+        if (!rightHanded) {
+            expectedForward.x *= -1;
+            expectedUp.x *= -1;
+        }
+        expect(Vector3.Distance(forward, expectedForward)).toBeCloseTo(0);
+        expect(Vector3.Distance(up, expectedUp)).toBeCloseTo(0);
     });
 
     it("keeps active camera accessors scoped to the converter's scene", () => {
@@ -896,6 +937,61 @@ describe("glTF interactivity Object Model", () => {
         );
 
         expect(log).toHaveBeenCalledWith(new Vector3(2, 3, 4));
+    });
+
+    it.each(["literal", "variable", "pointer"] as const)("interpolates baseColorFactor from a %s value without corrupting alpha", async (source) => {
+        const material = new PBRMaterial("target", scene);
+        material.albedoColor = new Color3(0.2, 0.4, 0.6);
+        material.alpha = 0.5;
+        const sourceMaterial = new PBRMaterial("source", scene);
+        sourceMaterial.albedoColor = new Color3(0.8, 0.6, 0.4);
+        sourceMaterial.alpha = 0.9;
+        const mockGltf = {
+            materials: [material, sourceMaterial].map((babylonMaterial) => ({
+                pbrMetallicRoughness: {},
+                _data: { 0: { babylonMaterial } },
+            })),
+        };
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/interpolate" }, { op: "variable/get" }, { op: "pointer/get" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/materials/0/pbrMetallicRoughness/baseColorFactor"] },
+                        type: { value: [0] },
+                    },
+                    values: {
+                        value: source === "literal" ? { type: 0, value: [0.8, 0.6, 0.4, 0.9] } : { node: 1, socket: "value" },
+                        duration: { type: 1, value: [1] },
+                    },
+                },
+                source === "pointer"
+                    ? {
+                          declaration: 2,
+                          configuration: {
+                              pointer: { value: ["/materials/1/pbrMetallicRoughness/baseColorFactor"] },
+                              type: { value: [0] },
+                          },
+                      }
+                    : { declaration: 1, configuration: { variable: { value: [0] } } },
+            ],
+            [{ signature: "float4" }, { signature: "float" }],
+            [{ type: 0, value: [0.8, 0.6, 0.4, 0.9] }]
+        );
+
+        const group = scene.animationGroups[0];
+        expect(group.targetedAnimations.map(({ animation }) => animation.targetProperty)).toEqual(["albedoColor", "alpha"]);
+        group.goToFrame(30);
+        for (const component of material.albedoColor.asArray()) {
+            expect(component).toBeCloseTo(0.5);
+        }
+        expect(material.alpha).toBeCloseTo(0.7);
+        group.goToFrame(60);
+        expect(material.albedoColor).toEqual(sourceMaterial.albedoColor);
+        expect(material.alpha).toBeCloseTo(0.9);
+        expect(errorLog).not.toHaveBeenCalled();
     });
 
     // simple pointer/interpolate
