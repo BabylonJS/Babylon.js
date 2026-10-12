@@ -661,7 +661,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * before compositing with the pass's actual view and target dimensions; matching color and depth passes share one result.
      * While point shaders compile, the pass waits without drawing classic splats. The color pass uses the classic path
      * while the GaussianSplattingSolidColorMaterialPlugin override is enabled or the source material's
-     * alpha mode is not ALPHA_COMBINE. WebGPU only.
+     * alpha mode is not ALPHA_COMBINE. Point color supports only the built-in GaussianSplattingMaterial;
+     * NodeMaterials, subclasses, and other source materials use classic color to preserve their shader behavior.
+     * Material compatibility is reevaluated each draw, including after material replacement. WebGPU only.
      *
      * Limitation: each pixel's accumulated color is depth-tested as a whole against its latest sample's depth. Where
      * other geometry intersects the splats, occluded splats can bleed through or visible ones drop out, and the

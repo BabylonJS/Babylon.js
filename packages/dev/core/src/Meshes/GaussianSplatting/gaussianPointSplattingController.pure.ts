@@ -1085,7 +1085,14 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const projectedSize = this._mesh.material?.pluginManager?.getPlugin("GaussianSplattingSize") as Nullable<GaussianSplattingSizeMaterialPlugin>;
         const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
         const colorSupported =
-            this._colorMode && fullViewport && this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE && !solidColor?.isEnabled && !projectedSize?.isEnabled && !fog;
+            this._colorMode &&
+            fullViewport &&
+            this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE &&
+            // Custom source shaders, including subclass overrides and NodeMaterial graphs, are not evaluated by compute.
+            this._mesh.material.constructor === GaussianSplattingMaterial &&
+            !solidColor?.isEnabled &&
+            !projectedSize?.isEnabled &&
+            !fog;
         if (depthPass && depthRenderer && colorSupported) {
             const depthMap = depthRenderer.getDepthMap();
             const colorSize = this._getOutputSize(true);

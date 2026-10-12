@@ -7,6 +7,8 @@ import { GaussianSplattingSolidColorMaterialPlugin } from "core/Materials/Gaussi
 import { GaussianSplattingSizeMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSizeMaterialPlugin";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { GaussianSplattingMeshBase } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
@@ -1340,6 +1342,36 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
             engine.dispose();
         }
     );
+
+    it("reevaluates source material compatibility without disabling point depth", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const source = mesh.material!;
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_runCompute"] = vi.fn();
+        class CustomGaussianMaterial extends GaussianSplattingMaterial {}
+        const incompatible = [new NodeMaterial("graph", scene), new StandardMaterial("custom", scene), new CustomGaussianMaterial("subclass", scene)];
+        for (const material of incompatible) {
+            material.alphaMode = Constants.ALPHA_COMBINE;
+            engine.currentRenderPassId = camera.renderPassId;
+            expect(controller.drawColorPass(true)).toBe(true);
+            mesh.material = material;
+            expect(controller.drawColorPass(true)).toBe(false);
+            engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+            expect(controller.drawColorPass(false)).toBe(true);
+            mesh.material = source;
+            engine.currentRenderPassId = camera.renderPassId;
+            expect(controller.drawColorPass(true)).toBe(true);
+        }
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
 
     it("falls back for partial viewports while retaining full-viewport point depth", async () => {
         const engine = new NullEngine();
