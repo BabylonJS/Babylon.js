@@ -113,7 +113,7 @@ describe("declaration directory watchers", () => {
                 expect(spawn).toHaveBeenCalledTimes(count);
                 expect(spawn).toHaveBeenLastCalledWith(
                     "npx",
-                    ["tsc", "-b", "packages/fixture/tsconfig.build.json", "--emitDeclarationOnly", "--pretty", "false"],
+                    ["tsc", "-b", path.join("packages", "fixture", "tsconfig.build.json"), "--emitDeclarationOnly", "--pretty", "false"],
                     expect.anything()
                 );
                 const result = vi.mocked(spawn).mock.results[count - 1];

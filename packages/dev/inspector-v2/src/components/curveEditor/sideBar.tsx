@@ -9,6 +9,7 @@ import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { useCurveEditor } from "./curveEditorContext";
+import { RemoveAnimationFromOwner } from "./animatableAnimations";
 import { AnimationList } from "./sideBar/animationList";
 import { AddAnimationPanel } from "./sideBar/addAnimationPanel";
 import { LoadAnimationPanel } from "./sideBar/loadAnimationPanel";
@@ -95,30 +96,36 @@ export const SideBar: FunctionComponent = () => {
         };
     }, [observables]);
 
-    // Subscribe to delete animation request - use ref to access current state.target
+    // Subscribe to delete animation request - use refs to access the current state.target and state.animations.
+    // The animations pane passes a new aggregate array on every render, so the mount-time array goes stale.
     const targetRef = useRef(state.target);
     targetRef.current = state.target;
+    const animationsRef = useRef(state.animations);
+    animationsRef.current = state.animations;
+    const useTargetAnimationsRef = useRef(state.useTargetAnimations);
+    useTargetAnimationsRef.current = state.useTargetAnimations;
 
     useEffect(() => {
         const observer = observables.onDeleteAnimation.add((animation: Animation) => {
             // Remove from active animations
             actions.setActiveAnimations((prev) => prev.filter((a) => a !== animation));
 
-            // Update target if exists
+            // Remove from whichever animatable owns it: the target or one of its child animatables (e.g. a bone of a skeleton)
             const target = targetRef.current;
-            if (target && target.animations) {
-                target.animations = target.animations.filter((a: Animation) => a !== animation);
+            if (target) {
+                RemoveAnimationFromOwner(target, animation);
             }
 
             // Also update state.animations if it's an array we can filter
             // This mutates the array in place since we can't setState on a prop
-            if (state.animations) {
-                const index = state.animations.findIndex((a) => {
-                    const anim = state.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
+            const animations = animationsRef.current;
+            if (animations) {
+                const index = animations.findIndex((a) => {
+                    const anim = useTargetAnimationsRef.current ? (a as TargetedAnimation).animation : (a as Animation);
                     return anim === animation;
                 });
                 if (index !== -1) {
-                    state.animations.splice(index, 1);
+                    animations.splice(index, 1);
                 }
             }
 

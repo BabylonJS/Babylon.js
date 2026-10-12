@@ -7,7 +7,7 @@ import { globSync } from "glob";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function populateEnvironment() {
-    dotenv.config({ path: path.resolve(findRootDirectory(), "./.env") });
+    dotenv.config({ path: path.resolve(findRootDirectory(), "./.env"), quiet: true });
 }
 
 populateEnvironment();

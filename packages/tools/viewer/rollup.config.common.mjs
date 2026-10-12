@@ -21,7 +21,7 @@ export function createConfig(outDir) {
             preserveModulesRoot: "../../",
         },
         plugins: [
-            typescript({ tsconfig: "tsconfig.build.json", sourceMap: false, inlineSources: false, declaration: false, declarationMap: false, outDir }),
+            typescript({ tsconfig: "tsconfig.build.json", composite: false, sourceMap: false, inlineSources: false, declaration: false, declarationMap: false, outDir }),
             alias({
                 entries: [
                     { find: "core", replacement: `@${source}/core/dist` },
