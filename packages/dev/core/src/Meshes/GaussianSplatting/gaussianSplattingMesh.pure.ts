@@ -690,7 +690,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * (an opaque nearest-surface depth) instead of the classic path. Off by default and independent of
      * {@link pointSplattingRenderMode}, with the same camera, clip-plane, data fallbacks and module requirement.
      * Color-only material fallbacks do not disable point depth. For partial camera viewports, point depth
-     * requires a depth map with ignoreCameraViewport enabled. WebGPU only.
+     * requires a depth map with ignoreCameraViewport enabled. When point color is supported, depth maps
+     * with different pixel dimensions use classic depth to preserve color accumulation. WebGPU only.
      */
     public get pointSplattingDepthRenderMode(): boolean {
         return this._pointController?.depthRenderMode ?? false;

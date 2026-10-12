@@ -1191,7 +1191,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
-    it("uses depth target dimensions and only shares results with equal-sized color targets", async () => {
+    it("retains point depth alone but falls back for incompatible point color dimensions", async () => {
         const engine = new NullEngine({ renderWidth: 128, renderHeight: 128 });
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
@@ -1201,7 +1201,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         const postProcess = new PassPostProcess("half", 0.5, camera);
         postProcess.width = 64;
         postProcess.height = 64;
-        controller["_colorMode"] = true;
+        controller["_colorMode"] = false;
         controller["_depthMode"] = true;
         scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
         const compute = vi.fn(() => {
@@ -1216,24 +1216,43 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(controller.drawColorPass(false)).toBe(true);
         expect(controller["_computedWidth"]).toBe(128);
         expect(controller["_computedHeight"]).toBe(128);
+        controller["_colorMode"] = true;
         engine.currentRenderPassId = camera.renderPassId;
         expect(controller.drawColorPass(true)).toBe(true);
         expect(controller["_computedWidth"]).toBe(64);
         expect(compute).toHaveBeenCalledTimes(2);
         engine.currentRenderPassId = depth.getDepthMap().renderPassId;
-        expect(controller.drawColorPass(false)).toBe(true);
-        expect(compute).toHaveBeenCalledTimes(3);
+        expect(controller.drawColorPass(false)).toBe(false);
+        expect(compute).toHaveBeenCalledTimes(2);
         postProcess.width = 128;
         postProcess.height = 128;
         engine.currentRenderPassId = camera.renderPassId;
         expect(controller.drawColorPass(true)).toBe(true);
         expect(compute).toHaveBeenCalledTimes(3);
-        depth.getDepthMap().resize({ width: 96, height: 80 });
         engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(true);
+        expect(compute).toHaveBeenCalledTimes(3);
+        depth.getDepthMap().resize({ width: 96, height: 80 });
+        expect(controller.drawColorPass(false)).toBe(false);
+        expect(compute).toHaveBeenCalledTimes(3);
+        controller["_colorMode"] = false;
         expect(controller.drawColorPass(false)).toBe(true);
         expect(controller["_computedWidth"]).toBe(96);
         expect(controller["_computedHeight"]).toBe(80);
         expect(compute).toHaveBeenCalledTimes(4);
+        controller["_colorMode"] = true;
+        mesh.material!.alphaMode = Constants.ALPHA_ADD;
+        expect(controller.drawColorPass(false)).toBe(true);
+        mesh.material!.alphaMode = Constants.ALPHA_COMBINE;
+        expect(controller.drawColorPass(false)).toBe(false);
+        postProcess.width = 96;
+        expect(controller.drawColorPass(false)).toBe(false);
+        postProcess.height = 80;
+        expect(controller.drawColorPass(false)).toBe(true);
+        scene.postProcessesEnabled = false;
+        expect(controller.drawColorPass(false)).toBe(false);
+        depth.getDepthMap().resize(128);
+        expect(controller.drawColorPass(false)).toBe(true);
         await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
         scene.dispose();
         engine.dispose();

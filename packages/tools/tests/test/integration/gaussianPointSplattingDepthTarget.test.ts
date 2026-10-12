@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 import { evaluateInitEngineForVisualization } from "../playwright/visualizationPlaywright.utils";
 
-test("WebGPU point depth preserves full-resolution pixel metrics with a half-resolution post-process", async ({ page }) => {
+test("WebGPU mismatched point targets preserve depth pixel metrics and translucent color convergence", async ({ page }) => {
     const config = getGlobalConfig();
     await page.goto(config.baseUrl + "/empty.html", { timeout: 0 });
     await page.waitForSelector("#babylon-canvas");
@@ -81,9 +81,50 @@ test("WebGPU point depth preserves full-resolution pixel metrics with a half-res
         const point = await countDepth();
         const depthWidth = controller["_computedWidth"];
         const depthHeight = controller["_computedHeight"];
+        material.minPixelSize = 0;
+        material.alpha = 0.5;
         mesh.pointSplattingRenderMode = true;
+        let depthFallbacks = 0;
+        let pointDepthPasses = 0;
+        mesh.onBeforeRenderObservable.add(() => {
+            if (engine.currentRenderPassId === depthMap.renderPassId) {
+                if (controller.handlesCurrentPass) {
+                    pointDepthPasses++;
+                } else {
+                    depthFallbacks++;
+                }
+            }
+        });
         for (let frame = 0; frame < 30; frame++) {
             await render();
+        }
+        const renderer = controller["_renderer"]!;
+        const accumulation = renderer.accumBuffer;
+        const hiZ = renderer["_hiZ"];
+        const hiZUniform = renderer["_hiZBuildParams"][0];
+        const readSampleCount = async () => {
+            const bytes = await renderer["_accumCount"]!.read((32 * 64 + 32) * 4, 4, undefined, true);
+            // Resolve packs the accumulation generation above the 16-bit sample count.
+            return new Uint32Array(bytes.buffer, bytes.byteOffset, 1)[0] & 0xffff;
+        };
+        const initialSamples = await readSampleCount();
+        const initialGeneration = mesh.pointSplattingProgress!.accumulationVersion;
+        const initialFrames = mesh.pointSplattingProgress!.renderedFrameCount;
+        const generations: number[] = [];
+        for (let frame = 0; frame < 30; frame++) {
+            await render();
+            generations.push(mesh.pointSplattingProgress!.accumulationVersion);
+        }
+        const finalSamples = await readSampleCount();
+        const finalFrames = mesh.pointSplattingProgress!.renderedFrameCount;
+        const buffersReused = accumulation === renderer.accumBuffer && hiZ === renderer["_hiZ"] && hiZUniform === renderer["_hiZBuildParams"][0];
+        engine.beginFrame();
+        scene.render();
+        engine.endFrame();
+        const colorPixels = await engine.readPixels(0, 0, 128, 128);
+        let visibleColor = 0;
+        for (let index = 0; index < colorPixels.byteLength; index += 4) {
+            visibleColor = Math.max(visibleColor, colorPixels[index]);
         }
         const both = await countDepth();
         const colorWidth = controller["_computedWidth"];
@@ -95,7 +136,29 @@ test("WebGPU point depth preserves full-resolution pixel metrics with a half-res
         scene.dispose();
         engine.dispose();
         window.engine = null;
-        return { classic, halfClassic, point, both, depthWidth, depthHeight, colorWidth, postWidth, postHeight, mapWidth, mapHeight };
+        return {
+            classic,
+            halfClassic,
+            point,
+            both,
+            depthWidth,
+            depthHeight,
+            colorWidth,
+            postWidth,
+            postHeight,
+            mapWidth,
+            mapHeight,
+            depthFallbacks,
+            pointDepthPasses,
+            initialSamples,
+            finalSamples,
+            initialGeneration,
+            generations,
+            initialFrames,
+            finalFrames,
+            buffersReused,
+            visibleColor,
+        };
     });
     expect(result.postWidth).toBe(64);
     expect(result.postHeight).toBe(64);
@@ -108,4 +171,13 @@ test("WebGPU point depth preserves full-resolution pixel metrics with a half-res
     expect(result.halfClassic).toBe(0);
     expect(result.point).toBeGreaterThan(0);
     expect(result.both).toBeGreaterThan(0);
+    expect(result.depthFallbacks).toBeGreaterThanOrEqual(60);
+    expect(result.pointDepthPasses).toBe(0);
+    expect(result.generations).toEqual(new Array(30).fill(result.initialGeneration));
+    expect(result.initialSamples).toBeGreaterThan(1);
+    expect(result.finalSamples - result.initialSamples).toBe(30);
+    expect(result.finalFrames - result.initialFrames).toBe(30);
+    expect(result.buffersReused).toBe(true);
+    expect(result.visibleColor).toBeGreaterThan(20);
+    expect(result.visibleColor).toBeLessThan(240);
 });
