@@ -7,6 +7,7 @@ import { GaussianSplattingSolidColorMaterialPlugin } from "core/Materials/Gaussi
 import { GaussianSplattingSizeMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSizeMaterialPlugin";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { Material } from "core/Materials/material";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
@@ -1336,6 +1337,42 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
             mesh.material!.alphaMode = Constants.ALPHA_COMBINE;
             expect(controller.drawColorPass(true)).toBe(true);
             mesh.material!.alphaMode = alphaMode;
+            expect(controller.drawColorPass(true)).toBe(false);
+            await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+            scene.dispose();
+            engine.dispose();
+        }
+    );
+
+    it.each([Material.MATERIAL_OPAQUE, Material.MATERIAL_ALPHATEST, Material.MATERIAL_ALPHATESTANDBLEND])(
+        "falls back for incompatible transparency mode (%s) and reevaluates changes without disabling point depth",
+        async (transparencyMode) => {
+            const engine = new NullEngine();
+            const scene = new Scene(engine);
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            const mesh = new GaussianSplattingMesh("splat", null, scene);
+            const material = mesh.material!;
+            const controller = CreateController(mesh);
+            const depth = scene.enableDepthRenderer(camera);
+            controller["_colorMode"] = true;
+            controller["_depthMode"] = true;
+            controller["_runCompute"] = vi.fn();
+            material.alpha = 0.5;
+            mesh.visibility = 0.5;
+            material.transparencyMode = transparencyMode;
+            engine.currentRenderPassId = camera.renderPassId;
+            expect(material.alphaMode).toBe(Constants.ALPHA_COMBINE);
+            expect(controller.drawColorPass(true)).toBe(false);
+            engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+            expect(controller.drawColorPass(false)).toBe(true);
+            engine.currentRenderPassId = camera.renderPassId;
+            material.transparencyMode = null;
+            expect(controller.drawColorPass(true)).toBe(true);
+            material.transparencyMode = transparencyMode;
+            expect(controller.drawColorPass(true)).toBe(false);
+            material.transparencyMode = Material.MATERIAL_ALPHABLEND;
+            expect(controller.drawColorPass(true)).toBe(true);
+            material.transparencyMode = transparencyMode;
             expect(controller.drawColorPass(true)).toBe(false);
             await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
             scene.dispose();

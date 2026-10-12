@@ -1088,6 +1088,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._colorMode &&
             fullViewport &&
             this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE &&
+            this._mesh.material.needAlphaBlendingForMesh(this._mesh) &&
+            !this._mesh.material.needAlphaTestingForMesh(this._mesh) &&
             // Custom source shaders, including subclass overrides and NodeMaterial graphs, are not evaluated by compute.
             this._mesh.material.constructor === GaussianSplattingMaterial &&
             !solidColor?.isEnabled &&
