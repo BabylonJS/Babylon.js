@@ -7,6 +7,7 @@ import { Vector3 } from "core/Maths/math.vector.pure";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { type FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { type FlowGraphSetDelayBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSetDelayBlock.pure";
 import { IsDelayActive } from "core/FlowGraph/flowGraphDelayRegistry";
@@ -83,6 +84,61 @@ describe("KHR_interactivity October conformance", () => {
         expect(node.position).toEqual(new Vector3(4, 5, 6));
         expect(context.getVariable("staticVariable_0")).toEqual(new Vector3(1, 2, 3));
         expect(log).toHaveBeenCalledWith("after both writes");
+    });
+
+    it.each(["float", "int"])("evaluates all variable/set inputs before writing %s variables", async (signature) => {
+        const { coordinator, context } = await runtime({
+            types: [{ signature }],
+            variables: [
+                { type: 0, value: [1] },
+                { type: 0, value: [2] },
+            ],
+            declarations: [{ op: "event/onStart" }, { op: "variable/set" }, { op: "variable/get" }],
+            nodes: [
+                { declaration: 2, configuration: { variable: { value: [0] } } },
+                { declaration: 2, configuration: { variable: { value: [1] } } },
+                { declaration: 0, flows: { out: { node: 3 } } },
+                {
+                    declaration: 1,
+                    configuration: { variables: { value: [0, 1] } },
+                    values: { "0": { node: 1 }, "1": { node: 0 } },
+                },
+            ],
+        });
+        coordinator.start();
+        expect(context.getVariable("staticVariable_0")).toEqual(signature === "int" ? new FlowGraphInteger(2) : 2);
+        expect(context.getVariable("staticVariable_1")).toEqual(signature === "int" ? new FlowGraphInteger(1) : 1);
+    });
+
+    it("reads and writes weights of a node outside the scene in a strict graph", async () => {
+        const { coordinator, context } = await runtime(
+            {
+                types: [{ signature: "float" }],
+                variables: [{ type: 0 }],
+                declarations: [{ op: "event/onStart" }, { op: "pointer/set" }, { op: "pointer/get" }, { op: "variable/set" }],
+                nodes: [
+                    { declaration: 0, flows: { out: { node: 1 } } },
+                    {
+                        declaration: 1,
+                        configuration: { pointer: { value: ["/nodes/0/weights/0"] }, type: { value: [0] } },
+                        values: { value: { type: 0, value: [42] } },
+                        flows: { out: { node: 3 } },
+                    },
+                    { declaration: 2, configuration: { pointer: { value: ["/nodes/0/weights/0"] }, type: { value: [0] } } },
+                    { declaration: 3, configuration: { variables: { value: [0] } }, values: { "0": { node: 2 } } },
+                ],
+            },
+            {
+                nodes: [{ index: 0, mesh: 0, weights: [10] }],
+                meshes: [{ index: 0, primitives: [{ attributes: { POSITION: 0 }, targets: [{ POSITION: 0 }] }] }],
+                scenes: [{ index: 0, nodes: [] }],
+                scene: 0,
+            }
+        );
+        coordinator.start();
+        expect(context.getVariable("staticVariable_0")).toBe(42);
+        expect(scene.meshes).toHaveLength(0);
+        expect(scene.transformNodes).toHaveLength(0);
     });
 
     it.each([

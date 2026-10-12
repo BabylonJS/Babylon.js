@@ -19,9 +19,12 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
     variable?: string;
 
     /**
-     * The name of the variables to set.
+     * The names of the variables to set.
      */
     variables?: string[];
+
+    /** Whether all input values are evaluated before any variable is written. Defaults to false. */
+    evaluateInputsBeforeWrite?: boolean;
 
     /** Whether writes cancel animations targeting the user-variable dictionary without firing done. Defaults to false. */
     cancelVariableAnimations?: boolean;
@@ -49,16 +52,18 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
 
     public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         if (this.config?.variables) {
-            for (const variable of this.config.variables) {
-                this._saveVariable(context, variable);
+            const variables: string[] = this.config.variables;
+            const values = this.config.evaluateInputsBeforeWrite ? variables.map((variable) => this.getDataInput(variable)?.getValue(context)) : undefined;
+            for (let i = 0; i < variables.length; i++) {
+                this._saveVariable(context, variables[i], () => (values ? values[i] : this.getDataInput(variables[i])?.getValue(context)));
             }
         } else {
-            this._saveVariable(context, this.config?.variable, "value");
+            this._saveVariable(context, this.config?.variable, () => this.getDataInput("value")?.getValue(context));
         }
         this.out._activateSignal(context);
     }
 
-    private _saveVariable(context: FlowGraphContext, variableName: string, inputName?: string): void {
+    private _saveVariable(context: FlowGraphContext, variableName: string, getValue: () => T): void {
         // check if there is an animation(group) running on this variable. If there is, stop the animation - a value was force-set.
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         for (const animationUniqueId of currentlyRunningAnimationGroups) {
@@ -90,8 +95,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                 }
             }
         }
-        const value = this.getDataInput(inputName || variableName)?.getValue(context);
-        context.setVariable(variableName, value);
+        context.setVariable(variableName, getValue());
     }
 
     public override getClassName(): string {

@@ -15,6 +15,8 @@ import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { type IGLTF } from "loaders/glTF/2.0/glTFLoaderInterfaces";
 
 /**
  * These tests will check the connection between interactivity's object model and pointers to the flow graph.
@@ -594,6 +596,47 @@ describe("glTF interactivity Object Model", () => {
 
         expect(log).toHaveBeenCalledWith(0.9);
         expect(manager.getTarget(0).influence).toBe(0.9);
+    });
+
+    it.each([
+        { nodeWeights: [0.6, 0.2], meshWeights: [0.1, 0.3], expected: [0.6, 0.2] },
+        { nodeWeights: undefined, meshWeights: [0.1, 0.3], expected: [0.1, 0.3] },
+        { nodeWeights: undefined, meshWeights: undefined, expected: [0, 0] },
+    ])("retains independent off-scene morph weights with defaults $expected", ({ nodeWeights, meshWeights, expected }) => {
+        const gltf: IGLTF = {
+            asset: { version: "2.0" },
+            nodes: [
+                { index: 0, mesh: 0, weights: nodeWeights },
+                { index: 1, mesh: 0 },
+            ],
+            meshes: [
+                {
+                    index: 0,
+                    weights: meshWeights,
+                    primitives: [{ attributes: { POSITION: 0 }, targets: [{ POSITION: 0 }, { POSITION: 0 }] }],
+                },
+            ],
+            scenes: [{ index: 0, nodes: [] }],
+            scene: 0,
+        };
+        const converter = GetPathToObjectConverter(gltf);
+        const length = converter.convert("/nodes/0/weights.length");
+        expect(length.info.get(length.object)).toEqual(new FlowGraphInteger(2));
+        const weights = converter.convert("/nodes/0/weights");
+        expect(weights.info.get(weights.object)).toEqual(expected);
+        const weight = converter.convert("/nodes/0/weights/1");
+        expect(weight.info.get(weight.object)).toBe(expected[1]);
+        weight.info.set!(0.9, weight.object);
+        expect(weight.info.get(weight.object)).toBe(0.9);
+        expect(weight.info.getTarget!(weight.object)).toEqual([expected[0], 0.9]);
+        expect(weight.info.getPropertyName![0](weight.object)).toBe("1");
+        const invalid = converter.convert("/nodes/0/weights/2");
+        expect(invalid.info.get(invalid.object)).toBeUndefined();
+        const other = converter.convert("/nodes/1/weights/1");
+        expect(other.info.get(other.object)).toBe(meshWeights?.[1] ?? 0);
+        const reimported = GetPathToObjectConverter(gltf).convert("/nodes/0/weights/1");
+        expect(reimported.info.get(reimported.object)).toBe(0.9);
+        expect(scene.meshes).toHaveLength(0);
     });
 
     // use variables to store the pointer

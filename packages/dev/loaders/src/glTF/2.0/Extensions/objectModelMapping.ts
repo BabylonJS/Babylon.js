@@ -89,12 +89,10 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
         weights: {
             /** When true, the path converter skips objectTree traversal for this property, keeping the parent target. */
             __passThroughTarget__?: boolean;
-            length: IObjectAccessor<GLTFTargetType, BabylonTargetType, FlowGraphInteger>;
-            // The per-element target alternates between TransformNode (when the index is
-            // out of range or no morph host is reachable) and MorphTarget (when it is),
-            // so we widen the BabylonTargetType to `any` here.
+            length: IObjectAccessor<GLTFTargetType, BabylonTargetType | number[] | undefined, FlowGraphInteger>;
+            // Scalar targets may be live MorphTargets or retained off-scene weight arrays.
             __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, any, number>;
-        } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
+        } & IObjectAccessor<GLTFTargetType, BabylonTargetType | number[], number[]>;
         extensions: {
             EXT_lights_ies?: {
                 multiplier: IObjectAccessor<INode, Light, number>;
@@ -469,15 +467,14 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             getPropertyName: [() => "scaling"],
         },
         weights: {
-            // Skip glTF objectTree traversal — weights may be undefined on the glTF node
-            // but accessible via the Babylon MorphTargetManager on the INode's meshes
+            // Weights may come from mesh defaults rather than an authored node property.
             __passThroughTarget__: true,
             length: _CreateLengthAccessor(
                 (node: INode) => {
                     const found = _findNodeMorphTargets(node);
-                    return found ? found.mtm.numTargets : node?.mesh !== undefined ? 0 : undefined;
+                    return found ? found.mtm.numTargets : node?.mesh !== undefined ? (node._morphTargetWeights?.length ?? 0) : undefined;
                 },
-                (node: INode) => node?._babylonTransformNode!
+                (node: INode) => node?._babylonTransformNode ?? node?._morphTargetWeights
             ),
             __array__: {
                 __target__: true,
@@ -487,12 +484,20 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                     if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
                         return _roundFloat32Artifact(found.mtm.getTarget(index).influence);
                     }
+                    if (!found && index !== undefined) {
+                        return node?._morphTargetWeights?.[index];
+                    }
                     return undefined;
                 },
                 set: (value: any, node: INode, index?: number) => {
                     const numValue = typeof value === "number" ? value : typeof value?.value === "number" ? value.value : value;
                     const found = _findNodeMorphTargets(node);
-                    if (!found || index === undefined || index < 0 || index >= found.mtm.numTargets) {
+                    const count = found?.mtm.numTargets ?? node?._morphTargetWeights?.length ?? 0;
+                    if (index === undefined || index < 0 || index >= count) {
+                        return;
+                    }
+                    if (!found) {
+                        node._morphTargetWeights![index] = numValue;
                         return;
                     }
                     // Fan out to every mesh that shares this morph target manager so
@@ -509,15 +514,15 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                     if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
                         return found.mtm.getTarget(index);
                     }
-                    return node?._babylonTransformNode;
+                    return node?._babylonTransformNode ?? node?._morphTargetWeights;
                 },
-                getPropertyName: [() => "influence"],
+                getPropertyName: [(node: INode, index?: number) => (_findNodeMorphTargets(node) ? "influence" : String(index))],
             },
             type: "number[]",
             get: (node: INode) => {
                 const found = _findNodeMorphTargets(node);
                 if (!found) {
-                    return [];
+                    return node?._morphTargetWeights?.slice() ?? [];
                 }
                 const weights: number[] = [];
                 for (let i = 0; i < found.mtm.numTargets; i++) {
@@ -525,7 +530,7 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 }
                 return weights;
             },
-            getTarget: (node: INode) => node?._babylonTransformNode,
+            getTarget: (node: INode) => node?._babylonTransformNode ?? node?._morphTargetWeights,
             getPropertyName: [() => "influence"],
         },
         // readonly!
@@ -1746,6 +1751,17 @@ function _cloneObjectModelMapping<T>(value: T): T {
  * @returns a path-to-object converter for the given glTF tree
  */
 export function GetPathToObjectConverter(gltf: IGLTF, configure?: (mapping: object) => void) {
+    // Off-scene nodes have no Babylon meshes, but their weights remain part of the object model.
+    for (const node of gltf?.nodes ?? []) {
+        if (node._babylonTransformNode || node.mesh === undefined || node._morphTargetWeights) {
+            continue;
+        }
+        const mesh = gltf.meshes?.[node.mesh];
+        if (mesh) {
+            const count = mesh.primitives[0]?.targets?.length ?? 0;
+            node._morphTargetWeights = Array.from({ length: count }, (_, index) => node.weights?.[index] ?? mesh.weights?.[index] ?? 0);
+        }
+    }
     if (!configure) {
         return new GLTFPathToObjectConverter(gltf, objectModelMapping);
     }

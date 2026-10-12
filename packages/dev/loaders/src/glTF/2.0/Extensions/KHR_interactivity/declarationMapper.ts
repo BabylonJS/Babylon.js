@@ -1790,10 +1790,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, parser, serializedObjects) {
-            // variable/get configuration
-            const serializedGetVariable = serializedObjects[0];
-            serializedGetVariable.config.cancelVariableAnimations = true;
-            serializedGetVariable.dataInputs.forEach((input) => {
+            const serializedSetVariable = serializedObjects[0];
+            serializedSetVariable.config.cancelVariableAnimations = true;
+            serializedSetVariable.config.evaluateInputsBeforeWrite = true;
+            serializedSetVariable.dataInputs.forEach((input) => {
                 input.name = parser.getVariableName(+input.name);
             });
 
