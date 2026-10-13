@@ -5,6 +5,9 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin";
 import { GaussianSplattingSolidColorMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin";
 import { GaussianSplattingSizeMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSizeMaterialPlugin";
+import { GaussianSplattingOverdrawMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingOverdrawMaterialPlugin";
+import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin";
+import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { Material } from "core/Materials/material";
@@ -1444,6 +1447,77 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
             engine.currentRenderPassId = camera.renderPassId;
             expect(controller.drawColorPass(true)).toBe(true);
         }
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it.each(["custom", "spoofed debug name", "debug subclass", "picking"])("reevaluates late %s plugins without disabling point depth", async (kind) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const source = mesh.material as GaussianSplattingMaterial;
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_runCompute"] = vi.fn();
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(true);
+        if (kind === "debug subclass") {
+            class CustomDebugPlugin extends GaussianSplattingDebugMaterialPlugin {}
+            new CustomDebugPlugin(source);
+        } else if (kind === "picking") {
+            new GaussianSplattingGpuPickingMaterialPlugin(source);
+        } else {
+            new MaterialPluginBase(source, kind === "spoofed debug name" ? "GaussianSplattingDebug" : "CustomColor", 200);
+        }
+        expect(source.constructor).toBe(GaussianSplattingMaterial);
+        expect(controller.drawColorPass(true)).toBe(false);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(true);
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it.each(["debug", "solid color", "projected size", "overdraw"])("supports only reproducible or disabled neutral %s plugin behavior", async (kind) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const source = mesh.material as GaussianSplattingMaterial;
+        const plugin =
+            kind === "debug"
+                ? new GaussianSplattingDebugMaterialPlugin(source)
+                : kind === "solid color"
+                  ? new GaussianSplattingSolidColorMaterialPlugin(source)
+                  : kind === "projected size"
+                    ? new GaussianSplattingSizeMaterialPlugin(source)
+                    : new GaussianSplattingOverdrawMaterialPlugin(source);
+        const setEnabled = (enabled: boolean) => {
+            if (plugin instanceof GaussianSplattingDebugMaterialPlugin) {
+                plugin.opacityScale = enabled ? 0.5 : 1;
+            } else {
+                plugin.isEnabled = enabled;
+            }
+        };
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_runCompute"] = vi.fn();
+        engine.currentRenderPassId = camera.renderPassId;
+        setEnabled(false);
+        expect(controller.drawColorPass(true)).toBe(true);
+        setEnabled(true);
+        expect(controller.drawColorPass(true)).toBe(kind === "debug");
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(true);
+        setEnabled(false);
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(true);
         await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
         scene.dispose();
         engine.dispose();

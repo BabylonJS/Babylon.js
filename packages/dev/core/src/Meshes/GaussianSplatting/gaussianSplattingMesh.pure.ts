@@ -663,8 +663,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * while the GaussianSplattingSolidColorMaterialPlugin override is enabled or the source material's
      * alpha mode is not ALPHA_COMBINE. Point color supports only the built-in GaussianSplattingMaterial;
      * NodeMaterials, subclasses, and other source materials use classic color to preserve their shader behavior.
+     * Custom material plugins and built-in visualization or picking plugins use classic color unless their
+     * behavior is explicitly reproduced or they are known neutral while disabled. The built-in debug plugin is supported.
      * The source must require alpha blending without alpha testing; opaque and alpha-test transparency modes use classic color.
-     * Material compatibility is reevaluated each draw, including after material replacement. WebGPU only.
+     * Material compatibility is reevaluated each draw, including after material replacement or plugin attachment. WebGPU only.
      *
      * Limitation: each pixel's accumulated color is depth-tested as a whole against its latest sample's depth. Where
      * other geometry intersects the splats, occluded splats can bleed through or visible ones drop out, and the

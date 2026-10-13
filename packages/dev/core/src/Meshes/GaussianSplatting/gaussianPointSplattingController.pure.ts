@@ -16,9 +16,10 @@ import { ToHalfFloat } from "core/Misc/textureTools";
 import { GaussianPointSplattingRenderer, _GetPackedShBytesPerSplat, _HasGaussianPointSplattingProjectedDepth } from "./gaussianPointSplattingRenderer.pure";
 import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.pure";
 import { GaussianPointSplattingDepthBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.pure";
-import { type GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
-import { type GaussianSplattingSolidColorMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin.pure";
-import { type GaussianSplattingSizeMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSizeMaterialPlugin.pure";
+import { GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
+import { GaussianSplattingSolidColorMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSolidColorMaterialPlugin.pure";
+import { GaussianSplattingSizeMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingSizeMaterialPlugin.pure";
+import { GaussianSplattingOverdrawMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingOverdrawMaterialPlugin.pure";
 import { RegisterEnginesWebGPUExtensionsEngineComputeShader } from "core/Engines/WebGPU/Extensions/engine.computeShader.pure";
 import {
     _SetGaussianPointSplattingControllerFactory,
@@ -583,8 +584,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         // The classic material multiplies every splat's opacity by material.alpha.
         const alpha = this._mesh.material?.alpha ?? 1;
 
-        const plugin = this._mesh.material?.pluginManager?.getPlugin("GaussianSplattingDebug") as Nullable<GaussianSplattingDebugMaterialPlugin>;
-        const debugActive = !!plugin && plugin.isDebugActive;
+        const plugin = this._mesh.material?.pluginManager?.getPlugin("GaussianSplattingDebug");
+        const pluginType = plugin?.constructor;
+        const debugActive = plugin instanceof GaussianSplattingDebugMaterialPlugin && pluginType === GaussianSplattingDebugMaterialPlugin && plugin.isDebugActive;
         let lut: Nullable<Float32Array> = null;
         let lutStride = 0;
         if (plugin && debugActive) {
@@ -1106,6 +1108,30 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer?.resetAccumulation();
     }
 
+    /**
+     * Checks only plugin implementations whose enabled behavior is reproduced, or whose disabled behavior is neutral.
+     * @returns whether the source material's plugins are compatible with point color
+     */
+    private _supportsSourceMaterialPlugins(): boolean {
+        const plugins = this._mesh.material?.pluginManager?._plugins;
+        if (!plugins) {
+            return true;
+        }
+        for (const plugin of plugins) {
+            const pluginType = plugin.constructor;
+            if (
+                (pluginType === GaussianSplattingDebugMaterialPlugin && plugin instanceof GaussianSplattingDebugMaterialPlugin) ||
+                (pluginType === GaussianSplattingSolidColorMaterialPlugin && plugin instanceof GaussianSplattingSolidColorMaterialPlugin && !plugin.isEnabled) ||
+                (pluginType === GaussianSplattingSizeMaterialPlugin && plugin instanceof GaussianSplattingSizeMaterialPlugin && !plugin.isEnabled) ||
+                (pluginType === GaussianSplattingOverdrawMaterialPlugin && plugin instanceof GaussianSplattingOverdrawMaterialPlugin && !plugin.isEnabled)
+            ) {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
     /** {@inheritDoc IGaussianPointSplattingController.handlesCurrentPass} */
     public get handlesCurrentPass(): boolean {
         const passMaterial = this._mesh.getMaterialForRenderPass(this._scene.getEngine().currentRenderPassId);
@@ -1118,8 +1144,6 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         if (passMaterial && !depthRenderer?._isGaussianSplattingDepthMaterial(passMaterial)) {
             return false;
         }
-        const solidColor = this._mesh.material?.pluginManager?.getPlugin("GaussianSplatSolidColor") as Nullable<GaussianSplattingSolidColorMaterialPlugin>;
-        const projectedSize = this._mesh.material?.pluginManager?.getPlugin("GaussianSplattingSize") as Nullable<GaussianSplattingSizeMaterialPlugin>;
         const fog = this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this._mesh.applyFog && !!this._mesh.material?.fogEnabled;
         const colorSupported =
             this._colorMode &&
@@ -1129,8 +1153,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             !this._mesh.material.needAlphaTestingForMesh(this._mesh) &&
             // Custom source shaders, including subclass overrides and NodeMaterial graphs, are not evaluated by compute.
             this._mesh.material.constructor === GaussianSplattingMaterial &&
-            !solidColor?.isEnabled &&
-            !projectedSize?.isEnabled &&
+            this._supportsSourceMaterialPlugins() &&
             !fog;
         if (depthPass && depthRenderer && colorSupported) {
             const depthMap = depthRenderer.getDepthMap();
