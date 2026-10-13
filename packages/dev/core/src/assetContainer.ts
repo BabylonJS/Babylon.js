@@ -253,6 +253,7 @@ export class InstantiatedEntries {
 export class AssetContainer extends AbstractAssetContainer {
     private _wasAddedToScene = false;
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
+    private _onSceneDisposedObserver: Nullable<Observer<Scene>>;
 
     /**
      * The scene the AssetContainer belongs to.
@@ -272,7 +273,7 @@ export class AssetContainer extends AbstractAssetContainer {
         this.scene = scene;
         this["proceduralTextures"] = [];
 
-        scene.onDisposeObservable.add(() => {
+        this._onSceneDisposedObserver = scene.onDisposeObservable.add(() => {
             if (!this._wasAddedToScene) {
                 this.dispose();
             }
@@ -1093,6 +1094,11 @@ export class AssetContainer extends AbstractAssetContainer {
         if (this._onContextRestoredObserver) {
             this.scene.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
             this._onContextRestoredObserver = null;
+        }
+
+        if (this._onSceneDisposedObserver) {
+            this.scene.onDisposeObservable.remove(this._onSceneDisposedObserver);
+            this._onSceneDisposedObserver = null;
         }
     }
 
