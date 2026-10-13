@@ -524,6 +524,74 @@ jobs:
                 failTaskOnFailedTests: true
 
     # ============================================================================
+    # DEPENDENCY COMPATIBILITY
+    # Exercise both supported Node minimums on Windows, plus Node 22 on Linux.
+    # The regular build and unit jobs cover Node 24 on Linux.
+    # ============================================================================
+    - job: DependencyCompatibility
+      displayName: "Node and Windows dependency compatibility"
+      dependsOn:
+          - FormatLint
+      strategy:
+          matrix:
+              WindowsNode22:
+                  vmImage: "windows-latest"
+                  NodeVersion: "22.22.2"
+              WindowsNode24:
+                  vmImage: "windows-latest"
+                  NodeVersion: "24.15.0"
+              LinuxNode22:
+                  vmImage: "ubuntu-latest"
+                  NodeVersion: "22.22.2"
+      pool:
+          vmImage: $(vmImage)
+      steps:
+          - template: templates/checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node $(NodeVersion)"
+            inputs:
+                version: $(NodeVersion)
+
+          - script: npx --yes npm@11.18.0 install --global npm@11.18.0
+            displayName: "Use npm 11.18.0"
+
+          - template: templates/cache-steps.yml
+
+          - script: npm ci
+            displayName: "Install locked dependencies"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: npm run build:source
+            displayName: "Build development packages"
+
+          - script: npm run test:unit -- --maxWorkers=2
+            displayName: "Unit tests"
+            env:
+                CI: "true"
+
+          - script: npm run build:umd:libs -- --maxParallel=2
+            displayName: "Build UMD libraries with Nx and Rollup"
+            env:
+                NX_DAEMON: "false"
+
+          - script: npm run build -w @tools/nme-mcp-server
+            displayName: "Build an ESM MCP server"
+
+          - script: npm run bundle:analyze -w @tools/viewer
+            displayName: "Build viewer analysis bundle"
+
+          - task: PublishTestResults@2
+            displayName: "Publish compatibility test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./junit.xml"
+                failTaskOnFailedTests: true
+
+    # ============================================================================
     # UNIT TESTS
     # Depends on: FormatLint (fail-fast gate only).
     # Intentionally does NOT depend on Build: the unit suite runs in-process

@@ -25,6 +25,7 @@ import { Tools } from "../Misc/tools.pure";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
 import { AbstractEngine, type ISceneLike, type AbstractEngineOptions } from "./abstractEngine.pure";
+import { EngineStore } from "./engineStore";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -4128,6 +4129,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         _CommonDispose(this, this._renderingCanvas);
 
         super.dispose();
+
+        // If this was the last WebGPU engine, reset the static caches shared by all WebGPU engines
+        if (!EngineStore.Instances.some((engine) => engine.isWebGPU)) {
+            WebGPUCacheRenderPipelineTree.ResetCache();
+            WebGPUCacheBindGroups.ResetCache();
+        }
     }
 
     //------------------------------------------------------------------------------

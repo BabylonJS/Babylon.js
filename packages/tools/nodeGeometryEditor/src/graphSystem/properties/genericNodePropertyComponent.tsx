@@ -15,6 +15,7 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import { type IEditablePropertyListOption, PropertyTypeForEdition, GetEditableProperties, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
+import { TeleportInPropertyComponent } from "shared-ui-components/nodeGraphSystem/teleportInPropertyComponent";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -112,6 +113,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         throttlePropertyChangedNotification={true}
                     />
                     {<TextLineComponent label="Build execution time" value={`${block.buildExecutionTime.toFixed(2)} ms`} />}
+                    {this.props.nodeData.invisibleEndpoints && <TeleportInPropertyComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />}
                 </LineContainerComponent>
                 {nonConnectedInputs.filter(
                     (p) => projectedProperties.indexOf(p.type) === -1 && (!p._defaultConnectionPointType || projectedProperties.indexOf(p._defaultConnectionPointType) !== -1)

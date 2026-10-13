@@ -16,6 +16,7 @@ import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProp
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { TeleportInPropertyComponent } from "shared-ui-components/nodeGraphSystem/teleportInPropertyComponent";
 
 export class DefaultPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -42,6 +43,7 @@ export function GetGeneralProperties(props: IPropertyComponentProps) {
     return (
         <LineContainerComponent title="GENERAL">
             <GeneralPropertiesContent stateManager={props.stateManager} nodeData={props.nodeData} />
+            {props.nodeData.invisibleEndpoints && <TeleportInPropertyComponent stateManager={props.stateManager} nodeData={props.nodeData} />}
         </LineContainerComponent>
     );
 }

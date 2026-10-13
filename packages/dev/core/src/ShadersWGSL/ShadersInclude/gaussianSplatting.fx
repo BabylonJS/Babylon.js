@@ -548,6 +548,8 @@ fn gaussianSplatting(
     let majorAxis = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     let minorAxis = min(sqrt(2.0 * lambda2), 1024.0) * vec2<f32>(diagonalVector.y, -diagonalVector.x);
 
+#define CUSTOM_GAUSSIAN_SPLAT_PROJECTED_SIZE
+
     let vCenter = vec2<f32>(pos2d.x, pos2d.y);
     
     // For ortho projection, pos2d.w is 1.0r

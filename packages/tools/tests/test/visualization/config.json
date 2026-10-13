@@ -91,6 +91,18 @@
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
         },
         {
+            "title": "Gaussian Splatting Projected Size",
+            "playgroundId": "#8FOB3C#0",
+            "referenceImage": "gsplat-debug-projected-size.png",
+            "dependsOn": ["GaussianSplatting", "Materials", "Loaders", "SPLATLoader"]
+        },
+        {
+            "title": "Gaussian Splatting Overdraw",
+            "playgroundId": "#D4U720#1",
+            "referenceImage": "gsplat-debug-overdraw.png",
+            "dependsOn": ["GaussianSplatting", "Materials", "Loaders", "SPLATLoader"]
+        },
+        {
             "title": "Gaussian Splatting SPZ SH No WASM",
             "playgroundId": "##XSNFXP#12",
             "referenceImage": "gsplat-spz-sh.png",
