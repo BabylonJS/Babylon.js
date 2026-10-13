@@ -254,16 +254,13 @@ export class SmartFilterEditorControl {
 
         // Close the popup window when the page is refreshed or scene is disposed
         if (globalState.smartFilter && this._PopupWindow) {
-            GetDisposeObservable(options.engine)?.addOnce(() => {
-                if (this._PopupWindow) {
-                    this._PopupWindow.close();
-                }
+            const popupWindow = this._PopupWindow;
+            const closePopup = () => popupWindow.close();
+            GetDisposeObservable(options.engine)?.addOnce(closePopup);
+            window.addEventListener("beforeunload", closePopup);
+            globalState.onPopupClosedObservable.addOnce(() => {
+                window.removeEventListener("beforeunload", closePopup);
             });
-            window.onbeforeunload = () => {
-                if (this._PopupWindow) {
-                    this._PopupWindow.close();
-                }
-            };
         }
     }
 
