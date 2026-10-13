@@ -1013,14 +1013,14 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /**
      * True when the frame renders a view the point path cannot reproduce: several active cameras, rig
-     * cameras (stereo, XR, multiview), unsupported projection clipping intervals, or scene/material clip planes.
+     * cameras (stereo, XR, multiview), floating origin, unsupported projection clipping intervals, or scene/material clip planes.
      * The classic path renders those instead.
      * @returns whether point splatting must fall back to the classic path this frame
      */
     private _hasUnsupportedView(): boolean {
         const scene = this._scene;
         const camera = scene.activeCamera;
-        if (!camera) {
+        if (!camera || scene.floatingOriginMode) {
             return true;
         }
         const projection = camera.getProjectionMatrix();

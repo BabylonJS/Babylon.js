@@ -1055,6 +1055,29 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it.each(["engine", "scene"])("uses classic color and depth for %s-level floating origin", async (mode) => {
+        const engine = new NullEngine();
+        engine.getCreationOptions().useLargeWorldRendering = mode === "engine";
+        const scene = new Scene(engine, { useFloatingOrigin: mode === "scene" });
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -3), scene);
+        camera.setTarget(Vector3.Zero());
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_runCompute"] = vi.fn();
+        expect(scene.floatingOriginMode).toBe(true);
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(false);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(false);
+        expect(controller["_runCompute"]).not.toHaveBeenCalled();
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("shares compatible passes and preserves color history across incompatible depth inputs", async () => {
         const engine = new NullEngine({ renderWidth: 400, renderHeight: 200 });
         const scene = new Scene(engine);

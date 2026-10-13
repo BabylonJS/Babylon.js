@@ -654,7 +654,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     /**
      * Whether the main color pass is rendered with the WebGPU compute point-splatting path instead of the
      * classic sorted quads. Off by default; other passes (shadows, picking, prepass) are unaffected. Falls
-     * back to the classic path for multiple or rig cameras, clip planes, and streamed parts.
+     * back to the classic path for multiple or rig cameras, floating-origin scenes, clip planes, and streamed parts.
      * Color rendering also falls back when the camera viewport does not cover the full target or projected-size visualization is enabled.
      * Clipping and depth quantization use the supplied projection's planes, including frozen projections.
      * Tilted and custom projections are supported by the point path. Compute runs immediately
@@ -693,7 +693,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     /**
      * Whether the active camera's DepthRenderer depth for this mesh comes from the point-splatting compute
      * (an opaque nearest-surface depth) instead of the classic path. Off by default and independent of
-     * {@link pointSplattingRenderMode}, with the same camera, clip-plane, data fallbacks and module requirement.
+     * {@link pointSplattingRenderMode}, with the same camera, floating-origin, clip-plane, data fallbacks and module requirement.
      * Color-only material fallbacks do not disable point depth. For partial camera viewports, point depth
      * requires a depth map with ignoreCameraViewport enabled. When point color is supported, depth maps
      * with different pixel dimensions use classic depth to preserve color accumulation.
