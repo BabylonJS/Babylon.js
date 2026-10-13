@@ -100,7 +100,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         const maxIterations = (this.config as IFlowGraphForLoopBlockConfiguration | undefined)?.maxLoopIterations ?? FlowGraphForLoopBlock.MaxLoopIterations;
         let iterations = 0;
         let truncated = false;
-        if (this.config?.incrementIndexWhenLoopDone) {
+        if (this.config?.incrementIndexWhenLoopDone && !(index < endIndex)) {
             this.index.setValue(new FlowGraphInteger(index), context);
         }
         for (let i = index; i < endIndex; i += step) {

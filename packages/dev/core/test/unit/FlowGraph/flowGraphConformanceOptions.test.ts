@@ -135,6 +135,21 @@ describe("FlowGraph optional execution semantics", () => {
         expect(block.index.getValue(context).value).toBe(incrementIndexWhenLoopDone ? 8 : 7);
     });
 
+    it.each([
+        [2, 5, [2, 3, 4, 5]],
+        [5, 2, [5]],
+        [3, 3, [3]],
+    ] as const)("notifies the opted-in loop index exactly once per assignment (%s..%s)", (start, end, expected) => {
+        const block = new FlowGraphForLoopBlock({ incrementIndexWhenLoopDone: true });
+        const notifications: number[] = [];
+        block.index.onValueChangedObservable.add((value) => notifications.push(value.value));
+        block.startIndex.setValue(start, context);
+        block.endIndex.setValue(end, context);
+        block._execute(context);
+        expect(notifications).toEqual(expected);
+        expect(block.index.getValue(context).value).toBe(expected[expected.length - 1]);
+    });
+
     it("keeps the incremented index on a nonempty opted-in loop", () => {
         const block = new FlowGraphForLoopBlock({ incrementIndexWhenLoopDone: true });
         block.startIndex.setValue(5, context);

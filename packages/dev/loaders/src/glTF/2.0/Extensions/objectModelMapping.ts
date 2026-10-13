@@ -32,6 +32,7 @@ import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { type AnimationGroup } from "core/Animations/animationGroup";
 import { type Mesh } from "core/Meshes/mesh";
 import { type RectAreaLight } from "core/Lights/rectAreaLight";
+import { type Camera } from "core/Cameras/camera";
 
 /**
  * Top-level shape of the glTF Object Model accessor tree. Each property
@@ -108,6 +109,7 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
 /**
  * Accessor tree describing the `/cameras` section of the glTF Object Model.
  * Exposes orthographic and perspective camera properties.
+ * Accessor inputs are glTF records; their runtime targets are Babylon cameras.
  */
 export interface IGLTFObjectModelTreeCamerasObject {
     /** Number of cameras in the array. */
@@ -115,16 +117,16 @@ export interface IGLTFObjectModelTreeCamerasObject {
     __array__: {
         __target__: boolean;
         orthographic: {
-            xmag: IObjectAccessor<ICamera, ICamera, Vector2>;
-            ymag: IObjectAccessor<ICamera, ICamera, Vector2>;
-            zfar: IObjectAccessor<ICamera, ICamera, number>;
-            znear: IObjectAccessor<ICamera, ICamera, number>;
+            xmag: IObjectAccessor<ICamera, Camera, Vector2>;
+            ymag: IObjectAccessor<ICamera, Camera, Vector2>;
+            zfar: IObjectAccessor<ICamera, Camera, number>;
+            znear: IObjectAccessor<ICamera, Camera, number>;
         };
         perspective: {
-            yfov: IObjectAccessor<ICamera, ICamera, number>;
-            zfar: IObjectAccessor<ICamera, ICamera, number>;
-            znear: IObjectAccessor<ICamera, ICamera, number>;
-            aspectRatio: IObjectAccessor<ICamera, ICamera, Nullable<number>>;
+            yfov: IObjectAccessor<ICamera, Camera, number>;
+            zfar: IObjectAccessor<ICamera, Camera, number>;
+            znear: IObjectAccessor<ICamera, Camera, number>;
+            aspectRatio: IObjectAccessor<ICamera, Camera, Nullable<number>>;
         };
     };
 }
@@ -494,7 +496,7 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                     const found = _findNodeMorphTargets(node);
                     const count = found?.mtm.numTargets ?? node?._morphTargetWeights?.length ?? 0;
                     if (index === undefined || index < 0 || index >= count) {
-                        return;
+                        throw new Error("Morph target weight index is out of range.");
                     }
                     if (!found) {
                         node._morphTargetWeights![index] = numValue;
@@ -734,7 +736,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.orthoRight = value.y;
                     }
                 },
-                getTarget: (camera) => camera,
+                getTarget: (camera) => camera._babylonCamera,
                 getPropertyName: [() => "orthoLeft", () => "orthoRight"],
             },
             ymag: {
@@ -747,7 +749,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.orthoTop = value.y;
                     }
                 },
-                getTarget: (camera) => camera,
+                getTarget: (camera) => camera._babylonCamera,
                 getPropertyName: [() => "orthoBottom", () => "orthoTop"],
             },
             zfar: {
@@ -758,7 +760,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.maxZ = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "maxZ"],
             },
             znear: {
@@ -769,7 +771,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.minZ = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "minZ"],
             },
         },
@@ -777,7 +779,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
             aspectRatio: {
                 type: "number",
                 get: (camera: ICamera) => camera._babylonCamera?.getEngine().getAspectRatio(camera._babylonCamera),
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "aspectRatio"],
                 isReadOnly: true, // might not be the case for glTF?
             },
@@ -789,7 +791,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.fov = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "fov"],
             },
             zfar: {
@@ -800,7 +802,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.maxZ = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "maxZ"],
             },
             znear: {
@@ -811,7 +813,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.minZ = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "minZ"],
             },
         },

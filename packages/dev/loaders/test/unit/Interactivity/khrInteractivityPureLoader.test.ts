@@ -15,16 +15,40 @@ import { registerBuiltInLoaders } from "../../../src/dynamic";
 import { GetKHRInteractivityImportResult, RegisterKHR_interactivity } from "../../../src/glTF/2.0/Extensions/KHR_interactivity.pure";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { DelayReferencePrefix } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityReferences";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 
-function asset(graph: IKHRInteractivity_Graph, extensionsUsed: string[] = ["KHR_interactivity"]): string {
+function asset(graph: IKHRInteractivity_Graph, extensionsUsed: string[] = ["KHR_interactivity"], contents: Record<string, unknown> = {}): string {
     return `data:${JSON.stringify({
         asset: { version: "2.0" },
         scenes: [{ nodes: [0] }],
         nodes: [{ translation: [0, 0, 0] }],
         scene: 0,
+        ...contents,
         extensionsUsed,
         extensions: { KHR_interactivity: { graphs: [graph] } },
     })}`;
+}
+
+function scalarInterpolation(pointer: string, value: number): IKHRInteractivity_Graph {
+    return {
+        types: [{ signature: "float" }, { signature: "float2" }],
+        declarations: [{ op: "event/onStart" }, { op: "pointer/interpolate" }, { op: "debug/log" }],
+        nodes: [
+            { declaration: 0, flows: { out: { node: 1 } } },
+            {
+                declaration: 1,
+                configuration: { pointer: { value: [pointer] }, type: { value: [0] } },
+                values: {
+                    value: { type: 0, value: [value] },
+                    duration: { type: 0, value: [1] },
+                    p1: { type: 1, value: [0, 0] },
+                    p2: { type: 1, value: [1, 1] },
+                },
+                flows: { err: { node: 2 } },
+            },
+            { declaration: 2, configuration: { severity: { value: [0] }, message: { value: ["interpolation error"] } } },
+        ],
+    };
 }
 
 describe("KHR_interactivity minimal public loader imports", () => {
@@ -129,6 +153,102 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(group.targetedAnimations[0].target.position.x).toBeGreaterThan(0);
         expect(group.targetedAnimations[0].target.position.x).toBeLessThan(3);
     }, 30000);
+
+    it.each([
+        ["metallicFactor", "metallic", "roughness", 0.2, 0.3],
+        ["roughnessFactor", "roughness", "metallic", 0.3, 0.2],
+    ] as const)("interpolates only the intended material scalar (%s)", async (pointerProperty, property, untouched, initial, otherInitial) => {
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(scalarInterpolation(`/materials/0/pbrMetallicRoughness/${pointerProperty}`, 0.8), ["KHR_interactivity"], {
+                scenes: [{ nodes: [] }],
+                materials: [{ name: "target material", pbrMetallicRoughness: { metallicFactor: 0.2, roughnessFactor: 0.3 } }],
+            }),
+            scene,
+            { pluginOptions: { gltf: { loadAllMaterials: true } } }
+        );
+        const material = scene.materials.find((material) => material.name === "target material");
+        expect(material).toBeInstanceOf(PBRMaterial);
+        if (!(material instanceof PBRMaterial)) {
+            throw new Error("Expected the loaded PBR material.");
+        }
+        const group = scene.animationGroups[0];
+        expect(group.targetedAnimations).toHaveLength(1);
+        expect(group.targetedAnimations[0].target).toBe(material);
+        expect(group.targetedAnimations[0].animation.targetProperty).toBe(property);
+        group.goToFrame(30);
+        expect(material[property]).toBeCloseTo((initial + 0.8) / 2);
+        expect(material[untouched]).toBeCloseTo(otherInitial);
+        group.goToFrame(60);
+        expect(material[property]).toBeCloseTo(0.8);
+        expect(material[untouched]).toBeCloseTo(otherInitial);
+        expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
+    it.each([
+        ["yfov", "fov", 0.6, 1.2],
+        ["znear", "minZ", 0.05, 0.2],
+        ["zfar", "maxZ", 80, 40],
+    ] as const)("interpolates the runtime camera rather than its glTF record (%s)", async (pointerProperty, property, initial, target) => {
+        await AppendSceneAsync(
+            asset(scalarInterpolation(`/cameras/0/perspective/${pointerProperty}`, target), ["KHR_interactivity"], {
+                nodes: [{ camera: 0 }],
+                cameras: [{ type: "perspective", perspective: { yfov: 0.6, znear: 0.05, zfar: 80 } }],
+            }),
+            scene
+        );
+        const cameraRecord = GetKHRInteractivityImportResult(scene)!.glTF.cameras![0];
+        const camera = cameraRecord._babylonCamera!;
+        const group = scene.animationGroups[0];
+        expect(group.targetedAnimations).toHaveLength(1);
+        expect(group.targetedAnimations[0].target).toBe(camera);
+        expect(group.targetedAnimations[0].target).not.toBe(cameraRecord);
+        expect(group.targetedAnimations[0].animation.targetProperty).toBe(property);
+        group.goToFrame(30);
+        expect(camera[property]).toBeCloseTo((initial + target) / 2);
+        group.goToFrame(60);
+        expect(camera[property]).toBeCloseTo(target);
+    });
+
+    it("routes an invalid off-scene morph-weight index to err without changing weights or activating out", async () => {
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(
+                {
+                    types: [{ signature: "float" }],
+                    variables: [{ type: 0, value: [-1] }],
+                    declarations: [{ op: "pointer/get" }, { op: "event/onStart" }, { op: "pointer/set" }, { op: "debug/log" }, { op: "variable/set" }],
+                    nodes: [
+                        { declaration: 0, configuration: { pointer: { value: ["/nodes/0/weights/0"] }, type: { value: [0] } } },
+                        { declaration: 1, flows: { out: { node: 2 } } },
+                        {
+                            declaration: 2,
+                            configuration: { pointer: { value: ["/nodes/0/weights/1"] }, type: { value: [0] } },
+                            values: { value: { type: 0, value: [0.9] } },
+                            flows: { err: { node: 3 }, out: { node: 4 } },
+                        },
+                        { declaration: 3, configuration: { severity: { value: [0] }, message: { value: ["err"] } }, flows: { out: { node: 5 } } },
+                        { declaration: 3, configuration: { severity: { value: [0] }, message: { value: ["out"] } } },
+                        { declaration: 4, configuration: { variables: { value: [0] } }, values: { "0": { node: 0 } } },
+                    ],
+                },
+                ["KHR_interactivity"],
+                {
+                    scenes: [{ nodes: [] }],
+                    nodes: [{ mesh: 0, weights: [0.25] }],
+                    meshes: [{ primitives: [{ attributes: {}, targets: [{}] }] }],
+                }
+            ),
+            scene
+        );
+        const result = GetKHRInteractivityImportResult(scene)!;
+        expect(result.glTF.nodes![0]._morphTargetWeights).toEqual([0.25]);
+        expect(result.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBe(0.25);
+        expect(log).toHaveBeenCalledWith("err");
+        expect(log).not.toHaveBeenCalledWith("out");
+        expect(result.glTF.nodes![0]._babylonTransformNode).toBeUndefined();
+        expect(result.glTF.nodes![0]._primitiveBabylonMeshes).toBeUndefined();
+    });
 
     it("keeps malformed inactive socket sources isolated from the selected graph", async () => {
         const log = vi.spyOn(Logger, "Log");

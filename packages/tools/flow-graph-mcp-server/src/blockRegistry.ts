@@ -423,6 +423,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         config: {
             variable: "string — the variable name to set (mutually exclusive with 'variables')",
             variables: "string[] — multiple variable names to set (creates one input per name)",
+            evaluateInputsBeforeWrite: "boolean — evaluate all inputs before any variable is written (default: false)",
             cancelVariableAnimations: "boolean — cancel animations targeting the user-variable dictionary without firing done (default: false)",
         },
     },
