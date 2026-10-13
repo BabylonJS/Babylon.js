@@ -5796,7 +5796,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
-     * This function works in left handed mode
+     * This function works in left handed mode, rotating local +Z to "forward" and local +Y to "up".
      * Example Playground https://playground.babylonjs.com/#L49EJ7#96
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -5810,7 +5810,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
-     * This function works in left handed mode
+     * This function works in left handed mode, rotating local +Z to "forward" and local +Y to "up".
      * Example Playground https://playground.babylonjs.com/#L49EJ7#97
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -5826,7 +5826,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
-     * This function works in right handed mode
+     * This function works in right handed mode, rotating local -Z to "forward" and local +Y to "up".
      * Example Playground https://playground.babylonjs.com/#L49EJ7#98
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -5840,7 +5840,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
-     * This function works in right handed mode
+     * This function works in right handed mode, rotating local -Z to "forward" and local +Y to "up".
      * Example Playground https://playground.babylonjs.com/#L49EJ7#105
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8115,8 +8115,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     }
 
     /**
-     * Creates a new matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
-     * This function generates a matrix suitable for a left handed coordinate system
+     * Creates an orientation matrix that rotates local +Z to "forward" and local +Y to "up", with no translation.
+     * For normalized orthogonal inputs, this is the inverse of LookAtLH at the origin, not a world-to-camera view matrix.
      * Example Playground - https://playground.babylonjs.com/#AV9X17#66
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8129,8 +8129,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     }
 
     /**
-     * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
-     * This function generates a matrix suitable for a left handed coordinate system
+     * Sets "result" to an orientation matrix that rotates local +Z to "forward" and local +Y to "up", with no translation.
+     * For normalized orthogonal inputs, this is the inverse of LookAtLH at the origin, not a world-to-camera view matrix.
      * Example Playground - https://playground.babylonjs.com/#AV9X17#67
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8147,8 +8147,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     }
 
     /**
-     * Creates a new matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
-     * This function generates a matrix suitable for a right handed coordinate system
+     * Creates an orientation matrix that rotates local -Z to "forward" and local +Y to "up", with no translation.
+     * For normalized orthogonal inputs, this is the inverse of LookAtRH at the origin, not a world-to-camera view matrix.
      * Example Playground - https://playground.babylonjs.com/#AV9X17#68
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8161,8 +8161,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     }
 
     /**
-     * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
-     * This function generates a matrix suitable for a right handed coordinate system
+     * Sets "result" to an orientation matrix that rotates local -Z to "forward" and local +Y to "up", with no translation.
+     * For normalized orthogonal inputs, this is the inverse of LookAtRH at the origin, not a world-to-camera view matrix.
      * Example Playground - https://playground.babylonjs.com/#AV9X17#69
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.

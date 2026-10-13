@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Matrix, Plane, Quaternion, Vector2, Vector3, Vector4, Viewport } from "core/Maths";
 import { BabylonMathVectorGetAngleBetweenVectorsOnPlaneTestCases } from "./babylon.math.vector.get-angle-between-vectors-on-plane.test-cases";
 
@@ -2413,48 +2414,54 @@ describe("Babylon Vector tests", () => {
 
     describe("Matrix", () => {
         describe("LookDirectionLHToRef / LookDirectionRHToRef", () => {
-            it("LH: transforms the local forward axis to the requested world forward direction", () => {
-                const forward = new Vector3(1, 2, 3).normalize();
-                const up = Vector3.Up();
-                const result = new Matrix();
-                Matrix.LookDirectionLHToRef(forward, up, result);
+            it.each([false, true])("preserves an orthonormal frame and matches inverse LookAt (RH=%s)", (isRightHanded) => {
+                const frames = [
+                    [Vector3.Forward(), Vector3.Up()],
+                    [Vector3.Backward(), Vector3.Up()],
+                    [Vector3.Up(), Vector3.Backward()],
+                    [new Vector3(1, 2, 3).normalize(), new Vector3(-2, 1, 0).normalize()],
+                    [new Vector3(-3, 1, -2).normalize(), new Vector3(1, 3, 0).normalize()],
+                ];
+                const lookDirection = isRightHanded ? Matrix.LookDirectionRH : Matrix.LookDirectionLH;
+                const lookDirectionToRef = isRightHanded ? Matrix.LookDirectionRHToRef : Matrix.LookDirectionLHToRef;
+                const lookAt = isRightHanded ? Matrix.LookAtRH : Matrix.LookAtLH;
+                const fromLookDirection = isRightHanded ? Quaternion.FromLookDirectionRH : Quaternion.FromLookDirectionLH;
+                const fromLookDirectionToRef = isRightHanded ? Quaternion.FromLookDirectionRHToRef : Quaternion.FromLookDirectionLHToRef;
 
-                const worldForward = Vector3.TransformNormal(Vector3.Forward(false), result);
-                expect(worldForward.x).toBeCloseTo(forward.x);
-                expect(worldForward.y).toBeCloseTo(forward.y);
-                expect(worldForward.z).toBeCloseTo(forward.z);
-            });
+                for (const [forward, up] of frames) {
+                    const originalForward = forward.clone();
+                    const originalUp = up.clone();
+                    expect(Vector3.Dot(forward, up)).toBeCloseTo(0);
+                    const result = new Matrix();
+                    expect(lookDirectionToRef(forward, up, result)).toBe(result);
+                    expect(result.determinant()).toBeCloseTo(1);
 
-            it("RH: transforms the local forward axis to the requested world forward direction", () => {
-                const forward = new Vector3(1, 2, 3).normalize();
-                const up = Vector3.Up();
-                const result = new Matrix();
-                Matrix.LookDirectionRHToRef(forward, up, result);
+                    const worldForward = Vector3.TransformNormal(Vector3.Forward(isRightHanded), result);
+                    const worldUp = Vector3.TransformNormal(Vector3.Up(), result);
+                    expect(worldForward.x).toBeCloseTo(forward.x);
+                    expect(worldForward.y).toBeCloseTo(forward.y);
+                    expect(worldForward.z).toBeCloseTo(forward.z);
+                    expect(worldUp.x).toBeCloseTo(up.x);
+                    expect(worldUp.y).toBeCloseTo(up.y);
+                    expect(worldUp.z).toBeCloseTo(up.z);
 
-                const worldForward = Vector3.TransformNormal(Vector3.Forward(true), result);
-                expect(worldForward.x).toBeCloseTo(forward.x);
-                expect(worldForward.y).toBeCloseTo(forward.y);
-                expect(worldForward.z).toBeCloseTo(forward.z);
-            });
-
-            it("agrees with the equivalent LookAt*ToRef result (eye at origin, target = forward)", () => {
-                const forward = new Vector3(1, 2, 3).normalize();
-                const up = Vector3.Up();
-
-                const lookDirLH = new Matrix();
-                Matrix.LookDirectionLHToRef(forward, up, lookDirLH);
-                const lookAtLH = new Matrix();
-                Matrix.LookAtLHToRef(Vector3.Zero(), forward, up, lookAtLH);
-                for (let i = 0; i < 16; i++) {
-                    expect(lookDirLH.m[i]).toBeCloseTo(lookAtLH.m[i]);
-                }
-
-                const lookDirRH = new Matrix();
-                Matrix.LookDirectionRHToRef(forward, up, lookDirRH);
-                const lookAtRH = new Matrix();
-                Matrix.LookAtRHToRef(Vector3.Zero(), forward, up, lookAtRH);
-                for (let i = 0; i < 16; i++) {
-                    expect(lookDirRH.m[i]).toBeCloseTo(lookAtRH.m[i]);
+                    const view = lookAt(Vector3.Zero(), forward, up);
+                    const inverseView = view.clone().invert();
+                    const transposeView = Matrix.Transpose(view);
+                    const allocated = lookDirection(forward, up);
+                    const quaternion = new Quaternion();
+                    expect(fromLookDirectionToRef(forward, up, quaternion)).toBe(quaternion);
+                    const quaternionMatrix = Matrix.FromQuaternionToRef(quaternion, new Matrix());
+                    const allocatedQuaternionMatrix = Matrix.FromQuaternionToRef(fromLookDirection(forward, up), new Matrix());
+                    for (let i = 0; i < 16; i++) {
+                        expect(result.m[i]).toBeCloseTo(inverseView.m[i]);
+                        expect(result.m[i]).toBeCloseTo(transposeView.m[i]);
+                        expect(result.m[i]).toBeCloseTo(allocated.m[i]);
+                        expect(result.m[i]).toBeCloseTo(quaternionMatrix.m[i]);
+                        expect(result.m[i]).toBeCloseTo(allocatedQuaternionMatrix.m[i]);
+                    }
+                    expect(forward.equals(originalForward)).toBe(true);
+                    expect(up.equals(originalUp)).toBe(true);
                 }
             });
         });
