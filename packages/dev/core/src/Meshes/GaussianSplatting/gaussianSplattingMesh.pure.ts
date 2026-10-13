@@ -656,6 +656,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * classic sorted quads. Off by default; other passes (shadows, picking, prepass) are unaffected. Falls
      * back to the classic path for multiple or rig cameras, floating-origin scenes, clip planes, and streamed parts.
      * Color rendering also falls back when the camera viewport does not cover the full target or projected-size visualization is enabled.
+     * Wireframe, point-cloud, and other non-triangle fill modes use classic color, including scene-wide and mesh overrides.
      * Clipping and depth quantization use the supplied projection's planes, including frozen projections.
      * Tilted and custom projections are supported by the point path. Compute runs immediately
      * before compositing with the pass's actual view and target dimensions; matching color and depth passes share one result.
@@ -694,7 +695,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Whether the active camera's DepthRenderer depth for this mesh comes from the point-splatting compute
      * (an opaque nearest-surface depth) instead of the classic path. Off by default and independent of
      * {@link pointSplattingRenderMode}, with the same camera, floating-origin, clip-plane, data fallbacks and module requirement.
-     * Color-only material fallbacks do not disable point depth. For partial camera viewports, point depth
+     * Color-only material fallbacks do not disable point depth. Scene-wide wireframe or point-cloud overrides
+     * use classic depth. For partial camera viewports, point depth
      * requires a depth map with ignoreCameraViewport enabled. When point color is supported, depth maps
      * with different pixel dimensions use classic depth to preserve color accumulation.
      * Depth passes whose view, material parameters, or part inputs differ from retained point-color history

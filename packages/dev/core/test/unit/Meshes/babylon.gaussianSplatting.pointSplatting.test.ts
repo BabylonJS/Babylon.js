@@ -1546,6 +1546,45 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
+    it.each(["material wireframe", "material points", "scene wireframe", "scene points", "mesh override"])("reevaluates %s fill modes each draw", async (kind) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const material = mesh.material!;
+        const controller = CreateController(mesh);
+        const depth = scene.enableDepthRenderer(camera);
+        controller["_colorMode"] = true;
+        controller["_depthMode"] = true;
+        controller["_runCompute"] = vi.fn();
+        const setEnabled = (enabled: boolean) => {
+            if (kind === "material wireframe") {
+                material.wireframe = enabled;
+            } else if (kind === "material points") {
+                material.pointsCloud = enabled;
+            } else if (kind === "scene wireframe") {
+                scene.forceWireframe = enabled;
+            } else if (kind === "scene points") {
+                scene.forcePointsCloud = enabled;
+            } else {
+                mesh.overrideRenderingFillMode = enabled ? Material.WireFrameFillMode : null;
+            }
+        };
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(true);
+        setEnabled(true);
+        expect(controller.drawColorPass(true)).toBe(false);
+        engine.currentRenderPassId = depth.getDepthMap().renderPassId;
+        expect(controller.drawColorPass(false)).toBe(!kind.startsWith("scene"));
+        setEnabled(false);
+        expect(controller.drawColorPass(false)).toBe(true);
+        engine.currentRenderPassId = camera.renderPassId;
+        expect(controller.drawColorPass(true)).toBe(true);
+        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("falls back for partial viewports while retaining full-viewport point depth", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

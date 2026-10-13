@@ -4,7 +4,7 @@ import { type Nullable } from "core/types";
 import { Scene } from "core/scene.pure";
 import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion } from "core/Maths/math.vector.pure";
-import { type Material } from "core/Materials/material.pure";
+import { Material } from "core/Materials/material.pure";
 import { type DepthRenderer } from "core/Rendering/depthRenderer.pure";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { Constants } from "core/Engines/constants";
@@ -1138,7 +1138,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         const depthRenderer = this._depthMode ? this._getCurrentDepthRenderer() : null;
         const viewport = this._scene.activeCamera?.viewport;
         const fullViewport = !!viewport && viewport.x === 0 && viewport.y === 0 && viewport.width === 1 && viewport.height === 1;
-        let depthPass = !!depthRenderer && (fullViewport || depthRenderer.getDepthMap().ignoreCameraViewport);
+        let depthPass = !!depthRenderer && (fullViewport || depthRenderer.getDepthMap().ignoreCameraViewport) && !this._scene.forceWireframe && !this._scene.forcePointsCloud;
         // The depth renderer always installs its own classic GS depth material for its pass; only a
         // user override set through setMaterialForRendering keeps the classic path.
         if (passMaterial && !depthRenderer?._isGaussianSplattingDepthMaterial(passMaterial)) {
@@ -1151,6 +1151,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._mesh.material?.alphaMode === Constants.ALPHA_COMBINE &&
             this._mesh.material.needAlphaBlendingForMesh(this._mesh) &&
             !this._mesh.material.needAlphaTestingForMesh(this._mesh) &&
+            this._mesh._getRenderingFillMode(this._mesh.material.fillMode) === Material.TriangleFillMode &&
             // Custom source shaders, including subclass overrides and NodeMaterial graphs, are not evaluated by compute.
             this._mesh.material.constructor === GaussianSplattingMaterial &&
             this._supportsSourceMaterialPlugins() &&
