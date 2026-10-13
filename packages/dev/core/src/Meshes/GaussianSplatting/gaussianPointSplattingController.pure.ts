@@ -111,6 +111,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _autoRequestId = 0;
     private _budgetReadPending = false;
     private _resultReady = false;
+    private _colorHistoryReady = false;
     /** Whether the latest compute run succeeded; unlike `_resultReady`, not cleared at frame start. */
     private _progressReady = false;
     private _computedWidth = 0;
@@ -157,6 +158,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             return;
         }
         this._colorMode = value;
+        if (!value) {
+            this._colorHistoryReady = false;
+        }
         if (value) {
             this._ensureCompute();
             this._enableColorBlit();
@@ -298,6 +302,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._renderer = null;
         this._decodedSplatsData = null;
         this._resultReady = false;
+        this._colorHistoryReady = false;
         this._progressReady = false;
         this._budgetReadPending = false;
         this._autoN = 2;
@@ -555,6 +560,15 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
 
     /** Uploads this frame's per-part world matrix, visibility and debug-plugin rows. */
     private _uploadParts(): void {
+        this._renderer!.debugActive = this._packParts() ? 1 : 0;
+        this._renderer!.setPartData(this._partScratch, this._partCount);
+    }
+
+    /**
+     * Packs current part inputs without changing the renderer's accumulation or dispatch buffers.
+     * @returns whether the debug plugin is active
+     */
+    private _packParts(): boolean {
         const count = this._partCount;
         if (this._partScratch.length !== count * 40) {
             this._partScratch = new Float32Array(count * 40);
@@ -578,7 +592,6 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             lut = resolved.data;
             lutStride = resolved.maxPartCount;
         }
-        this._renderer!.debugActive = debugActive ? 1 : 0;
 
         for (let i = 0; i < count; i++) {
             const worldM = (compound ? this._mesh.getWorldMatrixForPart(i) : meshWorld).m;
@@ -622,7 +635,31 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
                 scratch[o + 39] = 0;
             }
         }
-        this._renderer!.setPartData(scratch, count);
+        return debugActive;
+    }
+
+    /**
+     * Protects the latest point-color history from depth passes with different stable inputs.
+     * @returns whether depth can reuse the retained color inputs without restarting accumulation
+     */
+    private _depthInputsMatchColorHistory(): boolean {
+        const renderer = this._renderer;
+        if (!this._colorHistoryReady || !renderer) {
+            return true;
+        }
+        const material = this._mesh.material as GaussianSplattingMaterial;
+        if (
+            this._decodedSplatsData !== this._mesh._splatsData ||
+            this._decodedRevision !== this._mesh._splatDataRevision ||
+            !this._vpMatrix.equalsWithEpsilon(this._scene.getTransformMatrix(), 1e-5) ||
+            renderer.kernelSize !== (material.kernelSize || GaussianSplattingMaterial.KernelSize) ||
+            renderer.minPixelSize !== material.minPixelSize ||
+            renderer.compensation !== material.compensation
+        ) {
+            return false;
+        }
+        const debugActive = this._packParts() ? 1 : 0;
+        return renderer.debugActive === debugActive && renderer._matchesPartData(this._partScratch, this._partCount);
     }
 
     /**
@@ -1099,7 +1136,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             const depthMap = depthRenderer.getDepthMap();
             const colorSize = this._getOutputSize(true);
             // One renderer cannot retain accumulation while alternating incompatible pixel grids.
-            depthPass = depthMap.getRenderWidth() === colorSize.width && depthMap.getRenderHeight() === colorSize.height;
+            depthPass = depthMap.getRenderWidth() === colorSize.width && depthMap.getRenderHeight() === colorSize.height && this._depthInputsMatchColorHistory();
         }
         const colorPass = colorSupported && this._isMainColorPass();
         return (colorPass || depthPass) && this._computeActive && !this._hasUnsupportedView() && (!this._renderer || this._isWorkloadSupported());
@@ -1133,6 +1170,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
         if (!this._resultReady) {
             return true;
+        }
+        if (colorPass) {
+            this._colorHistoryReady = true;
         }
         if (colorPass && this._blitMesh && this._blitMesh.subMeshes.length > 0 && this._blit?.isReady(this._blitMesh, false, this._blitMesh.subMeshes[0])) {
             const blitMesh = this._blitMesh;

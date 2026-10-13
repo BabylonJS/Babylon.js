@@ -563,6 +563,26 @@ export class GaussianPointSplattingRenderer {
     }
 
     /**
+     * Checks part inputs without changing the current accumulation or dispatch buffers.
+     * @param packed packed part records
+     * @param count number of parts
+     * @returns whether these inputs match the current renderer state
+     * @internal
+     */
+    public _matchesPartData(packed: Float32Array, count: number): boolean {
+        const floats = count * 40;
+        if (!this._parts || this._partCount !== count || this._prevPartData.length !== floats) {
+            return false;
+        }
+        for (let i = 0; i < floats; i++) {
+            if (this._prevPartData[i] !== packed[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Uploads the per-part records (see GpsPart) and restarts accumulation when they changed.
      * @param packed part records, `count * 40` floats (world matrix + visibility + 5 debug rows per part)
      * @param count number of parts (at least 1)
@@ -570,15 +590,7 @@ export class GaussianPointSplattingRenderer {
     public setPartData(packed: Float32Array, count: number): void {
         const engine = this._engine as WebGPUEngine;
         const floats = count * 40;
-        let changed = !this._parts || this._partCount !== count || this._prevPartData.length !== floats;
-        if (!changed) {
-            for (let i = 0; i < floats; i++) {
-                if (this._prevPartData[i] !== packed[i]) {
-                    changed = true;
-                    break;
-                }
-            }
-        }
+        const changed = !this._matchesPartData(packed, count);
         if (this._partCount !== count) {
             this._disposePartBuffers();
             this._partCount = count;

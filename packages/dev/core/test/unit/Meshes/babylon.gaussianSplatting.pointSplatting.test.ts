@@ -1052,7 +1052,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
-    it("computes at draw time, shares matching passes, and recomputes changed views without classic rendering", async () => {
+    it("shares compatible passes and preserves color history across incompatible depth inputs", async () => {
         const engine = new NullEngine({ renderWidth: 400, renderHeight: 200 });
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
@@ -1129,32 +1129,39 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(compute).toHaveBeenCalledTimes(1);
         expect(colorDraw).toHaveBeenCalledTimes(1);
 
-        // A genuinely different target projection needs another point dispatch, not a classic pass.
+        // A different depth projection must not reset the retained color history.
         scene.setTransformMatrix(camera.getViewMatrix(), Matrix.PerspectiveFovLH(camera.fov, 1, camera.minZ, camera.maxZ));
         engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
         mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
-        expect(compute).toHaveBeenCalledTimes(2);
-        expect(controller["_vpMatrix"].equals(scene.getTransformMatrix())).toBe(true);
-        expect(depthDraw).toHaveBeenCalledTimes(2);
+        expect(compute).toHaveBeenCalledTimes(1);
+        expect(controller["_vpMatrix"].equals(scene.getTransformMatrix())).toBe(false);
+        expect(depthDraw).toHaveBeenCalledTimes(1);
+        expect(classic).toHaveBeenCalledTimes(1);
 
         camera.position.x = 2;
         scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        engine.currentRenderPassId = camera.renderPassId;
+        mesh["_drawColorPass"](mesh, colorMesh.subMeshes[0], true);
+        engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
         mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
-        expect(compute).toHaveBeenCalledTimes(3);
-        expect(depthDraw).toHaveBeenCalledTimes(3);
+        expect(compute).toHaveBeenCalledTimes(2);
+        expect(depthDraw).toHaveBeenCalledTimes(2);
 
         camera.outputRenderTarget = new RenderTargetTexture("resized", 200, scene);
         depthRenderer.getDepthMap().resize(200);
+        engine.currentRenderPassId = camera.outputRenderTarget.renderPassId;
+        mesh["_drawColorPass"](mesh, colorMesh.subMeshes[0], true);
+        engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
         mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
-        expect(compute).toHaveBeenCalledTimes(4);
+        expect(compute).toHaveBeenCalledTimes(3);
         expect(controller["_computedWidth"]).toBe(200);
         expect(controller["_computedHeight"]).toBe(200);
 
         scene.onBeforeRenderObservable.notifyObservers(scene);
-        expect(compute).toHaveBeenCalledTimes(4);
+        expect(compute).toHaveBeenCalledTimes(3);
         mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
-        expect(compute).toHaveBeenCalledTimes(5);
-        expect(classic).not.toHaveBeenCalled();
+        expect(compute).toHaveBeenCalledTimes(4);
+        expect(classic).toHaveBeenCalledTimes(1);
 
         let depthX = 1;
         let colorX = 2;
@@ -1163,16 +1170,17 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         });
         engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
         mesh.render(mesh.subMeshes[0], false);
-        expect(compute).toHaveBeenCalledTimes(6);
-        expect(renderer["_prevPartData"][12]).toBe(1);
+        expect(compute).toHaveBeenCalledTimes(4);
+        expect(renderer["_prevPartData"][12]).toBe(0);
+        expect(classic).toHaveBeenCalledTimes(2);
         engine.currentRenderPassId = camera.outputRenderTarget.renderPassId;
         mesh.render(mesh.subMeshes[0], true);
-        expect(compute).toHaveBeenCalledTimes(7);
+        expect(compute).toHaveBeenCalledTimes(5);
         expect(renderer["_prevPartData"][12]).toBe(2);
         mesh.render(mesh.subMeshes[0], true);
-        expect(compute).toHaveBeenCalledTimes(7);
-        expect(partContents.get(dispatchedParts[5])![12]).toBe(1);
-        expect(partContents.get(dispatchedParts[6])![12]).toBe(2);
+        expect(compute).toHaveBeenCalledTimes(5);
+        expect(partContents.get(dispatchedParts[3])![12]).toBe(0);
+        expect(partContents.get(dispatchedParts[4])![12]).toBe(2);
 
         // Next frame: depth reuses the unchanged parts while color changes them; the depth run must keep them.
         engine["_frameId"]++;
@@ -1183,10 +1191,41 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         mesh.render(mesh.subMeshes[0], false);
         engine.currentRenderPassId = camera.outputRenderTarget.renderPassId;
         mesh.render(mesh.subMeshes[0], true);
-        expect(compute).toHaveBeenCalledTimes(9);
-        expect(partContents.get(dispatchedParts[7])![12]).toBe(2);
-        expect(partContents.get(dispatchedParts[8])![12]).toBe(3);
+        expect(compute).toHaveBeenCalledTimes(7);
+        expect(partContents.get(dispatchedParts[5])![12]).toBe(2);
+        expect(partContents.get(dispatchedParts[6])![12]).toBe(3);
+        const generation = renderer.accumulationVersion;
+        depthX = 0;
+        for (let frame = 0; frame < 3; frame++) {
+            engine["_frameId"]++;
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
+            mesh.render(mesh.subMeshes[0], false);
+            expect(compute).toHaveBeenCalledTimes(7 + frame);
+            expect(renderer.accumulationVersion).toBe(generation);
+            engine.currentRenderPassId = camera.outputRenderTarget.renderPassId;
+            mesh.render(mesh.subMeshes[0], true);
+            expect(compute).toHaveBeenCalledTimes(8 + frame);
+            expect(renderer.accumulationVersion).toBe(generation);
+        }
         mesh.onBeforeRenderObservable.remove(before);
+        engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
+        mesh.visibility = 0.5;
+        expect(controller.handlesCurrentPass).toBe(false);
+        mesh.visibility = 1;
+        mesh.material!.alpha = 0.5;
+        expect(controller.handlesCurrentPass).toBe(false);
+        mesh.material!.alpha = 1;
+        const material = mesh.material as GaussianSplattingMaterial;
+        const kernelSize = material.kernelSize;
+        material.kernelSize += 1;
+        expect(controller.handlesCurrentPass).toBe(false);
+        material.kernelSize = kernelSize;
+        expect(controller.handlesCurrentPass).toBe(true);
+        expect(renderer.accumulationVersion).toBe(generation);
+        controller["_colorMode"] = false;
+        mesh.position.x = 0;
+        expect(controller.handlesCurrentPass).toBe(true);
 
         await vi.waitFor(() => expect(depthRenderer["_shadersLoaded"]).toBe(true));
         controller["_renderer"] = null;
