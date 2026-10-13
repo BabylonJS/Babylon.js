@@ -8,6 +8,7 @@ import { GaussianSplattingSizeMaterialPlugin } from "core/Materials/GaussianSpla
 import { GaussianSplattingOverdrawMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingOverdrawMaterialPlugin";
 import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
+import { ComputeShader } from "core/Compute/computeShader";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { Material } from "core/Materials/material";
@@ -1103,6 +1104,8 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         renderer["_engine"] = engine;
         renderer["_partBuffers"] = [];
         renderer["_partUseFrames"] = [];
+        renderer["_preprocessCs"] = Object.create(ComputeShader.prototype) as ComputeShader;
+        vi.spyOn(renderer["_preprocessCs"], "setStorageBuffer").mockImplementation(() => {});
         renderer["_partSlot"] = 0;
         renderer["_prevPartData"] = new Float32Array(0);
         renderer["_accumGeneration"] = 0;

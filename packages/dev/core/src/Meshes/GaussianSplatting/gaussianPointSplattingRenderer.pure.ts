@@ -122,6 +122,7 @@ export class GaussianPointSplattingRenderer {
     // One buffer per level: all level dispatches share one command encoder, so a single buffer updated
     // in the loop would leave every dispatch reading the last level's values.
     private _hiZBuildParams: UniformBuffer[] = [];
+    private _boundHiZParams: Nullable<UniformBuffer> = null;
     private _width = 0;
     private _height = 0;
     private _outWidth = 0;
@@ -217,7 +218,6 @@ export class GaussianPointSplattingRenderer {
             parts: { group: 0, binding: 7 },
             hiZ: { group: 0, binding: 8 },
         };
-        this._createPreprocessCs(0);
 
         this._scanBlocksCs = new ComputeShader("gpsScanBlocks", engine, "gpsScanBlocks", {
             bindingsMapping: { weights: { group: 0, binding: 0 }, cdf: { group: 0, binding: 1 }, blockSums: { group: 0, binding: 2 } },
@@ -288,6 +288,17 @@ export class GaussianPointSplattingRenderer {
             Constants.BUFFER_CREATIONFLAG_STORAGE | Constants.BUFFER_CREATIONFLAG_INDIRECT | Constants.BUFFER_CREATIONFLAG_WRITE
         );
         this._partition = new StorageBuffer(engine as WebGPUEngine, (PartitionBuckets + 1) * Uint32Array.BYTES_PER_ELEMENT);
+
+        // Keep binding records so dispatch can track native uniform-buffer replacements without rebuilding unchanged bind groups.
+        this._createPreprocessCs(0);
+        this._splatCs.setUniformBuffer("uniforms", this._uniforms);
+        this._resolveCs.setUniformBuffer("params", this._resolveParams);
+        this._scanSumsCs.setStorageBuffer("pointCount", this._pointCount);
+        this._scanSumsCs.setStorageBuffer("indirectArgs", this._indirectArgs);
+        this._partitionCs.setStorageBuffer("pointCount", this._pointCount);
+        this._partitionCs.setStorageBuffer("partTable", this._partition);
+        this._splatCs.setStorageBuffer("pointCount", this._pointCount);
+        this._splatCs.setStorageBuffer("partTable", this._partition);
     }
 
     /**
@@ -305,6 +316,13 @@ export class GaussianPointSplattingRenderer {
             bindingsMapping: bindings,
             defines: ["#define SH_DEGREE " + shDegree],
         });
+        this._preprocessCs.setUniformBuffer("uniforms", this._uniforms);
+        if (this._parts) {
+            this._preprocessCs.setStorageBuffer("parts", this._parts);
+        }
+        if (this._hiZ) {
+            this._preprocessCs.setStorageBuffer("hiZ", this._hiZ);
+        }
     }
 
     /**
@@ -445,6 +463,24 @@ export class GaussianPointSplattingRenderer {
         this._blockSums = new StorageBuffer(engine, this._numBlocks * Uint32Array.BYTES_PER_ELEMENT);
         // sizeof(GpsScreen)
         this._gsData = new StorageBuffer(engine, count * 64);
+
+        this._preprocessCs.setStorageBuffer("means", this._means);
+        this._preprocessCs.setStorageBuffer("colorOpacity", this._colorOpacity);
+        this._preprocessCs.setStorageBuffer("weights", this._weights);
+        this._preprocessCs.setStorageBuffer("gsData", this._gsData);
+        this._preprocessCs.setStorageBuffer("cov3d", this._cov3d);
+        if (this._shDegree > 0) {
+            this._preprocessCs.setStorageBuffer("sh", this._sh);
+        }
+        this._scanBlocksCs.setStorageBuffer("weights", this._weights);
+        this._scanBlocksCs.setStorageBuffer("cdf", this._cdf);
+        this._scanBlocksCs.setStorageBuffer("blockSums", this._blockSums);
+        this._scanSumsCs.setStorageBuffer("blockSums", this._blockSums);
+        this._scanAddCs.setStorageBuffer("cdf", this._cdf);
+        this._scanAddCs.setStorageBuffer("blockSums", this._blockSums);
+        this._partitionCs.setStorageBuffer("cdf", this._cdf);
+        this._splatCs.setStorageBuffer("cdf", this._cdf);
+        this._splatCs.setStorageBuffer("gsData", this._gsData);
 
         this.resetAccumulation();
     }
@@ -621,6 +657,7 @@ export class GaussianPointSplattingRenderer {
             }
             this._partSlot = slot;
             this._parts = this._partBuffers[slot];
+            this._preprocessCs.setStorageBuffer("parts", this._parts);
         }
         this._partUseFrames[this._partSlot] = frameId;
         this._parts.update(packed);
@@ -652,6 +689,8 @@ export class GaussianPointSplattingRenderer {
             const seed = new Uint32Array(pixelCount);
             seed.fill(DepthClearSentinel);
             this._imageBuffer.update(seed);
+            this._splatCs.setStorageBuffer("imageBuffer", this._imageBuffer);
+            this._resolveCs.setStorageBuffer("imageBuffer", this._imageBuffer);
 
             this._hiZLevels = [];
             let hiZOffset = 0;
@@ -665,11 +704,15 @@ export class GaussianPointSplattingRenderer {
             this._hiZ?.dispose();
             this._hiZ = new StorageBuffer(engine, hiZOffset * Float32Array.BYTES_PER_ELEMENT);
             this._hiZ.update(new Float32Array(hiZOffset).fill(1e30));
+            this._preprocessCs.setStorageBuffer("hiZ", this._hiZ);
+            this._resolveCs.setStorageBuffer("hiZ", this._hiZ);
+            this._hiZBuildCs.setStorageBuffer("hiZ", this._hiZ);
 
             for (const ub of this._hiZBuildParams) {
                 ub.dispose();
             }
             this._hiZBuildParams = [];
+            this._boundHiZParams = null;
             for (let l = 1; l < numLevels; l++) {
                 const src = this._hiZLevels[l - 1];
                 const dst = this._hiZLevels[l];
@@ -695,6 +738,9 @@ export class GaussianPointSplattingRenderer {
             this._accumDepth = new StorageBuffer(engine, outCount * Float32Array.BYTES_PER_ELEMENT);
             this._accumCount?.dispose();
             this._accumCount = new StorageBuffer(engine, outCount * Uint32Array.BYTES_PER_ELEMENT);
+            this._resolveCs.setStorageBuffer("accumBuffer", this._accumBuffer);
+            this._resolveCs.setStorageBuffer("accumDepth", this._accumDepth);
+            this._resolveCs.setStorageBuffer("accumCount", this._accumCount);
 
             this.resetAccumulation();
         }
@@ -795,62 +841,30 @@ export class GaussianPointSplattingRenderer {
 
         const groupsG = Math.ceil(this._gaussianCount / WorkgroupSize);
 
-        this._preprocessCs.setStorageBuffer("means", this._means!);
-        this._preprocessCs.setStorageBuffer("colorOpacity", this._colorOpacity!);
-        this._preprocessCs.setStorageBuffer("weights", this._weights!);
-        this._preprocessCs.setStorageBuffer("gsData", this._gsData!);
-        this._preprocessCs.setUniformBuffer("uniforms", this._uniforms);
-        this._preprocessCs.setStorageBuffer("cov3d", this._cov3d!);
-        // Binding an unused sh buffer would not match the auto-layout at degree 0.
-        if (this._shDegree > 0) {
-            this._preprocessCs.setStorageBuffer("sh", this._sh!);
-        }
-        this._preprocessCs.setStorageBuffer("parts", this._parts!);
         this._partUseFrames[this._partSlot] = this._engine.frameId;
-        this._preprocessCs.setStorageBuffer("hiZ", this._hiZ!);
         this._preprocessCs.dispatch(Math.min(groupsG, MaxDispatchGroupsPerDimension), Math.ceil(groupsG / MaxDispatchGroupsPerDimension), 1);
 
-        this._scanBlocksCs.setStorageBuffer("weights", this._weights!);
-        this._scanBlocksCs.setStorageBuffer("cdf", this._cdf!);
-        this._scanBlocksCs.setStorageBuffer("blockSums", this._blockSums!);
         this._scanBlocksCs.dispatch(Math.min(this._numBlocks, MaxDispatchGroupsPerDimension), Math.ceil(this._numBlocks / MaxDispatchGroupsPerDimension), 1);
 
-        this._scanSumsCs.setStorageBuffer("blockSums", this._blockSums!);
-        this._scanSumsCs.setStorageBuffer("pointCount", this._pointCount);
-        this._scanSumsCs.setStorageBuffer("indirectArgs", this._indirectArgs);
         this._scanSumsCs.dispatch(1, 1, 1);
 
-        this._scanAddCs.setStorageBuffer("cdf", this._cdf!);
-        this._scanAddCs.setStorageBuffer("blockSums", this._blockSums!);
         this._scanAddCs.dispatch(Math.min(groupsG, MaxDispatchGroupsPerDimension), Math.ceil(groupsG / MaxDispatchGroupsPerDimension), 1);
 
-        this._partitionCs.setStorageBuffer("cdf", this._cdf!);
-        this._partitionCs.setStorageBuffer("pointCount", this._pointCount);
-        this._partitionCs.setStorageBuffer("partTable", this._partition);
         this._partitionCs.dispatch(Math.ceil((PartitionBuckets + 1) / WorkgroupSize), 1, 1);
 
-        this._splatCs.setStorageBuffer("cdf", this._cdf!);
-        this._splatCs.setStorageBuffer("gsData", this._gsData!);
-        this._splatCs.setStorageBuffer("imageBuffer", this._imageBuffer!);
-        this._splatCs.setUniformBuffer("uniforms", this._uniforms);
-        this._splatCs.setStorageBuffer("pointCount", this._pointCount);
-        this._splatCs.setStorageBuffer("partTable", this._partition);
         this._splatCs.dispatchIndirect(this._indirectArgs);
 
-        this._resolveCs.setStorageBuffer("accumBuffer", this._accumBuffer!);
-        this._resolveCs.setStorageBuffer("accumDepth", this._accumDepth!);
-        this._resolveCs.setUniformBuffer("params", this._resolveParams);
-        this._resolveCs.setStorageBuffer("imageBuffer", this._imageBuffer!);
-        this._resolveCs.setStorageBuffer("hiZ", this._hiZ!);
-        this._resolveCs.setStorageBuffer("accumCount", this._accumCount!);
         this._resolveCs.dispatch(Math.ceil(width / 8), Math.ceil(height / 8), 1);
 
         // Level 0 is written by resolve; max-reduce the rest for next frame's cull.
         if (this.occlusionCulling) {
             for (let l = 1; l < this._hiZLevels.length; l++) {
                 const dst = this._hiZLevels[l];
-                this._hiZBuildCs.setStorageBuffer("hiZ", this._hiZ!);
-                this._hiZBuildCs.setUniformBuffer("params", this._hiZBuildParams[l - 1]);
+                const params = this._hiZBuildParams[l - 1];
+                if (params !== this._boundHiZParams) {
+                    this._hiZBuildCs.setUniformBuffer("params", params);
+                    this._boundHiZParams = params;
+                }
                 this._hiZBuildCs.dispatch(Math.ceil(dst.w / 8), Math.ceil(dst.h / 8), 1);
             }
         }
