@@ -66,6 +66,44 @@ function CreateAutoScaleSetup(generation: number): { mesh: GaussianSplattingMesh
 }
 
 describe("GaussianSplattingMesh point-splatting settings", () => {
+    it("commits reloaded classic atlas data without posting a deferred point-color sort", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -3), scene);
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        mesh.disableDepthSort = true;
+        mesh.updateData(new ArrayBuffer(32));
+        mesh["_disableDepthSort"] = false;
+        let sortRequired = false;
+        mesh["_isSortRequired"] = () => sortRequired;
+        const post = vi.fn();
+        mesh["_worker"] = { postMessage: post, terminate: vi.fn() } as Worker;
+        const upload = vi.fn();
+        mesh["_updateSubTextures"] = upload;
+        const cameraMesh = mesh["_cameraViewInfos"].get(camera.uniqueId)!.mesh;
+        const indexUpdate = vi.spyOn(cameraMesh, "thinInstanceBufferUpdated");
+        const data = new ArrayBuffer(32);
+        new Float32Array(data)[0] = 2;
+        new Uint8Array(data)[27] = 64;
+        mesh.updateData(data);
+        expect(mesh["_delayedTextureUpdate"]).toBeNull();
+        expect(upload).toHaveBeenCalledTimes(1);
+        expect(upload.mock.calls[0][0][0]).toBe(2);
+        expect(upload.mock.calls[0][3][3]).toBe(64);
+        expect(indexUpdate).toHaveBeenCalledWith("splatIndex");
+        expect(post.mock.calls.some(([message]) => message.command === "sort")).toBe(false);
+        expect(mesh["_forcedSortPending"]).toBe(true);
+
+        sortRequired = true;
+        upload.mockClear();
+        mesh.updateData(data.slice(0));
+        expect(mesh["_delayedTextureUpdate"]).not.toBeNull();
+        expect(upload).not.toHaveBeenCalled();
+        expect(post.mock.calls.some(([message]) => message.command === "sort")).toBe(true);
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("copies current source draw state to the color compositor on every draw", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

@@ -1575,6 +1575,16 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             });
         } else if (this._disableDepthSort || !sortRequired) {
+            // ShadowGenerator bypasses render()/isReady(), so its atlas cannot wait for a deferred camera sort.
+            if (this._delayedTextureUpdate) {
+                this._updateSplatIndexBuffer(this._vertexCount);
+                this._cameraViewInfos.forEach((info) => {
+                    if (info.splatIndexBufferSet) {
+                        info.mesh.thinInstanceBufferUpdated("splatIndex");
+                    }
+                });
+                this._commitDelayedTextureUpdate();
+            }
             if (this._splatIndex) {
                 activeViewInfos.forEach((cameraViewInfos) => {
                     if (!cameraViewInfos.splatIndexBufferSet) {
@@ -2747,6 +2757,16 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._delayedTextureUpdate = { covA, covB, colors: colorArray, centers: this._splatPositions!, sh };
     }
 
+    private _commitDelayedTextureUpdate(): void {
+        const update = this._delayedTextureUpdate;
+        if (!update) {
+            return;
+        }
+        const textureSize = this._getTextureSize(this._vertexCount);
+        this._updateSubTextures(update.centers, update.covA, update.covB, update.colors, 0, textureSize.y, update.sh);
+        this._delayedTextureUpdate = null;
+    }
+
     /**
      * Creates (or recreates) the MRT-backed data atlas at the given size and points the four core data
      * textures at its attachments. The attachments use the same decoded GS layout as {@link GaussianSplattingWorkBuffer}
@@ -3547,7 +3567,13 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
         const engine = this._getTextureDataUpdateEngine();
-        engine.updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        const internalTexture = texture.getInternalTexture()!;
+        // NativeEngine and NullEngine support complete raw uploads, but not sub-texture uploads.
+        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
+            engine.updateRawTexture(internalTexture, data, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
+            return;
+        }
+        engine.updateTextureData(internalTexture, data, 0, lineStart, width, lineCount, 0, 0, false);
     };
 
     protected _updateTextureFromDataRect = (texture: BaseTexture, data: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number) => {
@@ -3724,20 +3750,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             }
             this.forcedInstanceCount = Math.max(renderedPadded >> 4, 1);
-            if (this._delayedTextureUpdate) {
-                const vertexCountPadded = (this._vertexCount + 15) & ~0xf;
-                const textureSize = this._getTextureSize(vertexCountPadded);
-                this._updateSubTextures(
-                    this._delayedTextureUpdate.centers,
-                    this._delayedTextureUpdate.covA,
-                    this._delayedTextureUpdate.covB,
-                    this._delayedTextureUpdate.colors,
-                    0,
-                    textureSize.y,
-                    this._delayedTextureUpdate.sh
-                );
-                this._delayedTextureUpdate = null;
-            }
+            this._commitDelayedTextureUpdate();
 
             // get mesh for camera and update its instance buffer
             const cameraViewInfos = this._cameraViewInfos.get(cameraId);
