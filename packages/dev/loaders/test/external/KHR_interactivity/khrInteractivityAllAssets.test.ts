@@ -104,6 +104,8 @@ const ShowcaseRoot = path.join(AssetRepository, "Models");
 const InterGlbSegment = `${path.sep}InterGlb${path.sep}`;
 // Decimal-second fixture delays align to this clock step without accumulating frame-rounding drift.
 const FrameDurationMs = 10;
+const RenderSize = 256;
+const BootstrapResponses = new Map<string, Promise<Buffer>>();
 let _routeId = 0;
 
 // The shared empty.html bootstrap loads ~14 Babylon UMD bundles, but the KHR_interactivity
@@ -251,21 +253,51 @@ async function _routeAsset(page: Page, filePath: string): Promise<IRoutedAsset> 
 }
 
 async function _preparePage(page: Page): Promise<void> {
+    const baseUrl = getGlobalConfig().baseUrl;
+    // Fetch each deployed bootstrap resource once per worker, rather than thousands of CDN requests across the corpus.
+    await page.route(`${baseUrl}/**`, async (route) => {
+        const url = route.request().url();
+        if (url !== `${baseUrl}/empty.html` && !url.endsWith(".js")) {
+            await route.fallback();
+            return;
+        }
+        let pending = BootstrapResponses.get(url);
+        if (!pending) {
+            pending = (async () => {
+                const response = await page.request.get(url, { failOnStatusCode: true, maxRetries: 2, timeout: 60000 });
+                return await response.body();
+            })();
+            BootstrapResponses.set(url, pending);
+        }
+        const body = await pending.catch((error) => {
+            BootstrapResponses.delete(url);
+            throw error;
+        });
+        await route.fulfill({ status: 200, contentType: url.endsWith(".js") ? "application/javascript" : "text/html", body });
+    });
     // Register before navigating so the stub applies to the initial script loads. Serving an empty
     // body (rather than aborting) avoids a failed-request console error while still preventing the
     // unneeded library from evaluating.
     await page.route(BlockedLibraryScriptPattern, async (route) => {
         await route.fulfill({ status: 200, contentType: "application/javascript", body: "" });
     });
-    await page.goto(`${getGlobalConfig().baseUrl}/empty.html`, { waitUntil: "load", timeout: 0 });
+    await page.goto(`${baseUrl}/empty.html`, { waitUntil: "load", timeout: 60000 });
     await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
-    await page.waitForFunction(() => window.BABYLON);
+    await page.waitForFunction(
+        () =>
+            typeof BABYLON !== "undefined" &&
+            typeof BABYLON.Engine === "function" &&
+            typeof BABYLON.Scene === "function" &&
+            typeof BABYLON.Tools === "function" &&
+            typeof BABYLON.GLTFFileLoader === "function" &&
+            typeof BABYLON.FlowGraphCoordinator === "function"
+    );
     const clockStart = new Date();
     await page.clock.install({ time: clockStart });
     await page.clock.pauseAt(clockStart);
     await page.evaluate(evaluateInitEngine);
     // These tests assert graph behavior, not pixels. Bound software-renderer work without skipping draws or ticks.
-    await page.evaluate(() => window.engine!.setSize(256, 256));
+    await page.evaluate((size) => window.engine!.setSize(size, size), RenderSize);
     await page.evaluate(evaluateCreateScene);
     await page.evaluate(() => {
         const engine = window.scene!.getEngine();
@@ -341,6 +373,22 @@ async function _loadAsset(page: Page, assetUrl: string, autoStart: boolean = tru
                 return state;
             });
             if (state?.done) {
+                if (state.success) {
+                    await page.evaluate((limit) => {
+                        // Transmission and other offscreen passes do not inherit the canvas dimensions.
+                        for (const texture of window.scene!.textures) {
+                            if (texture instanceof BABYLON.RenderTargetTexture) {
+                                const size = texture.getSize();
+                                const scale = Math.min(1, limit / Math.max(size.width, size.height));
+                                if (scale < 1) {
+                                    const samples = texture.samples;
+                                    texture.resize({ width: Math.ceil(size.width * scale), height: Math.ceil(size.height * scale) });
+                                    texture.samples = samples;
+                                }
+                            }
+                        }
+                    }, RenderSize);
+                }
                 return { success: state.success, error: state.error };
             }
         } catch (error) {
