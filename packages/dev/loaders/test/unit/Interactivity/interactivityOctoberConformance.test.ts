@@ -243,7 +243,7 @@ describe("KHR_interactivity October conformance", () => {
         });
         const blocks = graph.getAllBlocks();
         const delay = blocks.find((block) => block.getClassName() === FlowGraphBlockNames.SetDelay) as FlowGraphSetDelayBlock;
-        const reference = blocks.find((block) => block.getClassName() === "KHR_interactivity/FlowGraphDelayReferenceBlock")!;
+        const reference = blocks.find((block) => block.getClassName() === "FlowGraphDelayReferenceBlock")!;
         expect(reference.getDataOutput("value")!.getValue(context)).toBe("");
         delay._execute(context, delay.in);
         expect(reference.getDataOutput("value")!.getValue(context)).toBe(`${DelayReferencePrefix}0`);

@@ -1,5 +1,6 @@
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
+import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraphPlayAnimationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.pure";
@@ -95,6 +96,33 @@ describe("KHR_interactivity FlowGraph export", () => {
         getMaterialIndex: () => undefined,
         setNodeExtension: () => {},
     };
+
+    it.each([false, true])("round-trips connected delay operations in source-preserving mode %s", async (preserveSourceDocument) => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }, { signature: "ref" }],
+            declarations: [{ op: "event/onStart" }, { op: "flow/setDelay" }, { op: "flow/cancelDelay" }, { op: "debug/log" }],
+            nodes: [
+                { declaration: 0, flows: { out: { node: 1 } } },
+                {
+                    declaration: 1,
+                    values: { duration: { type: 0, value: [1] } },
+                    flows: { out: { node: 2 }, done: { node: 3 } },
+                },
+                { declaration: 2, values: { delay: { node: 1, socket: "lastDelay" } }, flows: { out: { node: 3 } } },
+                { declaration: 3, configuration: { severity: { value: [0] }, message: { value: ["complete"] } } },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, {}, preserveSourceDocument);
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.analyze().representable).toBe(true);
+        const exported = preserveSourceDocument ? plan.buildWithSourceIndices() : plan.build(context);
+        expect(exported.graphs[0]).toEqual(graph);
+        expect(CreateKHRInteractivityDocument(exported).graphs[0].valid).toBe(true);
+        const reimported = await CreatePlan(exported, {}, preserveSourceDocument);
+        expect(reimported.analyze().diagnostics).toEqual([]);
+        expect(preserveSourceDocument ? reimported.buildWithSourceIndices() : reimported.build(context)).toEqual(exported);
+        expect(await blockFactory("FlowGraphDelayReferenceBlock")()).toBe(await blockFactory("KHR_interactivity/FlowGraphDelayReferenceBlock")());
+    });
 
     it.each([2, 3, 4])("round-trips math/extract%i with vector inputs and scalar outputs", async (size) => {
         const graph: IKHRInteractivity_Graph = {

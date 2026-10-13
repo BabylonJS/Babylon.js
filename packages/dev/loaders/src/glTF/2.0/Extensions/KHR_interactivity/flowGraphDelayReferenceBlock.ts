@@ -53,6 +53,6 @@ export class FlowGraphDelayReferenceBlock extends FlowGraphBlock {
 
     /** @returns the serialized class name */
     public override getClassName(): string {
-        return "KHR_interactivity/FlowGraphDelayReferenceBlock";
+        return "FlowGraphDelayReferenceBlock";
     }
 }

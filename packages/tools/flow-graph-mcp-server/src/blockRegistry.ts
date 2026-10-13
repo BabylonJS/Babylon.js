@@ -61,7 +61,7 @@ export interface IFlowGraphBlockTypeInfo {
  * They require source-asset metadata and have no meaningful standalone construction contract.
  */
 export const FlowGraphImportOnlyBlockClassNames = [
-    "KHR_interactivity/FlowGraphDelayReferenceBlock",
+    "FlowGraphDelayReferenceBlock",
     "FlowGraphEventReferenceBlock",
     "FlowGraphGLTFDataProvider",
     "FlowGraphObjectReferenceBlock",
