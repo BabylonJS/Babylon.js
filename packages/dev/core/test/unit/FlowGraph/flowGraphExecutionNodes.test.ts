@@ -24,6 +24,9 @@ import { IsDelayActive } from "core/FlowGraph/flowGraphDelayRegistry";
 import { Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Animation } from "core/Animations/animation";
+import { AnimationGroup } from "core/Animations/animationGroup";
 
 describe("Flow Graph Execution Nodes", () => {
     let engine: Engine;
@@ -62,6 +65,53 @@ describe("Flow Graph Execution Nodes", () => {
 
         expect(flowGraphContext.getVariable("first")).toBe(2);
         expect(flowGraphContext.getVariable("second")).toBe(evaluateInputsBeforeWrite ? 1 : 2);
+    });
+
+    it.each([false, true])("preserves animation cancellation and input evaluation order (%s)", (evaluateInputsBeforeWrite) => {
+        flowGraphContext.setVariable("source", 1);
+        const read = new FlowGraphGetVariableBlock<number>({ variable: "source" });
+        const write = new FlowGraphSetVariableBlock<number>({ variables: ["target"], evaluateInputsBeforeWrite });
+        read.value.connectTo(write.getDataInput("target")!);
+        const animation = new Animation("animated target", "target", 60, Animation.ANIMATIONTYPE_FLOAT);
+        animation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 60, value: 1 },
+        ]);
+        const group = new AnimationGroup("group", scene);
+        group.addTargetedAnimation(animation, flowGraphContext);
+        flowGraphContext._setGlobalContextVariable("currentlyRunningAnimationGroups", [group.uniqueId]);
+        const stop = vi.spyOn(group, "stop").mockImplementation(() => {
+            flowGraphContext.setVariable("source", 2);
+            return group;
+        });
+
+        write._execute(flowGraphContext, write.in);
+
+        expect(stop).toHaveBeenCalledOnce();
+        expect(flowGraphContext.getVariable("target")).toBe(evaluateInputsBeforeWrite ? 1 : 2);
+        group.dispose();
+    });
+
+    it("reads the single-variable input after animation cancellation", () => {
+        const write = new FlowGraphSetVariableBlock<number>({ variable: "target" });
+        write.getDataInput("value")!.setValue(1, flowGraphContext);
+        const animation = new Animation("animated target", "target", 60, Animation.ANIMATIONTYPE_FLOAT);
+        animation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 60, value: 1 },
+        ]);
+        const group = new AnimationGroup("group", scene);
+        group.addTargetedAnimation(animation, flowGraphContext);
+        flowGraphContext._setGlobalContextVariable("currentlyRunningAnimationGroups", [group.uniqueId]);
+        vi.spyOn(group, "stop").mockImplementation(() => {
+            write.getDataInput("value")!.setValue(2, flowGraphContext);
+            return group;
+        });
+
+        write._execute(flowGraphContext, write.in);
+
+        expect(flowGraphContext.getVariable("target")).toBe(2);
+        group.dispose();
     });
 
     it("Branch Block", () => {

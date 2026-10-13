@@ -195,6 +195,28 @@ describe("KHR_interactivity October conformance", () => {
         expect(graph.getAllBlocks()[0].getDataOutput("value")!.getValue(context)).toBe(true);
     });
 
+    it.each([1, 0, true, false, "invalid", "", null, [1]])("diagnoses malformed socket sources before resolving types (%j)", (source) => {
+        const graph: IKHRInteractivity_Graph = JSON.parse(
+            JSON.stringify({
+                types: [{ signature: "float" }],
+                declarations: [{ op: "math/sin" }],
+                nodes: [
+                    { declaration: 0, values: { a: source } },
+                    { declaration: 0, values: { a: { node: 0 } } },
+                ],
+            })
+        );
+        const model = CreateKHRInteractivityGraphModel(graph);
+        expect(model.valid).toBe(false);
+        expect(model.diagnostics).toContainEqual(
+            expect.objectContaining({
+                severity: "error",
+                path: "/extensions/KHR_interactivity/graphs/0/nodes/0/values/a",
+                message: 'Input value socket "a" must be an object.',
+            })
+        );
+    });
+
     it.each(["", "/nodes/0", `${DelayReferencePrefix}999`, `${DelayReferencePrefix}bad`])("ignores invalid or inactive cancellation references (%s)", async (reference) => {
         const { coordinator, graph } = await runtime({
             types: [{ signature: "ref" }],

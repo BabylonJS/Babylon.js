@@ -14,6 +14,7 @@ import { PickingInfo } from "core/Collisions/pickingInfo";
 import { registerBuiltInLoaders } from "../../../src/dynamic";
 import { GetKHRInteractivityImportResult, RegisterKHR_interactivity } from "../../../src/glTF/2.0/Extensions/KHR_interactivity.pure";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { DelayReferencePrefix } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityReferences";
 
 function asset(graph: IKHRInteractivity_Graph, extensionsUsed: string[] = ["KHR_interactivity"]): string {
     return `data:${JSON.stringify({
@@ -128,6 +129,98 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(group.targetedAnimations[0].target.position.x).toBeGreaterThan(0);
         expect(group.targetedAnimations[0].target.position.x).toBeLessThan(3);
     }, 30000);
+
+    it("keeps malformed inactive socket sources isolated from the selected graph", async () => {
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            `data:${JSON.stringify({
+                asset: { version: "2.0" },
+                extensionsUsed: ["KHR_interactivity"],
+                extensions: {
+                    KHR_interactivity: {
+                        graph: 0,
+                        graphs: [
+                            {
+                                declarations: [{ op: "event/onStart" }, { op: "debug/log" }],
+                                nodes: [
+                                    { declaration: 0, flows: { out: { node: 1 } } },
+                                    { declaration: 1, configuration: { severity: { value: [0] }, message: { value: ["selected started"] } } },
+                                ],
+                            },
+                            { types: [{ signature: "float" }], declarations: [{ op: "math/sin" }], nodes: [{ declaration: 0, values: { a: 1 } }] },
+                        ],
+                    },
+                },
+            })}`,
+            scene
+        );
+        const result = GetKHRInteractivityImportResult(scene)!;
+        expect(result.graphs[0].graph.valid).toBe(true);
+        expect(result.graphs[0].flowGraph).toBeDefined();
+        expect(result.graphs[1].graph.valid).toBe(false);
+        expect(result.graphs[1].flowGraph).toBeUndefined();
+        expect(result.graphs[1].graph.diagnostics).toContainEqual(expect.objectContaining({ path: "/extensions/KHR_interactivity/graphs/1/nodes/0/values/a" }));
+        expect(log).toHaveBeenCalledWith("selected started");
+        scene.render();
+    });
+
+    it("preserves a delay handle through connected pointer/get and ref/eq, then returns null after cancellation", async () => {
+        await AppendSceneAsync(
+            asset({
+                types: [{ signature: "ref" }, { signature: "float" }, { signature: "bool" }],
+                variables: [{ type: 0 }, { type: 0 }, { type: 2 }, { type: 2 }, { type: 0 }, { type: 2 }, { type: 2 }],
+                declarations: [
+                    { op: "event/onStart" },
+                    { op: "flow/setDelay" },
+                    { op: "variable/set" },
+                    { op: "variable/get" },
+                    { op: "pointer/get" },
+                    { op: "ref/eq" },
+                    { op: "flow/cancelDelay" },
+                ],
+                nodes: [
+                    { declaration: 0, flows: { out: { node: 1 } } },
+                    { declaration: 1, values: { duration: { type: 1, value: [60] } }, flows: { out: { node: 2 } } },
+                    {
+                        declaration: 2,
+                        configuration: { variables: { value: [0] } },
+                        values: { "0": { node: 1, socket: "lastDelay" } },
+                        flows: { out: { node: 6 } },
+                    },
+                    { declaration: 3, configuration: { variable: { value: [0] } } },
+                    {
+                        declaration: 4,
+                        configuration: { pointer: { value: ["/extensions/KHR_interactivity/delays/{delay}"] }, type: { value: [0] } },
+                        values: { delay: { node: 3 } },
+                    },
+                    { declaration: 5, values: { a: { node: 3 }, b: { node: 4 } } },
+                    {
+                        declaration: 2,
+                        configuration: { variables: { value: [1, 2, 3] } },
+                        values: { "1": { node: 4 }, "2": { node: 4, socket: "isValid" }, "3": { node: 5 } },
+                        flows: { out: { node: 7 } },
+                    },
+                    { declaration: 6, values: { delay: { node: 3 } }, flows: { out: { node: 8 } } },
+                    {
+                        declaration: 2,
+                        configuration: { variables: { value: [4, 5, 6] } },
+                        values: { "4": { node: 4 }, "5": { node: 4, socket: "isValid" }, "6": { node: 5 } },
+                    },
+                ],
+            }),
+            scene
+        );
+        const context = GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0);
+        expect(Array.from({ length: 7 }, (_, index) => context.getVariable(`staticVariable_${index}`))).toEqual([
+            `${DelayReferencePrefix}0`,
+            `${DelayReferencePrefix}0`,
+            true,
+            true,
+            "",
+            false,
+            false,
+        ]);
+    });
 
     it.each([-1, 7])("reports an invalid pointer/get index without throwing (%s)", async (index) => {
         await AppendSceneAsync(

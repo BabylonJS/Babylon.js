@@ -762,13 +762,13 @@ jobs:
               contains(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'glTF')
             )
           )
-      # A single run: consuming the deployed snapshot (rather than building Babylon in-agent) makes the
-      # full ~174-asset suite fast enough to finish well within the timeout on one agent, and avoids the
-      # redundant per-shard npm/playwright install overhead that sharding otherwise added.
+      # A single run consumes the deployed snapshot and avoids redundant per-shard installation.
+      # Allow the expanded 369-test corpus, including aggregate durations and showcase rendering,
+      # to finish on software-rendered hosted agents, with headroom for setup and retries.
       # Kept non-blocking (continueOnError) for now so an intermittent asset does not block merges;
       # promote to a required gate once it has a track record of completing green.
       continueOnError: true
-      timeoutInMinutes: 30
+      timeoutInMinutes: 60
       steps:
           - template: templates/checkout-with-tag-override.yml
 

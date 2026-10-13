@@ -614,6 +614,9 @@ function _resolveValueTypeIndex(
     declarations: readonly IKHRInteractivityDeclarationModel[],
     visited: Set<string> = new Set()
 ): number | undefined {
+    if (!_isRecord(value)) {
+        return undefined;
+    }
     if ("node" in value) {
         return _resolveOutputTypeIndex(value.node, value.socket ?? "value", graph, declarations, visited);
     }
@@ -743,6 +746,11 @@ function _validateNode(
     assetNodeCount?: number
 ): void {
     const path = `${graphPath}/nodes/${nodeIndex}`;
+    for (const [key, value] of Object.entries(node.values ?? {})) {
+        if (!_isRecord(value)) {
+            _addError(diagnostics, `${path}/values/${key}`, `Input value socket "${key}" must be an object.`);
+        }
+    }
     if (!_isValidIndex(node.declaration, declarations.length)) {
         _addError(diagnostics, `${path}/declaration`, `Declaration index ${String(node.declaration)} is out of range.`);
         return;
@@ -925,7 +933,7 @@ function _validateNode(
         try {
             const validationNode = _cloneJson(node);
             for (const value of Object.values(validationNode.values ?? {})) {
-                if (value.type === undefined) {
+                if (_isRecord(value) && value.type === undefined) {
                     value.type = _resolveValueTypeIndex(value, graph, declarations);
                 }
             }
@@ -939,7 +947,6 @@ function _validateNode(
     }
     for (const [key, value] of Object.entries(node.values ?? {})) {
         if (!_isRecord(value)) {
-            _addError(diagnostics, `${path}/values/${key}`, `Input value socket "${key}" must be an object.`);
             continue;
         }
         if (declarationModel.support === "unsupported-extension" && !declarationModel.source.inputValueSockets?.[key]) {

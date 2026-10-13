@@ -53,17 +53,23 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
     public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         if (this.config?.variables) {
             const variables: string[] = this.config.variables;
-            const values = this.config.evaluateInputsBeforeWrite ? variables.map((variable) => this.getDataInput(variable)?.getValue(context)) : undefined;
+            let values: T[] | undefined;
+            if (this.config.evaluateInputsBeforeWrite) {
+                values = [];
+                for (const variable of variables) {
+                    values.push(this.getDataInput(variable)?.getValue(context));
+                }
+            }
             for (let i = 0; i < variables.length; i++) {
-                this._saveVariable(context, variables[i], () => (values ? values[i] : this.getDataInput(variables[i])?.getValue(context)));
+                this._saveVariable(context, variables[i], values?.[i], values ? undefined : variables[i]);
             }
         } else {
-            this._saveVariable(context, this.config?.variable, () => this.getDataInput("value")?.getValue(context));
+            this._saveVariable(context, this.config?.variable, undefined, "value");
         }
         this.out._activateSignal(context);
     }
 
-    private _saveVariable(context: FlowGraphContext, variableName: string, getValue: () => T): void {
+    private _saveVariable(context: FlowGraphContext, variableName: string, value: T | undefined, inputName?: string): void {
         // check if there is an animation(group) running on this variable. If there is, stop the animation - a value was force-set.
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         for (const animationUniqueId of currentlyRunningAnimationGroups) {
@@ -95,7 +101,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                 }
             }
         }
-        context.setVariable(variableName, getValue());
+        context.setVariable(variableName, inputName === undefined ? value : this.getDataInput(inputName)?.getValue(context));
     }
 
     public override getClassName(): string {

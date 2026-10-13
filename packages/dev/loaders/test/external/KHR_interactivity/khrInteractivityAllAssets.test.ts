@@ -264,6 +264,8 @@ async function _preparePage(page: Page): Promise<void> {
     await page.clock.install({ time: clockStart });
     await page.clock.pauseAt(clockStart);
     await page.evaluate(evaluateInitEngine);
+    // These tests assert graph behavior, not pixels. Bound software-renderer work without skipping draws or ticks.
+    await page.evaluate(() => window.engine!.setSize(256, 256));
     await page.evaluate(evaluateCreateScene);
     await page.evaluate(() => {
         const engine = window.scene!.getEngine();
@@ -442,8 +444,22 @@ test.describe("Pinned Khronos KHR_interactivity strict conformance corpus", () =
     test.skip(!HasAssetRepository, "Run `npm run test:khr-interactivity` to fetch and test the pinned Khronos assets.");
 
     for (const asset of standaloneAssets) {
-        test(asset.relativePath, async ({ browser }) => {
-            const page = await browser.newPage();
+        test(asset.relativePath, async ({ browser, browserName, playwright }, testInfo) => {
+            const minimumTimeout = asset.kind === "showcase" ? 300000 : 120000;
+            test.setTimeout(minimumTimeout);
+            // Heavy showcase draws can leave software-GPU work queued across contexts. Isolate their process, not their assertions.
+            const showcaseBrowser =
+                asset.kind === "showcase"
+                    ? await playwright[browserName].launch({
+                          ...testInfo.project.use.launchOptions,
+                          channel: testInfo.project.use.channel,
+                          headless: testInfo.project.use.headless,
+                      })
+                    : undefined;
+            const page = await (showcaseBrowser ?? browser).newPage().catch(async (error) => {
+                await showcaseBrowser?.close();
+                throw error;
+            });
             let routed: IRoutedAsset | undefined;
             const consoleEntries: IConsoleEntry[] = [];
             const pageErrors: string[] = [];
@@ -513,7 +529,8 @@ test.describe("Pinned Khronos KHR_interactivity strict conformance corpus", () =
                 }
                 await _performRequiredInteractions(page, asset.descriptor);
                 const runtimeDuration = await page.evaluate(() => (window as any).__khrExpectedDurationMs as number);
-                test.setTimeout(Math.max(120000, runtimeDuration * 4 + 60000));
+                // Virtual time still renders every frame; aggregate assets need headroom on software GPUs.
+                test.setTimeout(Math.max(minimumTimeout, runtimeDuration * 8 + 60000));
                 const renderError = await _runFrames(page, Math.max(_getRunDurationMs(asset), runtimeDuration + 1000));
                 expect(renderError, `${asset.relativePath} failed while rendering`).toBeUndefined();
 
@@ -545,6 +562,7 @@ test.describe("Pinned Khronos KHR_interactivity strict conformance corpus", () =
                 }
                 await page.evaluate(evaluateDisposeEngine).catch(() => {});
                 await page.close().catch(() => {});
+                await showcaseBrowser?.close();
             }
         });
     }
