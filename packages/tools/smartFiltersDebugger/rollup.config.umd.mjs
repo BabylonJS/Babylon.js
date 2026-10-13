@@ -37,5 +37,7 @@ const configs = commonUMDRollupConfiguration({
 
 export default configs.map((config, index) => ({
     ...config,
+    // Extension scripts must run independently of the host page's module loader.
+    output: { ...config.output, format: "iife" },
     plugins: [...config.plugins, ...(index === 0 ? [copyExtensionAssetsPlugin] : [])],
 }));
