@@ -117,8 +117,8 @@ export interface IGLTFObjectModelTreeCamerasObject {
     __array__: {
         __target__: boolean;
         orthographic: {
-            xmag: IObjectAccessor<ICamera, Camera, Vector2>;
-            ymag: IObjectAccessor<ICamera, Camera, Vector2>;
+            xmag: IObjectAccessor<ICamera, Camera, number>;
+            ymag: IObjectAccessor<ICamera, Camera, number>;
             zfar: IObjectAccessor<ICamera, Camera, number>;
             znear: IObjectAccessor<ICamera, Camera, number>;
         };
@@ -728,12 +728,12 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
         orthographic: {
             xmag: {
                 componentsCount: 2,
-                type: "Vector2",
-                get: (camera) => new Vector2(camera._babylonCamera?.orthoLeft ?? 0, camera._babylonCamera?.orthoRight ?? 0),
+                type: "number",
+                get: (camera) => camera._babylonCamera?.orthoRight ?? 0,
                 set: (value, camera) => {
                     if (camera._babylonCamera) {
-                        camera._babylonCamera.orthoLeft = value.x;
-                        camera._babylonCamera.orthoRight = value.y;
+                        camera._babylonCamera.orthoLeft = -value;
+                        camera._babylonCamera.orthoRight = value;
                     }
                 },
                 getTarget: (camera) => camera._babylonCamera,
@@ -741,12 +741,12 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
             },
             ymag: {
                 componentsCount: 2,
-                type: "Vector2",
-                get: (camera: ICamera) => new Vector2(camera._babylonCamera?.orthoBottom ?? 0, camera._babylonCamera?.orthoTop ?? 0),
-                set: (value: Vector2, camera: ICamera) => {
+                type: "number",
+                get: (camera) => camera._babylonCamera?.orthoTop ?? 0,
+                set: (value, camera) => {
                     if (camera._babylonCamera) {
-                        camera._babylonCamera.orthoBottom = value.x;
-                        camera._babylonCamera.orthoTop = value.y;
+                        camera._babylonCamera.orthoBottom = -value;
+                        camera._babylonCamera.orthoTop = value;
                     }
                 },
                 getTarget: (camera) => camera._babylonCamera,
@@ -874,7 +874,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     }
                 },
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
-                getPropertyName: [() => "level"],
+                getPropertyName: [() => "bumpTexture.level"],
             },
             extensions: {
                 KHR_texture_transform: GenerateTextureMap("bumpTexture"),
@@ -1095,9 +1095,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 sheenRoughnessFactor: {
                     type: "number",
-                    get: (material, index, payload) => GetMaterial(material, index, payload).sheen.intensity,
+                    get: (material, index, payload) => GetMaterial(material, index, payload).sheen.roughness ?? 0,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).sheen.intensity = value),
+                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).sheen.roughness = value),
+                    getPropertyName: [() => "sheen.roughness"],
                 },
                 sheenRoughnessTexture: {
                     extensions: {
@@ -1240,17 +1241,17 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                 spot: {
                     innerConeAngle: {
                         type: "number",
-                        get: (light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.innerAngle,
-                        set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).innerAngle = value) : undefined),
+                        get: (light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.innerAngle / 2,
+                        set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).innerAngle = value * 2) : undefined),
                         getTarget: (light: IKHRLightsPunctual_Light) => light._babylonLight,
-                        getPropertyName: [(_light: IKHRLightsPunctual_Light) => "innerConeAngle"],
+                        getPropertyName: [() => "innerAngle"],
                     },
                     outerConeAngle: {
                         type: "number",
-                        get: (light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.angle,
-                        set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).angle = value) : undefined),
+                        get: (light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.angle / 2,
+                        set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).angle = value * 2) : undefined),
                         getTarget: (light: IKHRLightsPunctual_Light) => light._babylonLight,
-                        getPropertyName: [(_light: IKHRLightsPunctual_Light) => "outerConeAngle"],
+                        getPropertyName: [() => "angle"],
                     },
                 },
             },
@@ -1280,10 +1281,17 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                 },
                 size: {
                     type: "number",
-                    get: (light: IEXTLightsArea_Light) => (light._babylonLight as RectAreaLight)?.height,
-                    set: (value: number, light: IEXTLightsArea_Light) => (light._babylonLight ? ((light._babylonLight as RectAreaLight).height = value) : undefined),
+                    get: (light: IEXTLightsArea_Light) => (light._babylonLight as RectAreaLight)?.height * (light.type === "disk" ? 2 / Math.sqrt(Math.PI) : 1),
+                    set: (value, light) => {
+                        const target = light._babylonLight as RectAreaLight;
+                        if (target) {
+                            const aspect = target.width / target.height;
+                            target.height = value * (light.type === "disk" ? Math.sqrt(Math.PI) / 2 : 1);
+                            target.width = target.height * aspect;
+                        }
+                    },
                     getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
-                    getPropertyName: [(_light: IEXTLightsArea_Light) => "size"],
+                    getPropertyName: [() => "height", () => "width"],
                 },
                 rect: {
                     aspect: {
@@ -1292,7 +1300,7 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                         set: (value: number, light: IEXTLightsArea_Light) =>
                             light._babylonLight ? ((light._babylonLight as RectAreaLight).width = value * (light._babylonLight as RectAreaLight).height) : undefined,
                         getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
-                        getPropertyName: [(_light: IEXTLightsArea_Light) => "aspect"],
+                        getPropertyName: [() => "width"],
                     },
                 },
             },
@@ -1584,7 +1592,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             get: (material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
                 if (texture) {
-                    return texture.wAng;
+                    return -texture.wAng;
                 }
                 if (gltfPath) {
                     const xform = _gltfTextureTransform(material, gltfPath, false);
@@ -1596,7 +1604,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             set: (value, material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
                 if (texture) {
-                    texture.wAng = value;
+                    texture.wAng = -value;
                 }
                 if (gltfPath) {
                     const xform = _gltfTextureTransform(material, gltfPath, true);

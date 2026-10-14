@@ -11,6 +11,9 @@ import { FlowGraphThrottleBlock } from "core/FlowGraph/Blocks/Execution/ControlF
 import { FlowGraphCancelDelayBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCancelDelayBlock.pure";
 import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.pure";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { Animation } from "core/Animations/animation.pure";
+import { FlowGraphInterpolationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphInterpolationBlock.pure";
+import { FlowGraphJsonPointerParserBlock } from "core/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.pure";
 
 describe("FlowGraph optional execution semantics", () => {
     let engine: NullEngine;
@@ -118,6 +121,68 @@ describe("FlowGraph optional execution semantics", () => {
         expect(() => block._execute(context, block.in)).not.toThrow();
         expect(out).not.toHaveBeenCalled();
         expect(error).toHaveBeenCalledOnce();
+    });
+
+    it("retains zero-valued interpolation keys", () => {
+        const block = new FlowGraphInterpolationBlock<number>({ propertyName: "value", duration: 1 });
+        block.initialValue.setValue(0.2, context);
+        block.endValue.setValue(0, context);
+        block._updateOutputs(context);
+        const animations = block.animation.getValue(context);
+        expect(Array.isArray(animations)).toBe(true);
+        if (!Array.isArray(animations)) {
+            throw new Error("Expected interpolation animations.");
+        }
+        expect(animations[0].getKeys()).toEqual([
+            { frame: 0, value: 0.2 },
+            { frame: 60, value: 0 },
+        ]);
+    });
+
+    it("applies same-type interpolation metadata conversions with the accessor target", () => {
+        const target = { value: 0.2 };
+        const getValue = vi.fn((_target, source, offset) => source[offset] * 2);
+        const parser = new FlowGraphJsonPointerParserBlock({
+            jsonPointer: "/value",
+            pathConverter: {
+                convert: () => ({
+                    object: target,
+                    info: {
+                        type: "number",
+                        get: () => target.value,
+                        getTarget: () => target,
+                        interpolation: [
+                            {
+                                type: Animation.ANIMATIONTYPE_FLOAT,
+                                name: "value",
+                                getValue,
+                                getStride: () => 1,
+                                buildAnimations: (_target, name, fps, keys) => {
+                                    const animation = new Animation(name, "value", fps, Animation.ANIMATIONTYPE_FLOAT);
+                                    animation.setKeys(keys);
+                                    return [{ babylonAnimatable: target, babylonAnimation: animation }];
+                                },
+                            },
+                        ],
+                    },
+                }),
+            },
+        });
+        const block = new FlowGraphInterpolationBlock<number>({ duration: 1 });
+        block.initialValue.setValue(0.2, context);
+        block.endValue.setValue(0.4, context);
+        block.customBuildAnimation.connectTo(parser.generateAnimationsFunction);
+        block._updateOutputs(context);
+        const animations = block.animation.getValue(context);
+        if (!Array.isArray(animations)) {
+            throw new Error("Expected interpolation animations.");
+        }
+        expect(animations[0].getKeys()).toEqual([
+            { frame: 0, value: 0.4 },
+            { frame: 60, value: 0.8 },
+        ]);
+        expect(getValue).toHaveBeenNthCalledWith(1, target, [0.2], 0, 1);
+        expect(getValue).toHaveBeenNthCalledWith(2, target, [0.4], 0, 1);
     });
 
     it.each([false, true])("preserves empty-loop compatibility unless final-index behavior is enabled (%s)", (incrementIndexWhenLoopDone) => {

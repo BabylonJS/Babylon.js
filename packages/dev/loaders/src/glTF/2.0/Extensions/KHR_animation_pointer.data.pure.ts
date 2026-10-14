@@ -3,7 +3,8 @@
 /** This file must only contain pure code and pure imports */
 
 import { Animation } from "core/Animations/animation.pure";
-import { type ICamera, type IKHRLightsPunctual_Light, type IMaterial, type INode } from "../glTFLoaderInterfaces";
+import { type ICamera, type IEXTLightsArea_Light, type IKHRLightsPunctual_Light, type IMaterial, type INode } from "../glTFLoaderInterfaces";
+import { type RectAreaLight } from "core/Lights/rectAreaLight.pure";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationPropertyInfo, RegisterGLTFLoaderAnimation } from "../glTFLoaderAnimation.pure";
 import { Color3 } from "core/Maths/math.color.pure";
@@ -31,6 +32,19 @@ function getNextFloat(_target: any, source: Float32Array, offset: number, scale:
 
 function getFloatBy2(_target: any, source: Float32Array, offset: number, scale: number): number {
     return source[offset] * scale * 2;
+}
+
+function getAreaLightHeight(target: IEXTLightsArea_Light, source: Float32Array, offset: number, scale: number): number {
+    return getFloat(target, source, offset, scale) * (target.type === "disk" ? Math.sqrt(Math.PI) / 2 : 1);
+}
+
+function getAreaLightWidth(target: IEXTLightsArea_Light, source: Float32Array, offset: number, scale: number): number {
+    const light = target._babylonLight as RectAreaLight;
+    return getAreaLightHeight(target, source, offset, scale) * (light.width / light.height);
+}
+
+function getAreaLightAspectWidth(target: IEXTLightsArea_Light, source: Float32Array, offset: number, scale: number): number {
+    return getFloat(target, source, offset, scale) * (target._babylonLight as RectAreaLight).height;
 }
 
 function getTextureTransformTree(textureName: string) {
@@ -100,12 +114,12 @@ export function _RegisterKHRAnimationPointerData(): void {
 
     SetInterpolationForKey("/cameras/{}/orthographic/xmag", [
         new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoLeft", getMinusFloat, () => 1),
-        new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoRight", getNextFloat, () => 1),
+        new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoRight", getFloat, () => 1),
     ]);
 
     SetInterpolationForKey("/cameras/{}/orthographic/ymag", [
         new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoBottom", getMinusFloat, () => 1),
-        new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoTop", getNextFloat, () => 1),
+        new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoTop", getFloat, () => 1),
     ]);
 
     SetInterpolationForKey("/cameras/{}/orthographic/zfar", [new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "maxZ", getFloat, () => 1)]);
@@ -130,9 +144,9 @@ export function _RegisterKHRAnimationPointerData(): void {
     SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/rotation", baseColorTextureInterpolation.rotation);
 
     const metallicRoughnessTextureInterpolation = getTextureTransformTree("metallicTexture");
-    SetInterpolationForKey("//materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/scale", metallicRoughnessTextureInterpolation.scale);
-    SetInterpolationForKey("//materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/offset", metallicRoughnessTextureInterpolation.offset);
-    SetInterpolationForKey("//materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/rotation", metallicRoughnessTextureInterpolation.rotation);
+    SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/scale", metallicRoughnessTextureInterpolation.scale);
+    SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/offset", metallicRoughnessTextureInterpolation.offset);
+    SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/rotation", metallicRoughnessTextureInterpolation.rotation);
 
     SetInterpolationForKey("/materials/{}/emissiveFactor", [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", getColor3, () => 3)]);
     const normalTextureInterpolation = getTextureTransformTree("bumpTexture");
@@ -209,7 +223,7 @@ export function _RegisterKHRAnimationPointerData(): void {
         clearcoatRoughnessTextureInterpolation.rotation
     );
 
-    SetInterpolationForKey("/materials/{}/extensions/KHR_materials_dispersion/dispersionFactor", [
+    SetInterpolationForKey("/materials/{}/extensions/KHR_materials_dispersion/dispersion", [
         new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.dispersion", getFloat, () => 1),
     ]);
     SetInterpolationForKey("/materials/{}/extensions/KHR_materials_emissive_strength/emissiveStrength", [
@@ -376,8 +390,13 @@ export function _RegisterKHRAnimationPointerData(): void {
 
     SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
     SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/intensity", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
-    SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/size", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "radius", getFloat, () => 1)]);
-    SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/rect/aspect", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "radius", getFloat, () => 1)]);
+    SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/size", [
+        new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "height", getAreaLightHeight, () => 1),
+        new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "width", getAreaLightWidth, () => 1),
+    ]);
+    SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/rect/aspect", [
+        new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "width", getAreaLightAspectWidth, () => 1),
+    ]);
 
     SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
     SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/multiplier", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);

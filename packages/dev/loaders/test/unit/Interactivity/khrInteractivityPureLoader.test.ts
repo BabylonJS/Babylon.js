@@ -16,8 +16,14 @@ import { GetKHRInteractivityImportResult, RegisterKHR_interactivity } from "../.
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { DelayReferencePrefix } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityReferences";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
+import { type SpotLight } from "core/Lights/spotLight.pure";
+import { type RectAreaLight } from "core/Lights/rectAreaLight.pure";
 
-function asset(graph: IKHRInteractivity_Graph, extensionsUsed: string[] = ["KHR_interactivity"], contents: Record<string, unknown> = {}): string {
+function asset(
+    graph: IKHRInteractivity_Graph,
+    extensionsUsed: string[] = ["KHR_interactivity"],
+    contents: Record<string, unknown> & { extensions?: Record<string, unknown> } = {}
+): string {
     return `data:${JSON.stringify({
         asset: { version: "2.0" },
         scenes: [{ nodes: [0] }],
@@ -25,11 +31,11 @@ function asset(graph: IKHRInteractivity_Graph, extensionsUsed: string[] = ["KHR_
         scene: 0,
         ...contents,
         extensionsUsed,
-        extensions: { KHR_interactivity: { graphs: [graph] } },
+        extensions: { ...contents.extensions, KHR_interactivity: { graphs: [graph] } },
     })}`;
 }
 
-function scalarInterpolation(pointer: string, value: number): IKHRInteractivity_Graph {
+function scalarInterpolation(pointer: string, value: number | number[]): IKHRInteractivity_Graph {
     return {
         types: [{ signature: "float" }, { signature: "float2" }],
         declarations: [{ op: "event/onStart" }, { op: "pointer/interpolate" }, { op: "debug/log" }],
@@ -37,19 +43,60 @@ function scalarInterpolation(pointer: string, value: number): IKHRInteractivity_
             { declaration: 0, flows: { out: { node: 1 } } },
             {
                 declaration: 1,
-                configuration: { pointer: { value: [pointer] }, type: { value: [0] } },
+                configuration: { pointer: { value: [pointer] }, type: { value: [Array.isArray(value) ? 1 : 0] } },
                 values: {
-                    value: { type: 0, value: [value] },
+                    value: { type: Array.isArray(value) ? 1 : 0, value: Array.isArray(value) ? value : [value] },
                     duration: { type: 0, value: [1] },
                     p1: { type: 1, value: [0, 0] },
                     p2: { type: 1, value: [1, 1] },
                 },
-                flows: { err: { node: 2 } },
+                flows: { err: { node: 2 }, out: { node: 3 }, done: { node: 4 } },
             },
             { declaration: 2, configuration: { severity: { value: [0] }, message: { value: ["interpolation error"] } } },
+            { declaration: 2, configuration: { severity: { value: [0] }, message: { value: ["interpolation started"] } } },
+            { declaration: 2, configuration: { severity: { value: [0] }, message: { value: ["interpolation done"] } } },
         ],
     };
 }
+
+function withReadback(graph: IKHRInteractivity_Graph, pointer: string, type = 0): IKHRInteractivity_Graph {
+    const declaration = graph.declarations!.length;
+    const node = graph.nodes.length;
+    graph.variables = [{ type }];
+    graph.declarations!.push({ op: "pointer/get" }, { op: "variable/set" }, { op: "event/onTick" });
+    graph.nodes.push(
+        { declaration, configuration: { pointer: { value: [pointer] }, type: { value: [type] } } },
+        { declaration: declaration + 2, flows: { out: { node: node + 2 } } },
+        { declaration: declaration + 1, configuration: { variables: { value: [0] } }, values: { "0": { node } } }
+    );
+    return graph;
+}
+
+function pointerWrite(pointer: string, value: number): IKHRInteractivity_Graph {
+    return withReadback(
+        {
+            types: [{ signature: "float" }],
+            declarations: [{ op: "event/onStart" }, { op: "pointer/set" }, { op: "debug/log" }],
+            nodes: [
+                { declaration: 0, flows: { out: { node: 1 } } },
+                {
+                    declaration: 1,
+                    configuration: { pointer: { value: [pointer] }, type: { value: [0] } },
+                    values: { value: { type: 0, value: [value] } },
+                    flows: { out: { node: 2 }, err: { node: 3 } },
+                },
+                { declaration: 2, configuration: { severity: { value: [0] }, message: { value: ["written"] } } },
+                { declaration: 2, configuration: { severity: { value: [0] }, message: { value: ["write error"] } } },
+            ],
+        },
+        pointer
+    );
+}
+
+const TextureContents = {
+    images: [{ uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=" }],
+    textures: [{ source: 0 }],
+};
 
 describe("KHR_interactivity minimal public loader imports", () => {
     let engine: NullEngine;
@@ -70,6 +117,7 @@ describe("KHR_interactivity minimal public loader imports", () => {
         scene.dispose();
         engine.dispose();
         vi.restoreAllMocks();
+        vi.useRealTimers();
     });
 
     it("starts before the first tick while appending to an already-rendering, not-ready scene", async () => {
@@ -183,6 +231,349 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(material[property]).toBeCloseTo(0.8);
         expect(material[untouched]).toBeCloseTo(otherInitial);
         expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
+    it.each(["literal", "connected"])("preserves a %s zero material interpolation endpoint", async (source) => {
+        const log = vi.spyOn(Logger, "Log");
+        const graph = scalarInterpolation("/materials/0/pbrMetallicRoughness/metallicFactor", 0);
+        if (source === "connected") {
+            graph.variables = [{ type: 0, value: [0] }];
+            graph.declarations!.push({ op: "variable/get" });
+            for (const node of graph.nodes) {
+                for (const flow of Object.values(node.flows ?? {})) {
+                    flow.node++;
+                }
+            }
+            graph.nodes.unshift({ declaration: 3, configuration: { variable: { value: [0] } } });
+            graph.nodes[2].values!.value = { node: 0 };
+        }
+        await AppendSceneAsync(asset(graph, ["KHR_interactivity"], { materials: [{ pbrMetallicRoughness: { metallicFactor: 0.2 } }] }), scene, {
+            pluginOptions: { gltf: { loadAllMaterials: true } },
+        });
+        const group = scene.animationGroups[0];
+        const material = group.targetedAnimations[0].target as PBRMaterial;
+        expect(group.targetedAnimations[0].animation.getKeys()).toHaveLength(2);
+        group.goToFrame(30);
+        expect(material.metallic).toBeCloseTo(0.1);
+        group.goToFrame(60);
+        expect(material.metallic).toBe(0);
+        expect(log).toHaveBeenCalledWith("interpolation started");
+        expect(log).not.toHaveBeenCalledWith("interpolation error");
+        scene.render();
+        expect(log).toHaveBeenCalledWith("interpolation done");
+    });
+
+    it("still rejects an invalid duration when the interpolation endpoint is zero", async () => {
+        const log = vi.spyOn(Logger, "Log");
+        const graph = scalarInterpolation("/materials/0/pbrMetallicRoughness/metallicFactor", 0);
+        graph.nodes[1].values!.duration = { type: 0 };
+        await AppendSceneAsync(asset(graph, ["KHR_interactivity"], { materials: [{ pbrMetallicRoughness: { metallicFactor: 0.2 } }] }), scene, {
+            pluginOptions: { gltf: { loadAllMaterials: true } },
+        });
+        expect(log).toHaveBeenCalledWith("interpolation error");
+        expect(log).not.toHaveBeenCalledWith("interpolation started");
+        expect(log).not.toHaveBeenCalledWith("interpolation done");
+    });
+
+    it.each([
+        ["xmag", "orthoLeft", "orthoRight"],
+        ["ymag", "orthoBottom", "orthoTop"],
+    ] as const)("reads and interpolates scalar orthographic %s with symmetric bounds", async (property, lower, upper) => {
+        const pointer = `/cameras/0/orthographic/${property}`;
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(withReadback(scalarInterpolation(pointer, 4), pointer), ["KHR_interactivity"], {
+                nodes: [{ camera: 0 }],
+                cameras: [{ type: "orthographic", orthographic: { xmag: 2, ymag: 2, znear: 0.1, zfar: 100 } }],
+            }),
+            scene
+        );
+        const camera = GetKHRInteractivityImportResult(scene)!.glTF.cameras![0]._babylonCamera!;
+        const context = GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0);
+        const group = scene.animationGroups[0];
+        expect(group.targetedAnimations.map((entry) => entry.animation.targetProperty)).toEqual([lower, upper]);
+        group.pause();
+        for (const [frame, magnitude] of [
+            [0, 2],
+            [30, 3],
+            [60, 4],
+        ]) {
+            group.goToFrame(frame);
+            scene.render();
+            expect(camera[lower]).toBeCloseTo(-magnitude);
+            expect(camera[upper]).toBeCloseTo(magnitude);
+            expect(context.getVariable("staticVariable_0")).toBeCloseTo(magnitude);
+        }
+        expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
+    it.each([
+        ["xmag", "orthoLeft", "orthoRight"],
+        ["ymag", "orthoBottom", "orthoTop"],
+    ] as const)("writes scalar orthographic %s", async (property, lower, upper) => {
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(pointerWrite(`/cameras/0/orthographic/${property}`, 5), ["KHR_interactivity"], {
+                nodes: [{ camera: 0 }],
+                cameras: [{ type: "orthographic", orthographic: { xmag: 2, ymag: 2, znear: 0.1, zfar: 100 } }],
+            }),
+            scene
+        );
+        scene.render();
+        const result = GetKHRInteractivityImportResult(scene)!;
+        expect(result.glTF.cameras![0]._babylonCamera![lower]).toBe(-5);
+        expect(result.glTF.cameras![0]._babylonCamera![upper]).toBe(5);
+        expect(result.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBe(5);
+        expect(log).toHaveBeenCalledWith("written");
+        expect(log).not.toHaveBeenCalledWith("write error");
+    });
+
+    it("keeps an explicit normal-scale write authoritative after cancelling interpolation", async () => {
+        const log = vi.spyOn(Logger, "Log");
+        const pointer = "/materials/0/normalTexture/scale";
+        const graph = scalarInterpolation(pointer, 0.2);
+        graph.declarations!.push({ op: "pointer/set" });
+        graph.nodes[1].flows = { out: { node: 2 }, err: { node: 3 }, done: { node: 5 } };
+        graph.nodes.splice(2, 0, {
+            declaration: 3,
+            configuration: { pointer: { value: [pointer] }, type: { value: [0] } },
+            values: { value: { type: 0, value: [0.9] } },
+            flows: { out: { node: 4 }, err: { node: 3 } },
+        });
+        await AppendSceneAsync(asset(graph, ["KHR_interactivity"], { ...TextureContents, materials: [{ normalTexture: { index: 0, scale: 0.6 } }] }), scene, {
+            pluginOptions: { gltf: { loadAllMaterials: true } },
+        });
+        const material = scene.materials.find((entry) => entry instanceof PBRMaterial) as PBRMaterial;
+        expect(material.bumpTexture!.level).toBeCloseTo(0.9);
+        expect(scene.animationGroups).toHaveLength(0);
+        vi.useFakeTimers({ toFake: ["Date", "performance"] });
+        for (let frame = 0; frame < 120; frame++) {
+            vi.advanceTimersByTime(16);
+            scene.render();
+        }
+        expect(material.bumpTexture!.level).toBeCloseTo(0.9);
+        expect(log).toHaveBeenCalledWith("interpolation started");
+        expect(log).not.toHaveBeenCalledWith("interpolation done");
+        expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
+    it.each([
+        ["scale", [3, 4], "uScale", "vScale", 1, 2, 3, 4],
+        ["offset", [0.6, 0.8], "uOffset", "vOffset", 0.2, 0.4, 0.6, 0.8],
+        ["rotation", 0.8, "wAng", "wAng", -0.2, -0.2, -0.8, -0.8],
+    ] as const)("initializes metallic-roughness texture %s interpolation", async (property, value, first, second, initialFirst, initialSecond, finalFirst, finalSecond) => {
+        const log = vi.spyOn(Logger, "Log");
+        const pointer = `/materials/0/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/${property}`;
+        await AppendSceneAsync(
+            asset(
+                withReadback(scalarInterpolation(pointer, typeof value === "number" ? value : [...value]), pointer, typeof value === "number" ? 0 : 1),
+                ["KHR_interactivity", "KHR_texture_transform"],
+                {
+                    ...TextureContents,
+                    materials: [
+                        {
+                            pbrMetallicRoughness: {
+                                metallicRoughnessTexture: { index: 0, extensions: { KHR_texture_transform: { scale: [1, 2], offset: [0.2, 0.4], rotation: 0.2 } } },
+                            },
+                        },
+                    ],
+                }
+            ),
+            scene,
+            { pluginOptions: { gltf: { loadAllMaterials: true } } }
+        );
+        const material = scene.materials.find((entry) => entry instanceof PBRMaterial) as PBRMaterial;
+        const group = scene.animationGroups[0];
+        expect(group.targetedAnimations.map((entry) => entry.animation.targetProperty)).toEqual(
+            first === second ? [`metallicTexture.${first}`] : [`metallicTexture.${first}`, `metallicTexture.${second}`]
+        );
+        group.pause();
+        for (const [frame, amount] of [
+            [0, 0],
+            [30, 0.5],
+            [60, 1],
+        ]) {
+            group.goToFrame(frame);
+            scene.render();
+            expect(material.metallicTexture![first]).toBeCloseTo(initialFirst + amount * (finalFirst - initialFirst));
+            expect(material.metallicTexture![second]).toBeCloseTo(initialSecond + amount * (finalSecond - initialSecond));
+            if (property === "rotation") {
+                expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(0.2 + amount * 0.6);
+            }
+        }
+        expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
+    it("interpolates dispersion at the actual object-model path", async () => {
+        const pointer = "/materials/0/extensions/KHR_materials_dispersion/dispersion";
+        await AppendSceneAsync(
+            asset(withReadback(scalarInterpolation(pointer, 0.8), pointer), ["KHR_interactivity", "KHR_materials_transmission", "KHR_materials_dispersion"], {
+                materials: [{ extensions: { KHR_materials_transmission: { transmissionFactor: 1 }, KHR_materials_dispersion: { dispersion: 0.2 } } }],
+            }),
+            scene,
+            { pluginOptions: { gltf: { loadAllMaterials: true } } }
+        );
+        const group = scene.animationGroups[0];
+        const material = group.targetedAnimations[0].target as PBRMaterial;
+        expect(group.targetedAnimations[0].animation.targetProperty).toBe("subSurface.dispersion");
+        group.pause();
+        const initial = material.subSurface.dispersion;
+        expect(initial).toBe(100);
+        for (const [frame, value] of [
+            [0, initial],
+            [30, (initial + 0.8) / 2],
+            [60, 0.8],
+        ]) {
+            group.goToFrame(frame);
+            scene.render();
+            expect(material.subSurface.dispersion).toBeCloseTo(value);
+            expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(value);
+        }
+    });
+
+    it("reads and interpolates sheen roughness independently of intensity", async () => {
+        const pointer = "/materials/0/extensions/KHR_materials_sheen/sheenRoughnessFactor";
+        await AppendSceneAsync(
+            asset(withReadback(scalarInterpolation(pointer, 0.2), pointer), ["KHR_interactivity", "KHR_materials_sheen"], {
+                materials: [{ extensions: { KHR_materials_sheen: { sheenColorFactor: [1, 1, 1], sheenRoughnessFactor: 0.6 } } }],
+            }),
+            scene,
+            { pluginOptions: { gltf: { loadAllMaterials: true } } }
+        );
+        const group = scene.animationGroups[0];
+        const material = group.targetedAnimations[0].target as PBRMaterial;
+        expect(group.targetedAnimations[0].animation.targetProperty).toBe("sheen.roughness");
+        group.pause();
+        for (const [frame, value] of [
+            [0, 0.6],
+            [30, 0.4],
+            [60, 0.2],
+        ]) {
+            group.goToFrame(frame);
+            scene.render();
+            expect(material.sheen.roughness).toBeCloseTo(value);
+            expect(material.sheen.intensity).toBe(1);
+            expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(value);
+        }
+    });
+
+    it.each([
+        ["innerConeAngle", "innerAngle", 0.1],
+        ["outerConeAngle", "angle", 0.6],
+    ] as const)("reads and interpolates spotlight half angles (%s)", async (property, runtimeProperty, initial) => {
+        const pointer = `/extensions/KHR_lights_punctual/lights/0/spot/${property}`;
+        await AppendSceneAsync(
+            asset(withReadback(scalarInterpolation(pointer, 0.4), pointer), ["KHR_interactivity", "KHR_lights_punctual"], {
+                nodes: [{ extensions: { KHR_lights_punctual: { light: 0 } } }],
+                extensions: { KHR_lights_punctual: { lights: [{ type: "spot", spot: { innerConeAngle: 0.1, outerConeAngle: 0.6 } }] } },
+            }),
+            scene
+        );
+        const group = scene.animationGroups[0];
+        const light = group.targetedAnimations[0].target as SpotLight;
+        expect(group.targetedAnimations[0].animation.targetProperty).toBe(runtimeProperty);
+        group.pause();
+        for (const [frame, amount] of [
+            [0, 0],
+            [30, 0.5],
+            [60, 1],
+        ]) {
+            group.goToFrame(frame);
+            scene.render();
+            const value = initial + (0.4 - initial) * amount;
+            expect(light[runtimeProperty]).toBeCloseTo(2 * value);
+            expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(value);
+        }
+    });
+
+    it.each([
+        ["innerConeAngle", "innerAngle"],
+        ["outerConeAngle", "angle"],
+    ] as const)("writes spotlight half angles (%s)", async (property, runtimeProperty) => {
+        await AppendSceneAsync(
+            asset(pointerWrite(`/extensions/KHR_lights_punctual/lights/0/spot/${property}`, 0.3), ["KHR_interactivity", "KHR_lights_punctual"], {
+                nodes: [{ extensions: { KHR_lights_punctual: { light: 0 } } }],
+                extensions: { KHR_lights_punctual: { lights: [{ type: "spot", spot: { innerConeAngle: 0.1, outerConeAngle: 0.6 } }] } },
+            }),
+            scene
+        );
+        scene.render();
+        expect((scene.lights[0] as SpotLight)[runtimeProperty]).toBeCloseTo(0.6);
+        expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(0.3);
+    });
+
+    it.each([
+        ["size", 4, 4, 12],
+        ["rect/aspect", 1.5, 2, 3],
+    ] as const)("interpolates rectangle dimensions and readback (%s)", async (property, target, height, width) => {
+        const pointer = `/extensions/EXT_lights_area/lights/0/${property}`;
+        await AppendSceneAsync(
+            asset(withReadback(scalarInterpolation(pointer, target), pointer), ["KHR_interactivity", "EXT_lights_area"], {
+                nodes: [{ extensions: { EXT_lights_area: { light: 0 } } }],
+                extensions: { EXT_lights_area: { lights: [{ type: "rect", size: 2, rect: { aspect: 3 } }] } },
+            }),
+            scene
+        );
+        const group = scene.animationGroups[0];
+        const light = group.targetedAnimations[0].target as RectAreaLight;
+        expect(group.targetedAnimations.map((entry) => entry.animation.targetProperty)).toEqual(property === "size" ? ["height", "width"] : ["width"]);
+        group.pause();
+        for (const [frame, amount] of [
+            [0, 0],
+            [30, 0.5],
+            [60, 1],
+        ]) {
+            group.goToFrame(frame);
+            scene.render();
+            expect(light.height).toBeCloseTo(2 + amount * (height - 2));
+            expect(light.width).toBeCloseTo(6 + amount * (width - 6));
+            expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(
+                (property === "size" ? 2 : 3) + amount * (target - (property === "size" ? 2 : 3))
+            );
+        }
+    });
+
+    it("interpolates disk size through the equal-area rectangle dimensions", async () => {
+        const pointer = "/extensions/EXT_lights_area/lights/0/size";
+        await AppendSceneAsync(
+            asset(withReadback(scalarInterpolation(pointer, 4), pointer), ["KHR_interactivity", "EXT_lights_area"], {
+                nodes: [{ extensions: { EXT_lights_area: { light: 0 } } }],
+                extensions: { EXT_lights_area: { lights: [{ type: "disk", size: 2 }] } },
+            }),
+            scene
+        );
+        const group = scene.animationGroups[0];
+        const light = group.targetedAnimations[0].target as RectAreaLight;
+        group.pause();
+        for (const [frame, size] of [
+            [0, 2],
+            [30, 3],
+            [60, 4],
+        ]) {
+            group.goToFrame(frame);
+            scene.render();
+            expect(light.height).toBeCloseTo((size * Math.sqrt(Math.PI)) / 2);
+            expect(light.width).toBeCloseTo(light.height);
+            expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(size);
+        }
+    });
+
+    it.each(["rect", "disk"])("writes area-light size while retaining its shape (%s)", async (type) => {
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(pointerWrite("/extensions/EXT_lights_area/lights/0/size", 4), ["KHR_interactivity", "EXT_lights_area"], {
+                nodes: [{ extensions: { EXT_lights_area: { light: 0 } } }],
+                extensions: { EXT_lights_area: { lights: [{ type, size: 2, ...(type === "rect" ? { rect: { aspect: 3 } } : {}) }] } },
+            }),
+            scene
+        );
+        scene.render();
+        const light = scene.lights[0] as RectAreaLight;
+        expect(light.height).toBeCloseTo(type === "rect" ? 4 : 2 * Math.sqrt(Math.PI));
+        expect(light.width).toBeCloseTo(light.height * (type === "rect" ? 3 : 1));
+        expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(4);
+        expect(log).toHaveBeenCalledWith("written");
+        expect(log).not.toHaveBeenCalledWith("write error");
     });
 
     it.each([

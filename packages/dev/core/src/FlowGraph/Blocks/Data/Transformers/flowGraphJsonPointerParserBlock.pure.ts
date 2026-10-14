@@ -154,7 +154,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
                 throw new Error(`Property is not interpolatable with value type ${this.config.valueType}`);
             }
         }
-        return (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => {
+        return (keys: any[], fps: number, _animationType: number, easingFunction?: EasingFunction) => {
             const animations: Animation[] = [];
             // make sure keys are of the right type (in case of float3 color/vector)
             const type = accessorContainer.info.type;
@@ -169,16 +169,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
             accessorContainer.info.interpolation?.forEach((info, index) => {
                 const name = accessorContainer.info.getPropertyName?.[index](accessorContainer.object) || "Animation-interpolation-" + index;
                 // generate the keys based on interpolation info
-                let newKeys: any[] = keys;
-                if (animationType !== info.type) {
-                    // convert the keys to the right type
-                    newKeys = keys.map((key) => {
-                        return {
-                            frame: key.frame,
-                            value: info.getValue(undefined, key.value.asArray ? key.value.asArray() : [key.value], 0, 1),
-                        };
-                    });
-                }
+                // Metadata also converts units/components when the animation types match.
+                const newKeys = keys.map((key) => ({
+                    frame: key.frame,
+                    value: info.getValue(accessorContainer.object, key.value.asArray ? key.value.asArray() : [key.value], 0, 1),
+                }));
                 const animationData = info.buildAnimations(accessorContainer.object, name, 60, newKeys);
                 for (const animation of animationData) {
                     if (easingFunction) {
