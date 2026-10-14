@@ -175,7 +175,8 @@ export function ApplyPostProcess(
     });
 }
 
-function IsCompressedTextureFormat(format: number): boolean {
+/** @internal */
+export function IsCompressedTextureFormat(format: number): boolean {
     switch (format) {
         case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
@@ -262,7 +263,15 @@ export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void>
  * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format, which cannot be read using readPixels.
  * @internal
  */
-async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: number, face: number, lod: number, slice: number = 0): Promise<Uint8Array> {
+async function ReadPixelsUsingRTT(
+    texture: BaseTexture,
+    width: number,
+    height: number,
+    face: number,
+    lod: number,
+    slice: number,
+    applyGammaCorrection: boolean
+): Promise<Uint8Array> {
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
     const sourceInternalTexture = texture.getInternalTexture();
@@ -313,26 +322,44 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
         });
     }
 
-    await new Promise((resolve) => {
-        lodPostProcess.onEffectCreatedObservable.addOnce((e) => {
-            e.executeWhenCompiled(() => {
-                resolve(0);
+    let rtt: RenderTargetTexture | undefined;
+    try {
+        await new Promise<void>((resolve, reject) => {
+            lodPostProcess.onEffectCreatedObservable.addOnce((effect) => {
+                const cleanup = () => {
+                    effect.onCompileObservable.remove(onCompile);
+                    effect.onErrorObservable.remove(onError);
+                };
+                const onCompile = effect.onCompileObservable.addOnce(() => {
+                    cleanup();
+                    resolve();
+                });
+                const onError = effect.onErrorObservable.addOnce(() => {
+                    cleanup();
+                    reject(new Error(effect.getCompilationError() || "Texture readback shader compilation failed."));
+                });
+                const compilationError = effect.getCompilationError();
+                if (compilationError) {
+                    cleanup();
+                    reject(new Error(compilationError));
+                } else if (effect.isReady()) {
+                    cleanup();
+                    resolve();
+                }
             });
         });
-    });
 
-    const rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
+        rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
 
-    lodPostProcess.onApply = function (effect) {
-        effect.setTexture("textureSampler", texture);
-        effect.setFloat("lod", lod);
-        effect.setInt("gamma", texture.gammaSpace ? 1 : 0);
-        if (is3DTexture) {
-            effect.setFloat("slice", slice);
-        }
-    };
+        lodPostProcess.onApply = function (effect) {
+            effect.setTexture("textureSampler", texture);
+            effect.setFloat("lod", lod);
+            effect.setInt("gamma", !applyGammaCorrection || texture.gammaSpace ? 1 : 0);
+            if (is3DTexture) {
+                effect.setFloat("slice", slice);
+            }
+        };
 
-    try {
         if (rtt.renderTarget && sourceInternalTexture) {
             const samplingMode = sourceInternalTexture.samplingMode;
             if (lod !== 0) {
@@ -356,7 +383,7 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
             throw Error("Render to texture failed.");
         }
     } finally {
-        rtt.dispose();
+        rtt?.dispose();
         lodPostProcess.dispose();
     }
 }
@@ -373,6 +400,7 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
  * @param lod if the texture has multiple LODs, the lod index to use for the source
  * @param forceRTT if true, forces the use of the RTT path for reading pixels (useful for cube maps to ensure correct orientation and gamma)
  * @param slice if the texture is 3D, the depth slice index to use for the source
+ * @param applyGammaCorrection if true, converts linear RTT readback to display gamma. Defaults to true; false preserves stored channel values.
  * @returns the 8-bit texture data
  */
 export async function GetTextureDataAsync(
@@ -382,7 +410,8 @@ export async function GetTextureDataAsync(
     face: number = 0,
     lod: number = 0,
     forceRTT: boolean = false,
-    slice: number = 0
+    slice: number = 0,
+    applyGammaCorrection: boolean = true
 ): Promise<Uint8Array> {
     await WhenTextureReadyAsync(texture);
     const internalTexture = texture.getInternalTexture();
@@ -400,7 +429,7 @@ export async function GetTextureDataAsync(
         if (texture.is2DArray) {
             throw new Error(`Reading pixels from 2D array textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
         }
-        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod, slice);
+        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod, slice, applyGammaCorrection);
     }
 
     let data = (await texture.readPixels(face, lod)) as Nullable<Uint8Array | Float32Array>;
