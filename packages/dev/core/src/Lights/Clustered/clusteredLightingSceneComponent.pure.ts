@@ -25,6 +25,8 @@ export class ClusteredLightingSceneComponent implements ISceneComponent {
      */
     constructor(scene: Scene) {
         this.scene = scene;
+        // Register now: register() is deferred until the next render, but Scene.isReady() can be polled before then.
+        this.scene.addIsReadyCheck(this);
     }
 
     /**
@@ -44,7 +46,6 @@ export class ClusteredLightingSceneComponent implements ISceneComponent {
      * Register the component to one instance of a scene.
      */
     public register(): void {
-        this.scene.addIsReadyCheck(this);
         this.scene._gatherActiveCameraRenderTargetsStage.registerStep(
             SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHTING,
             this,

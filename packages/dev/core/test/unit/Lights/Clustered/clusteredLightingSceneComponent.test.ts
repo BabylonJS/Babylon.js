@@ -18,7 +18,7 @@ describe("ClusteredLightingSceneComponent readiness", () => {
         engine = new NullEngine();
         scene = new Scene(engine);
         component = new ClusteredLightingSceneComponent(scene);
-        component.register();
+        scene._addComponent(component);
     });
 
     afterEach(() => {
@@ -106,6 +106,24 @@ describe("ClusteredLightingSceneComponent readiness", () => {
         light.dispose();
         expect(scene.isReady()).toBe(true);
         expect(ready).not.toHaveBeenCalled();
+    });
+
+    it("gates direct isReady() polling for a normally constructed container before any render", () => {
+        const freshScene = new Scene(engine);
+        // NullEngine has no clustered-lighting caps; report a supported engine so construction registers the component.
+        vi.spyOn(ClusteredLightContainer as any, "_GetEngineBatchSize").mockReturnValue(32);
+        const light = new ClusteredLightContainer("cluster", [], freshScene);
+        expect(light.isSupported).toBe(true);
+        const ready = vi.spyOn(light, "_isReady").mockReturnValue(false);
+        const render = vi.spyOn(freshScene, "render");
+
+        expect(freshScene.isReady()).toBe(false);
+        expect(ready).toHaveBeenCalledOnce();
+
+        ready.mockReturnValue(true);
+        expect(freshScene.isReady()).toBe(true);
+        expect(render).not.toHaveBeenCalled();
+        freshScene.dispose();
     });
 
     it("unregisters its readiness check on disposal", () => {
