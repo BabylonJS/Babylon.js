@@ -415,6 +415,7 @@ async function _runFrames(page: Page, durationMs: number): Promise<string | unde
             ({ duration, frameDuration }) => {
                 (window as any).__khrFrameRun = (async () => {
                     const start = performance.now();
+                    let renderCount = 0;
                     while (performance.now() - start < duration) {
                         await new Promise<void>((resolve) => setTimeout(resolve, frameDuration));
                         const scene = window.scene!;
@@ -425,14 +426,24 @@ async function _runFrames(page: Page, durationMs: number): Promise<string | unde
                         (window as any).__khrDeltaTime = currentFrameTime - (window as any).__khrLastFrameTime;
                         (window as any).__khrLastFrameTime = currentFrameTime;
                         scene.render();
+                        renderCount++;
                     }
+                    return renderCount;
                 })();
             },
             { duration: durationMs, frameDuration: FrameDurationMs }
         );
-        // Give the final awaited frame one extra clock step to settle across fractional timer boundaries.
-        await page.clock.runFor((Math.ceil(durationMs / FrameDurationMs) + 1) * FrameDurationMs);
-        await page.evaluate(() => (window as any).__khrFrameRun as Promise<void>);
+        // Yield between clock quanta so software-rendered frames are not batched into one long browser task.
+        // The final extra quantum still settles the last awaited frame across fractional timer boundaries.
+        const clockSteps = Math.ceil(durationMs / FrameDurationMs) + 1;
+        for (let step = 0; step < clockSteps; step++) {
+            await page.clock.runFor(FrameDurationMs);
+        }
+        const renderCount = await page.evaluate(() => (window as any).__khrFrameRun as Promise<number>);
+        const expectedRenderCount = Math.ceil(durationMs / FrameDurationMs);
+        if (renderCount !== expectedRenderCount) {
+            throw new Error(`Expected ${expectedRenderCount} rendered frames, got ${renderCount}.`);
+        }
         return undefined;
     } catch (error) {
         return error instanceof Error ? (error.stack ?? error.message) : String(error);

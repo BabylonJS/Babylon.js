@@ -139,6 +139,41 @@ describe("FlowGraph optional execution semantics", () => {
         ]);
     });
 
+    it.each([false, true])("fully cleans up repeated property cancellations (synchronous=%s)", (synchronous) => {
+        const target = { value: 0.2 };
+        const play = new FlowGraphPlayAnimationBlock();
+        const write = new FlowGraphSetPropertyBlock({ target, propertyName: "value", stopOnError: true });
+        const animation = new Animation("value", "value", 60, Animation.ANIMATIONTYPE_FLOAT);
+        animation.setKeys([
+            { frame: 0, value: 0.2 },
+            { frame: 60, value: 0.8 },
+        ]);
+        play.animation.setValue(animation, context);
+        play.object.setValue(target, context);
+        write.value.setValue(0.9, context);
+        const done = vi.spyOn(play.done, "_activateSignal");
+        const tick = vi.spyOn(play, "_executeOnTick");
+        if (synchronous) {
+            vi.spyOn(play.out, "_activateSignal").mockImplementation(() => write._execute(context, write.in));
+        }
+        for (let iteration = 0; iteration < 10; iteration++) {
+            play._execute(context);
+            if (!synchronous) {
+                expect(context.hasPendingBlocks).toBe(true);
+                write._execute(context, write.in);
+            }
+            expect(target.value).toBe(0.9);
+            expect(scene.animationGroups).toHaveLength(0);
+            expect(context.hasPendingBlocks).toBe(false);
+            expect(context._getExecutionVariable(play, "_initialized", false)).toBe(false);
+            expect(context._getGlobalContextVariable("animationGroupObserverSets", new Map()).size).toBe(0);
+            expect(context._getGlobalContextVariable("currentlyRunningAnimationGroups", [])).toEqual([]);
+            context._notifyOnTick({ timeSinceStart: iteration, deltaTime: 0.1 });
+        }
+        expect(tick).not.toHaveBeenCalled();
+        expect(done).not.toHaveBeenCalled();
+    });
+
     it("applies same-type interpolation metadata conversions with the accessor target", () => {
         const target = { value: 0.2 };
         const getValue = vi.fn((_target, source, offset) => source[offset] * 2);
@@ -183,6 +218,7 @@ describe("FlowGraph optional execution semantics", () => {
         ]);
         expect(getValue).toHaveBeenNthCalledWith(1, target, [0.2], 0, 1);
         expect(getValue).toHaveBeenNthCalledWith(2, target, [0.4], 0, 1);
+        expect(parser.propertyName.getValue(context)).toBe("value");
     });
 
     it.each([false, true])("preserves empty-loop compatibility unless final-index behavior is enabled (%s)", (incrementIndexWhenLoopDone) => {

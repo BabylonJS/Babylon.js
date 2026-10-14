@@ -4,11 +4,11 @@
 
 import { Animation } from "core/Animations/animation.pure";
 import { type ICamera, type IEXTLightsArea_Light, type IKHRLightsPunctual_Light, type IMaterial, type INode } from "../glTFLoaderInterfaces";
-import { type RectAreaLight } from "core/Lights/rectAreaLight.pure";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationPropertyInfo, RegisterGLTFLoaderAnimation } from "../glTFLoaderAnimation.pure";
 import { Color3 } from "core/Maths/math.color.pure";
 import { SetInterpolationForKey } from "./objectModelMapping";
+import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
 
 function getColor3(_target: any, source: Float32Array, offset: number, scale: number): Color3 {
     return Color3.FromArray(source, offset).scale(scale);
@@ -32,19 +32,6 @@ function getNextFloat(_target: any, source: Float32Array, offset: number, scale:
 
 function getFloatBy2(_target: any, source: Float32Array, offset: number, scale: number): number {
     return source[offset] * scale * 2;
-}
-
-function getAreaLightHeight(target: IEXTLightsArea_Light, source: Float32Array, offset: number, scale: number): number {
-    return getFloat(target, source, offset, scale) * (target.type === "disk" ? Math.sqrt(Math.PI) / 2 : 1);
-}
-
-function getAreaLightWidth(target: IEXTLightsArea_Light, source: Float32Array, offset: number, scale: number): number {
-    const light = target._babylonLight as RectAreaLight;
-    return getAreaLightHeight(target, source, offset, scale) * (light.width / light.height);
-}
-
-function getAreaLightAspectWidth(target: IEXTLightsArea_Light, source: Float32Array, offset: number, scale: number): number {
-    return getFloat(target, source, offset, scale) * (target._babylonLight as RectAreaLight).height;
 }
 
 function getTextureTransformTree(textureName: string) {
@@ -86,6 +73,17 @@ class LightAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
     public buildAnimations(target: IKHRLightsPunctual_Light, name: string, fps: number, keys: any[]) {
         return [{ babylonAnimatable: target._babylonLight!, babylonAnimation: this._buildAnimation(name, fps, keys) }];
+    }
+}
+
+class AreaLightDimensionsAnimationPropertyInfo extends AnimationPropertyInfo {
+    /** @internal */
+    public buildAnimations(target: IEXTLightsArea_Light, name: string, fps: number, keys: any[]) {
+        const dimensions = _GetAreaLightDimensions(target);
+        if (!dimensions) {
+            throw new Error("Area light must be loaded before animating its dimensions.");
+        }
+        return [{ babylonAnimatable: dimensions, babylonAnimation: this._buildAnimation(name, fps, keys) }];
     }
 }
 
@@ -390,12 +388,9 @@ export function _RegisterKHRAnimationPointerData(): void {
 
     SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
     SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/intensity", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
-    SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/size", [
-        new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "height", getAreaLightHeight, () => 1),
-        new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "width", getAreaLightWidth, () => 1),
-    ]);
+    SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/size", [new AreaLightDimensionsAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "size", getFloat, () => 1)]);
     SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/rect/aspect", [
-        new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "width", getAreaLightAspectWidth, () => 1),
+        new AreaLightDimensionsAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "aspect", getFloat, () => 1),
     ]);
 
     SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);

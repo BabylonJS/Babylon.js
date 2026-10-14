@@ -93,6 +93,19 @@ function pointerWrite(pointer: string, value: number): IKHRInteractivity_Graph {
     );
 }
 
+function interpolationThenWrite(pointer: string): IKHRInteractivity_Graph {
+    const graph = scalarInterpolation(pointer, 0.2);
+    graph.declarations!.push({ op: "pointer/set" });
+    graph.nodes[1].flows = { out: { node: 2 }, err: { node: 3 }, done: { node: 5 } };
+    graph.nodes.splice(2, 0, {
+        declaration: 3,
+        configuration: { pointer: { value: [pointer] }, type: { value: [0] } },
+        values: { value: { type: 0, value: [0.9] } },
+        flows: { out: { node: 4 }, err: { node: 3 } },
+    });
+    return graph;
+}
+
 const TextureContents = {
     images: [{ uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=" }],
     textures: [{ source: 0 }],
@@ -357,6 +370,42 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(log).not.toHaveBeenCalledWith("interpolation error");
     });
 
+    it.each(["emissive", "clearcoat"])("cancels the metadata-named material interpolation (%s)", async (kind) => {
+        const log = vi.spyOn(Logger, "Log");
+        const pointer =
+            kind === "emissive"
+                ? "/materials/0/extensions/KHR_materials_emissive_strength/emissiveStrength"
+                : "/materials/0/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/scale";
+        await AppendSceneAsync(
+            asset(interpolationThenWrite(pointer), ["KHR_interactivity", kind === "emissive" ? "KHR_materials_emissive_strength" : "KHR_materials_clearcoat"], {
+                ...TextureContents,
+                materials: [
+                    {
+                        extensions:
+                            kind === "emissive"
+                                ? { KHR_materials_emissive_strength: { emissiveStrength: 0.6 } }
+                                : { KHR_materials_clearcoat: { clearcoatFactor: 1, clearcoatNormalTexture: { index: 0, scale: 0.6 } } },
+                    },
+                ],
+            }),
+            scene,
+            { pluginOptions: { gltf: { loadAllMaterials: true } } }
+        );
+        const material = scene.materials.find((entry) => entry instanceof PBRMaterial) as PBRMaterial;
+        const read = () => (kind === "emissive" ? material.emissiveIntensity : material.clearCoat.bumpTexture!.level);
+        expect(read()).toBeCloseTo(0.9);
+        expect(scene.animationGroups).toHaveLength(0);
+        vi.useFakeTimers({ toFake: ["Date", "performance"] });
+        for (let frame = 0; frame < 120; frame++) {
+            vi.advanceTimersByTime(16);
+            scene.render();
+        }
+        expect(read()).toBeCloseTo(0.9);
+        expect(log).toHaveBeenCalledWith("interpolation started");
+        expect(log).not.toHaveBeenCalledWith("interpolation done");
+        expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
     it.each([
         ["scale", [3, 4], "uScale", "vScale", 1, 2, 3, 4],
         ["offset", [0.6, 0.8], "uOffset", "vOffset", 0.2, 0.4, 0.6, 0.8],
@@ -515,8 +564,8 @@ describe("KHR_interactivity minimal public loader imports", () => {
             scene
         );
         const group = scene.animationGroups[0];
-        const light = group.targetedAnimations[0].target as RectAreaLight;
-        expect(group.targetedAnimations.map((entry) => entry.animation.targetProperty)).toEqual(property === "size" ? ["height", "width"] : ["width"]);
+        const light = scene.lights[0] as RectAreaLight;
+        expect(group.targetedAnimations.map((entry) => entry.animation.targetProperty)).toEqual(property === "size" ? ["size"] : ["aspect"]);
         group.pause();
         for (const [frame, amount] of [
             [0, 0],
@@ -543,7 +592,7 @@ describe("KHR_interactivity minimal public loader imports", () => {
             scene
         );
         const group = scene.animationGroups[0];
-        const light = group.targetedAnimations[0].target as RectAreaLight;
+        const light = scene.lights[0] as RectAreaLight;
         group.pause();
         for (const [frame, size] of [
             [0, 2],
@@ -574,6 +623,97 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(4);
         expect(log).toHaveBeenCalledWith("written");
         expect(log).not.toHaveBeenCalledWith("write error");
+    });
+
+    it("retains active aspect interpolation when a later positive size write changes height", async () => {
+        const pointer = "/extensions/EXT_lights_area/lights/0/rect/aspect";
+        const graph = withReadback(scalarInterpolation(pointer, 1.5), pointer);
+        graph.events = [{ id: "resize" }];
+        const declaration = graph.declarations!.length;
+        const node = graph.nodes.length;
+        graph.declarations!.push({ op: "event/receive" }, { op: "pointer/set" });
+        graph.nodes.push(
+            { declaration, configuration: { event: { value: [0] } }, flows: { out: { node: node + 1 } } },
+            {
+                declaration: declaration + 1,
+                configuration: { pointer: { value: ["/extensions/EXT_lights_area/lights/0/size"] }, type: { value: [0] } },
+                values: { value: { type: 0, value: [4] } },
+            }
+        );
+        await AppendSceneAsync(
+            asset(graph, ["KHR_interactivity", "EXT_lights_area"], {
+                nodes: [{ extensions: { EXT_lights_area: { light: 0 } } }],
+                extensions: { EXT_lights_area: { lights: [{ type: "rect", size: 2, rect: { aspect: 3 } }] } },
+            }),
+            scene
+        );
+        const flowGraph = GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!;
+        const group = scene.animationGroups[0];
+        group.pause();
+        group.goToFrame(30);
+        const light = scene.lights[0] as RectAreaLight;
+        expect(light.width / light.height).toBeCloseTo(2.25);
+        const eventId = flowGraph.getAllBlocks().find((block) => block.getClassName() === "FlowGraphReceiveCustomEventBlock")!.config?.eventId;
+        if (typeof eventId !== "string") {
+            throw new Error("Expected the imported resize event.");
+        }
+        flowGraph.getContext(0).configuration.coordinator.notifyCustomEvent(eventId, {}, false);
+        expect(light.height).toBe(4);
+        expect(light.width / light.height).toBeCloseTo(2.25);
+        expect(group.isStarted).toBe(true);
+        group.goToFrame(60);
+        scene.render();
+        expect(light.height).toBe(4);
+        expect(light.width).toBeCloseTo(6);
+        expect(flowGraph.getContext(0).getVariable("staticVariable_0")).toBeCloseTo(1.5);
+    });
+
+    it.each(["rect", "disk"])("restores finite size and shape after zero writes and interpolation (%s)", async (type) => {
+        const pointer = "/extensions/EXT_lights_area/lights/0/size";
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }, { signature: "float2" }],
+            variables: [{ type: 0 }, { type: 0 }],
+            declarations: [{ op: "pointer/get" }, { op: "event/onStart" }, { op: "pointer/set" }, { op: "variable/set" }, { op: "pointer/interpolate" }, { op: "event/onTick" }],
+            nodes: [
+                { declaration: 0, configuration: { pointer: { value: [pointer] }, type: { value: [0] } } },
+                { declaration: 1, flows: { out: { node: 2 } } },
+                { declaration: 2, configuration: { pointer: { value: [pointer] }, type: { value: [0] } }, values: { value: { type: 0, value: [0] } }, flows: { out: { node: 3 } } },
+                { declaration: 2, configuration: { pointer: { value: [pointer] }, type: { value: [0] } }, values: { value: { type: 0, value: [4] } }, flows: { out: { node: 4 } } },
+                { declaration: 3, configuration: { variables: { value: [0] } }, values: { "0": { node: 0 } }, flows: { out: { node: 5 } } },
+                { declaration: 2, configuration: { pointer: { value: [pointer] }, type: { value: [0] } }, values: { value: { type: 0, value: [0] } }, flows: { out: { node: 6 } } },
+                {
+                    declaration: 4,
+                    configuration: { pointer: { value: [pointer] }, type: { value: [0] } },
+                    values: { value: { type: 0, value: [4] }, duration: { type: 0, value: [1] }, p1: { type: 1, value: [0, 0] }, p2: { type: 1, value: [1, 1] } },
+                },
+                { declaration: 5, flows: { out: { node: 8 } } },
+                { declaration: 3, configuration: { variables: { value: [1] } }, values: { "1": { node: 0 } } },
+            ],
+        };
+        await AppendSceneAsync(
+            asset(graph, ["KHR_interactivity", "EXT_lights_area"], {
+                nodes: [{ extensions: { EXT_lights_area: { light: 0 } } }],
+                extensions: { EXT_lights_area: { lights: [{ type, size: 2, ...(type === "rect" ? { rect: { aspect: 3 } } : {}) }] } },
+            }),
+            scene
+        );
+        const context = GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0);
+        expect(context.getVariable("staticVariable_0")).toBeCloseTo(4);
+        const group = scene.animationGroups[0];
+        const light = scene.lights[0] as RectAreaLight;
+        group.pause();
+        for (const [frame, size] of [
+            [0, 0],
+            [30, 2],
+            [60, 4],
+        ]) {
+            group.goToFrame(frame);
+            scene.render();
+            const height = size * (type === "rect" ? 1 : Math.sqrt(Math.PI) / 2);
+            expect(light.height).toBeCloseTo(height);
+            expect(light.width).toBeCloseTo(height * (type === "rect" ? 3 : 1));
+            expect(context.getVariable("staticVariable_1")).toBeCloseTo(size);
+        }
     });
 
     it.each([

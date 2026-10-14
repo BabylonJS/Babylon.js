@@ -98,7 +98,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         // one validating a delay handle against the runtime active-delay set, can resolve.
         const value = accessorContainer.info.get(accessorContainer.object, undefined, context) as P;
         const object = accessorContainer.info.getTarget?.(accessorContainer.object);
-        const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object);
+        const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object) ?? accessorContainer.info.interpolation?.[0]?.name;
         if (!object) {
             throw new Error("Object is undefined");
         } else {

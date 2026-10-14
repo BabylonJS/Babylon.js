@@ -31,8 +31,9 @@ import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { type AnimationGroup } from "core/Animations/animationGroup";
 import { type Mesh } from "core/Meshes/mesh";
-import { type RectAreaLight } from "core/Lights/rectAreaLight";
 import { type Camera } from "core/Cameras/camera";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
 
 /**
  * Top-level shape of the glTF Object Model accessor tree. Each property
@@ -379,7 +380,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
-    /** Accessor tree for `/extensions/EXT_lights_area`. */
+    /** Accessor tree for `/extensions/EXT_lights_area`. Size/aspect use a loader-local semantic animation target. */
     EXT_lights_area: {
         lights: {
             length: IObjectAccessor<IEXTLightsArea_Light[], Light[], FlowGraphInteger>;
@@ -387,9 +388,9 @@ export interface IGLTFObjectModelTreeExtensionsObject {
                 __target__: boolean;
                 color: IObjectAccessor<IEXTLightsArea_Light, Light, Color3>;
                 intensity: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
-                size: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
+                size: IObjectAccessor<IEXTLightsArea_Light, IAnimatable, number>;
                 rect: {
-                    aspect: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
+                    aspect: IObjectAccessor<IEXTLightsArea_Light, IAnimatable, number>;
                 };
             };
         };
@@ -1281,26 +1282,28 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                 },
                 size: {
                     type: "number",
-                    get: (light: IEXTLightsArea_Light) => (light._babylonLight as RectAreaLight)?.height * (light.type === "disk" ? 2 / Math.sqrt(Math.PI) : 1),
+                    get: (light) => _GetAreaLightDimensions(light)?.size,
                     set: (value, light) => {
-                        const target = light._babylonLight as RectAreaLight;
+                        const target = _GetAreaLightDimensions(light);
                         if (target) {
-                            const aspect = target.width / target.height;
-                            target.height = value * (light.type === "disk" ? Math.sqrt(Math.PI) / 2 : 1);
-                            target.width = target.height * aspect;
+                            target.size = value;
                         }
                     },
-                    getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
-                    getPropertyName: [() => "height", () => "width"],
+                    getTarget: _GetAreaLightDimensions,
+                    getPropertyName: [() => "size"],
                 },
                 rect: {
                     aspect: {
                         type: "number",
-                        get: (light: IEXTLightsArea_Light) => (light._babylonLight as RectAreaLight)?.width / (light._babylonLight as RectAreaLight)?.height,
-                        set: (value: number, light: IEXTLightsArea_Light) =>
-                            light._babylonLight ? ((light._babylonLight as RectAreaLight).width = value * (light._babylonLight as RectAreaLight).height) : undefined,
-                        getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
-                        getPropertyName: [() => "width"],
+                        get: (light) => _GetAreaLightDimensions(light)?.aspect,
+                        set: (value, light) => {
+                            const target = _GetAreaLightDimensions(light);
+                            if (target) {
+                                target.aspect = value;
+                            }
+                        },
+                        getTarget: _GetAreaLightDimensions,
+                        getPropertyName: [() => "aspect"],
                     },
                 },
             },

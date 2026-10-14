@@ -111,8 +111,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             return;
         }
         context._addPendingBlock(this);
-        this.out._activateSignal(context);
         context._setExecutionVariable(this, "_initialized", true);
+        this.out._activateSignal(context);
     }
 
     /**
