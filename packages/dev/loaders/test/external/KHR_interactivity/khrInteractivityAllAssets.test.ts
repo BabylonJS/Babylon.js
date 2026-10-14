@@ -296,6 +296,14 @@ async function _preparePage(page: Page): Promise<void> {
     await page.clock.install({ time: clockStart });
     await page.clock.pauseAt(clockStart);
     await page.evaluate(evaluateInitEngine);
+    const rendererInfo = await page.evaluate(() => {
+        const engine = window.engine!;
+        if (!(engine instanceof BABYLON.Engine)) {
+            throw new Error("KHR conformance requires the WebGL engine.");
+        }
+        return engine.getGlInfo();
+    });
+    console.log(`KHR conformance WebGL backend: ${JSON.stringify(rendererInfo)}`);
     // These tests assert graph behavior, not pixels. Bound software-renderer work without skipping draws or ticks.
     await page.evaluate((size) => window.engine!.setSize(size, size), RenderSize);
     await page.evaluate(evaluateCreateScene);

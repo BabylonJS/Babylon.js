@@ -806,6 +806,8 @@ jobs:
                 # integration project only passes the `--use-angle=default` WebGL flag on the Chrome
                 # branch, so Firefox runs the conformance suite with no working WebGL context.
                 BROWSER: "Chrome"
+                # Select a consistent software backend instead of platform-dependent ANGLE defaults.
+                CUSTOM_FLAGS: "--use-angle=swiftshader --enable-unsafe-swiftshader"
                 # Consume the Build job's deployed snapshot (empty.html + the properly built UMD bundles)
                 # instead of building Babylon in-agent. This is what the other browser suites do and is
                 # what keeps the agent from running out of memory.
