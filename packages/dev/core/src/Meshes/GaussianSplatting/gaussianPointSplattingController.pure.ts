@@ -3,6 +3,7 @@
 import { type Nullable } from "core/types";
 import { Scene } from "core/scene.pure";
 import { type Observer } from "core/Misc/observable";
+import { type Camera } from "core/Cameras/camera.pure";
 import { Matrix, Quaternion } from "core/Maths/math.vector.pure";
 import { Material } from "core/Materials/material.pure";
 import { type DepthRenderer } from "core/Rendering/depthRenderer.pure";
@@ -113,6 +114,9 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _budgetReadPending = false;
     private _resultReady = false;
     private _colorHistoryReady = false;
+    private _colorUsesCameraTransform = false;
+    private _cameraFrameId = -1;
+    private _cameraId = -1;
     /** Whether the latest compute run succeeded; unlike `_resultReady`, not cleared at frame start. */
     private _progressReady = false;
     private _computedWidth = 0;
@@ -131,6 +135,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _depthBlit: Nullable<GaussianPointSplattingDepthBlitMaterial> = null;
     private _depthBlitMesh: Nullable<Mesh> = null;
     private _computeObserver: Nullable<Observer<Scene>> = null;
+    private _cameraObserver: Nullable<Observer<Camera>> = null;
     private _restoreObserver: Nullable<Observer<AbstractEngine>> = null;
     private _splatCount = 0;
     private _partCount = 1;
@@ -142,6 +147,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     private _partScratch = new Float32Array(40);
     private _decodedSplatsData: Nullable<ArrayBuffer> = null;
     private readonly _vpMatrix = new Matrix();
+    private readonly _cameraVpMatrix = new Matrix();
     private readonly _inverseProjection = new Matrix();
     private readonly _outputSize = { width: 1, height: 1 };
     private readonly _depthSpan: [number, number] = [0, 0];
@@ -265,6 +271,13 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
                 this._resultReady = false;
             });
         }
+        if (!this._cameraObserver) {
+            this._cameraObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
+                this._cameraFrameId = this._scene.getFrameId();
+                this._cameraId = camera.uniqueId;
+                this._cameraVpMatrix.copyFrom(this._scene.getTransformMatrix());
+            });
+        }
         if (!this._restoreObserver) {
             this._restoreObserver = engine.onContextRestoredObservable.add(() => {
                 // Rebuilt storage buffers are empty, including the image sentinel and cached splat uploads.
@@ -290,6 +303,10 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._scene.onBeforeRenderObservable.remove(this._computeObserver);
             this._computeObserver = null;
         }
+        if (this._cameraObserver) {
+            this._scene.onBeforeCameraRenderObservable.remove(this._cameraObserver);
+            this._cameraObserver = null;
+        }
         if (this._restoreObserver) {
             this._scene.getEngine().onContextRestoredObservable.remove(this._restoreObserver);
             this._restoreObserver = null;
@@ -304,6 +321,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         this._decodedSplatsData = null;
         this._resultReady = false;
         this._colorHistoryReady = false;
+        this._cameraFrameId = -1;
         this._progressReady = false;
         this._budgetReadPending = false;
         this._autoN = 2;
@@ -641,8 +659,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
     }
 
     /**
-     * Protects the latest point-color history from depth passes with different stable inputs.
-     * @returns whether depth can reuse the retained color inputs without restarting accumulation
+     * Protects point-color history from pass-specific inputs while allowing shared camera motion.
+     * @returns whether depth can share the current color inputs without a pass-specific accumulation reset
      */
     private _depthInputsMatchColorHistory(): boolean {
         const renderer = this._renderer;
@@ -650,11 +668,13 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             return true;
         }
         const material = this._mesh.material as GaussianSplattingMaterial;
+        // Camera motion advances both passes; only custom color matrices must match the retained frame.
+        const colorTransform = this._colorUsesCameraTransform ? this._getCameraTransform() : this._vpMatrix;
         if (
             this._decodedSplatsData !== this._mesh._splatsData ||
             this._decodedRevision !== this._mesh._splatDataRevision ||
             this._decodedShDegree !== this._mesh._shDegree ||
-            !this._vpMatrix.equalsWithEpsilon(this._scene.getTransformMatrix(), 1e-5) ||
+            !colorTransform?.equalsWithEpsilon(this._scene.getTransformMatrix(), 1e-5) ||
             renderer.kernelSize !== (material.kernelSize || GaussianSplattingMaterial.KernelSize) ||
             renderer.minPixelSize !== material.minPixelSize ||
             renderer.compensation !== material.compensation
@@ -663,6 +683,17 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
         const debugActive = this._packParts() ? 1 : 0;
         return renderer.debugActive === debugActive && renderer._matchesPartData(this._partScratch, this._partCount);
+    }
+
+    /**
+     * Uses the scene's main camera matrix before render targets can refresh the camera's projection cache.
+     * @returns the current camera transform, or null if a different camera owns the render target
+     */
+    private _getCameraTransform(): Nullable<Matrix> {
+        if (this._cameraFrameId === this._scene.getFrameId()) {
+            return this._cameraId === this._scene.activeCamera?.uniqueId ? this._cameraVpMatrix : null;
+        }
+        return this._scene.activeCamera?.getTransformationMatrix() ?? null;
     }
 
     /**
@@ -1079,6 +1110,10 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
             this._scene.onBeforeRenderObservable.remove(this._computeObserver);
             this._computeObserver = null;
         }
+        if (this._cameraObserver) {
+            this._scene.onBeforeCameraRenderObservable.remove(this._cameraObserver);
+            this._cameraObserver = null;
+        }
         if (this._restoreObserver) {
             this._scene.getEngine().onContextRestoredObservable.remove(this._restoreObserver);
             this._restoreObserver = null;
@@ -1198,6 +1233,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         }
         if (colorPass) {
             this._colorHistoryReady = true;
+            this._colorUsesCameraTransform = this._getCameraTransform()?.equalsWithEpsilon(this._vpMatrix, 1e-5) ?? false;
         }
         if (colorPass && this._blitMesh && this._blitMesh.subMeshes.length > 0 && this._blit?.isReady(this._blitMesh, false, this._blitMesh.subMeshes[0])) {
             const blitMesh = this._blitMesh;

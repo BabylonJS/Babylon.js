@@ -1295,6 +1295,36 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         mesh._shDegree = 0;
         expect(controller.handlesCurrentPass).toBe(true);
         expect(renderer.accumulationVersion).toBe(generation);
+
+        const computeCalls = compute.mock.calls.length;
+        const classicCalls = classic.mock.calls.length;
+        for (let frame = 0; frame < 3; frame++) {
+            engine["_frameId"]++;
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            camera.position.x += 0.2;
+            scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+            scene.onBeforeCameraRenderObservable.notifyObservers(camera);
+            const projection = camera.getProjectionMatrix().clone();
+            camera["_projectionMatrix"].copyFrom(Matrix.PerspectiveFovLH(camera.fov, 1, camera.minZ, camera.maxZ));
+            engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
+            expect(controller.handlesCurrentPass).toBe(true);
+            camera["_projectionMatrix"].copyFrom(projection);
+            mesh["_drawColorPass"](mesh, depthMesh.subMeshes[0], false);
+            engine.currentRenderPassId = camera.outputRenderTarget.renderPassId;
+            mesh["_drawColorPass"](mesh, colorMesh.subMeshes[0], true);
+            expect(compute).toHaveBeenCalledTimes(computeCalls + frame + 1);
+            expect(classic).toHaveBeenCalledTimes(classicCalls);
+        }
+
+        const customProjection = Matrix.PerspectiveFovLH(camera.fov, 1, camera.minZ, camera.maxZ);
+        scene.setTransformMatrix(camera.getViewMatrix(), customProjection);
+        mesh["_drawColorPass"](mesh, colorMesh.subMeshes[0], true);
+        expect(controller["_colorUsesCameraTransform"]).toBe(false);
+        engine.currentRenderPassId = depthRenderer.getDepthMap().renderPassId;
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+        expect(controller.handlesCurrentPass).toBe(false);
+        scene.setTransformMatrix(camera.getViewMatrix(), customProjection);
+        expect(controller.handlesCurrentPass).toBe(true);
         controller["_colorMode"] = false;
         mesh._shDegree = 1;
         mesh.position.x = 0;
