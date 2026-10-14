@@ -20,7 +20,9 @@ import { MorphTargetManager } from "core/Morph/morphTargetManager";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { type IGLTF } from "loaders/glTF/2.0/glTFLoaderInterfaces";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Color3 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { Constants } from "core/Engines/constants";
+import { Texture } from "core/Materials/Textures/texture";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -149,6 +151,79 @@ describe("glTF interactivity Object Model", () => {
 
         expect(accessor.info.get(accessor.object)).toBeUndefined();
         expect(() => accessor.info.set?.(0.5, accessor.object)).not.toThrow();
+    });
+
+    it("writes material scalars, colors and flags to all loaded variants while preserving explicit fill-mode selection", () => {
+        const triangle = new PBRMaterial("triangle", scene);
+        const lines = new PBRMaterial("lines", scene);
+        triangle.metallic = 0.2;
+        lines.metallic = 0.4;
+        const gltf: IGLTF = {
+            asset: { version: "2.0" },
+            materials: [
+                {
+                    index: 0,
+                    pbrMetallicRoughness: {},
+                    _data: {
+                        [Constants.MATERIAL_TriangleFillMode]: { babylonMaterial: triangle, babylonMeshes: [], promise: Promise.resolve() },
+                        [Constants.MATERIAL_LineListDrawMode]: { babylonMaterial: lines, babylonMeshes: [], promise: Promise.resolve() },
+                    },
+                },
+            ],
+        };
+        const converter = GetPathToObjectConverter(gltf);
+        const metallic = converter.convert("/materials/0/pbrMetallicRoughness/metallicFactor");
+        const payload = Object.freeze({ fillMode: Constants.MATERIAL_LineListDrawMode });
+        expect(metallic.info.get(metallic.object)).toBe(0.2);
+        expect(metallic.info.get(metallic.object, undefined, payload)).toBe(0.4);
+        metallic.info.set!(0.9, metallic.object);
+        expect([triangle.metallic, lines.metallic]).toEqual([0.9, 0.9]);
+        metallic.info.set!(0.7, metallic.object, undefined, payload);
+        expect([triangle.metallic, lines.metallic]).toEqual([0.9, 0.7]);
+        const color = converter.convert("/materials/0/pbrMetallicRoughness/baseColorFactor");
+        color.info.set!(new Color4(0.2, 0.4, 0.6, 0.8), color.object);
+        const flag = converter.convert("/materials/0/doubleSided");
+        flag.info.set!(true, flag.object);
+        for (const material of [triangle, lines]) {
+            expect(material.albedoColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+            expect(material.alpha).toBe(0.8);
+            expect(material.backFaceCulling).toBe(false);
+        }
+    });
+
+    it("writes material texture values to all loaded variants and reads the selected variant", () => {
+        const triangle = new PBRMaterial("triangle", scene);
+        const lines = new PBRMaterial("lines", scene);
+        const triangleTexture = new Texture(null, scene);
+        const lineTexture = new Texture(null, scene);
+        triangle.bumpTexture = triangleTexture;
+        lines.bumpTexture = lineTexture;
+        triangleTexture.level = 0.2;
+        lineTexture.level = 0.4;
+        const converter = GetPathToObjectConverter({
+            asset: { version: "2.0" },
+            materials: [
+                {
+                    index: 0,
+                    normalTexture: { index: 0 },
+                    _data: {
+                        [Constants.MATERIAL_TriangleFillMode]: { babylonMaterial: triangle, babylonMeshes: [], promise: Promise.resolve() },
+                        [Constants.MATERIAL_LineListDrawMode]: { babylonMaterial: lines, babylonMeshes: [], promise: Promise.resolve() },
+                    },
+                },
+            ],
+        });
+        const payload = Object.freeze({ fillMode: Constants.MATERIAL_LineListDrawMode });
+        const scale = converter.convert("/materials/0/normalTexture/scale");
+        expect(scale.info.get(scale.object, undefined, payload)).toBe(0.4);
+        scale.info.set!(0.6, scale.object);
+        expect([triangleTexture.level, lineTexture.level]).toEqual([0.6, 0.6]);
+        const rotation = converter.convert("/materials/0/normalTexture/extensions/KHR_texture_transform/rotation");
+        rotation.info.set!(0.8, rotation.object);
+        expect([triangleTexture.wAng, lineTexture.wAng]).toEqual([-0.8, -0.8]);
+        rotation.info.set!(0.3, rotation.object, undefined, payload);
+        expect([triangleTexture.wAng, lineTexture.wAng]).toEqual([-0.8, -0.3]);
+        expect(rotation.info.get(rotation.object, undefined, payload)).toBe(0.3);
     });
 
     it("should resolve the KHR_interactivity animation maxTime pointer even though the animation has no stored extensions object", () => {

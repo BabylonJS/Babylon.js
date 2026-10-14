@@ -824,38 +824,36 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
 const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
     length: _CreateLengthAccessor(
         (materials: IMaterial[]) => materials.length,
-        (materials: IMaterial[]) => materials.map((material) => material._data?.[Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial)
+        (materials: IMaterial[]) => materials.map((material) => GetMaterial(material))
     ),
     __array__: {
         __target__: true,
         doubleSided: {
             type: "boolean",
             get: (material, index?, payload?) => !GetMaterial(material, index, payload)?.backFaceCulling,
-            set: (value: boolean, material, index?, payload?) => {
-                const mat = GetMaterial(material, index, payload);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value: boolean, mat) => {
                 if (mat) {
                     mat.backFaceCulling = !value;
                 }
-            },
+            }),
             getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
             getPropertyName: [() => "backFaceCulling"],
         },
         alphaCutoff: {
             type: "number",
             get: (material, index?, payload?) => GetMaterial(material, index, payload)?.alphaCutOff,
-            set: (value: number, material, index?, payload?) => {
-                const mat = GetMaterial(material, index, payload);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
                 if (mat) {
                     mat.alphaCutOff = value;
                 }
-            },
+            }),
             getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
             getPropertyName: [() => "alphaCutOff"],
         },
         emissiveFactor: {
             type: "Color3",
             get: (material, index?, payload?) => GetMaterial(material, index, payload).emissiveColor,
-            set: (value: Color3, material, index?, payload?) => GetMaterial(material, index, payload).emissiveColor.copyFrom(value),
+            set: /*#__PURE__*/ _CreateMaterialSetter((value: Color3, mat) => mat.emissiveColor.copyFrom(value)),
             getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
             getPropertyName: [() => "emissiveColor"],
         },
@@ -868,12 +866,12 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             scale: {
                 type: "number",
                 get: (material, index?, payload?) => GetTexture(material, payload, "bumpTexture")?.level,
-                set: (value: number, material, index?, payload?) => {
-                    const texture = GetTexture(material, payload, "bumpTexture");
+                set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
+                    const texture = _GetMaterialTexture(mat, "bumpTexture");
                     if (texture) {
                         texture.level = value;
                     }
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 getPropertyName: [() => "bumpTexture.level"],
             },
@@ -885,12 +883,11 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             strength: {
                 type: "number",
                 get: (material, index?, payload?) => GetMaterial(material, index, payload).ambientTextureStrength,
-                set: (value: number, material, index?, payload?) => {
-                    const mat = GetMaterial(material, index, payload);
+                set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
                     if (mat) {
                         mat.ambientTextureStrength = value;
                     }
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 getPropertyName: [() => "ambientTextureStrength"],
             },
@@ -905,11 +902,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     const mat = GetMaterial(material, index, payload);
                     return Color4.FromColor3(mat.albedoColor, mat.alpha);
                 },
-                set: (value: Color4, material, index?, payload?) => {
-                    const mat = GetMaterial(material, index, payload);
+                set: /*#__PURE__*/ _CreateMaterialSetter((value: Color4, mat) => {
                     mat.albedoColor.set(value.r, value.g, value.b);
                     mat.alpha = value.a;
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 // This is correct on the animation level, but incorrect as a single property of a type Color4
                 getPropertyName: [() => "albedoColor", () => "alpha"],
@@ -922,24 +918,22 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             metallicFactor: {
                 type: "number",
                 get: (material, index?, payload?) => GetMaterial(material, index, payload).metallic,
-                set: (value, material, index?, payload?) => {
-                    const mat = GetMaterial(material, index, payload);
+                set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                     if (mat) {
                         mat.metallic = value;
                     }
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 getPropertyName: [() => "metallic"],
             },
             roughnessFactor: {
                 type: "number",
                 get: (material, index?, payload?) => GetMaterial(material, index, payload).roughness,
-                set: (value, material, index?, payload?) => {
-                    const mat = GetMaterial(material, index, payload);
+                set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                     if (mat) {
                         mat.roughness = value;
                     }
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 getPropertyName: [() => "roughness"],
             },
@@ -954,24 +948,22 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 anisotropyStrength: {
                     type: "number",
                     get: (material, index?, payload?) => GetMaterial(material, index, payload)?.anisotropy?.intensity,
-                    set: (value: number, material, index?, payload?) => {
-                        const mat = GetMaterial(material, index, payload);
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
                         if (mat) {
                             mat.anisotropy.intensity = value;
                         }
-                    },
+                    }),
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.intensity"],
                 },
                 anisotropyRotation: {
                     type: "number",
                     get: (material, index?, payload?) => GetMaterial(material, index, payload)?.anisotropy?.angle,
-                    set: (value: number, material, index?, payload?) => {
-                        const mat = GetMaterial(material, index, payload);
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
                         if (mat) {
                             mat.anisotropy.angle = value;
                         }
-                    },
+                    }),
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.angle"],
                 },
@@ -985,18 +977,18 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 clearcoatFactor: {
                     type: "number",
                     get: (material, index?, payload?) => GetMaterial(material, index, payload).clearCoat.intensity,
-                    set: (value, material, index?, payload?) => {
-                        GetMaterial(material, index, payload).clearCoat.intensity = value;
-                    },
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
+                        mat.clearCoat.intensity = value;
+                    }),
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "clearCoat.intensity"],
                 },
                 clearcoatRoughnessFactor: {
                     type: "number",
                     get: (material, index?, payload?) => GetMaterial(material, index, payload).clearCoat.roughness,
-                    set: (value, material, index?, payload?) => {
-                        GetMaterial(material, index, payload).clearCoat.roughness = value;
-                    },
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
+                        mat.clearCoat.roughness = value;
+                    }),
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "clearCoat.roughness"],
                 },
@@ -1010,7 +1002,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                         type: "number",
                         get: (material, index, payload) => GetMaterial(material, index, payload).clearCoat.bumpTexture?.level,
                         getTarget: GetMaterial,
-                        set: (value, material, index, payload) => (GetMaterial(material, index, payload).clearCoat.bumpTexture!.level = value),
+                        set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.clearCoat.bumpTexture!.level = value)),
                     },
                     extensions: {
                         KHR_texture_transform: GenerateTextureMap("clearCoat", "bumpTexture"),
@@ -1027,7 +1019,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.dispersion,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.dispersion = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.dispersion = value)),
                 },
             },
             KHR_materials_emissive_strength: {
@@ -1035,7 +1027,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).emissiveIntensity,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).emissiveIntensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.emissiveIntensity = value)),
                 },
             },
             KHR_materials_ior: {
@@ -1043,7 +1035,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).indexOfRefraction,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).indexOfRefraction = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.indexOfRefraction = value)),
                 },
             },
             KHR_materials_iridescence: {
@@ -1051,13 +1043,13 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).iridescence.intensity,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).iridescence.intensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.iridescence.intensity = value)),
                 },
                 iridescenceIor: {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).iridescence.indexOfRefraction,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).iridescence.indexOfRefraction = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.iridescence.indexOfRefraction = value)),
                 },
                 iridescenceTexture: {
                     extensions: {
@@ -1068,13 +1060,13 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).iridescence.maximumThickness,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).iridescence.maximumThickness = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.iridescence.maximumThickness = value)),
                 },
                 iridescenceThicknessMinimum: {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).iridescence.minimumThickness,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).iridescence.minimumThickness = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.iridescence.minimumThickness = value)),
                 },
                 iridescenceThicknessTexture: {
                     extensions: {
@@ -1087,7 +1079,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "Color3",
                     get: (material, index, payload) => GetMaterial(material, index, payload).sheen.color,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => GetMaterial(material, index, payload).sheen.color.copyFrom(value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => mat.sheen.color.copyFrom(value)),
                 },
                 sheenColorTexture: {
                     extensions: {
@@ -1098,7 +1090,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).sheen.roughness ?? 0,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).sheen.roughness = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.sheen.roughness = value)),
                     getPropertyName: [() => "sheen.roughness"],
                 },
                 sheenRoughnessTexture: {
@@ -1112,14 +1104,14 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).metallicF0Factor,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).metallicF0Factor = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.metallicF0Factor = value)),
                     getPropertyName: [() => "metallicF0Factor"],
                 },
                 specularColorFactor: {
                     type: "Color3",
                     get: (material, index, payload) => GetMaterial(material, index, payload).metallicReflectanceColor,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => GetMaterial(material, index, payload).metallicReflectanceColor.copyFrom(value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => mat.metallicReflectanceColor.copyFrom(value)),
                     getPropertyName: [() => "metallicReflectanceColor"],
                 },
                 specularTexture: {
@@ -1138,7 +1130,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.refractionIntensity,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.refractionIntensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.refractionIntensity = value)),
                     getPropertyName: [() => "subSurface.refractionIntensity"],
                 },
                 transmissionTexture: {
@@ -1155,7 +1147,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.translucencyIntensity,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.translucencyIntensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.translucencyIntensity = value)),
                 },
                 diffuseTransmissionTexture: {
                     extensions: {
@@ -1169,7 +1161,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "Color3",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.translucencyColor,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => value && GetMaterial(material, index, payload).subSurface.translucencyColor?.copyFrom(value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => value && mat.subSurface.translucencyColor?.copyFrom(value)),
                 },
                 diffuseTransmissionColorTexture: {
                     extensions: {
@@ -1185,19 +1177,19 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "Color3",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.tintColor,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => GetMaterial(material, index, payload).subSurface.tintColor.copyFrom(value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => mat.subSurface.tintColor.copyFrom(value)),
                 },
                 attenuationDistance: {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.tintColorAtDistance,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.tintColorAtDistance = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.tintColorAtDistance = value)),
                 },
                 thicknessFactor: {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.maximumThickness,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.maximumThickness = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.maximumThickness = value)),
                 },
                 thicknessTexture: {
                     extensions: {
@@ -1358,11 +1350,37 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
 };
 
 function GetTexture(material: IMaterial, payload: any, textureType: keyof PBRMaterial, textureInObject?: string) {
-    const babylonMaterial = GetMaterial(material, payload);
-    return textureInObject ? babylonMaterial[textureType][textureInObject] : babylonMaterial[textureType];
+    return _GetMaterialTexture(GetMaterial(material, undefined, payload), textureType, textureInObject);
+}
+function _GetMaterialTexture(material: PBRMaterial, textureType: keyof PBRMaterial, textureInObject?: string) {
+    return textureInObject ? material[textureType][textureInObject] : material[textureType];
 }
 function GetMaterial(material: IMaterial, _index?: number, payload?: any) {
-    return material._data?.[payload?.fillMode ?? Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial;
+    let target = material._data?.[payload?.fillMode ?? Constants.MATERIAL_TriangleFillMode]?.babylonMaterial;
+    if (!target && payload?.fillMode === undefined) {
+        for (const fillMode in material._data) {
+            target = material._data[Number(fillMode)].babylonMaterial;
+            break;
+        }
+    }
+    return target as PBRMaterial;
+}
+function _CreateMaterialSetter<T>(setValue: (value: T, target: PBRMaterial, source: IMaterial) => void): NonNullable<IObjectAccessor<IMaterial, PBRMaterial, T>["set"]> {
+    return (value, material, index, payload) => {
+        if (payload?.fillMode !== undefined) {
+            setValue(value, GetMaterial(material, index, payload), material);
+            return;
+        }
+        let found = false;
+        for (const fillMode in material._data) {
+            found = true;
+            setValue(value, material._data[Number(fillMode)].babylonMaterial as PBRMaterial, material);
+        }
+        if (!found) {
+            // Preserve each accessor's existing handling of unloaded materials.
+            setValue(value, GetMaterial(material, index, payload), material);
+        }
+    };
 }
 function _getNodeMorphTargetManager(node: INode): any {
     const tn = node?._babylonTransformNode;
@@ -1572,8 +1590,8 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 return new Vector2(0, 0);
             },
             getTarget: GetMaterial,
-            set: (value, material, _index?, payload?) => {
-                const texture = GetTexture(material, payload, textureType, textureInObject);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value, target, material) => {
+                const texture = _GetMaterialTexture(target, textureType, textureInObject);
                 if (texture) {
                     texture.uOffset = value.x;
                     texture.vOffset = value.y;
@@ -1584,7 +1602,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                         xform.offset = [value.x, value.y];
                     }
                 }
-            },
+            }),
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uOffset`,
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.vOffset`,
@@ -1604,8 +1622,8 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 return 0;
             },
             getTarget: GetMaterial,
-            set: (value, material, _index?, payload?) => {
-                const texture = GetTexture(material, payload, textureType, textureInObject);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value, target, material) => {
+                const texture = _GetMaterialTexture(target, textureType, textureInObject);
                 if (texture) {
                     texture.wAng = -value;
                 }
@@ -1615,7 +1633,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                         xform.rotation = value;
                     }
                 }
-            },
+            }),
             getPropertyName: [() => `${textureType}${textureInObject ? "." + textureInObject : ""}.wAng`],
         },
         scale: {
@@ -1634,8 +1652,8 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 return new Vector2(1, 1);
             },
             getTarget: GetMaterial,
-            set: (value, material, index?, payload?) => {
-                const texture = GetTexture(material, payload, textureType, textureInObject);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value, target, material) => {
+                const texture = _GetMaterialTexture(target, textureType, textureInObject);
                 if (texture) {
                     texture.uScale = value.x;
                     texture.vScale = value.y;
@@ -1646,7 +1664,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                         xform.scale = [value.x, value.y];
                     }
                 }
-            },
+            }),
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uScale`,
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.vScale`,

@@ -106,6 +106,18 @@ function interpolationThenWrite(pointer: string): IKHRInteractivity_Graph {
     return graph;
 }
 
+function materialContents(modes: number[]): Record<string, unknown> {
+    const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    return {
+        nodes: [{ mesh: 0 }],
+        buffers: [{ byteLength: positions.byteLength, uri: `data:application/octet-stream;base64,${Buffer.from(positions.buffer).toString("base64")}` }],
+        bufferViews: [{ buffer: 0, byteLength: positions.byteLength }],
+        accessors: [{ bufferView: 0, componentType: 5126, count: 6, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
+        materials: [{ pbrMetallicRoughness: { metallicFactor: 0.2, roughnessFactor: 0.3 } }],
+        meshes: [{ primitives: modes.map((mode) => ({ attributes: { POSITION: 0 }, mode, material: 0 })) }],
+    };
+}
+
 const TextureContents = {
     images: [{ uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=" }],
     textures: [{ source: 0 }],
@@ -246,31 +258,15 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(log).not.toHaveBeenCalledWith("interpolation error");
     });
 
-    it("interpolates every primitive-mode variant of a shared material", async () => {
-        const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    it.each([{ modes: [4, 1] }, { modes: [1] }])("interpolates loaded primitive-mode variants ($modes)", async ({ modes }) => {
         const log = vi.spyOn(Logger, "Log");
-        await AppendSceneAsync(
-            asset(scalarInterpolation("/materials/0/pbrMetallicRoughness/metallicFactor", 0.8), ["KHR_interactivity"], {
-                nodes: [{ mesh: 0 }],
-                buffers: [{ byteLength: positions.byteLength, uri: `data:application/octet-stream;base64,${Buffer.from(positions.buffer).toString("base64")}` }],
-                bufferViews: [{ buffer: 0, byteLength: positions.byteLength }],
-                accessors: [{ bufferView: 0, componentType: 5126, count: 6, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
-                materials: [{ pbrMetallicRoughness: { metallicFactor: 0.2, roughnessFactor: 0.3 } }],
-                meshes: [
-                    {
-                        primitives: [
-                            { attributes: { POSITION: 0 }, mode: 4, material: 0 },
-                            { attributes: { POSITION: 0 }, mode: 1, material: 0 },
-                        ],
-                    },
-                ],
-            }),
-            scene
-        );
+        await AppendSceneAsync(asset(scalarInterpolation("/materials/0/pbrMetallicRoughness/metallicFactor", 0.8), ["KHR_interactivity"], materialContents(modes)), scene, {
+            pluginOptions: { gltf: { loadAllMaterials: false } },
+        });
         await scene.whenReadyAsync();
         const record = GetKHRInteractivityImportResult(scene)!.glTF.materials![0];
         const materials = Object.values(record._data!).map((data) => data.babylonMaterial);
-        expect(materials).toHaveLength(2);
+        expect(materials).toHaveLength(modes.length);
         expect(materials.every((material) => material instanceof PBRMaterial)).toBe(true);
         const group = scene.animationGroups[0];
         expect(new Set(group.targetedAnimations.map((targeted) => targeted.target))).toEqual(new Set(materials));
@@ -292,6 +288,79 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(log).toHaveBeenCalledWith("interpolation started");
         expect(log).toHaveBeenCalledWith("interpolation done");
         expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
+    it("writes every shared material variant before cancelling interpolation", async () => {
+        const pointer = "/materials/0/pbrMetallicRoughness/metallicFactor";
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }, { signature: "float2" }, { signature: "bool" }],
+            variables: [{ type: 2, value: [false] }],
+            declarations: [
+                { op: "variable/get" },
+                { op: "event/onStart" },
+                { op: "pointer/interpolate" },
+                { op: "debug/log" },
+                { op: "event/onTick" },
+                { op: "flow/branch" },
+                { op: "pointer/set" },
+            ],
+            nodes: [
+                { declaration: 0, configuration: { variable: { value: [0] } } },
+                { declaration: 1, flows: { out: { node: 2 } } },
+                {
+                    ...scalarInterpolation(pointer, 0.8).nodes[1],
+                    declaration: 2,
+                    flows: { out: { node: 3 }, done: { node: 8 }, err: { node: 9 } },
+                },
+                { declaration: 3, configuration: { message: { value: ["interpolation started"] }, severity: { value: [0] } } },
+                { declaration: 4, flows: { out: { node: 5 } } },
+                { declaration: 5, values: { condition: { node: 0 } }, flows: { true: { node: 6 } } },
+                {
+                    declaration: 6,
+                    configuration: { pointer: { value: [pointer] }, type: { value: [0] } },
+                    values: { value: { type: 0, value: [0.9] } },
+                    flows: { out: { node: 7 }, err: { node: 9 } },
+                },
+                { declaration: 3, configuration: { message: { value: ["written"] }, severity: { value: [0] } } },
+                { declaration: 3, configuration: { message: { value: ["interpolation done"] }, severity: { value: [0] } } },
+                { declaration: 3, configuration: { message: { value: ["error"] }, severity: { value: [0] } } },
+            ],
+        };
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(asset(graph, ["KHR_interactivity"], materialContents([4, 1])), scene);
+        await scene.whenReadyAsync();
+        const result = GetKHRInteractivityImportResult(scene)!;
+        const materials = Object.values(result.glTF.materials![0]._data!).map((data) => data.babylonMaterial);
+        const group = scene.animationGroups[0];
+        group.pause();
+        group.goToFrame(30);
+        for (const material of materials) {
+            expect(material).toBeInstanceOf(PBRMaterial);
+            if (!(material instanceof PBRMaterial)) {
+                throw new Error("Expected PBR material variants.");
+            }
+            expect(material.metallic).toBeCloseTo(0.5);
+        }
+        const context = result.graphs[0].flowGraph!.getContext(0);
+        context.setVariable("staticVariable_0", true);
+        scene.render();
+        context.setVariable("staticVariable_0", false);
+        expect(scene.animationGroups).toHaveLength(0);
+        vi.useFakeTimers({ toFake: ["Date", "performance"] });
+        for (let frame = 0; frame < 120; frame++) {
+            vi.advanceTimersByTime(16);
+            scene.render();
+            for (const material of materials) {
+                if (!(material instanceof PBRMaterial)) {
+                    throw new Error("Expected PBR material variants.");
+                }
+                expect(material.metallic).toBeCloseTo(0.9);
+                expect(material.roughness).toBeCloseTo(0.3);
+            }
+        }
+        expect(log).toHaveBeenCalledWith("written");
+        expect(log).not.toHaveBeenCalledWith("interpolation done");
+        expect(log).not.toHaveBeenCalledWith("error");
     });
 
     it.each(["literal", "connected"])("preserves a %s zero material interpolation endpoint", async (source) => {
