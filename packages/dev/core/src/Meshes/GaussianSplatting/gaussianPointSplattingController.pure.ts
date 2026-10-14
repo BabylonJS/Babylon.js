@@ -653,6 +653,7 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         if (
             this._decodedSplatsData !== this._mesh._splatsData ||
             this._decodedRevision !== this._mesh._splatDataRevision ||
+            this._decodedShDegree !== this._mesh._shDegree ||
             !this._vpMatrix.equalsWithEpsilon(this._scene.getTransformMatrix(), 1e-5) ||
             renderer.kernelSize !== (material.kernelSize || GaussianSplattingMaterial.KernelSize) ||
             renderer.minPixelSize !== material.minPixelSize ||

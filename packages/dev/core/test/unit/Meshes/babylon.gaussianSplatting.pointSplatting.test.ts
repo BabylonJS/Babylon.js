@@ -1289,8 +1289,14 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(controller.handlesCurrentPass).toBe(false);
         material.kernelSize = kernelSize;
         expect(controller.handlesCurrentPass).toBe(true);
+        mesh._shDegree = 1;
+        expect(controller.handlesCurrentPass).toBe(false);
+        expect(controller["_decodedShDegree"]).toBe(0);
+        mesh._shDegree = 0;
+        expect(controller.handlesCurrentPass).toBe(true);
         expect(renderer.accumulationVersion).toBe(generation);
         controller["_colorMode"] = false;
+        mesh._shDegree = 1;
         mesh.position.x = 0;
         expect(controller.handlesCurrentPass).toBe(true);
 
