@@ -2023,6 +2023,103 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(renderer.supportsWorkload(2_000_000, 4, 1920, 1080)).toBe(false);
     });
 
+    it("keeps disabled Hi-Z allocation minimal and safely rebuilds it on toggles and resize", () => {
+        const engine = new NullEngine();
+        const create = vi.fn((size: number) => ({ capacity: size }));
+        const release = vi.fn(() => true);
+        const uploads = new Map<object, number>();
+        Object.defineProperty(engine, "supportsUniformBuffers", { value: true });
+        Object.assign(engine, {
+            _storageBuffers: [],
+            createStorageBuffer: create,
+            updateStorageBuffer: (buffer: object, data: ArrayBufferView) => uploads.set(buffer, data.byteLength),
+            createUniformBuffer: () => ({}),
+            updateUniformBuffer: () => {},
+            _releaseBuffer: release,
+        });
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        renderer["_engine"] = engine;
+        renderer.occlusionCulling = false;
+        renderer["_hiZLevels"] = [];
+        renderer["_hiZBuildParams"] = [];
+        renderer["_accumGeneration"] = 0;
+        for (const name of ["_preprocessCs", "_splatCs", "_resolveCs", "_hiZBuildCs"] as const) {
+            renderer[name] = Object.create(ComputeShader.prototype) as ComputeShader;
+            vi.spyOn(renderer[name], "setStorageBuffer").mockImplementation(() => {});
+        }
+        const cleanup = () => {
+            renderer["_imageBuffer"]?.dispose();
+            renderer["_accumBuffer"]?.dispose();
+            renderer["_accumDepth"]?.dispose();
+            renderer["_accumCount"]?.dispose();
+            renderer["_hiZ"]?.dispose();
+            for (const params of renderer["_hiZBuildParams"]) {
+                params.dispose();
+            }
+            engine.dispose();
+        };
+        onTestFinished(cleanup);
+
+        renderer["_ensurePixelBuffers"](3840, 2160, 3840, 2160);
+        const inert = renderer["_hiZ"]!;
+        const inertNative = inert.getBuffer();
+        expect(inert.getBuffer().capacity).toBe(4);
+        expect(uploads.get(inert.getBuffer())).toBe(4);
+        expect(renderer["_hiZLevels"]).toEqual([]);
+        expect(renderer["_hiZBuildParams"]).toEqual([]);
+        const allocations = create.mock.calls.length;
+        renderer["_ensurePixelBuffers"](3840, 2160, 3840, 2160);
+        expect(create).toHaveBeenCalledTimes(allocations);
+        renderer["_ensurePixelBuffers"](64, 32, 64, 32);
+        expect(renderer["_hiZ"]).toBe(inert);
+
+        renderer.occlusionCulling = true;
+        renderer["_ensurePixelBuffers"](64, 32, 64, 32);
+        const pyramid = renderer["_hiZ"]!;
+        expect(release).toHaveBeenCalledWith(inertNative);
+        expect(pyramid.getBuffer().capacity).toBe(2731 * 4);
+        expect(renderer["_hiZLevels"]).toHaveLength(7);
+        expect(renderer["_hiZBuildParams"]).toHaveLength(6);
+        const levelParams = renderer["_hiZBuildParams"].slice();
+        renderer["_ensurePixelBuffers"](64, 32, 64, 32);
+        expect(renderer["_hiZ"]).toBe(pyramid);
+        expect(renderer["_hiZBuildParams"]).toEqual(levelParams);
+        const disposeParams = levelParams.map((params) => vi.spyOn(params, "dispose"));
+        renderer["_ensurePixelBuffers"](32, 16, 32, 16);
+        expect(renderer["_hiZ"]).not.toBe(pyramid);
+        expect(renderer["_hiZ"]!.getBuffer().capacity).toBe(683 * 4);
+        expect(renderer["_hiZBuildParams"]).toHaveLength(5);
+        disposeParams.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
+
+        const resizedParams = renderer["_hiZBuildParams"].map((params) => vi.spyOn(params, "dispose"));
+        renderer["_boundHiZParams"] = renderer["_hiZBuildParams"][0];
+        renderer.occlusionCulling = false;
+        renderer["_ensurePixelBuffers"](32, 16, 32, 16);
+        expect(renderer["_hiZ"]!.getBuffer().capacity).toBe(4);
+        expect(renderer["_hiZLevels"]).toEqual([]);
+        expect(renderer["_hiZBuildParams"]).toEqual([]);
+        expect(renderer["_boundHiZParams"]).toBeNull();
+        resizedParams.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
+        renderer.occlusionCulling = true;
+        renderer["_ensurePixelBuffers"](32, 16, 32, 16);
+        expect(renderer["_hiZ"]!.getBuffer().capacity).toBe(683 * 4);
+        expect(renderer["_hiZBuildParams"]).toHaveLength(5);
+    });
+
+    it("does not compile or wait for the Hi-Z reduction shader while culling is disabled", () => {
+        const renderer = Object.create(GaussianPointSplattingRenderer.prototype) as GaussianPointSplattingRenderer;
+        for (const name of ["_preprocessCs", "_scanBlocksCs", "_scanSumsCs", "_scanAddCs", "_partitionCs", "_splatCs", "_resolveCs", "_hiZBuildCs"] as const) {
+            renderer[name] = Object.create(ComputeShader.prototype) as ComputeShader;
+            vi.spyOn(renderer[name], "isReady").mockReturnValue(name !== "_hiZBuildCs");
+        }
+        renderer.occlusionCulling = false;
+        expect(renderer.isReady()).toBe(true);
+        expect(renderer["_hiZBuildCs"].isReady).not.toHaveBeenCalled();
+        renderer.occlusionCulling = true;
+        expect(renderer.isReady()).toBe(false);
+        expect(renderer["_hiZBuildCs"].isReady).toHaveBeenCalledOnce();
+    });
+
     it("serializes the point settings but not the internal compositors", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

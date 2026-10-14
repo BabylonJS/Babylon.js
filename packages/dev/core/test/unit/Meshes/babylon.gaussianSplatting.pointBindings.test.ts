@@ -70,7 +70,7 @@ describe("Gaussian point-splatting resource bindings", () => {
         renderer.renderToBuffer(16, 16, 32, 32, 2);
         expect(renderer.accumBuffer).toBe(accumulation);
         expect(renderer["_imageBuffer"]).not.toBe(image);
-        expect(renderer["_hiZ"]).not.toBe(hiZ);
+        expect(renderer["_hiZ"]).toBe(hiZ);
         expect(renderer["_splatCs"]["_bindings"].imageBuffer.object).toBe(renderer["_imageBuffer"]);
         expect(renderer["_resolveCs"]["_bindings"].imageBuffer.object).toBe(renderer["_imageBuffer"]);
         expect(renderer["_hiZBuildCs"]["_bindings"].hiZ.object).toBe(renderer["_hiZ"]);

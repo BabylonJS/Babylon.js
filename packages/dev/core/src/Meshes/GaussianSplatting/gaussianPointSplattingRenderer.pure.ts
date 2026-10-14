@@ -103,6 +103,7 @@ export class GaussianPointSplattingRenderer {
     /**
      * Hi-Z occlusion culling: skip Gaussians fully behind the previous frame's nearest samples. Off by default
      * because those stochastic samples may be semi-transparent, so culling biases the converged image.
+     * The depth pyramid is allocated only while enabled.
      */
     public occlusionCulling = false;
 
@@ -279,6 +280,7 @@ export class GaussianPointSplattingRenderer {
         this._resolveParams.addUniform("misc2", 4); // x = maxAccum, y = moving flag
         this._resolveParams.addUniform("projZ", 4);
         this._resolveParams.addUniform("inverseProjection", 16);
+        this._resolveParams.addUniform("occlusion", 4);
 
         this._pointCount = new StorageBuffer(engine as WebGPUEngine, 4 * Uint32Array.BYTES_PER_ELEMENT);
         // WRITE (CopyDst) makes the initial zero-fill valid.
@@ -415,7 +417,7 @@ export class GaussianPointSplattingRenderer {
             this._partitionCs.isReady() &&
             this._splatCs.isReady() &&
             this._resolveCs.isReady() &&
-            this._hiZBuildCs.isReady()
+            (!this.occlusionCulling || this._hiZBuildCs.isReady())
         );
     }
 
@@ -691,15 +693,21 @@ export class GaussianPointSplattingRenderer {
             this._imageBuffer.update(seed);
             this._splatCs.setStorageBuffer("imageBuffer", this._imageBuffer);
             this._resolveCs.setStorageBuffer("imageBuffer", this._imageBuffer);
+        }
 
+        if (!this._hiZ || this.occlusionCulling !== this._hiZLevels.length > 0 || (this.occlusionCulling && renderChanged)) {
             this._hiZLevels = [];
-            let hiZOffset = 0;
-            const numLevels = Math.floor(Math.log2(Math.max(width, height))) + 1;
-            for (let l = 0; l < numLevels; l++) {
-                const lw = Math.max(1, width >> l);
-                const lh = Math.max(1, height >> l);
-                this._hiZLevels.push({ offset: hiZOffset, w: lw, h: lh });
-                hiZOffset += lw * lh;
+            // Both shaders require a valid storage binding even when their Hi-Z branches are disabled.
+            let hiZOffset = 1;
+            if (this.occlusionCulling) {
+                hiZOffset = 0;
+                const numLevels = Math.floor(Math.log2(Math.max(width, height))) + 1;
+                for (let l = 0; l < numLevels; l++) {
+                    const lw = Math.max(1, width >> l);
+                    const lh = Math.max(1, height >> l);
+                    this._hiZLevels.push({ offset: hiZOffset, w: lw, h: lh });
+                    hiZOffset += lw * lh;
+                }
             }
             this._hiZ?.dispose();
             this._hiZ = new StorageBuffer(engine, hiZOffset * Float32Array.BYTES_PER_ELEMENT);
@@ -713,7 +721,7 @@ export class GaussianPointSplattingRenderer {
             }
             this._hiZBuildParams = [];
             this._boundHiZParams = null;
-            for (let l = 1; l < numLevels; l++) {
+            for (let l = 1; l < this._hiZLevels.length; l++) {
                 const src = this._hiZLevels[l - 1];
                 const dst = this._hiZLevels[l];
                 const ub = new UniformBuffer(engine);
@@ -837,6 +845,7 @@ export class GaussianPointSplattingRenderer {
         if (this._inverseProjection) {
             this._resolveParams.updateMatrix("inverseProjection", this._inverseProjection);
         }
+        this._resolveParams.updateFloat4("occlusion", this.occlusionCulling ? 1 : 0, 0, 0, 0);
         this._resolveParams.update();
 
         const groupsG = Math.ceil(this._gaussianCount / WorkgroupSize);
@@ -912,6 +921,7 @@ export class GaussianPointSplattingRenderer {
             ub.dispose();
         }
         this._hiZBuildParams = [];
+        this._boundHiZParams = null;
         this._disposePartBuffers();
         this._partCount = 0;
         this._pointCount.dispose();

@@ -1,4 +1,4 @@
-// Gaussian Point Splatting — resolves each render pixel, seeds Hi-Z level 0, and accumulates a running
+// Gaussian Point Splatting — resolves each render pixel, optionally seeds Hi-Z level 0, and accumulates a running
 // mean of premultiplied color + coverage into its output jitter cell.
 #include<gaussianPointSplatting>
 
@@ -11,6 +11,7 @@ struct GpsResolveParams {
     misc2 : vec4f,         // x=maxAccum, y=moving, z=reverse depth, w=projected depth keys
     projZ : vec4f,         // projection z-row (m10 and m11 sign-adjusted for RH) to map positive view-z back to ndc.z
     inverseProjection : mat4x4f,
+    occlusion : vec4f,     // x = Hi-Z enabled
 };
 
 @group(0) @binding(0) var<storage, read_write> accumBuffer : array<vec4f>;
@@ -53,7 +54,9 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
             viewZ = unprojected.z / unprojected.w;
         }
     }
-    hiZ[idx] = occlVz;
+    if (params.occlusion.x > 0.5) {
+        hiZ[idx] = occlVz;
+    }
     atomicStore(&imageBuffer[idx], GPS_DEPTH_CLEAR);
 
     let n = u32(params.upsample.x);
