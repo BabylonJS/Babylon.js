@@ -202,12 +202,13 @@ describe("glTF exporter", () => {
     describe("multi-material meshes", () => {
         // https://forum.babylonjs.com/t/multi-materials-cause-strange-glb-export-artifacts/60558 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17241)
         // https://forum.babylonjs.com/t/exporting-to-gltf-in-new-version-causing-an-error-on-importing-from-blender/62030 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17662)
+        // https://github.com/BabylonJS/Babylon.js/pull/17244
         it("preserves geometry and material for sub meshes with offset vertex and index ranges", async () => {
             const { scene } = testScene;
             const mesh = new Mesh("mesh", scene);
             const sourcePositions = [0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 2, 1, 0];
             mesh.setVerticesData("position", sourcePositions);
-            mesh.setIndices([0, 1, 2, 3, 4, 5]);
+            mesh.setIndices(new Uint16Array([0, 1, 2, 3, 4, 5]));
             mesh.subMeshes = [];
             const multiMaterial = new MultiMaterial("multi", scene);
             multiMaterial.subMaterials.push(new PBRMaterial("a", scene), new PBRMaterial("b", scene));

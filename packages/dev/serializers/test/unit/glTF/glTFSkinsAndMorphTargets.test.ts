@@ -1,10 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { Bone } from "core/Bones/bone";
+import { Skeleton } from "core/Bones/skeleton";
+import { VertexBuffer } from "core/Buffers/buffer";
 import { Mesh } from "core/Meshes/mesh";
 import { SubMesh } from "core/Meshes/subMesh";
+import { TransformNode } from "core/Meshes/transformNode";
 import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Matrix } from "core/Maths/math.vector";
 import { CreateTestScene, CreateTriangleGltf, ExportGltfWithBinaryAsync, ReadAccessor, RoundTripGltfWithBinaryAsync, ToDataUri, type GltfJson } from "./glTFTestUtils";
 import { type IAccessor } from "babylonjs-gltf2interface";
 
@@ -30,6 +35,31 @@ function expectValuesClose(actual: number[], expected: number[]): void {
     actual.forEach((value, index) => expect(value).toBeCloseTo(expected[index], 5));
 }
 
+function createSkinnedTriangle(scene: ReturnType<typeof CreateTestScene>["scene"]): {
+    mesh: Mesh;
+    rootNode: TransformNode;
+    childNode: TransformNode;
+} {
+    const mesh = new Mesh("skinned", scene);
+    mesh.setVerticesData(VertexBuffer.PositionKind, TrianglePositions);
+    mesh.setVerticesData(VertexBuffer.NormalKind, TriangleNormals);
+    mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0], false, 4);
+    mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, new Float32Array([1, 0, 0, 0, 0.5, 0.5, 0, 0, 1, 0, 0, 0]), false, 4);
+    mesh.setIndices([0, 1, 2]);
+
+    const skeleton = new Skeleton("skeleton", "skeleton", scene);
+    const rootBone = new Bone("root", skeleton, null, Matrix.Identity(), null, Matrix.Identity(), 1);
+    const childBone = new Bone("child", skeleton, rootBone, Matrix.Translation(0, 1, 0), null, Matrix.Translation(0, 1, 0), 0);
+    const rootNode = new TransformNode("root", scene);
+    const childNode = new TransformNode("child", scene);
+    childNode.parent = rootNode;
+    rootBone.linkTransformNode(rootNode);
+    childBone.linkTransformNode(childNode);
+    mesh.skeleton = skeleton;
+
+    return { mesh, rootNode, childNode };
+}
+
 describe("glTF Exporter - skins and morph targets", () => {
     let testScene: ReturnType<typeof CreateTestScene>;
 
@@ -41,6 +71,8 @@ describe("glTF Exporter - skins and morph targets", () => {
         testScene.dispose();
     });
 
+    // https://forum.babylonjs.com/t/glbexporter-exports-bones-facing-opposite-direction-to-mesh/35330 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13214)
+    // https://github.com/BabylonJS/Babylon.js/pull/16888
     it.each([false, true])("round trips a parented skin with useRightHandedSystem=%s", async (useRightHandedSystem) => {
         testScene.scene.useRightHandedSystem = useRightHandedSystem;
         const source = CreateTriangleGltf();
@@ -100,6 +132,50 @@ describe("glTF Exporter - skins and morph targets", () => {
         expectValuesClose(ReadAccessor(gltf, bin, attributes.WEIGHTS_0), Array.from(weights));
     });
 
+    // https://forum.babylonjs.com/t/gltf-export-bug-skinning-has-errors/13744 (fixed by https://github.com/BabylonJS/Babylon.js/pull/8847)
+    it("orders skin joints by their shader indices", async () => {
+        createSkinnedTriangle(testScene.scene);
+
+        const { gltf, bin } = await ExportGltfWithBinaryAsync(testScene.scene);
+        const skin = gltf.skins?.[0];
+        if (!skin) {
+            throw new Error("Expected an exported skin");
+        }
+        const meshNode = gltf.nodes.find((node) => node.skin !== undefined);
+        if (!meshNode || meshNode.mesh === undefined) {
+            throw new Error("Expected a skinned mesh node");
+        }
+        const jointsAccessor = gltf.meshes[meshNode.mesh].primitives[0].attributes.JOINTS_0;
+
+        expect(skin.joints.map((index) => gltf.nodes[index].name)).toEqual(["child", "root"]);
+        expect(ReadAccessor(gltf, bin, jointsAccessor)).toEqual([0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]);
+    });
+
+    // https://forum.babylonjs.com/t/how-to-exclude-all-disabled-nodes-from-export/38780 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13604)
+    it("does not export skins whose linked bone nodes are excluded", async () => {
+        const { rootNode, childNode } = createSkinnedTriangle(testScene.scene);
+
+        const { gltf } = await ExportGltfWithBinaryAsync(testScene.scene, {
+            shouldExportNode: (node) => node !== rootNode && node !== childNode,
+        });
+
+        expect(gltf.skins).toBeUndefined();
+        expect(gltf.nodes.find((node) => node.name === "skinned")?.skin).toBeUndefined();
+    });
+
+    // https://forum.babylonjs.com/t/gltf-export-bug-faulty-export-if-skeleton-bones-length-0/30003 (fixed by https://github.com/BabylonJS/Babylon.js/pull/12489)
+    it("does not export empty skins", async () => {
+        const skeleton = new Skeleton("empty", "empty", testScene.scene);
+        const mesh = new Mesh("mesh", testScene.scene);
+        mesh.setVerticesData(VertexBuffer.PositionKind, TrianglePositions);
+        mesh.setIndices([0, 1, 2]);
+        mesh.skeleton = skeleton;
+
+        const { gltf } = await ExportGltfWithBinaryAsync(testScene.scene);
+
+        expect(gltf.skins).toBeUndefined();
+    });
+
     it("round trips morph targets with their default weights and names", async () => {
         const source = CreateTriangleGltf();
         appendAccessors(source, [
@@ -125,6 +201,7 @@ describe("glTF Exporter - skins and morph targets", () => {
         expect(ReadAccessor(gltf, bin, targets[1].POSITION)).toEqual([0, 1, 0, 0, 1, 0, 0, 1, 0]);
     });
 
+    // https://forum.babylonjs.com/t/gltfexporter-not-working-with-morph-targets/51337 (fixed by https://github.com/BabylonJS/Babylon.js/pull/15229)
     it("exports morph target deltas on each sub mesh primitive", async () => {
         const { scene } = testScene;
         const mesh = new Mesh("morphed", scene);

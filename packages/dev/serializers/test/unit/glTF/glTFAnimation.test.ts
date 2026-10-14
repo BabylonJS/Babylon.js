@@ -1,6 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { Animation } from "core/Animations/animation";
+import { AnimationGroup } from "core/Animations/animationGroup";
+import { Vector3 } from "core/Maths/math.vector";
+import { TransformNode } from "core/Meshes/transformNode";
 import { type IAccessor, type IAnimationChannelTarget, type IAnimationSampler } from "babylonjs-gltf2interface";
-import { CreateTestScene, CreateTriangleGltf, ExportGltfAsync, ReadAccessor, RoundTripGltfAsync, RoundTripGltfWithBinaryAsync, ToDataUri, type GltfJson } from "./glTFTestUtils";
+import {
+    CreateTestScene,
+    CreateTriangleGltf,
+    ExportGltfAsync,
+    ExportGltfWithBinaryAsync,
+    ReadAccessor,
+    RoundTripGltfWithBinaryAsync,
+    ToDataUri,
+    type GltfJson,
+} from "./glTFTestUtils";
 
 /** A triangle whose node is animated with translation (STEP) and scale (LINEAR) channels. */
 function createAnimatedGltf(): GltfJson {
@@ -82,11 +95,66 @@ describe("glTF Exporter - animations", () => {
         }
     });
 
-    it("exports only the animations accepted by shouldExportAnimation", async () => {
-        await RoundTripGltfAsync(testScene.scene, createAnimatedGltf());
+    // https://forum.babylonjs.com/t/the-function-call-is-missing-parameter-shouldexportanimation/55466 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16102)
+    it("exports only animation-group channels accepted by shouldExportAnimation", async () => {
+        const node = new TransformNode("animated", testScene.scene);
+        const kept = new Animation("kept", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+        kept.setKeys([
+            { frame: 0, value: Vector3.Zero() },
+            { frame: 30, value: Vector3.One() },
+        ]);
+        const skipped = new Animation("skipped", "scaling", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+        skipped.setKeys([
+            { frame: 0, value: Vector3.One() },
+            { frame: 30, value: Vector3.One().scale(2) },
+        ]);
+        const group = new AnimationGroup("group", testScene.scene);
+        group.addTargetedAnimation(kept, node);
+        group.addTargetedAnimation(skipped, node);
+        const visited: string[] = [];
 
-        const gltf = await ExportGltfAsync(testScene.scene, { shouldExportAnimation: () => false });
+        const gltf = await ExportGltfAsync(testScene.scene, {
+            shouldExportAnimation: (animation) => {
+                visited.push(animation.name);
+                return animation === kept;
+            },
+        });
 
-        expect(gltf.animations).toBeUndefined();
+        const animations = gltf.animations;
+        if (!animations) {
+            throw new Error("Expected an exported animation group");
+        }
+        expect(visited).toEqual(["kept", "skipped"]);
+        expect(animations).toHaveLength(1);
+        expect(animations[0].channels).toHaveLength(1);
+        expect(animations[0].channels[0].target.path).toBe("translation");
+    });
+
+    // https://forum.babylonjs.com/t/able-to-corrupt-gltf-file-by-adding-an-animation-that-rotates/36620 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13356)
+    it("exports Euler rotation animations with matching finite sampler counts", async () => {
+        const node = new TransformNode("animated", testScene.scene);
+        const animation = new Animation("rotate", "rotation", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+        animation.setKeys([
+            { frame: 0, value: Vector3.Zero() },
+            { frame: 30, value: new Vector3(0.2, 0.4, 0.6) },
+        ]);
+        node.animations.push(animation);
+
+        const { gltf, bin } = await ExportGltfWithBinaryAsync(testScene.scene);
+        const exportedAnimation = gltf.animations?.[0];
+        if (!exportedAnimation) {
+            throw new Error("Expected an exported animation");
+        }
+        const channel = exportedAnimation.channels[0];
+        const sampler = exportedAnimation.samplers[channel.sampler];
+        const inputs = ReadAccessor(gltf, bin, sampler.input);
+        const outputs = ReadAccessor(gltf, bin, sampler.output);
+
+        expect(channel.target.path).toBe("rotation");
+        expect(outputs).toHaveLength(inputs.length * 4);
+        expect(outputs.every(Number.isFinite)).toBe(true);
+        for (let index = 0; index < outputs.length; index += 4) {
+            expect(Math.hypot(...outputs.slice(index, index + 4))).toBeCloseTo(1);
+        }
     });
 });
