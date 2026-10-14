@@ -2095,6 +2095,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 isVariable: true,
             },
             {
+                input: "animationTargets",
+                output: "animationTargets",
+                inputBlockIndex: 2,
+                outputBlockIndex: 1,
+                isVariable: true,
+            },
+            {
                 input: "easingFunction",
                 output: "easingFunction",
                 inputBlockIndex: 0,

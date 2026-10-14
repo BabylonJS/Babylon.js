@@ -7,6 +7,7 @@ import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraph
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { AnimationGroup } from "core/Animations/animationGroup.pure";
 import { type Animation } from "core/Animations/animation.pure";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { RemoveFlowGraphAnimationGroupObservers, type IFlowGraphAnimationObserverSet } from "../../../flowGraphAnimationHelpers";
@@ -71,6 +72,12 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public readonly animation: FlowGraphDataConnection<Animation | Animation[]>;
 
     /**
+     * Input connection: Optional targets matching the animation array in order.
+     * When supplied, these replace the single object target. Ignored when animationGroup is supplied.
+     */
+    public readonly animationTargets: FlowGraphDataConnection<IAnimatable[] | undefined>;
+
+    /**
      * Input connection: The target object that will be animated. If animation group is provided this input will be ignored.
      */
     public readonly object: FlowGraphDataConnection<any>;
@@ -94,6 +101,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         this.currentAnimationGroup = this.registerDataOutput("currentAnimationGroup", RichTypeAny);
         this.animationGroup = this.registerDataInput("animationGroup", RichTypeAny, config?.animationGroup);
         this.animation = this.registerDataInput("animation", RichTypeAny);
+        this.animationTargets = this.registerDataInput("animationTargets", RichTypeAny);
         this.object = this.registerDataInput("object", RichTypeAny);
     }
 
@@ -133,9 +141,11 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     private _tryPreparePendingTasks(context: FlowGraphContext): boolean {
         let ag: AnimationGroup;
         let animation: Animation | Animation[];
+        let animationTargets: IAnimatable[] | undefined;
         try {
             ag = this.animationGroup.getValue(context);
             animation = this.animation.getValue(context);
+            animationTargets = ag ? undefined : this.animationTargets.getValue(context);
         } catch (error) {
             this._reportError(context, error);
             return false;
@@ -161,17 +171,30 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             let interpolationTarget: any;
             // check which animation to use. If no animationGroup was defined and an animation was provided, use the animation
             if (animation && !animationGroupToUse) {
-                const target = this.object.getValue(context);
-                if (!target) {
+                const target = animationTargets === undefined ? this.object.getValue(context) : undefined;
+                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                if (animationTargets !== undefined && (!Array.isArray(animationTargets) || animationTargets.length !== animationsArray.length)) {
+                    this._reportError(context, "Animation targets must match the animation array.");
+                    return false;
+                }
+                if (!animationTargets && !target) {
                     this._reportError(context, "No target object provided");
                     return false;
                 }
-                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                if (animationTargets) {
+                    for (const animationTarget of animationTargets) {
+                        if (!animationTarget) {
+                            this._reportError(context, "No target object provided");
+                            return false;
+                        }
+                    }
+                }
                 const name = animationsArray[0].name;
-                animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + target.name, context.configuration.scene);
+                animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + (target?.name ?? "targets"), context.configuration.scene);
                 const interpolationAnimations = context._getGlobalContextVariable("interpolationAnimations", []) as number[];
-                for (const anim of animationsArray) {
-                    animationGroupToUse.addTargetedAnimation(anim, target);
+                for (let index = 0; index < animationsArray.length; index++) {
+                    const anim = animationsArray[index];
+                    animationGroupToUse.addTargetedAnimation(anim, animationTargets ? animationTargets[index] : target);
                     if (interpolationAnimations.indexOf(anim.uniqueId) !== -1) {
                         isInterpolation = true;
                     }
@@ -251,8 +274,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // Stop any interpolation already running on the same target/property, but only after validation has
             // passed. An invalid interpolation (bad duration or NaN control points) must report [err] without
             // disturbing an interpolation that is already running on the same target.
-            if (isInterpolation && interpolationAnimationsArray && interpolationTarget !== undefined) {
-                this._checkInterpolationDuplications(context, interpolationAnimationsArray, interpolationTarget);
+            if (isInterpolation && interpolationAnimationsArray) {
+                this._checkInterpolationDuplications(context, interpolationAnimationsArray, interpolationTarget, animationTargets);
             }
 
             const loop = !isFinite(to) || this.loop.getValue(context);
@@ -323,16 +346,23 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * If they do, we want to stop the already-running animation group.
      * @internal
      */
-    private _checkInterpolationDuplications(context: FlowGraphContext, animation: Animation[], target: any) {
+    private _checkInterpolationDuplications(context: FlowGraphContext, animation: Animation[], target: any, targets?: IAnimatable[]) {
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
-        for (const uniqueId of currentlyRunningAnimationGroups) {
+        for (let groupIndex = currentlyRunningAnimationGroups.length - 1; groupIndex >= 0; groupIndex--) {
+            const uniqueId = currentlyRunningAnimationGroups[groupIndex];
             const ag = context.assetsContext.animationGroups.find((ag) => ag.uniqueId === uniqueId);
             if (ag) {
+                let stopped = false;
                 for (const anim of ag.targetedAnimations) {
-                    for (const animToCheck of animation) {
-                        if (anim.animation.targetProperty === animToCheck.targetProperty && anim.target === target) {
+                    for (let index = 0; index < animation.length; index++) {
+                        if (anim.animation.targetProperty === animation[index].targetProperty && anim.target === (targets ? targets[index] : target)) {
                             this._stopAnimationGroup(context, ag);
+                            stopped = true;
+                            break;
                         }
+                    }
+                    if (stopped) {
+                        break;
                     }
                 }
             }

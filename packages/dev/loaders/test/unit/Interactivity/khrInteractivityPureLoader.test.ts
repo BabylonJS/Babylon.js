@@ -246,6 +246,54 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(log).not.toHaveBeenCalledWith("interpolation error");
     });
 
+    it("interpolates every primitive-mode variant of a shared material", async () => {
+        const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0]);
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(scalarInterpolation("/materials/0/pbrMetallicRoughness/metallicFactor", 0.8), ["KHR_interactivity"], {
+                nodes: [{ mesh: 0 }],
+                buffers: [{ byteLength: positions.byteLength, uri: `data:application/octet-stream;base64,${Buffer.from(positions.buffer).toString("base64")}` }],
+                bufferViews: [{ buffer: 0, byteLength: positions.byteLength }],
+                accessors: [{ bufferView: 0, componentType: 5126, count: 6, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
+                materials: [{ pbrMetallicRoughness: { metallicFactor: 0.2, roughnessFactor: 0.3 } }],
+                meshes: [
+                    {
+                        primitives: [
+                            { attributes: { POSITION: 0 }, mode: 4, material: 0 },
+                            { attributes: { POSITION: 0 }, mode: 1, material: 0 },
+                        ],
+                    },
+                ],
+            }),
+            scene
+        );
+        await scene.whenReadyAsync();
+        const record = GetKHRInteractivityImportResult(scene)!.glTF.materials![0];
+        const materials = Object.values(record._data!).map((data) => data.babylonMaterial);
+        expect(materials).toHaveLength(2);
+        expect(materials.every((material) => material instanceof PBRMaterial)).toBe(true);
+        const group = scene.animationGroups[0];
+        expect(new Set(group.targetedAnimations.map((targeted) => targeted.target))).toEqual(new Set(materials));
+        for (const [frame, metallic] of [
+            [0, 0.2],
+            [30, 0.5],
+            [60, 0.8],
+        ]) {
+            group.goToFrame(frame);
+            for (const material of materials) {
+                if (!(material instanceof PBRMaterial)) {
+                    throw new Error("Expected PBR material variants.");
+                }
+                expect(material.metallic).toBeCloseTo(metallic);
+                expect(material.roughness).toBeCloseTo(0.3);
+            }
+        }
+        scene.render();
+        expect(log).toHaveBeenCalledWith("interpolation started");
+        expect(log).toHaveBeenCalledWith("interpolation done");
+        expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
     it.each(["literal", "connected"])("preserves a %s zero material interpolation endpoint", async (source) => {
         const log = vi.spyOn(Logger, "Log");
         const graph = scalarInterpolation("/materials/0/pbrMetallicRoughness/metallicFactor", 0);

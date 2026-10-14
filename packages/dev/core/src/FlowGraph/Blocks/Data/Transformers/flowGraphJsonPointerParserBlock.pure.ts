@@ -15,6 +15,7 @@ import { Vector3, Vector4 } from "core/Maths/math.vector.pure";
 import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
 import { RegisterClass } from "core/Misc/typeStore";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 
 /**
  * Configuration for the JSON pointer parser block.
@@ -73,6 +74,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     public readonly generateAnimationsFunction: FlowGraphDataConnection<() => (keys: any[], fps: number, easingFunction?: EasingFunction) => Animation[]>;
 
     /**
+     * Output connection: Targets supplied by the animation builder, in the same order as its generated animations.
+     */
+    public readonly animationTargets: FlowGraphDataConnection<IAnimatable[] | undefined>;
+
+    /**
      * The component with the templated inputs for the provided path.
      */
     public readonly templateComponent: FlowGraphPathConverterComponent;
@@ -89,6 +95,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         this.setterFunction = this.registerDataOutput("setFunction", RichTypeAny, this._setPropertyValue.bind(this));
         this.getterFunction = this.registerDataOutput("getFunction", RichTypeAny, this._getPropertyValue.bind(this));
         this.generateAnimationsFunction = this.registerDataOutput("generateAnimationsFunction", RichTypeAny, this._getInterpolationAnimationPropertyInfo.bind(this));
+        this.animationTargets = this.registerDataOutput("animationTargets", RichTypeAny);
         this.templateComponent = new FlowGraphPathConverterComponent(config.jsonPointer, this);
     }
 
@@ -156,6 +163,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         }
         return (keys: any[], fps: number, _animationType: number, easingFunction?: EasingFunction) => {
             const animations: Animation[] = [];
+            const targets: IAnimatable[] = [];
             // make sure keys are of the right type (in case of float3 color/vector)
             const type = accessorContainer.info.type;
             if (type.startsWith("Color")) {
@@ -180,9 +188,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
                         animation.babylonAnimation.setEasingFunction(easingFunction);
                     }
                     animations.push(animation.babylonAnimation);
+                    targets.push(animation.babylonAnimatable);
                 }
             });
 
+            this.animationTargets.setValue(targets, context);
             return animations;
         };
     }

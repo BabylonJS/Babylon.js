@@ -38,6 +38,11 @@ const CONSTRUCTION_CONFIG: Record<string, object> = {
 const isDynamicPort = (name: string): boolean => /_\d+$/.test(name);
 
 describe("Flow Graph MCP Server – Registry Drift", () => {
+    it("documents per-animation target ordering at both producer and consumer ports", () => {
+        expect(FlowGraphBlockRegistry.PlayAnimation.dataInputs.find((port) => port.name === "animationTargets")?.description).toContain("animation order");
+        expect(FlowGraphBlockRegistry.JsonPointerParser.dataOutputs.find((port) => port.name === "animationTargets")?.description).toContain("same order");
+    });
+
     it("documents simultaneous variable input evaluation and its false default", () => {
         const configuration = FlowGraphBlockRegistry.SetVariable.config!;
         expect(configuration.evaluateInputsBeforeWrite).toContain("before any variable is written");

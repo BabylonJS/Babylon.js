@@ -12,6 +12,7 @@ import { FlowGraphCancelDelayBlock } from "core/FlowGraph/Blocks/Execution/Contr
 import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.pure";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { Animation } from "core/Animations/animation.pure";
+import { AnimationGroup } from "core/Animations/animationGroup.pure";
 import { FlowGraphInterpolationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphInterpolationBlock.pure";
 import { FlowGraphJsonPointerParserBlock } from "core/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.pure";
 
@@ -174,6 +175,111 @@ describe("FlowGraph optional execution semantics", () => {
         expect(done).not.toHaveBeenCalled();
     });
 
+    it("plays each animation on its matching target without reading the single-target input", () => {
+        const targets = [
+            { value: 0, animations: [] },
+            { value: 0, animations: [] },
+        ];
+        const animations = targets.map((_, index) => {
+            const animation = new Animation(`value-${index}`, "value", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: index + 1 },
+            ]);
+            return animation;
+        });
+        const play = new FlowGraphPlayAnimationBlock();
+        play.animation.setValue(animations, context);
+        play.animationTargets.setValue(targets, context);
+        vi.spyOn(play.object, "getValue").mockImplementation(() => {
+            throw new Error("Single target must not be read.");
+        });
+        play._execute(context);
+        const group = play.currentAnimationGroup.getValue(context);
+        expect(group.targetedAnimations.map((targeted) => targeted.target)).toEqual(targets);
+        group.goToFrame(30);
+        expect(targets.map((target) => target.value)).toEqual([0.5, 1]);
+        group.goToFrame(60);
+        expect(targets.map((target) => target.value)).toEqual([1, 2]);
+    });
+
+    it("rejects animation target arrays of the wrong length", () => {
+        const animation = new Animation("value", "value", 60, Animation.ANIMATIONTYPE_FLOAT);
+        animation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 60, value: 1 },
+        ]);
+        const play = new FlowGraphPlayAnimationBlock();
+        play.animation.setValue([animation, animation.clone()], context);
+        const target = { value: 0, animations: [] };
+        play.animationTargets.setValue([target], context);
+        const error = vi.spyOn(play.error, "_activateSignal");
+        const out = vi.spyOn(play.out, "_activateSignal");
+        play._execute(context);
+        expect(error).toHaveBeenCalledOnce();
+        expect(out).not.toHaveBeenCalled();
+        expect(scene.animationGroups).toHaveLength(0);
+        expect(context.hasPendingBlocks).toBe(false);
+    });
+
+    it("keeps animation-group targets without reading either target input", () => {
+        const target = { value: 0, animations: [] };
+        const animation = new Animation("value", "value", 60, Animation.ANIMATIONTYPE_FLOAT);
+        animation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 60, value: 1 },
+        ]);
+        const group = new AnimationGroup("provided", scene);
+        group.addTargetedAnimation(animation, target);
+        const play = new FlowGraphPlayAnimationBlock();
+        play.animationGroup.setValue(group, context);
+        for (const input of [play.animationTargets, play.object]) {
+            vi.spyOn(input, "getValue").mockImplementation(() => {
+                throw new Error("Target inputs must not be read for an animation group.");
+            });
+        }
+        play._execute(context);
+        expect(play.currentAnimationGroup.getValue(context)).toBe(group);
+        group.goToFrame(30);
+        expect(target.value).toBe(0.5);
+    });
+
+    it("replaces a targeted interpolation when only a non-default target overlaps", () => {
+        const targets = [
+            { value: 0, animations: [] },
+            { value: 0, animations: [] },
+        ];
+        const firstAnimations = targets.map((_, index) => {
+            const animation = new Animation(`first-${index}`, "value", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 1 },
+            ]);
+            return animation;
+        });
+        context._setGlobalContextVariable(
+            "interpolationAnimations",
+            firstAnimations.map((animation) => animation.uniqueId)
+        );
+        const first = new FlowGraphPlayAnimationBlock();
+        first.animation.setValue(firstAnimations, context);
+        first.animationTargets.setValue(targets, context);
+        const done = vi.spyOn(first.done, "_activateSignal");
+        first._execute(context);
+        const firstGroup = first.currentAnimationGroup.getValue(context);
+        const secondAnimation = firstAnimations[1].clone();
+        context._getGlobalContextVariable("interpolationAnimations", []).push(secondAnimation.uniqueId);
+        const second = new FlowGraphPlayAnimationBlock();
+        second.animation.setValue(secondAnimation, context);
+        second.animationTargets.setValue([targets[1]], context);
+        second._execute(context);
+        expect(scene.animationGroups).not.toContain(firstGroup);
+        expect(context._getExecutionVariable(first, "_initialized", false)).toBe(false);
+        expect(done).not.toHaveBeenCalled();
+        expect(context._getGlobalContextVariable("animationGroupObserverSets", new Map()).size).toBe(1);
+        expect(context._getGlobalContextVariable("currentlyRunningAnimationGroups", [])).toEqual([second.currentAnimationGroup.getValue(context).uniqueId]);
+    });
+
     it("applies same-type interpolation metadata conversions with the accessor target", () => {
         const target = { value: 0.2 };
         const getValue = vi.fn((_target, source, offset) => source[offset] * 2);
@@ -219,6 +325,7 @@ describe("FlowGraph optional execution semantics", () => {
         expect(getValue).toHaveBeenNthCalledWith(1, target, [0.2], 0, 1);
         expect(getValue).toHaveBeenNthCalledWith(2, target, [0.4], 0, 1);
         expect(parser.propertyName.getValue(context)).toBe("value");
+        expect(parser.animationTargets.getValue(context)).toEqual([target]);
     });
 
     it.each([false, true])("preserves empty-loop compatibility unless final-index behavior is enabled (%s)", (incrementIndexWhenLoopDone) => {

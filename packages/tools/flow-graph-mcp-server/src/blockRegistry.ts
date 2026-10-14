@@ -617,6 +617,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "to", type: "number", description: "End frame (default 0 = full range)" },
             { name: "animationGroup", type: "any", description: "AnimationGroup to play" },
             { name: "animation", type: "any", description: "Animation or Animation[] to play", isOptional: true },
+            { name: "animationTargets", type: "any", description: "Optional target array matching animation order; replaces object when supplied", isOptional: true },
             { name: "object", type: "any", description: "Target object for the animation", isOptional: true },
         ],
         dataOutputs: [
@@ -811,6 +812,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "setFunction", type: "any", description: "Setter function for the resolved property (used internally by interpolation/animation)" },
             { name: "getFunction", type: "any", description: "Getter function for the resolved property" },
             { name: "generateAnimationsFunction", type: "any", description: "Builds animation property info for the resolved property" },
+            { name: "animationTargets", type: "any", description: "Targets in the same order as the generated animations" },
         ],
         config: {
             jsonPointer: "string — the JSON pointer path",

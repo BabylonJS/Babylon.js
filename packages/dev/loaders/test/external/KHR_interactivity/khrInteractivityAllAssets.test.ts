@@ -293,7 +293,8 @@ async function _preparePage(page: Page): Promise<void> {
             typeof BABYLON.FlowGraphCoordinator === "function"
     );
     const clockStart = new Date();
-    await page.clock.install({ time: clockStart });
+    // pauseAt must be ahead of installation time; otherwise elapsed host time can make it a past instant.
+    await page.clock.install({ time: new Date(clockStart.getTime() - 60 * 60 * 1000) });
     await page.clock.pauseAt(clockStart);
     await page.evaluate(evaluateInitEngine);
     const rendererInfo = await page.evaluate(() => {
