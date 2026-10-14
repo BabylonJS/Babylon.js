@@ -949,6 +949,7 @@ export class InteractivityGraphToFlowGraphParser {
         blocks: ISerializedFlowGraphBlock[],
         mapping: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string }
     ): void {
+        const declaredOutputs = this._canonicalGraph.declarations?.[node.declaration]?.outputValueSockets;
         const ensureConnections = (
             socketMappings: Record<string, IGLTFToFlowGraphMappingObject> | undefined,
             kind: IKHRInteractivitySocketProvenance["kind"],
@@ -968,6 +969,17 @@ export class InteractivityGraphToFlowGraphParser {
                 if (!connection) {
                     connection = this._createNewSocketConnection(property.name, direction === "output");
                     connections.push(connection);
+                }
+                const provenance = connection.metadata?.khrInteractivity as IKHRInteractivitySocketProvenance | undefined;
+                // Aliases can share a runtime port; retain the name actually declared by this node.
+                if (
+                    kind === "value" &&
+                    direction === "output" &&
+                    provenance &&
+                    _GetOwnMapping(declaredOutputs, provenance.socket) &&
+                    !_GetOwnMapping(declaredOutputs, sourceName)
+                ) {
+                    continue;
                 }
                 this._setSocketProvenance(connection, nodeIndex, node.declaration, mapping.fullOperationName, this._getBlockRole(blocks, block), kind, direction, sourceName);
             }

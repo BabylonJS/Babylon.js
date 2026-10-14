@@ -1299,6 +1299,61 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(plan.analyze().representable).toBe(false);
     });
 
+    it.each([
+        [false, "selectionRayOrigin", true],
+        [true, "selectionRayOrigin", true],
+        [false, "selectionRayOrigin", false],
+        [true, "selectionRayOrigin", false],
+        [false, "rayOrigin", false],
+        [true, "rayOrigin", false],
+    ] as const)("exports a newly connected selection output (source=%s, socket=%s, event=%s)", async (preserveSourceDocument, socket, includeEvent) => {
+        _RegisterKHRNodeSelectabilityRuntime();
+        const sourceNode = new TransformNode("source", scene);
+        const sourceGLTF = { nodes: [{ index: 0, _babylonTransformNode: sourceNode }] };
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }, { signature: "float3" }, { signature: "int" }],
+            variables: [{ type: 1, value: [0, 0, 0] }],
+            declarations: [
+                {
+                    op: "event/onSelect",
+                    extension: "KHR_node_selectability",
+                    outputValueSockets: {
+                        selectedNode: { type: 0 },
+                        [socket]: { type: 1 },
+                        selectionPoint: { type: 1 },
+                        controllerIndex: { type: 2 },
+                        ...(includeEvent ? { event: { type: 0 } } : {}),
+                    },
+                },
+                { op: "variable/set" },
+            ],
+            nodes: [
+                { declaration: 0, configuration: { nodeIndex: { value: [0] } }, flows: { out: { node: 1 } } },
+                { declaration: 1, configuration: { variables: { value: [0] } }, values: { "0": { type: 1, value: [1, 2, 3] } } },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, sourceGLTF, preserveSourceDocument);
+        const blocks = coordinator.flowGraphs[0].getAllBlocks();
+        const output = blocks.find((block) => block.metadata?.khrInteractivity?.nodeIndex === 0 && block.getDataOutput("selectionRayOrigin"))!.getDataOutput("selectionRayOrigin")!;
+        const input = blocks
+            .find((block) => block.metadata?.khrInteractivity?.nodeIndex === 1)!
+            .dataInputs.find((connection) => connection.metadata?.khrInteractivity?.socket === "0")!;
+        expect(output.isConnected()).toBe(false);
+        output.connectTo(input);
+        const serializerContext = {
+            ...context,
+            getNodeCount: () => 1,
+            getNodeIndex: (node: unknown) => (node === sourceNode ? 0 : undefined),
+        };
+        const exported = preserveSourceDocument ? plan.buildWithSourceIndices() : plan.build(serializerContext);
+        expect(exported.graphs[0].nodes![1].values!["0"]).toEqual({ type: 1, node: 0, socket });
+        expect(output.metadata?.khrInteractivity).toMatchObject({ socket });
+        expect(CreateKHRInteractivityDocument(exported, new Set(["KHR_node_selectability"]), 1).graphs[0].valid).toBe(true);
+        const reimported = await CreatePlan(exported, sourceGLTF, preserveSourceDocument);
+        expect(reimported.analyze().diagnostics).toEqual([]);
+        expect(preserveSourceDocument ? reimported.buildWithSourceIndices() : reimported.build(serializerContext)).toEqual(exported);
+    });
+
     it("retains source extension collection indices but rejects out-of-range edits", async () => {
         const graph: IKHRInteractivity_Graph = {
             types: [{ signature: "ref" }],
