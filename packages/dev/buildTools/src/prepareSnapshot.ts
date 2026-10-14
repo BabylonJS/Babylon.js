@@ -14,6 +14,9 @@ export const prepareSnapshot = () => {
         const coreUmd = globSync(`${corePath}/*+(.js|.d.ts|.map)`);
         for (const file of coreUmd) {
             copyFile(file, path.join(snapshotDirectory, metadata.baseDir, path.basename(file)), true);
+            for (const additionalBaseDir of metadata.additionalBaseDirs ?? []) {
+                copyFile(file, path.join(snapshotDirectory, additionalBaseDir, path.basename(file)), true);
+            }
         }
     });
 
