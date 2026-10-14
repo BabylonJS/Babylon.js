@@ -472,15 +472,16 @@ export class HolographicSlate extends ContentDisplay3D {
         const camera = scene.activeCamera;
         if (camera) {
             const worldMatrix = camera.getWorldMatrix();
-            const backward = Vector3.TransformNormal(Vector3.Backward(scene.useRightHandedSystem), worldMatrix);
+            const forward = Vector3.TransformNormal(Vector3.Forward(scene.useRightHandedSystem), worldMatrix);
             this.origin.setAll(0);
             this._gizmo.updateBoundingBox();
             const pivot = this.node.getAbsolutePivotPoint();
             // only if position was not yet set!
             if (this.node.position.equalsToFloats(0, 0, 0)) {
-                this.node.position.copyFrom(camera.position).subtractInPlace(backward).subtractInPlace(pivot);
+                this.node.position.copyFrom(camera.position).addInPlace(forward).subtractInPlace(pivot);
             }
-            this.node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
+            // Slate geometry faces local -Z in either scene handedness.
+            this.node.rotationQuaternion = Quaternion.FromLookDirectionLH(forward, new Vector3(0, 1, 0));
 
             if (resetAspect) {
                 this.dimensions = this.defaultDimensions;
