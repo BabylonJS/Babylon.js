@@ -8,6 +8,8 @@ import { Tools } from "core/Misc/tools";
 import { Scene } from "core/scene";
 
 import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
+import { type IMaterial } from "babylonjs-gltf2interface";
+import { CreateTestScene, CreateTriangleGltf, RoundTripGltfAsync } from "./glTFTestUtils";
 
 // Minimal 1x1 red PNG — lets us assert a known buffer flows through the
 // export pipeline without needing any real image decoding at test time.
@@ -106,5 +108,116 @@ describe("glTF Exporter - NullEngine / cached texture path", () => {
         } finally {
             loadFileSpy.mockRestore();
         }
+    });
+});
+
+describe("glTF Exporter - material properties", () => {
+    let testScene: ReturnType<typeof CreateTestScene>;
+
+    beforeEach(() => {
+        testScene = CreateTestScene();
+    });
+
+    afterEach(() => {
+        testScene.dispose();
+    });
+
+    let materialCount = 0;
+
+    async function roundTripMaterial(material: IMaterial): Promise<IMaterial> {
+        const name = `material${materialCount++}`;
+        const source = CreateTriangleGltf();
+        source.materials[0] = { name, ...material };
+        source.extensionsUsed = Object.keys(material.extensions ?? {});
+        const gltf = await RoundTripGltfAsync(testScene.scene, source);
+        const exported = gltf.materials.find((m) => m.name === name);
+        if (!exported) {
+            throw new Error(`Expected exported material ${name}`);
+        }
+        return exported;
+    }
+
+    it("round trips metallic-roughness factors, emissive and double-sidedness", async () => {
+        const material = await roundTripMaterial({
+            pbrMetallicRoughness: { baseColorFactor: [0.25, 0.5, 0.75, 1], metallicFactor: 0.6, roughnessFactor: 0.4 },
+            emissiveFactor: [0.1, 0.2, 0.3],
+            doubleSided: true,
+        });
+
+        const pbr = material.pbrMetallicRoughness;
+        if (!pbr?.baseColorFactor || pbr.metallicFactor === undefined || pbr.roughnessFactor === undefined) {
+            throw new Error("Expected metallic-roughness material factors");
+        }
+        expect(pbr.baseColorFactor).toEqual([0.25, 0.5, 0.75, 1]);
+        expect(pbr.metallicFactor).toBeCloseTo(0.6);
+        expect(pbr.roughnessFactor).toBeCloseTo(0.4);
+        expect(material.emissiveFactor).toEqual([0.1, 0.2, 0.3]);
+        expect(material.doubleSided).toBe(true);
+    });
+
+    it("round trips the alpha modes", async () => {
+        const blend = await roundTripMaterial({ alphaMode: "BLEND" as IMaterial["alphaMode"], pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 0.5] } });
+        const mask = await roundTripMaterial({ alphaMode: "MASK" as IMaterial["alphaMode"], alphaCutoff: 0.3, pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1] } });
+        const opaque = await roundTripMaterial({ pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1] } });
+
+        expect(blend.alphaMode).toBe("BLEND");
+        const blendBaseColor = blend.pbrMetallicRoughness?.baseColorFactor;
+        if (!blendBaseColor || mask.alphaCutoff === undefined) {
+            throw new Error("Expected alpha material factors");
+        }
+        expect(blendBaseColor[3]).toBeCloseTo(0.5);
+        expect(mask.alphaMode).toBe("MASK");
+        expect(mask.alphaCutoff).toBeCloseTo(0.3);
+        expect(opaque.alphaMode ?? "OPAQUE").toBe("OPAQUE");
+    });
+
+    const extensions: Record<string, Record<string, number | number[]>> = {
+        KHR_materials_ior: { ior: 1.8 },
+        KHR_materials_emissive_strength: { emissiveStrength: 4 },
+        KHR_materials_transmission: { transmissionFactor: 0.7 },
+        KHR_materials_volume: { thicknessFactor: 0.5, attenuationDistance: 2, attenuationColor: [0.5, 0.6, 0.7] },
+        KHR_materials_specular: { specularFactor: 0.4, specularColorFactor: [0.9, 0.8, 0.7] },
+        KHR_materials_sheen: { sheenColorFactor: [0.3, 0.4, 0.5], sheenRoughnessFactor: 0.6 },
+        KHR_materials_iridescence: { iridescenceFactor: 0.8, iridescenceIor: 1.4, iridescenceThicknessMinimum: 120, iridescenceThicknessMaximum: 450 },
+        KHR_materials_anisotropy: { anisotropyStrength: 0.5, anisotropyRotation: 0.25 },
+        KHR_materials_clearcoat: { clearcoatFactor: 0.5, clearcoatRoughnessFactor: 0.3 },
+    };
+
+    it.each(Object.keys(extensions))("round trips %s", async (name) => {
+        const material = await roundTripMaterial({
+            pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 1 },
+            emissiveFactor: [1, 1, 1],
+            ...(name === "KHR_materials_volume"
+                ? { extensions: { KHR_materials_transmission: { transmissionFactor: 1 }, [name]: extensions[name] } }
+                : { extensions: { [name]: extensions[name] } }),
+        });
+
+        const round = (value: unknown) => {
+            const values = Array.isArray(value) ? value : [value];
+            if (!values.every((item): item is number => typeof item === "number")) {
+                throw new Error("Expected numeric material extension values");
+            }
+            return values.map((item) => Math.round(item * 1e4) / 1e4);
+        };
+        const expected = Object.fromEntries(Object.entries(extensions[name]).map(([key, value]) => [key, round(value)]));
+        const outputExtensions = material.extensions;
+        const extension = outputExtensions?.[name];
+        if (!extension || typeof extension !== "object") {
+            throw new Error(`Expected exported ${name} extension`);
+        }
+        const actual = Object.fromEntries(Object.keys(expected).map((key) => [key, round(extension[key])]));
+        expect(actual).toEqual(expected);
+    });
+
+    it("round trips unlit materials", async () => {
+        const material = await roundTripMaterial({
+            pbrMetallicRoughness: { baseColorFactor: [0.2, 0.4, 0.6, 1] },
+            extensions: { KHR_materials_unlit: {} },
+        });
+
+        if (!material.extensions?.KHR_materials_unlit || !material.pbrMetallicRoughness?.baseColorFactor) {
+            throw new Error("Expected unlit material properties");
+        }
+        expect(material.pbrMetallicRoughness.baseColorFactor).toEqual([0.2, 0.4, 0.6, 1]);
     });
 });
