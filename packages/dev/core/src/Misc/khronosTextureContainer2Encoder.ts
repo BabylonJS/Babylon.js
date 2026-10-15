@@ -4,34 +4,17 @@ import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Constants } from "../Engines/constants";
 import { GetTextureDataAsync, IsCompressedTextureFormat, WhenTextureReadyAsync } from "./textureTools";
 import { AsyncLock } from "./asyncLock";
-import { KTX2EncoderWorkerFunction, type IKTX2EncoderInstance, type IKTX2EncoderModule, type KTX2EncoderWorkerReply } from "./khronosTextureContainer2EncoderWorker";
+import { AutoReleaseWorkerPool } from "./workerPool";
+import { _ValidateKTX2EncoderDimensions, type IKTX2EncoderOptions } from "../Materials/Textures/ktx2encoderTypes";
+import {
+    KTX2EncoderWorkerFunction,
+    type IKTX2EncoderInstance,
+    type IKTX2EncoderModule,
+    type KTX2EncoderWorkerReply,
+    type KTX2EncoderWorkerRequest,
+} from "./khronosTextureContainer2EncoderWorker";
 
-/**
- * Usage determines the format and color metadata of an encoded texture.
- * @experimental
- */
-export type KTX2EncoderUsage = "color" | "data" | "normal";
-
-/**
- * Options for encoding RGBA8 pixels into a KHR_texture_basisu-compatible KTX2 file.
- * @experimental
- */
-export interface IKTX2EncoderOptions {
-    /** Color uses ETC1S and sRGB; data and normal use linear UASTC. */
-    usage: KTX2EncoderUsage;
-    /** Generate a full mip pyramid. Defaults to true. */
-    generateMipmaps?: boolean;
-    /** Reverse the input row order in Basis. Defaults to false. */
-    flipY?: boolean;
-    /** ETC1S quality, from 1 to 255. Defaults to 128. */
-    etc1sQualityLevel?: number;
-    /** ETC1S compression effort, from 0 to 6. Defaults to 2. */
-    etc1sCompressionLevel?: number;
-    /** UASTC quality, from 0 to 4. Defaults to 2. */
-    uastcQualityLevel?: number;
-    /** Use Zstandard with UASTC. Defaults to true for data and normal. */
-    zstandard?: boolean;
-}
+export type { IKTX2EncoderOptions, KTX2EncoderUsage } from "../Materials/Textures/ktx2encoderTypes";
 
 /**
  * Resource locations and worker count for an encoder-owned pool.
@@ -78,9 +61,6 @@ interface IEncoderWorker {
     initId: number;
     ready: boolean;
     job?: IEncodeJob;
-    onMessage: (event: MessageEvent<KTX2EncoderWorkerReply>) => void;
-    onError: (event: ErrorEvent) => void;
-    onMessageError: () => void;
 }
 
 declare const KTX2ENCODER: IKTX2EncoderModule;
@@ -89,12 +69,21 @@ function AbortError(): DOMException {
     return new DOMException("KTX2 encoding was aborted.", "AbortError");
 }
 
-function ValidateTexture(texture: BaseTexture, checkSize: boolean): void {
+function ToError(error: unknown): Error {
+    return error instanceof Error ? error : new Error(String(error));
+}
+
+function DisposedError(): Error {
+    return new Error("KTX2 encoder has been disposed.");
+}
+
+function ValidateTexture(texture: BaseTexture, allowUninitialized: boolean): void {
     const internalTexture = texture.getInternalTexture();
     if (texture.isCube || texture.is3D || texture.is2DArray || internalTexture?.isCube || internalTexture?.is3D || internalTexture?.is2DArray) {
         throw new Error("KTX2 encoding supports only 2D textures, not cube, 3D, or array textures.");
     }
-    if (texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && (checkSize || internalTexture?.type !== -1)) {
+    const hasKnownType = internalTexture?.type !== -1;
+    if (texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && (!allowUninitialized || hasKnownType)) {
         throw new Error("KTX2 encoding requires an unsigned byte texture.");
     }
     if (internalTexture?._premulAlpha) {
@@ -104,13 +93,8 @@ function ValidateTexture(texture: BaseTexture, checkSize: boolean): void {
         throw new Error("KTX2 encoding compressed textures requires a scene for GPU readback.");
     }
     const { width, height } = texture.getSize();
-    if (checkSize || width > 0 || height > 0) {
-        if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0 || width % 4 !== 0 || height % 4 !== 0) {
-            throw new Error("KTX2 texture width and height must be positive multiples of 4.");
-        }
-        if (width * height > 12_582_912) {
-            throw new Error("KTX2 encoding supports at most 12,582,912 pixels.");
-        }
+    if (!allowUninitialized || width > 0 || height > 0) {
+        _ValidateKTX2EncoderDimensions(width, height);
     }
 }
 
@@ -127,7 +111,7 @@ async function WithAbortAsync<T>(operation: (signal: AbortSignal) => Promise<T>,
             reject(error);
         };
         const onAbort = () => fail(AbortError());
-        const onEncoderDispose = () => fail(new Error("KTX2 encoder has been disposed."));
+        const onEncoderDispose = () => fail(DisposedError());
         signal?.addEventListener("abort", onAbort, { once: true });
         disposeSignal.addEventListener("abort", onEncoderDispose, { once: true });
         if (signal?.aborted) {
@@ -141,7 +125,7 @@ async function WithAbortAsync<T>(operation: (signal: AbortSignal) => Promise<T>,
             try {
                 resolve(await operation(controller.signal));
             } catch (error) {
-                reject(error instanceof Error ? error : new Error(String(error)));
+                reject(ToError(error));
             } finally {
                 cleanup();
             }
@@ -174,6 +158,7 @@ export function _GetKTX2TextureFlipY(texture: BaseTexture): boolean {
 /**
  * Encodes level zero of a 2D unsigned byte texture to a top-down KTX2 image.
  * Texture UV transforms are not baked into the image. GPU readback may convert compressed source pixels.
+ * Each pending call holds its full RGBA buffer, so batch callers should limit concurrency.
  * @param texture Source texture. Width and height must be positive multiples of 4, with at most 12,582,912 pixels.
  * @param options Explicit usage, optional mipmap override, and cancellation signal.
  * @param encoder Encoder to use. Defaults to KhronosTextureContainer2Encoder.Default.
@@ -184,16 +169,10 @@ export async function EncodeTextureToKTX2Async(texture: BaseTexture, options: IE
     if (options.signal?.aborted) {
         throw AbortError();
     }
-    ValidateTexture(texture, false);
+    ValidateTexture(texture, true);
     const activeEncoder = encoder ?? KhronosTextureContainer2Encoder.Default;
     await WithAbortAsync(async (signal) => await WhenTextureReadyAsync(texture, signal), options.signal, activeEncoder._disposeSignal);
-    ValidateTexture(texture, true);
-    if (options.signal?.aborted) {
-        throw AbortError();
-    }
-    if (activeEncoder._disposeSignal.aborted) {
-        throw new Error("KTX2 encoder has been disposed.");
-    }
+    ValidateTexture(texture, false);
     const { width, height } = texture.getSize();
     const pixels = await WithAbortAsync(async () => await GetTextureDataAsync(texture, width, height, 0, 0, false, 0, false), options.signal, activeEncoder._disposeSignal);
     return await activeEncoder.encodeAsync(pixels, width, height, {
@@ -206,6 +185,7 @@ export async function EncodeTextureToKTX2Async(texture: BaseTexture, options: IE
 /**
  * Encodes RGBA8 pixels through an owned, cancellable pool of Basis Universal workers.
  * Each worker starts with approximately 128 MiB of WASM memory.
+ * The official Basis v2_50 factory requires CSP 'unsafe-eval' for Embind.
  * @experimental
  */
 export class KhronosTextureContainer2Encoder {
@@ -251,6 +231,7 @@ export class KhronosTextureContainer2Encoder {
     private _resourcesPromise?: Promise<void>;
     private _wasmBinary?: ArrayBuffer;
     private _encoder?: IKTX2EncoderInstance;
+    private _idleTimer?: ReturnType<typeof setTimeout>;
     private readonly _mainThreadLock = new AsyncLock();
 
     /** @internal */
@@ -287,7 +268,7 @@ export class KhronosTextureContainer2Encoder {
             throw AbortError();
         }
         if (this._disposed) {
-            throw new Error("KTX2 encoder has been disposed.");
+            throw DisposedError();
         }
         if (this._useWorkers && !(rgba.buffer instanceof ArrayBuffer)) {
             throw new Error("KTX2 worker encoding requires transferable ArrayBuffer pixels.");
@@ -352,12 +333,14 @@ export class KhronosTextureContainer2Encoder {
             this._dispatch();
         } catch (error) {
             for (const job of this._jobs) {
-                this._settle(job, undefined, error instanceof Error ? error : new Error(String(error)));
+                this._settle(job, undefined, ToError(error));
             }
         }
     }
 
     private _dispatch(): void {
+        clearTimeout(this._idleTimer);
+        this._idleTimer = undefined;
         if (this._disposed || !this._wasmBinary) {
             return;
         }
@@ -369,52 +352,59 @@ export class KhronosTextureContainer2Encoder {
             }
             this._queue.shift();
             try {
-                slot ??= this._createWorker();
-                slot.job = job;
-                if (slot.ready) {
+                if (!slot) {
+                    slot = this._createWorker(job);
+                } else {
+                    slot.job = job;
                     this._postEncode(slot);
                 }
             } catch (error) {
-                if (slot) {
+                this._settle(job, undefined, ToError(error));
+            }
+        }
+        if (!this._jobs.size && this._workers.length && this._idleTimer === undefined) {
+            this._idleTimer = setTimeout(() => {
+                this._idleTimer = undefined;
+                for (const slot of this._workers) {
                     this._removeWorker(slot);
                 }
-                this._settle(job, undefined, error instanceof Error ? error : new Error(String(error)));
-            }
+            }, AutoReleaseWorkerPool.DefaultOptions.idleTimeElapsedBeforeRelease);
         }
     }
 
-    private _createWorker(): IEncoderWorker {
+    private _createWorker(job: IEncodeJob): IEncoderWorker {
         const worker = new Worker(this._blobUrl!);
         const slot: IEncoderWorker = {
             worker,
             initId: this._nextId++,
             ready: false,
-            onMessage: (event) => this._onMessage(slot, event.data),
-            onError: (event) => this._workerFailed(slot, new Error(event.message || "KTX2 encoder worker failed.")),
-            onMessageError: () => this._workerFailed(slot, new Error("KTX2 encoder worker message could not be deserialized.")),
+            job,
         };
         this._workers.push(slot);
-        worker.addEventListener("message", slot.onMessage);
-        worker.addEventListener("error", slot.onError);
-        worker.addEventListener("messageerror", slot.onMessageError);
-        try {
-            worker.postMessage({
-                action: "init",
-                id: slot.initId,
-                jsEncoderModuleUrl: Tools.GetBabylonScriptURL(this._configuration.jsEncoderModuleUrl, true),
-                basisJsUrl: Tools.GetBabylonScriptURL(this._configuration.basisJsUrl, true),
-                wasmBinary: this._wasmBinary,
-            });
-        } catch (error) {
-            this._removeWorker(slot);
-            throw error;
-        }
+        worker.onmessage = (event: MessageEvent<KTX2EncoderWorkerReply>) => this._onMessage(slot, event.data);
+        worker.onerror = (event) => this._workerFailed(slot, new Error(event.message || "KTX2 encoder worker failed."));
+        worker.onmessageerror = () => this._workerFailed(slot, new Error("KTX2 encoder worker message could not be deserialized."));
+        this._postMessage(slot, {
+            action: "init",
+            id: slot.initId,
+            jsEncoderModuleUrl: Tools.GetBabylonScriptURL(this._configuration.jsEncoderModuleUrl, true),
+            basisJsUrl: Tools.GetBabylonScriptURL(this._configuration.basisJsUrl, true),
+            wasmBinary: this._wasmBinary!,
+        });
         return slot;
+    }
+
+    private _postMessage(slot: IEncoderWorker, request: KTX2EncoderWorkerRequest, transfer: Transferable[] = []): void {
+        try {
+            slot.worker.postMessage(request, transfer);
+        } catch (error) {
+            this._workerFailed(slot, ToError(error));
+        }
     }
 
     private _postEncode(slot: IEncoderWorker): void {
         const job = slot.job!;
-        slot.worker.postMessage({ action: "encode", id: job.id, rgba: job.rgba, width: job.width, height: job.height, options: job.options }, [job.rgba.buffer as ArrayBuffer]);
+        this._postMessage(slot, { action: "encode", id: job.id, rgba: job.rgba, width: job.width, height: job.height, options: job.options }, [job.rgba.buffer as ArrayBuffer]);
     }
 
     private _onMessage(slot: IEncoderWorker, reply: KTX2EncoderWorkerReply): void {
@@ -427,11 +417,7 @@ export class KhronosTextureContainer2Encoder {
             } else if (reply.action === "init") {
                 slot.ready = true;
                 if (slot.job) {
-                    try {
-                        this._postEncode(slot);
-                    } catch (error) {
-                        this._workerFailed(slot, error instanceof Error ? error : new Error(String(error)));
-                    }
+                    this._postEncode(slot);
                 }
             }
         } else if (slot.job && reply.id === slot.job.id) {
@@ -453,9 +439,9 @@ export class KhronosTextureContainer2Encoder {
     }
 
     private _removeWorker(slot: IEncoderWorker): void {
-        slot.worker.removeEventListener("message", slot.onMessage);
-        slot.worker.removeEventListener("error", slot.onError);
-        slot.worker.removeEventListener("messageerror", slot.onMessageError);
+        slot.worker.onmessage = null;
+        slot.worker.onerror = null;
+        slot.worker.onmessageerror = null;
         slot.worker.terminate();
         this._workers = this._workers.filter((worker) => worker !== slot);
     }
@@ -482,11 +468,13 @@ export class KhronosTextureContainer2Encoder {
      */
     public dispose(): void {
         this._disposed = true;
+        clearTimeout(this._idleTimer);
+        this._idleTimer = undefined;
         for (const slot of [...this._workers]) {
             this._removeWorker(slot);
         }
         for (const job of this._jobs) {
-            this._settle(job, undefined, new Error("KTX2 encoder has been disposed."));
+            this._settle(job, undefined, DisposedError());
         }
         this._disposeController.abort();
         if (this._blobUrl) {

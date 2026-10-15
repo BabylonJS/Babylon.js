@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IKTX2EncoderOptions } from "./khronosTextureContainer2Encoder";
+import { type IKTX2EncoderOptions } from "../Materials/Textures/ktx2encoderTypes";
 
 /** @internal */
 export interface IKTX2EncoderInstance {
@@ -9,7 +9,7 @@ export interface IKTX2EncoderInstance {
 /** @internal */
 export interface IKTX2EncoderModule {
     KTX2Encoder: {
-        CreateAsync(configuration: { jsModuleUrl: string; wasmBinary: ArrayBuffer }): Promise<IKTX2EncoderInstance>;
+        CreateAsync(configuration: { jsModuleUrl?: string; basisFactory?: unknown; wasmBinary: ArrayBuffer }): Promise<IKTX2EncoderInstance>;
     };
 }
 
@@ -22,6 +22,7 @@ export type KTX2EncoderWorkerRequest =
 export type KTX2EncoderWorkerReply = { action: "init"; id: number } | { action: "encoded"; id: number; data: Uint8Array } | { action: "error"; id: number; message: string };
 
 declare const KTX2ENCODER: IKTX2EncoderModule;
+declare const BASIS: unknown;
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: KTX2EncoderWorkerReply, transfer?: Transferable[]): void;
 
@@ -36,9 +37,9 @@ export function KTX2EncoderWorkerFunction(): void {
         const fail = (error: unknown) => postMessage({ action: "error", id: request.id, message: error instanceof Error ? error.message : String(error) });
         try {
             if (request.action === "init") {
-                importScripts(request.jsEncoderModuleUrl);
+                importScripts(request.jsEncoderModuleUrl, request.basisJsUrl);
                 // Avoid async helpers outside this serialized function in ES2015 bundles.
-                KTX2ENCODER.KTX2Encoder.CreateAsync({ jsModuleUrl: request.basisJsUrl, wasmBinary: request.wasmBinary })
+                KTX2ENCODER.KTX2Encoder.CreateAsync({ basisFactory: BASIS, wasmBinary: request.wasmBinary })
                     // eslint-disable-next-line github/no-then
                     .then((initialized) => {
                         encoder = initialized;

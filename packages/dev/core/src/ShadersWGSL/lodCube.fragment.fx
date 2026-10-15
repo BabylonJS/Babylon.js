@@ -1,4 +1,6 @@
-#define USE_EXACT_SRGB_CONVERSIONS 1
+#ifndef USE_EXACT_SRGB_CONVERSIONS
+#define USE_EXACT_SRGB_CONVERSIONS
+#endif
 #include<helperFunctions>
 
 varying vUV: vec2f;
@@ -7,7 +9,7 @@ var textureSamplerSampler: sampler;
 var textureSampler: texture_cube<f32>;
 
 uniform lod: f32;
-uniform gamma: i32;
+uniform gamma: i32; // 0: display gamma, 1: preserve channels, 2: restore hardware sRGB.
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {

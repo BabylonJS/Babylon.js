@@ -12,7 +12,7 @@
         "build:dev": "rollup -c rollup.config.umd.mjs",
         "build:dev:fast": "rollup -c rollup.config.umd.mjs --environment ROLLUP_DEVMODE:true",
         "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
-        "build:declaration": "build-tools -c pud --config ./config.json",
+        "build:declaration": "npm run compile -w @tools/ktx2encoder && build-tools -c pud --config ./config.json",
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "devDependencies": {

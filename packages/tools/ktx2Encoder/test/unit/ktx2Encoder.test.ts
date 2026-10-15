@@ -115,9 +115,6 @@ describe("KTX2Encoder validation", () => {
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", etc1sQualityLevel: 0 }, message: "etc1sQualityLevel" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", etc1sCompressionLevel: 7 }, message: "etc1sCompressionLevel" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "data", uastcQualityLevel: 5 }, message: "uastcQualityLevel" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "data", generateMipmaps: "false" }, message: "generateMipmaps must be a boolean" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "data", flipY: 1 }, message: "flipY must be a boolean" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "data", zstandard: 0 }, message: "zstandard must be a boolean" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", zstandard: true }, message: "UASTC options" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", zstandard: false }, message: "UASTC options" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "data", etc1sQualityLevel: 128 }, message: "ETC1S options" },
@@ -129,6 +126,24 @@ describe("KTX2Encoder validation", () => {
 });
 
 describe("KTX2Encoder presets", () => {
+    it.each(["color", "data", "normal"] as const)("uses the default %s quality and compression settings without overrides", (usage) => {
+        const context = _createEncoder();
+        context.encoder.encode(_rgba(), 4, 4, { usage });
+        expect(context.basisEncoder.calls).toEqual(
+            expect.arrayContaining(
+                usage === "color"
+                    ? [
+                          ["setQualityLevel", 128],
+                          ["setETC1SCompressionLevel", 2],
+                      ]
+                    : [
+                          ["setPackUASTCFlags", 2],
+                          ["setKTX2UASTCSupercompression", true],
+                      ]
+            )
+        );
+    });
+
     it("maps the color preset and overrides to Basis setters", () => {
         const context = _createEncoder();
         context.encoder.encode(_rgba(), 4, 4, {
@@ -178,6 +193,7 @@ describe("KTX2Encoder presets", () => {
         );
         expect(context.basisEncoder.calls.some(([name]) => name === "setNormalMapPreset")).toBe(usage === "normal");
         expect(output[93]).toBe(0);
+        expect(output.buffer.byteLength).toBe(output.byteLength);
         expect(context.basisEncoder.deleted).toBe(true);
     });
 });
@@ -195,13 +211,6 @@ describe("KTX2Encoder output handling", () => {
             ["encode", 65_600],
             ["encode", 131_200],
         ]);
-    });
-
-    it("returns a tightly sized data buffer with patched primaries", () => {
-        const context = _createEncoder();
-        const output = context.encoder.encode(_rgba(), 4, 4, { usage: "data" });
-        expect(output.buffer.byteLength).toBe(output.byteLength);
-        expect(output[93]).toBe(0);
     });
 
     it("throws after two failed encode attempts and deletes the encoder", () => {

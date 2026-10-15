@@ -9,8 +9,6 @@ export function MapSRGBToLinear(format: number): Nullable<number> {
     switch (format) {
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT:
             return Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1;
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
-            return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1;
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
             return Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3;
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:

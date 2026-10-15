@@ -1,14 +1,16 @@
 precision highp float;
 precision highp sampler3D;
 
-#define USE_EXACT_SRGB_CONVERSIONS 1
+#ifndef USE_EXACT_SRGB_CONVERSIONS
+#define USE_EXACT_SRGB_CONVERSIONS
+#endif
 #include<helperFunctions>
 
 varying vec2 vUV;
 uniform sampler3D textureSampler;
 uniform float lod;
 uniform float slice;
-uniform int gamma;
+uniform int gamma; // 0: display gamma, 1: preserve channels, 2: restore hardware sRGB.
 
 void main(void)
 {

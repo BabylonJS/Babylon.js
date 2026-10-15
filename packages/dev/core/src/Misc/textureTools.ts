@@ -15,6 +15,10 @@ import { FromHalfFloat, ToHalfFloat } from "./halfFloat";
 
 export { FromHalfFloat, ToHalfFloat };
 
+const DisplayGamma = 0;
+const PreserveChannels = 1;
+const RestoreHardwareSRGB = 2;
+
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
  * @param texture Texture to copy from
@@ -242,10 +246,16 @@ export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: Abort
     if (texture.isReady()) {
         return;
     }
+    if (texture.loadingError) {
+        throw new Error(texture.errorObject?.message || `Texture ${texture.name} errored while loading.`);
+    }
+    const onLoadObservable = (texture as Texture).onLoadObservable ?? texture._texture?.onLoadedObservable;
+    if (!onLoadObservable) {
+        throw new Error(`Cannot determine readiness of texture ${texture.name}.`);
+    }
     await new Promise<void>((resolve, reject) => {
-        let timer: ReturnType<typeof setTimeout> | undefined;
         const cleanup = () => {
-            clearTimeout(timer);
+            onLoadObservable.removeCallback(onLoad);
             signal?.removeEventListener("abort", onAbort);
             texture.onDisposeObservable.remove(onDispose);
         };
@@ -253,28 +263,16 @@ export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: Abort
             cleanup();
             reject(error);
         };
+        const onLoad = () => {
+            cleanup();
+            resolve();
+        };
         const onAbort = () => fail(signal!.reason);
         const onDispose = texture.onDisposeObservable.add(() => fail(new Error(`Texture ${texture.name} was disposed while waiting for readiness.`)));
-        const poll = () => {
-            try {
-                const loadError = texture.getInternalTexture()?._loadError;
-                if (texture.loadingError || loadError) {
-                    fail(new Error(texture.errorObject?.message || loadError?.message || `Texture ${texture.name} errored while loading.`));
-                } else if (texture.isReady()) {
-                    cleanup();
-                    resolve();
-                } else {
-                    timer = setTimeout(poll, 16);
-                }
-            } catch (error) {
-                fail(error instanceof Error ? error : new Error(String(error)));
-            }
-        };
+        onLoadObservable.addOnce(onLoad);
         signal?.addEventListener("abort", onAbort, { once: true });
         if (signal?.aborted) {
             onAbort();
-        } else {
-            poll();
         }
     });
 }
@@ -375,8 +373,11 @@ async function ReadPixelsUsingRTT(
         lodPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
             effect.setFloat("lod", lod);
-            const hardwareSRGB = sourceInternalTexture?._useSRGBBuffer || MapSRGBToLinear(texture.textureFormat) !== null;
-            effect.setInt("gamma", hardwareSRGB ? 2 : !applyGammaCorrection || texture.gammaSpace ? 1 : 0);
+            const hardwareSRGB =
+                sourceInternalTexture?._useSRGBBuffer ||
+                MapSRGBToLinear(texture.textureFormat) !== null ||
+                texture.textureFormat === Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+            effect.setInt("gamma", hardwareSRGB ? RestoreHardwareSRGB : !applyGammaCorrection || texture.gammaSpace ? PreserveChannels : DisplayGamma);
             if (is3DTexture) {
                 effect.setFloat("slice", slice);
             }

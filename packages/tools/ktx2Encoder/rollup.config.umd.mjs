@@ -12,4 +12,8 @@ export default commonUMDRollupConfiguration({
     outputPath: path.resolve("dist"),
     maxMode: true,
     minToMax: true,
+    alias: {
+        core: path.resolve("../../dev/core/dist"),
+    },
+    optionalExternalFunctionSkip: ["core"],
 });

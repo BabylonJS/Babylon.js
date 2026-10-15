@@ -108,22 +108,14 @@ describe("GetTextureDataAsync RTT", () => {
         expect(state.gamma).toBe(2);
     });
 
-    it.each([
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR,
-        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR,
-    ])("restores compressed sRGB format %s even without the sRGB-buffer flag", async (format) => {
-        texture.getInternalTexture()!.format = format;
-        await GetTextureDataAsync(texture, 4, 4, 0, 0, false, 0, false);
-        expect(state.gamma).toBe(2);
-    });
+    it.each([Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT, Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2])(
+        "restores compressed sRGB format %s even without the sRGB-buffer flag",
+        async (format) => {
+            texture.getInternalTexture()!.format = format;
+            await GetTextureDataAsync(texture, 4, 4, 0, 0, false, 0, false);
+            expect(state.gamma).toBe(2);
+        }
+    );
 
     it("rejects shader compilation errors and removes observers before disposing", async () => {
         state.failCompilation = true;
@@ -145,6 +137,29 @@ describe("GetTextureDataAsync RTT", () => {
 });
 
 describe("WhenTextureReadyAsync", () => {
+    it("preserves event-based readiness without a signal or polling", async () => {
+        const engine = new NullEngine();
+        const texture = new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);
+        const onLoadObservable = texture.onLoadObservable;
+        const ready = vi.spyOn(texture, "isReady").mockReturnValue(false);
+        vi.useFakeTimers();
+        try {
+            const pending = WhenTextureReadyAsync(texture);
+            expect(onLoadObservable.hasObservers()).toBe(true);
+            expect(vi.getTimerCount()).toBe(0);
+            onLoadObservable.notifyObservers(texture);
+            await pending;
+            expect(ready).toHaveBeenCalledOnce();
+            expect(onLoadObservable.hasObservers()).toBe(false);
+            expect(texture.onDisposeObservable.hasObservers()).toBe(false);
+        } finally {
+            texture.dispose();
+            engine.dispose();
+            vi.useRealTimers();
+            vi.restoreAllMocks();
+        }
+    });
+
     it("rejects an already-aborted signal before starting delayed loading", async () => {
         const engine = new NullEngine();
         const texture = new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);

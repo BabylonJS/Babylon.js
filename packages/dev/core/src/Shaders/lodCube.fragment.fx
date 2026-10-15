@@ -1,12 +1,14 @@
 precision highp float;
 
-#define USE_EXACT_SRGB_CONVERSIONS 1
+#ifndef USE_EXACT_SRGB_CONVERSIONS
+#define USE_EXACT_SRGB_CONVERSIONS
+#endif
 #include<helperFunctions>
 
 varying vec2 vUV;
 uniform samplerCube textureSampler;
 uniform float lod;
-uniform int gamma;
+uniform int gamma; // 0: display gamma, 1: preserve channels, 2: restore hardware sRGB.
 void main(void)
 {
     vec2 uv=vUV*2.0-1.0;

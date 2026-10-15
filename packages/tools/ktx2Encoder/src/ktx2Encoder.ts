@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-const MaxPixels = 12_582_912;
+import { _ValidateKTX2EncoderDimensions, type IKTX2EncoderOptions } from "./ktx2encoderTypes";
+
+export type { IKTX2EncoderOptions, KTX2EncoderUsage } from "./ktx2encoderTypes";
 const OutputBufferPadding = 65_536;
 const KTX2DFDOffsetPosition = 48;
 const KTX2PrimariesOffsetInDFD = 13;
@@ -42,60 +44,13 @@ interface IBasisModule {
 type BasisFactory = (options: { wasmBinary: ArrayBuffer | Uint8Array }) => IBasisModule | Promise<IBasisModule>;
 
 /**
- * Describes how the encoded texture data is used.
- * @experimental
- */
-export type KTX2EncoderUsage = "color" | "data" | "normal";
-
-/**
- * Options used to encode RGBA8 pixels as a KTX2 texture.
- * @experimental
- */
-export interface IKTX2EncoderOptions {
-    /**
-     * Describes how the encoded texture data is used.
-     * @experimental
-     */
-    usage: KTX2EncoderUsage;
-    /**
-     * Generates mipmaps when true. Defaults to true.
-     * @experimental
-     */
-    generateMipmaps?: boolean;
-    /**
-     * Flips the source image vertically before encoding. Defaults to false.
-     * @experimental
-     */
-    flipY?: boolean;
-    /**
-     * Sets the ETC1S quality level from 1 through 255.
-     * @experimental
-     */
-    etc1sQualityLevel?: number;
-    /**
-     * Sets the ETC1S compression level from 0 through 6.
-     * @experimental
-     */
-    etc1sCompressionLevel?: number;
-    /**
-     * Sets the UASTC quality level from 0 through 4.
-     * @experimental
-     */
-    uastcQualityLevel?: number;
-    /**
-     * Enables Zstandard supercompression for UASTC output.
-     * @experimental
-     */
-    zstandard?: boolean;
-}
-
-/**
  * Configuration used to create a KTX2 encoder.
  * @experimental
  */
 export interface IKTX2EncoderConfiguration {
     /**
      * URL of the Basis encoder JavaScript factory.
+     * This non-worker URL path evaluates the factory source and requires CSP unsafe-eval.
      * @experimental
      */
     jsModuleUrl?: string;
@@ -116,17 +71,9 @@ export interface IKTX2EncoderConfiguration {
     basisFactory?: unknown;
 }
 
-const GetEnumValue = (value: BasisEnumValue | number): number => (typeof value === "number" ? value : value.value);
-
 const ValidateIntegerRange = (name: string, value: number | undefined, minimum: number, maximum: number): void => {
     if (value !== undefined && (!Number.isInteger(value) || value < minimum || value > maximum)) {
         throw new Error(`${name} must be an integer from ${minimum} through ${maximum}.`);
-    }
-};
-
-const ValidateBooleanOption = (name: string, value: boolean | undefined): void => {
-    if (value !== undefined && typeof value !== "boolean") {
-        throw new Error(`${name} must be a boolean.`);
     }
 };
 
@@ -138,9 +85,6 @@ const ValidateOptions = (options: IKTX2EncoderOptions): void => {
     ValidateIntegerRange("etc1sQualityLevel", options.etc1sQualityLevel, 1, 255);
     ValidateIntegerRange("etc1sCompressionLevel", options.etc1sCompressionLevel, 0, 6);
     ValidateIntegerRange("uastcQualityLevel", options.uastcQualityLevel, 0, 4);
-    ValidateBooleanOption("generateMipmaps", options.generateMipmaps);
-    ValidateBooleanOption("flipY", options.flipY);
-    ValidateBooleanOption("zstandard", options.zstandard);
 
     if (options.usage === "color") {
         if (options.uastcQualityLevel !== undefined || options.zstandard !== undefined) {
@@ -152,15 +96,8 @@ const ValidateOptions = (options: IKTX2EncoderOptions): void => {
 };
 
 const ValidateInput = (rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): void => {
-    if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0 || width % 4 !== 0 || height % 4 !== 0) {
-        throw new Error("KTX2 encoder width and height must be positive multiples of 4.");
-    }
-
+    _ValidateKTX2EncoderDimensions(width, height);
     const pixelCount = width * height;
-    if (pixelCount > MaxPixels) {
-        throw new Error(`KTX2 encoder images cannot exceed ${MaxPixels.toLocaleString("en-US")} pixels.`);
-    }
-
     const expectedByteLength = pixelCount * 4;
     if (rgba.byteLength !== expectedByteLength) {
         throw new Error(`RGBA input byte length must be ${expectedByteLength} for a ${width}x${height} image, but received ${rgba.byteLength}.`);
@@ -212,6 +149,7 @@ export class KTX2Encoder {
 
     /**
      * Loads and initializes the Basis encoder module.
+     * The official Basis v2_50 factory requires CSP 'unsafe-eval' for Embind.
      * @param config The module factory, JavaScript URL, and WebAssembly source.
      * @returns A ready KTX2 encoder.
      * @experimental
@@ -244,7 +182,7 @@ export class KTX2Encoder {
 
     /**
      * Encodes an RGBA8 image.
-     * @param rgba Top-down RGBA8 source pixels.
+     * @param rgba RGBA8 source pixels, top-down unless `flipY` is true.
      * @param width Source width in pixels.
      * @param height Source height in pixels.
      * @param options Encoding options.
@@ -263,8 +201,8 @@ export class KTX2Encoder {
             }
 
             encoder.setCreateKTX2File(true);
-            encoder.setTexType(GetEnumValue(basisModule.basis_texture_type.cBASISTexType2D));
-            encoder.setFormatMode(GetEnumValue(isColor ? basisModule.basis_tex_format.cETC1S : basisModule.basis_tex_format.cUASTC_LDR_4x4));
+            encoder.setTexType(basisModule.basis_texture_type.cBASISTexType2D.value);
+            encoder.setFormatMode((isColor ? basisModule.basis_tex_format.cETC1S : basisModule.basis_tex_format.cUASTC_LDR_4x4).value);
             encoder.setPerceptual(isColor);
             encoder.setMipSRGB(isColor);
             encoder.setKTX2AndBasisSRGBTransferFunc(isColor);

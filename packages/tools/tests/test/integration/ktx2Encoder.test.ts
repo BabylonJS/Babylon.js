@@ -2,8 +2,18 @@ import { expect, test } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 import { evaluateInitEngineForVisualization } from "../playwright/visualizationPlaywright.utils";
 
-test("KTX2 color encoding preserves compressed sRGB channels through a round trip", async ({ page }) => {
+test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ page }) => {
     const { baseUrl } = getGlobalConfig();
+    await page.route("**/empty.html", async (route) => {
+        const response = await route.fetch();
+        await route.fulfill({
+            response,
+            headers: {
+                ...response.headers(),
+                "Content-Security-Policy": "script-src 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:",
+            },
+        });
+    });
     await page.goto(baseUrl + "/empty.html");
     await page.waitForFunction(() => window.BABYLON);
     await page.evaluate(evaluateInitEngineForVisualization, {
@@ -15,6 +25,8 @@ test("KTX2 color encoding preserves compressed sRGB channels through a round tri
     });
     const result = await page.evaluate(async (baseUrl) => {
         const B = window.BABYLON;
+        window.engine!.dispose();
+        window.engine = new B.Engine(window.canvas!, false, { forceSRGBBufferSupportState: true, useExactSrgbConversions: true });
         const scene = new B.Scene(window.engine!);
         const encoder = new B.KhronosTextureContainer2Encoder({
             jsEncoderModuleUrl: baseUrl + "/babylon.ktx2Encoder.js",
@@ -41,6 +53,7 @@ test("KTX2 color encoding preserves compressed sRGB channels through a round tri
             const roundTrip = await load(encoded);
             const second = await B.GetTextureDataAsync(roundTrip, 8, 8, 0, 0, false, 0, false);
             return {
+                exactConversions: window.engine!.useExactSrgbConversions,
                 compressed: B.IsCompressedTextureFormat(source.textureFormat),
                 hardwareSRGB: source.getInternalTexture()!._useSRGBBuffer,
                 firstDifference: Math.max(...first.map((value, index) => Math.abs(value - pixels[index]))),
@@ -56,6 +69,7 @@ test("KTX2 color encoding preserves compressed sRGB channels through a round tri
             }
         }
     }, baseUrl);
+    expect(result.exactConversions).toBe(true);
     expect(result.compressed).toBe(true);
     expect(result.hardwareSRGB).toBe(true);
     expect(result.firstDifference).toBeLessThanOrEqual(8);

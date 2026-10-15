@@ -1,1 +1,2 @@
-wasm/
+wasm/*
+!wasm/package.json

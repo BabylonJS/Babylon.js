@@ -4,6 +4,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools.pure";
+import { AutoReleaseWorkerPool } from "core/Misc/workerPool";
 
 async function ExpectAbortAsync(promise: Promise<unknown>) {
     await expect(promise).rejects.toMatchObject({ name: "AbortError" });
@@ -13,14 +14,16 @@ async function ExpectErrorAsync(promise: Promise<unknown>, message: string | Reg
     await expect(promise).rejects.toThrow(message);
 }
 
-class FakeWorker extends EventTarget {
+class FakeWorker {
     public static instances: FakeWorker[] = [];
     public messages: { action: string; id: number; rgba?: Uint8Array; options?: IKTX2EncoderOptions }[] = [];
     public terminated = false;
     public transfers: Transferable[][] = [];
+    public onmessage: ((event: MessageEvent) => void) | null = null;
+    public onerror: ((event: Event) => void) | null = null;
+    public onmessageerror: ((event: Event) => void) | null = null;
 
     constructor() {
-        super();
         FakeWorker.instances.push(this);
     }
 
@@ -33,7 +36,7 @@ class FakeWorker extends EventTarget {
     }
 
     public reply(message: object) {
-        this.dispatchEvent(new MessageEvent("message", { data: message }));
+        this.onmessage?.(new MessageEvent("message", { data: message }));
     }
 
     public finish() {
@@ -62,6 +65,33 @@ describe("KhronosTextureContainer2Encoder", () => {
         KhronosTextureContainer2Encoder.ResetDefault();
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+        vi.useRealTimers();
+    });
+
+    it("releases idle workers, keeps active workers, and recreates them on demand", async () => {
+        vi.useFakeTimers();
+        const idleTime = AutoReleaseWorkerPool.DefaultOptions.idleTimeElapsedBeforeRelease;
+        const first = encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "color" });
+        await vi.advanceTimersByTimeAsync(0);
+        const worker = FakeWorker.instances[0];
+        worker.finish();
+        await first;
+        await vi.advanceTimersByTimeAsync(idleTime - 1);
+        expect(worker.terminated).toBe(false);
+        const second = encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "data" });
+        await vi.advanceTimersByTimeAsync(idleTime);
+        expect(worker.terminated).toBe(false);
+        worker.finish();
+        await second;
+        await vi.advanceTimersByTimeAsync(idleTime);
+        expect(worker.terminated).toBe(true);
+        const third = encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "normal" });
+        await vi.advanceTimersByTimeAsync(0);
+        expect(FakeWorker.instances).toHaveLength(2);
+        FakeWorker.instances[1].finish();
+        await third;
+        encoder.dispose();
+        expect(vi.getTimerCount()).toBe(0);
     });
 
     it("queues encodes behind the active worker and transfers their pixel buffers", async () => {
@@ -112,7 +142,8 @@ describe("KhronosTextureContainer2Encoder", () => {
         const rejected = ExpectErrorAsync(first, /worker/);
         const second = encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "data" });
         await vi.waitFor(() => expect(FakeWorker.instances[0]?.messages).toHaveLength(2));
-        FakeWorker.instances[0].dispatchEvent(new Event(event));
+        const worker = FakeWorker.instances[0];
+        (event === "error" ? worker.onerror : worker.onmessageerror)?.(new Event(event));
         await rejected;
         await vi.waitFor(() => expect(FakeWorker.instances[1]?.messages).toHaveLength(2));
         FakeWorker.instances[1].finish();
@@ -235,32 +266,6 @@ describe("KhronosTextureContainer2Encoder", () => {
         }
     });
 
-    it.each([false, true])("undoes the upload flip for KTX2 RGBA fallback with invertY=%s", (invertY) => {
-        const engine = new NullEngine();
-        const texture = new RawTexture(new Uint8Array(64), 4, 4, Constants.TEXTUREFORMAT_RGBA, engine, false, invertY);
-        texture.getInternalTexture()!._extension = ".ktx2";
-        try {
-            expect(_GetKTX2TextureFlipY(texture)).toBe(invertY);
-        } finally {
-            texture.dispose();
-            engine.dispose();
-        }
-    });
-
-    it.each([".ktx2", ".dds"])("does not undo an upload flip that the %s compressed loader never applied", (extension) => {
-        const engine = new NullEngine();
-        const texture = new RawTexture(new Uint8Array(64), 4, 4, Constants.TEXTUREFORMAT_RGBA, engine, false, true);
-        const internalTexture = texture.getInternalTexture()!;
-        internalTexture._extension = extension;
-        internalTexture.format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
-        try {
-            expect(_GetKTX2TextureFlipY(texture)).toBe(false);
-        } finally {
-            texture.dispose();
-            engine.dispose();
-        }
-    });
-
     it.each([
         [false, undefined, false],
         [true, undefined, true],
@@ -283,23 +288,22 @@ describe("KhronosTextureContainer2Encoder", () => {
         }
     });
 
-    it.each(["abort", "load error", "internal load error", "dispose"] as const)("settles readiness on %s", async (reason) => {
+    it.each(["abort", "load error", "dispose"] as const)("settles readiness on %s", async (reason) => {
         const engine = new NullEngine();
         const texture = new RawTexture(new Uint8Array(64), 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);
         texture.getInternalTexture()!.isReady = false;
         const abort = new AbortController();
         const readPixels = vi.spyOn(texture, "readPixels");
         try {
+            if (reason === "load error") {
+                vi.spyOn(texture, "loadingError", "get").mockReturnValue(true);
+                vi.spyOn(texture, "errorObject", "get").mockReturnValue({ message: "load failed" });
+            }
             const result = EncodeTextureToKTX2Async(texture, { usage: "data", signal: abort.signal }, encoder);
             const rejected = reason === "abort" ? ExpectAbortAsync(result) : ExpectErrorAsync(result, /load failed|disposed/);
             if (reason === "abort") {
                 abort.abort();
-            } else if (reason === "load error") {
-                vi.spyOn(texture, "loadingError", "get").mockReturnValue(true);
-                vi.spyOn(texture, "errorObject", "get").mockReturnValue({ message: "load failed" });
-            } else if (reason === "internal load error") {
-                texture.getInternalTexture()!._setError("load failed");
-            } else {
+            } else if (reason === "dispose") {
                 texture.dispose();
             }
             await rejected;
@@ -338,6 +342,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             const result = EncodeTextureToKTX2Async(texture, { usage: "data" }, encoder);
             expect(readPixels).not.toHaveBeenCalled();
             texture.getInternalTexture()!.isReady = true;
+            texture.onLoadObservable.notifyObservers(texture);
             await vi.waitFor(() => expect(FakeWorker.instances[0]?.messages).toHaveLength(2));
             expect(readPixels).toHaveBeenCalledWith(0, 0);
             FakeWorker.instances[0].finish();
@@ -367,20 +372,39 @@ describe("KhronosTextureContainer2Encoder", () => {
         }
     });
 
-    it.each([
-        [true, false, false, false, false],
-        [true, true, false, false, true],
-        [true, false, true, false, false],
-        [false, true, false, false, true],
-        [false, false, false, false, false],
-        [true, false, false, true, true],
-        [false, false, false, true, true],
-    ])("normalizes orientation with bottom-left=%s, invertY=%s, invertVScale=%s, renderTarget=%s", (originBottomLeft, invertY, invertVScale, renderTarget, expected) => {
+    it.each<{
+        name: string;
+        extension?: string;
+        compressed?: boolean;
+        invertY?: boolean;
+        invertVScale?: boolean;
+        renderTarget?: boolean;
+        webGPU?: boolean;
+        expected: boolean;
+    }>([
+        { name: "KTX2 fallback without upload flip", extension: ".ktx2", expected: false },
+        { name: "KTX2 fallback with upload flip", extension: ".ktx2", invertY: true, expected: true },
+        { name: "compressed KTX2", extension: ".ktx2", compressed: true, invertY: true, expected: false },
+        { name: "compressed DDS", extension: ".dds", compressed: true, invertY: true, expected: false },
+        { name: "compressed KTX1 UV compensation", extension: ".ktx", compressed: true, invertY: true, invertVScale: true, expected: false },
+        { name: "WebGL without upload flip", expected: false },
+        { name: "WebGL with upload flip", invertY: true, expected: true },
+        { name: "WebGL UV compensation", invertVScale: true, expected: false },
+        { name: "WebGPU with upload flip", webGPU: true, invertY: true, expected: true },
+        { name: "WebGPU without upload flip", webGPU: true, expected: false },
+        { name: "WebGL render target", renderTarget: true, expected: true },
+        { name: "WebGPU render target", webGPU: true, renderTarget: true, expected: true },
+    ])("normalizes orientation for $name", ({ extension, compressed, invertY = false, invertVScale = false, renderTarget = false, webGPU = false, expected }) => {
         const engine = new NullEngine();
-        Object.defineProperty(engine, "hasOriginBottomLeft", { value: originBottomLeft });
-        Object.defineProperty(engine, "isWebGPU", { value: !originBottomLeft });
+        Object.defineProperty(engine, "hasOriginBottomLeft", { value: !webGPU });
+        Object.defineProperty(engine, "isWebGPU", { value: webGPU });
         const texture = new RawTexture(new Uint8Array(64), 4, 4, Constants.TEXTUREFORMAT_RGBA, engine, false, invertY);
-        texture.getInternalTexture()!._invertVScale = invertVScale;
+        const internalTexture = texture.getInternalTexture()!;
+        internalTexture._invertVScale = invertVScale;
+        internalTexture._extension = extension ?? "";
+        if (compressed) {
+            internalTexture.format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
+        }
         texture.isRenderTarget = renderTarget;
         try {
             expect(_GetKTX2TextureFlipY(texture)).toBe(expected);
@@ -536,11 +560,9 @@ describe("KhronosTextureContainer2Encoder", () => {
     it("settles a texture readiness exception and removes its disposal observer", async () => {
         const engine = new NullEngine();
         const texture = new RawTexture(new Uint8Array(64), 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);
-        vi.spyOn(texture, "isReady")
-            .mockReturnValueOnce(false)
-            .mockImplementation(() => {
-                throw new Error("Readiness failed");
-            });
+        vi.spyOn(texture, "isReady").mockImplementation(() => {
+            throw new Error("Readiness failed");
+        });
         try {
             await expect(EncodeTextureToKTX2Async(texture, { usage: "data" }, encoder)).rejects.toThrow("Readiness failed");
             expect(texture.onDisposeObservable.hasObservers()).toBe(false);

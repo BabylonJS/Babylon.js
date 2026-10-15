@@ -12,6 +12,7 @@
         "build:declaration": "build-tools -c pud --config ./config.json",
         "build:deployment": "npm run clean && rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
         "compile": "tsc -b tsconfig.build.json",
+        "postcompile": "build-tools -c cp -f \"../../dev/core/dist/Materials/Textures/ktx2encoderTypes.{js,js.map,d.ts}\" -t ./dist",
         "clean": "rimraf dist",
         "test": "cd ../../.. && vitest run --project=unit packages/tools/ktx2Encoder/test/unit"
     },
