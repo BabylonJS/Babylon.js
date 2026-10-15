@@ -1204,7 +1204,7 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
                 } else if (plan.mutation === "R") {
                     await Promise.all(
                         scenes.map(async (scene) => {
-                            await rebuildMaterial(scene, target, { rebuildViews: true, rebuildFrameGraph: plan.frameGraphParticipationChanged === true });
+                            await Promise.resolve(rebuildMaterial(scene, target, { rebuildViews: true, rebuildFrameGraph: plan.frameGraphParticipationChanged === true }));
                         })
                     );
                 }
@@ -1242,7 +1242,7 @@ export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (prop
                 } else if (invalidate === "rebuild") {
                     await Promise.all(
                         scenes.map(async (scene) => {
-                            await rebuildMaterial(scene, target, { rebuildViews: true, rebuildFrameGraph: rebuildFrameGraph === true });
+                            await Promise.resolve(rebuildMaterial(scene, target, { rebuildViews: true, rebuildFrameGraph: rebuildFrameGraph === true }));
                         })
                     );
                 }

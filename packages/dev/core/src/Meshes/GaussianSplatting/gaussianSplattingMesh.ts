@@ -9,3 +9,5 @@ RegisterGaussianSplattingMesh();
 
 import "../thinInstanceMesh";
 import "./gaussianSplattingPartProxyMesh";
+// Pure importers opt in to point splatting separately.
+import "./gaussianPointSplattingController";

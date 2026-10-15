@@ -9,6 +9,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { type GaussianSplattingDebugController, type GaussianSplattingDebugMode } from "../../../services/panes/properties/gaussianSplattingDebugController";
 import { BoundProperty, ComputedProperty } from "../boundProperty";
@@ -38,6 +39,7 @@ type GaussianSplattingStreamLike = GaussianSplattingMesh & {
 
 const GetSplatCount = (mesh: GaussianSplattingMesh) => mesh.splatCount ?? 0;
 const GetRenderedSplatCount = (stream: GaussianSplattingStreamLike) => stream.renderedSplatCount;
+const GetPointRenderScale = (mesh: GaussianSplattingMesh) => String(mesh.pointSplattingRenderScale);
 const GetResidentSplatBudget = (stream: GaussianSplattingStreamLike) => stream.residentSplatBudget;
 const GetLod0SplatCount = (stream: GaussianSplattingStreamLike) => stream.lod0SplatCount;
 
@@ -165,6 +167,37 @@ export const GaussianSplattingDisplayProperties: FunctionComponent<GaussianSplat
                 min={0}
                 max={20}
                 step={0.5}
+            />
+            <BoundProperty
+                component={CheckboxPropertyLine}
+                label="Point Splatting"
+                description="Render the main camera color with the WebGPU compute point-splatting path. WebGL engines ignore this."
+                target={mesh}
+                propertyKey="pointSplattingRenderMode"
+            />
+            <BoundProperty
+                component={CheckboxPropertyLine}
+                label="Point Splatting Depth"
+                description="Render the active camera DepthRenderer depth from the point-splatting result. WebGL engines ignore this."
+                target={mesh}
+                propertyKey="pointSplattingDepthRenderMode"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Point Density"
+                description="Sample-density multiplier for point splatting. 1 matches the calibrated coverage."
+                target={mesh}
+                propertyKey="pointSplattingScale"
+                min={0.1}
+                max={4}
+                step={0.1}
+            />
+            <ComputedProperty
+                component={TextPropertyLine}
+                label="Point Render Scale"
+                description="Current point-splatting resolution factor. Auto picks an integer upscale from the point budget."
+                target={mesh}
+                getValue={GetPointRenderScale}
             />
             {stream && (
                 <>
