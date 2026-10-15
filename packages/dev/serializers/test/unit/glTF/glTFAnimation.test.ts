@@ -95,7 +95,7 @@ describe("glTF Exporter - animations", () => {
         }
     });
 
-    // https://forum.babylonjs.com/t/the-function-call-is-missing-parameter-shouldexportanimation/55466 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16102)
+    // https://forum.babylonjs.com/t/the-function-call-is-missing-parameter-shouldexportanimation/55466
     it("exports only animation-group channels accepted by shouldExportAnimation", async () => {
         const node = new TransformNode("animated", testScene.scene);
         const kept = new Animation("kept", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
@@ -130,7 +130,7 @@ describe("glTF Exporter - animations", () => {
         expect(animations[0].channels[0].target.path).toBe("translation");
     });
 
-    // https://forum.babylonjs.com/t/able-to-corrupt-gltf-file-by-adding-an-animation-that-rotates/36620 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13356)
+    // https://forum.babylonjs.com/t/able-to-corrupt-gltf-file-by-adding-an-animation-that-rotates/36620
     it("exports Euler rotation animations with matching finite sampler counts", async () => {
         const node = new TransformNode("animated", testScene.scene);
         const animation = new Animation("rotate", "rotation.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);

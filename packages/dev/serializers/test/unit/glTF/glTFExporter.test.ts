@@ -201,8 +201,8 @@ describe("glTF exporter", () => {
     });
 
     describe("multi-material meshes", () => {
-        // https://forum.babylonjs.com/t/multi-materials-cause-strange-glb-export-artifacts/60558 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17241)
-        // https://forum.babylonjs.com/t/exporting-to-gltf-in-new-version-causing-an-error-on-importing-from-blender/62030 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17662)
+        // https://forum.babylonjs.com/t/multi-materials-cause-strange-glb-export-artifacts/60558
+        // https://forum.babylonjs.com/t/exporting-to-gltf-in-new-version-causing-an-error-on-importing-from-blender/62030
         it("preserves geometry and material for sub meshes with offset vertex and index ranges", async () => {
             const { scene } = testScene;
             const mesh = new Mesh("mesh", scene);

@@ -577,7 +577,7 @@ test.describe("Babylon glTF Serializer", () => {
             expect(assertionData.nodes).toHaveLength(1);
             expect(assertionData.nodes[0].extensions["KHR_lights_punctual"]["light"]).toEqual(0);
         });
-        // https://forum.babylonjs.com/t/exporting-a-scene-containing-a-light-node-leads-to-a-corrupt-glb-file/58837 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16721)
+        // https://forum.babylonjs.com/t/exporting-a-scene-containing-a-light-node-leads-to-a-corrupt-glb-file/58837
         test("should serialize directional light to glTF", async () => {
             const intensity = 0.2;
             const red = [1, 0, 0];
@@ -654,7 +654,7 @@ test.describe("Babylon glTF Serializer", () => {
                 return JSON.parse(jsonString);
             };
 
-            // https://github.com/BabylonJS/Babylon.js/issues/14056 (fixed by https://github.com/BabylonJS/Babylon.js/pull/15869)
+            // https://github.com/BabylonJS/Babylon.js/issues/14056
             test("exports one mesh that is shared by all instances", async () => {
                 const assertionData = await page.evaluate(exportInstances, { count: instanceCount, skipSource: false });
                 expect(assertionData.nodes).toHaveLength(instanceCount + 1);
@@ -664,8 +664,8 @@ test.describe("Babylon glTF Serializer", () => {
                 }
             });
 
-            // https://forum.babylonjs.com/t/glb-export-of-an-instanced-mesh-fails/39331 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13677)
-            // https://forum.babylonjs.com/t/glb-gltf-export-of-instanced-meshes-only/57728 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16469)
+            // https://forum.babylonjs.com/t/glb-export-of-an-instanced-mesh-fails/39331
+            // https://forum.babylonjs.com/t/glb-gltf-export-of-instanced-meshes-only/57728
             test("can export instances without their source mesh", async () => {
                 const assertionData = await page.evaluate(exportInstances, { count: instanceCount, skipSource: true });
                 expect(assertionData.nodes).toHaveLength(instanceCount);
@@ -737,7 +737,7 @@ test.describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[0].channels[0].target.node).toEqual(0);
             expect(assertionData.animations[0].channels[0].target.path).toEqual("translation");
         });
-        // https://forum.babylonjs.com/t/exported-file-size/35740 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13263)
+        // https://forum.babylonjs.com/t/exported-file-size/35740
         test("should not duplicate a shared texture between materials", async () => {
             const assertionData = await page.evaluate(async () => {
                 const texture = new BABYLON.Texture("https://assets.babylonjs.com/environments/backgroundGround.png", window.scene!);
@@ -807,7 +807,7 @@ test.describe("Babylon glTF Serializer", () => {
             });
         });
 
-        // https://forum.babylonjs.com/t/gltf-export-shouldexportnode-changed/55421 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16017)
+        // https://forum.babylonjs.com/t/gltf-export-shouldexportnode-changed/55421
         test("should reparent children of unexported node to nearest ancestor", async () => {
             const assertionData = await page.evaluate(async () => {
                 const parent = BABYLON.MeshBuilder.CreateBox("parent");
@@ -871,7 +871,7 @@ test.describe("Babylon glTF Serializer", () => {
                 const mime = image.mimeType || getMimeTypeFromUri(image.uri);
                 expect(mime).toEqual(mimeType);
             };
-            // https://github.com/BabylonJS/Babylon.js/issues/12257 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16507)
+            // https://github.com/BabylonJS/Babylon.js/issues/12257
             test("uses KHR_texture_basisu to export a KTX2 image", async () => {
                 await testRoundtripImage("textures/ktx2/sample_uastc.ktx2", "image/ktx2", "KHR_texture_basisu");
             });

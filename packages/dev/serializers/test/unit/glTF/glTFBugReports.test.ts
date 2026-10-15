@@ -27,7 +27,7 @@ describe("glTF Exporter - bug report regressions", () => {
         testScene.dispose();
     });
 
-    // https://github.com/BabylonJS/Babylon.js/issues/7152 and https://github.com/BabylonJS/Babylon.js/pull/4726
+    // https://github.com/BabylonJS/Babylon.js/issues/7152
     it("exports childless nodes without empty children arrays", async () => {
         new TransformNode("spawnPoint", testScene.scene);
 
@@ -36,7 +36,7 @@ describe("glTF Exporter - bug report regressions", () => {
         expect(gltf.nodes).toEqual([{ name: "spawnPoint" }]);
     });
 
-    // https://github.com/BabylonJS/Babylon.js/issues/10009 (fixed by https://github.com/BabylonJS/Babylon.js/pull/11386)
+    // https://github.com/BabylonJS/Babylon.js/issues/10009
     it("omits materials used only by excluded meshes", async () => {
         const kept = CreateBox("kept", {}, testScene.scene);
         kept.material = new PBRMaterial("keptMaterial", testScene.scene);
@@ -48,7 +48,7 @@ describe("glTF Exporter - bug report regressions", () => {
         expect(gltf.materials.map((material) => material.name)).toEqual(["keptMaterial"]);
     });
 
-    // https://forum.babylonjs.com/t/scene-exporter-is-not-working-correctly/28591 (fixed by https://github.com/BabylonJS/Babylon.js/pull/12694)
+    // https://forum.babylonjs.com/t/scene-exporter-is-not-working-correctly/28591
     it("omits materials assigned only to meshes without geometry", async () => {
         const empty = new Mesh("empty", testScene.scene);
         empty.material = new PBRMaterial("unusedMaterial", testScene.scene);
@@ -60,7 +60,7 @@ describe("glTF Exporter - bug report regressions", () => {
         expect(gltf.materials.map((material) => material.name)).toEqual(["usedMaterial"]);
     });
 
-    // https://forum.babylonjs.com/t/newbye-question/28514 (fixed by https://github.com/BabylonJS/Babylon.js/pull/12230)
+    // https://forum.babylonjs.com/t/newbye-question/28514
     it("assigns the scene default material when a mesh has no material", async () => {
         CreateBox("box", {}, testScene.scene);
 
@@ -74,7 +74,7 @@ describe("glTF Exporter - bug report regressions", () => {
         expect(gltf.materials[primitive.material].name).toBe(testScene.scene.defaultMaterial.name);
     });
 
-    // https://github.com/BabylonJS/Babylon.js/issues/10672 (fixed by https://github.com/BabylonJS/Babylon.js/pull/10675)
+    // https://github.com/BabylonJS/Babylon.js/issues/10672
     it("writes non-BMP node names to valid GLB JSON", async () => {
         new TransformNode("smile 😀", testScene.scene);
 
@@ -83,7 +83,7 @@ describe("glTF Exporter - bug report regressions", () => {
         expect(gltf.nodes[0].name).toBe("smile 😀");
     });
 
-    // https://forum.babylonjs.com/t/unexpected-mesh-transformations-on-glb-export/59440 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16858)
+    // https://forum.babylonjs.com/t/unexpected-mesh-transformations-on-glb-export/59440
     it("does not mutate source rotation quaternions while converting handedness", async () => {
         const node = new TransformNode("rotated", testScene.scene);
         node.rotationQuaternion = Quaternion.RotationYawPitchRoll(0.3, 0.4, 0.5);
@@ -94,7 +94,7 @@ describe("glTF Exporter - bug report regressions", () => {
         expect(node.rotationQuaternion.asArray()).toEqual(original.asArray());
     });
 
-    // https://forum.babylonjs.com/t/mesh-updatefacetdata-breaks-smooth-shading-after-gltf-glb-export-faceted-look-on-rounded-meshes/61944 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17593)
+    // https://forum.babylonjs.com/t/mesh-updatefacetdata-breaks-smooth-shading-after-gltf-glb-export-faceted-look-on-rounded-meshes/61944
     it("preserves smooth normals after updateFacetData", async () => {
         const sphere = CreateSphere("sphere", { segments: 8 }, testScene.scene);
         const before = await ExportGltfWithBinaryAsync(testScene.scene);

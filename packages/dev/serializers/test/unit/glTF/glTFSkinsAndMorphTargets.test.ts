@@ -71,8 +71,7 @@ describe("glTF Exporter - skins and morph targets", () => {
         testScene.dispose();
     });
 
-    // https://forum.babylonjs.com/t/glbexporter-exports-bones-facing-opposite-direction-to-mesh/35330 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13214)
-    // https://github.com/BabylonJS/Babylon.js/pull/16888
+    // https://forum.babylonjs.com/t/glbexporter-exports-bones-facing-opposite-direction-to-mesh/35330
     it.each([false, true])("round trips a parented skin with useRightHandedSystem=%s", async (useRightHandedSystem) => {
         testScene.scene.useRightHandedSystem = useRightHandedSystem;
         const source = CreateTriangleGltf();
@@ -110,7 +109,7 @@ describe("glTF Exporter - skins and morph targets", () => {
             throw new Error("Expected inverse bind matrices");
         }
         expect(gltf.accessors[skin.inverseBindMatrices]).toMatchObject({ count: 2, type: "MAT4", componentType: 5126 });
-        // https://github.com/BabylonJS/Babylon.js/pull/11168: only vertex attribute buffer views may define a byteStride
+        // Only vertex attribute buffer views may define a byteStride
         const inverseBindMatrixBufferView = gltf.accessors[skin.inverseBindMatrices].bufferView;
         if (inverseBindMatrixBufferView === undefined) {
             throw new Error("Expected an inverse bind matrix buffer view");
@@ -132,7 +131,7 @@ describe("glTF Exporter - skins and morph targets", () => {
         expectValuesClose(ReadAccessor(gltf, bin, attributes.WEIGHTS_0), Array.from(weights));
     });
 
-    // https://forum.babylonjs.com/t/gltf-export-bug-skinning-has-errors/13744 (fixed by https://github.com/BabylonJS/Babylon.js/pull/8847)
+    // https://forum.babylonjs.com/t/gltf-export-bug-skinning-has-errors/13744
     it("orders skin joints by their shader indices", async () => {
         createSkinnedTriangle(testScene.scene);
 
@@ -151,7 +150,7 @@ describe("glTF Exporter - skins and morph targets", () => {
         expect(ReadAccessor(gltf, bin, jointsAccessor)).toEqual([0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]);
     });
 
-    // https://forum.babylonjs.com/t/how-to-exclude-all-disabled-nodes-from-export/38780 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13604)
+    // https://forum.babylonjs.com/t/how-to-exclude-all-disabled-nodes-from-export/38780
     it("does not export skins whose linked bone nodes are excluded", async () => {
         const { rootNode, childNode } = createSkinnedTriangle(testScene.scene);
 
@@ -163,7 +162,7 @@ describe("glTF Exporter - skins and morph targets", () => {
         expect(gltf.nodes.find((node) => node.name === "skinned")?.skin).toBeUndefined();
     });
 
-    // https://forum.babylonjs.com/t/gltf-export-bug-faulty-export-if-skeleton-bones-length-0/30003 (fixed by https://github.com/BabylonJS/Babylon.js/pull/12489)
+    // https://forum.babylonjs.com/t/gltf-export-bug-faulty-export-if-skeleton-bones-length-0/30003
     it("does not export empty skins", async () => {
         const skeleton = new Skeleton("empty", "empty", testScene.scene);
         const mesh = new Mesh("mesh", testScene.scene);
@@ -201,7 +200,7 @@ describe("glTF Exporter - skins and morph targets", () => {
         expect(ReadAccessor(gltf, bin, targets[1].POSITION)).toEqual([0, 1, 0, 0, 1, 0, 0, 1, 0]);
     });
 
-    // https://forum.babylonjs.com/t/gltfexporter-not-working-with-morph-targets/51337 (fixed by https://github.com/BabylonJS/Babylon.js/pull/15229)
+    // https://forum.babylonjs.com/t/gltfexporter-not-working-with-morph-targets/51337
     it("exports morph target deltas on each sub mesh primitive", async () => {
         const { scene } = testScene;
         const mesh = new Mesh("morphed", scene);

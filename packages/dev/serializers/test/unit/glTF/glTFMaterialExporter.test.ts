@@ -63,8 +63,8 @@ describe("glTF Exporter - NullEngine / cached texture path", () => {
         return { texture };
     }
 
-    // https://forum.babylonjs.com/t/nullengine-glb-export-with-textures-workaround/62541 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17952)
-    // https://forum.babylonjs.com/t/glb-export-broken-under-nullengine-in-v9-root-cause-and-fix/63231 (fixed by https://github.com/BabylonJS/Babylon.js/pull/18357)
+    // https://forum.babylonjs.com/t/nullengine-glb-export-with-textures-workaround/62541
+    // https://forum.babylonjs.com/t/glb-export-broken-under-nullengine-in-v9-root-cause-and-fix/63231
     it("exports GLB with invertY=true (default) using cached Uint8Array buffer, without GPU fallback", async () => {
         const { texture } = buildTexturedBox();
 
@@ -151,7 +151,7 @@ describe("glTF Exporter - material properties", () => {
         return texture;
     }
 
-    // https://forum.babylonjs.com/t/broken-textures-after-glb-export/60756 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17237)
+    // https://forum.babylonjs.com/t/broken-textures-after-glb-export/60756
     it("exports finite metallic-roughness factors from black specular-glossiness", async () => {
         const box = CreateBox("box", {}, testScene.scene);
         const material = new PBRMaterial("specGloss", testScene.scene);
@@ -171,8 +171,8 @@ describe("glTF Exporter - material properties", () => {
         expect(factors.every((value) => Number.isFinite(value) && value >= 0 && value <= 1)).toBe(true);
     });
 
-    // https://forum.babylonjs.com/t/sandbox-the-khr-texture-transform-property-of-gltfexport-cannot-be-exported/55425 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16015 and https://github.com/BabylonJS/Babylon.js/pull/16199)
-    // https://forum.babylonjs.com/t/glb-export-uv-mapping-not-saving/36140 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13305)
+    // https://forum.babylonjs.com/t/sandbox-the-khr-texture-transform-property-of-gltfexport-cannot-be-exported/55425
+    // https://forum.babylonjs.com/t/glb-export-uv-mapping-not-saving/36140
     it("exports KHR_texture_transform with scaling and a non-origin rotation center", async () => {
         const box = CreateBox("box", {}, testScene.scene);
         const material = new PBRMaterial("material", testScene.scene);
@@ -200,7 +200,7 @@ describe("glTF Exporter - material properties", () => {
         expect(extension.rotation).toBeCloseTo(-Math.PI / 2);
     });
 
-    // https://forum.babylonjs.com/t/gltf2export-glbasync-missing-uv-scale-on-ambienttexture/39900 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13746)
+    // https://forum.babylonjs.com/t/gltf2export-glbasync-missing-uv-scale-on-ambienttexture/39900
     it("exports KHR_texture_transform for ambient textures", async () => {
         const box = CreateBox("box", {}, testScene.scene);
         const material = new PBRMaterial("material", testScene.scene);
@@ -218,7 +218,7 @@ describe("glTF Exporter - material properties", () => {
         expect(extension?.scale).toEqual([0.25, 0.5]);
     });
 
-    // https://forum.babylonjs.com/t/gltf-export-lost-transmission-texture/53315 (fixed by https://github.com/BabylonJS/Babylon.js/pull/15559)
+    // https://forum.babylonjs.com/t/gltf-export-lost-transmission-texture/53315
     it("exports KHR_materials_transmission textures", async () => {
         const box = CreateBox("box", {}, testScene.scene);
         const material = new PBRMaterial("material", testScene.scene);
@@ -237,7 +237,7 @@ describe("glTF Exporter - material properties", () => {
         expect(extension?.transmissionTexture?.index).toBeDefined();
     });
 
-    // https://forum.babylonjs.com/t/gltf-material-emissivestrength-is-not-exported-though-imported/37971 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17205)
+    // https://forum.babylonjs.com/t/gltf-material-emissivestrength-is-not-exported-though-imported/37971
     it("exports emissiveIntensity through KHR_materials_emissive_strength", async () => {
         const box = CreateBox("box", {}, testScene.scene);
         const material = new PBRMaterial("material", testScene.scene);
@@ -258,7 +258,7 @@ describe("glTF Exporter - material properties", () => {
         expect(extension.emissiveStrength).toBeCloseTo(3);
     });
 
-    // https://forum.babylonjs.com/t/the-gltf2exported-glb-doesnt-contain-the-assigned-pbrmetallicroughnessmaterial-in-newer-versions/59353 (fixed by https://github.com/BabylonJS/Babylon.js/pull/16857)
+    // https://forum.babylonjs.com/t/the-gltf2exported-glb-doesnt-contain-the-assigned-pbrmetallicroughnessmaterial-in-newer-versions/59353
     it("exports PBRMetallicRoughnessMaterial", async () => {
         const box = CreateBox("box", {}, testScene.scene);
         const material = new PBRMetallicRoughnessMaterial("metalRough", testScene.scene);
