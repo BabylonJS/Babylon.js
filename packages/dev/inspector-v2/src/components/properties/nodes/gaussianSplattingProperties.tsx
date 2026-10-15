@@ -12,6 +12,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { type GaussianSplattingDebugController, type GaussianSplattingDebugMode } from "../../../services/panes/properties/gaussianSplattingDebugController";
 import { BoundProperty, ComputedProperty } from "../boundProperty";
+import { useWatchedValue } from "../../../contexts/watcherContext";
 
 const ShDegreeOptions = [
     { label: "None (0)", value: 0 },
@@ -25,6 +26,7 @@ const RenderedSplatCountDescription =
     "Number of source splats in the active LOD ranges selected for rendering. May temporarily differ from Splat Count while depth sorting completes.";
 const SplatBudgetDescription = "Resolved maximum number of splats kept resident in the streaming work buffer. Disabled means no residency cap is configured.";
 const Lod0SplatCountDescription = "Total number of splats in the stream's finest-detail (LOD 0) source data.";
+const ResidencyPagesDescription = "Total number of residency pages created from source files, including pages not currently resident.";
 
 // GaussianSplattingStream (from the loaders package) adds a real-time max-detail-LOD cap. Detected by class
 // name and accessed structurally so the inspector keeps no dependency on the loaders package.
@@ -34,12 +36,21 @@ type GaussianSplattingStreamLike = GaussianSplattingMesh & {
     renderedSplatCount: number;
     residentSplatBudget: number;
     lod0SplatCount: { status: "pending" } | { status: "available"; count: number } | { status: "unavailable" };
+    rangeResidencyStats: Readonly<{
+        enabled: boolean;
+        pages: number;
+        sourcePackLoads: number;
+        sourcePackReuses: number;
+        splitPackLoads: number;
+        cachedSourceSplats: number;
+    }>;
 };
 
 const GetSplatCount = (mesh: GaussianSplattingMesh) => mesh.splatCount ?? 0;
 const GetRenderedSplatCount = (stream: GaussianSplattingStreamLike) => stream.renderedSplatCount;
 const GetResidentSplatBudget = (stream: GaussianSplattingStreamLike) => stream.residentSplatBudget;
 const GetLod0SplatCount = (stream: GaussianSplattingStreamLike) => stream.lod0SplatCount;
+const GetRangeResidencyStats = (stream: GaussianSplattingStreamLike) => stream.rangeResidencyStats;
 
 const SplatBudgetPropertyLine: FunctionComponent<{ value: number }> = (props) => {
     const { value } = props;
@@ -61,6 +72,7 @@ const Lod0SplatCountPropertyLine: FunctionComponent<{ value: GaussianSplattingSt
 
 const GaussianSplattingStreamDiagnostics: FunctionComponent<{ stream: GaussianSplattingStreamLike }> = (props) => {
     const { stream } = props;
+    const rangeStats = useWatchedValue(stream, GetRangeResidencyStats);
 
     return (
         <>
@@ -73,6 +85,12 @@ const GaussianSplattingStreamDiagnostics: FunctionComponent<{ stream: GaussianSp
             />
             <ComputedProperty component={SplatBudgetPropertyLine} target={stream} getValue={GetResidentSplatBudget} />
             <ComputedProperty component={Lod0SplatCountPropertyLine} target={stream} getValue={GetLod0SplatCount} />
+            <TextPropertyLine label="Range Residency" value={rangeStats.enabled ? "Enabled" : "Disabled"} />
+            <StringifiedPropertyLine label="Residency Pages" description={ResidencyPagesDescription} value={rangeStats.pages} />
+            <StringifiedPropertyLine label="Source Pack Loads" value={rangeStats.sourcePackLoads} />
+            <StringifiedPropertyLine label="Source Pack Reuses" value={rangeStats.sourcePackReuses} />
+            <StringifiedPropertyLine label="Split Pack Loads" value={rangeStats.splitPackLoads} />
+            <StringifiedPropertyLine label="Cached Source Splats" value={rangeStats.cachedSourceSplats} />
         </>
     );
 };

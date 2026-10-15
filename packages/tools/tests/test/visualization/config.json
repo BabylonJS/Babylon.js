@@ -16,6 +16,13 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting Ranged Source Row Boundary",
+            "playgroundId": "#7AZH52#1",
+            "referenceImage": "gsplat-ranged-source-row-boundary.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting LOD COMPOUND",
             "playgroundId": "#418POI#21",
             "renderCount": 15,
