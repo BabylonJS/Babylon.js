@@ -8,7 +8,7 @@ import { Constants } from "../Engines/constants";
 import { type Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { type Observable } from "./observable";
+import { MapSRGBToLinear } from "./textureFormat.functions";
 import { type Nullable } from "../types";
 import { Clamp } from "../Maths/math.scalar.functions";
 import { FromHalfFloat, ToHalfFloat } from "./halfFloat";
@@ -234,28 +234,49 @@ export function IsCompressedTextureFormat(format: number): boolean {
 /**
  * Waits for when the given texture is ready to be used (downloaded, converted, mip mapped...)
  * @param texture the texture to wait for
+ * @param signal optional signal to abort the readiness wait
  * @returns a promise that resolves when the texture is ready
  */
-export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void> {
+export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: AbortSignal): Promise<void> {
+    signal?.throwIfAborted();
     if (texture.isReady()) {
         return;
     }
-
-    if (texture.loadingError) {
-        throw new Error(texture.errorObject?.message || `Texture ${texture.name} errored while loading.`);
-    }
-
-    const onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
-    if (onLoadObservable) {
-        return await new Promise((res) => onLoadObservable.addOnce(() => res()));
-    }
-
-    const onLoadedObservable = texture._texture?.onLoadedObservable;
-    if (onLoadedObservable) {
-        return await new Promise((res) => onLoadedObservable.addOnce(() => res()));
-    }
-
-    throw new Error(`Cannot determine readiness of texture ${texture.name}.`);
+    await new Promise<void>((resolve, reject) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const cleanup = () => {
+            clearTimeout(timer);
+            signal?.removeEventListener("abort", onAbort);
+            texture.onDisposeObservable.remove(onDispose);
+        };
+        const fail = (error: Error) => {
+            cleanup();
+            reject(error);
+        };
+        const onAbort = () => fail(signal!.reason);
+        const onDispose = texture.onDisposeObservable.add(() => fail(new Error(`Texture ${texture.name} was disposed while waiting for readiness.`)));
+        const poll = () => {
+            try {
+                const loadError = texture.getInternalTexture()?._loadError;
+                if (texture.loadingError || loadError) {
+                    fail(new Error(texture.errorObject?.message || loadError?.message || `Texture ${texture.name} errored while loading.`));
+                } else if (texture.isReady()) {
+                    cleanup();
+                    resolve();
+                } else {
+                    timer = setTimeout(poll, 16);
+                }
+            } catch (error) {
+                fail(error instanceof Error ? error : new Error(String(error)));
+            }
+        };
+        signal?.addEventListener("abort", onAbort, { once: true });
+        if (signal?.aborted) {
+            onAbort();
+        } else {
+            poll();
+        }
+    });
 }
 
 /**
@@ -354,7 +375,8 @@ async function ReadPixelsUsingRTT(
         lodPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
             effect.setFloat("lod", lod);
-            effect.setInt("gamma", !applyGammaCorrection || texture.gammaSpace ? 1 : 0);
+            const hardwareSRGB = sourceInternalTexture?._useSRGBBuffer || MapSRGBToLinear(texture.textureFormat) !== null;
+            effect.setInt("gamma", hardwareSRGB ? 2 : !applyGammaCorrection || texture.gammaSpace ? 1 : 0);
             if (is3DTexture) {
                 effect.setFloat("slice", slice);
             }
@@ -400,7 +422,7 @@ async function ReadPixelsUsingRTT(
  * @param lod if the texture has multiple LODs, the lod index to use for the source
  * @param forceRTT if true, forces the use of the RTT path for reading pixels (useful for cube maps to ensure correct orientation and gamma)
  * @param slice if the texture is 3D, the depth slice index to use for the source
- * @param applyGammaCorrection if true, converts linear RTT readback to display gamma. Defaults to true; false preserves stored channel values.
+ * @param applyGammaCorrection if true (default), converts linear RTT pixels to display gamma. If false, preserves stored channels, including undoing hardware sRGB decoding.
  * @returns the 8-bit texture data
  */
 export async function GetTextureDataAsync(

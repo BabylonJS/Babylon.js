@@ -117,7 +117,7 @@ export type ES6PackageName =
     | "@babylonjs/smart-filters";
 
 export const umdPackageMapping: {
-    [key in UMDPackageName]: { sourceDir?: string; baseDir: string; additionalBaseDirs?: string[]; baseFilename: string; isBundle?: boolean };
+    [key in UMDPackageName]: { sourceDir?: string; baseDir: string; baseFilename: string; isBundle?: boolean };
 } = {
     babylonjs: {
         baseDir: "",
@@ -191,7 +191,6 @@ export const umdPackageMapping: {
     },
     "babylonjs-ktx2encoder": {
         baseDir: "", // keep in root of the cdn
-        additionalBaseDirs: ["ktx2Encoder/v1"],
         baseFilename: "babylon.ktx2Encoder",
     },
     "babylonjs-viewer": {

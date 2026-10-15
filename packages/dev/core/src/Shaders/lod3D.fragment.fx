@@ -1,7 +1,8 @@
 precision highp float;
 precision highp sampler3D;
 
-const float GammaEncodePowerApprox = 1.0 / 2.2;
+#define USE_EXACT_SRGB_CONVERSIONS 1
+#include<helperFunctions>
 
 varying vec2 vUV;
 uniform sampler3D textureSampler;
@@ -15,5 +16,7 @@ void main(void)
     gl_FragColor = texelFetch(textureSampler, textureCoordinates, int(lod));
     if (gamma == 0) {
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(GammaEncodePowerApprox));
+    } else if (gamma == 2) {
+        gl_FragColor.rgb = toGammaSpaceExact(gl_FragColor.rgb);
     }
 }

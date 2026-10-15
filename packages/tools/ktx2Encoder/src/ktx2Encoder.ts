@@ -21,8 +21,6 @@ interface IBasisEncoder {
     setPackUASTCFlags(value: number): void;
     setPerceptual(value: boolean): void;
     setQualityLevel(value: number): void;
-    setRDOUASTC(value: boolean): void;
-    setRDOUASTCQualityScalar(value: number): void;
     setSliceSourceImage(sliceIndex: number, source: Uint8Array, width: number, height: number, imageType: number): boolean;
     setTexType(value: number): void;
     setYFlip(value: boolean): void;
@@ -85,16 +83,6 @@ export interface IKTX2EncoderOptions {
      */
     uastcQualityLevel?: number;
     /**
-     * Enables UASTC rate-distortion optimization.
-     * @experimental
-     */
-    uastcRDO?: boolean;
-    /**
-     * Sets the UASTC rate-distortion quality scalar above 0 and through 10.
-     * @experimental
-     */
-    uastcRDOQualityScalar?: number;
-    /**
      * Enables Zstandard supercompression for UASTC output.
      * @experimental
      */
@@ -152,18 +140,10 @@ const ValidateOptions = (options: IKTX2EncoderOptions): void => {
     ValidateIntegerRange("uastcQualityLevel", options.uastcQualityLevel, 0, 4);
     ValidateBooleanOption("generateMipmaps", options.generateMipmaps);
     ValidateBooleanOption("flipY", options.flipY);
-    ValidateBooleanOption("uastcRDO", options.uastcRDO);
     ValidateBooleanOption("zstandard", options.zstandard);
 
-    if (
-        options.uastcRDOQualityScalar !== undefined &&
-        (!Number.isFinite(options.uastcRDOQualityScalar) || options.uastcRDOQualityScalar <= 0 || options.uastcRDOQualityScalar > 10)
-    ) {
-        throw new Error("uastcRDOQualityScalar must be greater than 0 and no greater than 10.");
-    }
-
     if (options.usage === "color") {
-        if (options.uastcQualityLevel !== undefined || options.uastcRDO !== undefined || options.uastcRDOQualityScalar !== undefined || options.zstandard !== undefined) {
+        if (options.uastcQualityLevel !== undefined || options.zstandard !== undefined) {
             throw new Error("UASTC options cannot be used when usage is 'color'.");
         }
     } else if (options.etc1sQualityLevel !== undefined || options.etc1sCompressionLevel !== undefined) {
@@ -296,10 +276,6 @@ export class KTX2Encoder {
                 encoder.setETC1SCompressionLevel(options.etc1sCompressionLevel ?? 2);
             } else {
                 encoder.setPackUASTCFlags(options.uastcQualityLevel ?? 2);
-                encoder.setRDOUASTC(options.uastcRDO ?? false);
-                if (options.uastcRDOQualityScalar !== undefined) {
-                    encoder.setRDOUASTCQualityScalar(options.uastcRDOQualityScalar);
-                }
                 encoder.setKTX2UASTCSupercompression(options.zstandard ?? true);
             }
 
@@ -317,7 +293,7 @@ export class KTX2Encoder {
                 throw new Error(`Basis failed to encode the ${width}x${height} '${options.usage}' texture.`);
             }
 
-            const encoded = output.subarray(0, encodedByteLength);
+            const encoded = output.slice(0, encodedByteLength);
             if (!isColor) {
                 PatchDFDPrimaries(encoded);
             }

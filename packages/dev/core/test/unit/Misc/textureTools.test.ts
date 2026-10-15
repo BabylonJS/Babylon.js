@@ -3,7 +3,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
-import { GetTextureDataAsync } from "core/Misc/textureTools";
+import { GetTextureDataAsync, WhenTextureReadyAsync } from "core/Misc/textureTools";
 
 const state = vi.hoisted(() => ({
     failCompilation: false,
@@ -101,6 +101,30 @@ describe("GetTextureDataAsync RTT", () => {
         expect(state.disposed).toBe(1);
     });
 
+    it.each([true, false])("restores hardware sRGB sampling with display conversion=%s", async (applyGammaCorrection) => {
+        texture.getInternalTexture()!._useSRGBBuffer = true;
+        texture.gammaSpace = true;
+        await GetTextureDataAsync(texture, 4, 4, 0, 0, true, 0, applyGammaCorrection);
+        expect(state.gamma).toBe(2);
+    });
+
+    it.each([
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR,
+        Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR,
+    ])("restores compressed sRGB format %s even without the sRGB-buffer flag", async (format) => {
+        texture.getInternalTexture()!.format = format;
+        await GetTextureDataAsync(texture, 4, 4, 0, 0, false, 0, false);
+        expect(state.gamma).toBe(2);
+    });
+
     it("rejects shader compilation errors and removes observers before disposing", async () => {
         state.failCompilation = true;
         const readback = GetTextureDataAsync(texture, 4, 4, 0, 0, true);
@@ -108,6 +132,7 @@ describe("GetTextureDataAsync RTT", () => {
         const timeout = new Promise<never>((_resolve, reject) => {
             timer = setTimeout(() => reject(new Error("Readback remained pending.")), 300);
         });
+
         try {
             await expect(Promise.race([readback, timeout])).rejects.toThrow("Test shader compilation failed.");
             expect(state.disposed).toBe(1);
@@ -115,6 +140,24 @@ describe("GetTextureDataAsync RTT", () => {
             expect(state.errorObservers).toBe(0);
         } finally {
             clearTimeout(timer);
+        }
+    });
+});
+
+describe("WhenTextureReadyAsync", () => {
+    it("rejects an already-aborted signal before starting delayed loading", async () => {
+        const engine = new NullEngine();
+        const texture = new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);
+        const ready = vi.spyOn(texture, "isReady");
+        const abort = new AbortController();
+        abort.abort();
+        try {
+            await expect(WhenTextureReadyAsync(texture, abort.signal)).rejects.toMatchObject({ name: "AbortError" });
+            expect(ready).not.toHaveBeenCalled();
+        } finally {
+            texture.dispose();
+            engine.dispose();
+            vi.restoreAllMocks();
         }
     });
 });

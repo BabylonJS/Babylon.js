@@ -2,7 +2,8 @@
 import { Tools } from "./tools.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Constants } from "../Engines/constants";
-import { GetTextureDataAsync, IsCompressedTextureFormat } from "./textureTools";
+import { GetTextureDataAsync, IsCompressedTextureFormat, WhenTextureReadyAsync } from "./textureTools";
+import { AsyncLock } from "./asyncLock";
 import { KTX2EncoderWorkerFunction, type IKTX2EncoderInstance, type IKTX2EncoderModule, type KTX2EncoderWorkerReply } from "./khronosTextureContainer2EncoderWorker";
 
 /**
@@ -28,10 +29,6 @@ export interface IKTX2EncoderOptions {
     etc1sCompressionLevel?: number;
     /** UASTC quality, from 0 to 4. Defaults to 2. */
     uastcQualityLevel?: number;
-    /** Enable UASTC rate-distortion optimization. */
-    uastcRDO?: boolean;
-    /** UASTC rate-distortion quality scalar, greater than 0 and at most 10. */
-    uastcRDOQualityScalar?: number;
     /** Use Zstandard with UASTC. Defaults to true for data and normal. */
     zstandard?: boolean;
 }
@@ -117,83 +114,32 @@ function ValidateTexture(texture: BaseTexture, checkSize: boolean): void {
     }
 }
 
-async function WaitForTextureAsync(texture: BaseTexture, signal: AbortSignal | undefined, disposeSignal: AbortSignal): Promise<void> {
-    if (signal?.aborted) {
-        throw AbortError();
-    }
-    if (disposeSignal.aborted) {
-        throw new Error("KTX2 encoder has been disposed.");
-    }
-    // isReady also starts delayed loading. Polling observes errors even without load/error observables.
-    if (texture.isReady()) {
-        return;
-    }
-    await new Promise<void>((resolve, reject) => {
-        let timer: ReturnType<typeof setTimeout> | undefined;
+async function WithAbortAsync<T>(operation: (signal: AbortSignal) => Promise<T>, signal: AbortSignal | undefined, disposeSignal: AbortSignal): Promise<T> {
+    return await new Promise<T>((resolve, reject) => {
+        const controller = new AbortController();
         const cleanup = () => {
-            clearTimeout(timer);
             signal?.removeEventListener("abort", onAbort);
             disposeSignal.removeEventListener("abort", onEncoderDispose);
-            texture.onDisposeObservable.remove(onDispose);
         };
         const fail = (error: Error) => {
+            controller.abort(error);
             cleanup();
             reject(error);
         };
         const onAbort = () => fail(AbortError());
         const onEncoderDispose = () => fail(new Error("KTX2 encoder has been disposed."));
-        const onDispose = texture.onDisposeObservable.add(() => fail(new Error("Texture was disposed while waiting for KTX2 encoding.")));
-        const poll = () => {
-            try {
-                const loadError = texture.getInternalTexture()?._loadError;
-                if (texture.loadingError || loadError) {
-                    fail(new Error(texture.errorObject?.message || loadError?.message || `Texture ${texture.name} failed to load.`));
-                } else if (texture.isReady()) {
-                    cleanup();
-                    resolve();
-                } else {
-                    timer = setTimeout(poll, 16);
-                }
-            } catch (error) {
-                fail(error instanceof Error ? error : new Error(String(error)));
-            }
-        };
         signal?.addEventListener("abort", onAbort, { once: true });
         disposeSignal.addEventListener("abort", onEncoderDispose, { once: true });
         if (signal?.aborted) {
             onAbort();
+            return;
         } else if (disposeSignal.aborted) {
             onEncoderDispose();
-        } else {
-            poll();
-        }
-    });
-}
-
-async function WithAbortAsync<T>(promise: Promise<T>, signal: AbortSignal | undefined, disposeSignal: AbortSignal): Promise<T> {
-    return await new Promise<T>((resolve, reject) => {
-        const cleanup = () => {
-            signal?.removeEventListener("abort", onAbort);
-            disposeSignal.removeEventListener("abort", onEncoderDispose);
-        };
-        const onAbort = () => {
-            cleanup();
-            reject(AbortError());
-        };
-        const onEncoderDispose = () => {
-            cleanup();
-            reject(new Error("KTX2 encoder has been disposed."));
-        };
-        signal?.addEventListener("abort", onAbort, { once: true });
-        disposeSignal.addEventListener("abort", onEncoderDispose, { once: true });
-        if (signal?.aborted) {
-            onAbort();
-        } else if (disposeSignal.aborted) {
-            onEncoderDispose();
+            return;
         }
         void (async () => {
             try {
-                resolve(await promise);
+                resolve(await operation(controller.signal));
             } catch (error) {
                 reject(error instanceof Error ? error : new Error(String(error)));
             } finally {
@@ -240,7 +186,7 @@ export async function EncodeTextureToKTX2Async(texture: BaseTexture, options: IE
     }
     ValidateTexture(texture, false);
     const activeEncoder = encoder ?? KhronosTextureContainer2Encoder.Default;
-    await WaitForTextureAsync(texture, options.signal, activeEncoder._disposeSignal);
+    await WithAbortAsync(async (signal) => await WhenTextureReadyAsync(texture, signal), options.signal, activeEncoder._disposeSignal);
     ValidateTexture(texture, true);
     if (options.signal?.aborted) {
         throw AbortError();
@@ -249,7 +195,7 @@ export async function EncodeTextureToKTX2Async(texture: BaseTexture, options: IE
         throw new Error("KTX2 encoder has been disposed.");
     }
     const { width, height } = texture.getSize();
-    const pixels = await WithAbortAsync(GetTextureDataAsync(texture, width, height, 0, 0, false, 0, false), options.signal, activeEncoder._disposeSignal);
+    const pixels = await WithAbortAsync(async () => await GetTextureDataAsync(texture, width, height, 0, 0, false, 0, false), options.signal, activeEncoder._disposeSignal);
     return await activeEncoder.encodeAsync(pixels, width, height, {
         ...options,
         generateMipmaps: options.generateMipmaps ?? (!texture.noMipmap && (texture.getInternalTexture()?.generateMipMaps ?? true)),
@@ -268,7 +214,7 @@ export class KhronosTextureContainer2Encoder {
      * @experimental
      */
     public static DefaultConfiguration: IKhronosTextureContainer2EncoderConfiguration = {
-        jsEncoderModuleUrl: `${Tools._DefaultCdnUrl}/ktx2Encoder/v1/babylon.ktx2Encoder.js`,
+        jsEncoderModuleUrl: `${Tools._DefaultCdnUrl}/babylon.ktx2Encoder.js`,
         basisJsUrl: `${Tools._DefaultCdnUrl}/basisEncoder/v2_50/basis_encoder.js`,
         basisWasmUrl: `${Tools._DefaultCdnUrl}/basisEncoder/v2_50/basis_encoder.wasm`,
         numWorkers: typeof navigator === "object" && navigator.hardwareConcurrency ? Math.max(1, Math.min(2, Math.floor(navigator.hardwareConcurrency / 2))) : 1,
@@ -305,6 +251,7 @@ export class KhronosTextureContainer2Encoder {
     private _resourcesPromise?: Promise<void>;
     private _wasmBinary?: ArrayBuffer;
     private _encoder?: IKTX2EncoderInstance;
+    private readonly _mainThreadLock = new AsyncLock();
 
     /** @internal */
     public get _disposeSignal(): AbortSignal {
@@ -346,6 +293,20 @@ export class KhronosTextureContainer2Encoder {
             throw new Error("KTX2 worker encoding requires transferable ArrayBuffer pixels.");
         }
         const { signal, ...encodingOptions } = options;
+        if (!this._useWorkers) {
+            return await WithAbortAsync(
+                async (signal) => {
+                    await (this._resourcesPromise ??= this._loadResourcesAsync());
+                    return await this._mainThreadLock.lockAsync(async () => {
+                        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+                        signal.throwIfAborted();
+                        return this._encoder!.encode(rgba, width, height, encodingOptions);
+                    }, signal);
+                },
+                signal,
+                this._disposeSignal
+            );
+        }
         return await new Promise<Uint8Array>((resolve, reject) => {
             const job: IEncodeJob = { id: this._nextId++, rgba, width, height, options: encodingOptions, resolve, reject, signal };
             job.onAbort = () => {
@@ -402,18 +363,6 @@ export class KhronosTextureContainer2Encoder {
         }
         while (this._queue.length) {
             const job = this._queue[0];
-            if (!this._useWorkers) {
-                if (!this._encoder) {
-                    return;
-                }
-                this._queue.shift();
-                try {
-                    this._settle(job, this._encoder.encode(job.rgba, job.width, job.height, job.options));
-                } catch (error) {
-                    this._settle(job, undefined, error instanceof Error ? error : new Error(String(error)));
-                }
-                continue;
-            }
             let slot = this._workers.find((worker) => worker.ready && !worker.job);
             if (!slot && this._workers.length >= this._configuration.numWorkers) {
                 return;

@@ -31,13 +31,21 @@ declare function postMessage(message: KTX2EncoderWorkerReply, transfer?: Transfe
  */
 export function KTX2EncoderWorkerFunction(): void {
     let encoder: IKTX2EncoderInstance | undefined;
-    onmessage = async (event: MessageEvent<KTX2EncoderWorkerRequest>) => {
+    onmessage = (event: MessageEvent<KTX2EncoderWorkerRequest>) => {
         const request = event.data;
+        const fail = (error: unknown) => postMessage({ action: "error", id: request.id, message: error instanceof Error ? error.message : String(error) });
         try {
             if (request.action === "init") {
                 importScripts(request.jsEncoderModuleUrl);
-                encoder = await KTX2ENCODER.KTX2Encoder.CreateAsync({ jsModuleUrl: request.basisJsUrl, wasmBinary: request.wasmBinary });
-                postMessage({ action: "init", id: request.id });
+                // Avoid async helpers outside this serialized function in ES2015 bundles.
+                KTX2ENCODER.KTX2Encoder.CreateAsync({ jsModuleUrl: request.basisJsUrl, wasmBinary: request.wasmBinary })
+                    // eslint-disable-next-line github/no-then
+                    .then((initialized) => {
+                        encoder = initialized;
+                        postMessage({ action: "init", id: request.id });
+                    })
+                    // eslint-disable-next-line github/no-then
+                    .catch(fail);
             } else {
                 if (!encoder) {
                     throw new Error("KTX2 encoder worker is not initialized.");
@@ -46,7 +54,7 @@ export function KTX2EncoderWorkerFunction(): void {
                 postMessage({ action: "encoded", id: request.id, data }, [data.buffer as ArrayBuffer]);
             }
         } catch (error) {
-            postMessage({ action: "error", id: request.id, message: error instanceof Error ? error.message : String(error) });
+            fail(error);
         }
     };
 }

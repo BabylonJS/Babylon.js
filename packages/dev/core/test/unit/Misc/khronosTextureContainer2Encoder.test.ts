@@ -391,7 +391,7 @@ describe("KhronosTextureContainer2Encoder", () => {
     });
 
     it.each([0, 1])("uses main-thread fallback with numWorkers=%s when workers are disabled or unavailable", async (numWorkers) => {
-        vi.stubGlobal("Worker", undefined);
+        vi.stubGlobal("Worker", numWorkers === 0 ? FakeWorker : undefined);
         const encode = vi.fn().mockReturnValue(new Uint8Array([9]));
         const create = vi.fn().mockResolvedValue({ encode });
         vi.stubGlobal("KTX2ENCODER", { KTX2Encoder: { CreateAsync: create } });
@@ -402,6 +402,59 @@ describe("KhronosTextureContainer2Encoder", () => {
             await expect(mainThread.encodeAsync(rgba, 4, 4, { usage: "color" })).resolves.toEqual(new Uint8Array([9]));
             expect(rgba.byteLength).toBe(64);
             expect(FakeWorker.instances).toHaveLength(0);
+        } finally {
+            mainThread.dispose();
+        }
+    });
+
+    it("yields between main-thread encodes so a pending job can be cancelled", async () => {
+        vi.useFakeTimers();
+        const abort = new AbortController();
+        const encode = vi.fn(() => {
+            setTimeout(() => abort.abort(), 0);
+            return new Uint8Array([9]);
+        });
+        vi.stubGlobal("KTX2ENCODER", { KTX2Encoder: { CreateAsync: vi.fn().mockResolvedValue({ encode }) } });
+        vi.spyOn(Tools, "LoadBabylonScriptAsync").mockResolvedValue(undefined);
+        const mainThread = new KhronosTextureContainer2Encoder({ numWorkers: 0, wasmBinary: new ArrayBuffer(8) });
+        try {
+            const first = mainThread.encodeAsync(new Uint8Array(64), 4, 4, { usage: "color" });
+            const second = mainThread.encodeAsync(new Uint8Array(64), 4, 4, { usage: "data", signal: abort.signal });
+            const rejected = ExpectAbortAsync(second);
+            expect(encode).not.toHaveBeenCalled();
+            await vi.runAllTimersAsync();
+            await expect(first).resolves.toEqual(new Uint8Array([9]));
+            await rejected;
+            expect(encode).toHaveBeenCalledOnce();
+        } finally {
+            mainThread.dispose();
+            vi.useRealTimers();
+        }
+    });
+
+    it.each(["abort", "dispose"] as const)("settles main-thread initialization on %s without encoding later", async (reason) => {
+        const encode = vi.fn();
+        let initialize: (value: { encode: typeof encode }) => void = () => {};
+        const create = vi.fn(async () => await new Promise<{ encode: typeof encode }>((resolve) => (initialize = resolve)));
+        vi.stubGlobal("KTX2ENCODER", {
+            KTX2Encoder: { CreateAsync: create },
+        });
+        vi.spyOn(Tools, "LoadBabylonScriptAsync").mockResolvedValue(undefined);
+        const mainThread = new KhronosTextureContainer2Encoder({ numWorkers: 0, wasmBinary: new ArrayBuffer(8) });
+        const abort = new AbortController();
+        try {
+            const result = mainThread.encodeAsync(new Uint8Array(64), 4, 4, { usage: "color", signal: abort.signal });
+            const rejected = reason === "abort" ? ExpectAbortAsync(result) : ExpectErrorAsync(result, "disposed");
+            await vi.waitFor(() => expect(create).toHaveBeenCalled());
+            if (reason === "abort") {
+                abort.abort();
+            } else {
+                mainThread.dispose();
+            }
+            await rejected;
+            initialize({ encode });
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            expect(encode).not.toHaveBeenCalled();
         } finally {
             mainThread.dispose();
         }

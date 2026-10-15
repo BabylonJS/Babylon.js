@@ -105,7 +105,6 @@ const umdUrlMap: Record<string, { dir: string; file: string }> = {
 
     // KTX2 Encoder
     "babylon.ktx2Encoder.js": { dir: "babylonjs-ktx2encoder", file: "babylon.ktx2Encoder.max.js" },
-    "ktx2Encoder/v1/babylon.ktx2Encoder.js": { dir: "babylonjs-ktx2encoder", file: "babylon.ktx2Encoder.max.js" },
 };
 
 /**
