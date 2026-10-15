@@ -2,6 +2,40 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Point Splatting Raw SOG Fallback",
+            "playgroundId": "#J65EJG#0",
+            "referenceImage": "gsplat-point-sog-raw.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "SPLATLoader", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Stream Fallback",
+            "playgroundId": "#QD5HD9#0",
+            "referenceImage": "gsplat-point-sog-stream.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "SPLATLoader", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Right-Handed Depth",
+            "playgroundId": "#F39YWU#2",
+            "referenceImage": "gsplat-point-rh-depth.png",
+            "renderCount": 96,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "Meshes", "Rendering"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Scaled Depth",
+            "playgroundId": "#O4L9TF#0",
+            "referenceImage": "gsplat-point-scaled-depth.png",
+            "renderCount": 245,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "Meshes", "Rendering"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting GLTF",
             "playgroundId": "#WSAFDA#0",
             "referenceImage": "gsplat-splat-gltf.png",

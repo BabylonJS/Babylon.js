@@ -713,9 +713,10 @@ export abstract class AbstractEngine {
         this._contextWasLost = false;
     }
 
-    protected _restoreEngineAfterContextLost(initEngine: () => void): void {
+    protected _restoreEngineAfterContextLost(initEngine: () => void | Promise<void>): void {
         // Adding a timeout to avoid race condition at browser level
-        setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        setTimeout(async () => {
             this._clearEmptyResources();
 
             const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
@@ -724,7 +725,12 @@ export abstract class AbstractEngine {
             const stencilTest = this._stencilState.stencilTest;
 
             // Rebuild context
-            initEngine();
+            try {
+                await initEngine();
+            } catch (error) {
+                Logger.Error(`${this.name}: context restoration failed: ${String(error)}`);
+                return;
+            }
             this._rebuildGraphicsResources();
 
             this._depthCullingState.depthTest = depthTest;

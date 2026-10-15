@@ -1284,7 +1284,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
     }
 
-    protected override _restoreEngineAfterContextLost(initEngine: () => void) {
+    protected override _restoreEngineAfterContextLost(initEngine: () => void | Promise<void>) {
         WebGPUCacheRenderPipelineTree.ResetCache();
         WebGPUCacheBindGroups.ResetCache();
 

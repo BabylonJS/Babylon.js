@@ -47,7 +47,7 @@ describe("Atmosphere material plugin registration", () => {
     });
 
     afterEach(async () => {
-        // Atmosphere starts effect-shader imports as well as material-plugin include imports.
+        // Atmosphere construction starts lazy shader imports that must finish before teardown.
         await vi.dynamicImportSettled();
         engine.dispose();
     });
