@@ -1,6 +1,8 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
+import { DirectionalLight } from "core/Lights/directionalLight";
 import { PointLight } from "core/Lights/pointLight";
+import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
@@ -39,6 +41,14 @@ describe("ShadowGenerator", () => {
             const generator = new ShadowGenerator(1024, light);
 
             expect(generator).not.toBeUndefined();
+        });
+
+        it("should throw a descriptive error when cascaded shadow maps are not supported", () => {
+            const scene = new Scene(subject);
+            const light = new DirectionalLight("Directional", new Vector3(0, -1, 0), scene);
+
+            expect(CascadedShadowGenerator.IsSupported).toBe(false);
+            expect(() => new CascadedShadowGenerator(1024, light)).toThrow("CascadedShadowMap is not supported by the current engine.");
         });
     });
 });
