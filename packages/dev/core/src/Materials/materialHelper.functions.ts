@@ -613,7 +613,7 @@ export function PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh,
  */
 export function PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
     if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
-        PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
+        PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"] || !!defines["PREPASS_VELOCITY_LINEAR"]);
     }
 
     if (defines.INSTANCESCOLOR) {

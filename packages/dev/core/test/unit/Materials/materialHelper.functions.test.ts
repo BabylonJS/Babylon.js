@@ -6,10 +6,12 @@ import {
     GetSupportedSimultaneousLights,
     BindLights,
     AreLightsTexturesReady,
+    PrepareAttributesForInstances,
 } from "core/Materials/materialHelper.functions";
 import { Logger } from "core/Misc/logger";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type Scene } from "core/scene";
+import { type MaterialDefines } from "core/Materials/materialDefines";
 
 describe("PrepareUniformsAndSamplersForLight", () => {
     it("keeps clustered light tile masks as textures by default", () => {
@@ -234,5 +236,28 @@ describe("maxSimultaneousLights clamping against the per-stage uniform buffer li
         expect(AreLightsTexturesReady(makeScene(webGpuLimit), mesh, 10)).toBe(false);
         mesh.lightSources[9].areLightTexturesReady = () => true;
         expect(AreLightsTexturesReady(makeScene(webGpuLimit), mesh, 10)).toBe(true);
+    });
+});
+
+describe("PrepareAttributesForInstances", () => {
+    const previousWorld = ["previousWorld0", "previousWorld1", "previousWorld2", "previousWorld3"];
+    const attribsFor = (defines: Record<string, boolean>): string[] => {
+        const attribs: string[] = [];
+        PrepareAttributesForInstances(attribs, defines as unknown as MaterialDefines);
+        return attribs;
+    };
+
+    it("adds the previous world matrices for the velocity prepass", () => {
+        expect(attribsFor({ INSTANCES: true, PREPASS_VELOCITY: true })).toEqual(expect.arrayContaining(previousWorld));
+    });
+
+    it("adds the previous world matrices for the linear velocity prepass used by TAA reprojection", () => {
+        expect(attribsFor({ INSTANCES: true, PREPASS_VELOCITY_LINEAR: true })).toEqual(expect.arrayContaining(previousWorld));
+        expect(attribsFor({ THIN_INSTANCES: true, PREPASS_VELOCITY_LINEAR: true })).toEqual(expect.arrayContaining(previousWorld));
+    });
+
+    it("adds only the world matrices without a velocity prepass", () => {
+        const attribs = attribsFor({ INSTANCES: true });
+        expect(attribs).toEqual(["world0", "world1", "world2", "world3"]);
     });
 });
