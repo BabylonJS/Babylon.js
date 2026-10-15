@@ -133,10 +133,10 @@ describe("glTF Exporter - animations", () => {
     // https://forum.babylonjs.com/t/able-to-corrupt-gltf-file-by-adding-an-animation-that-rotates/36620 (fixed by https://github.com/BabylonJS/Babylon.js/pull/13356)
     it("exports Euler rotation animations with matching finite sampler counts", async () => {
         const node = new TransformNode("animated", testScene.scene);
-        const animation = new Animation("rotate", "rotation", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+        const animation = new Animation("rotate", "rotation.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
         animation.setKeys([
-            { frame: 0, value: Vector3.Zero() },
-            { frame: 30, value: new Vector3(0.2, 0.4, 0.6) },
+            { frame: 0, value: 0 },
+            { frame: 30, value: 0.4 },
         ]);
         node.animations.push(animation);
 
