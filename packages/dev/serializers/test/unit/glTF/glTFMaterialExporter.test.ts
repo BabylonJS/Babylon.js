@@ -3,13 +3,15 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { PBRMetallicRoughnessMaterial } from "core/Materials/PBR/pbrMetallicRoughnessMaterial";
+import { Color3 } from "core/Maths/math.color";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Tools } from "core/Misc/tools";
 import { Scene } from "core/scene";
 
 import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
-import { type IMaterial } from "babylonjs-gltf2interface";
-import { CreateTestScene, CreateTriangleGltf, RoundTripGltfAsync } from "./glTFTestUtils";
+import { type IKHRMaterialsTransmission, type IKHRTextureTransform, type IMaterial } from "babylonjs-gltf2interface";
+import { CreateTestScene, CreateTriangleGltf, ExportGltfAsync, RoundTripGltfAsync } from "./glTFTestUtils";
 
 // Minimal 1x1 red PNG — lets us assert a known buffer flows through the
 // export pipeline without needing any real image decoding at test time.
@@ -61,6 +63,8 @@ describe("glTF Exporter - NullEngine / cached texture path", () => {
         return { texture };
     }
 
+    // https://forum.babylonjs.com/t/nullengine-glb-export-with-textures-workaround/62541
+    // https://forum.babylonjs.com/t/glb-export-broken-under-nullengine-in-v9-root-cause-and-fix/63231
     it("exports GLB with invertY=true (default) using cached Uint8Array buffer, without GPU fallback", async () => {
         const { texture } = buildTexturedBox();
 
@@ -137,6 +141,141 @@ describe("glTF Exporter - material properties", () => {
         return exported;
     }
 
+    function createCachedTexture(name: string): Texture {
+        const texture = new Texture(name, testScene.scene, { buffer: OnePixelRedPng, mimeType: "image/png" });
+        const internalTexture = texture.getInternalTexture();
+        if (!internalTexture) {
+            throw new Error("Expected an internal texture");
+        }
+        internalTexture._buffer = OnePixelRedPng;
+        return texture;
+    }
+
+    // https://forum.babylonjs.com/t/broken-textures-after-glb-export/60756
+    it("exports finite metallic-roughness factors from black specular-glossiness", async () => {
+        const box = CreateBox("box", {}, testScene.scene);
+        const material = new PBRMaterial("specGloss", testScene.scene);
+        material.metallic = null;
+        material.roughness = null;
+        material.albedoColor = new Color3(0.5, 0.25, 0.75);
+        material.reflectivityColor = Color3.Black();
+        material.microSurface = 0.6;
+        box.material = material;
+
+        const gltf = await ExportGltfAsync(testScene.scene);
+        const pbr = gltf.materials[0].pbrMetallicRoughness;
+        if (!pbr?.baseColorFactor) {
+            throw new Error("Expected metallic-roughness factors");
+        }
+        const factors = [...pbr.baseColorFactor, pbr.metallicFactor ?? 1, pbr.roughnessFactor ?? 1];
+        expect(factors.every((value) => Number.isFinite(value) && value >= 0 && value <= 1)).toBe(true);
+    });
+
+    // https://forum.babylonjs.com/t/sandbox-the-khr-texture-transform-property-of-gltfexport-cannot-be-exported/55425
+    // https://forum.babylonjs.com/t/glb-export-uv-mapping-not-saving/36140
+    it("exports KHR_texture_transform with scaling and a non-origin rotation center", async () => {
+        const box = CreateBox("box", {}, testScene.scene);
+        const material = new PBRMaterial("material", testScene.scene);
+        material.metallic = 0;
+        material.roughness = 1;
+        const texture = createCachedTexture("baseColor.png");
+        texture.uOffset = 0.1;
+        texture.vOffset = 0.2;
+        texture.uScale = 2;
+        texture.vScale = 3;
+        texture.uRotationCenter = 0.5;
+        texture.vRotationCenter = 0.25;
+        texture.wAng = Math.PI / 2;
+        material.albedoTexture = texture;
+        box.material = material;
+
+        const gltf = await ExportGltfAsync(testScene.scene);
+        const extension = gltf.materials[0].pbrMetallicRoughness?.baseColorTexture?.extensions?.KHR_texture_transform as IKHRTextureTransform | undefined;
+        if (!extension?.offset || !extension.scale || extension.rotation === undefined) {
+            throw new Error("Expected KHR_texture_transform values");
+        }
+        expect(extension.offset[0]).toBeCloseTo(1.85);
+        expect(extension.offset[1]).toBeCloseTo(-0.05);
+        expect(extension.scale).toEqual([2, 3]);
+        expect(extension.rotation).toBeCloseTo(-Math.PI / 2);
+    });
+
+    // https://forum.babylonjs.com/t/gltf2export-glbasync-missing-uv-scale-on-ambienttexture/39900
+    it("exports KHR_texture_transform for ambient textures", async () => {
+        const box = CreateBox("box", {}, testScene.scene);
+        const material = new PBRMaterial("material", testScene.scene);
+        material.metallic = 0;
+        material.roughness = 1;
+        const texture = createCachedTexture("ambient.png");
+        texture.uScale = 0.25;
+        texture.vScale = 0.5;
+        material.ambientTexture = texture;
+        box.material = material;
+
+        const gltf = await ExportGltfAsync(testScene.scene);
+        const extension = gltf.materials[0].occlusionTexture?.extensions?.KHR_texture_transform as IKHRTextureTransform | undefined;
+
+        expect(extension?.scale).toEqual([0.25, 0.5]);
+    });
+
+    // https://forum.babylonjs.com/t/gltf-export-lost-transmission-texture/53315
+    it("exports KHR_materials_transmission textures", async () => {
+        const box = CreateBox("box", {}, testScene.scene);
+        const material = new PBRMaterial("material", testScene.scene);
+        material.metallic = 0;
+        material.roughness = 1;
+        material.subSurface.isRefractionEnabled = true;
+        material.subSurface.refractionIntensity = 0.7;
+        material.subSurface.useGltfStyleTextures = true;
+        material.subSurface.refractionIntensityTexture = createCachedTexture("transmission.png");
+        box.material = material;
+
+        const gltf = await ExportGltfAsync(testScene.scene);
+        const extension = gltf.materials[0].extensions?.KHR_materials_transmission as IKHRMaterialsTransmission | undefined;
+
+        expect(extension?.transmissionFactor).toBeCloseTo(0.7);
+        expect(extension?.transmissionTexture?.index).toBeDefined();
+    });
+
+    // https://forum.babylonjs.com/t/gltf-material-emissivestrength-is-not-exported-though-imported/37971
+    it("exports emissiveIntensity through KHR_materials_emissive_strength", async () => {
+        const box = CreateBox("box", {}, testScene.scene);
+        const material = new PBRMaterial("material", testScene.scene);
+        material.metallic = 0;
+        material.roughness = 1;
+        material.emissiveColor = new Color3(0.25, 0.5, 1);
+        material.emissiveIntensity = 3;
+        box.material = material;
+
+        const gltf = await ExportGltfAsync(testScene.scene);
+        const exported = gltf.materials[0];
+        const extension = exported.extensions?.KHR_materials_emissive_strength;
+        if (!extension || typeof extension !== "object") {
+            throw new Error("Expected KHR_materials_emissive_strength");
+        }
+
+        expect(exported.emissiveFactor).toEqual([0.25, 0.5, 1]);
+        expect(extension.emissiveStrength).toBeCloseTo(3);
+    });
+
+    // https://forum.babylonjs.com/t/the-gltf2exported-glb-doesnt-contain-the-assigned-pbrmetallicroughnessmaterial-in-newer-versions/59353
+    it("exports PBRMetallicRoughnessMaterial", async () => {
+        const box = CreateBox("box", {}, testScene.scene);
+        const material = new PBRMetallicRoughnessMaterial("metalRough", testScene.scene);
+        material.baseColor = new Color3(0.2, 0.4, 0.6);
+        material.metallic = 0.3;
+        material.roughness = 0.7;
+        box.material = material;
+
+        const gltf = await ExportGltfAsync(testScene.scene);
+        const exported = gltf.materials[0];
+
+        expect(exported.name).toBe("metalRough");
+        expect(exported.pbrMetallicRoughness?.baseColorFactor).toEqual([0.2, 0.4, 0.6, 1]);
+        expect(exported.pbrMetallicRoughness?.metallicFactor).toBeCloseTo(0.3);
+        expect(exported.pbrMetallicRoughness?.roughnessFactor).toBeCloseTo(0.7);
+    });
+
     it("round trips metallic-roughness factors, emissive and double-sidedness", async () => {
         const material = await roundTripMaterial({
             pbrMetallicRoughness: { baseColorFactor: [0.25, 0.5, 0.75, 1], metallicFactor: 0.6, roughnessFactor: 0.4 },
@@ -183,6 +322,7 @@ describe("glTF Exporter - material properties", () => {
         KHR_materials_clearcoat: { clearcoatFactor: 0.5, clearcoatRoughnessFactor: 0.3 },
     };
 
+    // https://forum.babylonjs.com/t/anisotropic-values-not-saved-when-exporting-glb-from-sandbox/29944 is covered by the KHR_materials_anisotropy case.
     it.each(Object.keys(extensions))("round trips %s", async (name) => {
         const material = await roundTripMaterial({
             pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 1 },
