@@ -5,6 +5,7 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Mesh } from "core/Meshes/mesh";
 import { SubMesh } from "core/Meshes/subMesh";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { type IAccessor, type ICamera } from "babylonjs-gltf2interface";
 import { GLTF2Export } from "serializers/glTF/2.0";
@@ -202,13 +203,12 @@ describe("glTF exporter", () => {
     describe("multi-material meshes", () => {
         // https://forum.babylonjs.com/t/multi-materials-cause-strange-glb-export-artifacts/60558 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17241)
         // https://forum.babylonjs.com/t/exporting-to-gltf-in-new-version-causing-an-error-on-importing-from-blender/62030 (fixed by https://github.com/BabylonJS/Babylon.js/pull/17662)
-        // https://github.com/BabylonJS/Babylon.js/pull/17244
         it("preserves geometry and material for sub meshes with offset vertex and index ranges", async () => {
             const { scene } = testScene;
             const mesh = new Mesh("mesh", scene);
             const sourcePositions = [0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 2, 1, 0];
             mesh.setVerticesData("position", sourcePositions);
-            mesh.setIndices(new Uint16Array([0, 1, 2, 3, 4, 5]));
+            mesh.setIndices([0, 1, 2, 3, 4, 5]);
             mesh.subMeshes = [];
             const multiMaterial = new MultiMaterial("multi", scene);
             multiMaterial.subMaterials.push(new PBRMaterial("a", scene), new PBRMaterial("b", scene));
@@ -234,6 +234,36 @@ describe("glTF exporter", () => {
                 { material: "a", corners: ["0,0,0", "0,1,0", "-1,0,0"].sort() },
                 { material: "b", corners: ["-2,0,0", "-2,1,0", "-3,0,0"].sort() },
             ]);
+        });
+
+        // https://github.com/BabylonJS/Babylon.js/pull/17244
+        it("exports the requested typed index subarray for a sub mesh", async () => {
+            const { scene } = testScene;
+            const mesh = new Mesh("mesh", scene);
+            mesh.setVerticesData("position", [0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 2, 1, 0]);
+            mesh.setIndices(new Uint16Array([0, 1, 2, 3, 4, 5]));
+            mesh.subMeshes = [];
+            const multiMaterial = new MultiMaterial("multi", scene);
+            const firstMaterial = new PBRMaterial("a", scene);
+            const secondMaterial = new PBRMaterial("b", scene);
+            firstMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
+            secondMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
+            multiMaterial.subMaterials.push(firstMaterial, secondMaterial);
+            mesh.material = multiMaterial;
+            new SubMesh(0, 0, 6, 0, 3, mesh);
+            new SubMesh(1, 0, 6, 3, 3, mesh);
+
+            const { gltf, bin } = await ExportGltfWithBinaryAsync(scene);
+
+            const primitive = gltf.meshes[0].primitives[1];
+            if (primitive.indices === undefined) {
+                throw new Error("Expected exported indices");
+            }
+            const indices = ReadAccessor(gltf, bin, primitive.indices);
+            const positions = ReadAccessor(gltf, bin, primitive.attributes.POSITION);
+            const corners = indices.map((index) => positions.slice(index * 3, index * 3 + 3).join(",")).sort();
+            expect(indices).toEqual([3, 4, 5]);
+            expect(corners).toEqual(["-2,0,0", "-2,1,0", "-3,0,0"].sort());
         });
     });
 
