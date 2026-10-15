@@ -2542,10 +2542,7 @@ export class ThinNativeEngine extends ThinEngine {
         return texture;
     }
 
-    public override createRenderTargetTexture(
-        size: number | { width: number; height: number; depth: number },
-        options: boolean | RenderTargetCreationOptions
-    ): RenderTargetWrapper {
+    public override createRenderTargetTexture(size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
         let generateDepthBuffer = true;
@@ -3019,6 +3016,11 @@ export class ThinNativeEngine extends ThinEngine {
             // _framebuffers setter releases the stale handles.
             const { generateDepth, generateStencil } = this._getLayerFramebufferDepthStencil(rtWrapper);
             nativeRTWrapper._framebuffers = this._createLayerFramebuffers(nativeTexture, texture.baseWidth, texture.baseHeight, layers, generateStencil, generateDepth, samples);
+            // The rebuilt layer framebuffers carry the depth attachment, so keep the depth texture metadata in sync
+            // (e.g. FrameGraph validates that color and depth sample counts match).
+            if (rtWrapper._depthStencilTexture) {
+                rtWrapper._depthStencilTexture.samples = samples;
+            }
         } else if (isCube) {
             // Cube RTTs render through one framebuffer per face (see createRenderTargetCubeTexture). The
             // underlying bgfx handle was just rotated, so recreate all six attachments; the _framebuffers

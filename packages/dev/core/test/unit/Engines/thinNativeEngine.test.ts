@@ -562,7 +562,7 @@ describe("ThinNativeEngine", () => {
         };
 
         const createArrayTarget = (engine: ThinNativeEngine, layers = 4, generateDepthBuffer = false) =>
-            engine.createRenderTargetTexture({ width: 64, height: 64, layers } as any, { generateDepthBuffer, generateMipMaps: false }) as NativeRenderTargetWrapper;
+            engine.createRenderTargetTexture({ width: 64, height: 64, layers }, { generateDepthBuffer, generateMipMaps: false }) as NativeRenderTargetWrapper;
 
         const expectReleasedOnce = (released: FakeFramebuffer[], framebuffers: FakeFramebuffer[]) => {
             for (const framebuffer of framebuffers) {
@@ -633,6 +633,7 @@ describe("ThinNativeEngine", () => {
                 expectReleasedOnce(released, previous);
                 expect(released).toHaveLength(previous.length);
                 expect(rtWrapper._framebuffer).toBe(rebuilt[0]);
+                expect(rtWrapper.depthStencilTexture!.samples).toBe(samples);
             }
         });
 
@@ -642,10 +643,13 @@ describe("ThinNativeEngine", () => {
             const wrapped = engine.wrapNativeTexture({ id: "external-array" } as any);
             wrapped.is2DArray = true;
             wrapped.depth = 3;
-            const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 } as any, {
-                colorAttachment: wrapped,
-                generateDepthBuffer: true,
-            }) as NativeRenderTargetWrapper;
+            const rtWrapper = engine.createRenderTargetTexture(
+                { width: 64, height: 64, layers: 3 },
+                {
+                    colorAttachment: wrapped,
+                    generateDepthBuffer: true,
+                }
+            ) as NativeRenderTargetWrapper;
             const previous = [...(rtWrapper._framebuffers as unknown as FakeFramebuffer[])];
             const replacement = { id: "external-array-2" };
 
