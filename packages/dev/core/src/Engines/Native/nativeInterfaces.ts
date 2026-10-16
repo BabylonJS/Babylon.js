@@ -26,6 +26,12 @@ export interface INativeEngine {
      */
     readonly supportsPrimitiveModeExpansion?: boolean;
 
+    /**
+     * True when the runtime can create multisampled render targets that also request a mip chain
+     * (BabylonNative#1714).
+     */
+    readonly supportsMultisampledMipmaps?: boolean;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -164,7 +170,8 @@ export interface INativeEngine {
         autoGenerateMips?: boolean
     ): NativeFramebuffer;
 
-    createMultiFrameBuffer(
+    /** Optional: older runtimes only support single-attachment framebuffers. */
+    createMultiFrameBuffer?(
         colorTextures: NativeTexture[],
         width: number,
         height: number,
