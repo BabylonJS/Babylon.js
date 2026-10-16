@@ -15,7 +15,20 @@ import {
     ExtractChannelAsync,
     ChannelMask,
     ExtractMaxChannelAsync,
+    ThinWalledScatterWeightsAsync,
+    MultiScatterToSingleScatterAlbedoAsync,
 } from "core/Materials/Textures/textureProcessor";
+
+/**
+ * Returns the color space to sample a color texture in. Textures loaded with hardware sRGB buffers
+ * already return linear values (gammaSpace is false), so they must not be decoded a second time.
+ * Only use this for color textures; data textures report gammaSpace as true but are linear.
+ * @param texture The color texture to be sampled
+ * @returns The texture color space to use for the operand
+ */
+function GetColorTextureSpace(texture: Nullable<BaseTexture>): TextureColorSpace {
+    return texture?.gammaSpace ? TextureColorSpace.SRGB : TextureColorSpace.Linear;
+}
 
 /**
  * Material Loading Adapter for OpenPBR materials that provides a unified OpenPBR-like interface.
@@ -723,16 +736,16 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the transmission scatter coefficient.
-     * @param value The scatter coefficient as a Vector3
+     * Sets the transmission scatter coefficient, scaled by transmissionDepth.
+     * @param value The scatter coefficient * transmissionDepth as a Vector3
      */
     public set transmissionScatter(value: Color3) {
         this._material.transmissionScatter = value;
     }
 
     /**
-     * Gets the transmission scatter coefficient.
-     * @returns The scatter coefficient as a Vector3
+     * Gets the transmission scatter coefficient, scaled by transmissionDepth.
+     * @returns The scatter coefficient * transmissionDepth as a Vector3
      */
     public get transmissionScatter(): Color3 {
         return this._material.transmissionScatter;
@@ -752,6 +765,52 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public get transmissionScatterTexture(): Nullable<BaseTexture> {
         return this._material.transmissionScatterTexture;
+    }
+
+    private _volumetricScatterStrengthFactor: Nullable<number> = null;
+
+    /** @internal */
+    public set volumetricScatterStrengthFactor(value: Nullable<number>) {
+        this._volumetricScatterStrengthFactor = value;
+    }
+
+    /** @internal */
+    public get volumetricScatterStrengthFactor(): Nullable<number> {
+        return this._volumetricScatterStrengthFactor;
+    }
+
+    private _volumetricScatterStrengthTexture: Nullable<BaseTexture> = null;
+
+    public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {
+        this._volumetricScatterStrengthTexture = value;
+    }
+
+    public get volumetricScatterStrengthTexture(): Nullable<BaseTexture> {
+        return this._volumetricScatterStrengthTexture;
+    }
+
+    private _thinWalledScatterStrengthFactor: Nullable<number> = null;
+
+    /** @internal */
+    public set thinWalledScatterStrengthFactor(value: Nullable<number>) {
+        this._thinWalledScatterStrengthFactor = value;
+    }
+
+    /** @internal */
+    public get thinWalledScatterStrengthFactor(): Nullable<number> {
+        return this._thinWalledScatterStrengthFactor;
+    }
+
+    private _thinWalledScatterStrengthTexture: Nullable<BaseTexture> = null;
+
+    /** @internal */
+    public set thinWalledScatterStrengthTexture(value: Nullable<BaseTexture>) {
+        this._thinWalledScatterStrengthTexture = value;
+    }
+
+    /** @internal */
+    public get thinWalledScatterStrengthTexture(): Nullable<BaseTexture> {
+        return this._thinWalledScatterStrengthTexture;
     }
 
     /**
@@ -887,8 +946,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Configures subsurface properties for PBR material
      */
     public configureSubsurface(): void {
-        // glTF diffuse transmission is thin-walled (before volume extension is applied) will map to the subsurface slab and, without a
+        // glTF diffuse transmission is thin-walled (before volume extension is applied) will map to the subsurface slab
         this._material.geometryThinWalled = 1.0;
+        //  and, without a volume extension, diffuse transmission is fully transmitting, like having scatter aniso = +1.
         this._material.subsurfaceScatterAnisotropy = 1.0;
     }
 
@@ -1264,6 +1324,109 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public async finalizeAsync(loader: GLTFLoader): Promise<void> {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
 
+        // Thin-walled scatter: KHR_materials_scatter explicitly stages scatter strength S. Only staged
+        // values are converted; live material values may have been changed by user code in
+        // onMaterialLoadedObservable, which fires before finalization.
+        // This must run before the diffuse-transmission-tint block which reads subsurfaceWeight.
+        const thinScatterStrength = this._thinWalledScatterStrengthFactor;
+        const thinScatterTex = this._thinWalledScatterStrengthTexture;
+        this._thinWalledScatterStrengthFactor = null;
+        this._thinWalledScatterStrengthTexture = null;
+        if (thinScatterStrength !== null && !this._diffuseTransmissionTint.equals(Color3.White())) {
+            // Tinted diffuse transmission: use the scatter strength directly as the subsurface weight.
+            this.subsurfaceWeight = thinScatterStrength;
+            if (thinScatterTex) {
+                this.subsurfaceWeightTexture = thinScatterTex;
+            }
+        } else if (thinScatterStrength !== null && (thinScatterStrength > 0 || thinScatterTex)) {
+            // Compute final transmission_weight = T*(1-S) and subsurface_weight = T*S/(1-T*(1-S)).
+            const transmissionFactor = this.transmissionWeight;
+            const transmissionTex = this.transmissionWeightTexture;
+            const scatterStrength = thinScatterStrength;
+            const scatterTex = thinScatterTex;
+
+            const weights = await ThinWalledScatterWeightsAsync(
+                `${this._material.name}`,
+                CreateTextureWithFactorOperand(transmissionTex, new Color4(transmissionFactor, transmissionFactor, transmissionFactor, 1.0), TextureChannel.R),
+                CreateTextureWithFactorOperand(scatterTex, new Color4(scatterStrength, scatterStrength, scatterStrength, 1.0), TextureChannel.A),
+                this._material.getScene()
+            );
+
+            if (loader._disposed) {
+                weights.transmission.dispose?.();
+                weights.subsurface.dispose?.();
+                return;
+            }
+
+            this.transmissionWeight = weights.transmission.factor?.r ?? transmissionFactor * (1.0 - scatterStrength);
+            if (weights.transmission.texture) {
+                this.transmissionWeight = 1.0;
+                this.transmissionWeightTexture = weights.transmission.texture;
+                this._disposeTextureIfUnused(loader, transmissionTex);
+            }
+
+            this.subsurfaceWeight = weights.subsurface.factor?.r ?? 0.0;
+            if (weights.subsurface.texture) {
+                const oldSubsurfaceWeightTexture = this.subsurfaceWeightTexture;
+                this.subsurfaceWeight = 1.0;
+                this.subsurfaceWeightTexture = weights.subsurface.texture;
+                this._material._useSubsurfaceWeightFromTextureAlpha = false;
+                this._disposeTextureIfUnused(loader, oldSubsurfaceWeightTexture);
+            }
+            this._disposeTextureIfUnused(loader, scatterTex);
+        } else {
+            this._disposeTextureIfUnused(loader, thinScatterTex);
+        }
+
+        // KHR_materials_scatter supplies multi-scatter albedo, while OpenPBR 1.1 expects the
+        // scattering coefficient multiplied by transmission depth. Bake the nonlinear conversion
+        // to single-scatter albedo into the texture, then keep extinctionCoefficient * depth in the
+        // material factor so their product has the representation expected by OpenPBR.
+        if (this._volumetricScatterStrengthFactor !== null) {
+            const colorTex = this.transmissionScatterTexture;
+            const colorFactor = this.transmissionScatter;
+            const strengthTex = this._volumetricScatterStrengthTexture;
+            const scatterStrength = this._volumetricScatterStrengthFactor;
+            const scaledMultiScatter = await MultiplyTexturesAsync(
+                `multi-scatter (${this._material.name})`,
+                CreateTextureWithFactorOperand(strengthTex, new Color4(scatterStrength, scatterStrength, scatterStrength, 1.0), TextureChannel.A),
+                CreateTextureWithFactorOperand(colorTex, colorFactor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(colorTex)),
+                this._material.getScene()
+            );
+            const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(
+                `single-scatter (${this._material.name})`,
+                scaledMultiScatter,
+                this._material.getScene(),
+                this._material.transmissionScatterAnisotropy
+            );
+            if (loader._disposed) {
+                singleScatter.dispose?.();
+                this._disposeTextureIfUnused(loader, strengthTex);
+                return;
+            }
+            this._volumetricScatterStrengthFactor = null;
+            this._volumetricScatterStrengthTexture = null;
+
+            // OpenPBR transmission_scatter is scatterCoefficient * depth which is equivalent to extinctionCoefficient * ssAlbedo * depth.
+            const extinctionTimesDepth = new Color3(
+                -Math.log(Math.max(this.transmissionColor.r, 1e-7)),
+                -Math.log(Math.max(this.transmissionColor.g, 1e-7)),
+                -Math.log(Math.max(this.transmissionColor.b, 1e-7))
+            );
+            if (singleScatter.texture) {
+                this.transmissionScatter = extinctionTimesDepth;
+                this.transmissionScatterTexture = singleScatter.texture;
+            } else if (singleScatter.factor) {
+                this.transmissionScatter.set(
+                    extinctionTimesDepth.r * singleScatter.factor.r,
+                    extinctionTimesDepth.g * singleScatter.factor.g,
+                    extinctionTimesDepth.b * singleScatter.factor.b
+                );
+            }
+            this._disposeTextureIfUnused(loader, colorTex);
+            this._disposeTextureIfUnused(loader, strengthTex);
+        }
+
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
         if ((this._diffuseTransmissionTint && !this._diffuseTransmissionTint.equals(Color3.White())) || this._diffuseTransmissionTintTexture) {
             if (this._material.geometryThinWalled) {
@@ -1331,13 +1494,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this.specularRoughnessTexture = newRoughnessTexture.texture;
             this.specularRoughness = newRoughnessTexture.factor ? newRoughnessTexture.factor.r : 1.0;
 
-            // Metallic = max(linearize(specular).rgb). The specular texture is sRGB so we must
-            // linearize it first (TextureColorSpace.SRGB). The factor is already linear per convention.
+            // Metallic = max(linearize(specular).rgb). The specular texture is sRGB so we must linearize it
+            // first, unless it was loaded into an sRGB buffer. The factor is already linear per convention.
             // We store metallic as linear (no outputColorSpace) because it is a data/scalar value;
             // encoding it as sRGB would corrupt it when it is used as the lerp t below.
             const newMetallic = await ExtractMaxChannelAsync(
                 "metallicTexture (" + this._material.name + ")",
-                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
+                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(this.specularColorTexture)),
                 this._material.getScene(),
                 false,
                 TextureColorSpace.SRGB,
@@ -1355,8 +1518,8 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             // material (baseMetalnessTexture) and must not be released after the lerp pass.
             const newBaseColor = await LerpTexturesAsync(
                 "newBaseColor (" + this._material.name + ")",
-                CreateTextureWithFactorOperand(this.baseColorTexture, this.baseColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
-                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.Linear),
+                CreateTextureWithFactorOperand(this.baseColorTexture, this.baseColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(this.baseColorTexture)),
+                CreateTextureWithFactorOperand(this.specularColorTexture, this.specularColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(this.specularColorTexture)),
                 { ...newMetallic, dispose: undefined, colorSpace: TextureColorSpace.Linear },
                 this._material.getScene(),
                 TextureColorSpace.SRGB,
@@ -1367,13 +1530,26 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 return;
             }
             const oldBaseColorTexture = this.baseColorTexture;
-            oldBaseColorTexture?.dispose();
             this.baseColorTexture = newBaseColor.texture;
             this.baseColor = newBaseColor.factor ? new Color3(newBaseColor.factor.r, newBaseColor.factor.g, newBaseColor.factor.b) : Color3.White();
+            this._disposeTextureIfUnused(loader, oldBaseColorTexture);
 
             const oldSpecularColorTexture = this.specularColorTexture;
-            oldSpecularColorTexture?.dispose();
             this.specularColorTexture = null;
+            this._disposeTextureIfUnused(loader, oldSpecularColorTexture);
+        }
+    }
+
+    /**
+     * Disposes a texture that has been replaced on this material, unless another slot on this
+     * material (or on any other material created by the loader) still references it.
+     * Must be called after the texture has been removed from the slot being replaced.
+     * @param loader The glTF loader that created the materials
+     * @param texture The replaced texture
+     */
+    private _disposeTextureIfUnused(loader: GLTFLoader, texture: Nullable<BaseTexture>): void {
+        if (texture && !loader._isTextureUsedByMaterials(texture)) {
+            texture.dispose();
         }
     }
 
@@ -1404,6 +1580,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         const origCoatWeightCol4 = new Color4(origCoatWeight, origCoatWeight, origCoatWeight, origCoatWeight);
         const weightCol4 = new Color4(weight, weight, weight, weight);
 
+        // Textures removed from material slots are collected here and disposed only at the end, because
+        // they may still be needed as inputs to later passes (e.g. origCoatWeightTexture, or a packed
+        // texture that is shared between several coat slots).
+        const replacedTextures = new Set<BaseTexture>();
+        if (origCoatWeightTexture) {
+            replacedTextures.add(origCoatWeightTexture);
+        }
+
         this.coatWeightTexture = null;
         this.coatWeight = 1.0;
 
@@ -1411,7 +1595,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             LerpTexturesAsync(
                 "lerpExistingCoat",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
-                CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
+                CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(origCoatColorTexture)),
                 CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
                 this._material.getScene(),
                 TextureColorSpace.SRGB
@@ -1419,7 +1603,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             LerpTexturesAsync(
                 "lerpSurfaceColor",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
-                CreateTextureWithFactorOperand(colorTexture, color.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
+                CreateTextureWithFactorOperand(colorTexture, color.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(colorTexture)),
                 CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
                 this._material.getScene(),
                 TextureColorSpace.SRGB
@@ -1462,6 +1646,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this.coatColorTexture = null;
             this.coatColor.fromArray([newCoatColor.factor.r, newCoatColor.factor.g, newCoatColor.factor.b]);
         }
+        if (origCoatColorTexture) {
+            replacedTextures.add(origCoatColorTexture);
+        }
 
         const newCoatIor = await LerpTexturesAsync(
             "newCoatIor (" + this._material.name + ")",
@@ -1491,8 +1678,12 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             newCoatRoughness.texture?.dispose();
             return;
         }
+        const oldCoatRoughnessTexture = this.coatRoughnessTexture;
         this.coatRoughness = newCoatRoughness.factor ? newCoatRoughness.factor.r : 1.0;
         this.coatRoughnessTexture = newCoatRoughness.texture;
+        if (oldCoatRoughnessTexture) {
+            replacedTextures.add(oldCoatRoughnessTexture);
+        }
 
         const newCoatDarkening = await LerpTexturesAsync(
             "newCoatDarkening (" + this._material.name + ")",
@@ -1523,8 +1714,12 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 newSpecularRoughness.texture?.dispose();
                 return;
             }
+            const oldSpecularRoughnessTexture = this.specularRoughnessTexture;
             this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
             this.specularRoughnessTexture = newSpecularRoughness.texture;
+            if (oldSpecularRoughnessTexture) {
+                replacedTextures.add(oldSpecularRoughnessTexture);
+            }
         }
 
         if (origCoatNormalTexture || this.geometryNormalTexture) {
@@ -1545,7 +1740,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             }
             if (newCoatNormal.texture) {
                 this.geometryCoatNormalTexture = newCoatNormal.texture;
+                if (origCoatNormalTexture) {
+                    replacedTextures.add(origCoatNormalTexture);
+                }
             }
+        }
+
+        for (const texture of replacedTextures) {
+            this._disposeTextureIfUnused(loader, texture);
         }
     }
 }

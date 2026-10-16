@@ -51,11 +51,14 @@ async function CreateMergedAnisotropyTexture(babylonMaterial: OpenPBRMaterial): 
 
     return await MergeTexturesAsync(
         "AnisotropyTexture",
-        CreateRGBAConfiguration(
-            tangentTexture ? CreateTextureInput(tangentTexture, 0) : CreateConstantInput(1.0), // tangent x from red channel
-            tangentTexture ? CreateTextureInput(tangentTexture, 1) : CreateConstantInput(0.0), // tangent y from green channel
-            anisoStrengthTexture ? CreateTextureInput(anisoStrengthTexture, 0) : CreateConstantInput(1.0) // Anisotropy from red channel
-        ),
+        {
+            ...CreateRGBAConfiguration(
+                tangentTexture ? CreateTextureInput(tangentTexture, 0) : CreateConstantInput(1.0), // tangent x from red channel
+                tangentTexture ? CreateTextureInput(tangentTexture, 1) : CreateConstantInput(0.0), // tangent y from green channel
+                anisoStrengthTexture ? CreateTextureInput(anisoStrengthTexture, 0) : CreateConstantInput(1.0) // Anisotropy from red channel
+            ),
+            sharedSampling: true,
+        },
         scene
     );
 }
