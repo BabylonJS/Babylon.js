@@ -71,6 +71,19 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         }
     }
 
+    protected override _swapRenderTargetWrapper(target: NativeRenderTargetWrapper): void {
+        super._swapRenderTargetWrapper(target);
+
+        // Transfer the framebuffers created for the rebuilt textures to the target so that disposing this
+        // temporary wrapper doesn't release them. This only runs after a context loss, when the target's
+        // previous handles are stale, so they are overwritten rather than released (like the WebGL wrapper).
+        target.__framebuffer = this.__framebuffer;
+        target.__framebuffers = this.__framebuffers;
+        target.__framebufferDepthStencil = this.__framebufferDepthStencil;
+
+        this.__framebuffer = this.__framebuffers = this.__framebufferDepthStencil = null;
+    }
+
     public override dispose(disposeOnlyFramebuffers = false): void {
         if (this.__framebuffers) {
             // Releases all six per-face framebuffers (face 0 is aliased by __framebuffer, so
