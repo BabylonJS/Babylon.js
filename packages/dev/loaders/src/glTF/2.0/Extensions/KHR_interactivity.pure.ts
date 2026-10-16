@@ -9,7 +9,7 @@ import { type GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
 import { _CaptureKHRInteractivityRuntimeInputDefaults, InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
-import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
+import { Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene";
 import { type Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
@@ -155,9 +155,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             return;
         }
         const scene = this._loader.babylonScene;
-        const pathConverter = this._initializePathConverter(scene);
         const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
-        if (!interactivityDefinition) {
+        if (interactivityDefinition === undefined) {
             // This can technically throw, but it's not a critical error
             return;
         }
@@ -166,6 +165,11 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             (this._loader.gltf.extensionsUsed ?? []).filter((extensionName) => this._loader.parent.extensionOptions[extensionName]?.enabled !== false)
         );
         const document = CreateKHRInteractivityDocument(interactivityDefinition, supportedExtensions, this._loader.gltf.nodes?.length ?? 0);
+        if (document.graphs.some((graph) => graph.declarations.some((declaration) => declaration.operation === "pointer/interpolate"))) {
+            const { _RegisterKHRAnimationPointerData } = await import("./KHR_animation_pointer.data.pure");
+            _RegisterKHRAnimationPointerData();
+        }
+        const pathConverter = this._initializePathConverter(scene);
         const options = this._loader.parent.extensionOptions[NAME];
         const autoStart = options?.autoStart ?? true;
         const parseOnly = options?.parseOnly ?? false;
@@ -214,9 +218,6 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                     graphResult.coordinator = coordinator;
                     graphResult.flowGraph = await ParseFlowGraphAsync(serializedFlowGraph, { coordinator, pathConverter });
                     _CaptureKHRInteractivityRuntimeInputDefaults(graphResult.flowGraph);
-                    if (autoStart && graphModel.index === document.defaultGraphIndex) {
-                        coordinator.start();
-                    }
                 } catch (error) {
                     const message = (error as Error)?.message ?? String(error);
                     graphResult.diagnostics.push({
@@ -232,6 +233,21 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                 }
             })
         );
+        const selectedGraph = result.graphs[document.defaultGraphIndex];
+        const rejectionDiagnostics = [
+            ...document.diagnostics.filter((diagnostic) => diagnostic.severity === "error"),
+            ...(selectedGraph?.diagnostics.filter((diagnostic) => diagnostic.severity === "error") ?? []),
+        ];
+        if (strictValidation && rejectionDiagnostics.length > 0) {
+            for (const graph of result.graphs) {
+                graph.coordinator?.dispose();
+            }
+            throw new Error(`KHR_interactivity: ${rejectionDiagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`).join("; ")}`);
+        }
+        if (autoStart) {
+            // onStart is graph startup, not scene readiness; AppendSceneAsync still owns pending scene data here.
+            selectedGraph?.flowGraph?.start(true);
+        }
     }
 }
 
@@ -254,6 +270,8 @@ export function _AddInteractivityObjectModel(scene: Scene, targetFps: number, ma
                 if (!scene.useRightHandedSystem) {
                     quat.w *= -1; // glTF uses right-handed system, while babylon uses left-handed
                     quat.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
+                    // Left-handed cameras look along +Z; glTF camera identity looks along -Z.
+                    quat.multiplyInPlace(TmpVectors.Quaternion[0].set(0, 1, 0, 0));
                 }
                 return quat;
             },
@@ -491,6 +509,9 @@ export function _RegisterKHRInteractivityRuntime(): void {
     });
     addToBlockFactory(NAME, "FlowGraphEventReferenceBlock", async () => {
         return (await import("./KHR_interactivity/flowGraphEventReferenceBlock")).FlowGraphEventReferenceBlock;
+    });
+    addToBlockFactory(NAME, "FlowGraphDelayReferenceBlock", async () => {
+        return (await import("./KHR_interactivity/flowGraphDelayReferenceBlock")).FlowGraphDelayReferenceBlock;
     });
 }
 
