@@ -21,10 +21,11 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     // its own bgfx framebuffer selected by bindFramebuffer(lodLevel, layer).
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _layerFramebuffers: Nullable<Map<number, NativeFramebuffer>> = null;
-    // The 3D texture the multi-attachment (layered MRT) framebuffer was last built from, so it can be
-    // rebuilt when setInternalTexture swaps in the shared voxel texture after creation.
+    // The attachment layout (ordered color handles, per-attachment layers, explicit depth, samples) the layered
+    // MRT framebuffer was last built from. It is rebuilt on bind when any of them change, e.g. when
+    // setInternalTexture swaps a texture in or setLayerAndFaceIndex retargets an attachment.
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public _layered3DFramebufferTexture: unknown = undefined;
+    public _layeredFramebufferKey: Nullable<{ colors: unknown[]; layers: number[]; depth: unknown; samples: number }> = null;
 
     // True for a mixed-type MRT whose color attachments target specific layers of 2D-array textures and/or
     // faces of cube textures (plus plain 2D). Its multi-attachment framebuffer is built lazily on first bind
@@ -76,6 +77,36 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     }
 
     /**
+     * Releases the lazily-built per-(mip, layer/face) framebuffers, e.g. when the underlying texture is recreated.
+     * @internal
+     */
+    public _releaseLayerFramebuffers(): void {
+        if (this._layerFramebuffers) {
+            for (const framebuffer of this._layerFramebuffers.values()) {
+                this._engine._releaseFramebufferObjects(framebuffer);
+            }
+            this._layerFramebuffers = null;
+        }
+    }
+
+    /**
+     * True when the multi-attachment framebuffer is built lazily on bind with per-attachment layers/faces.
+     * @internal
+     */
+    public get _usesLayeredFramebuffer(): boolean {
+        return this.isMulti && (this.is3D || this._isMixedTypeMRT || this._layeredFramebufferKey !== null);
+    }
+
+    /**
+     * Drops the layered multi-attachment framebuffer so the next bind rebuilds it with its per-attachment layers.
+     * @internal
+     */
+    public _invalidateLayeredFramebuffer(): void {
+        this._framebuffer = null;
+        this._layeredFramebufferKey = null;
+    }
+
+    /**
      * Attaches a texture to one of the color attachments of this render target.
      * @param texture The texture to attach
      * @param index The index of the color attachment
@@ -87,6 +118,13 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         super.setTexture(texture, index, disposePrevious);
 
         if (previous === texture) {
+            return;
+        }
+
+        // Layered MRTs build their framebuffer on bind from every attachment's layer/face; a flat rebuild here
+        // would drop those selections, so just invalidate it.
+        if (this._usesLayeredFramebuffer) {
+            this._invalidateLayeredFramebuffer();
             return;
         }
 
@@ -115,6 +153,32 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         }
     }
 
+    protected override _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
+        // The inherited descriptor describes a single 3D target with size.layers (a 2D array on Native); recreate
+        // it as a volume so the restored resource matches the InternalTexture's is3D/depth.
+        if (!this.isMulti && this.is3D && this.texture) {
+            const texture = this.texture;
+            const rtw = this._engine.createRenderTargetTexture(
+                { width: this.width, height: this.height, depth: this.depth },
+                {
+                    generateDepthBuffer: this._generateDepthBuffer,
+                    generateMipMaps: texture.generateMipMaps,
+                    generateStencilBuffer: this._generateStencilBuffer,
+                    samplingMode: texture.samplingMode,
+                    type: texture.type,
+                    format: texture.format,
+                    label: this.label,
+                }
+            );
+            if (rtw.texture) {
+                rtw.texture.isReady = true;
+            }
+            return rtw;
+        }
+
+        return super._cloneRenderTargetWrapper();
+    }
+
     protected override _swapRenderTargetWrapper(target: NativeRenderTargetWrapper): void {
         super._swapRenderTargetWrapper(target);
 
@@ -130,7 +194,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         // Lazily-built per-layer/mip framebuffers reference the target's stale textures; drop them so they are
         // rebuilt against the new textures on the next bind.
         target._layerFramebuffers = this._layerFramebuffers;
-        target._layered3DFramebufferTexture = undefined;
+        target._layeredFramebufferKey = null;
         this._layerFramebuffers = null;
     }
 
@@ -148,6 +212,11 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             return;
         }
 
+        if (dest._usesLayeredFramebuffer) {
+            dest._invalidateLayeredFramebuffer();
+            return;
+        }
+
         if (dest._framebuffer && this._engine._isFrameGraphFramebuffer(dest._framebuffer)) {
             dest._framebuffer = null;
             return;
@@ -160,13 +229,8 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     }
 
     public override dispose(disposeOnlyFramebuffers = false): void {
-        if (this._layerFramebuffers) {
-            for (const framebuffer of this._layerFramebuffers.values()) {
-                this._engine._releaseFramebufferObjects(framebuffer);
-            }
-            this._layerFramebuffers = null;
-        }
-        this._layered3DFramebufferTexture = undefined;
+        this._releaseLayerFramebuffers();
+        this._layeredFramebufferKey = null;
 
         if (this.__framebuffers) {
             // Releases all six per-face framebuffers (face 0 is aliased by __framebuffer, so

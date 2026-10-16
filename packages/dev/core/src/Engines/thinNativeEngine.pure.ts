@@ -212,6 +212,9 @@ class CommandBufferEncoder {
 
 const remappedAttributesNames: string[] = [];
 
+// Reused by bindFramebuffer(forceFullscreenViewport) to avoid allocating a viewport per bind.
+const _FullscreenViewport: IViewportLike = { x: 0, y: 0, width: 1, height: 1 };
+
 /**
  * Sentinel for "no attachment masking": every color attachment of the bound framebuffer takes part in
  * the clear. Native treats this value specially and skips the bgfx color-palette clear path.
@@ -271,7 +274,15 @@ export class ThinNativeEngine extends ThinEngine {
     // (see _buildFrameGraphFramebuffer). Initialized in _initializeNativeEngine to match the other fields.
     private _frameGraphFramebufferRefCount: Map<
         NativeFramebuffer,
-        { count: number; hardwareTexture: NativeHardwareTexture; colorCount: number; hasDepth: boolean; sharedDepthResource?: NativeTexture }
+        {
+            count: number;
+            hardwareTexture: NativeHardwareTexture;
+            colorResources: NativeTexture[];
+            hasDepth: boolean;
+            hasStencil: boolean;
+            samples: number;
+            sharedDepthResource?: NativeTexture;
+        }
     >;
 
     public constructor(options: ThinNativeEngineOptions = {}) {
@@ -436,8 +447,9 @@ export class ThinNativeEngine extends ThinEngine {
             // _createDepthStencilTexture) and sample it afterwards. Hardware comparison samplers are
             // available through bgfx BGFX_SAMPLER_COMPARE_* (set via updateTextureComparisonFunction),
             // which is what ShadowGenerator needs for FILTER_PCF / FILTER_PCSS (incl. cascaded shadows).
-            supportDepthStencilTexture: true,
-            supportShadowSamplers: true,
+            // Both are optional runtime extensions, so only advertise them when the runtime provides them.
+            supportDepthStencilTexture: !!this._engine.createMultiFrameBuffer,
+            supportShadowSamplers: !!this._engine.createMultiFrameBuffer && !!this._engine.setTextureComparisonFunction,
             uniformBufferHardCheckMatrix: false,
             // Native supports GPU cube prefiltering (HDRFiltering / HDRIrradianceFiltering): the render path
             // binds a specific cube-face + mip via bindFramebuffer(faceIndex, lodLevel) and convolves the
@@ -617,6 +629,13 @@ export class ThinNativeEngine extends ThinEngine {
 
     protected override _restoreEngineAfterContextLost(): void {
         this._clearEmptyResources();
+
+        // The frame graph framebuffers of the lost context are invalid: forget their bookkeeping (without deleting
+        // the stale native handles) so each reset does not leave another generation of entries behind.
+        for (const shared of this._frameGraphFramebufferRefCount.values()) {
+            shared.hardwareTexture._frameGraphFramebuffer = null;
+        }
+        this._frameGraphFramebufferRefCount.clear();
 
         const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
         const depthFunc = this._depthCullingState.depthFunc;
@@ -2168,6 +2187,11 @@ export class ThinNativeEngine extends ThinEngine {
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.is3D = true;
+        texture.invertY = invertY;
+        texture._compression = compression;
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = data;
+        }
 
         if (texture._hardwareTexture) {
             const nativeTexture = texture._hardwareTexture.underlyingResource;
@@ -2193,6 +2217,14 @@ export class ThinNativeEngine extends ThinEngine {
     ): void {
         if (!texture) {
             return;
+        }
+
+        texture.format = format;
+        texture.type = textureType;
+        texture.invertY = invertY;
+        texture._compression = compression;
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = bufferView;
         }
 
         if (bufferView && texture._hardwareTexture) {
@@ -2317,7 +2349,7 @@ export class ThinNativeEngine extends ThinEngine {
             texture.isReady = true;
         }
 
-        this._internalTexturesCache.push(texture);
+        // Like WebGL, the cache registration is owned by the caller (e.g. createRawCubeTextureFromUrl).
         return texture;
     }
 
@@ -2349,6 +2381,9 @@ export class ThinNativeEngine extends ThinEngine {
         texture.type = type;
         texture.invertY = invertY;
         texture._compression = compression;
+        if (level === 0 && !this._doNotHandleContextLost) {
+            texture._bufferViewArray = data;
+        }
 
         // Data are in +X +Y +Z -X -Y -Z order, which matches the bgfx cube sides. Like gl.generateMipmap in the
         // WebGL path, Native rebuilds the rest of each face's mip chain from a full level 0 upload.
@@ -2533,8 +2568,8 @@ export class ThinNativeEngine extends ThinEngine {
                     void processBufferAsync(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
                     void processBufferAsync(buffer);
-                } else if (onError) {
-                    onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
+                } else {
+                    onInternalError("Unable to load: only ArrayBuffer or ArrayBufferView is supported");
                 }
             } else {
                 this._loadFile(
@@ -2799,6 +2834,23 @@ export class ThinNativeEngine extends ThinEngine {
         texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         texture._comparisonFunction = options.comparisonFunction ?? 0;
 
+        this._attachDepthStencilTexture(nativeRTWrapper, texture, width, height, generateStencil, samples);
+        return texture;
+    }
+
+    /**
+     * Builds the framebuffer(s) of a render target so they carry its sampleable depth/stencil texture. The depth
+     * texture's native handle must not be allocated yet: the first framebuffer creation allocates it.
+     * @internal
+     */
+    public _attachDepthStencilTexture(
+        nativeRTWrapper: NativeRenderTargetWrapper,
+        texture: InternalTexture,
+        width: number,
+        height: number,
+        generateStencil: boolean,
+        samples: number
+    ): void {
         if (nativeRTWrapper._framebuffers) {
             // Layered (2D array) or cube render target: the color framebuffers were created one-per-layer
             // (see createRenderTargetTexture / createRenderTargetCubeTexture). When the color RTT was built
@@ -2808,7 +2860,7 @@ export class ThinNativeEngine extends ThinEngine {
             // sampler2DArrayShadow; each cascade layer framebuffer writes into its own depth slice.
             // A single shared _framebufferDepthStencil would be ignored because bindFramebuffer selects
             // _framebuffers[layer] first.
-            const colorTexture = rtWrapper.texture;
+            const colorTexture = nativeRTWrapper.texture;
             if (colorTexture && colorTexture._hardwareTexture) {
                 const nativeColor = colorTexture._hardwareTexture.underlyingResource;
                 const nativeDepth = texture._hardwareTexture!.underlyingResource;
@@ -2817,14 +2869,14 @@ export class ThinNativeEngine extends ThinEngine {
                 for (let layer = 0; layer < layerCount; layer++) {
                     // First call creates the multi-layer sampleable depth and aliases it into nativeDepth;
                     // subsequent calls borrow the same depth array and attach the matching layer.
-                    framebuffers.push(this._engine.createMultiFrameBuffer([nativeColor], width, height, generateStencil, true, samples, [layer], nativeDepth));
+                    framebuffers.push(this._createNativeMultiFrameBuffer([nativeColor], width, height, generateStencil, true, samples, [layer], nativeDepth));
                 }
                 // The _framebuffers setter releases the previous handles.
                 nativeRTWrapper._framebuffers = framebuffers;
                 this._setTextureSampling(nativeDepth, getNativeSamplingMode(texture.samplingMode));
                 this.updateTextureComparisonFunction(texture, texture._comparisonFunction);
             }
-            return texture;
+            return;
         }
 
         // Plain 2D render target: build a framebuffer that carries BOTH the render target's color attachment
@@ -2833,13 +2885,27 @@ export class ThinNativeEngine extends ThinEngine {
         // render their packed depth into nothing. The depth texture's bgfx handle is still invalid at this
         // point, which is how CreateFrameBufferImpl recognizes a request for a readable depth attachment that
         // it aliases back into the supplied texture so it can be sampled afterwards.
-        const colorResource = rtWrapper.texture?._hardwareTexture?.underlyingResource;
+        const colorResource = nativeRTWrapper.texture?._hardwareTexture?.underlyingResource;
         const nativeDepth = texture._hardwareTexture!.underlyingResource;
-        const framebuffer = this._engine.createMultiFrameBuffer(colorResource ? [colorResource] : [], width, height, generateStencil, true, samples, undefined, nativeDepth);
+        const framebuffer = this._createNativeMultiFrameBuffer(colorResource ? [colorResource] : [], width, height, generateStencil, true, samples, undefined, nativeDepth);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         this._setTextureSampling(nativeDepth, getNativeSamplingMode(texture.samplingMode));
         this.updateTextureComparisonFunction(texture, texture._comparisonFunction);
-        return texture;
+    }
+
+    // Reallocates a render target's sampleable depth/stencil texture with a new sample count and reattaches it to
+    // the (already rebuilt) color framebuffer(s), so rendering and later depth sampling keep using the same resource.
+    private _recreateDepthStencilTexture(nativeRTWrapper: NativeRenderTargetWrapper, samples: number): void {
+        const depthTexture = nativeRTWrapper._depthStencilTexture;
+        if (!depthTexture?._hardwareTexture) {
+            return;
+        }
+
+        const previous = depthTexture._hardwareTexture;
+        depthTexture._hardwareTexture = this._createHardwareTexture();
+        depthTexture.samples = samples;
+        this._attachDepthStencilTexture(nativeRTWrapper, depthTexture, depthTexture.width, depthTexture.height, nativeRTWrapper._depthStencilTextureWithStencil, samples);
+        previous.release();
     }
 
     /**
@@ -2963,7 +3029,7 @@ export class ThinNativeEngine extends ThinEngine {
             const depthOnlyTexture = nativeRTWrapper._depthStencilTexture;
             const depthOnlyResource = depthOnlyTexture?._hardwareTexture?.underlyingResource;
             if (depthOnlyResource && !nativeRTWrapper._framebufferDepthStencil) {
-                nativeRTWrapper._framebufferDepthStencil = this._engine.createMultiFrameBuffer(
+                nativeRTWrapper._framebufferDepthStencil = this._createNativeMultiFrameBuffer(
                     [],
                     nativeRTWrapper.width,
                     nativeRTWrapper.height,
@@ -3000,15 +3066,19 @@ export class ThinNativeEngine extends ThinEngine {
         const cached = hardwareTexture._frameGraphFramebuffer;
         const cachedMeta = cached ? this._frameGraphFramebufferRefCount.get(cached) : undefined;
 
-        // Reuse the cached framebuffer when it is compatible: same color-attachment count, it has a depth
-        // buffer when this pass needs one (a pass that does not need depth can safely reuse a depth framebuffer),
-        // and it targets the same shared depth texture (so a shared-depth pass never reuses an auto-depth
+        // Reuse the cached framebuffer when it is compatible: the same ordered color attachments (a swap of any
+        // attachment, not only the primary one, needs a new framebuffer), the same sample count, depth/stencil
+        // buffers when this pass needs them (a pass that does not need them can safely reuse a framebuffer that
+        // has them), and the same shared depth texture (so a shared-depth pass never reuses an auto-depth
         // framebuffer, and vice versa).
         if (
             cached &&
             cachedMeta &&
-            cachedMeta.colorCount === colorTextures.length &&
+            cachedMeta.colorResources.length === colorTextures.length &&
+            cachedMeta.colorResources.every((resource, index) => resource === colorTextures[index]) &&
+            cachedMeta.samples === samples &&
             (cachedMeta.hasDepth || !generateDepthBuffer) &&
+            (cachedMeta.hasStencil || !generateStencilBuffer) &&
             cachedMeta.sharedDepthResource === sharedDepthResource
         ) {
             cachedMeta.count++;
@@ -3017,25 +3087,18 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         const framebuffer = sharedDepthResource
-            ? this._engine.createMultiFrameBuffer(
-                  colorTextures,
-                  nativeRTWrapper.width,
-                  nativeRTWrapper.height,
-                  generateStencilBuffer,
-                  true,
-                  samples,
-                  undefined,
-                  sharedDepthResource
-              )
+            ? this._createNativeMultiFrameBuffer(colorTextures, nativeRTWrapper.width, nativeRTWrapper.height, generateStencilBuffer, true, samples, undefined, sharedDepthResource)
             : colorTextures.length === 1
               ? this._engine.createFrameBuffer(colorTextures[0], nativeRTWrapper.width, nativeRTWrapper.height, generateStencilBuffer, generateDepthBuffer, samples)
-              : this._engine.createMultiFrameBuffer(colorTextures, nativeRTWrapper.width, nativeRTWrapper.height, generateStencilBuffer, generateDepthBuffer, samples);
+              : this._createNativeMultiFrameBuffer(colorTextures, nativeRTWrapper.width, nativeRTWrapper.height, generateStencilBuffer, generateDepthBuffer, samples);
 
         this._frameGraphFramebufferRefCount.set(framebuffer, {
             count: 1,
             hardwareTexture,
-            colorCount: colorTextures.length,
+            colorResources: colorTextures,
             hasDepth: generateDepthBuffer,
+            hasStencil: generateStencilBuffer,
+            samples,
             sharedDepthResource,
         });
         hardwareTexture._frameGraphFramebuffer = framebuffer;
@@ -3117,6 +3180,16 @@ export class ThinNativeEngine extends ThinEngine {
         return rtWrapper;
     }
 
+    /**
+     * Older bgfx D3D11/D3D12/Vulkan backends share one texture descriptor between the MSAA render target and its
+     * resolve target, so requesting mips together with samples > 1 fails texture creation (BabylonNative#1714).
+     * Only keep the mip chain of a multisampled render target when the runtime reports that it supports it.
+     * @internal
+     */
+    public _getRenderTargetHasMips(generateMipMaps: boolean, samples: number): boolean {
+        return generateMipMaps && (samples <= 1 || !!this._engine.supportsMultisampledMipmaps);
+    }
+
     /** @internal */
     public override _createInternalTexture(
         size: TextureSize,
@@ -3125,6 +3198,7 @@ export class ThinNativeEngine extends ThinEngine {
         source = InternalTextureSource.Unknown
     ): InternalTexture {
         let generateMipMaps: boolean;
+        let createMipMaps = false;
         let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         let format = Constants.TEXTUREFORMAT_RGBA;
@@ -3133,6 +3207,7 @@ export class ThinNativeEngine extends ThinEngine {
         let label: string | undefined;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
+            createMipMaps = !!options.createMipMaps;
             type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_BYTE : options.type;
             samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
@@ -3173,18 +3248,17 @@ export class ThinNativeEngine extends ThinEngine {
         const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        // Like WebGL, a depth (without layers) requests a volume texture (e.g. a TEXTURE_3D MRT attachment).
+        const depth = layers ? 0 : (<{ width: number; height: number; depth?: number }>size).depth || 0;
 
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = getNativeTextureFormat(format, type);
-        // MSAA render targets keep their requested mip chain. The bgfx D3D11 backend resets MipLevels=1 for
-        // the multisampled surface (m_rt2d) and keeps RENDER_TARGET on the single-sample resolve target
-        // (m_texture2d) so its mip chain is auto-generated after resolve (renderer_d3d11.cpp). Previously
-        // forced to false for samples > 1 to dodge a bgfx crash (BabylonNative#1714), now fixed for D3D11.
-        const hasMips = generateMipMaps;
+        // createMipMaps allocates mip storage (e.g. FrameGraph textures) without requesting automatic generation.
+        const hasMips = this._getRenderTargetHasMips(generateMipMaps || createMipMaps, samples);
         // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target.
         // A layers > 0 request creates a 2D texture array (e.g. a cascaded-shadow-map render target); the
         // matching per-layer framebuffers are built by createRenderTargetTexture and bound via bindFramebuffer(layer).
-        this._engine.initializeTexture(nativeTexture, width, height, hasMips, nativeTextureFormat, true, useSRGBBuffer, samples, false, layers);
+        this._engine.initializeTexture(nativeTexture, width, height, hasMips, nativeTextureFormat, true, useSRGBBuffer, samples, false, layers || depth, depth > 0);
         this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
@@ -3192,10 +3266,13 @@ export class ThinNativeEngine extends ThinEngine {
         texture.baseHeight = height;
         texture.width = width;
         texture.height = height;
-        texture.depth = layers;
+        texture.depth = layers || depth;
         if (layers > 0) {
             texture.is2DArray = true;
             texture.baseDepth = layers;
+        } else if (depth > 0) {
+            texture.is3D = true;
+            texture.baseDepth = depth;
         }
         texture.isReady = true;
         texture.samples = samples;
@@ -3221,6 +3298,7 @@ export class ThinNativeEngine extends ThinEngine {
         const format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
         const generateMipMaps = !!options.generateMipMaps;
         const samples = options.samples ?? 1;
+        const useSRGBBuffer = this._getUseSRGBBuffer(!!options.useSRGBBuffer, !generateMipMaps);
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
@@ -3245,12 +3323,13 @@ export class ThinNativeEngine extends ThinEngine {
         texture.type = type;
         texture.format = format;
         texture.label = options.label;
+        texture._useSRGBBuffer = useSRGBBuffer;
 
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = getNativeTextureFormat(format, type);
-        // See the createRenderTargetTexture MSAA/mips note: avoid the mips + samples combo on bgfx.
-        const hasMips = samples > 1 ? false : generateMipMaps;
-        this._engine.initializeTexture(nativeTexture, size, size, hasMips, nativeTextureFormat, /*renderTarget*/ true, /*srgb*/ false, samples, /*isCube*/ true);
+        // createMipMaps allocates mip storage (e.g. FrameGraph textures) without requesting automatic generation.
+        const hasMips = this._getRenderTargetHasMips(generateMipMaps || !!options.createMipMaps, samples);
+        this._engine.initializeTexture(nativeTexture, size, size, hasMips, nativeTextureFormat, /*renderTarget*/ true, useSRGBBuffer, samples, /*isCube*/ true);
         this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
 
         this._internalTexturesCache.push(texture);
@@ -3382,7 +3461,7 @@ export class ThinNativeEngine extends ThinEngine {
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = getNativeTextureFormat(format, type);
         // See the createRenderTargetTexture MSAA/mips note: avoid the mips + samples combo on bgfx.
-        const hasMips = samples > 1 ? false : generateMipMaps;
+        const hasMips = this._getRenderTargetHasMips(generateMipMaps, samples);
         this._engine.initializeTexture(
             nativeTexture,
             width,
@@ -3468,7 +3547,7 @@ export class ThinNativeEngine extends ThinEngine {
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = getNativeTextureFormat(format, type);
         // See the createRenderTargetTexture MSAA/mips note: avoid the mips + samples combo on bgfx.
-        const hasMips = samples > 1 ? false : allocateMips;
+        const hasMips = this._getRenderTargetHasMips(allocateMips, samples);
         this._engine.initializeTexture(nativeTexture, size, size, hasMips, nativeTextureFormat, /*renderTarget*/ true, /*srgb*/ false, samples, /*isCube*/ true);
         this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
 
@@ -3562,10 +3641,10 @@ export class ThinNativeEngine extends ThinEngine {
 
         const textures: InternalTexture[] = [];
         const attachments: number[] = [];
-        const colorTextures: NativeTexture[] = [];
 
         rtWrapper.label = options?.label ?? "MultiRenderTargetWrapper";
-        rtWrapper._generateDepthBuffer = generateDepthBuffer;
+        // Without a sampleable depth attachment on Native, a generateDepthTexture request still needs depth testing.
+        rtWrapper._generateDepthBuffer = generateDepthBuffer || generateDepthTexture;
         rtWrapper._generateStencilBuffer = generateStencilBuffer;
         rtWrapper._attachments = attachments;
 
@@ -3600,6 +3679,9 @@ export class ThinNativeEngine extends ThinEngine {
             } else if (target === Constants.TEXTURE_2D_ARRAY) {
                 const layerCount = Math.max(1, layerCounts?.[i] ?? 1);
                 texture = this._createInternalTexture({ width, height, layers: layerCount }, textureOptions, true, InternalTextureSource.MultiRenderTarget);
+            } else if (target === Constants.TEXTURE_3D) {
+                const depth = Math.max(1, layerCounts?.[i] || (<{ depth?: number }>size).depth || 1);
+                texture = this._createInternalTexture({ width, height, depth }, textureOptions, true, InternalTextureSource.MultiRenderTarget);
             } else {
                 texture = this._createInternalTexture({ width, height }, textureOptions, true, InternalTextureSource.MultiRenderTarget);
             }
@@ -3607,7 +3689,6 @@ export class ThinNativeEngine extends ThinEngine {
             texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
             textures[i] = texture;
-            colorTextures.push(texture._hardwareTexture!.underlyingResource);
         }
 
         if (generateDepthTexture && !dontCreateTextures) {
@@ -3620,19 +3701,19 @@ export class ThinNativeEngine extends ThinEngine {
             rtWrapper.setLayerAndFaceIndices(layerIndex ?? [], faceIndex ?? []);
         }
 
-        if (!dontCreateTextures && !isLayeredMRT) {
-            rtWrapper._framebuffer = this._engine.createMultiFrameBuffer(colorTextures, width, height, generateStencilBuffer, generateDepthBuffer, samples);
-        }
-
-        // Non-3D layered MRTs (mixed 2D-array / cube / 2D attachments) build their multi-attachment framebuffer
-        // lazily on first bind (like the 3D voxelization MRT, which is routed via is3D). The flag selects that
-        // path in bindFramebuffer so per-attachment layer/face and post-creation setInternalTexture are honored.
-        if (isLayeredMRT && !is3DLayeredMRT) {
+        // Layered MRTs (3D / 2D-array / cube attachments, possibly mixed with 2D) build their multi-attachment
+        // framebuffer lazily on first bind. The flag selects that path in bindFramebuffer so per-attachment
+        // layer/face and post-creation setInternalTexture are honored, even when the size carries no depth.
+        if (isLayeredMRT) {
             rtWrapper._isMixedTypeMRT = true;
         }
 
         rtWrapper._samples = samples;
         rtWrapper.setTextures(textures);
+
+        if (!dontCreateTextures && !isLayeredMRT) {
+            this._createMultiRenderTargetFramebuffer(rtWrapper);
+        }
 
         return rtWrapper;
     }
@@ -3678,27 +3759,43 @@ export class ThinNativeEngine extends ThinEngine {
         const explicitDepth = rtWrapper._depthStencilTexture?._hardwareTexture?.underlyingResource as NativeTexture | undefined;
         const generateDepthBuffer = !!explicitDepth || rtWrapper._generateDepthBuffer;
 
+        rtWrapper._framebuffer = this._createNativeMultiFrameBuffer(
+            colorHandles,
+            width,
+            height,
+            rtWrapper._generateStencilBuffer,
+            generateDepthBuffer,
+            rtWrapper._samples,
+            undefined,
+            explicitDepth
+        );
+    }
+
+    /**
+     * Creates a multi-attachment framebuffer, falling back to a single-attachment framebuffer bound to the first
+     * color target (and its first requested layer) on older Babylon Native runtimes without createMultiFrameBuffer.
+     * @internal
+     */
+    public _createNativeMultiFrameBuffer(
+        colorTextures: NativeTexture[],
+        width: number,
+        height: number,
+        generateStencilBuffer: boolean,
+        generateDepthBuffer: boolean,
+        samples: number,
+        layers?: number[],
+        explicitDepthTexture?: NativeTexture
+    ): NativeFramebuffer {
         if (this._engine.createMultiFrameBuffer) {
-            rtWrapper._framebuffer = this._engine.createMultiFrameBuffer(
-                colorHandles,
-                width,
-                height,
-                rtWrapper._generateStencilBuffer,
-                generateDepthBuffer,
-                rtWrapper._samples,
-                undefined,
-                explicitDepth
-            );
-        } else {
-            // Older Babylon Native binaries (predating multi render target support) do not expose createMultiFrameBuffer.
-            // Fall back to a single-attachment framebuffer bound to the first color target so the scene keeps rendering.
-            // Warn once (limit 1): the framebuffer can be rebuilt many times during attachment setup/swaps.
-            Logger.Warn(
-                "createMultiFrameBuffer is not supported by this version of Babylon Native; multi render targets are unavailable. Falling back to a single-attachment framebuffer bound to the first color target.",
-                1
-            );
-            rtWrapper._framebuffer = this._engine.createFrameBuffer(colorHandles[0], width, height, rtWrapper._generateStencilBuffer, generateDepthBuffer, rtWrapper._samples);
+            return this._engine.createMultiFrameBuffer(colorTextures, width, height, generateStencilBuffer, generateDepthBuffer, samples, layers, explicitDepthTexture);
         }
+
+        // Warn once (limit 1): the framebuffer can be rebuilt many times during attachment setup/swaps.
+        Logger.Warn(
+            "createMultiFrameBuffer is not supported by this version of Babylon Native; multi render targets are unavailable. Falling back to a single-attachment framebuffer bound to the first color target.",
+            1
+        );
+        return this._engine.createFrameBuffer(colorTextures[0] ?? null, width, height, generateStencilBuffer, generateDepthBuffer, samples, layers?.[0]);
     }
 
     public override generateMipMapsForCubemap(_texture: InternalTexture, _unbind = true): void {
@@ -3793,19 +3890,19 @@ export class ThinNativeEngine extends ThinEngine {
         // bgfx handle with the new MSAA flag. initializeTexture disposes the old handle and allocates a fresh
         // one while preserving the InternalTexture / Graphics::Texture identity; only the internal bgfx handle
         // rotates. Afterwards the framebuffer is recreated so its attachment list refers to the new handles.
+        const reinitialized = new Set<InternalTexture>();
         for (const texture of textures) {
             // Wrapped (External-source) textures own an opaque external handle (format=-1); reinitializing
             // would destroy it and getNativeTextureFormat would throw, so leave those attachments untouched.
-            if (!texture?._hardwareTexture || texture.source === InternalTextureSource.External) {
+            // A texture shared by several attachments (different layers/faces) is reinitialized only once.
+            if (!texture?._hardwareTexture || texture.source === InternalTextureSource.External || reinitialized.has(texture)) {
                 continue;
             }
+            reinitialized.add(texture);
 
+            // Keep the full descriptor so cube / 2D-array / 3D attachments keep their dimensionality.
             const nativeTexture = texture._hardwareTexture.underlyingResource;
-            // MSAA render targets keep their requested mip chain: the bgfx D3D11 backend resets MipLevels=1
-            // for the multisampled surface and generates the mip chain on the single-sample resolve target
-            // after resolve (see the RENDER_TARGET/GENERATE_MIPS handling in renderer_d3d11.cpp). Previously
-            // forced to false to dodge a bgfx crash (BabylonNative#1714), now fixed.
-            const hasMips = texture.generateMipMaps;
+            const hasMips = this._getRenderTargetHasMips(texture.generateMipMaps, samples);
             this._engine.initializeTexture(
                 nativeTexture,
                 texture.baseWidth,
@@ -3814,13 +3911,21 @@ export class ThinNativeEngine extends ThinEngine {
                 getNativeTextureFormat(texture.format, texture.type),
                 /*renderTarget*/ true,
                 texture._useSRGBBuffer,
-                samples
+                samples,
+                texture.isCube,
+                texture.is2DArray || texture.is3D ? texture.depth : 0,
+                texture.is3D
             );
             texture.samples = samples;
         }
 
         nativeRTWrapper._samples = samples;
-        this._createMultiRenderTargetFramebuffer(nativeRTWrapper);
+        if (nativeRTWrapper._usesLayeredFramebuffer) {
+            // Rebuilt on the next bind with the per-attachment layers/faces (the layout key includes samples).
+            nativeRTWrapper._invalidateLayeredFramebuffer();
+        } else {
+            this._createMultiRenderTargetFramebuffer(nativeRTWrapper);
+        }
 
         return samples;
     }
@@ -3855,18 +3960,15 @@ export class ThinNativeEngine extends ThinEngine {
         // only the internal bgfx handle rotates. After the texture is reissued we also recreate the
         // framebuffer so its attachment list refers to the new handle.
         //
-        // MSAA render targets keep their requested mip chain (generateMipMaps). Historically this was forced
-        // to false for samples > 1 to dodge a bgfx D3D11 crash: it used one D3D11_TEXTURE2D_DESC for both the
-        // multisampled render texture (m_rt2d) and the single-sample resolve target (m_texture2d) without
-        // resetting MipLevels, so MipLevels > 1 on the multisample texture failed with E_INVALIDARG. The bgfx
-        // backend now resets MipLevels=1 for m_rt2d and keeps RENDER_TARGET on m_texture2d so its mip chain is
-        // auto-generated after resolve (renderer_d3d11.cpp). The trigger in practice is the glTF transmission
-        // helper, whose opaqueSceneTexture RTT sets generateMipmaps + samples = 4 and needs the mip chain for
-        // roughness-based refraction blur. Tracked in BabylonNative#1714.
-        const hasMips = texture.generateMipMaps;
+        const hasMips = this._getRenderTargetHasMips(texture.generateMipMaps, samples);
         const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
         const isCube = texture.isCube;
-        const layers = texture.is2DArray ? texture.depth : 0;
+        const is3D = texture.is3D;
+        const layers = texture.is2DArray || is3D ? texture.depth : 0;
+
+        // Lazily-built per-(mip, layer/face) framebuffers reference the texture about to be recreated.
+        nativeRTWrapper._releaseLayerFramebuffers();
+
         this._engine.initializeTexture(
             nativeTexture,
             texture.baseWidth,
@@ -3877,38 +3979,32 @@ export class ThinNativeEngine extends ThinEngine {
             texture._useSRGBBuffer,
             samples,
             isCube,
-            layers
+            layers,
+            is3D
         );
 
-        if (layers > 0) {
-            // 2D-array RTTs render through one framebuffer per layer (see createRenderTargetTexture). The
-            // _framebuffers setter releases the stale handles.
-            const { generateDepth, generateStencil } = this._getLayerFramebufferDepthStencil(rtWrapper);
-            nativeRTWrapper._framebuffers = this._createLayerFramebuffers(nativeTexture, texture.baseWidth, texture.baseHeight, layers, generateStencil, generateDepth, samples);
-            // The rebuilt layer framebuffers carry the depth attachment, so keep the depth texture metadata in sync
-            // (e.g. FrameGraph validates that color and depth sample counts match).
-            if (rtWrapper._depthStencilTexture) {
-                rtWrapper._depthStencilTexture.samples = samples;
-            }
-        } else if (isCube) {
-            // Cube RTTs render through one framebuffer per face (see createRenderTargetCubeTexture). The
-            // underlying bgfx handle was just rotated, so recreate all six attachments; the _framebuffers
-            // setter releases the stale ones and keeps _framebuffer aliased to face 0 for single-target paths.
-            const framebuffers: NativeFramebuffer[] = [];
-            for (let face = 0; face < 6; face++) {
-                framebuffers.push(
-                    this._engine.createFrameBuffer(
-                        nativeTexture,
-                        texture.baseWidth,
-                        texture.baseHeight,
-                        rtWrapper._generateStencilBuffer,
-                        rtWrapper._generateDepthBuffer,
-                        samples,
-                        face
-                    )
-                );
-            }
-            nativeRTWrapper._framebuffers = framebuffers;
+        rtWrapper._samples = samples;
+        texture.samples = samples;
+
+        if (is3D) {
+            // 3D render targets render through the per-(mip, layer) framebuffers released above.
+            return samples;
+        }
+
+        const hasDepthStencilTexture = !!rtWrapper._depthStencilTexture?._hardwareTexture;
+        if (layers > 0 || isCube) {
+            // 2D-array RTTs render through one framebuffer per layer and cube RTTs through one per face (see
+            // createRenderTargetTexture / createRenderTargetCubeTexture). The _framebuffers setter releases the stale
+            // handles and keeps _framebuffer aliased to the first one for single-target paths.
+            nativeRTWrapper._framebuffers = this._createLayerFramebuffers(
+                nativeTexture,
+                texture.baseWidth,
+                texture.baseHeight,
+                isCube ? 6 : layers,
+                rtWrapper._generateStencilBuffer,
+                rtWrapper._generateDepthBuffer && !hasDepthStencilTexture,
+                samples
+            );
         } else {
             // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
             // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
@@ -3922,8 +4018,11 @@ export class ThinNativeEngine extends ThinEngine {
             );
         }
 
-        rtWrapper._samples = samples;
-        texture.samples = samples;
+        // A sampleable depth texture must match the new sample count and stay attached to every framebuffer.
+        if (hasDepthStencilTexture) {
+            this._recreateDepthStencilTexture(nativeRTWrapper, samples);
+        }
+
         return samples;
     }
 
@@ -3936,10 +4035,6 @@ export class ThinNativeEngine extends ThinEngine {
         texture.samplingMode = samplingMode;
     }
 
-    // bgfx has no per-texture wrap state that is decoupled from sampling (addressing is folded into the
-    // sampler flags applied at bind time via _setTextureSampling). So, like the WebGPU engine, just cache
-    // the requested wrap modes on the texture; this exists mainly so the HDR prefiltering render target
-    // path (which sets CLAMP on its cube RT) does not crash by dereferencing the absent WebGL context.
     public override updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
         if (wrapU !== null) {
             texture._cachedWrapU = wrapU;
@@ -3949,6 +4044,17 @@ export class ThinNativeEngine extends ThinEngine {
         }
         if ((texture.is2DArray || texture.is3D) && wrapR !== null) {
             texture._cachedWrapR = wrapR;
+        }
+
+        // Apply to the native texture too; axes that were not specified keep their cached (or default) mode.
+        const nativeTexture = texture._hardwareTexture?.underlyingResource;
+        if (nativeTexture) {
+            this._setTextureWrapMode(
+                nativeTexture,
+                getNativeAddressMode(texture._cachedWrapU ?? Constants.TEXTURE_WRAP_ADDRESSMODE),
+                getNativeAddressMode(texture._cachedWrapV ?? Constants.TEXTURE_WRAP_ADDRESSMODE),
+                getNativeAddressMode(texture._cachedWrapR ?? Constants.TEXTURE_WRAP_ADDRESSMODE)
+            );
         }
     }
 
@@ -4042,7 +4148,7 @@ export class ThinNativeEngine extends ThinEngine {
         }
         if (forceFullscreenViewport) {
             const cached = this._cachedViewport;
-            this.setViewport({ x: 0, y: 0, width: 1, height: 1 });
+            this.setViewport(_FullscreenViewport);
             this._cachedViewport = cached;
         }
     }
@@ -4143,38 +4249,52 @@ export class ThinNativeEngine extends ThinEngine {
 
     // (Re)builds and binds the multi-attachment framebuffer for a layered MRT: either an IBL voxelization MRT
     // (color attachments are distinct Z-slices of one shared 3D texture) or a mixed-type MRT (color attachments
-    // are specific layers of 2D-array textures and/or faces of cube textures, plus plain 2D). A shared texture
-    // may be assigned via setInternalTexture after createMultipleRenderTarget, so the framebuffer is built
-    // lazily here and rebuilt if the primary (first) texture changes.
+    // are specific layers of 2D-array textures and/or faces of cube textures, plus plain 2D). Textures may be
+    // assigned via setInternalTexture and layers/faces retargeted via setLayerAndFaceIndex after creation, so the
+    // framebuffer is built lazily here and rebuilt whenever its attachment layout changes.
     private _bindLayeredMultiFramebuffer(nativeRTWrapper: NativeRenderTargetWrapper): void {
         const textures = nativeRTWrapper.textures;
-        const primaryTexture = textures && textures.length > 0 ? textures[0] : nativeRTWrapper.texture;
-        if (!nativeRTWrapper._framebuffer || nativeRTWrapper._layered3DFramebufferTexture !== primaryTexture) {
-            const colorTextures: NativeTexture[] = [];
-            const layers: number[] = [];
-            const layerIndices = nativeRTWrapper.layerIndices;
-            for (let i = 0; i < (textures?.length ?? 0); i++) {
-                const tex = textures![i];
-                const nativeTexture = tex?._hardwareTexture?.underlyingResource;
-                if (!nativeTexture) {
-                    continue;
-                }
-                colorTextures.push(nativeTexture);
-                // For a 3D render target (IBL voxelization) the attachment layer is the Z-slice. For a cube or
-                // 2D-array color attachment (mixed-type MRT) getBaseArrayLayer maps the wrapper's per-attachment
-                // face/layer to the flat bgfx attachment layer (cube: layer*6+face; 2D-array: layer; 2D: 0).
-                layers.push(tex.is3D ? (layerIndices?.[i] ?? i) : nativeRTWrapper.getBaseArrayLayer(i));
+        const colorTextures: NativeTexture[] = [];
+        const layers: number[] = [];
+        const layerIndices = nativeRTWrapper.layerIndices;
+        for (let i = 0; i < (textures?.length ?? 0); i++) {
+            const tex = textures![i];
+            const nativeTexture = tex?._hardwareTexture?.underlyingResource;
+            if (!nativeTexture) {
+                continue;
             }
-            nativeRTWrapper._framebuffer = this._engine.createMultiFrameBuffer(
+            colorTextures.push(nativeTexture);
+            // For a 3D render target (IBL voxelization) the attachment layer is the Z-slice. For a cube or
+            // 2D-array color attachment (mixed-type MRT) getBaseArrayLayer maps the wrapper's per-attachment
+            // face/layer to the flat bgfx attachment layer (cube: layer*6+face; 2D-array: layer; 2D: 0).
+            layers.push(tex.is3D ? (layerIndices?.[i] ?? i) : nativeRTWrapper.getBaseArrayLayer(i));
+        }
+        // Like the flat frame graph path, attach an explicit depth texture as-is so every pass sharing it sees the
+        // same depth buffer.
+        const depth = nativeRTWrapper._depthStencilTexture?._hardwareTexture?.underlyingResource as NativeTexture | undefined;
+        const samples = nativeRTWrapper.samples;
+
+        const key = nativeRTWrapper._layeredFramebufferKey;
+        const upToDate =
+            !!nativeRTWrapper._framebuffer &&
+            !!key &&
+            key.depth === depth &&
+            key.samples === samples &&
+            key.colors.length === colorTextures.length &&
+            key.colors.every((color, index) => color === colorTextures[index] && key.layers[index] === layers[index]);
+
+        if (!upToDate) {
+            nativeRTWrapper._framebuffer = this._createNativeMultiFrameBuffer(
                 colorTextures,
                 nativeRTWrapper.width,
                 nativeRTWrapper.height,
                 nativeRTWrapper._generateStencilBuffer,
-                nativeRTWrapper._generateDepthBuffer,
-                nativeRTWrapper.samples,
-                layers
+                !!depth || nativeRTWrapper._generateDepthBuffer,
+                samples,
+                layers,
+                depth
             );
-            nativeRTWrapper._layered3DFramebufferTexture = primaryTexture;
+            nativeRTWrapper._layeredFramebufferKey = { colors: colorTextures, layers, depth, samples };
         }
         this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
     }
@@ -4487,10 +4607,19 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
 
-        // Upload raw pixel data (e.g. the decoded IES profile: a single-channel FLOAT texture) into the
-        // native texture. Mirrors updateRawTexture; face/lod sub-uploads are not supported on Native.
-        // Like texImage2D, Native reads only the texels it needs from a larger buffer.
         const underlyingResource = texture._hardwareTexture.underlyingResource;
+
+        // Per-mip uploads (e.g. KTX2 decoded mip levels, called with that mip's dimensions in texture.width/height)
+        // update only the requested level of the texture allocated by the lod 0 upload. Older runtimes without
+        // updateTextureData keep the mip chain generated from lod 0.
+        if (lod > 0) {
+            this._engine.updateTextureData?.(underlyingResource, imageData, 0, 0, texture.width, texture.height, faceIndex, lod, texture.invertY, false);
+            return;
+        }
+
+        // Upload raw pixel data (e.g. the decoded IES profile: a single-channel FLOAT texture) into the
+        // native texture. Mirrors updateRawTexture. Like texImage2D, Native reads only the texels it needs from a
+        // larger buffer.
         this._engine.loadRawTexture(
             underlyingResource,
             imageData,
