@@ -48,7 +48,6 @@ import { type PrePassRenderer } from "../Rendering/prePassRenderer.pure";
 import { type Mesh } from "../Meshes/mesh.pure";
 import { type Animation } from "../Animations/animation.pure";
 import { type InstancedMesh } from "../Meshes/instancedMesh.pure";
-import { type MultiMaterial } from "./multiMaterial.pure";
 import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
@@ -1883,14 +1882,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                 continue;
             }
             for (const subMesh of mesh.subMeshes) {
-                // No render pass of this submesh can resolve to this material: skip it without resolving each pass
-                if (!this._mayResolveTo(subMesh.getRenderingMesh())) {
+                const drawWrappers = subMesh._drawWrappers;
+                // Skip the submeshes that have not rendered yet, and those with no render pass that can resolve to this material,
+                // without resolving each pass
+                if (!drawWrappers.length || !subMesh.getRenderingMesh()._mayRenderWithMaterial(this, drawWrappers)) {
                     continue;
                 }
 
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
-                for (let passId = 0; passId < subMesh._drawWrappers.length; passId++) {
-                    const drawWrapper = subMesh._drawWrappers[passId];
+                for (let passId = 0; passId < drawWrappers.length; passId++) {
+                    const drawWrapper = drawWrappers[passId];
                     if (!drawWrapper) {
                         continue;
                     }
@@ -1905,31 +1906,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                 }
             }
         }
-    }
-
-    /**
-     * Checks whether a submesh rendered by the given mesh can resolve to this material in some render pass. SubMesh.getMaterial
-     * resolves a pass to the mesh's material for that pass (or its material), the scene's default material when there is none,
-     * or a sub-material of a multi-material: any other material can never resolve to this one.
-     * @param renderingMesh defines the rendering mesh of the submesh
-     * @returns false when no render pass of the submesh can resolve to this material
-     */
-    private _mayResolveTo(renderingMesh: AbstractMesh): boolean {
-        const material = renderingMesh.material;
-        if (material === this || !material || (material as MultiMaterial).getSubMaterial !== undefined) {
-            return true;
-        }
-
-        const materialForRenderPass = renderingMesh._internalAbstractMeshDataInfo._materialForRenderPass;
-        if (materialForRenderPass) {
-            for (const passMaterial of materialForRenderPass) {
-                if (passMaterial && (passMaterial === this || (passMaterial as MultiMaterial).getSubMaterial !== undefined)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /**

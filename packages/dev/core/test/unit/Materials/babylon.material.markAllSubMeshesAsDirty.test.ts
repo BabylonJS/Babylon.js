@@ -31,6 +31,14 @@ class OwnMaterialMesh extends Mesh {
     }
 }
 
+/** A mesh that resolves its render passes in an overridden getMaterialForRenderPass, without the per-pass material array */
+class PassMaterialMesh extends Mesh {
+    public passMaterials: { [renderPassId: number]: Material } = {};
+    public override getMaterialForRenderPass(renderPassId: number): Material | undefined {
+        return this.passMaterials?.[renderPassId];
+    }
+}
+
 /**
  * Marking a material dirty must reach exactly the draw wrappers that resolve to it (SubMesh.getMaterial for their render
  * pass) among the scene's meshes, whatever the order of the material assignments that led there.
@@ -219,6 +227,49 @@ describe("Material._markAllSubMeshesAsDirty", function () {
         scene.addMesh(removed);
         container.addAllToScene();
         expect(marked(a)).toEqual(["contained.0", "kept.0", "removed.0"]);
+    });
+
+    it("marks a mesh that resolves a render pass in an overridden getMaterialForRenderPass", () => {
+        const a = new StandardMaterial("a", scene);
+        const b = new StandardMaterial("b", scene);
+        const custom = new PassMaterialMesh("custom", scene);
+        CreateBoxVertexData({}).applyToMesh(custom);
+        custom.material = b;
+        custom.passMaterials[passes.p1] = a;
+        prepare(custom);
+        prepare(custom, passes.p1);
+        expect(custom._internalAbstractMeshDataInfo._materialForRenderPass).toBeUndefined();
+        expect(marked(a)).toEqual(["custom.0@p1"]);
+        expect(marked(b)).toEqual(["custom.0"]);
+    });
+
+    it("reads only the render passes with a draw wrapper once a high render pass override is removed and the material reassigned", () => {
+        const a = new StandardMaterial("a", scene);
+        const b = new StandardMaterial("b", scene);
+        const c = new StandardMaterial("c", scene);
+        const mesh = box("mesh", a);
+        const high = passes.p2 + 100000; // render pass ids only grow
+        mesh.setMaterialForRenderPass(high, c);
+        mesh.setMaterialForRenderPass(high, undefined);
+        mesh.material = b; // resets the draw cache
+        prepare(mesh);
+        const info = mesh._internalAbstractMeshDataInfo;
+        expect(info._materialForRenderPass.length).toBe(high + 1);
+        expect(mesh.subMeshes[0]._drawWrappers.length).toBe(main + 1);
+
+        let reads = 0;
+        info._materialForRenderPass = new Proxy(info._materialForRenderPass, {
+            get(target, key, receiver) {
+                if (typeof key === "string" && /^\d+$/.test(key)) {
+                    reads++;
+                }
+                return Reflect.get(target, key, receiver);
+            },
+        });
+        expect(marked(a)).toEqual([]);
+        expect(reads).toBeLessThanOrEqual(main + 1);
+        expect(marked(b)).toEqual(["mesh.0"]);
+        expect(marked(c)).toEqual([]);
     });
 
     it("does not resolve the passes of submeshes whose rendering mesh cannot use the material", () => {
