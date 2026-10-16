@@ -5796,7 +5796,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
-     * This function works in left handed mode, rotating local +Z to "forward" and local +Y to "up".
+     * This function works in left handed mode
      * Example Playground https://playground.babylonjs.com/#L49EJ7#96
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -5810,7 +5810,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
-     * This function works in left handed mode, rotating local +Z to "forward" and local +Y to "up".
+     * This function works in left handed mode
      * Example Playground https://playground.babylonjs.com/#L49EJ7#97
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -5826,7 +5826,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
-     * This function works in right handed mode, rotating local -Z to "forward" and local +Y to "up".
+     * This function works in right handed mode
      * Example Playground https://playground.babylonjs.com/#L49EJ7#98
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -5840,7 +5840,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
-     * This function works in right handed mode, rotating local -Z to "forward" and local +Y to "up".
+     * This function works in right handed mode
      * Example Playground https://playground.babylonjs.com/#L49EJ7#105
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8115,8 +8115,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     }
 
     /**
-     * Creates an orientation matrix that rotates local +Z to "forward" and local +Y to "up", with no translation.
-     * For normalized orthogonal inputs, this is the inverse of LookAtLH at the origin, not a world-to-camera view matrix.
+     * Creates a new matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
+     * This function generates a matrix suitable for a left handed coordinate system
      * Example Playground - https://playground.babylonjs.com/#AV9X17#66
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8129,8 +8129,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     }
 
     /**
-     * Sets "result" to an orientation matrix that rotates local +Z to "forward" and local +Y to "up", with no translation.
-     * For normalized orthogonal inputs, this is the inverse of LookAtLH at the origin, not a world-to-camera view matrix.
+     * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
+     * This function generates a matrix suitable for a left handed coordinate system
      * Example Playground - https://playground.babylonjs.com/#AV9X17#67
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8138,17 +8138,20 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns result input
      */
     public static LookDirectionLHToRef<T extends Matrix>(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: T): T {
-        const right = MathTmp.Vector3[1];
-        Vector3.CrossToRef(up, forward, right);
+        const back = MathTmp.Vector3[0];
+        back.copyFrom(forward);
+        back.scaleInPlace(-1);
+        const left = MathTmp.Vector3[1];
+        Vector3.CrossToRef(up, back, left);
 
         // Generate the rotation matrix.
-        Matrix.FromValuesToRef(right._x, right._y, right._z, 0.0, up._x, up._y, up._z, 0.0, forward._x, forward._y, forward._z, 0.0, 0, 0, 0, 1.0, result);
+        Matrix.FromValuesToRef(left._x, left._y, left._z, 0.0, up._x, up._y, up._z, 0.0, back._x, back._y, back._z, 0.0, 0, 0, 0, 1.0, result);
         return result;
     }
 
     /**
-     * Creates an orientation matrix that rotates local -Z to "forward" and local +Y to "up", with no translation.
-     * For normalized orthogonal inputs, this is the inverse of LookAtRH at the origin, not a world-to-camera view matrix.
+     * Creates a new matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
+     * This function generates a matrix suitable for a right handed coordinate system
      * Example Playground - https://playground.babylonjs.com/#AV9X17#68
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8161,8 +8164,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     }
 
     /**
-     * Sets "result" to an orientation matrix that rotates local -Z to "forward" and local +Y to "up", with no translation.
-     * For normalized orthogonal inputs, this is the inverse of LookAtRH at the origin, not a world-to-camera view matrix.
+     * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
+     * This function generates a matrix suitable for a right handed coordinate system
      * Example Playground - https://playground.babylonjs.com/#AV9X17#69
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
@@ -8170,14 +8173,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns result input
      */
     public static LookDirectionRHToRef<T extends Matrix>(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: T): T {
-        const back = MathTmp.Vector3[0];
-        back.copyFrom(forward);
-        back.scaleInPlace(-1);
-        const left = MathTmp.Vector3[2];
-        Vector3.CrossToRef(up, back, left);
+        const right = MathTmp.Vector3[2];
+        Vector3.CrossToRef(up, forward, right);
 
         // Generate the rotation matrix.
-        Matrix.FromValuesToRef(left._x, left._y, left._z, 0.0, up._x, up._y, up._z, 0.0, back._x, back._y, back._z, 0.0, 0, 0, 0, 1.0, result);
+        Matrix.FromValuesToRef(right._x, right._y, right._z, 0.0, up._x, up._y, up._z, 0.0, forward._x, forward._y, forward._z, 0.0, 0, 0, 0, 1.0, result);
         return result;
     }
 

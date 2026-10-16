@@ -19,10 +19,7 @@ export type DownloadGroupId = string | number;
  */
 interface IDownloadTask {
     url: string;
-    groupId?: DownloadGroupId;
-    promise: Promise<ArrayBuffer>;
-    resolve: (data: ArrayBuffer) => void;
-    reject: (reason: any) => void;
+    consumers: Set<IDownloadConsumer>;
     // Set once the task is settled (resolved/rejected/cancelled) so it is never settled twice.
     settled: boolean;
     // Set when the task has been cancelled so an in-flight download discards its eventual result.
@@ -38,6 +35,14 @@ interface IDownloadTask {
     cancelAttempt?: (reason: any) => void;
 }
 
+interface IDownloadConsumer {
+    task: IDownloadTask;
+    groupId?: DownloadGroupId;
+    promise: Promise<ArrayBuffer>;
+    resolve: (data: ArrayBuffer) => void;
+    reject: (reason: any) => void;
+}
+
 /**
  * Throttles the file downloads issued while streaming a Gaussian Splatting LOD scene.
  *
@@ -47,9 +52,8 @@ interface IDownloadTask {
  *
  * Downloads can be tagged with a group id and cancelled together via {@link cancelGroup}: when a node's
  * target LOD changes before its file finishes loading, the streamer cancels that file's now-unneeded
- * downloads. Cancellation aborts the underlying HTTP request (a queued download is dropped before it
- * starts; an in-flight download is aborted and its concurrency slot freed), so no bandwidth is wasted on
- * data that is no longer needed.
+ * downloads. A shared URL keeps downloading for consumers in other groups; its underlying HTTP request
+ * is aborted (or its queued task dropped) only when no consumers remain.
  *
  * Without this throttling, every on-demand LOD decode fans out into many parallel image fetches, so the
  * browser opens dozens of simultaneous connections that compete for bandwidth and delay the splats the
@@ -67,8 +71,8 @@ export class GaussianSplattingDownloadManager {
     // Idempotency: maps a URL to its task while the download is queued or in flight. The entry is removed
     // once the download settles so a later request (after the bytes were consumed) downloads again.
     private readonly _pending = new Map<string, IDownloadTask>();
-    // Maps a group id to the set of URLs currently downloading (or queued) under it, for bulk cancellation.
-    private readonly _groups = new Map<DownloadGroupId, Set<string>>();
+    // Maps each group to its outstanding callers, not to shared URL tasks.
+    private readonly _groups = new Map<DownloadGroupId, Set<IDownloadConsumer>>();
     private _disposed = false;
 
     /**
@@ -98,34 +102,31 @@ export class GaussianSplattingDownloadManager {
         if (this._disposed) {
             throw new Error("GaussianSplattingDownloadManager has been disposed.");
         }
-        const existing = this._pending.get(url);
-        if (existing) {
-            return await existing.promise;
+        let task = this._pending.get(url);
+        const newTask = !task;
+        if (!task) {
+            task = { url, consumers: new Set<IDownloadConsumer>(), settled: false, cancelled: false, started: false, slotReleased: false };
+            this._pending.set(url, task);
+            this._queue.push(task);
         }
-        const task: IDownloadTask = {
-            url,
-            groupId,
-            settled: false,
-            cancelled: false,
-            started: false,
-            slotReleased: false,
-        } as IDownloadTask;
-        task.promise = new Promise<ArrayBuffer>((resolve, reject) => {
-            task.resolve = resolve;
-            task.reject = reject;
+        const consumer = { task, groupId } as IDownloadConsumer;
+        consumer.promise = new Promise<ArrayBuffer>((resolve, reject) => {
+            consumer.resolve = resolve;
+            consumer.reject = reject;
         });
-        this._pending.set(url, task);
+        task.consumers.add(consumer);
         if (groupId !== undefined) {
-            let urls = this._groups.get(groupId);
-            if (!urls) {
-                urls = new Set<string>();
-                this._groups.set(groupId, urls);
+            let consumers = this._groups.get(groupId);
+            if (!consumers) {
+                consumers = new Set<IDownloadConsumer>();
+                this._groups.set(groupId, consumers);
             }
-            urls.add(url);
+            consumers.add(consumer);
         }
-        this._queue.push(task);
-        this._pump();
-        return await task.promise;
+        if (newTask) {
+            this._pump();
+        }
+        return await consumer.promise;
     }
 
     /**
@@ -143,19 +144,17 @@ export class GaussianSplattingDownloadManager {
     }
 
     /**
-     * Cancels every pending download tagged with the given group id.
-     * @param groupId the group whose downloads should be cancelled
+     * Cancels callers in the given group. A shared URL continues for callers in other groups or with no group.
+     * @param groupId the group whose callers should be cancelled
      */
     public cancelGroup(groupId: DownloadGroupId): void {
-        const urls = this._groups.get(groupId);
-        if (!urls) {
+        const consumers = this._groups.get(groupId);
+        if (!consumers) {
             return;
         }
-        // Copy first: cancel() mutates the group set as each URL settles.
-        for (const url of Array.from(urls)) {
-            this.cancel(url);
+        for (const consumer of Array.from(consumers)) {
+            this._cancelConsumer(consumer, new Error(`GaussianSplattingDownloadManager: download cancelled (${consumer.task.url}).`));
         }
-        this._groups.delete(groupId);
     }
 
     /**
@@ -175,7 +174,7 @@ export class GaussianSplattingDownloadManager {
 
     /**
      * Aborts a task: drops it from the queue (if not started), aborts its in-flight HTTP request (if started),
-     * unwinds its current attempt, settles its promise, and frees its concurrency slot.
+     * unwinds its current attempt, settles all remaining callers, and frees its concurrency slot.
      * @param task the task to abort
      * @param reason the rejection reason
      */
@@ -192,33 +191,52 @@ export class GaussianSplattingDownloadManager {
         task.request?.abort();
         // abort() does not fire the error callback, so unwind the awaited attempt explicitly.
         task.cancelAttempt?.(reason);
-        this._settle(task, () => task.reject(reason));
+        this._settle(task, (consumer) => consumer.reject(reason));
         if (task.started) {
             this._releaseSlot(task);
         }
     }
 
+    private _cancelConsumer(consumer: IDownloadConsumer, reason: Error): void {
+        const task = consumer.task;
+        if (!task.consumers.has(consumer)) {
+            return;
+        }
+        this._removeConsumer(consumer);
+        consumer.reject(reason);
+        if (task.consumers.size === 0) {
+            this._abort(task, reason);
+        }
+    }
+
+    private _removeConsumer(consumer: IDownloadConsumer): void {
+        consumer.task.consumers.delete(consumer);
+        if (consumer.groupId !== undefined) {
+            const members = this._groups.get(consumer.groupId);
+            members?.delete(consumer);
+            if (members?.size === 0) {
+                this._groups.delete(consumer.groupId);
+            }
+        }
+    }
+
     /**
-     * Settles a task exactly once, removing it from the pending map and its group.
+     * Settles a task exactly once, removing it from the pending map and all consumer groups.
      * @param task the task to settle
-     * @param settleFn resolves or rejects the task's promise
+     * @param settleFn resolves or rejects each outstanding caller
      */
-    private _settle(task: IDownloadTask, settleFn: () => void): void {
+    private _settle(task: IDownloadTask, settleFn: (consumer: IDownloadConsumer) => void): void {
         if (task.settled) {
             return;
         }
         task.settled = true;
-        this._pending.delete(task.url);
-        if (task.groupId !== undefined) {
-            const urls = this._groups.get(task.groupId);
-            if (urls) {
-                urls.delete(task.url);
-                if (urls.size === 0) {
-                    this._groups.delete(task.groupId);
-                }
-            }
+        if (this._pending.get(task.url) === task) {
+            this._pending.delete(task.url);
         }
-        settleFn();
+        for (const consumer of task.consumers) {
+            this._removeConsumer(consumer);
+            settleFn(consumer);
+        }
     }
 
     /**
@@ -252,7 +270,7 @@ export class GaussianSplattingDownloadManager {
     }
 
     /**
-     * Runs a single download with retries, settling the task's shared promise. The idempotency entry is
+     * Runs a single download with retries, settling each outstanding consumer. The idempotency entry is
      * removed the moment the task settles so a later request for the same URL starts a fresh download.
      * @param task the queued download to run
      */
@@ -266,7 +284,7 @@ export class GaussianSplattingDownloadManager {
             try {
                 // eslint-disable-next-line no-await-in-loop
                 const buffer = await this._downloadAttemptAsync(task);
-                this._settle(task, () => task.resolve(buffer));
+                this._settle(task, (consumer) => consumer.resolve(buffer));
                 return;
             } catch (e) {
                 task.cancelAttempt = undefined;
@@ -277,7 +295,7 @@ export class GaussianSplattingDownloadManager {
                 lastError = e;
             }
         }
-        this._settle(task, () => task.reject(lastError));
+        this._settle(task, (consumer) => consumer.reject(lastError));
     }
 
     /**
