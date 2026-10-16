@@ -3046,6 +3046,34 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 this._cancelledDecodes.add(fileId);
                 this._downloadManager.cancelGroup(fileId);
             }
+        } else if (queueIndex !== -1) {
+            const source = this._residencyPages.get(fileId);
+            if (source && !this._splitPacks.has(fileId)) {
+                let hasLiveConsumer = false;
+                let hasCancelledLoader = false;
+                for (const loading of this._loadingFiles) {
+                    if (this._splitPacks.has(loading) || this._residencyPages.get(loading)?.file !== source.file) {
+                        continue;
+                    }
+                    if (this._cancelledDecodes.has(loading)) {
+                        hasCancelledLoader = true;
+                    } else {
+                        hasLiveConsumer = true;
+                        break;
+                    }
+                }
+                if (hasCancelledLoader && !hasLiveConsumer) {
+                    for (const queued of this._decodeQueue) {
+                        if (!this._splitPacks.has(queued) && this._residencyPages.get(queued)?.file === source.file) {
+                            hasLiveConsumer = true;
+                            break;
+                        }
+                    }
+                    if (!hasLiveConsumer) {
+                        this._downloadManager.cancelGroup(source.file);
+                    }
+                }
+            }
         }
     }
 

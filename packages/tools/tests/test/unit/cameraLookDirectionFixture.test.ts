@@ -5,8 +5,6 @@ import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 
 const config: { tests: { title: string; playgroundId?: string; replace?: string }[] } = JSON.parse(readFileSync(new URL("../visualization/config.json", import.meta.url), "utf8"));
 
-// Frozen playground #3A00GJ#42 uses the old LookDirection basis for its reference model.
-// Negate only its model-facing input; helper handedness and camera animation stay unchanged.
 const modelSetup = `
 let roundtripCount = 0;
 let srcRH = false;
@@ -37,7 +35,7 @@ describe.each([
 
         let code = modelSetup;
         const replacements = fixture.replace.split(",");
-        expect(replacements.length % 2).toBe(0);
+        expect(replacements).toHaveLength(2);
         for (let i = 0; i < replacements.length; i += 2) {
             const source = replacements[i].trim();
             const destination = replacements[i + 1].trim();
@@ -45,8 +43,8 @@ describe.each([
             code = code.replace(source, destination);
         }
         expect(code).toContain("if (srcRH) {");
-        expect(code).toContain("FromLookDirectionLH(BABYLON.Vector3.Backward(srcRH)");
-        expect(code).toContain("FromLookDirectionRH(BABYLON.Vector3.Backward(srcRH)");
+        expect(code).toContain("FromLookDirectionLH(BABYLON.Vector3.Forward(srcRH)");
+        expect(code).toContain("FromLookDirectionRH(BABYLON.Vector3.Forward(srcRH)");
 
         const result: { roundtripCount: number; srcRH: boolean; destRH: boolean; rotation: Quaternion } = runInNewContext(code, {
             BABYLON: { Quaternion, Vector3 },

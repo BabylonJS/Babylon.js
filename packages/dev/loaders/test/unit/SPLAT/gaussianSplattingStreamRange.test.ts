@@ -505,6 +505,48 @@ describe("GaussianSplattingStream source-range residency", () => {
                 expect(stream._decodeQueue).toContain(3);
             });
 
+            it("aborts a real source download when its last queued sibling is released and unblocks unrelated decoding", async () => {
+                const stream = makeRangeStream();
+                const requests = useControlledDownloads(stream);
+                vi.spyOn(Sog, "ParseSogMetaAsTextures").mockResolvedValue({ sogTextures: makePack(20) } as any);
+                stream._fileRefs.set(2, 1);
+                stream._fileRefs.set(3, 1);
+                const first = stream._decodeFileAsync(2);
+                stream._decodeQueue.push(3);
+                await vi.waitFor(() => expect(requests).toHaveLength(5));
+
+                stream._releaseFileRef(2);
+                expect(requests.every((request) => !request.aborted)).toBe(true);
+                stream._releaseFileRef(3);
+                expect(stream._decodeQueue).not.toContain(3);
+                expect(requests.every((request) => request.aborted)).toBe(true);
+                await expect(first).resolves.toBe(false);
+
+                await expect(stream._decodeFileAsync(1)).resolves.toBe(true);
+                expect(stream._decodedFiles.has(1)).toBe(true);
+            });
+
+            it("keeps the source request while a third same-source queued page still needs it", async () => {
+                const stream = makeRangeStream({}, makeMetadata({ offset: 80, count: 10 }));
+                const requests = useControlledDownloads(stream);
+                vi.spyOn(Sog, "ParseSogMetaAsTextures").mockResolvedValue({ sogTextures: makePack() } as any);
+                stream._fileRefs.set(2, 1);
+                stream._fileRefs.set(3, 1);
+                stream._fileRefs.set(4, 1);
+                const first = stream._decodeFileAsync(2);
+                stream._decodeQueue.push(3, 4);
+                await vi.waitFor(() => expect(requests).toHaveLength(5));
+
+                stream._releaseFileRef(2);
+                stream._releaseFileRef(3);
+                expect(requests.every((request) => !request.aborted)).toBe(true);
+                expect(stream._decodeQueue).toEqual([4]);
+                requests.forEach((request) => request.succeed());
+                await expect(first).resolves.toBe(false);
+                await expect(stream._decodeFileAsync(4)).resolves.toBe(true);
+                expect(stream._decodedFiles.has(4)).toBe(true);
+            });
+
             it("does not keep an unsplit source load for a split sibling", () => {
                 const stream = makeRangeStream({
                     rangePack: (source: { count: number }) => (source.count === 10 ? { sogData: makeSourceData(10), subRootUrl: "pages/" } : null),
