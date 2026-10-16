@@ -774,7 +774,10 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         super(mapSize, light, usefulFloatFirst, camera, useRedTextureType);
 
-        this.usePercentageCloserFiltering = true;
+        // Without comparison samplers, PCF would fall back to Poisson sampling, which CSM does not support.
+        if (this._scene.getEngine()._features.supportShadowSamplers) {
+            this.usePercentageCloserFiltering = true;
+        }
     }
 
     protected override _initializeGenerator(): void {
