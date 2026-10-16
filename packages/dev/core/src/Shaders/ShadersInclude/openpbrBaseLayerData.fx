@@ -13,6 +13,7 @@ float specular_weight = 1.0;
 float specular_roughness = 0.3;
 vec3 specular_color = vec3(1.0);
 float specular_roughness_anisotropy = 0.0;
+float specular_retroreflectivity = 0.0;
 float specular_ior = 1.5;
 float alpha = 1.0;
 vec2 geometry_tangent = vec2(1.0, 0.0);
@@ -43,6 +44,10 @@ float geometry_thickness = 0.0;
 
 #ifdef SPECULAR_ROUGHNESS_ANISOTROPY
     float anisotropyFromTexture = TEXRD(specularRoughnessAnisotropySampler, vSpecularRoughnessAnisotropyUV + uvOffset).r * vSpecularRoughnessAnisotropyInfos.y;
+#endif
+
+#ifdef SPECULAR_RETROREFLECTIVITY
+    float retroreflectivityFromTexture = TEXRD(specularRetroreflectivitySampler, vSpecularRetroreflectivityUV + uvOffset).r;
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
@@ -97,6 +102,7 @@ specular_color = vSpecularColor.rgb;
 specular_weight = vReflectanceInfo.a;
 specular_ior = vReflectanceInfo.z;
 specular_roughness_anisotropy = vSpecularAnisotropy.b;
+specular_retroreflectivity = vSpecularColor.a;
 geometry_tangent = vSpecularAnisotropy.rg;
 geometry_thickness = vGeometryThickness;
 
@@ -192,6 +198,10 @@ geometry_thickness = vGeometryThickness;
 specular_roughness_anisotropy *= geometryTangentFromTexture.b;
 #elif defined(SPECULAR_ROUGHNESS_ANISOTROPY)
     specular_roughness_anisotropy *= anisotropyFromTexture;
+#endif
+
+#ifdef SPECULAR_RETROREFLECTIVITY
+    specular_retroreflectivity *= retroreflectivityFromTexture;
 #endif
 
 #ifdef DETAIL

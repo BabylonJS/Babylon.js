@@ -145,7 +145,9 @@ uniform ambientOcclusionMatrix: mat4x4f;
 
 #define ADDITIONAL_UBO_DECLARATION
 
+#if defined(SPECULAR_RETROREFLECTIVITY) && SPECULAR_RETROREFLECTIVITYDIRECTUV == 0
+uniform specularRetroreflectivityMatrix: mat4x4f;
+#endif
 
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>
-

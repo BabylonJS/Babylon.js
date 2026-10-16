@@ -203,6 +203,8 @@ class Sampler {
     public value: Nullable<BaseTexture> = null; // Texture value, default to null
     public samplerPrefix: string = ""; // The name of the sampler in the shader
     public textureDefine: string = ""; // The define used in the shader for this sampler
+    /** Keeps this sampler's transform matrix outside the material uniform buffer. */
+    public useLooseMatrixUniform: boolean;
 
     /**
      * The name of the sampler used in the shader.
@@ -237,11 +239,13 @@ class Sampler {
      * @param name The name of the texture property
      * @param samplerPrefix The prefix used for the name of the sampler in the shader
      * @param textureDefine The define used in the shader for this sampler
+     * @param useLooseMatrixUniform Whether to bind the texture matrix outside the material uniform buffer
      */
-    constructor(name: string, samplerPrefix: string, textureDefine: string) {
+    constructor(name: string, samplerPrefix: string, textureDefine: string, useLooseMatrixUniform: boolean = false) {
         this.name = name;
         this.samplerPrefix = samplerPrefix;
         this.textureDefine = textureDefine;
+        this.useLooseMatrixUniform = useLooseMatrixUniform;
     }
 }
 
@@ -338,6 +342,26 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
      * Tells the shader to enable the thin film layer
      */
     public THIN_FILM = false;
+
+    /**
+     * Tells the shader to apply retroreflection to the base specular lobes.
+     */
+    public RETROREFLECTION = false;
+
+    /** Texture coordinate set used by the retroreflection texture. */
+    public SPECULAR_RETROREFLECTIVITY_UV_INDEX = 0;
+    /** First coefficient of the retroreflection texture transform. */
+    public SPECULAR_RETROREFLECTIVITY_MATRIX_0 = 1;
+    /** Second coefficient of the retroreflection texture transform. */
+    public SPECULAR_RETROREFLECTIVITY_MATRIX_1 = 0;
+    /** Third coefficient of the retroreflection texture transform. */
+    public SPECULAR_RETROREFLECTIVITY_MATRIX_2 = 0;
+    /** Fourth coefficient of the retroreflection texture transform. */
+    public SPECULAR_RETROREFLECTIVITY_MATRIX_3 = 0;
+    /** Fifth coefficient of the retroreflection texture transform. */
+    public SPECULAR_RETROREFLECTIVITY_MATRIX_4 = 1;
+    /** Sixth coefficient of the retroreflection texture transform. */
+    public SPECULAR_RETROREFLECTIVITY_MATRIX_5 = 0;
 
     /**
      * Tells the shader to enable the legacy iridescence code
@@ -656,6 +680,25 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     accessor specularRoughnessAnisotropyTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughnessAnisotropyTexture: Sampler = new Sampler("specular_roughness_anisotropy", "specularRoughnessAnisotropy", "SPECULAR_ROUGHNESS_ANISOTROPY");
+
+    /**
+     * Blend weight between the regular and retroreflective base specular lobes.
+     * @experimental
+     */
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularRetroreflectivity: number;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // Pack into the unused alpha channel to preserve the Material UBO layout required by Native.
+    private _specularRetroreflectivity: Property<number> = new Property<number>("specular_retroreflectivity", 0, "vSpecularColor", 4, 3);
+
+    /**
+     * Texture whose red channel multiplies the retroreflectivity blend weight.
+     * @experimental
+     */
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularRetroreflectivityTexture: Nullable<BaseTexture>;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularRetroreflectivityTexture: Sampler = new Sampler("specular_retroreflectivity", "specularRetroreflectivity", "SPECULAR_RETROREFLECTIVITY", true);
 
     /**
      * IOR of the specular lobe.
@@ -2050,6 +2093,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._specularRoughnessTexture;
         this._specularRoughnessAnisotropy;
         this._specularRoughnessAnisotropyTexture;
+        this._specularRetroreflectivity;
+        this._specularRetroreflectivityTexture;
         this._transmissionWeight;
         this._transmissionWeightTexture;
         this._transmissionColor;
@@ -2496,8 +2541,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         });
 
         Object.values(this._samplersList).forEach((sampler) => {
-            ubo.addUniform(sampler.samplerInfoName, 2);
-            ubo.addUniform(sampler.samplerMatrixName, 16);
+            if (!sampler.useLooseMatrixUniform) {
+                ubo.addUniform(sampler.samplerInfoName, 2);
+                ubo.addUniform(sampler.samplerMatrixName, 16);
+            }
         });
 
         super.buildUniformLayout();
@@ -2598,8 +2645,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     for (const key in this._samplersList) {
                         const sampler = this._samplersList[key];
                         if (sampler.value) {
-                            ubo.updateFloat2(sampler.samplerInfoName, sampler.value.coordinatesIndex, sampler.value.level);
-                            BindTextureMatrix(sampler.value, ubo, sampler.samplerPrefix);
+                            if (sampler.useLooseMatrixUniform) {
+                                effect.setMatrix(sampler.samplerMatrixName, sampler.value.getTextureMatrix());
+                            } else {
+                                ubo.updateFloat2(sampler.samplerInfoName, sampler.value.coordinatesIndex, sampler.value.level);
+                                BindTextureMatrix(sampler.value, ubo, sampler.samplerPrefix);
+                            }
                         }
                     }
 
@@ -2632,6 +2683,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     // If the property actually defines a uniform, update it.
                     if (uniform.numComponents === 4) {
                         uniform.populateVectorFromLinkedProperties(TmpVectors.Vector4[0]);
+                        if (uniform.name === "vSpecularColor" && this.specularRetroreflectivityTexture) {
+                            TmpVectors.Vector4[0].w *= this.specularRetroreflectivityTexture.level;
+                        }
                         ubo.updateVector4(uniform.name, TmpVectors.Vector4[0]);
                     } else if (uniform.numComponents === 3) {
                         uniform.populateVectorFromLinkedProperties(TmpVectors.Vector3[0]);
@@ -3046,8 +3100,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             samplers.push(sampler.samplerName);
 
             // Push uniforms for texture infos and matrix
-            uniforms.push(sampler.samplerInfoName);
-            uniforms.push(sampler.samplerMatrixName);
+            if (sampler.useLooseMatrixUniform) {
+                uniforms.push(sampler.samplerMatrixName);
+            } else {
+                uniforms.push(sampler.samplerInfoName);
+                uniforms.push(sampler.samplerMatrixName);
+            }
         }
 
         PrepareUniformsAndSamplersForIBL(uniforms, samplers, true);
@@ -3164,6 +3222,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         MaterialHelperGeometryRendering.PrepareDefines(engine.currentRenderPassId, mesh, defines);
 
+        const retroreflectionTexture = this._specularRetroreflectivityTexture.value;
+        if (retroreflectionTexture) {
+            const directUV =
+                retroreflectionTexture.optimizeUVAllocation && retroreflectionTexture.getTextureMatrix().isIdentityAs3x2() ? retroreflectionTexture.coordinatesIndex + 1 : 0;
+            if (defines.SPECULAR_RETROREFLECTIVITYDIRECTUV !== directUV) {
+                defines.markAsTexturesDirty();
+            }
+        }
+
         // Textures
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
@@ -3177,6 +3244,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     if (sampler.value) {
                         PrepareDefinesForMergedUV(sampler.value, defines, sampler.textureDefine);
                         defines[sampler.textureDefine + "_GAMMA"] = sampler.value.gammaSpace;
+                        if (sampler.textureDefine === "SPECULAR_RETROREFLECTIVITY") {
+                            defines.SPECULAR_RETROREFLECTIVITY_UV_INDEX = sampler.value.coordinatesIndex;
+                        }
                     } else {
                         defines[sampler.textureDefine] = false;
                     }
@@ -3285,6 +3355,28 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
+        if (retroreflectionTexture) {
+            const matrix = retroreflectionTexture.getTextureMatrix().m;
+            const matrixChanged =
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0 !== matrix[0] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_1 !== matrix[4] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2 !== matrix[8] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_3 !== matrix[1] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4 !== matrix[5] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5 !== matrix[9];
+
+            if (engine.shaderPlatformName === "NATIVE" && matrixChanged) {
+                defines.markAsUnprocessed();
+            }
+
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0 = matrix[0];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_1 = matrix[4];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2 = matrix[8];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_3 = matrix[1];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4 = matrix[5];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5 = matrix[9];
+        }
+
         if (defines._areTexturesDirty || defines._areMiscDirty) {
             defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
             defines.PREMULTIPLYALPHA = this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
@@ -3332,6 +3424,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
+        defines.RETROREFLECTION = this.specularRetroreflectivity > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
         defines.SCATTERING = this.hasScattering;
         const _sssSampleCounts = [8, 16, 32];
