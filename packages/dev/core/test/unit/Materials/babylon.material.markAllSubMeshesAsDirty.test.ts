@@ -39,6 +39,14 @@ class PassMaterialMesh extends Mesh {
     }
 }
 
+/** A submesh that resolves its material in an overridden getMaterial, whatever its rendering mesh holds */
+class ResolverSubMesh extends SubMesh {
+    public resolved: Nullable<Material> = null;
+    public override getMaterial(): Nullable<Material> {
+        return this.resolved;
+    }
+}
+
 /**
  * Marking a material dirty must reach exactly the draw wrappers that resolve to it (SubMesh.getMaterial for their render
  * pass) among the scene's meshes, whatever the order of the material assignments that led there.
@@ -241,6 +249,20 @@ describe("Material._markAllSubMeshesAsDirty", function () {
         expect(custom._internalAbstractMeshDataInfo._materialForRenderPass).toBeUndefined();
         expect(marked(a)).toEqual(["custom.0@p1"]);
         expect(marked(b)).toEqual(["custom.0"]);
+    });
+
+    it("marks a submesh that resolves its material in an overridden getMaterial", () => {
+        const a = new StandardMaterial("a", scene);
+        const b = new StandardMaterial("b", scene);
+        const mesh = box("custom", b);
+        const source = mesh.subMeshes[0];
+        mesh.subMeshes = [];
+        const subMesh = new ResolverSubMesh(0, source.verticesStart, source.verticesCount, source.indexStart, source.indexCount, mesh);
+        subMesh.resolved = a;
+        prepare(mesh);
+        expect(mesh.material).toBe(b);
+        expect(marked(a)).toEqual(["custom.0"]);
+        expect(marked(b)).toEqual([]);
     });
 
     it("reads only the render passes with a draw wrapper once a high render pass override is removed and the material reassigned", () => {
