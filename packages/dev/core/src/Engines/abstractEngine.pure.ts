@@ -181,6 +181,19 @@ export interface AbstractEngineOptions {
     useExactSrgbConversions?: boolean;
 
     /**
+     * Defines whether the depth buffer should be reversed, going from far (0) to near (1) (default: false).
+     * This is the same as setting `engine.useReverseDepthBuffer = true` right after the engine is created, but it is
+     * applied during construction, so it is already in effect for the first frame.
+     *
+     * A reversed depth buffer gives more depth precision to distant objects and reduces z-fighting. It is recommended
+     * for WebGPU, where the default depth setup can z-fight more than WebGL. With WebGL it brings little or no gain,
+     * because the [-1, 1] clip space depth range loses the extra precision.
+     *
+     * Custom shaders that write or read depth values must account for the reversed range (see the `USE_REVERSE_DEPTHBUFFER` define).
+     */
+    useReverseDepthBuffer?: boolean;
+
+    /**
      * Defines the tab index to set on the rendering canvas (default: 1).
      * Any value >= 0 makes the canvas focusable so it can capture keyboard events and places it in the
      * document's sequential tab order (0 follows DOM order, a positive value forces an explicit order).
@@ -2157,6 +2170,7 @@ export abstract class AbstractEngine {
         this._doNotHandleContextLost = !!options.doNotHandleContextLost;
         this._isStencilEnable = options.stencil ? true : false;
         this.useExactSrgbConversions = options.useExactSrgbConversions ?? false;
+        this.useReverseDepthBuffer = options.useReverseDepthBuffer ?? false;
         this.canvasTabIndex = options.canvasTabIndex ?? this.canvasTabIndex;
 
         const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;

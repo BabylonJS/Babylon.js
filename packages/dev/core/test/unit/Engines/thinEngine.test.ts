@@ -2,6 +2,7 @@ import { Engine } from "core/Engines/engine";
 import { ThinEngine } from "core/Engines/thinEngine";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Color4 } from "core/Maths/math.color";
+import { Constants } from "core/Engines/constants";
 import "core/Engines/Extensions/engine.multiRender";
 
 type RenderFrameCallback = (timestamp: number) => void;
@@ -15,6 +16,43 @@ describe("Engine", () => {
                 expect(engine.adaptToDeviceRatio).toBe(true);
             } finally {
                 engine.dispose();
+            }
+        });
+
+        it("sets useReverseDepthBuffer from engine options", () => {
+            const engine = new Engine(null, undefined, { useReverseDepthBuffer: true });
+
+            try {
+                expect(engine.useReverseDepthBuffer).toBe(true);
+                expect(engine.depthCullingState.depthFunc).toBe(Constants.GEQUAL);
+            } finally {
+                engine.dispose();
+            }
+        });
+
+        it("keeps the standard depth buffer when useReverseDepthBuffer is omitted", () => {
+            const engine = new Engine(null);
+
+            try {
+                expect(engine.useReverseDepthBuffer).toBe(false);
+                expect(engine.depthCullingState.depthFunc).not.toBe(Constants.GEQUAL);
+            } finally {
+                engine.dispose();
+            }
+        });
+
+        it("gives the same depth state as setting useReverseDepthBuffer after creation", () => {
+            const fromOptions = new Engine(null, undefined, { useReverseDepthBuffer: true });
+            const fromProperty = new Engine(null);
+
+            try {
+                fromProperty.useReverseDepthBuffer = true;
+
+                expect(fromOptions.useReverseDepthBuffer).toBe(fromProperty.useReverseDepthBuffer);
+                expect(fromOptions.depthCullingState.depthFunc).toBe(fromProperty.depthCullingState.depthFunc);
+            } finally {
+                fromOptions.dispose();
+                fromProperty.dispose();
             }
         });
     });
