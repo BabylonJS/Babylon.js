@@ -803,12 +803,21 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Outside of a rebuild the base-class behaviour is used unchanged.
      */
     protected override _instantiateWorker(): void {
-        if (this._rebuilding && this._worker) {
+        if (this._rebuilding && this._worker && !this._isGpuSortActive) {
             // Worker already exists and is kept alive; just resize the splat-index buffer.
             this._updateSplatIndexBuffer(this._vertexCount);
             return;
         }
         super._instantiateWorker();
+    }
+
+    protected override _getGpuSortPartIndicesTexture(): Nullable<BaseTexture> {
+        // Same condition as isCompound: without part matrices the mesh renders as a regular one.
+        return this._partMatrices.length > 0 ? this._partIndicesTexture : null;
+    }
+
+    protected override _getGpuSortPartMatrices(): Nullable<ReadonlyArray<Matrix>> {
+        return this._partMatrices;
     }
 
     /**
@@ -826,6 +835,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     protected override _notifyWorkerNewData(): void {
         super._notifyWorkerNewData();
+        this._markGpuSourceDirty();
         if (this._worker) {
             this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.PART_INDICES, partIndices: this._partIndices ?? null });
         }
@@ -1058,6 +1068,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)),
                 });
             }
+            this._markGpuPartMatricesDirty();
             this._postToWorker(true);
         }
     }
@@ -1196,8 +1207,20 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     protected override _onUpdateTextures(textureSize: Vector2) {
+        this._markGpuSourceDirty();
         const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+            return new RawTexture(
+                data,
+                width,
+                height,
+                format,
+                this._scene,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
+            );
         };
 
         // Keep the part indices texture in sync with _partIndices whenever textures are rebuilt.
@@ -1243,7 +1266,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             const texelCount = lineCount * textureSize.x;
             const partIndicesView = new Uint8Array(partIndices.buffer, texelStart, texelCount);
             this._updateTextureFromData(this._partIndicesTexture, partIndicesView, textureSize.x, lineStart, lineCount);
-
+            this._markGpuSourceDirty();
             if (this._worker) {
                 this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.PART_INDICES, partIndices: partIndices });
             }
@@ -1274,10 +1297,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             false,
             false,
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE
+            Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
         );
         this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        this._markGpuSourceDirty();
         if (this._worker) {
             this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.PART_INDICES, partIndices: partIndices ?? null });
         }
@@ -1719,7 +1744,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                             false,
                             false,
                             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+                            Constants.TEXTURETYPE_UNSIGNED_INTEGER,
+                            Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
                         );
                         shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                         shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
@@ -1818,6 +1844,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)),
                     });
                 }
+                this._markGpuPartMatricesDirty();
                 this._canPostToWorker = true;
                 // A streaming compound renders the active-range UNION (a part carries an override), so a newly
                 // added static part must be folded into that union now — otherwise it stays out of the sorted
@@ -1943,6 +1970,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._worker.terminate();
             this._worker = null;
         }
+        this._markGpuSourceDirty();
         // Dispose GPU textures and null them so _updateTextures sees firstTime=true and allocates fresh ones.
         // For a streaming atlas the four data textures are attachments of _mrtAtlas — dispose the MRT, not each.
         if (this._mrtAtlas) {
@@ -2181,6 +2209,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 command: GaussianSplattingSortWorkerCommand.PART_MATRICES,
                 partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)),
             });
+            this._markGpuPartMatricesDirty();
             this._postToWorker(true);
             this.onPartCountChangedObservable.notifyObservers(this.partCount);
         } catch (e) {
@@ -2291,6 +2320,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 command: GaussianSplattingSortWorkerCommand.PART_MATRICES,
                 partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)),
             });
+            this._markGpuPartMatricesDirty();
             this._canPostToWorker = true;
             this._postToWorker(true);
         } catch (e) {
@@ -2390,6 +2420,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // allocates covariance B as RGBA. Harmless/no-op if a streaming part was already reserved.
         this._useMrtAtlas = true;
         this._useRGBACovariants = true;
+        // Streaming decodes into a render-target atlas that the GPU sorter doesn't read yet: use the worker.
+        this._switchToWorkerSort();
 
         // Higher-order SH: convert the SH textures to render-targetable integer MRTs so the stream can bake SH into
         // its region, and set the compound's SH degree so the draw path lights the decoded splats. Sized for the

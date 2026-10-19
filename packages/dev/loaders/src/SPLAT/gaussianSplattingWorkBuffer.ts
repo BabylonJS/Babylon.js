@@ -662,7 +662,8 @@ export class GaussianSplattingWorkBuffer {
                 false,
                 false,
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                Constants.TEXTURETYPE_FLOAT
+                Constants.TEXTURETYPE_FLOAT,
+                Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
             );
         } else {
             this._relayoutMapTexture.update(mapData);
