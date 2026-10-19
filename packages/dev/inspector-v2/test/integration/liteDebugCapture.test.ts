@@ -77,6 +77,26 @@ test("Lite Inspector screenshots capture the primary and auxiliary surfaces at t
     expect(errors).toEqual([]);
 });
 
+for (const mode of ["filtered", "hidden"] as const) {
+    test(`Lite Inspector screenshots work when the video row is ${mode}`, async ({ page }) => {
+        const errors: string[] = [];
+        page.on("pageerror", (error) => errors.push(error.message));
+        if (mode === "hidden") {
+            await page.addInitScript(() => localStorage.setItem("Babylon/Accordion/Hidden/Lite Tools", JSON.stringify(["Lite Tools/Capture/Record Video"])));
+        }
+        await OpenTools(page);
+        if (mode === "filtered") {
+            await page.getByPlaceholder("Filter", { exact: true }).last().fill("Capture Screenshot");
+        }
+        await expect(page.getByRole("button", { name: "Record Video", exact: true })).toHaveCount(0);
+        const downloadPromise = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Capture Screenshot", exact: true }).click();
+        const download = await downloadPromise;
+        expect(download.suggestedFilename()).toBe("screenshot.png");
+        expect(errors).toEqual([]);
+    });
+}
+
 test("Lite Inspector video capture survives tab changes and downloads playable canvas content", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
@@ -220,5 +240,48 @@ test("Lite Inspector bounding boxes stay synchronized with animated and parented
     expect(result.motion).toBeGreaterThan(0.01);
     expect(result.maximumError).toBeLessThan(0.000001);
     expect(result.unchangedHierarchy).toBe(true);
+    expect(errors).toEqual([]);
+});
+
+test("Lite Inspector helper cleanup preserves application meshes and their world transforms", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await OpenTools(page);
+    await page.locator('[role="radio"][value="Debug"]').click();
+    const gridSwitch = page.getByRole("switch", { name: "Ground Grid", exact: true });
+    await gridSwitch.check();
+    const before = await page.evaluate(() => {
+        const state = window as LiteTestWindow;
+        for (const group of state.liteAnimationGroups) {
+            group.isPlaying = false;
+        }
+        const scene = state.litePrimaryScene;
+        const grid = scene.meshes.find((mesh) => mesh.name === "Inspector Ground Grid")!;
+        const sources = scene.meshes.filter((mesh) => !mesh.name.startsWith("Inspector "));
+        const source = sources.find((mesh) => !mesh.parent)!;
+        grid.position.set(4, 2, -3);
+        grid.scaling.set(2, 3, 1);
+        source.parent = grid;
+        grid.children.push(source);
+        return {
+            sourceName: source.name,
+            meshes: sources.map((mesh) => ({ name: mesh.name, matrix: Array.from(mesh.worldMatrix) })),
+        };
+    });
+    await gridSwitch.uncheck();
+    const after = await page.evaluate((sourceName) => {
+        const meshes = (window as LiteTestWindow).litePrimaryScene.meshes;
+        return {
+            detached: meshes.find((mesh) => mesh.name === sourceName)?.parent === null,
+            meshes: meshes.map((mesh) => ({ name: mesh.name, matrix: Array.from(mesh.worldMatrix) })),
+        };
+    }, before.sourceName);
+    expect(after.detached).toBe(true);
+    expect(after.meshes.map((mesh) => mesh.name)).toEqual(before.meshes.map((mesh) => mesh.name));
+    for (let mesh = 0; mesh < before.meshes.length; mesh++) {
+        for (let index = 0; index < 16; index++) {
+            expect(after.meshes[mesh].matrix[index]).toBeCloseTo(before.meshes[mesh].matrix[index], 5);
+        }
+    }
     expect(errors).toEqual([]);
 });

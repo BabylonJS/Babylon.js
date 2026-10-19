@@ -46,7 +46,7 @@ const CaptureTools: FunctionComponent<{ controller: CaptureController; engineCon
                     label={state.pending && !state.recording ? "Capturing Screenshot..." : "Capture Screenshot"}
                     icon={CameraRegular}
                     disabled={state.pending || state.recording}
-                    onClick={() => void controller.screenshotAsync(videoLine.current!.ownerDocument)}
+                    onClick={(event) => void controller.screenshotAsync(event!.currentTarget.ownerDocument)}
                 />
                 <PropertyLine ref={videoLine} label="Record Video">
                     <ToggleButton

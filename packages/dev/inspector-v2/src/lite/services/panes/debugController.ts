@@ -5,6 +5,7 @@ import {
     createLineSystem,
     disposeMeshGpu,
     removeFromScene,
+    setParent,
     updateLineSystem,
     type EngineContext,
     type Mesh,
@@ -142,20 +143,31 @@ export class DebugController {
         const helpers = this._getHelpers(this.scene);
         helpers.showBounds = enabled;
         this.error = undefined;
-        this._refreshBounds(this.scene, helpers);
+        this._refreshHelpers(this.scene, helpers);
         this.onChanged.notifyObservers();
     }
 
     /**
-     * Captures topology, visibility, and local bounds for watch-mode comparison.
+     * Captures helper membership, topology, visibility, and local bounds for watch-mode comparison.
      * @returns An ordered snapshot without references to mutable bounds arrays.
      */
     public getSnapshot(): readonly unknown[] {
         const snapshot: unknown[] = [];
         for (const scene of this.scenes) {
             snapshot.push(scene);
-            if (!this._helpers.get(scene)?.showBounds) {
+            const helpers = this._helpers.get(scene);
+            if (!helpers || (!helpers.grid && !helpers.showBounds)) {
                 continue;
+            }
+            const meshes = new Set(scene.meshes);
+            if (helpers.grid) {
+                snapshot.push(helpers.grid, meshes.has(helpers.grid));
+            }
+            if (!helpers.showBounds) {
+                continue;
+            }
+            for (const box of helpers.bounds.values()) {
+                snapshot.push(box, meshes.has(box));
             }
             for (const mesh of scene.meshes) {
                 if (!this._meshes.has(mesh)) {
@@ -177,7 +189,7 @@ export class DebugController {
                 this._clear(scene, helpers);
                 this._helpers.delete(scene);
             } else {
-                this._refreshBounds(scene, helpers);
+                this._refreshHelpers(scene, helpers);
             }
         }
         if (!this.scene || !scenes.includes(this.scene)) {
@@ -205,10 +217,19 @@ export class DebugController {
         return helpers;
     }
 
-    private _refreshBounds(scene: SceneContext, helpers: Helpers): void {
+    private _refreshHelpers(scene: SceneContext, helpers: Helpers): void {
+        const meshes = new Set(scene.meshes);
+        if (helpers.grid && !meshes.has(helpers.grid)) {
+            this._meshes.delete(helpers.grid);
+            helpers.grid = undefined;
+        }
         for (const [source, box] of helpers.bounds) {
-            if (!helpers.showBounds || !scene.meshes.includes(source) || !source.boundMin || !source.boundMax) {
-                this._remove(scene, box);
+            if (!meshes.has(box)) {
+                box.parent = null;
+                this._meshes.delete(box);
+                helpers.bounds.delete(source);
+            } else if (!helpers.showBounds || !meshes.has(source) || !source.boundMin || !source.boundMax) {
+                this._remove(scene, box, meshes);
                 helpers.bounds.delete(source);
             }
         }
@@ -238,6 +259,7 @@ export class DebugController {
                         },
                     };
                     addToScene(scene, box);
+                    meshes.add(box);
                 } else {
                     updateLineSystem(this._engine, box, { lines });
                 }
@@ -246,16 +268,20 @@ export class DebugController {
         } catch (error) {
             helpers.showBounds = false;
             for (const box of helpers.bounds.values()) {
-                this._remove(scene, box);
+                this._remove(scene, box, meshes);
             }
             helpers.bounds.clear();
             this.error = `Bounding boxes failed: ${error instanceof Error ? error.message : String(error)}`;
         }
     }
 
-    private _remove(scene: SceneContext, mesh: Mesh): void {
-        mesh.parent = null;
-        if (scene.meshes.includes(mesh)) {
+    private _remove(scene: SceneContext, mesh: Mesh, meshes?: ReadonlySet<Mesh>): void {
+        // Lite removes children recursively; application-owned nodes must survive helper cleanup.
+        for (const child of mesh.children.slice()) {
+            setParent(child, null);
+        }
+        setParent(mesh, null);
+        if (meshes ? meshes.has(mesh) : scene.meshes.includes(mesh)) {
             removeFromScene(scene, mesh);
         } else {
             disposeMeshGpu(mesh);
@@ -264,11 +290,12 @@ export class DebugController {
     }
 
     private _clear(scene: SceneContext, helpers: Helpers): void {
+        const meshes = new Set(scene.meshes);
         if (helpers.grid) {
-            this._remove(scene, helpers.grid);
+            this._remove(scene, helpers.grid, meshes);
         }
         for (const box of helpers.bounds.values()) {
-            this._remove(scene, box);
+            this._remove(scene, box, meshes);
         }
         helpers.bounds.clear();
     }

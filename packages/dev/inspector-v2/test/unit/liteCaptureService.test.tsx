@@ -13,6 +13,7 @@ import { SettingsStoreContext } from "shared-ui-components/modularTool/contexts/
 import { type ISettingsStore } from "shared-ui-components/modularTool/services/settingsStore";
 import { Observable } from "core/Misc/observable";
 import { CaptureServiceDefinition } from "../../src/lite/services/panes/captureService";
+import { CaptureController } from "../../src/lite/services/panes/captureController";
 import { type IWatcherService } from "../../src/services/watcherService";
 
 vi.hoisted(() => {
@@ -34,7 +35,12 @@ vi.hoisted(() => {
 vi.mock("@babylonjs/lite", () => ({ captureScreenshot: vi.fn() }));
 
 describe("Babylon Lite capture service", () => {
-    it("watches surface topology, updates mounted controls, and releases its registrations", () => {
+    it.each([false, true])("captures with the video row hidden=%s, watches surfaces, and releases registrations", (hideVideo) => {
+        const hiddenKey = "Babylon/Accordion/Hidden/Lite Tools";
+        if (hideVideo) {
+            localStorage.setItem(hiddenKey, JSON.stringify(["Lite Tools/Capture/Record Video"]));
+        }
+        const screenshot = vi.spyOn(CaptureController.prototype, "screenshotAsync").mockResolvedValue();
         let pane!: SidePaneDefinition;
         const unregister = vi.fn();
         const unregisterWatcher = vi.fn();
@@ -81,8 +87,15 @@ describe("Babylon Lite capture service", () => {
                 )
             );
             expect(container.textContent).toContain("Primary Surface");
-            const record = container.querySelector('button[aria-label="Record Video"]') as HTMLButtonElement;
-            expect(record.disabled).toBe(true);
+            const record = container.querySelector<HTMLButtonElement>('button[aria-label="Record Video"]');
+            if (hideVideo) {
+                expect(record).toBeNull();
+            } else {
+                expect(record?.disabled).toBe(true);
+            }
+            const capture = Array.from(container.querySelectorAll("button")).find((button) => button.textContent === "Capture Screenshot")!;
+            act(() => capture.click());
+            expect(screenshot).toHaveBeenCalledWith(capture.ownerDocument);
             const surface = { canvas: document.createElement("canvas") } as SurfaceContext;
             surfaces.push(surface);
             expect(initial).toHaveLength(1);
@@ -92,6 +105,8 @@ describe("Babylon Lite capture service", () => {
             act(() => root.unmount());
             service?.dispose?.();
             container.remove();
+            screenshot.mockRestore();
+            localStorage.removeItem(hiddenKey);
         }
         expect(unregister).toHaveBeenCalledTimes(1);
         expect(unregisterWatcher).toHaveBeenCalledTimes(1);

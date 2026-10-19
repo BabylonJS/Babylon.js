@@ -59,7 +59,10 @@ the mesh's live world transform, keeping animation synchronized every frame with
 changing the application's node hierarchy. Geometry, visibility, and topology updates
 follow Inspector's polling/manual watch mode; skeletal/morph deformations and individual thin instances are not
 included. Removing a source mesh or unregistering a scene releases its helpers;
-closing Inspector removes only the meshes it created.
+closing Inspector removes only the meshes it created. Cleanup detaches any
+application nodes parented under helpers while preserving their world transforms.
+Deleting a grid in Explorer disables it; deleting a bounding-box helper recreates
+that box on the next Inspector refresh while Bounding Boxes remains enabled.
 
 The **Tools** pane captures the primary or an auxiliary surface. **Capture Screenshot**
 downloads a PNG of the final presented frame at the canvas's native resolution,

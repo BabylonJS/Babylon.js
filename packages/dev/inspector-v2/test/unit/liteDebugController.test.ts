@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DebugController } from "../../src/lite/services/panes/debugController";
 
-const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose } = vi.hoisted(() => ({
+const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose, Parent } = vi.hoisted(() => ({
     Ground: vi.fn(),
     GridMaterial: vi.fn(),
     Lines: vi.fn(),
@@ -11,6 +11,7 @@ const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose } = vi.ho
     Add: vi.fn(),
     Remove: vi.fn(),
     Dispose: vi.fn(),
+    Parent: vi.fn(),
 }));
 
 vi.mock("@babylonjs/lite", () => ({
@@ -21,6 +22,7 @@ vi.mock("@babylonjs/lite", () => ({
     addToScene: Add,
     removeFromScene: Remove,
     disposeMeshGpu: Dispose,
+    setParent: Parent,
     getRenderingContexts: (surface: { contexts: SceneContext[] }) => surface.contexts,
     getRenderingContextKind: () => "scene",
 }));
@@ -43,11 +45,30 @@ function Harness() {
 describe("Babylon Lite debug helpers", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        Ground.mockImplementation(() => ({}));
+        Ground.mockImplementation(() => SourceMesh("Grid"));
         GridMaterial.mockImplementation(() => ({}));
-        Lines.mockImplementation(() => ({}));
+        Lines.mockImplementation(() => SourceMesh("Bounds"));
         Add.mockImplementation((scene: SceneContext, mesh: Mesh) => scene.meshes.push(mesh));
-        Remove.mockImplementation((scene: SceneContext, mesh: Mesh) => scene.meshes.splice(scene.meshes.indexOf(mesh), 1));
+        Remove.mockImplementation((scene: SceneContext, mesh: Mesh) => {
+            const index = scene.meshes.indexOf(mesh);
+            if (index >= 0) {
+                scene.meshes.splice(index, 1);
+            }
+            for (const child of mesh.children.slice()) {
+                Remove(scene, child);
+            }
+        });
+        Parent.mockImplementation((child: Mesh, parent: Mesh | null) => {
+            const previous = child.parent;
+            if (previous && "children" in previous && Array.isArray(previous.children)) {
+                const index = previous.children.indexOf(child);
+                if (index >= 0) {
+                    previous.children.splice(index, 1);
+                }
+            }
+            child.parent = parent;
+            parent?.children.push(child);
+        });
         UpdateLines.mockReset();
     });
 
@@ -150,10 +171,71 @@ describe("Babylon Lite debug helpers", () => {
         expect(h.controller.getSnapshot()).toEqual([h.scene]);
     });
 
+    it.each(["grid", "bounds"] as const)("reconciles an externally removed %s without reusing the removed mesh", (kind) => {
+        const h = Harness();
+        h.controller.setGrid(true);
+        h.controller.setBounds(true);
+        const helper = h.scene.meshes[kind === "grid" ? 1 : 2];
+        const snapshot = h.controller.getSnapshot();
+        Remove(h.scene, helper);
+        expect(h.controller.getSnapshot()).not.toEqual(snapshot);
+        h.controller.refresh();
+        if (kind === "grid") {
+            expect(h.controller.gridEnabled).toBe(false);
+            expect(Ground).toHaveBeenCalledTimes(1);
+        } else {
+            expect(h.controller.boundsEnabled).toBe(true);
+            expect(Lines).toHaveBeenCalledTimes(2);
+            expect(h.scene.meshes.find((mesh) => mesh.name.startsWith("Inspector Bounds:"))).not.toBe(helper);
+        }
+        h.controller.refresh();
+        expect(UpdateLines.mock.calls.every((call) => call[1] !== helper)).toBe(true);
+        expect(Dispose).not.toHaveBeenCalledWith(helper);
+    });
+
+    it("checks mesh membership without rescanning the scene for each bounding box", () => {
+        const h = Harness();
+        h.scene.meshes.push(...Array.from({ length: 200 }, (_, index) => SourceMesh(`Mesh ${index}`)));
+        h.controller.setBounds(true);
+        const includes = vi.spyOn(h.scene.meshes, "includes");
+        try {
+            h.controller.refresh();
+            expect(UpdateLines).toHaveBeenCalledTimes(201);
+            expect(includes).not.toHaveBeenCalled();
+        } finally {
+            includes.mockRestore();
+        }
+    });
+
+    it.each(["disable", "dispose"] as const)("detaches application children before %s removes helpers recursively", (action) => {
+        const h = Harness();
+        const source = h.scene.meshes[0];
+        const descendant = SourceMesh("Descendant");
+        h.scene.meshes.push(descendant);
+        source.children.push(descendant);
+        descendant.parent = source;
+        h.controller.setGrid(true);
+        const grid = h.scene.meshes[2];
+        grid.children.push(source);
+        source.parent = grid;
+        if (action === "disable") {
+            h.controller.setGrid(false);
+        } else {
+            h.controller.dispose();
+        }
+        expect(Parent).toHaveBeenCalledWith(source, null);
+        expect(source.parent).toBeNull();
+        expect(source.children).toEqual([descendant]);
+        expect(descendant.parent).toBe(source);
+        expect(h.scene.meshes).toEqual([source, descendant]);
+        expect(Remove).toHaveBeenCalledTimes(1);
+        expect(Remove).toHaveBeenCalledWith(h.scene, grid);
+    });
+
     it("surfaces helper failures and cleans up partially created bounding boxes", () => {
         const h = Harness();
         h.scene.meshes.push(SourceMesh("Second"));
-        Lines.mockImplementationOnce(() => ({})).mockImplementationOnce(() => {
+        Lines.mockImplementationOnce(() => SourceMesh("Bounds")).mockImplementationOnce(() => {
             throw new Error("Line creation failed");
         });
         h.controller.setBounds(true);
