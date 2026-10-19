@@ -8,10 +8,18 @@ import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { Chart } = vi.hoisted(() => {
+const { Chart, GetAccordionItem } = vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-    return { Chart: vi.fn<(props: LineChartProps) => null>(() => null) };
+    return {
+        Chart: vi.fn<(props: LineChartProps) => null>(() => null),
+        GetAccordionItem: vi.fn<() => { open: boolean }>(),
+    };
 });
+
+vi.mock("@fluentui/react-components", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("@fluentui/react-components")>()),
+    useAccordionItemContext_unstable: GetAccordionItem,
+}));
 
 vi.mock("@fluentui/react-charts", () => ({
     LineChart: Chart,
@@ -31,6 +39,7 @@ describe("Lite GPU timing chart", () => {
     let nextFrame = 0;
 
     beforeEach(() => {
+        GetAccordionItem.mockReturnValue({ open: true });
         vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
         vi.stubGlobal(
             "requestAnimationFrame",
@@ -174,6 +183,30 @@ describe("Lite GPU timing chart", () => {
         expect(frames.size).toBe(1);
         act(() => unmounts.pop()!());
         expect(frames.size).toBe(0);
+    });
+
+    it("cancels animation while collapsed and resumes at the current session time when reopened", () => {
+        const samples = [{ elapsedMs: 1000, frameIndex: 1, durationMs: 1, latestDrawCalls: 7 }];
+        let elapsedMs = 1000;
+        const getElapsedMs = () => elapsedMs;
+        const root = Render(samples, "available", getElapsedMs);
+        expect(frames.size).toBe(1);
+        GetAccordionItem.mockReturnValue({ open: false });
+        act(() => root.render(<GpuTimingChart samples={samples} status="available" getElapsedMs={getElapsedMs} />));
+        expect(frames.size).toBe(0);
+        const rendersWhileCollapsed = Chart.mock.calls.length;
+        elapsedMs = 2000;
+        AdvanceFrame(2000);
+        expect(Chart.mock.calls).toHaveLength(rendersWhileCollapsed);
+        samples.push({ elapsedMs: 2000, frameIndex: 2, durationMs: 2, latestDrawCalls: 7 });
+        GetAccordionItem.mockReturnValue({ open: true });
+        act(() => root.render(<GpuTimingChart samples={samples} status="available" getElapsedMs={getElapsedMs} />));
+        expect(frames.size).toBe(1);
+        elapsedMs = 2050;
+        AdvanceFrame(2050);
+        const points = Chart.mock.lastCall![0].data.lineChartData![0].data;
+        expect(points[0].x).toBeCloseTo(-1.05);
+        expect(points[1].x).toBeCloseTo(-0.05);
     });
 
     it("preserves a stopped history when remounted after its wall-clock window has passed", () => {

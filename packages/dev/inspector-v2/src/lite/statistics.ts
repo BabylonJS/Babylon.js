@@ -96,8 +96,6 @@ export type GpuTimingSample = Readonly<{
 export class LiteStatistics {
     /** Notifies when timing state or the sampled history changes. */
     public readonly onChanged = new Observable<void>();
-    /** Whether profiling was already enabled when Inspector opened. */
-    public readonly applicationOwnsTiming: boolean;
     /** The latest public GPU timing snapshot. */
     public timing: RenderTaskGpuTimings;
     /** Whether an asynchronous profiling toggle is in progress. */
@@ -115,8 +113,12 @@ export class LiteStatistics {
 
     public constructor(private readonly _engine: EngineContext) {
         this.timing = getRenderTaskGpuTimings(_engine);
-        this.applicationOwnsTiming = this.timing.enabled;
         this._interval = setInterval(() => this._refresh(), 250);
+    }
+
+    /** Whether the latest public snapshot has profiling enabled outside Inspector ownership. */
+    public get applicationOwnsTiming(): boolean {
+        return this.timing.enabled && !this._ownsTiming;
     }
 
     /** Wall-clock time since this profiling session began, in milliseconds. */
@@ -132,8 +134,12 @@ export class LiteStatistics {
         if (this._disposed || this.busy) {
             return;
         }
+        this._refresh();
         if (this.applicationOwnsTiming) {
             throw new Error("GPU task timing is managed by the application.");
+        }
+        if (!enabled && !this._ownsTiming) {
+            return;
         }
 
         this.busy = true;
@@ -204,6 +210,9 @@ export class LiteStatistics {
         const timing = getRenderTaskGpuTimings(this._engine);
         const changed = timing !== this.timing;
         this.timing = timing;
+        if (!timing.enabled && !this.busy) {
+            this._ownsTiming = false;
+        }
         let sampled = false;
         if (timing.enabled && timing.status === "available" && timing.frameIndex !== this._lastFrameIndex) {
             this._lastFrameIndex = timing.frameIndex;

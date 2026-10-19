@@ -1,6 +1,6 @@
 import { type RenderTaskGpuTimings } from "@babylonjs/lite";
 import { LineChart, ResponsiveContainer, type ChartProps } from "@fluentui/react-charts";
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles, tokens, useAccordionItemContext_unstable } from "@fluentui/react-components";
 import { type FunctionComponent, useEffect, useState } from "react";
 
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
@@ -43,8 +43,10 @@ const useStyles = makeStyles({
 export const GpuTimingChart: FunctionComponent<GpuTimingChartProps> = (props) => {
     const { samples, status, getElapsedMs } = props;
     const classes = useStyles();
+    const { open } = useAccordionItemContext_unstable();
     const [elapsedMs, setElapsedMs] = useState(getElapsedMs);
-    const animate = (status === "available" || status === "pending") && samples.length > 0;
+    const profiling = (status === "available" || status === "pending") && samples.length > 0;
+    const animate = open && profiling;
     useEffect(() => {
         if (!animate) {
             return;
@@ -68,7 +70,7 @@ export const GpuTimingChart: FunctionComponent<GpuTimingChartProps> = (props) =>
 
     const lastSampleTime = samples[samples.length - 1].elapsedMs;
     // A new session resets the clock; stopped histories stay anchored to their last readback.
-    const currentTime = (animate ? Math.max(Math.min(elapsedMs, getElapsedMs()), lastSampleTime) : lastSampleTime) / 1000;
+    const currentTime = (profiling ? Math.max(Math.min(elapsedMs, getElapsedMs()), lastSampleTime) : lastSampleTime) / 1000;
     const visibleSamples = samples.filter((sample) => sample.elapsedMs / 1000 >= currentTime - 30);
     if (!visibleSamples.length) {
         return <TextPropertyLine label="GPU History" value="No GPU readbacks in the last 30 seconds." />;

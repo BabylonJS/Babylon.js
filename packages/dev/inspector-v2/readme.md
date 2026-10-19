@@ -62,22 +62,26 @@ every GPU allocation. Telemetry refreshes independently of Preferred Watch Mode.
 The pane shows unsupported, disabled, pending, available, and error states, the
 GPU task span, individual task durations, and dropped-task counts. Overlapping task
 durations are not summed. Profiling and its bounded history survive tab switches;
-closing Inspector stops only profiling Inspector enabled. Profiling already enabled
-by the application is read-only and remains enabled on close.
+closing Inspector stops only profiling Inspector enabled. Profiling enabled
+by the application, including after Inspector opens, is read-only and remains enabled on close.
 
 The graph retains up to 120 distinct asynchronous GPU readbacks sampled at most
 four times per second. **Export GPU Samples to CSV** exports that retained window,
 not every rendered frame. The Fluent line chart plots GPU task span in milliseconds
 in a fixed 30-second window: -30 is 30 seconds ago and 0 is now. It scrolls at up to
 30 display updates per second independently of the GPU readback sampling cadence,
-without hover markers, guide lines, or callouts. Both Y-axis bounds fit the visible
+without hover markers, guide lines, or callouts. Collapsing Performance suspends chart
+animation without stopping session sampling; reopening resumes from the profiling clock.
+Both Y-axis bounds fit the visible
 samples with 10% padding (at least 0.5 ms), with the lower bound clamped to zero.
 Stopped histories stay frozen at
 the last readback. Refreshing the app starts with profiling disabled; enable **Profile GPU
 Tasks** again to collect a new history.
 Its module and `@fluentui/react-charts` are loaded only when the
-Statistics performance section is displayed. ES module consumers using this chart
-must install the optional `@fluentui/react-charts` peer dependency.
+Statistics performance section is displayed. ES module consumers must install the
+required `@fluentui/react-charts` peer dependency (for example,
+`npm install @fluentui/react-charts@^9.3.27`), even if they never open Statistics:
+bundlers resolve the lazy chart chunk at build time.
 GPU frame indices refer to readbacks; draw counts refer to
 the latest CPU-side render and may be from a different frame. System Info lists
 timestamp-query support, precision settings, and each surface's live dimensions,

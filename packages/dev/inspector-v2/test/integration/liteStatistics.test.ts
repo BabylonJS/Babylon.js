@@ -139,6 +139,39 @@ test("Lite Inspector statistics show engine-wide counts, system info, and opt-in
         expect(await chart.evaluate((element, point) => element.contains(document.elementFromPoint(point.x, point.y)), point)).toBe(false);
         await page.mouse.move(0, 0);
         await expect(page.getByText("1. scene", { exact: true })).toBeVisible();
+        const retainedSamples = page.getByText("Retained Samples", { exact: true }).locator("xpath=ancestor::div[div[@id='property']][1]");
+        const readRetainedSamples = async () => Number((await retainedSamples.textContent())!.match(/\d+$/)![0]);
+        const samplesBeforeCollapse = await readRetainedSamples();
+        const performanceSection = page.getByRole("button", { name: "Performance", exact: true });
+        await performanceSection.click();
+        await expect(performanceSection).toHaveAttribute("aria-expanded", "false");
+        await expect(chart).not.toBeInViewport();
+        const hiddenUpdates = await line.evaluate(
+            (element) =>
+                new Promise<number>((resolve) => {
+                    let changes = 0;
+                    let previousPath = element.getAttribute("d");
+                    const observer = new MutationObserver(() => {
+                        const path = element.getAttribute("d");
+                        if (path !== previousPath) {
+                            changes++;
+                            previousPath = path;
+                        }
+                    });
+                    observer.observe(element, { attributes: true, attributeFilter: ["d"] });
+                    setTimeout(() => {
+                        observer.disconnect();
+                        resolve(changes);
+                    }, 1000);
+                })
+        );
+        expect(hiddenUpdates).toBeLessThanOrEqual(6);
+        expect(await readRetainedSamples()).toBeGreaterThan(samplesBeforeCollapse);
+        expect((await ReadTimings(page)).enabled).toBe(true);
+        await performanceSection.click();
+        await expect(chart).toBeVisible();
+        const resumedPath = await line.getAttribute("d");
+        await expect.poll(() => line.getAttribute("d")).not.toBe(resumedPath);
         await page.locator('[role="radio"][value="Properties"]').click();
         expect((await ReadTimings(page)).enabled).toBe(true);
         await page.locator('[role="radio"][value="Statistics"]').click();
@@ -151,6 +184,23 @@ test("Lite Inspector statistics show engine-wide counts, system info, and opt-in
         await expect.poll(async () => (await ReadTimings(page)).enabled).toBe(false);
     }
     expect(errors).toEqual([]);
+});
+
+test("Lite Inspector statistics preserve application profiling enabled after Inspector opens", async ({ page }) => {
+    await OpenStatistics(page);
+    if (!(await ReadTimings(page)).supported) {
+        test.skip(true, "Timestamp queries are not supported by this WebGPU device.");
+    }
+    await expect(page.getByRole("switch")).not.toBeChecked();
+    await page.evaluate(async () => {
+        const state = window as LiteTestWindow;
+        await state.liteSetRenderTaskGpuTimingEnabled(state.liteEngine, true);
+    });
+    await expect(page.getByRole("switch")).toBeChecked();
+    await expect(page.getByRole("switch")).toBeDisabled();
+    await expect(page.getByText("GPU task timing is managed by the application; Inspector will not change it.", { exact: true })).toBeVisible();
+    await page.evaluate(() => (window as LiteTestWindow).liteInspectorToken.dispose());
+    expect((await ReadTimings(page)).enabled).toBe(true);
 });
 
 test("Lite Inspector statistics preserve application-owned GPU task profiling", async ({ page }) => {

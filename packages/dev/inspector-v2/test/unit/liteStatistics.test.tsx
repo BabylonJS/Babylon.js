@@ -162,6 +162,63 @@ describe("Babylon Lite statistics", () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 
+    it("makes profiling enabled later by the application read-only and preserves it on disposal", async () => {
+        const session = Session();
+        const { container } = Render(<LitePerformanceStats statistics={session} />);
+        await act(async () => {
+            await import("../../src/lite/components/gpuTimingChart");
+        });
+        const toggle = container.querySelector<HTMLInputElement>('input[role="switch"]')!;
+        expect(toggle.disabled).toBe(false);
+        timing = Timing({ enabled: true, status: "pending" });
+        act(() => vi.advanceTimersByTime(250));
+        expect(session.applicationOwnsTiming).toBe(true);
+        expect(toggle.checked).toBe(true);
+        expect(toggle.disabled).toBe(true);
+        expect(container.textContent).toContain("GPU task timing is managed by the application");
+        await expect(session.setEnabledAsync(false)).rejects.toThrow("managed by the application");
+        session.dispose();
+        expect(SetEnabled).not.toHaveBeenCalled();
+        expect(timing.enabled).toBe(true);
+    });
+
+    it("checks current public ownership before toggling even when polling has not caught up", async () => {
+        const session = Session();
+        timing = Timing({ enabled: true, status: "pending" });
+        await expect(session.setEnabledAsync(false)).rejects.toThrow("managed by the application");
+        await expect(session.setEnabledAsync(true)).rejects.toThrow("managed by the application");
+        expect(session.applicationOwnsTiming).toBe(true);
+        expect(SetEnabled).not.toHaveBeenCalled();
+    });
+
+    it("releases Inspector ownership when the application disables profiling and protects a later restart", async () => {
+        const session = Session();
+        await session.setEnabledAsync(true);
+        timing = Timing();
+        vi.advanceTimersByTime(250);
+        expect(session.applicationOwnsTiming).toBe(false);
+        timing = Timing({ enabled: true, status: "pending" });
+        vi.advanceTimersByTime(250);
+        expect(session.applicationOwnsTiming).toBe(true);
+        await expect(session.setEnabledAsync(false)).rejects.toThrow("managed by the application");
+        session.dispose();
+        expect(SetEnabled.mock.calls.map((call) => call[1])).toEqual([true]);
+    });
+
+    it("allows Inspector to take ownership after application-owned profiling stops", async () => {
+        timing = Timing({ enabled: true, status: "pending" });
+        const session = Session();
+        timing = Timing();
+        vi.advanceTimersByTime(250);
+        expect(session.applicationOwnsTiming).toBe(false);
+        await session.setEnabledAsync(false);
+        expect(SetEnabled).not.toHaveBeenCalled();
+        await session.setEnabledAsync(true);
+        expect(session.applicationOwnsTiming).toBe(false);
+        await session.setEnabledAsync(false);
+        expect(SetEnabled.mock.calls.map((call) => call[1])).toEqual([true, false]);
+    });
+
     it("samples distinct readbacks, retains only 120, and exports exact numeric CSV columns", async () => {
         const session = Session();
         await session.setEnabledAsync(true);
