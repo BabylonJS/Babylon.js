@@ -31,7 +31,9 @@ import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { type AnimationGroup } from "core/Animations/animationGroup";
 import { type Mesh } from "core/Meshes/mesh";
-import { type RectAreaLight } from "core/Lights/rectAreaLight";
+import { type Camera } from "core/Cameras/camera";
+import { type IAnimatable } from "core/Animations/animatable.interface";
+import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
 
 /**
  * Top-level shape of the glTF Object Model accessor tree. Each property
@@ -89,12 +91,10 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
         weights: {
             /** When true, the path converter skips objectTree traversal for this property, keeping the parent target. */
             __passThroughTarget__?: boolean;
-            length: IObjectAccessor<GLTFTargetType, BabylonTargetType, FlowGraphInteger>;
-            // The per-element target alternates between TransformNode (when the index is
-            // out of range or no morph host is reachable) and MorphTarget (when it is),
-            // so we widen the BabylonTargetType to `any` here.
+            length: IObjectAccessor<GLTFTargetType, BabylonTargetType | number[] | undefined, FlowGraphInteger>;
+            // Scalar targets may be live MorphTargets or retained off-scene weight arrays.
             __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, any, number>;
-        } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
+        } & IObjectAccessor<GLTFTargetType, BabylonTargetType | number[], number[]>;
         extensions: {
             EXT_lights_ies?: {
                 multiplier: IObjectAccessor<INode, Light, number>;
@@ -110,6 +110,7 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
 /**
  * Accessor tree describing the `/cameras` section of the glTF Object Model.
  * Exposes orthographic and perspective camera properties.
+ * Accessor inputs are glTF records; their runtime targets are Babylon cameras.
  */
 export interface IGLTFObjectModelTreeCamerasObject {
     /** Number of cameras in the array. */
@@ -117,16 +118,16 @@ export interface IGLTFObjectModelTreeCamerasObject {
     __array__: {
         __target__: boolean;
         orthographic: {
-            xmag: IObjectAccessor<ICamera, ICamera, Vector2>;
-            ymag: IObjectAccessor<ICamera, ICamera, Vector2>;
-            zfar: IObjectAccessor<ICamera, ICamera, number>;
-            znear: IObjectAccessor<ICamera, ICamera, number>;
+            xmag: IObjectAccessor<ICamera, Camera, number>;
+            ymag: IObjectAccessor<ICamera, Camera, number>;
+            zfar: IObjectAccessor<ICamera, Camera, number>;
+            znear: IObjectAccessor<ICamera, Camera, number>;
         };
         perspective: {
-            yfov: IObjectAccessor<ICamera, ICamera, number>;
-            zfar: IObjectAccessor<ICamera, ICamera, number>;
-            znear: IObjectAccessor<ICamera, ICamera, number>;
-            aspectRatio: IObjectAccessor<ICamera, ICamera, Nullable<number>>;
+            yfov: IObjectAccessor<ICamera, Camera, number>;
+            zfar: IObjectAccessor<ICamera, Camera, number>;
+            znear: IObjectAccessor<ICamera, Camera, number>;
+            aspectRatio: IObjectAccessor<ICamera, Camera, Nullable<number>>;
         };
     };
 }
@@ -379,7 +380,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
-    /** Accessor tree for `/extensions/EXT_lights_area`. */
+    /** Accessor tree for `/extensions/EXT_lights_area`. Size/aspect use a loader-local semantic animation target. */
     EXT_lights_area: {
         lights: {
             length: IObjectAccessor<IEXTLightsArea_Light[], Light[], FlowGraphInteger>;
@@ -387,9 +388,9 @@ export interface IGLTFObjectModelTreeExtensionsObject {
                 __target__: boolean;
                 color: IObjectAccessor<IEXTLightsArea_Light, Light, Color3>;
                 intensity: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
-                size: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
+                size: IObjectAccessor<IEXTLightsArea_Light, IAnimatable, number>;
                 rect: {
-                    aspect: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
+                    aspect: IObjectAccessor<IEXTLightsArea_Light, IAnimatable, number>;
                 };
             };
         };
@@ -430,6 +431,7 @@ function _CreateLengthAccessor<GLTFTargetType, BabylonTargetType>(
 ): IObjectAccessor<GLTFTargetType, BabylonTargetType, FlowGraphInteger> {
     return {
         type: FlowGraphTypes.Integer,
+        isReadOnly: true,
         get: (target: GLTFTargetType) => {
             const length = getLength(target);
             return length === undefined ? undefined : FlowGraphInteger.FromValue(length);
@@ -468,15 +470,14 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             getPropertyName: [() => "scaling"],
         },
         weights: {
-            // Skip glTF objectTree traversal — weights may be undefined on the glTF node
-            // but accessible via the Babylon MorphTargetManager on the INode's meshes
+            // Weights may come from mesh defaults rather than an authored node property.
             __passThroughTarget__: true,
             length: _CreateLengthAccessor(
                 (node: INode) => {
                     const found = _findNodeMorphTargets(node);
-                    return found ? found.mtm.numTargets : node?.mesh !== undefined ? 0 : undefined;
+                    return found ? found.mtm.numTargets : node?.mesh !== undefined ? (node._morphTargetWeights?.length ?? 0) : undefined;
                 },
-                (node: INode) => node?._babylonTransformNode!
+                (node: INode) => node?._babylonTransformNode ?? node?._morphTargetWeights
             ),
             __array__: {
                 __target__: true,
@@ -486,12 +487,20 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                     if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
                         return _roundFloat32Artifact(found.mtm.getTarget(index).influence);
                     }
+                    if (!found && index !== undefined) {
+                        return node?._morphTargetWeights?.[index];
+                    }
                     return undefined;
                 },
                 set: (value: any, node: INode, index?: number) => {
                     const numValue = typeof value === "number" ? value : typeof value?.value === "number" ? value.value : value;
                     const found = _findNodeMorphTargets(node);
-                    if (!found || index === undefined || index < 0 || index >= found.mtm.numTargets) {
+                    const count = found?.mtm.numTargets ?? node?._morphTargetWeights?.length ?? 0;
+                    if (index === undefined || index < 0 || index >= count) {
+                        throw new Error("Morph target weight index is out of range.");
+                    }
+                    if (!found) {
+                        node._morphTargetWeights![index] = numValue;
                         return;
                     }
                     // Fan out to every mesh that shares this morph target manager so
@@ -508,15 +517,15 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                     if (found && index !== undefined && index >= 0 && index < found.mtm.numTargets) {
                         return found.mtm.getTarget(index);
                     }
-                    return node?._babylonTransformNode;
+                    return node?._babylonTransformNode ?? node?._morphTargetWeights;
                 },
-                getPropertyName: [() => "influence"],
+                getPropertyName: [(node: INode, index?: number) => (_findNodeMorphTargets(node) ? "influence" : String(index))],
             },
             type: "number[]",
             get: (node: INode) => {
                 const found = _findNodeMorphTargets(node);
                 if (!found) {
-                    return [];
+                    return node?._morphTargetWeights?.slice() ?? [];
                 }
                 const weights: number[] = [];
                 for (let i = 0; i < found.mtm.numTargets; i++) {
@@ -524,7 +533,7 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 }
                 return weights;
             },
-            getTarget: (node: INode) => node?._babylonTransformNode,
+            getTarget: (node: INode) => node?._babylonTransformNode ?? node?._morphTargetWeights,
             getPropertyName: [() => "influence"],
         },
         // readonly!
@@ -720,28 +729,28 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
         orthographic: {
             xmag: {
                 componentsCount: 2,
-                type: "Vector2",
-                get: (camera) => new Vector2(camera._babylonCamera?.orthoLeft ?? 0, camera._babylonCamera?.orthoRight ?? 0),
+                type: "number",
+                get: (camera) => camera._babylonCamera?.orthoRight ?? 0,
                 set: (value, camera) => {
                     if (camera._babylonCamera) {
-                        camera._babylonCamera.orthoLeft = value.x;
-                        camera._babylonCamera.orthoRight = value.y;
+                        camera._babylonCamera.orthoLeft = -value;
+                        camera._babylonCamera.orthoRight = value;
                     }
                 },
-                getTarget: (camera) => camera,
+                getTarget: (camera) => camera._babylonCamera,
                 getPropertyName: [() => "orthoLeft", () => "orthoRight"],
             },
             ymag: {
                 componentsCount: 2,
-                type: "Vector2",
-                get: (camera: ICamera) => new Vector2(camera._babylonCamera?.orthoBottom ?? 0, camera._babylonCamera?.orthoTop ?? 0),
-                set: (value: Vector2, camera: ICamera) => {
+                type: "number",
+                get: (camera) => camera._babylonCamera?.orthoTop ?? 0,
+                set: (value, camera) => {
                     if (camera._babylonCamera) {
-                        camera._babylonCamera.orthoBottom = value.x;
-                        camera._babylonCamera.orthoTop = value.y;
+                        camera._babylonCamera.orthoBottom = -value;
+                        camera._babylonCamera.orthoTop = value;
                     }
                 },
-                getTarget: (camera) => camera,
+                getTarget: (camera) => camera._babylonCamera,
                 getPropertyName: [() => "orthoBottom", () => "orthoTop"],
             },
             zfar: {
@@ -752,7 +761,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.maxZ = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "maxZ"],
             },
             znear: {
@@ -763,7 +772,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.minZ = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "minZ"],
             },
         },
@@ -771,7 +780,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
             aspectRatio: {
                 type: "number",
                 get: (camera: ICamera) => camera._babylonCamera?.getEngine().getAspectRatio(camera._babylonCamera),
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "aspectRatio"],
                 isReadOnly: true, // might not be the case for glTF?
             },
@@ -783,7 +792,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.fov = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "fov"],
             },
             zfar: {
@@ -794,7 +803,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.maxZ = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "maxZ"],
             },
             znear: {
@@ -805,7 +814,7 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
                         camera._babylonCamera.minZ = value;
                     }
                 },
-                getTarget: (camera: ICamera) => camera,
+                getTarget: (camera: ICamera) => camera._babylonCamera,
                 getPropertyName: [() => "minZ"],
             },
         },
@@ -815,38 +824,36 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
 const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
     length: _CreateLengthAccessor(
         (materials: IMaterial[]) => materials.length,
-        (materials: IMaterial[]) => materials.map((material) => material._data?.[Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial)
+        (materials: IMaterial[]) => materials.map((material) => GetMaterial(material))
     ),
     __array__: {
         __target__: true,
         doubleSided: {
             type: "boolean",
             get: (material, index?, payload?) => !GetMaterial(material, index, payload)?.backFaceCulling,
-            set: (value: boolean, material, index?, payload?) => {
-                const mat = GetMaterial(material, index, payload);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value: boolean, mat) => {
                 if (mat) {
                     mat.backFaceCulling = !value;
                 }
-            },
+            }),
             getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
             getPropertyName: [() => "backFaceCulling"],
         },
         alphaCutoff: {
             type: "number",
             get: (material, index?, payload?) => GetMaterial(material, index, payload)?.alphaCutOff,
-            set: (value: number, material, index?, payload?) => {
-                const mat = GetMaterial(material, index, payload);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
                 if (mat) {
                     mat.alphaCutOff = value;
                 }
-            },
+            }),
             getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
             getPropertyName: [() => "alphaCutOff"],
         },
         emissiveFactor: {
             type: "Color3",
             get: (material, index?, payload?) => GetMaterial(material, index, payload).emissiveColor,
-            set: (value: Color3, material, index?, payload?) => GetMaterial(material, index, payload).emissiveColor.copyFrom(value),
+            set: /*#__PURE__*/ _CreateMaterialSetter((value: Color3, mat) => mat.emissiveColor.copyFrom(value)),
             getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
             getPropertyName: [() => "emissiveColor"],
         },
@@ -859,14 +866,14 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             scale: {
                 type: "number",
                 get: (material, index?, payload?) => GetTexture(material, payload, "bumpTexture")?.level,
-                set: (value: number, material, index?, payload?) => {
-                    const texture = GetTexture(material, payload, "bumpTexture");
+                set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
+                    const texture = _GetMaterialTexture(mat, "bumpTexture");
                     if (texture) {
                         texture.level = value;
                     }
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
-                getPropertyName: [() => "level"],
+                getPropertyName: [() => "bumpTexture.level"],
             },
             extensions: {
                 KHR_texture_transform: GenerateTextureMap("bumpTexture"),
@@ -876,12 +883,11 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             strength: {
                 type: "number",
                 get: (material, index?, payload?) => GetMaterial(material, index, payload).ambientTextureStrength,
-                set: (value: number, material, index?, payload?) => {
-                    const mat = GetMaterial(material, index, payload);
+                set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
                     if (mat) {
                         mat.ambientTextureStrength = value;
                     }
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 getPropertyName: [() => "ambientTextureStrength"],
             },
@@ -896,11 +902,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     const mat = GetMaterial(material, index, payload);
                     return Color4.FromColor3(mat.albedoColor, mat.alpha);
                 },
-                set: (value: Color4, material, index?, payload?) => {
-                    const mat = GetMaterial(material, index, payload);
+                set: /*#__PURE__*/ _CreateMaterialSetter((value: Color4, mat) => {
                     mat.albedoColor.set(value.r, value.g, value.b);
                     mat.alpha = value.a;
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 // This is correct on the animation level, but incorrect as a single property of a type Color4
                 getPropertyName: [() => "albedoColor", () => "alpha"],
@@ -913,24 +918,22 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             metallicFactor: {
                 type: "number",
                 get: (material, index?, payload?) => GetMaterial(material, index, payload).metallic,
-                set: (value, material, index?, payload?) => {
-                    const mat = GetMaterial(material, index, payload);
+                set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                     if (mat) {
                         mat.metallic = value;
                     }
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 getPropertyName: [() => "metallic"],
             },
             roughnessFactor: {
                 type: "number",
                 get: (material, index?, payload?) => GetMaterial(material, index, payload).roughness,
-                set: (value, material, index?, payload?) => {
-                    const mat = GetMaterial(material, index, payload);
+                set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                     if (mat) {
                         mat.roughness = value;
                     }
-                },
+                }),
                 getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                 getPropertyName: [() => "roughness"],
             },
@@ -945,24 +948,22 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 anisotropyStrength: {
                     type: "number",
                     get: (material, index?, payload?) => GetMaterial(material, index, payload)?.anisotropy?.intensity,
-                    set: (value: number, material, index?, payload?) => {
-                        const mat = GetMaterial(material, index, payload);
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
                         if (mat) {
                             mat.anisotropy.intensity = value;
                         }
-                    },
+                    }),
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.intensity"],
                 },
                 anisotropyRotation: {
                     type: "number",
                     get: (material, index?, payload?) => GetMaterial(material, index, payload)?.anisotropy?.angle,
-                    set: (value: number, material, index?, payload?) => {
-                        const mat = GetMaterial(material, index, payload);
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value: number, mat) => {
                         if (mat) {
                             mat.anisotropy.angle = value;
                         }
-                    },
+                    }),
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "anisotropy.angle"],
                 },
@@ -976,18 +977,18 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 clearcoatFactor: {
                     type: "number",
                     get: (material, index?, payload?) => GetMaterial(material, index, payload).clearCoat.intensity,
-                    set: (value, material, index?, payload?) => {
-                        GetMaterial(material, index, payload).clearCoat.intensity = value;
-                    },
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
+                        mat.clearCoat.intensity = value;
+                    }),
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "clearCoat.intensity"],
                 },
                 clearcoatRoughnessFactor: {
                     type: "number",
                     get: (material, index?, payload?) => GetMaterial(material, index, payload).clearCoat.roughness,
-                    set: (value, material, index?, payload?) => {
-                        GetMaterial(material, index, payload).clearCoat.roughness = value;
-                    },
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
+                        mat.clearCoat.roughness = value;
+                    }),
                     getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
                     getPropertyName: [() => "clearCoat.roughness"],
                 },
@@ -1001,7 +1002,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                         type: "number",
                         get: (material, index, payload) => GetMaterial(material, index, payload).clearCoat.bumpTexture?.level,
                         getTarget: GetMaterial,
-                        set: (value, material, index, payload) => (GetMaterial(material, index, payload).clearCoat.bumpTexture!.level = value),
+                        set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.clearCoat.bumpTexture!.level = value)),
                     },
                     extensions: {
                         KHR_texture_transform: GenerateTextureMap("clearCoat", "bumpTexture"),
@@ -1018,7 +1019,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.dispersion,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.dispersion = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.dispersion = value)),
                 },
             },
             KHR_materials_emissive_strength: {
@@ -1026,7 +1027,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).emissiveIntensity,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).emissiveIntensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.emissiveIntensity = value)),
                 },
             },
             KHR_materials_ior: {
@@ -1034,7 +1035,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).indexOfRefraction,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).indexOfRefraction = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.indexOfRefraction = value)),
                 },
             },
             KHR_materials_iridescence: {
@@ -1042,13 +1043,13 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).iridescence.intensity,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).iridescence.intensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.iridescence.intensity = value)),
                 },
                 iridescenceIor: {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).iridescence.indexOfRefraction,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).iridescence.indexOfRefraction = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.iridescence.indexOfRefraction = value)),
                 },
                 iridescenceTexture: {
                     extensions: {
@@ -1059,13 +1060,13 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).iridescence.maximumThickness,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).iridescence.maximumThickness = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.iridescence.maximumThickness = value)),
                 },
                 iridescenceThicknessMinimum: {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).iridescence.minimumThickness,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).iridescence.minimumThickness = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.iridescence.minimumThickness = value)),
                 },
                 iridescenceThicknessTexture: {
                     extensions: {
@@ -1078,7 +1079,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "Color3",
                     get: (material, index, payload) => GetMaterial(material, index, payload).sheen.color,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => GetMaterial(material, index, payload).sheen.color.copyFrom(value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => mat.sheen.color.copyFrom(value)),
                 },
                 sheenColorTexture: {
                     extensions: {
@@ -1087,9 +1088,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 sheenRoughnessFactor: {
                     type: "number",
-                    get: (material, index, payload) => GetMaterial(material, index, payload).sheen.intensity,
+                    get: (material, index, payload) => GetMaterial(material, index, payload).sheen.roughness ?? 0,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).sheen.intensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.sheen.roughness = value)),
+                    getPropertyName: [() => "sheen.roughness"],
                 },
                 sheenRoughnessTexture: {
                     extensions: {
@@ -1102,14 +1104,14 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).metallicF0Factor,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).metallicF0Factor = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.metallicF0Factor = value)),
                     getPropertyName: [() => "metallicF0Factor"],
                 },
                 specularColorFactor: {
                     type: "Color3",
                     get: (material, index, payload) => GetMaterial(material, index, payload).metallicReflectanceColor,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => GetMaterial(material, index, payload).metallicReflectanceColor.copyFrom(value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => mat.metallicReflectanceColor.copyFrom(value)),
                     getPropertyName: [() => "metallicReflectanceColor"],
                 },
                 specularTexture: {
@@ -1128,7 +1130,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.refractionIntensity,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.refractionIntensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.refractionIntensity = value)),
                     getPropertyName: [() => "subSurface.refractionIntensity"],
                 },
                 transmissionTexture: {
@@ -1145,7 +1147,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.translucencyIntensity,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.translucencyIntensity = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.translucencyIntensity = value)),
                 },
                 diffuseTransmissionTexture: {
                     extensions: {
@@ -1159,7 +1161,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "Color3",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.translucencyColor,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => value && GetMaterial(material, index, payload).subSurface.translucencyColor?.copyFrom(value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => value && mat.subSurface.translucencyColor?.copyFrom(value)),
                 },
                 diffuseTransmissionColorTexture: {
                     extensions: {
@@ -1175,19 +1177,19 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     type: "Color3",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.tintColor,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => GetMaterial(material, index, payload).subSurface.tintColor.copyFrom(value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => mat.subSurface.tintColor.copyFrom(value)),
                 },
                 attenuationDistance: {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.tintColorAtDistance,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.tintColorAtDistance = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.tintColorAtDistance = value)),
                 },
                 thicknessFactor: {
                     type: "number",
                     get: (material, index, payload) => GetMaterial(material, index, payload).subSurface.maximumThickness,
                     getTarget: GetMaterial,
-                    set: (value, material, index, payload) => (GetMaterial(material, index, payload).subSurface.maximumThickness = value),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (mat.subSurface.maximumThickness = value)),
                 },
                 thicknessTexture: {
                     extensions: {
@@ -1232,17 +1234,17 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                 spot: {
                     innerConeAngle: {
                         type: "number",
-                        get: (light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.innerAngle,
-                        set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).innerAngle = value) : undefined),
+                        get: (light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.innerAngle / 2,
+                        set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).innerAngle = value * 2) : undefined),
                         getTarget: (light: IKHRLightsPunctual_Light) => light._babylonLight,
-                        getPropertyName: [(_light: IKHRLightsPunctual_Light) => "innerConeAngle"],
+                        getPropertyName: [() => "innerAngle"],
                     },
                     outerConeAngle: {
                         type: "number",
-                        get: (light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.angle,
-                        set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).angle = value) : undefined),
+                        get: (light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.angle / 2,
+                        set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).angle = value * 2) : undefined),
                         getTarget: (light: IKHRLightsPunctual_Light) => light._babylonLight,
-                        getPropertyName: [(_light: IKHRLightsPunctual_Light) => "outerConeAngle"],
+                        getPropertyName: [() => "angle"],
                     },
                 },
             },
@@ -1272,19 +1274,28 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                 },
                 size: {
                     type: "number",
-                    get: (light: IEXTLightsArea_Light) => (light._babylonLight as RectAreaLight)?.height,
-                    set: (value: number, light: IEXTLightsArea_Light) => (light._babylonLight ? ((light._babylonLight as RectAreaLight).height = value) : undefined),
-                    getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
-                    getPropertyName: [(_light: IEXTLightsArea_Light) => "size"],
+                    get: (light) => _GetAreaLightDimensions(light)?.size,
+                    set: (value, light) => {
+                        const target = _GetAreaLightDimensions(light);
+                        if (target) {
+                            target.size = value;
+                        }
+                    },
+                    getTarget: _GetAreaLightDimensions,
+                    getPropertyName: [() => "size"],
                 },
                 rect: {
                     aspect: {
                         type: "number",
-                        get: (light: IEXTLightsArea_Light) => (light._babylonLight as RectAreaLight)?.width / (light._babylonLight as RectAreaLight)?.height,
-                        set: (value: number, light: IEXTLightsArea_Light) =>
-                            light._babylonLight ? ((light._babylonLight as RectAreaLight).width = value * (light._babylonLight as RectAreaLight).height) : undefined,
-                        getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
-                        getPropertyName: [(_light: IEXTLightsArea_Light) => "aspect"],
+                        get: (light) => _GetAreaLightDimensions(light)?.aspect,
+                        set: (value, light) => {
+                            const target = _GetAreaLightDimensions(light);
+                            if (target) {
+                                target.aspect = value;
+                            }
+                        },
+                        getTarget: _GetAreaLightDimensions,
+                        getPropertyName: [() => "aspect"],
                     },
                 },
             },
@@ -1339,11 +1350,37 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
 };
 
 function GetTexture(material: IMaterial, payload: any, textureType: keyof PBRMaterial, textureInObject?: string) {
-    const babylonMaterial = GetMaterial(material, payload);
-    return textureInObject ? babylonMaterial[textureType][textureInObject] : babylonMaterial[textureType];
+    return _GetMaterialTexture(GetMaterial(material, undefined, payload), textureType, textureInObject);
+}
+function _GetMaterialTexture(material: PBRMaterial, textureType: keyof PBRMaterial, textureInObject?: string) {
+    return textureInObject ? material[textureType][textureInObject] : material[textureType];
 }
 function GetMaterial(material: IMaterial, _index?: number, payload?: any) {
-    return material._data?.[payload?.fillMode ?? Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial;
+    let target = material._data?.[payload?.fillMode ?? Constants.MATERIAL_TriangleFillMode]?.babylonMaterial;
+    if (!target && payload?.fillMode === undefined) {
+        for (const fillMode in material._data) {
+            target = material._data[Number(fillMode)].babylonMaterial;
+            break;
+        }
+    }
+    return target as PBRMaterial;
+}
+function _CreateMaterialSetter<T>(setValue: (value: T, target: PBRMaterial, source: IMaterial) => void): NonNullable<IObjectAccessor<IMaterial, PBRMaterial, T>["set"]> {
+    return (value, material, index, payload) => {
+        if (payload?.fillMode !== undefined) {
+            setValue(value, GetMaterial(material, index, payload), material);
+            return;
+        }
+        let found = false;
+        for (const fillMode in material._data) {
+            found = true;
+            setValue(value, material._data[Number(fillMode)].babylonMaterial as PBRMaterial, material);
+        }
+        if (!found) {
+            // Preserve each accessor's existing handling of unloaded materials.
+            setValue(value, GetMaterial(material, index, payload), material);
+        }
+    };
 }
 function _getNodeMorphTargetManager(node: INode): any {
     const tn = node?._babylonTransformNode;
@@ -1553,8 +1590,8 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 return new Vector2(0, 0);
             },
             getTarget: GetMaterial,
-            set: (value, material, _index?, payload?) => {
-                const texture = GetTexture(material, payload, textureType, textureInObject);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value, target, material) => {
+                const texture = _GetMaterialTexture(target, textureType, textureInObject);
                 if (texture) {
                     texture.uOffset = value.x;
                     texture.vOffset = value.y;
@@ -1565,7 +1602,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                         xform.offset = [value.x, value.y];
                     }
                 }
-            },
+            }),
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uOffset`,
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.vOffset`,
@@ -1576,7 +1613,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             get: (material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
                 if (texture) {
-                    return texture.wAng;
+                    return -texture.wAng;
                 }
                 if (gltfPath) {
                     const xform = _gltfTextureTransform(material, gltfPath, false);
@@ -1585,10 +1622,10 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 return 0;
             },
             getTarget: GetMaterial,
-            set: (value, material, _index?, payload?) => {
-                const texture = GetTexture(material, payload, textureType, textureInObject);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value, target, material) => {
+                const texture = _GetMaterialTexture(target, textureType, textureInObject);
                 if (texture) {
-                    texture.wAng = value;
+                    texture.wAng = -value;
                 }
                 if (gltfPath) {
                     const xform = _gltfTextureTransform(material, gltfPath, true);
@@ -1596,7 +1633,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                         xform.rotation = value;
                     }
                 }
-            },
+            }),
             getPropertyName: [() => `${textureType}${textureInObject ? "." + textureInObject : ""}.wAng`],
         },
         scale: {
@@ -1615,8 +1652,8 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 return new Vector2(1, 1);
             },
             getTarget: GetMaterial,
-            set: (value, material, index?, payload?) => {
-                const texture = GetTexture(material, payload, textureType, textureInObject);
+            set: /*#__PURE__*/ _CreateMaterialSetter((value, target, material) => {
+                const texture = _GetMaterialTexture(target, textureType, textureInObject);
                 if (texture) {
                     texture.uScale = value.x;
                     texture.vScale = value.y;
@@ -1627,7 +1664,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                         xform.scale = [value.x, value.y];
                     }
                 }
-            },
+            }),
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uScale`,
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.vScale`,
@@ -1745,6 +1782,17 @@ function _cloneObjectModelMapping<T>(value: T): T {
  * @returns a path-to-object converter for the given glTF tree
  */
 export function GetPathToObjectConverter(gltf: IGLTF, configure?: (mapping: object) => void) {
+    // Off-scene nodes have no Babylon meshes, but their weights remain part of the object model.
+    for (const node of gltf?.nodes ?? []) {
+        if (node._babylonTransformNode || node.mesh === undefined || node._morphTargetWeights) {
+            continue;
+        }
+        const mesh = gltf.meshes?.[node.mesh];
+        if (mesh) {
+            const count = mesh.primitives[0]?.targets?.length ?? 0;
+            node._morphTargetWeights = Array.from({ length: count }, (_, index) => node.weights?.[index] ?? mesh.weights?.[index] ?? 0);
+        }
+    }
     if (!configure) {
         return new GLTFPathToObjectConverter(gltf, objectModelMapping);
     }
