@@ -5,11 +5,14 @@ import { type Engine } from "core/Engines/engine";
 import { Mesh } from "core/Meshes/mesh";
 import { SubMesh } from "core/Meshes/subMesh";
 import { OpenPBRMaterial, OpenPBRMaterialDefines } from "core/Materials/PBR/openpbrMaterial";
+import "core/Materials/colorCurves";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Scene } from "core/scene";
-import { Vector4 } from "core/Maths/math.vector";
+import { Vector3, Vector4 } from "core/Maths/math.vector";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { openpbrVertexShader as openpbrVertexShaderGLSL } from "core/Shaders/openpbr.vertex";
 import { openpbrVertexShaderWGSL } from "core/ShadersWGSL/openpbr.vertex";
 import { openpbrDirectLighting as openpbrDirectLightingGLSL } from "core/Shaders/ShadersInclude/openpbrDirectLighting";
@@ -148,6 +151,77 @@ describe("OpenPBRMaterial", () => {
     });
 
     describe("Retroreflection uniform layout", () => {
+        it("preserves the retroreflection factor and texture when cloning", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new Texture("retro.png", scene);
+            texture.level = 0.25;
+            texture.uOffset = 0.2;
+            material.specularRetroreflectivity = 0.5;
+            material.specularRetroreflectivityTexture = texture;
+
+            const clone = material.clone("clone");
+
+            expect(clone.specularRetroreflectivity).toBe(0.5);
+            expect(clone.specularRetroreflectivityTexture).not.toBe(texture);
+            expect(clone.specularRetroreflectivityTexture?.name).toBe(texture.name);
+            expect(clone.specularRetroreflectivityTexture?.level).toBe(0.25);
+            expect((clone.specularRetroreflectivityTexture as Texture).uOffset).toBe(0.2);
+        });
+
+        it("round-trips the retroreflection factor and texture through Babylon serialization", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new Texture("retro.png", scene);
+            texture.level = 0.25;
+            texture.uOffset = 0.2;
+            material.specularRetroreflectivity = 0.5;
+            material.specularRetroreflectivityTexture = texture;
+
+            const serialized = material.serialize();
+            expect(serialized.specularRetroreflectivity).toBe(0.5);
+            expect(serialized.specularRetroreflectivityTexture.level).toBe(0.25);
+            const parsed = OpenPBRMaterial.Parse(serialized, scene, "");
+
+            expect(parsed.specularRetroreflectivity).toBe(0.5);
+            expect(parsed.specularRetroreflectivityTexture?.name).toBe(texture.name);
+            expect(parsed.specularRetroreflectivityTexture?.level).toBe(0.25);
+            expect((parsed.specularRetroreflectivityTexture as Texture).uOffset).toBe(0.2);
+        });
+
+        it("rebinds loose matrices when switching synchronized frozen materials sharing an effect", async () => {
+            new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+            scene.updateTransformMatrix(true);
+            const meshes = [CreateBox("first", {}, scene), CreateBox("second", {}, scene)];
+            const materials = meshes.map((mesh, index) => {
+                const material = new OpenPBRMaterial(mesh.name, scene);
+                const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+                vi.spyOn(texture, "isReadyOrNotBlocking").mockReturnValue(true);
+                texture.uOffset = 0.2 + index * 0.3;
+                material.specularRetroreflectivity = 1;
+                material.specularRetroreflectivityTexture = texture;
+                mesh.material = material;
+                return material;
+            });
+            for (const [index, material] of materials.entries()) {
+                const mesh = meshes[index];
+                await material.forceCompilationAsync(mesh);
+                expect(material.isReadyForSubMesh(mesh, mesh.subMeshes[0])).toBe(true);
+                material.freeze();
+                material.bindForSubMesh(mesh.getWorldMatrix(), mesh, mesh.subMeshes[0]);
+                vi.spyOn(material._uniformBuffer, "useUbo", "get").mockReturnValue(true);
+                vi.spyOn(material._uniformBuffer, "isSync", "get").mockReturnValue(true);
+            }
+
+            const effect = meshes[0].subMeshes[0].effect!;
+            expect(meshes[1].subMeshes[0].effect).toBe(effect);
+            const setMatrix = vi.spyOn(effect, "setMatrix");
+            for (const index of [0, 1, 0]) {
+                setMatrix.mockClear();
+                const mesh = meshes[index];
+                materials[index].bindForSubMesh(mesh.getWorldMatrix(), mesh, mesh.subMeshes[0]);
+                expect(setMatrix).toHaveBeenCalledWith("specularRetroreflectivityMatrix", materials[index].specularRetroreflectivityTexture!.getTextureMatrix());
+            }
+        });
+
         it("packs the factor and keeps the texture matrix outside the Material UBO", () => {
             const material = new OpenPBRMaterial("mat", scene);
             const uniformsArray: {
@@ -269,9 +343,13 @@ describe("OpenPBRMaterial", () => {
         ])("guards missing higher UV sets in %s", (_language, shader, uvExpression) => {
             expect(shader).toMatch(
                 new RegExp(
-                    `#elif SPECULAR_RETROREFLECTIVITY_UV_INDEX\\s*==\\s*2\\s+#ifdef UV3\\s+specularRetroreflectivityUVSource\\s*=\\s*${uvExpression.replace(".", "\\.")};\\s+#endif`
+                    `#elif SPECULAR_RETROREFLECTIVITY_UV_INDEX\\s*==\\s*2\\s+#ifdef UV3[\\s\\S]*?specularRetroreflectivityUVSource\\s*=\\s*${uvExpression.replace(".", "\\.")};`
                 )
             );
+        });
+
+        it.each([3, 4, 5, 6])("uses pulled UV%s coordinates for transformed retroreflection in WGSL", (uv) => {
+            expect(openpbrVertexShaderWGSL.shader).toMatch(new RegExp(`#ifdef UV${uv}\\s+#ifdef USE_VERTEX_PULLING\\s+specularRetroreflectivityUVSource\\s*=\\s*uv${uv}Updated;`));
         });
 
         it("declares the transformed retroreflection matrix without UBOs", () => {
@@ -385,6 +463,22 @@ describe("OpenPBRMaterial", () => {
             );
             expect(openpbrDirectLightingWGSL.shader).toContain(
                 "slab_metal=computeSpecularLighting(preInfo{X},normalW,vec3f(1.0f),coloredFresnel,specular_roughness,lightColor{X}.rgb)"
+            );
+        });
+
+        it.each([
+            ["GLSL", openpbrDirectLightingGLSL.shader],
+            ["WGSL", openpbrDirectLightingWGSL.shader],
+        ])("applies conductor and thin-film Fresnel to anisotropic retroreflection in %s", (_language, shader) => {
+            expect(shader).toMatch(/slab_metal_retro\s*=\s*coloredFresnelRetro\s*\*\s*computeAnisotropicSpecularLighting\(/);
+        });
+
+        it.each([
+            ["GLSL", openpbrDirectLightingGLSL.shader],
+            ["WGSL", openpbrDirectLightingWGSL.shader],
+        ])("preserves back-lit transmission with retroreflection in %s", (_language, shader) => {
+            expect(shader).toMatch(
+                /if\s*\(preInfoTrans\.NdotLUnclamped<=0\.0\)\s*\{[^}]*#ifdef RETROREFLECTION\s+specularFresnelRetro=0\.0f?;\s*specularColoredFresnelRetro=specularFresnelRetro\*specular_color;/
             );
         });
     });

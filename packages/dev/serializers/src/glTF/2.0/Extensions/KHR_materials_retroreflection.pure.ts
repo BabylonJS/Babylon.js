@@ -2,6 +2,8 @@ import { type IKHRMaterialsRetroreflection, type IMaterial } from "babylonjs-glt
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Material } from "core/Materials/material";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
+import { Clamp } from "core/Maths/math.scalar.functions";
+import { Logger } from "core/Misc/logger";
 import { GLTFExporter } from "../glTFExporter";
 import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 
@@ -52,13 +54,13 @@ export class KHR_materials_retroreflection implements IGLTFExporterExtensionV2 {
 
     /**
      * Adds retroreflection properties to the exported glTF material.
-     * @param _context GLTF context of the material
+     * @param context GLTF context of the material
      * @param node Exported glTF material
      * @param babylonMaterial Source Babylon material
      * @returns The exported glTF material
      */
     // eslint-disable-next-line no-restricted-syntax
-    public postExportMaterialAsync?(_context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
+    public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
             if (!(babylonMaterial instanceof OpenPBRMaterial) || !this._isExtensionEnabled(babylonMaterial)) {
                 resolve(node);
@@ -69,8 +71,12 @@ export class KHR_materials_retroreflection implements IGLTFExporterExtensionV2 {
             node.extensions ||= {};
 
             const retroreflectionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.specularRetroreflectivityTexture) ?? undefined;
+            const factor = babylonMaterial.specularRetroreflectivity * (babylonMaterial.specularRetroreflectivityTexture?.level ?? 1);
+            if (factor < 0 || factor > 1) {
+                Logger.Warn(`${context}: ${NAME} factor for ${babylonMaterial.name} is outside [0, 1] and will be clamped.`);
+            }
             const retroreflectionInfo: IKHRMaterialsRetroreflection = {
-                retroreflectionFactor: babylonMaterial.specularRetroreflectivity === 0 ? undefined : babylonMaterial.specularRetroreflectivity,
+                retroreflectionFactor: factor === 0 ? undefined : Clamp(factor),
                 retroreflectionTexture,
             };
 

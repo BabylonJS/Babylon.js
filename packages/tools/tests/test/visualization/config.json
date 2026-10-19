@@ -499,6 +499,30 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "OpenPBR Retroreflection Anisotropic Metals",
+            "playgroundId": "#UBDF4Z#1",
+            "referenceImage": "openpbr-retroreflection-anisotropic-metals.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["PBR", "Textures", "Lights", "Cameras", "Loaders", "glTF"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "OpenPBR Retroreflection Higher UVs",
+            "playgroundId": "#U08Q2C#1",
+            "referenceImage": "openpbr-retroreflection-higher-uvs.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["PBR", "Textures", "Lights", "Cameras", "Materials", "Meshes"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "OpenPBR Retroreflection Backlit Transmission",
+            "playgroundId": "#Y513WL#0",
+            "referenceImage": "openpbr-retroreflection-backlit-transmission.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["PBR", "Lights", "Cameras", "Materials", "Meshes"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
             "playgroundId": "#MXACV7#30",
             "referenceImage": "openpbr_base_diffuse_roughness.png",

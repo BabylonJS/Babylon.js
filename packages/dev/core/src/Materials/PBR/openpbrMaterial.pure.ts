@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
+import { serialize, serializeAsTexture, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentFuzzBRDFTexture, GetOpenPBREnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
@@ -692,6 +692,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Blend weight between the regular and retroreflective base specular lobes.
      * @experimental
      */
+    @serialize()
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
     accessor specularRetroreflectivity: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -702,6 +703,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Texture whose red channel multiplies the retroreflectivity blend weight.
      * @experimental
      */
+    @serializeAsTexture()
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
     accessor specularRetroreflectivityTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -2657,13 +2659,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     // Loop through samplers and bind info and matrix for each texture.
                     for (const key in this._samplersList) {
                         const sampler = this._samplersList[key];
-                        if (sampler.value) {
-                            if (sampler.useLooseMatrixUniform) {
-                                effect.setMatrix(sampler.samplerMatrixName, sampler.value.getTextureMatrix());
-                            } else {
-                                ubo.updateFloat2(sampler.samplerInfoName, sampler.value.coordinatesIndex, sampler.value.level);
-                                BindTextureMatrix(sampler.value, ubo, sampler.samplerPrefix);
-                            }
+                        if (sampler.value && !sampler.useLooseMatrixUniform) {
+                            ubo.updateFloat2(sampler.samplerInfoName, sampler.value.coordinatesIndex, sampler.value.level);
+                            BindTextureMatrix(sampler.value, ubo, sampler.samplerPrefix);
                         }
                     }
 
@@ -2725,6 +2723,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 for (const key in this._samplersList) {
                     const sampler = this._samplersList[key];
                     if (sampler.value) {
+                        if (sampler.useLooseMatrixUniform) {
+                            effect.setMatrix(sampler.samplerMatrixName, sampler.value.getTextureMatrix());
+                        }
                         ubo.setTexture(sampler.samplerName, sampler.value);
                     }
                 }

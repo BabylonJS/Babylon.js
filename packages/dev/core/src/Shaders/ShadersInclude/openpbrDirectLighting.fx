@@ -176,12 +176,14 @@
                 #else
                     preInfoTrans.roughness = transmission_roughness;
                 #endif
-                // On the side of the surface facing away from the light, we'll modify
-                // the VdotH used for the Fresnel calculation. This is to avoid the maxed-out
-                // Fresnel from obscuring the transmitted light.
+                // Back-lit reflection must not attenuate transmitted light.
                 if (preInfoTrans.NdotLUnclamped <= 0.0) {
                     specularFresnel = 0.0;
                     specularColoredFresnel = specularFresnel * specular_color;
+                    #ifdef RETROREFLECTION
+                    specularFresnelRetro = 0.0;
+                    specularColoredFresnelRetro = specularFresnelRetro * specular_color;
+                    #endif
                 }
 
                 #ifdef GEOMETRY_THIN_WALLED
@@ -419,7 +421,7 @@
             #endif
 
             #ifdef ANISOTROPIC_BASE
-                slab_metal_retro = computeAnisotropicSpecularLighting(
+                slab_metal_retro = coloredFresnelRetro * computeAnisotropicSpecularLighting(
                     preInfoRetro,
                     retroViewDirectionW,
                     normalW,
