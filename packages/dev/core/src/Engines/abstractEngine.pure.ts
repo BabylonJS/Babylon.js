@@ -188,6 +188,8 @@ export interface AbstractEngineOptions {
      * A reversed depth buffer gives more depth precision to distant objects and reduces z-fighting. It is recommended
      * for WebGPU, where the default depth setup can z-fight more than WebGL. With WebGL it brings little or no gain,
      * because the [-1, 1] clip space depth range loses the extra precision.
+     * For the best precision, pair it with a floating-point depth buffer (on WebGPU, creating the engine with `stencil: false`
+     * makes the main depth buffer `depth32float` instead of `depth24plus-stencil8`).
      *
      * Custom shaders that write or read depth values must account for the reversed range (see the `USE_REVERSE_DEPTHBUFFER` define).
      */
