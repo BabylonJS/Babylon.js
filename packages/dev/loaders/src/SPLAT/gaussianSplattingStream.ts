@@ -20,14 +20,15 @@ import { GaussianSplattingWorkBuffer } from "./gaussianSplattingWorkBuffer";
 import { GaussianSplattingDownloadManager } from "./gaussianSplattingDownloadManager";
 import { GaussianSplattingResidencyController } from "./gaussianSplattingResidencyController";
 import { type ISogTexturePack } from "./splatDefs";
+import { BuildSplatResidencyPages } from "./gaussianSplattingResidencyPages";
 
 /**
  * A single LOD variant of a tree node: a contiguous splat range inside one streamed SOG file.
  */
 interface ISOGLODEntry {
-    /** Index into {@link ISOGLODMetadata.filenames}. */
+    /** Initially an index into {@link ISOGLODMetadata.filenames}; remapped to a residency page ID when range residency is enabled. */
     file: number;
-    /** First splat index inside that file. */
+    /** First splat index inside the source file, or relative to the residency page after remapping. */
     offset: number;
     /** Number of splats. */
     count: number;
@@ -60,11 +61,11 @@ interface ISOGLODNode {
     inFrustum?: boolean;
     /** Cached local-space bounding info used for the per-node frustum test (created once per leaf). */
     cullBounds?: BoundingInfo;
-    /** File index this node currently has an in-flight/queued decode request for (its not-yet-decoded target),
+    /** Allocation ID (source file or residency page) this node has an in-flight/queued decode request for,
      * or undefined when the node's target is already decoded. Drives pending-download reference counting. */
     pendingFile?: number;
-    /** File index this node's current {@link activeLod} renders from, or undefined before any LOD is active.
-     * Drives the resident reference count that keeps a file in the work buffer. */
+    /** Allocation ID (source file or residency page) this node's current {@link activeLod} renders from,
+     * or undefined before any LOD is active. Drives the work-buffer resident reference count. */
     activeFile?: number;
 }
 
@@ -74,7 +75,7 @@ interface ISOGLODNode {
 export interface ISOGLODMetadata {
     /** Number of LOD levels (0 = highest detail). */
     lodLevels: number;
-    /** SOG `meta.json` paths, relative to the metadata file, indexed by `ISOGLODEntry.file`. */
+    /** SOG `meta.json` paths, relative to the metadata file, indexed by the original source file ID of each LOD entry. */
     filenames: string[];
     /** Optional always-on environment `.sog` bundle, relative to the metadata file. */
     environment?: string;
@@ -86,6 +87,55 @@ export interface ISOGLODMetadata {
  * Selects which LOD value drives the {@link GaussianSplattingStream} debug wireframe colors.
  */
 export type GaussianSplattingStreamDebugLodSource = "optimal" | "current";
+
+/**
+ * Immutable metadata-resolution state for a stream's total number of finest-LOD splats.
+ * @experimental
+ */
+export type GaussianSplattingStreamLod0SplatCount = Readonly<{ status: "pending" }> | Readonly<{ status: "available"; count: number }> | Readonly<{ status: "unavailable" }>;
+
+/**
+ * A contiguous splat interval inside one streamed source file.
+ * @experimental
+ */
+export interface IGaussianSplattingStreamSourceRange {
+    /** Index of the source file in the LOD metadata `filenames`. */
+    file: number;
+    /** First splat of the interval inside the source file. */
+    offset: number;
+    /** Number of splats in the interval. */
+    count: number;
+}
+
+/**
+ * A separately packed copy of exactly one residency page interval, see {@link IGaussianSplattingStreamOptions.rangePack}.
+ * @experimental
+ */
+export interface IGaussianSplattingStreamRangePack {
+    /** SOG metadata of the split pack; its splat count must equal the page interval count. */
+    sogData: SOGRootData;
+    /** URL prefix prepended to every image file name listed in {@link sogData}. */
+    subRootUrl: string;
+}
+
+/**
+ * Counters describing range residency activity. They are not memory measurements.
+ * @experimental
+ */
+export interface IGaussianSplattingStreamRangeResidencyStats {
+    /** Whether range residency is enabled for the stream. */
+    enabled: boolean;
+    /** Number of residency pages created. */
+    pages: number;
+    /** Number of source packs downloaded and cached for source pages. */
+    sourcePackLoads: number;
+    /** Number of times a cached source pack served another page of the same source. */
+    sourcePackReuses: number;
+    /** Number of split packs loaded successfully. */
+    splitPackLoads: number;
+    /** Splat count of the currently cached source pack, or 0 when none is cached. */
+    cachedSourceSplats: number;
+}
 
 /**
  * Options for {@link GaussianSplattingStream}.
@@ -133,17 +183,20 @@ export interface IGaussianSplattingStreamOptions {
     /** Number of times a failed file download is retried before giving up. PlayCanvas default `2`. */
     maxDownloadRetries?: number;
     /**
-     * GPU memory budget (in megabytes) for resident splats. When set (and smaller than the full dataset),
-     * LOD files are streamed through a fixed-size work buffer and unreferenced files are evicted to stay
-     * within budget, allowing datasets larger than a single full-dataset buffer. Converted to a splat count
-     * using the per-splat cost (core data plus any baked SH and rotation/scale textures). Combined with
-     * {@link maxResidentSplats} by taking the smaller of the two.
+     * Initial GPU/CPU memory estimate (in megabytes) for resident splats. It is converted to a splat count
+     * using the per-splat cost (core data plus any baked SH and rotation/scale textures), combined with
+     * {@link maxResidentSplats} by taking the smaller limit, then raised when necessary to fit the complete
+     * coarse layer. The work buffer has a fixed lifetime capacity; construct a new stream to use another limit.
+     * Finite non-positive values leave this limit unset; non-finite values are rejected.
      */
     memoryBudgetMb?: number;
     /**
-     * Maximum number of splats kept resident in the work buffer. When set (and smaller than the full
-     * dataset), enables eviction-based streaming (see {@link memoryBudgetMb}). Default unset = size the work
-     * buffer for the whole dataset (no eviction).
+     * Initial maximum number of splats kept resident in the fixed-size work buffer. It is raised when necessary
+     * to fit the complete coarse layer. When unset and the complete source size is known, streams retain the complete
+     * source. Streams that defer finer metadata use a bounded device-tiered default with coarse-derived refinement
+     * headroom.
+     * Finite non-positive values leave this limit unset; non-finite or unsafe positive counts are rejected.
+     * Positive fractional counts are floored to at least one splat before applying the coarse minimum.
      */
     maxResidentSplats?: number;
     /**
@@ -173,10 +226,10 @@ export interface IGaussianSplattingStreamOptions {
     /**
      * When true, higher-order spherical-harmonics carried by the SOG files (`shN`) are GPU-decoded into baked
      * packed-u32 SH textures so the streamed splats render with view-dependent lighting (matching the non-stream
-     * `.spz`/`.sog` path) instead of flat DC-only color. The SH degree is the max `shN.bands` across the streamed
-     * files (lower-band files neutral-fill). No effect when the files carry no `shN`. Defaults to `true`, matching
-     * the non-stream path's always-decode-if-present behavior; set to `false` to force flat DC-only color even
-     * when the data carries `shN` (e.g. to save the decode cost/texture memory).
+     * `.spz`/`.sog` path) instead of flat DC-only color. Streams with complete initial metadata use the maximum
+     * source SH degree. Streams that defer finer metadata reserve the supported degree-4 layout before it is known,
+     * even if the files ultimately carry no `shN`; lower-degree files neutral-fill the unused bands.
+     * Defaults to `true`; set to `false` to force flat DC-only color and avoid the SH decode cost/texture memory.
      */
     decodeSh?: boolean;
     /**
@@ -186,6 +239,24 @@ export interface IGaussianSplattingStreamOptions {
      * the stream decodes into. Defaults to `false`.
      */
     needsRotationScale?: boolean;
+    /**
+     * When true, finer (non-coarse) source files are split into residency pages: each LOD leaf's interval becomes its
+     * own work-buffer allocation, sized to the interval rather than the whole source file. Overlapping intervals share
+     * a page; adjacent ones do not. Files of the pinned coarse layer stay whole. Pages of the same source share one
+     * download of the source textures, cached until no page needs it, so source pages load one at a time.
+     * Defaults to `false` (whole-file residency, unchanged behavior).
+     * Playground example: https://playground.babylonjs.com/#7AZH52#1
+     * @experimental
+     */
+    rangeResidency?: boolean;
+    /**
+     * Optional resolver returning a separately packed copy of exactly one residency page interval, so the page downloads
+     * and decodes only its own textures instead of its whole source pack. Called at most once per page, when the page
+     * is created. Return `null` to use the source pack. A result whose splat count differs from `source.count`, or a
+     * resolver that throws, is ignored with a warning. Requires {@link rangeResidency}.
+     * @experimental
+     */
+    rangePack?: (source: Readonly<IGaussianSplattingStreamSourceRange>, sourceData: SOGRootData) => Nullable<IGaussianSplattingStreamRangePack>;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
@@ -197,6 +268,11 @@ const EnvironmentFileId = -1;
 // Core bytes per resident splat: the four work-buffer textures cost 16+16+16+4 = 52 bytes on the GPU, plus ~32
 // bytes of CPU position/sort data. `_resolveResidentBudget` adds the SH and rotation/scale texture cost on top.
 const BytesPerResidentSplat = 84;
+const MaxSupportedShDegree = 4;
+const MaxSupportedShTextureCount = 5;
+const ProgressiveMetadataFileThreshold = 32;
+const DesktopAutomaticResidentMemoryMb = 512;
+const MobileAutomaticResidentMemoryMb = 256;
 
 // Scratch objects reused by the per-frame optimal-LOD evaluation (avoids per-call allocations).
 const TmpInvWorld = new Matrix();
@@ -260,6 +336,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     // Flat list of leaf nodes that carry renderable LOD entries (used by the LOD heuristic and debug).
     private readonly _leafNodes: ISOGLODNode[] = [];
 
+    private _lod0SplatCount: GaussianSplattingStreamLod0SplatCount = Object.freeze({ status: "pending" as const });
+
     // LOD heuristic parameters (PlayCanvas-aligned defaults).
     private _lodBaseDistance = 5;
     private _lodMultiplier = 3;
@@ -283,7 +361,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     // Frustum LOD bias: when enabled, nodes outside the camera frustum are rendered at their coarsest LOD.
     private _frustumCulling = true;
-    // Reused world-space frustum planes and view-projection scratch matrix (avoids per-frame allocation).
+    // Reused local-space frustum planes and local-to-clip scratch matrix (avoids per-frame allocation).
     private readonly _frustumPlanes: Plane[] = [
         new Plane(0, 0, 0, 0),
         new Plane(0, 0, 0, 0),
@@ -292,14 +370,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         new Plane(0, 0, 0, 0),
         new Plane(0, 0, 0, 0),
     ];
+    private readonly _cullCameraViewProj = new Matrix();
     private readonly _cullViewProj = new Matrix();
     // Reused per-leaf "inside any active camera's frustum" accumulator for the union frustum test (avoids per-frame allocation).
     private readonly _frustumScratch: boolean[] = [];
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
-    // Higher-order SH. Set from options.decodeSh in the constructor; the degree/texture-count are the MAX across the
-    // streamed files (learned in the meta pre-pass). 0 degree = no SH baking (files carry no shN or option is off).
+    // Higher-order SH: exact maximum for small streams, supported maximum for progressive metadata.
+    // Degree 0 disables baking; progressive streams reserve SH even before source degrees are known.
     private _decodeSh!: boolean;
     private _streamShDegree = 0;
     private _shTextureCount = 0;
@@ -316,10 +395,24 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     // Residency controller: owns the work-buffer slot allocator, per-file blocks, and eviction cooldowns.
     private _residency: Nullable<GaussianSplattingResidencyController> = null;
-    // Splat count of each source file (learned from its metadata before allocation).
+    // Splat counts keyed by source file ID or residency page ID (source counts are learned from metadata).
     private readonly _fileCounts = new Map<number, number>();
-    // Cached SOG metadata per file so on-demand decodes don't refetch the meta.json.
+    // Cached SOG metadata keyed by source file ID or residency page ID (pages share their source's metadata).
     private readonly _fileMeta = new Map<number, { sogData: SOGRootData; subRootUrl: string }>();
+    // Residency pages: page ID -> original source interval. Empty unless rangeResidency is enabled.
+    private readonly _residencyPages = new Map<number, Readonly<IGaussianSplattingStreamSourceRange>>();
+    // Resolved split packs per page (absent = the page decodes from its source pack). Resolved once, at page creation.
+    private readonly _splitPacks = new Map<number, IGaussianSplattingStreamRangePack>();
+    private _nextPageId = 0;
+    // At most one cached source pack; source pages hold the decode gate while using it, so it cannot grow with the queue.
+    private _rangeSourcePack: Nullable<{ file: number; pack: ISogTexturePack }> = null;
+    // Source whose cached pack is held by an active decode/readback, including after cancellation.
+    private _activeRangeSource: Nullable<number> = null;
+    private _rangeSourcePackLoads = 0;
+    private _rangeSourcePackReuses = 0;
+    private _rangeSplitPackLoads = 0;
+    // Unique source files required by the coarsest entry of at least one leaf.
+    private readonly _baseFileIds = new Set<number>();
     // Files whose splats have been fully GPU-decoded into the work buffer (render-safe).
     private readonly _decodedFiles = new Set<number>();
     // Files whose decode is currently in flight (dedupes concurrent requests).
@@ -331,9 +424,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     private readonly _fileRefs = new Map<number, number>();
     // Files whose in-flight decode was cancelled; checked at decode checkpoints to bail out cooperatively.
     private readonly _cancelledDecodes = new Set<number>();
-    // Eviction streaming config: enabled only when a budget smaller than the full dataset is configured.
+    // Eviction is enabled for progressive metadata or capacity below the complete source size.
     private _evictionEnabled = false;
     private _residentBudget = 0;
+    // Padding + environment + unique whole coarse source files. Zero until coarse metadata has resolved.
+    private _minimumResidentSplats = 0;
     // Raw budget options; the final `_residentBudget` is resolved from these once the SH/rotation byte cost is known
     // (after the metadata pre-pass), so the memory budget accounts for the extra baked SH and rotation textures.
     private _maxResidentSplats = 0;
@@ -357,6 +452,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     // Per-frame LOD streaming loop; installed once the base layer is ready.
     private _lodObserver: Nullable<Observer<Scene>> = null;
     private _baseLayerReady = false;
+    private _metadataReady = false;
     // Throttling state for the per-frame LOD loop: each active camera's world position at the last LOD evaluation, so
     // a re-eval is gated on the camera set changing or any camera translating past `_lodUpdateDistance`.
     private _framesSinceLodUpdate = 0;
@@ -434,8 +530,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      * @param options streaming options
      */
     constructor(name: string, metadata: ISOGLODMetadata, rootUrl: string, scene: Scene, options: IGaussianSplattingStreamOptions = {}) {
+        // Validate before super registers the mesh with the scene, so invalid options leave no partial entity.
+        const maxResidentSplats = GaussianSplattingStream._NormalizeResidentLimit(options.maxResidentSplats ?? 0, "maxResidentSplats", true);
+        const memoryBudgetMb = GaussianSplattingStream._NormalizeResidentLimit(options.memoryBudgetMb ?? 0, "memoryBudgetMb", false);
+        if (options.rangePack && !options.rangeResidency) {
+            throw new Error("GaussianSplattingStream: rangePack requires rangeResidency.");
+        }
         super(name, null, scene, false);
-        this._metadata = metadata;
+        // Range residency rewrites LOD entries into pages, so it works on a copy of the caller's metadata.
+        this._metadata = options.rangeResidency ? GaussianSplattingStream._CloneLodMetadata(metadata) : metadata;
+        this._nextPageId = metadata.filenames.length;
         this._rootUrl = rootUrl;
         this._streamOptions = options;
         this._hostCompound = options.hostCompound ?? null;
@@ -485,14 +589,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         if (options.evictionCooldownFrames !== undefined) {
             this._evictionCooldownFrames = Math.max(0, Math.floor(options.evictionCooldownFrames));
         }
-        // Capture the raw budget options; `_residentBudget` is resolved in _streamAllAsync once the SH/rotation
-        // per-splat cost is known (a memory budget must count the extra baked SH and rotation textures, not just core).
-        if (options.maxResidentSplats !== undefined && options.maxResidentSplats > 0) {
-            this._maxResidentSplats = Math.floor(options.maxResidentSplats);
-        }
-        if (options.memoryBudgetMb !== undefined && options.memoryBudgetMb > 0) {
-            this._memoryBudgetMb = options.memoryBudgetMb;
-        }
+        // Resolve the capacity after coarse metadata and the fixed SH/rotation layout are known.
+        this._maxResidentSplats = maxResidentSplats;
+        this._memoryBudgetMb = memoryBudgetMb;
 
         this._downloadManager = new GaussianSplattingDownloadManager({
             maxConcurrent: options.maxConcurrentDownloads,
@@ -533,7 +632,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             this._hostUnsubDispose = () => this._hostCompound!.onDisposeObservable.remove(disposeObserver);
         }
 
-        this._collectLodEntries(metadata.tree);
+        this._collectLodEntries(this._metadata.tree);
 
         if (options.debugDisplay) {
             this.debugDisplay = true;
@@ -543,7 +642,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         // deferred: _streamAllAsync resolves it once the base layer has decoded. If it finishes WITHOUT the part ever
         // becoming ready (empty stream) or throws, dispose the controller so a hosted stream doesn't leave its work
         // buffer and reserved region allocated — the synchronous AddGaussianSplattingStreamPart never awaits, so it
-        // can't clean up itself. `_partReadySettled` distinguishes a genuine success (leave it running) from a
+        // can't clean up itself. Standalone startup failures also dispose their partial resources.
+        // `_partReadySettled` distinguishes a genuine success (leave it running) from a
         // finished-but-never-ready result (dispose).
         // eslint-disable-next-line github/no-then
         void this._streamAllAsync().then(
@@ -555,9 +655,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 }
             },
             (e) => {
+                this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
                 Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
                 this._rejectPartReady("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
-                if (this._hostCompound && !this._disposed) {
+                if (!this._disposed) {
                     this._disposeAndReclaim();
                 }
             }
@@ -705,7 +806,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      * @returns true when no loading work remains
      */
     private _isLoadingIdle(): boolean {
-        return this._baseLayerReady && this._decodeQueue.length === 0 && this._loadingFiles.size === 0 && this._downloadManager.isIdle;
+        return this._baseLayerReady && this._metadataReady && this._decodeQueue.length === 0 && this._loadingFiles.size === 0 && this._downloadManager.isIdle;
     }
 
     /**
@@ -758,6 +859,117 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      */
     public get effectiveSplatBudget(): number {
         return this._effectiveSplatBudget();
+    }
+
+    /**
+     * The resolved maximum number of splats kept resident in the work buffer. This combines
+     * {@link IGaussianSplattingStreamOptions.maxResidentSplats} and {@link IGaussianSplattingStreamOptions.memoryBudgetMb},
+     * taking the smaller positive limit and raising it to {@link minimumResidentSplats}. With neither limit set,
+     * the complete source size is retained when known; otherwise a bounded device-tiered default is used.
+     * The fixed capacity is capped at the device texture limit. `0` means initial capacity has not been resolved.
+     * @experimental
+     */
+    public get residentSplatBudget(): number {
+        return this._residentBudget;
+    }
+
+    /**
+     * Minimum fixed work-buffer capacity required for the complete coarse representation: one invisible padding
+     * splat, the included environment, and every unique whole coarse source file. It is `0` until the required
+     * coarse metadata has resolved. Initial residency options below this value are raised to it.
+     * @experimental
+     */
+    public get minimumResidentSplats(): number {
+        return this._minimumResidentSplats;
+    }
+
+    /**
+     * The total number of splats represented by valid level-0 leaf entries. This remains pending while source
+     * metadata is loading and is unavailable when no applicable level-0 entries exist or required metadata fails.
+     * @experimental
+     */
+    public get lod0SplatCount(): GaussianSplattingStreamLod0SplatCount {
+        return this._lod0SplatCount;
+    }
+
+    /**
+     * The source interval represented by a residency page allocation.
+     * @param fileId allocation ID as used for LOD entries (a source file index or a page ID)
+     * @returns the page's source interval, or null when the ID is a whole source file or range residency is off
+     * @experimental
+     */
+    public getSourceRange(fileId: number): Nullable<Readonly<IGaussianSplattingStreamSourceRange>> {
+        return this._residencyPages.get(fileId) ?? null;
+    }
+
+    /**
+     * Whether a residency page loads from its own split pack, see {@link IGaussianSplattingStreamOptions.rangePack}.
+     * @param fileId allocation ID
+     * @returns true when the page downloads only its own textures
+     * @experimental
+     */
+    public isSplitPage(fileId: number): boolean {
+        return this._splitPacks.has(fileId);
+    }
+
+    /**
+     * Cancels in-flight residency page loads, e.g. pages that lost priority. Only pages currently loading are affected,
+     * queued pages are untouched. A split page's own downloads are aborted. A shared source download is aborted only
+     * when no other non-cancelled, non-split loading page of that source and no entry of `keepSources` still needs it.
+     * Cancelled pages that are still referenced by a node are re-queued at the end of the decode queue.
+     * @param files allocation IDs to cancel; whole-file IDs and IDs that are not loading are ignored
+     * @param keepSources source file indices whose download must be kept (e.g. needed by queued pages), defaults to none
+     * @experimental
+     */
+    public cancelRangeLoads(files: readonly number[], keepSources: readonly number[] = []): void {
+        const sources = new Set<number>();
+        for (const file of files) {
+            const source = this._residencyPages.get(file);
+            if (!source || !this._loadingFiles.has(file)) {
+                continue;
+            }
+            this._cancelledDecodes.add(file);
+            if (this._splitPacks.has(file)) {
+                // A split page downloads under its own ID and shares nothing with its siblings.
+                this._downloadManager.cancelGroup(file);
+            } else {
+                sources.add(source.file);
+            }
+        }
+        if (sources.size === 0) {
+            return;
+        }
+        for (const keep of keepSources) {
+            sources.delete(keep);
+        }
+        for (const loading of this._loadingFiles) {
+            // Split siblings never use the source download, so only an uncancelled unsplit page keeps it.
+            if (this._cancelledDecodes.has(loading) || this._splitPacks.has(loading)) {
+                continue;
+            }
+            const source = this._residencyPages.get(loading);
+            if (source) {
+                sources.delete(source.file);
+            }
+        }
+        for (const source of sources) {
+            this._downloadManager.cancelGroup(source);
+        }
+    }
+
+    /**
+     * Range residency counters for diagnostics. A new object is created on each call, so avoid reading it every frame.
+     * @experimental
+     */
+    public get rangeResidencyStats(): Readonly<IGaussianSplattingStreamRangeResidencyStats> {
+        return {
+            enabled: this._streamOptions.rangeResidency === true,
+            pages: this._residencyPages.size,
+            sourcePackLoads: this._rangeSourcePackLoads,
+            sourcePackReuses: this._rangeSourcePackReuses,
+            splitPackLoads: this._rangeSplitPackLoads,
+            cachedSourceSplats: this._rangeSourcePack?.pack.splatCount ?? 0,
+        };
     }
 
     /**
@@ -961,6 +1173,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         }
         this._clearDebugDisplay();
         this._downloadManager.dispose();
+        this._disposeRangeSourcePack();
+        this._splitPacks.clear();
+        this._residencyPages.clear();
         this._residency?.dispose();
         this._residency = null;
         this._workBuffer?.dispose();
@@ -969,8 +1184,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Disposes this stream (which tombstones its region) and then compacts the host once to actually reclaim the
-     * reserved rows. Used on a definitive load failure / empty result — a discrete, one-off reclaim, versus a bare
+     * Disposes this stream and, when hosted, compacts the host once to reclaim its tombstoned region's reserved
+     * rows. Used on a definitive load failure / empty result — a discrete, one-off reclaim, versus a bare
      * {@link dispose} that only tombstones so tearing down several parts doesn't rebuild the atlas repeatedly.
      */
     private _disposeAndReclaim(): void {
@@ -984,7 +1199,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     /**
      * The world matrix that actually places this stream's splats, used to map the camera into the space the
-     * node bounds live in (for LOD distance) and to build per-node world AABBs (for frustum culling). Standalone:
+     * node bounds live in (for LOD distance) and to build camera-local frusta (for frustum culling). Standalone:
      * this controller mesh carries the transform. Hosted: this controller is a hidden, unplaced node — the splats
      * are placed by the reserved part's proxy (SOG up-axis basis composed with the host's placement), so LOD and
      * culling MUST use the proxy's world matrix or they compute distances/frustum tests in the wrong space
@@ -1338,6 +1553,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             const entry = node.lods[key];
             const count = entry ? Math.floor(Number(entry.count)) : NaN;
             if (Number.isInteger(level) && String(level) === key && level >= 0 && level <= maxLevel && entry && Number.isFinite(count) && count > 0) {
+                if (this._streamOptions.rangeResidency && (!Number.isSafeInteger(entry.file) || entry.file < 0 || entry.file >= this._metadata.filenames.length)) {
+                    Logger.Warn(`GaussianSplattingStream: invalid LOD file index ${entry.file}; skipping level ${level}.`);
+                    continue;
+                }
                 entry.count = count;
                 levels.push(level);
             }
@@ -1367,54 +1586,86 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         node.activeLod = undefined;
         node.lodCooldown = 0;
         node.inFrustum = true;
-        // Local-space bounds for the per-node frustum test; the mesh world matrix is applied per evaluation.
+        // Static local bounds; each camera's frustum is transformed into this space for evaluation.
         node.cullBounds = new BoundingInfo(Vector3.FromArray(bmin), Vector3.FromArray(bmax));
         this._leafNodes.push(node);
     }
 
     /**
-     * Streams the scene: learns every source file's splat count, allocates one unified GPU work buffer
-     * sized for all LOD files, decodes the environment and the coarsest LOD of every node as a permanent
-     * base layer, then installs the per-frame loop that streams finer LODs on demand.
+     * Streams the scene. Large streams fetch only required coarse metadata before allocating and decoding the
+     * complete coarse layer; finer metadata starts afterwards so it cannot occupy the download queue ahead of
+     * visible geometry. Small streams and streams containing only coarse files retain an exact all-file capacity upper bound.
      */
     private async _streamAllAsync(): Promise<void> {
-        // Step 1: learn splat counts for the environment and every referenced LOD file (cheap meta only). This also
-        // resolves the max SH degree, so the resident-splat budget can now be sized with the SH/rotation byte cost.
         const fileIds = this._collectAllFileIds();
-        const envCount = await this._gatherCountsAsync(fileIds);
+        const baseFileIds = this._collectBaseFileIds();
+        this._baseFileIds.clear();
+        for (const fileId of baseFileIds) {
+            this._baseFileIds.add(fileId);
+        }
+        if (this._leafNodes.length > 0 && baseFileIds.length === 0) {
+            throw new Error("GaussianSplattingStream: no valid coarse source files were referenced.");
+        }
+
+        const progressiveMetadata = fileIds.length > ProgressiveMetadataFileThreshold && baseFileIds.length < fileIds.length;
+        if (progressiveMetadata && this._decodeSh) {
+            // Finer metadata is deliberately unknown during allocation. Reserve the renderer's complete supported
+            // degree-4 layout so a later file can never require a fixed-atlas resize or silently lose its SH.
+            this._streamShDegree = MaxSupportedShDegree;
+            this._shTextureCount = MaxSupportedShTextureCount;
+        }
+
+        // The environment keeps its existing initial ordering. On large streams only coarse source metadata follows
+        // it, leaving the FIFO download manager free for coarse textures before the hundreds of finer metadata files.
+        const initialFileIds = progressiveMetadata ? baseFileIds : fileIds;
+        const envCount = await this._gatherCountsAsync(initialFileIds);
         if (this._disposed) {
             return;
         }
-        this._resolveResidentBudget();
+        for (const fileId of baseFileIds) {
+            const count = this._fileCounts.get(fileId);
+            if (!this._fileMeta.has(fileId) || count === undefined || count <= 0) {
+                throw new Error(`GaussianSplattingStream: required coarse metadata for file ${fileId} is unavailable or invalid.`);
+            }
+        }
+        this._resolveMinimumResidentSplats(baseFileIds, envCount);
+        if (!progressiveMetadata) {
+            this._resolveLod0SplatCount();
+            this._metadataReady = true;
+        }
 
-        // Step 2: learn the full dataset size (padding + environment + every LOD file). The work buffer is
-        // sized to this unless a smaller budget enables eviction-based streaming.
         // Index 0 is reserved as a never-decoded padding splat: the sort worker and index buffer pad unused
         // slots with index 0, and leaving that slot zeroed (center.w = 0 => zero covariance, alpha 0) makes
         // the padding invisible instead of ghosting a copy of the first real splat.
-        let fullCapacity = 1;
-        if (envCount > 0) {
-            fullCapacity += envCount;
-        }
-        for (const fileId of fileIds) {
-            const count = this._fileCounts.get(fileId);
-            if (count !== undefined && count > 0) {
-                fullCapacity += count;
+        let fullCapacity: Nullable<number> = null;
+        if (!progressiveMetadata) {
+            fullCapacity = 1 + envCount;
+            for (const fileId of fileIds) {
+                const count = this._fileCounts.get(fileId);
+                if (count !== undefined && count > 0) {
+                    fullCapacity = GaussianSplattingStream._SafeAddCounts(fullCapacity, count, "stream capacity");
+                }
             }
         }
-        if (fullCapacity <= 1) {
-            return;
+        if (this._minimumResidentSplats <= 1) {
+            throw new Error("GaussianSplattingStream: stream produced no splats.");
         }
 
-        // Eviction streams the dataset through a fixed budget; only enabled when that budget is below the full set.
-        this._evictionEnabled = this._residentBudget > 0 && this._residentBudget < fullCapacity;
-        const capacity = this._evictionEnabled ? Math.max(this._residentBudget, 1) : fullCapacity;
+        let largestBaseFileCount = 0;
+        for (const fileId of baseFileIds) {
+            largestBaseFileCount = Math.max(largestBaseFileCount, this._fileCounts.get(fileId)!);
+        }
+        const capacity = this._resolveResidentBudget(fullCapacity, largestBaseFileCount);
+        // Progressive metadata always implies that additional source files may need to replace one another. For an
+        // exact small stream, eviction is necessary only when its chosen capacity is below the full source set.
+        this._evictionEnabled = progressiveMetadata || (fullCapacity !== null && capacity < fullCapacity);
 
         this._residency = new GaussianSplattingResidencyController(capacity, this._evictionCooldownFrames, (file) => this._onFileEvicted(file));
-        // Pin splat 0 as the invisible padding splat, then the environment (always rendered) — neither is evicted.
+        // Padding is always pinned. Reserve the environment now, but pin it only after a successful decode so
+        // failed environment data can release its allocation before coarse/fine files need that space.
         this._residency.pin(PaddingFileId, 1);
         if (envCount > 0) {
-            const envOffset = this._residency.pin(EnvironmentFileId, envCount);
+            const envOffset = this._residency.allocate(EnvironmentFileId, envCount);
             if (envOffset !== null) {
                 this._environmentRange = { offset: envOffset, count: envCount };
             } else {
@@ -1529,37 +1780,53 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             }
         }
 
-        // Step 3: decode the environment, then every node's coarsest LOD as the permanent base layer.
+        // Decode the environment, then every unique coarse source. Each completed coarse file immediately
+        // promotes its leaves and publishes their ranges; incomplete essential coarse data fails the stream.
         if (this._environmentRange && this._environmentFiles) {
             await this._decodeEnvironmentAsync();
         }
         this._environmentFiles = null;
 
-        const baseFiles = new Set<number>();
-        for (const node of this._leafNodes) {
-            const entry = node.lods![String(node.baseLod)];
-            if (entry && this._fileCounts.has(entry.file)) {
-                baseFiles.add(entry.file);
-            }
-        }
-        for (const fileId of Array.from(baseFiles)) {
+        for (const fileId of baseFileIds) {
             if (this._disposed) {
                 return;
             }
             // eslint-disable-next-line no-await-in-loop
-            await this._decodeFileAsync(fileId);
+            const decoded = await this._decodeFileAsync(fileId);
+            if (!decoded) {
+                throw new Error(`GaussianSplattingStream: required coarse file ${fileId} failed to decode.`);
+            }
         }
 
         if (this._disposed) {
             return;
         }
-        // Step 4: hand off to the per-frame LOD streaming loop.
+        for (const node of this._leafNodes) {
+            if (node.activeLod !== node.baseLod || node.activeFile === undefined) {
+                throw new Error("GaussianSplattingStream: the complete coarse layer could not be activated.");
+            }
+        }
+
+        // Coarse data is now complete and visible. Hosted callers can place/frame the real bounds immediately,
+        // while large streams fetch finer metadata in the background.
         this._baseLayerReady = true;
+        this._resolvePartReady();
+
+        if (progressiveMetadata) {
+            const fineFileIds = fileIds.filter((fileId) => !this._baseFileIds.has(fileId));
+            await this._gatherCountsAsync(fineFileIds, false);
+            this._resolveLod0SplatCount();
+            this._metadataReady = true;
+            if (this._disposed) {
+                return;
+            }
+        }
+
+        // Only after complete coarse coverage and the finer metadata phase may the per-frame loop request fine
+        // geometry. The fixed work buffer continues to retain every pinned coarse source as fallback.
         if (!this._lodObserver) {
             this._lodObserver = this._scene.onBeforeRenderObservable.add(() => this._onLodFrame());
         }
-        // Hosted: the reserved part now exists with a decoded base layer and real bounds — release awaiters.
-        this._resolvePartReady();
     }
 
     /**
@@ -1584,28 +1851,75 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Resolves the resident-splat budget from the raw options, sizing a memory (MB) budget with the actual per-splat
-     * GPU+CPU cost — core data plus the baked SH textures and rotation/scale textures when enabled — so SH/rotation
-     * assets don't silently consume up to double the configured budget. Requires the SH degree (from the metadata
-     * pre-pass) to be known. The smaller of the splat-count and memory budgets wins.
+     * Resolves the fixed initial work-buffer capacity. Explicit count/MB limits are combined by taking the smaller
+     * and then raised to the complete coarse minimum. Without an explicit limit, a known complete source retains
+     * legacy full residency. When finer metadata is deferred and the complete size is unknown, the device-tiered
+     * memory estimate is given at least one largest-coarse-file of headroom so one replacement file can refine
+     * while all coarse fallback files remain pinned.
+     * @param fullCapacity exact complete source capacity, or null when unavailable
+     * @param largestBaseFileCount largest whole coarse source file, used as modest replacement headroom
+     * @returns the fixed initial work-buffer capacity
      */
-    private _resolveResidentBudget(): void {
-        let budget = this._maxResidentSplats;
+    private _resolveResidentBudget(fullCapacity: Nullable<number> = null, largestBaseFileCount = 0): number {
+        const hasExplicitLimit = this._maxResidentSplats > 0 || this._memoryBudgetMb > 0;
+        let budget = this._maxResidentSplats > 0 ? this._maxResidentSplats : Number.POSITIVE_INFINITY;
+        const bytesPerSplat = this._bytesPerResidentSplat();
         if (this._memoryBudgetMb > 0) {
-            // Per resident splat: core 84 B, + 16 B per packed-u32 SH texture, + the 3 RGBA rotation textures. The
-            // work buffer uses half-float rotation textures (8 B each = 24 B) when the engine can render to them,
-            // else full float (16 B each = 48 B) — match that so fallback devices aren't under-budgeted.
-            const rotBytes = this._scene.getEngine().getCaps().textureHalfFloatRender ? 24 : 48;
-            const bytesPerSplat = BytesPerResidentSplat + this._shTextureCount * 16 + (this._needsRotationScale ? rotBytes : 0);
             const fromMB = Math.floor((this._memoryBudgetMb * 1024 * 1024) / bytesPerSplat);
-            budget = budget > 0 ? Math.min(budget, fromMB) : fromMB;
+            budget = Math.min(budget, fromMB);
+        }
+        if (!hasExplicitLimit && fullCapacity !== null) {
+            budget = fullCapacity;
+        } else if (!hasExplicitLimit) {
+            const automaticMb = this._scene.getEngine().hostInformation?.isMobile ? MobileAutomaticResidentMemoryMb : DesktopAutomaticResidentMemoryMb;
+            const automaticCount = Math.floor((automaticMb * 1024 * 1024) / bytesPerSplat);
+            const refinementHeadroom = Math.max(0, Math.floor(largestBaseFileCount));
+            const coarseWithHeadroom = GaussianSplattingStream._SafeAddCounts(this._minimumResidentSplats, refinementHeadroom, "automatic resident capacity");
+            budget = Math.max(automaticCount, coarseWithHeadroom);
+        } else if (budget < this._minimumResidentSplats) {
+            Logger.Warn(
+                `GaussianSplattingStream: the requested initial residency (${budget} splats) is below the complete coarse minimum (${this._minimumResidentSplats}); using the minimum.`
+            );
+        }
+
+        budget = Math.max(this._minimumResidentSplats, Math.floor(budget));
+        if (fullCapacity !== null) {
+            budget = Math.min(budget, fullCapacity);
+        }
+        if (fullCapacity !== null || this._minimumResidentSplats > 0) {
+            const maxTextureSize = Math.floor(this._scene.getEngine().getCaps().maxTextureSize);
+            const maxCapacity = maxTextureSize * maxTextureSize;
+            if (!Number.isSafeInteger(maxCapacity) || this._minimumResidentSplats > maxCapacity) {
+                throw new Error(`GaussianSplattingStream: minimum resident splat count ${this._minimumResidentSplats} exceeds the device texture capacity ${maxCapacity}.`);
+            }
+            if (budget > maxCapacity) {
+                budget = maxCapacity;
+            }
+            if (budget < this._minimumResidentSplats) {
+                throw new Error(`GaussianSplattingStream: minimum resident splat count ${this._minimumResidentSplats} exceeds the device texture capacity ${maxCapacity}.`);
+            }
+        }
+        if (!Number.isSafeInteger(budget) || budget < this._minimumResidentSplats || budget < 1) {
+            throw new Error("GaussianSplattingStream: resolved resident capacity is invalid.");
         }
         this._residentBudget = budget;
+        return budget;
     }
 
     /**
-     * Collects the unique set of source file indices referenced by any LOD of any leaf, sorted ascending.
-     * @returns sorted unique file indices
+     * Returns the estimated combined GPU/CPU bytes occupied by one resident splat.
+     * @returns estimated bytes per resident splat
+     */
+    private _bytesPerResidentSplat(): number {
+        // The three rotation textures use half floats (8 B each) when supported, otherwise full floats (16 B each).
+        const rotBytes = this._scene.getEngine().getCaps().textureHalfFloatRender ? 24 : 48;
+        return BytesPerResidentSplat + this._shTextureCount * 16 + (this._needsRotationScale ? rotBytes : 0);
+    }
+
+    /**
+     * Collects sorted allocation IDs referenced by leaf LODs: source file IDs before range remapping, and
+     * source file or residency page IDs afterwards.
+     * @returns sorted unique allocation IDs
      */
     private _collectAllFileIds(): number[] {
         const ids = new Set<number>();
@@ -1621,12 +1935,75 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Fetches the environment bundle and every referenced file's metadata to learn splat counts, caching
-     * each file's parsed metadata for the later on-demand decode. Metadata fetches run in parallel.
+     * Collects unique whole source files required by the coarsest entry of every valid leaf.
+     * @returns sorted unique coarse file indices
+     */
+    private _collectBaseFileIds(): number[] {
+        const ids = new Set<number>();
+        for (const node of this._leafNodes) {
+            const entry = node.lods?.[String(node.baseLod)];
+            if (entry) {
+                ids.add(entry.file);
+            }
+        }
+        return Array.from(ids).sort((a, b) => a - b);
+    }
+
+    /**
+     * Resolves the immutable minimum initial capacity from padding, environment, and unique whole coarse files.
+     * @param baseFileIds unique coarse source file indices
+     * @param environmentCount included environment splat count
+     */
+    private _resolveMinimumResidentSplats(baseFileIds: number[], environmentCount: number): void {
+        let minimum = GaussianSplattingStream._SafeAddCounts(1, Math.max(0, Math.floor(environmentCount)), "minimum resident splats");
+        for (const fileId of baseFileIds) {
+            const count = this._fileCounts.get(fileId);
+            if (count === undefined || !Number.isSafeInteger(count) || count <= 0) {
+                throw new Error(`GaussianSplattingStream: required coarse metadata for file ${fileId} is unavailable or invalid.`);
+            }
+            minimum = GaussianSplattingStream._SafeAddCounts(minimum, count, "minimum resident splats");
+        }
+        this._minimumResidentSplats = minimum;
+    }
+
+    /**
+     * Settles the level-0 diagnostic from normalized renderable leaf entries after their source metadata resolves.
+     * A file may back several leaf ranges, so its source count is deliberately not used in the total.
+     */
+    private _resolveLod0SplatCount(): void {
+        let total = 0;
+        let hasLod0Entry = false;
+        for (const node of this._leafNodes) {
+            if (node.availableLevels?.[0] !== 0) {
+                continue;
+            }
+            const entry = node.lods?.["0"];
+            if (!entry) {
+                this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
+                return;
+            }
+            hasLod0Entry = true;
+            if (!this._fileCounts.has(entry.file) || !this._fileMeta.has(entry.file)) {
+                this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
+                return;
+            }
+            total += entry.count;
+            if (!Number.isSafeInteger(total)) {
+                this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
+                return;
+            }
+        }
+        this._lod0SplatCount = hasLod0Entry ? Object.freeze({ status: "available" as const, count: total }) : Object.freeze({ status: "unavailable" as const });
+    }
+
+    /**
+     * Fetches the environment bundle and the supplied referenced files' metadata to learn splat counts, caching
+     * each file's parsed metadata for the later on-demand decode. File metadata fetches run in parallel.
      * @param fileIds file indices to fetch metadata for
+     * @param includeEnvironment whether to fetch the optional environment bundle in this phase
      * @returns the environment splat count (0 when there is no environment)
      */
-    private async _gatherCountsAsync(fileIds: number[]): Promise<number> {
+    private async _gatherCountsAsync(fileIds: number[], includeEnvironment = true): Promise<number> {
         let envCount = 0;
         // Track the max SH degree/coeffs across every streamed file (+ environment): the baked SH atlas is sized
         // for the max once, up front, so no mid-stream resize — lower-degree files neutral-fill their higher bands.
@@ -1641,7 +2018,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 maxCoeffs = info.coeffs;
             }
         };
-        if (this._metadata.environment) {
+        if (includeEnvironment && this._metadata.environment) {
             try {
                 const url = this._rootUrl + this._metadata.environment;
                 const buffer = await this._downloadManager.loadFileAsync(url);
@@ -1686,12 +2063,186 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
         // Resolve the stream's baked-SH configuration: enabled only when requested AND the data carries shN.
         if (this._decodeSh && maxShDegree > 0 && maxCoeffs > 0) {
-            this._streamShDegree = maxShDegree;
+            this._streamShDegree = Math.max(this._streamShDegree, maxShDegree);
             // Packed-u32 SH textures: 16 SH scalar-bytes per texel, 3 channels per coefficient (matches ParseSogDatas).
-            this._shTextureCount = Math.ceil((maxCoeffs * 3) / 16);
+            this._shTextureCount = Math.max(this._shTextureCount, Math.ceil((maxCoeffs * 3) / 16));
         }
 
+        if (this._streamOptions.rangeResidency) {
+            this._initializeResidencyPages(fileIds);
+        }
         return envCount;
+    }
+
+    /**
+     * Splits the gathered source files into residency pages sized to the LOD leaf intervals they serve, and rewrites
+     * those leaf entries to point at the pages. Pinned coarse files, files without metadata and files with invalid
+     * intervals stay whole.
+     * @param fileIds source file indices whose metadata was just gathered
+     */
+    private _initializeResidencyPages(fileIds: readonly number[]): void {
+        const sources = new Set(fileIds);
+        const entries: ISOGLODEntry[] = [];
+        for (const node of this._leafNodes) {
+            for (const level of node.availableLevels!) {
+                const entry = node.lods![String(level)];
+                if (sources.has(entry.file)) {
+                    entries.push(entry);
+                }
+            }
+        }
+        const { pages, invalidFiles } = BuildSplatResidencyPages(entries, this._fileCounts, this._baseFileIds, this._metadata.filenames.length, this._nextPageId);
+        for (const file of invalidFiles) {
+            Logger.Warn(`GaussianSplattingStream: invalid LOD interval in file ${file}; keeping it as one resident file.`);
+        }
+        for (const page of pages) {
+            const meta = this._fileMeta.get(page.source.file)!;
+            this._fileMeta.set(page.id, meta);
+            this._fileCounts.set(page.id, page.source.count);
+            const source = Object.freeze({ ...page.source });
+            this._residencyPages.set(page.id, source);
+            const split = this._resolveSplitPack(page.id, source, meta.sogData);
+            if (split) {
+                this._splitPacks.set(page.id, split);
+            }
+            for (const entry of page.entries) {
+                entry.file = page.id;
+                entry.offset -= page.source.offset;
+            }
+        }
+        this._nextPageId += pages.length;
+        if (pages.length) {
+            this._forceLodUpdate = true;
+        }
+    }
+
+    /**
+     * Asks the {@link IGaussianSplattingStreamOptions.rangePack} resolver for the split pack of one page.
+     * @param pageId page allocation ID
+     * @param source the page's source interval
+     * @param sourceData SOG metadata of the page's source file
+     * @returns the split pack, or null when the page decodes from its source pack
+     */
+    private _resolveSplitPack(pageId: number, source: Readonly<IGaussianSplattingStreamSourceRange>, sourceData: SOGRootData): Nullable<IGaussianSplattingStreamRangePack> {
+        const resolve = this._streamOptions.rangePack;
+        if (!resolve) {
+            return null;
+        }
+        try {
+            const split = resolve(source, sourceData);
+            if (!split) {
+                return null;
+            }
+            if (GaussianSplattingStream._GetSplatCount(split.sogData) !== source.count) {
+                Logger.Warn(`GaussianSplattingStream: split pack for page ${pageId} does not hold ${source.count} splats; using the source pack.`);
+                return null;
+            }
+            return split;
+        } catch (e: any) {
+            Logger.Warn(`GaussianSplattingStream: rangePack failed for page ${pageId}: ${e?.message ?? e}; using the source pack.`);
+            return null;
+        }
+    }
+
+    /**
+     * Downloads every image of a pack through the download manager, then creates its textures. The cancellable
+     * network phase completes before any GPU texture exists, so a cancelled or failed download cannot leave textures
+     * allocated by sibling image promises behind.
+     * @param meta SOG metadata and image URL prefix of the pack
+     * @param groupId download group, so the downloads can be cancelled together
+     * @returns the texture pack, or null when the stream was disposed meanwhile
+     */
+    private async _loadPrefetchedPackAsync(meta: { sogData: SOGRootData; subRootUrl: string }, groupId: number): Promise<Nullable<ISogTexturePack>> {
+        const data = meta.sogData;
+        const names = new Set<string>([
+            ...(data.means?.files ?? []),
+            ...(data.scales?.files ?? []),
+            ...(data.quats?.files ?? []),
+            ...(data.sh0?.files ?? []),
+            ...(data.shN?.files ?? []),
+        ]);
+        const files = new Map<string, Uint8Array>();
+        await Promise.all(
+            Array.from(names, async (name) => {
+                files.set(name, new Uint8Array(await this._downloadManager.loadFileAsync(meta.subRootUrl + name, groupId)));
+            })
+        );
+        if (this._disposed) {
+            return null;
+        }
+        files.set("meta.json", new TextEncoder().encode(JSON.stringify(data)));
+        const pack = (await ParseSogMetaAsTextures(files, "", this._scene, !this._useGpuPositionReadback)).sogTextures;
+        if (!pack) {
+            return null;
+        }
+        if (this._disposed) {
+            GaussianSplattingStream._DisposePack(pack);
+            return null;
+        }
+        return pack;
+    }
+
+    /**
+     * Returns the cached source pack of a file, loading it (and dropping any other cached source pack) when needed.
+     * @param file source file index
+     * @param meta SOG metadata and image URL prefix of the source file
+     * @returns the shared source pack, which the caller must not dispose
+     */
+    private async _getRangeSourcePackAsync(file: number, meta: { sogData: SOGRootData; subRootUrl: string }): Promise<Nullable<ISogTexturePack>> {
+        if (this._rangeSourcePack?.file === file) {
+            this._rangeSourcePackReuses++;
+            return this._rangeSourcePack.pack;
+        }
+        this._disposeRangeSourcePack();
+        const pack = await this._loadPrefetchedPackAsync(meta, file);
+        if (!pack) {
+            return null;
+        }
+        if (this._disposed) {
+            GaussianSplattingStream._DisposePack(pack);
+            return null;
+        }
+        this._rangeSourcePackLoads++;
+        this._rangeSourcePack = { file, pack };
+        return pack;
+    }
+
+    private _disposeRangeSourcePack(): void {
+        if (this._rangeSourcePack) {
+            GaussianSplattingStream._DisposePack(this._rangeSourcePack.pack);
+            this._rangeSourcePack = null;
+        }
+    }
+
+    /**
+     * Copies the parts of the LOD metadata a stream mutates (tree nodes and LOD entries), so a range-residency stream
+     * can rewrite entries without affecting the caller's object or another stream built from it.
+     * @param metadata caller metadata
+     * @returns metadata sharing every field except a freshly copied tree
+     */
+    private static _CloneLodMetadata(metadata: ISOGLODMetadata): ISOGLODMetadata {
+        return { ...metadata, tree: GaussianSplattingStream._CloneLodNode(metadata.tree) };
+    }
+
+    private static _CloneLodNode(node: ISOGLODNode): ISOGLODNode {
+        const copy = {} as ISOGLODNode;
+        if (node.bound) {
+            copy.bound = {
+                min: Array.isArray(node.bound.min) ? node.bound.min.slice() : node.bound.min,
+                max: Array.isArray(node.bound.max) ? node.bound.max.slice() : node.bound.max,
+            };
+        }
+        if (Array.isArray(node.children)) {
+            copy.children = node.children.map((child) => GaussianSplattingStream._CloneLodNode(child));
+        }
+        if (node.lods) {
+            copy.lods = {};
+            for (const key of Object.keys(node.lods)) {
+                const entry = node.lods[key];
+                copy.lods[key] = entry && typeof entry === "object" ? { ...entry } : entry;
+            }
+        }
+        return copy;
     }
 
     /**
@@ -1835,9 +2386,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      * @param pack the parsed SOG pack (its `positions` is populated only on the CPU path)
      * @param base first splat index of the range in the work buffer
      * @param count number of splats in the range
+     * @param sourceOffset first splat of the range inside the pack, defaults to 0
      * @returns whether positions were applied
      */
-    private async _applyDecodedPositionsAsync(pack: ISogTexturePack, base: number, count: number): Promise<boolean> {
+    private async _applyDecodedPositionsAsync(pack: ISogTexturePack, base: number, count: number, sourceOffset = 0): Promise<boolean> {
         if (this._useGpuPositionReadback && this._workBuffer) {
             const positions = await this._workBuffer.readCentersRangeAsync(base, count);
             if (this._disposed) {
@@ -1850,7 +2402,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             // Validated readback unexpectedly returned nothing; fall through to the (likely empty) CPU positions.
         }
 
-        const cpu = pack.positions.length >= count * 4 ? (pack.positions.subarray(0, count * 4) as Float32Array) : null;
+        const cpu = pack.positions.length >= (sourceOffset + count) * 4 ? (pack.positions.subarray(sourceOffset * 4, (sourceOffset + count) * 4) as Float32Array) : null;
         if (!cpu || !this._splatPositions) {
             return false;
         }
@@ -1870,10 +2422,12 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             return;
         }
         const range = this._environmentRange;
+        let decoded = false;
         try {
             const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene, !this._useGpuPositionReadback, this._downloadManager);
             const pack = parsed.sogTextures;
             if (!pack) {
+                Logger.Warn("GaussianSplattingStream: environment decoding produced no texture data.");
                 return;
             }
             try {
@@ -1884,10 +2438,18 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 if (this._disposed) {
                     return;
                 }
-                await this._applyDecodedPositionsAsync(pack, range.offset, range.count);
+                const positionsApplied = await this._applyDecodedPositionsAsync(pack, range.offset, range.count);
                 if (this._disposed) {
                     return;
                 }
+                if (!positionsApplied) {
+                    Logger.Warn("GaussianSplattingStream: decoded positions could not be applied for the environment.");
+                    return;
+                }
+                if (this._residency?.pin(EnvironmentFileId, range.count) !== range.offset) {
+                    throw new Error("GaussianSplattingStream: decoded environment could not be pinned.");
+                }
+                decoded = true;
                 this._refreshActiveRanges();
             } finally {
                 // Always release the GPU source textures (the decode pass is the only consumer).
@@ -1895,42 +2457,84 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             }
         } catch (e: any) {
             Logger.Warn("GaussianSplattingStream: failed to decode environment: " + (e?.message ?? e));
+        } finally {
+            if (!decoded) {
+                this._residency?.free(EnvironmentFileId);
+                this._environmentRange = null;
+            }
         }
     }
 
     /**
-     * Loads one LOD source file as GPU textures, decodes it into its fixed work-buffer block, records its
-     * CPU centers for sorting, frees the source textures, then promotes any nodes that were waiting for it.
-     * Concurrent or repeat requests for the same file are ignored. If the file is cancelled mid-flight
+     * Loads one LOD source file or residency page, decodes it into its work-buffer block, records CPU
+     * centers for sorting, then promotes waiting nodes. Whole-file and split-page textures are freed
+     * after decoding; unsplit pages can reuse a cached source pack until no page needs it.
+     * Concurrent or repeat requests for the same allocation are ignored. If it is cancelled mid-flight
      * (because every node that wanted it retargeted), the decode bails cooperatively at the next checkpoint.
-     * @param fileId file index to decode
+     * @param fileId source file or residency page allocation ID to decode
+     * @returns whether the allocation was decoded and published successfully
      */
-    private async _decodeFileAsync(fileId: number): Promise<void> {
-        if (this._decodedFiles.has(fileId) || this._loadingFiles.has(fileId) || !this._residency) {
-            return;
+    private async _decodeFileAsync(fileId: number): Promise<boolean> {
+        if (this._decodedFiles.has(fileId)) {
+            return true;
+        }
+        if (this._loadingFiles.has(fileId) || !this._residency) {
+            return false;
         }
         const meta = this._fileMeta.get(fileId);
         const count = this._fileCounts.get(fileId);
         if (!meta || count === undefined) {
-            return;
+            return false;
         }
         this._loadingFiles.add(fileId);
         this._cancelledDecodes.delete(fileId);
         let allocated = false;
+        const source = this._residencyPages.get(fileId);
+        const split = this._splitPacks.get(fileId);
+        let releaseGate: Nullable<() => void> = null;
         try {
-            const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene, !this._useGpuPositionReadback, this._downloadManager, fileId);
-            const pack = parsed.sogTextures;
-            if (!pack) {
-                return;
+            let pack: Nullable<ISogTexturePack>;
+            // Whole-file and split packs are owned by this decode; the cached source pack is shared by all pages of its source.
+            let ownsPack = true;
+            if (split) {
+                // A split page downloads under its own group, so it can be cancelled independently of its siblings.
+                pack = await this._loadPrefetchedPackAsync(split, fileId);
+            } else if (source) {
+                // Source pages hold the decode gate from download through readback, one at a time, so the shared
+                // source pack cannot grow with the queue. A split page takes the gate only to decode.
+                releaseGate = await this._acquireDecodeGateAsync();
+                if (this._disposed || this._cancelledDecodes.has(fileId)) {
+                    return false;
+                }
+                pack = await this._getRangeSourcePackAsync(source.file, meta);
+                ownsPack = false;
+                if (pack) {
+                    this._activeRangeSource = source.file;
+                }
+            } else {
+                const parsed = await ParseSogMetaAsTextures(meta.sogData, meta.subRootUrl, this._scene, !this._useGpuPositionReadback, this._downloadManager, fileId);
+                pack = parsed.sogTextures ?? null;
             }
+            if (!pack) {
+                return false;
+            }
+            if (split) {
+                this._rangeSplitPackLoads++;
+            }
+            // A split page holds only its own interval, starting at row 0 of its pack.
+            const sourceOffset = source && !split ? source.offset : 0;
             // Serialize the allocate -> decode -> readback section: a relayout runs only inside it (see
             // _relayoutAndAllocateAsync), so it never moves a file whose decode has not finished writing.
-            const release = await this._acquireDecodeGateAsync();
+            releaseGate ??= await this._acquireDecodeGateAsync();
             try {
                 if (this._disposed || !this._workBuffer || this._cancelledDecodes.has(fileId)) {
-                    return;
+                    return false;
                 }
-                let base = this._residency.allocate(fileId, count);
+                const residency = this._residency;
+                if (!residency) {
+                    return false;
+                }
+                let base = residency.allocate(fileId, count);
                 if (base === null) {
                     // Defragment the work buffer to reclaim fragmented free space, then retry.
                     base = await this._relayoutAndAllocateAsync(fileId, count);
@@ -1941,41 +2545,66 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                     if (!this._cancelledDecodes.has(fileId)) {
                         Logger.Warn(`GaussianSplattingStream: resident memory budget full; skipping LOD file ${fileId}.`);
                     }
-                    return;
+                    return false;
                 }
                 allocated = true;
                 if (this._disposed || !this._workBuffer || this._cancelledDecodes.has(fileId)) {
-                    return;
+                    return false;
                 }
-                await this._workBuffer.decodeAsync(pack, base);
+                if (source) {
+                    await this._workBuffer.decodeAsync(pack, base, sourceOffset, count);
+                } else {
+                    await this._workBuffer.decodeAsync(pack, base);
+                }
                 if (this._disposed || this._cancelledDecodes.has(fileId)) {
-                    return;
+                    return false;
                 }
-                await this._applyDecodedPositionsAsync(pack, base, count);
-                if (this._disposed) {
-                    return;
+                const positionsApplied = await this._applyDecodedPositionsAsync(pack, base, count, sourceOffset);
+                if (this._disposed || this._cancelledDecodes.has(fileId)) {
+                    return false;
+                }
+                if (!positionsApplied) {
+                    Logger.Warn(`GaussianSplattingStream: decoded positions could not be applied for LOD file ${fileId}.`);
+                    return false;
+                }
+                if (this._baseFileIds.has(fileId)) {
+                    if (residency.pin(fileId, count) !== base) {
+                        throw new Error(`GaussianSplattingStream: required coarse file ${fileId} could not be pinned.`);
+                    }
                 }
                 this._decodedFiles.add(fileId);
                 // Promote any nodes that can now reach their desired LOD via this newly decoded file.
                 if (this._applyDesiredLods()) {
                     this._refreshActiveRanges();
                 }
+                return true;
             } finally {
-                GaussianSplattingStream._DisposePack(pack);
-                release();
+                if (ownsPack) {
+                    GaussianSplattingStream._DisposePack(pack);
+                }
             }
         } catch (e) {
             // A cancelled file rejects its downloads on purpose — swallow that; re-throw genuine failures.
             if (!this._cancelledDecodes.has(fileId)) {
                 throw e;
             }
+            return false;
         } finally {
+            if (source && !split && releaseGate) {
+                this._activeRangeSource = null;
+            }
+            releaseGate?.();
             // If a slot was allocated but the decode did not complete (cancelled/disposed), release it.
             if (allocated && !this._decodedFiles.has(fileId)) {
-                this._residency.free(fileId);
+                this._residency?.free(fileId);
             }
+            const wasCancelled = this._cancelledDecodes.has(fileId);
             this._loadingFiles.delete(fileId);
             this._cancelledDecodes.delete(fileId);
+            // A decode cancelled while a node still references the file would otherwise never be retried.
+            if (wasCancelled && !this._disposed && (this._fileRefs.get(fileId) ?? 0) > 0) {
+                this._enqueueDecode(fileId);
+            }
         }
     }
 
@@ -2369,7 +2998,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     /**
      * Records that a node needs a not-yet-decoded file, bumping its reference count and queueing the decode.
-     * @param fileId file index the node now targets
+     * @param fileId source file or residency page allocation ID the node now targets
      */
     private _acquirePendingFile(fileId: number): void {
         this._acquireFileRef(fileId);
@@ -2380,7 +3009,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      * Releases a node's reference to a file. When the last reference is dropped: a decoded file is scheduled
      * for eviction (when streaming under a budget), and a still-downloading file has its queued decode dropped
      * and any in-flight download cancelled.
-     * @param fileId file index the node no longer references
+     * @param fileId source file or residency page allocation ID the node no longer references
      */
     private _releaseFileRef(fileId: number): void {
         const refs = (this._fileRefs.get(fileId) ?? 0) - 1;
@@ -2403,8 +3032,48 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         }
         if (this._loadingFiles.has(fileId)) {
             // Flag the in-flight decode to bail at its next checkpoint and cancel its image downloads.
-            this._cancelledDecodes.add(fileId);
-            this._downloadManager.cancelGroup(fileId);
+            const source = this._residencyPages.get(fileId);
+            if (source) {
+                let hasQueuedSibling = false;
+                for (const queued of this._decodeQueue) {
+                    if (!this._splitPacks.has(queued) && this._residencyPages.get(queued)?.file === source.file) {
+                        hasQueuedSibling = true;
+                        break;
+                    }
+                }
+                this.cancelRangeLoads([fileId], hasQueuedSibling ? [source.file] : []);
+            } else {
+                this._cancelledDecodes.add(fileId);
+                this._downloadManager.cancelGroup(fileId);
+            }
+        } else if (queueIndex !== -1) {
+            const source = this._residencyPages.get(fileId);
+            if (source && !this._splitPacks.has(fileId)) {
+                let hasLiveConsumer = false;
+                let hasCancelledLoader = false;
+                for (const loading of this._loadingFiles) {
+                    if (this._splitPacks.has(loading) || this._residencyPages.get(loading)?.file !== source.file) {
+                        continue;
+                    }
+                    if (this._cancelledDecodes.has(loading)) {
+                        hasCancelledLoader = true;
+                    } else {
+                        hasLiveConsumer = true;
+                        break;
+                    }
+                }
+                if (hasCancelledLoader && !hasLiveConsumer) {
+                    for (const queued of this._decodeQueue) {
+                        if (!this._splitPacks.has(queued) && this._residencyPages.get(queued)?.file === source.file) {
+                            hasLiveConsumer = true;
+                            break;
+                        }
+                    }
+                    if (!hasLiveConsumer) {
+                        this._downloadManager.cancelGroup(source.file);
+                    }
+                }
+            }
         }
     }
 
@@ -2425,6 +3094,29 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     private _onLodFrame(): void {
         if (this._disposed || !this._baseLayerReady) {
             return;
+        }
+        if (this._rangeSourcePack) {
+            const sourceFile = this._rangeSourcePack.file;
+            let needed = this._activeRangeSource === sourceFile;
+            if (!needed) {
+                for (const file of this._loadingFiles) {
+                    if (!this._cancelledDecodes.has(file) && !this._splitPacks.has(file) && this._residencyPages.get(file)?.file === sourceFile) {
+                        needed = true;
+                        break;
+                    }
+                }
+            }
+            if (!needed) {
+                for (const file of this._decodeQueue) {
+                    if (!this._splitPacks.has(file) && this._residencyPages.get(file)?.file === sourceFile) {
+                        needed = true;
+                        break;
+                    }
+                }
+            }
+            if (!needed) {
+                this._disposeRangeSourcePack();
+            }
         }
         let cooldownExpiredWithPendingSwitch = false;
         for (const node of this._leafNodes) {
@@ -2526,17 +3218,38 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
         const nodes = this._leafNodes;
         const inAny = this._frustumScratch;
-        // Update each node's world AABB once (force=false uses the renderId/sync fast-path, avoiding a full
-        // world-matrix recompute), then seed the union accumulator to false.
+        // Node bounds remain immutable in stream-local space. Compose that space to clip once per camera instead
+        // of transforming every leaf's box and sphere into world space every frame.
         const world = this._getEffectiveWorldMatrix(false);
         for (let i = 0; i < nodes.length; i++) {
-            nodes[i].cullBounds!.update(world);
             inAny[i] = false;
         }
         // A node is in-frustum if inside ANY active camera's frustum: OR each camera's test into the accumulator.
         for (const cam of cameras) {
-            cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), this._cullViewProj);
+            cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), this._cullCameraViewProj);
+            world.multiplyToRef(this._cullCameraViewProj, this._cullViewProj);
             Frustum.GetPlanesToRef(this._cullViewProj, this._frustumPlanes);
+            let validFrustum = true;
+            for (const plane of this._frustumPlanes) {
+                if (
+                    !Number.isFinite(plane.normal.x) ||
+                    !Number.isFinite(plane.normal.y) ||
+                    !Number.isFinite(plane.normal.z) ||
+                    !Number.isFinite(plane.d) ||
+                    plane.normal.lengthSquared() === 0
+                ) {
+                    validFrustum = false;
+                    break;
+                }
+            }
+            if (!validFrustum) {
+                // Degenerate transforms/projections cannot safely reject local volumes. Treat this camera as seeing
+                // every node, preserving conservative rendering rather than turning malformed planes into holes.
+                for (let i = 0; i < nodes.length; i++) {
+                    inAny[i] = true;
+                }
+                continue;
+            }
             for (let i = 0; i < nodes.length; i++) {
                 if (!inAny[i] && nodes[i].cullBounds!.isInFrustum(this._frustumPlanes)) {
                     inAny[i] = true;
@@ -2550,6 +3263,42 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             }
         }
         return changed;
+    }
+
+    /**
+     * Normalizes an initial residency option, preserving finite non-positive values as an unset limit.
+     * @param value option value
+     * @param name option name used in errors
+     * @param integer whether the normalized value must be an integer splat count
+     * @returns normalized value
+     */
+    private static _NormalizeResidentLimit(value: number, name: string, integer: boolean): number {
+        if (!Number.isFinite(value)) {
+            throw new RangeError(`GaussianSplattingStream: ${name} must be finite.`);
+        }
+        if (value <= 0) {
+            return 0;
+        }
+        const normalized = integer ? Math.max(1, Math.floor(value)) : value;
+        if (normalized > Number.MAX_SAFE_INTEGER) {
+            throw new RangeError(`GaussianSplattingStream: ${name} is outside the supported range.`);
+        }
+        return normalized;
+    }
+
+    /**
+     * Adds trusted non-negative integer counts without allowing unsafe capacity arithmetic.
+     * @param left first count
+     * @param right second count
+     * @param label capacity name used in errors
+     * @returns the safe integer sum
+     */
+    private static _SafeAddCounts(left: number, right: number, label: string): number {
+        const sum = left + right;
+        if (!Number.isSafeInteger(left) || left < 0 || !Number.isSafeInteger(right) || right < 0 || !Number.isSafeInteger(sum)) {
+            throw new Error(`GaussianSplattingStream: ${label} exceeds the supported integer range.`);
+        }
+        return sum;
     }
 
     /**
@@ -2577,7 +3326,6 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         // Derive the SH degree from remote (untrusted) metadata, then validate/clamp it: the degree drives the SH
         // render-target count and decode-pass count, so a bogus (huge / non-finite / negative) `bands` or `shape`
         // must not be able to demand unbounded allocation. The draw path supports shTexture0..4, i.e. degree <= 4.
-        const maxDegree = 4;
         let degree = 0;
         const bands = data.shN.bands;
         if (typeof bands === "number" && Number.isFinite(bands) && bands > 0) {
@@ -2589,9 +3337,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         if (!(degree > 0)) {
             return { degree: 0, coeffs: 0 };
         }
-        if (degree > maxDegree) {
-            Logger.Warn(`GaussianSplattingStream: SH degree ${degree} exceeds the maximum supported (${maxDegree}); clamping.`);
-            degree = maxDegree;
+        if (degree > MaxSupportedShDegree) {
+            Logger.Warn(`GaussianSplattingStream: SH degree ${degree} exceeds the maximum supported (${MaxSupportedShDegree}); clamping.`);
+            degree = MaxSupportedShDegree;
         }
         return { degree, coeffs: (degree + 1) ** 2 - 1 };
     }

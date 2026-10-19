@@ -3,10 +3,8 @@
 import { type Camera, type FrameGraph, type FrameGraphObjectList, type FrameGraphTextureHandle, type InternalTexture, type Mesh, type Nullable, type Observer } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { type Material } from "core/Materials/material.pure";
-import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial.pure";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
-import { StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { IBLShadowsPluginMaterial } from "core/Rendering/IBLShadows/iblShadowsPluginMaterial.pure";
+import { IsIBLShadowsReceiverCompatible } from "core/Rendering/IBLShadows/iblShadowsMaterialCompatibility.pure";
 import { FrameGraphIblShadowsAccumulationTask } from "./iblShadows/iblShadowsAccumulationTask";
 import { FrameGraphIblShadowsSpatialBlurTask } from "./iblShadows/iblShadowsSpatialBlurTask";
 import { FrameGraphIblShadowsTracingTask } from "./iblShadows/iblShadowsTracingTask";
@@ -682,8 +680,7 @@ export class FrameGraphIblShadowsRendererTask extends FrameGraphTask {
     }
 
     private _addShadowReceivingMaterialInternal(material: Material): void {
-        const isSupportedMaterial = material instanceof PBRBaseMaterial || material instanceof StandardMaterial || material instanceof OpenPBRMaterial;
-        if (!isSupportedMaterial || this._materialsWithRenderPlugin.indexOf(material) !== -1) {
+        if (!IsIBLShadowsReceiverCompatible(material) || this._materialsWithRenderPlugin.indexOf(material) !== -1) {
             return;
         }
 

@@ -34,6 +34,7 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
         this.outputObjectList = {
             meshes: null,
             particleSystems: null,
+            spriteManagers: null,
         };
     }
 
@@ -49,13 +50,15 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
         // Initial output values
         this.outputObjectList.meshes = this.objectList.meshes;
         this.outputObjectList.particleSystems = this.objectList.particleSystems;
+        this.outputObjectList.spriteManagers = this.objectList.spriteManagers;
 
         const pass = this._frameGraph.addObjectListPass(this.name);
 
         pass.setObjectList(this.outputObjectList);
         pass.setExecuteFunc((_context) => {
-            // No culling on particle systems
+            // No culling on particle systems or sprite managers
             this.outputObjectList.particleSystems = this.objectList.particleSystems;
+            this.outputObjectList.spriteManagers = this.objectList.spriteManagers;
 
             if (this._scene._activeMeshesFrozen) {
                 // If active meshes are frozen, we don't need culling: we keep the last list created before freezing
@@ -92,6 +95,7 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
         passDisabled.setExecuteFunc((_context) => {
             this.outputObjectList.meshes = this.objectList.meshes;
             this.outputObjectList.particleSystems = this.objectList.particleSystems;
+            this.outputObjectList.spriteManagers = this.objectList.spriteManagers;
         });
     }
 }

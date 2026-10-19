@@ -13,6 +13,7 @@ export * from "./filterPostProcessBlock.pure";
 export * from "./fxaaPostProcessBlock.pure";
 export * from "./grainPostProcessBlock.pure";
 export * from "./imageProcessingPostProcessBlock.pure";
+export * from "./meshBlendingPostProcessBlock.pure";
 export * from "./motionBlurPostProcessBlock.pure";
 export * from "./passPostProcessBlock.pure";
 export * from "./screenSpaceCurvaturePostProcessBlock.pure";

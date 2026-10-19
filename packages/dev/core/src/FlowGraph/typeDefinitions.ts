@@ -126,6 +126,10 @@ export interface ISerializedFlowGraphConnection {
      */
     connectedPointIds: string[];
     /**
+     * Optional host-format metadata associated with this connection.
+     */
+    metadata?: any;
+    /**
      * The serialized default value of a data connection (set by the user for
      * unconnected inputs).  Only present on data connections.
      */
@@ -186,6 +190,10 @@ export interface ISerializedFlowGraph {
      * Optional unique identifier for the graph
      */
     uniqueId?: string;
+    /**
+     * Optional host-format metadata associated with the graph.
+     */
+    metadata?: any;
     /**
      * Contexts belonging to the flow graph
      */

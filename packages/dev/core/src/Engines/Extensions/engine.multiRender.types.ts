@@ -2,6 +2,7 @@ import { type IMultiRenderTargetOptions } from "../../Materials/Textures/multiRe
 import { type Nullable } from "../../types";
 import { type RenderTargetWrapper } from "../renderTargetWrapper";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type IColor4Like } from "../../Maths/math.like";
 declare module "../../Engines/abstractEngine.pure" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
@@ -52,6 +53,19 @@ declare module "../../Engines/abstractEngine.pure" {
          * @param attachments gl attachments
          */
         bindAttachments(attachments: number[]): void;
+
+        /**
+         * Clears selected color attachments and optionally the depth/stencil attachments.
+         * Attachment formats are handled by the active rendering backend.
+         * @param color Clear color
+         * @param attachments Attachment layout created by buildTextureLayout
+         * @param clearColor Whether color attachments should be cleared
+         * @param clearDepth Whether the depth attachment should be cleared
+         * @param clearStencil Whether the stencil attachment should be cleared
+         * @param stencilClearValue Stencil clear value
+         * @internal
+         */
+        clearAttachments(color: Nullable<IColor4Like>, attachments: number[], clearColor: boolean, clearDepth: boolean, clearStencil?: boolean, stencilClearValue?: number): void;
 
         /**
          * Creates a layout object to draw/clear on specific textures in a MRT

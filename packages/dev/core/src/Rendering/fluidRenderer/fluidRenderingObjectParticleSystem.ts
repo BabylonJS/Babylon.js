@@ -15,7 +15,7 @@ import { type ShaderLanguage } from "core/Materials/shaderLanguage";
  */
 export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     private _particleSystem: IParticleSystem;
-    private _originalRender: () => number;
+    private _originalRender: (preWarm?: boolean, forceUpdateOnly?: boolean) => number;
     private _blendMode: number;
     private _onBeforeDrawParticleObserver: Nullable<Observer<Nullable<Effect>>>;
     private _updateInAnimate: boolean;
@@ -100,6 +100,26 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     }
 
     /**
+     * GPUParticleSystem stores "size" as (baseSize, scaleX, scaleY); ParticleSystem as (width, height).
+     * @returns the number of components of the "size" attribute
+     */
+    protected override _getPerParticleSizeAttributeSize(): number {
+        return this._isGPUParticleSystem ? 3 : 2;
+    }
+
+    /**
+     * GPUParticleSystem's "offset" quad is centered ([-0.5, 0.5]); ParticleSystem's is in [0, 1].
+     * @returns true if the "offset" attribute is centered
+     */
+    protected override _usesCenteredOffsetAttribute(): boolean {
+        return this._isGPUParticleSystem;
+    }
+
+    private get _isGPUParticleSystem(): boolean {
+        return this._particleSystem.getClassName() === "GPUParticleSystem";
+    }
+
+    /**
      * Indicates if the object is ready to be rendered
      * @returns True if everything is ready for the object to be rendered, otherwise false
      */
@@ -120,6 +140,15 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
      */
     public override renderDiffuseTexture(): void {
         this._originalRender();
+    }
+
+    /**
+     * Updates the state of the particles. GPUParticleSystem does it in render(), which is replaced by a no-op while the system is rendered as a fluid
+     */
+    public override updateSimulation(): void {
+        if (this._isGPUParticleSystem) {
+            this._originalRender(false, true);
+        }
     }
 
     /**

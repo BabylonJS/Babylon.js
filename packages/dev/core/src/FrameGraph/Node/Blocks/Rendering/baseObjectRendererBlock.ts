@@ -512,11 +512,11 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.renderTransparentMeshes = serializationObject.renderTransparentMeshes ?? true;
         this.useOITForTransparentMeshes = serializationObject.useOITForTransparentMeshes ?? false;
         this.oitPassCount = serializationObject.oitPassCount ?? 5;
-        this.renderParticles = serializationObject.renderParticles ?? true;
-        this.renderSprites = serializationObject.renderSprites ?? true;
+        this.renderParticles = serializationObject.renderParticles ?? this.renderParticles;
+        this.renderSprites = serializationObject.renderSprites ?? this.renderSprites;
         this.forceLayerMaskCheck = serializationObject.forceLayerMaskCheck ?? true;
-        this.enableBoundingBoxRendering = serializationObject.enableBoundingBoxRendering ?? true;
-        this.enableOutlineRendering = serializationObject.enableOutlineRendering ?? true;
+        this.enableBoundingBoxRendering = serializationObject.enableBoundingBoxRendering ?? this.enableBoundingBoxRendering;
+        this.enableOutlineRendering = serializationObject.enableOutlineRendering ?? this.enableOutlineRendering;
         this.disableShadows = serializationObject.disableShadows;
         this.renderInLinearSpace = !!serializationObject.renderInLinearSpace;
         this.resolveMSAAColors = serializationObject.resolveMSAAColors ?? true;

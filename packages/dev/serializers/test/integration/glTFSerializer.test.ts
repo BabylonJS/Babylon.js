@@ -130,6 +130,73 @@ test.describe("Babylon glTF Serializer", () => {
             expect(assertionData.version).toEqual("2.0");
             expect(assertionData.generator).toContain("Babylon.js v");
         });
+        test("should emit KHR_interactivity after final entity remapping", async () => {
+            const assertionData = await page.evaluate(async () => {
+                const box = BABYLON.MeshBuilder.CreateBox("interactiveBox", {}, window.scene!);
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test", {
+                    khrInteractivity: {
+                        required: true,
+                        additionalExtensionsUsed: ["KHR_node_selectability"],
+                        additionalExtensionsRequired: [],
+                        build: (context) => {
+                            const nodeIndex = context.getNodeIndex(box);
+                            if (nodeIndex === undefined) {
+                                throw new Error("Interactive box was not remapped.");
+                            }
+                            context.setNodeExtension(nodeIndex, "KHR_node_selectability", { selectable: true });
+                            return {
+                                graph: 0,
+                                graphs: [{ name: "Interaction", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+                            };
+                        },
+                    },
+                });
+                return JSON.parse(glTFData.files["test.gltf"] as string);
+            });
+
+            expect(assertionData.extensions.KHR_interactivity).toEqual({
+                graph: 0,
+                graphs: [{ name: "Interaction", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+            });
+            expect(assertionData.extensionsUsed).toContain("KHR_interactivity");
+            expect(assertionData.extensionsUsed).toContain("KHR_node_selectability");
+            expect(assertionData.extensionsRequired).toEqual(["KHR_interactivity"]);
+            expect(assertionData.nodes[0].extensions.KHR_node_selectability).toEqual({ selectable: true });
+        });
+        test("should preserve a right-handed identity root for KHR_interactivity references", async () => {
+            const assertionData = await page.evaluate(async () => {
+                window.scene!.useRightHandedSystem = true;
+                const identityRoot = new BABYLON.TransformNode("interactiveIdentityRoot", window.scene!);
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test", {
+                    khrInteractivity: {
+                        required: true,
+                        additionalExtensionsUsed: [],
+                        additionalExtensionsRequired: [],
+                        build: (context) => {
+                            const nodeIndex = context.getNodeIndex(identityRoot);
+                            if (nodeIndex === undefined) {
+                                throw new Error("Interactive identity root was not remapped.");
+                            }
+                            return {
+                                graphs: [
+                                    {
+                                        types: [{ signature: "ref" }],
+                                        variables: [{ type: 0, value: [`/nodes/${nodeIndex}`] }],
+                                        declarations: [{ op: "event/onStart" }],
+                                        nodes: [{ declaration: 0 }],
+                                    },
+                                ],
+                            };
+                        },
+                    },
+                });
+                return JSON.parse(glTFData.files["test.gltf"] as string);
+            });
+
+            expect(assertionData.nodes).toEqual([expect.objectContaining({ name: "interactiveIdentityRoot" })]);
+            expect(assertionData.scenes[0].nodes).toEqual([0]);
+            expect(assertionData.extensions.KHR_interactivity.graphs[0].variables[0].value).toEqual(["/nodes/0"]);
+        });
         test("should serialize sphere geometry in window.scene to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 BABYLON.MeshBuilder.CreateSphere(
@@ -510,6 +577,7 @@ test.describe("Babylon glTF Serializer", () => {
             expect(assertionData.nodes).toHaveLength(1);
             expect(assertionData.nodes[0].extensions["KHR_lights_punctual"]["light"]).toEqual(0);
         });
+        // https://forum.babylonjs.com/t/exporting-a-scene-containing-a-light-node-leads-to-a-corrupt-glb-file/58837
         test("should serialize directional light to glTF", async () => {
             const intensity = 0.2;
             const red = [1, 0, 0];
@@ -532,6 +600,7 @@ test.describe("Babylon glTF Serializer", () => {
             expect(assertionData.extensions["KHR_lights_punctual"].lights[0].color).toEqual(red);
             expect(assertionData.nodes).toHaveLength(1);
             expect(assertionData.nodes[0].extensions["KHR_lights_punctual"]["light"]).toEqual(0);
+            expect(assertionData.nodes[0].rotation?.every(Number.isFinite) ?? true).toBe(true);
         });
         test("should serialize multiple lights to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
@@ -585,6 +654,7 @@ test.describe("Babylon glTF Serializer", () => {
                 return JSON.parse(jsonString);
             };
 
+            // https://github.com/BabylonJS/Babylon.js/issues/14056
             test("exports one mesh that is shared by all instances", async () => {
                 const assertionData = await page.evaluate(exportInstances, { count: instanceCount, skipSource: false });
                 expect(assertionData.nodes).toHaveLength(instanceCount + 1);
@@ -594,6 +664,8 @@ test.describe("Babylon glTF Serializer", () => {
                 }
             });
 
+            // https://forum.babylonjs.com/t/glb-export-of-an-instanced-mesh-fails/39331
+            // https://forum.babylonjs.com/t/glb-gltf-export-of-instanced-meshes-only/57728
             test("can export instances without their source mesh", async () => {
                 const assertionData = await page.evaluate(exportInstances, { count: instanceCount, skipSource: true });
                 expect(assertionData.nodes).toHaveLength(instanceCount);
@@ -604,6 +676,7 @@ test.describe("Babylon glTF Serializer", () => {
             });
         });
 
+        // https://github.com/BabylonJS/Babylon.js/pull/7629
         test("should not export a root conversion node", async () => {
             const assertionData = await page.evaluate(async () => {
                 await BABYLON.SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/Tests/TwoQuads/", "TwoQuads.gltf", window.scene);
@@ -664,6 +737,7 @@ test.describe("Babylon glTF Serializer", () => {
             expect(assertionData.animations[0].channels[0].target.node).toEqual(0);
             expect(assertionData.animations[0].channels[0].target.path).toEqual("translation");
         });
+        // https://forum.babylonjs.com/t/exported-file-size/35740
         test("should not duplicate a shared texture between materials", async () => {
             const assertionData = await page.evaluate(async () => {
                 const texture = new BABYLON.Texture("https://assets.babylonjs.com/environments/backgroundGround.png", window.scene!);
@@ -733,6 +807,7 @@ test.describe("Babylon glTF Serializer", () => {
             });
         });
 
+        // https://forum.babylonjs.com/t/gltf-export-shouldexportnode-changed/55421
         test("should reparent children of unexported node to nearest ancestor", async () => {
             const assertionData = await page.evaluate(async () => {
                 const parent = BABYLON.MeshBuilder.CreateBox("parent");
@@ -796,6 +871,7 @@ test.describe("Babylon glTF Serializer", () => {
                 const mime = image.mimeType || getMimeTypeFromUri(image.uri);
                 expect(mime).toEqual(mimeType);
             };
+            // https://github.com/BabylonJS/Babylon.js/issues/12257
             test("uses KHR_texture_basisu to export a KTX2 image", async () => {
                 await testRoundtripImage("textures/ktx2/sample_uastc.ktx2", "image/ktx2", "KHR_texture_basisu");
             });

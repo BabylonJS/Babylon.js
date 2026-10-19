@@ -4,8 +4,7 @@ import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable.pure";
 import { type Nullable } from "../../../types";
 import { type Scene } from "../../../scene.pure";
-import { type Matrix, type Vector4, type Vector3, type Vector2 } from "../../../Maths/math.vector.pure";
-import { type Color4, type Color3 } from "../../../Maths/math.color.pure";
+import { type IColor3Like, type IColor4Like, type IMatrixLike, type IVector2Like, type IVector3Like, type IVector4Like } from "../../../Maths/math.like";
 import { type AbstractEngine } from "../../../Engines/abstractEngine.pure";
 import { VertexBuffer } from "../../../Buffers/buffer.pure";
 import { SceneComponentConstants } from "../../../sceneComponent";
@@ -131,12 +130,12 @@ export class ProceduralTexture extends Texture {
     private _floats: { [key: string]: number } = {};
     private _ints: { [key: string]: number } = {};
     private _floatsArrays: { [key: string]: number[] } = {};
-    private _colors3: { [key: string]: Color3 } = {};
-    private _colors4: { [key: string]: Color4 } = {};
-    private _vectors2: { [key: string]: Vector2 } = {};
-    private _vectors3: { [key: string]: Vector3 } = {};
-    private _vectors4: { [key: string]: Vector4 } = {};
-    private _matrices: { [key: string]: Matrix } = {};
+    private _colors3: { [key: string]: IColor3Like } = {};
+    private _colors4: { [key: string]: IColor4Like } = {};
+    private _vectors2: { [key: string]: IVector2Like } = {};
+    private _vectors3: { [key: string]: IVector3Like } = {};
+    private _vectors4: { [key: string]: IVector4Like } = {};
+    private _matrices: { [key: string]: IMatrixLike } = {};
 
     private _fallbackTextureUsed = false;
     private _fullEngine: AbstractEngine;
@@ -275,17 +274,37 @@ export class ProceduralTexture extends Texture {
         }
 
         if (this._contentData) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-            this._contentData.then((buffer) => {
-                this._contentData = this.readPixels(0, 0, buffer);
-                this._contentUpdateId = this._frameId;
-            });
+            const contentData = this._contentData;
+            /* eslint-disable github/no-then */
+            contentData
+                .then((buffer) => {
+                    if (this._contentData !== contentData) {
+                        // Resized or replaced by a newer refresh: do not reuse the stale buffer nor repopulate the cache.
+                        return;
+                    }
+                    this._readContent(buffer);
+                })
+                .catch(() => {});
+            /* eslint-enable github/no-then */
         } else {
-            this._contentData = this.readPixels(0, 0);
-            this._contentUpdateId = this._frameId;
+            this._readContent();
         }
 
         return this._contentData;
+    }
+
+    private _readContent(buffer?: ArrayBufferView): void {
+        const contentData = buffer ? this.readPixels(0, 0, buffer) : this.readPixels(0, 0);
+        this._contentData = contentData;
+        this._contentUpdateId = this._frameId;
+        // eslint-disable-next-line github/no-then
+        contentData?.catch(() => {
+            // An older rejection must not clear a newer readback.
+            if (this._contentData === contentData) {
+                this._contentData = null;
+                this._contentUpdateId = -1;
+            }
+        });
     }
 
     private _createIndexBuffer(): void {
@@ -403,6 +422,8 @@ export class ProceduralTexture extends Texture {
                 () => {
                     this._rtWrapper?.dispose();
                     this._rtWrapper = this._texture = null;
+                    this._contentData = null;
+                    this._contentUpdateId = -1;
 
                     if (this._fallbackTexture) {
                         this._texture = this._fallbackTexture._texture;
@@ -524,6 +545,10 @@ export class ProceduralTexture extends Texture {
         // Update properties
         this._size = size;
         this._generateMipMaps = generateMipMaps;
+
+        // The cached readback belongs to the previous size: drop it so getContent() reads the new texture.
+        this._contentData = null;
+        this._contentUpdateId = -1;
     }
 
     private _checkUniform(uniformName: string): void {
@@ -587,12 +612,12 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * Set a vec3 in the shader from a Color3.
+     * Set a vec3 in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
      * @returns the texture itself allowing "fluent" like uniform updates
      */
-    public setColor3(name: string, value: Color3): ProceduralTexture {
+    public setColor3(name: string, value: IColor3Like): ProceduralTexture {
         this._checkUniform(name);
         this._colors3[name] = value;
 
@@ -600,12 +625,12 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * Set a vec4 in the shader from a Color4.
+     * Set a vec4 in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
      * @returns the texture itself allowing "fluent" like uniform updates
      */
-    public setColor4(name: string, value: Color4): ProceduralTexture {
+    public setColor4(name: string, value: IColor4Like): ProceduralTexture {
         this._checkUniform(name);
         this._colors4[name] = value;
 
@@ -613,12 +638,12 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * Set a vec2 in the shader from a Vector2.
+     * Set a vec2 in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
      * @returns the texture itself allowing "fluent" like uniform updates
      */
-    public setVector2(name: string, value: Vector2): ProceduralTexture {
+    public setVector2(name: string, value: IVector2Like): ProceduralTexture {
         this._checkUniform(name);
         this._vectors2[name] = value;
 
@@ -626,12 +651,12 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * Set a vec3 in the shader from a Vector3.
+     * Set a vec3 in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
      * @returns the texture itself allowing "fluent" like uniform updates
      */
-    public setVector3(name: string, value: Vector3): ProceduralTexture {
+    public setVector3(name: string, value: IVector3Like): ProceduralTexture {
         this._checkUniform(name);
         this._vectors3[name] = value;
 
@@ -639,12 +664,12 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * Set a vec4 in the shader from a Vector4.
+     * Set a vec4 in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
      * @returns the texture itself allowing "fluent" like uniform updates
      */
-    public setVector4(name: string, value: Vector4): ProceduralTexture {
+    public setVector4(name: string, value: IVector4Like): ProceduralTexture {
         this._checkUniform(name);
         this._vectors4[name] = value;
 
@@ -652,12 +677,12 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * Set a mat4 in the shader from a MAtrix.
+     * Set a mat4 in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
      * @returns the texture itself allowing "fluent" like uniform updates
      */
-    public setMatrix(name: string, value: Matrix): ProceduralTexture {
+    public setMatrix(name: string, value: IMatrixLike): ProceduralTexture {
         this._checkUniform(name);
         this._matrices[name] = value;
 

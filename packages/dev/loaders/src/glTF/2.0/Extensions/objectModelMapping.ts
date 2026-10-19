@@ -1716,12 +1716,41 @@ const objectModelMapping: IGLTFObjectModelTree = {
 };
 
 /**
+ * Creates a detached copy so asset-local accessors cannot mutate other converters.
+ * @param value mapping value to clone
+ * @returns the cloned mapping value
+ */
+function _cloneObjectModelMapping<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map((entry) => _cloneObjectModelMapping(entry)) as T;
+    }
+    if (value !== null && typeof value === "object") {
+        const prototype = Object.getPrototypeOf(value);
+        if (prototype !== Object.prototype && prototype !== null) {
+            return value;
+        }
+        const clone: Record<string, unknown> = {};
+        for (const [key, entry] of Object.entries(value)) {
+            clone[key] = _cloneObjectModelMapping(entry);
+        }
+        return clone as T;
+    }
+    return value;
+}
+
+/**
  * get a path-to-object converter for the given glTF tree
  * @param gltf the glTF tree to use
+ * @param configure optional callback for adding asset-local accessors to this converter
  * @returns a path-to-object converter for the given glTF tree
  */
-export function GetPathToObjectConverter(gltf: IGLTF) {
-    return new GLTFPathToObjectConverter(gltf, objectModelMapping);
+export function GetPathToObjectConverter(gltf: IGLTF, configure?: (mapping: object) => void) {
+    if (!configure) {
+        return new GLTFPathToObjectConverter(gltf, objectModelMapping);
+    }
+    const assetMapping = _cloneObjectModelMapping(objectModelMapping);
+    configure(assetMapping);
+    return new GLTFPathToObjectConverter(gltf, assetMapping);
 }
 
 /**
@@ -1775,14 +1804,16 @@ export function SetInterpolationForKey(key: string, interpolation?: IInterpolati
  * Note that this will NOT change the typescript types. To do that you will need to change the interface itself (extending it in the module that uses it)
  * @param key the key to add the object accessor at. For example /cameras/\{\}/perspective/aspectRatio
  * @param accessor the object accessor to add
+ * @param mapping object-model mapping to update; defaults to the process-wide mapping used as the template for new converters
  */
 export function AddObjectAccessorToKey<GLTFTargetType = any, BabylonTargetType = any, BabylonValueType = any>(
     key: string,
-    accessor: IObjectAccessor<GLTFTargetType, BabylonTargetType, BabylonValueType>
+    accessor: IObjectAccessor<GLTFTargetType, BabylonTargetType, BabylonValueType>,
+    mapping: object = objectModelMapping
 ): void {
     // replace every `{}` in key with __array__ to match the object model
     const keyParts = key.split("/").map((part) => part.replace(/{}/g, "__array__"));
-    let current = objectModelMapping as any;
+    let current = mapping as any;
     for (const part of keyParts) {
         // make sure part is not empty
         if (!part) {

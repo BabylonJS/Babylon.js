@@ -1,4 +1,4 @@
-﻿#define CUSTOM_FRAGMENT_EXTENSION
+#define CUSTOM_FRAGMENT_EXTENSION
 
 #include<__decl__defaultFragment>
 
@@ -152,6 +152,12 @@ void main(void) {
 #if defined(DECAL) && !defined(DECAL_AFTER_DETAIL)
 	vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
 	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
+#endif
+
+// The depth pre-pass must discard the same texels as the colour pass, so it evaluates every alpha
+// contribution (not only the diffuse texture) before exiting.
+#ifdef DEPTHPREPASS
+#include<defaultFragmentAlpha>
 #endif
 
 #include<depthPrePass>
@@ -311,37 +317,8 @@ vec4 reflectionColor = vec4(0., 0., 0., 1.);
 	refractionColor.rgb *= refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * refractionRightColor.rgb;
 #endif
 
-#ifdef OPACITY
-	vec4 opacityMap = TEXRD(opacitySampler, vOpacityUV + uvOffset);
-
-#ifdef OPACITYRGB
-	opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
-	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* vOpacityInfos.y;
-#else
-	alpha *= opacityMap.a * vOpacityInfos.y;
-#endif
-
-#endif
-
-#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-	alpha *= vColor.a;
-#endif
-
-#ifdef OPACITYFRESNEL
-	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);
-
-	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
-#endif
-
-#ifdef ALPHATEST
-    #ifdef ALPHATEST_AFTERALLALPHACOMPUTATIONS
-        if (alpha < alphaCutOff)
-            discard;
-    #endif
-    #ifndef ALPHABLEND
-        // Prevent to blend with the canvas.
-        alpha = 1.0;
-    #endif
+#ifndef DEPTHPREPASS
+#include<defaultFragmentAlpha>
 #endif
 
 	// Emissive
@@ -431,18 +408,29 @@ color.rgb = max(color.rgb, 0.);
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
 #if SCENE_MRT_COUNT > 0
-	float writeGeometryInfo = color.a > 0.4 ? 1.0 : 0.0;
+	#ifdef ALPHATEST
+		float writeGeometryInfo = 1.0;
+	#else
+		float writeGeometryInfo = color.a > 0.4 ? 1.0 : 0.0;
+	#endif
 
     #ifdef PREPASS_COLOR
-    	gl_FragData[PREPASS_COLOR_INDEX] = color; // We can't split irradiance on std material
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_COLOR_INDEX, color); // We can't split irradiance on std material
 	#endif
 
     #ifdef PREPASS_POSITION
-    	gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_POSITION_INDEX, vec4(vPositionW, writeGeometryInfo));
+    #endif
+
+    #ifdef PREPASS_OBJECT_ID
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_OBJECT_ID_INDEX, encodeObjectId(objectId) * writeGeometryInfo);
+    #endif
+    #ifdef PREPASS_MESH_BLEND_TAG
+        meshBlendTagOutput = writeGeometryInfo > 0.0 ? uvec4(uint(meshBlendTag), 0u, 0u, 0u) : uvec4(0u);
     #endif
 
 	#ifdef PREPASS_LOCAL_POSITION
-		gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(vPosition, writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_LOCAL_POSITION_INDEX, vec4(vPosition, writeGeometryInfo));
 	#endif
 
 	#if defined(PREPASS_VELOCITY)
@@ -452,53 +440,53 @@ color.rgb = max(color.rgb, 0.);
 		vec2 velocity = abs(a - b);
 		velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
-		gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_VELOCITY_INDEX, vec4(velocity, 0.0, writeGeometryInfo));
 	#elif defined(PREPASS_VELOCITY_LINEAR)
 		vec2 velocity = vec2(0.5) * ((vPreviousPosition.xy / vPreviousPosition.w) - (vCurrentPosition.xy / vCurrentPosition.w));
-		gl_FragData[PREPASS_VELOCITY_LINEAR_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_VELOCITY_LINEAR_INDEX, vec4(velocity, 0.0, writeGeometryInfo));
 	#endif
 
 	#ifdef PREPASS_IRRADIANCE
-		gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(0.0, 0.0, 0.0,	writeGeometryInfo); //  We can't split irradiance on std material
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_IRRADIANCE_INDEX, vec4(0.0, 0.0, 0.0,	writeGeometryInfo)); //  We can't split irradiance on std material
 	#endif
 
 	#ifdef PREPASS_DEPTH
-		gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_DEPTH_INDEX, vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo)); // Linear depth
 	#endif
 
 	#ifdef PREPASS_SCREENSPACE_DEPTH
-		gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_SCREENSPACE_DEPTH_INDEX, vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo));
 	#endif
 
 	#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
-		gl_FragData[PREPASS_NORMALIZED_VIEW_DEPTH_INDEX] = vec4(vNormViewDepth, 0.0, 0.0, writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_NORMALIZED_VIEW_DEPTH_INDEX, vec4(vNormViewDepth, 0.0, 0.0, writeGeometryInfo));
 	#endif
 
 	#ifdef PREPASS_NORMAL
 		#ifdef PREPASS_NORMAL_WORLDSPACE
-			gl_FragData[PREPASS_NORMAL_INDEX] =	vec4(normalW, writeGeometryInfo);
+			WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_NORMAL_INDEX, vec4(normalW, writeGeometryInfo));
 		#else
-			gl_FragData[PREPASS_NORMAL_INDEX] =	vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo);
+			WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_NORMAL_INDEX, vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo));
 		#endif
 	#endif
 
 	#ifdef PREPASS_WORLD_NORMAL
-		gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(normalW * 0.5 + 0.5, writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_WORLD_NORMAL_INDEX, vec4(normalW * 0.5 + 0.5, writeGeometryInfo));
 	#endif
 
 	#ifdef PREPASS_ALBEDO
-		gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(baseColor.rgb, writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_ALBEDO_INDEX, vec4(baseColor.rgb, writeGeometryInfo));
 	#endif
 
 	#ifdef PREPASS_ALBEDO_SQRT
-		gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(sqrt(baseColor.rgb), writeGeometryInfo);
+		WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_ALBEDO_SQRT_INDEX, vec4(sqrt(baseColor.rgb), writeGeometryInfo));
 	#endif
 
 	#ifdef PREPASS_REFLECTIVITY
 		#if defined(SPECULAR)
-			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularMapColor)) * writeGeometryInfo; // no specularity if no visibility
+			WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_REFLECTIVITY_INDEX, vec4(toLinearSpace(specularMapColor)) * writeGeometryInfo); // no specularity if no visibility
 		#else
-			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
+			WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_REFLECTIVITY_INDEX, vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo);
 		#endif
 	#endif
 #endif

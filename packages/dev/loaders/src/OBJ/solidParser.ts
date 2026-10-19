@@ -921,7 +921,12 @@ export class SolidParser {
 
                 if (!this._materialNameFromObj) {
                     // Create a material with point cloud on
-                    newMaterial = new StandardMaterial(Geometry.RandomId(), scene);
+                    newMaterial = scene._executeWithBlockedEntityCollection(!!assetContainer, () => {
+                        newMaterial = new StandardMaterial(Geometry.RandomId(), scene);
+                        newMaterial._parentContainer = assetContainer;
+                        assetContainer?.materials.push(newMaterial);
+                        return newMaterial;
+                    });
 
                     newMaterial.pointsCloud = true;
 
@@ -969,10 +974,12 @@ export class SolidParser {
             this._handledMesh = this._meshesFromObj[j];
             //Create a Mesh with the name of the obj mesh
 
-            scene._blockEntityCollection = !!assetContainer;
-            const babylonMesh = new Mesh(this._meshesFromObj[j].name, scene);
-            babylonMesh._parentContainer = assetContainer;
-            scene._blockEntityCollection = false;
+            const babylonMesh = scene._executeWithBlockedEntityCollection(!!assetContainer, () => {
+                const mesh = new Mesh(this._meshesFromObj[j].name, scene);
+                mesh._parentContainer = assetContainer;
+                assetContainer?.meshes.push(mesh);
+                return mesh;
+            });
             this._handledMesh._babylonMesh = babylonMesh;
             // If this is a group mesh, it should have an object mesh as a parent. So look for the first object mesh that appears before it.
             if (!this._handledMesh.isObject) {
@@ -1019,7 +1026,11 @@ export class SolidParser {
                 vertexData.colors = this._handledMesh.colors;
             }
             //Set the data from the VertexBuffer to the current Mesh
-            vertexData.applyToMesh(babylonMesh);
+            scene._executeWithBlockedEntityCollection(!!assetContainer, () => {
+                vertexData.applyToMesh(babylonMesh);
+                babylonMesh.geometry!._parentContainer = assetContainer;
+                assetContainer?.geometries.push(babylonMesh.geometry!);
+            });
             if (this._loadingOptions.invertY) {
                 babylonMesh.scaling.y *= -1;
             }

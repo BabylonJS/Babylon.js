@@ -6,7 +6,7 @@
  */
 
 import { GeometryGraphManager } from "../../src/geometryGraph";
-import { BlockRegistry } from "../../src/blockRegistry";
+import { BlockRegistry, GetBlockTypeDetails } from "../../src/blockRegistry";
 
 // ─── Test Helpers ─────────────────────────────────────────────────────────
 
@@ -140,6 +140,30 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(vec3Block.valueType).toBe("BABYLON.Vector3");
     });
 
+    it("recomputes constant input serializer types after vector type changes", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("valueTypes");
+        const result = mgr.addBlock("valueTypes", "GeometryInputBlock", "value", {
+            type: "Float",
+            value: 1,
+        });
+        expect(typeof result).not.toBe("string");
+        const block = (result as any).block;
+
+        expect(mgr.setBlockProperties("valueTypes", block.id, { type: "Vector3", value: { x: 1, y: 2, z: 3 } })).toBe("OK");
+        expect(block.value).toEqual([1, 2, 3]);
+        expect(block.valueType).toBe("BABYLON.Vector3");
+
+        expect(mgr.setBlockProperties("valueTypes", block.id, { type: "Vector2", value: [4, 5] })).toBe("OK");
+        expect(block.valueType).toBe("BABYLON.Vector2");
+        expect(mgr.setBlockProperties("valueTypes", block.id, { type: "Vector4", value: [6, 7, 8, 9] })).toBe("OK");
+        expect(block.valueType).toBe("BABYLON.Vector4");
+
+        const beforeInvalidUpdate = JSON.parse(JSON.stringify(block));
+        expect(mgr.setBlockProperties("valueTypes", block.id, { type: "Vector3", value: [1, 2] })).toContain('Property "value" is not valid');
+        expect(block).toEqual(beforeInvalidUpdate);
+    });
+
     // ── Test 5: Enum conversion for block properties ────────────────────
 
     it("converts string enum values to numbers for all block types", () => {
@@ -198,6 +222,110 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(block.operation).toBe(3); // Divide = 3
     });
 
+    it("exposes machine-readable mutable property metadata", () => {
+        expect(GetBlockTypeDetails("GeometryInputBlock")?.propertyMetadata).toMatchObject({
+            name: { type: "string" },
+            type: {
+                type: "enum",
+                enumName: "NodeGeometryBlockConnectionPointTypes",
+                enumValues: expect.objectContaining({ Float: 2, Vector3: 8 }),
+            },
+            value: { type: "geometryInputValue" },
+            displayInInspector: { type: "boolean" },
+        });
+        expect(BlockRegistry.LatticeBlock.propertyMetadata?.resolutionX).toEqual({
+            type: "integer",
+            minimum: 1,
+            maximum: 10,
+        });
+    });
+
+    it("validates and normalizes declared block properties", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("validated");
+
+        const box = mgr.addBlock("validated", "BoxBlock", "box", { evaluateContext: true });
+        expect(typeof box).not.toBe("string");
+        expect((box as any).block.evaluateContext).toBe(true);
+
+        const lattice = mgr.addBlock("validated", "LatticeBlock", "lattice", { resolutionX: 4 });
+        expect(typeof lattice).not.toBe("string");
+        expect((lattice as any).block.resolutionX).toBe(4);
+        expect(mgr.setBlockProperties("validated", (lattice as any).block.id, { resolutionX: 0 })).toContain("at least 1");
+
+        const bool = mgr.addBlock("validated", "BooleanGeometryBlock", "csg", { operation: 2 });
+        expect(typeof bool).not.toBe("string");
+        expect((bool as any).block.operation).toBe(2);
+        expect(mgr.setBlockProperties("validated", (bool as any).block.id, { operation: "Subtract" })).toBe("OK");
+        expect((bool as any).block.operation).toBe(1);
+    });
+
+    it("rejects unknown, mistyped, and invalid enum properties atomically", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("invalidProperties");
+
+        expect(mgr.addBlock("invalidProperties", "BoxBlock", "bad", { evaluateContext: "yes" })).toBe('Property "evaluateContext" must be a boolean.');
+        expect(mgr.addBlock("invalidProperties", "BoxBlock", "bad", { invented: true })).toBe('Property "invented" is not configurable on BoxBlock.');
+        expect(mgr.getGeometry("invalidProperties")!.blocks).toHaveLength(0);
+
+        const math = mgr.addBlock("invalidProperties", "MathBlock", "math");
+        expect(typeof math).not.toBe("string");
+        const mathBlock = (math as any).block;
+        expect(mathBlock.id).toBe(1);
+        expect(mgr.setBlockProperties("invalidProperties", mathBlock.id, { name: "changed", operation: "NotAnOperation" })).toContain("must be a valid MathBlockOperations");
+        expect(mathBlock.name).toBe("math");
+        expect(mathBlock.operation).toBe(0);
+    });
+
+    it("validates and normalizes GeometryInputBlock values", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("inputValidation");
+
+        const vector = mgr.addBlock("inputValidation", "GeometryInputBlock", "vector", {
+            type: "Vector3",
+            value: { x: 1, y: 2, z: 3 },
+        });
+        expect(typeof vector).not.toBe("string");
+        expect((vector as any).block.value).toEqual([1, 2, 3]);
+
+        expect(
+            mgr.addBlock("inputValidation", "GeometryInputBlock", "badVector", {
+                type: "Vector3",
+                value: [1, 2],
+            })
+        ).toContain('Property "value" is not valid');
+        expect(mgr.addBlock("inputValidation", "GeometryInputBlock", "badType", { type: "Geometry" })).toContain("must be a valid NodeGeometryBlockConnectionPointTypes");
+        expect(mgr.setBlockProperties("inputValidation", (vector as any).block.id, { displayInInspector: 1 })).toBe('Property "displayInInspector" must be a boolean.');
+        expect((vector as any).block.displayInInspector).toBe(true);
+        expect(mgr.setBlockProperties("inputValidation", (vector as any).block.id, { type: "Float" })).toContain('Property "value" is not valid');
+        expect((vector as any).block.type).toBe(8);
+        expect(mgr.setBlockProperties("inputValidation", (vector as any).block.id, { type: "Float", value: 2 })).toBe("OK");
+        expect((vector as any).block.type).toBe(2);
+        expect((vector as any).block.value).toBe(2);
+    });
+
+    it("rejects structural properties when adding or updating blocks", () => {
+        const structuralProperties = ["customType", "id", "inputs", "outputs"];
+
+        for (const property of structuralProperties) {
+            const mgr = new GeometryGraphManager();
+            mgr.createGeometry(property);
+
+            expect(mgr.addBlock(property, "BoxBlock", "box", { [property]: "invalid" })).toBe(`Property "${property}" is structural and cannot be set.`);
+            expect(mgr.getGeometry(property)!.blocks).toHaveLength(0);
+
+            const result = mgr.addBlock(property, "BoxBlock", "box");
+            if (typeof result === "string") {
+                throw new Error(result);
+            }
+            const block = result.block;
+            expect(block.id).toBe(1);
+
+            expect(mgr.setBlockProperties(property, block.id, { evaluateContext: true, [property]: "invalid" })).toBe(`Property "${property}" is structural and cannot be set.`);
+            expect(block.evaluateContext).toBe(false);
+        }
+    });
+
     // ── Test 7: exportJSON safety net converts remaining string enums ───
 
     it("exportJSON converts any remaining string enum values", () => {
@@ -234,6 +362,67 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
 
         // Non-existent geometry
         expect(mgr.connectBlocks("nope", boxId, "geometry", boxId, "geometry")).toContain("not found");
+    });
+
+    it("rejects incompatible concrete and inferred connection types without mutation", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("typedConnections");
+        mgr.addBlock("typedConnections", "BoxBlock", "box");
+        mgr.addBlock("typedConnections", "GeometryInputBlock", "vector", { type: "Vector3", value: [1, 2, 3] });
+        mgr.addBlock("typedConnections", "GeometryTransformBlock", "transform");
+        mgr.addBlock("typedConnections", "GeometryOutputBlock", "output");
+
+        expect(mgr.connectBlocks("typedConnections", 1, "geometry", 1, "size")).toContain("Incompatible connection");
+        expect(mgr.getGeometry("typedConnections")!.blocks[0].inputs.find((input) => input.name === "size")!.targetBlockId).toBeUndefined();
+        expect(mgr.connectBlocks("typedConnections", 2, "output", 1, "size")).toContain("Vector3");
+        expect(mgr.connectBlocks("typedConnections", 2, "output", 3, "value")).toBe("OK");
+        expect(mgr.connectBlocks("typedConnections", 3, "output", 4, "geometry")).toContain("Vector3");
+    });
+
+    it("handles accepted, excluded, and BasedOnInput connection metadata", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("connectionMetadata");
+        mgr.addBlock("connectionMetadata", "GeometryInputBlock", "scalar", { type: "Float", value: 2 });
+        mgr.addBlock("connectionMetadata", "InstantiateBlock", "instances");
+        mgr.addBlock("connectionMetadata", "MathBlock", "math");
+        mgr.addBlock("connectionMetadata", "BoxBlock", "box");
+        mgr.addBlock("connectionMetadata", "DebugBlock", "debug");
+
+        expect(mgr.connectBlocks("connectionMetadata", 1, "output", 2, "scaling")).toBe("OK");
+        expect(mgr.connectBlocks("connectionMetadata", 1, "output", 3, "left")).toBe("OK");
+        expect(mgr.connectBlocks("connectionMetadata", 3, "output", 4, "size")).toBe("OK");
+        expect(mgr.connectBlocks("connectionMetadata", 4, "geometry", 5, "input")).toContain("Incompatible connection");
+    });
+
+    it("rejects connections that would create a cycle", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("cycle");
+
+        mgr.addBlock("cycle", "MathBlock", "first");
+        mgr.addBlock("cycle", "MathBlock", "second");
+
+        expect(mgr.connectBlocks("cycle", 1, "output", 2, "left")).toBe("OK");
+        expect(mgr.connectBlocks("cycle", 2, "output", 1, "left")).toBe("Connection from block 2 to block 1 would create a cycle.");
+        expect(mgr.getGeometry("cycle")!.blocks[0].inputs[0].targetBlockId).toBeUndefined();
+    });
+
+    it("terminates layout for imported cyclic graphs", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("importedCycle");
+
+        mgr.addBlock("importedCycle", "MathBlock", "first");
+        mgr.addBlock("importedCycle", "MathBlock", "second");
+        mgr.addBlock("importedCycle", "GeometryOutputBlock", "output");
+        mgr.connectBlocks("importedCycle", 1, "output", 2, "left");
+        mgr.connectBlocks("importedCycle", 2, "output", 3, "geometry");
+
+        mgr.getGeometry("importedCycle")!.blocks[0].inputs[0] = {
+            name: "left",
+            targetBlockId: 2,
+            targetConnectionName: "output",
+        };
+
+        expect(() => mgr.exportJSON("importedCycle")).not.toThrow();
     });
 
     // ── Test 9: Disconnect input ────────────────────────────────────────
@@ -282,6 +471,93 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(issues.every((i) => !i.includes(`block ${inputId}`))).toBe(true);
     });
 
+    it("removeBlock disconnects typed consumers of invalidated Teleport outputs", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("teleportRemoval");
+
+        const value = mgr.addBlock("teleportRemoval", "GeometryInputBlock", "value", {
+            type: "Float",
+            value: 1,
+        });
+        const entry = mgr.addBlock("teleportRemoval", "TeleportInBlock", "entry");
+        const valueId = (value as any).block.id;
+        const entryId = (entry as any).block.id;
+        const endpoint = mgr.addBlock("teleportRemoval", "TeleportOutBlock", "endpoint", {
+            entryPoint: entryId,
+        });
+        const rotation = mgr.addBlock("teleportRemoval", "RotationXBlock", "rotation");
+        const endpointId = (endpoint as any).block.id;
+        const rotationId = (rotation as any).block.id;
+
+        expect(mgr.connectBlocks("teleportRemoval", valueId, "output", entryId, "input")).toBe("OK");
+        expect(mgr.connectBlocks("teleportRemoval", endpointId, "output", rotationId, "angle")).toBe("OK");
+        expect(mgr.removeBlock("teleportRemoval", entryId)).toBe("OK");
+
+        const geometry = mgr.getGeometry("teleportRemoval")!;
+        expect(geometry.blocks.find((block) => block.id === endpointId)?.entryPoint).toBeUndefined();
+        expect(geometry.blocks.find((block) => block.id === rotationId)?.inputs.find((input) => input.name === "angle")?.targetBlockId).toBeUndefined();
+    });
+
+    it("removeBlock disconnects consumers invalidated by dynamic output type changes", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("dynamicRemoval");
+
+        const scalarId = (mgr.addBlock("dynamicRemoval", "GeometryInputBlock", "scalar", { type: "Float", value: 1 }) as any).block.id;
+        const vectorId = (mgr.addBlock("dynamicRemoval", "GeometryInputBlock", "vector", { type: "Vector3", value: { x: 1, y: 2, z: 3 } }) as any).block.id;
+        const entryId = (mgr.addBlock("dynamicRemoval", "TeleportInBlock", "entry") as any).block.id;
+        const endpointId = (mgr.addBlock("dynamicRemoval", "TeleportOutBlock", "endpoint", { entryPoint: entryId }) as any).block.id;
+        const mathId = (mgr.addBlock("dynamicRemoval", "MathBlock", "math") as any).block.id;
+        const setPositionsId = (mgr.addBlock("dynamicRemoval", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(mgr.connectBlocks("dynamicRemoval", scalarId, "output", mathId, "left")).toBe("OK");
+        expect(mgr.connectBlocks("dynamicRemoval", vectorId, "output", entryId, "input")).toBe("OK");
+        expect(mgr.connectBlocks("dynamicRemoval", endpointId, "output", mathId, "right")).toBe("OK");
+        expect(mgr.connectBlocks("dynamicRemoval", mathId, "output", setPositionsId, "positions")).toBe("OK");
+        expect(mgr.removeBlock("dynamicRemoval", entryId)).toBe("OK");
+
+        const geometry = mgr.getGeometry("dynamicRemoval")!;
+        expect(geometry.blocks.find((block) => block.id === mathId)?.inputs.find((input) => input.name === "right")?.targetBlockId).toBeUndefined();
+        expect(geometry.blocks.find((block) => block.id === setPositionsId)?.inputs.find((input) => input.name === "positions")?.targetBlockId).toBeUndefined();
+    });
+
+    it("removeBlock preserves consumers typed through a surviving linked input", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("linkedInputRemoval");
+
+        const minId = (mgr.addBlock("linkedInputRemoval", "GeometryInputBlock", "min", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any).block.id;
+        const maxId = (mgr.addBlock("linkedInputRemoval", "GeometryInputBlock", "max", { type: "Vector3", value: { x: 1, y: 1, z: 1 } }) as any).block.id;
+        const randomId = (mgr.addBlock("linkedInputRemoval", "RandomBlock", "random") as any).block.id;
+        const setPositionsId = (mgr.addBlock("linkedInputRemoval", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(mgr.connectBlocks("linkedInputRemoval", minId, "output", randomId, "min")).toBe("OK");
+        expect(mgr.connectBlocks("linkedInputRemoval", maxId, "output", randomId, "max")).toBe("OK");
+        expect(mgr.connectBlocks("linkedInputRemoval", randomId, "output", setPositionsId, "positions")).toBe("OK");
+        expect(mgr.removeBlock("linkedInputRemoval", minId)).toBe("OK");
+
+        const geometry = mgr.getGeometry("linkedInputRemoval")!;
+        expect(geometry.blocks.find((block) => block.id === randomId)?.inputs.find((input) => input.name === "max")?.targetBlockId).toBe(maxId);
+        expect(geometry.blocks.find((block) => block.id === setPositionsId)?.inputs.find((input) => input.name === "positions")?.targetBlockId).toBe(randomId);
+    });
+
+    it("removeBlock prefers an output default over a surviving linked input", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("defaultTypeRemoval");
+
+        const trueId = (mgr.addBlock("defaultTypeRemoval", "GeometryInputBlock", "true", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any).block.id;
+        const falseId = (mgr.addBlock("defaultTypeRemoval", "GeometryInputBlock", "false", { type: "Vector3", value: { x: 1, y: 1, z: 1 } }) as any).block.id;
+        const conditionId = (mgr.addBlock("defaultTypeRemoval", "ConditionBlock", "condition") as any).block.id;
+        const setPositionsId = (mgr.addBlock("defaultTypeRemoval", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(mgr.connectBlocks("defaultTypeRemoval", trueId, "output", conditionId, "ifTrue")).toBe("OK");
+        expect(mgr.connectBlocks("defaultTypeRemoval", falseId, "output", conditionId, "ifFalse")).toBe("OK");
+        expect(mgr.connectBlocks("defaultTypeRemoval", conditionId, "output", setPositionsId, "positions")).toBe("OK");
+        expect(mgr.removeBlock("defaultTypeRemoval", trueId)).toBe("OK");
+
+        const geometry = mgr.getGeometry("defaultTypeRemoval")!;
+        expect(geometry.blocks.find((block) => block.id === conditionId)?.inputs.find((input) => input.name === "ifFalse")?.targetBlockId).toBe(falseId);
+        expect(geometry.blocks.find((block) => block.id === setPositionsId)?.inputs.find((input) => input.name === "positions")?.targetBlockId).toBeUndefined();
+    });
+
     // ── Test 11: Validation catches issues ──────────────────────────────
 
     it("validation detects missing output block and orphans", () => {
@@ -294,6 +570,21 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         const issues = mgr.validateGeometry("val");
         expect(issues.some((i) => i.includes("Missing GeometryOutputBlock"))).toBe(true);
         expect(issues.some((i) => i.includes("orphan"))).toBe(true);
+    });
+
+    it("validation rejects multiple output blocks and mismatched outputNodeId", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("outputs");
+
+        mgr.addBlock("outputs", "BoxBlock", "box");
+        mgr.addBlock("outputs", "GeometryOutputBlock", "first");
+        mgr.addBlock("outputs", "GeometryOutputBlock", "second");
+
+        expect(mgr.validateGeometry("outputs")).toContain("ERROR: Found 2 GeometryOutputBlocks — every geometry graph needs exactly one.");
+
+        mgr.removeBlock("outputs", 3);
+        mgr.getGeometry("outputs")!.outputNodeId = 1;
+        expect(mgr.validateGeometry("outputs")).toContain("ERROR: outputNodeId references block 1, which is not a GeometryOutputBlock.");
     });
 
     // ── Test 12: Registry completeness ──────────────────────────────────

@@ -197,8 +197,12 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
 
     fragmentOutputs.color = vec4f(color, 1.0);
     #ifdef PREPASS
-        fragmentOutputs.fragData0 = toLinearSpaceVec3(color); // linear to cancel gamma transform in prepass
-        fragmentOutputs.fragData1 = vec4f(0., 0., 0., 0.); // tag as no SSS
+        #if SCENE_MRT_COUNT > 0 && (!defined(PREPASS_MESH_BLEND_TAG) || PREPASS_MESH_BLEND_TAG_INDEX != 0) && (!defined(PREPASS_OBJECT_ID) || PREPASS_OBJECT_ID_INDEX != 0)
+            fragmentOutputs.fragData0 = vec4f(toLinearSpaceVec3(color), 1.0); // linear to cancel gamma transform in prepass
+        #endif
+        #if SCENE_MRT_COUNT > 1 && (!defined(PREPASS_MESH_BLEND_TAG) || PREPASS_MESH_BLEND_TAG_INDEX != 1) && (!defined(PREPASS_OBJECT_ID) || PREPASS_OBJECT_ID_INDEX != 1)
+            fragmentOutputs.fragData1 = vec4f(0., 0., 0., 0.); // tag as no SSS
+        #endif
     #endif
 
     #ifdef DEBUGMODE_FORCERETURN

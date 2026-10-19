@@ -12,6 +12,7 @@ import {
     OpenMcpEditorSessionEventSource,
     PostMcpEditorSessionDocumentAsync,
 } from "shared-ui-components/mcp/mcpEditorSessionConnection";
+import { ApplySerializedNodeGeometryToEditor } from "../../webMcp";
 
 interface IMcpSessionComponentProps {
     globalState: GlobalState;
@@ -26,28 +27,29 @@ export const McpSessionComponent: FunctionComponent<IMcpSessionComponentProps> =
     const { globalState } = props;
     const [url, setUrl] = useState<string>(globalState.mcpSessionUrl ?? "");
     const [connected, setConnected] = useState<boolean>(globalState.mcpSessionConnected);
+    const [webMcpStatus, setWebMcpStatus] = useState<string>(globalState.webMcpRegistrationStatus);
 
     useEffect(() => {
         const observer = globalState.onMcpSessionStateChangedObservable.add((state) => {
             setConnected(state);
         });
+        const webMcpObserver = globalState.onWebMcpRegistrationStatusChangedObservable.add((status) => {
+            setWebMcpStatus(status);
+        });
         setConnected(globalState.mcpSessionConnected);
+        setWebMcpStatus(globalState.webMcpRegistrationStatus);
         if (globalState.mcpSessionUrl) {
             setUrl(globalState.mcpSessionUrl);
         }
         return () => {
             globalState.onMcpSessionStateChangedObservable.remove(observer);
+            globalState.onWebMcpRegistrationStatusChangedObservable.remove(webMcpObserver);
         };
     }, [globalState]);
 
     const loadGeometryFromJson = useCallback(
         (json: unknown) => {
-            SerializationTools.Deserialize(json, globalState);
-            globalState.onResetRequiredObservable.notifyObservers(false);
-            globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            globalState.onFrame.notifyObservers();
-            globalState.onClearUndoStack.notifyObservers();
-            globalState.onZoomToFitRequiredObservable.notifyObservers();
+            ApplySerializedNodeGeometryToEditor(json, globalState);
         },
         [globalState]
     );
@@ -120,6 +122,8 @@ export const McpSessionComponent: FunctionComponent<IMcpSessionComponentProps> =
 
     return (
         <LineContainerComponent title="MCP SESSION" closed={true}>
+            <TextLineComponent label="WebMCP" value={webMcpStatus} />
+            <TextLineComponent label="MCP writer" value={connected ? "Legacy session" : webMcpStatus === "registered" ? "WebMCP" : "None"} />
             <TextInputLineComponent
                 label="Session URL"
                 value={url}

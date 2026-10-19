@@ -12,9 +12,9 @@ describe("KHR_interactivity JSON Pointer Template validation", () => {
         vi.spyOn(Logger, "Warn").mockImplementation(() => {});
     });
 
-    const parse = (pointer: string) => {
+    const parse = (pointer: string, operation: "pointer/set" | "pointer/interpolate" = "pointer/set") => {
         const graph: IKHRInteractivity_Graph = {
-            declarations: [{ op: "event/onStart" }, { op: "pointer/set" }],
+            declarations: [{ op: "event/onStart" }, { op: operation }],
             types: [{ signature: "float3" }],
             nodes: [
                 { declaration: 0, flows: { out: { node: 1, socket: "in" } } },
@@ -61,7 +61,15 @@ describe("KHR_interactivity JSON Pointer Template validation", () => {
         ["/nodes/{index}/children/{index}"],
         // Not a JSON Pointer.
         ["nodes/0/scale"],
+        // Invalid RFC 6901 escape.
+        ["/nodes/~2bad/scale"],
+        // Reserved pointer/set socket id.
+        ["/nodes/{value}/scale"],
     ])("rejects the invalid template %s", (pointer) => {
         expect(() => parse(pointer)).toThrow();
+    });
+
+    it.each(["value", "duration", "p1", "p2"])("rejects pointer/interpolate reserved template socket %s", (socket) => {
+        expect(() => parse(`/nodes/{${socket}}/scale`, "pointer/interpolate")).toThrow();
     });
 });

@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "files": {
+        "USD/usdFileLoader.ts": ["top-level-call"],
+        "USD/usdFileLoader.types.ts": ["declare-module"]
+    }
+}

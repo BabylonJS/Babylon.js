@@ -11,7 +11,7 @@ import { ShaderLanguage } from "../shaderLanguage";
 import { RegisterClass } from "../../Misc/typeStore";
 import { type Vector3 } from "../../Maths/math.vector";
 import { Logger } from "../../Misc/logger";
-import { type GaussianSplattingMaterial, GetGaussianSplattingMaxPartCount } from "./gaussianSplattingMaterial.pure";
+import { type GaussianSplattingMaterial, GetGaussianSplattingMaxPartCount, GetPartIndexVaryingDeclaration } from "./gaussianSplattingMaterial.pure";
 import { RawTexture } from "../Textures/rawTexture";
 import { Constants } from "../../Engines/constants";
 
@@ -40,6 +40,9 @@ class GaussianSplattingDebugDefines extends MaterialDefines {
     /** Defines whether SH band 4 contribution is included (0: off, 1: on) */
     GS_DBG_SH_ORDER4: number = 1;
 }
+
+// Clip box min/max (6) + opacity culling min/max (2) + size culling min/max (2) per snapshot slot.
+const _MutableValuesPerSlot = 10;
 
 /**
  * Per-part debug options for compound Gaussian splat meshes.
@@ -111,6 +114,8 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     private _dbgPartDataTexture: Nullable<RawTexture> = null;
     private _textureDirty: boolean = false;
     private _maxPartCount: number = 0;
+    private _resolvedPartData: Nullable<{ partCount: number; data: Float32Array; maxPartCount: number }> = null;
+    private _mutableValuesSnapshot: Nullable<Float64Array> = null;
 
     /**
      * Creates a new GaussianSplattingDebugMaterialPlugin.
@@ -130,6 +135,103 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
             this._partShOrder3s,
             this._partShOrder4s,
         ];
+    }
+
+    /**
+     * True when any global or per-part debug feature is active.
+     * @returns true when debug work is needed
+     */
+    public get isDebugActive(): boolean {
+        return this._isAnyFeatureActive();
+    }
+
+    /**
+     * Returns resolved per-part debug data in the classic `dbgPartData` layout (5 RGBA rows per part).
+     * @param partCount current mesh part count
+     * @param engine engine used to size the LUT if needed
+     * @returns the resolved LUT floats and its per-row part-count stride
+     */
+    public getResolvedPartData(partCount: number, engine: AbstractEngine): { data: Float32Array; maxPartCount: number } {
+        if (!this._maxPartCount) {
+            this._maxPartCount = GetGaussianSplattingMaxPartCount(engine);
+        }
+        // Clip boxes and culling ranges are handed out by reference, so callers can change their values
+        // without going through a setter. Comparing the values catches that, like the classic non-compound
+        // path which reads them live at bind time.
+        const mutated = this._refreshMutableValuesSnapshot(partCount);
+        if (!this._resolvedPartData || this._resolvedPartData.partCount !== partCount || mutated) {
+            this._resolvedPartData = { partCount, data: this._buildTextureData(partCount), maxPartCount: this._maxPartCount };
+        }
+        return this._resolvedPartData;
+    }
+
+    /**
+     * Stores the current values of every externally mutable debug setting and reports whether any changed.
+     * @param partCount current mesh part count
+     * @returns true when at least one value differs from the previous call
+     */
+    private _refreshMutableValuesSnapshot(partCount: number): boolean {
+        // One slot per part plus a trailing slot for the parts that resolve to the global settings.
+        const slotCount = partCount + 1;
+        let snapshot = this._mutableValuesSnapshot;
+        let changed = false;
+        if (!snapshot || snapshot.length !== slotCount * _MutableValuesPerSlot) {
+            snapshot = new Float64Array(slotCount * _MutableValuesPerSlot);
+            this._mutableValuesSnapshot = snapshot;
+            changed = true;
+        }
+        for (let i = 0; i < slotCount; i++) {
+            const offset = i * _MutableValuesPerSlot;
+            const box = i < partCount ? (this._partClippingBoxes[i] ?? this._clippingBox) : this._clippingBox;
+            if (this._diffMutableValue(snapshot, offset, box ? box.min.x : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 1, box ? box.min.y : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 2, box ? box.min.z : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 3, box ? box.max.x : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 4, box ? box.max.y : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 5, box ? box.max.z : 0)) {
+                changed = true;
+            }
+            const opacityCulling = i < partCount ? (this._partOpacityCullings[i] ?? this._opacityCulling) : this._opacityCulling;
+            if (this._diffMutableValue(snapshot, offset + 6, opacityCulling ? opacityCulling.min : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 7, opacityCulling ? opacityCulling.max : 0)) {
+                changed = true;
+            }
+            const sizeCulling = i < partCount ? (this._partSizeCullings[i] ?? this._sizeCulling) : this._sizeCulling;
+            if (this._diffMutableValue(snapshot, offset + 8, sizeCulling ? sizeCulling.min : 0)) {
+                changed = true;
+            }
+            if (this._diffMutableValue(snapshot, offset + 9, sizeCulling ? sizeCulling.max : 0)) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Writes a value into the snapshot and reports whether it replaced a different one.
+     * @param snapshot the snapshot buffer
+     * @param index the slot index to write
+     * @param value the current value
+     * @returns true when the stored value changed
+     */
+    private _diffMutableValue(snapshot: Float64Array, index: number, value: number): boolean {
+        if (snapshot[index] === value) {
+            return false;
+        }
+        snapshot[index] = value;
+        return true;
     }
 
     private _isAnyFeatureActive(): boolean {
@@ -160,6 +262,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     private _markDirty(): void {
         this.markAllDefinesAsDirty();
         this._textureDirty = true;
+        this._resolvedPartData = null;
     }
 
     // ----- Public API -----
@@ -460,7 +563,7 @@ uniform float dbgOpacityScale;
 #endif
 #if defined(GS_DBG_ENABLED) && IS_COMPOUND
 uniform sampler2D dbgPartData;
-varying float vPartIndex;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.GLSL)}
 #endif
 `,
                 CUSTOM_VERTEX_UPDATE: `
@@ -539,7 +642,7 @@ varying float vPartIndex;
                 CUSTOM_FRAGMENT_DEFINITIONS: `
 #if defined(GS_DBG_ENABLED) && IS_COMPOUND
 uniform sampler2D dbgPartData;
-varying float vPartIndex;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.GLSL)}
 #endif
 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
@@ -575,7 +678,7 @@ uniform dbgOpacityScale: f32;
 #endif
 #if defined(GS_DBG_ENABLED) && IS_COMPOUND
 var dbgPartData: texture_2d<f32>;
-varying vPartIndex: f32;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.WGSL)}
 #endif
 `,
                 CUSTOM_VERTEX_UPDATE: `
@@ -654,7 +757,7 @@ varying vPartIndex: f32;
                 CUSTOM_FRAGMENT_DEFINITIONS: `
 #if defined(GS_DBG_ENABLED) && IS_COMPOUND
 var dbgPartData: texture_2d<f32>;
-varying vPartIndex: f32;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.WGSL)}
 #endif
 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `

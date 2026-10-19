@@ -400,6 +400,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
     public override isReady() {
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
+        this._renderer.spriteManagerList = this.objectList.spriteManagers ?? null;
 
         return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
@@ -431,12 +432,13 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
         pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
         pass.setInitializeFunc(() => {
-            // Note: we don't use pass.frameGraphRenderTarget.renderTargetWrapper for OIT but recreate our own render target wrapper because this.targetTexture may not be the first one of the wrapper in the geometry renderer task case
+            // OIT composition targets only the caller's color textures, not the geometry attachments of the render pass.
             this._rtForOrderIndependentTransparency = new FrameGraphRenderTarget(this.name + "_oitRT", this._frameGraph.textureManager, this.targetTexture, this.depthTexture);
         });
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
+            this._renderer.spriteManagerList = this.objectList.spriteManagers ?? null;
 
             this._updateLayerAndFaceIndices(pass);
 

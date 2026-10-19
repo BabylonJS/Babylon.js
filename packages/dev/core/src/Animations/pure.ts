@@ -13,3 +13,4 @@ export * from "./pathCursor";
 export * from "./animationGroupMask";
 export * from "./animation.optimizations";
 export * from "./animatorAvatar";
+export * from "./rootMotion";

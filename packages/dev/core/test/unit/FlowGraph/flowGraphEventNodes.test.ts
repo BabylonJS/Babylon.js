@@ -11,6 +11,8 @@ import {
     FlowGraphSceneReadyEventBlock,
     FlowGraphSceneTickEventBlock,
     FlowGraphSendCustomEventBlock,
+    FlowGraphStopEventPropagationBlock,
+    GetDefaultEventReference,
     RichTypeNumber,
     RichTypeString,
     ParseFlowGraphAsync,
@@ -42,6 +44,29 @@ describe("Flow Graph Event Nodes", () => {
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
         flowGraph = flowGraphCoordinator.createGraph();
         flowGraphContext = flowGraph.createContext();
+    });
+
+    it("logs an explicitly empty message template", () => {
+        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        const log = new FlowGraphConsoleLogBlock({ messageTemplate: "" });
+        flowGraph.addEventBlock(sceneReady);
+        sceneReady.done.connectTo(log.in);
+
+        flowGraph.start();
+
+        expect(Logger.Log).toHaveBeenCalledWith("");
+    });
+
+    it("treats a non-string message template as absent", () => {
+        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        const log = new FlowGraphConsoleLogBlock(JSON.parse('{"messageTemplate":null}'));
+        flowGraph.addEventBlock(sceneReady);
+        sceneReady.done.connectTo(log.in);
+        log.message.setValue("fallback", flowGraphContext);
+
+        flowGraph.start();
+
+        expect(Logger.Log).toHaveBeenCalledWith("fallback");
     });
 
     it("Custom Event Block", () => {
@@ -224,6 +249,58 @@ describe("Flow Graph Event Nodes", () => {
         // Mesh3 was picked, so we expect the pick to "bubble up" to mesh1
         expect(Logger.Log).toHaveBeenNthCalledWith(1, "Mesh 3 was picked");
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "Mesh 1 was picked");
+    });
+
+    it("stops hierarchical mesh pick propagation without affecting ordinary event dispatch", () => {
+        const graph = flowGraphCoordinator.createGraph();
+        const context = graph.createContext();
+        const parent = new Mesh("parent", scene);
+        const child = new Mesh("child", scene);
+        child.parent = parent;
+        const childPick = new FlowGraphMeshPickEventBlock({ targetMesh: child });
+        const parentPick = new FlowGraphMeshPickEventBlock({ targetMesh: parent });
+        const stop = new FlowGraphStopEventPropagationBlock();
+        const parentLog = new FlowGraphConsoleLogBlock();
+        stop.event.setValue(GetDefaultEventReference(childPick.eventKey), context);
+        parentLog.message.setValue("parent", context);
+        childPick.done.connectTo(stop.in);
+        parentPick.done.connectTo(parentLog.in);
+        graph.addEventBlock(parentPick);
+        graph.addEventBlock(childPick);
+        graph.start();
+
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = child;
+        scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, {} as any, pickInfo));
+
+        expect(Logger.Log).not.toHaveBeenCalledWith("parent");
+    });
+
+    it("Mesh Pick Event ignores unrelated meshes with duplicate names", () => {
+        const graph = flowGraphCoordinator.createGraph();
+        const context = graph.createContext();
+        const meshA = new Mesh("duplicate", scene);
+        const meshB = new Mesh("duplicate", scene);
+        const pickA = new FlowGraphMeshPickEventBlock({ targetMesh: meshA });
+        const pickB = new FlowGraphMeshPickEventBlock({ targetMesh: meshB });
+        const logA = new FlowGraphConsoleLogBlock();
+        const logB = new FlowGraphConsoleLogBlock();
+        pickA.done.connectTo(logA.in);
+        pickB.done.connectTo(logB.in);
+        logA.message.setValue("A", context);
+        logB.message.setValue("B", context);
+        graph.addEventBlock(pickA);
+        graph.addEventBlock(pickB);
+        graph.start();
+
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = meshA;
+        scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, {} as any, pickInfo));
+
+        expect(Logger.Log).toHaveBeenCalledWith("A");
+        expect(Logger.Log).not.toHaveBeenCalledWith("B");
     });
 
     it("Event blocks fire both done and out signals", () => {

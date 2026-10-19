@@ -50,7 +50,8 @@ export class EXT_texture_webp implements IGLTFLoaderExtension {
                     assign(babylonTexture);
                 },
                 undefined,
-                !texture._textureInfo.nonColorData
+                !texture._textureInfo.nonColorData,
+                texture
             );
         });
     }

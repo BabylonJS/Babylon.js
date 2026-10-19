@@ -14,7 +14,54 @@ import { type ThinEngine } from "../Engines/thinEngine";
 import { Logger } from "../Misc/logger";
 import { BindLogDepth } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { Vector3 } from "../Maths/math.vector.pure";
+import { Matrix, Vector3 } from "../Maths/math.vector.pure";
+import { MaterialHelperGeometryRendering, type GeometryRenderingConfiguration } from "../Materials/materialHelper.geometryrendering";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
+import { Observable, type Observer } from "../Misc/observable.pure";
+
+type SpriteRendererSpriteHistory = {
+    previousX: number;
+    previousY: number;
+    previousZ: number;
+    previousAngle: number;
+    previousWidth: number;
+    previousHeight: number;
+    currentX: number;
+    currentY: number;
+    currentZ: number;
+    currentAngle: number;
+    currentWidth: number;
+    currentHeight: number;
+    frameId: number;
+};
+
+type SpriteRendererCameraHistory = {
+    previousView: Matrix;
+    previousProjection: Matrix;
+    currentView: Matrix;
+    currentProjection: Matrix;
+    sprites: WeakMap<ThinSprite, SpriteRendererSpriteHistory>;
+    frameId: number;
+};
+
+type SpriteRendererDrawCache = {
+    drawWrapperBase: DrawWrapper;
+    drawWrapperDepth: DrawWrapper;
+    defines: string;
+    geometryDefines?: string;
+    geometryConfiguration?: GeometryRenderingConfiguration;
+    variantKey: number;
+    vertexBuffers: { [key: string]: VertexBuffer };
+    vertexArrayObject?: WebGLVertexArrayObject;
+    usesGeometryRendering: boolean;
+    usesVelocity: boolean;
+    usesObjectId: boolean;
+    usesMeshBlendTag: boolean;
+    usesInverseView: boolean;
+    usesNormals: boolean;
+    usesNormalizedDepth: boolean;
+    cameraHistories?: WeakMap<object, SpriteRendererCameraHistory>;
+};
 
 /**
  * Options for the SpriteRenderer
@@ -164,14 +211,19 @@ export class SpriteRenderer {
     private _vertexData: Float32Array;
     private _buffer: Buffer;
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+    private _previousVertexData: Nullable<Float32Array> = null;
+    private _previousBuffer: Nullable<Buffer> = null;
+    private _vertexBuffersWithPrevious: Nullable<{ [key: string]: VertexBuffer }> = null;
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: DataBuffer;
     /** @internal */
     public _drawWrapperBase: DrawWrapper;
     /** @internal */
     public _drawWrapperDepth: DrawWrapper;
-    private _vertexArrayObject: WebGLVertexArrayObject;
+    private _drawCaches: Array<SpriteRendererDrawCache | undefined> = [];
+    private _inverseViewMatrix: Nullable<Matrix> = null;
     private _isDisposed = false;
+    private _renderPassObserver: Nullable<Observer<number>> = null;
 
     /**
      * Creates a new sprite renderer
@@ -258,52 +310,327 @@ export class SpriteRenderer {
         this._createEffects();
     }
 
+    /**
+     * Checks whether the texture and shader variant for the current render pass are ready.
+     * This prepares the effect without updating or drawing any sprites.
+     * @returns true when the renderer can draw sprites
+     * @see https://playground.babylonjs.com/#PVK3RV#2
+     */
+    public isReady(): boolean {
+        if (this._isDisposed || !this._shadersLoaded || !this.texture?.isReady()) {
+            return false;
+        }
+        const renderPassId = this._engine._features.supportRenderPasses ? this._engine.currentRenderPassId : Constants.RENDERPASS_MAIN;
+        return !!this._getDrawCache(renderPassId).drawWrapperBase.effect?.isReady();
+    }
+
     private _createEffects() {
         if (this._isDisposed || !this._shadersLoaded) {
             return;
         }
 
-        this._drawWrapperBase?.dispose();
-        this._drawWrapperDepth?.dispose();
+        this._disposeDrawCaches();
 
-        this._drawWrapperBase = new DrawWrapper(this._engine);
-        this._drawWrapperDepth = new DrawWrapper(this._engine, false);
+        const mainCache = this._getDrawCache(Constants.RENDERPASS_MAIN);
+        this._drawWrapperBase = mainCache.drawWrapperBase;
+        this._drawWrapperDepth = mainCache.drawWrapperDepth;
+    }
 
-        if (this._drawWrapperBase.drawContext) {
-            this._drawWrapperBase.drawContext.useInstancing = this._useInstancing;
+    private _getDrawCache(renderPassId: number): SpriteRendererDrawCache {
+        const fogEnabled = !!(this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0 && this._fogEnabled);
+        const variantKey = (this._pixelPerfect ? 1 : 0) | (fogEnabled ? 2 : 0) | (this._useLogarithmicDepth ? 4 : 0);
+        const geometryConfiguration = MaterialHelperGeometryRendering.GetConfiguration(renderPassId);
+        const geometryDefines = geometryConfiguration?._defines;
+        let cache = this._drawCaches[renderPassId];
+
+        if (cache?.variantKey === variantKey && cache.geometryDefines === geometryDefines && cache.geometryConfiguration === geometryConfiguration) {
+            return cache;
         }
-        if (this._drawWrapperDepth.drawContext) {
-            this._drawWrapperDepth.drawContext.useInstancing = this._useInstancing;
-        }
 
-        let defines = "";
+        const defines: string[] = [];
 
         if (this._pixelPerfect) {
-            defines += "#define PIXEL_PERFECT\n";
+            defines.push("#define PIXEL_PERFECT");
         }
-        if (this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0 && this._fogEnabled) {
-            defines += "#define FOG\n";
+        if (fogEnabled) {
+            defines.push("#define FOG");
         }
         if (this._useLogarithmicDepth) {
-            defines += "#define LOGARITHMICDEPTH\n";
+            defines.push("#define LOGARITHMICDEPTH");
         }
 
-        this._drawWrapperBase.effect = this._engine.createEffect(
-            "sprites",
-            [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
-            ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor", "logarithmicDepthConstant"],
-            ["diffuseSampler"],
-            defines,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            this._shaderLanguage
-        );
+        const usesGeometryRendering = MaterialHelperGeometryRendering._PrepareStringDefines(renderPassId, defines);
+        const mrtCount = usesGeometryRendering ? (MaterialHelperGeometryRendering.GetConfiguration(renderPassId)._mrtCount ?? 0) : 0;
+        if (!usesGeometryRendering) {
+            defines.push("#define SCENE_MRT_COUNT 0");
+        }
+        const joinedDefines = defines.join("\n");
 
-        this._drawWrapperDepth.effect = this._drawWrapperBase.effect;
-        this._drawWrapperBase.effect._refCount++;
-        this._drawWrapperDepth.materialContext = this._drawWrapperBase.materialContext;
+        if (cache) {
+            this._disposeDrawCache(cache);
+            this._drawCaches[renderPassId] = undefined;
+        }
+
+        const usesVelocity = joinedDefines.indexOf("#define PREPASS_VELOCITY\n") !== -1 || joinedDefines.indexOf("#define PREPASS_VELOCITY_LINEAR\n") !== -1;
+        const usesObjectId = joinedDefines.indexOf("#define PREPASS_OBJECT_ID\n") !== -1;
+        const usesMeshBlendTag = joinedDefines.indexOf("#define PREPASS_MESH_BLEND_TAG\n") !== -1;
+        const attributes = [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind];
+        let vertexBuffers = this._vertexBuffers;
+
+        if (usesVelocity) {
+            vertexBuffers = this._ensurePreviousVertexBuffer();
+            attributes.push("previousPosition", "previousOptions");
+        }
+
+        const uniforms = [
+            "view",
+            "projection",
+            "textureInfos",
+            "alphaTest",
+            "vFogInfos",
+            "vFogColor",
+            "logarithmicDepthConstant",
+            "invView",
+            "cameraInfo",
+            "spriteNormalSign",
+            "previousView",
+            "previousProjection",
+            "objectId",
+            "meshBlendTag",
+            "geometryZeroAlphaDiscard",
+        ];
+        const drawWrapperBase = new DrawWrapper(this._engine);
+        const drawWrapperDepth = new DrawWrapper(this._engine, false);
+
+        if (drawWrapperBase.drawContext) {
+            drawWrapperBase.drawContext.useInstancing = this._useInstancing;
+        }
+        if (drawWrapperDepth.drawContext) {
+            drawWrapperDepth.drawContext.useInstancing = this._useInstancing;
+        }
+
+        const effectOptions: IEffectCreationOptions = {
+            attributes,
+            uniformsNames: uniforms,
+            samplers: ["diffuseSampler"],
+            defines: joinedDefines,
+            fallbacks: null,
+            onCompiled: null,
+            onError: null,
+            indexParameters: { SCENE_MRT_COUNT: mrtCount },
+            multiTarget: usesGeometryRendering,
+            shaderLanguage: this._shaderLanguage,
+        };
+        const effect = this._engine.createEffect("sprites", effectOptions, this._engine);
+
+        drawWrapperBase.effect = effect;
+        drawWrapperBase.defines = joinedDefines;
+        drawWrapperDepth.effect = effect;
+        effect._refCount++;
+        drawWrapperDepth.defines = joinedDefines;
+        drawWrapperDepth.materialContext = drawWrapperBase.materialContext;
+
+        cache = {
+            drawWrapperBase,
+            drawWrapperDepth,
+            defines: joinedDefines,
+            geometryDefines,
+            geometryConfiguration,
+            variantKey,
+            vertexBuffers,
+            usesGeometryRendering,
+            usesVelocity,
+            usesObjectId,
+            usesMeshBlendTag,
+            usesInverseView: geometryConfiguration?.defines.PREPASS_POSITION_INDEX !== undefined || geometryConfiguration?.defines.PREPASS_WORLD_NORMAL_INDEX !== undefined,
+            usesNormals: geometryConfiguration?.defines.PREPASS_NORMAL_INDEX !== undefined || geometryConfiguration?.defines.PREPASS_WORLD_NORMAL_INDEX !== undefined,
+            usesNormalizedDepth: geometryConfiguration?.defines.PREPASS_NORMALIZED_VIEW_DEPTH_INDEX !== undefined,
+            cameraHistories: usesVelocity ? new WeakMap<object, SpriteRendererCameraHistory>() : undefined,
+        };
+        this._drawCaches[renderPassId] = cache;
+        if (renderPassId !== Constants.RENDERPASS_MAIN && !this._renderPassObserver) {
+            this._renderPassObserver = (this._engine._onReleaseRenderPassObservable ??= new Observable<number>()).add((id) => {
+                const releasedCache = this._drawCaches[id];
+                if (releasedCache) {
+                    this._disposeDrawCache(releasedCache);
+                    delete this._drawCaches[id];
+                    this._disposePreviousVertexBufferIfUnused();
+                }
+            });
+        }
+        this._disposePreviousVertexBufferIfUnused();
+
+        return cache;
+    }
+
+    private _ensurePreviousVertexBuffer(): { [key: string]: VertexBuffer } {
+        if (this._vertexBuffersWithPrevious) {
+            return this._vertexBuffersWithPrevious;
+        }
+
+        const previousVertexBufferSize = 6;
+        this._previousVertexData = new Float32Array(this._capacity * previousVertexBufferSize * (this._useInstancing ? 1 : 4));
+        this._previousBuffer = new Buffer(this._engine, this._previousVertexData, true, previousVertexBufferSize);
+        this._vertexBuffersWithPrevious = { ...this._vertexBuffers };
+        this._vertexBuffersWithPrevious["previousPosition"] = this._previousBuffer.createVertexBuffer("previousPosition", 0, 4, previousVertexBufferSize, this._useInstancing);
+        this._vertexBuffersWithPrevious["previousOptions"] = this._previousBuffer.createVertexBuffer("previousOptions", 4, 2, previousVertexBufferSize, this._useInstancing);
+
+        return this._vertexBuffersWithPrevious;
+    }
+
+    private _disposeDrawCache(cache: SpriteRendererDrawCache): void {
+        if (cache.vertexArrayObject) {
+            (this._engine as ThinEngine).releaseVertexArrayObject(cache.vertexArrayObject);
+        }
+        cache.drawWrapperBase.dispose();
+        cache.drawWrapperDepth.dispose();
+    }
+
+    private _disposeDrawCaches(): void {
+        for (const cache of this._drawCaches) {
+            if (cache) {
+                this._disposeDrawCache(cache);
+            }
+        }
+        this._drawCaches = [];
+        this._disposePreviousVertexBuffer();
+    }
+
+    private _disposePreviousVertexBufferIfUnused(): void {
+        for (const cache of this._drawCaches) {
+            if (cache?.usesVelocity) {
+                return;
+            }
+        }
+        this._disposePreviousVertexBuffer();
+    }
+
+    private _disposePreviousVertexBuffer(): void {
+        if (this._previousBuffer) {
+            this._previousBuffer.dispose();
+            this._previousBuffer = null;
+            this._previousVertexData = null;
+            this._vertexBuffersWithPrevious = null;
+        }
+    }
+
+    private _bindVertexBuffers(cache: SpriteRendererDrawCache, effect: Effect): void {
+        if (this._useVAO) {
+            if (!cache.vertexArrayObject) {
+                cache.vertexArrayObject = (this._engine as ThinEngine).recordVertexArrayObject(cache.vertexBuffers, this._indexBuffer, effect);
+            }
+            (this._engine as ThinEngine).bindVertexArrayObject(cache.vertexArrayObject, this._indexBuffer);
+        } else {
+            this._engine.bindBuffers(cache.vertexBuffers, this._indexBuffer, effect);
+        }
+    }
+
+    private _getCameraHistory(cache: SpriteRendererDrawCache, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, frameId: number): SpriteRendererCameraHistory {
+        const cameraKey = (this._scene?.activeCamera ?? viewMatrix) as object;
+        let history = cache.cameraHistories!.get(cameraKey);
+
+        if (!history) {
+            const currentView = Matrix.FromArray(viewMatrix.asArray());
+            const currentProjection = Matrix.FromArray(projectionMatrix.asArray());
+            history = {
+                previousView: currentView.clone(),
+                previousProjection: currentProjection.clone(),
+                currentView,
+                currentProjection,
+                sprites: new WeakMap<ThinSprite, SpriteRendererSpriteHistory>(),
+                frameId,
+            };
+            cache.cameraHistories!.set(cameraKey, history);
+        } else {
+            if (history.frameId !== frameId) {
+                if (history.frameId === frameId - 1) {
+                    history.previousView.copyFrom(history.currentView);
+                    history.previousProjection.copyFrom(history.currentProjection);
+                } else {
+                    Matrix.FromArrayToRef(viewMatrix.asArray(), 0, history.previousView);
+                    Matrix.FromArrayToRef(projectionMatrix.asArray(), 0, history.previousProjection);
+                    history.sprites = new WeakMap<ThinSprite, SpriteRendererSpriteHistory>();
+                }
+                history.frameId = frameId;
+            }
+            Matrix.FromArrayToRef(viewMatrix.asArray(), 0, history.currentView);
+            Matrix.FromArrayToRef(projectionMatrix.asArray(), 0, history.currentProjection);
+        }
+
+        return history;
+    }
+
+    private _prepareSpriteHistory(history: SpriteRendererCameraHistory, sprite: ThinSprite, frameId: number): Nullable<SpriteRendererSpriteHistory> {
+        const spriteHistory = history.sprites.get(sprite);
+        if (spriteHistory && spriteHistory.frameId !== frameId) {
+            if (spriteHistory.frameId !== frameId - 1) {
+                history.sprites.delete(sprite);
+                return null;
+            }
+            spriteHistory.previousX = spriteHistory.currentX;
+            spriteHistory.previousY = spriteHistory.currentY;
+            spriteHistory.previousZ = spriteHistory.currentZ;
+            spriteHistory.previousAngle = spriteHistory.currentAngle;
+            spriteHistory.previousWidth = spriteHistory.currentWidth;
+            spriteHistory.previousHeight = spriteHistory.currentHeight;
+            spriteHistory.frameId = frameId;
+        }
+        return spriteHistory ?? null;
+    }
+
+    private _updateSpriteHistory(
+        history: SpriteRendererCameraHistory,
+        sprite: ThinSprite,
+        spriteHistory: Nullable<SpriteRendererSpriteHistory>,
+        floatingOriginOffset: Vector3,
+        frameId: number
+    ): void {
+        const x = sprite.position.x - floatingOriginOffset.x;
+        const y = sprite.position.y - floatingOriginOffset.y;
+        const z = sprite.position.z - floatingOriginOffset.z;
+
+        if (!spriteHistory) {
+            history.sprites.set(sprite, {
+                previousX: x,
+                previousY: y,
+                previousZ: z,
+                previousAngle: sprite.angle,
+                previousWidth: sprite.width,
+                previousHeight: sprite.height,
+                currentX: x,
+                currentY: y,
+                currentZ: z,
+                currentAngle: sprite.angle,
+                currentWidth: sprite.width,
+                currentHeight: sprite.height,
+                frameId,
+            });
+            return;
+        }
+
+        if (spriteHistory.frameId === frameId) {
+            spriteHistory.currentX = x;
+            spriteHistory.currentY = y;
+            spriteHistory.currentZ = z;
+            spriteHistory.currentAngle = sprite.angle;
+            spriteHistory.currentWidth = sprite.width;
+            spriteHistory.currentHeight = sprite.height;
+        }
+    }
+
+    private _animateSprite(sprite: ThinSprite, deltaTime: number): void {
+        if (!this._scene) {
+            sprite._animate(deltaTime);
+            return;
+        }
+
+        const frameId = this._scene.getFrameId();
+        const frameGraphRendering = !!this._scene.frameGraph || !!MaterialHelperGeometryRendering.GetConfiguration(this._engine.currentRenderPassId);
+        if (!frameGraphRendering || sprite._animationFrameId !== frameId || sprite._animationSceneId !== this._scene.uniqueId) {
+            sprite._animationFrameId = frameId;
+            sprite._animationSceneId = this._scene.uniqueId;
+            sprite._animate(deltaTime);
+        }
     }
 
     /**
@@ -325,8 +652,11 @@ export class SpriteRenderer {
             return;
         }
 
-        const drawWrapper = this._drawWrapperBase;
-        const drawWrapperDepth = this._drawWrapperDepth;
+        const engine = this._engine;
+        const renderPassId = engine._features.supportRenderPasses ? engine.currentRenderPassId : Constants.RENDERPASS_MAIN;
+        const drawCache = this._getDrawCache(renderPassId);
+        const drawWrapper = drawCache.drawWrapperBase;
+        const drawWrapperDepth = drawCache.drawWrapperDepth;
         const shouldRenderFog = this.fogEnabled && this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0;
 
         const effect = drawWrapper.effect!;
@@ -336,8 +666,10 @@ export class SpriteRenderer {
             return;
         }
 
-        const engine = this._engine;
         const useRightHandedSystem = !!(this._scene && this._scene.useRightHandedSystem);
+        const frameId = this._scene?.getFrameId() ?? engine.frameId;
+        const usesVelocity = drawCache.usesVelocity;
+        const cameraHistory = usesVelocity ? this._getCameraHistory(drawCache, viewMatrix, projectionMatrix, frameId) : null;
 
         // Sprites
         const max = Math.min(this._capacity, sprites.length);
@@ -352,14 +684,19 @@ export class SpriteRenderer {
             }
 
             noSprite = false;
-            sprite._animate(deltaTime);
+            this._animateSprite(sprite, deltaTime);
             const baseSize = this.texture.getBaseSize(); // This could be change by the user inside the animate callback (like onAnimationEnd)
+            const spriteHistory = cameraHistory ? this._prepareSpriteHistory(cameraHistory, sprite, frameId) : null;
 
-            this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset);
+            this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory, usesVelocity);
             if (!this._useInstancing) {
-                this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset);
-                this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset);
-                this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset);
+                this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory, usesVelocity);
+                this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory, usesVelocity);
+                this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory, usesVelocity);
+            }
+
+            if (cameraHistory) {
+                this._updateSpriteHistory(cameraHistory, sprite, spriteHistory, floatingOriginOffset, frameId);
             }
         }
 
@@ -368,6 +705,9 @@ export class SpriteRenderer {
         }
 
         this._buffer.update(this._vertexData);
+        if (usesVelocity) {
+            this._previousBuffer!.update(this._previousVertexData!);
+        }
 
         const culling = !!engine.depthCullingState.cull;
         const zOffset = engine.depthCullingState.zOffset;
@@ -381,6 +721,32 @@ export class SpriteRenderer {
         effect.setTexture("diffuseSampler", this.texture);
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", projectionMatrix);
+
+        if (drawCache.usesGeometryRendering) {
+            if (drawCache.usesInverseView) {
+                this._inverseViewMatrix ??= Matrix.Identity();
+                Matrix.FromArrayToRef(viewMatrix.asArray(), 0, this._inverseViewMatrix).invertToRef(this._inverseViewMatrix);
+                effect.setMatrix("invView", this._inverseViewMatrix);
+            }
+            if (drawCache.usesNormals) {
+                effect.setFloat("spriteNormalSign", useRightHandedSystem ? 1 : -1);
+            }
+            if (drawCache.usesNormalizedDepth) {
+                const camera = this._scene?.activeCamera;
+                effect.setFloat2("cameraInfo", camera?.minZ ?? 0, camera?.maxZ ?? 1);
+            }
+
+            if (drawCache.usesObjectId) {
+                effect.setFloat("objectId", 0);
+            }
+            if (drawCache.usesMeshBlendTag) {
+                effect.setInt("meshBlendTag", 0);
+            }
+            if (cameraHistory) {
+                effect.setMatrix("previousView", cameraHistory.previousView);
+                effect.setMatrix("previousProjection", cameraHistory.previousProjection);
+            }
+        }
 
         // Scene Info
         if (shouldRenderFog) {
@@ -396,15 +762,7 @@ export class SpriteRenderer {
             BindLogDepth(drawWrapper.defines, effect, this._scene);
         }
 
-        if (this._useVAO) {
-            if (!this._vertexArrayObject) {
-                this._vertexArrayObject = (engine as ThinEngine).recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
-            }
-            (engine as ThinEngine).bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
-        } else {
-            // VBOs
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
-        }
+        this._bindVertexBuffers(drawCache, effect);
 
         // Draw order
         engine.depthCullingState.depthFunc = engine.useReverseDepthBuffer ? Constants.GEQUAL : Constants.LEQUAL;
@@ -423,10 +781,19 @@ export class SpriteRenderer {
         }
 
         engine.setAlphaMode(this.blendMode);
-        if (this._useInstancing) {
-            engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
-        } else {
-            engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
+        if (drawCache.usesGeometryRendering) {
+            MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
+        }
+        try {
+            if (MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, effect)) {
+                if (this._useInstancing) {
+                    engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
+                } else {
+                    engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
+                }
+            }
+        } finally {
+            MaterialHelperGeometryRendering._RestoreAttachments(engine);
         }
 
         if (this.autoResetAlpha) {
@@ -449,7 +816,9 @@ export class SpriteRenderer {
         baseSize: ISize,
         useRightHandedSystem: boolean,
         customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>,
-        floatingOriginOffset: Vector3
+        floatingOriginOffset: Vector3,
+        spriteHistory: Nullable<SpriteRendererSpriteHistory>,
+        writeHistory: boolean
     ): void {
         let arrayOffset = index * this._vertexBufferSize;
 
@@ -515,6 +884,16 @@ export class SpriteRenderer {
         this._vertexData[arrayOffset + 15] = sprite.color.g;
         this._vertexData[arrayOffset + 16] = sprite.color.b;
         this._vertexData[arrayOffset + 17] = sprite.color.a;
+
+        if (writeHistory && this._previousVertexData) {
+            const previousArrayOffset = index * 6;
+            this._previousVertexData[previousArrayOffset] = spriteHistory?.previousX ?? sprite.position.x - floatingOriginOffset.x;
+            this._previousVertexData[previousArrayOffset + 1] = spriteHistory?.previousY ?? sprite.position.y - floatingOriginOffset.y;
+            this._previousVertexData[previousArrayOffset + 2] = spriteHistory?.previousZ ?? sprite.position.z - floatingOriginOffset.z;
+            this._previousVertexData[previousArrayOffset + 3] = spriteHistory?.previousAngle ?? sprite.angle;
+            this._previousVertexData[previousArrayOffset + 4] = spriteHistory?.previousWidth ?? sprite.width;
+            this._previousVertexData[previousArrayOffset + 5] = spriteHistory?.previousHeight ?? sprite.height;
+        }
     }
 
     private _buildIndexBuffer(): void {
@@ -542,7 +921,17 @@ export class SpriteRenderer {
         }
 
         if (this._useVAO) {
-            this._vertexArrayObject = undefined as any;
+            for (const cache of this._drawCaches) {
+                if (cache) {
+                    cache.vertexArrayObject = undefined;
+                }
+            }
+        }
+
+        for (const cache of this._drawCaches) {
+            if (cache?.usesVelocity) {
+                cache.cameraHistories = new WeakMap<object, SpriteRendererCameraHistory>();
+            }
         }
 
         this._buffer._rebuild();
@@ -553,12 +942,17 @@ export class SpriteRenderer {
         }
 
         this._spriteBuffer?._rebuild();
+        this._previousBuffer?._rebuild();
     }
 
     /**
      * Release associated resources
      */
     public dispose(): void {
+        this._engine._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
+        this._renderPassObserver = null;
+        this._disposeDrawCaches();
+
         if (this._buffer) {
             this._buffer.dispose();
             (<any>this._buffer) = null;
@@ -574,17 +968,10 @@ export class SpriteRenderer {
             (<any>this._indexBuffer) = null;
         }
 
-        if (this._vertexArrayObject) {
-            (this._engine as ThinEngine).releaseVertexArrayObject(this._vertexArrayObject);
-            (<any>this._vertexArrayObject) = null;
-        }
-
         if (this.texture) {
             this.texture.dispose();
             (<any>this.texture) = null;
         }
-        this._drawWrapperBase?.dispose();
-        this._drawWrapperDepth?.dispose();
         this._isDisposed = true;
     }
 }

@@ -15,6 +15,7 @@ import { NodeRenderGraphExtractHighlightsPostProcessBlock } from "core/FrameGrap
 import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/Textures/clearBlock";
 import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/Textures/copyTextureBlock";
 import { NodeRenderGraphGenerateMipmapsBlock } from "core/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock";
+import { NodeRenderGraphMinMaxReducerBlock } from "core/FrameGraph/Node/Blocks/Textures/minMaxReducerBlock";
 import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/cullObjectsBlock";
@@ -38,6 +39,7 @@ import { NodeRenderGraphMotionBlurPostProcessBlock } from "core/FrameGraph/Node/
 import { NodeRenderGraphConvolutionPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/convolutionPostProcessBlock";
 import { NodeRenderGraphSharpenPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/sharpenPostProcessBlock";
 import { NodeRenderGraphScreenSpaceCurvaturePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/screenSpaceCurvaturePostProcessBlock";
+import { NodeRenderGraphMeshBlendingPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/meshBlendingPostProcessBlock";
 import { NodeRenderGraphColorCorrectionPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/colorCorrectionPostProcessBlock";
 import { NodeRenderGraphFilterPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/filterPostProcessBlock";
 import { NodeRenderGraphTonemapPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/tonemapPostProcessBlock";
@@ -102,6 +104,9 @@ export class BlockTools {
             }
             case "GenerateMipmapsBlock": {
                 return new NodeRenderGraphGenerateMipmapsBlock("Generate mipmaps", frameGraph, scene);
+            }
+            case "MinMaxReducerBlock": {
+                return new NodeRenderGraphMinMaxReducerBlock("Min/max reducer", frameGraph, scene);
             }
             case "BlackAndWhiteBlock": {
                 return new NodeRenderGraphBlackAndWhitePostProcessBlock("Black and White", frameGraph, scene);
@@ -183,6 +188,9 @@ export class BlockTools {
             }
             case "ScreenSpaceCurvatureBlock": {
                 return new NodeRenderGraphScreenSpaceCurvaturePostProcessBlock("Screen Space Curvature", frameGraph, scene);
+            }
+            case "MeshBlendingBlock": {
+                return new NodeRenderGraphMeshBlendingPostProcessBlock("Mesh Blending", frameGraph, scene);
             }
             case "ColorCorrectionBlock": {
                 return new NodeRenderGraphColorCorrectionPostProcessBlock("Color Correction", frameGraph, scene, "https://assets.babylonjs.com/textures/co.png");
@@ -271,6 +279,12 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
                 color = "#c451e5";
                 break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureObjectId:
+                color = "#9251e5";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag:
+                color = "#7451e5";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
                 color = "#adad92";
                 break;
@@ -334,6 +348,10 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal;
             case "TextureLinearVelocity":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity;
+            case "TextureObjectId":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureObjectId;
+            case "TextureMeshBlendTag":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag;
             case "ResourceContainer":
                 return NodeRenderGraphBlockConnectionPointTypes.ResourceContainer;
             case "ShadowGenerator":
@@ -383,6 +401,10 @@ export class BlockTools {
                 return "TextureWorldNormal";
             case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
                 return "TextureLinearVelocity";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureObjectId:
+                return "TextureObjectId";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag:
+                return "TextureMeshBlendTag";
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
                 return "ResourceContainer";
             case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:

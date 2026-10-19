@@ -713,9 +713,10 @@ export abstract class AbstractEngine {
         this._contextWasLost = false;
     }
 
-    protected _restoreEngineAfterContextLost(initEngine: () => void): void {
+    protected _restoreEngineAfterContextLost(initEngine: () => void | Promise<void>): void {
         // Adding a timeout to avoid race condition at browser level
-        setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        setTimeout(async () => {
             this._clearEmptyResources();
 
             const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
@@ -724,7 +725,12 @@ export abstract class AbstractEngine {
             const stencilTest = this._stencilState.stencilTest;
 
             // Rebuild context
-            initEngine();
+            try {
+                await initEngine();
+            } catch (error) {
+                Logger.Error(`${this.name}: context restoration failed: ${String(error)}`);
+                return;
+            }
             this._rebuildGraphicsResources();
 
             this._depthCullingState.depthTest = depthTest;
@@ -1707,7 +1713,7 @@ export abstract class AbstractEngine {
                 }
 
                 message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
-                texture.onErrorObservable.notifyObservers({ message, exception });
+                texture._setError(message, exception);
                 if (onError) {
                     onError(message, exception);
                 }
@@ -1996,14 +2002,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.23.0";
+        return "babylonjs@9.30.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.23.0";
+        return "9.30.0";
     }
 
     /**
@@ -2527,6 +2533,9 @@ export abstract class AbstractEngine {
     public _renderPassNames: string[] = ["main"];
 
     /** @internal */
+    public _onReleaseRenderPassObservable: Nullable<Observable<number>> = null;
+
+    /** @internal */
     public abstract _createHardwareTexture(): IHardwareTextureWrapper;
 
     /**
@@ -2835,6 +2844,8 @@ export abstract class AbstractEngine {
         // Observables
         this.onBeginFrameObservable.clear();
         this.onEndFrameObservable.clear();
+        this._onReleaseRenderPassObservable?.clear();
+        this._onReleaseRenderPassObservable = null;
     }
 
     /**

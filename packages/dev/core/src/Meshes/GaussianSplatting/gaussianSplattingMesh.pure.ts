@@ -14,10 +14,77 @@ import { type MultiRenderTarget } from "core/Materials/Textures/multiRenderTarge
 import { Constants } from "core/Engines/constants";
 import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 import { Mesh } from "core/Meshes/mesh.pure";
+import { Logger } from "core/Misc/logger";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh.pure";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
+import { type SubMesh } from "core/Meshes/subMesh.pure";
+
+export { IsGaussianSplattingClassName } from "./gaussianSplatting.functions";
+
+/**
+ * Progress counters of the optional point-splatting compute renderer, as reported by
+ * {@link GaussianSplattingMesh.pointSplattingProgress}.
+ */
+export interface IGaussianPointSplattingProgress {
+    /** Lifetime count of successfully dispatched compute frames; never reset by an accumulation restart. */
+    renderedFrameCount: number;
+    /** Identifier of the current accumulation generation; changes whenever accumulated samples are invalidated. */
+    accumulationVersion: number;
+    /** Number of frames needed to visit every output pixel once; fixed for the lifetime of a generation. */
+    pixelCycleLength: number;
+}
+
+/**
+ * Contract between {@link GaussianSplattingMesh} and the optional WebGPU compute point-splatting
+ * implementation, so the mesh can drive it without importing it.
+ * @internal
+ */
+export interface IGaussianPointSplattingController {
+    /** Whether the main color pass is rendered by the compute path instead of the classic sorted quads. */
+    colorRenderMode: boolean;
+    /** Whether the active camera's DepthRenderer pass is fed by the compute path. */
+    depthRenderMode: boolean;
+    /** Density multiplier (higher = denser and slower). */
+    pointScale: number;
+    /** Internal render-resolution scale, or `"auto"` for the device-tiered point budget. */
+    renderScale: number | "auto";
+    /** Whether the point renderer culls splats against previous-frame depth. */
+    occlusionCulling: boolean;
+    /** Counters of the most recent successful compute frame, or null when no frame is available. */
+    readonly progress: Nullable<IGaussianPointSplattingProgress>;
+    /** Whether compute owns the current pass, including pending shader compilation. */
+    readonly handlesCurrentPass: boolean;
+    /** Drops the decoded compute buffers so the next frame re-decodes them, and restarts accumulation. */
+    invalidateDecodedSplats(): void;
+    /**
+     * Handles the point result for the current pass, including waiting for shader readiness without classic rendering.
+     * @param enableAlphaMode whether the caller wants alpha mode applied
+     * @returns true when the point path handled this pass and the classic geometry must be skipped
+     */
+    drawColorPass(enableAlphaMode: boolean): boolean;
+    /** Releases every GPU resource owned by the controller. */
+    dispose(): void;
+}
+
+/**
+ * Factory installed by the optional point-splatting module.
+ * @internal
+ */
+export type GaussianPointSplattingControllerFactory = (mesh: GaussianSplattingMesh) => IGaussianPointSplattingController;
+
+let _PointSplattingControllerFactory: Nullable<GaussianPointSplattingControllerFactory> = null;
+
+/**
+ * Installs the point-splatting controller factory. Called by the optional point-splatting module's
+ * registration; until then every point-splatting mode on {@link GaussianSplattingMesh} is a no-op.
+ * @param factory creates a controller for a given mesh
+ * @internal
+ */
+export function _SetGaussianPointSplattingControllerFactory(factory: GaussianPointSplattingControllerFactory): void {
+    _PointSplattingControllerFactory = factory;
+}
 
 const _GaussianSplattingBytesPerSplat = 32;
 const _GaussianSplattingBytesPerShTexel = 16;
@@ -264,6 +331,46 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     protected _partVisibility: number[] = [];
 
+    // Point-splatting settings, kept here so they can be set before the controller exists.
+    private _pointScale = 1;
+    private _pointRenderScale: number | "auto" = "auto";
+    private _pointOcclusionCulling = false;
+    private _pointController: Nullable<IGaussianPointSplattingController> = null;
+
+    /**
+     * Internal render-resolution scale for point splatting (1 = full). Lower values emit ~scale^2 fewer
+     * points; full resolution is reconstructed over frames. `"auto"` (default) targets a device-tiered point
+     * budget, with the upscale factor capped at 8. Setting it restarts accumulation.
+     */
+    public get pointSplattingRenderScale(): number | "auto" {
+        return this._pointRenderScale;
+    }
+
+    public set pointSplattingRenderScale(value: number | "auto") {
+        if (value === this._pointRenderScale) {
+            return;
+        }
+        this._pointRenderScale = value;
+        if (this._pointController) {
+            this._pointController.renderScale = value;
+        }
+    }
+
+    /** Enables previous-frame Hi-Z culling in point mode. Off by default because translucent splats can be biased. */
+    public get pointSplattingOcclusionCulling(): boolean {
+        return this._pointOcclusionCulling;
+    }
+
+    public set pointSplattingOcclusionCulling(value: boolean) {
+        if (value === this._pointOcclusionCulling) {
+            return;
+        }
+        this._pointOcclusionCulling = value;
+        if (this._pointController) {
+            this._pointController.occlusionCulling = value;
+        }
+    }
+
     /**
      * Per-part active source-splat range overrides, indexed by part index, in GLOBAL source-splat
      * coordinates (offsets into the merged atlas). A part with no entry (undefined) renders its full
@@ -312,6 +419,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     private _partIndicesTexture: Nullable<BaseTexture> = null;
     private _partIndices: Nullable<Uint8Array> = null;
+    private _partWorldData = new Float32Array(0);
+    private readonly _partVisibilityData: number[] = [];
 
     /** Gets the part indices texture used for compound rendering */
     public get partIndicesTexture() {
@@ -489,6 +598,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partIndicesTexture = null;
         this._part0LocalMin = null;
         this._part0LocalMax = null;
+        this._pointController?.dispose();
+        this._pointController = null;
         super.dispose(doNotRecurse);
     }
 
@@ -516,6 +627,159 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     protected override _onIndexDataReceived(partIndices: Uint8Array, textureLength: number): void {
         this._partIndices = new Uint8Array(textureLength);
         this._partIndices.set(partIndices);
+    }
+
+    // Point-splatting properties are no-ops until the controller module is registered.
+
+    /**
+     * Lazily creates this mesh's point-splatting controller, or null when the optional module is absent.
+     * @returns the controller, or null when point splatting has not been registered
+     */
+    private _ensurePointController(): Nullable<IGaussianPointSplattingController> {
+        if (!this._pointController) {
+            if (!_PointSplattingControllerFactory) {
+                Logger.Warn(
+                    'GaussianSplattingMesh: point splatting is not registered; import "@babylonjs/core/Meshes/GaussianSplatting/gaussianPointSplattingController" to enable it.'
+                );
+                return null;
+            }
+            this._pointController = _PointSplattingControllerFactory(this);
+            this._pointController.pointScale = this._pointScale;
+            this._pointController.renderScale = this._pointRenderScale;
+            this._pointController.occlusionCulling = this._pointOcclusionCulling;
+        }
+        return this._pointController;
+    }
+
+    /**
+     * Whether the main color pass is rendered with the WebGPU compute point-splatting path instead of the
+     * classic sorted quads. Off by default; other passes (shadows, picking, prepass) are unaffected. Falls
+     * back to the classic path for multiple or rig cameras, floating-origin scenes, clip planes, and streamed parts.
+     * Color rendering also falls back when the camera viewport does not cover the full target or projected-size visualization is enabled.
+     * Wireframe, point-cloud, and other non-triangle fill modes use classic color, including scene-wide and mesh overrides.
+     * Clipping and depth quantization use the supplied projection's planes, including frozen projections.
+     * Tilted and custom projections are supported by the point path. Compute runs immediately
+     * before compositing with the pass's actual view and target dimensions; matching color and depth passes share one result.
+     * While point shaders compile, the pass waits without drawing classic splats. The color pass uses the classic path
+     * while the GaussianSplattingSolidColorMaterialPlugin override is enabled or the source material's
+     * alpha mode is not ALPHA_COMBINE. Point color supports only the built-in GaussianSplattingMaterial;
+     * NodeMaterials, subclasses, and other source materials use classic color to preserve their shader behavior.
+     * Custom material plugins and built-in visualization or picking plugins use classic color unless their
+     * behavior is explicitly reproduced or they are known neutral while disabled. The built-in debug plugin is supported.
+     * The source must require alpha blending without alpha testing; opaque and alpha-test transparency modes use classic color.
+     * Material compatibility is reevaluated each draw, including after material replacement or plugin attachment. WebGPU only.
+     *
+     * Limitation: each pixel's accumulated color is depth-tested as a whole against its latest sample's depth. Where
+     * other geometry intersects the splats, occluded splats can bleed through or visible ones drop out, and the
+     * result can flicker as the latest sample changes. Non-intersecting geometry composites correctly, and mostly
+     * opaque splats show no visible artifacts.
+     *
+     * Requires `@babylonjs/core/Meshes/GaussianSplatting/gaussianPointSplattingController` (included in
+     * `@babylonjs/core`); without it, enabling this logs a warning and does nothing.
+     * @see https://playground.babylonjs.com/#F39YWU#1
+     */
+    public get pointSplattingRenderMode(): boolean {
+        return this._pointController?.colorRenderMode ?? false;
+    }
+    public set pointSplattingRenderMode(value: boolean) {
+        if (value === this.pointSplattingRenderMode) {
+            return;
+        }
+        const controller = value ? this._ensurePointController() : this._pointController;
+        if (controller) {
+            controller.colorRenderMode = value;
+        }
+    }
+
+    /**
+     * Whether the active camera's DepthRenderer depth for this mesh comes from the point-splatting compute
+     * (an opaque nearest-surface depth) instead of the classic path. Off by default and independent of
+     * {@link pointSplattingRenderMode}, with the same camera, floating-origin, clip-plane, data fallbacks and module requirement.
+     * Color-only material fallbacks do not disable point depth. Scene-wide wireframe or point-cloud overrides
+     * use classic depth. For partial camera viewports, point depth
+     * requires a depth map with ignoreCameraViewport enabled. When point color is supported, depth maps
+     * with different pixel dimensions use classic depth to preserve color accumulation.
+     * Depth passes whose view, material parameters, or part inputs differ from retained point-color history
+     * also use classic depth rather than resetting that history. WebGPU only.
+     */
+    public get pointSplattingDepthRenderMode(): boolean {
+        return this._pointController?.depthRenderMode ?? false;
+    }
+    public set pointSplattingDepthRenderMode(value: boolean) {
+        if (value === this.pointSplattingDepthRenderMode) {
+            return;
+        }
+        const controller = value ? this._ensurePointController() : this._pointController;
+        if (controller) {
+            controller.depthRenderMode = value;
+        }
+    }
+
+    /**
+     * Counters of the most recent point-splatting compute frame, or null when compute has no available result.
+     * Individual render passes may still use the classic path for unsupported configurations.
+     *
+     * Snapshot `renderedFrameCount` whenever `accumulationVersion` changes: after the first frame of a
+     * generation, each further `pixelCycleLength` frames add one sample to every output pixel.
+     * @returns the latest compute counters, or null when point splatting is not producing frames
+     */
+    public get pointSplattingProgress(): Nullable<IGaussianPointSplattingProgress> {
+        return this._pointController?.progress ?? null;
+    }
+
+    /** Density multiplier for point splatting (higher = denser and slower). */
+    public get pointSplattingScale(): number {
+        return this._pointScale;
+    }
+    public set pointSplattingScale(value: number) {
+        this._pointScale = value;
+        if (this._pointController) {
+            this._pointController.pointScale = value;
+        }
+    }
+
+    /**
+     * True when this mesh hosts a streamed (GPU-decoded) region, which is absent from the CPU `_splatsData`
+     * that point splatting decodes.
+     * @internal
+     */
+    public get _pointStreamingUnsupported(): boolean {
+        return this._hasStreamingPart;
+    }
+
+    /**
+     * Force-computes every part proxy's world matrix (a non-forced call skips nodes already computed this frame).
+     * @internal
+     */
+    public _syncPartProxyWorldMatrices(): void {
+        for (const proxy of this._partProxies) {
+            proxy?.computeWorldMatrix(true);
+        }
+    }
+
+    /**
+     * Protected state the point-splatting controller needs to decode {@link _splatsData}.
+     * @returns the decoded atlas positions, fallback flip-Y convention, part indices, and active splat-range pairs
+     * @internal
+     */
+    public _getPointDecodeInputs(): { positions: Nullable<Float32Array>; flipY: boolean; partIndices: Nullable<Uint8Array>; activeRanges: Nullable<Uint32Array> } {
+        return { positions: this._splatPositions, flipY: this._flipY, partIndices: this._partIndices, activeRanges: this._activeSplatRanges };
+    }
+
+    protected override _drawColorPass(mesh: Mesh, subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+        if (this._pointController?.drawColorPass(enableAlphaMode)) {
+            return mesh;
+        }
+
+        return super._drawColorPass(mesh, subMesh, enableAlphaMode, effectiveMeshReplacement);
+    }
+
+    protected override _isSortRequired(): boolean {
+        return !this._pointController?.handlesCurrentPass;
+    }
+
+    protected override _drawPointPass(enableAlphaMode: boolean): boolean {
+        return this._pointController?.drawColorPass(enableAlphaMode) ?? false;
     }
 
     /**
@@ -578,14 +842,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
         effect.setTexture("partIndicesTexture", this._partIndicesTexture);
-        const partWorldData = new Float32Array(this.partCount * 16);
+        const partWorldDataLength = this.partCount * 16;
+        if (this._partWorldData.length !== partWorldDataLength) {
+            this._partWorldData = new Float32Array(partWorldDataLength);
+        }
+        const partWorldData = this._partWorldData;
         for (let i = 0; i < this.partCount; i++) {
             this._partMatrices[i].toArray(partWorldData, i * 16);
         }
         effect.setMatrices("partWorld", partWorldData);
-        const partVisibilityData: number[] = [];
+        const partVisibilityData = this._partVisibilityData;
+        partVisibilityData.length = this.partCount;
         for (let i = 0; i < this.partCount; i++) {
-            partVisibilityData.push(this._partVisibility[i] ?? 1.0);
+            partVisibilityData[i] = this._partVisibility[i] ?? 1.0;
         }
         effect.setArray("partVisibility", partVisibilityData);
     }
@@ -842,6 +1111,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
+     * Sets the active splat ranges and invalidates decoded point-splatting data when they change.
+     * @param ranges global source-splat ranges to render, or null to render all splats
+     */
+    public override setSplatIndexRanges(ranges: Nullable<readonly IGaussianSplattingSplatRange[]>): void {
+        const previous = this._activeSplatRanges;
+        super.setSplatIndexRanges(ranges);
+        if (previous !== this._activeSplatRanges) {
+            this._pointController?.invalidateDecodedSplats();
+        }
+    }
+
+    /**
      * Recomputes the global active-range union across all parts and pushes it to the shared sort/draw
      * via the base {@link setSplatIndexRanges}. When no part carries an override the filter is cleared
      * (render everything). A part without an override contributes its full `[offset, count)` derived
@@ -916,7 +1197,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     protected override _onUpdateTextures(textureSize: Vector2) {
         const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
         // Keep the part indices texture in sync with _partIndices whenever textures are rebuilt.
@@ -992,7 +1273,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._scene,
             false,
             false,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
         this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
@@ -1058,12 +1339,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         for (const other of others) {
-            if (!other._splatsData) {
-                continue;
-            }
-
+            // A reserved-empty streaming source carries no CPU data but still owns its slot in the atlas (its
+            // GPU rows are decoded later). Advance past that slot regardless of data so a real source appended
+            // after it lands at the offset its proxy's _splatsDataOffset points to — matching the unconditional
+            // GPU dstOffset advance in _addPartsInternal (and the SH loop below).
             const splatByteLength = other._vertexCount * _GaussianSplattingBytesPerSplat;
-            mergedSplatsData.set(GaussianSplattingMeshBase._GetSplatDataBytes(other._splatsData).subarray(0, splatByteLength), splatByteOffset);
+            if (other._splatsData) {
+                mergedSplatsData.set(GaussianSplattingMeshBase._GetSplatDataBytes(other._splatsData).subarray(0, splatByteLength), splatByteOffset);
+            }
             splatByteOffset += splatByteLength;
         }
 
@@ -2304,6 +2587,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         serializationObject.disableDepthSort = this._disableDepthSort;
         serializationObject.viewUpdateThreshold = this.viewUpdateThreshold;
         serializationObject._flipY = this._flipY;
+        serializationObject.pointSplattingScale = this._pointScale;
+        serializationObject.pointSplattingRenderScale = this._pointRenderScale;
+        serializationObject.pointSplattingOcclusionCulling = this._pointOcclusionCulling;
+        serializationObject.pointSplattingRenderMode = this.pointSplattingRenderMode;
+        serializationObject.pointSplattingDepthRenderMode = this.pointSplattingDepthRenderMode;
 
         if (this._splatsData) {
             serializationObject.splatsData = encoding === "base64" ? EncodeArrayBufferToBase64(this._splatsData) : this._splatsData;
@@ -2375,6 +2663,24 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices, parsedMesh.shDegree);
         }
 
+        // After updateData, which rebuilds the point-splatting state from the restored splats.
+        if (parsedMesh.pointSplattingScale !== undefined) {
+            mesh.pointSplattingScale = parsedMesh.pointSplattingScale;
+        }
+        if (parsedMesh.pointSplattingRenderScale !== undefined) {
+            mesh.pointSplattingRenderScale = parsedMesh.pointSplattingRenderScale;
+        }
+        if (parsedMesh.pointSplattingOcclusionCulling !== undefined) {
+            mesh.pointSplattingOcclusionCulling = parsedMesh.pointSplattingOcclusionCulling;
+        }
+        // Only assign when enabled: the setters warn when the optional point-splatting module is absent.
+        if (parsedMesh.pointSplattingRenderMode) {
+            mesh.pointSplattingRenderMode = true;
+        }
+        if (parsedMesh.pointSplattingDepthRenderMode) {
+            mesh.pointSplattingDepthRenderMode = true;
+        }
+
         if (parsedMesh.partProxies) {
             for (const serializedPart of parsedMesh.partProxies) {
                 const part = Object.assign({}, serializedPart);
@@ -2399,22 +2705,6 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
         return GaussianSplattingMesh._ParseInternal(parsedMesh, scene, GaussianSplattingMesh);
     }
-}
-
-/**
- * True when `className` (from `AbstractMesh.getClassName()`) identifies a Gaussian Splatting mesh whose
- * `position.z` vertex attribute encodes a splat index rather than world-space Z: `"GaussianSplattingMesh"`
- * (also returned by {@link GaussianSplattingCompoundMesh}, which deliberately does not override
- * `getClassName()`) and `"GaussianSplattingStream"` (which does override it, to remain distinguishable for
- * other purposes). Rendering-pipeline code that must treat any Gaussian Splatting mesh differently from an
- * ordinary mesh (geometry buffer, depth pre-pass, GPU picking, IBL voxelization, snapshot rendering, ...)
- * should use this instead of a literal string comparison, so a future splat mesh subclass only needs to be
- * added here once.
- * @param className the mesh class name to test, e.g. from `AbstractMesh.getClassName()`
- * @returns true if the class name identifies a Gaussian Splatting mesh
- */
-export function IsGaussianSplattingClassName(className: string): boolean {
-    return className === "GaussianSplattingMesh" || className === "GaussianSplattingStream";
 }
 
 let _Registered = false;

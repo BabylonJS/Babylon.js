@@ -17,7 +17,9 @@
             "node-editor/*": ["../../tools/nodeEditor/src/*"],
             "node-geometry-editor/*": ["../../tools/nodeGeometryEditor/src/*"],
             "gui-editor/*": ["../../tools/guiEditor/dist/*"],
-            "ktx2decoder/*": ["../../tools/ktx2Decoder/dist/*"]
+            "ktx2decoder/*": ["../../tools/ktx2Decoder/dist/*"],
+            "@tools/mcp-server-core/webMcp": ["../../tools/mcp-server-core/dist/webMcp"],
+            "@tools/nge-mcp-common": ["../../tools/ngeMcpCommon/dist"]
         }
     },
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],

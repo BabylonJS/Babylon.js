@@ -10,6 +10,7 @@ import * as path from "path";
 
 // import { Debug } from "./Debug";
 import { ConfigCache } from "./ConfigCache";
+import { FindSideEffectsManifestRoot, SideEffectsManifestLoader, type SideEffectsPackageName } from "./SideEffectsManifest";
 
 const tsdocMessageIds: { [x: string]: string } = {};
 
@@ -32,6 +33,209 @@ interface IFoundComment {
     compilerNode: ts.Node;
     name: string;
     textRange: tsdoc.TextRange;
+}
+
+type TypeScriptExpressionWrapper = ESTree.BaseExpression & {
+    type: "TSAsExpression" | "TSTypeAssertion" | "TSSatisfiesExpression" | "TSNonNullExpression";
+    expression: PureAnnotationNode;
+};
+type PureAnnotationNode = ESTree.Node | TypeScriptExpressionWrapper;
+type PureAnnotationCallOrNewExpression = ESTree.SimpleCallExpression | ESTree.NewExpression;
+
+function createPureAnnotationVisitors(context: eslint.Rule.RuleContext, mode: "direct" | "nested"): eslint.Rule.RuleListener {
+    if (!context.filename.endsWith(".pure.ts")) {
+        return {};
+    }
+
+    const sourceCode = context.sourceCode;
+
+    function unwrapExpression(node: PureAnnotationNode | null | undefined): PureAnnotationNode | null | undefined {
+        if (node?.type === "TSAsExpression" || node?.type === "TSTypeAssertion" || node?.type === "TSSatisfiesExpression" || node?.type === "TSNonNullExpression") {
+            return unwrapExpression(node.expression);
+        }
+        return node;
+    }
+
+    function findDirectCallOrNew(node: PureAnnotationNode | null | undefined): PureAnnotationCallOrNewExpression | null {
+        const unwrappedNode = unwrapExpression(node);
+        return unwrappedNode?.type === "CallExpression" || unwrappedNode?.type === "NewExpression" ? unwrappedNode : null;
+    }
+
+    function hasPureAnnotation(node: PureAnnotationCallOrNewExpression): boolean {
+        const comments = sourceCode.getCommentsBefore(node);
+        if (comments.some((comment) => comment.type === "Block" && comment.value.trim() === "#__PURE__")) {
+            return true;
+        }
+        const previousToken = sourceCode.getTokenBefore(node, { includeComments: true });
+        return previousToken?.type === "Block" && previousToken.value?.trim() === "#__PURE__";
+    }
+
+    const safelyAutofixablePureConstructors = new Set([
+        "Map",
+        "Set",
+        "WeakMap",
+        "WeakSet",
+        "Color3",
+        "Color4",
+        "Matrix",
+        "Plane",
+        "Quaternion",
+        "Size",
+        "Vector2",
+        "Vector3",
+        "Vector4",
+        "Viewport",
+    ]);
+
+    function isSimplePureArgument(node: PureAnnotationNode | null | undefined): boolean {
+        const unwrappedNode = unwrapExpression(node);
+        if (!unwrappedNode) {
+            return true;
+        }
+        switch (unwrappedNode.type) {
+            case "Identifier":
+            case "Literal":
+            case "ThisExpression":
+                return true;
+            case "TemplateLiteral":
+                return unwrappedNode.expressions.length === 0;
+            case "UnaryExpression":
+                return unwrappedNode.operator !== "delete" && isSimplePureArgument(unwrappedNode.argument as PureAnnotationNode);
+            case "ArrayExpression":
+                return unwrappedNode.elements.every((element) => element !== null && element.type !== "SpreadElement" && isSimplePureArgument(element as PureAnnotationNode));
+            case "ObjectExpression":
+                return unwrappedNode.properties.every(
+                    (property) => property.type !== "SpreadElement" && !property.computed && isSimplePureArgument(property.value as PureAnnotationNode)
+                );
+            default:
+                return false;
+        }
+    }
+
+    function isSafelyAutofixablePureExpression(node: PureAnnotationCallOrNewExpression): boolean {
+        if (!node.arguments.every((argument) => isSimplePureArgument(argument as PureAnnotationNode))) {
+            return false;
+        }
+        if (node.type === "NewExpression") {
+            const callee = unwrapExpression(node.callee as PureAnnotationNode);
+            return callee?.type === "Identifier" && safelyAutofixablePureConstructors.has(callee.name);
+        }
+        const callee = unwrapExpression(node.callee as PureAnnotationNode);
+        return (
+            callee?.type === "MemberExpression" && !callee.computed && callee.object.type === "Identifier" && callee.object.name === "Math" && callee.property.type === "Identifier"
+        );
+    }
+
+    function report(node: PureAnnotationCallOrNewExpression): void {
+        if (hasPureAnnotation(node)) {
+            return;
+        }
+        const expression = sourceCode.getText(node);
+        const data = { expr: expression.length > 60 ? expression.slice(0, 57) + "..." : expression };
+        if (mode === "nested") {
+            context.report({ node, messageId: "nested-pure-review", data });
+            return;
+        }
+        context.report({
+            node,
+            messageId: "missing-pure-annotation",
+            data,
+            fix: isSafelyAutofixablePureExpression(node) ? (fixer) => fixer.insertTextBefore(node, "/*#__PURE__*/ ") : undefined,
+        });
+    }
+
+    function collectNestedExpressions(node: PureAnnotationNode | null | undefined): void {
+        if (!node) {
+            return;
+        }
+        if (node.type === "CallExpression" || node.type === "NewExpression") {
+            report(node);
+            // Keep this advisory bounded at the outermost call/new. Calls in its
+            // arguments may still have effects and are not classified by this rule.
+            return;
+        }
+        if (
+            node.type === "FunctionDeclaration" ||
+            node.type === "FunctionExpression" ||
+            node.type === "ArrowFunctionExpression" ||
+            node.type === "ClassDeclaration" ||
+            node.type === "ClassExpression"
+        ) {
+            return;
+        }
+        for (const [key, value] of Object.entries(node as unknown as Record<string, unknown>)) {
+            if (key === "parent" || key === "range" || key === "loc" || key === "tokens" || key === "comments") {
+                continue;
+            }
+            for (const child of Array.isArray(value) ? value : [value]) {
+                if (child && typeof child === "object" && "type" in child) {
+                    collectNestedExpressions(child as PureAnnotationNode);
+                }
+            }
+        }
+    }
+
+    function isExecutedAtModuleScope(node: ESTree.Node): boolean {
+        const ancestors = sourceCode.getAncestors ? sourceCode.getAncestors(node) : (context as any).getAncestors();
+        return !ancestors.some((ancestor: ESTree.Node & { static?: boolean }) => {
+            return (
+                ancestor.type === "FunctionDeclaration" ||
+                ancestor.type === "FunctionExpression" ||
+                ancestor.type === "ArrowFunctionExpression" ||
+                ancestor.type === "MethodDefinition" ||
+                (ancestor.type === "PropertyDefinition" && !ancestor.static)
+            );
+        });
+    }
+
+    function checkNestedRoot(node: PureAnnotationNode | null | undefined, coveredByDirectRule: boolean): void {
+        if (coveredByDirectRule && findDirectCallOrNew(node)) {
+            return;
+        }
+        collectNestedExpressions(node);
+    }
+
+    if (mode === "direct") {
+        return {
+            "PropertyDefinition[static=true]"(node: any) {
+                const callOrNew = findDirectCallOrNew(node.value);
+                if (callOrNew) {
+                    report(callOrNew);
+                }
+            },
+            "Program > VariableDeclaration > VariableDeclarator"(node: any) {
+                const callOrNew = findDirectCallOrNew(node.init);
+                if (callOrNew) {
+                    report(callOrNew);
+                }
+            },
+            "Program > ExpressionStatement"(node: any) {
+                const callOrNew = findDirectCallOrNew(node.expression);
+                if (callOrNew) {
+                    report(callOrNew);
+                }
+            },
+        };
+    }
+
+    return {
+        "PropertyDefinition[static=true]"(node: any) {
+            if (isExecutedAtModuleScope(node)) {
+                checkNestedRoot(node.value, true);
+            }
+        },
+        VariableDeclarator(node: any) {
+            if (isExecutedAtModuleScope(node)) {
+                const declaration = node.parent;
+                checkNestedRoot(node.init, declaration?.type === "VariableDeclaration" && declaration.parent?.type === "Program");
+            }
+        },
+        ExpressionStatement(node: any) {
+            if (isExecutedAtModuleScope(node)) {
+                checkNestedRoot(node.expression, node.parent?.type === "Program");
+            }
+        },
+    };
 }
 
 function isDeclarationKind(kind: ts.SyntaxKind): boolean {
@@ -685,9 +889,206 @@ const plugin: IPlugin = {
                         "Unless this is a temporary context, context.save() must be called before this._applyStates(context). Remember to also call context.restore() at the appropriate location to restore the canvas state.",
                 },
             },
-            create(context) {
+            create(context: eslint.Rule.RuleContext) {
+                type BalanceSet = Set<number>;
+
+                const isFunctionNode = (node: ESTree.Node): node is ESTree.FunctionDeclaration | ESTree.FunctionExpression | ESTree.ArrowFunctionExpression =>
+                    node.type === "FunctionDeclaration" || node.type === "FunctionExpression" || node.type === "ArrowFunctionExpression";
+
+                const containsNode = (container: ESTree.Node, target: ESTree.Node): boolean =>
+                    !!container.range && !!target.range && container.range[0] <= target.range[0] && container.range[1] >= target.range[1];
+
+                function getContextOperation(node: ESTree.Node | null | undefined, contextName: string): "save" | "restore" | null {
+                    if (
+                        node?.type !== "CallExpression" ||
+                        node.callee.type !== "MemberExpression" ||
+                        node.callee.computed ||
+                        node.callee.object.type !== "Identifier" ||
+                        node.callee.object.name !== contextName ||
+                        node.callee.property.type !== "Identifier"
+                    ) {
+                        return null;
+                    }
+                    return node.callee.property.name === "save" || node.callee.property.name === "restore" ? node.callee.property.name : null;
+                }
+
+                function applyOperation(balances: BalanceSet, operation: "save" | "restore"): BalanceSet {
+                    return new Set(
+                        [...balances].map((balance) => {
+                            if (operation === "save") {
+                                return Math.min(balance + 1, 32);
+                            }
+                            return Math.max(balance - 1, 0);
+                        })
+                    );
+                }
+
+                function transferExpression(expression: ESTree.Expression, contextName: string, balances: BalanceSet): BalanceSet {
+                    const operation = getContextOperation(expression, contextName);
+                    if (operation) {
+                        return applyOperation(balances, operation);
+                    }
+                    if (expression.type === "SequenceExpression") {
+                        return expression.expressions.reduce((current, child) => transferExpression(child, contextName, current), balances);
+                    }
+                    if (expression.type === "LogicalExpression") {
+                        const afterLeft = transferExpression(expression.left, contextName, balances);
+                        return new Set([...afterLeft, ...transferExpression(expression.right, contextName, new Set(afterLeft))]);
+                    }
+                    if (expression.type === "ConditionalExpression") {
+                        const afterTest = transferExpression(expression.test, contextName, balances);
+                        return new Set([
+                            ...transferExpression(expression.consequent, contextName, new Set(afterTest)),
+                            ...transferExpression(expression.alternate, contextName, new Set(afterTest)),
+                        ]);
+                    }
+                    return containsContextRestore(expression, contextName) ? new Set([...balances, 0]) : balances;
+                }
+
+                function containsContextRestore(node: ESTree.Node, contextName: string): boolean {
+                    if (getContextOperation(node, contextName) === "restore") {
+                        return true;
+                    }
+                    if (isFunctionNode(node)) {
+                        return false;
+                    }
+                    for (const [key, value] of Object.entries(node as unknown as Record<string, unknown>)) {
+                        if (key === "parent" || key === "range" || key === "loc") {
+                            continue;
+                        }
+                        for (const child of Array.isArray(value) ? value : [value]) {
+                            if (child && typeof child === "object" && "type" in child && containsContextRestore(child as ESTree.Node, contextName)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+
+                function transferStatement(statement: ESTree.Statement, contextName: string, balances: BalanceSet): BalanceSet {
+                    switch (statement.type) {
+                        case "ExpressionStatement":
+                            return transferExpression(statement.expression, contextName, balances);
+                        case "BlockStatement":
+                            return statement.body.reduce((current, child) => transferStatement(child, contextName, current), balances);
+                        case "IfStatement": {
+                            const afterTest = transferExpression(statement.test, contextName, balances);
+                            const consequent = transferStatement(statement.consequent, contextName, new Set(afterTest));
+                            const alternate = statement.alternate ? transferStatement(statement.alternate, contextName, new Set(afterTest)) : new Set(afterTest);
+                            return new Set([...consequent, ...alternate]);
+                        }
+                        case "TryStatement": {
+                            const successful = transferStatement(statement.block, contextName, new Set(balances));
+                            const attempted = statement.handler ? transferStatement(statement.handler.body, contextName, new Set(balances)) : new Set<never>();
+                            const combined = new Set([...successful, ...attempted]);
+                            if (statement.handler && containsContextRestore(statement.block, contextName)) {
+                                combined.add(0);
+                            }
+                            return statement.finalizer ? transferStatement(statement.finalizer, contextName, combined) : combined;
+                        }
+                        case "DoWhileStatement":
+                        case "ForStatement":
+                        case "ForInStatement":
+                        case "ForOfStatement":
+                        case "WhileStatement": {
+                            // Repeated restores can exhaust any finite number of saves.
+                            return containsContextRestore(statement, contextName) ? new Set([...balances, 0]) : balances;
+                        }
+                        case "SwitchStatement": {
+                            const outcomes = new Set(balances);
+                            for (const switchCase of statement.cases) {
+                                const caseOutcome = switchCase.consequent.reduce((current, child) => transferStatement(child, contextName, current), new Set(balances));
+                                caseOutcome.forEach((balance) => outcomes.add(balance));
+                            }
+                            return outcomes;
+                        }
+                        case "ReturnStatement":
+                        case "ThrowStatement":
+                            return new Set();
+                        case "FunctionDeclaration":
+                            return balances;
+                        default:
+                            return balances;
+                    }
+                }
+
+                function balancesBeforeTarget(container: ESTree.Node, target: ESTree.Node, contextName: string, balances: BalanceSet): BalanceSet {
+                    if (container === target) {
+                        return balances;
+                    }
+                    if (container.type === "BlockStatement") {
+                        let current = balances;
+                        for (const statement of container.body) {
+                            if (containsNode(statement, target)) {
+                                return balancesBeforeTarget(statement, target, contextName, current);
+                            }
+                            current = transferStatement(statement, contextName, current);
+                        }
+                        return current;
+                    }
+                    if (container.type === "IfStatement") {
+                        const afterTest = transferExpression(container.test, contextName, balances);
+                        if (containsNode(container.consequent, target)) {
+                            return balancesBeforeTarget(container.consequent, target, contextName, afterTest);
+                        }
+                        if (container.alternate && containsNode(container.alternate, target)) {
+                            return balancesBeforeTarget(container.alternate, target, contextName, afterTest);
+                        }
+                    }
+                    if (
+                        container.type === "ForStatement" ||
+                        container.type === "ForInStatement" ||
+                        container.type === "ForOfStatement" ||
+                        container.type === "WhileStatement" ||
+                        container.type === "DoWhileStatement"
+                    ) {
+                        if (containsNode(container.body, target)) {
+                            const loopEntryBalances = containsContextRestore(container.body, contextName) ? new Set([...balances, 0]) : balances;
+                            return balancesBeforeTarget(container.body, target, contextName, loopEntryBalances);
+                        }
+                    }
+                    if (container.type === "SequenceExpression") {
+                        let current = balances;
+                        for (const expression of container.expressions) {
+                            if (containsNode(expression, target)) {
+                                return balancesBeforeTarget(expression, target, contextName, current);
+                            }
+                            current = transferExpression(expression, contextName, current);
+                        }
+                        return current;
+                    }
+                    if (container.type === "TryStatement") {
+                        if (containsNode(container.block, target)) {
+                            return balancesBeforeTarget(container.block, target, contextName, balances);
+                        }
+                        if (container.handler && containsNode(container.handler.body, target)) {
+                            return balancesBeforeTarget(container.handler.body, target, contextName, balances);
+                        }
+                        if (container.finalizer && containsNode(container.finalizer, target)) {
+                            return balancesBeforeTarget(container.finalizer, target, contextName, balances);
+                        }
+                    }
+
+                    for (const [key, value] of Object.entries(container as unknown as Record<string, unknown>)) {
+                        if (key === "parent" || key === "range" || key === "loc" || key === "tokens" || key === "comments") {
+                            continue;
+                        }
+                        const children = Array.isArray(value) ? value : [value];
+                        for (const child of children) {
+                            if (!child || typeof child !== "object" || !("type" in child)) {
+                                continue;
+                            }
+                            const childNode = child as ESTree.Node;
+                            if (!isFunctionNode(childNode) && containsNode(childNode, target)) {
+                                return balancesBeforeTarget(childNode, target, contextName, balances);
+                            }
+                        }
+                    }
+                    return balances;
+                }
+
                 return {
-                    CallExpression(node) {
+                    CallExpression(node: ESTree.CallExpression & eslint.Rule.NodeParentExtension) {
                         // Check if this is a call to this._applyStates(context)
                         if (
                             node.callee.type === "MemberExpression" &&
@@ -700,106 +1101,24 @@ const plugin: IPlugin = {
                             const contextParam = (node.arguments[0] as ESTree.Identifier).name;
 
                             // Find the containing function/method
-                            let currentNode: any = node.parent;
-                            let functionNode: ESTree.Node | null = null;
+                            let currentNode: ESTree.Node | undefined = node.parent;
+                            let functionBody: ESTree.BlockStatement | null = null;
 
                             while (currentNode) {
-                                if (
-                                    currentNode.type === "FunctionDeclaration" ||
-                                    currentNode.type === "FunctionExpression" ||
-                                    currentNode.type === "ArrowFunctionExpression" ||
-                                    currentNode.type === "MethodDefinition"
-                                ) {
-                                    functionNode = currentNode;
+                                if (isFunctionNode(currentNode)) {
+                                    const body = currentNode.body;
+                                    functionBody = body.type === "BlockStatement" ? body : null;
                                     break;
                                 }
-                                currentNode = currentNode.parent;
+                                currentNode = (currentNode as ESTree.Node & eslint.Rule.NodeParentExtension).parent;
                             }
 
-                            if (!functionNode) {
+                            if (!functionBody || !node.range) {
                                 return;
                             }
 
-                            // Get the function body
-                            let functionBody: ESTree.BlockStatement | null = null;
-                            if (functionNode.type === "MethodDefinition") {
-                                const methodDef = functionNode as ESTree.MethodDefinition;
-                                if (methodDef.value.type === "FunctionExpression") {
-                                    functionBody = methodDef.value.body;
-                                }
-                            } else if (functionNode.type === "ArrowFunctionExpression") {
-                                const arrowFunc = functionNode as ESTree.ArrowFunctionExpression;
-                                functionBody = arrowFunc.body.type === "BlockStatement" ? arrowFunc.body : null;
-                            } else if (functionNode.type === "FunctionDeclaration" || functionNode.type === "FunctionExpression") {
-                                const func = functionNode as ESTree.FunctionDeclaration | ESTree.FunctionExpression;
-                                functionBody = func.body;
-                            }
-
-                            if (!functionBody || functionBody.type !== "BlockStatement" || !node.range) {
-                                return;
-                            }
-
-                            // Look for context.save() call before this._applyStates call
-                            const applyStatesPosition = node.range[0];
-                            let contextSaveFound = false;
-
-                            // Check all statements in the function body
-                            const checkForContextSave = (statements: ESTree.Statement[]): void => {
-                                for (const statement of statements) {
-                                    if (statement.range && statement.range[1] >= applyStatesPosition) {
-                                        // We've reached or passed the _applyStates call
-                                        break;
-                                    }
-
-                                    // Check if this statement contains context.save()
-                                    if (hasContextSaveCall(statement, contextParam)) {
-                                        contextSaveFound = true;
-                                        break;
-                                    }
-                                }
-                            };
-
-                            const hasContextSaveCall = (node: any, contextParam: string): boolean => {
-                                if (!node) {
-                                    return false;
-                                }
-
-                                if (node.type === "ExpressionStatement" && node.expression.type === "CallExpression") {
-                                    const callExpr = node.expression;
-                                    if (
-                                        callExpr.callee.type === "MemberExpression" &&
-                                        callExpr.callee.object.type === "Identifier" &&
-                                        callExpr.callee.object.name === contextParam &&
-                                        callExpr.callee.property.type === "Identifier" &&
-                                        callExpr.callee.property.name === "save"
-                                    ) {
-                                        return true;
-                                    }
-                                }
-
-                                // Recursively check child nodes
-                                for (const key in node) {
-                                    if (key === "parent" || key === "range" || key === "loc") {
-                                        continue;
-                                    }
-                                    const child = node[key];
-                                    if (Array.isArray(child)) {
-                                        for (const item of child) {
-                                            if (item && typeof item === "object" && hasContextSaveCall(item, contextParam)) {
-                                                return true;
-                                            }
-                                        }
-                                    } else if (child && typeof child === "object" && hasContextSaveCall(child, contextParam)) {
-                                        return true;
-                                    }
-                                }
-
-                                return false;
-                            };
-
-                            checkForContextSave(functionBody.body);
-
-                            if (!contextSaveFound) {
+                            const balances = balancesBeforeTarget(functionBody, node, contextParam, new Set([0]));
+                            if (balances.size === 0 || [...balances].some((balance) => balance === 0)) {
                                 context.report({
                                     node,
                                     messageId: "missingSave",
@@ -831,196 +1150,22 @@ const plugin: IPlugin = {
                 },
             },
             create(context: eslint.Rule.RuleContext) {
-                const filename = context.filename;
-                if (!filename.endsWith(".pure.ts")) {
-                    return {};
-                }
-
-                const sourceCode = context.sourceCode;
-
-                type TypeScriptExpressionWrapper = ESTree.BaseExpression & {
-                    type: "TSAsExpression" | "TSTypeAssertion" | "TSSatisfiesExpression" | "TSNonNullExpression";
-                    expression: PureAnnotationNode;
-                };
-
-                type PureAnnotationNode = ESTree.Node | TypeScriptExpressionWrapper;
-                type PureAnnotationCallOrNewExpression = ESTree.SimpleCallExpression | ESTree.NewExpression;
-
-                /**
-                 * Unwrap TS type assertions (e.g. `new Foo() as Bar`) to find the
-                 * underlying CallExpression or NewExpression.
-                 * @param node - The AST node to unwrap.
-                 * @returns The unwrapped CallExpression/NewExpression, or null.
-                 */
-                function findCallOrNew(node: PureAnnotationNode | null | undefined): PureAnnotationCallOrNewExpression | null {
-                    if (!node) {
-                        return null;
-                    }
-                    if (node.type === "NewExpression" || node.type === "CallExpression") {
-                        return node;
-                    }
-                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression") {
-                        return findCallOrNew(node.expression);
-                    }
-                    return null;
-                }
-
-                /**
-                 * Check whether the node is preceded by a PURE block comment.
-                 * @param node - The AST node to check.
-                 * @returns True if a #__PURE__ annotation precedes the node.
-                 */
-                function hasPureAnnotation(node: PureAnnotationCallOrNewExpression): boolean {
-                    // getCommentsBefore returns leading comments attached to the node
-                    const comments = sourceCode.getCommentsBefore(node);
-                    for (const c of comments) {
-                        if (c.type === "Block" && c.value.trim() === "#__PURE__") {
-                            return true;
-                        }
-                    }
-                    // Also check the immediately preceding token (comment) in case
-                    // ESLint attached it differently
-                    const prev = sourceCode.getTokenBefore(node, { includeComments: true });
-                    if (prev && prev.type === "Block" && prev.value?.trim() === "#__PURE__") {
-                        return true;
-                    }
-                    return false;
-                }
-
-                const safelyAutofixablePureConstructors = new Set<string>([
-                    "Map",
-                    "Set",
-                    "WeakMap",
-                    "WeakSet",
-                    "Color3",
-                    "Color4",
-                    "Matrix",
-                    "Plane",
-                    "Quaternion",
-                    "Size",
-                    "Vector2",
-                    "Vector3",
-                    "Vector4",
-                    "Viewport",
-                ]);
-
-                function unwrapExpression(node: PureAnnotationNode | null | undefined): PureAnnotationNode | null | undefined {
-                    if (!node) {
-                        return node;
-                    }
-                    if (node.type === "TSAsExpression" || node.type === "TSTypeAssertion" || node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression") {
-                        return unwrapExpression(node.expression);
-                    }
-                    return node;
-                }
-
-                function isSimplePureArgument(node: PureAnnotationNode | null | undefined): boolean {
-                    const unwrappedNode = unwrapExpression(node);
-                    if (!unwrappedNode) {
-                        return true;
-                    }
-                    switch (unwrappedNode.type) {
-                        case "Identifier":
-                        case "Literal":
-                        case "ThisExpression":
-                            return true;
-                        case "TemplateLiteral":
-                            return unwrappedNode.expressions.length === 0;
-                        case "UnaryExpression":
-                            // Reject side-effecting unary operators; allow safe ones.
-                            if (unwrappedNode.operator === "delete") {
-                                return false;
-                            }
-                            return isSimplePureArgument(unwrappedNode.argument);
-                        case "ArrayExpression":
-                            return unwrappedNode.elements.every((element) => element !== null && element.type !== "SpreadElement" && isSimplePureArgument(element));
-                        case "ObjectExpression":
-                            return unwrappedNode.properties.every((property) => {
-                                if (property.type === "SpreadElement" || property.computed) {
-                                    return false;
-                                }
-                                return isSimplePureArgument(property.value);
-                            });
-                        default:
-                            return false;
-                    }
-                }
-
-                function hasOnlySimplePureArguments(node: PureAnnotationCallOrNewExpression): boolean {
-                    // Keep autofix limited to arguments that are already values or literal containers.
-                    // For example, `new Vector3(GetXValue(), 0, 0)` still needs manual review because
-                    // the argument call may have side effects even though `Vector3` itself is safe.
-                    return node.arguments.every((argument) => isSimplePureArgument(argument));
-                }
-
-                function isSafelyAutofixablePureExpression(node: PureAnnotationCallOrNewExpression): boolean {
-                    if (node.type === "NewExpression") {
-                        // Only accept a plain Identifier callee (e.g. `new Vector3()`).
-                        // Member-expression callees like `new SomeNamespace.Vector3()` are
-                        // rejected because the trailing name alone cannot confirm the type.
-                        const calleeNode = unwrapExpression(node.callee);
-                        if (!calleeNode || calleeNode.type !== "Identifier") {
-                            return false;
-                        }
-                        return safelyAutofixablePureConstructors.has(calleeNode.name) && hasOnlySimplePureArguments(node);
-                    }
-
-                    if (node.type === "CallExpression") {
-                        // Only accept a direct `Math.<identifier>(...)` call —
-                        // not chains like `Math.abs.call(...)` / `Math.max.bind(...)`.
-                        const calleeNode = unwrapExpression(node.callee);
-                        if (
-                            !calleeNode ||
-                            calleeNode.type !== "MemberExpression" ||
-                            calleeNode.computed ||
-                            calleeNode.object?.type !== "Identifier" ||
-                            calleeNode.object.name !== "Math" ||
-                            calleeNode.property?.type !== "Identifier"
-                        ) {
-                            return false;
-                        }
-                        return hasOnlySimplePureArguments(node);
-                    }
-
-                    return false;
-                }
-
-                function reportMissing(callOrNew: PureAnnotationCallOrNewExpression) {
-                    const text = sourceCode.getText(callOrNew);
-                    const canAutofix = isSafelyAutofixablePureExpression(callOrNew);
-                    context.report({
-                        node: callOrNew,
-                        messageId: "missing-pure-annotation",
-                        data: { expr: text.length > 60 ? text.slice(0, 57) + "..." : text },
-                        fix: canAutofix ? (fixer: eslint.Rule.RuleFixer) => fixer.insertTextBefore(callOrNew, "/*#__PURE__*/ ") : undefined,
-                    });
-                }
-
-                return {
-                    // Static class field initializers:  static foo = new Bar() / Bar.Create()
-                    "PropertyDefinition[static=true]"(node: any) {
-                        const callOrNew = findCallOrNew(node.value);
-                        if (callOrNew && !hasPureAnnotation(callOrNew)) {
-                            reportMissing(callOrNew);
-                        }
-                    },
-
-                    // Top-level variable initializers:  const x = new Foo()
-                    "Program > VariableDeclaration > VariableDeclarator"(node: any) {
-                        const callOrNew = findCallOrNew(node.init);
-                        if (callOrNew && !hasPureAnnotation(callOrNew)) {
-                            reportMissing(callOrNew);
-                        }
-                    },
-
-                    // Top-level expression statements:  Object.defineProperties(...)
-                    "Program > ExpressionStatement"(node: any) {
-                        const callOrNew = findCallOrNew(node.expression);
-                        if (callOrNew && !hasPureAnnotation(callOrNew)) {
-                            reportMissing(callOrNew);
-                        }
-                    },
-                };
+                return createPureAnnotationVisitors(context, "direct");
+            },
+        },
+        "require-nested-pure-annotation": {
+            meta: {
+                type: "suggestion",
+                docs: {
+                    description: "Review nested call/new expressions executed during module initialization in .pure.ts files",
+                },
+                messages: {
+                    "nested-pure-review":
+                        "Nested module-initializer expression requires review for side effects. Add /*#__PURE__*/ only when the call/constructor and its evaluated inputs are known to be side-effect-free. Expression: {{expr}}",
+                },
+            },
+            create(context: eslint.Rule.RuleContext) {
+                return createPureAnnotationVisitors(context, "nested");
             },
         },
 
@@ -1065,54 +1210,49 @@ const plugin: IPlugin = {
 
                 const isBarrelPure = /[/\\]pure\.[tj]sx?$/.test(filename);
 
-                // ── Manifest-based side-effect lookup (cached across files) ──
-                // The manifest lists files WITH side effects.  If a resolved
-                // import target is NOT in the set, it's safe.
+                type BabylonPackageName = "core" | "gui" | "loaders" | "serializers";
+                type ResolvedImport = {
+                    packageName: BabylonPackageName;
+                    relativePath: string;
+                };
 
-                // Static cache shared across all files in this ESLint run
-                const sideEffectFiles = loadSideEffectsSet();
+                const packageNames = new Set<BabylonPackageName>(["core", "gui", "loaders", "serializers"]);
 
                 /**
-                 * Resolve an import source relative to the current file and
-                 * return the manifest-style path (relative to packages/dev/core/src/).
-                 * Returns null if the file is outside core/src.
+                 * Resolve an import source to its package and manifest-relative path.
                  * @param source - The import specifier to resolve.
-                 * @returns The manifest-relative path if the source has side effects, or null.
+                 * @returns The resolved package/path, or null for external imports.
                  */
-                function resolveToManifestPath(source: string): string | null {
-                    let rel: string;
+                function resolveImport(source: string): ResolvedImport | null {
+                    let packageName: BabylonPackageName;
+                    let relativePath: string;
                     if (source.startsWith(".")) {
-                        const dir = path.dirname(filename);
-                        const resolved = path.resolve(dir, source);
-
-                        // Find core/src/ anchor
-                        const anchor = path.sep + path.join("packages", "dev", "core", "src") + path.sep;
-                        const idx = resolved.indexOf(anchor);
-                        if (idx === -1) {
+                        const resolved = path.resolve(path.dirname(filename), source).replace(/\\/g, "/");
+                        const match = /\/packages\/dev\/(core|gui|loaders|serializers)\/src\/(.+)$/.exec(resolved);
+                        if (!match || !packageNames.has(match[1] as BabylonPackageName)) {
                             return null;
                         }
-                        rel = resolved.substring(idx + anchor.length);
-                    } else if (source === "core") {
-                        rel = "index";
-                    } else if (source.startsWith("core/")) {
-                        rel = source.substring("core/".length);
+                        packageName = match[1] as BabylonPackageName;
+                        relativePath = match[2];
                     } else {
-                        return null; // external / absolute — skip
-                    }
-
-                    // Normalise to forward-slashes (Windows)
-                    rel = rel.replace(/\\/g, "/");
-                    rel = rel.replace(/\.(?:js|mjs|ts|tsx)$/, "");
-
-                    // Try common extensions
-                    for (const ext of [".ts", ".tsx", "/index.ts"]) {
-                        const candidate = rel + ext;
-                        if (sideEffectFiles.has(candidate)) {
-                            return candidate; // it HAS side effects
+                        const match = /^(?:@babylonjs\/)?(core|gui|loaders|serializers)(?:\/(.*))?$/.exec(source);
+                        if (!match || !packageNames.has(match[1] as BabylonPackageName)) {
+                            return null;
                         }
+                        packageName = match[1] as BabylonPackageName;
+                        relativePath = match[2] || "index";
                     }
-                    // Not in the side-effects set → pure (or unknown)
-                    return null;
+
+                    relativePath = relativePath.replace(/\\/g, "/").replace(/\.(?:js|mjs|ts|tsx)$/, "");
+                    return { packageName, relativePath };
+                }
+
+                function isManifestSideEffect(resolvedImport: ResolvedImport): boolean | null {
+                    const manifest = loadSideEffectsSet(resolvedImport.packageName);
+                    if (!manifest.available) {
+                        return null;
+                    }
+                    return [".ts", ".tsx", "/index.ts"].some((extension) => manifest.files.has(resolvedImport.relativePath + extension));
                 }
 
                 /**
@@ -1123,8 +1263,13 @@ const plugin: IPlugin = {
                  * @returns True if the source has side effects.
                  */
                 function hasSideEffects(source: string): boolean {
-                    if (sideEffectFiles.size > 0) {
-                        return resolveToManifestPath(source) !== null;
+                    const resolvedImport = resolveImport(source);
+                    if (!resolvedImport) {
+                        return false;
+                    }
+                    const manifestResult = isManifestSideEffect(resolvedImport);
+                    if (manifestResult !== null) {
+                        return manifestResult;
                     }
                     // Fallback: naming-convention check (inverse — safe sources)
                     return !isSafeSourceByName(source);
@@ -1145,15 +1290,16 @@ const plugin: IPlugin = {
                 }
 
                 function hasPureCounterpart(source: string): boolean {
-                    if (source.endsWith(".pure")) {
+                    const normalizedSource = source.replace(/\.(?:js|mjs|ts|tsx)$/, "");
+                    if (normalizedSource.endsWith(".pure")) {
                         return false;
                     }
 
                     let resolved: string;
-                    if (source.startsWith(".")) {
-                        resolved = path.resolve(path.dirname(filename), source);
+                    if (normalizedSource.startsWith(".")) {
+                        resolved = path.resolve(path.dirname(filename), normalizedSource);
                     } else {
-                        const packageImport = /^(core|gui|loaders|serializers)\/(.+)$/.exec(source);
+                        const packageImport = /^(?:@babylonjs\/)?(core|gui|loaders|serializers)(?:\/(.*))?$/.exec(normalizedSource);
                         if (!packageImport) {
                             return false;
                         }
@@ -1164,7 +1310,7 @@ const plugin: IPlugin = {
                         }
 
                         const repoRoot = filename.substring(0, packagesMatch.index);
-                        resolved = path.join(repoRoot, "packages", "dev", packageImport[1], "src", packageImport[2]);
+                        resolved = path.join(repoRoot, "packages", "dev", packageImport[1], "src", packageImport[2] || "index");
                     }
 
                     return fs.existsSync(`${resolved}.pure.ts`) || fs.existsSync(`${resolved}.pure.tsx`);
@@ -1259,76 +1405,25 @@ const plugin: IPlugin = {
     },
 };
 
+let sideEffectsManifestRoot: string | null | undefined;
+let sideEffectsManifestLoader: SideEffectsManifestLoader | undefined;
+
 /**
- * Load the side-effects manifest and return a Set of file paths that HAVE
- * side effects.  Cached across the entire ESLint process.
+ * Load one package's manifest shards. Cache validation is throttled so a
+ * manifest edit is observed by a long-lived editor process without doing
+ * filesystem work for every import.
+ * @param packageName - Package whose side-effect manifest should be loaded.
+ * @returns The package's side-effect files and whether its manifest was available.
  */
-let _sideEffectFilesCache: Set<string> | undefined;
-function loadSideEffectsSet(): Set<string> {
-    if (_sideEffectFilesCache) {
-        return _sideEffectFilesCache;
+function loadSideEffectsSet(packageName: SideEffectsPackageName) {
+    if (sideEffectsManifestRoot === undefined) {
+        sideEffectsManifestRoot = FindSideEffectsManifestRoot(__dirname);
     }
-    _sideEffectFilesCache = new Set<string>();
-    try {
-        // Walk up from this compiled plugin file to the repo root
-        // Plugin is at packages/tools/eslintBabylonPlugin/dist/index.js
-        // Manifest is at scripts/treeshaking/side-effects-manifest/core/*.json
-        // or, for older branches, scripts/treeshaking/side-effects-manifest.json
-        let dir = __dirname;
-        for (let i = 0; i < 10; i++) {
-            const candidate = [
-                path.join(dir, "scripts", "treeshaking", "side-effects-manifest", "core"),
-                path.join(dir, "scripts", "treeshaking", "side-effects-manifest.json"),
-            ].find((candidatePath) => fs.existsSync(candidatePath));
-            if (candidate) {
-                loadSideEffectsManifest(candidate, _sideEffectFilesCache);
-                break;
-            }
-            const parent = path.dirname(dir);
-            if (parent === dir) {
-                break;
-            }
-            dir = parent;
-        }
-    } catch {
-        // Manifest not available — fall back to naming conventions
+    if (!sideEffectsManifestRoot) {
+        return { available: false, files: new Set() };
     }
-    return _sideEffectFilesCache;
-}
-
-function loadSideEffectsManifest(manifestPath: string, sideEffectFiles: Set<string>): void {
-    const stat = fs.statSync(manifestPath);
-    if (stat.isDirectory()) {
-        for (const entry of fs.readdirSync(manifestPath, { withFileTypes: true })) {
-            if (entry.isFile() && path.extname(entry.name) === ".json") {
-                loadSideEffectsManifest(path.join(manifestPath, entry.name), sideEffectFiles);
-            }
-        }
-        return;
-    }
-
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-    if (Array.isArray(manifest.manifest)) {
-        for (const entry of manifest.manifest) {
-            if (entry.file) {
-                sideEffectFiles.add(entry.file);
-            }
-        }
-        return;
-    }
-
-    if (manifest.files && !Array.isArray(manifest.files)) {
-        for (const file of Object.keys(manifest.files)) {
-            sideEffectFiles.add(file);
-        }
-        return;
-    }
-
-    if (Array.isArray(manifest.files)) {
-        for (const file of manifest.files) {
-            sideEffectFiles.add(file);
-        }
-    }
+    sideEffectsManifestLoader ??= new SideEffectsManifestLoader(sideEffectsManifestRoot);
+    return sideEffectsManifestLoader.load(packageName);
 }
 
 export = plugin;

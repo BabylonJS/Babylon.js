@@ -428,8 +428,11 @@ const useStyles = makeStyles({
         borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
         backgroundColor: tokens.colorNeutralBackground2,
     },
-    paneCollapseButtonWithBorder: {
+    paneCollapseButtonWithLeftBorder: {
         borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
+    },
+    paneCollapseButtonWithRightBorder: {
+        borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     },
     collapseMenuPopover: {
         minWidth: 0,
@@ -683,38 +686,34 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Reado
     const rightComponents = useMemo(() => components.filter((entry) => entry.horizontalLocation === "right"), [components]);
 
     return (
-        <>
-            {components.length > 0 && (
-                <div className={`${classes.bar} ${location === "top" ? classes.barTop : classes.barBottom}`}>
-                    <div className={classes.barLeft}>
-                        {leftComponents.map((entry) => (
-                            <ToolbarItem
-                                key={entry.key}
-                                verticalLocation={location}
-                                horizontalLocation={entry.horizontalLocation}
-                                id={entry.key}
-                                component={entry.component}
-                                displayName={entry.displayName}
-                                teachingMoment={entry.teachingMoment}
-                            />
-                        ))}
-                    </div>
-                    <div className={classes.barRight}>
-                        {rightComponents.map((entry) => (
-                            <ToolbarItem
-                                key={entry.key}
-                                verticalLocation={location}
-                                horizontalLocation={entry.horizontalLocation}
-                                id={entry.key}
-                                component={entry.component}
-                                displayName={entry.displayName}
-                                teachingMoment={entry.teachingMoment}
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-        </>
+        <div className={`${classes.bar} ${location === "top" ? classes.barTop : classes.barBottom}`}>
+            <div className={classes.barLeft}>
+                {leftComponents.map((entry) => (
+                    <ToolbarItem
+                        key={entry.key}
+                        verticalLocation={location}
+                        horizontalLocation={entry.horizontalLocation}
+                        id={entry.key}
+                        component={entry.component}
+                        displayName={entry.displayName}
+                        teachingMoment={entry.teachingMoment}
+                    />
+                ))}
+            </div>
+            <div className={classes.barRight}>
+                {rightComponents.map((entry) => (
+                    <ToolbarItem
+                        key={entry.key}
+                        verticalLocation={location}
+                        horizontalLocation={entry.horizontalLocation}
+                        id={entry.key}
+                        component={entry.component}
+                        displayName={entry.displayName}
+                        teachingMoment={entry.teachingMoment}
+                    />
+                ))}
+            </div>
+        </div>
     );
 };
 
@@ -921,7 +920,11 @@ function usePane(
                             <SplitButton
                                 className={mergeClasses(
                                     classes.paneCollapseButton,
-                                    location === "right" && toolbarMode === "compact" ? classes.paneCollapseButtonWithBorder : undefined
+                                    toolbarMode === "compact"
+                                        ? location === "left"
+                                            ? classes.paneCollapseButtonWithRightBorder
+                                            : classes.paneCollapseButtonWithLeftBorder
+                                        : undefined
                                 )}
                                 menuButton={triggerProps}
                                 primaryActionButton={{ onClick: onExpandCollapseClick }}
@@ -1110,7 +1113,7 @@ function usePane(
         return (
             <>
                 {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
-                {toolbarMode === "compact" && (topPanes.length > 1 || topBarItems.length > 0) && (
+                {toolbarMode === "compact" && (topPanes.length > 1 || topBarItems.length > 0 || (!isChildWindowOpen && (topPanes.length > 0 || bottomPanes.length > 0))) && (
                     <>
                         <div className={classes.barDiv}>
                             {/* The tablist gets merged in with the toolbar. */}

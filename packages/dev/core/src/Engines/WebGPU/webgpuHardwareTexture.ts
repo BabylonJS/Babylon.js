@@ -81,6 +81,8 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
 
     public set(hardwareTexture: GPUTexture): void {
         this._webgpuTexture = hardwareTexture;
+        this._mipmapGenRenderPassDescr = [];
+        this._mipmapGenBindGroup = [];
     }
 
     public setUsage(_textureSource: number, generateMipMaps: boolean, is2DArray: boolean, isCube: boolean, is3D: boolean, width: number, height: number, depth: number): void {
@@ -106,7 +108,7 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
             }_${viewDimension}`,
             format,
             dimension: viewDimension,
-            mipLevelCount: generateMipMaps ? ILog2(Math.max(width, height)) + 1 : 1,
+            mipLevelCount: generateMipMaps ? ILog2(Math.max(width, height, is3D ? depth : 1)) + 1 : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
             arrayLayerCount,

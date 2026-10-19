@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config";
 import { transformWithEsbuild } from "vite";
 import * as fs from "fs";
+import { createRequire } from "module";
 import * as path from "path";
 import { fileURLToPath } from "url";
 
@@ -32,6 +33,9 @@ const aliases = convertPathsToAliases();
 // cannot find one. Provide a runtime stub so glTF loader tests can import
 // modules that reference this package.
 const gltf2InterfaceStub = path.resolve(__dirname, "packages/public/glTF2Interface/babylonjs-gltf2interface.stub.ts");
+
+// Tabster has an ESM entry but no exports map, so Vitest otherwise loads its CommonJS entry as ESM.
+const tabsterEsmEntry = createRequire(import.meta.url).resolve("tabster/dist/esm/index.js");
 
 const createProjectConfig = (type: string) => {
     const globalSetupLocation = path.resolve(".", `vitest.${type}.setup.ts`);
@@ -101,20 +105,24 @@ export default defineConfig({
     },
     test: {
         globals: true,
+        clearMocks: false,
         environment: "node",
         reporters: process.env.CI ? ["default", "junit"] : ["default"],
         outputFile: process.env.CI ? { junit: "./junit.xml" } : undefined,
         projects: [
             {
-                oxc: false,
-                plugins: [esbuildDecoratorPlugin],
                 test: createProjectConfig("unit"),
                 resolve: {
                     alias: {
-                        ...aliases,
-                        "babylonjs-gltf2interface": gltf2InterfaceStub,
+                        tabster: tabsterEsmEntry,
                     },
-                    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
+                },
+                environments: {
+                    ssr: {
+                        resolve: {
+                            noExternal: [/@fluentui/],
+                        },
+                    },
                 },
             },
             // Integration, performance, and interactions tests require a browser

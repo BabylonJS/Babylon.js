@@ -24,6 +24,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     private static _DefaultTextureByEngine = /*#__PURE__*/ new WeakMap<AbstractEngine, ThinTexture>();
 
     private _samplerName: string;
+    private _dimensionsUniformName = "";
     protected _texture: Nullable<Texture>;
 
     private static _GetDefaultTexture(engine: AbstractEngine): ThinTexture {
@@ -104,6 +105,10 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         }
 
         effect.setTexture(this._samplerName, this.texture);
+        if (this._dimensionsUniformName) {
+            const size = this.texture.getSize();
+            effect.setFloat2(this._dimensionsUniformName, size.width, size.height);
+        }
     }
 
     /**
@@ -145,6 +150,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
             this._samplerName = state._getFreeVariableName(this.name);
+            this._dimensionsUniformName = "";
 
             // Declarations
             state.sharedData.blockingBlocks.push(this);
@@ -153,9 +159,14 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         }
 
         if (this.dimensions.isConnected) {
+            const engine = state.sharedData.scene.getEngine();
             let affect: string;
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
                 affect = `vec2f(textureDimensions(${this._samplerName}, 0).xy)`;
+            } else if (!engine.isWebGPU && engine.version === 1) {
+                this._dimensionsUniformName ||= state._getFreeVariableName("textureDimensions");
+                state._emitUniformFromString(this._dimensionsUniformName, NodeMaterialBlockConnectionPointTypes.Vector2);
+                affect = this._dimensionsUniformName;
             } else {
                 affect = `vec2(textureSize(${this._samplerName}, 0).xy)`;
             }

@@ -150,6 +150,7 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public REFRACTIONMAP_3D = false;
     public REFLECTIONOVERALPHA = false;
     public TWOSIDEDLIGHTING = false;
+    public SKIP_OUT_OF_RANGE_LIGHTING = false;
     public SHADOWFLOAT = false;
     public MORPHTARGETS = false;
     public MORPHTARGETS_POSITION = false;
@@ -534,6 +535,16 @@ export class StandardMaterial extends StandardMaterialBase {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public accessor maxSimultaneousLights: number;
 
+    @serialize("skipOutOfRangeLighting")
+    private _skipOutOfRangeLighting = false;
+    /**
+     * If set to true, point and spot lights skip their lighting computations for fragments beyond the light range, where they
+     * contribute nothing. Only lights with a finite range are affected. The extra per-fragment test costs time when most fragments
+     * are within range of most lights, so only enable it for sparse lighting measured on the target devices (default: false).
+     */
+    @expandToProperty("_markAllSubMeshesAsLightsDirty")
+    public accessor skipOutOfRangeLighting: boolean;
+
     @serialize("invertNormalMapX")
     private _invertNormalMapX = false;
     /**
@@ -751,6 +762,7 @@ export class StandardMaterial extends StandardMaterialBase {
 
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
+        defines.SKIP_OUT_OF_RANGE_LIGHTING = this._skipOutOfRangeLighting;
 
         if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights, this._disableLighting)) {
             return false;
@@ -1465,6 +1477,13 @@ export class StandardMaterial extends StandardMaterialBase {
                     }
                 }
 
+                // The alpha test compares against alphaCutOff whatever supplies the alpha: a texture, vertex or
+                // instance color, opacity fresnel or the material alpha. Binding it only when a texture carried
+                // alpha left every other case testing against the default of 0, so nothing was ever discarded.
+                if (defines.ALPHATEST) {
+                    ubo.updateFloat("alphaCutOff", this.alphaCutOff);
+                }
+
                 // Textures
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
@@ -1480,10 +1499,6 @@ export class StandardMaterial extends StandardMaterialBase {
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                         ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                         BindTextureMatrix(this._opacityTexture, ubo, "opacity");
-                    }
-
-                    if (this._hasAlphaChannel()) {
-                        ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
                     BindIBLParameters(scene, defines, ubo, Color3.White(), this._reflectionTexture, false, false, true, false, false, false, this.roughness);

@@ -15,6 +15,8 @@ import { type IntersectionInfo } from "../Collisions/intersectionInfo";
 import { type ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { type Material } from "../Materials/material.pure";
 import { type MaterialDefines } from "../Materials/materialDefines";
+import { type MultiMaterial } from "../Materials/multiMaterial.pure";
+import { type DrawWrapper } from "../Materials/drawWrapper";
 import { type Light } from "../Lights/light";
 import { type Skeleton } from "../Bones/skeleton";
 import { type MorphTargetManager } from "../Morph/morphTargetManager";
@@ -324,6 +326,7 @@ class _InternalAbstractMeshDataInfo {
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
+    public _meshBlendingTag = 0;
     public _bakedVertexAnimationManager: Nullable<IBakedVertexAnimationManager> = null;
     public _material: Nullable<Material> = null;
     public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
@@ -675,6 +678,12 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public isPickable = AbstractMesh.DefaultIsPickable;
 
     /**
+     * Whether this mesh participates in pointer-move ray picking.
+     * @internal
+     */
+    public _isPointerMovePickable: boolean | undefined;
+
+    /**
      * Gets or sets a boolean indicating if the mesh can be near picked (touched by the XR controller or hands). Default is false
      */
     public isNearPickable = false;
@@ -723,6 +732,25 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
     public set renderingGroupId(value: number) {
         this._internalAbstractMeshDataInfo._renderingGroupId = value;
+    }
+
+    /**
+     * Gets or sets the packed mesh-blending tag for this mesh.
+     *
+     * Group ID occupies bits 0..5 and radius class occupies bits 6..7. Use PackMeshBlendingTag
+     * to construct the value. Group 0 disables blending; valid participating groups are 1..63.
+     * Meshes in the same nonzero group are treated as one logical surface and do not blend together.
+     * This visual-only property does not alter geometry, collision queries, depth, normals, or shadows.
+     */
+    public get meshBlendingTag(): number {
+        return this._internalAbstractMeshDataInfo._meshBlendingTag;
+    }
+
+    public set meshBlendingTag(value: number) {
+        if (!Number.isInteger(value) || value < 0 || value > 0xff || (value !== 0 && (value & 0x3f) === 0)) {
+            throw new RangeError("Mesh-blending tag must be 0 or contain a group ID between 1 and 63.");
+        }
+        this._internalAbstractMeshDataInfo._meshBlendingTag = value;
     }
 
     /** Gets or sets current material */
@@ -790,6 +818,42 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         if (material && material.meshMap) {
             material.meshMap[this.uniqueId] = this;
         }
+    }
+
+    /**
+     * Checks whether a submesh rendered by this mesh can resolve to the given material in a render pass it has a draw wrapper for.
+     * SubMesh.getMaterial resolves a pass to the mesh's material for that pass (or its material), the scene's default material when
+     * there is none, or a sub-material of a multi-material: any other material can never resolve to the given one. A mesh that
+     * customizes getMaterialForRenderPass is always a candidate.
+     * @param material defines the material to check
+     * @param drawWrappers defines the draw wrappers of the submesh, indexed by render pass id
+     * @returns false when no render pass with a draw wrapper can resolve to the material
+     * @internal
+     */
+    public _mayRenderWithMaterial(material: Material, drawWrappers: Array<DrawWrapper>): boolean {
+        if (this.getMaterialForRenderPass !== AbstractMesh.prototype.getMaterialForRenderPass) {
+            return true;
+        }
+
+        const meshMaterial = this.material;
+        if (meshMaterial === material || !meshMaterial || (meshMaterial as MultiMaterial).getSubMaterial !== undefined) {
+            return true;
+        }
+
+        const materialForRenderPass = this._internalAbstractMeshDataInfo._materialForRenderPass;
+        if (materialForRenderPass) {
+            // The array is indexed by render pass id and keeps its length when an override is removed: only the passes with a draw
+            // wrapper matter
+            const passCount = Math.min(drawWrappers.length, materialForRenderPass.length);
+            for (let passId = 0; passId < passCount; passId++) {
+                const passMaterial = materialForRenderPass[passId];
+                if (passMaterial && drawWrappers[passId] && (passMaterial === material || (passMaterial as MultiMaterial).getSubMaterial !== undefined)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1158,6 +1222,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      */
     public getMeshUniformBuffer(): UniformBuffer {
         return this._uniformBuffer;
+    }
+
+    /** @internal */
+    public get _isGaussianSplatting(): boolean {
+        return false;
     }
 
     /**

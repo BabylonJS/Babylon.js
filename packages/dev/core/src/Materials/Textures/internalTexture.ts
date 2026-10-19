@@ -135,7 +135,7 @@ export class InternalTexture extends TextureSampler {
     /**
      * Gets the number of mip levels for this texture.
      * Note: This property has the correct value only if the texture was created through
-     * `createRawTexture` or `createRawTexture2DArray`.
+     * `createRawTexture`, `createRawTexture2DArray`, or (on WebGPU) `createRawTexture3D`.
      */
     public mipLevelCount: number = 1;
     /**
@@ -158,6 +158,8 @@ export class InternalTexture extends TextureSampler {
      * Observable called when the texture load is raising an error
      */
     public onErrorObservable = new Observable<Partial<{ message: string; exception: any }>>();
+    /** @internal */
+    public _loadError: Nullable<Partial<{ message: string; exception: any }>> = null;
     /**
      * If this callback is defined it will be called instead of the default _rebuild function
      */
@@ -337,6 +339,12 @@ export class InternalTexture extends TextureSampler {
      */
     public incrementReferences(): void {
         this._references++;
+    }
+
+    /** @internal */
+    public _setError(message?: string, exception?: any): void {
+        this._loadError = { message, exception };
+        this.onErrorObservable.notifyObservers(this._loadError);
     }
 
     /**
@@ -555,7 +563,9 @@ export class InternalTexture extends TextureSampler {
                     },
                     null,
                     this.format,
-                    this._extension
+                    this._extension,
+                    undefined,
+                    ArrayBuffer.isView(this._buffer) ? this._buffer : null
                 );
                 proxy._sphericalPolynomial = this._sphericalPolynomial;
                 return;

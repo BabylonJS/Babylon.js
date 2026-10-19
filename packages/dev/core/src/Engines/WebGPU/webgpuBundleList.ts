@@ -131,6 +131,11 @@ export class WebGPUBundleList {
 
     public numDrawCalls = 0;
 
+    /** @internal */
+    public get isEmpty(): boolean {
+        return this._listLength === 0 && !this._bundleEncoder;
+    }
+
     public constructor(device: GPUDevice) {
         this._device = device;
         this._list = new Array(10);

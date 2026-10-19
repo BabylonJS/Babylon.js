@@ -1,0 +1,134 @@
+import { type FunctionComponent } from "react";
+
+import { MaterialTextureBindingPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
+
+import { type ISelectionService } from "../../../../../services/selectionService";
+import { type ISceneResourceIndexService } from "../../scene/sceneResourceIndexService";
+import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../scene/sceneResources";
+import { type useDirectMaterialOperations } from "./useDirectMaterialOperations";
+
+type DirectOperations = ReturnType<typeof useDirectMaterialOperations>;
+
+export type DirectTextureBindingProps = Readonly<{
+    record: IMaterialResourceRecord;
+    resourceIndexService: ISceneResourceIndexService;
+    selectionService: ISelectionService;
+    operations: DirectOperations["operations"];
+    commit: DirectOperations["commit"];
+    id: string;
+    label: string;
+    value: object | null | undefined;
+    read: () => object | null | undefined;
+    acceptedKinds: readonly string[];
+    sampleCategory?: "float" | "depth" | "float-or-depth";
+    canClear?: boolean;
+    invalidate: "rebuild" | "owned";
+    apply: (texture: object | null) => void | Promise<void>;
+}>;
+
+function GetTextureDisplayName(record: ITextureResourceRecord | undefined): string {
+    if (!record) {
+        return "Texture";
+    }
+    if (record.metadata.name) {
+        return record.metadata.name;
+    }
+    const kind = record.metadata.kind === "cube" ? "Cube" : record.metadata.kind === "3d" ? "3D" : record.metadata.kind === "2d-array" ? "2D Array" : "2D";
+    return `${kind} Texture ${record.ordinal}`;
+}
+
+function AcceptsSampleType(sampleType: string | undefined, category: "float" | "depth" | "float-or-depth"): boolean {
+    if (sampleType === "depth") {
+        return category !== "float";
+    }
+    return category !== "depth" && (sampleType === undefined || sampleType === "float" || sampleType === "unfilterable-float");
+}
+
+/**
+ * Connects one family-owned Lite texture slot to the runtime-neutral directional control.
+ * @param props The slot getter result, supported directions, and Inspector-owned services.
+ * @returns The navigable texture binding row.
+ */
+export const DirectTextureBinding: FunctionComponent<DirectTextureBindingProps> = (props) => {
+    const {
+        record,
+        resourceIndexService,
+        selectionService,
+        operations,
+        commit,
+        id,
+        label,
+        value,
+        read,
+        acceptedKinds,
+        sampleCategory = "float",
+        canClear = true,
+        invalidate,
+        apply,
+    } = props;
+    const currentRecord = value ? resourceIndexService.getTextureRecord(value) : undefined;
+    const unsupported = value && (!currentRecord || !acceptedKinds.includes(currentRecord.metadata.kind) || !AcceptsSampleType(currentRecord.metadata.sampleType, sampleCategory));
+    const candidates: object[] = [];
+    const seen = new Set<object>();
+    for (const scene of record.scenes) {
+        for (const texture of resourceIndexService.getSceneSnapshot(scene).textures) {
+            if (!seen.has(texture.entity)) {
+                seen.add(texture.entity);
+                candidates.push(texture.entity);
+            }
+        }
+    }
+    const mutate = (texture: object | null) => {
+        commit({
+            id,
+            oldValue: value ?? null,
+            newValue: texture,
+            apply: (): void | Promise<void> => {
+                if ((read() ?? null) !== (value ?? null)) {
+                    throw new Error(`Texture binding "${id}" is stale.`);
+                }
+                const metadata = texture && resourceIndexService.getTextureRecord(texture)?.metadata;
+                if (texture && (!metadata || !acceptedKinds.includes(metadata.kind) || !AcceptsSampleType(metadata.sampleType, sampleCategory))) {
+                    throw new TypeError(`Texture binding "${id}" does not accept this texture.`);
+                }
+                return apply(texture);
+            },
+            invalidate,
+        });
+    };
+    return (
+        <MaterialTextureBindingPropertyLine
+            id={id}
+            label={label}
+            value={unsupported ? null : (value ?? null)}
+            candidates={candidates}
+            getId={(texture) => String(resourceIndexService.getTextureRecord(texture)?.ordinal ?? candidates.indexOf(texture))}
+            getDisplayName={(texture) => GetTextureDisplayName(resourceIndexService.getTextureRecord(texture))}
+            getKind={(texture) => resourceIndexService.getTextureRecord(texture)?.metadata.kind ?? "unknown"}
+            acceptedKinds={acceptedKinds}
+            isCandidateAccepted={(texture) => {
+                const metadata = resourceIndexService.getTextureRecord(texture)?.metadata;
+                return !!metadata && AcceptsSampleType(metadata.sampleType, sampleCategory);
+            }}
+            write={
+                unsupported
+                    ? undefined
+                    : {
+                          assign: (texture) => mutate(texture),
+                          clear: value && canClear ? () => mutate(null) : undefined,
+                      }
+            }
+            navigate={
+                value && !unsupported
+                    ? (texture) => {
+                          if (!resourceIndexService.isDisposed && read() === texture && resourceIndexService.getTextureRecord(texture)) {
+                              selectionService.selectedEntity = texture;
+                          }
+                      }
+                    : undefined
+            }
+            pending={operations[id]?.pending}
+            error={operations[id]?.error ?? (unsupported ? `${label} contains an unsupported texture value.` : undefined)}
+        />
+    );
+};

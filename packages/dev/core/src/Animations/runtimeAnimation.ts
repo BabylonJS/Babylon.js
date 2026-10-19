@@ -16,6 +16,25 @@ import { type Scene } from "../scene";
 import { type IAnimationKey } from "./animationKey";
 
 /**
+ * @internal
+ * A write of a runtime animation to one of its targets in an animation step, recorded as it is made.
+ */
+export interface IRuntimeAnimationWrite {
+    /** The runtime animation that wrote; null once the record is emptied, after its step. */
+    runtimeAnimation: Nullable<RuntimeAnimation>;
+    /** The object it wrote a property of; null once the record is emptied. */
+    target: any;
+    /** The weight it wrote with, -1 for a direct write. */
+    weight: number;
+    /** Whether it wrote additively. */
+    additive: boolean;
+    /** The factor the value it wrote was blended in with, one once the animation has blended in. */
+    blendingFactor: number;
+    /** Whether a step prologue has already held the record over; a direct write is held over one step and no more. */
+    carried: boolean;
+}
+
+/**
  * Defines a runtime animation
  */
 export class RuntimeAnimation {
@@ -117,6 +136,14 @@ export class RuntimeAnimation {
      * The previous absolute frame of the runtime animation (meaning, without taking into account the from/to values, only the elapsed time and the fps)
      */
     private _previousAbsoluteFrame: number = 0;
+    private _playbackFrom = 0;
+    private _playbackTo = 0;
+    private _playbackFrames = 0;
+    private _playbackProgress = 0;
+    private _playbackSyncRoot: Nullable<Animatable> = null;
+    private _playbackJumped = false;
+    private _playbackSyncMasterPlayed = 0;
+    private _playbackSyncMasterFrame = 0;
 
     private _enableBlending: boolean;
 
@@ -133,6 +160,51 @@ export class RuntimeAnimation {
      */
     public get currentFrame(): number {
         return this._currentFrame;
+    }
+
+    /**
+     * @internal
+     * The first frame of the range the animation was last evaluated over: the requested range, clamped to its keys.
+     */
+    public get _evaluatedFrom(): number {
+        return this._playbackFrom;
+    }
+
+    /**
+     * @internal
+     * The last frame of the range the animation was last evaluated over.
+     */
+    public get _evaluatedTo(): number {
+        return this._playbackTo;
+    }
+
+    /**
+     * @internal
+     * How far the pose last evaluated had played from _evaluatedFrom, in frames, unwrapped across loops: folding it into
+     * the range gives the frame that was evaluated, and dividing it by the range counts the whole cycles the pose has been
+     * through. It follows a synchronization root, swings with a yoyo loop and holds where a constant loop or a playback
+     * that does not loop holds its pose, so it always describes the pose that was evaluated.
+     */
+    public get _evaluatedProgress(): number {
+        return this._playbackProgress;
+    }
+
+    /**
+     * @internal
+     * The animatable the evaluation was clocked by, captured as it was made: the pose of a step stays that of the root
+     * it was synchronized with then, whatever the host has been synchronized with since.
+     */
+    public get _evaluatedSyncRoot(): Nullable<Animatable> {
+        return this._playbackSyncRoot;
+    }
+
+    /**
+     * @internal
+     * Whether the evaluated progress jumped rather than playing on from the one before: the pose of a follower snapped
+     * back to the start of its range by a root whose own clock cannot carry it to the end.
+     */
+    public get _evaluatedJump(): boolean {
+        return this._playbackJumped;
     }
 
     /**
@@ -411,6 +483,20 @@ export class RuntimeAnimation {
     }
 
     private _setValue(target: any, destination: any, currentValue: any, weight: number, targetIndex: number): void {
+        // Recorded as written - the target, the weight and whether additively, as the bindings take it - so what an
+        // animation step wrote can be read after the step from these records alone, whatever a callback did since.
+        const writes = this._scene._animationWrites;
+        const count = this._scene._animationWriteCount++;
+        let write = writes[count];
+        if (!write) {
+            write = writes[count] = { runtimeAnimation: this, target, weight, additive: false, blendingFactor: 1, carried: false };
+        }
+        write.runtimeAnimation = this;
+        write.target = target;
+        write.weight = weight;
+        write.additive = this.isAdditive;
+        write.carried = false;
+
         // Set value
         this._currentActiveTarget = destination;
 
@@ -447,8 +533,12 @@ export class RuntimeAnimation {
             }
 
             const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
+            // The record carries the factor this very write blended in with, so what the step blended can be read
+            // after the step whatever a write made since has moved the animation's own factor on to.
+            write.blendingFactor = this._blendingFactor;
             this._blendingFactor += blendingSpeed;
         } else {
+            write.blendingFactor = 1;
             if (!this._currentValue) {
                 if (currentValue?.clone) {
                     this._currentValue = currentValue.clone();
@@ -701,11 +791,40 @@ export class RuntimeAnimation {
 
             // Compute value
 
-            if (this._host && this._host.syncRoot) {
+            // The root this evaluation is clocked by, and the progress of the pose it gives, taken before any callback of
+            // the evaluation - a loop callback, an event - can synchronize the host with another root or move this one
+            const syncRoot = this._host ? this._host.syncRoot : null;
+            let syncFrames = this._playbackFrames;
+            let syncJumped = false;
+            if (syncRoot) {
                 // If we must sync with an animatable, calculate the current frame based on the frame of the root animatable
-                const syncRoot = this._host.syncRoot;
-                const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
+                const syncRange = syncRoot.toFrame - syncRoot.fromFrame;
+                const masterFrame = syncRoot.masterFrame;
+                const hostNormalizedFrame = (masterFrame - syncRoot.fromFrame) / syncRange;
                 currentFrame = from + frameRange * hostNormalizedFrame;
+
+                const master = syncRoot.getAnimations()[0];
+                if (master && syncRange !== 0) {
+                    const phase = frameRange * hostNormalizedFrame;
+                    const masterEvaluated = master._playbackTo - master._playbackFrom;
+                    if (masterEvaluated !== 0 && master._playbackFrom <= syncRoot.fromFrame && master._playbackTo >= syncRoot.toFrame) {
+                        // The root's clock covers the range synchronized over: its whole cycles are whole cycles of the follower
+                        const masterCycles = Math.round((master._playbackFrames - (master._currentFrame - master._playbackFrom)) / masterEvaluated);
+                        syncFrames = frameRange * masterCycles + phase;
+                    } else {
+                        // Keyed shorter, the root never carries the follower to its end but snaps it back across its range,
+                        // which happens exactly when the root's own frame wraps: when that frame moves against the root's
+                        // playback. Both are the root's frames, so neither the follower's range nor the root's, whichever
+                        // way round each is, changes the comparison.
+                        syncJumped = (masterFrame - this._playbackSyncMasterFrame) * (master._playbackFrames - this._playbackSyncMasterPlayed) < 0;
+                        syncFrames = phase;
+                    }
+                    // A jump of the root is a jump of whatever follows it, down the chain
+                    syncJumped = syncJumped || master._playbackJumped;
+                    this._playbackSyncMasterPlayed = master._playbackFrames;
+                    this._playbackSyncMasterFrame = masterFrame;
+                }
+                // A root with no runtime animation reads as frame 0: the pose snaps there and holds, and so does the progress
             } else {
                 if ((absoluteFrame > 0 && from > to) || (absoluteFrame < 0 && from < to)) {
                     currentFrame = returnValue && frameRange !== 0 ? to + (absoluteFrame % frameRange) : from;
@@ -732,6 +851,28 @@ export class RuntimeAnimation {
             this._animationState.repeatCount = frameRange === 0 ? 0 : (absoluteFrame / frameRange) >> 0;
             this._animationState.highLimitValue = highLimitValue;
             this._animationState.offsetValue = offsetValue;
+
+            // The frame evaluated, unwrapped across loops, then the progress of the pose it gave
+            this._playbackFrom = from;
+            this._playbackTo = to;
+            this._playbackJumped = syncJumped;
+            this._playbackSyncRoot = syncRoot;
+            let frames: number;
+            if (syncRoot) {
+                frames = syncFrames;
+            } else if (!returnValue) {
+                // The end of the cycle the playback was in - however many it had been through before it stopped looping - or that cycle's start when it ran backwards
+                const cycles = frameRange !== 0 ? Math.floor(this._playbackFrames / frameRange) : 0;
+                frames = (currentFrame === to ? cycles + 1 : cycles) * frameRange;
+            } else if (yoyoMode) {
+                // At the far end of the swing the mapped frame is exactly `to`, which the fold above lands on `from`: the same pose, so the whole range
+                frames = currentFrame === from && absoluteFrame === to ? frameRange : currentFrame - from;
+            } else {
+                frames = absoluteFrame;
+            }
+            this._playbackFrames = frames;
+            // A constant loop holds its last value from its own second cycle on, whatever frame is evaluated
+            this._playbackProgress = this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && this._animationState.repeatCount > 0 ? frameRange : frames;
         } else {
             frameRange = to - from;
             currentFrame = this._coreRuntimeAnimation.currentFrame;
@@ -739,6 +880,12 @@ export class RuntimeAnimation {
             this._animationState.repeatCount = this._coreRuntimeAnimation._animationState.repeatCount;
             this._animationState.highLimitValue = this._coreRuntimeAnimation._animationState.highLimitValue;
             this._animationState.offsetValue = this._coreRuntimeAnimation._animationState.offsetValue;
+            this._playbackFrom = this._coreRuntimeAnimation._playbackFrom;
+            this._playbackTo = this._coreRuntimeAnimation._playbackTo;
+            this._playbackFrames = this._coreRuntimeAnimation._playbackFrames;
+            this._playbackProgress = this._coreRuntimeAnimation._playbackProgress;
+            this._playbackJumped = this._coreRuntimeAnimation._playbackJumped;
+            this._playbackSyncRoot = this._coreRuntimeAnimation._playbackSyncRoot;
         }
 
         const currentValue = animation._interpolate(currentFrame, this._animationState);

@@ -196,8 +196,12 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
 
     gl_FragColor.a = 1.0;
     #ifdef PREPASS
-        gl_FragData[0] = toLinearSpace(gl_FragColor); // linear to cancel gamma transform in prepass
-        gl_FragData[1] = vec4(0., 0., 0., 0.); // tag as no SSS
+        #if !defined(PREPASS_OBJECT_ID) || PREPASS_OBJECT_ID_INDEX != 0
+            WRITE_GEOMETRY_FRAGMENT_OUTPUT(0, toLinearSpace(gl_FragColor)); // linear to cancel gamma transform in prepass
+        #endif
+        #if !defined(PREPASS_OBJECT_ID) || PREPASS_OBJECT_ID_INDEX != 1
+            WRITE_GEOMETRY_FRAGMENT_OUTPUT(1, vec4(0., 0., 0., 0.)); // tag as no SSS
+        #endif
     #endif
 #ifdef DEBUGMODE_FORCERETURN
     return;

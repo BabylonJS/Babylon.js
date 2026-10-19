@@ -1,33 +1,25 @@
 # =============================================================================
-# Template: Pipeline caches (npm / Nx / Playwright)
+# Template: Pipeline caches (npm / Playwright)
 #
 # Emits Cache@2 restore+save steps. Insert this immediately BEFORE the job's
-# `npm ci` step so the npm download cache is restored first, and (when
-# enabled) the Nx computation cache is available for the later build target.
+# `npm ci` step so the npm download cache is restored first.
 #
 # Uses these pipeline-level cache path variables (see ci-monorepo.yml):
 #   - npm_config_cache          e.g. $(Pipeline.Workspace)/.npm
-#   - NX_CACHE_DIRECTORY        e.g. $(Pipeline.Workspace)/.nxcache
+#   - NX_CACHE_DIRECTORY        e.g. $(Pipeline.Workspace)/.nxcache (job-local)
 #   - PLAYWRIGHT_BROWSERS_PATH  e.g. $(Pipeline.Workspace)/.playwright
-# The consuming job controls Nx's local cache size; this template only persists
-# the resulting directory.
 #
 # Cache keys:
 #   - npm:        keyed on package-lock.json (hits until dependencies change).
-#   - nx:         keyed per-job on the commit, with restoreKeys falling back to
-#                 that job's most recent cache. Nx validates each task by its
-#                 own input hash, so unchanged packages are restored as cache
-#                 hits — this is what makes re-pushes fast.
 #   - playwright: keyed on package-lock.json (browser version is pinned there).
+#
+# Nx's database cache is intentionally not persisted with Cache@2. Its metadata
+# is machine-specific and stored outside NX_CACHE_DIRECTORY, so restoring only
+# the artifacts on a new hosted agent makes them unrecognized and unprunable.
+# Nx still uses its bounded local cache within each job.
 # =============================================================================
 
 parameters:
-    - name: nx
-      type: boolean
-      default: false
-    - name: nxCacheKey
-      type: string
-      default: default
     - name: playwright
       type: boolean
       default: false
@@ -48,16 +40,6 @@ steps:
               npm | "$(Agent.OS)"
           path: $(npm_config_cache)
 
-    - ${{ if eq(parameters.nx, true) }}:
-          - task: Cache@2
-            displayName: "Cache Nx computation"
-            continueOnError: true
-            inputs:
-                key: 'nx | "$(Agent.OS)" | "${{ parameters.nxCacheKey }}" | $(Build.SourceVersion)'
-                restoreKeys: |
-                    nx | "$(Agent.OS)" | "${{ parameters.nxCacheKey }}"
-                path: $(NX_CACHE_DIRECTORY)
-
     - ${{ if eq(parameters.playwright, true) }}:
           - task: Cache@2
             displayName: "Cache Playwright browsers"
@@ -69,8 +51,8 @@ steps:
 
     # Guarantee the cache paths exist so the automatic post-job save never
     # fails on a missing directory (e.g. a job whose tool wrote nothing, or a
-    # tool that hasn't created its dir yet). Caching an empty dir is harmless,
-    # and paths without a Cache task above are simply left unused.
+    # tool that hasn't created its dir yet). NX_CACHE_DIRECTORY is created for
+    # the job-local Nx cache; it is not persisted by this template.
     - bash: |
           mkdir -p "$(npm_config_cache)" "$(NX_CACHE_DIRECTORY)" "$(PLAYWRIGHT_BROWSERS_PATH)"
       displayName: "Ensure cache directories exist"

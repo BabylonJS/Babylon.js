@@ -146,6 +146,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
 
+// The depth pre-pass must discard the same texels as the colour pass, so it evaluates every alpha
+// contribution (not only the diffuse texture) before exiting.
+#ifdef DEPTHPREPASS
+#include<defaultFragmentAlpha>
+#endif
+
 #define DEPTHPREPASS_SKIP_EARLY_RETURN
 #include<depthPrePass>
 
@@ -306,39 +312,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 	refractionColor = vec4f(refractionColor.rgb * uniforms.refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * uniforms.refractionRightColor.rgb, refractionColor.a);
 #endif
 
-#ifdef OPACITY
-	var opacityMap: vec4f = TEXRD(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
-
-#ifdef OPACITYRGB
-	opacityMap = vec4f(opacityMap.rgb *  vec3f(0.3, 0.59, 0.11), opacityMap.a);
-	alpha *= (opacityMap.x + opacityMap.y + opacityMap.z)* uniforms.vOpacityInfos.y;
-#else
-	alpha *= opacityMap.a * uniforms.vOpacityInfos.y;
-#endif
-
-#endif
-
-#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-	alpha *= fragmentInputs.vColor.a;
-#endif
-
-#ifdef OPACITYFRESNEL
-	var opacityFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, uniforms.opacityParts.z, uniforms.opacityParts.w);
-
-	alpha += uniforms.opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * uniforms.opacityParts.y;
-#endif
-
-#ifdef ALPHATEST
-    #ifdef ALPHATEST_AFTERALLALPHACOMPUTATIONS
-        if (alpha < uniforms.alphaCutOff) {
-            discard;
-		}
-    #endif
-    #ifndef ALPHABLEND
-        // Prevent to blend with the canvas.
-        alpha = 1.0;
-    #endif
-#endif
+#include<defaultFragmentAlpha>
 
 	// Emissive
 	var emissiveColor: vec3f = uniforms.vEmissiveColor;
@@ -427,8 +401,18 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
 #if SCENE_MRT_COUNT > 0
-	var writeGeometryInfo: f32 = select(0.0, 1.0, color.a > 0.4);
+	#ifdef ALPHATEST
+		var writeGeometryInfo: f32 = 1.0;
+	#else
+		var writeGeometryInfo: f32 = select(0.0, 1.0, color.a > 0.4);
+	#endif
 	var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
+	#ifdef PREPASS_MESH_BLEND_TAG
+		var meshBlendTagOutput: vec4<u32> = vec4u(0u);
+		if (writeGeometryInfo > 0.0) {
+			meshBlendTagOutput = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+		}
+	#endif
 
     #ifdef PREPASS_COLOR
     	fragData[PREPASS_COLOR_INDEX] = color; // We can't split irradiance on std material
@@ -436,6 +420,10 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 
     #ifdef PREPASS_POSITION
     	fragData[PREPASS_POSITION_INDEX] = vec4f(fragmentInputs.vPositionW, writeGeometryInfo);
+    #endif
+
+    #ifdef PREPASS_OBJECT_ID
+        fragData[PREPASS_OBJECT_ID_INDEX] = encodeObjectId(uniforms.objectId) * writeGeometryInfo;
     #endif
 
 	#ifdef PREPASS_LOCAL_POSITION
@@ -500,30 +488,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 		#endif
 	#endif
 
-	#if SCENE_MRT_COUNT > 0
-		fragmentOutputs.fragData0 = fragData[0];
-	#endif
-	#if SCENE_MRT_COUNT > 1
-		fragmentOutputs.fragData1 = fragData[1];
-	#endif
-	#if SCENE_MRT_COUNT > 2
-		fragmentOutputs.fragData2 = fragData[2];
-	#endif
-	#if SCENE_MRT_COUNT > 3
-		fragmentOutputs.fragData3 = fragData[3];
-	#endif
-	#if SCENE_MRT_COUNT > 4
-		fragmentOutputs.fragData4 = fragData[4];
-	#endif
-	#if SCENE_MRT_COUNT > 5
-		fragmentOutputs.fragData5 = fragData[5];
-	#endif
-	#if SCENE_MRT_COUNT > 6
-		fragmentOutputs.fragData6 = fragData[6];
-	#endif
-	#if SCENE_MRT_COUNT > 7
-		fragmentOutputs.fragData7 = fragData[7];
-	#endif
+	#include<meshBlendTagFragmentOutput>[0..8]
 #endif
 #endif
 

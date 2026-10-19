@@ -81,6 +81,23 @@ function buildRig(rootModelId: number, skins: FBXSkinData[], objectMap: FBXObjec
         }
     }
 
+    // Skeleton models below the clusters (leaf joints, "_end" effectors) are part of the same rig even without
+    // clusters of their own; keeping them as bones lets inherit-mode handling and animation stay uniform.
+    const pending = Array.from(rigModelIds);
+    while (pending.length > 0) {
+        const parentId = pending.pop()!;
+        for (const conn of objectMap.connections) {
+            if (conn.type !== "OO" || conn.parentId !== parentId || rigModelIds.has(conn.childId)) {
+                continue;
+            }
+            const child = objectMap.objects.get(conn.childId);
+            if (child && child.name === "Model" && isSkeletonModel(child)) {
+                rigModelIds.add(conn.childId);
+                pending.push(conn.childId);
+            }
+        }
+    }
+
     const warnings = collectTransformLinkWarnings(sourceBonesByModelId);
     const preferredBoneByModelId = new Map<number, FBXBoneData>();
     for (const [modelId, sources] of Array.from(sourceBonesByModelId)) {

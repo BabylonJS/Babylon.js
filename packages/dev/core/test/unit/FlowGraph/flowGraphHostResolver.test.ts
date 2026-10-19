@@ -96,7 +96,15 @@ describe("FlowGraph host resolver", () => {
             const block = new FlowGraphReceiveCustomEventBlock({ eventId: "myEvent", eventData: { amount: { type: RichTypeNumber } } });
             graph.addEventBlock(block);
 
-            expect(block.eventRef.getValue(context)).toBe("/host/events/myEvent");
+            expect(block.eventRef.getValue(context)).toBe("/host/events/custom:myEvent");
+        });
+
+        it("namespaces custom event identities away from lifecycle events", () => {
+            const { graph } = createGraph(hostResolver);
+            const block = new FlowGraphReceiveCustomEventBlock({ eventId: "sceneReady", eventData: {} });
+            graph.addEventBlock(block);
+
+            expect(block.eventKey).toBe("custom:sceneReady");
         });
 
         it("delegates object references to the host, forwarding the disambiguation hint", () => {

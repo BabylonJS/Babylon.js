@@ -1,7 +1,7 @@
 import { type IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { GetBlockType, BlockTypeBodyColor } from "../blockTypeColors";
+import { GetBlockType, BlockTypeBodyColor, IsGltfSpecificBlockName } from "../blockTypeColors";
 
 /**
  * Default display manager for all flow graph blocks.
@@ -19,7 +19,7 @@ export class FlowGraphDefaultDisplayManager implements IDisplayManager {
     }
 
     public getHeaderText(data: INodeData): string {
-        return data.name;
+        return IsGltfSpecificBlockName(data.getClassName()) ? `${data.name} · glTF` : data.name;
     }
 
     public getBackgroundColor(data: INodeData): string {

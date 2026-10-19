@@ -135,8 +135,12 @@ function SaveMetadata(entity: IMetadataContainer, metadata: string) {
     }
 }
 
+/**
+ * An inspected entity that can carry user-defined metadata.
+ */
 export interface IMetadataContainer {
-    metadata: unknown;
+    /** User-defined metadata associated with the inspected entity. */
+    metadata?: unknown;
 }
 
 const useStyles = makeStyles({

@@ -5,7 +5,6 @@ import { type PrimitiveProps } from "./primitive";
 import { Input, makeStyles, mergeClasses, tokens, useId, useMergedRefs } from "@fluentui/react-components";
 import { ArrowBidirectionalUpDownFilled } from "@fluentui/react-icons";
 
-import { Clamp } from "core/Maths/math.scalar.functions";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { useKeyState } from "../hooks/keyboardHooks";
 import { InfoLabel } from "./infoLabel";
@@ -148,7 +147,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     );
 
     // Constrain a value to the valid range by clamping to [min, max].
-    const constrainValue = useCallback((v: number) => Clamp(v, min ?? -Infinity, max ?? Infinity), [min, max]);
+    const constrainValue = useCallback((v: number) => Math.min(max ?? Infinity, Math.max(min ?? -Infinity, v)), [min, max]);
 
     const tryCommitValue = useCallback(
         (currVal: number) => {

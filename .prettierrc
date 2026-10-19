@@ -2,5 +2,14 @@
     "trailingComma": "es5",
     "tabWidth": 4,
     "printWidth": 180,
-    "endOfLine": "auto"
+    "endOfLine": "auto",
+    "overrides": [
+        {
+            "files": ["packages/tools/nme-mcp-server/test/unit/fixtures/*.json", "packages/tools/tests/test/unit/bundleSizeBaselines.json"],
+            "options": {
+                "parser": "json-stringify",
+                "tabWidth": 2
+            }
+        }
+    ]
 }

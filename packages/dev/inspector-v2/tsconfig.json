@@ -3,6 +3,9 @@
 
     "compilerOptions": {
         "strict": true,
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "target": "es2021"
     }
 }

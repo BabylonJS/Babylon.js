@@ -3,6 +3,9 @@
 uniform alpha: f32;
 uniform shadowColor: vec3f;
 
+// Uniforms contributed by material plugins (e.g. IBL shadows)
+#define ADDITIONAL_UBO_DECLARATION
+
 // Input
 varying vPositionW: vec3f;
 
@@ -57,6 +60,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var numLights: f32 = 0.;
 
 #include<lightFragment>[0..1]
+
+#define CUSTOM_FRAGMENT_BEFORE_LIGHT_COMPOSITION
 
 	// Composition
 	var color: vec4f =  vec4f(uniforms.shadowColor, (1.0 - clamp(shadow, 0., 1.)) * uniforms.alpha);

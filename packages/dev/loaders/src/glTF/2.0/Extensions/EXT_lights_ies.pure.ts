@@ -74,14 +74,14 @@ export class EXT_lights_ies implements IGLTFLoaderExtension {
                 light = ArrayItem.Get(extensionContext, this._lights, extension.light);
                 const name = light.name || babylonMesh.name;
 
-                this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
-
-                babylonSpotLight = new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 1, this._loader.babylonScene);
+                babylonSpotLight = this._loader.babylonScene._executeWithBlockedEntityCollection(
+                    !!this._loader._assetContainer,
+                    () => new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 1, this._loader.babylonScene)
+                );
                 babylonSpotLight.angle = Math.PI / 2;
                 babylonSpotLight.innerAngle = 0;
 
                 babylonSpotLight._parentContainer = this._loader._assetContainer;
-                this._loader.babylonScene._blockEntityCollection = false;
                 light._babylonLight = babylonSpotLight;
 
                 babylonSpotLight.falloffType = Light.FALLOFF_GLTF;

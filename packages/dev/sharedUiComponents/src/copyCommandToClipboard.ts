@@ -1,5 +1,3 @@
-import { GetClassName } from "core/Misc/typeStore";
-
 // Check if BABYLON namespace exists
 let BabylonNamespace = "";
 const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
@@ -31,8 +29,13 @@ export function copyCommandToClipboard(strCommand: string) {
 // Return the class name of the considered target
 // babylonNamespace is either "" (ES6) or "BABYLON."
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function getClassNameWithNamespace(obj: any): { className: string; babylonNamespace: string } {
-    let className = GetClassName(obj);
+export function getClassNameWithNamespace(obj: unknown): { className: string; babylonNamespace: string } {
+    if ((typeof obj !== "object" && typeof obj !== "function") || obj === null) {
+        return { className: "Unknown", babylonNamespace: "" };
+    }
+
+    const candidate = obj as { getClassName?: () => string; constructor?: { name?: string } };
+    let className = candidate.getClassName?.() ?? candidate.constructor?.name ?? "Unknown";
     if (className.includes("BABYLON.")) {
         className = className.split("BABYLON.")[1];
     }

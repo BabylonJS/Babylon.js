@@ -40,6 +40,7 @@ uniform vec4 sogSh0Min;
 uniform vec4 sogSh0Max;
 uniform int uVersion;
 uniform int uOffset;
+uniform int uSourceOffset;
 uniform int uCount;
 uniform int uDestWidth;
 uniform int uSrcWidth;
@@ -56,7 +57,7 @@ void main() {
     if (global < uOffset || global >= uOffset + uCount) {
         discard;
     }
-    int k = global - uOffset;
+    int k = global - uOffset + uSourceOffset;
     ivec2 src = ivec2(k - (k / uSrcWidth) * uSrcWidth, k / uSrcWidth);
 
     vec3 mL = texelFetch(sogMeansLTex, src, 0).xyz;
@@ -170,6 +171,7 @@ uniform sogSh0Min : vec4<f32>;
 uniform sogSh0Max : vec4<f32>;
 uniform uVersion : i32;
 uniform uOffset : i32;
+uniform uSourceOffset : i32;
 uniform uCount : i32;
 uniform uDestWidth : i32;
 uniform uSrcWidth : i32;
@@ -181,7 +183,7 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
     if (global < uniforms.uOffset || global >= uniforms.uOffset + uniforms.uCount) {
         discard;
     }
-    let k : i32 = global - uniforms.uOffset;
+    let k : i32 = global - uniforms.uOffset + uniforms.uSourceOffset;
     let src : vec2<i32> = vec2<i32>(k - (k / uniforms.uSrcWidth) * uniforms.uSrcWidth, k / uniforms.uSrcWidth);
 
     let mL : vec3<f32> = textureLoad(sogMeansLTex, src, 0).xyz;
@@ -282,6 +284,7 @@ uniform vec3 sogScalesMin;
 uniform vec3 sogScalesMax;
 uniform int uVersion;
 uniform int uOffset;
+uniform int uSourceOffset;
 uniform int uCount;
 uniform int uDestWidth;
 uniform int uSrcWidth;
@@ -294,7 +297,7 @@ void main() {
     if (global < uOffset || global >= uOffset + uCount) {
         discard;
     }
-    int k = global - uOffset;
+    int k = global - uOffset + uSourceOffset;
     ivec2 src = ivec2(k - (k / uSrcWidth) * uSrcWidth, k / uSrcWidth);
 
     vec3 sRaw = texelFetch(sogScalesTex, src, 0).xyz;
@@ -354,6 +357,7 @@ uniform sogScalesMin : vec3<f32>;
 uniform sogScalesMax : vec3<f32>;
 uniform uVersion : i32;
 uniform uOffset : i32;
+uniform uSourceOffset : i32;
 uniform uCount : i32;
 uniform uDestWidth : i32;
 uniform uSrcWidth : i32;
@@ -365,7 +369,7 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
     if (global < uniforms.uOffset || global >= uniforms.uOffset + uniforms.uCount) {
         discard;
     }
-    let k : i32 = global - uniforms.uOffset;
+    let k : i32 = global - uniforms.uOffset + uniforms.uSourceOffset;
     let src : vec2<i32> = vec2<i32>(k - (k / uniforms.uSrcWidth) * uniforms.uSrcWidth, k / uniforms.uSrcWidth);
 
     let sRaw : vec3<f32> = textureLoad(sogScalesTex, src, 0).xyz;
@@ -434,6 +438,7 @@ uniform float sogShnMin;
 uniform float sogShnMax;
 uniform int uVersion;
 uniform int uOffset;
+uniform int uSourceOffset;
 uniform int uCount;
 uniform int uDestWidth;
 uniform int uSrcWidth;
@@ -448,7 +453,7 @@ void main() {
     if (global < uOffset || global >= uOffset + uCount) {
         discard;
     }
-    int kLocal = global - uOffset;
+    int kLocal = global - uOffset + uSourceOffset;
 
     // 16-bit label for this source splat (LSB in r, MSB in g), indexed over the labels texture's own width.
     ivec2 lsz = textureSize(sogShLabelsTex, 0);
@@ -508,6 +513,7 @@ uniform sogShnMin : f32;
 uniform sogShnMax : f32;
 uniform uVersion : i32;
 uniform uOffset : i32;
+uniform uSourceOffset : i32;
 uniform uCount : i32;
 uniform uDestWidth : i32;
 uniform uSrcWidth : i32;
@@ -521,7 +527,7 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
     if (global < uniforms.uOffset || global >= uniforms.uOffset + uniforms.uCount) {
         discard;
     }
-    let kLocal : i32 = global - uniforms.uOffset;
+    let kLocal : i32 = global - uniforms.uOffset + uniforms.uSourceOffset;
 
     let lsz : vec2<i32> = vec2<i32>(textureDimensions(sogShLabelsTex, 0));
     let lsrc : vec2<i32> = vec2<i32>(kLocal - (kLocal / lsz.x) * lsz.x, kLocal / lsz.x);

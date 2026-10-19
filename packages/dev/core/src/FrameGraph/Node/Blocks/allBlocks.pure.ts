@@ -18,6 +18,7 @@ import { RegisterFilterPostProcessBlock } from "./PostProcesses/filterPostProces
 import { RegisterFxaaPostProcessBlock } from "./PostProcesses/fxaaPostProcessBlock.pure";
 import { RegisterGrainPostProcessBlock } from "./PostProcesses/grainPostProcessBlock.pure";
 import { RegisterImageProcessingPostProcessBlock } from "./PostProcesses/imageProcessingPostProcessBlock.pure";
+import { RegisterMeshBlendingPostProcessBlock } from "./PostProcesses/meshBlendingPostProcessBlock.pure";
 import { RegisterMotionBlurPostProcessBlock } from "./PostProcesses/motionBlurPostProcessBlock.pure";
 import { RegisterPassPostProcessBlock } from "./PostProcesses/passPostProcessBlock.pure";
 import { RegisterScreenSpaceCurvaturePostProcessBlock } from "./PostProcesses/screenSpaceCurvaturePostProcessBlock.pure";
@@ -43,6 +44,7 @@ import { RegisterFrameGraphNodeBlocksTeleportTeleportOutBlock } from "./Teleport
 import { RegisterClearBlock } from "./Textures/clearBlock.pure";
 import { RegisterCopyTextureBlock } from "./Textures/copyTextureBlock.pure";
 import { RegisterGenerateMipmapsBlock } from "./Textures/generateMipmapsBlock.pure";
+import { RegisterMinMaxReducerBlock } from "./Textures/minMaxReducerBlock.pure";
 
 // Root-level blocks
 import { RegisterComputeShaderBlock } from "./computeShaderBlock.pure";
@@ -81,6 +83,7 @@ export function RegisterNodeRenderGraphPostProcessesBlocks(): void {
     RegisterFxaaPostProcessBlock();
     RegisterGrainPostProcessBlock();
     RegisterImageProcessingPostProcessBlock();
+    RegisterMeshBlendingPostProcessBlock();
     RegisterMotionBlurPostProcessBlock();
     RegisterPassPostProcessBlock();
     RegisterScreenSpaceCurvaturePostProcessBlock();
@@ -118,6 +121,7 @@ export function RegisterNodeRenderGraphTexturesBlocks(): void {
     RegisterClearBlock();
     RegisterCopyTextureBlock();
     RegisterGenerateMipmapsBlock();
+    RegisterMinMaxReducerBlock();
 }
 
 /**

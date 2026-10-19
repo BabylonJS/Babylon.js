@@ -37,7 +37,7 @@ import { EngineStore } from "core/Engines/engineStore";
 
 import { type IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
 import { GLTFMaterialExporter } from "./glTFMaterialExporter";
-import { type IExportOptions } from "./glTFSerializer";
+import { type IExportOptions, type KhrInteractivityRootCollection } from "./glTFSerializer";
 import { GLTFData } from "./glTFData";
 import {
     ConvertToRightHandedPosition,
@@ -79,6 +79,7 @@ import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
 import { DataWriter } from "./dataWriter";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { type AnimationGroup } from "core/Animations/animationGroup";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -248,7 +249,7 @@ export class GLTFExporter {
      */
     private _animationSampleRate: number;
 
-    private readonly _options: Required<IExportOptions>;
+    private readonly _options: Required<Omit<IExportOptions, "khrInteractivity">> & Pick<IExportOptions, "khrInteractivity">;
 
     public _shouldUseGlb: boolean = false;
 
@@ -262,6 +263,7 @@ export class GLTFExporter {
 
     // Babylon node -> glTF node index
     private readonly _nodeMap = new Map<Node, number>();
+    private readonly _animationGroupMap = new Map<AnimationGroup, number>();
 
     // Babylon material -> glTF material index
     public readonly _materialMap = new Map<Material, number>();
@@ -434,6 +436,7 @@ export class GLTFExporter {
             removeNoopRootNodes: true,
             includeCoordinateSystemConversionNodes: false,
             meshCompressionMethod: "None",
+            khrInteractivity: undefined,
             ...options,
         };
 
@@ -872,10 +875,11 @@ export class GLTFExporter {
         const rootNodesRH = new Array<Node>();
         const rootNodesLH = new Array<Node>();
         const rootNoopNodesRH = new Array<Node>();
+        const removeNoopRootNodes = this._options.removeNoopRootNodes && !this._options.khrInteractivity;
 
         // Collect root nodes targeted by animation groups so we preserve them during noop removal.
         let animGroupTargets: Set<Node> | undefined;
-        if (this._options.removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes) {
+        if (removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes) {
             for (const animationGroup of this._babylonScene.animationGroups) {
                 for (const targetedAnimation of animationGroup.targetedAnimations) {
                     const target = targetedAnimation.target;
@@ -889,12 +893,7 @@ export class GLTFExporter {
         for (const rootNode of this._babylonScene.rootNodes) {
             const animations = rootNode.animations;
             const hasAnimations = (!!animations && animations.length > 0) || animGroupTargets?.has(rootNode);
-            if (
-                this._options.removeNoopRootNodes &&
-                !this._options.includeCoordinateSystemConversionNodes &&
-                IsNoopNode(rootNode, this._babylonScene.useRightHandedSystem) &&
-                !hasAnimations
-            ) {
+            if (removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes && IsNoopNode(rootNode, this._babylonScene.useRightHandedSystem) && !hasAnimations) {
                 rootNoopNodesRH.push(...rootNode.getChildren());
             } else if (this._babylonScene.useRightHandedSystem) {
                 rootNodesRH.push(rootNode);
@@ -930,9 +929,90 @@ export class GLTFExporter {
                 this._accessors,
                 this._animationSampleRate,
                 stateLH.getNodesSet(),
-                this._options.shouldExportAnimation
+                this._options.shouldExportAnimation,
+                this._animationGroupMap
             );
         }
+    }
+
+    /** @internal */
+    public _getNodeIndex(node: Node): number | undefined {
+        return this._nodeMap.get(node);
+    }
+
+    /** @internal */
+    public _getAnimationIndex(animationGroup: AnimationGroup): number | undefined {
+        return this._animationGroupMap.get(animationGroup);
+    }
+
+    /** @internal */
+    public _getCameraIndex(camera: Camera): number | undefined {
+        const glTFCamera = this._camerasMap.get(camera);
+        if (!glTFCamera) {
+            return undefined;
+        }
+        const index = this._cameras.indexOf(glTFCamera);
+        return index >= 0 ? index : undefined;
+    }
+
+    /** @internal */
+    public _getMaterialIndex(material: Material): number | undefined {
+        return this._materialMap.get(material);
+    }
+
+    /** @internal */
+    public _getRootIndex(collection: KhrInteractivityRootCollection, entity: object): number | undefined {
+        switch (collection) {
+            case "nodes":
+                return this._getNodeIndex(entity as Node);
+            case "animations":
+                return this._getAnimationIndex(entity as AnimationGroup);
+            case "cameras":
+                return this._getCameraIndex(entity as Camera);
+            case "materials":
+                return this._getMaterialIndex(entity as Material);
+            case "meshes": {
+                const nodeIndex = this._getNodeIndex(entity as Node);
+                return nodeIndex === undefined ? undefined : this._nodes[nodeIndex]?.mesh;
+            }
+            case "textures":
+                return this._materialExporter.getTextureInfo(entity as BaseTexture)?.index;
+            case "images": {
+                const textureIndex = this._materialExporter.getTextureInfo(entity as BaseTexture)?.index;
+                if (textureIndex === undefined) {
+                    return undefined;
+                }
+                const texture = this._textures[textureIndex];
+                for (const extensionName of ["KHR_texture_basisu", "EXT_texture_webp", "EXT_texture_avif"]) {
+                    const source = (texture?.extensions?.[extensionName] as { source?: unknown } | undefined)?.source;
+                    if (typeof source === "number") {
+                        return source;
+                    }
+                }
+                return texture?.source;
+            }
+            case "samplers": {
+                const textureIndex = this._materialExporter.getTextureInfo(entity as BaseTexture)?.index;
+                return textureIndex === undefined ? undefined : this._textures[textureIndex]?.sampler;
+            }
+            case "skins": {
+                const skin = this._skinMap.get(entity as Skeleton);
+                const index = skin ? this._skins.indexOf(skin) : -1;
+                return index >= 0 ? index : undefined;
+            }
+            case "scenes":
+                return entity === this._babylonScene && this._scenes.length > 0 ? 0 : undefined;
+        }
+    }
+
+    /** @internal */
+    public _setNodeExtension(nodeIndex: number, extensionName: string, value: unknown): void {
+        const node = this._nodes[nodeIndex];
+        if (!node) {
+            throw new Error(`Cannot write ${extensionName}: glTF node ${nodeIndex} does not exist.`);
+        }
+        node.extensions ||= {};
+        node.extensions[extensionName] = value;
     }
 
     private _shouldExportNode(babylonNode: Node): boolean {

@@ -2020,8 +2020,10 @@ export class ThinNativeEngine extends ThinEngine {
                     this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
                 }
 
+                const errorMessage = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
+                texture._setError(errorMessage, exception);
                 if (onError) {
-                    onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
+                    onError(errorMessage, exception);
                 }
             } else {
                 // fall back to the original url if the transformed url fails to load
@@ -2719,6 +2721,18 @@ export class ThinNativeEngine extends ThinEngine {
     public override bindAttachments(_attachments: number[]): void {
         // No-op on Native: bgfx renders to every color attachment of the bound framebuffer, so there is
         // no gl.drawBuffers equivalent to select a subset.
+    }
+
+    public override clearAttachments(
+        color: Nullable<IColor4Like>,
+        attachments: number[],
+        clearColor: boolean,
+        clearDepth: boolean,
+        clearStencil = false,
+        stencilClearValue = 0
+    ): void {
+        this.bindAttachments(attachments);
+        this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
     }
 
     public override buildTextureLayout(textureStatus: boolean[], _backBufferLayout = false): number[] {

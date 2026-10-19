@@ -78,12 +78,16 @@ export class FlowGraphPointerOutEventBlock extends FlowGraphEventBlock {
         const mesh = this.targetMesh.getValue(context);
         this.meshOutOfPointer.setValue(payload.mesh, context);
         this.pointerId.setValue(payload.pointerId, context);
-        const skipEvent = payload.over && _IsDescendantOf(payload.mesh, mesh);
+        const skipEvent = payload.over && (payload.over === mesh || _IsDescendantOf(payload.over, mesh));
         if (!skipEvent && (payload.mesh === mesh || _IsDescendantOf(payload.mesh, mesh))) {
             this._execute(context);
             return !this.config?.stopPropagation;
         }
         return true;
+    }
+    /** @internal */
+    public _getReferencedMesh(context: FlowGraphContext): AbstractMesh {
+        return this.targetMesh.getValue(context);
     }
     public override _preparePendingTasks(_context: FlowGraphContext): void {
         // no-op

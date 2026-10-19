@@ -19,6 +19,7 @@ import {
     GetDefaultValueForType,
     InferVariableType,
     InferVariableTypesFromBlocks,
+    SetVariableAuthoringValue,
     type IVariableEntry,
     type VariableTypeName,
 } from "../../variableUtils";
@@ -485,14 +486,14 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
         if (!ctx) {
             ctx = fg.createContext();
         }
-        ctx.setVariable(name, 0);
+        SetVariableAuthoringValue(fg, ctx, name, 0);
         ctx.setVariableType(name, "number");
         // Also set on all other contexts
         for (let i = 0; i < fg.contextCount; i++) {
             const other = fg.getContext(i);
             if (other && other !== ctx) {
                 if (!other.hasVariable(name)) {
-                    other.setVariable(name, 0);
+                    SetVariableAuthoringValue(fg, other, name, 0);
                 }
                 other.setVariableType(name, "number");
             }
@@ -554,7 +555,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
 
         const currentValue = ctx.userVariables[name];
         const parsed = ParseVariableValue(editingValue, currentValue);
-        ctx.setVariable(name, parsed);
+        SetVariableAuthoringValue(fg, ctx, name, parsed);
         this._pollRuntimeValues();
     }
 
@@ -573,7 +574,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
             const ctx = fg.getContext(i);
             if (ctx) {
                 ctx.setVariableType(varName, newType);
-                ctx.setVariable(varName, defaultValue);
+                SetVariableAuthoringValue(fg, ctx, varName, defaultValue);
             }
         }
 
@@ -682,7 +683,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                 obj = scene.animationGroups.find((ag) => ag.uniqueId === uniqueId);
                 break;
         }
-        ctx.setVariable(varName, obj);
+        SetVariableAuthoringValue(fg, ctx, varName, obj);
         this._pollRuntimeValues();
     }
 
@@ -701,7 +702,7 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
         const components = GetComponents(current, typeName);
         components[componentIndex] = value;
         const newValue = BuildFromComponents(components, typeName);
-        ctx.setVariable(varName, newValue);
+        SetVariableAuthoringValue(fg, ctx, varName, newValue);
         this._pollRuntimeValues();
     }
 
@@ -753,7 +754,9 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                     <Switch
                         checked={!!currentVal}
                         onChange={(_, data) => {
-                            ctx?.setVariable(varName, data.checked);
+                            if (ctx) {
+                                SetVariableAuthoringValue(fg, ctx, varName, data.checked);
+                            }
                             this._pollRuntimeValues();
                         }}
                     />
@@ -783,9 +786,13 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                         const n = typeName === "FlowGraphInteger" ? Math.round(Number(data.value)) : Number(data.value);
                         if (!isNaN(n)) {
                             if (typeName === "FlowGraphInteger") {
-                                ctx?.setVariable(varName, new FlowGraphInteger(n));
+                                if (ctx) {
+                                    SetVariableAuthoringValue(fg, ctx, varName, new FlowGraphInteger(n));
+                                }
                             } else {
-                                ctx?.setVariable(varName, n);
+                                if (ctx) {
+                                    SetVariableAuthoringValue(fg, ctx, varName, n);
+                                }
                             }
                             this._pollRuntimeValues();
                         }
@@ -811,7 +818,9 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                         this.props.globalState.lockObject.lock = false;
                     }}
                     onChange={(_, data) => {
-                        ctx?.setVariable(varName, data.value);
+                        if (ctx) {
+                            SetVariableAuthoringValue(fg, ctx, varName, data.value);
+                        }
                         this._pollRuntimeValues();
                     }}
                     onKeyDown={(e) => e.stopPropagation()}
@@ -871,7 +880,9 @@ class VariablesPanelInner extends React.Component<IVariablesPanelInnerProps, IVa
                     onChange={(e) => {
                         const uid = Number(e.target.value);
                         if (uid === -1) {
-                            ctx?.setVariable(varName, undefined);
+                            if (ctx) {
+                                SetVariableAuthoringValue(fg, ctx, varName, undefined);
+                            }
                             this._pollRuntimeValues();
                         } else {
                             this._setSceneObjectVariable(varName, typeName, uid);

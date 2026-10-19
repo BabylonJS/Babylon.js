@@ -63,4 +63,4 @@ describe("Babylon Scene", () => {
             expect(spy).not.toHaveBeenCalled();
         });
     });
-})
+});

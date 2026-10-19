@@ -4,7 +4,8 @@ import { Constants } from "../../Engines/constants";
 import { EngineStore } from "../../Engines/engineStore";
 import { Matrix, Vector3, Vector4, Quaternion } from "../../Maths/math.vector.pure";
 import { type Mesh } from "../../Meshes/mesh.pure";
-import { type GaussianSplattingMesh, IsGaussianSplattingClassName } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { _IsGaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplatting.functions";
 import { type Scene } from "../../scene.pure";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { Logger } from "../../Misc/logger";
@@ -25,11 +26,9 @@ import { RegisterIblCdfGeneratorSceneComponent } from "core/Rendering/iblCdfGene
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import { IBLShadowsPluginMaterial } from "./iblShadowsPluginMaterial.pure";
-import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial.pure";
-import { StandardMaterial } from "core/Materials/standardMaterial.pure";
+import { IsIBLShadowsReceiverCompatible } from "./iblShadowsMaterialCompatibility.pure";
 import { type Material } from "core/Materials/material.pure";
 import { Observable } from "core/Misc/observable.pure";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { Tools } from "../../Misc/tools.pure";
 
 interface IIblShadowsSettings {
@@ -537,7 +536,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             for (const m of mesh) {
                 if (m && this._shadowCastingMeshes.indexOf(m) === -1) {
                     this._shadowCastingMeshes.push(m);
-                    if (IsGaussianSplattingClassName(m.getClassName())) {
+                    if (_IsGaussianSplattingMesh(m)) {
                         (m as GaussianSplattingMesh).needsRotationScaleTextures = true;
                     }
                 }
@@ -545,7 +544,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         } else {
             if (mesh && this._shadowCastingMeshes.indexOf(mesh) === -1) {
                 this._shadowCastingMeshes.push(mesh);
-                if (IsGaussianSplattingClassName(mesh.getClassName())) {
+                if (_IsGaussianSplattingMesh(mesh)) {
                     (mesh as GaussianSplattingMesh).needsRotationScaleTextures = true;
                 }
             }
@@ -563,7 +562,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const index = this._shadowCastingMeshes.indexOf(m);
                 if (index !== -1) {
                     this._shadowCastingMeshes.splice(index, 1);
-                    if (IsGaussianSplattingClassName(m.getClassName())) {
+                    if (_IsGaussianSplattingMesh(m)) {
                         (m as GaussianSplattingMesh).needsRotationScaleTextures = false;
                     }
                 }
@@ -572,7 +571,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             const index = this._shadowCastingMeshes.indexOf(mesh);
             if (index !== -1) {
                 this._shadowCastingMeshes.splice(index, 1);
-                if (IsGaussianSplattingClassName(mesh.getClassName())) {
+                if (_IsGaussianSplattingMesh(mesh)) {
                     (mesh as GaussianSplattingMesh).needsRotationScaleTextures = false;
                 }
             }
@@ -584,7 +583,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public clearShadowCastingMeshes(): void {
         for (const m of this._shadowCastingMeshes) {
-            if (IsGaussianSplattingClassName(m.getClassName())) {
+            if (_IsGaussianSplattingMesh(m)) {
                 (m as GaussianSplattingMesh).needsRotationScaleTextures = false;
             }
         }
@@ -1124,7 +1123,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     protected _addShadowSupportToMaterial(material: Material) {
-        if (!(material instanceof PBRBaseMaterial) && !(material instanceof StandardMaterial) && !(material instanceof OpenPBRMaterial)) {
+        if (!IsIBLShadowsReceiverCompatible(material)) {
             return;
         }
         let plugin = material.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name);

@@ -31,6 +31,8 @@ export interface IDrawContext {
      * Resets the draw context to its initial state.
      */
     reset(): void;
+    /** Releases effect-specific uniform-buffer reservations. @internal */
+    _releaseUniformBufferSlots?(): void;
     /**
      * Disposes the draw context and its resources.
      */

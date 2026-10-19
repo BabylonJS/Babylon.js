@@ -7,6 +7,9 @@ import { useEffect, useMemo } from "react";
  * Creates a polling observable that notifies its observers at a specified interval.
  * @param delay The polling interval in milliseconds.
  * @returns A readonly observable that can be used to subscribe to polling notifications.
+ * @remarks Combine this with `useObservableState` for telemetry and statistics that intentionally
+ * refresh at a fixed cadence. For inspected values that should honor the user's Preferred Watch
+ * Mode, use `useWatchedValue` instead.
  */
 export function usePollingObservable(delay: number): IReadonlyObservable<void> {
     const observable = useMemo(() => new Observable<void>(), []);

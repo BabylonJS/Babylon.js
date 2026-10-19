@@ -6,6 +6,7 @@ import { type FlowGraphContext } from "../../flowGraphContext";
 import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { defaultValueSerializationFunction } from "../../serialization";
 
 /**
  * Parameters used to create a FlowGraphSendCustomEventBlock.
@@ -35,7 +36,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
         public override config: IFlowGraphSendCustomEventBlockConfiguration
     ) {
         super(config);
-        for (const key in this.config.eventData) {
+        for (const key of Object.keys(this.config.eventData ?? {})) {
             const entry = this.config.eventData[key];
             // Handle deserialized config where type may be a string typeName, a plain object
             // with a typeName property (from old JSON serialization), or a proper RichType instance.
@@ -49,9 +50,14 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
     public _execute(context: FlowGraphContext): void {
         const eventId = this.config.eventId;
         // eventData is a map with the key being the data input's name, and value being the data input's value
-        const eventData: any = {};
+        const eventData: any = Object.create(null);
         for (const port of this.dataInputs) {
-            eventData[port.name] = port.getValue(context);
+            Object.defineProperty(eventData, port.name, {
+                configurable: true,
+                enumerable: true,
+                value: port.getValue(context),
+                writable: true,
+            });
         }
 
         context.configuration.coordinator.notifyCustomEvent(eventId, eventData);
@@ -62,13 +68,19 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
     public override serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         // Override the eventData in config to store typeName strings instead of RichType instances
-        const serializedEventData: any = {};
-        for (const key in this.config.eventData) {
+        const serializedEventData: any = Object.create(null);
+        for (const key of Object.keys(this.config.eventData ?? {})) {
             const entry = this.config.eventData[key];
-            serializedEventData[key] = { type: entry.type.typeName };
+            const serializedEntry: { type: string; value?: unknown } = { type: entry.type.typeName };
             if (entry.value !== undefined) {
-                serializedEventData[key].value = entry.value;
+                defaultValueSerializationFunction("value", entry.value, serializedEntry);
             }
+            Object.defineProperty(serializedEventData, key, {
+                configurable: true,
+                enumerable: true,
+                value: serializedEntry,
+                writable: true,
+            });
         }
         serializationObject.config.eventData = serializedEventData;
     }

@@ -342,7 +342,7 @@
                         var nextShadow: f32 = 0.;
                         #if defined(SHADOWPCF{X})
                             #if defined(SHADOWLOWQUALITY{X})
-                                nextShadow = computeShadowWithCSMPCF1(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], , shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                                nextShadow = computeShadowWithCSMPCF1(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                             #elif defined(SHADOWMEDIUMQUALITY{X})
                                 nextShadow = computeShadowWithCSMPCF3(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                             #else

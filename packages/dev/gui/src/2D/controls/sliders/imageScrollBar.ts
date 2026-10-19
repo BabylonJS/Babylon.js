@@ -184,10 +184,10 @@ export class ImageScrollBar extends BaseSlider {
 
     protected override _getThumbThickness(): number {
         let thumbThickness: number;
-        if (this._thumbWidth.isPixel) {
-            thumbThickness = this._thumbWidth.getValue(this._host);
+        if (!this._thumbWidth.isPercentage) {
+            thumbThickness = this._getValueInPixel(this._thumbWidth, 1);
         } else {
-            thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
+            thumbThickness = this._backgroundBoxThickness * this._getValueInPixel(this._thumbWidth, 1);
         }
         return thumbThickness;
     }

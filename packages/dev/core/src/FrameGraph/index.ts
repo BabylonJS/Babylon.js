@@ -18,6 +18,7 @@ export * from "./Tasks/Misc/computeShaderTask";
 export * from "./Tasks/Misc/cullObjectsTask";
 export * from "./Tasks/Misc/executeTask";
 export * from "./Tasks/Misc/lightingVolumeTask";
+export * from "./Tasks/Misc/minMaxReducerTask";
 
 export * from "./Tasks/PostProcesses/anaglyphTask";
 export * from "./Tasks/PostProcesses/blackAndWhiteTask";
@@ -35,6 +36,7 @@ export * from "./Tasks/PostProcesses/fxaaTask";
 export * from "./Tasks/PostProcesses/grainTask";
 export * from "./Tasks/PostProcesses/imageProcessingTask";
 export * from "./Tasks/PostProcesses/motionBlurTask";
+export * from "./Tasks/PostProcesses/meshBlendingTask";
 export * from "./Tasks/PostProcesses/passTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
 export * from "./Tasks/PostProcesses/sharpenTask";

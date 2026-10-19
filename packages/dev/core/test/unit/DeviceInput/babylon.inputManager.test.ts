@@ -299,6 +299,44 @@ describe("InputManager", () => {
         expect(moveHitCt).toBe(3);
     });
 
+    it("re-picks hover targets each frame using pointer-move eligibility", () => {
+        scene!.constantlyUpdateMeshUnderPointer = true;
+        const front = MeshBuilder.CreateBox("front", { size: 2 }, scene);
+        const rear = MeshBuilder.CreateBox("rear", { size: 2 }, scene);
+        rear.position.z = 3;
+
+        deviceInputSystem!.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
+        deviceInputSystem!.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 128, false);
+        deviceInputSystem!.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+        expect(scene!.meshUnderPointer).toBe(front);
+
+        front._isPointerMovePickable = false;
+        scene!.render();
+        expect(scene!.meshUnderPointer).toBe(rear);
+        expect(scene!.pick(128, 128).pickedMesh).toBe(front);
+
+        front._isPointerMovePickable = true;
+        scene!.render();
+        expect(scene!.meshUnderPointer).toBe(front);
+
+        front.position.x = 10;
+        scene!.render();
+        expect(scene!.meshUnderPointer).toBe(rear);
+    });
+
+    it("retains independent coordinates for each tracked hover pointer", () => {
+        scene!.constantlyUpdateMeshUnderPointer = true;
+        const box = MeshBuilder.CreateBox("box", { size: 2 }, scene);
+        const manager = scene!._inputManager as any;
+        manager._onPointerMove({ pointerId: 1, pointerType: "touch", clientX: 128, clientY: 128, offsetX: 128, offsetY: 128 });
+        manager._onPointerMove({ pointerId: 2, pointerType: "touch", clientX: 0, clientY: 0, offsetX: 0, offsetY: 0 });
+
+        manager._updateMeshUnderPointer();
+
+        expect(scene!._inputManager.getMeshUnderPointerByPointerId(1)).toBe(box);
+        expect(scene!._inputManager.getMeshUnderPointerByPointerId(2)).toBeNull();
+    });
+
     it("onPointerObservable can pick only when necessary", () => {
         let lazyPickCt = 0;
         let lazyPickHitCt = 0;
@@ -947,6 +985,7 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Vertical, 64, false);
             deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Move, 1);
             deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.LeftClick, 0);
+            expect((scene._inputManager as any)._latestPointerMoveEvents.has(2)).toBe(false);
 
             // Both should be positive values based on movement
             deltaX2 = camera.cameraRotation.x;

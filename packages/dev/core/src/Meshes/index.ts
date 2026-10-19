@@ -11,6 +11,7 @@ export * from "./trailMesh";
 export * from "./instancedMesh";
 export * from "./linesMesh";
 export * from "./mesh";
+export * from "./meshBlendingTag";
 export * from "./mesh.vertexData";
 export * from "./meshBuilder";
 export * from "./meshSimplification";
@@ -39,6 +40,7 @@ export * from "./GaussianSplatting/gaussianSplattingMeshBase";
 export * from "./GaussianSplatting/gaussianSplattingMesh";
 export * from "./GaussianSplatting/gaussianSplattingCompoundMesh";
 export * from "./GaussianSplatting/gaussianSplattingDebugger";
+export * from "./GaussianSplatting/gaussianPointSplattingRenderer";
 
 // LineMesh
 export * from "../Shaders/color.fragment";

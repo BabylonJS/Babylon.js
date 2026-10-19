@@ -7,6 +7,7 @@ export * from "./ellipse";
 export * from "./focusableButton";
 export * from "./focusableControl";
 export * from "./grid";
+export * from "./flexPanel";
 export * from "./image";
 export * from "./inputText";
 export * from "./inputTextArea";

@@ -10,8 +10,13 @@ import { type RenderTargetWrapper } from "../renderTargetWrapper";
 import { type WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { type WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type IColor4Like } from "../../Maths/math.like";
+import { Color4 } from "../../Maths/math.color.pure";
+import { IsIntegerTextureFormat, IsUnsignedIntegerTextureType } from "../../Materials/Textures/textureHelper.functions";
 
 let _Registered = false;
+const _UnsignedIntegerClearColor = /*#__PURE__*/ new Color4();
+const _SignedIntegerClearColor = /*#__PURE__*/ new Color4();
 /**
  * Register side effects for enginesExtensionsEngineMultiRender.
  * Safe to call multiple times; only the first call has an effect.
@@ -56,8 +61,76 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
 
     ThinEngine.prototype.bindAttachments = function (attachments: number[]): void {
         const gl = this._gl;
+        const textures = this._currentRenderTarget?.textures;
+
+        this._integerMRTAttachmentsMask = 0;
+        if (textures) {
+            for (let index = 0; index < attachments.length; index++) {
+                if (attachments[index] !== gl.NONE && textures[index] && IsIntegerTextureFormat(textures[index].format)) {
+                    this._integerMRTAttachmentsMask |= 1 << index;
+                }
+            }
+        }
 
         gl.drawBuffers(attachments);
+    };
+
+    ThinEngine.prototype.clearAttachments = function (
+        color: Nullable<IColor4Like>,
+        attachments: number[],
+        clearColor: boolean,
+        clearDepth: boolean,
+        clearStencil = false,
+        stencilClearValue = 0
+    ): void {
+        const textures = this._currentRenderTarget?.textures;
+        let hasIntegerAttachment = false;
+        if (clearColor && color && textures) {
+            for (let index = 0; index < attachments.length; index++) {
+                const texture = textures[index];
+                if (attachments[index] !== this._gl.NONE && texture && IsIntegerTextureFormat(texture.format)) {
+                    if (this._webGLVersion < 2) {
+                        throw new Error("ThinEngine.clearAttachments: integer MRT attachments require WebGL2");
+                    }
+                    hasIntegerAttachment = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasIntegerAttachment || !color || !textures) {
+            this.bindAttachments(attachments);
+            this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
+            return;
+        }
+
+        this.bindAttachments(attachments);
+        this._applyColorWriteState();
+        for (let index = 0; index < attachments.length; index++) {
+            const texture = textures[index];
+            if (attachments[index] !== this._gl.NONE && texture) {
+                let clearValue = color;
+                if (IsIntegerTextureFormat(texture.format)) {
+                    const unsigned = IsUnsignedIntegerTextureType(texture.type);
+                    clearValue = unsigned ? _UnsignedIntegerClearColor : _SignedIntegerClearColor;
+                    const scale = unsigned ? 255 : 1;
+                    clearValue.r = Math.round(color.r * scale);
+                    clearValue.g = Math.round(color.g * scale);
+                    clearValue.b = Math.round(color.b * scale);
+                    clearValue.a = Math.round(color.a * scale);
+                }
+                this._clearColorAttachment(index, clearValue, texture.format, texture.type);
+            }
+        }
+        if (clearDepth || clearStencil) {
+            const integerMRTAttachmentsMask = this._integerMRTAttachmentsMask;
+            this._integerMRTAttachmentsMask = 0;
+            try {
+                this.clear(null, false, clearDepth, clearStencil, stencilClearValue);
+            } finally {
+                this._integerMRTAttachmentsMask = integerMRTAttachmentsMask;
+            }
+        }
     };
 
     ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
@@ -66,6 +139,7 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
         onBeforeUnbind?: () => void
     ): void {
         this._currentRenderTarget = null;
+        this._integerMRTAttachmentsMask = 0;
 
         if (!rtWrapper.disableAutomaticMSAAResolve) {
             this.resolveMultiFramebuffer(rtWrapper);

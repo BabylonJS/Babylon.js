@@ -2,9 +2,52 @@
 
 This document covers the high level aspects of the Inspector V2 architecture. Note that much of this may move to a shared tooling package as it is intended to be usable by other tools (Sandbox, Playground, NME, etc.) in the future if we find enough value in integrating the framework into those tools.
 
+## Babylon Lite Picking
+
+The Lite Inspector's **Enable Picking** toolbar toggle is available only while the engine has a registered scene context. It selects a mesh by tapping its scene canvas. Picks update the Explorer, Properties pane, and `debugNode` through the shared selection service. Camera drags and empty-space taps leave the selection unchanged. Press **Escape**, including from an undocked toolbar, or toggle picking off to exit; pending GPU results cannot change selection after exiting. Removing the last scene also exits picking and removes the toggle; registering another scene restores it with picking disabled.
+
+Picking supports registered scenes on the engine's primary and auxiliary HTML canvases, including canvases created in same-origin iframes or popup windows and scenes added while picking is active. Non-scene rendering contexts, offscreen canvases, and non-mesh pick contributors are not selected. Selection visuals and transform gizmos are not included.
+
+For the Inspector v2 test app, run `npm run serve -w @dev/inspector` and open `http://localhost:9001/?experience=lite`. Set `INSPECTOR_TEST_PORT` to use a separate port when running multiple worktrees.
+
 One of the goals of the Inspector V2 architecture is to allow new functionality to easily be added to the Inspector in one of two ways:
 1. **Modularity**: In code, using `Inspector.Show`. For example, the Sandbox might want to include additional features in the Inspector that make sense in the context of the Sandbox.
 2. **Extensibility**: By the end user opting into optional features by installing extensions from the Inspector UI. For example, we might have an extension for advanced skeleton diagnostics, which a user would only care about if they are heavily working with skeletal animations. In the future, we can open up extensibility to make it possible for the community to publish their own extensions to a community extension feed. This makes it possible to drastically extend the power of Inspector without overwhelming all users with every single potential capability of the Inspector.
+
+## Babylon Lite animations
+
+The `@babylonjs/inspector/lite` entrypoint lists each registered scene's public
+`animationGroups` in Explorer, including their targeted animations. Group properties
+provide play/pause, stop, speed, looping, weight, frame scrubbing, clip information,
+and metadata. Scrubbing applies the pose through Lite's `goToFrame` API and preserves
+the group's playing/paused state. Values and hierarchy changes follow the preferred
+polling or manual watch mode.
+
+Target rows show the public path, target name, and node index, and link to the runtime
+target when Lite exposes one. An entity's Animation section links to groups that
+directly target it or its scene-node transform values, including groups added after
+a non-node target is selected. Objects with no matching groups show "No Animations".
+Name-only targets remain
+inspectable without inventing a runtime target. Standalone animation managers are not
+engine-discoverable; their groups must also be exposed in a registered scene's
+`animationGroups` to appear here. Weight edits do not implicitly enable an optional
+animation mixer.
+
+Lite's public target descriptions do not expose editable keyframe curves, per-target
+animation ranges, blending overrides, or additive state, so the Lite Inspector does
+not load Babylon.js animation implementations or the native curve editor. The test
+app's `?experience=lite` scene includes two property-animation groups for exercising
+these controls.
+
+The browser tests use the Inspector test app rather than the CDN scene-test harness.
+Start the app with `npm run serve -w @dev/inspector`, then set
+`INSPECTOR_TEST_PORT=9001` and run
+`npx playwright test --config playwright.config.ts --project=integration -g "Lite Inspector"`.
+These tests are skipped when `INSPECTOR_TEST_PORT` is unset so other integration suites
+do not require an Inspector server. On a GPU-less machine, set
+`CUSTOM_FLAGS=--use-webgpu-adapter=swiftshader` to use Chrome's software WebGPU adapter.
+These tests explicitly select Chromium with the Chrome channel even when the
+integration project's default browser is Firefox.
 
 ## Modularity
 

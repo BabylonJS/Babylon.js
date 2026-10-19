@@ -8,11 +8,14 @@ import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
-import "loaders/glTF/2.0/Extensions/KHR_interactivity";
+import { _AddInteractivityObjectModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Animation } from "core/Animations/animation";
+import { CreateKHRInteractivityGraphModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
+import { InteractivityHostResolver } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityHostResolver";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 describe("Interactivity/animation nodes", () => {
     let engine: NullEngine;
@@ -21,35 +24,67 @@ describe("Interactivity/animation nodes", () => {
     const errorLog: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Error").mockImplementation(() => {});
     let renderInterval: any;
 
+    function createPlayableAnimationGroup(): AnimationGroup {
+        const animationGroup = new AnimationGroup("test", scene);
+        const animation = new Animation("test", "value", 60, Constants.ANIMATIONTYPE_FLOAT);
+        animation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 600, value: 1 },
+        ]);
+        animationGroup.addTargetedAnimation(animation, { name: "target", value: 0 });
+        return animationGroup;
+    }
+
     async function generateSimpleNodeGraph(
         mockGltf: any, //Partial<IGLTF>,
         declarations: IKHRInteractivity_Declaration[],
         nodes: IKHRInteractivity_Node[],
         types: IKHRInteractivity_Type[] = [],
-        variables: IKHRInteractivity_Variable[] = []
+        variables: IKHRInteractivity_Variable[] = [],
+        entryNodeIndex: number = 0,
+        strictValidation: boolean = true
     ) {
+        const shiftedNodes = nodes.map((node) => ({
+            ...node,
+            declaration: node.declaration + 1,
+            values: node.values
+                ? Object.fromEntries(Object.entries(node.values).map(([key, value]) => [key, "node" in value ? { ...value, node: value.node + 1 } : value]))
+                : undefined,
+            flows: node.flows ? Object.fromEntries(Object.entries(node.flows).map(([key, flow]) => [key, { ...flow, node: flow.node + 1 }])) : undefined,
+        }));
         const ig: IKHRInteractivity_Graph = {
-            declarations: [...declarations, { op: "event/onStart" }],
+            declarations: [{ op: "event/onStart" }, ...declarations],
             types,
             nodes: [
-                ...nodes,
                 {
-                    declaration: declarations.length,
+                    declaration: 0,
                     flows: {
                         out: {
-                            node: 0, // first node provided should be the flow node tested
+                            node: entryNodeIndex + 1,
                             socket: "in",
                         },
                     },
                 },
+                ...shiftedNodes,
             ],
-            variables,
+            variables: variables.length ? variables : undefined,
         };
 
-        const pathConverter = GetPathToObjectConverter(mockGltf);
-        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
+        const pathConverter = GetPathToObjectConverter(mockGltf, (mapping) => _AddInteractivityObjectModel(scene, 60, mapping));
+        const model = CreateKHRInteractivityGraphModel(ig);
+        if (strictValidation) {
+            expect(model.valid, model.diagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`).join("\n")).toBe(true);
+        }
+        const i2fg = new InteractivityGraphToFlowGraphParser(
+            strictValidation ? model.effectiveSource : ig,
+            mockGltf,
+            60,
+            0,
+            undefined,
+            strictValidation ? model.declarations : undefined
+        );
         const json = i2fg.serializeToFlowGraph();
-        const coordinator = new FlowGraphCoordinator({ scene });
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
         const graph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });
         graph.getContext(0).enableLogging = true;
         graph.getContext(0).logger!.logToConsole = false;
@@ -58,6 +93,7 @@ describe("Interactivity/animation nodes", () => {
 
         return {
             graph,
+            serialized: json,
             logger: graph.getContext(0).logger!,
         };
     }
@@ -78,10 +114,10 @@ describe("Interactivity/animation nodes", () => {
     });
 
     test("animation/start with default values", async () => {
-        const ag = new AnimationGroup("test");
+        const ag = createPlayableAnimationGroup();
         ag.to = 10;
         // spy on the start, reset and stop functions
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
@@ -94,7 +130,7 @@ describe("Interactivity/animation nodes", () => {
             ],
         };
 
-        await generateSimpleNodeGraph(
+        const { serialized } = await generateSimpleNodeGraph(
             gltf,
             [{ op: "animation/start" }],
             [
@@ -102,26 +138,30 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 0,
                     values: {
                         animation: {
-                            value: [1], // index in the animation array
+                            value: ["/animations/1"],
                             type: 0,
                         },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [10 / 60], type: 1 },
                     },
                 },
             ],
-            [{ signature: "int" }]
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         expect(startSpy).toHaveBeenCalledTimes(1);
         // expect the variables sent to start to be the default values
         expect(startSpy).toHaveBeenCalledWith(false, 1, 0, 10);
         expect(stopSpy).not.toHaveBeenCalled();
+        expect(serialized.allBlocks.find((block) => block.className === "FlowGraphPlayAnimationBlock")!.config.useVirtualTimeline).toBe(true);
     });
 
     test("animation/start with custom values", async () => {
-        const ag = new AnimationGroup("test");
+        const ag = createPlayableAnimationGroup();
         ag.to = 600; // 600 frames mean 10 seconds at 60fps
         // spy on the start, reset and stop functions
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
@@ -142,7 +182,7 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 0,
                     values: {
                         animation: {
-                            value: [1], // index in the animation array
+                            value: ["/animations/1"],
                             type: 0,
                         },
                         speed: {
@@ -160,7 +200,7 @@ describe("Interactivity/animation nodes", () => {
                     },
                 },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         expect(startSpy).toHaveBeenCalledTimes(1);
@@ -169,33 +209,58 @@ describe("Interactivity/animation nodes", () => {
         expect(stopSpy).not.toHaveBeenCalled();
     });
 
+    test.each(["/animations/999", "/nodes/0"])("animation/start rejects a non-animation reference in strict mode: %s", async (reference) => {
+        const ag = createPlayableAnimationGroup();
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
+        await generateSimpleNodeGraph(
+            { animations: [{ _babylonAnimationGroup: ag }], nodes: [{}] },
+            [{ op: "animation/start" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: [reference], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [1], type: 1 },
+                    },
+                },
+            ],
+            [{ signature: "ref" }, { signature: "float" }]
+        );
+
+        expect(startSpy).not.toHaveBeenCalled();
+    });
+
     // Regression (WhackAMole): when endTime is supplied by a connection (here the read-only `maxTime`
     // animation pointer) rather than a literal, the parse-time seconds→frames dataTransformer cannot
     // run. The parser must insert a runtime multiply so the connected KHR time (seconds) is still
     // converted to Babylon frames. Without it the animation plays a tiny fraction of its range.
     test("animation/start converts a connected endTime (maxTime pointer) from seconds to frames", async () => {
         const ag = new AnimationGroup("test");
-        ag.to = 600; // 600 frames == 10 seconds at 60 fps; maxTime therefore reads 10 (seconds)
-        const startSpy = vi.spyOn(ag, "start");
+        const animation = new Animation("test", "value", 60, Constants.ANIMATIONTYPE_FLOAT);
+        animation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 600, value: 1 },
+        ]);
+        ag.addTargetedAnimation(animation, { value: 0 });
+        ag.to = 600;
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const gltf = {
             animations: [
                 {}, // index 0 unused
                 { _babylonAnimationGroup: ag },
             ],
         };
+        const maxTime = GetPathToObjectConverter(gltf as any, (mapping) => _AddInteractivityObjectModel(scene, 60, mapping)).convert(
+            "/animations/1/extensions/KHR_interactivity/maxTime"
+        );
+        expect(maxTime.info.get(maxTime.object)).toBe(10);
 
         await generateSimpleNodeGraph(
             gltf,
             [{ op: "animation/start" }, { op: "pointer/get" }],
             [
-                {
-                    declaration: 0,
-                    values: {
-                        animation: { value: [1], type: 0 },
-                        // endTime is fed by the pointer/get output rather than a literal.
-                        endTime: { node: 1, socket: "value" },
-                    },
-                },
                 {
                     declaration: 1,
                     configuration: {
@@ -203,8 +268,20 @@ describe("Interactivity/animation nodes", () => {
                         type: { value: [1] }, // float
                     },
                 },
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: ["/animations/1"], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        // endTime is fed by the pointer/get output rather than a literal.
+                        endTime: { node: 0, socket: "value" },
+                    },
+                },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }],
+            [],
+            1
         );
 
         expect(startSpy).toHaveBeenCalledTimes(1);
@@ -223,9 +300,9 @@ describe("Interactivity/animation nodes", () => {
         ["startTime NaN", { startTime: { value: [NaN], type: 1 } }],
         ["startTime +Infinity", { startTime: { value: [Infinity], type: 1 } }],
     ])("animation/start does not start the animation for invalid input: %s", async (_name, extraValues) => {
-        const ag = new AnimationGroup("test");
+        const ag = createPlayableAnimationGroup();
         ag.to = 10;
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const gltf = {
             animations: [{}, { _babylonAnimationGroup: ag }],
         };
@@ -237,7 +314,7 @@ describe("Interactivity/animation nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        animation: { value: [1], type: 0 },
+                        animation: { value: ["/animations/1"], type: 0 },
                         speed: { value: [1], type: 1 },
                         startTime: { value: [0], type: 1 },
                         endTime: { value: [2], type: 1 },
@@ -245,16 +322,19 @@ describe("Interactivity/animation nodes", () => {
                     },
                 },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }],
+            [],
+            0,
+            false
         );
 
         expect(startSpy).not.toHaveBeenCalled();
     });
 
     test("animation/start allows an infinite endTime (plays/loops, does not error)", async () => {
-        const ag = new AnimationGroup("test");
+        const ag = createPlayableAnimationGroup();
         ag.to = 10;
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const gltf = {
             animations: [{}, { _babylonAnimationGroup: ag }],
         };
@@ -266,7 +346,7 @@ describe("Interactivity/animation nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        animation: { value: [1], type: 0 },
+                        animation: { value: ["/animations/1"], type: 0 },
                         speed: { value: [1], type: 1 },
                         startTime: { value: [0], type: 1 },
                         // Per the KHR spec only a NaN or infinite START time errors; an infinite END time is valid
@@ -275,7 +355,10 @@ describe("Interactivity/animation nodes", () => {
                     },
                 },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }],
+            [],
+            0,
+            false
         );
 
         // The animation must still start (with loop = true because the end time is infinite).
@@ -283,12 +366,38 @@ describe("Interactivity/animation nodes", () => {
         expect(startSpy).toHaveBeenCalledWith(true, 1, 0, expect.anything());
     });
 
+    test("animation/start does not leave an empty animation group pending", async () => {
+        const ag = new AnimationGroup("test", scene);
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
+        const { graph } = await generateSimpleNodeGraph(
+            { animations: [{ _babylonAnimationGroup: ag }] },
+            [{ op: "animation/start" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: ["/animations/0"], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [1], type: 1 },
+                    },
+                },
+            ],
+            [{ signature: "ref" }, { signature: "float" }]
+        );
+        const context = graph.getContext(0);
+
+        expect(startSpy).not.toHaveBeenCalled();
+        expect((context as any)._pendingBlocks.map((block: any) => block.getClassName())).not.toContain("FlowGraphPlayAnimationBlock");
+        expect(context._getGlobalContextVariable("currentlyRunningAnimationGroups", [])).toEqual([]);
+    });
+
     // animation/stop
 
     test("animation/stop after a delay", async () => {
-        const ag = new AnimationGroup("test");
+        const ag = createPlayableAnimationGroup();
         // spy on the start, reset and stop functions
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
@@ -301,37 +410,30 @@ describe("Interactivity/animation nodes", () => {
             ],
         };
 
-        await generateSimpleNodeGraph(
+        const { serialized } = await generateSimpleNodeGraph(
             gltf,
-            [{ op: "animation/start" }, { op: "animation/stop" }, { op: "flow/setDelay" }],
+            [{ op: "animation/start" }, { op: "flow/setDelay" }, { op: "animation/stop" }],
             [
                 {
                     declaration: 0,
                     values: {
                         animation: {
-                            value: [1], // index in the animation array
+                            value: ["/animations/1"],
                             type: 0,
                         },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [1], type: 1 },
                     },
                     flows: {
                         out: {
-                            node: 2, // delay node
+                            node: 1,
                             socket: "in",
                         },
                     },
                 },
                 {
                     declaration: 1,
-                    values: {
-                        animation: {
-                            value: [1], // index in the animation array
-                            type: 0,
-                        },
-                    },
-                },
-                // delay 0.5 seconds and run stop
-                {
-                    declaration: 2,
                     values: {
                         duration: {
                             value: [0.5],
@@ -340,13 +442,22 @@ describe("Interactivity/animation nodes", () => {
                     },
                     flows: {
                         done: {
-                            node: 1, // stop node
+                            node: 2,
                             socket: "in",
                         },
                     },
                 },
+                {
+                    declaration: 2,
+                    values: {
+                        animation: {
+                            value: ["/animations/1"],
+                            type: 0,
+                        },
+                    },
+                },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         // wait a second for the delay to pass
@@ -357,6 +468,7 @@ describe("Interactivity/animation nodes", () => {
         // The animation must be stopped while skipping the animation-end observable, so that stopping does not
         // activate the originating animation/start operation's `done` flow (KHR_interactivity spec).
         expect(stopSpy).toHaveBeenCalledWith(true);
+        expect(serialized.allBlocks.find((block) => block.className === "FlowGraphStopAnimationBlock")!.config.skipOnAnimationEnd).toBe(true);
     });
 
     // animation/stopAt
@@ -376,7 +488,7 @@ describe("Interactivity/animation nodes", () => {
         ]);
         ag.addTargetedAnimation(animation, objectToAnimation);
         // spy on the start, reset and stop functions
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
@@ -386,7 +498,7 @@ describe("Interactivity/animation nodes", () => {
             ],
         };
 
-        await generateSimpleNodeGraph(
+        const { serialized } = await generateSimpleNodeGraph(
             gltf,
             [{ op: "animation/start" }, { op: "animation/stopAt" }],
             [
@@ -394,9 +506,12 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 0,
                     values: {
                         animation: {
-                            value: [0], // index in the animation array
+                            value: ["/animations/0"],
                             type: 0,
                         },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [1], type: 1 },
                     },
                     flows: {
                         out: {
@@ -409,7 +524,7 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 1,
                     values: {
                         animation: {
-                            value: [0], // index in the animation array
+                            value: ["/animations/0"],
                             type: 0,
                         },
                         stopTime: {
@@ -419,7 +534,7 @@ describe("Interactivity/animation nodes", () => {
                     },
                 },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         // wait 400 MSFT_audio_emitter, check that stop has NOT been triggered
@@ -430,5 +545,9 @@ describe("Interactivity/animation nodes", () => {
         // wait another 400 ms and check that stop has been called
         await new Promise((resolve) => setTimeout(resolve, 400));
         expect(stopSpy).toHaveBeenCalledTimes(1);
+        expect(serialized.allBlocks.find((block) => block.className === "FlowGraphStopAnimationBlock")!.config).toMatchObject({
+            useVirtualStopAt: true,
+            skipOnAnimationEnd: true,
+        });
     });
 });

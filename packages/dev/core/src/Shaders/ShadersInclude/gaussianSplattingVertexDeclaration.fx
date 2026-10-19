@@ -8,3 +8,6 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 world;
 uniform vec4 vEyePosition;
+#ifdef PREPASS
+uniform mat4 inverseProjection;
+#endif

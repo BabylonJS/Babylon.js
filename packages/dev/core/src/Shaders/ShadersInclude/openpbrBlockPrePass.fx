@@ -1,13 +1,24 @@
 #if SCENE_MRT_COUNT > 0
 
-float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
+#ifdef ALPHATEST
+    float writeGeometryInfo = 1.0;
+#else
+    float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
+#endif
 
 #ifdef PREPASS_POSITION
-    gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_POSITION_INDEX, vec4(vPositionW, writeGeometryInfo));
+#endif
+
+#ifdef PREPASS_OBJECT_ID
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_OBJECT_ID_INDEX, encodeObjectId(objectId) * writeGeometryInfo);
+#endif
+#ifdef PREPASS_MESH_BLEND_TAG
+    meshBlendTagOutput = writeGeometryInfo > 0.0 ? uvec4(uint(meshBlendTag), 0u, 0u, 0u) : uvec4(0u);
 #endif
 
 #ifdef PREPASS_LOCAL_POSITION
-    gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(vPosition, writeGeometryInfo);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_LOCAL_POSITION_INDEX, vec4(vPosition, writeGeometryInfo));
 #endif
 
 #if defined(PREPASS_VELOCITY)
@@ -17,15 +28,15 @@ float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
     vec2 velocity = abs(a - b);
     velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
-    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_VELOCITY_INDEX, vec4(velocity, 0.0, writeGeometryInfo));
 #elif defined(PREPASS_VELOCITY_LINEAR)
     vec2 velocity = vec2(0.5) * ((vPreviousPosition.xy / vPreviousPosition.w) - (vCurrentPosition.xy / vCurrentPosition.w));
 
-    gl_FragData[PREPASS_VELOCITY_LINEAR_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_VELOCITY_LINEAR_INDEX, vec4(velocity, 0.0, writeGeometryInfo));
 #endif
 
 #ifdef PREPASS_ALBEDO
-    gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(base_color, writeGeometryInfo);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_ALBEDO_INDEX, vec4(base_color, writeGeometryInfo));
 #endif
 
 #ifdef PREPASS_ALBEDO_SQRT
@@ -46,45 +57,45 @@ float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
         float scatter_mask = 0.0;
     #endif
 
-    gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(irradiance, writeGeometryInfo * scatter_mask);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_IRRADIANCE_INDEX, vec4(irradiance, writeGeometryInfo * scatter_mask));
 #endif
 #if defined(PREPASS_COLOR)
-    gl_FragData[PREPASS_COLOR_INDEX] = vec4(finalColor.rgb, finalColor.a);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_COLOR_INDEX, vec4(finalColor.rgb, finalColor.a));
 #endif
 
 #ifdef PREPASS_DEPTH
-    gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_DEPTH_INDEX, vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo)); // Linear depth
 #endif
 
 #ifdef PREPASS_SCREENSPACE_DEPTH
-    gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_SCREENSPACE_DEPTH_INDEX, vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo));
 #endif
 
 #ifdef PREPASS_NORMALIZED_VIEW_DEPTH
-    gl_FragData[PREPASS_NORMALIZED_VIEW_DEPTH_INDEX] = vec4(vNormViewDepth, 0.0, 0.0, writeGeometryInfo);
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_NORMALIZED_VIEW_DEPTH_INDEX, vec4(vNormViewDepth, 0.0, 0.0, writeGeometryInfo));
 #endif
 
 #ifdef PREPASS_NORMAL
     #ifdef PREPASS_NORMAL_WORLDSPACE
-        gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_NORMAL_INDEX, vec4(normalW, writeGeometryInfo));
     #else
-        gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_NORMAL_INDEX, vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo));
     #endif
 #endif
 
 #ifdef PREPASS_WORLD_NORMAL
-    gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(normalW * 0.5 + 0.5, writeGeometryInfo); // Normal
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_WORLD_NORMAL_INDEX, vec4(normalW * 0.5 + 0.5, writeGeometryInfo)); // Normal
 #endif
 
 #ifdef PREPASS_ALBEDO_SQRT
-    gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
+    WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_ALBEDO_SQRT_INDEX, vec4(sqAlbedo, writeGeometryInfo)); // albedo, for pre and post scatter
 #endif
 
 #ifdef PREPASS_REFLECTIVITY
     #ifndef UNLIT
-        gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularEnvironmentR0, microSurface) * writeGeometryInfo;
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_REFLECTIVITY_INDEX, vec4(specularEnvironmentR0, microSurface) * writeGeometryInfo);
     #else
-        gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_REFLECTIVITY_INDEX, vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo);
     #endif
 #endif
 

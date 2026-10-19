@@ -12,6 +12,7 @@ import { MaterialGraphManager } from "../../src/materialGraph";
 import { BlockRegistry } from "../../src/blockRegistry";
 import * as fs from "fs";
 import * as path from "path";
+import { describe, expect, it } from "vitest";
 
 const SAMPLE_DIR = path.resolve(__dirname, "../..");
 
@@ -121,7 +122,7 @@ describe("Node Material MCP Server – Graph Manager Validation", () => {
             // Write to fixture for the Babylon.js parse test
             const outDir = path.resolve(__dirname, "fixtures");
             fs.mkdirSync(outDir, { recursive: true });
-            fs.writeFileSync(path.join(outDir, "simpleColor.json"), json);
+            fs.writeFileSync(path.join(outDir, "simpleColor.json"), json + "\n");
         }
     });
 
@@ -180,7 +181,7 @@ describe("Node Material MCP Server – Graph Manager Validation", () => {
             validateMaterialJSON(json, "pbrTest");
             const outDir = path.resolve(__dirname, "fixtures");
             fs.mkdirSync(outDir, { recursive: true });
-            fs.writeFileSync(path.join(outDir, "pbrMaterial.json"), json);
+            fs.writeFileSync(path.join(outDir, "pbrMaterial.json"), json + "\n");
         }
     });
 
@@ -221,7 +222,7 @@ describe("Node Material MCP Server – Graph Manager Validation", () => {
                 // Write for the Babylon.js parse test
                 const outDir = path.resolve(__dirname, "fixtures");
                 fs.mkdirSync(outDir, { recursive: true });
-                fs.writeFileSync(path.join(outDir, `roundtrip-${file}`), exported);
+                fs.writeFileSync(path.join(outDir, `roundtrip-${file}`), exported + "\n");
             }
         });
     }

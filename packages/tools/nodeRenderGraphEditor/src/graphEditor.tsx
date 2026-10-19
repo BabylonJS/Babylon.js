@@ -348,7 +348,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else if (input.isCamera()) {
                 input.value = this.props.globalState.scene.activeCamera;
             } else if (input.isObjectList()) {
-                input.value = { meshes: this.props.globalState.scene.meshes.slice(), particleSystems: this.props.globalState.scene.particleSystems.slice() };
+                input.value = {
+                    meshes: this.props.globalState.scene.meshes.slice(),
+                    particleSystems: this.props.globalState.scene.particleSystems.slice(),
+                    spriteManagers: this.props.globalState.scene.spriteManagers?.slice() ?? null,
+                };
             } else if (input.isShadowLight()) {
                 input.value = this.props.globalState.scene.lights[1] as IShadowLight;
             }

@@ -39,8 +39,9 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
 
     /**
      * Called after the loader state changes to READY.
+     * @returns a promise when the extension has asynchronous readiness work
      */
-    onReady?(): void;
+    onReady?(): void | Promise<void>;
 
     /**
      * Define this method to modify the default behavior when loading scenes.

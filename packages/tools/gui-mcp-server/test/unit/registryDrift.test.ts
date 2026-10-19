@@ -14,6 +14,8 @@
  * out of sync with the real controls without anything catching it.
  */
 import { GetClass } from "core/Misc/typeStore";
+import { FlexPanel } from "gui/2D/controls/flexPanel";
+import { describe, expect, it } from "vitest";
 
 // Side-effect import: register ALL GUI control classes via RegisterClass
 import "gui/2D/index";
@@ -21,6 +23,22 @@ import "gui/2D/index";
 import { ControlRegistry, BaseControlProperties } from "../../src/catalog";
 
 describe("GUI MCP Server – Catalog Drift", () => {
+    it("includes FlexPanel and its serialized flex defaults in the catalog", () => {
+        const panel = new FlexPanel();
+        const serialized: Record<string, unknown> = {};
+        panel.serialize(serialized);
+        const info = ControlRegistry.FlexPanel;
+        expect(info?.className).toBe(panel.typeName);
+        expect(info?.isContainer).toBe(true);
+        for (const name of ["flexDirection", "flexWrap", "justifyContent", "alignItems", "alignContent", "gap"]) {
+            expect(info?.properties[name]?.defaultValue).toBe(serialized[name]);
+        }
+        for (const name of ["flexGrow", "flexShrink"]) {
+            expect(BaseControlProperties[name]?.defaultValue).toBe(serialized[name]);
+        }
+        panel.dispose();
+    });
+
     it("catalog control class names and property names match the real Babylon GUI controls", () => {
         const problems: string[] = [];
 

@@ -36,7 +36,7 @@ export const PropertyContext = createContext<PropertyContext | undefined>(undefi
 export function usePropertyChangedNotifier() {
     const propertyContext = useContext(PropertyContext);
     return useCallback(
-        <ObjectT, PropertyT extends keyof ObjectT>(entity: ObjectT, propertyKey: PropertyT, oldValue: ObjectT[PropertyT], newValue: ObjectT[PropertyT]) => {
+        (entity: unknown, propertyKey: PropertyKey, oldValue: unknown, newValue: unknown) => {
             propertyContext?.onPropertyChanged.notifyObservers({ entity, propertyKey, oldValue, newValue });
         },
         [propertyContext]

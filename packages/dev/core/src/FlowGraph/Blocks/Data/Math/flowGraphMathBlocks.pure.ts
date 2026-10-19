@@ -1355,8 +1355,8 @@ function CountOnes(n: number) {
         // This zeroes out all bits except for the least significant one.
         // So if the bit is set, it will be 1, otherwise it will be 0.
         result += n & 1;
-        // This shifts n's bits to the right by one
-        n >>= 1;
+        // Unsigned shifting is required so negative int32 values converge to zero.
+        n >>>= 1;
     }
     return result;
 }

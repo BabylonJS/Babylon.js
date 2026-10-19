@@ -38,6 +38,10 @@ const Tooltips: Record<string, string> = {
     FlowGraphKeyDownEventBlock: "Triggered when a keyboard key is pressed down",
     FlowGraphKeyUpEventBlock: "Triggered when a keyboard key is released",
     FlowGraphIsKeyPressedBlock: "Checks if a keyboard key is currently held down",
+    FlowGraphEventReferenceBlock: "glTF import helper that captures KHR_interactivity event outputs; normally created automatically",
+    FlowGraphGLTFDataProvider: "glTF import helper that exposes loaded glTF nodes and animations; normally created automatically",
+    FlowGraphObjectReferenceBlock: "glTF import helper that converts runtime objects to KHR references; normally created automatically",
+    FlowGraphUnsupportedInteractivityBlock: "Imported placeholder preserving an unsupported glTF interactivity extension operation",
 
     // Control Flow
     FlowGraphBranchBlock: "Branches execution based on a condition",

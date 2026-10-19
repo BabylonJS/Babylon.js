@@ -47,6 +47,7 @@ export class FrameGraphLightingVolumeTask extends FrameGraphTask {
         this.outputMeshLightingVolume = {
             meshes: [this.lightingVolume.mesh],
             particleSystems: [],
+            spriteManagers: [],
         };
     }
 
