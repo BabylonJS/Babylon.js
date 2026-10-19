@@ -1321,9 +1321,9 @@ export async function SingleScatterToMultiScatterAlbedoAsync(
  * scattered (subsurface) transmission while keeping the total translucency constant.
  *
  * When both operands are constants the computation is performed entirely on the CPU.
- * When either operand has a texture the result is computed via composable GPU passes. Intermediate
- * passes render to floating-point targets (when the engine supports it) so only the two final
- * outputs are quantized; this avoids amplifying 8-bit rounding in the final division near T = 1.
+ * When either operand has a texture, each weight is computed from T and S in a single GPU pass, so
+ * only the two outputs are quantized. Near T = 1 the subsurface weight divides two small values, and
+ * quantizing intermediates (e.g. T * S or 1 - S to 8 bits) would change it drastically.
  *
  * @param name - Base name for any procedural textures created
  * @param transmission - T operand (transmissionFactor × optional transmissionTexture, R channel)
@@ -1344,8 +1344,10 @@ export async function ThinWalledScatterWeightsAsync(
         const transmissionFactor = _EvalConstant(transmission).r;
         const scatterStrength = _EvalConstant(scatter).r;
         const transW = transmissionFactor * (1.0 - scatterStrength);
-        const denom = 1.0 - transW;
-        const ssW = denom > 0.00001 ? (transmissionFactor * scatterStrength) / denom : 0.0;
+        const transmittedScatter = transmissionFactor * scatterStrength;
+        // 1 - T(1 - S), written to avoid cancellation near T = 1.
+        const denom = 1.0 - transmissionFactor + transmittedScatter;
+        const ssW = denom > 0.00001 ? transmittedScatter / denom : 0.0;
         transmission.dispose?.();
         scatter.dispose?.();
         return {
@@ -1354,34 +1356,61 @@ export async function ThinWalledScatterWeightsAsync(
         };
     }
 
-    // GPU path. Intermediates stay in floating point so only the two final outputs are quantized:
-    //   1. invertedS      = 1 - S               (invert, intermediate)
-    //   2. transWFloat    = T * (1 - S)         (multiply, intermediate)
-    //   3. transW         = T * (1 - S)         (multiply, output)
-    //   4. tTimesS        = T * S               (multiply, intermediate)
-    //   5. oneMinusTransW = 1 - transWFloat     (invert, intermediate)
-    //   6. ssW            = T*S / (1 - transW)  (divide, output)
-    // T, S and invertedS are each consumed by two passes, so feed the passes no-dispose copies and release
-    // them only after every pass has run — otherwise an input that is itself a processor result
-    // (i.e. carries a dispose) would be freed by the first pass and sampled disposed by a later one.
-    const caps = scene.getEngine().getCaps();
-    const intermediateOptions: ITextureProcessorOutputOptions = {
-        textureType: caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE,
-        samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-    };
-    const transmissionIn: ITextureProcessOperand = { ...transmission, dispose: undefined };
-    const scatterIn: ITextureProcessOperand = { ...scatter, dispose: undefined };
+    // GPU path. Each weight is computed from T and S in one pass, so there are no intermediate textures to
+    // quantize. T and S are consumed by both passes and released only after both have run.
+    try {
+        const transW = await _RenderThinWalledWeightAsync(`${name}_transWeight`, "OP_THIN_WALLED_TRANSMISSION_WEIGHT", transmission, scatter, scene);
+        try {
+            const ssW = await _RenderThinWalledWeightAsync(`${name}_subWeight`, "OP_THIN_WALLED_SUBSURFACE_WEIGHT", transmission, scatter, scene);
+            return { transmission: transW, subsurface: ssW };
+        } catch (error) {
+            transW.dispose?.();
+            throw error;
+        }
+    } finally {
+        transmission.dispose?.();
+        scatter.dispose?.();
+    }
+}
 
-    const invertedS = await InvertTextureAsync(`${name}/1-S`, scatterIn, scene, undefined, undefined, undefined, intermediateOptions);
-    const invertedSIn: ITextureProcessOperand = { ...invertedS, dispose: undefined };
-    const transWFloat = await MultiplyTexturesAsync(`${name}/T*(1-S)`, transmissionIn, invertedSIn, scene, undefined, undefined, intermediateOptions);
-    const transW = await MultiplyTexturesAsync(`${name}_transWeight`, transmissionIn, invertedS, scene);
-    const tTimesS = await MultiplyTexturesAsync(`${name}/T*S`, transmissionIn, scatterIn, scene, undefined, undefined, intermediateOptions);
-    const oneMinusTransW = await InvertTextureAsync(`${name}/1-transW`, transWFloat, scene, undefined, undefined, undefined, intermediateOptions);
-    const ssW = await DivideTexturesAsync(`${name}_subWeight`, tTimesS, oneMinusTransW, scene);
+/**
+ * Renders one thin-walled scatter weight from the transmission and scatter strength operands. The operands
+ * are not disposed, since both weights are computed from them.
+ * @param name - Name for the resulting procedural texture
+ * @param op - Shader operation define
+ * @param transmission - T operand
+ * @param scatter - S operand
+ * @param scene - Scene to create the texture in
+ * @returns An operand whose `texture` holds the weight
+ */
+async function _RenderThinWalledWeightAsync(
+    name: string,
+    op: "OP_THIN_WALLED_TRANSMISSION_WEIGHT" | "OP_THIN_WALLED_SUBSURFACE_WEIGHT",
+    transmission: ITextureProcessOperand,
+    scatter: ITextureProcessOperand,
+    scene: Scene
+): Promise<ITextureProcessOperand> {
+    const allTextures: BaseTexture[] = [];
+    if (transmission.texture) {
+        allTextures.push(transmission.texture);
+    }
+    if (scatter.texture) {
+        allTextures.push(scatter.texture);
+    }
+    const canPropagate = _AllTransformsMatch(allTextures);
+    const bakeTransform = !canPropagate;
 
-    transmission.dispose?.();
-    scatter.dispose?.();
+    const defines = [op, ..._BuildOperandDefines(transmission, "A", bakeTransform), ..._BuildOperandDefines(scatter, "B", bakeTransform)];
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([transmission, scatter]), scene);
+    _SetOperandUniforms(pt, transmission, "textureA", "factorA", bakeTransform);
+    _SetOperandUniforms(pt, scatter, "textureB", "factorB", bakeTransform);
+    try {
+        await _RenderAsync(pt);
+    } catch (error) {
+        pt.dispose();
+        throw error;
+    }
 
-    return { transmission: transW, subsurface: ssW };
+    _CopyTextureMetadata(allTextures[0], pt, canPropagate);
+    return { texture: pt, dispose: () => pt.dispose() };
 }

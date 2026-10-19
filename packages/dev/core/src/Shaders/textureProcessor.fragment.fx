@@ -19,6 +19,10 @@
 //   OP_MAX                 - use max(a, b) instead of a * b
 //   OP_DIVIDE              - component-wise safe division: result = a / max(b, 0.00001)
 //   OP_TRANSMISSION_FRACTION - component-wise result = a / max(a + b * (1 - a), 0.00001) in a single pass
+//   OP_THIN_WALLED_TRANSMISSION_WEIGHT - thin-walled scatter transmission weight from transmission A and scatter strength B:
+//                            result = a * (1 - b)
+//   OP_THIN_WALLED_SUBSURFACE_WEIGHT - thin-walled scatter subsurface weight from transmission A and scatter strength B:
+//                            result = a * b / max((1 - a) + a * b, 0.00001), equal to a * b / (1 - a * (1 - b))
 //   OP_TRANSMISSION_SCATTER_ALBEDO - single-scatter albedo from transmission color A and transmission scatter B, using the
 //                            renderer's extinction (absorption shifted to be non-negative); alpha is taken from B
 //   OP_INVERT              - unary: invert selected channels of operand A (operand B is ignored)
@@ -202,6 +206,11 @@ void main() {
     vec4 result = a / max(b, vec4(0.00001));
     #elif defined(OP_TRANSMISSION_FRACTION)
     vec4 result = a / max(a + b * (vec4(1.0) - a), vec4(0.00001));
+    #elif defined(OP_THIN_WALLED_TRANSMISSION_WEIGHT)
+    vec4 result = a * (vec4(1.0) - b);
+    #elif defined(OP_THIN_WALLED_SUBSURFACE_WEIGHT)
+    vec4 _transmittedScatter = a * b;
+    vec4 result = _transmittedScatter / max(vec4(1.0) - a + _transmittedScatter, vec4(0.00001));
     #elif defined(OP_TRANSMISSION_SCATTER_ALBEDO)
     // Matches openpbrVolumeFunctions; the transmission depth cancels out of scatter / extinction.
     vec3 _extinction = -log(max(a.rgb, vec3(0.0000001)));

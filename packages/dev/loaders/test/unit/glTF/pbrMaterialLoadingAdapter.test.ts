@@ -187,25 +187,30 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
         expect(adapter.subsurfaceWeight).toBe(0.3);
     });
 
-    // The legacy KHR_materials_volume_scatter loader writes the scattering coefficient in place through the
-    // transmissionScatter getter. That must not alias (and overwrite) the attenuation color.
-    it("preserves attenuationColor when importing KHR_materials_volume_scatter", async () => {
+    /**
+     * Imports a single-triangle glTF whose only material uses transmission and volume plus the given scatter extension.
+     * @param name The material name
+     * @param scatterExtensionName The scatter extension to add to the material
+     * @param scatterExtension The scatter extension's properties
+     * @returns The imported PBR material
+     */
+    async function importVolumeScatterMaterialAsync(name: string, scatterExtensionName: string, scatterExtension: object): Promise<PBRMaterial> {
         const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
         const base64 = btoa(String.fromCharCode(...new Uint8Array(positions.buffer)));
         const gltf = {
             asset: { version: "2.0" },
-            extensionsUsed: ["KHR_materials_transmission", "KHR_materials_volume", "KHR_materials_volume_scatter"],
+            extensionsUsed: ["KHR_materials_transmission", "KHR_materials_volume", scatterExtensionName],
             scene: 0,
             scenes: [{ nodes: [0] }],
             nodes: [{ mesh: 0 }],
             meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
             materials: [
                 {
-                    name: "legacyScatter",
+                    name,
                     extensions: {
                         KHR_materials_transmission: { transmissionFactor: 1 },
                         KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 2, attenuationColor: [0.9, 0.6, 0.3] },
-                        KHR_materials_volume_scatter: { multiscatterColorFactor: [0.5, 0.5, 0.5], scatterAnisotropy: 0 },
+                        [scatterExtensionName]: scatterExtension,
                     },
                 },
             ],
@@ -216,8 +221,39 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
 
         await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene);
 
-        const material = scene.materials.find((m) => m.name === "legacyScatter") as PBRMaterial;
+        const material = scene.materials.find((m) => m.name === name) as PBRMaterial;
         expect(material).toBeInstanceOf(PBRMaterial);
+        return material;
+    }
+
+    // KHR_materials_scatter stages the multiscatter color through the transmissionScatter setter, which must
+    // write the separate translucency color rather than the volume attenuation tint. A zero scatter strength
+    // leaves nothing for finalizeAsync to convert, so the attenuation must be unchanged once loading completes.
+    it("preserves the volume attenuation when importing volumetric KHR_materials_scatter with zero scatter strength", async () => {
+        const material = await importVolumeScatterMaterialAsync("volumetricScatter", "KHR_materials_scatter", {
+            multiscatterColorFactor: [0.2, 0.4, 0.8],
+            scatterStrengthFactor: 0,
+        });
+
+        const tint = material.subSurface.tintColor;
+        expect(tint.r).toBeCloseTo(0.9, 5);
+        expect(tint.g).toBeCloseTo(0.6, 5);
+        expect(tint.b).toBeCloseTo(0.3, 5);
+        expect(material.subSurface.tintColorAtDistance).toBeCloseTo(2, 5);
+        const scatter = material.subSurface.translucencyColor!;
+        expect(scatter).not.toBe(tint);
+        expect(scatter.r).toBeCloseTo(0.2, 5);
+        expect(scatter.g).toBeCloseTo(0.4, 5);
+        expect(scatter.b).toBeCloseTo(0.8, 5);
+    });
+
+    // The legacy KHR_materials_volume_scatter loader writes the scattering coefficient in place through the
+    // transmissionScatter getter. That must not alias (and overwrite) the attenuation color.
+    it("preserves attenuationColor when importing KHR_materials_volume_scatter", async () => {
+        const material = await importVolumeScatterMaterialAsync("legacyScatter", "KHR_materials_volume_scatter", {
+            multiscatterColorFactor: [0.5, 0.5, 0.5],
+            scatterAnisotropy: 0,
+        });
         const tint = material.subSurface.tintColor;
         expect(tint.r).toBeCloseTo(0.9, 5);
         expect(tint.g).toBeCloseTo(0.6, 5);

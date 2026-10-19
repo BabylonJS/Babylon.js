@@ -111,6 +111,145 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
         });
     }
 
+    // Scatter strength is baked from the weight textures, so the baked texture must keep their UV set. The weights
+    // vary only along u and the mesh's UV0 mirrors UV1 in u, so sampling either texture through UV0 reads the
+    // other column and changes the value at every vertex.
+    for (const withColorTexture of [false, true]) {
+        test(`thin-walled scatter strength baked from UV1 weight textures still samples UV1${withColorTexture ? " when packed with the color texture" : ""}`, async () => {
+            const result = await page.evaluate(async (withColorTexture) => {
+                const scene = window.scene!;
+                const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                // 2x2 grayscale texture whose value depends only on the column, with alpha equal to the value.
+                const columns = (left: number, right: number) => {
+                    const data = new Uint8Array(16);
+                    for (let i = 0; i < 4; i++) {
+                        data.fill(Math.round((i % 2 === 0 ? left : right) * 255), i * 4, i * 4 + 4);
+                    }
+                    const texture = new BABYLON.RawTexture(data, 2, 2, RGBA, scene, false, false, NEAREST);
+                    texture.coordinatesIndex = 1;
+                    return texture;
+                };
+                const transmissionValues = [0.2, 0.8];
+                const subsurfaceValues = [0.9, 0.3];
+
+                const quad = new BABYLON.Mesh("quad", scene);
+                const uv1 = [0.25, 0.25, 0.75, 0.25, 0.75, 0.75, 0.25, 0.75];
+                const vertexData = new BABYLON.VertexData();
+                vertexData.positions = [0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0];
+                vertexData.normals = [0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1];
+                vertexData.indices = [0, 2, 1, 0, 3, 2];
+                vertexData.uvs = uv1.map((value, i) => (i % 2 === 0 ? 1 - value : value));
+                vertexData.uvs2 = uv1;
+                vertexData.applyToMesh(quad);
+
+                const mat = new BABYLON.OpenPBRMaterial("uv1Scatter", scene);
+                mat.geometryThinWalled = 1;
+                mat.transmissionWeight = 1;
+                mat.subsurfaceWeight = 1;
+                mat.transmissionWeightTexture = columns(transmissionValues[0], transmissionValues[1]);
+                mat.subsurfaceWeightTexture = columns(subsurfaceValues[0], subsurfaceValues[1]);
+                if (withColorTexture) {
+                    mat.subsurfaceColorTexture = columns(0.8, 0.4);
+                }
+                quad.material = mat;
+
+                const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
+                const json = JSON.parse(gltf.files["rt.gltf"] as string);
+                const scatter = json.materials[0].extensions.KHR_materials_scatter;
+                const strengthInfo = scatter.scatterStrengthTexture ?? null;
+                let strengthColumns: number[] | null = null;
+                if (strengthInfo) {
+                    const uri = json.images[json.textures[strengthInfo.index].source].uri as string;
+                    const bitmap = await createImageBitmap(gltf.files[uri] as Blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+                    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                    const context = canvas.getContext("2d")!;
+                    context.drawImage(bitmap, 0, 0);
+                    const pixels = context.getImageData(0, 0, bitmap.width, 1).data;
+                    strengthColumns = [pixels[3] / 255, pixels[(bitmap.width - 1) * 4 + 3] / 255];
+                }
+
+                const glb = await BABYLON.GLTF2Export.GLBAsync(scene, "rt");
+                const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
+                const scene2 = new BABYLON.Scene(scene.getEngine());
+                let gltfLoader: { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> } | null = null;
+                BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
+                    if (loader.name === "gltf") {
+                        gltfLoader = loader as unknown as { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> };
+                        gltfLoader.useOpenPBR = true;
+                    }
+                });
+                await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
+                await gltfLoader!.whenCompleteAsync();
+                URL.revokeObjectURL(url);
+
+                const reMesh = scene2.meshes.find((m) => m.getTotalVertices() === 4)!;
+                const reMat = reMesh.material as InstanceType<typeof BABYLON.OpenPBRMaterial>;
+                const halfToFloat = (h: number) => {
+                    const exponent = (h >> 10) & 0x1f;
+                    const mantissa = h & 0x3ff;
+                    const sign = h & 0x8000 ? -1 : 1;
+                    if (exponent === 0) {
+                        return sign * Math.pow(2, -14) * (mantissa / 1024);
+                    }
+                    return sign * Math.pow(2, exponent - 15) * (1 + mantissa / 1024);
+                };
+                // Sample the red channel of a reimported weight texture at each vertex, through the UV set and
+                // transform it is configured with, as the renderer does.
+                const sampleAtVertices = async (texture: InstanceType<typeof BABYLON.BaseTexture> | null) => {
+                    if (!texture) {
+                        return null;
+                    }
+                    const size = texture.getSize();
+                    const pixels = (await texture.readPixels())!;
+                    const toValue = (v: number) => (pixels instanceof Uint8Array ? v / 255 : pixels instanceof Uint16Array ? halfToFloat(v) : v);
+                    const uvs = reMesh.getVerticesData(texture.coordinatesIndex === 1 ? BABYLON.VertexBuffer.UV2Kind : BABYLON.VertexBuffer.UVKind)!;
+                    const m = texture.getTextureMatrix().asArray();
+                    const values: number[] = [];
+                    for (let i = 0; i < 4; i++) {
+                        const u = uvs[i * 2];
+                        const v = uvs[i * 2 + 1];
+                        const tu = m[0] * u + m[4] * v + m[8];
+                        const tv = m[1] * u + m[5] * v + m[9];
+                        const x = Math.min(size.width - 1, Math.floor((tu - Math.floor(tu)) * size.width));
+                        const y = Math.min(size.height - 1, Math.floor((tv - Math.floor(tv)) * size.height));
+                        values.push(toValue(pixels[(y * size.width + x) * 4]));
+                    }
+                    return { coordinatesIndex: texture.coordinatesIndex, values };
+                };
+
+                return {
+                    strengthTexCoord: strengthInfo ? ((strengthInfo.texCoord as number | undefined) ?? 0) : null,
+                    colorTexCoord: scatter.multiscatterColorTexture ? ((scatter.multiscatterColorTexture.texCoord as number | undefined) ?? 0) : null,
+                    strengthColumns,
+                    // Source weights at each vertex, sampled through UV1.
+                    expectedTransmission: [0, 1, 2, 3].map((i) => transmissionValues[uv1[i * 2] < 0.5 ? 0 : 1]),
+                    expectedSubsurface: [0, 1, 2, 3].map((i) => subsurfaceValues[uv1[i * 2] < 0.5 ? 0 : 1]),
+                    reTransmission: await sampleAtVertices(reMat.transmissionWeightTexture),
+                    reSubsurface: await sampleAtVertices(reMat.subsurfaceWeightTexture),
+                };
+            }, withColorTexture);
+
+            // The baked scatter strength (and, when packed, the color) stays on UV1.
+            expect(result.strengthTexCoord).toBe(1);
+            expect(result.colorTexCoord).toBe(withColorTexture ? 1 : null);
+            // Strength = 1 - T / (T + S(1 - T)) per column, so the columns differ and stay in place.
+            const strength = (t: number, s: number) => 1 - t / (t + s * (1 - t));
+            expect(result.strengthColumns).not.toBeNull();
+            expect(Math.abs(result.strengthColumns![0] - strength(0.2, 0.9))).toBeLessThanOrEqual(1.5 / 255);
+            expect(Math.abs(result.strengthColumns![1] - strength(0.8, 0.3))).toBeLessThanOrEqual(1.5 / 255);
+            // The reimported weights sample UV1 and reproduce the source weights at every vertex.
+            for (const [label, reimported, expected] of [
+                ["transmission", result.reTransmission, result.expectedTransmission],
+                ["subsurface", result.reSubsurface, result.expectedSubsurface],
+            ] as const) {
+                expect(reimported, label).not.toBeNull();
+                expect(reimported!.coordinatesIndex, label).toBe(1);
+                reimported!.values.forEach((value, i) => expect(Math.abs(value - expected[i]), `${label} vertex ${i}: ${value}`).toBeLessThanOrEqual(0.02));
+            }
+        });
+    }
+
     // Thin-walled: scatter strength is baked from the (textured) weights, multi-scatter color is the
     // subsurface color/texture, and anisotropy is the subsurface scatter anisotropy. No volume extension
     // is written, so the material re-imports as thin-walled.

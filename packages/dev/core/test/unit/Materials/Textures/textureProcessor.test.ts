@@ -909,29 +909,32 @@ describe("TextureProcessor", () => {
             warn.mockRestore();
         });
 
-        it("ThinWalledScatterWeights keeps intermediates in float and quantizes only the outputs", async () => {
-            const floatScene = makeFakeScene({ textureFloatRender: true });
-            const result = await ThinWalledScatterWeightsAsync("scatter-float", { texture: makeFakeTexture() }, { texture: makeFakeTexture() }, floatScene);
+        it("ThinWalledScatterWeights computes each weight in one pass without intermediates", async () => {
+            const transmissionDispose = vi.fn();
+            const scatterDispose = vi.fn();
+            const result = await ThinWalledScatterWeightsAsync(
+                "scatter-fused",
+                { texture: makeFakeTexture(), dispose: transmissionDispose },
+                { texture: makeFakeTexture(), dispose: scatterDispose },
+                scene
+            );
 
-            const typeOf = (pt: (typeof _capturedPTs)[number]) => (pt.options as { type: number }).type;
-            const outputs = [result.transmission.texture, result.subsurface.texture];
-            const intermediates = _capturedPTs.filter((pt) => !outputs.includes(pt as any));
-
-            expect(_capturedPTs).toHaveLength(6);
-            expect(outputs.every((pt) => typeOf(pt as any) === Constants.TEXTURETYPE_UNSIGNED_BYTE)).toBe(true);
-            expect(intermediates).toHaveLength(4);
-            expect(intermediates.every((pt) => typeOf(pt) === Constants.TEXTURETYPE_FLOAT)).toBe(true);
-            expect(intermediates.every((pt) => pt.disposed)).toBe(true);
-            expect(outputs.some((pt) => (pt as any).disposed)).toBe(false);
+            expect(_capturedPTs).toHaveLength(2);
+            expect(_capturedPTs[0]).toBe(result.transmission.texture);
+            expect(_capturedPTs[1]).toBe(result.subsurface.texture);
+            expect(_capturedPTs[0].getDefines()).toContain("OP_THIN_WALLED_TRANSMISSION_WEIGHT");
+            expect(_capturedPTs[1].getDefines()).toContain("OP_THIN_WALLED_SUBSURFACE_WEIGHT");
+            expect(_capturedPTs.every((pt) => (pt.options as { type: number }).type === Constants.TEXTURETYPE_UNSIGNED_BYTE)).toBe(true);
+            expect(_capturedPTs.some((pt) => pt.disposed)).toBe(false);
+            expect(transmissionDispose).toHaveBeenCalledOnce();
+            expect(scatterDispose).toHaveBeenCalledOnce();
         });
 
-        it("ThinWalledScatterWeights falls back to half-float intermediates", async () => {
-            const halfScene = makeFakeScene({ textureHalfFloatRender: true });
-            const result = await ThinWalledScatterWeightsAsync("scatter-half", { texture: makeFakeTexture() }, { texture: makeFakeTexture() }, halfScene);
+        it("ThinWalledScatterWeights constant path keeps a small subsurface weight near T = 1", async () => {
+            const result = await ThinWalledScatterWeightsAsync("scatter-const", { factor: new Color4(1, 1, 1, 1) }, { factor: new Color4(0.001, 0.001, 0.001, 1) }, scene);
 
-            const outputs = [result.transmission.texture, result.subsurface.texture];
-            const intermediates = _capturedPTs.filter((pt) => !outputs.includes(pt as any));
-            expect(intermediates.every((pt) => (pt.options as { type: number }).type === Constants.TEXTURETYPE_HALF_FLOAT)).toBe(true);
+            expect(result.transmission.factor!.r).toBeCloseTo(0.999, 6);
+            expect(result.subsurface.factor!.r).toBeCloseTo(1, 6);
         });
     });
 });

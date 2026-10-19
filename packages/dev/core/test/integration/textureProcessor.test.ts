@@ -104,4 +104,68 @@ test.describe("textureProcessor GPU numerics", () => {
             expect(Math.abs(result.gpu.subsurface[i] - result.cpu.subsurface[i]), `subsurface weight at pixel ${i}`).toBeLessThanOrEqual(tolerance);
         }
     });
+    for (const floatRender of [true, false]) {
+        test(`ThinWalledScatterWeightsAsync keeps T * S from a scaled alpha texture near T = 1 (float render ${floatRender})`, async () => {
+            const result = await page.evaluate(async (floatRender) => {
+                const scene = window.scene!;
+                const caps = scene.getEngine().getCaps();
+                if (!floatRender) {
+                    // Without float render targets, any intermediate pass would be quantized to 8 bits.
+                    caps.textureFloatRender = false;
+                    caps.textureHalfFloatRender = false;
+                }
+                const width = 2;
+                const createTexture = (name: string, rgb: number) => {
+                    const data = new Uint8Array(width * 4);
+                    for (let i = 0; i < width; i++) {
+                        data.set([rgb, rgb, rgb, 255], i * 4);
+                    }
+                    const texture = BABYLON.RawTexture.CreateRGBATexture(data, width, 1, scene, false, false, BABYLON.Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+                    texture.name = name;
+                    return texture;
+                };
+                const readRed = async (texture: InstanceType<typeof BABYLON.BaseTexture>) => {
+                    const pixels = (await texture.readPixels()) as ArrayBufferView;
+                    const scale = pixels instanceof Uint8Array ? 1 / 255 : 1;
+                    return (pixels as unknown as ArrayLike<number>)[0] * scale;
+                };
+
+                const scatterStrength = 0.001;
+                const transmissionTexture = createTexture("T", 255);
+                // S comes from an alpha-one texture scaled by a scalar factor, as the loader stages it.
+                const scatterTexture = createTexture("S", 0);
+                const textured = await BABYLON.ThinWalledScatterWeightsAsync(
+                    "textured",
+                    BABYLON.CreateTextureOperand(transmissionTexture, BABYLON.TextureChannel.R),
+                    BABYLON.CreateTextureWithFactorOperand(
+                        scatterTexture,
+                        new BABYLON.Color4(scatterStrength, scatterStrength, scatterStrength, scatterStrength),
+                        BABYLON.TextureChannel.A
+                    ),
+                    scene
+                );
+                const gpu = {
+                    transmission: await readRed(textured.transmission.texture!),
+                    subsurface: await readRed(textured.subsurface.texture!),
+                };
+                textured.transmission.dispose?.();
+                textured.subsurface.dispose?.();
+                transmissionTexture.dispose();
+                scatterTexture.dispose();
+
+                const constant = await BABYLON.ThinWalledScatterWeightsAsync(
+                    "constant",
+                    BABYLON.CreateFactorOperand(new BABYLON.Color4(1, 1, 1, 1)),
+                    BABYLON.CreateFactorOperand(new BABYLON.Color4(scatterStrength, scatterStrength, scatterStrength, 1)),
+                    scene
+                );
+                return { gpu, cpu: { transmission: constant.transmission.factor!.r, subsurface: constant.subsurface.factor!.r } };
+            }, floatRender);
+
+            const tolerance = 1.5 / 255;
+            expect(result.cpu.subsurface).toBeCloseTo(1, 5);
+            expect(Math.abs(result.gpu.transmission - result.cpu.transmission), "transmission weight").toBeLessThanOrEqual(tolerance);
+            expect(Math.abs(result.gpu.subsurface - result.cpu.subsurface), "subsurface weight").toBeLessThanOrEqual(tolerance);
+        });
+    }
 });
