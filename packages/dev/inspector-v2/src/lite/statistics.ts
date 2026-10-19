@@ -128,6 +128,7 @@ export class LiteStatistics {
 
     /**
      * Toggles Inspector-owned profiling without modifying application-owned profiling.
+     * Failures are reported through error and onChanged without rejecting the operation.
      * @param enabled Whether to collect future GPU task timings.
      */
     public async setEnabledAsync(enabled: boolean): Promise<void> {
@@ -136,7 +137,10 @@ export class LiteStatistics {
         }
         this._refresh();
         if (this.applicationOwnsTiming) {
-            throw new Error("GPU task timing is managed by the application.");
+            this.error = "GPU task timing is managed by the application.";
+            Logger.Error(this.error);
+            this.onChanged.notifyObservers();
+            return;
         }
         if (!enabled && !this._ownsTiming) {
             return;

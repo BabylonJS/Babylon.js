@@ -64,6 +64,9 @@ GPU task span, individual task durations, and dropped-task counts. Overlapping t
 durations are not summed. Profiling and its bounded history survive tab switches;
 closing Inspector stops only profiling Inspector enabled. Profiling enabled
 by the application, including after Inspector opens, is read-only and remains enabled on close.
+The profiling switch follows the actual profiler state after failed toggles, allowing
+a one-click retry. Toggle failures and ownership changes detected at click time are
+reported in the pane and logged without unhandled promise rejections.
 
 The graph retains up to 120 distinct asynchronous GPU readbacks sampled at most
 four times per second. **Export GPU Samples to CSV** exports that retained window,

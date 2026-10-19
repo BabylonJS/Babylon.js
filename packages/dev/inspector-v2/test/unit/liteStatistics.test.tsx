@@ -76,6 +76,7 @@ describe("Babylon Lite statistics", () => {
     beforeEach(() => {
         vi.useFakeTimers();
         vi.clearAllMocks();
+        vi.spyOn(Logger, "Error").mockImplementation(() => {});
         timing = Timing();
         GetTimings.mockImplementation(() => timing);
         SetEnabled.mockImplementation(async (_engine, enabled) => {
@@ -156,7 +157,8 @@ describe("Babylon Lite statistics", () => {
         const session = Session();
         expect(SetEnabled).not.toHaveBeenCalled();
         expect(session.applicationOwnsTiming).toBe(true);
-        await expect(session.setEnabledAsync(false)).rejects.toThrow("managed by the application");
+        await expect(session.setEnabledAsync(false)).resolves.toBeUndefined();
+        expect(session.error).toContain("managed by the application");
         session.dispose();
         expect(SetEnabled).not.toHaveBeenCalled();
         expect(vi.getTimerCount()).toBe(0);
@@ -176,7 +178,10 @@ describe("Babylon Lite statistics", () => {
         expect(toggle.checked).toBe(true);
         expect(toggle.disabled).toBe(true);
         expect(container.textContent).toContain("GPU task timing is managed by the application");
-        await expect(session.setEnabledAsync(false)).rejects.toThrow("managed by the application");
+        await act(async () => {
+            await expect(session.setEnabledAsync(false)).resolves.toBeUndefined();
+        });
+        expect(session.error).toContain("managed by the application");
         session.dispose();
         expect(SetEnabled).not.toHaveBeenCalled();
         expect(timing.enabled).toBe(true);
@@ -185,8 +190,9 @@ describe("Babylon Lite statistics", () => {
     it("checks current public ownership before toggling even when polling has not caught up", async () => {
         const session = Session();
         timing = Timing({ enabled: true, status: "pending" });
-        await expect(session.setEnabledAsync(false)).rejects.toThrow("managed by the application");
-        await expect(session.setEnabledAsync(true)).rejects.toThrow("managed by the application");
+        await expect(session.setEnabledAsync(false)).resolves.toBeUndefined();
+        await expect(session.setEnabledAsync(true)).resolves.toBeUndefined();
+        expect(session.error).toContain("managed by the application");
         expect(session.applicationOwnsTiming).toBe(true);
         expect(SetEnabled).not.toHaveBeenCalled();
     });
@@ -200,7 +206,8 @@ describe("Babylon Lite statistics", () => {
         timing = Timing({ enabled: true, status: "pending" });
         vi.advanceTimersByTime(250);
         expect(session.applicationOwnsTiming).toBe(true);
-        await expect(session.setEnabledAsync(false)).rejects.toThrow("managed by the application");
+        await expect(session.setEnabledAsync(false)).resolves.toBeUndefined();
+        expect(session.error).toContain("managed by the application");
         session.dispose();
         expect(SetEnabled.mock.calls.map((call) => call[1])).toEqual([true]);
     });
@@ -310,6 +317,73 @@ describe("Babylon Lite statistics", () => {
         expect(logger).toHaveBeenCalledWith(expect.stringContaining("Disable failed"));
         session.dispose();
         expect(SetEnabled.mock.calls.map((call) => call[1])).toEqual([true, false, false]);
+    });
+
+    it.each([false, true])("reconciles a rejected rendered toggle from enabled=%s and retries with one click", async (enabled) => {
+        const logger = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        const session = Session();
+        if (enabled) {
+            await session.setEnabledAsync(true);
+        }
+        const { container } = Render(<LitePerformanceStats statistics={session} />);
+        await act(async () => {
+            await import("../../src/lite/components/gpuTimingChart");
+        });
+        const toggle = container.querySelector<HTMLInputElement>('input[role="switch"]')!;
+        expect(toggle.checked).toBe(enabled);
+        let reject!: (error: Error) => void;
+        SetEnabled.mockImplementationOnce(
+            () =>
+                new Promise((_, fail) => {
+                    reject = fail;
+                })
+        );
+        act(() => toggle.click());
+        expect(toggle.disabled).toBe(true);
+        await act(async () => reject(new Error("Toggle failed")));
+        expect(session.busy).toBe(false);
+        expect(toggle.disabled).toBe(false);
+        expect(toggle.checked).toBe(timing.enabled);
+        expect(toggle.checked).toBe(enabled);
+        expect(container.textContent).toContain("Toggle failed");
+        expect(logger).toHaveBeenCalledWith(expect.stringContaining("Toggle failed"));
+        act(() => vi.advanceTimersByTime(500));
+        expect(toggle.checked).toBe(enabled);
+        await act(async () => toggle.click());
+        expect(SetEnabled.mock.lastCall?.[1]).toBe(!enabled);
+        expect(timing.enabled).toBe(!enabled);
+        expect(toggle.checked).toBe(timing.enabled);
+        expect(container.textContent).not.toContain("Toggle failed");
+    });
+
+    it("handles application ownership acquired before polling when the still-enabled control is clicked", async () => {
+        const logger = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        const unhandled = vi.fn();
+        window.addEventListener("unhandledrejection", unhandled);
+        try {
+            const session = Session();
+            const { container } = Render(<LitePerformanceStats statistics={session} />);
+            await act(async () => {
+                await import("../../src/lite/components/gpuTimingChart");
+            });
+            const toggle = container.querySelector<HTMLInputElement>('input[role="switch"]')!;
+            timing = Timing({ enabled: true, status: "pending" });
+            expect(toggle.disabled).toBe(false);
+            expect(toggle.checked).toBe(false);
+            await act(async () => toggle.click());
+            expect(SetEnabled).not.toHaveBeenCalled();
+            expect(timing.enabled).toBe(true);
+            expect(toggle.checked).toBe(true);
+            expect(toggle.disabled).toBe(true);
+            expect(session.error).toBe("GPU task timing is managed by the application.");
+            expect(container.textContent).toContain(session.error);
+            expect(logger).toHaveBeenCalledWith(session.error);
+            expect(unhandled).not.toHaveBeenCalled();
+            session.dispose();
+            expect(SetEnabled).not.toHaveBeenCalled();
+        } finally {
+            window.removeEventListener("unhandledrejection", unhandled);
+        }
     });
 
     it("renders unsupported, pending, available, and error states without invented zero timings", async () => {

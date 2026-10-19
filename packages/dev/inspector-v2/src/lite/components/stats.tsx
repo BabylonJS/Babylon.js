@@ -125,6 +125,7 @@ export const LitePerformanceStats: FunctionComponent<PerformanceStatsProps> = (p
         <>
             <SwitchPropertyLine
                 label="Profile GPU Tasks"
+                controlled
                 value={timing.enabled}
                 disabled={!timing.supported || applicationOwnsTiming || busy}
                 onChange={(enabled) => void statistics.setEnabledAsync(enabled)}
