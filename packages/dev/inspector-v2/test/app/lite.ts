@@ -33,6 +33,10 @@ import {
     disposeSurface,
     disposeTextRenderer,
     loadFont,
+    getRenderingContexts,
+    getViewProjectionMatrix,
+    isGizmoDragging,
+    isGizmoPickPending,
     registerScene,
     registerSpriteRenderer,
     registerTextRenderer,
@@ -42,6 +46,7 @@ import {
     startAnimationManager,
     stopAnimationManager,
     clearAnimationManager,
+    waitForGpuResourceRetirements,
 } from "@babylonjs/lite";
 
 import { ShowInspector } from "../../src/lite/inspector";
@@ -214,6 +219,14 @@ Object.assign(globalThis, {
     liteCreateSceneContext: createSceneContext,
     liteDisposeScene: disposeScene,
     liteEngine: engine,
+    liteGetRenderingContexts: getRenderingContexts,
+    liteGetViewProjectionMatrix: getViewProjectionMatrix,
+    liteIsGizmoDragging: isGizmoDragging,
+    liteIsGizmoPickPending: isGizmoPickPending,
+    liteInspectorToken: inspectorToken,
+    liteStopAnimationManager: stopAnimationManager,
+    liteStopEngine: stopEngine,
+    liteWaitForGpuResourceRetirements: waitForGpuResourceRetirements,
     liteAnimationManager: animationManager,
     liteAnimationGroups: [boxAnimation, sphereAnimation],
     liteMaterials: [standardMaterial, pbrMaterial],

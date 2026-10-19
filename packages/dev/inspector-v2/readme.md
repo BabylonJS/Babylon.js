@@ -6,9 +6,15 @@ This document covers the high level aspects of the Inspector V2 architecture. No
 
 The Lite Inspector's **Enable Picking** toolbar toggle is available only while the engine has a registered scene context. It selects a mesh by tapping its scene canvas. Picks update the Explorer, Properties pane, and `debugNode` through the shared selection service. Camera drags and empty-space taps leave the selection unchanged. Press **Escape**, including from an undocked toolbar, or toggle picking off to exit; pending GPU results cannot change selection after exiting. Removing the last scene also exits picking and removes the toggle; registering another scene restores it with picking disabled.
 
-Picking supports registered scenes on the engine's primary and auxiliary HTML canvases, including canvases created in same-origin iframes or popup windows and scenes added while picking is active. Non-scene rendering contexts, offscreen canvases, and non-mesh pick contributors are not selected. Selection visuals and transform gizmos are not included.
+Picking supports registered scenes on the engine's primary and auxiliary HTML canvases, including canvases created in same-origin iframes or popup windows and scenes added while picking is active. Non-scene rendering contexts, offscreen canvases, non-mesh pick contributors, and Inspector-owned gizmo utility scenes are not selected. Gizmo interactions do not trigger mesh selection. Selection visuals are not included.
 
 For the Inspector v2 test app, run `npm run serve -w @dev/inspector` and open `http://localhost:9001/?experience=lite`. Set `INSPECTOR_TEST_PORT` to use a separate port when running multiple worktrees.
+
+## Babylon Lite Transform Gizmos
+
+Select a mesh or a mesh-hierarchy transform node in Explorer, then enable **Translate**, **Rotate**, **Scale**, or **Bounding Box** in the toolbar. Clicking the active mode again disables it. Translation, rotation, and scale support the **Local Coordinates** / **World Coordinates** toggle; bounding-box handles follow the target's bounds and rotation. Gizmos edit the actual Lite node, so the Properties pane follows those changes in polling mode (or after an explicit refresh in manual mode).
+
+Gizmos use Lite's public native utility-layer and pointer-drag APIs, without Babylon.js gizmo implementations or proxy nodes. They currently support registered scenes on the engine's primary HTML canvas only: Lite's utility-layer and gizmo factories target that canvas. Lite supports one gizmo utility layer per canvas, so Inspector controls should not be used simultaneously with application-owned gizmos on that canvas. Cameras, lights, non-node resources, offscreen canvases, and auxiliary-surface nodes have disabled transform controls. Gizmo utility scenes and their resources are hidden from Inspector discovery and picking. Selection changes reattach or dispose gizmos; mode changes, removed scenes/nodes, and Inspector disposal release their utility layers and pointer bindings. Removing the last supported scene resets the mode.
 
 One of the goals of the Inspector V2 architecture is to allow new functionality to easily be added to the Inspector in one of two ways:
 1. **Modularity**: In code, using `Inspector.Show`. For example, the Sandbox might want to include additional features in the Inspector that make sense in the context of the Sandbox.

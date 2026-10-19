@@ -16,7 +16,7 @@ import { PickingServiceDefinition } from "../../src/lite/services/pickingService
 import { type ISelectionService } from "../../src/services/selectionService";
 import { type IWatcherService } from "../../src/services/watcherService";
 
-const { CreatePicker, DisposePicker, Pick } = vi.hoisted(() => {
+const { CreatePicker, DisposePicker, Pick, GizmoInteracting, GizmoPickPending } = vi.hoisted(() => {
     vi.stubGlobal(
         "matchMedia",
         vi.fn(() => ({ matches: false }))
@@ -25,6 +25,8 @@ const { CreatePicker, DisposePicker, Pick } = vi.hoisted(() => {
         CreatePicker: vi.fn<(scene: SceneContext) => GpuPicker>(),
         DisposePicker: vi.fn<(picker: GpuPicker) => void>(),
         Pick: vi.fn<(picker: GpuPicker, x: number, y: number, options?: PickOptions) => Promise<PickingInfo>>(),
+        GizmoInteracting: vi.fn<(canvas: HTMLCanvasElement) => boolean>(),
+        GizmoPickPending: vi.fn<(canvas: HTMLCanvasElement) => boolean>(),
     };
 });
 
@@ -33,6 +35,8 @@ vi.mock("@babylonjs/lite", async (importOriginal) => ({
     createGpuPicker: CreatePicker,
     disposePicker: DisposePicker,
     pickAsync: Pick,
+    isGizmoInteracting: GizmoInteracting,
+    isGizmoPickPending: GizmoPickPending,
 }));
 
 vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -82,6 +86,8 @@ describe("Babylon Lite picking service", () => {
         vi.clearAllMocks();
         CreatePicker.mockImplementation(() => ({}));
         Pick.mockResolvedValue(Result());
+        GizmoInteracting.mockReturnValue(false);
+        GizmoPickPending.mockReturnValue(false);
     });
 
     afterEach(() => {
@@ -282,6 +288,26 @@ describe("Babylon Lite picking service", () => {
         Tap(h.canvas);
         expect(Pick).toHaveBeenCalledTimes(2);
         expect(consoleError).not.toHaveBeenCalled();
+    });
+
+    it("ignores gizmo hover, pending gizmo picks, and stationary gizmo gestures before the native dispatcher ends them", () => {
+        const h = MakeHarness();
+        h.toggle();
+        GizmoInteracting.mockReturnValue(true);
+        Tap(h.canvas);
+        expect(Pick).not.toHaveBeenCalled();
+
+        GizmoInteracting.mockReturnValue(false);
+        GizmoPickPending.mockReturnValue(true);
+        Tap(h.canvas);
+        expect(Pick).not.toHaveBeenCalled();
+
+        GizmoPickPending.mockReturnValue(false);
+        Pointer(h.canvas, "pointerdown");
+        GizmoInteracting.mockReturnValue(true);
+        h.canvas.addEventListener("pointerup", () => GizmoInteracting.mockReturnValue(false), { capture: true, once: true });
+        Pointer(h.canvas, "pointerup");
+        expect(Pick).not.toHaveBeenCalled();
     });
 
     it("accounts for canvas borders and ignores taps outside the canvas content", async () => {
