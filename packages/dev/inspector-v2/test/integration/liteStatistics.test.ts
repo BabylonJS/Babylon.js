@@ -35,6 +35,28 @@ async function ReadTimings(page: Page): Promise<RenderTaskGpuTimings> {
     });
 }
 
+test("Lite Inspector statistics defer Fluent charts until Statistics is displayed", async ({ page }) => {
+    const chartRequests: string[] = [];
+    page.on("request", (request) => {
+        if (/gpuTimingChart|@fluentui_react-charts/.test(request.url())) {
+            chartRequests.push(request.url());
+        }
+    });
+    await page.goto(TestUrl);
+    await page.waitForFunction(() => "liteInspectorToken" in window);
+    await expect(page.locator('[role="radio"][value="Properties"]')).toBeChecked();
+    expect(chartRequests).toEqual([]);
+    await page.locator('[role="radio"][value="Statistics"]').click();
+    await expect(page.getByText('Enable "Profile GPU Tasks" to display GPU history.', { exact: true })).toBeVisible();
+    expect(chartRequests.some((url) => url.includes("gpuTimingChart"))).toBe(true);
+    expect(chartRequests.some((url) => url.includes("@fluentui_react-charts"))).toBe(true);
+    const loadedRequests = [...chartRequests];
+    await page.locator('[role="radio"][value="Properties"]').click();
+    await page.locator('[role="radio"][value="Statistics"]').click();
+    await expect(page.getByText('Enable "Profile GPU Tasks" to display GPU history.', { exact: true })).toBeVisible();
+    expect(chartRequests).toEqual(loadedRequests);
+});
+
 test("Lite Inspector statistics show engine-wide counts, system info, and opt-in GPU timings", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
@@ -62,6 +84,60 @@ test("Lite Inspector statistics show engine-wide counts, system info, and opt-in
     } else {
         await toggle.click();
         await expect.poll(async () => (await ReadTimings(page)).status, { timeout: 30000 }).toBe("available");
+        const chart = page.getByRole("img", { name: "Sampled GPU task duration history", exact: true });
+        await expect(chart).toBeVisible();
+        await expect(chart.getByText("Relative time (s)", { exact: true })).toBeVisible();
+        await expect(chart.getByText("GPU span (ms)", { exact: true })).toBeVisible();
+        for (const label of ["Relative time (s)", "GPU span (ms)"]) {
+            const background = chart.getByText(label, { exact: true }).locator("xpath=preceding-sibling::*[local-name()='rect'][1]");
+            await expect(background).toHaveCSS("fill", "rgba(0, 0, 0, 0)");
+        }
+        const line = chart.locator('path[tabindex="0"]');
+        await expect.poll(async () => line.evaluate((element) => (element as SVGPathElement).getTotalLength())).toBeGreaterThan(0);
+        await expect(line).toHaveAttribute("stroke-width", "2");
+        const motion = await line.evaluate(
+            (element) =>
+                new Promise<{ betweenReadbacks: number; ticks: string[] }>((resolve) => {
+                    const path = element as SVGPathElement;
+                    const startedAt = performance.now();
+                    let previousX = path.getPointAtLength(0).x;
+                    let previousSegments = path.getAttribute("d")!.split("L").length;
+                    let betweenReadbacks = 0;
+                    const checkFrame = () => {
+                        const x = path.getPointAtLength(0).x;
+                        const segments = path.getAttribute("d")!.split("L").length;
+                        if (segments === previousSegments && x < previousX - 0.001) {
+                            betweenReadbacks++;
+                        }
+                        previousX = x;
+                        previousSegments = segments;
+                        if (performance.now() - startedAt < 1000) {
+                            requestAnimationFrame(checkFrame);
+                        } else {
+                            resolve({
+                                betweenReadbacks,
+                                ticks: [...path.ownerSVGElement!.querySelectorAll('[class*="__xAxis"] .tick text')].map((tick) => tick.textContent!),
+                            });
+                        }
+                    };
+                    requestAnimationFrame(checkFrame);
+                })
+        );
+        expect(motion.betweenReadbacks).toBeGreaterThan(2);
+        expect(motion.ticks.map((tick) => tick.replace("\u2212", "-"))).toEqual(["-30", "-20", "-10", "0"]);
+        const point = await line.evaluate((element) => {
+            const path = element as SVGPathElement;
+            const point = path.getPointAtLength(path.getTotalLength() / 2);
+            const screenPoint = new DOMPoint(point.x, point.y).matrixTransform(path.getScreenCTM()!);
+            return { x: screenPoint.x, y: screenPoint.y };
+        });
+        await page.mouse.move(point.x, point.y);
+        await expect(page.getByRole("dialog")).toHaveCount(0);
+        await expect(page.locator('[id^="callout"]')).toHaveCount(0);
+        await expect(chart.locator("circle:visible")).toHaveCount(0);
+        await expect(chart.locator('line[id^="verticalLine"]:visible')).toHaveCount(0);
+        expect(await chart.evaluate((element, point) => element.contains(document.elementFromPoint(point.x, point.y)), point)).toBe(false);
+        await page.mouse.move(0, 0);
         await expect(page.getByText("1. scene", { exact: true })).toBeVisible();
         await page.locator('[role="radio"][value="Properties"]').click();
         expect((await ReadTimings(page)).enabled).toBe(true);

@@ -119,6 +119,11 @@ export class LiteStatistics {
         this._interval = setInterval(() => this._refresh(), 250);
     }
 
+    /** Wall-clock time since this profiling session began, in milliseconds. */
+    public get elapsedMs(): number {
+        return performance.now() - this._startedAt;
+    }
+
     /**
      * Toggles Inspector-owned profiling without modifying application-owned profiling.
      * @param enabled Whether to collect future GPU task timings.

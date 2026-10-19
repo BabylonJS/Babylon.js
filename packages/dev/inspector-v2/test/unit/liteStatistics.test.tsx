@@ -8,7 +8,7 @@ import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { GetTimings, SetEnabled } = vi.hoisted(() => {
+const { GetTimings, SetEnabled, Chart } = vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     vi.stubGlobal(
         "matchMedia",
@@ -17,6 +17,7 @@ const { GetTimings, SetEnabled } = vi.hoisted(() => {
     return {
         GetTimings: vi.fn<(engine: EngineContext) => RenderTaskGpuTimings>(),
         SetEnabled: vi.fn<(engine: EngineContext, enabled: boolean) => Promise<RenderTaskGpuTimings>>(),
+        Chart: vi.fn<(props: { samples: readonly { durationMs: number }[] }) => null>(() => null),
     };
 });
 
@@ -25,6 +26,8 @@ vi.mock("@babylonjs/lite", async (importOriginal) => ({
     getRenderTaskGpuTimings: GetTimings,
     setRenderTaskGpuTimingEnabled: SetEnabled,
 }));
+
+vi.mock("../../src/lite/components/gpuTimingChart", () => ({ GpuTimingChart: Chart }));
 
 import { Logger } from "core/Misc/logger";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
@@ -185,6 +188,27 @@ describe("Babylon Lite statistics", () => {
         expect(session.samples).toHaveLength(0);
     });
 
+    it("exposes elapsed profiling time between readbacks and resets it when profiling restarts", async () => {
+        const now = vi.spyOn(performance, "now");
+        now.mockReturnValue(1000);
+        const session = Session();
+        now.mockReturnValue(1250);
+        expect(session.elapsedMs).toBe(250);
+        await session.setEnabledAsync(true);
+        now.mockReturnValue(1500);
+        expect(session.elapsedMs).toBe(250);
+        timing = Timing({ enabled: true, status: "available", frameIndex: 1, totalDurationMs: 1 });
+        vi.advanceTimersByTime(250);
+        expect(session.samples[0].elapsedMs).toBe(session.elapsedMs);
+        now.mockReturnValue(1550);
+        expect(session.elapsedMs).toBe(300);
+        expect(session.samples[0].elapsedMs).toBe(250);
+        await session.setEnabledAsync(false);
+        now.mockReturnValue(2000);
+        await session.setEnabledAsync(true);
+        expect(session.elapsedMs).toBe(0);
+    });
+
     it("disables owned timing and removes polling even if the lazy enable is still pending", async () => {
         let resolve!: (snapshot: RenderTaskGpuTimings) => void;
         SetEnabled.mockImplementationOnce(
@@ -235,6 +259,9 @@ describe("Babylon Lite statistics", () => {
         timing = Timing({ status: "unsupported", supported: false });
         const session = Session();
         const { container } = Render(<LitePerformanceStats statistics={session} />);
+        await act(async () => {
+            await import("../../src/lite/components/gpuTimingChart");
+        });
         const toggle = container.querySelector<HTMLInputElement>('input[role="switch"]')!;
         expect(toggle.disabled).toBe(true);
         expect(container.textContent).toContain("does not support timestamp queries");
@@ -247,7 +274,7 @@ describe("Babylon Lite statistics", () => {
         timing = Timing({ enabled: true, status: "available", frameIndex: 3, totalDurationMs: 2.5 });
         act(() => vi.advanceTimersByTime(250));
         expect(container.textContent).toContain("2.50 ms");
-        expect(container.querySelector("polyline")?.getAttribute("points")).not.toBe("");
+        expect(Chart.mock.lastCall?.[0].samples).toEqual([expect.objectContaining({ durationMs: 2.5 })]);
         timing = Timing({ enabled: true, status: "error", error: "Readback failed" });
         act(() => vi.advanceTimersByTime(250));
         expect(container.textContent).toContain("Readback failed");

@@ -8,7 +8,9 @@ import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
+import { ErrorBoundary } from "shared-ui-components/modularTool/components/errorBoundary";
 import { ExtensibleAccordion } from "shared-ui-components/modularTool/components/extensibleAccordion";
 import { SidePaneContainer } from "shared-ui-components/modularTool/components/pane";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
@@ -21,15 +23,10 @@ const useStyles = makeStyles({
         flex: "0 1 auto",
         paddingBottom: tokens.spacingVerticalM,
     },
-    history: {
-        width: "100%",
-        height: "120px",
-    },
-    line: {
-        fill: "none",
-        stroke: tokens.colorBrandForeground1,
-        strokeWidth: "2px",
-    },
+});
+
+const GpuTimingChart = MakeLazyComponent(async () => (await import("./gpuTimingChart")).GpuTimingChart, {
+    spinnerLabel: "Loading GPU timing chart",
 });
 
 type EngineStatsProps = {
@@ -108,15 +105,13 @@ export const LiteCountStats: FunctionComponent<EngineStatsProps> = (props) => {
  */
 export const LitePerformanceStats: FunctionComponent<PerformanceStatsProps> = (props) => {
     const { statistics } = props;
-    const classes = useStyles();
+    const getElapsedMs = useCallback(() => statistics.elapsedMs, [statistics]);
     const { timing, busy, error } = useObservableState(
         useCallback(() => ({ timing: statistics.timing, busy: statistics.busy, error: statistics.error }), [statistics]),
         statistics.onChanged
     );
     const { samples, applicationOwnsTiming } = statistics;
     const average = samples.length ? samples.reduce((sum, sample) => sum + sample.durationMs, 0) / samples.length : undefined;
-    const max = Math.max(1, ...samples.map((sample) => sample.durationMs));
-    const points = samples.map((sample, index) => `${(index / 119) * 300},${110 - (sample.durationMs / max) * 100}`).join(" ");
     const exportSamples = () => {
         const url = URL.createObjectURL(new Blob([statistics.toCsv()], { type: "text/csv;charset=utf-8" }));
         const link = document.createElement("a");
@@ -166,9 +161,9 @@ export const LitePerformanceStats: FunctionComponent<PerformanceStatsProps> = (p
                 value={samples.length}
                 description="Latest 120 distinct GPU readbacks. This is not a trace of every rendered frame."
             />
-            <svg className={classes.history} viewBox="0 0 300 120" role="img" aria-label="Sampled GPU task duration history">
-                <polyline className={classes.line} points={points} />
-            </svg>
+            <ErrorBoundary name="GPU timing chart">
+                <GpuTimingChart samples={samples} status={timing.status} getElapsedMs={getElapsedMs} />
+            </ErrorBoundary>
             <ButtonLine label="Export GPU Samples to CSV" icon={ArrowDownloadRegular} disabled={!samples.length} onClick={exportSamples} />
             <MessageBar
                 intent="info"
