@@ -442,6 +442,58 @@ describe("Interactivity event nodes", () => {
         expect(block.selectionRayOrigin.getValue(context)).toEqual(new Vector3(4, 5, 6));
     });
 
+    it.each([false, true])("event/onSelect supplies picked coordinates to graph consumers (right handed: %s)", async (rightHanded) => {
+        scene.useRightHandedSystem = rightHanded;
+        const root = new TransformNode("assetRoot", scene);
+        root.scaling.x = rightHanded ? 1 : -1;
+        root.position.set(10, 20, 30);
+        const mesh = new Mesh("selected", scene);
+        mesh.parent = root;
+        mesh.computeWorldMatrix(true);
+        const gltf = { nodes: [{ _babylonTransformNode: mesh, _primitiveBabylonMeshes: [mesh] }] };
+        const source: IKHRInteractivity_Graph = {
+            declarations: [
+                {
+                    op: "event/onSelect",
+                    extension: "KHR_node_selectability",
+                    outputValueSockets: {
+                        selectedNode: { type: 1 },
+                        selectionRayOrigin: { type: 0 },
+                        selectionPoint: { type: 0 },
+                        controllerIndex: { type: 2 },
+                        event: { type: 1 },
+                    },
+                },
+                { op: "flow/sequence" },
+                { op: "flow/log", extension: "BABYLON" },
+            ],
+            types: [{ signature: "float3" }, { signature: "ref" }, { signature: "int" }],
+            nodes: [
+                { declaration: 0, configuration: { nodeIndex: { value: [0] } }, flows: { out: { node: 1 } } },
+                { declaration: 1, flows: { "0": { node: 2 }, "1": { node: 3 } } },
+                { declaration: 2, values: { message: { node: 0, socket: "selectionPoint" } } },
+                { declaration: 2, values: { message: { node: 0, socket: "selectionRayOrigin" } } },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(source);
+        expect(model.valid, model.diagnostics.map((diagnostic) => diagnostic.message).join("\n")).toBe(true);
+        const parser = new InteractivityGraphToFlowGraphParser(model.effectiveSource, gltf, 60, 0, undefined, model.declarations);
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
+        coordinator.start();
+
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = mesh;
+        pickInfo.pickedPoint = Vector3.TransformCoordinates(new Vector3(1, 2, 3), root.getWorldMatrix());
+        pickInfo.ray = new Ray(Vector3.TransformCoordinates(new Vector3(4, 5, 6), root.getWorldMatrix()), Vector3.Forward());
+        scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, { pointerId: 7 } as PointerEvent, pickInfo));
+
+        expect(log).toHaveBeenNthCalledWith(1, new Vector3(1, 2, 3));
+        expect(log).toHaveBeenNthCalledWith(2, new Vector3(4, 5, 6));
+        expect(errorLog).not.toHaveBeenCalled();
+    });
+
     it.each([
         ["immediate", true],
         ["transitive", false],

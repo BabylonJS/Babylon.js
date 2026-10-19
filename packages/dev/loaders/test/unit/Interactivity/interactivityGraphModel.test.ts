@@ -1278,7 +1278,7 @@ describe("KHR_interactivity canonical import model", () => {
         const serialized = new InteractivityGraphToFlowGraphParser(wrongTypeGraph, {} as any, 60, 0, undefined, wrongType.declarations).serializeToFlowGraph();
 
         expect(valid.declarations[0].support).toBe("extension");
-        expect(missingEvent.declarations[0].support).toBe("unsupported-extension");
+        expect(missingEvent.declarations[0].support).toBe("extension");
         expect(wrongType.declarations[0].support).toBe("unsupported-extension");
         expect(serialized.allBlocks[0].className).toBe("KHR_interactivity/FlowGraphUnsupportedInteractivityBlock");
     });

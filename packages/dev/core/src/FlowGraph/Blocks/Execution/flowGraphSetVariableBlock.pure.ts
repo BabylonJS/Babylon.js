@@ -7,6 +7,7 @@ import { type FlowGraphSignalConnection } from "../../flowGraphSignalConnection.
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { RegisterClass } from "core/Misc/typeStore";
+import { RemoveFlowGraphAnimationGroupObservers } from "../../flowGraphAnimationHelpers";
 
 /**
  * The configuration of the FlowGraphGetVariableBlock.
@@ -18,9 +19,15 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
     variable?: string;
 
     /**
-     * The name of the variables to set.
+     * The names of the variables to set.
      */
     variables?: string[];
+
+    /** Whether all input values are evaluated before any variable is written. Defaults to false. */
+    evaluateInputsBeforeWrite?: boolean;
+
+    /** Whether writes cancel animations targeting the user-variable dictionary without firing done. Defaults to false. */
+    cancelVariableAnimations?: boolean;
 }
 
 /**
@@ -45,16 +52,24 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
 
     public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         if (this.config?.variables) {
-            for (const variable of this.config.variables) {
-                this._saveVariable(context, variable);
+            const variables: string[] = this.config.variables;
+            let values: T[] | undefined;
+            if (this.config.evaluateInputsBeforeWrite) {
+                values = [];
+                for (const variable of variables) {
+                    values.push(this.getDataInput(variable)?.getValue(context));
+                }
+            }
+            for (let i = 0; i < variables.length; i++) {
+                this._saveVariable(context, variables[i], values?.[i], values ? undefined : variables[i]);
             }
         } else {
-            this._saveVariable(context, this.config?.variable, "value");
+            this._saveVariable(context, this.config?.variable, undefined, "value");
         }
         this.out._activateSignal(context);
     }
 
-    private _saveVariable(context: FlowGraphContext, variableName: string, inputName?: string): void {
+    private _saveVariable(context: FlowGraphContext, variableName: string, value: T | undefined, inputName?: string): void {
         // check if there is an animation(group) running on this variable. If there is, stop the animation - a value was force-set.
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         for (const animationUniqueId of currentlyRunningAnimationGroups) {
@@ -63,11 +78,17 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                 // check if there is a target animation that has the target set to be the context
                 for (const targetAnimation of animationGroup.targetedAnimations) {
                     // check if the target property is the variable we are setting
-                    if (targetAnimation.target === context) {
+                    if (targetAnimation.target === context || (this.config?.cancelVariableAnimations && targetAnimation.target === context.userVariables)) {
                         // check the variable name
                         if (targetAnimation.animation.targetProperty === variableName) {
                             // stop the animation
-                            animationGroup.stop();
+                            if (this.config?.cancelVariableAnimations) {
+                                RemoveFlowGraphAnimationGroupObservers(context, animationGroup)?._cleanupAfterExternalStop(context, animationGroup);
+                                animationGroup.stop(true);
+                                animationGroup.dispose();
+                            } else {
+                                animationGroup.stop();
+                            }
                             // remove the animation from the currently running animations
                             const index = currentlyRunningAnimationGroups.indexOf(animationUniqueId);
                             if (index > -1) {
@@ -80,8 +101,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
                 }
             }
         }
-        const value = this.getDataInput(inputName || variableName)?.getValue(context);
-        context.setVariable(variableName, value);
+        context.setVariable(variableName, inputName === undefined ? value : this.getDataInput(inputName)?.getValue(context));
     }
 
     public override getClassName(): string {

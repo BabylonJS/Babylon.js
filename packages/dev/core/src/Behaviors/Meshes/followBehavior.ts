@@ -327,8 +327,6 @@ export class FollowBehavior implements Behavior<TransformNode> {
         right.normalizeFromLength(length);
 
         Vector3.CrossToRef(right, toFollowed, up);
-        // The following node's front is -Z in LH and +Z in RH, opposite the helper's forward axis.
-        toFollowed.negateInPlace();
         if (this.attachedNode?.getScene().useRightHandedSystem) {
             Quaternion.FromLookDirectionRHToRef(toFollowed, up, rotationQuaternion);
         } else {

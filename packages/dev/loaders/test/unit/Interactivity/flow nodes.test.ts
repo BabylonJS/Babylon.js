@@ -8,6 +8,7 @@ import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 describe("Flow Nodes", () => {
     let engine;
@@ -69,6 +70,9 @@ describe("Flow Nodes", () => {
 
     afterEach(() => {
         clearInterval(renderInterval);
+        scene.dispose();
+        engine.dispose();
+        vi.useRealTimers();
     });
 
     test("flow/sequence with proper IDs", async () => {
@@ -830,6 +834,9 @@ describe("Flow Nodes", () => {
     });
 
     test("variable/interpolate with float - colliding, cancel 1st", async () => {
+        clearInterval(renderInterval);
+        vi.useFakeTimers({ toFake: ["Date", "performance", "setInterval", "clearInterval", "setTimeout", "clearTimeout"] });
+        renderInterval = setInterval(() => scene.render(), 16);
         // linear interpolation from 1 to 5 in 1 second
         await generateSimpleNodeGraph(
             [{ op: "variable/interpolate" }, { op: "flow/log", extension: "BABYLON" }, { op: "variable/get" }, { op: "flow/sequence" }, { op: "flow/setDelay" }],
@@ -941,8 +948,7 @@ describe("Flow Nodes", () => {
             [{ type: 0, value: [1] }]
         );
 
-        // wait 1 second
-        await new Promise((resolve) => setTimeout(resolve, 1000 + 200));
+        await vi.advanceTimersByTimeAsync(1300);
         // only one time, and ONLY with 3! not with 5
         expect(log).toHaveBeenCalledTimes(1);
         expect(log).toHaveBeenCalledWith(3);

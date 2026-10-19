@@ -1,7 +1,6 @@
 import { type IObjectInfo, type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { EventReferencePrefix, DelayReferencePrefix } from "./KHR_interactivity/interactivityReferences";
 import { IsDelayActive } from "core/FlowGraph/flowGraphDelayRegistry";
 
@@ -69,7 +68,7 @@ export class InteractivityRefPathToObjectConverter implements IPathToObjectConve
                     if (!context || isNaN(index) || index < 0) {
                         return undefined;
                     }
-                    return IsDelayActive(context, index) ? new FlowGraphInteger(index) : undefined;
+                    return IsDelayActive(context, index) ? DelayReferencePrefix + index : undefined;
                 },
                 getTarget: () => RefValidityTarget,
             },
