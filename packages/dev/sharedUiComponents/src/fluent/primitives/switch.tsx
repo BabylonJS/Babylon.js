@@ -17,7 +17,12 @@ const useSwitchStyles = makeStyles({
     },
 });
 
-export type SwitchProps = PrimitiveProps<boolean>;
+export type SwitchProps = PrimitiveProps<boolean> & {
+    /**
+     * Accessible name for switches whose visible label is rendered separately.
+     */
+    ariaLabel?: string;
+};
 
 /**
  * This is a primitive fluent boolean switch component whose only knowledge is the shared styling across all tools
@@ -46,6 +51,7 @@ export const Switch: FunctionComponent<SwitchProps> = (props) => {
             className={mergeClasses(classes.switch, size === "small" && classes.switchSmall)}
             indicator={{ className: classes.indicator }}
             checked={checked}
+            aria-label={props.ariaLabel}
             disabled={props.disabled}
             onChange={onChange}
         />

@@ -49,6 +49,40 @@ do not require an Inspector server. On a GPU-less machine, set
 These tests explicitly select Chromium with the Chrome channel even when the
 integration project's default browser is Firefox.
 
+## Babylon Lite debug and capture
+
+The Lite **Debug** pane offers a ground grid and mesh bounding boxes for any
+registered scene, including scenes on auxiliary surfaces. Helpers are non-pickable
+meshes named `Inspector Ground Grid` and `Inspector Bounds: <mesh name>` in Explorer.
+Each scene retains its own helper settings across tab changes. Bounding boxes inherit
+the mesh's live world transform, keeping animation synchronized every frame without
+changing the application's node hierarchy. Geometry, visibility, and topology updates
+follow Inspector's polling/manual watch mode; skeletal/morph deformations and individual thin instances are not
+included. Removing a source mesh or unregistering a scene releases its helpers;
+closing Inspector removes only the meshes it created.
+
+The **Tools** pane captures the primary or an auxiliary surface. **Capture Screenshot**
+downloads a PNG of the final presented frame at the canvas's native resolution,
+including canvas-rendered text, sprites, and post-processing but not HTML overlays.
+It uses Lite's GPU readback API, works for offscreen surfaces, and requires an active
+render loop. It does not resize or re-render the scene at a custom resolution.
+
+**Record Video** records an HTML canvas using `captureStream` and `MediaRecorder`;
+**Stop Recording** downloads WebM (or MP4 when that is the available format).
+Recording continues when changing Inspector tabs. Surface changes are disabled
+during capture; surface-list updates follow Inspector's watch mode. Removing the
+surface or closing Inspector cancels the operation, releases recording tracks, and prevents stale
+downloads. Capture failures appear in the pane. Offscreen canvases and browsers
+without these media APIs show video recording as unavailable.
+
+Lite does not expose the full Inspector's global feature switches, physics/name
+helpers, equirectangular capture, or scene replay APIs. These tools are not imported
+from the full Babylon.js runtime. Physics visualization belongs to the physics
+inspection milestone; custom-resolution rendering and GIF capture are not included
+in this initial surface-capture implementation. The published Lite runtime also
+does not expose GPU-error/device-loss subscriptions, so Inspector does not access
+private GPU device fields to emulate those APIs.
+
 ## Modularity
 
 Modularity is hierarchical. For example, Scene Explorer is an extension of the tool Shell (the basic top/bottom tool bar + left/right side panes + primary content layout), and Audio Engine Explorer is an extension of Scene Explorer. Since this creates a dependency graph of components, a "service" architecture is leveraged, where each service can consume other services, and produce services that can be consumed by other services.
