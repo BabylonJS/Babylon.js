@@ -1,6 +1,43 @@
 import { expect, test } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 import { evaluateInitEngineForVisualization } from "../playwright/visualizationPlaywright.utils";
+import { type KTX2Encoder } from "../../../ktx2Encoder/src/ktx2Encoder";
+
+test("KTX2 encoder lazily loads default assets and supports main-thread adapter encoding", async ({ page }) => {
+    const { baseUrl } = getGlobalConfig();
+    const requests: string[] = [];
+    await page.route("https://cdn.babylonjs.com/basisEncoder/v2_50/*", async (route) => {
+        const pathname = new URL(route.request().url()).pathname;
+        requests.push(pathname);
+        const response = await page.request.get(baseUrl + pathname);
+        await route.fulfill({ response, headers: { ...response.headers(), "access-control-allow-origin": "*" } });
+    });
+    await page.goto(baseUrl + "/empty.html");
+    await page.addScriptTag({ url: baseUrl + "/babylon.ktx2Encoder.js" });
+    const result = await page.evaluate(async (baseUrl) => {
+        const module = (window as typeof window & { KTX2ENCODER: { KTX2Encoder: new () => KTX2Encoder } }).KTX2ENCODER;
+        const encoder = new module.KTX2Encoder();
+        const pixels = new Uint8Array(64).fill(128);
+        const options = { usage: "color", generateMipmaps: false } as const;
+        const output = await encoder.encode(pixels, 4, 4, options);
+        const adapter = new window.BABYLON.KhronosTextureContainer2Encoder({
+            numWorkers: 0,
+            jsEncoderModuleUrl: baseUrl + "/babylon.ktx2Encoder.js",
+            basisJsUrl: baseUrl + "/basisEncoder/v2_50/basis_encoder.js",
+            basisWasmUrl: baseUrl + "/basisEncoder/v2_50/basis_encoder.wasm",
+        });
+        try {
+            const adapted = await adapter.encodeAsync(pixels, 4, 4, { usage: "color", generateMipmaps: false });
+            return { identical: output.every((value, index) => adapted[index] === value) && output.length === adapted.length, signature: Array.from(output.slice(0, 4)) };
+        } finally {
+            adapter.dispose();
+        }
+    }, baseUrl);
+    expect(result.signature).toEqual([0xab, 0x4b, 0x54, 0x58]);
+    expect(result.identical).toBe(true);
+    expect(requests).toEqual(expect.arrayContaining(["/basisEncoder/v2_50/basis_encoder.js", "/basisEncoder/v2_50/basis_encoder.wasm"]));
+    expect(requests).toHaveLength(2);
+});
 
 test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ page }) => {
     const { baseUrl } = getGlobalConfig();
@@ -47,6 +84,12 @@ test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ pa
             return texture;
         };
         try {
+            let invalidOptions = "";
+            try {
+                await encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "color", etc1sQualityLevel: 0 });
+            } catch (error) {
+                invalidOptions = String(error);
+            }
             const source = await load(await encoder.encodeAsync(pixels.slice(), 8, 8, { usage: "color", generateMipmaps: false }));
             const first = await B.GetTextureDataAsync(source, 8, 8, 0, 0, false, 0, false);
             const encoded = await B.EncodeTextureToKTX2Async(source, { usage: "color", generateMipmaps: false }, encoder);
@@ -54,6 +97,7 @@ test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ pa
             const second = await B.GetTextureDataAsync(roundTrip, 8, 8, 0, 0, false, 0, false);
             return {
                 exactConversions: window.engine!.useExactSrgbConversions,
+                invalidOptions,
                 compressed: B._IsCompressedTextureFormat(source.textureFormat),
                 hardwareSRGB: source.getInternalTexture()!._useSRGBBuffer,
                 firstDifference: Math.max(...first.map((value, index) => Math.abs(value - pixels[index]))),
@@ -70,6 +114,7 @@ test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ pa
         }
     }, baseUrl);
     expect(result.exactConversions).toBe(true);
+    expect(result.invalidOptions).toContain("etc1sQualityLevel");
     expect(result.compressed).toBe(true);
     expect(result.hardwareSRGB).toBe(true);
     expect(result.firstDifference).toBeLessThanOrEqual(8);

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { KTX2Decoder } from "../../../ktx2Decoder/src/ktx2Decoder.js";
 import { LiteTranscoder_UASTC_RGBA_UNORM } from "../../../ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.js";
 import { KTX2Encoder, type KTX2EncoderUsage } from "../../src/ktx2Encoder.js";
@@ -38,18 +38,27 @@ const _createPixels = (): Uint8Array => {
 
 describe("KTX2Encoder with Basis v2.50", () => {
     let encoder: KTX2Encoder;
-    beforeAll(async () => {
+    beforeAll(() => {
         const wasmBinary = _readArrayBuffer(new URL("../../../babylonServer/public/basisEncoder/v2_50/basis_encoder.wasm", import.meta.url));
-        encoder = await KTX2Encoder.CreateAsync({ basisFactory: _loadFactory(), wasmBinary });
+        KTX2Encoder.JSModule = _loadFactory();
+        KTX2Encoder.WasmBinary = wasmBinary;
+        encoder = new KTX2Encoder();
     }, 30_000);
+
+    afterEach(() => {
+        KTX2Encoder.JSModule = null;
+        KTX2Encoder.WasmBinary = null;
+    });
 
     it("loads the official factory from a URL in Node ESM with an injected binary", async () => {
         const source = readFileSync(new URL("../../../babylonServer/public/basisEncoder/v2_50/basis_encoder.js", import.meta.url), "utf8");
         const wasmBinary = _readArrayBuffer(new URL("../../../babylonServer/public/basisEncoder/v2_50/basis_encoder.wasm", import.meta.url));
         vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(source)));
         try {
-            const loaded = await KTX2Encoder.CreateAsync({ jsModuleUrl: "https://example.test/basis_encoder.js", wasmBinary });
-            const encoded = loaded.encode(_createPixels(), 8, 8, { usage: "color", generateMipmaps: false });
+            KTX2Encoder.JSModule = null;
+            KTX2Encoder.WasmBinary = wasmBinary;
+            const loaded = new KTX2Encoder();
+            const encoded = await loaded.encode(_createPixels(), 8, 8, { usage: "color", generateMipmaps: false });
             CheckKTX2(encoded, { width: 8, height: 8, levelCount: 1, supercompressionScheme: 1, colorModel: 163, primaries: 1, transferFunction: 2 });
         } finally {
             vi.unstubAllGlobals();
@@ -63,7 +72,7 @@ describe("KTX2Encoder with Basis v2.50", () => {
     ] satisfies Array<{ usage: KTX2EncoderUsage; supercompressionScheme: number; colorModel: number; primaries: number; transferFunction: number }>)(
         "encodes $usage KTX2 output",
         async ({ usage, ...expected }) => {
-            const encoded = encoder.encode(_createPixels(), 8, 8, { usage, generateMipmaps: false });
+            const encoded = await encoder.encode(_createPixels(), 8, 8, { usage, generateMipmaps: false });
 
             expect(encoded.byteLength).toBeGreaterThan(80);
             CheckKTX2(encoded, {
@@ -77,7 +86,7 @@ describe("KTX2Encoder with Basis v2.50", () => {
     );
 
     it("generates the expected mip chain", async () => {
-        const encoded = encoder.encode(_createPixels(), 8, 8, { usage: "color", generateMipmaps: true });
+        const encoded = await encoder.encode(_createPixels(), 8, 8, { usage: "color", generateMipmaps: true });
 
         CheckKTX2(encoded, {
             width: 8,
@@ -92,7 +101,7 @@ describe("KTX2Encoder with Basis v2.50", () => {
 
     it("round trips UASTC pixels through the existing decoder", async () => {
         const source = _createPixels();
-        const encoded = encoder.encode(source, 8, 8, { usage: "data", generateMipmaps: false, zstandard: false });
+        const encoded = await encoder.encode(source, 8, 8, { usage: "data", generateMipmaps: false, zstandard: false });
         LiteTranscoder_UASTC_RGBA_UNORM.WasmBinary = _readArrayBuffer(new URL("../../../babylonServer/public/ktx2Transcoders/1/uastc_rgba8_unorm_v2.wasm", import.meta.url));
 
         const decoded = await new KTX2Decoder().decode(encoded, {});

@@ -43,34 +43,6 @@ interface IBasisModule {
 
 type BasisFactory = (options: { wasmBinary: ArrayBuffer | Uint8Array }) => IBasisModule | Promise<IBasisModule>;
 
-/**
- * Configuration used to create a KTX2 encoder.
- * @experimental
- */
-export interface IKTX2EncoderConfiguration {
-    /**
-     * URL of the Basis encoder JavaScript factory.
-     * This non-worker URL path evaluates the factory source and requires CSP unsafe-eval.
-     * @experimental
-     */
-    jsModuleUrl?: string;
-    /**
-     * URL of the Basis encoder WebAssembly binary.
-     * @experimental
-     */
-    wasmUrl?: string;
-    /**
-     * Basis encoder WebAssembly binary.
-     * @experimental
-     */
-    wasmBinary?: ArrayBuffer;
-    /**
-     * Factory that returns a Basis module, synchronously or asynchronously.
-     * @experimental
-     */
-    basisFactory?: unknown;
-}
-
 const ValidateIntegerRange = (name: string, value: number | undefined, minimum: number, maximum: number): void => {
     if (value !== undefined && (!Number.isInteger(value) || value < minimum || value > maximum)) {
         throw new Error(`${name} must be an integer from ${minimum} through ${maximum}.`);
@@ -114,40 +86,67 @@ const LoadFactoryAsync = async (url: string): Promise<BasisFactory> => {
  * @experimental
  */
 export class KTX2Encoder {
-    private readonly _basisModule: unknown;
-
     /**
-     * Creates an encoder from an initialized Basis module.
-     * @param basisModule The initialized Basis encoder module.
+     * URL of the Basis encoder JavaScript factory. Configure before constructing an encoder.
+     * URL loading evaluates trusted JavaScript and requires CSP 'unsafe-eval'.
      * @experimental
      */
-    public constructor(basisModule: unknown) {
-        this._basisModule = basisModule;
+    public static JSModuleURL = "https://cdn.babylonjs.com/basisEncoder/v2_50/basis_encoder.js";
+    /**
+     * URL of the Basis encoder WebAssembly binary. Configure before constructing an encoder.
+     * @experimental
+     */
+    public static WasmModuleURL = "https://cdn.babylonjs.com/basisEncoder/v2_50/basis_encoder.wasm";
+    /**
+     * Injected Basis encoder WebAssembly binary, or null to load WasmModuleURL.
+     * Configure before constructing an encoder.
+     * @experimental
+     */
+    public static WasmBinary: ArrayBuffer | null = null;
+    /**
+     * Injected Basis encoder factory, or null to load JSModuleURL.
+     * Configure before constructing an encoder.
+     * @experimental
+     */
+    public static JSModule: unknown = null;
+
+    private readonly _configuration = {
+        jsModule: KTX2Encoder.JSModule as BasisFactory | null,
+        wasmBinary: KTX2Encoder.WasmBinary,
+        jsModuleURL: KTX2Encoder.JSModuleURL,
+        wasmModuleURL: KTX2Encoder.WasmModuleURL,
+    };
+    private _basisModule?: IBasisModule;
+    private _initializationPromise?: Promise<void>;
+    /**
+     * Captures the static resource settings without loading the codec.
+     * The first encode initializes the codec lazily.
+     * @experimental
+     */
+    public constructor() {}
+
+    /** @internal */
+    public async _initializeAsync(): Promise<void> {
+        await (this._initializationPromise ??= this._loadAsync());
     }
 
-    /**
-     * Loads and initializes the Basis encoder module.
-     * The official Basis v2_50 factory requires CSP 'unsafe-eval' for Embind.
-     * @param config The module factory, JavaScript URL, and WebAssembly source.
-     * @returns A ready KTX2 encoder.
-     * @experimental
-     */
-    public static async CreateAsync(config: IKTX2EncoderConfiguration): Promise<KTX2Encoder> {
-        if (!config.basisFactory && !config.jsModuleUrl) {
-            throw new Error("A Basis encoder factory or jsModuleUrl is required.");
+    private async _loadAsync(): Promise<void> {
+        const config = this._configuration;
+        if (!config.jsModule && !config.jsModuleURL) {
+            throw new Error("A Basis encoder JSModule or JSModuleURL is required.");
         }
-        if (!config.wasmBinary && !config.wasmUrl) {
-            throw new Error("A Basis encoder wasmBinary or wasmUrl is required.");
+        if (!config.wasmBinary && !config.wasmModuleURL) {
+            throw new Error("A Basis encoder WasmBinary or WasmModuleURL is required.");
         }
         const [factory, wasmBinary] = await Promise.all([
-            (config.basisFactory as BasisFactory | undefined) ?? LoadFactoryAsync(config.jsModuleUrl!),
+            config.jsModule ?? LoadFactoryAsync(config.jsModuleURL),
             (async () => {
                 if (config.wasmBinary) {
                     return config.wasmBinary;
                 }
-                const response = await fetch(config.wasmUrl!);
+                const response = await fetch(config.wasmModuleURL);
                 if (!response.ok) {
-                    throw new Error(`Failed to load the Basis encoder WebAssembly module from '${config.wasmUrl}': ${response.status} ${response.statusText}.`);
+                    throw new Error(`Failed to load the Basis encoder WebAssembly module from '${config.wasmModuleURL}': ${response.status} ${response.statusText}.`);
                 }
                 return await response.arrayBuffer();
             })(),
@@ -158,11 +157,13 @@ export class KTX2Encoder {
             basisModule.initializeBasis();
             basisModule[BasisInitialized] = true;
         }
-        return new KTX2Encoder(basisModule);
+        this._basisModule = basisModule;
     }
 
     /**
      * Encodes an RGBA8 image.
+     * Loads the codec on first use. The official Basis v2_50 factory requires CSP 'unsafe-eval' for Embind.
+     * Compression is synchronous after initialization; calls on this thread cannot overlap.
      * @param rgba RGBA8 source pixels, top-down unless `flipY` is true.
      * @param width Source width in pixels.
      * @param height Source height in pixels.
@@ -170,7 +171,7 @@ export class KTX2Encoder {
      * @returns The encoded KTX2 file.
      * @experimental
      */
-    public encode(rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): Uint8Array {
+    public async encode(rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): Promise<Uint8Array> {
         _ValidateKTX2EncoderDimensions(width, height);
         const expectedByteLength = width * height * 4;
         if (rgba.byteLength !== expectedByteLength) {
@@ -190,7 +191,10 @@ export class KTX2Encoder {
             throw new Error("ETC1S options can only be used when usage is 'color'.");
         }
 
-        const basisModule = this._basisModule as IBasisModule;
+        if (!this._basisModule) {
+            await this._initializeAsync();
+        }
+        const basisModule = this._basisModule!;
         const encoder = new basisModule.BasisEncoder();
         try {
             const isColor = options.usage === "color";

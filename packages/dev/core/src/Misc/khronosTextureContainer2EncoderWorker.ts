@@ -3,13 +3,18 @@ import { type IKTX2EncoderOptions } from "../Materials/Textures/ktx2encoderTypes
 
 /** @internal */
 export interface IKTX2EncoderInstance {
-    encode(rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): Uint8Array;
+    _initializeAsync(): Promise<void>;
+    encode(rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): Promise<Uint8Array>;
 }
 
 /** @internal */
 export interface IKTX2EncoderModule {
     KTX2Encoder: {
-        CreateAsync(configuration: { jsModuleUrl?: string; basisFactory?: unknown; wasmBinary: ArrayBuffer }): Promise<IKTX2EncoderInstance>;
+        new (): IKTX2EncoderInstance;
+        JSModule: unknown;
+        WasmBinary: ArrayBuffer | null;
+        JSModuleURL: string;
+        WasmModuleURL: string;
     };
 }
 
@@ -39,9 +44,13 @@ export function KTX2EncoderWorkerFunction(): void {
             if (request.action === "init") {
                 importScripts(request.jsEncoderModuleUrl, request.basisJsUrl);
                 // Avoid async helpers outside this serialized function in ES2015 bundles.
-                KTX2ENCODER.KTX2Encoder.CreateAsync({ basisFactory: BASIS, wasmBinary: request.wasmBinary })
+                KTX2ENCODER.KTX2Encoder.JSModule = BASIS;
+                KTX2ENCODER.KTX2Encoder.WasmBinary = request.wasmBinary;
+                const initialized = new KTX2ENCODER.KTX2Encoder();
+                initialized
+                    ._initializeAsync()
                     // eslint-disable-next-line github/no-then
-                    .then((initialized) => {
+                    .then(() => {
                         encoder = initialized;
                         postMessage({ action: "init", id: request.id });
                     })
@@ -51,8 +60,12 @@ export function KTX2EncoderWorkerFunction(): void {
                 if (!encoder) {
                     throw new Error("KTX2 encoder worker is not initialized.");
                 }
-                const data = encoder.encode(request.rgba, request.width, request.height, request.options);
-                postMessage({ action: "encoded", id: request.id, data }, [data.buffer as ArrayBuffer]);
+                encoder
+                    .encode(request.rgba, request.width, request.height, request.options)
+                    // eslint-disable-next-line github/no-then
+                    .then((data) => postMessage({ action: "encoded", id: request.id, data }, [data.buffer as ArrayBuffer]))
+                    // eslint-disable-next-line github/no-then
+                    .catch(fail);
             }
         } catch (error) {
             fail(error);

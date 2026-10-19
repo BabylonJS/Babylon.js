@@ -302,7 +302,7 @@ export class KhronosTextureContainer2Encoder {
                     return await this._mainThreadLock.lockAsync(async () => {
                         await new Promise<void>((resolve) => setTimeout(resolve, 0));
                         signal.throwIfAborted();
-                        return this._encoder!.encode(rgba, width, height, encodingOptions);
+                        return await this._encoder!.encode(rgba, width, height, encodingOptions);
                     }, signal);
                 },
                 signal,
@@ -343,10 +343,22 @@ export class KhronosTextureContainer2Encoder {
             if (this._disposed) {
                 return;
             }
-            const encoder = await KTX2ENCODER.KTX2Encoder.CreateAsync({
-                jsModuleUrl: Tools.GetBabylonScriptURL(this._configuration.basisJsUrl, true),
-                wasmBinary: this._wasmBinary,
-            });
+            const constructor = KTX2ENCODER.KTX2Encoder;
+            const { JSModule, WasmBinary, JSModuleURL, WasmModuleURL } = constructor;
+            let encoder: IKTX2EncoderInstance;
+            try {
+                constructor.JSModule = null;
+                constructor.WasmBinary = this._wasmBinary!;
+                constructor.JSModuleURL = Tools.GetBabylonScriptURL(this._configuration.basisJsUrl, true);
+                constructor.WasmModuleURL = Tools.GetBabylonScriptURL(this._configuration.basisWasmUrl, true);
+                encoder = new constructor();
+            } finally {
+                constructor.JSModule = JSModule;
+                constructor.WasmBinary = WasmBinary;
+                constructor.JSModuleURL = JSModuleURL;
+                constructor.WasmModuleURL = WasmModuleURL;
+            }
+            await encoder._initializeAsync();
             if (!this._disposed) {
                 this._encoder = encoder;
             }

@@ -10,15 +10,21 @@ npm install @babylonjs/ktx2encoder
 
 ## Encode pixels in Node
 
+In browsers, `new KTX2Encoder()` uses the default CDN assets on the first awaited `encode` call. For Node, inject the packaged factory and WASM:
+
 ```js
 import { readFile } from "node:fs/promises";
 import { KTX2Encoder } from "@babylonjs/ktx2encoder";
 import BASIS from "@babylonjs/ktx2encoder/wasm/basis_encoder.js";
 
 const wasm = await readFile(new URL(import.meta.resolve("@babylonjs/ktx2encoder/wasm/basis_encoder.wasm")));
-const encoder = await KTX2Encoder.CreateAsync({ basisFactory: BASIS, wasmBinary: new Uint8Array(wasm).buffer });
-const ktx2 = encoder.encode(rgba, width, height, { usage: "color" });
+KTX2Encoder.JSModule = BASIS;
+KTX2Encoder.WasmBinary = new Uint8Array(wasm).buffer;
+const encoder = new KTX2Encoder();
+const ktx2 = await encoder.encode(rgba, width, height, { usage: "color" });
 ```
+
+Configure `JSModule`, `WasmBinary`, `JSModuleURL`, and `WasmModuleURL` before constructing an encoder. Each instance captures those settings and initializes lazily once. Injected resources take precedence over URLs. Each call releases its native encoder; the standalone instance has no `dispose` method.
 
 ## Encode a Babylon texture
 

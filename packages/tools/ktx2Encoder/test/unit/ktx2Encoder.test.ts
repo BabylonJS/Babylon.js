@@ -1,7 +1,13 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { KTX2Encoder, type IKTX2EncoderOptions } from "../../src/ktx2Encoder.js";
 
 type EncoderMethod = keyof FakeBasisEncoder;
+const DefaultSettings = {
+    JSModule: KTX2Encoder.JSModule,
+    WasmBinary: KTX2Encoder.WasmBinary,
+    JSModuleURL: KTX2Encoder.JSModuleURL,
+    WasmModuleURL: KTX2Encoder.WasmModuleURL,
+};
 
 class FakeBasisEncoder {
     public readonly calls: Array<[EncoderMethod, ...unknown[]]> = [];
@@ -92,8 +98,11 @@ const _createEncoder = (configure?: (encoder: FakeBasisEncoder) => void) => {
         },
         initializeBasis: vi.fn(),
     };
+    KTX2Encoder.JSModule = () => module;
+    KTX2Encoder.WasmBinary = new ArrayBuffer(1);
     return {
-        encoder: new KTX2Encoder(module),
+        module,
+        encoder: new KTX2Encoder(),
         get basisEncoder(): FakeBasisEncoder {
             if (!basisEncoder) {
                 throw new Error("BasisEncoder has not been created.");
@@ -104,6 +113,88 @@ const _createEncoder = (configure?: (encoder: FakeBasisEncoder) => void) => {
 };
 
 const _rgba = (width = 4, height = 4) => new Uint8Array(width * height * 4);
+
+afterEach(() => {
+    Object.assign(KTX2Encoder, DefaultSettings);
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+});
+
+describe("KTX2Encoder lazy initialization", () => {
+    it("constructs without loading and shares initialization across concurrent encodes", async () => {
+        const native: FakeBasisEncoder[] = [];
+        const context = _createEncoder((instance) => {
+            expect(native.every((previous) => previous.deleted)).toBe(true);
+            native.push(instance);
+        });
+        let initialize!: () => void;
+        const ready = new Promise<void>((resolve) => (initialize = resolve));
+        const factory = vi.fn(async () => {
+            await ready;
+            return context.module;
+        });
+        KTX2Encoder.JSModule = factory;
+        KTX2Encoder.WasmBinary = new ArrayBuffer(1);
+        const encoder = new KTX2Encoder();
+        expect(factory).not.toHaveBeenCalled();
+        const results = Promise.all([encoder.encode(_rgba(), 4, 4, { usage: "color" }), encoder.encode(_rgba(), 4, 4, { usage: "data" })]);
+        try {
+            await vi.waitFor(() => expect(factory).toHaveBeenCalledOnce());
+            expect(native).toHaveLength(0);
+        } finally {
+            initialize();
+        }
+        await results;
+        expect(native).toHaveLength(2);
+        expect(native.every((instance) => instance.deleted)).toBe(true);
+        expect(context.module.initializeBasis).toHaveBeenCalledOnce();
+    });
+
+    it("keeps each instance's injected resources when settings change before first use", async () => {
+        const first = _createEncoder();
+        const firstFactory = vi.fn(async () => first.module);
+        const firstBinary = new ArrayBuffer(2);
+        KTX2Encoder.JSModule = firstFactory;
+        KTX2Encoder.WasmBinary = firstBinary;
+        const firstEncoder = new KTX2Encoder();
+        const second = _createEncoder();
+        const secondFactory = vi.fn(async () => second.module);
+        const secondBinary = new ArrayBuffer(3);
+        KTX2Encoder.JSModule = secondFactory;
+        KTX2Encoder.WasmBinary = secondBinary;
+        const secondEncoder = new KTX2Encoder();
+        const fetch = vi.fn();
+        vi.stubGlobal("fetch", fetch);
+        await secondEncoder.encode(_rgba(), 4, 4, { usage: "color" });
+        await firstEncoder.encode(_rgba(), 4, 4, { usage: "color" });
+        expect(firstFactory).toHaveBeenCalledWith({ wasmBinary: firstBinary });
+        expect(secondFactory).toHaveBeenCalledWith({ wasmBinary: secondBinary });
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it.each(["factory", "initializeBasis"] as const)("caches %s failures for every pending encode", async (failure) => {
+        const context = _createEncoder();
+        const error = new Error("Initialization failed");
+        const factory = vi.fn(async () => {
+            if (failure === "factory") {
+                throw error;
+            }
+            return context.module;
+        });
+        if (failure === "initializeBasis") {
+            context.module.initializeBasis.mockImplementation(() => {
+                throw error;
+            });
+        }
+        KTX2Encoder.JSModule = factory;
+        const encoder = new KTX2Encoder();
+        const pending = [encoder.encode(_rgba(), 4, 4, { usage: "color" }), encoder.encode(_rgba(), 4, 4, { usage: "data" })];
+        await Promise.all(pending.map(async (result) => await expect(result).rejects.toThrow(error)));
+        await expect(encoder.encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow(error);
+        expect(factory).toHaveBeenCalledOnce();
+        expect(() => context.basisEncoder).toThrow("has not been created");
+    });
+});
 
 describe("KTX2Encoder validation", () => {
     it.each([
@@ -120,9 +211,9 @@ describe("KTX2Encoder validation", () => {
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", zstandard: true }, message: "UASTC options" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", zstandard: false }, message: "UASTC options" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "data", etc1sQualityLevel: 128 }, message: "ETC1S options" },
-    ])("rejects invalid input before creating BasisEncoder", ({ rgba, width, height, options, message }) => {
+    ])("rejects invalid input before creating BasisEncoder", async ({ rgba, width, height, options, message }) => {
         const context = _createEncoder();
-        expect(() => context.encoder.encode(rgba, width, height, options as IKTX2EncoderOptions)).toThrow(message);
+        await expect(context.encoder.encode(rgba, width, height, options as IKTX2EncoderOptions)).rejects.toThrow(message);
         expect(() => context.basisEncoder).toThrow("has not been created");
     });
 });
@@ -131,13 +222,13 @@ describe("KTX2Encoder presets", () => {
     it.each([
         [16384, 4],
         [4, 16384],
-    ])("accepts the maximum dimension in a %s by %s image", (width, height) => {
+    ])("accepts the maximum dimension in a %s by %s image", async (width, height) => {
         const context = _createEncoder();
-        expect(context.encoder.encode(_rgba(width, height), width, height, { usage: "color" })).toHaveLength(96);
+        await expect(context.encoder.encode(_rgba(width, height), width, height, { usage: "color" })).resolves.toHaveLength(96);
     });
-    it.each(["color", "data", "normal"] as const)("uses the default %s quality and compression settings without overrides", (usage) => {
+    it.each(["color", "data", "normal"] as const)("uses the default %s quality and compression settings without overrides", async (usage) => {
         const context = _createEncoder();
-        context.encoder.encode(_rgba(), 4, 4, { usage });
+        await context.encoder.encode(_rgba(), 4, 4, { usage });
         expect(context.basisEncoder.calls).toEqual(
             expect.arrayContaining(
                 usage === "color"
@@ -153,9 +244,9 @@ describe("KTX2Encoder presets", () => {
         );
     });
 
-    it("maps the color preset and overrides to Basis setters", () => {
+    it("maps the color preset and overrides to Basis setters", async () => {
         const context = _createEncoder();
-        context.encoder.encode(_rgba(), 4, 4, {
+        await context.encoder.encode(_rgba(), 4, 4, {
             usage: "color",
             generateMipmaps: false,
             flipY: true,
@@ -180,9 +271,9 @@ describe("KTX2Encoder presets", () => {
         expect(context.basisEncoder.deleted).toBe(true);
     });
 
-    it.each(["data", "normal"] as const)("maps the %s preset and overrides to Basis setters", (usage) => {
+    it.each(["data", "normal"] as const)("maps the %s preset and overrides to Basis setters", async (usage) => {
         const context = _createEncoder();
-        const output = context.encoder.encode(_rgba(), 4, 4, {
+        const output = await context.encoder.encode(_rgba(), 4, 4, {
             usage,
             uastcQualityLevel: 4,
             zstandard: false,
@@ -208,10 +299,10 @@ describe("KTX2Encoder presets", () => {
 });
 
 describe("KTX2Encoder output handling", () => {
-    it("retries once with a doubled output buffer", () => {
+    it("retries once with a doubled output buffer", async () => {
         const context = _createEncoder((encoder) => (encoder.encodeResults = [0, 96]));
 
-        const output = context.encoder.encode(_rgba(), 4, 4, { usage: "color" });
+        const output = await context.encoder.encode(_rgba(), 4, 4, { usage: "color" });
 
         expect(output.byteLength).toBe(96);
         expect(output.buffer.byteLength).toBe(96);
@@ -222,36 +313,36 @@ describe("KTX2Encoder output handling", () => {
         ]);
     });
 
-    it("throws after two failed encode attempts and deletes the encoder", () => {
+    it("throws after two failed encode attempts and deletes the encoder", async () => {
         const context = _createEncoder((encoder) => (encoder.encodeResults = [0, 0]));
 
-        expect(() => context.encoder.encode(_rgba(), 4, 4, { usage: "color" })).toThrow("Basis failed to encode the 4x4 'color' texture.");
+        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("Basis failed to encode the 4x4 'color' texture.");
         expect(context.basisEncoder.deleted).toBe(true);
     });
 
-    it("deletes the encoder when Basis rejects the source", () => {
+    it("deletes the encoder when Basis rejects the source", async () => {
         const context = _createEncoder((encoder) => (encoder.rejectSource = true));
 
-        expect(() => context.encoder.encode(_rgba(), 4, 4, { usage: "color" })).toThrow("Basis rejected");
+        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("Basis rejected");
         expect(context.basisEncoder.deleted).toBe(true);
     });
 
-    it("deletes the encoder when the KTX2 DFD is invalid", () => {
+    it("deletes the encoder when the KTX2 DFD is invalid", async () => {
         const context = _createEncoder((encoder) => (encoder.encodeResults = [40]));
 
-        expect(() => context.encoder.encode(_rgba(), 4, 4, { usage: "data" })).toThrow("complete header");
+        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "data" })).rejects.toThrow("complete header");
         expect(context.basisEncoder.deleted).toBe(true);
     });
 
-    it("rejects an out-of-range KTX2 DFD and deletes the encoder", () => {
+    it("rejects an out-of-range KTX2 DFD and deletes the encoder", async () => {
         const context = _createEncoder((encoder) => (encoder.dfdOffset = 1_000));
 
-        expect(() => context.encoder.encode(_rgba(), 4, 4, { usage: "data" })).toThrow("out-of-range DFD");
+        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "data" })).rejects.toThrow("out-of-range DFD");
         expect(context.basisEncoder.deleted).toBe(true);
     });
 });
 
-describe("KTX2Encoder.CreateAsync", () => {
+describe("KTX2Encoder resource configuration", () => {
     it("initializes an injected module once", async () => {
         const initializeBasis = vi.fn();
         const module = {
@@ -263,8 +354,10 @@ describe("KTX2Encoder.CreateAsync", () => {
         const factory = vi.fn(async () => module);
         const wasmBinary = new ArrayBuffer(1);
 
-        await KTX2Encoder.CreateAsync({ basisFactory: factory, wasmBinary });
-        await KTX2Encoder.CreateAsync({ basisFactory: factory, wasmBinary });
+        KTX2Encoder.JSModule = factory;
+        KTX2Encoder.WasmBinary = wasmBinary;
+        await new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" });
+        await new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" });
 
         expect(factory).toHaveBeenCalledTimes(2);
         expect(factory).toHaveBeenCalledWith({ wasmBinary });
@@ -272,8 +365,11 @@ describe("KTX2Encoder.CreateAsync", () => {
     });
 
     it("requires a factory and WebAssembly source", async () => {
-        await expect(KTX2Encoder.CreateAsync({ wasmBinary: new ArrayBuffer(1) })).rejects.toThrow("factory or jsModuleUrl");
-        await expect(KTX2Encoder.CreateAsync({ basisFactory: vi.fn() })).rejects.toThrow("wasmBinary or wasmUrl");
+        KTX2Encoder.JSModuleURL = "";
+        await expect(new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("JSModule or JSModuleURL");
+        KTX2Encoder.JSModule = vi.fn();
+        KTX2Encoder.WasmModuleURL = "";
+        await expect(new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("WasmBinary or WasmModuleURL");
     });
 
     it("loads the factory and WebAssembly binary concurrently from URLs", async () => {
@@ -294,7 +390,7 @@ describe("KTX2Encoder.CreateAsync", () => {
         vi.stubGlobal("fetch", fetchMock);
 
         try {
-            const pending = KTX2Encoder.CreateAsync({ jsModuleUrl: "basis.js", wasmUrl: "basis.wasm" });
+            const pending = new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" });
             try {
                 expect(fetchMock).toHaveBeenCalledTimes(2);
             } finally {
@@ -306,16 +402,19 @@ describe("KTX2Encoder.CreateAsync", () => {
             vi.unstubAllGlobals();
         }
 
-        expect(fetchMock).toHaveBeenNthCalledWith(1, "basis.js");
-        expect(fetchMock).toHaveBeenNthCalledWith(2, "basis.wasm");
+        expect(fetchMock).toHaveBeenNthCalledWith(1, DefaultSettings.JSModuleURL);
+        expect(fetchMock).toHaveBeenNthCalledWith(2, DefaultSettings.WasmModuleURL);
         expect(initializeBasis).toHaveBeenCalledOnce();
     });
 
     it("reports URL loading failures", async () => {
         vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 404, statusText: "Not Found" })));
         try {
-            await expect(KTX2Encoder.CreateAsync({ jsModuleUrl: "missing.js", wasmUrl: "basis.wasm" })).rejects.toThrow("missing.js");
-            await expect(KTX2Encoder.CreateAsync({ basisFactory: vi.fn(), wasmUrl: "missing.wasm" })).rejects.toThrow("missing.wasm");
+            KTX2Encoder.JSModuleURL = "missing.js";
+            await expect(new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("missing.js");
+            KTX2Encoder.JSModule = vi.fn();
+            KTX2Encoder.WasmModuleURL = "missing.wasm";
+            await expect(new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("missing.wasm");
         } finally {
             vi.unstubAllGlobals();
         }

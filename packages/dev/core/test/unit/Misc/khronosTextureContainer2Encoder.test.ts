@@ -14,6 +14,27 @@ async function ExpectErrorAsync(promise: Promise<unknown>, message: string | Reg
     await expect(promise).rejects.toThrow(message);
 }
 
+function StubEncoder(encode: (rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions) => Uint8Array, initialize = async () => {}) {
+    class Encoder {
+        public static JSModule: unknown = "existing factory";
+        public static WasmBinary: ArrayBuffer | null = new ArrayBuffer(2);
+        public static JSModuleURL = "existing.js";
+        public static WasmModuleURL = "existing.wasm";
+        public readonly configuration = {
+            JSModule: Encoder.JSModule,
+            WasmBinary: Encoder.WasmBinary,
+            JSModuleURL: Encoder.JSModuleURL,
+            WasmModuleURL: Encoder.WasmModuleURL,
+        };
+        public _initializeAsync = initialize;
+        public async encode(rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions) {
+            return encode(rgba, width, height, options);
+        }
+    }
+    vi.stubGlobal("KTX2ENCODER", { KTX2Encoder: Encoder });
+    return Encoder;
+}
+
 class FakeWorker {
     public static instances: FakeWorker[] = [];
     public messages: { action: string; id: number; rgba?: Uint8Array; options?: IKTX2EncoderOptions }[] = [];
@@ -439,8 +460,7 @@ describe("KhronosTextureContainer2Encoder", () => {
     it.each([0, 1])("uses main-thread fallback with numWorkers=%s when workers are disabled or unavailable", async (numWorkers) => {
         vi.stubGlobal("Worker", numWorkers === 0 ? FakeWorker : undefined);
         const encode = vi.fn().mockReturnValue(new Uint8Array([9]));
-        const create = vi.fn().mockResolvedValue({ encode });
-        vi.stubGlobal("KTX2ENCODER", { KTX2Encoder: { CreateAsync: create } });
+        StubEncoder(encode);
         vi.spyOn(Tools, "LoadBabylonScriptAsync").mockResolvedValue(undefined);
         const mainThread = new KhronosTextureContainer2Encoder({ numWorkers, wasmBinary: new ArrayBuffer(8) });
         try {
@@ -453,6 +473,38 @@ describe("KhronosTextureContainer2Encoder", () => {
         }
     });
 
+    it("isolates adapter resources and restores all standalone settings before awaiting initialization", async () => {
+        const captured: Array<{ JSModule: unknown; WasmBinary: ArrayBuffer | null; JSModuleURL: string; WasmModuleURL: string }> = [];
+        const encode = vi.fn().mockReturnValue(new Uint8Array([9]));
+        const initialize = vi.fn(async function (this: { configuration: (typeof captured)[number] }) {
+            captured.push(this.configuration);
+        });
+        const constructor = StubEncoder(encode, initialize);
+        const original = {
+            JSModule: constructor.JSModule,
+            WasmBinary: constructor.WasmBinary,
+            JSModuleURL: constructor.JSModuleURL,
+            WasmModuleURL: constructor.WasmModuleURL,
+        };
+        vi.spyOn(Tools, "LoadBabylonScriptAsync").mockResolvedValue(undefined);
+        const binaries = [new ArrayBuffer(4), new ArrayBuffer(8)];
+        const adapters = binaries.map(
+            (wasmBinary, index) => new KhronosTextureContainer2Encoder({ numWorkers: 0, wasmBinary, basisJsUrl: `https://example.test/codec${index}.js` })
+        );
+        try {
+            await Promise.all(adapters.map(async (adapter) => await adapter.encodeAsync(new Uint8Array(64), 4, 4, { usage: "color" })));
+            expect(captured.map(({ JSModule, WasmBinary, JSModuleURL }) => ({ JSModule, WasmBinary, JSModuleURL }))).toEqual([
+                { JSModule: null, WasmBinary: binaries[0], JSModuleURL: "https://example.test/codec0.js" },
+                { JSModule: null, WasmBinary: binaries[1], JSModuleURL: "https://example.test/codec1.js" },
+            ]);
+            for (const key of Object.keys(original) as Array<keyof typeof original>) {
+                expect(constructor[key]).toBe(original[key]);
+            }
+        } finally {
+            adapters.forEach((adapter) => adapter.dispose());
+        }
+    });
+
     it("yields between main-thread encodes so a pending job can be cancelled", async () => {
         vi.useFakeTimers();
         const abort = new AbortController();
@@ -460,7 +512,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             setTimeout(() => abort.abort(), 0);
             return new Uint8Array([9]);
         });
-        vi.stubGlobal("KTX2ENCODER", { KTX2Encoder: { CreateAsync: vi.fn().mockResolvedValue({ encode }) } });
+        StubEncoder(encode);
         vi.spyOn(Tools, "LoadBabylonScriptAsync").mockResolvedValue(undefined);
         const mainThread = new KhronosTextureContainer2Encoder({ numWorkers: 0, wasmBinary: new ArrayBuffer(8) });
         try {
@@ -480,11 +532,9 @@ describe("KhronosTextureContainer2Encoder", () => {
 
     it.each(["abort", "dispose"] as const)("settles main-thread initialization on %s without encoding later", async (reason) => {
         const encode = vi.fn();
-        let initialize: (value: { encode: typeof encode }) => void = () => {};
-        const create = vi.fn(async () => await new Promise<{ encode: typeof encode }>((resolve) => (initialize = resolve)));
-        vi.stubGlobal("KTX2ENCODER", {
-            KTX2Encoder: { CreateAsync: create },
-        });
+        let initialize: () => void = () => {};
+        const create = vi.fn(async () => await new Promise<void>((resolve) => (initialize = resolve)));
+        StubEncoder(encode, create);
         vi.spyOn(Tools, "LoadBabylonScriptAsync").mockResolvedValue(undefined);
         const mainThread = new KhronosTextureContainer2Encoder({ numWorkers: 0, wasmBinary: new ArrayBuffer(8) });
         const abort = new AbortController();
@@ -498,7 +548,7 @@ describe("KhronosTextureContainer2Encoder", () => {
                 mainThread.dispose();
             }
             await rejected;
-            initialize({ encode });
+            initialize();
             await new Promise((resolve) => setTimeout(resolve, 10));
             expect(encode).not.toHaveBeenCalled();
         } finally {
@@ -571,7 +621,7 @@ describe("KhronosTextureContainer2Encoder", () => {
                 throw new Error("Script load failed");
             }
         });
-        vi.stubGlobal("KTX2ENCODER", { KTX2Encoder: { CreateAsync: vi.fn().mockRejectedValue(new Error("Factory failed")) } });
+        StubEncoder(vi.fn(), vi.fn().mockRejectedValue(new Error("Factory failed")));
         try {
             await expect(mainThread.encodeAsync(new Uint8Array(64), 4, 4, { usage: "data" })).rejects.toThrow(/failed/);
         } finally {
