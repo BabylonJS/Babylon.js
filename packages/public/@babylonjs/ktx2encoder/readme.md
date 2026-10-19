@@ -5,7 +5,7 @@ Encode RGBA8 pixels with Basis Universal v2_50. This experimental API uses ETC1S
 ## Installation
 
 ```bash
-npm install @babylonjs/ktx2encoder @babylonjs/core
+npm install @babylonjs/ktx2encoder
 ```
 
 ## Encode pixels in Node
@@ -22,6 +22,8 @@ const ktx2 = encoder.encode(rgba, width, height, { usage: "color" });
 
 ## Encode a Babylon texture
 
+Also install `@babylonjs/core` for the texture adapter.
+
 ```js
 import { EncodeTextureToKTX2Async } from "@babylonjs/core/Misc/khronosTextureContainer2Encoder.js";
 
@@ -30,7 +32,7 @@ const ktx2 = await EncodeTextureToKTX2Async(texture, { usage: "normal" });
 
 ## Limits
 
-Both dimensions must be positive multiples of 4, with at most 12,582,912 pixels. Pixels are not resized. The texture adapter accepts 2D unsigned-byte textures with straight alpha; compressed textures require a scene.
+Both dimensions must be multiples of 4 from 4 through 16,384, with at most 12,582,912 pixels. Pixels are not resized. The texture adapter accepts 2D unsigned-byte textures with straight alpha; compressed textures require a scene.
 
 Each worker starts with about 128 MiB of WASM memory. Main-thread compression is synchronous. HDR, threaded WASM, progress reporting, and glTF export are not included.
 

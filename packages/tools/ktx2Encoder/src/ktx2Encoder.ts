@@ -77,35 +77,6 @@ const ValidateIntegerRange = (name: string, value: number | undefined, minimum: 
     }
 };
 
-const ValidateOptions = (options: IKTX2EncoderOptions): void => {
-    if (options.usage !== "color" && options.usage !== "data" && options.usage !== "normal") {
-        throw new Error("usage must be 'color', 'data', or 'normal'.");
-    }
-
-    ValidateIntegerRange("etc1sQualityLevel", options.etc1sQualityLevel, 1, 255);
-    ValidateIntegerRange("etc1sCompressionLevel", options.etc1sCompressionLevel, 0, 6);
-    ValidateIntegerRange("uastcQualityLevel", options.uastcQualityLevel, 0, 4);
-
-    if (options.usage === "color") {
-        if (options.uastcQualityLevel !== undefined || options.zstandard !== undefined) {
-            throw new Error("UASTC options cannot be used when usage is 'color'.");
-        }
-    } else if (options.etc1sQualityLevel !== undefined || options.etc1sCompressionLevel !== undefined) {
-        throw new Error("ETC1S options can only be used when usage is 'color'.");
-    }
-};
-
-const ValidateInput = (rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): void => {
-    _ValidateKTX2EncoderDimensions(width, height);
-    const pixelCount = width * height;
-    const expectedByteLength = pixelCount * 4;
-    if (rgba.byteLength !== expectedByteLength) {
-        throw new Error(`RGBA input byte length must be ${expectedByteLength} for a ${width}x${height} image, but received ${rgba.byteLength}.`);
-    }
-
-    ValidateOptions(options);
-};
-
 const PatchDFDPrimaries = (data: Uint8Array): void => {
     if (data.byteLength < KTX2DFDOffsetPosition + 4) {
         throw new Error("Basis produced an invalid KTX2 file without a complete header.");
@@ -128,6 +99,13 @@ const LoadFactoryAsync = async (url: string): Promise<BasisFactory> => {
     }
 
     const source = await response.text();
+    if (typeof process === "object" && process.versions?.node) {
+        // WASM is supplied directly, so the factory only needs Node's built-ins.
+        const directory = process.cwd();
+        const filename = `${directory}/basis_encoder.js`;
+        const nodeRequire = process.getBuiltinModule("module").createRequire(filename);
+        return Function("require", "__dirname", "__filename", `${source}\nreturn BASIS;`)(nodeRequire, directory, filename) as BasisFactory;
+    }
     return Function(`${source}\nreturn BASIS;`)() as BasisFactory;
 };
 
@@ -155,22 +133,25 @@ export class KTX2Encoder {
      * @experimental
      */
     public static async CreateAsync(config: IKTX2EncoderConfiguration): Promise<KTX2Encoder> {
-        const factory = (config.basisFactory as BasisFactory | undefined) ?? (config.jsModuleUrl ? await LoadFactoryAsync(config.jsModuleUrl) : undefined);
-        if (!factory) {
+        if (!config.basisFactory && !config.jsModuleUrl) {
             throw new Error("A Basis encoder factory or jsModuleUrl is required.");
         }
-
-        let wasmBinary: ArrayBuffer | Uint8Array | undefined = config.wasmBinary;
-        if (!wasmBinary) {
-            if (!config.wasmUrl) {
-                throw new Error("A Basis encoder wasmBinary or wasmUrl is required.");
-            }
-            const response = await fetch(config.wasmUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to load the Basis encoder WebAssembly module from '${config.wasmUrl}': ${response.status} ${response.statusText}.`);
-            }
-            wasmBinary = await response.arrayBuffer();
+        if (!config.wasmBinary && !config.wasmUrl) {
+            throw new Error("A Basis encoder wasmBinary or wasmUrl is required.");
         }
+        const [factory, wasmBinary] = await Promise.all([
+            (config.basisFactory as BasisFactory | undefined) ?? LoadFactoryAsync(config.jsModuleUrl!),
+            (async () => {
+                if (config.wasmBinary) {
+                    return config.wasmBinary;
+                }
+                const response = await fetch(config.wasmUrl!);
+                if (!response.ok) {
+                    throw new Error(`Failed to load the Basis encoder WebAssembly module from '${config.wasmUrl}': ${response.status} ${response.statusText}.`);
+                }
+                return await response.arrayBuffer();
+            })(),
+        ]);
 
         const basisModule = await factory({ wasmBinary });
         if (!basisModule[BasisInitialized]) {
@@ -190,7 +171,24 @@ export class KTX2Encoder {
      * @experimental
      */
     public encode(rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): Uint8Array {
-        ValidateInput(rgba, width, height, options);
+        _ValidateKTX2EncoderDimensions(width, height);
+        const expectedByteLength = width * height * 4;
+        if (rgba.byteLength !== expectedByteLength) {
+            throw new Error(`RGBA input byte length must be ${expectedByteLength} for a ${width}x${height} image, but received ${rgba.byteLength}.`);
+        }
+        if (options.usage !== "color" && options.usage !== "data" && options.usage !== "normal") {
+            throw new Error("usage must be 'color', 'data', or 'normal'.");
+        }
+        ValidateIntegerRange("etc1sQualityLevel", options.etc1sQualityLevel, 1, 255);
+        ValidateIntegerRange("etc1sCompressionLevel", options.etc1sCompressionLevel, 0, 6);
+        ValidateIntegerRange("uastcQualityLevel", options.uastcQualityLevel, 0, 4);
+        if (options.usage === "color") {
+            if (options.uastcQualityLevel !== undefined || options.zstandard !== undefined) {
+                throw new Error("UASTC options cannot be used when usage is 'color'.");
+            }
+        } else if (options.etc1sQualityLevel !== undefined || options.etc1sCompressionLevel !== undefined) {
+            throw new Error("ETC1S options can only be used when usage is 'color'.");
+        }
 
         const basisModule = this._basisModule as IBasisModule;
         const encoder = new basisModule.BasisEncoder();

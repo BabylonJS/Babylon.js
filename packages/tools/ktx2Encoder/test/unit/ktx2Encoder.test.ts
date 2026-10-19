@@ -109,6 +109,8 @@ describe("KTX2Encoder validation", () => {
     it.each([
         { rgba: _rgba(), width: 0, height: 4, options: { usage: "color" }, message: "positive multiples of 4" },
         { rgba: _rgba(), width: 5, height: 4, options: { usage: "color" }, message: "positive multiples of 4" },
+        { rgba: _rgba(), width: 16388, height: 4, options: { usage: "color" }, message: "16,384" },
+        { rgba: _rgba(), width: 4, height: 16388, options: { usage: "color" }, message: "16,384" },
         { rgba: new Uint8Array(63), width: 4, height: 4, options: { usage: "color" }, message: "byte length must be 64" },
         { rgba: new Uint8Array(1), width: 4096, height: 3076, options: { usage: "color" }, message: "12,582,912" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "other" }, message: "usage must be" },
@@ -126,6 +128,13 @@ describe("KTX2Encoder validation", () => {
 });
 
 describe("KTX2Encoder presets", () => {
+    it.each([
+        [16384, 4],
+        [4, 16384],
+    ])("accepts the maximum dimension in a %s by %s image", (width, height) => {
+        const context = _createEncoder();
+        expect(context.encoder.encode(_rgba(width, height), width, height, { usage: "color" })).toHaveLength(96);
+    });
     it.each(["color", "data", "normal"] as const)("uses the default %s quality and compression settings without overrides", (usage) => {
         const context = _createEncoder();
         context.encoder.encode(_rgba(), 4, 4, { usage });
@@ -267,7 +276,7 @@ describe("KTX2Encoder.CreateAsync", () => {
         await expect(KTX2Encoder.CreateAsync({ basisFactory: vi.fn() })).rejects.toThrow("wasmBinary or wasmUrl");
     });
 
-    it("loads the factory and WebAssembly binary from URLs", async () => {
+    it("loads the factory and WebAssembly binary concurrently from URLs", async () => {
         const initializeBasis = vi.fn();
         const module = {
             BasisEncoder: FakeBasisEncoder,
@@ -277,11 +286,21 @@ describe("KTX2Encoder.CreateAsync", () => {
         };
         (globalThis as typeof globalThis & { __basisTestModule?: unknown }).__basisTestModule = module;
         const wasmBinary = new ArrayBuffer(2);
-        const fetchMock = vi.fn().mockResolvedValueOnce(new Response("var BASIS = async () => globalThis.__basisTestModule;")).mockResolvedValueOnce(new Response(wasmBinary));
+        let releaseSource!: (response: Response) => void;
+        const sourceResponse = new Promise<Response>((resolve) => {
+            releaseSource = resolve;
+        });
+        const fetchMock = vi.fn().mockReturnValueOnce(sourceResponse).mockResolvedValueOnce(new Response(wasmBinary));
         vi.stubGlobal("fetch", fetchMock);
 
         try {
-            await KTX2Encoder.CreateAsync({ jsModuleUrl: "basis.js", wasmUrl: "basis.wasm" });
+            const pending = KTX2Encoder.CreateAsync({ jsModuleUrl: "basis.js", wasmUrl: "basis.wasm" });
+            try {
+                expect(fetchMock).toHaveBeenCalledTimes(2);
+            } finally {
+                releaseSource(new Response("var BASIS = async () => globalThis.__basisTestModule;"));
+                await pending;
+            }
         } finally {
             delete (globalThis as typeof globalThis & { __basisTestModule?: unknown }).__basisTestModule;
             vi.unstubAllGlobals();
