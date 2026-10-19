@@ -238,6 +238,25 @@ describe("Babylon Lite gizmo service", () => {
         expect(Mocks.coordinates.Rotation).toHaveBeenLastCalledWith(expect.anything(), true);
     });
 
+    it("keeps rotated-node scaling local without changing the translation and rotation coordinate preference", async () => {
+        const h = MakeHarness();
+        h.mesh.rotationQuaternion.set(0, 0, Math.SQRT1_2, Math.SQRT1_2);
+        await h.select(h.mesh);
+        await h.click("Translate");
+        await h.click("Local Coordinates");
+        await h.click("Scale");
+        expect(Mocks.coordinates.Scale).toHaveBeenCalledExactlyOnceWith(expect.anything(), true);
+        await vi.waitFor(() => {
+            expect(h.button("Local Coordinates")).toBeNull();
+            expect(h.button("World Coordinates")).toBeNull();
+        });
+        await h.select(h.otherMesh);
+        expect(Mocks.coordinates.Scale).toHaveBeenCalledExactlyOnceWith(expect.anything(), true);
+        await h.click("Rotate");
+        expect(Mocks.coordinates.Rotation).toHaveBeenLastCalledWith(expect.anything(), false);
+        expect(h.button("World Coordinates")).not.toBeNull();
+    });
+
     it("lets native capture handlers manipulate gizmos without also moving application cameras", async () => {
         const h = MakeHarness();
         const nativeMove = vi.fn();

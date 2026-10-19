@@ -291,6 +291,47 @@ for (const [mode, target, property, dx, dy] of [
     });
 }
 
+test("Lite Inspector scaling stays local on a rotated mesh after using world-coordinate translation", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await OpenMesh(page);
+    await page.evaluate(() => {
+        const mesh = (window as LiteTestWindow).liteMeshes[0];
+        mesh.rotationQuaternion.set(0, 0, Math.SQRT1_2, Math.SQRT1_2);
+    });
+    await page.getByRole("button", { name: "Translate", exact: true }).click();
+    await page.getByRole("button", { name: "Local Coordinates", exact: true }).click();
+    await page.getByRole("button", { name: "Scale", exact: true }).click();
+    await expect(page.getByRole("button", { name: "World Coordinates", exact: true })).toBeHidden();
+    await expect(page.getByRole("button", { name: "Local Coordinates", exact: true })).toBeHidden();
+    const handle = await GetCanvasPoint(page, "scale");
+    const before = await page.evaluate(() => {
+        const scaling = (window as LiteTestWindow).liteMeshes[0].scaling;
+        return [scaling.x, scaling.y, scaling.z];
+    });
+    await page.mouse.move(handle.x, handle.y);
+    await page.mouse.down();
+    expect(await page.evaluate(() => (window as LiteTestWindow).liteIsGizmoDragging((window as LiteTestWindow).liteEngine.canvas as HTMLCanvasElement))).toBe(true);
+    await page.mouse.move(handle.x, handle.y - 60, { steps: 5 });
+    const after = await page.evaluate(() => {
+        const scaling = (window as LiteTestWindow).liteMeshes[0].scaling;
+        return [scaling.x, scaling.y, scaling.z];
+    });
+    expect(after[0]).not.toBeCloseTo(before[0], 5);
+    expect(after[1]).toBeCloseTo(before[1], 5);
+    expect(after[2]).toBeCloseTo(before[2], 5);
+    await page.mouse.up();
+    await page.getByRole("button", { name: "Rotate", exact: true }).click();
+    await expect(page.getByRole("button", { name: "World Coordinates", exact: true })).toBeVisible();
+    await page.evaluate(async () => {
+        const state = window as LiteTestWindow;
+        await state.liteInspectorToken.dispose();
+        state.liteStopEngine(state.liteEngine);
+        await state.liteWaitForGpuResourceRetirements(state.liteEngine);
+    });
+    expect(errors).toEqual([]);
+});
+
 test("Lite Inspector canvas picking still switches meshes while a gizmo mode is active", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));

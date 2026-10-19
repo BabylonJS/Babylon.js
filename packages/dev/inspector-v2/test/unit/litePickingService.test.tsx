@@ -330,6 +330,33 @@ describe("Babylon Lite picking service", () => {
         expect(Pick).toHaveBeenCalledTimes(1);
     });
 
+    it.each([
+        ["gizmo press", true, false],
+        ["released gizmo gesture", true, true],
+        ["camera press", false, false],
+    ] as const)("discards an earlier mesh readback when a new %s starts", async (_gesture, gizmo, released) => {
+        const h = MakeHarness();
+        const otherMesh = { name: "Other Mesh" } as Mesh;
+        h.scene.meshes.push(otherMesh);
+        h.selection.selectedEntity = h.mesh;
+        const deferred = Deferred<PickingInfo>();
+        Pick.mockReturnValueOnce(deferred.promise);
+        h.toggle();
+        Tap(h.canvas);
+        expect(Pick).toHaveBeenCalledTimes(1);
+
+        GizmoInteracting.mockReturnValue(gizmo);
+        Pointer(h.canvas, "pointerdown");
+        if (released) {
+            Pointer(h.canvas, "pointerup");
+            GizmoInteracting.mockReturnValue(false);
+        }
+        await act(async () => deferred.resolve(Result(otherMesh)));
+        expect(h.selection.selectedEntity).toBe(h.mesh);
+        expect(Pick).toHaveBeenCalledTimes(1);
+        Pointer(h.canvas, "pointercancel");
+    });
+
     it("does not pick camera drags, secondary pointers, non-left clicks, cancelled gestures, or unmatched pointerups", () => {
         const h = MakeHarness();
         h.toggle();

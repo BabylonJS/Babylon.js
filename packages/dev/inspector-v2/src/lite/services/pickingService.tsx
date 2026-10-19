@@ -101,6 +101,9 @@ export const PickingServiceDefinition: ServiceDefinition<[], [IEngineContext, IS
             let pointer: { id: number; x: number; y: number; dragged: boolean } | undefined;
             const isDragged = (event: PointerEvent) => !!pointer && Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) > 5;
             const onPointerDown = (event: PointerEvent) => {
+                if (event.isPrimary && event.button === 0) {
+                    generation++;
+                }
                 pointer =
                     event.isPrimary && event.button === 0 && !isGizmoInteracting(canvas) ? { id: event.pointerId, x: event.clientX, y: event.clientY, dragged: false } : undefined;
             };

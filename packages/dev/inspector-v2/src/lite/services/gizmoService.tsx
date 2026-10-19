@@ -63,9 +63,10 @@ function CreateGizmo(engine: EngineContext, layer: UtilityLayer, mode: GizmoMode
         }
         case "scale": {
             const gizmo = createScaleGizmo(engine, layer);
+            setScaleGizmoLocalCoordinates(gizmo, true);
             return {
                 attach: (node: SceneNode) => attachScaleGizmoToNode(gizmo, node),
-                setLocalCoordinates: (local: boolean) => setScaleGizmoLocalCoordinates(gizmo, local),
+                setLocalCoordinates: undefined,
                 dispose: () => disposeScaleGizmo(gizmo, layer),
             };
         }
@@ -247,7 +248,7 @@ export const GizmoServiceDefinition: ServiceDefinition<[], [IEngineContext, IShe
                         value={state.mode === "boundingBox"}
                         onChange={() => toggleMode("boundingBox")}
                     />
-                    <Collapse visible={!!state.mode && state.mode !== "boundingBox"} orientation="horizontal">
+                    <Collapse visible={state.mode === "translate" || state.mode === "rotate"} orientation="horizontal">
                         <ToggleButton
                             title={state.localCoordinates ? "Local Coordinates" : "World Coordinates"}
                             checkedIcon={CubeRegular}
