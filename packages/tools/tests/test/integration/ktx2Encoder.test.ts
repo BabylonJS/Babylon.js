@@ -54,7 +54,7 @@ test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ pa
             const second = await B.GetTextureDataAsync(roundTrip, 8, 8, 0, 0, false, 0, false);
             return {
                 exactConversions: window.engine!.useExactSrgbConversions,
-                compressed: B.IsCompressedTextureFormat(source.textureFormat),
+                compressed: B._IsCompressedTextureFormat(source.textureFormat),
                 hardwareSRGB: source.getInternalTexture()!._useSRGBBuffer,
                 firstDifference: Math.max(...first.map((value, index) => Math.abs(value - pixels[index]))),
                 roundTripDifference: Math.max(...second.map((value, index) => Math.abs(value - first[index]))),
@@ -74,4 +74,68 @@ test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ pa
     expect(result.hardwareSRGB).toBe(true);
     expect(result.firstDifference).toBeLessThanOrEqual(8);
     expect(result.roundTripDifference).toBeLessThanOrEqual(8);
+});
+
+test("KTX1 compressed rows encode identically for both upload-flip settings", async ({ page }) => {
+    const { baseUrl } = getGlobalConfig();
+    await page.goto(baseUrl + "/empty.html");
+    await page.waitForFunction(() => window.BABYLON);
+    await page.evaluate(evaluateInitEngineForVisualization, {
+        engineName: "webgl2",
+        useLargeWorldRendering: false,
+        useReverseDepthBuffer: "false",
+        useNonCompatibilityMode: "false",
+        baseUrl,
+    });
+    const rows = await page.evaluate(async (baseUrl) => {
+        const B = window.BABYLON;
+        const scene = new B.Scene(window.engine!);
+        const encoder = new B.KhronosTextureContainer2Encoder({
+            jsEncoderModuleUrl: baseUrl + "/babylon.ktx2Encoder.js",
+            basisJsUrl: baseUrl + "/basisEncoder/v2_50/basis_encoder.js",
+            basisWasmUrl: baseUrl + "/basisEncoder/v2_50/basis_encoder.wasm",
+            numWorkers: 1,
+        });
+        const data = new Uint8Array(100);
+        data.set([0xab, 0x4b, 0x54, 0x58, 0x20, 0x31, 0x31, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a]);
+        new Uint32Array(data.buffer, 12, 13).set([0x04030201, 0, 1, 0, 0x83f0, 0x1907, 8, 8, 0, 0, 1, 1, 0]);
+        const view = new DataView(data.buffer);
+        view.setUint32(64, 32, true);
+        for (let block = 0; block < 4; block++) {
+            view.setUint16(68 + block * 8, block < 2 ? 0xf800 : 0x001f, true);
+        }
+        const urls: string[] = [];
+        const load = async (data: Uint8Array, extension: string, invertY: boolean) => {
+            const url = URL.createObjectURL(new Blob([data.slice().buffer]));
+            urls.push(url);
+            const texture = new B.Texture(url, scene, { noMipmap: true, invertY, forcedExtension: extension });
+            await B.WhenTextureReadyAsync(texture);
+            return texture;
+        };
+        try {
+            const results = [];
+            for (const invertY of [false, true]) {
+                const source = await load(data, ".ktx", invertY);
+                const encoded = await B.EncodeTextureToKTX2Async(source, { usage: "data", generateMipmaps: false }, encoder);
+                const decoded = await load(encoded, ".ktx2", false);
+                const pixels = await B.GetTextureDataAsync(decoded, 8, 8, 0, 0, false, 0, false);
+                results.push({ first: Array.from(pixels.slice(0, 4)), last: Array.from(pixels.slice(-4)) });
+            }
+            return results;
+        } finally {
+            encoder.dispose();
+            scene.dispose();
+            window.engine!.dispose();
+            window.engine = null;
+            for (const url of urls) {
+                URL.revokeObjectURL(url);
+            }
+        }
+    }, baseUrl);
+    for (const { first, last } of rows) {
+        expect(first[0]).toBeGreaterThanOrEqual(247);
+        expect(first[2]).toBeLessThanOrEqual(8);
+        expect(last[0]).toBeLessThanOrEqual(8);
+        expect(last[2]).toBeGreaterThanOrEqual(247);
+    }
 });

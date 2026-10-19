@@ -27,13 +27,6 @@ vi.mock("core/PostProcesses/postProcess.pure", async (importOriginal) => {
         public getCompilationError() {
             return state.compilationError;
         }
-        public executeWhenCompiled(callback: (effect: FakeEffect) => void) {
-            if (this.isReady()) {
-                callback(this);
-            } else {
-                this.onCompileObservable.add(callback);
-            }
-        }
         public setTexture() {}
         public setFloat() {}
         public setInt(name: string, value: number) {

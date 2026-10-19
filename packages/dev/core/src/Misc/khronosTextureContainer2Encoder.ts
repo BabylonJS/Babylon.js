@@ -2,7 +2,7 @@
 import { Tools } from "./tools.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Constants } from "../Engines/constants";
-import { GetTextureDataAsync, IsCompressedTextureFormat, WhenTextureReadyAsync } from "./textureTools";
+import { GetTextureDataAsync, _IsCompressedTextureFormat, WhenTextureReadyAsync } from "./textureTools";
 import { AsyncLock } from "./asyncLock";
 import { AutoReleaseWorkerPool } from "./workerPool";
 import { _ValidateKTX2EncoderDimensions, type IKTX2EncoderOptions } from "../Materials/Textures/ktx2encoderTypes";
@@ -21,15 +21,30 @@ export type { IKTX2EncoderOptions, KTX2EncoderUsage } from "../Materials/Texture
  * @experimental
  */
 export interface IKhronosTextureContainer2EncoderConfiguration {
-    /** URL of the agnostic encoder's UMD bundle. */
+    /**
+     * URL of the agnostic encoder's UMD bundle.
+     * @experimental
+     */
     jsEncoderModuleUrl: string;
-    /** URL of the Basis Universal v2_50 JavaScript factory. */
+    /**
+     * URL of the Basis Universal v2_50 JavaScript factory.
+     * @experimental
+     */
     basisJsUrl: string;
-    /** URL of the Basis Universal v2_50 WASM binary. */
+    /**
+     * URL of the Basis Universal v2_50 WASM binary.
+     * @experimental
+     */
     basisWasmUrl: string;
-    /** Inject the WASM binary instead of fetching it. The binary is not detached. */
+    /**
+     * Inject the WASM binary instead of fetching it. The binary is not detached.
+     * @experimental
+     */
     wasmBinary?: ArrayBuffer;
-    /** Number of workers. Zero runs synchronously on the calling thread after initialization. */
+    /**
+     * Number of workers. Zero runs synchronously on the calling thread after initialization.
+     * @experimental
+     */
     numWorkers: number;
 }
 
@@ -38,9 +53,15 @@ export interface IKhronosTextureContainer2EncoderConfiguration {
  * @experimental
  */
 export interface IEncodeTextureToKTX2Options extends Omit<IKTX2EncoderOptions, "generateMipmaps" | "flipY"> {
-    /** Generate mipmaps. Defaults to the source texture's mipmap setting. */
+    /**
+     * Generate mipmaps. Defaults to the source texture's mipmap setting.
+     * @experimental
+     */
     generateMipmaps?: boolean;
-    /** Abort readiness, readback waiting, or encoding. */
+    /**
+     * Abort readiness, readback waiting, or encoding.
+     * @experimental
+     */
     signal?: AbortSignal;
 }
 
@@ -89,7 +110,7 @@ function ValidateTexture(texture: BaseTexture, allowUninitialized: boolean): voi
     if (internalTexture?._premulAlpha) {
         throw new Error("KTX2 encoding does not support premultiplied alpha.");
     }
-    if (IsCompressedTextureFormat(texture.textureFormat) && !texture.getScene()) {
+    if (_IsCompressedTextureFormat(texture.textureFormat) && !texture.getScene()) {
         throw new Error("KTX2 encoding compressed textures requires a scene for GPU readback.");
     }
     const { width, height } = texture.getSize();
@@ -137,8 +158,8 @@ async function WithAbortAsync<T>(operation: (signal: AbortSignal) => Promise<T>,
  * Determines the Basis row flip without modifying pixels.
  * GetTextureDataAsync's direct and LOD RTT paths preserve texture texel row order:
  * WebGL reads bottom-first; WebGPU's Y-flipped RTT draw compensates its top-left origin.
- * Uploaded images undo their upload flip. Compressed uploads cannot apply that flip;
- * KTX1 compensates with _invertVScale, while compressed KTX2 and DDS retain their source rows.
+ * Uploaded images undo their upload flip. Compressed uploads retain their source rows;
+ * loader UV compensation does not change readback pixels.
  * KTX2's uncompressed fallback uses the regular upload flip.
  * Render targets need a flip on WebGL and on WebGPU, whose render-target draws are Y-flipped.
  * @internal
@@ -149,7 +170,7 @@ export function _GetKTX2TextureFlipY(texture: BaseTexture): boolean {
     if (texture.isRenderTarget) {
         return !!engine && (engine.hasOriginBottomLeft || engine.isWebGPU);
     }
-    if (internalTexture?._extension !== ".ktx" && IsCompressedTextureFormat(texture.textureFormat)) {
+    if (_IsCompressedTextureFormat(texture.textureFormat)) {
         return false;
     }
     return !!internalTexture?.invertY && !internalTexture._invertVScale;
@@ -159,7 +180,7 @@ export function _GetKTX2TextureFlipY(texture: BaseTexture): boolean {
  * Encodes level zero of a 2D unsigned byte texture to a top-down KTX2 image.
  * Texture UV transforms are not baked into the image. GPU readback may convert compressed source pixels.
  * Each pending call holds its full RGBA buffer, so batch callers should limit concurrency.
- * @param texture Source texture. Width and height must be positive multiples of 4, with at most 12,582,912 pixels.
+ * @param texture Source texture. Dimensions must be multiples of 4 from 4 through 16,384, with at most 12,582,912 pixels.
  * @param options Explicit usage, optional mipmap override, and cancellation signal.
  * @param encoder Encoder to use. Defaults to KhronosTextureContainer2Encoder.Default.
  * @returns KTX2 file bytes.
@@ -256,7 +277,7 @@ export class KhronosTextureContainer2Encoder {
     /**
      * Encodes pixels. In worker mode the entire input ArrayBuffer is transferred and detached.
      * Cancellation on the main thread is cooperative; synchronous Basis encoding cannot be interrupted.
-     * @param rgba RGBA8 pixels. Dimensions must be positive multiples of 4, with at most 12,582,912 pixels.
+     * @param rgba RGBA8 pixels. Dimensions must be multiples of 4 from 4 through 16,384, with at most 12,582,912 pixels.
      * @param width Image width.
      * @param height Image height.
      * @param options Encoding options and optional cancellation signal.
@@ -275,9 +296,9 @@ export class KhronosTextureContainer2Encoder {
         }
         const { signal, ...encodingOptions } = options;
         if (!this._useWorkers) {
+            await this._initializeAsync(signal);
             return await WithAbortAsync(
                 async (signal) => {
-                    await (this._resourcesPromise ??= this._loadResourcesAsync());
                     return await this._mainThreadLock.lockAsync(async () => {
                         await new Promise<void>((resolve) => setTimeout(resolve, 0));
                         signal.throwIfAborted();
@@ -305,11 +326,16 @@ export class KhronosTextureContainer2Encoder {
         });
     }
 
+    private async _initializeAsync(signal?: AbortSignal): Promise<void> {
+        await WithAbortAsync(async () => await (this._resourcesPromise ??= this._loadResourcesAsync()), signal, this._disposeSignal);
+    }
+
     private async _loadResourcesAsync(): Promise<void> {
-        this._wasmBinary = this._configuration.wasmBinary ?? (await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(this._configuration.basisWasmUrl, true)));
+        const wasmBinary = this._configuration.wasmBinary ?? (await Tools.LoadFileAsync(Tools.GetBabylonScriptURL(this._configuration.basisWasmUrl, true)));
         if (this._disposed) {
             return;
         }
+        this._wasmBinary = wasmBinary;
         if (this._useWorkers) {
             this._blobUrl = URL.createObjectURL(new Blob([`(${KTX2EncoderWorkerFunction.toString()})()`], { type: "application/javascript" }));
         } else {
@@ -332,6 +358,7 @@ export class KhronosTextureContainer2Encoder {
             await (this._resourcesPromise ??= this._loadResourcesAsync());
             this._dispatch();
         } catch (error) {
+            this._queue = [];
             for (const job of this._jobs) {
                 this._settle(job, undefined, ToError(error));
             }
@@ -346,14 +373,14 @@ export class KhronosTextureContainer2Encoder {
         }
         while (this._queue.length) {
             const job = this._queue[0];
-            let slot = this._workers.find((worker) => worker.ready && !worker.job);
+            const slot = this._workers.find((worker) => worker.ready && !worker.job);
             if (!slot && this._workers.length >= this._configuration.numWorkers) {
                 return;
             }
             this._queue.shift();
             try {
                 if (!slot) {
-                    slot = this._createWorker(job);
+                    this._createWorker(job);
                 } else {
                     slot.job = job;
                     this._postEncode(slot);
@@ -362,17 +389,19 @@ export class KhronosTextureContainer2Encoder {
                 this._settle(job, undefined, ToError(error));
             }
         }
-        if (!this._jobs.size && this._workers.length && this._idleTimer === undefined) {
+        if (this._workers.some((slot) => !slot.job) && this._idleTimer === undefined) {
             this._idleTimer = setTimeout(() => {
                 this._idleTimer = undefined;
                 for (const slot of this._workers) {
-                    this._removeWorker(slot);
+                    if (!slot.job) {
+                        this._removeWorker(slot);
+                    }
                 }
             }, AutoReleaseWorkerPool.DefaultOptions.idleTimeElapsedBeforeRelease);
         }
     }
 
-    private _createWorker(job: IEncodeJob): IEncoderWorker {
+    private _createWorker(job: IEncodeJob): void {
         const worker = new Worker(this._blobUrl!);
         const slot: IEncoderWorker = {
             worker,
@@ -391,7 +420,6 @@ export class KhronosTextureContainer2Encoder {
             basisJsUrl: Tools.GetBabylonScriptURL(this._configuration.basisJsUrl, true),
             wasmBinary: this._wasmBinary!,
         });
-        return slot;
     }
 
     private _postMessage(slot: IEncoderWorker, request: KTX2EncoderWorkerRequest, transfer: Transferable[] = []): void {
@@ -473,6 +501,7 @@ export class KhronosTextureContainer2Encoder {
         for (const slot of [...this._workers]) {
             this._removeWorker(slot);
         }
+        this._queue = [];
         for (const job of this._jobs) {
             this._settle(job, undefined, DisposedError());
         }
@@ -482,5 +511,7 @@ export class KhronosTextureContainer2Encoder {
             this._blobUrl = undefined;
         }
         this._encoder = undefined;
+        this._wasmBinary = undefined;
+        this._configuration.wasmBinary = undefined;
     }
 }

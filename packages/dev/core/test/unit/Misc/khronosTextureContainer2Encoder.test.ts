@@ -94,6 +94,26 @@ describe("KhronosTextureContainer2Encoder", () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 
+    it("releases an idle worker while its sibling is still encoding", async () => {
+        vi.useFakeTimers();
+        encoder.dispose();
+        encoder = new KhronosTextureContainer2Encoder({ numWorkers: 2, wasmBinary: new ArrayBuffer(8) });
+        const first = encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "color" });
+        const second = encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "data" });
+        await vi.advanceTimersByTimeAsync(0);
+        const [idle, active] = FakeWorker.instances;
+        idle.finish();
+        await first;
+        await vi.advanceTimersByTimeAsync(AutoReleaseWorkerPool.DefaultOptions.idleTimeElapsedBeforeRelease);
+        try {
+            expect(idle.terminated).toBe(true);
+            expect(active.terminated).toBe(false);
+        } finally {
+            active.finish();
+            await second;
+        }
+    });
+
     it("queues encodes behind the active worker and transfers their pixel buffers", async () => {
         const rgba = new Uint8Array(64);
         const first = encoder.encodeAsync(rgba, 4, 4, { usage: "color" });
@@ -176,9 +196,8 @@ describe("KhronosTextureContainer2Encoder", () => {
     });
 
     it("rejects running and queued jobs on dispose and revokes its Blob URL once", async () => {
-        const first = encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "color" });
-        const second = encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "data" });
-        const rejected = [ExpectErrorAsync(first, "disposed"), ExpectErrorAsync(second, "disposed")];
+        const jobs = Array.from({ length: 64 }, () => encoder.encodeAsync(new Uint8Array(64), 4, 4, { usage: "color" }));
+        const rejected = jobs.map(async (job) => await ExpectErrorAsync(job, "disposed"));
         await vi.waitFor(() => expect(FakeWorker.instances[0]?.messages).toHaveLength(2));
         encoder.dispose();
         encoder.dispose();
@@ -239,12 +258,14 @@ describe("KhronosTextureContainer2Encoder", () => {
         [3, 4],
         [4, 7],
         [4096, 4096],
+        [16388, 4],
+        [4, 16388],
     ])("rejects %s by %s textures before readback", async (width, height) => {
         const engine = new NullEngine();
         const texture = new RawTexture(null, width, height, Constants.TEXTUREFORMAT_RGBA, engine);
         const readPixels = vi.spyOn(texture, "readPixels");
         try {
-            await expect(EncodeTextureToKTX2Async(texture, { usage: "data" }, encoder)).rejects.toThrow(/multiples of 4|12,582,912/);
+            await expect(EncodeTextureToKTX2Async(texture, { usage: "data" }, encoder)).rejects.toThrow(/multiples of 4|12,582,912|16,384/);
             expect(readPixels).not.toHaveBeenCalled();
         } finally {
             texture.dispose();
@@ -386,7 +407,8 @@ describe("KhronosTextureContainer2Encoder", () => {
         { name: "KTX2 fallback with upload flip", extension: ".ktx2", invertY: true, expected: true },
         { name: "compressed KTX2", extension: ".ktx2", compressed: true, invertY: true, expected: false },
         { name: "compressed DDS", extension: ".dds", compressed: true, invertY: true, expected: false },
-        { name: "compressed KTX1 UV compensation", extension: ".ktx", compressed: true, invertY: true, invertVScale: true, expected: false },
+        { name: "compressed KTX1 with UV compensation", extension: ".ktx", compressed: true, invertVScale: true, expected: false },
+        { name: "compressed KTX1 without UV compensation", extension: ".ktx", compressed: true, invertY: true, expected: false },
         { name: "WebGL without upload flip", expected: false },
         { name: "WebGL with upload flip", invertY: true, expected: true },
         { name: "WebGL UV compensation", invertVScale: true, expected: false },

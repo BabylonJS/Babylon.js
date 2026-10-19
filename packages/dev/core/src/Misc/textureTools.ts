@@ -180,7 +180,7 @@ export function ApplyPostProcess(
 }
 
 /** @internal */
-export function IsCompressedTextureFormat(format: number): boolean {
+export function _IsCompressedTextureFormat(format: number): boolean {
     switch (format) {
         case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
@@ -448,7 +448,7 @@ export async function GetTextureDataAsync(
     // If we're resizing the texture, we need to use a render target texture.
     // forceRTT can be used to ensure correct orientation and gamma for cube maps.
     // 3D textures must also use RTT because direct readPixels does not expose slice selection.
-    if (forceRTT || is3DTexture || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+    if (forceRTT || is3DTexture || _IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
         if (texture.is2DArray) {
             throw new Error(`Reading pixels from 2D array textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
         }
