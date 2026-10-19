@@ -12,6 +12,9 @@ import { type IHardwareTextureWrapper } from "core/Materials/Textures/hardwareTe
 import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { CubeMapToSphericalPolynomialTools } from "core/Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Scene } from "core/scene";
+import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
+import { AbstractEngine } from "core/Engines/abstractEngine";
+import { RegisterEnginesExtensionsEngineRawTexture } from "core/Engines/Extensions/engine.rawTexture.pure";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 type NativeFrameRequester = {
@@ -641,6 +644,7 @@ describe("ThinNativeEngine", () => {
                 loadRawTexture: vi.fn(),
                 loadRawTexture3D: vi.fn(),
                 updateTextureData: vi.fn(),
+                deleteTexture: vi.fn(),
                 getTextureWidth: () => 64,
                 getTextureHeight: () => 64,
                 createFrameBuffer: vi.fn(
@@ -691,6 +695,7 @@ describe("ThinNativeEngine", () => {
                     };
                 },
                 _setTextureSampling: () => {},
+                _loadFile: vi.fn((_url: string, onSuccess: (data: ArrayBuffer) => void) => onSuccess(new ArrayBuffer(8))),
                 _commandBufferEncoder: {
                     startEncodingCommand: (command: unknown) => {
                         currentCommand = [command];
@@ -699,6 +704,7 @@ describe("ThinNativeEngine", () => {
                     encodeCommandArgAsUInt32: (arg: unknown) => currentCommand.push(arg),
                     finishEncodingCommand: () => commands.push(currentCommand),
                 },
+                _boundUniforms: [{ id: "uniform-0" }],
             }) as ThinNativeEngine;
             // Record releases but keep the real frame graph reference counting.
             const releaseFramebuffer = ThinNativeEngine.prototype._releaseFramebufferObjects;
@@ -716,6 +722,11 @@ describe("ThinNativeEngine", () => {
         };
 
         const resourceOf = (texture: InternalTexture) => texture._hardwareTexture!.underlyingResource;
+        const flushAsync = async () => {
+            for (let i = 0; i < 5; i++) {
+                await Promise.resolve();
+            }
+        };
 
         it("falls back to a single-attachment framebuffer when the runtime lacks createMultiFrameBuffer", () => {
             const { engine, nativeEngine } = createEngine({ multiFrameBuffer: false });
@@ -762,14 +773,51 @@ describe("ThinNativeEngine", () => {
                 return rtWrapper;
             };
 
-            engine.bindFramebuffer(createFrameGraphTarget(secondaryA));
+            const retained = createFrameGraphTarget(secondaryA);
+            engine.bindFramebuffer(retained);
             const first = bound();
-            engine.bindFramebuffer(createFrameGraphTarget(secondaryA));
+            const changed = createFrameGraphTarget(secondaryA);
+            engine.bindFramebuffer(changed);
             expect(bound()).toBe(first);
-            engine.bindFramebuffer(createFrameGraphTarget(secondaryB));
+            changed.setTexture(secondaryB, 1, false);
+            engine.bindFramebuffer(changed);
 
             expect(bound()).not.toBe(first);
             expect(bound().colors).toEqual([resourceOf(primary), resourceOf(secondaryB)]);
+            engine.bindFramebuffer(retained);
+            expect(bound()).toBe(first);
+            expect(bound().colors).toEqual([resourceOf(primary), resourceOf(secondaryA)]);
+        });
+
+        it("rebuilds a flat frame graph framebuffer when its depth attachment changes", () => {
+            const { engine, bound } = createEngine();
+            const color = engine._createInternalTexture({ width: 64, height: 64 }, {});
+            const depth1 = engine._createInternalTexture({ width: 64, height: 64 }, {});
+            const depth2 = engine._createInternalTexture({ width: 64, height: 64 }, {});
+            const rtWrapper = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 1, dontCreateTextures: true }) as NativeRenderTargetWrapper;
+            rtWrapper.setTexture(color, 0, false);
+            rtWrapper.setDepthStencilTexture(depth1, false);
+
+            engine.bindFramebuffer(rtWrapper);
+            const first = bound();
+            expect(first.explicitDepth).toBe(resourceOf(depth1));
+
+            rtWrapper.setDepthStencilTexture(depth2);
+            engine.bindFramebuffer(rtWrapper);
+
+            expect(bound()).not.toBe(first);
+            expect(bound().explicitDepth).toBe(resourceOf(depth2));
+        });
+
+        it("keeps every flat MRT color attachment when adding a depth texture", () => {
+            const { engine, bound } = createEngine();
+            const rtWrapper = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2, generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+
+            rtWrapper.createDepthStencilTexture(0, false, false, 1);
+            engine.bindFramebuffer(rtWrapper);
+
+            expect(bound().colors).toEqual(rtWrapper.textures!.map(resourceOf));
+            expect(bound().explicitDepth).toBe(resourceOf(rtWrapper._depthStencilTexture!));
         });
 
         it("rebuilds a layered MRT when its faces, attachments or explicit depth change", () => {
@@ -860,6 +908,51 @@ describe("ThinNativeEngine", () => {
             );
         });
 
+        it("recreates an owned MRT depth texture when its sample count changes", () => {
+            const { engine, bound, releasedTextures } = createEngine();
+            const rtWrapper = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2, generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            rtWrapper.createDepthStencilTexture(0, false, false, 1);
+            const depth = rtWrapper._depthStencilTexture!;
+            const previousDepth = resourceOf(depth);
+
+            engine.updateMultipleRenderTargetTextureSampleCount(rtWrapper, 4);
+            engine.bindFramebuffer(rtWrapper);
+
+            expect(depth.samples).toBe(4);
+            expect(resourceOf(depth)).not.toBe(previousDepth);
+            expect(releasedTextures).toContain(previousDepth);
+            expect(bound().samples).toBe(4);
+            expect(bound().explicitDepth).toBe(resourceOf(depth));
+        });
+
+        it("rejects changing MRT samples while its depth texture is shared", () => {
+            const { engine } = createEngine();
+            const source = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 1 }) as NativeRenderTargetWrapper;
+            const destination = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 1 }) as NativeRenderTargetWrapper;
+            source.createDepthStencilTexture(0, false, false, 1);
+            source.shareDepth(destination);
+
+            expect(() => engine.updateMultipleRenderTargetTextureSampleCount(destination, 4)).toThrow("cannot change samples while using a shared depth texture");
+            expect(destination.samples).toBe(1);
+            expect(destination.textures![0].samples).toBe(1);
+        });
+
+        it("reattaches shared depth to an ordinary render target", () => {
+            const { engine, bound } = createEngine();
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            source.createDepthStencilTexture(0, false, false, 1);
+            destination.createDepthStencilTexture(0, false, false, 1);
+            const sharedDepth = source._depthStencilTexture!;
+
+            source.shareDepth(destination);
+            engine.bindFramebuffer(destination);
+
+            expect(destination._depthStencilTexture).toBe(sharedDepth);
+            expect(bound().colors).toEqual([resourceOf(destination.texture!)]);
+            expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+        });
+
         it("releases cached per-mip framebuffers when the texture is recreated for a new sample count", () => {
             const { engine, released, bound } = createEngine();
             const rtWrapper = engine.createRenderTargetCubeTexture(64, { generateMipMaps: true }) as NativeRenderTargetWrapper;
@@ -874,6 +967,21 @@ describe("ThinNativeEngine", () => {
             expect(bound().samples).toBe(4);
         });
 
+        it("preserves authored cube mip storage across sample changes and rebuilding", () => {
+            const { engine, nativeEngine } = createEngine({ multisampledMipmaps: true });
+            const rtWrapper = engine.createRenderTargetCubeTexture(64, { createMipMaps: true, generateMipMaps: false }) as NativeRenderTargetWrapper;
+            const texture = rtWrapper.texture!;
+
+            engine.updateRenderTargetTextureSampleCount(rtWrapper, 4);
+            expect(nativeEngine.initializeTexture.mock.lastCall![3]).toBe(true);
+            expect(texture.generateMipMaps).toBe(false);
+
+            (rtWrapper as any)._rebuild();
+            expect(rtWrapper.texture).toBe(texture);
+            expect(nativeEngine.initializeTexture.mock.lastCall![3]).toBe(true);
+            expect(engine._hasMipStorage(texture)).toBe(true);
+        });
+
         it("honors createMipMaps and sRGB for cube internal textures", () => {
             const { engine, nativeEngine } = createEngine();
             const texture = engine._createInternalTexture({ width: 64, height: 64 }, { isCube: true, createMipMaps: true, useSRGBBuffer: true });
@@ -883,21 +991,34 @@ describe("ThinNativeEngine", () => {
             expect(texture._useSRGBBuffer).toBe(true);
         });
 
-        it("keeps raw texture data and orientation for context restoration", () => {
+        it("keeps public RawTexture3D updates inverted", () => {
+            const { engine, nativeEngine } = createEngine();
+            const initial = new Uint8Array(4 * 4 * 4 * 4);
+            const updated = new Uint8Array(initial.length);
+            const internalTexture = engine.createRawTexture3D(initial, 4, 4, 4, Constants.TEXTUREFORMAT_RGBA, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            const publicTexture = Object.assign(Object.create(RawTexture3D.prototype), {
+                _texture: internalTexture,
+                _getEngine: () => engine,
+            }) as RawTexture3D;
+
+            publicTexture.update(updated);
+
+            expect(nativeEngine.loadRawTexture3D.mock.calls.map((call: unknown[]) => call[7])).toEqual([true, true]);
+            expect(internalTexture.invertY).toBe(true);
+        });
+
+        it("rebuilds raw volume and cube textures from their latest data", () => {
             const { engine, nativeEngine } = createEngine();
             const data = new Uint8Array(4 * 4 * 4 * 4);
             const texture3D = engine.createRawTexture3D(data, 4, 4, 4, Constants.TEXTUREFORMAT_RGBA, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-            expect(texture3D.invertY).toBe(true);
-            expect(texture3D._bufferView).toBe(data);
-
             const updated = new Uint8Array(data.length);
-            engine.updateRawTexture3D(texture3D, updated, Constants.TEXTUREFORMAT_RGBA, false);
-            expect(texture3D.invertY).toBe(false);
-            expect(texture3D._bufferView).toBe(updated);
+            engine.updateRawTexture3D(texture3D, updated, Constants.TEXTUREFORMAT_RGBA, true);
+            const texture3DIdentity = texture3D;
+            texture3D._rebuild();
+            expect(texture3D).toBe(texture3DIdentity);
+            expect(nativeEngine.loadRawTexture3D.mock.lastCall![1]).toBe(updated);
 
             const faces = Array.from({ length: 6 }, () => new Uint8Array(4 * 4 * 4));
-            const cache = (engine as any)._internalTexturesCache as InternalTexture[];
-            const cacheLength = cache.length;
             const cube = engine.createRawCubeTexture(
                 faces,
                 4,
@@ -907,21 +1028,46 @@ describe("ThinNativeEngine", () => {
                 false,
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE
             );
-            expect(cube._bufferViewArray).toBe(faces);
-            expect(cache).toHaveLength(cacheLength);
-            expect(nativeEngine.updateTextureData).toHaveBeenCalledTimes(6);
+            const updatedFaces = Array.from({ length: 6 }, () => new Uint8Array(4 * 4 * 4));
+            engine.updateRawCubeTexture(cube, updatedFaces, Constants.TEXTUREFORMAT_RGBA, Constants.TEXTURETYPE_UNSIGNED_BYTE, false);
+            const cubeIdentity = cube;
+            nativeEngine.updateTextureData.mockClear();
+            cube._rebuild();
+            expect(cube).toBe(cubeIdentity);
+            expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => call[1])).toEqual(updatedFaces);
         });
 
-        it("restores a 3D render target as a volume", () => {
+        it("rebuilds a 3D render target as a bindable volume", () => {
             const { engine, nativeEngine } = createEngine();
             const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 4 }, {}) as NativeRenderTargetWrapper;
+            const texture = rtWrapper.texture!;
 
-            const clone = (rtWrapper as any)._cloneRenderTargetWrapper() as NativeRenderTargetWrapper;
+            (rtWrapper as any)._rebuild();
+            engine.bindFramebuffer(rtWrapper, undefined, 32, 32, true, 1, 2);
 
-            expect(clone.is3D).toBe(true);
-            expect(clone.texture!.is3D).toBe(true);
-            expect(clone.texture!.depth).toBe(4);
+            expect(rtWrapper.texture).toBe(texture);
+            expect(rtWrapper.is3D).toBe(true);
+            expect(rtWrapper.texture!.is3D).toBe(true);
+            expect(rtWrapper.texture!.depth).toBe(4);
             expect(nativeEngine.initializeTexture.mock.lastCall!.slice(9)).toEqual([4, true]);
+            expect(nativeEngine.createFrameBuffer.mock.lastCall!.slice(6, 8)).toEqual([2, 1]);
+        });
+
+        it("does not compact missing layered MRT attachments", () => {
+            const { engine, bound } = createEngine();
+            const rtWrapper = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                { textureCount: 3, targetTypes: [Constants.TEXTURE_CUBE_MAP, -1, Constants.TEXTURE_2D], faceIndex: [2, 0, 0] }
+            ) as NativeRenderTargetWrapper;
+
+            expect(() => engine.bindFramebuffer(rtWrapper)).toThrow("until every color attachment is assigned");
+
+            const middle = engine._createInternalTexture({ width: 64, height: 64 }, {});
+            rtWrapper.setTexture(middle, 1, false);
+            engine.bindFramebuffer(rtWrapper);
+
+            expect(bound().colors).toEqual(rtWrapper.textures!.map(resourceOf));
+            expect(bound().layers).toEqual([2, 0, 0]);
         });
 
         it("forgets frame graph framebuffer bookkeeping on context restoration", () => {
@@ -954,11 +1100,13 @@ describe("ThinNativeEngine", () => {
 
             engine.updateTextureWrappingMode(texture, Constants.TEXTURE_CLAMP_ADDRESSMODE);
             engine.updateTextureWrappingMode(texture, null, Constants.TEXTURE_MIRROR_ADDRESSMODE);
+            engine._bindTexture(0, texture);
 
-            expect(commands).toEqual([
+            expect(commands.filter((command) => command[0] === "COMMAND_SETTEXTUREWRAPMODE")).toEqual([
                 ["COMMAND_SETTEXTUREWRAPMODE", resourceOf(texture), "ADDRESS_MODE_CLAMP", "ADDRESS_MODE_WRAP", "ADDRESS_MODE_WRAP"],
                 ["COMMAND_SETTEXTUREWRAPMODE", resourceOf(texture), "ADDRESS_MODE_CLAMP", "ADDRESS_MODE_MIRROR", "ADDRESS_MODE_WRAP"],
             ]);
+            expect(commands.at(-1)).toEqual(["COMMAND_SETTEXTURE", { id: "uniform-0" }, resourceOf(texture)]);
         });
 
         it("uploads decoded mip levels into the requested level", () => {
@@ -974,19 +1122,80 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.updateTextureData).toHaveBeenCalledWith(resourceOf(texture), mip, 0, 0, 2, 2, 0, 1, texture.invertY, false);
         });
 
-        it("reports unsupported texture loader buffers through the internal error path", async () => {
+        it("removes rejected loader textures from pending data without an error callback", async () => {
             const { engine } = createEngine();
             const useFallbackTexture = EngineStore.UseFallbackTexture;
             EngineStore.UseFallbackTexture = false;
             onTestFinished(() => {
                 EngineStore.UseFallbackTexture = useFallbackTexture;
             });
-            const onError = vi.fn();
+            const pending = new Set<InternalTexture>();
+            const removePendingData = vi.fn((texture: InternalTexture) => pending.delete(texture));
+            const scene = {
+                addPendingData: (texture: InternalTexture) => pending.add(texture),
+                removePendingData,
+            };
 
-            const texture = engine.createTexture("profile.ies", true, false, null, undefined, null, onError, "not a buffer" as any);
+            const texture = engine.createTexture("profile.ies", true, false, scene as any, undefined, null, null, "not a buffer" as any);
 
-            expect(onError).toHaveBeenCalledWith(expect.stringContaining("only ArrayBuffer or ArrayBufferView is supported"), undefined);
+            expect(pending.has(texture)).toBe(false);
+            expect(removePendingData).toHaveBeenCalledWith(texture);
             expect(texture._loadError?.message).toContain("only ArrayBuffer or ArrayBufferView is supported");
+        });
+
+        it("leaves a loader texture unready when its GPU upload throws", async () => {
+            const { engine } = createEngine();
+            const useFallbackTexture = EngineStore.UseFallbackTexture;
+            EngineStore.UseFallbackTexture = false;
+            onTestFinished(() => {
+                EngineStore.UseFallbackTexture = useFallbackTexture;
+            });
+            const uploadError = new Error("upload failed");
+            const loader = {
+                loadData: (_data: ArrayBufferView, _texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void) =>
+                    callback(4, 4, false, false, () => {
+                        throw uploadError;
+                    }),
+            };
+            vi.spyOn(AbstractEngine, "GetCompatibleTextureLoader").mockResolvedValue(loader as any);
+            const pending = new Set<InternalTexture>();
+            const scene = {
+                addPendingData: (texture: InternalTexture) => pending.add(texture),
+                removePendingData: (texture: InternalTexture) => pending.delete(texture),
+            };
+
+            const texture = engine.createTexture("texture.ktx2", true, false, scene as any, undefined, null, null, new Uint8Array(4));
+            await flushAsync();
+
+            expect(texture.isReady).toBe(false);
+            expect(texture._loadError?.exception).toBe(uploadError);
+            expect(pending.has(texture)).toBe(false);
+        });
+
+        it("keeps one URL raw-cube cache entry through rebuild and removes it on disposal", async () => {
+            RegisterEnginesExtensionsEngineRawTexture();
+            const { engine } = createEngine();
+            const faces = Array.from({ length: 6 }, () => new Uint8Array(4 * 4 * 4));
+
+            const texture = engine.createRawCubeTextureFromUrl(
+                "environment.hdr",
+                null,
+                4,
+                Constants.TEXTUREFORMAT_RGBA,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                true,
+                () => faces,
+                null
+            );
+            await flushAsync();
+            const cache = (engine as any)._internalTexturesCache as InternalTexture[];
+            expect(cache.filter((entry) => entry === texture)).toHaveLength(1);
+
+            texture._rebuild();
+            expect(cache.filter((entry) => entry === texture)).toHaveLength(1);
+
+            texture.dispose();
+            expect(cache).not.toContain(texture);
         });
 
         it("reuses one fullscreen viewport for forced fullscreen binds", () => {

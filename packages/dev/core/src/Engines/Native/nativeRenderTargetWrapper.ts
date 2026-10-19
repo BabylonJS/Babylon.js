@@ -153,23 +153,39 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         }
     }
 
+    public override setDepthStencilTexture(texture: Nullable<InternalTexture>, disposeExisting = true): void {
+        const previous = this._depthStencilTexture;
+        super.setDepthStencilTexture(texture, disposeExisting);
+
+        if (previous !== texture) {
+            this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(this);
+        }
+    }
+
     protected override _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
-        // The inherited descriptor describes a single 3D target with size.layers (a 2D array on Native); recreate
-        // it as a volume so the restored resource matches the InternalTexture's is3D/depth.
-        if (!this.isMulti && this.is3D && this.texture) {
+        if (!this.isMulti && this.texture) {
             const texture = this.texture;
-            const rtw = this._engine.createRenderTargetTexture(
-                { width: this.width, height: this.height, depth: this.depth },
-                {
-                    generateDepthBuffer: this._generateDepthBuffer,
-                    generateMipMaps: texture.generateMipMaps,
-                    generateStencilBuffer: this._generateStencilBuffer,
-                    samplingMode: texture.samplingMode,
-                    type: texture.type,
-                    format: texture.format,
-                    label: this.label,
-                }
-            );
+            const options = {
+                generateDepthBuffer: this._generateDepthBuffer,
+                generateMipMaps: texture.generateMipMaps,
+                createMipMaps: this._engine._hasMipStorage(texture),
+                generateStencilBuffer: this._generateStencilBuffer,
+                samplingMode: texture.samplingMode,
+                type: texture.type,
+                format: texture.format,
+                label: this.label,
+            };
+            const rtw = this.isCube
+                ? this._engine.createRenderTargetCubeTexture(this.width, options)
+                : this._engine.createRenderTargetTexture(
+                      {
+                          width: this.width,
+                          height: this.height,
+                          layers: this.is2DArray ? this.depth : undefined,
+                          depth: this.is3D ? this.depth : undefined,
+                      },
+                      options
+                  );
             if (rtw.texture) {
                 rtw.texture.isReady = true;
             }
@@ -208,24 +224,11 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         super.shareDepth(renderTarget);
 
         const dest = renderTarget as NativeRenderTargetWrapper;
-        if (!dest?.isMulti || dest._engine !== this._engine) {
+        if (!dest || dest._engine !== this._engine) {
             return;
         }
 
-        if (dest._usesLayeredFramebuffer) {
-            dest._invalidateLayeredFramebuffer();
-            return;
-        }
-
-        if (dest._framebuffer && this._engine._isFrameGraphFramebuffer(dest._framebuffer)) {
-            dest._framebuffer = null;
-            return;
-        }
-
-        // Same gate as setTexture: only rebuild an already-built non-FG multi FB (OIT depth MRTs).
-        if (dest._framebuffer) {
-            this._engine._createMultiRenderTargetFramebuffer(dest);
-        }
+        this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(dest);
     }
 
     public override dispose(disposeOnlyFramebuffers = false): void {
