@@ -98,7 +98,7 @@ const requiredBuilds = [
     {
         packageName: "babylonjs-ktx2encoder",
         outputFile: "babylonjs-ktx2encoder/babylon.ktx2Encoder.max.js",
-        sourceRoots: [resolve(TOOLS_ROOT, "ktx2Encoder/src")],
+        sourceRoots: [resolve(TOOLS_ROOT, "ktx2Encoder/src"), resolve(DEV_ROOT, "core/src/Materials/Textures/ktx2encoderTypes.ts")],
     },
 ];
 

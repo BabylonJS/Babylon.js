@@ -170,6 +170,7 @@ function babylonServerPlugin(): Plugin {
     const sourceToPackage: Array<{ srcDir: string; packages: string[] }> = [
         { srcDir: path.join(DEV_ROOT, "core/src"), packages: ["babylonjs"] },
         { srcDir: path.join(DEV_ROOT, "core/src/Materials/Textures/ktx2decoderTypes.ts"), packages: ["babylonjs-ktx2decoder"] },
+        { srcDir: path.join(DEV_ROOT, "core/src/Materials/Textures/ktx2encoderTypes.ts"), packages: ["babylonjs-ktx2encoder"] },
         { srcDir: path.join(DEV_ROOT, "gui/src"), packages: ["babylonjs-gui"] },
         { srcDir: path.join(DEV_ROOT, "loaders/src"), packages: ["babylonjs-loaders"] },
         { srcDir: path.join(DEV_ROOT, "serializers/src"), packages: ["babylonjs-serializers"] },
