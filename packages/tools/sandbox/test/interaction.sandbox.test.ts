@@ -489,7 +489,8 @@ test("loading a model using query parameters", async ({ page }) => {
 });
 
 test("loading a model without an environment using query parameters", async ({ page }) => {
-    const trafficConeUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/3582d49006fca135dc990bab0d80b83c958ac617/Models/TrafficCone/glTF/TrafficCone.gltf";
+    const trafficConeUrl =
+        "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/TrafficCone/glTF-Binary/TrafficCone.glb";
     const query = [`assetUrl=${trafficConeUrl}`, "camera=0", "environment=none", "skybox=false", "clearcolor=000000"].join("&");
 
     await page.goto(url + (snapshot ? "&" : "?") + query, {
@@ -502,6 +503,11 @@ test("loading a model without an environment using query parameters", async ({ p
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
     await page.waitForLoadState("networkidle");
+    await waitForSandboxReady(page);
+    const scene = await getSandboxScene(page);
+    await scene.evaluate(async (loadedScene) => {
+        await loadedScene.whenReadyAsync();
+    });
 
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });

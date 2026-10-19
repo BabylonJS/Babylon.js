@@ -10,8 +10,8 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_materials_retroreflection";
 
 /**
- * Loads the draft KHR_materials_retroreflection extension.
- * [Specification](https://github.com/KhronosGroup/glTF/blob/8d0b94e47630cbedb12ff365822658792da27d44/extensions/2.0/Khronos/KHR_materials_retroreflection/README.md)
+ * Loads the Release Candidate KHR_materials_retroreflection extension.
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/166ed853dfde3780d9c7e3080291d835a926ebab/extensions/2.0/Khronos/KHR_materials_retroreflection/README.md)
  * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention

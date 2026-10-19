@@ -8,8 +8,8 @@ import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 const NAME = "KHR_materials_retroreflection";
 
 /**
- * Exports the draft KHR_materials_retroreflection glTF extension.
- * [Specification](https://github.com/KhronosGroup/glTF/blob/bfb9d65397d19cf630a36a3d1f95cb86a2f671c4/extensions/2.0/Khronos/KHR_materials_retroreflection/README.md)
+ * Exports the Release Candidate KHR_materials_retroreflection glTF extension.
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/166ed853dfde3780d9c7e3080291d835a926ebab/extensions/2.0/Khronos/KHR_materials_retroreflection/README.md)
  * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
