@@ -1486,6 +1486,10 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     private applyStencil(): void {
+        if (!this._stencilTest) {
+            return;
+        }
+
         this._setStencil(
             this._stencilMask,
             getNativeStencilOpFail(this._stencilOpStencilFail),
@@ -2536,8 +2540,8 @@ export class ThinNativeEngine extends ThinEngine {
                             return;
                         }
 
-                        const baseWidth = width;
-                        const baseHeight = height;
+                        const baseWidth = texture.baseWidth || width;
+                        const baseHeight = texture.baseHeight || height;
                         texture.baseWidth = baseWidth;
                         texture.baseHeight = baseHeight;
                         texture.width = baseWidth;
@@ -2788,7 +2792,8 @@ export class ThinNativeEngine extends ThinEngine {
                     nativeRTWrapper._framebuffers.length,
                     generateStencil,
                     generateDepth,
-                    rtWrapper.samples ?? 1
+                    rtWrapper.samples ?? 1,
+                    rtWrapper.texture?.generateMipMaps
                 );
                 continue;
             }
@@ -2822,7 +2827,24 @@ export class ThinNativeEngine extends ThinEngine {
 
     public override _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         // TODO: handle other options?
-        const generateStencil = options.generateStencil || false;
+        const requestedFormat = options.depthTextureFormat;
+        // Native allocates either D32F (depth only) or D24S8 (depth + stencil). Requested depth formats map onto
+        // whichever of those matches their stencil aspect, and texture.format records what was actually allocated.
+        const requestedStencil =
+            requestedFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+            requestedFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+            requestedFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+        if (
+            requestedFormat !== undefined &&
+            !requestedStencil &&
+            requestedFormat !== Constants.TEXTUREFORMAT_DEPTH16 &&
+            requestedFormat !== Constants.TEXTUREFORMAT_DEPTH24 &&
+            requestedFormat !== Constants.TEXTUREFORMAT_DEPTH32_FLOAT
+        ) {
+            throw new Error(`NativeEngine: depth texture format ${requestedFormat} is not supported.`);
+        }
+
+        const generateStencil = !!options.generateStencil || requestedStencil;
         const samples = options.samples || 1;
 
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
@@ -2850,7 +2872,9 @@ export class ThinNativeEngine extends ThinEngine {
         texture.generateMipMaps = false;
         texture.samplingMode = options.bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        texture.format = generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
         texture._comparisonFunction = options.comparisonFunction ?? 0;
+        nativeRTWrapper._depthStencilTextureWithStencil = generateStencil;
 
         this._attachDepthStencilTexture(nativeRTWrapper, texture, width, height, generateStencil, samples);
         return texture;
@@ -3026,7 +3050,8 @@ export class ThinNativeEngine extends ThinEngine {
                     nativeRTWrapper.isCube ? 6 : nativeRTWrapper.layers,
                     nativeRTWrapper._generateStencilBuffer,
                     nativeRTWrapper._generateDepthBuffer,
-                    nativeRTWrapper.samples
+                    nativeRTWrapper.samples,
+                    nativeRTWrapper.texture?.generateMipMaps
                 );
             }
             return;
@@ -3092,11 +3117,12 @@ export class ThinNativeEngine extends ThinEngine {
         layerCount: number,
         generateStencilBuffer: boolean,
         generateDepthBuffer: boolean,
-        samples: number
+        samples: number,
+        autoGenerateMips = true
     ): NativeFramebuffer[] {
         const framebuffers: NativeFramebuffer[] = [];
         for (let layer = 0; layer < layerCount; layer++) {
-            framebuffers.push(this._engine.createFrameBuffer(nativeTexture, width, height, generateStencilBuffer, generateDepthBuffer, samples, layer));
+            framebuffers.push(this._engine.createFrameBuffer(nativeTexture, width, height, generateStencilBuffer, generateDepthBuffer, samples, layer, 0, autoGenerateMips));
         }
         return framebuffers;
     }
@@ -3524,7 +3550,8 @@ export class ThinNativeEngine extends ThinEngine {
                 layers,
                 generateStencilBuffer,
                 generateDepthBuffer,
-                samples
+                samples,
+                texture.generateMipMaps
             );
             rtWrapper._generateDepthBuffer = generateDepthBuffer;
             rtWrapper._generateStencilBuffer = generateStencilBuffer;
@@ -4179,7 +4206,8 @@ export class ThinNativeEngine extends ThinEngine {
                 isCube ? 6 : layers,
                 rtWrapper._generateStencilBuffer,
                 rtWrapper._generateDepthBuffer && !hasDepthStencilTexture,
-                samples
+                samples,
+                texture.generateMipMaps
             );
         } else {
             // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
@@ -4794,6 +4822,9 @@ export class ThinNativeEngine extends ThinEngine {
             this._engine.updateTextureData?.(underlyingResource, imageData, 0, 0, texture.width, texture.height, faceIndex, lod, texture.invertY, false);
             return;
         }
+
+        texture.baseWidth = texture.width;
+        texture.baseHeight = texture.height;
 
         // Upload raw pixel data (e.g. the decoded IES profile: a single-channel FLOAT texture) into the
         // native texture. Mirrors updateRawTexture. Like texImage2D, Native reads only the texels it needs from a

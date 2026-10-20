@@ -15,6 +15,10 @@ import { Scene } from "core/scene";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { RegisterEnginesExtensionsEngineRawTexture } from "core/Engines/Extensions/engine.rawTexture.pure";
+import { _KTXTextureLoader } from "core/Materials/Textures/Loaders/ktxTextureLoader";
+import { KhronosTextureContainer2 } from "core/Misc/khronosTextureContainer2";
+import { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
+import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 type NativeFrameRequester = {
@@ -545,7 +549,7 @@ describe("ThinNativeEngine", () => {
             };
             const engine = Object.assign(Object.create(ThinNativeEngine.prototype), {
                 _engine: nativeEngine,
-                _caps: { textureFloatLinearFiltering: true, textureHalfFloatLinearFiltering: true, textureFloat: true },
+                _caps: { textureFloatLinearFiltering: true, textureHalfFloatLinearFiltering: true, textureFloat: true, supportSRGBBuffers: true },
                 _internalTexturesCache: [],
                 _renderTargetWrapperCache: [],
                 _getUseSRGBBuffer: () => false,
@@ -676,7 +680,7 @@ describe("ThinNativeEngine", () => {
             let currentCommand: unknown[] = [];
             const engine = Object.assign(Object.create(ThinNativeEngine.prototype), {
                 _engine: nativeEngine,
-                _caps: { textureFloatLinearFiltering: true, textureHalfFloatLinearFiltering: true, textureFloat: true },
+                _caps: { textureFloatLinearFiltering: true, textureHalfFloatLinearFiltering: true, textureFloat: true, supportSRGBBuffers: true },
                 _internalTexturesCache: [],
                 _renderTargetWrapperCache: [],
                 _frameGraphFramebufferRefCount: new Map(),
@@ -836,6 +840,21 @@ describe("ThinNativeEngine", () => {
             expect(bound()).not.toBe(firstFramebuffer);
             expect(bound().colors).toEqual([resourceOf(firstColor), resourceOf(replacement)]);
             expect(bound().explicitDepth).toBe(resourceOf(depth));
+        });
+
+        it("invalidates cached volume framebuffers when the color texture changes", () => {
+            const { engine, released, bound } = createEngine();
+            const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 4 }, {}) as NativeRenderTargetWrapper;
+            const replacement = engine._createInternalTexture({ width: 64, height: 64, depth: 4 }, {});
+
+            engine.bindFramebuffer(rtWrapper, undefined, 32, 32, true, 1, 2);
+            const first = bound();
+            rtWrapper.setTexture(replacement, 0, false);
+            engine.bindFramebuffer(rtWrapper, undefined, 32, 32, true, 1, 2);
+
+            expect(released).toContain(first);
+            expect(bound()).not.toBe(first);
+            expect(bound().colors).toEqual([resourceOf(replacement)]);
         });
 
         it("rebuilds a layered MRT when its faces, attachments or explicit depth change", () => {
@@ -1066,6 +1085,162 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.initializeTexture.mock.lastCall![3]).toBe(true);
         });
 
+        it("rebuilds a multisampled render target with matching color and explicit depth samples", () => {
+            const { engine, nativeEngine } = createEngine();
+            const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false, samples: 4 }) as NativeRenderTargetWrapper;
+            rtWrapper.createDepthStencilTexture(0, false, false, 4);
+            nativeEngine.initializeTexture.mockClear();
+            nativeEngine.createFrameBuffer.mockClear();
+            nativeEngine.createMultiFrameBuffer.mockClear();
+
+            (rtWrapper as any)._rebuild();
+
+            const colorSamples = new Map(nativeEngine.initializeTexture.mock.calls.map((call: unknown[]) => [call[0], call[7]]));
+            expect([...colorSamples.values()]).toEqual([4]);
+            for (const call of nativeEngine.createFrameBuffer.mock.calls) {
+                if (call[0]) {
+                    expect(colorSamples.get(call[0])).toBe(call[5]);
+                }
+            }
+            for (const call of nativeEngine.createMultiFrameBuffer.mock.calls) {
+                for (const color of call[0]) {
+                    expect(colorSamples.get(color)).toBe(call[5]);
+                }
+            }
+        });
+
+        it("rebuilds a multisampled MRT with matching samples and per-attachment sRGB", () => {
+            const { engine, nativeEngine } = createEngine();
+            const rtWrapper = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                { textureCount: 2, samples: 4, useSRGBBuffers: [false, true], generateDepthBuffer: false }
+            ) as NativeRenderTargetWrapper;
+            rtWrapper.createDepthStencilTexture(0, false, false, 4);
+            nativeEngine.initializeTexture.mockClear();
+            nativeEngine.createMultiFrameBuffer.mockClear();
+
+            (rtWrapper as any)._rebuild();
+
+            const allocations = nativeEngine.initializeTexture.mock.calls.map((call: unknown[]) => ({ resource: call[0], srgb: call[6], samples: call[7] }));
+            expect(allocations.map(({ srgb, samples }) => [srgb, samples])).toEqual([
+                [false, 4],
+                [true, 4],
+            ]);
+            const colorSamples = new Map(allocations.map(({ resource, samples }) => [resource, samples]));
+            for (const call of nativeEngine.createMultiFrameBuffer.mock.calls) {
+                for (const color of call[0]) {
+                    expect(colorSamples.get(color)).toBe(call[5]);
+                }
+            }
+        });
+
+        it("preserves cube auto-mip policy when framebuffers are recreated", () => {
+            const { engine, nativeEngine } = createEngine({ multisampledMipmaps: true });
+            const rtWrapper = engine.createRenderTargetCubeTexture(64, { createMipMaps: true, generateMipMaps: false }) as NativeRenderTargetWrapper;
+
+            expect(nativeEngine.createFrameBuffer.mock.calls.map((call: unknown[]) => call[8])).toEqual(new Array(6).fill(false));
+            nativeEngine.createFrameBuffer.mockClear();
+            engine.updateRenderTargetTextureSampleCount(rtWrapper, 4);
+            expect(nativeEngine.createFrameBuffer.mock.calls.map((call: unknown[]) => call[8])).toEqual(new Array(6).fill(false));
+
+            rtWrapper.createDepthStencilTexture(0, false, false, 4);
+            nativeEngine.createFrameBuffer.mockClear();
+            rtWrapper.setDepthStencilTexture(null);
+            expect(nativeEngine.createFrameBuffer.mock.calls.map((call: unknown[]) => call[8])).toEqual(new Array(6).fill(false));
+
+            nativeEngine.createFrameBuffer.mockClear();
+            (rtWrapper as any)._rebuild();
+            expect(nativeEngine.createFrameBuffer.mock.calls.map((call: unknown[]) => call[8])).toEqual(new Array(6).fill(false));
+        });
+
+        it("records native depth formats and routes frame graph copies through the depth path", () => {
+            const { engine } = createEngine();
+            const depthOnlyTarget = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            const depthOnly = depthOnlyTarget.createDepthStencilTexture();
+            const stencilTarget = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            const stencil = stencilTarget.createDepthStencilTexture(0, false, true);
+            const explicitStencilTarget = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            const explicitStencil = explicitStencilTarget.createDepthStencilTexture(0, false, false, 1, Constants.TEXTUREFORMAT_DEPTH24_STENCIL8);
+
+            expect(depthOnly.format).toBe(Constants.TEXTUREFORMAT_DEPTH32_FLOAT);
+            expect(IsDepthTexture(depthOnly.format)).toBe(true);
+            expect(HasStencilAspect(depthOnly.format)).toBe(false);
+            expect(stencil.format).toBe(Constants.TEXTUREFORMAT_DEPTH24_STENCIL8);
+            expect(HasStencilAspect(stencil.format)).toBe(true);
+            expect(explicitStencil.format).toBe(Constants.TEXTUREFORMAT_DEPTH24_STENCIL8);
+            expect(explicitStencilTarget._depthStencilTextureWithStencil).toBe(true);
+            const mappedDepthOnly = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            expect(mappedDepthOnly.createDepthStencilTexture(0, false, false, 1, Constants.TEXTUREFORMAT_DEPTH24).format).toBe(Constants.TEXTUREFORMAT_DEPTH32_FLOAT);
+            expect(mappedDepthOnly._depthStencilTextureWithStencil).toBe(false);
+            const mappedStencil = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            expect(mappedStencil.createDepthStencilTexture(0, false, false, 1, Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8).format).toBe(
+                Constants.TEXTUREFORMAT_DEPTH24_STENCIL8
+            );
+            expect(mappedStencil._depthStencilTextureWithStencil).toBe(true);
+            const unsupportedTarget = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            expect(() => unsupportedTarget.createDepthStencilTexture(0, false, false, 1, Constants.TEXTUREFORMAT_RGBA)).toThrow(
+                `NativeEngine: depth texture format ${Constants.TEXTUREFORMAT_RGBA} is not supported.`
+            );
+
+            const colorCopy = {
+                source: null,
+                lodLevel: 0,
+                effectWrapper: { drawWrapper: {}, onApplyObservable: { notifyObservers: vi.fn() } },
+            };
+            const depthCopy = {
+                source: null,
+                lodLevel: 0,
+                effectWrapper: { drawWrapper: {}, onApplyObservable: { notifyObservers: vi.fn() } },
+            };
+            const context = Object.assign(Object.create(FrameGraphRenderContext.prototype), {
+                _textureManager: { getTextureFromHandle: () => depthOnly },
+                _copyTexture: colorCopy,
+                _copyDepthTexture: depthCopy,
+                applyFullScreenEffect: vi.fn(),
+            }) as FrameGraphRenderContext;
+
+            context.copyTexture(1);
+
+            expect(depthCopy.source).toBe(depthOnly);
+            expect(colorCopy.source).toBeNull();
+        });
+
+        it("keeps stencil disabled while cached stencil parameters change", () => {
+            const { engine, commands } = createEngine();
+            Object.assign(engine as any, {
+                _stencilTest: false,
+                _stencilMask: 0xff,
+                _stencilOpStencilFail: Constants.KEEP,
+                _stencilOpDepthFail: Constants.KEEP,
+                _stencilOpStencilDepthPass: Constants.KEEP,
+                _stencilFunc: Constants.ALWAYS,
+                _stencilFuncRef: 0,
+                _stencilFuncMask: 0xff,
+            });
+
+            engine.setStencilFunction(Constants.NEVER);
+            expect(commands).toHaveLength(0);
+            engine.setStencilBuffer(true);
+            expect(commands).toHaveLength(1);
+            engine.setStencilFunctionMask(0x7f);
+            expect(commands).toHaveLength(2);
+            engine.setStencilBuffer(false);
+            expect(commands).toHaveLength(3);
+
+            engine.setStencilFunction(Constants.ALWAYS);
+            engine.setStencilFunctionReference(3);
+            engine.setStencilFunctionMask(0x3f);
+            engine.setStencilMask(0x1f);
+            engine.setStencilOperationFail(Constants.REPLACE);
+            engine.setStencilOperationDepthFail(Constants.INCR);
+            engine.setStencilOperationPass(Constants.DECR);
+
+            expect(commands).toHaveLength(3);
+            engine.setStencilBuffer(true);
+            expect(commands).toHaveLength(4);
+            expect(commands.at(-1)?.at(-1)).toBe(0x3f);
+        });
+
         it("reapplies MRT depth sampling after recreating flat and layered depth textures", () => {
             for (const layered of [false, true]) {
                 const { engine } = createEngine();
@@ -1237,25 +1412,25 @@ describe("ThinNativeEngine", () => {
             onTestFinished(() => {
                 EngineStore.UseFallbackTexture = useFallbackTexture;
             });
-            const loader = {
-                loadData: (
-                    _data: ArrayBufferView,
-                    texture: InternalTexture,
-                    callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void
-                ) =>
-                    callback(4, 4, true, false, () => {
-                        texture.format = Constants.TEXTUREFORMAT_RGBA;
-                        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-                        for (const [lod, size] of [4, 2, 1].entries()) {
-                            texture.width = size;
-                            texture.height = size;
-                            engine._uploadDataToTextureDirectly(texture, new Uint8Array(size * size * 4), 0, lod);
-                        }
-                    }),
-            };
-            vi.spyOn(AbstractEngine, "GetCompatibleTextureLoader").mockResolvedValue(loader as any);
+            const workerPool = KhronosTextureContainer2.WorkerPool;
+            KhronosTextureContainer2.WorkerPool = {} as any;
+            onTestFinished(() => {
+                KhronosTextureContainer2.WorkerPool = workerPool;
+            });
+            vi.spyOn(KhronosTextureContainer2.prototype as any, "_decodeAsync").mockResolvedValue({
+                width: 4,
+                height: 4,
+                transcodedFormat: 0x8058,
+                mipmaps: [4, 2, 1].map((size, lod) => ({ data: new Uint8Array(size * size * 4), width: size, height: size, layerIndex: 0, lod })),
+                layerCount: 1,
+                isInGammaSpace: false,
+                hasAlpha: true,
+                transcoderName: "mock",
+            });
+            vi.spyOn(AbstractEngine, "GetCompatibleTextureLoader").mockResolvedValue(new _KTXTextureLoader());
+            const ktx2Data = new Uint8Array([0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-            const texture = engine.createTexture("texture.ktx2", false, false, null, undefined, null, null, new Uint8Array(4));
+            const texture = engine.createTexture("texture.ktx2", false, false, null, undefined, null, null, ktx2Data);
             await flushAsync();
 
             expect([texture.width, texture.height, texture.baseWidth, texture.baseHeight]).toEqual([4, 4, 4, 4]);

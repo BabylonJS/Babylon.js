@@ -1,6 +1,7 @@
 import { type Nullable } from "../../types";
 import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { Constants } from "../constants";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { type NativeFramebuffer } from "./nativeInterfaces";
 import { type ThinNativeEngine } from "../thinNativeEngine";
@@ -121,6 +122,10 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             return;
         }
 
+        if (!this.isMulti && index === 0) {
+            this._releaseLayerFramebuffers();
+        }
+
         if (this._framebufferDepthStencil) {
             this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(this);
             return;
@@ -169,16 +174,92 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
 
     protected override _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
         if (this.isMulti) {
-            const rtw = super._cloneRenderTargetWrapper() as Nullable<NativeRenderTargetWrapper>;
-            if (!rtw?.textures || !this.textures) {
+            const textureArray = this.textures;
+            if (!textureArray?.length) {
+                return super._cloneRenderTargetWrapper();
+            }
+
+            const samplingModes: number[] = [];
+            const types: number[] = [];
+            const formats: number[] = [];
+            const useSRGBBuffers: boolean[] = [];
+            const targetTypes: number[] = [];
+            const faceIndex: number[] = [];
+            const layerIndex: number[] = [];
+            const layerCounts: number[] = [];
+            const internalTexture2Index: Record<number, number> = {};
+
+            for (let i = 0; i < textureArray.length; i++) {
+                const texture = textureArray[i];
+                samplingModes.push(texture.samplingMode);
+                types.push(texture.type);
+                formats.push(texture.format);
+                useSRGBBuffers.push(texture._useSRGBBuffer);
+
+                const existingIndex = internalTexture2Index[texture.uniqueId];
+                if (existingIndex !== undefined) {
+                    targetTypes.push(-1);
+                    layerCounts.push(0);
+                } else {
+                    internalTexture2Index[texture.uniqueId] = i;
+                    if (texture.is2DArray) {
+                        targetTypes.push(Constants.TEXTURE_2D_ARRAY);
+                        layerCounts.push(texture.depth);
+                    } else if (texture.isCube) {
+                        targetTypes.push(Constants.TEXTURE_CUBE_MAP);
+                        layerCounts.push(0);
+                    } else if (texture.is3D) {
+                        targetTypes.push(Constants.TEXTURE_3D);
+                        layerCounts.push(texture.depth);
+                    } else {
+                        targetTypes.push(Constants.TEXTURE_2D);
+                        layerCounts.push(0);
+                    }
+                }
+
+                if (this.faceIndices) {
+                    faceIndex.push(this.faceIndices[i] ?? 0);
+                }
+                if (this.layerIndices) {
+                    layerIndex.push(this.layerIndices[i] ?? 0);
+                }
+            }
+
+            const rtw = this._engine.createMultipleRenderTarget(
+                { width: this.width, height: this.height, depth: this.depth },
+                {
+                    samplingModes,
+                    generateMipMaps: textureArray[0].generateMipMaps,
+                    generateDepthBuffer: this._generateDepthBuffer,
+                    generateStencilBuffer: this._generateStencilBuffer,
+                    types,
+                    formats,
+                    useSRGBBuffers,
+                    textureCount: textureArray.length,
+                    samples: this.samples,
+                    targetTypes,
+                    faceIndex,
+                    layerIndex,
+                    layerCounts,
+                    label: this.label,
+                }
+            ) as NativeRenderTargetWrapper;
+            const replacementTextures = rtw.textures;
+            if (!replacementTextures) {
                 return rtw;
+            }
+
+            for (let i = 0; i < textureArray.length; i++) {
+                if (targetTypes[i] === -1) {
+                    rtw.setTexture(replacementTextures[internalTexture2Index[textureArray[i].uniqueId]], i);
+                }
             }
 
             let framebufferNeedsRebuild = false;
             const processed = new Set<InternalTexture>();
-            for (let i = 0; i < this.textures.length; i++) {
-                const source = this.textures[i];
-                const replacement = rtw.textures[i];
+            for (let i = 0; i < textureArray.length; i++) {
+                const source = textureArray[i];
+                const replacement = replacementTextures[i];
                 if (!source || !replacement || processed.has(replacement)) {
                     continue;
                 }
@@ -208,6 +289,8 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
                 samplingMode: texture.samplingMode,
                 type: texture.type,
                 format: texture.format,
+                samples: this.samples,
+                useSRGBBuffer: texture._useSRGBBuffer,
                 label: this.label,
             };
             const rtw = this.isCube
