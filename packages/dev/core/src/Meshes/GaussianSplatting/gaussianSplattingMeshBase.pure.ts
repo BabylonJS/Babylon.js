@@ -532,6 +532,9 @@ export class GaussianSplattingMeshBase extends Mesh {
      * worker is usually faster on low-end GPUs while the camera moves, because the GPU sort competes with rendering. Other engines
      * (WebGL, Native) always use the CPU worker. Meshes of a scene using a custom render function (`scene.customRenderFunction`, other than
      * the frame graph one) also keep the CPU worker, because the GPU sort is dispatched from `onBeforeRenderObservable`.
+     * A mesh leaves the GPU sort for the CPU worker, and does not come back to it, when depth sorting is disabled at runtime
+     * (see {@link GaussianSplattingMeshBase.disableDepthSort}), when point splatting is enabled, or when it starts streaming parts.
+     * After a WebGPU device restoration, the sorter and its buffers are recreated.
      * Read when the mesh instantiates its sort, so set it before loading data.
      * See also {@link GaussianSplattingMeshBase.useGpuSort} to override it on a single mesh.
      * @experimental
@@ -632,6 +635,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _gpuMode = false;
     private _gpuSorter: Nullable<GaussianSplattingGpuSorter> = null;
     private _gpuObserver: Nullable<Observer<Scene>> = null;
+    private _gpuRestoreObserver: Nullable<Observer<AbstractEngine>> = null;
     // Incremented whenever the sort inputs change (data, ranges, part matrices): every camera output is then sorted again.
     private _gpuDataRevision = 1;
     private _gpuSourceDirty = true;
@@ -769,6 +773,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     /**
      * If true, disables depth sorting of the splats (default: false)
      * Disabling sorting also discards deferred forced-sort requests.
+     * A mesh sorted on the GPU (see {@link GaussianSplattingMeshBase.UseGpuSort}) leaves the GPU sort when it is disabled at runtime
+     * and uses the identity index buffer of the CPU path. It does not return to the GPU sort when sorting is enabled again: the CPU worker is used instead.
      */
     public get disableDepthSort() {
         return this._disableDepthSort;
@@ -779,6 +785,10 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._worker = null;
             this._disableDepthSort = true;
             this._forcedSortPending = false;
+            if (this._gpuMode) {
+                // The GPU sort has no identity output: the CPU path provides valid indices for every view and data update.
+                this._switchToWorkerSort();
+            }
         } else if (this._disableDepthSort && !value) {
             this._disableDepthSort = false;
             this._sortIsDirty = true;
@@ -1798,8 +1808,40 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (!this._gpuObserver) {
             this._gpuObserver = this._scene.onBeforeRenderObservable.add(() => this._runGpuSort());
         }
+        if (!this._gpuRestoreObserver) {
+            this._gpuRestoreObserver = this._scene.getEngine().onContextRestoredObservable.add(() => this._onGpuContextRestored());
+        }
         // The compute shaders are loaded lazily: the first sort waits for them.
         void _LoadGpuSortDependenciesAsync();
+    }
+
+    // After a device restoration the rebuilt storage buffers are empty, the sorter caches (radix parameters, intervals, bindings) describe the lost buffers,
+    // and the geometry rebuild recreates the vertex buffer wrappers separately from the storage buffers they alias.
+    // The sorter is dropped with all its outputs and every view is invalidated: the next sort recreates and rebinds everything from the current source.
+    private _onGpuContextRestored(): void {
+        if (!this._gpuMode) {
+            return;
+        }
+        this._resetGpuViews();
+        this._gpuSorter?.dispose();
+        this._gpuSorter = null;
+        this._readyToDisplay = false;
+        this._gpuSortPending = true;
+        this._canPostToWorker = true;
+        this._markGpuSourceDirty();
+    }
+
+    // Drops the sort output bound to each view: they must be sorted and bound again.
+    private _resetGpuViews(): void {
+        this._cameraViewInfos.forEach((info) => {
+            info.gpuOutput = null;
+            info.gpuAppliedRevision = 0;
+            info.gpuBuffersVersion = 0;
+            info.splatIndexBufferSet = false;
+            info.sortAppliedId = 0;
+            info.sortRequestId = 0;
+            info.mesh.forcedInstanceCount = 0;
+        });
     }
 
     // Leaves the GPU sort mode. The worker is created by the next _postToWorker call.
@@ -1812,15 +1854,11 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._scene.onBeforeRenderObservable.remove(this._gpuObserver);
             this._gpuObserver = null;
         }
-        this._cameraViewInfos.forEach((info) => {
-            info.gpuOutput = null;
-            info.gpuAppliedRevision = 0;
-            info.gpuBuffersVersion = 0;
-            info.splatIndexBufferSet = false;
-            info.sortAppliedId = 0;
-            info.sortRequestId = 0;
-            info.mesh.forcedInstanceCount = 0;
-        });
+        if (this._gpuRestoreObserver) {
+            this._scene.getEngine().onContextRestoredObservable.remove(this._gpuRestoreObserver);
+            this._gpuRestoreObserver = null;
+        }
+        this._resetGpuViews();
         this._gpuSorter?.dispose();
         this._gpuSorter = null;
         this._gpuSortPending = false;
@@ -3026,6 +3064,10 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._scene.onBeforeRenderObservable.remove(this._gpuObserver);
             this._gpuObserver = null;
         }
+        if (this._gpuRestoreObserver) {
+            this._scene.getEngine().onContextRestoredObservable.remove(this._gpuRestoreObserver);
+            this._gpuRestoreObserver = null;
+        }
         this._gpuSorter?.dispose();
         this._gpuSorter = null;
         this._gpuMode = false;
@@ -3034,6 +3076,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     protected _copyTextures(source: GaussianSplattingMeshBase): void {
+        // The texture dimensions are not copied with the underscore-prefixed fields: the sort source and incremental updates read them.
+        this._textureSize.copyFrom(source._textureSize);
         this._covariancesATexture = source.covariancesATexture?.clone()!;
         this._covariancesBTexture = source.covariancesBTexture?.clone()!;
         this._centersTexture = source.centersTexture?.clone()!;

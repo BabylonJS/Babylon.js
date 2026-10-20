@@ -1,4 +1,6 @@
 import { NullEngine } from "core/Engines/nullEngine";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { Vector3 } from "core/Maths/math.vector";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingGpuSorter } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
@@ -211,5 +213,133 @@ describe("GaussianSplatting GPU sort selection", () => {
 
         expect(mesh._isGpuSortActive).toBe(false);
         expect(workerCtor).toHaveBeenCalledTimes(1);
+    });
+
+    const getViews = (mesh: GaussianSplattingMesh) => Array.from<any>((mesh as any)._cameraViewInfos.values());
+
+    it("leaves the GPU mode when depth sort is disabled after the data is loaded", () => {
+        const camera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+        scene.activeCamera = camera;
+        const mesh = createMesh(40);
+        expect(mesh._isGpuSortActive).toBe(true);
+
+        mesh.disableDepthSort = true;
+        expect(mesh._isGpuSortActive).toBe(false);
+
+        // A data update must not request a GPU sort anymore: the identity index buffer is used.
+        mesh.updateData(createSplatData(40));
+        mesh._postToWorker(true);
+        expect(mesh._isGpuSortActive).toBe(false);
+        expect(workerCtor).not.toHaveBeenCalled();
+        expect((mesh as any)._gpuSorter).toBeNull();
+        expect((mesh as any)._splatIndex).toBeInstanceOf(Float32Array);
+        expect(getViews(mesh).length).toBe(1);
+        expect(getViews(mesh).every((view) => view.splatIndexBufferSet)).toBe(true);
+        expect((mesh as any)._readyToDisplay).toBe(true);
+
+        // A new view gets the identity index buffer too.
+        scene.activeCamera = new FreeCamera("cam2", new Vector3(0, 0, -5), scene);
+        mesh._postToWorker();
+        expect(getViews(mesh).length).toBe(2);
+        expect(getViews(mesh).every((view) => view.splatIndexBufferSet)).toBe(true);
+    });
+
+    it("stays on the CPU path when depth sort is re-enabled after leaving the GPU mode", () => {
+        scene.activeCamera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+        const mesh = createMesh(40);
+        mesh.disableDepthSort = true;
+        mesh.disableDepthSort = false;
+        mesh.updateData(createSplatData(40));
+
+        expect(mesh._isGpuSortActive).toBe(false);
+        expect(workerCtor).toHaveBeenCalled();
+    });
+
+    it("leaves the GPU mode when point splatting is enabled", () => {
+        const controller = { colorRenderMode: false, depthRenderMode: false };
+        const mesh = createMesh(40);
+        vi.spyOn(mesh as any, "_ensurePointController").mockReturnValue(controller);
+        expect(mesh._isGpuSortActive).toBe(true);
+
+        mesh.pointSplattingDepthRenderMode = true;
+        expect(controller.depthRenderMode).toBe(true);
+        expect(mesh._isGpuSortActive).toBe(false);
+        expect((mesh as any)._gpuSortForbidden).toBe(true);
+    });
+
+    it("keeps the GPU mode when the point-splatting controller does not accept the mode", () => {
+        // Same as the real controller on an engine without compute support: the mode stays off.
+        const controller = {
+            get colorRenderMode() {
+                return false;
+            },
+            set colorRenderMode(_value: boolean) {},
+        };
+        const mesh = createMesh(40);
+        vi.spyOn(mesh as any, "_ensurePointController").mockReturnValue(controller);
+
+        mesh.pointSplattingRenderMode = true;
+        expect(mesh._isGpuSortActive).toBe(true);
+    });
+
+    it("copies the texture dimensions when cloning a GPU-sorted mesh", () => {
+        const mesh = createMesh(40);
+        const sourceSize = (mesh as any)._textureSize;
+        expect(sourceSize.x).toBeGreaterThan(0);
+
+        const clone = mesh.clone("clone") as GaussianSplattingMeshBase;
+        expect(clone._isGpuSortActive).toBe(true);
+        expect((clone as any)._textureSize.x).toBe(sourceSize.x);
+        expect((clone as any)._textureSize.y).toBe(sourceSize.y);
+        expect((clone as any)._textureSize).not.toBe(sourceSize);
+
+        const setSource = vi.fn(() => true);
+        const sorter = { setSource, setIntervals: vi.fn(), setPartMatrices: vi.fn() };
+        expect((clone as any)._applyGpuSource(sorter)).toBe(true);
+        expect((setSource.mock.calls[0] as any)[0].textureWidth).toBe(sourceSize.x);
+    });
+
+    describe("device restoration", () => {
+        it("drops the sorter and invalidates every view, then keeps sorting on the GPU", () => {
+            scene.activeCamera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+            const mesh = createMesh(40);
+            mesh._postToWorker(true);
+            const view = getViews(mesh)[0];
+            const sorter = { dispose: vi.fn() };
+            (mesh as any)._gpuSorter = sorter;
+            Object.assign(view, { gpuOutput: {}, gpuAppliedRevision: 5, gpuBuffersVersion: 3, splatIndexBufferSet: true, sortAppliedId: 4, sortRequestId: 4 });
+            const revision = (mesh as any)._gpuDataRevision;
+            (mesh as any)._gpuSourceDirty = false;
+
+            engine.onContextRestoredObservable.notifyObservers(engine);
+
+            expect(sorter.dispose).toHaveBeenCalledTimes(1);
+            expect((mesh as any)._gpuSorter).toBeNull();
+            expect(view.gpuOutput).toBeNull();
+            expect(view.gpuAppliedRevision).toBe(0);
+            expect(view.gpuBuffersVersion).toBe(0);
+            expect(view.splatIndexBufferSet).toBe(false);
+            expect(view.sortAppliedId).toBe(0);
+            expect((mesh as any)._gpuSourceDirty).toBe(true);
+            expect((mesh as any)._gpuDataRevision).toBeGreaterThan(revision);
+            expect(mesh._isGpuSortActive).toBe(true);
+        });
+
+        it("removes the restoration observer when leaving the GPU mode and on dispose", async () => {
+            const flush = () => new Promise((resolve) => setTimeout(resolve, 0)); // Observer removal is deferred
+            const before = engine.onContextRestoredObservable.observers.length;
+            const mesh = createMesh(40);
+            expect(engine.onContextRestoredObservable.observers.length).toBe(before + 1);
+
+            mesh._switchToWorkerSort();
+            await flush();
+            expect(engine.onContextRestoredObservable.observers.length).toBe(before);
+
+            const other = createMesh(40);
+            expect(engine.onContextRestoredObservable.observers.length).toBe(before + 1);
+            other.dispose();
+            await flush();
+            expect(engine.onContextRestoredObservable.observers.length).toBe(before);
+        });
     });
 });

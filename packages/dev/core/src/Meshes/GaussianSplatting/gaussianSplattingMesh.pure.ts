@@ -688,6 +688,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const controller = value ? this._ensurePointController() : this._pointController;
         if (controller) {
             controller.colorRenderMode = value;
+            if (value && controller.colorRenderMode) {
+                this._leaveGpuSortForPointSplatting();
+            }
         }
     }
 
@@ -712,7 +715,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const controller = value ? this._ensurePointController() : this._pointController;
         if (controller) {
             controller.depthRenderMode = value;
+            if (value && controller.depthRenderMode) {
+                this._leaveGpuSortForPointSplatting();
+            }
         }
+    }
+
+    // The GPU sort is dispatched before the scene renders and cannot serve a classic pass (e.g. the DepthRenderer) that needs sorted splats
+    // while another pass of the same mesh uses point splatting: such a mesh sorts on the CPU worker, which can answer any pass.
+    private _leaveGpuSortForPointSplatting(): void {
+        this._switchToWorkerSort();
     }
 
     /**

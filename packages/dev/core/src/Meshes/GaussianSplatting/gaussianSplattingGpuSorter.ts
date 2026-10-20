@@ -280,6 +280,7 @@ export class GaussianSplattingGpuSortOutput {
     private _label: string;
     private _storageBuffer: Nullable<StorageBuffer> = null;
     private _vertexBuffers: VertexBuffer[] = [];
+    private _wrapper: Nullable<Buffer> = null;
     private _capacity = 0;
     private _buffersVersion = 0;
     /** @internal */
@@ -382,9 +383,9 @@ export class GaussianSplattingGpuSortOutput {
             this._label + "_indices"
         );
         // The wrapper does not own the GPU buffer: it is released through the StorageBuffer only.
-        const wrapper = new Buffer(this._engine, this._storageBuffer.getBuffer(), false, 16, true, true);
+        this._wrapper = new Buffer(this._engine, this._storageBuffer.getBuffer(), false, 16, true, true);
         for (let i = 0; i < 4; i++) {
-            this._vertexBuffers.push(wrapper.createVertexBuffer("splatIndex" + i, i * 4, 4));
+            this._vertexBuffers.push(this._wrapper.createVertexBuffer("splatIndex" + i, i * 4, 4));
         }
         this._buffersVersion++;
     }
@@ -411,6 +412,11 @@ export class GaussianSplattingGpuSortOutput {
             vertexBuffer.dispose();
         }
         this._vertexBuffers = [];
+        // A device restoration rebuilds the wrapper with its own buffer, which is no longer the storage buffer and must be released.
+        if (this._wrapper && this._wrapper.getBuffer() !== this._storageBuffer?.getBuffer()) {
+            this._wrapper.dispose();
+        }
+        this._wrapper = null;
         this._storageBuffer?.dispose();
         this._storageBuffer = null;
     }
