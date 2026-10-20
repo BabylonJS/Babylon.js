@@ -820,6 +820,24 @@ describe("ThinNativeEngine", () => {
             expect(bound().explicitDepth).toBe(resourceOf(rtWrapper._depthStencilTexture!));
         });
 
+        it("rebuilds a depth-attached flat MRT when a color attachment changes", () => {
+            const { engine, bound } = createEngine();
+            const rtWrapper = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2, generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            const firstColor = rtWrapper.textures![0];
+            const replacement = engine._createInternalTexture({ width: 64, height: 64 }, {});
+            rtWrapper.createDepthStencilTexture(0, false, false, 1);
+            const depth = rtWrapper._depthStencilTexture!;
+
+            engine.bindFramebuffer(rtWrapper);
+            const firstFramebuffer = bound();
+            rtWrapper.setTexture(replacement, 1);
+            engine.bindFramebuffer(rtWrapper);
+
+            expect(bound()).not.toBe(firstFramebuffer);
+            expect(bound().colors).toEqual([resourceOf(firstColor), resourceOf(replacement)]);
+            expect(bound().explicitDepth).toBe(resourceOf(depth));
+        });
+
         it("rebuilds a layered MRT when its faces, attachments or explicit depth change", () => {
             const { engine, bound } = createEngine();
             const rtWrapper = engine.createMultipleRenderTarget(
@@ -908,6 +926,35 @@ describe("ThinNativeEngine", () => {
             );
         });
 
+        it("preserves 2D-array layers across render target rebuilding", () => {
+            const { engine, nativeEngine, bound } = createEngine();
+            const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 }, {}) as NativeRenderTargetWrapper;
+            const texture = rtWrapper.texture!;
+            nativeEngine.initializeTexture.mockClear();
+
+            (rtWrapper as any)._rebuild();
+            engine.bindFramebuffer(rtWrapper, undefined, undefined, undefined, undefined, undefined, 2);
+
+            expect(rtWrapper.texture).toBe(texture);
+            expect(rtWrapper.layers).toBe(3);
+            expect(rtWrapper.depth).toBe(0);
+            expect(nativeEngine.initializeTexture.mock.lastCall!.slice(8)).toEqual([false, 3, false]);
+            expect(bound().layers).toEqual([2]);
+        });
+
+        it("keeps every 2D-array framebuffer after removing its depth texture", () => {
+            const { engine, bound } = createEngine();
+            const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            rtWrapper.createDepthStencilTexture(0, false, false, 1);
+
+            rtWrapper.setDepthStencilTexture(null);
+            engine.bindFramebuffer(rtWrapper, undefined, undefined, undefined, undefined, undefined, 2);
+
+            expect(rtWrapper._framebuffers).toHaveLength(3);
+            expect(bound().layers).toEqual([2]);
+            expect(bound().explicitDepth).toBeUndefined();
+        });
+
         it("recreates an owned MRT depth texture when its sample count changes", () => {
             const { engine, bound, releasedTextures } = createEngine();
             const rtWrapper = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2, generateDepthBuffer: false }) as NativeRenderTargetWrapper;
@@ -935,6 +982,26 @@ describe("ThinNativeEngine", () => {
             expect(() => engine.updateMultipleRenderTargetTextureSampleCount(destination, 4)).toThrow("cannot change samples while using a shared depth texture");
             expect(destination.samples).toBe(1);
             expect(destination.textures![0].samples).toBe(1);
+        });
+
+        it("rejects changing single-target samples while its depth texture is shared", () => {
+            const { engine, nativeEngine } = createEngine();
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            source.createDepthStencilTexture(0, false, false, 1);
+            source.shareDepth(destination);
+            const colorResource = resourceOf(destination.texture!);
+            const depthResource = resourceOf(source._depthStencilTexture!);
+            nativeEngine.initializeTexture.mockClear();
+
+            expect(() => engine.updateRenderTargetTextureSampleCount(destination, 4)).toThrow(
+                "updateRenderTargetTextureSampleCount: cannot change samples while using a shared depth texture."
+            );
+            expect(destination.samples).toBe(1);
+            expect(destination.texture!.samples).toBe(1);
+            expect(resourceOf(destination.texture!)).toBe(colorResource);
+            expect(resourceOf(source._depthStencilTexture!)).toBe(depthResource);
+            expect(nativeEngine.initializeTexture).not.toHaveBeenCalled();
         });
 
         it("reattaches shared depth to an ordinary render target", () => {
@@ -980,6 +1047,47 @@ describe("ThinNativeEngine", () => {
             expect(rtWrapper.texture).toBe(texture);
             expect(nativeEngine.initializeTexture.mock.lastCall![3]).toBe(true);
             expect(engine._hasMipStorage(texture)).toBe(true);
+        });
+
+        it("preserves allocation-only mip storage when rebuilding an MRT", () => {
+            const { engine, nativeEngine } = createEngine();
+            const rtWrapper = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                { textureCount: 1, createMipMaps: true, generateMipMaps: false }
+            ) as NativeRenderTargetWrapper;
+            const texture = rtWrapper.textures![0];
+            nativeEngine.initializeTexture.mockClear();
+
+            (rtWrapper as any)._rebuild();
+
+            expect(rtWrapper.textures![0]).toBe(texture);
+            expect(texture.generateMipMaps).toBe(false);
+            expect(engine._hasMipStorage(texture)).toBe(true);
+            expect(nativeEngine.initializeTexture.mock.lastCall![3]).toBe(true);
+        });
+
+        it("reapplies MRT depth sampling after recreating flat and layered depth textures", () => {
+            for (const layered of [false, true]) {
+                const { engine } = createEngine();
+                const rtWrapper = engine.createMultipleRenderTarget(
+                    { width: 64, height: 64 },
+                    layered ? { textureCount: 1, targetTypes: [Constants.TEXTURE_2D_ARRAY], layerCounts: [3] } : { textureCount: 1, generateDepthBuffer: false }
+                ) as NativeRenderTargetWrapper;
+                rtWrapper.createDepthStencilTexture(Constants.LEQUAL, false, false, 1);
+                const depth = rtWrapper._depthStencilTexture!;
+                depth.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+                const setSampling = vi.fn();
+                (engine as any)._setTextureSampling = setSampling;
+                const updateComparison = vi.spyOn(engine, "updateTextureComparisonFunction");
+
+                engine.updateMultipleRenderTargetTextureSampleCount(rtWrapper, 4);
+                if (layered) {
+                    engine.bindFramebuffer(rtWrapper);
+                }
+
+                expect(setSampling).toHaveBeenCalledWith(resourceOf(depth), expect.anything());
+                expect(updateComparison).toHaveBeenCalledWith(depth, Constants.LEQUAL);
+            }
         });
 
         it("honors createMipMaps and sRGB for cube internal textures", () => {
@@ -1122,6 +1230,43 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.updateTextureData).toHaveBeenCalledWith(resourceOf(texture), mip, 0, 0, 2, 2, 0, 1, texture.invertY, false);
         });
 
+        it("keeps decoded multi-mip textures at their level-zero dimensions", async () => {
+            const { engine, nativeEngine } = createEngine();
+            const useFallbackTexture = EngineStore.UseFallbackTexture;
+            EngineStore.UseFallbackTexture = false;
+            onTestFinished(() => {
+                EngineStore.UseFallbackTexture = useFallbackTexture;
+            });
+            const loader = {
+                loadData: (
+                    _data: ArrayBufferView,
+                    texture: InternalTexture,
+                    callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void
+                ) =>
+                    callback(4, 4, true, false, () => {
+                        texture.format = Constants.TEXTUREFORMAT_RGBA;
+                        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                        for (const [lod, size] of [4, 2, 1].entries()) {
+                            texture.width = size;
+                            texture.height = size;
+                            engine._uploadDataToTextureDirectly(texture, new Uint8Array(size * size * 4), 0, lod);
+                        }
+                    }),
+            };
+            vi.spyOn(AbstractEngine, "GetCompatibleTextureLoader").mockResolvedValue(loader as any);
+
+            const texture = engine.createTexture("texture.ktx2", false, false, null, undefined, null, null, new Uint8Array(4));
+            await flushAsync();
+
+            expect([texture.width, texture.height, texture.baseWidth, texture.baseHeight]).toEqual([4, 4, 4, 4]);
+            expect(nativeEngine.loadRawTexture.mock.calls.map((call: unknown[]) => call.slice(2, 4))).toEqual([[4, 4]]);
+            expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => call.slice(4, 8))).toEqual([
+                [2, 2, 0, 1],
+                [1, 1, 0, 2],
+            ]);
+            expect(texture.isReady).toBe(true);
+        });
+
         it("removes rejected loader textures from pending data without an error callback", async () => {
             const { engine } = createEngine();
             const useFallbackTexture = EngineStore.UseFallbackTexture;
@@ -1152,7 +1297,11 @@ describe("ThinNativeEngine", () => {
             });
             const uploadError = new Error("upload failed");
             const loader = {
-                loadData: (_data: ArrayBufferView, _texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void) =>
+                loadData: (
+                    _data: ArrayBufferView,
+                    _texture: InternalTexture,
+                    callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void
+                ) =>
                     callback(4, 4, false, false, () => {
                         throw uploadError;
                     }),
@@ -1170,6 +1319,45 @@ describe("ThinNativeEngine", () => {
             expect(texture.isReady).toBe(false);
             expect(texture._loadError?.exception).toBe(uploadError);
             expect(pending.has(texture)).toBe(false);
+        });
+
+        it("leaves a multi-mip loader texture unready when a later mip upload fails", async () => {
+            const { engine, nativeEngine } = createEngine();
+            const useFallbackTexture = EngineStore.UseFallbackTexture;
+            EngineStore.UseFallbackTexture = false;
+            onTestFinished(() => {
+                EngineStore.UseFallbackTexture = useFallbackTexture;
+            });
+            const uploadError = new Error("later mip upload failed");
+            nativeEngine.updateTextureData.mockImplementationOnce(() => {
+                throw uploadError;
+            });
+            const loader = {
+                loadData: (
+                    _data: ArrayBufferView,
+                    texture: InternalTexture,
+                    callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void
+                ) => {
+                    texture.format = Constants.TEXTUREFORMAT_RGBA;
+                    texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                    texture.width = texture.height = 4;
+                    engine._uploadDataToTextureDirectly(texture, new Uint8Array(4 * 4 * 4), 0, 0);
+                    try {
+                        texture.width = texture.height = 2;
+                        engine._uploadDataToTextureDirectly(texture, new Uint8Array(2 * 2 * 4), 0, 1);
+                    } catch {
+                        callback(4, 4, true, false, () => {}, true);
+                    }
+                },
+            };
+            vi.spyOn(AbstractEngine, "GetCompatibleTextureLoader").mockResolvedValue(loader as any);
+
+            const texture = engine.createTexture("texture.ktx2", false, false, null, undefined, null, null, new Uint8Array(4));
+            await flushAsync();
+
+            expect(nativeEngine.loadRawTexture).toHaveBeenCalledTimes(1);
+            expect(texture.isReady).toBe(false);
+            expect(texture._loadError?.message).toContain("TextureLoader failed to load data");
         });
 
         it("keeps one URL raw-cube cache entry through rebuild and removes it on disposal", async () => {

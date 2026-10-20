@@ -2493,6 +2493,8 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         const onInternalError = (message?: string, exception?: any) => {
+            texture.isReady = false;
+
             if (scene) {
                 scene.removePendingData(texture);
             }
@@ -2534,14 +2536,25 @@ export class ThinNativeEngine extends ThinEngine {
                             return;
                         }
 
-                        texture.baseWidth = width;
-                        texture.baseHeight = height;
-                        texture.width = width;
-                        texture.height = height;
+                        const baseWidth = width;
+                        const baseHeight = height;
+                        texture.baseWidth = baseWidth;
+                        texture.baseHeight = baseHeight;
+                        texture.width = baseWidth;
+                        texture.height = baseHeight;
 
                         // The loader-supplied done() performs the actual GPU upload (e.g. via
                         // _uploadDataToTextureDirectly), so texture dimensions must be set beforehand.
-                        done();
+                        try {
+                            done();
+                        } finally {
+                            // Some loaders temporarily publish each mip's dimensions through width/height.
+                            // Restore the level-zero dimensions even when a later mip upload fails.
+                            texture.baseWidth = baseWidth;
+                            texture.baseHeight = baseHeight;
+                            texture.width = baseWidth;
+                            texture.height = baseHeight;
+                        }
 
                         if (texture._hardwareTexture) {
                             const filter = getNativeSamplingMode(samplingMode);
@@ -2938,6 +2951,37 @@ export class ThinNativeEngine extends ThinEngine {
             _TexturesWithMipStorage.delete(texture);
         }
     }
+
+    /**
+     * Ensures a cloned render-target texture retains allocation-only mip storage.
+     * @internal
+     */
+    public _ensureRenderTargetMipStorage(texture: InternalTexture): boolean {
+        if (this._hasMipStorage(texture)) {
+            return false;
+        }
+
+        this._setHasMipStorage(texture, true);
+        if (!texture._hardwareTexture) {
+            return false;
+        }
+
+        this._engine.initializeTexture(
+            texture._hardwareTexture.underlyingResource,
+            texture.baseWidth,
+            texture.baseHeight,
+            this._getRenderTargetHasMips(true, texture.samples),
+            getNativeTextureFormat(texture.format, texture.type),
+            /*renderTarget*/ true,
+            texture._useSRGBBuffer,
+            texture.samples,
+            texture.isCube,
+            texture.is2DArray || texture.is3D ? texture.depth : 0,
+            texture.is3D
+        );
+        return true;
+    }
+
     /**
      * Rebuilds native framebuffer objects after a wrapper's explicit depth attachment changes.
      * @internal
@@ -2979,7 +3023,7 @@ export class ThinNativeEngine extends ThinEngine {
                     nativeTexture,
                     nativeRTWrapper.width,
                     nativeRTWrapper.height,
-                    nativeRTWrapper.isCube ? 6 : nativeRTWrapper.depth,
+                    nativeRTWrapper.isCube ? 6 : nativeRTWrapper.layers,
                     nativeRTWrapper._generateStencilBuffer,
                     nativeRTWrapper._generateDepthBuffer,
                     nativeRTWrapper.samples
@@ -3693,6 +3737,7 @@ export class ThinNativeEngine extends ThinEngine {
     // framebuffer via _createMultiRenderTargetFramebuffer (called from NativeRenderTargetWrapper.setTexture).
     public override createMultipleRenderTarget(size: TextureSize, options: IMultiRenderTargetOptions, _initializeBuffers = true): RenderTargetWrapper {
         let generateMipMaps = false;
+        let createMipMaps = false;
         let generateDepthBuffer = true;
         let generateStencilBuffer = false;
         let generateDepthTexture = false;
@@ -3715,6 +3760,7 @@ export class ThinNativeEngine extends ThinEngine {
 
         if (options !== undefined) {
             generateMipMaps = options.generateMipMaps ?? false;
+            createMipMaps = options.createMipMaps ?? generateMipMaps;
             generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = options.generateStencilBuffer ?? false;
             generateDepthTexture = options.generateDepthTexture ?? false;
@@ -3779,7 +3825,7 @@ export class ThinNativeEngine extends ThinEngine {
             // texture (one face targeted per attachment) or a 2D-array texture with layerCounts layers (one
             // layer targeted per attachment). The framebuffer selects the specific face/layer per attachment.
             const textureLabel = labels[i] ?? rtWrapper.label + "-Texture" + i;
-            const textureOptions = { generateMipMaps, type, format, samplingMode, useSRGBBuffer, samples, label: textureLabel };
+            const textureOptions = { generateMipMaps, createMipMaps, type, format, samplingMode, useSRGBBuffer, samples, label: textureLabel };
             let texture: InternalTexture;
             if (target === Constants.TEXTURE_CUBE_MAP) {
                 texture = this._createInternalCubeTexture(width, textureOptions, InternalTextureSource.MultiRenderTarget);
@@ -3876,6 +3922,18 @@ export class ThinNativeEngine extends ThinEngine {
             undefined,
             explicitDepth
         );
+        this._applyDepthTextureSampling(rtWrapper);
+    }
+
+    private _applyDepthTextureSampling(rtWrapper: NativeRenderTargetWrapper): void {
+        const depthTexture = rtWrapper._depthStencilTexture;
+        const nativeDepth = depthTexture?._hardwareTexture?.underlyingResource;
+        if (!depthTexture || !nativeDepth) {
+            return;
+        }
+
+        this._setTextureSampling(nativeDepth, getNativeSamplingMode(depthTexture.samplingMode));
+        this.updateTextureComparisonFunction(depthTexture, depthTexture._comparisonFunction);
     }
 
     /**
@@ -4065,6 +4123,10 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+        const depthTexture = nativeRTWrapper._depthStencilTexture;
+        if (depthTexture?._hardwareTexture && depthTexture.samples !== samples && depthTexture._references > 1) {
+            throw new Error("updateRenderTargetTextureSampleCount: cannot change samples while using a shared depth texture.");
+        }
         const nativeTexture = texture._hardwareTexture.underlyingResource;
 
         // bgfx couples MSAA to the texture creation flags, so changing samples after the fact requires
@@ -4410,6 +4472,7 @@ export class ThinNativeEngine extends ThinEngine {
                 depth
             );
             nativeRTWrapper._layeredFramebufferKey = { colors: colorTextures, layers, depth, samples };
+            this._applyDepthTextureSampling(nativeRTWrapper);
         }
         this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
     }
@@ -4745,8 +4808,6 @@ export class ThinNativeEngine extends ThinEngine {
             texture.invertY,
             texture._useSRGBBuffer
         );
-
-        texture.isReady = true;
     }
 
     /**

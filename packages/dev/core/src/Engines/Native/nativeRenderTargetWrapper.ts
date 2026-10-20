@@ -121,6 +121,11 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             return;
         }
 
+        if (this._framebufferDepthStencil) {
+            this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(this);
+            return;
+        }
+
         // Layered MRTs build their framebuffer on bind from every attachment's layer/face; a flat rebuild here
         // would drop those selections, so just invalidate it.
         if (this._usesLayeredFramebuffer) {
@@ -163,6 +168,36 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     }
 
     protected override _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
+        if (this.isMulti) {
+            const rtw = super._cloneRenderTargetWrapper() as Nullable<NativeRenderTargetWrapper>;
+            if (!rtw?.textures || !this.textures) {
+                return rtw;
+            }
+
+            let framebufferNeedsRebuild = false;
+            const processed = new Set<InternalTexture>();
+            for (let i = 0; i < this.textures.length; i++) {
+                const source = this.textures[i];
+                const replacement = rtw.textures[i];
+                if (!source || !replacement || processed.has(replacement)) {
+                    continue;
+                }
+                processed.add(replacement);
+                if (this._engine._hasMipStorage(source)) {
+                    framebufferNeedsRebuild = this._engine._ensureRenderTargetMipStorage(replacement) || framebufferNeedsRebuild;
+                }
+            }
+
+            if (framebufferNeedsRebuild) {
+                if (rtw._usesLayeredFramebuffer) {
+                    rtw._invalidateLayeredFramebuffer();
+                } else {
+                    this._engine._createMultiRenderTargetFramebuffer(rtw);
+                }
+            }
+            return rtw;
+        }
+
         if (!this.isMulti && this.texture) {
             const texture = this.texture;
             const options = {
@@ -181,7 +216,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
                       {
                           width: this.width,
                           height: this.height,
-                          layers: this.is2DArray ? this.depth : undefined,
+                          layers: this.is2DArray ? this.layers : undefined,
                           depth: this.is3D ? this.depth : undefined,
                       },
                       options
