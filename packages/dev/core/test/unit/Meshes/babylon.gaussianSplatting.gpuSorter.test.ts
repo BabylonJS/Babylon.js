@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Logger } from "core/Misc/logger";
 import {
     GaussianSplattingGpuSorter,
     GetGaussianSplattingGpuSorterMaxSplatCount,
@@ -13,6 +14,73 @@ import {
 } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
 
 const Identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+describe("GaussianSplattingGpuSorter shader readiness", () => {
+    it("caches readiness and invalidates the fast path when shared or output bindings change", () => {
+        const shader = () => ({
+            isReady: vi.fn(() => true),
+            setStorageBuffer: vi.fn(),
+            setTexture: vi.fn(),
+            fastMode: false,
+            triggerContextRebuild: false,
+        });
+        const keys = shader();
+        const outputCs = shader();
+        const count = shader();
+        const scatter = shader();
+        const scanLocal = shader();
+        const scanSums = shader();
+        const shaders = [keys, outputCs, count, scatter, scanLocal, scanSums];
+        const sorter = Object.create(GaussianSplattingGpuSorter.prototype) as any;
+        Object.assign(sorter, {
+            _bindingsVersion: 1,
+            _sortShadersBoundVersion: -1,
+            _passCount: 1,
+            _passParams: [{}],
+            _countCs: [count],
+            _scatterCs: [scatter],
+            _scanLocalCs: scanLocal,
+            _scanSumsCs: scanSums,
+        });
+        const output = { buffersVersion: 1, _coefsBuffer: {}, _outputCs: outputCs };
+        sorter._bindResources(output, keys, false, false);
+        expect(sorter._isReady(keys, output)).toBe(true);
+        for (const cs of shaders) {
+            expect(cs.fastMode).toBe(true);
+            // The first dispatch still checks/clears the compute context before taking the fast path.
+            expect(cs.triggerContextRebuild).toBe(true);
+            cs.isReady.mockClear();
+        }
+        sorter._bindResources(output, keys, false, false);
+        expect(sorter._isReady(keys, output)).toBe(true);
+        for (const cs of shaders) {
+            expect(cs.isReady).not.toHaveBeenCalled();
+        }
+
+        sorter._bindingsVersion++;
+        sorter._bindResources(output, keys, false, false);
+        for (const cs of shaders) {
+            expect(cs.fastMode).toBe(false);
+        }
+        expect(sorter._isReady(keys, output)).toBe(true);
+        for (const cs of shaders) {
+            expect(cs.isReady).toHaveBeenCalledOnce();
+            cs.isReady.mockClear();
+        }
+
+        output.buffersVersion++;
+        output._coefsBuffer = {};
+        const newKeys = shader();
+        sorter._bindResources(output, newKeys, false, false);
+        expect(outputCs.fastMode).toBe(false);
+        expect(sorter._isReady(newKeys, output)).toBe(true);
+        expect(newKeys.isReady).toHaveBeenCalledOnce();
+        expect(outputCs.isReady).toHaveBeenCalledOnce();
+        for (const cs of [count, scatter, scanLocal, scanSums]) {
+            expect(cs.isReady).not.toHaveBeenCalled();
+        }
+    });
+});
 
 describe("GaussianSplattingGpuSorter helpers", () => {
     it("pads the count to a multiple of 16, at least 16", () => {
@@ -100,6 +168,41 @@ describe("GaussianSplattingGpuSorter helpers", () => {
 });
 
 describe("GaussianSplattingGpuSorter support", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    const createValidationSorter = (maxSplatCount: number, vertexCount: number) => {
+        // Exercise interval validation without allocating storage for millions of keys.
+        const sorter = Object.create(GaussianSplattingGpuSorter.prototype) as GaussianSplattingGpuSorter;
+        Object.assign(sorter, { _name: "validation", _maxSplatCount: maxSplatCount, _vertexCount: vertexCount });
+        return sorter;
+    };
+
+    it("rejects overlapping intervals exceeding the scan chunk capacity before allocating or dispatching", () => {
+        vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        const sorter = createValidationSorter(1 << 24, 8388609);
+        const ensureCapacity = vi.spyOn(sorter as any, "_ensureCapacity");
+
+        expect(sorter.setIntervals([0, 8388609, 0, 8388609])).toBe(false);
+        expect(sorter.sort({} as any, { m: Identity }, { m: Identity })).toBe(false);
+        expect(ensureCapacity).not.toHaveBeenCalled();
+        expect(sorter.setIntervals([0, 8388608, 0, 8388608])).toBe(true);
+        expect(sorter.activeCount).toBe(1 << 24);
+    });
+
+    it("validates the packed padded count against either storage buffer limit", () => {
+        vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        for (const limits of [
+            { maxStorageBufferBindingSize: 1000, maxBufferSize: 1 << 20 },
+            { maxStorageBufferBindingSize: 1 << 20, maxBufferSize: 1000 },
+        ]) {
+            const maxCount = GetGaussianSplattingGpuSorterMaxSplatCount({ currentLimits: limits } as any);
+            const sorter = createValidationSorter(maxCount, 121);
+            expect(sorter.setIntervals([0, 121, 0, 120])).toBe(false);
+            expect(sorter.setIntervals([0, 120, 0, 120])).toBe(true);
+            expect(sorter.paddedCount).toBe(240);
+        }
+    });
+
     it("is only supported on WebGPU engines with compute shaders", () => {
         const webgpu = { isWebGPU: true, getCaps: () => ({ supportComputeShaders: true }) };
         const noCompute = { isWebGPU: true, getCaps: () => ({ supportComputeShaders: false }) };

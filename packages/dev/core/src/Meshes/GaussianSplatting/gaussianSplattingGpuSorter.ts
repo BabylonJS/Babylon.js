@@ -19,6 +19,7 @@ const RadixBins = 16;
 // One scan chunk covers 1024 histogram entries (16 bins x 64 blocks). The top-level scan handles at most 256 chunks.
 const BlocksPerScanChunk = 64;
 const MaxScanChunks = 256;
+const MaxSortKeyCount = SortBlockSize * BlocksPerScanChunk * MaxScanChunks;
 const MaxDispatchGroupsPerDimension = 65535;
 // Source indices travel as float32 in the vertex buffer, so they must stay exactly representable.
 const MaxFloatExactSplatCount = 1 << 24;
@@ -261,7 +262,7 @@ export function GetGaussianSplattingGpuSorterMaxSplatCount(engine: AbstractEngin
     const maxBytes = limits
         ? Math.min(limits.maxStorageBufferBindingSize ?? DefaultMaxStorageBufferSize, limits.maxBufferSize ?? DefaultMaxStorageBufferSize)
         : DefaultMaxStorageBufferSize;
-    return Math.min(MaxFloatExactSplatCount, Math.floor(maxBytes / Float32Array.BYTES_PER_ELEMENT) & ~15);
+    return Math.min(MaxFloatExactSplatCount, MaxSortKeyCount, Math.floor(maxBytes / Float32Array.BYTES_PER_ELEMENT) & ~15);
 }
 
 function _RoundUp16(value: number): number {
@@ -428,6 +429,19 @@ function _Dispatch(cs: ComputeShader, groups: number): boolean {
         : cs.dispatch(MaxDispatchGroupsPerDimension, Math.ceil(groups / MaxDispatchGroupsPerDimension), 1);
 }
 
+function _IsShaderReady(cs: ComputeShader): boolean {
+    if (cs.fastMode) {
+        return true;
+    }
+    if (!cs.isReady()) {
+        return false;
+    }
+    cs.fastMode = true;
+    // Binding setters mark the context dirty, but fastMode skips that check. Rebuild it on the first dispatch after each rebind.
+    cs.triggerContextRebuild = true;
+    return true;
+}
+
 /**
  * WebGPU compute depth sorter for Gaussian Splatting. It reproduces the ordering of the CPU sort worker (back-to-front counting sort) entirely on the GPU,
  * and writes the sorted splat indices in a vertex buffer ready to be used as the instanced `splatIndex` attributes ({@link GaussianSplattingGpuSortOutput}).
@@ -474,6 +488,7 @@ export class GaussianSplattingGpuSorter {
     private _packedIntervals: Nullable<Uint32Array> = null;
     private _intervalCount = 0;
     private _intervalsDirty = true;
+    private _intervalsValid = true;
     private _activeCount = 0;
 
     // Incremented whenever a buffer or texture bound to the compute shaders is created, replaced or released, so the shaders are only rebound when needed.
@@ -625,7 +640,7 @@ export class GaussianSplattingGpuSorter {
     /**
      * Sets the splat data to sort.
      * @param source the source textures and layout
-     * @returns false (and logs an error) if the splat count exceeds {@link GaussianSplattingGpuSorter.GetMaxSupportedSplatCount}
+     * @returns false (and logs an error) if the source or active interval count exceeds {@link GaussianSplattingGpuSorter.GetMaxSupportedSplatCount}
      */
     public setSource(source: IGaussianSplattingGpuSortSource): boolean {
         if (source.vertexCount > this._maxSplatCount) {
@@ -655,8 +670,7 @@ export class GaussianSplattingGpuSorter {
             this._boundsMin = Float32Array.from(source.boundsMin);
             this._boundsMax = Float32Array.from(source.boundsMax);
         }
-        this._refreshIntervals();
-        return true;
+        return this._refreshIntervals();
     }
 
     /**
@@ -685,10 +699,12 @@ export class GaussianSplattingGpuSorter {
     /**
      * Restricts the sort to ranges of source splats, like the CPU worker's `intervals` message.
      * @param intervals flat `[start0, count0, start1, count1, ...]` (start, COUNT pairs), or null to sort every splat
+     * @returns false (and logs an error) if the packed, padded active count exceeds the scan or device storage-buffer limits.
+     * Overlapping intervals count each occurrence. Sorting is disabled until valid intervals or a valid source are set.
      */
-    public setIntervals(intervals: Nullable<ArrayLike<number>>): void {
+    public setIntervals(intervals: Nullable<ArrayLike<number>>): boolean {
         this._rawIntervals = intervals ? Uint32Array.from(intervals) : null;
-        this._refreshIntervals();
+        return this._refreshIntervals();
     }
 
     /**
@@ -696,6 +712,9 @@ export class GaussianSplattingGpuSorter {
      * @returns the new output
      */
     public createOutput(): GaussianSplattingGpuSortOutput {
+        if (!this._intervalsValid) {
+            throw new Error(`${this._name}: cannot create an output for unsupported active intervals.`);
+        }
         const output = new GaussianSplattingGpuSortOutput(this._engine, this._name + "_out" + this._outputs.length);
         output._ensureCapacity(this.paddedCount, this._maxSplatCount);
         this._outputs.push(output);
@@ -714,7 +733,7 @@ export class GaussianSplattingGpuSorter {
      * @param worldMatrix world matrix of the mesh (ignored for compound meshes, which use the part matrices)
      * @param viewMatrix view matrix of the camera
      * @param options handedness, camera position and depth range
-     * @returns false if nothing was enqueued (the shaders are still compiling, no source was set, or no depth range is available), true otherwise
+     * @returns false if nothing was enqueued (unsupported active intervals, shaders still compiling, no source, or no depth range), true otherwise
      */
     public sort(
         output: GaussianSplattingGpuSortOutput,
@@ -722,7 +741,7 @@ export class GaussianSplattingGpuSorter {
         viewMatrix: GaussianSplattingGpuSortMatrix,
         options?: IGaussianSplattingGpuSortOptions
     ): boolean {
-        if (this._disposed || !this._centersTexture || !GaussianSplattingGpuSorter._DependenciesReady) {
+        if (this._disposed || !this._intervalsValid || !this._centersTexture || !GaussianSplattingGpuSorter._DependenciesReady) {
             return false;
         }
         const sog = !!this._meansHighTexture;
@@ -807,7 +826,7 @@ export class GaussianSplattingGpuSorter {
         this._partIndicesTexture = null;
     }
 
-    private _refreshIntervals(): void {
+    private _refreshIntervals(): boolean {
         if (this._rawIntervals) {
             const packed = _PackGpuSortIntervals(this._rawIntervals, this._vertexCount);
             this._packedIntervals = packed.data;
@@ -819,6 +838,11 @@ export class GaussianSplattingGpuSorter {
             this._activeCount = this._vertexCount;
         }
         this._intervalsDirty = true;
+        this._intervalsValid = this._activeCount <= this._maxSplatCount && this.paddedCount <= this._maxSplatCount;
+        if (!this._intervalsValid) {
+            Logger.Error(`${this._name}: ${this._activeCount} active splats exceeds the GPU sorter limit of ${this._maxSplatCount}.`);
+        }
+        return this._intervalsValid;
     }
 
     private _releaseSortBuffers(): void {
@@ -928,6 +952,8 @@ export class GaussianSplattingGpuSorter {
         output._boundCoefsBuffer = output._coefsBuffer;
         output._boundKeysCs = keysCs;
 
+        keysCs.fastMode = false;
+        output._outputCs.fastMode = false;
         keysCs.setStorageBuffer("params", output._paramsBuffer);
         keysCs.setStorageBuffer("intervals", this._intervalsBuffer!);
         keysCs.setStorageBuffer("coefs", output._coefsBuffer!);
@@ -956,10 +982,12 @@ export class GaussianSplattingGpuSorter {
         for (let pass = 0; pass < this._passCount; pass++) {
             const params = this._passParams[pass];
             const count = this._countCs[pass];
+            count.fastMode = false;
             count.setStorageBuffer("params", params);
             count.setStorageBuffer("keysIn", keysIn);
             count.setStorageBuffer("sumTable", this._sumTable!);
             const scatter = this._scatterCs[pass];
+            scatter.fastMode = false;
             scatter.setStorageBuffer("params", params);
             scatter.setStorageBuffer("keysIn", keysIn);
             scatter.setStorageBuffer("valsIn", valsIn);
@@ -975,6 +1003,8 @@ export class GaussianSplattingGpuSorter {
             valsOut = valsTemp;
         }
 
+        this._scanLocalCs.fastMode = false;
+        this._scanSumsCs.fastMode = false;
         this._scanLocalCs.setStorageBuffer("params", this._passParams[0]);
         this._scanLocalCs.setStorageBuffer("sumTable", this._sumTable!);
         this._scanLocalCs.setStorageBuffer("chunkSums", this._chunkSums);
@@ -983,9 +1013,9 @@ export class GaussianSplattingGpuSorter {
     }
 
     private _isReady(keysCs: ComputeShader, output: GaussianSplattingGpuSortOutput): boolean {
-        let ready = keysCs.isReady() && output._outputCs.isReady() && this._scanLocalCs.isReady() && this._scanSumsCs.isReady();
+        let ready = _IsShaderReady(keysCs) && _IsShaderReady(output._outputCs) && _IsShaderReady(this._scanLocalCs) && _IsShaderReady(this._scanSumsCs);
         for (let pass = 0; pass < this._passCount && ready; pass++) {
-            ready = this._countCs[pass].isReady() && this._scatterCs[pass].isReady();
+            ready = _IsShaderReady(this._countCs[pass]) && _IsShaderReady(this._scatterCs[pass]);
         }
         return ready;
     }

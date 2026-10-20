@@ -2,9 +2,10 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { GaussianSplattingGpuSorter } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
+import { GaussianSplattingGpuSorter, type IGaussianSplattingGpuSortSource } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { GaussianSplattingMeshBase } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
+import { GaussianSplattingSortWorkerCommand } from "core/Meshes/GaussianSplatting/gaussianSplattingSortWorker";
 import { Scene } from "core/scene";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -34,14 +35,19 @@ describe("GaussianSplatting GPU sort selection", () => {
     let workerCtor: ReturnType<typeof vi.fn>;
     let originalWorker: typeof Worker | undefined;
     let originalCreateObjectURL: typeof URL.createObjectURL;
+    let originalUseGpuSort: boolean;
+    let originalProgressiveUpdateAmount: number;
 
     beforeEach(() => {
         engine = new NullEngine();
         (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
         scene = new Scene(engine);
+        originalUseGpuSort = GaussianSplattingMeshBase.UseGpuSort;
+        originalProgressiveUpdateAmount = GaussianSplattingMeshBase.ProgressiveUpdateAmount;
         GaussianSplattingMeshBase.UseGpuSort = true;
 
-        // Pretend WebGPU compute is available; the sorter itself is never constructed without a render loop.
+        // Dependency loading can finish between tests: selection tests must never allocate real GPU resources on NullEngine.
+        vi.spyOn(GaussianSplattingMeshBase.prototype as any, "_ensureGpuSorter").mockReturnValue(false);
         vi.spyOn(GaussianSplattingGpuSorter, "IsSupported").mockReturnValue(true);
         vi.spyOn(GaussianSplattingGpuSorter, "GetMaxSupportedSplatCount").mockReturnValue(1000);
 
@@ -60,7 +66,8 @@ describe("GaussianSplatting GPU sort selection", () => {
     });
 
     afterEach(() => {
-        GaussianSplattingMeshBase.UseGpuSort = false;
+        GaussianSplattingMeshBase.UseGpuSort = originalUseGpuSort;
+        GaussianSplattingMeshBase.ProgressiveUpdateAmount = originalProgressiveUpdateAmount;
         scene.dispose();
         engine.dispose();
         vi.restoreAllMocks();
@@ -217,6 +224,106 @@ describe("GaussianSplatting GPU sort selection", () => {
 
     const getViews = (mesh: GaussianSplattingMesh) => Array.from<any>((mesh as any)._cameraViewInfos.values());
 
+    const installSorter = (mesh: GaussianSplattingMesh) => {
+        const output = { buffersVersion: 1, vertexBuffers: [], paddedCount: 16, instanceCount: 1, dispose: vi.fn() };
+        const sorter = {
+            setSource: vi.fn((_source: IGaussianSplattingGpuSortSource) => true),
+            setIntervals: vi.fn((_intervals: ArrayLike<number> | null) => true),
+            setPartMatrices: vi.fn(),
+            createOutput: vi.fn(() => output),
+            sort: vi.fn(() => true),
+            dispose: vi.fn(),
+        };
+        (mesh as any)._gpuSorter = sorter;
+        vi.spyOn(mesh as any, "_ensureGpuSorter").mockReturnValue(true);
+        return sorter;
+    };
+
+    it("keeps selection independent of shader dependency loading", async () => {
+        await GaussianSplattingGpuSorter.LoadDependenciesAsync();
+        createMesh(40);
+        await Promise.resolve();
+        scene.activeCamera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+        const mesh = createMesh(40);
+        mesh._postToWorker(true);
+        expect(mesh._isGpuSortActive).toBe(true);
+        expect((mesh as any)._gpuSorter).toBeNull();
+    });
+
+    it("sorts uploaded progressive batches between coroutine yields", () => {
+        GaussianSplattingMeshBase.ProgressiveUpdateAmount = 1;
+        (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 16;
+        vi.spyOn(engine, "version", "get").mockReturnValue(2);
+        scene.activeCamera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+        vi.spyOn(engine, "updateTextureData").mockImplementation(() => {});
+        const mesh = new GaussianSplattingMesh("progressive", null, scene);
+        const sorter = installSorter(mesh);
+        const update = (mesh as any)._updateData(createSplatData(40), true);
+
+        for (const uploaded of [16, 32, 40]) {
+            expect(update.next().done).toBe(false);
+            expect(mesh._splatDataPending).toBe(true);
+            mesh._postToWorker(true);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(sorter.sort).toHaveBeenCalledTimes(Math.ceil(uploaded / 16));
+            expect(sorter.setSource.mock.lastCall![0]).toMatchObject({ vertexCount: 40, boundsMax: [uploaded - 1, 0, 0] });
+            expect(Array.from(sorter.setIntervals.mock.lastCall![0]!)).toEqual([0, uploaded]);
+            expect(getViews(mesh)[0].splatIndexBufferSet).toBe(true);
+            expect((mesh as any)._readyToDisplay).toBe(true);
+            (scene as any)._frameId++;
+        }
+        expect(update.next().done).toBe(true);
+        expect(mesh._splatDataPending).toBe(false);
+    });
+
+    it("switches to the worker in the same request when a custom renderer is installed after loading", () => {
+        scene.activeCamera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+        const mesh = createMesh(40);
+        expect(mesh._isGpuSortActive).toBe(true);
+        scene.customRenderFunction = () => {};
+        vi.spyOn(scene, "_isInRenderingMeshEvaluation").mockReturnValue(true);
+
+        mesh._postToWorker(true);
+
+        expect(mesh._isGpuSortActive).toBe(false);
+        expect(workerCtor).toHaveBeenCalledTimes(1);
+        const messages = (mesh as any)._worker.postMessage.mock.calls.map(([message]: any[]) => message);
+        expect(messages.some((message: any) => message.command === GaussianSplattingSortWorkerCommand.SORT)).toBe(true);
+    });
+
+    it("updates intervals and re-sorts without recomputing source bounds on range changes", () => {
+        scene.activeCamera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+        const mesh = createMesh(40);
+        const sorter = installSorter(mesh);
+        mesh._postToWorker(true);
+        const bounds = vi.spyOn(mesh as any, "_updateGpuBounds");
+        const revision = (mesh as any)._gpuDataRevision;
+        (scene as any)._frameId++;
+
+        mesh.setSplatIndexRanges([{ offset: 3, count: 2 }]);
+
+        expect(bounds).not.toHaveBeenCalled();
+        expect(sorter.setSource).toHaveBeenCalledTimes(1);
+        expect(Array.from(sorter.setIntervals.mock.lastCall![0]!)).toEqual([3, 2]);
+        expect(sorter.sort).toHaveBeenCalledTimes(2);
+        expect((mesh as any)._gpuDataRevision).toBeGreaterThan(revision);
+    });
+
+    it("falls back to the worker when the packed intervals exceed the sorter limits", () => {
+        scene.activeCamera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+        const mesh = createMesh(40);
+        const sorter = installSorter(mesh);
+        sorter.setIntervals.mockReturnValue(false);
+
+        mesh._postToWorker(true);
+        mesh._postToWorker(true);
+
+        expect(mesh._isGpuSortActive).toBe(false);
+        expect(sorter.sort).not.toHaveBeenCalled();
+        expect(sorter.dispose).toHaveBeenCalledOnce();
+        expect(workerCtor).toHaveBeenCalledOnce();
+    });
+
     it("leaves the GPU mode when depth sort is disabled after the data is loaded", () => {
         const camera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
         scene.activeCamera = camera;
@@ -294,7 +401,7 @@ describe("GaussianSplatting GPU sort selection", () => {
         expect((clone as any)._textureSize).not.toBe(sourceSize);
 
         const setSource = vi.fn(() => true);
-        const sorter = { setSource, setIntervals: vi.fn(), setPartMatrices: vi.fn() };
+        const sorter = { setSource, setIntervals: vi.fn(() => true), setPartMatrices: vi.fn() };
         expect((clone as any)._applyGpuSource(sorter)).toBe(true);
         expect((setSource.mock.calls[0] as any)[0].textureWidth).toBe(sourceSize.x);
     });

@@ -535,6 +535,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * A mesh leaves the GPU sort for the CPU worker, and does not come back to it, when depth sorting is disabled at runtime
      * (see {@link GaussianSplattingMeshBase.disableDepthSort}), when point splatting is enabled, or when it starts streaming parts.
      * After a WebGPU device restoration, the sorter and its buffers are recreated.
+     * Progressive loading sorts only the batches already uploaded, making them displayable before loading completes.
      * Read when the mesh instantiates its sort, so set it before loading data.
      * See also {@link GaussianSplattingMeshBase.useGpuSort} to override it on a single mesh.
      * @experimental
@@ -639,11 +640,14 @@ export class GaussianSplattingMeshBase extends Mesh {
     // Incremented whenever the sort inputs change (data, ranges, part matrices): every camera output is then sorted again.
     private _gpuDataRevision = 1;
     private _gpuSourceDirty = true;
+    private _gpuIntervalsDirty = true;
+    // Null outside progressive loading; otherwise only this prefix of the source has been uploaded.
+    private _gpuProgressiveCount: Nullable<number> = null;
     private _gpuSortPending = false;
     private _gpuPaddedCount = 0;
     private _gpuBoundsMin: Nullable<Vector3> = null;
     private _gpuBoundsMax: Nullable<Vector3> = null;
-    private _gpuBoundsRevision = -1;
+    private _gpuBoundsDirty = true;
     private _gpuSortOptions: IGaussianSplattingGpuSortOptions = {};
     private _gpuViewInfos: ICameraViewInfo[] = [];
     private _gpuCollectFrameId = 0;
@@ -865,8 +869,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._activeSplatRenderCount = rangeData.count;
         this._activeRangeVersion++;
         if (this._gpuMode) {
-            this._markGpuSourceDirty();
-            this._updateSplatIndexBuffer(this._vertexCount);
+            this._gpuIntervalsDirty = true;
+            this._gpuDataRevision++;
             this._sortIsDirty = true;
             this._postToWorker(true);
             return;
@@ -923,7 +927,8 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     private _postIntervalsToWorker(): void {
         if (this._gpuMode) {
-            this._markGpuSourceDirty();
+            this._gpuIntervalsDirty = true;
+            this._gpuDataRevision++;
             return;
         }
         if (!this._worker) {
@@ -1750,6 +1755,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     /** @internal */
     public _markGpuSourceDirty(): void {
         this._gpuSourceDirty = true;
+        this._gpuIntervalsDirty = true;
+        this._gpuBoundsDirty = true;
         this._gpuDataRevision++;
     }
 
@@ -1878,6 +1885,11 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     private _postToGpuSort(forced: boolean): void {
+        if (this._scene.customRenderFunction && !this._scene.frameGraph) {
+            this._switchToWorkerSort();
+            this._postToWorker(forced);
+            return;
+        }
         const frameId = this._scene.getFrameId();
         this._collectActiveViewInfos(frameId, true, this._gpuViewInfos);
         const sortRequired = this._isSortRequired();
@@ -1951,14 +1963,14 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (!positions) {
             return false;
         }
-        if (this._gpuBoundsRevision === this._gpuDataRevision && this._gpuBoundsMin) {
+        if (!this._gpuBoundsDirty && this._gpuBoundsMin) {
             return true;
         }
         const min = (this._gpuBoundsMin ??= new Vector3());
         const max = (this._gpuBoundsMax ??= new Vector3());
         min.setAll(Number.MAX_VALUE);
         max.setAll(-Number.MAX_VALUE);
-        const count = Math.min(this._vertexCount, Math.floor(positions.length / 4));
+        const count = Math.min(this._gpuProgressiveCount ?? this._vertexCount, Math.floor(positions.length / 4));
         for (let i = 0; i < count; i++) {
             const x = positions[i * 4];
             const y = positions[i * 4 + 1];
@@ -1986,7 +1998,28 @@ export class GaussianSplattingMeshBase extends Mesh {
             min.setAll(0);
             max.setAll(0);
         }
-        this._gpuBoundsRevision = this._gpuDataRevision;
+        this._gpuBoundsDirty = false;
+        return true;
+    }
+
+    private _applyGpuIntervals(sorter: GaussianSplattingGpuSorter): boolean {
+        let intervals = this._activeSplatRanges;
+        const uploaded = this._gpuProgressiveCount;
+        if (uploaded !== null) {
+            if (intervals) {
+                intervals = new Uint32Array(intervals);
+                for (let i = 0; i < intervals.length; i += 2) {
+                    intervals[i + 1] = Math.max(0, Math.min(intervals[i + 1], uploaded - intervals[i]));
+                }
+            } else {
+                intervals = new Uint32Array([0, uploaded]);
+            }
+        }
+        if (!sorter.setIntervals(intervals)) {
+            this._switchToWorkerSort();
+            return false;
+        }
+        this._gpuIntervalsDirty = false;
         return true;
     }
 
@@ -2019,11 +2052,12 @@ export class GaussianSplattingMeshBase extends Mesh {
             });
         }
         if (!accepted) {
-            this._gpuSortForbidden = true;
-            this._exitGpuMode();
+            this._switchToWorkerSort();
             return false;
         }
-        sorter.setIntervals(this._activeSplatRanges);
+        if (!this._applyGpuIntervals(sorter)) {
+            return false;
+        }
         sorter.setPartMatrices(partIndicesTexture ? this._getGpuSortPartMatrices() : null);
         this._gpuSourceDirty = false;
         this._gpuPartMatricesDirty = false;
@@ -2045,7 +2079,14 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     // Sorts the splats of every view that needs it. Runs before the scene renders: compute work cannot be dispatched during a render pass.
     private _runGpuSort(): void {
-        if (!this._gpuMode || !this._canPostToWorker || !this._vertexCount || !this._centersTexture || this._splatDataPending || !this._isSortRequired()) {
+        if (
+            !this._gpuMode ||
+            !this._canPostToWorker ||
+            !this._vertexCount ||
+            !this._centersTexture ||
+            (this._splatDataPending && !this._gpuProgressiveCount) ||
+            !this._isSortRequired()
+        ) {
             return;
         }
         const scene = this._scene;
@@ -2074,6 +2115,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         // The pending texture rows are uploaded right before sorting so the centers match the sort source.
         this._commitDelayedTextureUpdate();
         if (this._gpuSourceDirty && !this._applyGpuSource(sorter)) {
+            return;
+        }
+        if (this._gpuIntervalsDirty && !this._applyGpuIntervals(sorter)) {
             return;
         }
         if (this._gpuPartMatricesDirty) {
@@ -3934,6 +3978,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._flipY = flipY;
         this._splatDataRevision++;
         this._splatDataPending = true;
+        this._gpuProgressiveCount = GaussianSplattingMeshBase.ProgressiveUpdateAmount ? 0 : null;
 
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
@@ -4040,6 +4085,14 @@ export class GaussianSplattingMeshBase extends Mesh {
 
                 this._updateSubTextures(this._splatPositions, covA, covB, colorArray, uploadStartLine, batchEndLine - uploadStartLine, sh);
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+                if (this._gpuMode) {
+                    this._gpuProgressiveCount = Math.min(batchEndTexel, vertexCount);
+                    this._markGpuSourceDirty();
+                    // The batch loop already accumulated the bounds of the uploaded centers.
+                    (this._gpuBoundsMin ??= new Vector3()).copyFrom(minimum);
+                    (this._gpuBoundsMax ??= new Vector3()).copyFrom(maximum);
+                    this._gpuBoundsDirty = false;
+                }
                 if (isAsync) {
                     yield;
                 }
@@ -4081,6 +4134,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._cachedBoundingMax = maximum.clone();
 
         this._splatDataPending = false;
+        this._gpuProgressiveCount = null;
         this._postToWorker(true);
     }
 

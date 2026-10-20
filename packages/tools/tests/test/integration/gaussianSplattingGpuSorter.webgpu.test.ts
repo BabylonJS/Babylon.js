@@ -5,6 +5,7 @@ import { evaluateInitEngineForVisualization } from "../playwright/visualizationP
 // Opt-in WebGPU regression for the Gaussian Splatting GPU radix sort. It runs the real compute pipeline, reads the sorted index
 // buffer back and compares it, padding included, with a CPU reference of the documented ordering: back-to-front (farthest first),
 // 16-bit depth keys quantized over the depth range of the bounds, stable for equal keys, only splats inside the intervals.
+// The .webgpu suffix includes this suite in the BrowserStack WebGPU CI job, without matching WebGL-only projects.
 
 type CameraKind = "z" | "negx" | "general";
 
@@ -248,7 +249,7 @@ const runGpuSortCase = async (testCase: IGpuSortCase): Promise<IGpuSortStageResu
 
 const initPage = async (page: Page) => {
     const config = getGlobalConfig();
-    await page.goto(config.baseUrl + "/empty.html", { timeout: 0 });
+    await page.goto(config.baseUrl + "/empty.html");
     await page.waitForSelector("#babylon-canvas");
     await page.waitForFunction(() => window.BABYLON?.Tools);
     const supported = await page.evaluate(async () => !!navigator.gpu && !!(await navigator.gpu.requestAdapter()));
@@ -290,7 +291,7 @@ const stage = (vertexCount: number, intervals: number[] | null = null, cameras: 
 });
 
 test.describe("WebGPU Gaussian Splatting GPU sort", () => {
-    test.describe.configure({ timeout: 180000 });
+    test.describe.configure({ timeout: 60000 });
 
     test("empty input only writes padding over previous results", async ({ page }) => {
         const results = await runCase(page, {
