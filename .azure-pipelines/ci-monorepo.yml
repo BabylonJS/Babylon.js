@@ -762,13 +762,13 @@ jobs:
               contains(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'glTF')
             )
           )
-      # A single run: consuming the deployed snapshot (rather than building Babylon in-agent) makes the
-      # full ~174-asset suite fast enough to finish well within the timeout on one agent, and avoids the
-      # redundant per-shard npm/playwright install overhead that sharding otherwise added.
+      # A single run consumes the deployed snapshot and avoids redundant per-shard installation.
+      # Allow the expanded 369-test corpus, including aggregate durations and showcase rendering,
+      # to finish on software-rendered hosted agents, with headroom for setup and retries.
       # Kept non-blocking (continueOnError) for now so an intermittent asset does not block merges;
       # promote to a required gate once it has a track record of completing green.
       continueOnError: true
-      timeoutInMinutes: 30
+      timeoutInMinutes: 60
       steps:
           - template: templates/checkout-with-tag-override.yml
 
@@ -806,6 +806,8 @@ jobs:
                 # integration project only passes the `--use-angle=default` WebGL flag on the Chrome
                 # branch, so Firefox runs the conformance suite with no working WebGL context.
                 BROWSER: "Chrome"
+                # Select a consistent software backend instead of platform-dependent ANGLE defaults.
+                CUSTOM_FLAGS: "--use-angle=swiftshader --enable-unsafe-swiftshader"
                 # Consume the Build job's deployed snapshot (empty.html + the properly built UMD bundles)
                 # instead of building Babylon in-agent. This is what the other browser suites do and is
                 # what keeps the agent from running out of memory.
@@ -1011,7 +1013,7 @@ jobs:
       dependsOn:
           - Build
           - FormatLint
-      timeoutInMinutes: 35
+      timeoutInMinutes: 90
       pool:
           vmImage: windows-latest
       steps:

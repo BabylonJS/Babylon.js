@@ -1,8 +1,7 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import { getNumericValue } from "core/FlowGraph/utils";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { MarkDelayActive, MarkDelayInactive, IsDelayActive } from "core/FlowGraph/flowGraphDelayRegistry";
 import { GetEventReference } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityReferences";
 import { InteractivityRefPathToObjectConverter } from "loaders/glTF/2.0/Extensions/interactivityRefPathToObjectConverter";
@@ -42,8 +41,7 @@ describe("KHR_interactivity ref-validity accessors", () => {
             // pointer/get on an active delay ref => value is the delay handle, isValid (truthy) true.
             const active = converter.convert("/extensions/KHR_interactivity/delays/0/");
             const value = active.info.get(active.object, undefined, context);
-            expect(value).toBeInstanceOf(FlowGraphInteger);
-            expect(getNumericValue(value as FlowGraphInteger)).toBe(0);
+            expect(value).toBe("/extensions/KHR_interactivity/delays/0");
 
             // Once the delay fires or is cancelled it is no longer valid.
             MarkDelayInactive(context, 0);

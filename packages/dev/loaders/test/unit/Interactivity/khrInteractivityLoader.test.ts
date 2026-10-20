@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { AppendSceneAsync } from "core/Loading/sceneLoader";
@@ -40,10 +40,13 @@ describe("KHR_interactivity loader lifecycle", () => {
     let engine: NullEngine;
     let scene: Scene;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
+        await import("loaders/glTF/2.0");
+    }, 60000);
+
+    beforeEach(() => {
         engine = new NullEngine();
         scene = new Scene(engine);
-        await import("loaders/glTF/2.0");
     });
 
     afterEach(() => {
@@ -98,8 +101,8 @@ describe("KHR_interactivity loader lifecycle", () => {
         expect(GetKHRInteractivityImportResult(scene)).toBe(results[1]);
     });
 
-    it("starts no graph when the selected graph is invalid", async () => {
-        await AppendSceneAsync(`data:${buildAsset(2)}`, scene);
+    it("rejects the asset when the selected graph is invalid", async () => {
+        await expect(AppendSceneAsync(`data:${buildAsset(2)}`, scene)).rejects.toThrow(/KHR_interactivity/);
 
         const result = GetKHRInteractivityImportResult(scene)!;
         expect(result.graphs[0].flowGraph?.state).toBe(FlowGraphState.Stopped);
@@ -124,7 +127,7 @@ describe("KHR_interactivity loader lifecycle", () => {
                 },
             },
         });
-        await AppendSceneAsync(`data:${legacyAsset}`, scene);
+        await expect(AppendSceneAsync(`data:${legacyAsset}`, scene)).rejects.toThrow(/KHR_interactivity/);
         expect(GetKHRInteractivityImportResult(scene)!.graphs[0].serializedFlowGraph).toBeUndefined();
 
         const compatibilityScene = new Scene(engine);
@@ -141,6 +144,18 @@ describe("KHR_interactivity loader lifecycle", () => {
         });
         expect(GetKHRInteractivityImportResult(compatibilityScene)!.graphs[0].serializedFlowGraph).toBeDefined();
         compatibilityScene.dispose();
+    });
+
+    it("rejects extension-level validation errors even with a valid graph", async () => {
+        const asset = JSON.parse(buildAsset(0));
+        asset.extensions.KHR_interactivity.graph = 10;
+        await expect(AppendSceneAsync(`data:${JSON.stringify(asset)}`, scene)).rejects.toThrow(/KHR_interactivity.*Default graph index/);
+    });
+
+    it.each([null, false, 0, "invalid"])("rejects a non-object extension (%s) with an interactivity error", async (extension) => {
+        const asset = JSON.parse(buildAsset(0));
+        asset.extensions.KHR_interactivity = extension;
+        await expect(AppendSceneAsync(`data:${JSON.stringify(asset)}`, scene)).rejects.toThrow(/KHR_interactivity.*Extension must be an object/);
     });
 
     it("uses production strict contracts and effective configuration during loader lowering", async () => {

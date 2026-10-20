@@ -11,6 +11,10 @@ interface IAssetCase {
     filePath: string;
     kind: "conformance" | "showcase";
     descriptor?: ITestDescriptor;
+    invalid?: {
+        caseId: string;
+        expectedOutcome: "rejectGraph" | "rejectExtension";
+    };
 }
 
 interface ITestDescriptor {
@@ -37,10 +41,10 @@ async function _performRequiredInteractions(page: Page, descriptor: ITestDescrip
         return;
     }
 
-    await page.evaluate(async (requiredInteractions) => {
-        const scene = window.scene!;
-        const importResult = (BABYLON as any).GLTF2.Loader.Extensions.GetKHRInteractivityImportResult(scene);
-        for (const interaction of requiredInteractions) {
+    for (const interaction of interactions) {
+        await page.evaluate((interaction) => {
+            const scene = window.scene!;
+            const importResult = (BABYLON as any).GLTF2.Loader.Extensions.GetKHRInteractivityImportResult(scene);
             const glTFNode = importResult?.glTF.nodes?.[interaction.targetNodeId];
             const transformNode = glTFNode?._babylonTransformNode;
             const mesh = glTFNode?._primitiveBabylonMeshes?.[0] ?? transformNode?.getChildMeshes?.()[0] ?? transformNode;
@@ -62,7 +66,7 @@ async function _performRequiredInteractions(page: Page, descriptor: ITestDescrip
                 if (pickInfo?.hit) {
                     throw new Error(`Expected ${interaction.type} target "${interaction.targetNodeName}" to be excluded from real ray picking.`);
                 }
-                continue;
+                return;
             }
             if (!pickInfo?.hit || !pickInfo.pickedMesh) {
                 throw new Error(`Expected ${interaction.type} target "${interaction.targetNodeName}" to be hit by real ray picking.`);
@@ -70,15 +74,17 @@ async function _performRequiredInteractions(page: Page, descriptor: ITestDescrip
 
             if (interaction.type === "hover") {
                 scene.simulatePointerMove(pickInfo, { pointerId: 1 });
-                await new Promise<void>((resolve) => setTimeout(resolve, 0));
-                scene.simulatePointerMove(new BABYLON.PickingInfo(), { pointerId: 1 });
             } else {
                 scene.simulatePointerDown(pickInfo, { pointerId: 1 });
                 scene.simulatePointerUp(pickInfo, { pointerId: 1 });
             }
-            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        }, interaction);
+        await page.clock.runFor(0);
+        if (interaction.type === "hover" && interaction.expectation === "mustFire") {
+            await page.evaluate(() => window.scene!.simulatePointerMove(new BABYLON.PickingInfo(), { pointerId: 1 }));
+            await page.clock.runFor(0);
         }
-    }, interactions);
+    }
 }
 
 interface IConsoleEntry {
@@ -96,6 +102,10 @@ const HasAssetRepository = AssetRepository.length > 0 && fs.existsSync(AssetRepo
 const ConformanceRoot = path.join(AssetRepository, "Tests", "Interactivity");
 const ShowcaseRoot = path.join(AssetRepository, "Models");
 const InterGlbSegment = `${path.sep}InterGlb${path.sep}`;
+// Decimal-second fixture delays align to this clock step without accumulating frame-rounding drift.
+const FrameDurationMs = 10;
+const RenderSize = 256;
+const BootstrapResponses = new Map<string, Promise<Buffer>>();
 let _routeId = 0;
 
 // The shared empty.html bootstrap loads ~14 Babylon UMD bundles, but the KHR_interactivity
@@ -158,11 +168,20 @@ function _discoverAssets(root: string, kind: IAssetCase["kind"]): IAssetCase[] {
                 filePath: fullPath,
                 kind,
                 descriptor: kind === "conformance" ? _readDescriptor(fullPath) : undefined,
+                ...(kind === "conformance" && path.relative(root, fullPath).startsWith(`invalid${path.sep}`) ? { invalid: _readInvalidExpectation(fullPath) } : {}),
             });
         }
     };
     visit(root);
     return result.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
+}
+
+function _readInvalidExpectation(filePath: string): NonNullable<IAssetCase["invalid"]> {
+    const metadata = JSON.parse(fs.readFileSync(filePath, "utf8")).asset?.extras;
+    if (typeof metadata?.caseId !== "string" || (metadata.expectedOutcome !== "rejectGraph" && metadata.expectedOutcome !== "rejectExtension")) {
+        throw new Error(`Invalid-graph asset ${filePath} has no rejection expectation.`);
+    }
+    return { caseId: metadata.caseId, expectedOutcome: metadata.expectedOutcome };
 }
 
 function _getSuccessVariables(descriptor: ITestDescriptor | undefined): { id: number; name: string }[] {
@@ -234,55 +253,119 @@ async function _routeAsset(page: Page, filePath: string): Promise<IRoutedAsset> 
 }
 
 async function _preparePage(page: Page): Promise<void> {
+    const baseUrl = getGlobalConfig().baseUrl;
+    // Fetch each deployed bootstrap resource once per worker, rather than thousands of CDN requests across the corpus.
+    await page.route(`${baseUrl}/**`, async (route) => {
+        const url = route.request().url();
+        if (url !== `${baseUrl}/empty.html` && !url.endsWith(".js")) {
+            await route.fallback();
+            return;
+        }
+        let pending = BootstrapResponses.get(url);
+        if (!pending) {
+            pending = (async () => {
+                const response = await page.request.get(url, { failOnStatusCode: true, maxRetries: 2, timeout: 60000 });
+                return await response.body();
+            })();
+            BootstrapResponses.set(url, pending);
+        }
+        const body = await pending.catch((error) => {
+            BootstrapResponses.delete(url);
+            throw error;
+        });
+        await route.fulfill({ status: 200, contentType: url.endsWith(".js") ? "application/javascript" : "text/html", body });
+    });
     // Register before navigating so the stub applies to the initial script loads. Serving an empty
     // body (rather than aborting) avoids a failed-request console error while still preventing the
     // unneeded library from evaluating.
     await page.route(BlockedLibraryScriptPattern, async (route) => {
         await route.fulfill({ status: 200, contentType: "application/javascript", body: "" });
     });
-    await page.goto(`${getGlobalConfig().baseUrl}/empty.html`, { waitUntil: "load", timeout: 0 });
+    await page.goto(`${baseUrl}/empty.html`, { waitUntil: "load", timeout: 60000 });
     await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
-    await page.waitForFunction(() => window.BABYLON);
+    await page.waitForFunction(
+        () =>
+            typeof BABYLON !== "undefined" &&
+            typeof BABYLON.Engine === "function" &&
+            typeof BABYLON.Scene === "function" &&
+            typeof BABYLON.Tools === "function" &&
+            typeof BABYLON.GLTFFileLoader === "function" &&
+            typeof BABYLON.FlowGraphCoordinator === "function"
+    );
+    const clockStart = new Date();
+    // pauseAt must be ahead of installation time; otherwise elapsed host time can make it a past instant.
+    await page.clock.install({ time: new Date(clockStart.getTime() - 60 * 60 * 1000) });
+    await page.clock.pauseAt(clockStart);
     await page.evaluate(evaluateInitEngine);
+    const rendererInfo = await page.evaluate(() => {
+        const engine = window.engine!;
+        if (!(engine instanceof BABYLON.Engine)) {
+            throw new Error("KHR conformance requires the WebGL engine.");
+        }
+        return engine.getGlInfo();
+    });
+    console.log(`KHR conformance WebGL backend: ${JSON.stringify(rendererInfo)}`);
+    // These tests assert graph behavior, not pixels. Bound software-renderer work without skipping draws or ticks.
+    await page.evaluate((size) => window.engine!.setSize(size, size), RenderSize);
     await page.evaluate(evaluateCreateScene);
     await page.evaluate(() => {
         const engine = window.scene!.getEngine();
         (window as any).__khrDeltaTime = 0;
         (window as any).__khrLastFrameTime = performance.now();
+        (window as any).__khrExpectedDurationMs = 0;
+        (window as any).__khrFailureEvents = [];
         engine.getDeltaTime = () => (window as any).__khrDeltaTime;
+        const original = BABYLON.FlowGraphCoordinator.prototype.notifyCustomEvent;
+        BABYLON.FlowGraphCoordinator.prototype.notifyCustomEvent = function (...args) {
+            if (args[0] === "test/onStart") {
+                const duration = (args[1] as { expectedDuration?: unknown })?.expectedDuration;
+                if (typeof duration !== "number" || !Number.isFinite(duration) || duration < 0) {
+                    throw new Error("test/onStart must supply a finite non-negative expectedDuration.");
+                }
+                (window as any).__khrExpectedDurationMs = Math.max((window as any).__khrExpectedDurationMs, duration * 1000);
+            } else if (args[0] === "test/onFailed") {
+                (window as any).__khrFailureEvents.push(args[0]);
+            }
+            return original.apply(this, args);
+        };
     });
 }
 
-async function _loadAsset(page: Page, assetUrl: string): Promise<{ success: boolean; error?: string }> {
-    await page.evaluate((url: string) => {
-        const state = { done: false, success: false, error: undefined as string | undefined };
-        (window as any).__khrAssetLoadState = state;
-        void BABYLON.AppendSceneAsync(url, window.scene!, {
-            pluginOptions: {
-                gltf: {
-                    extensionOptions: {
-                        ["KHR_interactivity"]: {
-                            strictValidation: false,
+async function _loadAsset(page: Page, assetUrl: string, autoStart: boolean = true): Promise<{ success: boolean; error?: string }> {
+    await page.evaluate(
+        ({ url, autoStart }) => {
+            const state = { done: false, success: false, error: undefined as string | undefined };
+            (window as any).__khrAssetLoadState = state;
+            void BABYLON.AppendSceneAsync(url, window.scene!, {
+                pluginOptions: {
+                    gltf: {
+                        extensionOptions: {
+                            ["KHR_interactivity"]: {
+                                strictValidation: true,
+                                autoStart,
+                            },
                         },
                     },
                 },
-            },
-        }).then(
-            () => {
-                state.done = true;
-                state.success = true;
-            },
-            (error) => {
-                state.done = true;
-                state.error = error instanceof Error ? (error.stack ?? error.message) : String(error);
-            }
-        );
-    }, assetUrl);
+            }).then(
+                () => {
+                    state.done = true;
+                    state.success = true;
+                },
+                (error) => {
+                    state.done = true;
+                    state.error = error instanceof Error ? (error.stack ?? error.message) : String(error);
+                }
+            );
+        },
+        { url: assetUrl, autoStart }
+    );
 
     const deadline = Date.now() + 90000;
     let firstEvaluationError: unknown;
     while (Date.now() < deadline) {
         try {
+            await page.clock.runFor(FrameDurationMs);
             const state = await page.evaluate(() => {
                 const state = (window as any).__khrAssetLoadState as { done: boolean; success: boolean; error?: string };
                 if (state?.done) {
@@ -299,6 +382,22 @@ async function _loadAsset(page: Page, assetUrl: string): Promise<{ success: bool
                 return state;
             });
             if (state?.done) {
+                if (state.success) {
+                    await page.evaluate((limit) => {
+                        // Transmission and other offscreen passes do not inherit the canvas dimensions.
+                        for (const texture of window.scene!.textures) {
+                            if (texture instanceof BABYLON.RenderTargetTexture) {
+                                const size = texture.getSize();
+                                const scale = Math.min(1, limit / Math.max(size.width, size.height));
+                                if (scale < 1) {
+                                    const samples = texture.samples;
+                                    texture.resize({ width: Math.ceil(size.width * scale), height: Math.ceil(size.height * scale) });
+                                    texture.samples = samples;
+                                }
+                            }
+                        }
+                    }, RenderSize);
+                }
                 return { success: state.success, error: state.error };
             }
         } catch (error) {
@@ -320,36 +419,54 @@ async function _loadAsset(page: Page, assetUrl: string): Promise<{ success: bool
 }
 
 async function _runFrames(page: Page, durationMs: number): Promise<string | undefined> {
-    return page.evaluate(async (duration: number) => {
-        const scene = window.scene!;
-        if (!scene.activeCamera) {
-            scene.createDefaultCamera(true);
+    try {
+        await page.evaluate(
+            ({ duration, frameDuration }) => {
+                (window as any).__khrFrameRun = (async () => {
+                    const start = performance.now();
+                    let renderCount = 0;
+                    while (performance.now() - start < duration) {
+                        await new Promise<void>((resolve) => setTimeout(resolve, frameDuration));
+                        const scene = window.scene!;
+                        if (!scene.activeCamera) {
+                            scene.createDefaultCamera(true);
+                        }
+                        const currentFrameTime = performance.now();
+                        (window as any).__khrDeltaTime = currentFrameTime - (window as any).__khrLastFrameTime;
+                        (window as any).__khrLastFrameTime = currentFrameTime;
+                        scene.render();
+                        renderCount++;
+                    }
+                    return renderCount;
+                })();
+            },
+            { duration: durationMs, frameDuration: FrameDurationMs }
+        );
+        // Yield between clock quanta so software-rendered frames are not batched into one long browser task.
+        // The final extra quantum still settles the last awaited frame across fractional timer boundaries.
+        const clockSteps = Math.ceil(durationMs / FrameDurationMs) + 1;
+        for (let step = 0; step < clockSteps; step++) {
+            await page.clock.runFor(FrameDurationMs);
         }
-        const start = performance.now();
-        try {
-            while (performance.now() - start < duration) {
-                await new Promise<void>((resolve) => setTimeout(resolve, 16));
-                const currentFrameTime = performance.now();
-                (window as any).__khrDeltaTime = currentFrameTime - (window as any).__khrLastFrameTime;
-                (window as any).__khrLastFrameTime = currentFrameTime;
-                scene.render();
-            }
-            return undefined;
-        } catch (error) {
-            return error instanceof Error ? (error.stack ?? error.message) : String(error);
+        const renderCount = await page.evaluate(() => (window as any).__khrFrameRun as Promise<number>);
+        const expectedRenderCount = Math.ceil(durationMs / FrameDurationMs);
+        if (renderCount !== expectedRenderCount) {
+            throw new Error(`Expected ${expectedRenderCount} rendered frames, got ${renderCount}.`);
         }
-    }, durationMs);
+        return undefined;
+    } catch (error) {
+        return error instanceof Error ? (error.stack ?? error.message) : String(error);
+    }
 }
 
 async function _readSuccessVariables(page: Page, variables: { id: number; name: string }[]): Promise<{ id: number; name: string; values: unknown[] }[]> {
     return page.evaluate((expectedVariables) => {
-        const coordinators = (BABYLON as any).FlowGraphCoordinator.SceneCoordinators.get(window.scene!) ?? [];
+        const importResult = (BABYLON as any).GLTF2.Loader.Extensions.GetKHRInteractivityImportResult(window.scene!);
+        const graph = importResult?.graphs[importResult.document.defaultGraphIndex]?.flowGraph as BABYLON.FlowGraph | undefined;
         const contexts: any[] = [];
-        for (const coordinator of coordinators) {
-            for (const graph of coordinator.flowGraphs ?? []) {
-                for (let index = 0; index < graph.contextCount; index++) {
-                    contexts.push(graph.getContext(index));
-                }
+        if (graph) {
+            for (let index = 0; index < graph.contextCount; index++) {
+                contexts.push(graph.getContext(index));
             }
         }
         return expectedVariables.map(({ id, name }) => ({
@@ -389,29 +506,28 @@ const showcaseAssets = HasAssetRepository ? _discoverAssets(ShowcaseRoot, "showc
 const pairedInterGlbAssets = conformanceAssets.filter((asset) => asset.filePath.includes(InterGlbSegment));
 const standaloneAssets = [...conformanceAssets.filter((asset) => !asset.filePath.includes(InterGlbSegment)), ...showcaseAssets];
 
-/**
- * Assets that are known not to pass, keyed by their path in the asset repository.
- *
- * They are listed here rather than deleted so the gap stays visible in the report instead of
- * silently disappearing from the run. Remove an entry once the underlying issue is fixed.
- */
-const KnownFailingAssets: Record<string, string> = {
-    "Tests/Interactivity/Overview.glb":
-        "Two midpoint subtests ('animation/start - Position at 50%' and 'pointer/interpolate - Value at 50%') sample a value part-way through a delay. " +
-        "This aggregate scene runs many entry points at once, and the harness drives frames from the wall clock, so the sample lands off-target. " +
-        "Pre-dates the importer work: it reproduces on the commit before it, and the standalone animation/start and pointer/interpolate assets both pass.",
-};
-
-test.describe("Pinned Khronos pre-ratification KHR_interactivity compatibility corpus", () => {
+test.describe("Pinned Khronos KHR_interactivity strict conformance corpus", () => {
     test.describe.configure({ mode: "parallel" });
     test.setTimeout(120000);
     test.skip(!HasAssetRepository, "Run `npm run test:khr-interactivity` to fetch and test the pinned Khronos assets.");
 
     for (const asset of standaloneAssets) {
-        test(asset.relativePath, async ({ browser }) => {
-            const knownFailure = KnownFailingAssets[asset.relativePath];
-            test.fixme(!!knownFailure, knownFailure);
-            const page = await browser.newPage();
+        test(asset.relativePath, async ({ browser, browserName, playwright }, testInfo) => {
+            const minimumTimeout = asset.kind === "showcase" ? 300000 : 120000;
+            test.setTimeout(minimumTimeout);
+            // Heavy showcase draws can leave software-GPU work queued across contexts. Isolate their process, not their assertions.
+            const showcaseBrowser =
+                asset.kind === "showcase"
+                    ? await playwright[browserName].launch({
+                          ...testInfo.project.use.launchOptions,
+                          channel: testInfo.project.use.channel,
+                          headless: testInfo.project.use.headless,
+                      })
+                    : undefined;
+            const page = await (showcaseBrowser ?? browser).newPage().catch(async (error) => {
+                await showcaseBrowser?.close();
+                throw error;
+            });
             let routed: IRoutedAsset | undefined;
             const consoleEntries: IConsoleEntry[] = [];
             const pageErrors: string[] = [];
@@ -443,10 +559,47 @@ test.describe("Pinned Khronos pre-ratification KHR_interactivity compatibility c
                     );
                 }
                 expect(pageCrashed, `${asset.relativePath} crashed the renderer process while loading`).toBe(false);
+                if (asset.invalid) {
+                    if (!loadResult.success) {
+                        expect(loadResult.error, `${asset.invalid.caseId} must fail for an interactivity validation error, not an unrelated loading failure`).toMatch(
+                            /KHR_interactivity/i
+                        );
+                    }
+                    const renderError = await _runFrames(page, 150);
+                    expect(renderError, `${asset.relativePath} failed while checking graph rejection`).toBeUndefined();
+                    const rejection = await page.evaluate(() => {
+                        const scene = window.scene!;
+                        const result = (BABYLON as any).GLTF2.Loader.Extensions.GetKHRInteractivityImportResult(scene);
+                        return {
+                            diagnosticErrors: [...(result?.document.diagnostics ?? []), ...(result?.graphs ?? []).flatMap((graph: any) => graph.diagnostics ?? [])].filter(
+                                (diagnostic: any) => diagnostic.severity === "error"
+                            ).length,
+                            coordinatorCount: BABYLON.FlowGraphCoordinator.SceneCoordinators.get(scene)?.length ?? 0,
+                        };
+                    });
+                    if (loadResult.success) {
+                        expect(rejection.diagnosticErrors, `${asset.invalid.caseId} was not diagnosed as invalid`).toBeGreaterThan(0);
+                    }
+                    expect(rejection.coordinatorCount, `${asset.invalid.caseId} created an executable coordinator`).toBe(0);
+                    expect(await page.evaluate(() => (window as any).__khrFailureEvents), `${asset.invalid.caseId} executed its failure event`).toEqual([]);
+                    expect(
+                        consoleEntries.filter((entry) => entry.text.includes(`FAILED [${asset.invalid!.caseId}]`)),
+                        `${asset.invalid.caseId} executed its failure log`
+                    ).toEqual([]);
+                    expect(pageErrors, `${asset.relativePath} raised page errors:\n${pageErrors.join("\n")}`).toEqual([]);
+                    return;
+                }
                 expect(loadResult.success, `${asset.relativePath} failed to load:\n${loadResult.error ?? "Unknown load failure"}`).toBe(true);
 
+                if ((asset.descriptor?.tests ?? []).some((descriptorTest) => descriptorTest.requiredInteractions?.length)) {
+                    const startupError = await _runFrames(page, 50);
+                    expect(startupError, `${asset.relativePath} failed before pointer interaction`).toBeUndefined();
+                }
                 await _performRequiredInteractions(page, asset.descriptor);
-                const renderError = await _runFrames(page, _getRunDurationMs(asset));
+                const runtimeDuration = await page.evaluate(() => (window as any).__khrExpectedDurationMs as number);
+                // Virtual time still renders every frame; aggregate assets need headroom on software GPUs.
+                test.setTimeout(Math.max(minimumTimeout, runtimeDuration * 8 + 60000));
+                const renderError = await _runFrames(page, Math.max(_getRunDurationMs(asset), runtimeDuration + 1000));
                 expect(renderError, `${asset.relativePath} failed while rendering`).toBeUndefined();
 
                 const bjsErrors = consoleEntries.filter((entry) => entry.text.startsWith("BJS - ") && entry.text.includes("ERROR!"));
@@ -477,6 +630,7 @@ test.describe("Pinned Khronos pre-ratification KHR_interactivity compatibility c
                 }
                 await page.evaluate(evaluateDisposeEngine).catch(() => {});
                 await page.close().catch(() => {});
+                await showcaseBrowser?.close();
             }
         });
     }
@@ -495,56 +649,50 @@ test.describe("Pinned Khronos pre-ratification KHR_interactivity compatibility c
             await _preparePage(page);
             routedA = await _routeAsset(page, pairedInterGlbAssets[0].filePath);
             routedB = await _routeAsset(page, pairedInterGlbAssets[1].filePath);
-            const loadResult = await page.evaluate(
-                async ({ urlA, urlB }: { urlA: string; urlB: string }) => {
-                    try {
-                        const scene = window.scene!;
-                        const coordinatorsByScene = (BABYLON as any).FlowGraphCoordinator.SceneCoordinators;
-                        const before = new Set<any>(coordinatorsByScene.get(scene) ?? []);
-                        const options = {
-                            pluginOptions: {
-                                gltf: {
-                                    extensionOptions: {
-                                        ["KHR_interactivity"]: {
-                                            strictValidation: false,
-                                        },
-                                    },
-                                },
-                            },
-                        };
-                        await BABYLON.AppendSceneAsync(urlA, scene, options);
-                        await BABYLON.AppendSceneAsync(urlB, scene, options);
-                        const created = (coordinatorsByScene.get(scene) ?? []).filter((coordinator: any) => !before.has(coordinator));
-                        if (created.length !== 2) {
-                            return { success: false, error: `Expected 2 coordinators, got ${created.length}` };
-                        }
-                        (window as any).__khrInterGlbCoordinators = created;
-
-                        const methodA = created[0].notifyCustomEvent;
-                        const methodB = created[1].notifyCustomEvent;
-                        const notifyA = (id: string, data: unknown, async?: boolean): unknown => methodA.call(created[0], id, data, async);
-                        const notifyB = (id: string, data: unknown, async?: boolean): unknown => methodB.call(created[1], id, data, async);
-                        const isPublic = (id: string): boolean => typeof id === "string" && id.length > 0 && !id.startsWith("_");
-
-                        created[0].notifyCustomEvent = (id: string, data: unknown, async?: boolean) => {
-                            if (isPublic(id) && async !== false) {
-                                notifyB(id, data, async);
-                            }
-                            return notifyA(id, data, async);
-                        };
-                        created[1].notifyCustomEvent = (id: string, data: unknown, async?: boolean) => {
-                            if (isPublic(id) && async !== false) {
-                                notifyA(id, data, async);
-                            }
-                            return notifyB(id, data, async);
-                        };
-                        return { success: true };
-                    } catch (error) {
-                        return { success: false, error: error instanceof Error ? (error.stack ?? error.message) : String(error) };
+            await page.evaluate(() => {
+                (window as any).__khrInterGlbBefore = new Set(BABYLON.FlowGraphCoordinator.SceneCoordinators.get(window.scene!) ?? []);
+            });
+            for (const asset of [routedA, routedB]) {
+                const result = await _loadAsset(page, asset.entryUrl, false);
+                expect(result.success, result.error).toBe(true);
+            }
+            const loadResult = await page.evaluate(() => {
+                try {
+                    const scene = window.scene!;
+                    const coordinatorsByScene = (BABYLON as any).FlowGraphCoordinator.SceneCoordinators;
+                    const before = (window as any).__khrInterGlbBefore as Set<BABYLON.FlowGraphCoordinator>;
+                    const created = (coordinatorsByScene.get(scene) ?? []).filter((coordinator: any) => !before.has(coordinator));
+                    if (created.length !== 2) {
+                        return { success: false, error: `Expected 2 coordinators, got ${created.length}` };
                     }
-                },
-                { urlA: routedA.entryUrl, urlB: routedB.entryUrl }
-            );
+                    (window as any).__khrInterGlbCoordinators = created;
+
+                    const methodA = created[0].notifyCustomEvent;
+                    const methodB = created[1].notifyCustomEvent;
+                    const notifyA = (id: string, data: unknown, async?: boolean): unknown => methodA.call(created[0], id, data, async);
+                    const notifyB = (id: string, data: unknown, async?: boolean): unknown => methodB.call(created[1], id, data, async);
+                    const isPublic = (id: string): boolean => typeof id === "string" && id.length > 0 && !id.startsWith("_");
+
+                    created[0].notifyCustomEvent = (id: string, data: unknown, async?: boolean) => {
+                        if (isPublic(id) && async !== false) {
+                            notifyB(id, data, async);
+                        }
+                        return notifyA(id, data, async);
+                    };
+                    created[1].notifyCustomEvent = (id: string, data: unknown, async?: boolean) => {
+                        if (isPublic(id) && async !== false) {
+                            notifyA(id, data, async);
+                        }
+                        return notifyB(id, data, async);
+                    };
+                    for (const coordinator of created) {
+                        coordinator.start();
+                    }
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error instanceof Error ? (error.stack ?? error.message) : String(error) };
+                }
+            });
             expect(loadResult.success, loadResult.error).toBe(true);
 
             const renderError = await _runFrames(page, 6500);

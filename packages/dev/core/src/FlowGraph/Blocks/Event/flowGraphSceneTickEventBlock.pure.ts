@@ -7,6 +7,15 @@ import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+
+/**
+ * Configuration for the scene tick event.
+ */
+export interface IFlowGraphSceneTickEventBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /** Whether elapsed time starts at the first tick, whose delta time remains NaN. Defaults to false. */
+    useFirstTickAsStart?: boolean;
+}
 
 /** Event source key used to build this block's event reference. */
 const EventKey = "sceneTick";
@@ -16,7 +25,7 @@ const EventKey = "sceneTick";
  */
 export interface IFlowGraphOnTickEventPayload {
     /**
-     * the time in seconds since the scene started.
+     * The scene's accumulated time in seconds before the current frame interval.
      */
     timeSinceStart: number;
     /**
@@ -30,12 +39,12 @@ export interface IFlowGraphOnTickEventPayload {
  */
 export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     /**
-     * the time in seconds since the scene started.
+     * Time in seconds since the scene started, or since the first tick when useFirstTickAsStart is enabled.
      */
     public readonly timeSinceStart: FlowGraphDataConnection<number>;
 
     /**
-     * the time in seconds since the last frame.
+     * Time in seconds since the last frame. Remains NaN on the first opted-in tick.
      */
     public readonly deltaTime: FlowGraphDataConnection<number>;
 
@@ -52,10 +61,14 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
         return EventKey;
     }
 
-    constructor() {
-        super();
-        this.timeSinceStart = this.registerDataOutput("timeSinceStart", RichTypeNumber);
-        this.deltaTime = this.registerDataOutput("deltaTime", RichTypeNumber);
+    /**
+     * Creates a scene tick event block.
+     * @param config optional clock behavior
+     */
+    constructor(config?: IFlowGraphSceneTickEventBlockConfiguration) {
+        super(config);
+        this.timeSinceStart = this.registerDataOutput("timeSinceStart", RichTypeNumber, config?.useFirstTickAsStart ? NaN : 0);
+        this.deltaTime = this.registerDataOutput("deltaTime", RichTypeNumber, config?.useFirstTickAsStart ? NaN : 0);
         this.eventRef = this.registerDataOutput("event", RichTypeString);
     }
 
@@ -74,8 +87,17 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
      * @internal
      */
     public override _executeEvent(context: FlowGraphContext, payload: IFlowGraphOnTickEventPayload): boolean {
-        this.timeSinceStart.setValue(payload.timeSinceStart, context);
-        this.deltaTime.setValue(payload.deltaTime, context);
+        if (this.config?.useFirstTickAsStart) {
+            const firstTick = context._getGlobalContextVariable("firstTickPayload", payload);
+            context._setGlobalContextVariable("firstTickPayload", firstTick);
+            // The scene counter advances after dispatch; elapsed time uses the current tick's interval instead of the first one.
+            const elapsedTime = payload.timeSinceStart - firstTick.timeSinceStart + payload.deltaTime - firstTick.deltaTime;
+            this.timeSinceStart.setValue(payload === firstTick ? 0 : elapsedTime, context);
+            this.deltaTime.setValue(payload === firstTick ? NaN : payload.deltaTime, context);
+        } else {
+            this.timeSinceStart.setValue(payload.timeSinceStart, context);
+            this.deltaTime.setValue(payload.deltaTime, context);
+        }
         this.eventRef.setValue(context.getEventReference(EventKey), context);
         this._execute(context);
         return true;

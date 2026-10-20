@@ -37,6 +37,7 @@ pool:
 jobs:
     - job: PublishToNpm
       displayName: "Publish to npm"
+      timeoutInMinutes: 120
       steps:
           - checkout: self
             clean: true

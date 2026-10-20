@@ -155,7 +155,11 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             this._textureHelper.generateCubeMipmaps(gpuHardwareTexture, mipmapCount, commandEncoder);
         } else if (texture.is3D) {
             this._textureHelper.generate3DMipmaps(gpuHardwareTexture, gpuHardwareTexture.underlyingResource?.mipLevelCount ?? mipmapCount, commandEncoder);
-        } else if (texture._source === InternalTextureSource.Raw || texture._source === InternalTextureSource.Raw2DArray) {
+        } else if (texture._source === InternalTextureSource.Raw2DArray) {
+            for (let layer = 0; layer < texture.depth; ++layer) {
+                this._textureHelper.generateMipmaps(gpuHardwareTexture, texture.mipLevelCount, layer, commandEncoder);
+            }
+        } else if (texture._source === InternalTextureSource.Raw) {
             this._textureHelper.generateMipmaps(gpuHardwareTexture, texture.mipLevelCount, 0, commandEncoder);
         } else {
             this._textureHelper.generateMipmaps(gpuHardwareTexture, mipmapCount, 0, commandEncoder);

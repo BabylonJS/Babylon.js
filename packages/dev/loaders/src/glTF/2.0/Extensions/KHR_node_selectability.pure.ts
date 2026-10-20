@@ -82,6 +82,16 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
                 event: "ref",
             },
         },
+        declarationSchemaVariants: [
+            {
+                inputValueSockets: {},
+                outputValueSockets: { selectedNode: "ref", selectionRayOrigin: "float3", selectionPoint: "float3", controllerIndex: "int" },
+            },
+            {
+                inputValueSockets: {},
+                outputValueSockets: { selectedNode: "ref", rayOrigin: "float3", selectionPoint: "float3", controllerIndex: "int" },
+            },
+        ],
         configuration: {
             nodeIndex: {
                 name: "variable",
@@ -104,6 +114,7 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
                 controllerIndex: { name: "controllerIndex", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
                 selectionPoint: { name: "selectionPoint", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
                 selectionRayOrigin: { name: "selectionRayOrigin", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                rayOrigin: { name: "selectionRayOrigin", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
                 event: { name: "value", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
             },
             flows: {

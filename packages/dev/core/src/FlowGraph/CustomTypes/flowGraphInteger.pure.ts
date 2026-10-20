@@ -18,6 +18,14 @@ export class FlowGraphInteger {
     }
 
     /**
+     * Creates an independent copy of this integer.
+     * @returns a new integer with the same value
+     */
+    public clone(): FlowGraphInteger {
+        return new FlowGraphInteger(this.value);
+    }
+
+    /**
      * Converts a float to an integer.
      * @param n the float to convert
      * @returns the result of n | 0 - converting it to a int

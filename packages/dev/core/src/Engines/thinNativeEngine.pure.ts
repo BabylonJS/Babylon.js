@@ -248,6 +248,10 @@ export class ThinNativeEngine extends ThinEngine {
     private _depthWrite: boolean;
     // warning for non supported fill mode has already been displayed
     private _fillModeWarningDisplayed: boolean;
+    // Scratch buffers for setInt2/3/4; NativeDataStream copies them synchronously.
+    private _int2Scratch: Int32Array;
+    private _int3Scratch: Int32Array;
+    private _int4Scratch: Int32Array;
 
     public constructor(options: ThinNativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
@@ -295,6 +299,9 @@ export class ThinNativeEngine extends ThinEngine {
         this._depthWrite = true;
         // warning for non supported fill mode has already been displayed
         this._fillModeWarningDisplayed = false;
+        this._int2Scratch = new Int32Array(2);
+        this._int3Scratch = new Int32Array(3);
+        this._int4Scratch = new Int32Array(4);
 
         this._drawCalls = new PerfCounter();
 
@@ -394,7 +401,8 @@ export class ThinNativeEngine extends ThinEngine {
             allowTexturePrefiltering: false,
             trackUbosInFrame: false,
             checkUbosContentBeforeUpload: false,
-            supportCSM: false,
+            // Cascaded shadow maps render into 2D-array render targets, one framebuffer per layer.
+            supportCSM: true,
             basisNeedsPOT: false,
             support3DTextures: false,
             needTypeSuffixInShaderConstants: false,
@@ -1498,6 +1506,42 @@ export class ThinNativeEngine extends ThinEngine {
         return true;
     }
 
+    public override setInt2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        const values = this._int2Scratch;
+        values[0] = x;
+        values[1] = y;
+        return this.setIntArray2(uniform, values);
+    }
+
+    public override setInt3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        const values = this._int3Scratch;
+        values[0] = x;
+        values[1] = y;
+        values[2] = z;
+        return this.setIntArray3(uniform, values);
+    }
+
+    public override setInt4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        const values = this._int4Scratch;
+        values[0] = x;
+        values[1] = y;
+        values[2] = z;
+        values[3] = w;
+        return this.setIntArray4(uniform, values);
+    }
+
     public override setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
             return false;
@@ -2205,6 +2249,21 @@ export class ThinNativeEngine extends ThinEngine {
                 continue;
             }
             const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+            if (nativeRTWrapper._framebuffers && !rtWrapper.isCube) {
+                // Wrapped 2D-array color attachment with one framebuffer per layer: rebuild every layer
+                // against the new handle. The _framebuffers setter releases the stale handles.
+                const { generateDepth, generateStencil } = this._getLayerFramebufferDepthStencil(rtWrapper);
+                nativeRTWrapper._framebuffers = this._createLayerFramebuffers(
+                    texture,
+                    rtWrapper.width,
+                    rtWrapper.height,
+                    nativeRTWrapper._framebuffers.length,
+                    generateStencil,
+                    generateDepth,
+                    rtWrapper.samples ?? 1
+                );
+                continue;
+            }
             // NativeRenderTargetWrapper._framebuffer setter releases the old framebuffer before assigning,
             // so no manual _releaseFramebufferObjects call is needed (and would double-delete the handle).
             nativeRTWrapper._framebuffer = this._engine.createFrameBuffer(
@@ -2249,6 +2308,29 @@ export class ThinNativeEngine extends ThinEngine {
         texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         texture._comparisonFunction = options.comparisonFunction ?? 0;
 
+        if (nativeRTWrapper._framebuffers) {
+            // Layered (2D array) or cube render target: the color framebuffers were created one-per-layer
+            // (see createRenderTargetTexture / createRenderTargetCubeTexture). When the color RTT was built
+            // without a depth buffer (e.g. cascaded shadow maps create the RTT with generateDepthBuffer=false
+            // and then call createDepthStencilTexture), rebuild each per-layer framebuffer so it carries a
+            // depth/stencil attachment for the depth test. A single shared _framebufferDepthStencil would be
+            // ignored because bindFramebuffer selects _framebuffers[layer] first.
+            const colorTexture = rtWrapper.texture;
+            if (colorTexture && colorTexture._hardwareTexture) {
+                // The _framebuffers setter releases the previous handles.
+                nativeRTWrapper._framebuffers = this._createLayerFramebuffers(
+                    colorTexture._hardwareTexture.underlyingResource,
+                    width,
+                    height,
+                    nativeRTWrapper._framebuffers.length,
+                    generateStencil,
+                    true,
+                    samples
+                );
+            }
+            return texture;
+        }
+
         const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
@@ -2257,6 +2339,39 @@ export class ThinNativeEngine extends ThinEngine {
     /**
      * @internal
      */
+    /**
+     * Creates one framebuffer per layer (or cube face) of a native texture.
+     * @internal
+     */
+    public _createLayerFramebuffers(
+        nativeTexture: NativeTexture,
+        width: number,
+        height: number,
+        layerCount: number,
+        generateStencilBuffer: boolean,
+        generateDepthBuffer: boolean,
+        samples: number
+    ): NativeFramebuffer[] {
+        const framebuffers: NativeFramebuffer[] = [];
+        for (let layer = 0; layer < layerCount; layer++) {
+            framebuffers.push(this._engine.createFrameBuffer(nativeTexture, width, height, generateStencilBuffer, generateDepthBuffer, samples, layer));
+        }
+        return framebuffers;
+    }
+
+    /**
+     * Per-layer framebuffers carry their own depth/stencil attachment, either requested at creation or added by
+     * createDepthStencilTexture (see _createDepthStencilTexture), so recreate them with the same attachments.
+     * @internal
+     */
+    public _getLayerFramebufferDepthStencil(rtWrapper: RenderTargetWrapper): { generateDepth: boolean; generateStencil: boolean } {
+        const hasDepthStencilTexture = !!rtWrapper._depthStencilTexture;
+        return {
+            generateDepth: rtWrapper._generateDepthBuffer || hasDepthStencilTexture,
+            generateStencil: rtWrapper._generateStencilBuffer || (hasDepthStencilTexture && rtWrapper._depthStencilTextureWithStencil),
+        };
+    }
+
     public _releaseFramebufferObjects(framebuffer: Nullable<NativeFramebuffer>): void {
         if (framebuffer) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEFRAMEBUFFER);
@@ -2385,9 +2500,6 @@ export class ThinNativeEngine extends ThinEngine {
         const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
-        if (layers !== 0) {
-            throw new Error("Texture layers are not supported in Babylon Native");
-        }
 
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = getNativeTextureFormat(format, type);
@@ -2402,7 +2514,9 @@ export class ThinNativeEngine extends ThinEngine {
         // underlying bgfx resource has 1 mip.
         const hasMips = samples > 1 ? false : generateMipMaps;
         // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target.
-        this._engine.initializeTexture(nativeTexture, width, height, hasMips, nativeTextureFormat, true, useSRGBBuffer, samples);
+        // A layers > 0 request creates a 2D texture array (e.g. a cascaded-shadow-map render target); the
+        // matching per-layer framebuffers are built by createRenderTargetTexture and bound via bindFramebuffer(layer).
+        this._engine.initializeTexture(nativeTexture, width, height, hasMips, nativeTextureFormat, true, useSRGBBuffer, samples, false, layers);
         this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
@@ -2411,6 +2525,10 @@ export class ThinNativeEngine extends ThinEngine {
         texture.width = width;
         texture.height = height;
         texture.depth = layers;
+        if (layers > 0) {
+            texture.is2DArray = true;
+            texture.baseDepth = layers;
+        }
         texture.isReady = true;
         texture.samples = samples;
         texture.generateMipMaps = generateMipMaps;
@@ -2424,10 +2542,7 @@ export class ThinNativeEngine extends ThinEngine {
         return texture;
     }
 
-    public override createRenderTargetTexture(
-        size: number | { width: number; height: number; depth: number },
-        options: boolean | RenderTargetCreationOptions
-    ): RenderTargetWrapper {
+    public override createRenderTargetTexture(size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
         let generateDepthBuffer = true;
@@ -2446,6 +2561,27 @@ export class ThinNativeEngine extends ThinEngine {
         const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
         const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
+        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+
+        if (layers > 0 && texture) {
+            // 2D texture array render target (e.g. cascaded shadow maps): the native engine renders each
+            // array layer through its own framebuffer bound to that layer (mirroring the cube per-face path);
+            // bindFramebuffer(layerIndex) then selects the right one.
+            rtWrapper._framebuffers = this._createLayerFramebuffers(
+                texture._hardwareTexture!.underlyingResource,
+                width,
+                height,
+                layers,
+                generateStencilBuffer,
+                generateDepthBuffer,
+                samples
+            );
+            rtWrapper._generateDepthBuffer = generateDepthBuffer;
+            rtWrapper._generateStencilBuffer = generateStencilBuffer;
+            rtWrapper._samples = samples;
+            rtWrapper.setTextures(texture);
+            return rtWrapper;
+        }
 
         const framebuffer = this._engine.createFrameBuffer(
             texture ? texture._hardwareTexture!.underlyingResource : null,
@@ -2861,6 +2997,7 @@ export class ThinNativeEngine extends ThinEngine {
         const hasMips = samples > 1 ? false : texture.generateMipMaps;
         const nativeTextureFormat = getNativeTextureFormat(texture.format, texture.type);
         const isCube = texture.isCube;
+        const layers = texture.is2DArray ? texture.depth : 0;
         this._engine.initializeTexture(
             nativeTexture,
             texture.baseWidth,
@@ -2870,10 +3007,21 @@ export class ThinNativeEngine extends ThinEngine {
             /*renderTarget*/ true,
             texture._useSRGBBuffer,
             samples,
-            isCube
+            isCube,
+            layers
         );
 
-        if (isCube) {
+        if (layers > 0) {
+            // 2D-array RTTs render through one framebuffer per layer (see createRenderTargetTexture). The
+            // _framebuffers setter releases the stale handles.
+            const { generateDepth, generateStencil } = this._getLayerFramebufferDepthStencil(rtWrapper);
+            nativeRTWrapper._framebuffers = this._createLayerFramebuffers(nativeTexture, texture.baseWidth, texture.baseHeight, layers, generateStencil, generateDepth, samples);
+            // The rebuilt layer framebuffers carry the depth attachment, so keep the depth texture metadata in sync
+            // (e.g. FrameGraph validates that color and depth sample counts match).
+            if (rtWrapper._depthStencilTexture) {
+                rtWrapper._depthStencilTexture.samples = samples;
+            }
+        } else if (isCube) {
             // Cube RTTs render through one framebuffer per face (see createRenderTargetCubeTexture). The
             // underlying bgfx handle was just rotated, so recreate all six attachments; the _framebuffers
             // setter releases the stale ones and keeps _framebuffer aliased to face 0 for single-target paths.
@@ -2919,7 +3067,15 @@ export class ThinNativeEngine extends ThinEngine {
         texture.samplingMode = samplingMode;
     }
 
-    public override bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+    public override bindFramebuffer(
+        texture: RenderTargetWrapper,
+        faceIndex?: number,
+        requiredWidth?: number,
+        requiredHeight?: number,
+        forceFullscreenViewport?: boolean,
+        lodLevel?: number,
+        layer?: number
+    ): void {
         const nativeRTWrapper = texture as NativeRenderTargetWrapper;
 
         if (this._currentRenderTarget) {
@@ -2933,8 +3089,10 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         if (nativeRTWrapper._framebuffers) {
-            // Cube render target: bind the framebuffer for the requested face.
-            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffers[faceIndex ?? 0]);
+            // One framebuffer per cube face or per 2D-array layer. Callers pass the cube face in `faceIndex`
+            // and the array slice in `layer`.
+            const framebufferIndex = nativeRTWrapper.isCube ? (faceIndex ?? 0) : layer || faceIndex || 0;
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffers[Math.min(framebufferIndex, nativeRTWrapper._framebuffers.length - 1)]);
         } else if (faceIndex) {
             throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
         } else if (nativeRTWrapper._framebufferDepthStencil) {
