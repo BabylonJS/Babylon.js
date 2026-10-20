@@ -13,6 +13,7 @@ import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { CubeMapToSphericalPolynomialTools } from "core/Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Scene } from "core/scene";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
+import { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { RegisterEnginesExtensionsEngineRawTexture } from "core/Engines/Extensions/engine.rawTexture.pure";
 import { _KTXTextureLoader } from "core/Materials/Textures/Loaders/ktxTextureLoader";
@@ -858,6 +859,38 @@ describe("ThinNativeEngine", () => {
             expect(bound().colors).toEqual([resourceOf(replacement)]);
         });
 
+        it("binds explicit depth to volume slices and rebuilds it for sample changes", () => {
+            const { engine, released, bound } = createEngine();
+            const depthTarget = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            const depth = depthTarget.createDepthStencilTexture();
+            const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 4 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            rtWrapper.setDepthStencilTexture(depth, false);
+
+            engine.bindFramebuffer(rtWrapper, undefined, undefined, undefined, true, 0, 2);
+            const first = bound();
+            expect(first.multi).toBe(true);
+            expect(first.colors).toEqual([resourceOf(rtWrapper.texture!)]);
+            expect(first.layers).toEqual([2]);
+            expect(first.explicitDepth).toBe(resourceOf(depth));
+
+            engine.updateRenderTargetTextureSampleCount(rtWrapper, 4);
+            engine.bindFramebuffer(rtWrapper, undefined, undefined, undefined, true, 0, 2);
+
+            expect(released).toContain(first);
+            expect(bound()).not.toBe(first);
+            expect(bound().samples).toBe(4);
+            expect(bound().explicitDepth).toBe(resourceOf(depth));
+            expect(depth.samples).toBe(4);
+            expect(() => engine.bindFramebuffer(rtWrapper, undefined, 32, 32, true, 1, 2)).toThrow("only support rendering to mip 0");
+
+            const { engine: legacyEngine } = createEngine({ multiFrameBuffer: false });
+            const legacyVolume = legacyEngine.createRenderTargetTexture({ width: 64, height: 64, depth: 4 }, {}) as NativeRenderTargetWrapper;
+            const unsupportedDepth = legacyEngine._createInternalTexture({ width: 64, height: 64 }, {});
+            unsupportedDepth.samples = 1;
+            expect(() => legacyVolume.setDepthStencilTexture(unsupportedDepth, false)).toThrow("require createMultiFrameBuffer support");
+            expect(legacyVolume._depthStencilTexture).toBeNull();
+        });
+
         it("rebuilds a layered MRT when its faces, attachments or explicit depth change", () => {
             const { engine, bound } = createEngine();
             const rtWrapper = engine.createMultipleRenderTarget(
@@ -1337,6 +1370,102 @@ describe("ThinNativeEngine", () => {
             cube._rebuild();
             expect(cube).toBe(cubeIdentity);
             expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => call[1])).toEqual(updatedFaces);
+        });
+
+        it("reallocates raw cube storage before public format and type changes", () => {
+            const { engine, nativeEngine } = createEngine();
+            const byteFaces = Array.from({ length: 6 }, () => new Uint8Array(4 * 4 * 4));
+            const internalTexture = engine.createRawCubeTexture(
+                byteFaces,
+                4,
+                Constants.TEXTUREFORMAT_RGBA,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE
+            );
+            const publicTexture = Object.assign(Object.create(RawCubeTexture.prototype), { _texture: internalTexture }) as RawCubeTexture;
+            nativeEngine.initializeTexture.mockClear();
+
+            const floatFaces = Array.from({ length: 6 }, () => new Float32Array(4 * 4 * 4));
+            publicTexture.update(floatFaces, Constants.TEXTUREFORMAT_RGBA, Constants.TEXTURETYPE_FLOAT, false);
+            expect(nativeEngine.initializeTexture.mock.lastCall![4]).toBe("TEXTURE_FORMAT_RGBA32F");
+            expect([internalTexture.format, internalTexture.type]).toEqual([Constants.TEXTUREFORMAT_RGBA, Constants.TEXTURETYPE_FLOAT]);
+
+            const rgFaces = Array.from({ length: 6 }, () => new Uint8Array(4 * 4 * 2));
+            publicTexture.update(rgFaces, Constants.TEXTUREFORMAT_RG, Constants.TEXTURETYPE_UNSIGNED_BYTE, false);
+            expect(nativeEngine.initializeTexture.mock.lastCall![4]).toBe("TEXTURE_FORMAT_RG8");
+            expect([internalTexture.format, internalTexture.type]).toEqual([Constants.TEXTUREFORMAT_RG, Constants.TEXTURETYPE_UNSIGNED_BYTE]);
+            expect(nativeEngine.initializeTexture).toHaveBeenCalledTimes(2);
+        });
+
+        it("rejects compressed raw cube creation and updates before mutation", () => {
+            const { engine, nativeEngine } = createEngine();
+            const faces = Array.from({ length: 6 }, () => new Uint8Array(8));
+            const compression = "COMPRESSED_RGBA_S3TC_DXT1_EXT";
+
+            expect(() =>
+                engine.createRawCubeTexture(
+                    faces,
+                    4,
+                    Constants.TEXTUREFORMAT_RGBA,
+                    Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                    false,
+                    false,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    compression
+                )
+            ).toThrow("compressed raw cube uploads are not supported");
+            expect(nativeEngine.initializeTexture).not.toHaveBeenCalled();
+
+            const texture = engine.createRawCubeTexture(
+                faces,
+                4,
+                Constants.TEXTUREFORMAT_RGBA,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE
+            );
+            const previousBuffer = texture._bufferViewArray;
+            nativeEngine.updateTextureData.mockClear();
+            expect(() => engine.updateRawCubeTexture(texture, faces, Constants.TEXTUREFORMAT_RG, Constants.TEXTURETYPE_FLOAT, true, compression)).toThrow(
+                "compressed raw cube uploads are not supported"
+            );
+            expect([texture.format, texture.type, texture.invertY, texture._compression, texture._bufferViewArray]).toEqual([
+                Constants.TEXTUREFORMAT_RGBA,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                false,
+                null,
+                previousBuffer,
+            ]);
+            expect(nativeEngine.updateTextureData).not.toHaveBeenCalled();
+        });
+
+        it("preserves sRGB volume allocation through rebuilding", () => {
+            const { engine, nativeEngine } = createEngine();
+            const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 4 }, { useSRGBBuffer: true }) as NativeRenderTargetWrapper;
+
+            expect(rtWrapper.texture!._useSRGBBuffer).toBe(true);
+            expect(nativeEngine.initializeTexture.mock.lastCall![6]).toBe(true);
+
+            (rtWrapper as any)._rebuild();
+
+            expect(rtWrapper.texture!._useSRGBBuffer).toBe(true);
+            expect(nativeEngine.initializeTexture.mock.lastCall![6]).toBe(true);
+        });
+
+        it("honors boolean mipmap options for volume render targets", () => {
+            const { engine, nativeEngine } = createEngine();
+            const booleanTarget = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 4 }, true);
+            const booleanAllocation = nativeEngine.initializeTexture.mock.lastCall!;
+            const objectTarget = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 4 }, { generateMipMaps: true });
+            const objectAllocation = nativeEngine.initializeTexture.mock.lastCall!;
+
+            expect(booleanTarget.texture!.generateMipMaps).toBe(true);
+            expect(objectTarget.texture!.generateMipMaps).toBe(true);
+            expect(booleanAllocation[3]).toBe(true);
+            expect(objectAllocation[3]).toBe(true);
         });
 
         it("rebuilds a 3D render target as a bindable volume", () => {

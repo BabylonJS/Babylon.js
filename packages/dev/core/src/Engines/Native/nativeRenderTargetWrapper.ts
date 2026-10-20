@@ -164,12 +164,30 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     }
 
     public override setDepthStencilTexture(texture: Nullable<InternalTexture>, disposeExisting = true): void {
+        if (texture && this.is3D) {
+            this._engine._assertVolumeDepthAttachmentSupported(texture.samples, this.samples);
+        }
+
         const previous = this._depthStencilTexture;
         super.setDepthStencilTexture(texture, disposeExisting);
 
         if (previous !== texture) {
             this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(this);
         }
+    }
+
+    public override createDepthStencilTexture(
+        comparisonFunction: number = 0,
+        bilinearFiltering: boolean = true,
+        generateStencil: boolean = false,
+        samples: number = 1,
+        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        label?: string
+    ): InternalTexture {
+        if (this.is3D) {
+            this._engine._assertVolumeDepthAttachmentSupported(samples, this.samples);
+        }
+        return super.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);
     }
 
     protected override _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
@@ -339,9 +357,13 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
      * @param renderTarget The render target that receives the shared depth texture
      */
     public override shareDepth(renderTarget: RenderTargetWrapper): void {
+        const dest = renderTarget as NativeRenderTargetWrapper;
+        if (this._depthStencilTexture && dest?.is3D && dest._engine === this._engine) {
+            this._engine._assertVolumeDepthAttachmentSupported(this._depthStencilTexture.samples, dest.samples);
+        }
+
         super.shareDepth(renderTarget);
 
-        const dest = renderTarget as NativeRenderTargetWrapper;
         if (!dest || dest._engine !== this._engine) {
             return;
         }

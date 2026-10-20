@@ -2313,6 +2313,10 @@ export class ThinNativeEngine extends ThinEngine {
         samplingMode: number,
         compression: Nullable<string> = null
     ): InternalTexture {
+        if (compression) {
+            throw new Error(`NativeEngine.createRawCubeTexture: compressed raw cube uploads are not supported (${compression}).`);
+        }
+
         const texture = new InternalTexture(this, InternalTextureSource.CubeRaw);
         texture.isCube = true;
         texture.format = format;
@@ -2380,6 +2384,32 @@ export class ThinNativeEngine extends ThinEngine {
         compression: Nullable<string> = null,
         level: number = 0
     ): void {
+        if (compression) {
+            throw new Error(`NativeEngine.updateRawCubeTexture: compressed raw cube uploads are not supported (${compression}).`);
+        }
+
+        const descriptorChanged = texture.format !== format || texture.type !== type;
+        if (descriptorChanged && level !== 0) {
+            throw new Error("NativeEngine.updateRawCubeTexture: changing the format or type is only supported when updating level 0.");
+        }
+
+        const nativeTexture = texture._hardwareTexture?.underlyingResource;
+        const nativeTextureFormat = descriptorChanged ? getNativeTextureFormat(format, type) : undefined;
+        if (descriptorChanged && nativeTexture) {
+            this._engine.initializeTexture(
+                nativeTexture,
+                texture.width,
+                texture.height,
+                texture.generateMipMaps,
+                nativeTextureFormat!,
+                /*renderTarget*/ false,
+                texture._useSRGBBuffer,
+                /*samples*/ 1,
+                /*isCube*/ true
+            );
+            this._setTextureSampling(nativeTexture, getNativeSamplingMode(texture.samplingMode));
+        }
+
         // NativeEngine.updateTextureData honors invertY directly on cubes (no D3D origin
         // compensation). That matches WebGL: HDRCubeTexture uploads with invertY=false and
         // UNPACK_FLIP_Y_WEBGL=false. Forcing invertY here double-flipped float/half faces and
@@ -2893,6 +2923,11 @@ export class ThinNativeEngine extends ThinEngine {
         generateStencil: boolean,
         samples: number
     ): void {
+        if (nativeRTWrapper.is3D) {
+            this._assertVolumeDepthAttachmentSupported(texture.samples, samples);
+            return;
+        }
+
         if (nativeRTWrapper._framebuffers) {
             // Layered (2D array) or cube render target: the color framebuffers were created one-per-layer
             // (see createRenderTargetTexture / createRenderTargetCubeTexture). When the color RTT was built
@@ -3075,6 +3110,16 @@ export class ThinNativeEngine extends ThinEngine {
                 nativeRTWrapper._generateDepthBuffer,
                 nativeRTWrapper.samples
             );
+        }
+    }
+
+    /** @internal */
+    public _assertVolumeDepthAttachmentSupported(depthSamples?: number, colorSamples?: number): void {
+        if (!this._engine.createMultiFrameBuffer) {
+            throw new Error("NativeEngine: explicit depth attachments on volume render targets require createMultiFrameBuffer support.");
+        }
+        if (depthSamples !== undefined && colorSamples !== undefined && depthSamples !== colorSamples) {
+            throw new Error("NativeEngine: explicit depth and color attachments on volume render targets must use the same sample count.");
         }
     }
 
@@ -3534,7 +3579,7 @@ export class ThinNativeEngine extends ThinEngine {
         // 3D render target (IBL voxel grid + its procedural mip chain): create a real volume texture and
         // render to each Z-slice / mip through its own lazily-built framebuffer (see _get3DLayerFramebuffer).
         if (depth > 0 && !noColorAttachment && !colorAttachment) {
-            return this._createRenderTargetTexture3D(rtWrapper, options, width, height, depth, generateDepthBuffer, generateStencilBuffer, samples);
+            return this._createRenderTargetTexture3D(rtWrapper, options, width, height, depth, generateDepthBuffer, generateStencilBuffer);
         }
 
         const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
@@ -3588,80 +3633,14 @@ export class ThinNativeEngine extends ThinEngine {
         height: number,
         depth: number,
         generateDepthBuffer: boolean,
-        generateStencilBuffer: boolean,
-        samples: number
+        generateStencilBuffer: boolean
     ): RenderTargetWrapper {
-        let generateMipMaps = false;
-        let createMipMaps = false;
-        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-        let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-        let format = Constants.TEXTUREFORMAT_RGBA;
-        let label: string | undefined;
-        if (options !== undefined && typeof options === "object") {
-            generateMipMaps = !!options.generateMipMaps;
-            createMipMaps = !!options.createMipMaps;
-            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
-            samplingMode = options.samplingMode ?? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-            format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
-            label = options.label;
-        }
-
-        // Match _createInternalTexture: float/half-float RTTs that the platform can't linearly filter fall
-        // back to NEAREST, and unsupported float types drop to unsigned byte.
-        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        }
-        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
-        }
-
-        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
-        texture.is3D = true;
-        texture.baseWidth = width;
-        texture.baseHeight = height;
-        texture.width = width;
-        texture.height = height;
-        texture.baseDepth = depth;
-        texture.depth = depth;
-        texture.isReady = true;
-        texture.samples = samples;
-        texture.generateMipMaps = generateMipMaps;
-        this._setHasMipStorage(texture, generateMipMaps || createMipMaps);
-        texture.samplingMode = samplingMode;
-        texture.type = type;
-        texture.format = format;
-        texture.label = label;
-
-        const nativeTexture = texture._hardwareTexture!.underlyingResource;
-        const nativeTextureFormat = getNativeTextureFormat(format, type);
-        // See the createRenderTargetTexture MSAA/mips note: avoid the mips + samples combo on bgfx.
-        const hasMips = this._getRenderTargetHasMips(this._hasMipStorage(texture), samples);
-        this._engine.initializeTexture(
-            nativeTexture,
-            width,
-            height,
-            hasMips,
-            nativeTextureFormat,
-            /*renderTarget*/ true,
-            /*srgb*/ false,
-            samples,
-            /*isCube*/ false,
-            /*numLayers(depth)*/ depth,
-            /*is3D*/ true
-        );
-        this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
+        const texture = this._createInternalTexture({ width, height, depth }, options, true, InternalTextureSource.RenderTarget);
 
         rtWrapper._generateDepthBuffer = generateDepthBuffer;
         rtWrapper._generateStencilBuffer = generateStencilBuffer;
-        rtWrapper._samples = samples;
+        rtWrapper._samples = texture.samples;
         rtWrapper.setTextures(texture);
-
-        // Track the hand-built 3D RTT texture the same way _createInternalTexture tracks 2D textures so it
-        // participates in engine-wide lifecycle management (dispose iteration, context rebuild, stats).
-        this._internalTexturesCache.push(texture);
 
         return rtWrapper;
     }
@@ -4189,12 +4168,15 @@ export class ThinNativeEngine extends ThinEngine {
         rtWrapper._samples = samples;
         texture.samples = samples;
 
+        const hasDepthStencilTexture = !!rtWrapper._depthStencilTexture?._hardwareTexture;
         if (is3D) {
             // 3D render targets render through the per-(mip, layer) framebuffers released above.
+            if (hasDepthStencilTexture) {
+                this._recreateDepthStencilTexture(nativeRTWrapper, samples);
+            }
             return samples;
         }
 
-        const hasDepthStencilTexture = !!rtWrapper._depthStencilTexture?._hardwareTexture;
         if (layers > 0 || isCube) {
             // 2D-array RTTs render through one framebuffer per layer and cube RTTs through one per face (see
             // createRenderTargetTexture / createRenderTargetCubeTexture). The _framebuffers setter releases the stale
@@ -4368,18 +4350,40 @@ export class ThinNativeEngine extends ThinEngine {
         let framebuffer = nativeRTWrapper._layerFramebuffers.get(key);
         if (!framebuffer) {
             const nativeTexture = nativeRTWrapper.texture!._hardwareTexture!.underlyingResource;
+            const depthTexture = nativeRTWrapper._depthStencilTexture;
+            const nativeDepth = depthTexture?._hardwareTexture?.underlyingResource;
             const width = requiredWidth || Math.max(1, nativeRTWrapper.width >> mip);
             const height = requiredHeight || Math.max(1, nativeRTWrapper.height >> mip);
-            framebuffer = this._engine.createFrameBuffer(
-                nativeTexture,
-                width,
-                height,
-                nativeRTWrapper._generateStencilBuffer,
-                nativeRTWrapper._generateDepthBuffer,
-                nativeRTWrapper.samples,
-                layer,
-                mip
-            );
+            if (nativeDepth) {
+                this._assertVolumeDepthAttachmentSupported();
+                // createMultiFrameBuffer has no mip selector and the explicit depth texture only covers mip 0.
+                if (mip !== 0) {
+                    throw new Error("NativeEngine: explicit depth attachments on volume render targets only support rendering to mip 0.");
+                }
+                framebuffer = this._engine.createMultiFrameBuffer!(
+                    [nativeTexture],
+                    width,
+                    height,
+                    nativeRTWrapper._generateStencilBuffer,
+                    false,
+                    nativeRTWrapper.samples,
+                    [layer],
+                    nativeDepth
+                );
+                this._setTextureSampling(nativeDepth, getNativeSamplingMode(depthTexture.samplingMode));
+                this.updateTextureComparisonFunction(depthTexture, depthTexture._comparisonFunction);
+            } else {
+                framebuffer = this._engine.createFrameBuffer(
+                    nativeTexture,
+                    width,
+                    height,
+                    nativeRTWrapper._generateStencilBuffer,
+                    nativeRTWrapper._generateDepthBuffer,
+                    nativeRTWrapper.samples,
+                    layer,
+                    mip
+                );
+            }
             nativeRTWrapper._layerFramebuffers.set(key, framebuffer);
         }
         return framebuffer;
