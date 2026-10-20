@@ -7,9 +7,11 @@ import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraph
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { AnimationGroup } from "core/Animations/animationGroup.pure";
 import { type Animation } from "core/Animations/animation.pure";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { type Observer } from "core/Misc/observable.pure";
+import { RemoveFlowGraphAnimationGroupObservers, type IFlowGraphAnimationObserverSet } from "../../../flowGraphAnimationHelpers";
+export { RemoveFlowGraphAnimationGroupObservers } from "../../../flowGraphAnimationHelpers";
 
 /**
  * Configuration for playing an animation.
@@ -19,35 +21,6 @@ export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlo
      * Whether animation-group playback uses the unbounded KHR_interactivity timeline.
      */
     useVirtualTimeline?: boolean;
-}
-
-type AnimationObserverSet = {
-    block: FlowGraphPlayAnimationBlock;
-    groupEnd: Observer<AnimationGroup>;
-    animationEnd: Observer<any>;
-    animationLoop: Observer<any>;
-    groupLoop: Observer<AnimationGroup>;
-};
-
-/**
- * Removes observers owned by the play block that started an animation group.
- * @param context active FlowGraph context
- * @param animationGroup animation group being replaced or stopped
- * @returns the owning play block, when one was registered
- */
-export function RemoveFlowGraphAnimationGroupObservers(context: FlowGraphContext, animationGroup: AnimationGroup): FlowGraphPlayAnimationBlock | undefined {
-    const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, AnimationObserverSet>()) as Map<number, AnimationObserverSet>;
-    const observers = observerSets.get(animationGroup.uniqueId);
-    if (!observers) {
-        return undefined;
-    }
-    animationGroup.onAnimationGroupEndObservable.remove(observers.groupEnd);
-    animationGroup.onAnimationEndObservable.remove(observers.animationEnd);
-    animationGroup.onAnimationLoopObservable.remove(observers.animationLoop);
-    animationGroup.onAnimationGroupLoopObservable.remove(observers.groupLoop);
-    observerSets.delete(animationGroup.uniqueId);
-    context._setGlobalContextVariable("animationGroupObserverSets", observerSets);
-    return observers.block;
 }
 
 /**
@@ -99,6 +72,12 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public readonly animation: FlowGraphDataConnection<Animation | Animation[]>;
 
     /**
+     * Input connection: Optional targets matching the animation array in order.
+     * When supplied, these replace the single object target. Ignored when animationGroup is supplied.
+     */
+    public readonly animationTargets: FlowGraphDataConnection<IAnimatable[] | undefined>;
+
+    /**
      * Input connection: The target object that will be animated. If animation group is provided this input will be ignored.
      */
     public readonly object: FlowGraphDataConnection<any>;
@@ -122,6 +101,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         this.currentAnimationGroup = this.registerDataOutput("currentAnimationGroup", RichTypeAny);
         this.animationGroup = this.registerDataInput("animationGroup", RichTypeAny, config?.animationGroup);
         this.animation = this.registerDataInput("animation", RichTypeAny);
+        this.animationTargets = this.registerDataInput("animationTargets", RichTypeAny);
         this.object = this.registerDataInput("object", RichTypeAny);
     }
 
@@ -139,8 +119,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             return;
         }
         context._addPendingBlock(this);
-        this.out._activateSignal(context);
         context._setExecutionVariable(this, "_initialized", true);
+        this.out._activateSignal(context);
     }
 
     /**
@@ -159,10 +139,22 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @returns whether the animation was prepared and started successfully
      */
     private _tryPreparePendingTasks(context: FlowGraphContext): boolean {
-        const ag = this.animationGroup.getValue(context);
-        const animation = this.animation.getValue(context);
+        let ag: AnimationGroup;
+        let animation: Animation | Animation[];
+        let animationTargets: IAnimatable[] | undefined;
+        try {
+            ag = this.animationGroup.getValue(context);
+            animation = this.animation.getValue(context);
+            animationTargets = ag ? undefined : this.animationTargets.getValue(context);
+        } catch (error) {
+            this._reportError(context, error);
+            return false;
+        }
         if (!ag && !animation) {
             this._reportError(context, "No animation or animation group provided");
+            return false;
+        } else if (!ag && Array.isArray(animation) && animation.length === 0) {
+            this._reportError(context, "Animation array is empty");
             return false;
         } else if (ag && ag.targetedAnimations.length === 0) {
             this._reportError(context, "Animation group has no targeted animations");
@@ -179,17 +171,30 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             let interpolationTarget: any;
             // check which animation to use. If no animationGroup was defined and an animation was provided, use the animation
             if (animation && !animationGroupToUse) {
-                const target = this.object.getValue(context);
-                if (!target) {
+                const target = animationTargets === undefined ? this.object.getValue(context) : undefined;
+                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                if (animationTargets !== undefined && (!Array.isArray(animationTargets) || animationTargets.length !== animationsArray.length)) {
+                    this._reportError(context, "Animation targets must match the animation array.");
+                    return false;
+                }
+                if (!animationTargets && !target) {
                     this._reportError(context, "No target object provided");
                     return false;
                 }
-                const animationsArray = Array.isArray(animation) ? animation : [animation];
+                if (animationTargets) {
+                    for (const animationTarget of animationTargets) {
+                        if (!animationTarget) {
+                            this._reportError(context, "No target object provided");
+                            return false;
+                        }
+                    }
+                }
                 const name = animationsArray[0].name;
-                animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + target.name, context.configuration.scene);
+                animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + (target?.name ?? "targets"), context.configuration.scene);
                 const interpolationAnimations = context._getGlobalContextVariable("interpolationAnimations", []) as number[];
-                for (const anim of animationsArray) {
-                    animationGroupToUse.addTargetedAnimation(anim, target);
+                for (let index = 0; index < animationsArray.length; index++) {
+                    const anim = animationsArray[index];
+                    animationGroupToUse.addTargetedAnimation(anim, animationTargets ? animationTargets[index] : target);
                     if (interpolationAnimations.indexOf(anim.uniqueId) !== -1) {
                         isInterpolation = true;
                     }
@@ -269,8 +274,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // Stop any interpolation already running on the same target/property, but only after validation has
             // passed. An invalid interpolation (bad duration or NaN control points) must report [err] without
             // disturbing an interpolation that is already running on the same target.
-            if (isInterpolation && interpolationAnimationsArray && interpolationTarget !== undefined) {
-                this._checkInterpolationDuplications(context, interpolationAnimationsArray, interpolationTarget);
+            if (isInterpolation && interpolationAnimationsArray) {
+                this._checkInterpolationDuplications(context, interpolationAnimationsArray, interpolationTarget, animationTargets);
             }
 
             const loop = !isFinite(to) || this.loop.getValue(context);
@@ -287,14 +292,14 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 } else {
                     animationGroupToUse.start(loop, speed, from, to);
                 }
-                const observers: AnimationObserverSet = {
+                const observers: IFlowGraphAnimationObserverSet = {
                     block: this,
                     groupEnd: animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context, animationGroupToUse)),
                     animationEnd: animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context)),
                     animationLoop: animationGroupToUse.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context)),
                     groupLoop: animationGroupToUse.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context)),
                 };
-                const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, AnimationObserverSet>()) as Map<number, AnimationObserverSet>;
+                const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, IFlowGraphAnimationObserverSet>());
                 observerSets.set(animationGroupToUse.uniqueId, observers);
                 context._setGlobalContextVariable("animationGroupObserverSets", observerSets);
                 currentlyRunningAnimationGroups.push(animationGroupToUse.uniqueId);
@@ -341,16 +346,23 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * If they do, we want to stop the already-running animation group.
      * @internal
      */
-    private _checkInterpolationDuplications(context: FlowGraphContext, animation: Animation[], target: any) {
+    private _checkInterpolationDuplications(context: FlowGraphContext, animation: Animation[], target: any, targets?: IAnimatable[]) {
         const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
-        for (const uniqueId of currentlyRunningAnimationGroups) {
+        for (let groupIndex = currentlyRunningAnimationGroups.length - 1; groupIndex >= 0; groupIndex--) {
+            const uniqueId = currentlyRunningAnimationGroups[groupIndex];
             const ag = context.assetsContext.animationGroups.find((ag) => ag.uniqueId === uniqueId);
             if (ag) {
+                let stopped = false;
                 for (const anim of ag.targetedAnimations) {
-                    for (const animToCheck of animation) {
-                        if (anim.animation.targetProperty === animToCheck.targetProperty && anim.target === target) {
+                    for (let index = 0; index < animation.length; index++) {
+                        if (anim.animation.targetProperty === animation[index].targetProperty && anim.target === (targets ? targets[index] : target)) {
                             this._stopAnimationGroup(context, ag);
+                            stopped = true;
+                            break;
                         }
+                    }
+                    if (stopped) {
+                        break;
                     }
                 }
             }

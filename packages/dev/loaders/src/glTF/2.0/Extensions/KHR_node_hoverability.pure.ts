@@ -82,6 +82,7 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
                 event: "ref",
             },
         },
+        declarationSchemaVariants: [{ inputValueSockets: {}, outputValueSockets: { hoveredNode: "ref", controllerIndex: "int" } }],
         configuration: {
             nodeIndex: {
                 name: "variable",
@@ -182,6 +183,7 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
                 event: "ref",
             },
         },
+        declarationSchemaVariants: [{ inputValueSockets: {}, outputValueSockets: { hoveredNode: "ref", controllerIndex: "int" } }],
         configuration: {
             nodeIndex: {
                 name: "variable",

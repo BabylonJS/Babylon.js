@@ -12,6 +12,7 @@ export const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Qua
 
 /**
  * Checks if a node is a "noop" transform node, usually inserted by the glTF loader to correct handedness.
+ * Refreshes changed transforms even when the scene's render ID has not advanced.
  * @internal
  */
 export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
@@ -20,13 +21,13 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     }
 
     // Transform
+    const worldMatrix = node.computeWorldMatrix(!node.isSynchronized());
     if (useRightHandedSystem) {
-        const matrix = node.getWorldMatrix();
-        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
+        if (!worldMatrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
             return false;
         }
     } else {
-        const matrix = node.getWorldMatrix().multiplyToRef(ConvertHandednessMatrix, TmpVectors.Matrix[0]);
+        const matrix = worldMatrix.multiplyToRef(ConvertHandednessMatrix, TmpVectors.Matrix[0]);
         if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
             return false;
         }

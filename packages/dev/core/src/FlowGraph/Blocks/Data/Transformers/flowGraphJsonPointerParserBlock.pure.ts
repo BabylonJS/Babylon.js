@@ -15,6 +15,7 @@ import { Vector3, Vector4 } from "core/Maths/math.vector.pure";
 import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
 import { RegisterClass } from "core/Misc/typeStore";
+import { type IAnimatable } from "core/Animations/animatable.interface";
 
 /**
  * Configuration for the JSON pointer parser block.
@@ -33,6 +34,12 @@ export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGrap
      * Whether to output the value of the property.
      */
     outputValue?: boolean;
+
+    /**
+     * Expected property value type for writes. When provided, writes require a mutable accessor
+     * with the matching type; vector/color and vector4/quaternion representations are equivalent.
+     */
+    valueType?: string;
 }
 
 /**
@@ -67,6 +74,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     public readonly generateAnimationsFunction: FlowGraphDataConnection<() => (keys: any[], fps: number, easingFunction?: EasingFunction) => Animation[]>;
 
     /**
+     * Output connection: Targets supplied by the animation builder, in the same order as its generated animations.
+     */
+    public readonly animationTargets: FlowGraphDataConnection<IAnimatable[] | undefined>;
+
+    /**
      * The component with the templated inputs for the provided path.
      */
     public readonly templateComponent: FlowGraphPathConverterComponent;
@@ -83,6 +95,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         this.setterFunction = this.registerDataOutput("setFunction", RichTypeAny, this._setPropertyValue.bind(this));
         this.getterFunction = this.registerDataOutput("getFunction", RichTypeAny, this._getPropertyValue.bind(this));
         this.generateAnimationsFunction = this.registerDataOutput("generateAnimationsFunction", RichTypeAny, this._getInterpolationAnimationPropertyInfo.bind(this));
+        this.animationTargets = this.registerDataOutput("animationTargets", RichTypeAny);
         this.templateComponent = new FlowGraphPathConverterComponent(config.jsonPointer, this);
     }
 
@@ -92,7 +105,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         // one validating a delay handle against the runtime active-delay set, can resolve.
         const value = accessorContainer.info.get(accessorContainer.object, undefined, context) as P;
         const object = accessorContainer.info.getTarget?.(accessorContainer.object);
-        const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object);
+        const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object) ?? accessorContainer.info.interpolation?.[0]?.name;
         if (!object) {
             throw new Error("Object is undefined");
         } else {
@@ -107,6 +120,12 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     private _setPropertyValue(_target: O, _propertyName: string, value: P, context: FlowGraphContext): void {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
         const type = accessorContainer.info.type;
+        if (this.config.valueType !== undefined) {
+            const valueType = type === "Color3" ? "Vector3" : type === "Color4" || type === "Quaternion" ? "Vector4" : type;
+            if (valueType !== this.config.valueType || accessorContainer.info.isReadOnly || !accessorContainer.info.set) {
+                throw new Error(`Property is not writable with value type ${this.config.valueType}`);
+            }
+        }
         if (type.startsWith("Color")) {
             value = ToColor(value as Vector4, type) as unknown as P;
         }
@@ -135,8 +154,16 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         context: FlowGraphContext
     ): (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => Animation[] {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        return (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => {
+        if (this.config.valueType !== undefined) {
+            const type = accessorContainer.info.type;
+            const valueType = type === "Color3" ? "Vector3" : type === "Color4" || type === "Quaternion" ? "Vector4" : type;
+            if (valueType !== this.config.valueType || accessorContainer.info.isReadOnly || !accessorContainer.info.interpolation?.length) {
+                throw new Error(`Property is not interpolatable with value type ${this.config.valueType}`);
+            }
+        }
+        return (keys: any[], fps: number, _animationType: number, easingFunction?: EasingFunction) => {
             const animations: Animation[] = [];
+            const targets: IAnimatable[] = [];
             // make sure keys are of the right type (in case of float3 color/vector)
             const type = accessorContainer.info.type;
             if (type.startsWith("Color")) {
@@ -150,25 +177,22 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
             accessorContainer.info.interpolation?.forEach((info, index) => {
                 const name = accessorContainer.info.getPropertyName?.[index](accessorContainer.object) || "Animation-interpolation-" + index;
                 // generate the keys based on interpolation info
-                let newKeys: any[] = keys;
-                if (animationType !== info.type) {
-                    // convert the keys to the right type
-                    newKeys = keys.map((key) => {
-                        return {
-                            frame: key.frame,
-                            value: info.getValue(undefined, key.value.asArray ? key.value.asArray() : [key.value], 0, 1),
-                        };
-                    });
-                }
+                // Metadata also converts units/components when the animation types match.
+                const newKeys = keys.map((key) => ({
+                    frame: key.frame,
+                    value: info.getValue(accessorContainer.object, key.value.asArray ? key.value.asArray() : [key.value], 0, 1),
+                }));
                 const animationData = info.buildAnimations(accessorContainer.object, name, 60, newKeys);
                 for (const animation of animationData) {
                     if (easingFunction) {
                         animation.babylonAnimation.setEasingFunction(easingFunction);
                     }
                     animations.push(animation.babylonAnimation);
+                    targets.push(animation.babylonAnimatable);
                 }
             });
 
+            this.animationTargets.setValue(targets, context);
             return animations;
         };
     }
