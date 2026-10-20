@@ -164,10 +164,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #elif defined(OP_TRANSMISSION_FRACTION)
     var result: vec4f = a / max(a + b * (vec4f(1.0) - a), vec4f(0.00001));
     #elif defined(OP_THIN_WALLED_TRANSMISSION_WEIGHT)
-    var result: vec4f = a * (vec4f(1.0) - b);
+    var result: vec4f = vec4f(a.r * (1.0 - b.r));
     #elif defined(OP_THIN_WALLED_SUBSURFACE_WEIGHT)
-    let _transmittedScatter: vec4f = a * b;
-    var result: vec4f = _transmittedScatter / max(vec4f(1.0) - a + _transmittedScatter, vec4f(0.00001));
+    let _transmittedScatter: f32 = a.r * b.r;
+    var result: vec4f = vec4f(_transmittedScatter / max(1.0 - a.r + _transmittedScatter, 0.00001));
     #elif defined(OP_TRANSMISSION_SCATTER_ALBEDO)
     var _extinction: vec3f = -log(max(a.rgb, vec3f(0.0000001)));
     let _absorption: vec3f = _extinction - b.rgb;

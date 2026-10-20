@@ -1239,6 +1239,8 @@ export async function ExtractChannelAsync(
  * @returns An operand containing the converted single-scatter albedo
  */
 export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene, aniso: number = 0): Promise<ITextureProcessOperand> {
+    // Match the renderer, which clamps the scatter anisotropy before this conversion.
+    aniso = Math.min(Math.max(aniso, -0.9999), 0.9999);
     if (!input.texture) {
         return { texture: null, factor: _MultiScatterToSingleScatterAlbedoConstant(_EvalConstant(input), aniso) };
     }
@@ -1309,7 +1311,8 @@ export async function SingleScatterToMultiScatterAlbedoAsync(
 
 /**
  * Compute the OpenPBR thin-walled scatter weights from a transmission operand (T) and a
- * scatter-strength operand (S).  Both operands are read from their R channel.
+ * scatter-strength operand (S).  Both operands are read from their R channel (after the operand's
+ * channel swizzle and factor), and each weight is broadcast to all four output channels.
  *
  * For each texel:
  * ```
@@ -1354,8 +1357,8 @@ export async function ThinWalledScatterWeightsAsync(
         transmission.dispose?.();
         scatter.dispose?.();
         return {
-            transmission: { texture: null, factor: new Color4(transW, transW, transW, 1.0) },
-            subsurface: { texture: null, factor: new Color4(ssW, ssW, ssW, 1.0) },
+            transmission: { texture: null, factor: new Color4(transW, transW, transW, transW) },
+            subsurface: { texture: null, factor: new Color4(ssW, ssW, ssW, ssW) },
         };
     }
 

@@ -981,7 +981,7 @@ test.describe("Babylon Scene Loader", function () {
         test.describe("KHR_materials_scatter thin-walled on PBRMaterial", () => {
             // Imports a one-triangle glTF using KHR_materials_transmission and thin-walled KHR_materials_scatter.
             // Returns the refraction (red) and translucency (alpha) intensity texels as 0-1 values.
-            const loadThinWalledScatterAsync = async (transmissionTexels: number[] | null, scatterTexels: number[]) => {
+            const loadThinWalledScatterAsync = async (transmissionTexels: number[] | null, scatterTexels: number[], transmissionFactor = 1, scatterStrengthFactor = 1) => {
                 const images = [
                     createPngDataUri(
                         scatterTexels.length,
@@ -989,7 +989,7 @@ test.describe("Babylon Scene Loader", function () {
                         scatterTexels.flatMap((s) => [255, 255, 255, s])
                     ),
                 ];
-                const transmission: Record<string, unknown> = { transmissionFactor: 1 };
+                const transmission: Record<string, unknown> = { transmissionFactor };
                 if (transmissionTexels) {
                     images.push(
                         createPngDataUri(
@@ -1013,7 +1013,7 @@ test.describe("Babylon Scene Loader", function () {
                             name: "thinScatter",
                             extensions: {
                                 KHR_materials_transmission: transmission,
-                                KHR_materials_scatter: { scatterStrengthFactor: 1, scatterStrengthTexture: { index: 0 } },
+                                KHR_materials_scatter: { scatterStrengthFactor, scatterStrengthTexture: { index: 0 } },
                             },
                         },
                     ],
@@ -1083,6 +1083,21 @@ test.describe("Babylon Scene Loader", function () {
                     result.translucency,
                     t.map((ti, i) => (refraction[i] < 1 ? (ti * s[i]) / (1 - refraction[i]) : 0))
                 );
+            });
+
+            // Near T = 1 the translucency weight divides two small values, so T must reach the fused weight pass
+            // unquantized. Rounding T = 0.999 to 8 bits gives 1 and a translucency of 1 instead of about 0.5.
+            test("keeps a non-unit transmissionFactor near 1 when converting textured weights", async () => {
+                const transmissionFactor = 0.999;
+                const scatterStrengthFactor = 0.001;
+                const result = await loadThinWalledScatterAsync([255, 255], [255, 255], transmissionFactor, scatterStrengthFactor);
+
+                expect(result.className).toBe("PBRMaterial");
+                const refraction = transmissionFactor * (1 - scatterStrengthFactor);
+                const translucency = (transmissionFactor * scatterStrengthFactor) / (1 - refraction);
+                expect(translucency).toBeCloseTo(0.49975, 4);
+                expectTexels(result.refraction, [refraction, refraction]);
+                expectTexels(result.translucency, [translucency, translucency]);
             });
         });
     });

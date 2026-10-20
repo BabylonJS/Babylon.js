@@ -328,8 +328,9 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
             // from RGB, so pack both into one image. They are referenced separately, so each keeps its own sampling.
             const fractionTexture = subsurfaceFractionOp.texture;
             let colorSource: Nullable<BaseTexture> = colorTexture;
-            if (colorSource?.getInternalTexture()?._useSRGBBuffer) {
-                // Sampling an sRGB buffer yields linear values; re-encode so the packed RGB stays sRGB.
+            if (colorSource && (!colorSource.gammaSpace || colorSource.getInternalTexture()?._useSRGBBuffer)) {
+                // Linear textures and sRGB buffers both sample as linear values, but the packed texels are
+                // copied as-is and glTF reads multiscatterColorTexture as sRGB. Re-encode the RGB as sRGB.
                 colorSource = (
                     await ExtractChannelAsync(
                         `scatter color (${mat.name})`,
@@ -337,7 +338,7 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
                         TextureChannel.RGBA,
                         scene,
                         TextureColorSpace.SRGB,
-                        ChannelMask.RGB,
+                        undefined,
                         IntermediateOutputOptions(scene)
                     )
                 ).texture;

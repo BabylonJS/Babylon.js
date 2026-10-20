@@ -236,4 +236,35 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
             expectCoefficients(material.transmissionScatter, expectedExtinction);
         });
     });
+
+    // KHR_materials_scatter's zero endpoints must give zero single-scatter albedo, and therefore a zero scattering
+    // coefficient, at any anisotropy. The multi-scatter fit leaves s slightly below 1 at zero, so with anisotropy 1 an
+    // unguarded (1 - s^2) / (1 - aniso * s^2) would give full albedo instead.
+    describe("volumetric scatter zero endpoints", () => {
+        const cases = [
+            { label: "zero scatter strength", strength: 0, color: new Color3(0.5, 0.5, 0.5) },
+            { label: "black multiscatter color", strength: 1, color: new Color3(0, 0, 0) },
+        ];
+        for (const { label, strength, color } of cases) {
+            for (const anisotropy of [0, 1]) {
+                it(`gives zero transmission scatter for ${label} (anisotropy ${anisotropy})`, async () => {
+                    const material = new OpenPBRMaterial("mat", scene);
+                    const adapter = loader._getOrCreateMaterialAdapter(material) as OpenPBRMaterialLoadingAdapter;
+                    adapter.configureTransmission();
+                    adapter.transmissionWeight = 1;
+                    adapter.configureVolume();
+                    adapter.transmissionDepth = 1;
+                    adapter.transmissionColor = new Color3(0.5, 0.5, 0.5);
+                    adapter.transmissionScatter = color;
+                    adapter.transmissionScatterAnisotropy = anisotropy;
+                    adapter.volumetricScatterStrengthFactor = strength;
+
+                    await adapter.finalizeAsync(loader);
+
+                    expect(material.transmissionScatterTexture).toBeNull();
+                    expect(material.transmissionScatter.asArray()).toEqual([0, 0, 0]);
+                });
+            }
+        }
+    });
 });

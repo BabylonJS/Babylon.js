@@ -6,14 +6,7 @@ import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { Constants } from "core/Engines/constants";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 import { type GLTFLoader } from "./glTFLoader";
-import {
-    CreateFactorOperand,
-    CreateTextureWithFactorOperand,
-    ExtractMaxChannelAsync,
-    type ITextureProcessOperand,
-    TextureChannel,
-    ThinWalledScatterWeightsAsync,
-} from "core/Materials/Textures/textureProcessor";
+import { CreateTextureWithFactorOperand, TextureChannel, ThinWalledScatterWeightsAsync } from "core/Materials/Textures/textureProcessor";
 
 /**
  * Material Loading Adapter for PBR materials that provides a unified OpenPBR-like interface.
@@ -124,26 +117,12 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         const scene = this._material.getScene();
         const name = this._material.name;
 
-        // The weights are computed per channel, and PBR reads refraction intensity from red and
-        // translucency intensity from alpha, so broadcast T and S to all four channels.
-        let transmission: ITextureProcessOperand;
-        if (transmissionTex) {
-            transmission = await ExtractMaxChannelAsync(
-                `${name} (transmission)`,
-                CreateTextureWithFactorOperand(transmissionTex, new Color4(transmissionFactor, transmissionFactor, transmissionFactor, 0), TextureChannel.R),
-                scene,
-                true
-            );
-            if (loader._disposed) {
-                transmission.dispose?.();
-                return;
-            }
-        } else {
-            transmission = CreateFactorOperand(new Color4(transmissionFactor, transmissionFactor, transmissionFactor, transmissionFactor));
-        }
+        // The weights are computed from the red channel of T and S and broadcast to all four channels, so
+        // they serve both PBR's refraction intensity (red) and translucency intensity (alpha). T is passed
+        // with its factor unbaked so that it isn't quantized before the weights are computed.
         const weights = await ThinWalledScatterWeightsAsync(
             name,
-            transmission,
+            CreateTextureWithFactorOperand(transmissionTex, new Color4(transmissionFactor, transmissionFactor, transmissionFactor, transmissionFactor), TextureChannel.R),
             CreateTextureWithFactorOperand(scatterTex, new Color4(scatterStrength, scatterStrength, scatterStrength, scatterStrength), TextureChannel.A),
             scene
         );

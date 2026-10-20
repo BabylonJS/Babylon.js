@@ -250,6 +250,60 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
         });
     }
 
+    // A weight texture makes the exporter pack subsurface_color into multiscatterColorTexture. The packed texels are
+    // copied as-is and glTF reads them as sRGB, so a linear color texture (gammaSpace = false, no sRGB buffer) must be
+    // re-encoded first. Otherwise a linear 128/255 would reimport as about 0.216 instead of about 0.502.
+    test("thin-walled scatter re-encodes a linear subsurface color texture before packing", async () => {
+        const result = await page.evaluate(async () => {
+            const scene = window.scene!;
+            const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+            const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+            const linearColor = [128, 64, 200];
+
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+            const mat = new BABYLON.OpenPBRMaterial("linearColor", scene);
+            mat.geometryThinWalled = 1;
+            mat.transmissionWeight = 1;
+            mat.subsurfaceWeight = 1;
+            mat.transmissionWeightTexture = new BABYLON.RawTexture(new Uint8Array(16).fill(128), 2, 2, RGBA, scene, false, false, NEAREST);
+            const colorData = new Uint8Array(16);
+            for (let i = 0; i < 4; i++) {
+                colorData.set([...linearColor, 255], i * 4);
+            }
+            const colorTexture = new BABYLON.RawTexture(colorData, 2, 2, RGBA, scene, false, false, NEAREST);
+            colorTexture.gammaSpace = false;
+            mat.subsurfaceColorTexture = colorTexture;
+            box.material = mat;
+
+            const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
+            const json = JSON.parse(gltf.files["rt.gltf"] as string);
+            const scatter = json.materials[0].extensions.KHR_materials_scatter;
+            const colorInfo = scatter.multiscatterColorTexture;
+            const uri = json.images[json.textures[colorInfo.index].source].uri as string;
+            const bitmap = await createImageBitmap(gltf.files[uri] as Blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+            const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+            const context = canvas.getContext("2d")!;
+            context.drawImage(bitmap, 0, 0);
+            const pixels = context.getImageData(0, 0, 1, 1).data;
+
+            return {
+                usesSRGBBuffer: !!colorTexture.getInternalTexture()?._useSRGBBuffer,
+                packed: scatter.scatterStrengthTexture?.index === colorInfo.index,
+                exported: Array.from(pixels.slice(0, 3)),
+                linearColor,
+            };
+        });
+
+        expect(result.usesSRGBBuffer).toBe(false);
+        expect(result.packed).toBe(true);
+        // glTF decodes multiscatterColorTexture from sRGB, which must give back the source's linear values. One 8-bit
+        // sRGB step is up to about 2/255 in linear near white.
+        const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+        for (let i = 0; i < 3; i++) {
+            expect(Math.abs(toLinear(result.exported[i] / 255) - result.linearColor[i] / 255), `channel ${i}: ${result.exported[i]}`).toBeLessThanOrEqual(3 / 255);
+        }
+    });
+
     // Thin-walled: scatter strength is baked from the (textured) weights, multi-scatter color is the
     // subsurface color/texture, and anisotropy is the subsurface scatter anisotropy. No volume extension
     // is written, so the material re-imports as thin-walled.
