@@ -33,8 +33,15 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
 
     const isDisposed = (texture: Texture) => !scene.textures.includes(texture);
 
+    function createTransmissiveAdapter(name: string): { material: PBRMaterial; adapter: PBRMaterialLoadingAdapter } {
+        const result = createAdapter(name);
+        result.adapter.configureTransmission();
+        result.adapter.transmissionWeight = 1;
+        return result;
+    }
+
     it("applies staged scatter strength and color textures to the translucency slots", async () => {
-        const { material, adapter } = createAdapter("mat");
+        const { material, adapter } = createTransmissiveAdapter("mat");
         const strength = new Texture(null, scene);
         const color = new Texture(null, scene);
         adapter.volumetricScatterStrengthFactor = 0.5;
@@ -55,7 +62,7 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
     });
 
     it("replaces diffuse transmission textures that finished loading after the scatter textures", async () => {
-        const { material, adapter } = createAdapter("mat");
+        const { material, adapter } = createTransmissiveAdapter("mat");
         const strength = new Texture(null, scene);
         const color = new Texture(null, scene);
         const diffuseTransmission = new Texture(null, scene);
@@ -75,7 +82,7 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
     });
 
     it("keeps a replaced texture that is still referenced by another loaded material", async () => {
-        const { material, adapter } = createAdapter("mat");
+        const { material, adapter } = createTransmissiveAdapter("mat");
         const { material: other } = createAdapter("other");
         const strength = new Texture(null, scene);
         const shared = new Texture(null, scene);
@@ -88,6 +95,27 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
 
         expect(material.subSurface.translucencyIntensityTexture).toBe(strength);
         expect(isDisposed(shared)).toBe(false);
+    });
+
+    it("keeps volumetric scatter inert and preserves diffuse transmission when there is no transmission", async () => {
+        const { material, adapter } = createAdapter("mat");
+        const strength = new Texture(null, scene);
+        const color = new Texture(null, scene);
+        const diffuseTransmission = new Texture(null, scene);
+        adapter.configureSubsurface();
+        adapter.subsurfaceWeight = 0.4;
+        adapter.subsurfaceWeightTexture = diffuseTransmission;
+        adapter.volumetricScatterStrengthFactor = 1;
+        adapter.volumetricScatterStrengthTexture = strength;
+        adapter.transmissionScatterTexture = color;
+
+        await adapter.finalizeAsync(loader);
+
+        expect(adapter.subsurfaceWeight).toBe(0.4);
+        expect(material.subSurface.translucencyIntensityTexture).toBe(diffuseTransmission);
+        expect(material.subSurface.translucencyColorTexture).toBeNull();
+        expect(isDisposed(strength)).toBe(true);
+        expect(isDisposed(color)).toBe(true);
     });
 
     it("leaves translucency textures untouched when no volumetric scatter was staged", async () => {
@@ -192,9 +220,10 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
      * @param name The material name
      * @param scatterExtensionName The scatter extension to add to the material
      * @param scatterExtension The scatter extension's properties
+     * @param transmissionFactor The KHR_materials_transmission factor
      * @returns The imported PBR material
      */
-    async function importVolumeScatterMaterialAsync(name: string, scatterExtensionName: string, scatterExtension: object): Promise<PBRMaterial> {
+    async function importVolumeScatterMaterialAsync(name: string, scatterExtensionName: string, scatterExtension: object, transmissionFactor = 1): Promise<PBRMaterial> {
         const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
         const base64 = btoa(String.fromCharCode(...new Uint8Array(positions.buffer)));
         const gltf = {
@@ -208,7 +237,7 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
                 {
                     name,
                     extensions: {
-                        KHR_materials_transmission: { transmissionFactor: 1 },
+                        KHR_materials_transmission: { transmissionFactor },
                         KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 2, attenuationColor: [0.9, 0.6, 0.3] },
                         [scatterExtensionName]: scatterExtension,
                     },
@@ -245,6 +274,23 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
         expect(scatter.r).toBeCloseTo(0.2, 5);
         expect(scatter.g).toBeCloseTo(0.4, 5);
         expect(scatter.b).toBeCloseTo(0.8, 5);
+    });
+
+    // KHR_materials_scatter only redistributes transmitted light, so it must have no visible effect on a
+    // dielectric without transmission, even at full scatter strength.
+    it("keeps volumetric KHR_materials_scatter inert when transmissionFactor is zero", async () => {
+        const material = await importVolumeScatterMaterialAsync(
+            "opaqueScatter",
+            "KHR_materials_scatter",
+            {
+                multiscatterColorFactor: [0.2, 0.4, 0.8],
+                scatterStrengthFactor: 1,
+            },
+            0
+        );
+
+        expect(material.subSurface.isRefractionEnabled).toBe(false);
+        expect(material.subSurface.isTranslucencyEnabled).toBe(false);
     });
 
     // The legacy KHR_materials_volume_scatter loader writes the scattering coefficient in place through the

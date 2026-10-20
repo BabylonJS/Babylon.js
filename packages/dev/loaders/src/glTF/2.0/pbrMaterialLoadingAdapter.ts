@@ -63,18 +63,25 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // loads can otherwise resolve after these, matching how the scatter factors replace its factors.
         // The subsurface color texture (thin-walled KHR_materials_scatter, KHR_materials_volume_scatter)
         // tints translucency in the same way and is applied here for the same reason.
+        // Volumetric scatter only acts on transmitted light, so without transmission it has no visible
+        // effect and must leave translucency (e.g. from KHR_materials_diffuse_transmission) untouched.
         const strengthTex = this._volumetricScatterStrengthTexture;
         const transmissionScatterTex = this._transmissionScatterTexture;
         const subsurfaceColorTex = this._subsurfaceColorTexture;
-        const staged = this._volumetricScatterStrengthFactor !== null;
+        const scatterStrength = this._volumetricScatterStrengthFactor;
         this._volumetricScatterStrengthFactor = null;
         this._volumetricScatterStrengthTexture = null;
         this._transmissionScatterTexture = null;
         this._subsurfaceColorTexture = null;
-        const appliedStrengthTex = staged ? strengthTex : null;
-        const colorTex = (staged ? transmissionScatterTex : null) ?? subsurfaceColorTex;
+        const applyScatter = scatterStrength !== null && this.transmissionWeight > 0;
+        const appliedStrengthTex = applyScatter ? strengthTex : null;
+        const colorTex = (applyScatter ? transmissionScatterTex : null) ?? subsurfaceColorTex;
 
         const subSurface = this._material.subSurface;
+        if (applyScatter) {
+            subSurface.isTranslucencyEnabled = scatterStrength > 0;
+            subSurface.translucencyIntensity = scatterStrength;
+        }
         if (appliedStrengthTex && subSurface.translucencyIntensityTexture !== appliedStrengthTex) {
             const oldIntensityTexture = subSurface.translucencyIntensityTexture;
             subSurface.translucencyIntensityTexture = appliedStrengthTex;
@@ -965,9 +972,8 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /** @internal */
     public set volumetricScatterStrengthFactor(value: Nullable<number>) {
+        // Staged and applied in finalizeAsync, once the transmission weight is known.
         this._volumetricScatterStrengthFactor = value;
-        this._material.subSurface.isTranslucencyEnabled = value !== null && value > 0;
-        this._material.subSurface.translucencyIntensity = value ?? 0;
     }
 
     /** @internal */
