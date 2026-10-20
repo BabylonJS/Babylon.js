@@ -240,7 +240,10 @@ function _LerpConstants(a: Color4, b: Color4, t: Color4): Color4 {
 function _MultiScatterToSingleScatterAlbedoConstant(multiScatter: Color4, aniso: number): Color4 {
     const convert = (value: number) => {
         const rhoMs = Math.min(Math.max(value, 0), 1);
-        const s = 4.09712 + 4.20863 * rhoMs - Math.sqrt(9.59217 + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+        let s = 4.09712 + 4.20863 * rhoMs - Math.sqrt(9.59217 + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+        if (rhoMs === 0) {
+            s = 1;
+        }
         return (1 - s * s) / Math.max(1 - aniso * s * s, 0.0000001);
     };
     return new Color4(convert(multiScatter.r), convert(multiScatter.g), convert(multiScatter.b), multiScatter.a);

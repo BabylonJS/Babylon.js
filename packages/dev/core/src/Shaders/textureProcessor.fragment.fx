@@ -145,6 +145,8 @@ void main() {
     #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
     vec3 rhoMs = clamp(a.rgb, vec3(0.0), vec3(1.0));
     vec3 s = vec3(4.09712) + 4.20863 * rhoMs - sqrt(vec3(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+    // The fit gives s slightly below 1 at rhoMs = 0; force s = 1 so the single-scatter albedo is exactly 0.
+    s = mix(s, vec3(1.0), vec3(equal(rhoMs, vec3(0.0))));
     vec4 result = vec4((vec3(1.0) - s * s) / max(vec3(1.0) - scatterAniso * s * s, vec3(0.0000001)), a.a);
     #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
     vec3 ssAlbedo = clamp(a.rgb, vec3(0.0), vec3(1.0));
