@@ -18,6 +18,7 @@ import { RegisterEnginesExtensionsEngineRawTexture } from "core/Engines/Extensio
 import { _KTXTextureLoader } from "core/Materials/Textures/Loaders/ktxTextureLoader";
 import { KhronosTextureContainer2 } from "core/Misc/khronosTextureContainer2";
 import { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
+import { FrameGraphTextureManager } from "core/FrameGraph/frameGraphTextureManager";
 import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
@@ -1192,16 +1193,34 @@ describe("ThinNativeEngine", () => {
                 lodLevel: 0,
                 effectWrapper: { drawWrapper: {}, onApplyObservable: { notifyObservers: vi.fn() } },
             };
+            // Import the native depth textures through a real texture manager so the imported description is
+            // derived from the native InternalTexture metadata.
+            // The manager registers backbuffer system textures on construction; give the mocked engine a backbuffer size.
+            Object.assign(engine, { getRenderWidth: () => 64, getRenderHeight: () => 64, getCreationOptions: () => ({}) });
+            const textureManager = new FrameGraphTextureManager(engine, false, {} as Scene);
+            const depthOnlyHandle = textureManager.importTexture("native depth", depthOnly);
+            const stencilHandle = textureManager.importTexture("native depth stencil", stencil);
+            const depthOnlyFormat = textureManager.getTextureDescription(depthOnlyHandle).options.formats![0];
+            const stencilFormat = textureManager.getTextureDescription(stencilHandle).options.formats![0];
+            expect(depthOnlyFormat).toBe(Constants.TEXTUREFORMAT_DEPTH32_FLOAT);
+            expect(IsDepthTexture(depthOnlyFormat)).toBe(true);
+            expect(HasStencilAspect(depthOnlyFormat)).toBe(false);
+            expect(stencilFormat).toBe(Constants.TEXTUREFORMAT_DEPTH24_STENCIL8);
+            expect(HasStencilAspect(stencilFormat)).toBe(true);
+
             const context = Object.assign(Object.create(FrameGraphRenderContext.prototype), {
-                _textureManager: { getTextureFromHandle: () => depthOnly },
+                _textureManager: textureManager,
                 _copyTexture: colorCopy,
                 _copyDepthTexture: depthCopy,
                 applyFullScreenEffect: vi.fn(),
             }) as FrameGraphRenderContext;
 
-            context.copyTexture(1);
-
+            context.copyTexture(depthOnlyHandle);
             expect(depthCopy.source).toBe(depthOnly);
+            expect(colorCopy.source).toBeNull();
+
+            context.copyTexture(stencilHandle);
+            expect(depthCopy.source).toBe(stencil);
             expect(colorCopy.source).toBeNull();
         });
 
