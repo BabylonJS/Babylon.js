@@ -16,6 +16,7 @@ import {
     ExtractChannelAsync,
     InvertTextureAsync,
     LerpTexturesAsync,
+    MultiplyTexturesAsync,
     SingleScatterToMultiScatterAlbedoAsync,
     TextureChannel,
     TextureColorSpace,
@@ -274,8 +275,9 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
             subsurfaceMultiOp = CreateFactorOperand(new Color4(0, 0, 0, 1.0));
         }
 
-        // multiscatterColor = lerp(subsurface, transmission, transmissionFraction). Force opaque alpha and
-        // output sRGB so the baked glTF color texture round-trips through the loader (which reads it as sRGB).
+        // multiscatterColor = lerp(subsurface, transmission, transmissionFraction), kept linear in a floating-point
+        // target (when supported) so that tiny albedos, such as those produced near anisotropy 1, survive until
+        // the final bake.
         const transmissionFractionOp = await this._computeTransmissionFractionAsync(mat);
         const combined = await LerpTexturesAsync(
             `scatter multiscatter color (${mat.name})`,
@@ -283,24 +285,69 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
             transmissionMultiOp,
             transmissionFractionOp,
             scene,
-            TextureColorSpace.SRGB,
-            ChannelMask.RGB
+            undefined,
+            ChannelMask.RGB,
+            IntermediateOutputOptions(scene)
         );
+        let colorFactor: [number, number, number] = [combined.factor?.r ?? 0, combined.factor?.g ?? 0, combined.factor?.b ?? 0];
+        let colorTexture: Nullable<BaseTexture> = null;
+        if (combined.texture) {
+            // The exported texture is 8-bit sRGB, which rounds albedos below about 1e-4 to black. Move each
+            // channel's maximum into multiscatterColorFactor and store the texels normalized to it, so the
+            // magnitude survives export. Force opaque alpha and output sRGB, as the loader reads it as sRGB.
+            const max = await this._readChannelMaximaAsync(combined.texture);
+            colorFactor = [max[0], max[1], max[2]];
+            const normalize = new Color4(max[0] > 0 ? 1 / max[0] : 1, max[1] > 0 ? 1 / max[1] : 1, max[2] > 0 ? 1 / max[2] : 1, 1.0);
+            colorTexture = (
+                await MultiplyTexturesAsync(
+                    `scatter multiscatter color (${mat.name})`,
+                    { texture: combined.texture, factor: normalize, dispose: combined.dispose },
+                    CreateFactorOperand(new Color4(1, 1, 1, 1)),
+                    scene,
+                    TextureColorSpace.SRGB,
+                    ChannelMask.RGB
+                )
+            ).texture;
+        }
 
         const fractions = this._constantFractions(mat);
         const anisotropy = mat.transmissionScatterAnisotropy * fractions.transmissionFraction + mat.subsurfaceScatterAnisotropy * fractions.subsurfaceFraction;
         const ownedTextures: BaseTexture[] = [];
-        if (combined.texture) {
-            ownedTextures.push(combined.texture);
+        if (colorTexture) {
+            ownedTextures.push(colorTexture);
         }
         return {
             strengthFactor: 1.0,
             strengthTexture: null,
-            colorFactor: combined.texture ? [1, 1, 1] : [combined.factor?.r ?? 0, combined.factor?.g ?? 0, combined.factor?.b ?? 0],
-            colorTexture: combined.texture ?? null,
+            colorFactor,
+            colorTexture,
             anisotropy,
             ownedTextures,
         };
+    }
+
+    /**
+     * Read back a texture and return the maximum of each RGB channel.
+     * @param texture the texture to read (unsigned-byte, or floating-point read back as 32-bit floats)
+     * @returns the per-channel maxima, normalized to [0, 1] for unsigned-byte textures
+     */
+    private async _readChannelMaximaAsync(texture: BaseTexture): Promise<[number, number, number]> {
+        const pixels = await texture.readPixels();
+        const max: [number, number, number] = [0, 0, 0];
+        if (!pixels) {
+            return [1, 1, 1];
+        }
+        const data = pixels instanceof Uint8Array ? pixels : new Float32Array(pixels.buffer, pixels.byteOffset, pixels.byteLength / 4);
+        const scale = pixels instanceof Uint8Array ? 1 / 255 : 1;
+        for (let i = 0; i < data.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                const value = data[i + c] * scale;
+                if (value > max[c]) {
+                    max[c] = value;
+                }
+            }
+        }
+        return max;
     }
 
     /**

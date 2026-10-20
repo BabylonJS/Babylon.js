@@ -540,16 +540,16 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
     //    alone would recover (1.443, 0.721, 0.721) and inflate the green and blue coefficients by about 44%.
     //  - anisotropy 1: the exporter must clamp the anisotropy to the renderer's 0.9999 before inverting the albedo
     //    conversion. Unclamped, a single-scatter albedo of 0.5 gives s = sqrt((1 - 0.5) / (1 - 0.5)) = 1 and a black
-    //    multi-scatter color. Clamped, the multi-scatter color is about 2e-5, which 8-bit textures can't represent,
-    //    so only the constant export is covered. The fitted forward/inverse coefficients agree to about 3% this
-    //    close to s = 1.
+    //    multi-scatter color. Clamped, the multi-scatter color is about 2e-5, which an 8-bit texel can't represent on
+    //    its own, so the textured export must carry the magnitude in multiscatterColorFactor. The fitted
+    //    forward/inverse coefficients agree to about 3% this close to s = 1.
     const volumetricCases = [
-        { label: "a zero attenuation channel", color: [0.9, 0, 0.5], scatter: [0.08, 2.0, 0.2], zeroChannel: true, anisotropy: 0, tolerance: 0.02, texturedToo: true },
-        { label: "negative absorption", color: [0.5, 0.5, 0.5], scatter: [1.0, 0.5, 0.5], zeroChannel: false, anisotropy: 0, tolerance: 0.02, texturedToo: true },
-        { label: "anisotropy 1", color: [0.5, 0.5, 0.5], scatter: Array(3).fill(Math.LN2 / 2), zeroChannel: false, anisotropy: 1, tolerance: 0.04, texturedToo: false },
+        { label: "a zero attenuation channel", color: [0.9, 0, 0.5], scatter: [0.08, 2.0, 0.2], zeroChannel: true, anisotropy: 0, tolerance: 0.02 },
+        { label: "negative absorption", color: [0.5, 0.5, 0.5], scatter: [1.0, 0.5, 0.5], zeroChannel: false, anisotropy: 0, tolerance: 0.02 },
+        { label: "anisotropy 1", color: [0.5, 0.5, 0.5], scatter: Array(3).fill(Math.LN2 / 2), zeroChannel: false, anisotropy: 1, tolerance: 0.04 },
     ];
-    for (const { label, color, scatter, zeroChannel, anisotropy, tolerance: constantTolerance, texturedToo } of volumetricCases) {
-        for (const textured of texturedToo ? [false, true] : [false]) {
+    for (const { label, color, scatter, zeroChannel, anisotropy, tolerance: constantTolerance } of volumetricCases) {
+        for (const textured of [false, true]) {
             test(`volumetric scatter with ${label} preserves the scattering coefficient (${textured ? "textured" : "constant"})`, async () => {
                 const result = await page.evaluate(
                     async ({ textured, color, scatter, anisotropy }) => {
@@ -695,10 +695,12 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
                 expect(result.textured.strengthFactor).toBe(1);
                 expect(Math.abs(texel[3] / 255 - result.constant.strengthFactor)).toBeLessThanOrEqual(1 / 255);
             } else {
-                // The baked color texture is sRGB-encoded; compare against the encoded constant color.
-                const toSRGB = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+                // The baked color texture is sRGB-encoded and scaled by the color factor; compare the decoded product
+                // against the constant color. One 8-bit sRGB step is up to about 2/255 in linear near white.
+                const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
                 for (let i = 0; i < 3; i++) {
-                    expect(Math.abs(texel[i] - toSRGB(result.constant.colorFactor[i]) * 255), `channel ${i}`).toBeLessThanOrEqual(1.5);
+                    const product = result.textured.colorFactor[i] * toLinear(texel[i] / 255);
+                    expect(Math.abs(product - result.constant.colorFactor[i]) / result.constant.colorFactor[i], `channel ${i}: ${product}`).toBeLessThanOrEqual(0.01);
                 }
             }
         });
