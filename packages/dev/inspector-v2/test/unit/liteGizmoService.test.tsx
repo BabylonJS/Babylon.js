@@ -58,10 +58,12 @@ vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 
 function Deferred() {
     let resolve!: () => void;
-    const promise = new Promise<void>((resolvePromise) => {
+    let reject!: (error: Error) => void;
+    const promise = new Promise<void>((resolvePromise, rejectPromise) => {
         resolve = resolvePromise;
+        reject = rejectPromise;
     });
-    return { promise, resolve };
+    return { promise, resolve, reject };
 }
 
 describe("Babylon Lite gizmo service", () => {
@@ -89,7 +91,7 @@ describe("Babylon Lite gizmo service", () => {
         vi.restoreAllMocks();
     });
 
-    function MakeHarness(withScene = true) {
+    function MakeScene() {
         const canvas = document.createElement("canvas");
         document.body.appendChild(canvas);
         const surfaces: SurfaceContext[] = [];
@@ -99,7 +101,15 @@ describe("Babylon Lite gizmo service", () => {
         const mesh = Object.assign(createTransformNode("Mesh"), { material: {}, receiveShadows: false }) as Mesh;
         const otherMesh = Object.assign(createTransformNode("Other Mesh"), { material: {}, receiveShadows: false }) as Mesh;
         const scene = { _kind: "scene", surface: engine, camera: {}, meshes: [mesh, otherMesh] } as unknown as SceneContext;
-        engine._renderingContexts = withScene ? [scene] : [];
+        engine._renderingContexts = [scene];
+        return { engine, canvas, surfaces, scene, mesh, otherMesh };
+    }
+
+    function MakeHarness(withScene = true, fixture = MakeScene()) {
+        const { engine, canvas, surfaces, scene, mesh, otherMesh } = fixture;
+        if (!withScene) {
+            engine._renderingContexts = [];
+        }
         let selectedEntity: object | null = engine;
         const onSelectedEntityChanged = new Observable<void>();
         const selection: ISelectionService = {
@@ -399,5 +409,80 @@ describe("Babylon Lite gizmo service", () => {
         expect(h.button("Translate")?.getAttribute("aria-pressed")).toBe("false");
         await h.click("Translate");
         expect(Mocks.create.Position).toHaveBeenCalledTimes(2);
+    });
+
+    it.each(["resolve", "reject"] as const)("waits for a disposed Inspector's %s registration to retire before its replacement creates resources", async (settlement) => {
+        const warning = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+        const h = MakeHarness();
+        const deferred = Deferred();
+        Mocks.registerLayer.mockReturnValueOnce(deferred.promise);
+        await h.select(h.mesh);
+        await h.click("Translate");
+        const retiredLayer = Mocks.createLayer.mock.results[0].value;
+        await act(async () => h.service.dispose?.());
+        const replacement = MakeHarness(true, h);
+        await replacement.select(h.otherMesh);
+        await replacement.click("Rotate");
+        expect(Mocks.createLayer).toHaveBeenCalledTimes(1);
+        expect(Mocks.create.Rotation).not.toHaveBeenCalled();
+        expect(Mocks.disposeLayer).not.toHaveBeenCalled();
+
+        await act(async () => {
+            if (settlement === "resolve") {
+                deferred.resolve();
+            } else {
+                deferred.reject(new Error("Retired registration failed"));
+            }
+        });
+        expect(Mocks.dispose.Position).toHaveBeenCalledTimes(1);
+        expect(Mocks.disposeLayer).toHaveBeenCalledExactlyOnceWith(retiredLayer);
+        expect(Mocks.createLayer).toHaveBeenCalledTimes(2);
+        expect(Mocks.create.Rotation).toHaveBeenCalledTimes(1);
+        expect(Mocks.attach.Rotation).toHaveBeenLastCalledWith(expect.anything(), h.otherMesh);
+        expect(Mocks.dispose.Rotation).not.toHaveBeenCalled();
+        expect(Mocks.disposeLayer.mock.invocationCallOrder[0]).toBeLessThan(Mocks.createLayer.mock.invocationCallOrder[1]);
+        expect(warning).toHaveBeenCalledTimes(settlement === "reject" ? 1 : 0);
+    });
+
+    it("skips a disposed queued replacement and creates only the latest replacement mode and target", async () => {
+        const h = MakeHarness();
+        const deferred = Deferred();
+        Mocks.registerLayer.mockReturnValueOnce(deferred.promise);
+        await h.select(h.mesh);
+        await h.click("Translate");
+        await act(async () => h.service.dispose?.());
+        const skipped = MakeHarness(true, h);
+        await skipped.select(h.mesh);
+        await skipped.click("Rotate");
+        await act(async () => skipped.service.dispose?.());
+        const replacement = MakeHarness(true, h);
+        await replacement.select(h.mesh);
+        await replacement.click("Rotate");
+        await replacement.click("Scale");
+        await replacement.select(h.otherMesh);
+        expect(Mocks.createLayer).toHaveBeenCalledTimes(1);
+        await act(async () => deferred.resolve());
+        expect(Mocks.createLayer).toHaveBeenCalledTimes(2);
+        expect(Mocks.create.Rotation).not.toHaveBeenCalled();
+        expect(Mocks.create.Scale).toHaveBeenCalledTimes(1);
+        expect(Mocks.attach.Scale).toHaveBeenLastCalledWith(expect.anything(), h.otherMesh);
+        expect(Mocks.disposeLayer.mock.invocationCallOrder[0]).toBeLessThan(Mocks.createLayer.mock.invocationCallOrder[1]);
+    });
+
+    it("does not delay another canvas while a retired Inspector's registration is pending", async () => {
+        const h = MakeHarness();
+        const deferred = Deferred();
+        Mocks.registerLayer.mockReturnValueOnce(deferred.promise);
+        await h.select(h.mesh);
+        await h.click("Translate");
+        await act(async () => h.service.dispose?.());
+        const independent = MakeHarness();
+        await independent.select(independent.mesh);
+        await independent.click("Rotate");
+        expect(Mocks.create.Rotation).toHaveBeenCalledTimes(1);
+        expect(Mocks.disposeLayer).not.toHaveBeenCalled();
+        await act(async () => deferred.resolve());
+        expect(Mocks.disposeLayer).toHaveBeenCalledTimes(1);
+        expect(Mocks.dispose.Rotation).not.toHaveBeenCalled();
     });
 });

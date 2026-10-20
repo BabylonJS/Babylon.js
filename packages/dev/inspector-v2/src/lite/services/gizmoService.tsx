@@ -43,6 +43,9 @@ import { GetSceneContexts, GetSceneNodes, InspectorUtilityScenes, IsSceneNode } 
 
 type GizmoMode = "translate" | "rotate" | "scale" | "boundingBox";
 
+// Registration can outlive a disposed Inspector. Its replacement must wait for that layer to retire.
+const PendingGizmoCreations = new WeakMap<EngineContext["canvas"], Promise<void>>();
+
 function CreateGizmo(engine: EngineContext, layer: UtilityLayer, mode: GizmoMode) {
     switch (mode) {
         case "translate": {
@@ -137,43 +140,62 @@ export const GizmoServiceDefinition: ServiceDefinition<[], [IEngineContext, IShe
                             active.gizmo.setLocalCoordinates?.(localCoordinates);
                         } else {
                             const nextMode = mode;
-                            const layer = createUtilityLayer(engine, target.scene);
-                            InspectorUtilityScenes.add(layer.scene);
-                            let gizmo: ReturnType<typeof CreateGizmo> | undefined;
-                            let unbindCameraGuard: (() => void) | undefined;
-                            let retained = false;
+                            const previousCreation = PendingGizmoCreations.get(engine.canvas);
+                            let releaseCreation!: () => void;
+                            const creation = new Promise<void>((resolve) => {
+                                releaseCreation = resolve;
+                            });
+                            PendingGizmoCreations.set(engine.canvas, creation);
                             try {
-                                gizmo = CreateGizmo(engine, layer, nextMode);
-                                if ("ownerDocument" in engine.canvas) {
-                                    const canvas = engine.canvas;
-                                    const onPointerMove = (event: PointerEvent) => {
-                                        if (isGizmoDragging(canvas) || isGizmoPickPending(canvas)) {
-                                            event.stopPropagation();
-                                        }
-                                    };
-                                    // Run after Lite's capture-phase dispatcher, before application camera controls.
-                                    canvas.addEventListener("pointermove", onPointerMove, true);
-                                    unbindCameraGuard = () => canvas.removeEventListener("pointermove", onPointerMove, true);
+                                if (previousCreation) {
+                                    // eslint-disable-next-line no-await-in-loop
+                                    await previousCreation;
+                                    if (disposed || requestGeneration !== generation) {
+                                        continue;
+                                    }
                                 }
-                                gizmo.attach(target.node);
-                                gizmo.setLocalCoordinates?.(localCoordinates);
-                                // Serialize creation: Lite allows only one gizmo dispatcher/layer per canvas.
-                                // Keep resources alive until registration settles, even if selection changes.
-                                // eslint-disable-next-line no-await-in-loop
-                                await registerUtilityLayer(layer);
-                                const latest = getTarget();
-                                if (!disposed && mode === nextMode && latest?.scene === target.scene && latest.node === target.node) {
+                                const layer = createUtilityLayer(engine, target.scene);
+                                InspectorUtilityScenes.add(layer.scene);
+                                let gizmo: ReturnType<typeof CreateGizmo> | undefined;
+                                let unbindCameraGuard: (() => void) | undefined;
+                                let retained = false;
+                                try {
+                                    gizmo = CreateGizmo(engine, layer, nextMode);
+                                    if ("ownerDocument" in engine.canvas) {
+                                        const canvas = engine.canvas;
+                                        const onPointerMove = (event: PointerEvent) => {
+                                            if (isGizmoDragging(canvas) || isGizmoPickPending(canvas)) {
+                                                event.stopPropagation();
+                                            }
+                                        };
+                                        // Run after Lite's capture-phase dispatcher, before application camera controls.
+                                        canvas.addEventListener("pointermove", onPointerMove, true);
+                                        unbindCameraGuard = () => canvas.removeEventListener("pointermove", onPointerMove, true);
+                                    }
+                                    gizmo.attach(target.node);
                                     gizmo.setLocalCoordinates?.(localCoordinates);
-                                    // eslint-disable-next-line require-atomic-updates -- Target and mode are rechecked after registration.
-                                    active = { ...target, mode: nextMode, layer, gizmo, unbindCameraGuard };
-                                    retained = true;
+                                    // Keep resources alive until registration settles, even if selection or Inspector changes.
+                                    // eslint-disable-next-line no-await-in-loop
+                                    await registerUtilityLayer(layer);
+                                    const latest = getTarget();
+                                    if (!disposed && mode === nextMode && latest?.scene === target.scene && latest.node === target.node) {
+                                        gizmo.setLocalCoordinates?.(localCoordinates);
+                                        // eslint-disable-next-line require-atomic-updates -- Target and mode are rechecked after registration.
+                                        active = { ...target, mode: nextMode, layer, gizmo, unbindCameraGuard };
+                                        retained = true;
+                                    }
+                                } finally {
+                                    if (!retained) {
+                                        unbindCameraGuard?.();
+                                        gizmo?.dispose();
+                                        disposeUtilityLayer(layer);
+                                    }
                                 }
                             } finally {
-                                if (!retained) {
-                                    unbindCameraGuard?.();
-                                    gizmo?.dispose();
-                                    disposeUtilityLayer(layer);
+                                if (PendingGizmoCreations.get(engine.canvas) === creation) {
+                                    PendingGizmoCreations.delete(engine.canvas);
                                 }
+                                releaseCreation();
                             }
                         }
                     }
