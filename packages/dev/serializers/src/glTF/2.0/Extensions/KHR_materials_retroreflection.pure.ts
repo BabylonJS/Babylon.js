@@ -90,7 +90,7 @@ export class KHR_materials_retroreflection implements IGLTFExporterExtensionV2 {
     }
 
     private _isExtensionEnabled(material: OpenPBRMaterial): boolean {
-        return material.specularRetroreflectivity !== 0 || !!material.specularRetroreflectivityTexture;
+        return this.enabled && (material.specularRetroreflectivity !== 0 || !!material.specularRetroreflectivityTexture);
     }
 }
 

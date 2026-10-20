@@ -9,7 +9,8 @@ import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
-import { RegisterKHR_materials_retroreflection } from "serializers/glTF/2.0/Extensions/KHR_materials_retroreflection.pure";
+import { KHR_materials_retroreflection, RegisterKHR_materials_retroreflection } from "serializers/glTF/2.0/Extensions/KHR_materials_retroreflection.pure";
+import { GLTFExporter } from "serializers/glTF/2.0/glTFExporter";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
 interface IRetroreflectionExport {
@@ -80,6 +81,30 @@ describe("KHR_materials_retroreflection glTF exporter", () => {
         expect(glTF.extensionsUsed).toContain("KHR_materials_retroreflection");
         expect(glTF.extensionsRequired ?? []).not.toContain("KHR_materials_retroreflection");
         expect(extension).toEqual({ retroreflectionFactor: 0.6 });
+    });
+
+    it("omits material data and textures when the exporter extension is disabled", async () => {
+        const texture = new Texture("retro.png", scene, { buffer: OnePixelRedPng, mimeType: "image/png" });
+        texture.getInternalTexture()!._buffer = OnePixelRedPng;
+        material.specularRetroreflectivity = 0.75;
+        material.specularRetroreflectivityTexture = texture;
+
+        GLTFExporter.UnregisterExtension("KHR_materials_retroreflection");
+        GLTFExporter.RegisterExtension("KHR_materials_retroreflection", (exporter) => {
+            const extension = new KHR_materials_retroreflection(exporter);
+            extension.enabled = false;
+            return extension;
+        });
+        try {
+            const glTF = await exportSceneAsync();
+
+            expect.soft(glTF.materials[0].extensions?.KHR_materials_retroreflection).toBeUndefined();
+            expect.soft(glTF.textures ?? []).toHaveLength(0);
+            expect(glTF.extensionsUsed ?? []).not.toContain("KHR_materials_retroreflection");
+        } finally {
+            GLTFExporter.UnregisterExtension("KHR_materials_retroreflection");
+            GLTFExporter.RegisterExtension("KHR_materials_retroreflection", (exporter) => new KHR_materials_retroreflection(exporter));
+        }
     });
 
     it.each([

@@ -463,7 +463,10 @@ export class GLTFLoader implements IGLTFLoader {
                 await this._loadExtensionsAsync();
 
                 if (!this.parent.skipMaterials) {
-                    const needsOpenPBR = this.parent.useOpenPBR || this.isExtensionUsed("KHR_materials_openpbr") || this.isExtensionUsed("KHR_materials_retroreflection");
+                    const needsOpenPBR =
+                        this.parent.useOpenPBR ||
+                        this.isExtensionUsed("KHR_materials_openpbr") ||
+                        this._extensions.some((extension) => extension.name === "KHR_materials_retroreflection" && extension.enabled);
 
                     let needsPBR = false;
                     if (!this.parent.useOpenPBR) {
@@ -2366,13 +2369,18 @@ export class GLTFLoader implements IGLTFLoader {
 
     /**
      * Selects the appropriate PBR material implementation for a given glTF material.
-     * Uses OpenPBR when the material carries a "KHR_materials_openpbr" extension or when
-     * the loader-level `useOpenPBR` flag is set; falls back to standard PBR otherwise.
+     * Uses OpenPBR for "KHR_materials_openpbr", enabled retroreflection, or the
+     * loader-level `useOpenPBR` flag; falls back to standard PBR otherwise.
      * @param material The glTF material
      * @returns The matching loaded implementation
      */
     private _selectImplForGltfMaterial(material: IMaterial): Readonly<PBRMaterialImplementation> {
-        if (this.parent.useOpenPBR || material.extensions?.["KHR_materials_openpbr"] || material.extensions?.["KHR_materials_retroreflection"]) {
+        if (
+            this.parent.useOpenPBR ||
+            material.extensions?.["KHR_materials_openpbr"] ||
+            (material.extensions?.["KHR_materials_retroreflection"] &&
+                this._extensions.some((extension) => extension.name === "KHR_materials_retroreflection" && extension.enabled))
+        ) {
             const impl = this._pbrMaterialImpls.get("openpbr");
             if (impl) {
                 return impl;

@@ -78,6 +78,42 @@ describe("KHR_materials_retroreflection", () => {
         expect(material.specularRetroreflectivity).toBe(0);
     });
 
+    it("uses ordinary PBR when the optional retroreflection extension is disabled", async () => {
+        const result = await ImportMeshAsync(`data:${buildRetroreflectionGltf(0.75)}`, scene, {
+            pluginOptions: {
+                gltf: {
+                    useOpenPBR: false,
+                    extensionOptions: { KHR_materials_retroreflection: { enabled: false } },
+                },
+            },
+        });
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")?.material;
+
+        expect(material).toBeInstanceOf(PBRMaterial);
+        expect(material).not.toBeInstanceOf(OpenPBRMaterial);
+    });
+
+    it.each(["loader option", "material extension"])("preserves explicit OpenPBR selection through the %s when retroreflection is disabled", async (selection) => {
+        const gltf = JSON.parse(buildRetroreflectionGltf(0.75));
+        if (selection === "material extension") {
+            gltf.extensionsUsed.push("KHR_materials_openpbr");
+            gltf.materials[0].extensions.KHR_materials_openpbr = {};
+        }
+
+        const result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, {
+            pluginOptions: {
+                gltf: {
+                    useOpenPBR: selection === "loader option",
+                    extensionOptions: { KHR_materials_retroreflection: { enabled: false } },
+                },
+            },
+        });
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")?.material as OpenPBRMaterial;
+
+        expect(material).toBeInstanceOf(OpenPBRMaterial);
+        expect(material.specularRetroreflectivity).toBe(0);
+    });
+
     it("loads the factor texture as linear data and applies textureInfo transforms", async () => {
         const gltf = JSON.parse(buildRetroreflectionGltf(0.5));
         gltf.extensionsUsed.push("KHR_texture_transform");
