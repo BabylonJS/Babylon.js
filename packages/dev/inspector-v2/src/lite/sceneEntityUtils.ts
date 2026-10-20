@@ -20,6 +20,9 @@ import {
     type Vec3,
 } from "@babylonjs/lite";
 
+/** Inspector bounds helpers must retain their source-dependent transform and cannot participate in reparenting. */
+export const InspectorBoundsHelpers = new WeakSet<SceneNode>();
+
 export function GetSceneContexts(engine: EngineContext): readonly SceneContext[] {
     return engine.surfaces.flatMap((surface) => getRenderingContexts(surface).filter((context): context is SceneContext => getRenderingContextKind(context) === "scene"));
 }

@@ -39,6 +39,7 @@ const DebugPane: FunctionComponent<{ controller: DebugController }> = (props) =>
                         <SwitchPropertyLine
                             label="Ground Grid"
                             ariaLabel="Ground Grid"
+                            controlled
                             description="Show a 100-unit ground grid at the scene origin."
                             value={state.grid}
                             onChange={(value) => controller.setGrid(value)}
@@ -46,6 +47,7 @@ const DebugPane: FunctionComponent<{ controller: DebugController }> = (props) =>
                         <SwitchPropertyLine
                             label="Bounding Boxes"
                             ariaLabel="Bounding Boxes"
+                            controlled
                             description="Show mesh-local bounds that follow transforms every frame. Geometry and visibility updates follow Inspector's watch mode; deformations and individual thin instances are not included."
                             value={state.bounds}
                             onChange={(value) => controller.setBounds(value)}

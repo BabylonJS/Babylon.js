@@ -63,6 +63,9 @@ closing Inspector removes only the meshes it created. Cleanup detaches any
 application nodes parented under helpers while preserving their world transforms.
 Deleting a grid in Explorer disables it; deleting a bounding-box helper recreates
 that box on the next Inspector refresh while Bounding Boxes remains enabled.
+Bounds helpers cannot be dragged or used as parenting targets in Explorer, preventing
+cycles through their source-dependent transforms. Failed helper creation leaves its
+switch off and displays an error so it can be retried.
 
 The **Tools** pane captures the primary or an auxiliary surface. **Capture Screenshot**
 downloads a PNG of the final presented frame at the canvas's native resolution,
@@ -72,11 +75,13 @@ render loop. It does not resize or re-render the scene at a custom resolution.
 
 **Record Video** records an HTML canvas using `captureStream` and `MediaRecorder`;
 **Stop Recording** downloads WebM (or MP4 when that is the available format).
-Recording continues when changing Inspector tabs. Surface changes are disabled
-during capture; surface-list updates follow Inspector's watch mode. Removing the
-surface or closing Inspector cancels the operation, releases recording tracks, and prevents stale
-downloads. Capture failures appear in the pane. Offscreen canvases and browsers
-without these media APIs show video recording as unavailable.
+Recording continues when changing Inspector tabs or closing an undocked pane to
+redock it. Screenshots and videos download through a live document rather than an
+unloaded popup. Surface changes are disabled during capture; surface-list updates
+follow Inspector's watch mode. Removing the surface or closing Inspector cancels
+the operation, releases recording tracks, and prevents stale downloads. Capture
+failures appear in the pane. Offscreen canvases and browsers without these media
+APIs show video recording as unavailable.
 
 Lite does not expose the full Inspector's global feature switches, physics/name
 helpers, equirectangular capture, or scene replay APIs. These tools are not imported

@@ -9,6 +9,7 @@ type LiteTestWindow = Window &
         liteSecondarySurface: SurfaceContext;
         litePrimaryScene: SceneContext;
         liteAnimationGroups: AnimationGroup[];
+        resumeCaptureEncoding?: () => void;
     };
 
 const TestUrl = `http://localhost:${process.env.INSPECTOR_TEST_PORT ?? "9001"}/?experience=lite`;
@@ -27,6 +28,19 @@ async function OpenTools(page: Page): Promise<void> {
     await page.goto(TestUrl);
     await page.waitForFunction(() => "liteEngine" in window);
     await page.locator('[role="radio"][value="Tools"]').click();
+}
+
+async function UndockTools(page: Page): Promise<Page> {
+    const container = page
+        .getByText("Tools", { exact: true })
+        .and(page.locator("span"))
+        .locator("xpath=ancestor::div[.//button[contains(@class,'fui-SplitButton__menuButton')]][1]");
+    await container.locator(".fui-SplitButton__menuButton").last().click();
+    const popupPromise = page.waitForEvent("popup");
+    await page.getByRole("menuitem", { name: "Undock", exact: true }).click();
+    const popup = await popupPromise;
+    await expect(popup.getByRole("button", { name: "Capture Screenshot", exact: true })).toBeVisible();
+    return popup;
 }
 
 async function GetCanvasPixelsAsync(page: Page): Promise<Buffer> {
@@ -97,59 +111,99 @@ for (const mode of ["filtered", "hidden"] as const) {
     });
 }
 
-test("Lite Inspector video capture survives tab changes and downloads playable canvas content", async ({ page }) => {
+for (const lifetime of ["tab changes", "popup closure and redocking"] as const) {
+    test(`Lite Inspector video capture survives ${lifetime} and downloads playable canvas content`, async ({ page }) => {
+        const errors: string[] = [];
+        page.on("pageerror", (error) => errors.push(error.message));
+        await OpenTools(page);
+        const recordingPage = lifetime === "tab changes" ? page : await UndockTools(page);
+        if (recordingPage !== page) {
+            recordingPage.on("pageerror", (error) => errors.push(error.message));
+        }
+        await recordingPage.getByRole("button", { name: "Record Video", exact: true }).click();
+        await expect(recordingPage.getByRole("button", { name: "Stop Recording", exact: true })).toBeVisible();
+        await expect(recordingPage.getByRole("combobox")).toBeDisabled();
+        if (recordingPage === page) {
+            await page.locator('[role="radio"][value="Debug"]').click();
+        } else {
+            await recordingPage.close();
+        }
+        await page.waitForTimeout(1500);
+        await page.locator('[role="radio"][value="Tools"]').click();
+        const downloadPromise = page.waitForEvent("download");
+        await page.getByRole("button", { name: "Stop Recording", exact: true }).click();
+        const download = await downloadPromise;
+        expect(download.suggestedFilename()).toMatch(/^recording\.(webm|mp4)$/);
+        const data = await readFile((await download.path())!);
+        expect(data.length).toBeGreaterThan(1000);
+        const video = await page.evaluate(async (base64) => {
+            const bytes = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
+            const url = URL.createObjectURL(new Blob([bytes]));
+            const element = document.createElement("video");
+            element.muted = true;
+            element.src = url;
+            try {
+                await new Promise<void>((resolve, reject) => {
+                    element.onloadeddata = () => resolve();
+                    element.onerror = () => reject(new Error("The recorded video could not be decoded."));
+                });
+                // Canvas capture tracks can begin with a blank frame before the next presentation.
+                await new Promise<void>((resolve) => {
+                    element.onseeked = () => resolve();
+                    element.currentTime = 0.5;
+                });
+                const canvas = document.createElement("canvas");
+                canvas.width = element.videoWidth;
+                canvas.height = element.videoHeight;
+                const context = canvas.getContext("2d")!;
+                context.drawImage(element, 0, 0);
+                const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+                let minimum = 255;
+                let maximum = 0;
+                for (let index = 0; index < pixels.length; index += 4) {
+                    minimum = Math.min(minimum, pixels[index]);
+                    maximum = Math.max(maximum, pixels[index]);
+                }
+                return { width: element.videoWidth, height: element.videoHeight, range: maximum - minimum };
+            } finally {
+                URL.revokeObjectURL(url);
+            }
+        }, data.toString("base64"));
+        expect(video.width).toBeGreaterThan(0);
+        expect(video.height).toBeGreaterThan(0);
+        expect(video.range).toBeGreaterThan(20);
+        await expect(page.getByRole("button", { name: "Record Video", exact: true })).toBeEnabled();
+        expect(errors).toEqual([]);
+    });
+}
+
+test("Lite Inspector screenshot completion survives popup closure during PNG encoding", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await OpenTools(page);
-    await page.getByRole("button", { name: "Record Video", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Stop Recording", exact: true })).toBeVisible();
-    await expect(page.getByRole("combobox")).toBeDisabled();
-    await page.locator('[role="radio"][value="Debug"]').click();
-    await page.waitForTimeout(1500);
-    await page.locator('[role="radio"][value="Tools"]').click();
+    const popup = await UndockTools(page);
+    popup.on("pageerror", (error) => errors.push(error.message));
+    await page.evaluate(() => {
+        const toBlob = HTMLCanvasElement.prototype.toBlob;
+        HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
+            HTMLCanvasElement.prototype.toBlob = toBlob;
+            (window as LiteTestWindow).resumeCaptureEncoding = () => this.toBlob(callback, type, quality);
+        };
+    });
     const downloadPromise = page.waitForEvent("download");
-    await page.getByRole("button", { name: "Stop Recording", exact: true }).click();
+    await popup.getByRole("button", { name: "Capture Screenshot", exact: true }).click();
+    await page.waitForFunction(() => !!(window as LiteTestWindow).resumeCaptureEncoding);
+    await popup.close();
+    await page.locator('[role="radio"][value="Tools"]').click();
+    await expect(page.getByRole("button", { name: "Capturing Screenshot...", exact: true })).toBeDisabled();
+    await page.evaluate(() => (window as LiteTestWindow).resumeCaptureEncoding!());
     const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/^recording\.(webm|mp4)$/);
-    const data = await readFile((await download.path())!);
-    expect(data.length).toBeGreaterThan(1000);
-    const video = await page.evaluate(async (base64) => {
-        const bytes = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
-        const url = URL.createObjectURL(new Blob([bytes]));
-        const element = document.createElement("video");
-        element.muted = true;
-        element.src = url;
-        try {
-            await new Promise<void>((resolve, reject) => {
-                element.onloadeddata = () => resolve();
-                element.onerror = () => reject(new Error("The recorded video could not be decoded."));
-            });
-            // Canvas capture tracks can begin with a blank frame before the next presentation.
-            await new Promise<void>((resolve) => {
-                element.onseeked = () => resolve();
-                element.currentTime = 0.5;
-            });
-            const canvas = document.createElement("canvas");
-            canvas.width = element.videoWidth;
-            canvas.height = element.videoHeight;
-            const context = canvas.getContext("2d")!;
-            context.drawImage(element, 0, 0);
-            const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
-            let minimum = 255;
-            let maximum = 0;
-            for (let index = 0; index < pixels.length; index += 4) {
-                minimum = Math.min(minimum, pixels[index]);
-                maximum = Math.max(maximum, pixels[index]);
-            }
-            return { width: element.videoWidth, height: element.videoHeight, range: maximum - minimum };
-        } finally {
-            URL.revokeObjectURL(url);
-        }
-    }, data.toString("base64"));
-    expect(video.width).toBeGreaterThan(0);
-    expect(video.height).toBeGreaterThan(0);
-    expect(video.range).toBeGreaterThan(20);
-    await expect(page.getByRole("button", { name: "Record Video", exact: true })).toBeEnabled();
+    expect(download.suggestedFilename()).toBe("screenshot.png");
+    const image = await readFile((await download.path())!);
+    const dimensions = await page.locator("#canvas").evaluate((canvas: HTMLCanvasElement) => ({ width: canvas.width, height: canvas.height }));
+    expect(image.readUInt32BE(16)).toBe(dimensions.width);
+    expect(image.readUInt32BE(20)).toBe(dimensions.height);
+    await expect(page.getByRole("button", { name: "Capture Screenshot", exact: true })).toBeEnabled();
     expect(errors).toEqual([]);
 });
 

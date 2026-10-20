@@ -2,6 +2,7 @@ import { type EngineContext, type Mesh, type SceneContext } from "@babylonjs/lit
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DebugController } from "../../src/lite/services/panes/debugController";
+import { InspectorBoundsHelpers } from "../../src/lite/sceneEntityUtils";
 
 const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose, Parent } = vi.hoisted(() => ({
     Ground: vi.fn(),
@@ -103,6 +104,8 @@ describe("Babylon Lite debug helpers", () => {
         ]);
         const box = h.scene.meshes[2];
         expect(box.pickable).toBe(false);
+        expect(InspectorBoundsHelpers.has(box)).toBe(true);
+        expect(InspectorBoundsHelpers.has(mesh)).toBe(false);
         expect(box.parent?.worldMatrix).toBe(mesh.worldMatrix);
         const snapshot = h.controller.getSnapshot();
         Object.assign(mesh, { worldMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -10, -20, -30, 1], worldMatrixVersion: 1 });

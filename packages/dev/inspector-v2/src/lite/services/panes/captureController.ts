@@ -60,7 +60,7 @@ export class CaptureController {
 
     /**
      * Downloads the next presented frame as a native-resolution PNG.
-     * @param document The mounted pane's document, used for encoding and downloading.
+     * @param document A fallback UI document when the engine's owning document is unavailable.
      */
     public async screenshotAsync(document: Document): Promise<void> {
         if (this._disposed || this.pending || this.recording) {
@@ -76,7 +76,7 @@ export class CaptureController {
             if (!this._isCurrent(generation, surface)) {
                 return;
             }
-            const canvas = document.createElement("canvas");
+            const canvas = this._getDocument(document).createElement("canvas");
             canvas.width = screenshot.width;
             canvas.height = screenshot.height;
             const context = canvas.getContext("2d");
@@ -88,7 +88,7 @@ export class CaptureController {
             context.putImageData(image, 0, 0);
             const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => (value ? resolve(value) : reject(new Error("PNG encoding failed."))), "image/png"));
             if (this._isCurrent(generation, surface)) {
-                Download(blob, "screenshot.png", document);
+                Download(blob, "screenshot.png", this._getDocument(document));
             }
         } catch (error) {
             if (this._isCurrent(generation, surface)) {
@@ -105,7 +105,7 @@ export class CaptureController {
 
     /**
      * Starts recording independently of the pane's mounted lifetime.
-     * @param document The mounted pane's document, used for downloading.
+     * @param document A fallback UI document when the engine's owning document is unavailable.
      */
     public startRecording(document: Document): void {
         if (this._disposed || this.pending || this.recording) {
@@ -158,7 +158,7 @@ export class CaptureController {
                     if (!chunks.length) {
                         throw new Error("The recorder produced no video data.");
                     }
-                    Download(new Blob(chunks, { type: recorder.mimeType }), mimeType.startsWith("video/mp4") ? "recording.mp4" : "recording.webm", document);
+                    Download(new Blob(chunks, { type: recorder.mimeType }), mimeType.startsWith("video/mp4") ? "recording.mp4" : "recording.webm", this._getDocument(document));
                 } catch (error) {
                     this.error = `Video capture failed: ${error instanceof Error ? error.message : String(error)}`;
                 }
@@ -188,6 +188,18 @@ export class CaptureController {
         this._generation++;
         this._cancelRecording();
         this.onChanged.clear();
+    }
+
+    private _getDocument(document: Document): Document {
+        const canvas = this._engine.canvas;
+        const hostDocument = "ownerDocument" in canvas ? canvas.ownerDocument : undefined;
+        for (const candidate of [hostDocument, document, globalThis.document]) {
+            const view = candidate?.defaultView;
+            if (view && !view.closed && view.document === candidate) {
+                return candidate;
+            }
+        }
+        throw new Error("No active document is available for the capture download.");
     }
 
     private _isCurrent(generation: number, surface: SurfaceContext): boolean {

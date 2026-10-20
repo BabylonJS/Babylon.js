@@ -22,6 +22,10 @@ export type SwitchProps = PrimitiveProps<boolean> & {
      * Accessible name for switches whose visible label is rendered separately.
      */
     ariaLabel?: string;
+    /**
+     * When true, value controls the checked state without optimistic local updates. Defaults to false.
+     */
+    controlled?: boolean;
 };
 
 /**
@@ -43,14 +47,16 @@ export const Switch: FunctionComponent<SwitchProps> = (props) => {
 
     const onChange = (event: ChangeEvent<HTMLInputElement>, _: SwitchOnChangeData) => {
         props.onChange && props.onChange(event.target.checked);
-        setChecked(event.target.checked);
+        if (!props.controlled) {
+            setChecked(event.target.checked);
+        }
     };
 
     return (
         <FluentSwitch
             className={mergeClasses(classes.switch, size === "small" && classes.switchSmall)}
             indicator={{ className: classes.indicator }}
-            checked={checked}
+            checked={props.controlled ? (props.value ?? false) : checked}
             aria-label={props.ariaLabel}
             disabled={props.disabled}
             onChange={onChange}

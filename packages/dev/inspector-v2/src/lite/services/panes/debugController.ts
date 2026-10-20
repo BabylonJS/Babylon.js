@@ -15,7 +15,7 @@ import {
 
 import { Observable } from "core/Misc/observable";
 
-import { GetSceneContexts } from "../../sceneEntityUtils";
+import { GetSceneContexts, InspectorBoundsHelpers } from "../../sceneEntityUtils";
 
 const BoxEdges = [
     [0, 1],
@@ -247,6 +247,7 @@ export class DebugController {
                 if (!box) {
                     box = createLineSystem(this._engine, { name: `Inspector Bounds: ${mesh.name}`, lines, color: { r: 1, g: 0.7, b: 0, a: 1 } });
                     box.pickable = false;
+                    InspectorBoundsHelpers.add(box);
                     this._meshes.add(box);
                     helpers.bounds.set(mesh, box);
                     // Inherit transforms without changing the application's node hierarchy.

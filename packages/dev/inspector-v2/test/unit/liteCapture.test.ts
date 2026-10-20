@@ -200,6 +200,68 @@ describe("Babylon Lite capture controller", () => {
         expect(controller.pending).toBe(false);
     });
 
+    it("downloads a recording through the engine document after its initial pane document unloads", () => {
+        const frame = document.createElement("iframe");
+        document.body.appendChild(frame);
+        const popup = frame.contentDocument!;
+        const createElement = vi.spyOn(popup, "createElement");
+        controller.startRecording(popup);
+        frame.remove();
+        controller.stopRecording();
+        recorder?.finish();
+        expect(createElement).not.toHaveBeenCalled();
+        expect(click.mock.instances[0]).toHaveProperty("ownerDocument", document);
+        expect(click.mock.instances[0]).toHaveProperty("download", "recording.webm");
+        expect(stopTrack).toHaveBeenCalledTimes(1);
+        expect(controller.recording).toBe(false);
+        expect(controller.pending).toBe(false);
+        expect(controller.error).toBeUndefined();
+    });
+
+    it("encodes and downloads a screenshot after its initiating pane document unloads during readback", async () => {
+        const frame = document.createElement("iframe");
+        document.body.appendChild(frame);
+        const popup = frame.contentDocument!;
+        const createElement = vi.spyOn(popup, "createElement");
+        const deferred = Deferred<Screenshot>();
+        CaptureScreenshot.mockReturnValue(deferred.promise);
+        const capture = controller.screenshotAsync(popup);
+        frame.remove();
+        deferred.resolve(Shot);
+        await capture;
+        expect(createElement).not.toHaveBeenCalled();
+        expect(click.mock.instances[0]).toHaveProperty("ownerDocument", document);
+        expect(controller.pending).toBe(false);
+        expect(controller.error).toBeUndefined();
+    });
+
+    it("resolves a live document again when PNG encoding completes after pane closure", async () => {
+        const frame = document.createElement("iframe");
+        document.body.appendChild(frame);
+        const popup = frame.contentDocument!;
+        const createElement = vi.spyOn(popup, "createElement");
+        vi.mocked(HTMLCanvasElement.prototype.toBlob).mockImplementation((callback) => {
+            encodingCallback = callback;
+        });
+        const capture = controller.screenshotAsync(popup);
+        await Promise.resolve();
+        frame.remove();
+        encodingCallback(new Blob(["png"], { type: "image/png" }));
+        await capture;
+        expect(createElement).not.toHaveBeenCalled();
+        expect(click.mock.instances[0]).toHaveProperty("ownerDocument", document);
+        expect(controller.pending).toBe(false);
+        expect(controller.error).toBeUndefined();
+    });
+
+    it("falls back to the active global document for offscreen screenshots when the UI document is inactive", async () => {
+        Object.assign(engine, { canvas: {} });
+        const inactiveDocument = document.implementation.createHTMLDocument();
+        await controller.screenshotAsync(inactiveDocument);
+        expect(click.mock.instances[0]).toHaveProperty("ownerDocument", document);
+        expect(controller.error).toBeUndefined();
+    });
+
     it.each(["dispose", "surfaceRemoved"] as const)("cancels recording and releases tracks without downloading after %s", (action) => {
         if (action === "surfaceRemoved") {
             const auxiliary = { canvas: engine.canvas } as SurfaceContext;
