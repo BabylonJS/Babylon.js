@@ -69,7 +69,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #if HAS_DEPTH_TEXTURE
                 // If there's no depth i.e., missing patch of the planet, but it should be a ground pixel,
                 // then make the pixel opaque so that it does not show the background through the planet.
-                fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb, select(fragmentOutputs.color.a, 1., depth >= 1.));
+                fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb, select(fragmentOutputs.color.a, 1., isAtOrBeyondFarPlane(depth)));
             #endif
 
         }
@@ -92,14 +92,18 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         }
 
         #if HAS_DEPTH_TEXTURE
-            let distanceFromCamera =
-                reconstructDistanceFromCamera(
-                    depth,
-                    rayDirection,
-                    atmosphere.cameraForward,
-                    atmosphere.cameraNearPlane);
-            let distanceToSurface = distanceFromCamera / 1000.;
+            let isBackground = isAtOrBeyondFarPlane(depth);
+            var distanceToSurface = 0.;
+            if (!isBackground) {
+                distanceToSurface =
+                    reconstructDistanceFromCamera(
+                        depth,
+                        rayDirection,
+                        atmosphere.cameraForward,
+                        atmosphere.cameraNearPlane) / 1000.;
+            }
         #else
+            let isBackground = false;
             let distanceToSurface = 0.;
         #endif
 
@@ -122,7 +126,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
         fragmentOutputs.color = vec4f(radiance, transparency);
 
-        if (distanceToSurface > 0.) {
+        if (isBackground || distanceToSurface > 0.) {
 
             fragmentOutputs.color =
                 applyAerialPerspectiveRadianceBias(
@@ -132,7 +136,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #if HAS_DEPTH_TEXTURE
                 // If there's no depth i.e., missing patch of the planet, but it should be a ground pixel,
                 // then make the pixel opaque so that it does not show background through the planet.
-                fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb, select(fragmentOutputs.color.a, 1., depth >= 1.));
+                fragmentOutputs.color = vec4f(fragmentOutputs.color.rgb, select(fragmentOutputs.color.a, 1., isAtOrBeyondFarPlane(depth)));
             #endif
 
         }

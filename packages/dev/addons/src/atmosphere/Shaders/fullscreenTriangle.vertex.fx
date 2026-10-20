@@ -19,7 +19,13 @@ varying vec3 positionOnNearPlane;
 #endif
 
 #if COMPUTE_WORLD_RAY
+#if USE_REVERSE_DEPTHBUFFER
+const float nearPlaneNDC = 1.;
+#elif IS_NDC_HALF_ZRANGE
+const float nearPlaneNDC = 0.;
+#else
 const float nearPlaneNDC = -1.;
+#endif
 #endif
 
 void main() {

@@ -30,7 +30,7 @@ void main() {
 
     // This requires a depth texture value.
     float depth = textureLod(depthTexture, uv, 0.).r;
-    if (depth >= 1.) {
+    if (isAtOrBeyondFarPlane(depth)) {
         discard;
     }
 
