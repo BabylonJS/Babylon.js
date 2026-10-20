@@ -20,5 +20,6 @@ export * from "./flowGraphDelayRegistry";
 export * from "./flowGraphAnimationHelpers";
 export * from "./flowGraphLogger";
 export * from "./flowGraphValidator";
+export { defaultValueParseFunction } from "./serialization";
 export * from "./Blocks/pure";
 export * from "./CustomTypes/pure";
