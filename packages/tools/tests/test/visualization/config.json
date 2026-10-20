@@ -2,6 +2,14 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Raw Texture 2D Array Mipmaps",
+            "playgroundId": "#I5RZPG#1",
+            "referenceImage": "raw-texture-2d-array-mipmaps.png",
+            "renderCount": 1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Textures"]
+        },
+        {
             "title": "Gaussian Point Splatting Raw SOG Fallback",
             "playgroundId": "#J65EJG#0",
             "referenceImage": "gsplat-point-sog-raw.png",
