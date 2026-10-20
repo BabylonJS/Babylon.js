@@ -2,6 +2,48 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Raw Texture 2D Array Mipmaps",
+            "playgroundId": "#I5RZPG#1",
+            "referenceImage": "raw-texture-2d-array-mipmaps.png",
+            "renderCount": 1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Textures"]
+        },
+        {
+            "title": "Gaussian Point Splatting Raw SOG Fallback",
+            "playgroundId": "#J65EJG#0",
+            "referenceImage": "gsplat-point-sog-raw.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "SPLATLoader", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Stream Fallback",
+            "playgroundId": "#QD5HD9#0",
+            "referenceImage": "gsplat-point-sog-stream.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "SPLATLoader", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Right-Handed Depth",
+            "playgroundId": "#F39YWU#2",
+            "referenceImage": "gsplat-point-rh-depth.png",
+            "renderCount": 96,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "Meshes", "Rendering"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Scaled Depth",
+            "playgroundId": "#O4L9TF#0",
+            "referenceImage": "gsplat-point-scaled-depth.png",
+            "renderCount": 245,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "Meshes", "Rendering"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting GLTF",
             "playgroundId": "#WSAFDA#0",
             "referenceImage": "gsplat-splat-gltf.png",
@@ -12,6 +54,13 @@
             "playgroundId": "#418POI#12",
             "renderCount": 15,
             "referenceImage": "gsplat-lod.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Ranged Source Row Boundary",
+            "playgroundId": "#7AZH52#1",
+            "referenceImage": "gsplat-ranged-source-row-boundary.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
             "excludeFromPerformance": true
         },

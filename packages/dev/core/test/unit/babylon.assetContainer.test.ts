@@ -7,6 +7,7 @@ import { AssetContainer } from "core/assetContainer";
 import { NullEngine } from "core/Engines/nullEngine";
 import { LoadAssetContainerFromSerializedScene } from "core/Loading/Plugins/babylonFileLoader";
 import "core/Materials/standardMaterial";
+import { beforeEach, describe, expect, it } from "vitest";
 
 /**
  * Describes the test suite.
@@ -165,5 +166,57 @@ describe("Babylon AssetContainer", () => {
 
         expect(meshObservableFired).toBe(false);
         expect(transformNodeObservableFired).toBe(false);
+    });
+
+    it("disposeObservers", () => {
+        vi.useFakeTimers();
+
+        // Arrange
+        const assetContainer = new AssetContainer(scene);
+        const sceneOnDisposeObserver = scene.onDisposeObservable.observers[0];
+        const engineOnContextRestoredObserver = engine.onContextRestoredObservable.observers[0];
+
+        expect(sceneOnDisposeObserver).toBeDefined();
+        expect(engineOnContextRestoredObserver).toBeDefined();
+
+        const testObserver = scene.onDisposeObservable.add(() => {});
+
+        // Act
+        assetContainer.dispose();
+        vi.advanceTimersByTime(5);
+
+        // Assert
+        expect(scene.onDisposeObservable.observers.includes(sceneOnDisposeObserver)).toBe(false);
+        expect(engine.onContextRestoredObservable.observers.includes(engineOnContextRestoredObserver)).toBe(false);
+        expect(scene.onDisposeObservable.observers.includes(testObserver)).toBe(true);
+
+        vi.useRealTimers();
+    });
+
+    it("sceneDispose", () => {
+        // Arrange
+        const assetCount = 4;
+        const assetContainer = new AssetContainer(scene);
+        for (let i = 0; i < assetCount; i++) {
+            assetContainer.transformNodes.push(new TransformNode(`transformNode${i}`, scene));
+            assetContainer.transformNodes[i]._parentContainer = assetContainer;
+            assetContainer.meshes.push(new Mesh(`mesh${i}`, scene));
+            assetContainer.meshes[i]._parentContainer = assetContainer;
+            assetContainer.meshes[i].parent = assetContainer.transformNodes[i];
+            assetContainer.materials.push(new PBRMaterial(`material${i}`, scene));
+            assetContainer.materials[i]._parentContainer = assetContainer;
+        }
+
+        const spyObserver = vi.fn();
+        scene.onDisposeObservable.add(spyObserver);
+
+        // Act
+        scene.onDisposeObservable.notifyObservers(scene);
+
+        // Assert
+        expect(scene.transformNodes.length).toBe(0);
+        expect(scene.meshes.length).toBe(0);
+        expect(scene.materials.length).toBe(0);
+        expect(spyObserver).toHaveBeenCalledOnce();
     });
 });

@@ -527,8 +527,9 @@ export class FlowGraph {
     /**
      * Starts the flow graph. Initializes the event blocks and starts listening to events.
      * Can also be called to resume from a paused state.
+     * @param skipSceneReadyCheck whether to activate the startup event immediately even when the scene is not yet ready
      */
-    public start() {
+    public start(skipSceneReadyCheck: boolean = false) {
         if (this.state === FlowGraphState.Started) {
             return;
         }
@@ -545,7 +546,7 @@ export class FlowGraph {
         // the flag and handle the ready state ourselves.
         if (!resumingFromPause) {
             this._sceneEventCoordinator.sceneReadyTriggered = false;
-            if (this._scene.isReady(true)) {
+            if (skipSceneReadyCheck || this._scene.isReady(true)) {
                 this._sceneEventCoordinator.sceneReadyTriggered = true;
                 this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
             } else {

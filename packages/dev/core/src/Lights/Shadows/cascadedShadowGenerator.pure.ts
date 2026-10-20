@@ -766,14 +766,18 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @param useRedTextureType Forces the generator to use a Red instead of a RGBA type for the shadow map texture format (default: true)
      */
     constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean, camera?: Nullable<Camera>, useRedTextureType = true) {
+        // A derived class constructor cannot return before calling super(), so report the
+        // unsupported engine with an explicit error.
         if (!CascadedShadowGenerator.IsSupported) {
-            Logger.Error("CascadedShadowMap is not supported by the current engine.");
-            return;
+            throw new Error("CascadedShadowMap is not supported by the current engine.");
         }
 
         super(mapSize, light, usefulFloatFirst, camera, useRedTextureType);
 
-        this.usePercentageCloserFiltering = true;
+        // Without comparison samplers, PCF would fall back to Poisson sampling, which CSM does not support.
+        if (this._scene.getEngine()._features.supportShadowSamplers) {
+            this.usePercentageCloserFiltering = true;
+        }
     }
 
     protected override _initializeGenerator(): void {

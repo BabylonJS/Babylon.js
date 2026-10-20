@@ -594,6 +594,7 @@ export class FlowGraphContext {
 
     public _notifyOnTick(framePayload: IFlowGraphOnTickEventPayload) {
         // set the values as global variables
+        this._setGlobalContextVariable("firstTickPayload", this._getGlobalContextVariable("firstTickPayload", framePayload));
         this._setGlobalContextVariable("timeSinceStart", framePayload.timeSinceStart);
         this._setGlobalContextVariable("deltaTime", framePayload.deltaTime);
         // iterate the pending blocks and run each one's onFrame function

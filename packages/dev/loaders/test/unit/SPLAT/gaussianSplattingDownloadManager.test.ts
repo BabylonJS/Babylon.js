@@ -211,6 +211,79 @@ describe("GaussianSplattingDownloadManager", () => {
         await expect(other).resolves.toBeInstanceOf(ArrayBuffer);
     });
 
+    it("keeps a shared request alive when its first group is cancelled", async () => {
+        const manager = new GaussianSplattingDownloadManager({ maxRetries: 0 });
+        const first = manager.loadFileAsync("shared", "first");
+        const second = manager.loadFileAsync("shared", "second");
+        await FlushAsync();
+        expect(requests).toHaveLength(1);
+
+        manager.cancelGroup("first");
+        await expect(first).rejects.toThrow("cancelled");
+        expect(FindRequest("shared").aborted).toBe(false);
+        expect(manager.isIdle).toBe(false);
+        FindRequest("shared").succeed(new ArrayBuffer(4));
+        await expect(second).resolves.toHaveProperty("byteLength", 4);
+        expect(manager.isIdle).toBe(true);
+    });
+
+    it("keeps the original group alive when a joining group is cancelled", async () => {
+        const manager = new GaussianSplattingDownloadManager();
+        const first = manager.loadFileAsync("shared", "first");
+        const second = manager.loadFileAsync("shared", "second");
+        manager.cancelGroup("second");
+        await expect(second).rejects.toThrow("cancelled");
+        expect(FindRequest("shared").aborted).toBe(false);
+        FindRequest("shared").succeed();
+        await expect(first).resolves.toBeInstanceOf(ArrayBuffer);
+    });
+
+    it("aborts a shared HTTP request once its last group is cancelled", async () => {
+        const manager = new GaussianSplattingDownloadManager({ maxConcurrent: 1 });
+        const first = manager.loadFileAsync("shared", "first");
+        const second = manager.loadFileAsync("shared", "second");
+        const waiting = manager.loadFileAsync("waiting", "third");
+        manager.cancelGroup("first");
+        await expect(first).rejects.toThrow("cancelled");
+        expect(FindRequest("shared").aborted).toBe(false);
+        manager.cancelGroup("second");
+        await expect(second).rejects.toThrow("cancelled");
+        expect(FindRequest("shared").aborted).toBe(true);
+        await FlushAsync();
+        expect(requests.map((request) => request.url)).toEqual(["shared", "waiting"]);
+        FindRequest("waiting").succeed();
+        await expect(waiting).resolves.toBeInstanceOf(ArrayBuffer);
+        expect(manager.isIdle).toBe(true);
+    });
+
+    it("preserves an ungrouped consumer when cancelling a joining group", async () => {
+        const manager = new GaussianSplattingDownloadManager();
+        const grouped = manager.loadFileAsync("shared", "group");
+        const ungrouped = manager.loadFileAsync("shared");
+        manager.cancelGroup("group");
+        await expect(grouped).rejects.toThrow("cancelled");
+        expect(FindRequest("shared").aborted).toBe(false);
+        FindRequest("shared").succeed();
+        await expect(ungrouped).resolves.toBeInstanceOf(ArrayBuffer);
+    });
+
+    it("cleans up failed joined downloads and permits a fresh retry", async () => {
+        const manager = new GaussianSplattingDownloadManager({ maxRetries: 0 });
+        const first = manager.loadFileAsync("shared", "first");
+        const second = manager.loadFileAsync("shared", "second");
+        FindRequest("shared").fail(new Error("network failure"));
+        await expect(first).rejects.toThrow("network failure");
+        await expect(second).rejects.toThrow("network failure");
+        expect(manager.isIdle).toBe(true);
+        expect(() => manager.cancelGroup("first")).not.toThrow();
+        expect(() => manager.cancelGroup("second")).not.toThrow();
+        const retry = manager.loadFileAsync("shared", "second");
+        expect(requests).toHaveLength(2);
+        requests[1].succeed();
+        await expect(retry).resolves.toBeInstanceOf(ArrayBuffer);
+        expect(manager.isIdle).toBe(true);
+    });
+
     it("ignores cancel for an unknown or already-settled URL", async () => {
         const manager = new GaussianSplattingDownloadManager();
         expect(() => manager.cancel("never")).not.toThrow();
