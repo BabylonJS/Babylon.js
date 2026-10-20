@@ -7,6 +7,7 @@ import { type Scene } from "../scene.pure";
 import { type VertexBuffer } from "../Buffers/buffer.pure";
 import { RegisterBufferAlign } from "../Buffers/buffer.align.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { HasStencilAspect } from "../Materials/Textures/textureHelper.functions";
 import { type IInternalTextureLoader } from "../Materials/Textures/Loaders/internalTextureLoader";
 import { _IESTextureLoader } from "../Materials/Textures/Loaders/iesTextureLoader";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
@@ -2925,6 +2926,8 @@ export class ThinNativeEngine extends ThinEngine {
     ): void {
         if (nativeRTWrapper.is3D) {
             this._assertVolumeDepthAttachmentSupported(texture.samples, samples);
+            // Volume slices bind lazily built framebuffers; drop cached slices so the next bind attaches the new depth.
+            nativeRTWrapper._releaseLayerFramebuffers();
             return;
         }
 
@@ -4360,12 +4363,14 @@ export class ThinNativeEngine extends ThinEngine {
                 if (mip !== 0) {
                     throw new Error("NativeEngine: explicit depth attachments on volume render targets only support rendering to mip 0.");
                 }
+                // generateDepth must be set so a depth texture without a native handle yet (created directly on this
+                // volume) is allocated and aliased by the first slice; later slices borrow the existing handle.
                 framebuffer = this._engine.createMultiFrameBuffer!(
                     [nativeTexture],
                     width,
                     height,
-                    nativeRTWrapper._generateStencilBuffer,
-                    false,
+                    HasStencilAspect(depthTexture.format),
+                    true,
                     nativeRTWrapper.samples,
                     [layer],
                     nativeDepth

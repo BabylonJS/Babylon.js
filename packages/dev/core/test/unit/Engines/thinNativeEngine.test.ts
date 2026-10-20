@@ -891,6 +891,42 @@ describe("ThinNativeEngine", () => {
             expect(legacyVolume._depthStencilTexture).toBeNull();
         });
 
+        it("invalidates cached volume slices when depth is created or recreated on the volume", () => {
+            const { engine, released, bound } = createEngine();
+            const rtWrapper = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 4 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+
+            // Cache a slice framebuffer and a nonzero-mip framebuffer before any depth exists.
+            engine.bindFramebuffer(rtWrapper, undefined, undefined, undefined, true, 0, 1);
+            const noDepth = bound();
+            expect(noDepth.explicitDepth).toBeUndefined();
+            engine.bindFramebuffer(rtWrapper, undefined, 32, 32, true, 1, 1);
+            const noDepthMip = bound();
+
+            const depth = rtWrapper.createDepthStencilTexture();
+            expect(released).toContain(noDepth);
+            expect(released).toContain(noDepthMip);
+            engine.bindFramebuffer(rtWrapper, undefined, undefined, undefined, true, 0, 1);
+            const withDepth = bound();
+            expect(withDepth).not.toBe(noDepth);
+            expect(withDepth.multi).toBe(true);
+            expect(withDepth.layers).toEqual([1]);
+            expect(withDepth.explicitDepth).toBe(resourceOf(depth));
+            // A depth texture created on the volume has no native handle yet, so the first slice must request depth
+            // for the native side to allocate and alias it.
+            expect(withDepth.depth).toBe(true);
+            expect(withDepth.stencil).toBe(false);
+            // The previously cached nonzero mip must not bypass the explicit-depth mip rejection.
+            expect(() => engine.bindFramebuffer(rtWrapper, undefined, 32, 32, true, 1, 1)).toThrow("only support rendering to mip 0");
+
+            const recreated = rtWrapper.createDepthStencilTexture(0, true, true);
+            expect(recreated).not.toBe(depth);
+            expect(released).toContain(withDepth);
+            engine.bindFramebuffer(rtWrapper, undefined, undefined, undefined, true, 0, 1);
+            expect(bound()).not.toBe(withDepth);
+            expect(bound().explicitDepth).toBe(resourceOf(recreated));
+            expect(bound().stencil).toBe(true);
+        });
+
         it("rebuilds a layered MRT when its faces, attachments or explicit depth change", () => {
             const { engine, bound } = createEngine();
             const rtWrapper = engine.createMultipleRenderTarget(
