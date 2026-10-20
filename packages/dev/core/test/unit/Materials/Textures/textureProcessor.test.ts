@@ -29,6 +29,7 @@ import {
     MultiScatterToSingleScatterAlbedoAsync,
     SingleScatterToMultiScatterAlbedoAsync,
     CreateFactorOperand,
+    CreateTextureWithFactorOperand,
     ChannelMask,
     TextureChannel,
     TextureColorSpace,
@@ -421,6 +422,22 @@ describe("TextureProcessor", () => {
             expect(r.factor?.a).toBeCloseTo(0.75);
         });
 
+        it("MultiScatterToSingleScatterAlbedo: scales constant multi-scatter before conversion", async () => {
+            const scaled = await MultiScatterToSingleScatterAlbedoAsync(
+                "t",
+                CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 0.5)),
+                scene,
+                1,
+                CreateFactorOperand(new Color4(0.001, 0.001, 0.001, 0.5))
+            );
+            const product = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(new Color4(0.0005, 0.0005, 0.0005, 0.25)), scene, 1);
+
+            expect(scaled.texture).toBeNull();
+            expect(scaled.factor?.r).toBeGreaterThan(0.9);
+            expect(scaled.factor?.r).toBeCloseTo(product.factor!.r, 6);
+            expect(scaled.factor?.a).toBeCloseTo(0.25);
+        });
+
         it("MultiScatterToSingleScatterAlbedo: clamps RGB before conversion", async () => {
             const r = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(new Color4(-1, 2, 0, 1)), scene);
 
@@ -481,6 +498,25 @@ describe("TextureProcessor", () => {
             expect(roundTrip.factor?.r).toBeCloseTo(multi.r, 3);
             expect(roundTrip.factor?.g).toBeCloseTo(multi.g, 3);
             expect(roundTrip.factor?.b).toBeCloseTo(multi.b, 3);
+        });
+
+        // The renderer clamps anisotropy to 0.9999. Unclamped, aniso = 1 makes s^2 = (1 - rho_ss) / (1 - rho_ss) = 1 for
+        // every albedo below 1, so the inverse would export a black multi-scatter color.
+        it("SingleScatterToMultiScatterAlbedo: clamps anisotropy like the renderer", async () => {
+            const single = CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 1));
+            const atOne = await SingleScatterToMultiScatterAlbedoAsync("t", single, scene, 1);
+            const atClamp = await SingleScatterToMultiScatterAlbedoAsync("t", single, scene, 0.9999);
+            const atMinusOne = await SingleScatterToMultiScatterAlbedoAsync("t", single, scene, -1);
+            const atMinusClamp = await SingleScatterToMultiScatterAlbedoAsync("t", single, scene, -0.9999);
+
+            expect(atOne.factor!.r).toBeGreaterThan(1e-5);
+            expect(atOne.factor!.r).toBe(atClamp.factor!.r);
+            expect(atMinusOne.factor!.r).toBe(atMinusClamp.factor!.r);
+
+            // Converting back at the same anisotropy recovers the single-scatter albedo. The fitted forward and inverse
+            // coefficients agree to about 3% this close to s = 1.
+            const roundTrip = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(atOne.factor!), scene, 1);
+            expect(Math.abs(roundTrip.factor!.r - 0.5)).toBeLessThan(0.02);
         });
 
         describe("outputChannelMask", () => {
@@ -741,6 +777,23 @@ describe("TextureProcessor", () => {
             await MultiScatterToSingleScatterAlbedoAsync("t", { texture: tex }, scene);
 
             expect(_capturedPTs[0].getDefines()).toContain("OP_MULTI_SCATTER_TO_SINGLE_SCATTER");
+        });
+
+        it("MultiScatterToSingleScatterAlbedoAsync fuses the scale operand into the conversion pass", async () => {
+            await MultiScatterToSingleScatterAlbedoAsync(
+                "t",
+                CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 1)),
+                scene,
+                1,
+                CreateTextureWithFactorOperand(makeFakeTexture(), new Color4(0.001, 0.001, 0.001, 1), TextureChannel.A)
+            );
+
+            expect(_capturedPTs).toHaveLength(1);
+            const defs = _capturedPTs[0].getDefines();
+            expect(defs).toContain("OP_MULTI_SCATTER_TO_SINGLE_SCATTER");
+            expect(defs).toContain("MULTI_SCATTER_SCALE_B");
+            expect(defs).toContain("OPERAND_B_TEXTURE");
+            expect(defs).toContain("OPERAND_B_CHANNEL_A");
         });
 
         it("TransmissionFractionAsync fuses the fraction into one pass with the requested output type", async () => {

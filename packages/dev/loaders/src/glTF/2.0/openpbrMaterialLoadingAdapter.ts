@@ -1387,17 +1387,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             const colorFactor = this.transmissionScatter;
             const strengthTex = this._volumetricScatterStrengthTexture;
             const scatterStrength = this._volumetricScatterStrengthFactor;
-            const scaledMultiScatter = await MultiplyTexturesAsync(
-                `multi-scatter (${this._material.name})`,
-                CreateTextureWithFactorOperand(strengthTex, new Color4(scatterStrength, scatterStrength, scatterStrength, 1.0), TextureChannel.A),
-                CreateTextureWithFactorOperand(colorTex, colorFactor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(colorTex)),
-                this._material.getScene()
-            );
+            // Fuse the strength scale into the conversion so the small multi-scatter product is not
+            // quantized to an unsigned-byte intermediate before the nonlinear conversion.
             const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(
                 `single-scatter (${this._material.name})`,
-                scaledMultiScatter,
+                CreateTextureWithFactorOperand(colorTex, colorFactor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(colorTex)),
                 this._material.getScene(),
-                this._material.transmissionScatterAnisotropy
+                this._material.transmissionScatterAnisotropy,
+                CreateTextureWithFactorOperand(strengthTex, new Color4(scatterStrength, scatterStrength, scatterStrength, 1.0), TextureChannel.A)
             );
             if (loader._disposed) {
                 singleScatter.dispose?.();

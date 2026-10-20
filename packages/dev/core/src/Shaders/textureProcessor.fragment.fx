@@ -32,6 +32,7 @@
 //   INVERT_A               - invert the alpha channel (used with OP_INVERT)
 //   OP_CHANNEL_MAX         - unary: broadcast max(r,g,b[,a]) of operand A to all output channels
 //   OP_MULTI_SCATTER_TO_SINGLE_SCATTER - unary: convert multi-scatter albedo A.rgb to single-scatter albedo (uses scatterAniso uniform)
+//   MULTI_SCATTER_SCALE_B  - multiply operand A by operand B before OP_MULTI_SCATTER_TO_SINGLE_SCATTER
 //   OP_SINGLE_SCATTER_TO_MULTI_SCATTER - unary: convert single-scatter albedo A.rgb to multi-scatter albedo (inverse of the above; uses scatterAniso uniform)
 //   CHANNEL_MAX_INCLUDE_ALPHA - include alpha in the max computation and broadcast to all four channels
 //   LERP_T_TEXTURE         - t operand has a texture
@@ -143,11 +144,16 @@ void main() {
 
     // Apply operation
     #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
-    vec3 rhoMs = clamp(a.rgb, vec3(0.0), vec3(1.0));
+    #ifdef MULTI_SCATTER_SCALE_B
+    vec4 multiScatter = a * b;
+    #else
+    vec4 multiScatter = a;
+    #endif
+    vec3 rhoMs = clamp(multiScatter.rgb, vec3(0.0), vec3(1.0));
     vec3 s = vec3(4.09712) + 4.20863 * rhoMs - sqrt(vec3(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
     // The fit gives s slightly below 1 at rhoMs = 0; force s = 1 so the single-scatter albedo is exactly 0.
     s = mix(s, vec3(1.0), vec3(equal(rhoMs, vec3(0.0))));
-    vec4 result = vec4((vec3(1.0) - s * s) / max(vec3(1.0) - scatterAniso * s * s, vec3(0.0000001)), a.a);
+    vec4 result = vec4((vec3(1.0) - s * s) / max(vec3(1.0) - scatterAniso * s * s, vec3(0.0000001)), multiScatter.a);
     #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
     vec3 ssAlbedo = clamp(a.rgb, vec3(0.0), vec3(1.0));
     vec3 s2 = (vec3(1.0) - ssAlbedo) / max(vec3(1.0) - scatterAniso * ssAlbedo, vec3(0.0000001));

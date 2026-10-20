@@ -236,6 +236,15 @@ function _LerpConstants(a: Color4, b: Color4, t: Color4): Color4 {
     return new Color4(a.r + (b.r - a.r) * t.r, a.g + (b.g - a.g) * t.g, a.b + (b.b - a.b) * t.b, a.a + (b.a - a.a) * t.a);
 }
 
+/**
+ * Clamps a scatter anisotropy the same way the renderer does before converting between single- and
+ * multi-scatter albedo, so that |aniso| = 1 doesn't collapse the conversion.
+ * @internal
+ */
+function _EffectiveScatterAnisotropy(aniso: number): number {
+    return Math.min(Math.max(aniso, -0.9999), 0.9999);
+}
+
 /** @internal */
 function _MultiScatterToSingleScatterAlbedoConstant(multiScatter: Color4, aniso: number): Color4 {
     const convert = (value: number) => {
@@ -1236,29 +1245,51 @@ export async function ExtractChannelAsync(
  * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
  * @param aniso - Scattering anisotropy in `[-1, 1]`. `0` (default) is isotropic; positive values are
  *   forward-scattering. Matches `multiScatterToSingleScatterAlbedo(rho_ms, aniso)` in helperFunctions.
+ *   Clamped to `[-0.9999, 0.9999]`, as in the renderer.
+ * @param scale - Optional operand multiplied into `input` (RGBA) before conversion, in the same pass. Use it
+ *   instead of a separate {@link MultiplyTexturesAsync} so that the product (e.g. scatter strength times
+ *   multi-scatter color) isn't quantized before the nonlinear conversion.
  * @returns An operand containing the converted single-scatter albedo
  */
-export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene, aniso: number = 0): Promise<ITextureProcessOperand> {
-    // Match the renderer, which clamps the scatter anisotropy before this conversion.
-    aniso = Math.min(Math.max(aniso, -0.9999), 0.9999);
-    if (!input.texture) {
-        return { texture: null, factor: _MultiScatterToSingleScatterAlbedoConstant(_EvalConstant(input), aniso) };
+export async function MultiScatterToSingleScatterAlbedoAsync(
+    name: string,
+    input: ITextureProcessOperand,
+    scene: Scene,
+    aniso: number = 0,
+    scale?: ITextureProcessOperand
+): Promise<ITextureProcessOperand> {
+    aniso = _EffectiveScatterAnisotropy(aniso);
+    if (!input.texture && !scale?.texture) {
+        const multiScatter = scale ? _MultiplyConstants(_EvalConstant(input), _EvalConstant(scale)) : _EvalConstant(input);
+        return { texture: null, factor: _MultiScatterToSingleScatterAlbedoConstant(multiScatter, aniso) };
     }
 
-    const defines = [..._BuildOperandDefines(input, "A", false), "OP_MULTI_SCATTER_TO_SINGLE_SCATTER"];
-    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene);
-    _SetOperandUniforms(pt, input, "textureA", "factorA", false);
+    const operands = scale ? _KeepMatchingOperandCoordinates(name, [input, scale]) : [input];
+    const allTextures = operands.map((operand) => operand.texture).filter((texture): texture is BaseTexture => !!texture);
+    const canPropagate = _AllTransformsMatch(allTextures);
+    const bakeTransform = !canPropagate;
+
+    const defines = [..._BuildOperandDefines(operands[0], "A", bakeTransform), "OP_MULTI_SCATTER_TO_SINGLE_SCATTER"];
+    if (operands[1]) {
+        defines.push(..._BuildOperandDefines(operands[1], "B", bakeTransform), "MULTI_SCATTER_SCALE_B");
+    }
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize(operands), scene);
+    _SetOperandUniforms(pt, operands[0], "textureA", "factorA", bakeTransform);
+    if (operands[1]) {
+        _SetOperandUniforms(pt, operands[1], "textureB", "factorB", bakeTransform);
+    }
     pt.setFloat("scatterAniso", aniso);
+    const disposeOperands = () => operands.forEach((operand) => operand.dispose?.());
     try {
         await _RenderAsync(pt);
     } catch (error) {
-        input.dispose?.();
+        disposeOperands();
         throw error;
     }
 
-    input.dispose?.();
+    disposeOperands();
 
-    _CopyTextureMetadata(input.texture, pt, true);
+    _CopyTextureMetadata(allTextures[0], pt, canPropagate);
     return { texture: pt, dispose: () => pt.dispose() };
 }
 
@@ -1277,7 +1308,8 @@ export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input
  * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
  * @param aniso - Scattering anisotropy in `[-1, 1]`. `0` (default) is isotropic; positive values are
  *   forward-scattering. This inverts the anisotropic multi→single mapping: `s^2 = (1 - rho_ss) /
- *   (1 - aniso * rho_ss)`, then `rho_ms = (1 - s)(1 - 0.139 s)/(1 + 1.17 s)`.
+ *   (1 - aniso * rho_ss)`, then `rho_ms = (1 - s)(1 - 0.139 s)/(1 + 1.17 s)`. Clamped to
+ *   `[-0.9999, 0.9999]`, as in the renderer.
  * @param outputOptions - Optional render-target type, sampling, and mipmap settings.
  * @returns An operand containing the converted multi-scatter albedo
  */
@@ -1288,6 +1320,7 @@ export async function SingleScatterToMultiScatterAlbedoAsync(
     aniso: number = 0,
     outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
+    aniso = _EffectiveScatterAnisotropy(aniso);
     if (!input.texture) {
         return { texture: null, factor: _SingleScatterToMultiScatterAlbedoConstant(_EvalConstant(input), aniso) };
     }

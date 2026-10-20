@@ -98,11 +98,16 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     // Apply operation
     #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
-    let rhoMs: vec3f = clamp(a.rgb, vec3f(0.0), vec3f(1.0));
+    #ifdef MULTI_SCATTER_SCALE_B
+    let multiScatter: vec4f = a * b;
+    #else
+    let multiScatter: vec4f = a;
+    #endif
+    let rhoMs: vec3f = clamp(multiScatter.rgb, vec3f(0.0), vec3f(1.0));
     var s: vec3f = vec3f(4.09712) + 4.20863 * rhoMs - sqrt(vec3f(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
     // The fit gives s slightly below 1 at rhoMs = 0; force s = 1 so the single-scatter albedo is exactly 0.
     s = select(s, vec3f(1.0), rhoMs == vec3f(0.0));
-    var result: vec4f = vec4f((vec3f(1.0) - s * s) / max(vec3f(1.0) - uniforms.scatterAniso * s * s, vec3f(0.0000001)), a.a);
+    var result: vec4f = vec4f((vec3f(1.0) - s * s) / max(vec3f(1.0) - uniforms.scatterAniso * s * s, vec3f(0.0000001)), multiScatter.a);
     #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
     let ssAlbedo: vec3f = clamp(a.rgb, vec3f(0.0), vec3f(1.0));
     let s2: vec3f = (vec3f(1.0) - ssAlbedo) / max(vec3f(1.0) - uniforms.scatterAniso * ssAlbedo, vec3f(0.0000001));

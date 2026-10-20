@@ -250,59 +250,93 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
         });
     }
 
-    // A weight texture makes the exporter pack subsurface_color into multiscatterColorTexture. The packed texels are
-    // copied as-is and glTF reads them as sRGB, so a linear color texture (gammaSpace = false, no sRGB buffer) must be
-    // re-encoded first. Otherwise a linear 128/255 would reimport as about 0.216 instead of about 0.502.
-    test("thin-walled scatter re-encodes a linear subsurface color texture before packing", async () => {
-        const result = await page.evaluate(async () => {
-            const scene = window.scene!;
-            const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
-            const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
-            const linearColor = [128, 64, 200];
+    // glTF reads multiscatterColorTexture as sRGB, so a linear subsurface color texture (gammaSpace = false, no sRGB
+    // buffer) must be re-encoded, whether a weight texture makes the exporter pack it with the strength or constant
+    // weights export it alone. Otherwise a linear 128/255 would reimport as about 0.216 instead of about 0.502. An
+    // sRGB texture must be exported without a second encoding, and the UV set and wrap modes must be kept.
+    for (const packed of [true, false]) {
+        for (const gammaSpace of [false, true]) {
+            test(`thin-walled scatter exports a ${gammaSpace ? "sRGB" : "linear"} subsurface color texture as sRGB (${packed ? "packed with weights" : "constant weights"})`, async () => {
+                const result = await page.evaluate(
+                    async ({ packed, gammaSpace }) => {
+                        const scene = window.scene!;
+                        const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                        const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+                        const sourceColor = [128, 64, 200];
 
-            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
-            const mat = new BABYLON.OpenPBRMaterial("linearColor", scene);
-            mat.geometryThinWalled = 1;
-            mat.transmissionWeight = 1;
-            mat.subsurfaceWeight = 1;
-            mat.transmissionWeightTexture = new BABYLON.RawTexture(new Uint8Array(16).fill(128), 2, 2, RGBA, scene, false, false, NEAREST);
-            const colorData = new Uint8Array(16);
-            for (let i = 0; i < 4; i++) {
-                colorData.set([...linearColor, 255], i * 4);
-            }
-            const colorTexture = new BABYLON.RawTexture(colorData, 2, 2, RGBA, scene, false, false, NEAREST);
-            colorTexture.gammaSpace = false;
-            mat.subsurfaceColorTexture = colorTexture;
-            box.material = mat;
+                        const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                        box.setVerticesData(BABYLON.VertexBuffer.UV2Kind, box.getVerticesData(BABYLON.VertexBuffer.UVKind)!);
+                        const mat = new BABYLON.OpenPBRMaterial("subsurfaceColor", scene);
+                        mat.geometryThinWalled = 1;
+                        mat.transmissionWeight = packed ? 1 : 0.5;
+                        mat.subsurfaceWeight = 1;
+                        if (packed) {
+                            mat.transmissionWeightTexture = new BABYLON.RawTexture(new Uint8Array(16).fill(128), 2, 2, RGBA, scene, false, false, NEAREST);
+                        }
+                        const colorData = new Uint8Array(16);
+                        for (let i = 0; i < 4; i++) {
+                            colorData.set([...sourceColor, 255], i * 4);
+                        }
+                        const colorTexture = new BABYLON.RawTexture(colorData, 2, 2, RGBA, scene, false, false, NEAREST);
+                        colorTexture.gammaSpace = gammaSpace;
+                        colorTexture.coordinatesIndex = 1;
+                        colorTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                        colorTexture.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+                        mat.subsurfaceColorTexture = colorTexture;
+                        box.material = mat;
 
-            const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
-            const json = JSON.parse(gltf.files["rt.gltf"] as string);
-            const scatter = json.materials[0].extensions.KHR_materials_scatter;
-            const colorInfo = scatter.multiscatterColorTexture;
-            const uri = json.images[json.textures[colorInfo.index].source].uri as string;
-            const bitmap = await createImageBitmap(gltf.files[uri] as Blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
-            const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-            const context = canvas.getContext("2d")!;
-            context.drawImage(bitmap, 0, 0);
-            const pixels = context.getImageData(0, 0, 1, 1).data;
+                        const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
+                        const json = JSON.parse(gltf.files["rt.gltf"] as string);
+                        const scatter = json.materials[0].extensions.KHR_materials_scatter;
+                        const colorInfo = scatter.multiscatterColorTexture;
+                        const gltfTexture = json.textures[colorInfo.index];
+                        const uri = json.images[gltfTexture.source].uri as string;
+                        const bitmap = await createImageBitmap(gltf.files[uri] as Blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+                        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                        const context = canvas.getContext("2d")!;
+                        context.drawImage(bitmap, 0, 0);
+                        const pixels = context.getImageData(0, 0, 1, 1).data;
 
-            return {
-                usesSRGBBuffer: !!colorTexture.getInternalTexture()?._useSRGBBuffer,
-                packed: scatter.scatterStrengthTexture?.index === colorInfo.index,
-                exported: Array.from(pixels.slice(0, 3)),
-                linearColor,
-            };
-        });
+                        return {
+                            usesSRGBBuffer: !!colorTexture.getInternalTexture()?._useSRGBBuffer,
+                            sourceDisposed: !colorTexture.getInternalTexture(),
+                            isPacked: scatter.scatterStrengthTexture !== undefined && json.textures[scatter.scatterStrengthTexture.index].source === gltfTexture.source,
+                            strengthFactor: scatter.scatterStrengthFactor,
+                            texCoord: colorInfo.texCoord ?? 0,
+                            sampler: json.samplers?.[gltfTexture.sampler] ?? {},
+                            exported: Array.from(pixels.slice(0, 3)),
+                            sourceColor,
+                        };
+                    },
+                    { packed, gammaSpace }
+                );
 
-        expect(result.usesSRGBBuffer).toBe(false);
-        expect(result.packed).toBe(true);
-        // glTF decodes multiscatterColorTexture from sRGB, which must give back the source's linear values. One 8-bit
-        // sRGB step is up to about 2/255 in linear near white.
-        const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-        for (let i = 0; i < 3; i++) {
-            expect(Math.abs(toLinear(result.exported[i] / 255) - result.linearColor[i] / 255), `channel ${i}: ${result.exported[i]}`).toBeLessThanOrEqual(3 / 255);
+                expect(result.usesSRGBBuffer).toBe(false);
+                expect(result.sourceDisposed).toBe(false);
+                expect(result.isPacked).toBe(packed);
+                if (!packed) {
+                    // Subsurface fraction S(1 - T) / (1 - (1 - T)(1 - S)) with T = 0.5 and S = 1.
+                    expect(result.strengthFactor).toBeCloseTo(0.5, 5);
+                }
+                expect(result.texCoord).toBe(1);
+                expect(result.sampler.wrapS).toBe(33071); // CLAMP_TO_EDGE
+                expect(result.sampler.wrapT).toBe(33648); // MIRRORED_REPEAT
+                if (gammaSpace) {
+                    // Already sRGB: the bytes are exported unchanged.
+                    for (let i = 0; i < 3; i++) {
+                        expect(Math.abs(result.exported[i] - result.sourceColor[i]), `channel ${i}: ${result.exported[i]}`).toBeLessThanOrEqual(1);
+                    }
+                } else {
+                    // glTF decodes multiscatterColorTexture from sRGB, which must give back the source's linear values. One
+                    // 8-bit sRGB step is up to about 2/255 in linear near white.
+                    const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+                    for (let i = 0; i < 3; i++) {
+                        expect(Math.abs(toLinear(result.exported[i] / 255) - result.sourceColor[i] / 255), `channel ${i}: ${result.exported[i]}`).toBeLessThanOrEqual(3 / 255);
+                    }
+                }
+            });
         }
-    });
+    }
 
     // Thin-walled: scatter strength is baked from the (textured) weights, multi-scatter color is the
     // subsurface color/texture, and anisotropy is the subsurface scatter anisotropy. No volume extension
@@ -504,15 +538,21 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
     //  - negative absorption: -log(0.5) - (1, 0.5, 0.5) has a negative red absorption, which the renderer shifts
     //    out of every channel, giving an extinction of (1, 1, 1) and albedo (1, 0.5, 0.5). Dividing by -log(0.5)
     //    alone would recover (1.443, 0.721, 0.721) and inflate the green and blue coefficients by about 44%.
+    //  - anisotropy 1: the exporter must clamp the anisotropy to the renderer's 0.9999 before inverting the albedo
+    //    conversion. Unclamped, a single-scatter albedo of 0.5 gives s = sqrt((1 - 0.5) / (1 - 0.5)) = 1 and a black
+    //    multi-scatter color. Clamped, the multi-scatter color is about 2e-5, which 8-bit textures can't represent,
+    //    so only the constant export is covered. The fitted forward/inverse coefficients agree to about 3% this
+    //    close to s = 1.
     const volumetricCases = [
-        { label: "a zero attenuation channel", color: [0.9, 0, 0.5], scatter: [0.08, 2.0, 0.2], zeroChannel: true },
-        { label: "negative absorption", color: [0.5, 0.5, 0.5], scatter: [1.0, 0.5, 0.5], zeroChannel: false },
+        { label: "a zero attenuation channel", color: [0.9, 0, 0.5], scatter: [0.08, 2.0, 0.2], zeroChannel: true, anisotropy: 0, tolerance: 0.02, texturedToo: true },
+        { label: "negative absorption", color: [0.5, 0.5, 0.5], scatter: [1.0, 0.5, 0.5], zeroChannel: false, anisotropy: 0, tolerance: 0.02, texturedToo: true },
+        { label: "anisotropy 1", color: [0.5, 0.5, 0.5], scatter: Array(3).fill(Math.LN2 / 2), zeroChannel: false, anisotropy: 1, tolerance: 0.04, texturedToo: false },
     ];
-    for (const { label, color, scatter, zeroChannel } of volumetricCases) {
-        for (const textured of [false, true]) {
+    for (const { label, color, scatter, zeroChannel, anisotropy, tolerance: constantTolerance, texturedToo } of volumetricCases) {
+        for (const textured of texturedToo ? [false, true] : [false]) {
             test(`volumetric scatter with ${label} preserves the scattering coefficient (${textured ? "textured" : "constant"})`, async () => {
                 const result = await page.evaluate(
-                    async ({ textured, color, scatter }) => {
+                    async ({ textured, color, scatter, anisotropy }) => {
                         const scene = window.scene!;
                         const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
                         const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
@@ -526,6 +566,7 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
                         mat.geometryThickness = 1.0;
                         mat.transmissionColor = BABYLON.Color3.FromArray(color);
                         mat.transmissionScatter = BABYLON.Color3.FromArray(scatter);
+                        mat.transmissionScatterAnisotropy = anisotropy;
                         if (textured) {
                             mat.transmissionScatterTexture = new BABYLON.RawTexture(new Uint8Array(16).fill(255), 2, 2, RGBA, scene, false, false, NEAREST);
                         }
@@ -568,7 +609,7 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
                             scatterCoefficient: factor.map((f, i) => (f * texel[i]) / depth),
                         };
                     },
-                    { textured, color, scatter }
+                    { textured, color, scatter, anisotropy }
                 );
 
                 // The exported volume is finite.
@@ -584,7 +625,7 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
                     }
                 }
                 // The scattering coefficient (scatter / depth, with depth 1 originally) is preserved per channel.
-                const tolerance = textured ? 0.06 : 0.02;
+                const tolerance = textured ? 0.06 : constantTolerance;
                 for (let i = 0; i < 3; i++) {
                     expect(Math.abs(result.scatterCoefficient[i] - scatter[i]) / scatter[i], `channel ${i}: ${result.scatterCoefficient[i]}`).toBeLessThanOrEqual(tolerance);
                 }

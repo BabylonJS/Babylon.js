@@ -237,4 +237,117 @@ test.describe("textureProcessor GPU numerics", () => {
             });
         }
     }
+
+    // A small scatter strength times the multi-scatter color (0.5 * 0.001 = 0.0005) rounds to zero in an unsigned-byte
+    // intermediate, but at anisotropy 1 it converts to a substantial single-scatter albedo (~0.96). Scaling inside the
+    // conversion pass must match the constant path. Runs the GLSL shader on WebGL2 and the WGSL shader on WebGPU.
+    for (const engineName of ["webgl2", "webgpu"]) {
+        test(`MultiScatterToSingleScatterAlbedoAsync scales small multi-scatter before conversion like the constant path (${engineName})`, async () => {
+            if (engineName === "webgpu") {
+                const hasWebGPU = await page.evaluate(async () => !!(await (navigator as any).gpu?.requestAdapter()));
+                test.skip(!hasWebGPU, "WebGPU is not available");
+                // The canvas already has a WebGL context, so start over on a fresh page.
+                await page.goto(getGlobalConfig().baseUrl + `/empty.html`, { waitUntil: "load", timeout: 0 });
+                await page.evaluate(evaluateInitEngine, { engineName });
+                await page.evaluate(evaluateCreateScene);
+            }
+            const result = await page.evaluate(async () => {
+                const scene = window.scene!;
+                const colorFactor = new BABYLON.Color4(0.5, 0.5, 0.5, 1);
+                const strengthFactor = new BABYLON.Color4(0.001, 0.001, 0.001, 1);
+                const createWhiteTexture = () =>
+                    BABYLON.RawTexture.CreateRGBATexture(new Uint8Array([255, 255, 255, 255]), 1, 1, scene, false, false, BABYLON.Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+                const colorTexture = createWhiteTexture();
+                const strengthTexture = createWhiteTexture();
+
+                const constant = await BABYLON.MultiScatterToSingleScatterAlbedoAsync(
+                    "constant",
+                    BABYLON.CreateFactorOperand(colorFactor),
+                    scene,
+                    1,
+                    BABYLON.CreateFactorOperand(strengthFactor)
+                );
+
+                type Operand = ReturnType<typeof BABYLON.CreateFactorOperand>;
+                const readTextured = async (color: Operand, strength: Operand) => {
+                    const singleScatter = await BABYLON.MultiScatterToSingleScatterAlbedoAsync("single-scatter", color, scene, 1, strength);
+                    const pixels = Array.from((await singleScatter.texture!.readPixels()) as Uint8Array);
+                    singleScatter.dispose?.();
+                    return pixels;
+                };
+                const strengthOnly = await readTextured(
+                    BABYLON.CreateFactorOperand(colorFactor),
+                    BABYLON.CreateTextureWithFactorOperand(strengthTexture, strengthFactor, BABYLON.TextureChannel.A)
+                );
+                const both = await readTextured(
+                    BABYLON.CreateTextureWithFactorOperand(colorTexture, colorFactor),
+                    BABYLON.CreateTextureWithFactorOperand(strengthTexture, strengthFactor, BABYLON.TextureChannel.A)
+                );
+                colorTexture.dispose();
+                strengthTexture.dispose();
+                return { isWebGPU: scene.getEngine().isWebGPU, constant: [constant.factor!.r, constant.factor!.g, constant.factor!.b], strengthOnly, both };
+            });
+
+            expect(result.isWebGPU).toBe(engineName === "webgpu");
+            for (let c = 0; c < 3; c++) {
+                expect(result.constant[c], `constant channel ${c}`).toBeGreaterThan(0.9);
+                expect(Math.abs(result.strengthOnly[c] - result.constant[c] * 255), `strength texture channel ${c}: ${result.strengthOnly[c]}`).toBeLessThanOrEqual(1.5);
+                expect(Math.abs(result.both[c] - result.constant[c] * 255), `color and strength textures channel ${c}: ${result.both[c]}`).toBeLessThanOrEqual(1.5);
+            }
+        });
+    }
+
+    // The renderer clamps the scatter anisotropy to 0.9999. The inverse conversion must too: at anisotropy 1 an
+    // unclamped shader computes s = sqrt((1 - rho_ss) / (1 - rho_ss)) = 1 and outputs zero multi-scatter albedo.
+    // The results are around 1e-5, so the GPU pass renders to a float target.
+    for (const engineName of ["webgl2", "webgpu"]) {
+        test(`SingleScatterToMultiScatterAlbedoAsync clamps anisotropy 1 like the renderer (${engineName})`, async () => {
+            if (engineName === "webgpu") {
+                const hasWebGPU = await page.evaluate(async () => !!(await (navigator as any).gpu?.requestAdapter()));
+                test.skip(!hasWebGPU, "WebGPU is not available");
+                // The canvas already has a WebGL context, so start over on a fresh page.
+                await page.goto(getGlobalConfig().baseUrl + `/empty.html`, { waitUntil: "load", timeout: 0 });
+                await page.evaluate(evaluateInitEngine, { engineName });
+                await page.evaluate(evaluateCreateScene);
+            }
+            const texelBytes = [51, 128, 230];
+            const result = await page.evaluate(async (texelBytes) => {
+                const scene = window.scene!;
+                if (!scene.getEngine().getCaps().textureFloatRender) {
+                    return null;
+                }
+                const data = new Uint8Array(texelBytes.flatMap((v) => [v, v, v, 255]));
+                const texture = BABYLON.RawTexture.CreateRGBATexture(data, texelBytes.length, 1, scene, false, false, BABYLON.Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+                const multiScatter = await BABYLON.SingleScatterToMultiScatterAlbedoAsync("multi-scatter", BABYLON.CreateTextureOperand(texture), scene, 1, {
+                    textureType: BABYLON.Constants.TEXTURETYPE_FLOAT,
+                    samplingMode: BABYLON.Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                });
+                const pixels = Array.from((await multiScatter.texture!.readPixels()) as Float32Array);
+                multiScatter.dispose?.();
+                texture.dispose();
+
+                const constants: number[] = [];
+                for (const v of texelBytes) {
+                    const constant = await BABYLON.SingleScatterToMultiScatterAlbedoAsync(
+                        "constant",
+                        BABYLON.CreateFactorOperand(new BABYLON.Color4(v / 255, v / 255, v / 255, 1)),
+                        scene,
+                        1
+                    );
+                    constants.push(constant.factor!.r);
+                }
+                return { isWebGPU: scene.getEngine().isWebGPU, pixels, constants };
+            }, texelBytes);
+
+            test.skip(!result, "Float render targets are not supported");
+            expect(result!.isWebGPU).toBe(engineName === "webgpu");
+            for (let i = 0; i < texelBytes.length; i++) {
+                const constant = result!.constants[i];
+                expect(constant, `constant ${i}`).toBeGreaterThan(1e-6);
+                for (let c = 0; c < 3; c++) {
+                    expect(Math.abs(result!.pixels[i * 4 + c] - constant) / constant, `texel ${i} channel ${c}: ${result!.pixels[i * 4 + c]}`).toBeLessThanOrEqual(0.02);
+                }
+            }
+        });
+    }
 });

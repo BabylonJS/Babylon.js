@@ -327,22 +327,9 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
             // KHR_materials_scatter reads scatterStrengthTexture from the alpha channel and multiscatterColorTexture
             // from RGB, so pack both into one image. They are referenced separately, so each keeps its own sampling.
             const fractionTexture = subsurfaceFractionOp.texture;
-            let colorSource: Nullable<BaseTexture> = colorTexture;
-            if (colorSource && (!colorSource.gammaSpace || colorSource.getInternalTexture()?._useSRGBBuffer)) {
-                // Linear textures and sRGB buffers both sample as linear values, but the packed texels are
-                // copied as-is and glTF reads multiscatterColorTexture as sRGB. Re-encode the RGB as sRGB.
-                colorSource = (
-                    await ExtractChannelAsync(
-                        `scatter color (${mat.name})`,
-                        CreateTextureOperand(colorSource),
-                        TextureChannel.RGBA,
-                        scene,
-                        TextureColorSpace.SRGB,
-                        undefined,
-                        IntermediateOutputOptions(scene)
-                    )
-                ).texture;
-            }
+            const colorSource: Nullable<BaseTexture> = colorTexture
+                ? ((await this._encodeColorTextureAsSrgbAsync(`scatter color (${mat.name})`, colorTexture, IntermediateOutputOptions(scene))) ?? colorTexture)
+                : null;
             const packed = await MergeTexturesAsync(
                 `scatter color and strength (${mat.name})`,
                 CreateRGBAConfiguration(
@@ -370,6 +357,13 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
                 strengthTexture = packed;
             }
             fractionTexture.dispose(); // intermediate; the packed texture replaces it
+        } else if (colorTexture) {
+            // Exported without packing: still re-encode linear data, keeping the source filtering.
+            const encoded = await this._encodeColorTextureAsSrgbAsync(`scatter color (${mat.name})`, colorTexture, { samplingMode: colorTexture.samplingMode });
+            if (encoded) {
+                ownedTextures.push(encoded);
+                colorTexture = encoded;
+            }
         }
 
         const color = mat.subsurfaceColor;
@@ -381,6 +375,23 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
             anisotropy: mat.subsurfaceScatterAnisotropy,
             ownedTextures,
         };
+    }
+
+    /**
+     * glTF reads multiscatterColorTexture as sRGB, but the exporter writes texels as stored. Linear textures and
+     * hardware sRGB buffers both sample as linear values, so bake their RGB into a new sRGB-encoded texture that
+     * keeps the source UV set, wrap modes and transform. Textures that already store sRGB bytes need no change.
+     * @param name the name of the encoded texture
+     * @param texture the source color texture, which is not modified or disposed
+     * @param outputOptions render-target options for the encoded texture
+     * @returns a new texture owned by the caller, or null when the source can be exported as-is
+     */
+    private async _encodeColorTextureAsSrgbAsync(name: string, texture: BaseTexture, outputOptions: ITextureProcessorOutputOptions): Promise<Nullable<BaseTexture>> {
+        if (texture.gammaSpace && !texture.getInternalTexture()?._useSRGBBuffer) {
+            return null;
+        }
+        const encoded = await ExtractChannelAsync(name, CreateTextureOperand(texture), TextureChannel.RGBA, texture.getScene()!, TextureColorSpace.SRGB, undefined, outputOptions);
+        return encoded.texture;
     }
 
     /**
