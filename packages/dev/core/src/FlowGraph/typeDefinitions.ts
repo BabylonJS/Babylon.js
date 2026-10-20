@@ -53,7 +53,7 @@ export interface IObjectAccessor<GLTFTargetType = any, BabylonTargetType = any, 
     /**
      * @deprecated Use get instead
      */
-    getPropertyName?: Array<(target: GLTFTargetType) => string>;
+    getPropertyName?: Array<(target: GLTFTargetType, index?: number) => string>;
     /**
      * Set a new value to the property.
      * @param newValue the new value to set

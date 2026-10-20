@@ -14,6 +14,7 @@ import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection.pure";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { defaultValueParseFunction } from "core/FlowGraph/serialization";
 import { type Material } from "core/Materials/material";
 import { type Node } from "core/node";
 import { type Camera } from "core/Cameras/camera";
@@ -1279,7 +1280,14 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                             block.config?.[key])
                           : block.config?.[key];
                 const runtimeExpected =
-                    _GetOwn(blockProvenance?.generatedConfigurationRuntime, key) ?? (key === "eventData" ? _CreateEventSchemaRuntimeSnapshot(expected) : undefined);
+                    _GetOwn(blockProvenance?.generatedConfigurationRuntime, key) ??
+                    (key === "eventData"
+                        ? _CreateEventSchemaRuntimeSnapshot(expected)
+                        : key === "invalidValue"
+                          ? _CreateKHRInteractivityRuntimeValueSnapshot(
+                                defaultValueParseFunction(key, { [key]: expected }, this._flowGraphs[graphIndex].scene, this._flowGraphs[graphIndex].scene)
+                            )
+                          : undefined);
                 const currentRuntime = runtimeExpected
                     ? key === "eventData"
                         ? _CreateEventSchemaRuntimeSnapshot(current)

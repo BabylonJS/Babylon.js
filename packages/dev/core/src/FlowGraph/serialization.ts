@@ -145,8 +145,8 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
  * @param key the key to the value that will be parsed
  * @param serializationObject the object that will be parsed
  * @param assetsContainer the assets container that will be used to find the objects
- * @param scene
- * @returns
+ * @param scene the scene used to resolve node and animation group references
+ * @returns the parsed value, with serialized Babylon types and scene references restored
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) {

@@ -324,6 +324,17 @@ export class SubMesh implements ICullable {
         return rootMaterial;
     }
 
+    /**
+     * Checks whether this submesh can resolve to the given material in a render pass it has a draw wrapper for, without resolving
+     * each pass. A submesh that customizes getMaterial is always a candidate; otherwise its rendering mesh decides.
+     * @param material defines the material to check
+     * @returns false when no render pass with a draw wrapper can resolve to the material
+     * @internal
+     */
+    public _mayRenderWithMaterial(material: Material): boolean {
+        return this.getMaterial !== SubMesh.prototype.getMaterial || this._renderingMesh._mayRenderWithMaterial(material, this._drawWrappers);
+    }
+
     private _isMultiMaterial(material: Material): material is MultiMaterial {
         return (material as MultiMaterial).getSubMaterial !== undefined;
     }

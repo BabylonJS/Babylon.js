@@ -78,4 +78,25 @@ describe("asset directory watchers", () => {
         },
         15000
     );
+
+    it.each([
+        ["add", "input folder/"],
+        ["change", "input folder/"],
+        ["add", "input folder\\"],
+        ["change", "input folder\\"],
+    ] as const)("copies prefixed assets from Windows-style %s events with prefix %s", (event, prefix) => {
+        fs.mkdirSync("input folder/src", { recursive: true });
+        fs.writeFileSync("input folder/src/existing.json", '{"initial":true}');
+        externalArgs.push("--watch", "--path-prefix", prefix);
+
+        processAssets({ extensions: ["json"] });
+
+        const watcherResult = vi.mocked(watch).mock.results[0];
+        if (watcherResult.type !== "return") {
+            throw new Error("Expected the asset watcher to start");
+        }
+        watcherResult.value.emit("all", event, "input folder\\src\\existing.json");
+
+        expect(fs.readFileSync("dist/existing.json", "utf8")).toBe('{"initial":true}');
+    });
 });

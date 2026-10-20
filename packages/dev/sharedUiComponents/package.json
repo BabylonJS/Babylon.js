@@ -32,8 +32,8 @@
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "react": "^18.2.0",
-        "react-dnd": "15.0.1",
-        "react-dnd-touch-backend": "15.0.1",
+        "react-dnd": "15.0.1 || 16.0.1",
+        "react-dnd-touch-backend": "15.0.1 || 16.0.1",
         "react-dom": "^18.2.0"
     },
     "devDependencies": {
@@ -48,8 +48,8 @@
         "@fluentui/react-icons": "^2.0.341",
         "@fluentui/react-motion-components-preview": "^0.15.9",
         "@fluentui/react-utilities": "^9.26.7",
-        "react-dnd": "15.0.1",
-        "react-dnd-touch-backend": "15.0.1",
+        "react-dnd": "16.0.1",
+        "react-dnd-touch-backend": "16.0.1",
         "sass": "^1.105.0"
     },
     "sideEffects": false

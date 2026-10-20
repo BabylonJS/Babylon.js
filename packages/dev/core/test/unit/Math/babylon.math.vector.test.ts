@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Matrix, Plane, Quaternion, Vector2, Vector3, Vector4, Viewport } from "core/Maths";
 import { BabylonMathVectorGetAngleBetweenVectorsOnPlaneTestCases } from "./babylon.math.vector.get-angle-between-vectors-on-plane.test-cases";
 
@@ -2407,6 +2408,57 @@ describe("Babylon Vector tests", () => {
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(4);
                 shouldNotChange = true;
+            });
+        });
+    });
+
+    describe("Matrix", () => {
+        describe("LookDirectionLHToRef / LookDirectionRHToRef", () => {
+            it.each([false, true])("preserves the legacy orientation for Matrix and Quaternion (RH=%s)", (isRightHanded) => {
+                const frames = [
+                    [Vector3.Forward(), Vector3.Up()],
+                    [Vector3.Backward(), Vector3.Up()],
+                    [new Vector3(1, 2, 3).normalize(), new Vector3(-2, 1, 0).normalize()],
+                ];
+                const lookDirection = isRightHanded ? Matrix.LookDirectionRH : Matrix.LookDirectionLH;
+                const lookDirectionToRef = isRightHanded ? Matrix.LookDirectionRHToRef : Matrix.LookDirectionLHToRef;
+                const fromLookDirection = isRightHanded ? Quaternion.FromLookDirectionRH : Quaternion.FromLookDirectionLH;
+                const fromLookDirectionToRef = isRightHanded ? Quaternion.FromLookDirectionRHToRef : Quaternion.FromLookDirectionLHToRef;
+
+                for (const [forward, up] of frames) {
+                    const originalForward = forward.clone();
+                    const originalUp = up.clone();
+                    expect(Vector3.Dot(forward, up)).toBeCloseTo(0);
+                    const result = new Matrix();
+                    expect(lookDirectionToRef(forward, up, result)).toBe(result);
+                    expect(result.determinant()).toBeCloseTo(1);
+
+                    const worldForward = Vector3.TransformNormal(Vector3.Forward(), result);
+                    const worldUp = Vector3.TransformNormal(Vector3.Up(), result);
+                    const expectedForward = isRightHanded ? forward : forward.negate();
+                    expect(worldForward.x).toBeCloseTo(expectedForward.x);
+                    expect(worldForward.y).toBeCloseTo(expectedForward.y);
+                    expect(worldForward.z).toBeCloseTo(expectedForward.z);
+                    expect(worldUp.x).toBeCloseTo(up.x);
+                    expect(worldUp.y).toBeCloseTo(up.y);
+                    expect(worldUp.z).toBeCloseTo(up.z);
+
+                    const allocated = lookDirection(forward, up);
+                    const quaternion = new Quaternion();
+                    expect(fromLookDirectionToRef(forward, up, quaternion)).toBe(quaternion);
+                    const quaternionMatrix = Matrix.FromQuaternionToRef(quaternion, new Matrix());
+                    const allocatedQuaternionMatrix = Matrix.FromQuaternionToRef(fromLookDirection(forward, up), new Matrix());
+                    for (let i = 0; i < 16; i++) {
+                        expect(result.m[i]).toBeCloseTo(allocated.m[i]);
+                        expect(result.m[i]).toBeCloseTo(quaternionMatrix.m[i]);
+                        expect(result.m[i]).toBeCloseTo(allocatedQuaternionMatrix.m[i]);
+                    }
+                    if (forward.equals(Vector3.Forward())) {
+                        expect(quaternion.w).toBeCloseTo(isRightHanded ? 1 : 0);
+                    }
+                    expect(forward.equals(originalForward)).toBe(true);
+                    expect(up.equals(originalUp)).toBe(true);
+                }
             });
         });
     });

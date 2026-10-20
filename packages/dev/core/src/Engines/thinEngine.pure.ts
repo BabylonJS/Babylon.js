@@ -805,7 +805,7 @@ export class ThinEngine extends AbstractEngine {
 
         // Depth buffer
         this._depthCullingState.depthTest = true;
-        this._depthCullingState.depthFunc = this._gl.LEQUAL;
+        this._depthCullingState.depthFunc = this.useReverseDepthBuffer ? this._gl.GEQUAL : this._gl.LEQUAL;
         this._depthCullingState.depthMask = true;
 
         // Texture maps

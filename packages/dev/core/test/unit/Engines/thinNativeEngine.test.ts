@@ -1,4 +1,5 @@
 import { ThinNativeEngine } from "core/Engines/thinNativeEngine";
+import { type NativeRenderTargetWrapper } from "core/Engines/Native/nativeRenderTargetWrapper";
 import { NullEngine } from "core/Engines/nullEngine";
 import { RegisterNativeEngineCubeTexture } from "core/Engines/Native/Extensions/nativeEngine.cubeTexture.pure";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
@@ -8,7 +9,7 @@ import { type IHardwareTextureWrapper } from "core/Materials/Textures/hardwareTe
 import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { CubeMapToSphericalPolynomialTools } from "core/Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Scene } from "core/scene";
-import { afterEach, describe, expect, it, onTestFinished, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 type NativeFrameRequester = {
     requestAnimationFrame: (callback: () => void) => number;
@@ -502,6 +503,104 @@ describe("ThinNativeEngine", () => {
             expect(observer.mock.invocationCallOrder[0]).toBeLessThan(onLoad.mock.invocationCallOrder[0]);
             expect(texture.onLoadedObservable.hasObservers()).toBe(false);
             expect(engine._internalTexturesCache).toEqual([texture]);
+        });
+    });
+
+    describe("layered render targets", () => {
+        beforeEach(() => {
+            // Native enum constants are only read to be passed through to the mocked native engine.
+            vi.stubGlobal("_native", { Engine: new Proxy({}, { get: (_target, name) => String(name) }) });
+        });
+
+        afterEach(() => {
+            vi.restoreAllMocks();
+            vi.unstubAllGlobals();
+        });
+
+        type FakeFramebuffer = { id: number; texture: unknown; layer: number | undefined; depth: boolean; stencil: boolean; samples: number };
+
+        const createLayeredEngine = () => {
+            let nextFramebufferId = 0;
+            let nextTextureId = 0;
+            const created: FakeFramebuffer[] = [];
+            const released: FakeFramebuffer[] = [];
+            const nativeEngine = {
+                initializeTexture: vi.fn(),
+                setTextureSampling: vi.fn(),
+                getTextureWidth: () => 64,
+                getTextureHeight: () => 64,
+                createFrameBuffer: vi.fn(
+                    (texture: unknown, _width: number, _height: number, stencil: boolean, depth: boolean, samples: number, layer?: number): FakeFramebuffer => {
+                        const framebuffer = { id: nextFramebufferId++, texture, layer, depth, stencil, samples };
+                        created.push(framebuffer);
+                        return framebuffer;
+                    }
+                ),
+            };
+            const engine = Object.assign(Object.create(ThinNativeEngine.prototype), {
+                _engine: nativeEngine,
+                _caps: { textureFloatLinearFiltering: true, textureHalfFloatLinearFiltering: true, textureFloat: true },
+                _internalTexturesCache: [],
+                _renderTargetWrapperCache: [],
+                _getUseSRGBBuffer: () => false,
+                _createHardwareTexture: (): IHardwareTextureWrapper => ({
+                    underlyingResource: { id: `texture-${nextTextureId++}` },
+                    setUsage() {},
+                    set() {},
+                    reset() {},
+                    release() {},
+                }),
+                _setTextureSampling: () => {},
+                _releaseFramebufferObjects: (framebuffer: FakeFramebuffer | null) => {
+                    if (framebuffer) {
+                        released.push(framebuffer);
+                    }
+                },
+            }) as ThinNativeEngine;
+
+            return { engine, nativeEngine, created, released };
+        };
+
+        const expectReleasedOnce = (released: FakeFramebuffer[], framebuffers: FakeFramebuffer[]) => {
+            for (const framebuffer of framebuffers) {
+                expect(released.filter((candidate) => candidate === framebuffer)).toHaveLength(1);
+            }
+        };
+
+        it("rebuilds every layer framebuffer against a replaced wrapped native array texture", () => {
+            const { engine, released } = createLayeredEngine();
+            (engine as any)._engine.getTextureLayerCount = () => 3;
+            const wrapped = engine.wrapNativeTexture({ id: "external-array" } as any);
+            wrapped.is2DArray = true;
+            wrapped.depth = 3;
+            const rtWrapper = engine.createRenderTargetTexture(
+                { width: 64, height: 64, layers: 3 },
+                {
+                    colorAttachment: wrapped,
+                    generateDepthBuffer: true,
+                }
+            ) as NativeRenderTargetWrapper;
+            const previous = [...(rtWrapper._framebuffers as unknown as FakeFramebuffer[])];
+            const replacement = { id: "external-array-2" };
+
+            engine.updateWrappedNativeTexture(wrapped, replacement as any);
+
+            const rebuilt = rtWrapper._framebuffers as unknown as FakeFramebuffer[];
+            expect(rebuilt.map((framebuffer) => [framebuffer.texture, framebuffer.layer, framebuffer.depth])).toEqual([0, 1, 2].map((layer) => [replacement, layer, true]));
+            expectReleasedOnce(released, previous);
+            expect(released).toHaveLength(previous.length);
+            expect(rtWrapper._framebuffer).toBe(rebuilt[0]);
+
+            const bind = vi.spyOn(engine as any, "_bindUnboundFramebuffer").mockImplementation(() => {});
+            vi.spyOn(engine, "setViewport").mockImplementation(() => {});
+            for (const layer of [0, 1, 2]) {
+                engine.bindFramebuffer(rtWrapper, undefined, undefined, undefined, undefined, 0, layer);
+                const bound = bind.mock.lastCall![0] as unknown as FakeFramebuffer;
+                expect(bound).toBe(rebuilt[layer]);
+                expect(bound.texture).toBe(replacement);
+                expect(bound.layer).toBe(layer);
+                expect(released).not.toContain(bound);
+            }
         });
     });
 });
