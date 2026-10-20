@@ -29,8 +29,7 @@ import { type INative } from "core/Engines/Native/nativeInterfaces";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
 import { GaussianSplattingSortWorker, GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
-import { GaussianSplattingGpuSorter, type GaussianSplattingGpuSortOutput, type IGaussianSplattingGpuSortOptions } from "./gaussianSplattingGpuSorter.pure";
-import { RegisterEnginesWebGPUExtensionsEngineComputeShader } from "core/Engines/WebGPU/Extensions/engine.computeShader.pure";
+import { GaussianSplattingGpuSorter, type GaussianSplattingGpuSortOutput, type IGaussianSplattingGpuSortOptions } from "./gaussianSplattingGpuSorter";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -38,18 +37,15 @@ declare const _native: INative;
 // The compute shaders of the GPU sorter are loaded lazily, only when a WebGPU mesh uses the GPU sort.
 let _GpuSortDependenciesReady = false;
 let _GpuSortDependenciesFailed = false;
-let _GpuSortDependenciesPromise: Nullable<Promise<void>> = null;
+let _GpuSortDependenciesLoading = false;
 
 async function _LoadGpuSortDependenciesAsync(): Promise<void> {
+    if (_GpuSortDependenciesLoading) {
+        return;
+    }
+    _GpuSortDependenciesLoading = true;
     try {
-        await Promise.all([
-            import("../../ShadersWGSL/gsSortKeys.compute"),
-            import("../../ShadersWGSL/gsSortCount.compute"),
-            import("../../ShadersWGSL/gsSortScanLocal.compute"),
-            import("../../ShadersWGSL/gsSortScanSums.compute"),
-            import("../../ShadersWGSL/gsSortScatter.compute"),
-            import("../../ShadersWGSL/gsSortOutput.compute"),
-        ]);
+        await GaussianSplattingGpuSorter.LoadDependenciesAsync();
         _GpuSortDependenciesReady = true;
     } catch (e) {
         _GpuSortDependenciesFailed = true;
@@ -57,9 +53,6 @@ async function _LoadGpuSortDependenciesAsync(): Promise<void> {
     }
 }
 
-function _LoadGpuSortDependencies(): void {
-    _GpuSortDependenciesPromise ??= _LoadGpuSortDependenciesAsync();
-}
 /** Internal mirror of ISogTexturePack (defined in loaders) — avoids a circular import. */
 interface ISogPackInternal {
     version: 1 | 2;
@@ -537,15 +530,18 @@ export class GaussianSplattingMeshBase extends Mesh {
      * When true, meshes sort their splats on the GPU with a compute shader when the engine is WebGPU with compute shader support
      * and the splat count is within the GPU sorter limit. The CPU worker is then not created. False by default: the asynchronous CPU
      * worker is usually faster on low-end GPUs while the camera moves, because the GPU sort competes with rendering. Other engines
-     * (WebGL, Native) always use the CPU worker. Read when the mesh instantiates its sort, so set it before loading data.
+     * (WebGL, Native) always use the CPU worker. Meshes of a scene using a custom render function (`scene.customRenderFunction`, other than
+     * the frame graph one) also keep the CPU worker, because the GPU sort is dispatched from `onBeforeRenderObservable`.
+     * Read when the mesh instantiates its sort, so set it before loading data.
      * See also {@link GaussianSplattingMeshBase.useGpuSort} to override it on a single mesh.
      * @experimental
      */
     public static UseGpuSort = false;
 
     /**
-     * Minimum number of frames between two GPU sorts of the same camera view when only the camera moved (data changes always sort
-     * immediately). The default of 1 re-sorts whenever the view changed. On a slow GPU the sort competes with rendering; a value of 2 or
+     * Minimum number of frames between two GPU sorts of the same camera view when only the view changed (the camera moved or the mesh world
+     * transform changed). Sorts caused by data changes (new splat data, parts, ranges) and the first sort of a view bypass this throttle and
+     * run immediately. The default of 1 re-sorts whenever the view changed. On a slow GPU the sort competes with rendering; a value of 2 or
      * more trades a slightly stale order during camera motion for a lower GPU cost, like the asynchronous CPU worker does.
      * @experimental
      */
@@ -1024,49 +1020,56 @@ export class GaussianSplattingMeshBase extends Mesh {
     public static ProgressiveUpdateAmount = 0;
 
     /**
-     * Gets the covariancesA texture
+     * Gets the covariancesA texture.
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get covariancesATexture() {
         return this._covariancesATexture;
     }
 
     /**
-     * Gets the covariancesB texture
+     * Gets the covariancesB texture.
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get covariancesBTexture() {
         return this._covariancesBTexture;
     }
 
     /**
-     * Gets the centers texture
+     * Gets the centers texture.
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get centersTexture() {
         return this._centersTexture;
     }
 
     /**
-     * Gets the colors texture
+     * Gets the colors texture.
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get colorsTexture() {
         return this._colorsTexture;
     }
 
     /**
-     * Gets the rotation matrix A texture (rotation elements m[0],m[1],m[2],m[4])
+     * Gets the rotation matrix A texture (rotation elements m[0],m[1],m[2],m[4]).
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get rotationsATexture() {
         return this._rotationsATexture;
     }
 
     /**
-     * Gets the rotation matrix B texture (rotation elements m[5],m[6],m[8],m[9])
+     * Gets the rotation matrix B texture (rotation elements m[5],m[6],m[8],m[9]).
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get rotationsBTexture() {
         return this._rotationsBTexture;
     }
 
     /**
-     * Gets the rotation scale texture (rotation element m[10] followed by scale diagonal sx,sy,sz)
+     * Gets the rotation scale texture (rotation element m[10] followed by scale diagonal sx,sy,sz).
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get rotationScaleTexture() {
         return this._rotationScaleTexture;
@@ -1097,7 +1100,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     /**
-     * Gets the SH textures
+     * Gets the SH textures.
+     * On WebGPU these are created as sampled-data-only textures (no render attachment usage), so they cannot be used as render targets.
      */
     public get shTextures() {
         return this._shTextures;
@@ -1771,7 +1775,12 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (this._useMrtAtlas || this._mrtAtlas) {
             return false;
         }
-        const engine = this._scene.getEngine();
+        // A custom render function (other than the frame graph one) does not notify onBeforeRenderObservable, where the sort is dispatched.
+        const scene = this._scene;
+        if (scene.customRenderFunction && !scene.frameGraph) {
+            return false;
+        }
+        const engine = scene.getEngine();
         if (!GaussianSplattingGpuSorter.IsSupported(engine) || vertexCount > GaussianSplattingGpuSorter.GetMaxSupportedSplatCount(engine)) {
             return false;
         }
@@ -1790,7 +1799,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._gpuObserver = this._scene.onBeforeRenderObservable.add(() => this._runGpuSort());
         }
         // The compute shaders are loaded lazily: the first sort waits for them.
-        _LoadGpuSortDependencies();
+        void _LoadGpuSortDependenciesAsync();
     }
 
     // Leaves the GPU sort mode. The worker is created by the next _postToWorker call.
@@ -1890,10 +1899,9 @@ export class GaussianSplattingMeshBase extends Mesh {
             return false;
         }
         if (!_GpuSortDependenciesReady) {
-            _LoadGpuSortDependencies();
+            void _LoadGpuSortDependenciesAsync();
             return false;
         }
-        RegisterEnginesWebGPUExtensionsEngineComputeShader();
         this._gpuSorter = new GaussianSplattingGpuSorter(this._scene.getEngine(), this.name + "_gpuSort");
         this._gpuSourceDirty = true;
         return true;

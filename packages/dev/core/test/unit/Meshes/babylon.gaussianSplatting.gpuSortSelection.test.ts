@@ -1,6 +1,6 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { GaussianSplattingGpuSorter } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter.pure";
+import { GaussianSplattingGpuSorter } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { GaussianSplattingMeshBase } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { Scene } from "core/scene";
@@ -178,5 +178,38 @@ describe("GaussianSplatting GPU sort selection", () => {
         const clone = mesh.clone("clone") as GaussianSplattingMesh;
 
         expect(clone.useGpuSort).toBe(false);
+    });
+
+    it("serializes and parses the instance override", () => {
+        for (const value of [true, false, null]) {
+            GaussianSplattingMeshBase.UseGpuSort = value === true ? false : true;
+            const mesh = createMesh(40, (m) => (m.useGpuSort = value));
+            const serialized = mesh.serialize({}, "binary");
+            expect(serialized.useGpuSort).toBe(value);
+
+            // Legacy files without the property parse as "not overridden".
+            const parsed = GaussianSplattingMesh.Parse(JSON.parse(JSON.stringify({ ...serialized, splatsData: undefined, shData: undefined, partIndices: undefined })), scene);
+            expect(parsed.useGpuSort).toBe(value);
+        }
+
+        const legacy = GaussianSplattingMesh.Parse({ name: "legacy", keepInRam: false }, scene);
+        expect(legacy.useGpuSort).toBeNull();
+    });
+
+    it("applies the parsed override when the data is loaded", () => {
+        GaussianSplattingMeshBase.UseGpuSort = false;
+        const source = createMesh(40, (m) => (m.useGpuSort = true));
+        const parsed = GaussianSplattingMesh.Parse(source.serialize({}, "binary"), scene);
+
+        expect(parsed.useGpuSort).toBe(true);
+        expect(parsed._isGpuSortActive).toBe(true);
+    });
+
+    it("falls back to the worker when the scene uses a custom render function", () => {
+        scene.customRenderFunction = () => {};
+        const mesh = createMesh(40);
+
+        expect(mesh._isGpuSortActive).toBe(false);
+        expect(workerCtor).toHaveBeenCalledTimes(1);
     });
 });

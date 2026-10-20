@@ -2617,6 +2617,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         serializationObject.type = this.getClassName();
         serializationObject.keepInRam = this._keepInRam;
         serializationObject.disableDepthSort = this._disableDepthSort;
+        serializationObject.useGpuSort = this.useGpuSort;
         serializationObject.viewUpdateThreshold = this.viewUpdateThreshold;
         serializationObject._flipY = this._flipY;
         serializationObject.pointSplattingScale = this._pointScale;
@@ -2659,6 +2660,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const mesh = new ctor(parsedMesh.name, null, scene, parsedMesh.keepInRam);
 
         mesh.disableDepthSort = parsedMesh.disableDepthSort ?? false;
+        // Read when the sort is instantiated by updateData, so it must be restored first.
+        mesh.useGpuSort = parsedMesh.useGpuSort ?? null;
         mesh.viewUpdateThreshold = parsedMesh.viewUpdateThreshold ?? GaussianSplattingMeshBase._DefaultViewUpdateThreshold;
 
         let splatsData: ArrayBuffer | string | undefined = parsedMesh.splatsData;

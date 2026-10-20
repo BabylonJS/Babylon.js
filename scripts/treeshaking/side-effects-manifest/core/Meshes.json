@@ -26,7 +26,6 @@
         "Meshes/GaussianSplatting/gaussianPointSplattingRenderer.ts": ["bare-import"],
         "Meshes/GaussianSplatting/gaussianSplattingCompoundMesh.ts": ["top-level-call"],
         "Meshes/GaussianSplatting/gaussianSplattingDebugger.ts": ["bare-import"],
-        "Meshes/GaussianSplatting/gaussianSplattingGpuSorter.ts": ["bare-import"],
         "Meshes/GaussianSplatting/gaussianSplattingMesh.ts": ["bare-import", "top-level-call"],
         "Meshes/GaussianSplatting/gaussianSplattingMeshBase.ts": ["bare-import"],
         "Meshes/GaussianSplatting/gaussianSplattingPartProxyMesh.ts": ["top-level-call"],

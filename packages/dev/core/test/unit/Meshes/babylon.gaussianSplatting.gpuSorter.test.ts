@@ -10,7 +10,7 @@ import {
     _GetGpuSortPaddedCount,
     _GetGpuSortPassCount,
     _PackGpuSortIntervals,
-} from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter.pure";
+} from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
 
 const Identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
@@ -64,11 +64,26 @@ describe("GaussianSplattingGpuSorter helpers", () => {
         expect(Array.from(out)).toEqual([-0, -0, -1, -8]);
     });
 
+    it("reads the world matrix at an offset of a flat array", () => {
+        const view = Identity.slice();
+        const flat = [...Identity, ...Identity];
+        flat[16 + 12] = 1;
+        flat[16 + 13] = 2;
+        flat[16 + 14] = 3;
+        const out = new Float32Array(8);
+        _ComputeGpuSortDepthCoefficients(flat, view, 1, null, out, 4, 16);
+        expect(Array.from(out.subarray(4))).toEqual([0, 0, 1, 3]);
+    });
+
     it("computes the depth range of a box over several coefficient sets", () => {
         const coefs = [0, 0, 1, 0, 0, 0, -1, 10];
         const range = _ComputeGpuSortDepthRange(coefs, 2, [-1, -1, -2], [1, 1, 3]);
         expect(range.min).toBe(-2);
         expect(range.max).toBe(12);
+
+        const result = { min: 0, max: 0 };
+        expect(_ComputeGpuSortDepthRange(coefs, 2, [-1, -1, -2], [1, 1, 3], result)).toBe(result);
+        expect(result).toEqual({ min: -2, max: 12 });
     });
 
     it("computes the key scale", () => {
