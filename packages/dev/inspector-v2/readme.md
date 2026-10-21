@@ -49,6 +49,49 @@ do not require an Inspector server. On a GPU-less machine, set
 These tests explicitly select Chromium with the Chrome channel even when the
 integration project's default browser is Firefox.
 
+## Babylon Lite statistics and performance
+
+The Lite **Statistics** pane reports the runtime version, latest engine draw count,
+registered surfaces and rendering contexts, and distinct scene meshes, lights,
+source materials, reachable texture wrappers, animation groups, and shadow generators.
+Standalone text and sprite layers are counted too. Counts span all registered
+surfaces and deduplicate shared entities; scene texture counts are not a census of
+every GPU allocation. Telemetry refreshes independently of Preferred Watch Mode.
+
+**Profile GPU Tasks** explicitly enables Lite's lazy timestamp-query profiler.
+The pane shows unsupported, disabled, pending, available, and error states, the
+GPU task span, individual task durations, and dropped-task counts. Overlapping task
+durations are not summed. Profiling and its bounded history survive tab switches;
+closing Inspector stops only profiling Inspector enabled. Profiling enabled
+by the application, including after Inspector opens, is read-only and remains enabled on close.
+The profiling switch follows the actual profiler state after failed toggles, allowing
+a one-click retry. Toggle failures and ownership changes detected at click time are
+reported in the pane and logged without unhandled promise rejections.
+
+The graph retains up to 120 distinct asynchronous GPU readbacks sampled at most
+four times per second. **Export GPU Samples to CSV** exports that retained window,
+not every rendered frame. The Fluent line chart plots GPU task span in milliseconds
+in a fixed 30-second window: -30 is 30 seconds ago and 0 is now. It scrolls at up to
+30 display updates per second independently of the GPU readback sampling cadence,
+without hover markers, guide lines, or callouts. Collapsing Performance suspends chart
+animation without stopping session sampling; reopening resumes from the profiling clock.
+Both Y-axis bounds fit the visible
+samples with 10% padding (at least 0.5 ms), with the lower bound clamped to zero.
+Stopped histories stay frozen at
+the last readback. Refreshing the app starts with profiling disabled; enable **Profile GPU
+Tasks** again to collect a new history.
+Its module and `@fluentui/react-charts` are loaded only when the
+Statistics performance section is displayed. ES module consumers must install the
+required `@fluentui/react-charts` peer dependency (for example,
+`npm install @fluentui/react-charts@^9.3.27`), even if they never open Statistics:
+bundlers resolve the lazy chart chunk at build time.
+GPU frame indices refer to readbacks; draw counts refer to
+the latest CPU-side render and may be from a different frame. System Info lists
+timestamp-query support, precision settings, and each surface's live dimensions,
+format, and MSAA sample count. The published Lite runtime has no public device-limit,
+driver-information, engine FPS, or CPU frame-step instrumentation APIs,
+so this pane does not substitute browser refresh rate or synthetic CPU durations.
+
 ## Modularity
 
 Modularity is hierarchical. For example, Scene Explorer is an extension of the tool Shell (the basic top/bottom tool bar + left/right side panes + primary content layout), and Audio Engine Explorer is an extension of Scene Explorer. Since this creates a dependency graph of components, a "service" architecture is leveraged, where each service can consume other services, and produce services that can be consumed by other services.
