@@ -102,6 +102,31 @@ describe("GaussianSplatting GPU sort selection", () => {
         expect(mesh.splatCount).toBe(48);
     });
 
+    it.each([true, false])("copies positions on same-size data updates only for the worker (useGpuSort=%s)", (useGpuSort) => {
+        const mesh = createMesh(40, (m) => (m.useGpuSort = useGpuSort));
+        const worker = mesh["_worker"];
+        if (worker) {
+            vi.mocked(worker.postMessage).mockClear();
+        }
+        const copy = vi.spyOn(Float32Array, "from");
+        const invalidateSource = vi.spyOn(mesh, "_markGpuSourceDirty");
+
+        mesh.updateData(createSplatData(40));
+
+        expect(mesh._isGpuSortActive).toBe(useGpuSort);
+        if (useGpuSort) {
+            expect(copy).not.toHaveBeenCalled();
+            expect(invalidateSource).toHaveBeenCalledOnce();
+            expect(workerCtor).not.toHaveBeenCalled();
+        } else {
+            expect(copy).toHaveBeenCalledOnce();
+            const positions = copy.mock.results[0].value as Float32Array;
+            expect(positions).toEqual(mesh["_splatPositions"]);
+            expect(positions.buffer).not.toBe(mesh["_splatPositions"]!.buffer);
+            expect(worker!.postMessage).toHaveBeenCalledWith({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount: 40 }, [positions.buffer]);
+        }
+    });
+
     it("falls back to the worker when the engine does not support the GPU sorter", () => {
         (GaussianSplattingGpuSorter.IsSupported as any).mockReturnValue(false);
         const mesh = createMesh(40);

@@ -1,4 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, onTestFinished, vi } from "vitest";
+import { DataBuffer } from "core/Buffers/dataBuffer";
+import { ComputeShader } from "core/Compute/computeShader";
+import { NullEngine } from "core/Engines/nullEngine";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Matrix } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import {
     GaussianSplattingGpuSorter,
@@ -16,6 +21,61 @@ import {
 const Identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 describe("GaussianSplattingGpuSorter shader readiness", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("returns to the fast path after refreshing the source with unchanged resources", async () => {
+        await GaussianSplattingGpuSorter.LoadDependenciesAsync();
+        const engine = new NullEngine();
+        engine["_isWebGPU"] = true;
+        engine.getCaps().supportComputeShaders = true;
+        Object.assign(engine, {
+            _storageBuffers: [],
+            createStorageBuffer: () => new DataBuffer(),
+            updateStorageBuffer: vi.fn(),
+            createComputeContext: () => ({ clear: vi.fn() }),
+            createComputeEffect: () => ({ isReady: () => true }),
+            computeDispatch: vi.fn(),
+        });
+        const texture = new BaseTexture(engine);
+        vi.spyOn(texture, "isReady").mockReturnValue(true);
+        const sorter = new GaussianSplattingGpuSorter(engine);
+        onTestFinished(() => {
+            sorter.dispose();
+            texture.dispose();
+            engine.dispose();
+        });
+        const source = { vertexCount: 40, textureWidth: 64, centersTexture: texture, boundsMin: [0, 0, 0], boundsMax: [1, 1, 1] };
+        expect(sorter.setSource(source)).toBe(true);
+        const output = sorter.createOutput();
+        const identity = Matrix.Identity();
+        expect(sorter.sort(output, identity, identity)).toBe(true);
+        const shaders = [output._keysCs!, output._outputCs, ...sorter["_countCs"], ...sorter["_scatterCs"], sorter["_scanLocalCs"], sorter["_scanSumsCs"]];
+        const bindings = shaders.map((shader) => Object.values(shader["_bindings"]).map((binding) => binding.object));
+        const clears = shaders.map((shader) => vi.spyOn(shader["_context"], "clear").mockClear());
+        const readiness = vi.spyOn(ComputeShader.prototype, "isReady");
+        const dispatch = vi.mocked(engine.computeDispatch);
+
+        expect(sorter.setSource(source)).toBe(true);
+        expect(sorter.sort(output, identity, identity)).toBe(true);
+        expect(readiness).toHaveBeenCalled();
+        shaders.forEach((shader, shaderIndex) => {
+            Object.values(shader["_bindings"]).forEach((binding, bindingIndex) => {
+                expect(binding.object).toBe(bindings[shaderIndex][bindingIndex]);
+            });
+        });
+        expect(clears.every((clear) => clear.mock.calls.length === 0)).toBe(true);
+        expect(shaders.every((shader) => shader.fastMode && !shader.triggerContextRebuild)).toBe(true);
+
+        readiness.mockClear();
+        dispatch.mockClear();
+        for (let i = 0; i < 3; i++) {
+            expect(sorter.sort(output, identity, identity)).toBe(true);
+        }
+        expect(dispatch).toHaveBeenCalledTimes(3 * (2 + 4 * sorter["_passCount"]));
+        expect(readiness).not.toHaveBeenCalled();
+        expect(clears.every((clear) => clear.mock.calls.length === 0)).toBe(true);
+    });
+
     it("caches readiness and invalidates the fast path when shared or output bindings change", () => {
         const shader = () => ({
             isReady: vi.fn(() => true),
