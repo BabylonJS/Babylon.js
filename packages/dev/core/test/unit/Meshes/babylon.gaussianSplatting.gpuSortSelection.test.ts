@@ -1,9 +1,10 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { FreeCamera } from "core/Cameras/freeCamera";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingGpuSorter, type IGaussianSplattingGpuSortSource } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { GaussianSplattingMeshBase } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { GaussianSplattingSortWorkerCommand } from "core/Meshes/GaussianSplatting/gaussianSplattingSortWorker";
 import { Scene } from "core/scene";
@@ -263,6 +264,78 @@ describe("GaussianSplatting GPU sort selection", () => {
         vi.spyOn(mesh as any, "_ensureGpuSorter").mockReturnValue(true);
         return sorter;
     };
+
+    it.each([1, 2])("coalesces compound matrix edits before rendering into one sort for each of %s views", (viewCount) => {
+        const cameras = Array.from({ length: viewCount }, (_, i) => new FreeCamera("cam" + i, new Vector3(i, 0, -5), scene));
+        scene.activeCamera = cameras[0];
+        scene.activeCameras = cameras;
+        const mesh = new GaussianSplattingCompoundMesh("compound", null, scene);
+        mesh.updateData(
+            createSplatData(40),
+            undefined,
+            undefined,
+            Uint8Array.from({ length: 40 }, (_, i) => (i < 20 ? 0 : 1))
+        );
+        mesh.setWorldMatrixForPart(0, Matrix.Identity());
+        mesh.setWorldMatrixForPart(1, Matrix.Identity());
+        const sorter = installSorter(mesh);
+        mesh._postToWorker(true);
+        expect(sorter.sort).toHaveBeenCalledTimes(viewCount);
+        expect(mesh["_readyToDisplay"]).toBe(true);
+        // The headless sorter has no drawable buffers; start from the state after a successful first render.
+        mesh["_hasRenderedOnce"] = true;
+        mesh.setEnabled(false);
+        sorter.sort.mockClear();
+        sorter.setPartMatrices.mockClear();
+        const matricesAtDispatch: number[][][] = [];
+        sorter.sort.mockImplementation(() => {
+            matricesAtDispatch.push([0, 1].map((part) => Array.from(mesh.getWorldMatrixForPart(part).m)));
+            expect(scene._isInRenderingMeshEvaluation()).toBe(false);
+            return true;
+        });
+        const first = Matrix.Translation(1, 2, 3);
+        const second = Matrix.Translation(4, 5, 6);
+
+        mesh.setWorldMatrixForPart(0, Matrix.Translation(-1, 0, 0));
+        mesh.setWorldMatrixForPart(1, second);
+        mesh.setWorldMatrixForPart(0, first);
+        mesh._postToWorker(true);
+
+        expect(sorter.sort).not.toHaveBeenCalled();
+        expect(sorter.setPartMatrices).not.toHaveBeenCalled();
+        expect(mesh._isDepthSortSettled).toBe(false);
+
+        scene.render();
+
+        expect(sorter.sort).toHaveBeenCalledTimes(viewCount);
+        expect(sorter.setPartMatrices).toHaveBeenCalledExactlyOnceWith([first, second]);
+        expect(matricesAtDispatch).toEqual(Array.from({ length: viewCount }, () => [Array.from(first.m), Array.from(second.m)]));
+        expect(getViews(mesh).map((view) => view.gpuLastSortFrameId)).toEqual(Array(viewCount).fill(scene.getFrameId()));
+        expect(mesh._isDepthSortSettled).toBe(true);
+
+        // A second pre-render notification without changed inputs must not enqueue another sort.
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(sorter.sort).toHaveBeenCalledTimes(viewCount);
+    });
+
+    it("keeps GPU sort bootstrap progressing without a render loop", () => {
+        scene.activeCamera = new FreeCamera("cam", new Vector3(0, 0, -5), scene);
+        const mesh = createMesh(40);
+        const sorter = installSorter(mesh);
+        sorter.sort.mockReturnValueOnce(false);
+
+        mesh._postToWorker(true);
+        expect(mesh["_readyToDisplay"]).toBe(false);
+        mesh._postToWorker(true);
+        expect(mesh["_readyToDisplay"]).toBe(true);
+        expect(sorter.sort).toHaveBeenCalledTimes(2);
+        expect(mesh["_hasRenderedOnce"]).toBe(false);
+
+        // Readiness polling may request another sort if inputs change before the first draw.
+        mesh.setWorldMatrixForPart(0, Matrix.Translation(1, 0, 0));
+        expect(sorter.sort).toHaveBeenCalledTimes(3);
+        expect(mesh._isDepthSortSettled).toBe(true);
+    });
 
     it("keeps selection independent of shader dependency loading", async () => {
         await GaussianSplattingGpuSorter.LoadDependenciesAsync();
