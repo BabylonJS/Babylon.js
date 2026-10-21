@@ -465,11 +465,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @returns true when ready
      */
     public override isReady(completeCheck = false): boolean {
-        for (const proxy of this._partProxies) {
-            if (proxy) {
-                proxy.computeWorldMatrix(true);
-            }
-        }
+        this._syncPartProxyWorldMatrices();
         return super.isReady(completeCheck);
     }
 
@@ -763,7 +759,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Force-computes every part proxy's world matrix (a non-forced call skips nodes already computed this frame).
      * @internal
      */
-    public _syncPartProxyWorldMatrices(): void {
+    public override _syncPartProxyWorldMatrices(): void {
         for (const proxy of this._partProxies) {
             proxy?.computeWorldMatrix(true);
         }
@@ -1057,6 +1053,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     public setWorldMatrixForPart(partIndex: number, worldMatrix: Matrix): void {
         if (this._partMatrices.length <= partIndex) {
+            if (this._partMatrices.length === 0) {
+                this._markGpuSourceDirty();
+            }
             this.computeWorldMatrix(true);
             const defaultMatrix = this.getWorldMatrix();
             while (this._partMatrices.length <= partIndex) {

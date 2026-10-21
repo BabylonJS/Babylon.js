@@ -1,6 +1,8 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { FreeCamera } from "core/Cameras/freeCamera";
-import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { FrameGraph } from "core/FrameGraph/frameGraph";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingGpuSorter, type IGaussianSplattingGpuSortSource } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
@@ -316,6 +318,172 @@ describe("GaussianSplatting GPU sort selection", () => {
         // A second pre-render notification without changed inputs must not enqueue another sort.
         scene.onBeforeRenderObservable.notifyObservers(scene);
         expect(sorter.sort).toHaveBeenCalledTimes(viewCount);
+    });
+
+    it.each([1, 2])("sorts current compound proxy transforms on the next rendered frame for each of %s views", (viewCount) => {
+        const cameras = Array.from({ length: viewCount }, (_, i) => new FreeCamera("cam" + i, new Vector3(i, 0, -5), scene));
+        scene.activeCamera = cameras[0];
+        scene.activeCameras = cameras;
+        const mesh = new GaussianSplattingCompoundMesh("compound", null, scene);
+        const proxies = mesh.addParts([createMesh(20), createMesh(20)]);
+        for (const proxy of proxies) {
+            proxy.rotationQuaternion = null;
+        }
+        mesh.alwaysSelectAsActiveMesh = true;
+        const sorter = installSorter(mesh);
+        // The headless sorter has no drawable buffers; keep the scene's readiness and render scheduling.
+        const draw = vi.spyOn(mesh as any, "_drawColorPass").mockImplementation((cameraMesh: any) => cameraMesh);
+        mesh._postToWorker(true);
+        for (let frame = 0; frame < 3; frame++) {
+            scene.render();
+        }
+        expect(mesh["_hasRenderedOnce"]).toBe(true);
+        expect(draw).toHaveBeenCalled();
+        expect(mesh._isDepthSortSettled).toBe(true);
+
+        const matricesAtDispatch: number[][][] = [];
+        sorter.sort.mockImplementation(() => {
+            matricesAtDispatch.push(proxies.map((proxy) => Array.from(mesh.getWorldMatrixForPart(proxy.partIndex).m)));
+            expect(scene._isInRenderingMeshEvaluation()).toBe(false);
+            return true;
+        });
+        for (let frame = 1; frame <= 2; frame++) {
+            sorter.sort.mockClear();
+            sorter.setPartMatrices.mockClear();
+            matricesAtDispatch.length = 0;
+            const first = Matrix.Compose(Vector3.One(), Quaternion.RotationYawPitchRoll(frame * 0.25, 0, 0), new Vector3(frame, 2, 3));
+            const second = Matrix.Compose(Vector3.One(), Quaternion.RotationYawPitchRoll(-frame * 0.5, 0, 0), new Vector3(4, -frame, 6));
+
+            proxies[0].position.set(frame, 2, 3);
+            proxies[0].rotation.y = frame * 0.25;
+            proxies[1].position.set(4, -frame, 6);
+            proxies[1].rotation.y = -frame * 0.5;
+            expect(sorter.sort).not.toHaveBeenCalled();
+
+            scene.render();
+
+            expect(sorter.sort).toHaveBeenCalledTimes(viewCount);
+            expect(sorter.setPartMatrices).toHaveBeenCalledExactlyOnceWith([expect.objectContaining({ m: first.m }), expect.objectContaining({ m: second.m })]);
+            expect(matricesAtDispatch).toEqual(Array.from({ length: viewCount }, () => [Array.from(first.m), Array.from(second.m)]));
+            expect(getViews(mesh).map((view) => view.gpuLastSortFrameId)).toEqual(Array(viewCount).fill(scene.getFrameId()));
+            expect(mesh._isDepthSortSettled).toBe(true);
+
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(sorter.sort).toHaveBeenCalledTimes(viewCount);
+        }
+    });
+
+    it.each(["RTT", "frame graph"])("keeps recent compound views when proxy synchronization posts during %s pre-render", async (renderMode) => {
+        const mainCamera = new FreeCamera("main", new Vector3(0, 0, -5), scene);
+        const targetCamera = new FreeCamera("target", new Vector3(1, 0, -5), scene);
+        scene.activeCamera = mainCamera;
+        const mesh = new GaussianSplattingCompoundMesh("compound", null, scene);
+        const proxies = mesh.addParts([createMesh(20), createMesh(20)]);
+        for (const proxy of proxies) {
+            proxy.rotationQuaternion = null;
+        }
+        mesh.alwaysSelectAsActiveMesh = true;
+        const sorter = installSorter(mesh);
+        vi.spyOn(mesh as any, "_drawColorPass").mockImplementation((cameraMesh: any) => cameraMesh);
+        const target = new RenderTargetTexture("target", 32, scene);
+        target.activeCamera = targetCamera;
+        target.renderList = [mesh];
+        scene.customRenderTargets.push(target);
+        mesh._postToWorker(true);
+        for (let frame = 0; frame < 3; frame++) {
+            scene.render();
+        }
+        expect(mesh["_hasRenderedOnce"]).toBe(true);
+        expect(getViews(mesh).map((view) => view.camera)).toEqual([mainCamera, targetCamera]);
+        expect(getViews(mesh).every((view) => view.sortAppliedId > 0)).toBe(true);
+        expect(mesh._isDepthSortSettled).toBe(true);
+
+        scene.activeCameras = [mainCamera];
+        if (renderMode === "frame graph") {
+            scene.frameGraph = new FrameGraph(scene);
+            await scene.frameGraph.buildAsync();
+        }
+        const matricesAtDispatch: number[][][] = [];
+        sorter.sort.mockImplementation(() => {
+            matricesAtDispatch.push(proxies.map((proxy) => Array.from(mesh.getWorldMatrixForPart(proxy.partIndex).m)));
+            // Scene wraps the whole frame-graph callback in mesh evaluation, including pre-render.
+            expect(scene._isInRenderingMeshEvaluation()).toBe(renderMode === "frame graph");
+            expect(engine._currentRenderTarget).toBeNull();
+            return true;
+        });
+        for (let frame = 1; frame <= 2; frame++) {
+            // Refresh each camera as a render pass would, without including the RTT camera in activeCameras.
+            scene.activeCameras = null;
+            scene.activeCamera = targetCamera;
+            mesh._postToWorker();
+            scene.activeCamera = mainCamera;
+            scene.activeCameras = [mainCamera];
+            mesh._postToWorker();
+            sorter.sort.mockClear();
+            sorter.setPartMatrices.mockClear();
+            matricesAtDispatch.length = 0;
+            const first = Matrix.Compose(Vector3.One(), Quaternion.RotationYawPitchRoll(frame * 0.25, 0, 0), new Vector3(frame, 2, 3));
+            const second = Matrix.Compose(Vector3.One(), Quaternion.RotationYawPitchRoll(-frame * 0.5, 0, 0), new Vector3(4, -frame, 6));
+            proxies[0].position.set(frame, 2, 3);
+            proxies[0].rotation.y = frame * 0.25;
+            proxies[1].position.set(4, -frame, 6);
+            proxies[1].rotation.y = -frame * 0.5;
+
+            scene.render();
+
+            expect(sorter.sort).toHaveBeenCalledTimes(2);
+            expect(sorter.setPartMatrices).toHaveBeenCalledExactlyOnceWith([expect.objectContaining({ m: first.m }), expect.objectContaining({ m: second.m })]);
+            expect(matricesAtDispatch).toEqual(Array.from({ length: 2 }, () => [Array.from(first.m), Array.from(second.m)]));
+            expect(getViews(mesh).map((view) => view.gpuLastSortFrameId)).toEqual([scene.getFrameId(), scene.getFrameId()]);
+            expect(getViews(mesh).every((view) => view.gpuAppliedRevision === mesh["_gpuDataRevision"])).toBe(true);
+            expect(mesh._isDepthSortSettled).toBe(true);
+            expect(mesh._isGpuSortActive).toBe(true);
+        }
+    });
+
+    it.each([false, true])("refreshes the GPU source when the first part matrix enables compound sorting (identity=%s)", (identity) => {
+        scene.activeCamera = new FreeCamera("main", new Vector3(0, 0, -5), scene);
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const data = createSplatData(2);
+        const positions = new Float32Array(data);
+        positions[2] = 1;
+        positions[8] = 0;
+        positions[10] = 2;
+        mesh.updateData(data, undefined, undefined, new Uint8Array([0, 1]));
+        const sorter = installSorter(mesh);
+        mesh.alwaysSelectAsActiveMesh = true;
+        vi.spyOn(mesh as any, "_drawColorPass").mockImplementation((cameraMesh: any) => cameraMesh);
+        mesh._postToWorker(true);
+        for (let frame = 0; frame < 3; frame++) {
+            scene.render();
+        }
+        expect(mesh["_hasRenderedOnce"]).toBe(true);
+        expect(mesh.isCompound).toBe(false);
+        expect(mesh.partIndicesTexture).not.toBeNull();
+        expect(sorter.setSource.mock.lastCall![0].partIndicesTexture).toBeUndefined();
+        sorter.setSource.mockClear();
+        sorter.setPartMatrices.mockClear();
+        sorter.sort.mockClear();
+        const firstPartMatrix = identity ? Matrix.Identity() : Matrix.Translation(0, 0, -2);
+
+        mesh.setWorldMatrixForPart(1, firstPartMatrix);
+        expect(mesh.isCompound).toBe(true);
+        expect(sorter.sort).not.toHaveBeenCalled();
+        scene.render();
+
+        expect(sorter.sort).toHaveBeenCalledOnce();
+        expect(sorter.setSource).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ partIndicesTexture: mesh.partIndicesTexture }));
+        expect(sorter.setPartMatrices).toHaveBeenCalledExactlyOnceWith([expect.objectContaining({ m: Matrix.Identity().m }), expect.objectContaining({ m: firstPartMatrix.m })]);
+        expect(mesh._isDepthSortSettled).toBe(true);
+
+        sorter.setSource.mockClear();
+        sorter.sort.mockClear();
+        mesh.setWorldMatrixForPart(1, Matrix.Translation(0, 0, -3));
+        scene.render();
+
+        expect(sorter.sort).toHaveBeenCalledOnce();
+        expect(sorter.setSource).not.toHaveBeenCalled();
+        expect(mesh._isDepthSortSettled).toBe(true);
     });
 
     it("keeps GPU sort bootstrap progressing without a render loop", () => {

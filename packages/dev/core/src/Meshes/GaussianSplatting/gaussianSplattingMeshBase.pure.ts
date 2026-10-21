@@ -1784,6 +1784,11 @@ export class GaussianSplattingMeshBase extends Mesh {
         return null;
     }
 
+    /**
+     * Synchronizes compound part transforms before checking whether the GPU sort is up to date.
+     */
+    protected _syncPartProxyWorldMatrices(): void {}
+
     // Whether this mesh can use the GPU sorter. `vertexCount` is the (possibly upcoming) source splat count.
     private _isGpuSortEligible(vertexCount: number): boolean {
         if (!(this.useGpuSort ?? GaussianSplattingMeshBase.UseGpuSort) || IsNative || this._gpuSortForbidden || _GpuSortDependenciesFailed) {
@@ -2090,6 +2095,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         ) {
             return;
         }
+        this._syncPartProxyWorldMatrices();
         const scene = this._scene;
         const frameId = scene.getFrameId();
         const views = this._gpuViewInfos;

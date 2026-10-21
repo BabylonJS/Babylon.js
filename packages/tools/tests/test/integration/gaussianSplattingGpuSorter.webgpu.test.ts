@@ -249,6 +249,7 @@ const runGpuSortCase = async (testCase: IGpuSortCase): Promise<IGpuSortStageResu
 
 const initPage = async (page: Page) => {
     const config = getGlobalConfig();
+    await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204 }));
     await page.goto(config.baseUrl + "/empty.html");
     await page.waitForSelector("#babylon-canvas");
     await page.waitForFunction(() => window.BABYLON?.Tools);

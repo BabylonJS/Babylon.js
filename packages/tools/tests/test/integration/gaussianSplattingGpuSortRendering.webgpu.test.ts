@@ -17,6 +17,7 @@ for (const kind of ["plain", "compound", "sog"] as const) {
                 errors.push(message.text());
             }
         });
+        await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204 }));
         await page.goto(config.baseUrl + "/empty.html");
         await page.waitForFunction(() => window.BABYLON?.Tools);
         const supported = await page.evaluate(async () => !!navigator.gpu && !!(await navigator.gpu.requestAdapter()));
