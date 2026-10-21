@@ -11,6 +11,7 @@ import { Color4 } from "../Maths/math.color.pure";
 import { type Nullable } from "../types";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { type Camera } from "../Cameras/camera.pure";
+import { type Observer } from "../Misc/observable";
 import { Material } from "../Materials/material.pure";
 import { type SubMesh } from "../Meshes/subMesh.pure";
 import { type PrePassEffectConfiguration } from "./prePassEffectConfiguration";
@@ -47,6 +48,8 @@ export class PrePassRenderer {
 
     private _scene: Scene;
     private _engine: AbstractEngine;
+    private _activeCameraChangedObserver: Nullable<Observer<Scene>>;
+    private _activeCamerasChangedObserver: Nullable<Observer<Scene>>;
 
     /**
      * Number of textures in the multi render target texture where the scene is directly rendered
@@ -341,6 +344,8 @@ export class PrePassRenderer {
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
         this._currentTarget = this.defaultRT;
+        this._activeCameraChangedObserver = scene.onActiveCameraChanged.add(() => this.markAsDirty());
+        this._activeCamerasChangedObserver = scene.onActiveCamerasChanged.add(() => this.markAsDirty());
     }
 
     /**
@@ -979,6 +984,8 @@ export class PrePassRenderer {
      * Disposes the prepass renderer.
      */
     public dispose() {
+        this._scene.onActiveCameraChanged.remove(this._activeCameraChangedObserver);
+        this._scene.onActiveCamerasChanged.remove(this._activeCamerasChangedObserver);
         this._scene._setPreviousWorldMatricesRequired(this, false);
         for (let i = this.renderTargets.length - 1; i >= 0; i--) {
             this.renderTargets[i].dispose();
