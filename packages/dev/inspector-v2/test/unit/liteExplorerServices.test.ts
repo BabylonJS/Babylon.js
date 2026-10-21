@@ -12,6 +12,7 @@ import {
     type TextLayer,
     type TextRenderer,
     type Texture2D,
+    createSceneContext,
     getPbrClearCoat,
     getTextureMetadata,
 } from "@babylonjs/lite";
@@ -88,6 +89,7 @@ import { MaterialExplorerServiceDefinition } from "../../src/lite/services/panes
 import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/scene/meshExplorerService";
 import { SceneResourceIndexServiceDefinition, SceneResourceIndexServiceIdentity } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { SceneResourceIndex } from "../../src/lite/services/panes/scene/sceneResources";
+import { InspectorUtilityScenes } from "../../src/lite/sceneEntityUtils";
 import { SpriteLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
@@ -201,6 +203,33 @@ function GetNames(nodes: readonly ExplorerNode[]): string[] {
 }
 
 describe("Babylon Lite engine explorer service", () => {
+    it("excludes Inspector gizmo utility scenes and their resources without hiding user utility scenes", () => {
+        const mainMaterial = CreateMaterial("standard", "Main");
+        const gizmoMaterial = CreateMaterial("standard", "Gizmo");
+        const scenes: SceneContext[] = [];
+        const engine = CreateResourceEngine(scenes);
+        Object.assign(engine, { engine });
+        const mainScene = createSceneContext(engine, { defaultRenderTask: false });
+        mainScene.meshes.push(CreateMesh("Main", mainMaterial));
+        const utilityScene = createSceneContext(engine, { defaultRenderTask: false });
+        utilityScene.name = "UtilityLayer";
+        utilityScene.meshes.push(CreateMesh("Gizmo", gizmoMaterial));
+        const userUtilityScene = createSceneContext(engine, { defaultRenderTask: false });
+        userUtilityScene.name = "UtilityLayer";
+        InspectorUtilityScenes.add(utilityScene);
+        scenes.push(mainScene, utilityScene, userUtilityScene);
+        const watcher = CreateTopologyWatcherService();
+        const service = EngineExplorerServiceDefinition.factory({ engine }, {} as IShellService, {} as ISelectionService, watcher.watcherService)!;
+        const nodes = PaneRegistrations.at(-1)!.options.getNodes();
+        expect(nodes.map((node) => node.entity)).toEqual([mainScene, userUtilityScene]);
+        const index = new SceneResourceIndex(engine);
+        expect(index.getMaterialRecord(mainMaterial)?.scenes).toEqual([mainScene]);
+        expect(index.getMaterialRecord(gizmoMaterial)).toBeUndefined();
+        expect(index.getTopologySnapshot()).not.toContain(utilityScene);
+        index.dispose();
+        service.dispose?.();
+    });
+
     it("uses scene names with fallback and updates them live", () => {
         PaneRegistrations.length = 0;
         const unnamedScene = { _kind: "scene", name: "" } as SceneContext;
