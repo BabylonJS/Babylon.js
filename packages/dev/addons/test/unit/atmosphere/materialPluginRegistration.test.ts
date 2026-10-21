@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
@@ -46,7 +46,9 @@ describe("Atmosphere material plugin registration", () => {
         sceneB = CreateScene(engine);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        // Atmosphere construction starts lazy shader imports that must finish before teardown.
+        await vi.dynamicImportSettled();
         engine.dispose();
     });
 

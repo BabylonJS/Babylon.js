@@ -573,7 +573,9 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _splatSizeMin: number = Infinity;
     private _splatSizeMax: number = -Infinity;
     private _sortIsDirty = false;
-    private _activeSplatRanges: Nullable<Uint32Array> = null;
+    // A forced sort requested while no classic pass needed sorting; runs on the next classic pass.
+    private _forcedSortPending = false;
+    protected _activeSplatRanges: Nullable<Uint32Array> = null;
     private _activeSplatRangeKey = "";
     private _activeSplatRenderCount = 0;
 
@@ -590,6 +592,10 @@ export class GaussianSplattingMeshBase extends Mesh {
     private static _PlyConversionBatchSize = 32768;
     /** @internal */
     public _shDegree = 0;
+    /** Incremented whenever `_updateData` replaces the splat data, even when it reuses the same buffer. @internal */
+    public _splatDataRevision = 0;
+    /** True while `_updateData` is filling the atlas, so consumers keep the last complete data. @internal */
+    public _splatDataPending = false;
     protected _maxShDegree = 0;
 
     private static readonly _BatchSize = 16; // 16 splats per instance
@@ -688,6 +694,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _disableDepthSort = false;
     /**
      * If true, disables depth sorting of the splats (default: false)
+     * Disabling sorting also discards deferred forced-sort requests.
      */
     public get disableDepthSort() {
         return this._disableDepthSort;
@@ -697,6 +704,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._worker?.terminate();
             this._worker = null;
             this._disableDepthSort = true;
+            this._forcedSortPending = false;
         } else if (this._disableDepthSort && !value) {
             this._disableDepthSort = false;
             this._sortIsDirty = true;
@@ -792,14 +800,15 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     /**
      * Whether the depth sort is settled: a sort computed for the current active ranges and camera has been
-     * applied to the rendered index buffer, and no further sort is pending or in flight. For a static camera
+     * applied to the rendered index buffer, and no further sort is pending or in flight (including a forced sort
+     * deferred until a classic pass needs it). For a static camera
      * and a fixed active set this becomes true once the final sort completes. Used by streaming subclasses to
      * detect when rendering is fully up to date (e.g. for deterministic screenshots) and by IBL shadows to
      * avoid voxelizing against an index buffer the worker has not finished (re)building yet.
      * @internal
      */
     public get _isDepthSortSettled(): boolean {
-        return this._readyToDisplay && !this._sortIsDirty && this._canPostToWorker;
+        return this._readyToDisplay && !this._sortIsDirty && !this._forcedSortPending && this._canPostToWorker;
     }
 
     // (Re)allocates the worker depth buffer to the given padded size. A fresh array is allocated when the
@@ -1135,16 +1144,22 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _loadingPromise: Promise<void> | null = null;
 
     /**
-     * set rendering material
+     * Sets the rendering material and updates camera views. Notifies material-change observers when the material changes.
      */
-    public override set material(value: Material) {
+    public override set material(value: Nullable<Material>) {
+        const previous = this._material;
         this._material = value;
-        this._material.backFaceCulling = false;
-        this._material.cullBackFaces = false;
-        value.resetDrawCache();
+        if (value) {
+            value.backFaceCulling = false;
+            value.cullBackFaces = false;
+            value.resetDrawCache();
+        }
         this._cameraViewInfos?.forEach((cameraViewInfo) => {
             cameraViewInfo.mesh.material = value;
         });
+        if (previous !== value && this.onMaterialChangedObservable.hasObservers()) {
+            this.onMaterialChangedObservable.notifyObservers(this);
+        }
     }
 
     /**
@@ -1258,11 +1273,15 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @returns true when ready
      */
     public override isReady(completeCheck = false): boolean {
-        if (!super.isReady(completeCheck, true)) {
+        const sortRequired = this._isSortRequired();
+        if (!super.isReady(sortRequired && completeCheck, true)) {
             return false;
         }
 
-        if (!this._readyToDisplay) {
+        if (!sortRequired && !this._geometry) {
+            this._postToWorker();
+        }
+        if (sortRequired && !this._readyToDisplay) {
             // mesh is ready when worker has done at least 1 sorting
             this._postToWorker(true);
             return false;
@@ -1271,7 +1290,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         // Before the first successful render, require an applied index buffer. A pending refresh can
         // use the latest completed buffer, otherwise a transform changed every frame would starve the
         // first render. Once rendered, the render loop continuously re-sorts as the camera/world changes.
-        if (!this._hasRenderedOnce && !this._disableDepthSort) {
+        if (sortRequired && !this._hasRenderedOnce && !this._disableDepthSort) {
             const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
             const canRenderWithPendingRefresh = this._scene._isInRenderingMeshEvaluation() && cameras.filter((camera) => camera !== null).length === 1;
             const worldMatrix = this.computeWorldMatrix(true);
@@ -1494,7 +1513,15 @@ export class GaussianSplattingMeshBase extends Mesh {
         // null before any splat data has been committed) or the native binding throws on the conversion.
         const hasNativeSort = !!Native?.sortSplats && !!this._splatPositions && !!this._splatIndex;
         // When depth sort is disabled, no sort function must run: fall through to the no-sort path below.
-        const hasSortFunction = !this._disableDepthSort && (this._worker || hasNativeSort);
+        const sortRequired = this._isSortRequired();
+        const hasSortFunction = sortRequired && !this._disableDepthSort && (this._worker || hasNativeSort);
+        // A forced sort (new data or parts) requested while no classic pass needs sorting (e.g. point
+        // splatting) is deferred to the next classic pass; the camera and world may be unchanged by then.
+        if (forced && !sortRequired && !this._disableDepthSort) {
+            this._forcedSortPending = true;
+        } else if (hasSortFunction && this._forcedSortPending) {
+            forced = true;
+        }
         if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             const worldMatrix = this.computeWorldMatrix(true);
             // view infos sorted by least recent updated frame id
@@ -1510,6 +1537,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                     cameraViewInfos.sortRequestId = ++this._sortRequestId;
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
+                    this._forcedSortPending = false;
                     if (this._worker) {
                         this._worker.postMessage(
                             {
@@ -1546,7 +1574,17 @@ export class GaussianSplattingMeshBase extends Mesh {
                     }
                 }
             });
-        } else if (this._disableDepthSort) {
+        } else if (this._disableDepthSort || !sortRequired) {
+            // ShadowGenerator bypasses render()/isReady(), so its atlas cannot wait for a deferred camera sort.
+            if (this._delayedTextureUpdate) {
+                this._updateSplatIndexBuffer(this._vertexCount);
+                this._cameraViewInfos.forEach((info) => {
+                    if (info.splatIndexBufferSet) {
+                        info.mesh.thinInstanceBufferUpdated("splatIndex");
+                    }
+                });
+                this._commitDelayedTextureUpdate();
+            }
             if (this._splatIndex) {
                 activeViewInfos.forEach((cameraViewInfos) => {
                     if (!cameraViewInfos.splatIndexBufferSet) {
@@ -1556,7 +1594,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                 });
                 this._readyToDisplay = true;
             }
-            this._canPostToWorker = true;
+            // With a worker, the gate is owned by in-flight sorts and rebuilds; their completion unlocks it.
+            if (this._disableDepthSort || !this._worker) {
+                this._canPostToWorker = true;
+            }
         }
     }
     /**
@@ -1567,6 +1608,15 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @returns the current mesh
      */
     public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+        let beforeNotified = false;
+        if (!this._isSortRequired()) {
+            this.onBeforeRenderObservable.notifyObservers(this);
+            beforeNotified = true;
+            if (this._drawPointPass(enableAlphaMode)) {
+                this.onAfterRenderObservable.notifyObservers(this);
+                return this;
+            }
+        }
         this._postToWorker();
 
         // geometry used for shadows, bind the first found in the camera view infos
@@ -1577,10 +1627,13 @@ export class GaussianSplattingMeshBase extends Mesh {
         const cameraId = this._scene.activeCamera!.uniqueId;
         const cameraViewInfos = this._cameraViewInfos.get(cameraId);
         if (!cameraViewInfos || !cameraViewInfos.splatIndexBufferSet) {
+            if (beforeNotified) {
+                this.onAfterRenderObservable.notifyObservers(this);
+            }
             return this;
         }
 
-        if (this.onBeforeRenderObservable) {
+        if (!beforeNotified && this.onBeforeRenderObservable) {
             this.onBeforeRenderObservable.notifyObservers(this);
         }
         const mesh = cameraViewInfos.mesh;
@@ -1596,7 +1649,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             mesh.setMaterialForRenderPass(renderPassId, renderPassMaterial);
         }
 
-        const ret = mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+        const ret = this._drawColorPass(mesh, subMesh, enableAlphaMode, effectiveMeshReplacement);
 
         this._hasRenderedOnce = true;
 
@@ -1609,6 +1662,35 @@ export class GaussianSplattingMeshBase extends Mesh {
             this.onAfterRenderObservable.notifyObservers(this);
         }
         return ret;
+    }
+
+    /**
+     * Draws the inner per-camera mesh for one render pass. Subclasses may replace selected passes.
+     * @param mesh inner per-camera mesh carrying the sorted splat geometry
+     * @param subMesh the submesh to draw
+     * @param enableAlphaMode whether alpha mode can be changed
+     * @param effectiveMeshReplacement optional mesh providing render info
+     * @returns the drawn mesh
+     */
+    protected _drawColorPass(mesh: Mesh, subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+        return mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+    }
+
+    /**
+     * Whether the current pass needs classic sorted splat geometry.
+     * @returns whether classic sorting is required
+     */
+    protected _isSortRequired(): boolean {
+        return true;
+    }
+
+    /**
+     * Handles a compute-owned pass before allocating or waiting for sorted geometry.
+     * @param _enableAlphaMode whether alpha mode can be changed
+     * @returns whether the pass was handled
+     */
+    protected _drawPointPass(_enableAlphaMode: boolean): boolean {
+        return false;
     }
 
     private static _TypeNameToEnum(name: string): PLYType {
@@ -2675,6 +2757,16 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._delayedTextureUpdate = { covA, covB, colors: colorArray, centers: this._splatPositions!, sh };
     }
 
+    private _commitDelayedTextureUpdate(): void {
+        const update = this._delayedTextureUpdate;
+        if (!update) {
+            return;
+        }
+        const textureSize = this._getTextureSize(this._vertexCount);
+        this._updateSubTextures(update.centers, update.covA, update.covB, update.colors, 0, textureSize.y, update.sh);
+        this._delayedTextureUpdate = null;
+    }
+
     /**
      * Creates (or recreates) the MRT-backed data atlas at the given size and points the four core data
      * textures at its attachments. The attachments use the same decoded GS layout as {@link GaussianSplattingWorkBuffer}
@@ -3238,6 +3330,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._readyToDisplay = false;
         }
         this._flipY = flipY;
+        this._splatDataRevision++;
+        this._splatDataPending = true;
 
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
@@ -3384,6 +3478,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._cachedBoundingMin = minimum.clone();
         this._cachedBoundingMax = maximum.clone();
 
+        this._splatDataPending = false;
         this._postToWorker(true);
     }
 
@@ -3472,7 +3567,13 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
         const engine = this._getTextureDataUpdateEngine();
-        engine.updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        const internalTexture = texture.getInternalTexture()!;
+        // NativeEngine and NullEngine support complete raw uploads, but not sub-texture uploads.
+        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
+            engine.updateRawTexture(internalTexture, data, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
+            return;
+        }
+        engine.updateTextureData(internalTexture, data, 0, lineStart, width, lineCount, 0, 0, false);
     };
 
     protected _updateTextureFromDataRect = (texture: BaseTexture, data: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number) => {
@@ -3649,20 +3750,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             }
             this.forcedInstanceCount = Math.max(renderedPadded >> 4, 1);
-            if (this._delayedTextureUpdate) {
-                const vertexCountPadded = (this._vertexCount + 15) & ~0xf;
-                const textureSize = this._getTextureSize(vertexCountPadded);
-                this._updateSubTextures(
-                    this._delayedTextureUpdate.centers,
-                    this._delayedTextureUpdate.covA,
-                    this._delayedTextureUpdate.covB,
-                    this._delayedTextureUpdate.colors,
-                    0,
-                    textureSize.y,
-                    this._delayedTextureUpdate.sh
-                );
-                this._delayedTextureUpdate = null;
-            }
+            this._commitDelayedTextureUpdate();
 
             // get mesh for camera and update its instance buffer
             const cameraViewInfos = this._cameraViewInfos.get(cameraId);

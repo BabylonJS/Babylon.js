@@ -27,6 +27,8 @@ You can drag and drop a `.glb`, `.gltf`, or `.babylon` file onto the **Scene Pre
 
 The loaded scene replaces the current scene (default or snippet) and populates the scene context with all objects found in the file.
 
+The preview preserves the scene's active camera, or selects its first imported camera if none is active. A default orbit camera is created only when the scene has no camera. If loading fails, the previous preview remains available.
+
 ### Loading a Playground Snippet
 
 The editor can load a Babylon.js Playground snippet as a live scene to test your flow graph against.

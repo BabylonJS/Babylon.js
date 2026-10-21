@@ -142,16 +142,16 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         const type = this.initialValue.richType;
         const keys: { frame: number; value: T }[] = [];
         // add initial value
-        const currentValue = this.initialValue.getValue(context) || type.defaultValue;
+        const currentValue = this.initialValue.getValue(context) ?? type.defaultValue;
         keys.push({ frame: 0, value: currentValue });
         const numberOfKeyFrames = this.config?.numberOfKeyFrames ?? 1;
         for (let i = 1; i < numberOfKeyFrames + 1; i++) {
             const duration = this.keyFrames[i].duration?.getValue(context);
             let value = this.keyFrames[i].value?.getValue(context);
             if (i === numberOfKeyFrames - 1) {
-                value = value || type.defaultValue;
+                value = value ?? type.defaultValue;
             }
-            if (duration !== undefined && value) {
+            if (duration !== undefined && value !== undefined && value !== null) {
                 // convert duration to frames, based on 60 fps
                 keys.push({ frame: duration * 60, value });
             }

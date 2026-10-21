@@ -65,6 +65,11 @@ export const HelpTopics: IHelpTopic[] = [
 <p>If the playground builds its flow graph from a snippet (e.g. <code>ParseFlowGraphCoordinatorFromSnippetAsync</code>), that flow graph is automatically opened in the editor for editing. Saving it to the snippet server then publishes a new version of that same snippet.</p>`,
             },
             {
+                heading: "Loading a Scene from File",
+                html: `<p>Drop a <code>.glb</code>, <code>.gltf</code>, or <code>.babylon</code> file onto the <strong>Scene Preview</strong> pane. For files that reference separate buffers or textures, drop all files together.</p>
+<p>The preview preserves the scene's active camera, or selects its first imported camera if none is active. A default orbit camera is created only when the scene has no camera. If loading fails, the previous preview remains available.</p>`,
+            },
+            {
                 heading: "Saving and Loading Graphs",
                 html: `<ul>
 <li><b>Save to file</b> — Downloads a <code>flowGraph.json</code> file to your machine.</li>
@@ -473,7 +478,8 @@ export const HelpTopics: IHelpTopic[] = [
             },
             {
                 heading: "Exporting KHR_interactivity",
-                html: `<p>Use <strong>Export KHR glTF</strong> or <strong>Export KHR GLB</strong> to export an imported graph set. For an imported <code>.glb</code>, <strong>Export KHR GLB</strong> saves representable graph edits into the retained source document without rewriting unrelated scene data or binary chunks. The glTF and Babylon-specific scene export actions are unavailable for that source-preserving path. The editor validates every logical node and imported composite before export and reports edits that cannot be represented.</p>
+                html: `<p>Use <strong>Export KHR glTF</strong> or <strong>Export KHR GLB</strong> to save graph edits, choosing the output format. For an asset loaded into the preview, both actions patch its retained source document rather than rebuild the scene. Unrelated asset data and original entity indices are preserved, including extension-backed pointers, computed pointer roots, and imported compatibility connections. Literal entity references are checked against the retained source collections. The editor validates every logical node and imported composite and reports edits that cannot be represented.</p>
+<p>This exports graph edits, not changes to preview geometry, materials, or scene hierarchy. External resources must remain available at their original referenced paths. Converting GLB to glTF embeds its binary buffer; GLBs containing additional binary chunks must remain GLB. Converting glTF to GLB preserves existing resource URIs rather than packing companion files.</p>
 <p>Imported multi-block operations must remain structurally intact. Unknown operations supplied by additional glTF extensions remain typed no-op blocks and round-trip without claiming runtime support.</p>
 <p><strong>Export BABYLON_flow_graph GLB</strong> remains a separate Babylon-specific option for ordinary Flow Graph JSON. It does not emit <code>KHR_interactivity</code>.</p>`,
             },

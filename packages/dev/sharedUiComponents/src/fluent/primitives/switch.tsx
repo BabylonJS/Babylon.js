@@ -17,7 +17,10 @@ const useSwitchStyles = makeStyles({
     },
 });
 
-export type SwitchProps = PrimitiveProps<boolean>;
+export type SwitchProps = PrimitiveProps<boolean> & {
+    /** When true, value controls the checked state without optimistic local updates. Defaults to false. */
+    controlled?: boolean;
+};
 
 /**
  * This is a primitive fluent boolean switch component whose only knowledge is the shared styling across all tools
@@ -38,14 +41,16 @@ export const Switch: FunctionComponent<SwitchProps> = (props) => {
 
     const onChange = (event: ChangeEvent<HTMLInputElement>, _: SwitchOnChangeData) => {
         props.onChange && props.onChange(event.target.checked);
-        setChecked(event.target.checked);
+        if (!props.controlled) {
+            setChecked(event.target.checked);
+        }
     };
 
     return (
         <FluentSwitch
             className={mergeClasses(classes.switch, size === "small" && classes.switchSmall)}
             indicator={{ className: classes.indicator }}
-            checked={checked}
+            checked={props.controlled ? props.value : checked}
             disabled={props.disabled}
             onChange={onChange}
         />

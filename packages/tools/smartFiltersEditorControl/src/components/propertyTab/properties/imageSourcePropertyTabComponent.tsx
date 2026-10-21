@@ -9,7 +9,7 @@ import { type IInspectableOptions } from "core/Misc/iInspectable.js";
 import { CheckBoxLineComponent } from "../../../sharedComponents/checkBoxLineComponent.js";
 
 import { type Nullable } from "core/types.js";
-import { GetTextureInputBlockEditorData } from "../../../graphSystem/getEditorData.js";
+import { GetTextureInputBlockEditorData, GetTextureInputBlockUrl } from "../../../graphSystem/getEditorData.js";
 import { LazyTextInputLineComponent } from "../../../sharedComponents/lazyTextInputLineComponent.js";
 import { Debounce } from "../../../helpers/debounce.js";
 import { type StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
@@ -87,7 +87,7 @@ export class ImageSourcePropertyTabComponent extends react.Component<IImageSourc
                         if (editorData.url?.startsWith("data:")) {
                             return CustomImageOption;
                         }
-                        const url = editorData.url || this.props.inputBlock.runtimeValue.value?.getInternalTexture()?.url;
+                        const url = GetTextureInputBlockUrl(this.props.inputBlock);
                         if (!url) {
                             return CustomImageOption;
                         }

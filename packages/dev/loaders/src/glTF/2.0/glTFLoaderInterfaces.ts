@@ -193,6 +193,9 @@ export interface INode extends GLTF2.INode, IArrayItem {
     _numMorphTargets?: number;
 
     /** @internal */
+    _morphTargetWeights?: number[];
+
+    /** @internal */
     _isJoint?: boolean;
 }
 

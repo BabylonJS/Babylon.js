@@ -1,5 +1,6 @@
 import { type Node } from "core/node";
-import { applyEdits, modify } from "jsonc-parser";
+import { EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
+import { applyEdits, findNodeAtLocation, modify, parseTree } from "jsonc-parser";
 import { BuildKhrSelectionRevealGraph } from "./khrSelectionRevealTemplate";
 import { BuildKhrTwoStepProcedureGraph, type IKhrTwoStepProcedureNodes } from "./khrTwoStepProcedureTemplate";
 
@@ -19,7 +20,7 @@ export interface IGlbDocument {
     /** A graph takes control of every glTF animation in the asset. */
     animations?: unknown;
     /** Buffers may refer to external files instead of the GLB BIN chunk. */
-    buffers?: Array<{ uri?: string }>;
+    buffers?: Array<{ uri?: string; byteLength?: number }>;
     /** Images may refer to external files instead of embedded data. */
     images?: Array<{ uri?: string }>;
     /** Root glTF extensions. */
@@ -128,9 +129,26 @@ export function ReadGlbDocument(bytes: Uint8Array): IGlbDocument {
  * @returns GLB retaining unrelated source JSON tokens and chunks
  */
 export function PatchKhrInteractivityGlb(bytes: Uint8Array, extension: unknown, extensionsUsed: readonly string[], extensionsRequired: readonly string[]): Uint8Array {
-    const { document, jsonText: sourceJsonText, suffixOffset } = _ReadGlb(bytes);
+    const { jsonText, suffixOffset } = _ReadGlb(bytes);
+    const patched = PatchKhrInteractivityDocument(jsonText, extension, extensionsUsed, extensionsRequired);
+    return patched === jsonText ? bytes.slice() : _WriteGlb(bytes, patched, suffixOffset);
+}
+
+/**
+ * Applies graph edits to retained glTF JSON without rewriting unrelated JSON tokens.
+ * @param sourceJsonText original glTF JSON
+ * @param extension validated edited behavior extension
+ * @param extensionsUsed additional extensions used by the graph
+ * @param extensionsRequired additional extensions required by the graph
+ * @returns patched source JSON
+ */
+export function PatchKhrInteractivityDocument(sourceJsonText: string, extension: unknown, extensionsUsed: readonly string[], extensionsRequired: readonly string[]): string {
+    const document = JSON.parse(sourceJsonText) as IGlbDocument;
+    if (document?.asset?.version !== "2.0") {
+        throw new Error("Expected a glTF 2.0 document.");
+    }
     if (!_IsRecord(document.extensions) || !_IsRecord(document.extensions.KHR_interactivity)) {
-        throw new Error("The source GLB has no KHR_interactivity graph to update.");
+        throw new Error("The source document has no KHR_interactivity graph to update.");
     }
     if (!_IsRecord(extension) || !Array.isArray(extension.graphs)) {
         throw new Error("The edited KHR_interactivity extension is malformed.");
@@ -139,13 +157,49 @@ export function PatchKhrInteractivityGlb(bytes: Uint8Array, extension: unknown, 
         (document.extensionsUsed !== undefined && (!Array.isArray(document.extensionsUsed) || document.extensionsUsed.some((name) => typeof name !== "string"))) ||
         (document.extensionsRequired !== undefined && (!Array.isArray(document.extensionsRequired) || document.extensionsRequired.some((name) => typeof name !== "string")))
     ) {
-        throw new Error("The source GLB has malformed extension declarations.");
+        throw new Error("The source asset has malformed extension declarations.");
     }
     let jsonText = sourceJsonText;
     const write = (path: Array<string | number>, value: unknown, isArrayInsertion = false) => {
         jsonText = applyEdits(jsonText, modify(jsonText, path, value, { isArrayInsertion }));
     };
-    write(["extensions", "KHR_interactivity"], extension);
+    const update = (path: Array<string | number>, sourceValue: unknown, editedValue: unknown) => {
+        if (JSON.stringify(sourceValue) === JSON.stringify(editedValue)) {
+            return;
+        }
+        if (_IsRecord(sourceValue) && _IsRecord(editedValue)) {
+            for (const key of Object.keys(sourceValue)) {
+                update([...path, key], sourceValue[key], Object.prototype.hasOwnProperty.call(editedValue, key) ? editedValue[key] : undefined);
+            }
+            for (const key of Object.keys(editedValue)) {
+                if (!Object.prototype.hasOwnProperty.call(sourceValue, key)) {
+                    write([...path, key], editedValue[key]);
+                }
+            }
+        } else if (Array.isArray(sourceValue) && Array.isArray(editedValue)) {
+            for (let index = 0; index < Math.min(sourceValue.length, editedValue.length); index++) {
+                update([...path, index], sourceValue[index], editedValue[index]);
+            }
+            for (let index = sourceValue.length - 1; index >= editedValue.length; index--) {
+                // jsonc-parser can consume the closing bracket when removing the final array element.
+                const tree = parseTree(jsonText);
+                const array = tree && findNodeAtLocation(tree, path);
+                const entry = array?.children?.[index];
+                const previous = array?.children?.[index - 1];
+                if (!entry || (index > 0 && !previous)) {
+                    throw new Error("The source interactivity array could not be updated.");
+                }
+                const offset = previous ? previous.offset + previous.length : entry.offset;
+                jsonText = applyEdits(jsonText, [{ offset, length: entry.offset + entry.length - offset, content: "" }]);
+            }
+            for (let index = sourceValue.length; index < editedValue.length; index++) {
+                write([...path, index], editedValue[index], true);
+            }
+        } else {
+            write(path, editedValue);
+        }
+    };
+    update(["extensions", "KHR_interactivity"], document.extensions.KHR_interactivity, extension);
     for (const [key, names] of [
         ["extensionsUsed", ["KHR_interactivity", ...extensionsUsed]],
         ["extensionsRequired", extensionsRequired],
@@ -159,7 +213,74 @@ export function PatchKhrInteractivityGlb(bytes: Uint8Array, extension: unknown, 
             }
         }
     }
-    return _WriteGlb(bytes, jsonText, suffixOffset);
+    return jsonText;
+}
+
+/**
+ * Exports graph edits in either glTF format while retaining the imported scene document.
+ * External resource URIs remain unchanged. Converting GLB to glTF embeds its BIN buffer as a data URI.
+ * Unknown binary chunks can only be preserved when the output remains GLB.
+ * @param bytes original asset bytes
+ * @param sourceFormat imported file format
+ * @param targetFormat requested output format
+ * @param extension validated edited behavior extension
+ * @param extensionsUsed additional extensions used by the graph
+ * @param extensionsRequired additional extensions required by the graph
+ * @returns exported asset bytes
+ */
+export function ExportKhrInteractivityAsset(
+    bytes: Uint8Array,
+    sourceFormat: "gltf" | "glb",
+    targetFormat: "gltf" | "glb",
+    extension: unknown,
+    extensionsUsed: readonly string[] = [],
+    extensionsRequired: readonly string[] = []
+): Uint8Array {
+    if (sourceFormat === "glb" && targetFormat === "glb") {
+        return PatchKhrInteractivityGlb(bytes, extension, extensionsUsed, extensionsRequired);
+    }
+    const source = sourceFormat === "glb" ? _ReadGlb(bytes) : undefined;
+    let jsonText = PatchKhrInteractivityDocument(source?.jsonText ?? new TextDecoder("utf-8", { fatal: true }).decode(bytes), extension, extensionsUsed, extensionsRequired);
+    if (source) {
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        let offset = source.suffixOffset;
+        let hasBin = false;
+        while (offset < bytes.byteLength) {
+            const length = view.getUint32(offset, true);
+            if (view.getUint32(offset + 4, true) !== 0x004e4942 || hasBin) {
+                throw new Error("This GLB contains binary chunks that cannot be preserved as glTF. Export it as GLB.");
+            }
+            hasBin = true;
+            const buffer = source.document.buffers?.[0];
+            const byteLength = buffer?.byteLength;
+            if (
+                !buffer ||
+                buffer.uri !== undefined ||
+                typeof byteLength !== "number" ||
+                !Number.isInteger(byteLength) ||
+                byteLength < 0 ||
+                byteLength > length ||
+                length - byteLength > 3
+            ) {
+                throw new Error("The GLB BIN chunk does not match its source buffer.");
+            }
+            const binary = EncodeArrayBufferToBase64(bytes.subarray(offset + 8, offset + 8 + byteLength));
+            jsonText = applyEdits(jsonText, modify(jsonText, ["buffers", 0, "uri"], `data:application/octet-stream;base64,${binary}`, {}));
+            offset += 8 + length;
+        }
+        if (!hasBin && source.document.buffers?.some((buffer) => buffer.uri === undefined)) {
+            throw new Error("The GLB is missing its embedded buffer.");
+        }
+    }
+    if (targetFormat === "gltf") {
+        return new TextEncoder().encode(jsonText);
+    }
+    const header = new Uint8Array(20);
+    const view = new DataView(header.buffer);
+    view.setUint32(0, GlbMagic, true);
+    view.setUint32(4, 2, true);
+    view.setUint32(16, JsonChunk, true);
+    return _WriteGlb(header, jsonText, 20);
 }
 
 /**

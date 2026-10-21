@@ -183,6 +183,14 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         this._m = m;
     }
 
+    /**
+     * Creates an independent copy of this matrix.
+     * @returns a new matrix with copied column-major elements
+     */
+    public clone(): FlowGraphMatrix2D {
+        return new FlowGraphMatrix2D(this._m.slice());
+    }
+
     public get m(): number[] {
         return this._m;
     }
@@ -335,6 +343,14 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
 
     constructor(array: number[] = [1, 0, 0, 0, 1, 0, 0, 0, 1]) {
         this._m = array;
+    }
+
+    /**
+     * Creates an independent copy of this matrix.
+     * @returns a new matrix with copied column-major elements
+     */
+    public clone(): FlowGraphMatrix3D {
+        return new FlowGraphMatrix3D(this._m.slice());
     }
 
     public get m(): number[] {

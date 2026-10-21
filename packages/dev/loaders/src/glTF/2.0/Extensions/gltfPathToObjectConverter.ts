@@ -151,6 +151,11 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
                     if (typeof orig.getTarget === "function") {
                         infoTree.getTarget = (target: any, _index?: number, ...rest: any[]) => orig.getTarget(target, numericIndex, ...rest);
                     }
+                    if (orig.getPropertyName) {
+                        infoTree.getPropertyName = orig.getPropertyName.map(
+                            (getName: NonNullable<IObjectAccessor["getPropertyName"]>[number]) => (target: T) => getName(target, numericIndex)
+                        );
+                    }
                 }
             }
 

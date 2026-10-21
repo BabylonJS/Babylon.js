@@ -3,6 +3,9 @@ import {
     addToScene,
     attachControl,
     createBox,
+    createAnimationManager,
+    createPropertyAnimationClip,
+    createPropertyAnimationGroup,
     createDefaultTextData,
     createDefaultCamera,
     createDirectionalLight,
@@ -30,12 +33,22 @@ import {
     disposeSurface,
     disposeTextRenderer,
     loadFont,
+    getRenderingContexts,
+    getViewProjectionMatrix,
+    isGizmoDragging,
+    isGizmoPickPending,
+    getRenderTaskGpuTimings,
     registerScene,
     registerSpriteRenderer,
     registerTextRenderer,
     setShadowTaskCasterMeshes,
+    setRenderTaskGpuTimingEnabled,
     startEngine,
     stopEngine,
+    startAnimationManager,
+    stopAnimationManager,
+    clearAnimationManager,
+    waitForGpuResourceRetirements,
 } from "@babylonjs/lite";
 
 import { ShowInspector } from "../../src/lite/inspector";
@@ -88,6 +101,38 @@ const boxGroup = createTransformNode("Box Group", -0.75);
 boxGroup.children.push(smallBox);
 smallBox.parent = boxGroup;
 addToScene(primaryScene, boxGroup);
+
+const animationManager = createAnimationManager({ engine });
+const boxAnimation = createPropertyAnimationGroup(
+    animationManager,
+    box,
+    createPropertyAnimationClip("Box Bounce", [
+        {
+            path: "position",
+            keys: [
+                { frame: 0, value: [-0.75, 0, 0] },
+                { frame: 60, value: [-0.75, 0.75, 0] },
+                { frame: 120, value: [-0.75, 0, 0] },
+            ],
+        },
+    ])
+);
+const sphereAnimation = createPropertyAnimationGroup(
+    animationManager,
+    sphere,
+    createPropertyAnimationClip("Sphere Pulse", [
+        {
+            path: "scaling",
+            keys: [
+                { frame: 0, value: [1, 1, 1] },
+                { frame: 60, value: [0.65, 0.65, 0.65] },
+                { frame: 120, value: [1, 1, 1] },
+            ],
+        },
+    ])
+);
+primaryScene.animationGroups.push(boxAnimation, sphereAnimation);
+startAnimationManager(animationManager);
 
 const hemisphericLight = createHemisphericLight([0, 1, 0], 0.55);
 const directionalLight = createDirectionalLight([-0.5, -1, 0.25], 0.45);
@@ -173,9 +218,22 @@ await startEngine(engine);
 const inspectorToken = ShowInspector(engine);
 
 Object.assign(globalThis, {
+    liteInspectorToken: inspectorToken,
+    liteShowInspector: ShowInspector,
+    liteGetRenderTaskGpuTimings: getRenderTaskGpuTimings,
+    liteSetRenderTaskGpuTimingEnabled: setRenderTaskGpuTimingEnabled,
     liteCreateSceneContext: createSceneContext,
     liteDisposeScene: disposeScene,
     liteEngine: engine,
+    liteGetRenderingContexts: getRenderingContexts,
+    liteGetViewProjectionMatrix: getViewProjectionMatrix,
+    liteIsGizmoDragging: isGizmoDragging,
+    liteIsGizmoPickPending: isGizmoPickPending,
+    liteStopAnimationManager: stopAnimationManager,
+    liteStopEngine: stopEngine,
+    liteWaitForGpuResourceRetirements: waitForGpuResourceRetirements,
+    liteAnimationManager: animationManager,
+    liteAnimationGroups: [boxAnimation, sphereAnimation],
     liteMaterials: [standardMaterial, pbrMaterial],
     liteMeshes: [box, sphere, smallBox],
     liteLights: [hemisphericLight, directionalLight, pointLight, spotLight],
@@ -199,6 +257,8 @@ window.addEventListener(
         void inspectorToken.dispose();
         detachCameraControl();
         stopEngine(engine);
+        stopAnimationManager(animationManager);
+        clearAnimationManager(animationManager);
         disposeTextRenderer(textRenderer);
         disposeDefaultTextData(overlayTextData);
         disposeDefaultTextData(backgroundTextData);

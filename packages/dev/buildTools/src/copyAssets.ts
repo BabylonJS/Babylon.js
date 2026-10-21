@@ -7,6 +7,7 @@ import { type DevPackageName } from "./packageMapping.js";
 import { BuildShader } from "./buildShaders.js";
 
 const ProcessFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName; pathPrefix?: string; outputDir?: string } = {}) => {
+    file = file.replace(/\\/g, "/");
     if (!options.outputDir) {
         options.outputDir = "dist";
     }
@@ -27,7 +28,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
     const global = checkArgs("--global", true);
     const fileTypes = checkArgs(["--file-types", "-ft"], false, true);
     const extensions = fileTypes && typeof fileTypes === "string" ? fileTypes.split(",") : options.extensions;
-    const pathPrefix = (checkArgs("--path-prefix", false, true) as string) || "";
+    const pathPrefix = ((checkArgs("--path-prefix", false, true) as string) || "").replace(/\\/g, "/");
     const globDirectory = global ? `./packages/**/*/src/**/*.+(${extensions.join("|")})` : pathPrefix + `src/**/*.+(${extensions.join("|")})`;
     const isCore = !!checkArgs("--isCore", true);
     const outputDir = checkArgs(["--output-dir"], false, true) as string;
@@ -104,7 +105,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
         globSync(globDirectory, {
             windowsPathsNoEscape: true,
         }).forEach((file) => {
-            ProcessFile(file.replace(/\\/g, "/"), processOptions);
+            ProcessFile(file, processOptions);
         });
     }
 };

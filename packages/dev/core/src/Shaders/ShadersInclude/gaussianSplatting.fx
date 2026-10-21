@@ -502,6 +502,8 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
     vec2 majorAxis = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     vec2 minorAxis = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
 
+#define CUSTOM_GAUSSIAN_SPLAT_PROJECTED_SIZE
+
     vec2 vCenter = vec2(pos2d);
     
     // For ortho projection, pos2d.w is 1.0

@@ -15,7 +15,7 @@ import { type ShaderLanguage } from "core/Materials/shaderLanguage";
  */
 export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     private _particleSystem: IParticleSystem;
-    private _originalRender: () => number;
+    private _originalRender: (preWarm?: boolean, forceUpdateOnly?: boolean) => number;
     private _blendMode: number;
     private _onBeforeDrawParticleObserver: Nullable<Observer<Nullable<Effect>>>;
     private _updateInAnimate: boolean;
@@ -140,6 +140,15 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
      */
     public override renderDiffuseTexture(): void {
         this._originalRender();
+    }
+
+    /**
+     * Updates the state of the particles. GPUParticleSystem does it in render(), which is replaced by a no-op while the system is rendered as a fluid
+     */
+    public override updateSimulation(): void {
+        if (this._isGPUParticleSystem) {
+            this._originalRender(false, true);
+        }
     }
 
     /**

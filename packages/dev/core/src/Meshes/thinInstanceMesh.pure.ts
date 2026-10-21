@@ -340,6 +340,7 @@ export function RegisterThinInstanceMesh(): void {
                 this._thinInstanceDataStorage.previousMatrixBuffer = this._thinInstanceCreateMatrixBuffer("previousWorld", buffer, staticBuffer);
             }
         } else if (kind === "splatIndex" && buffer) {
+            this._thinInstanceDataStorage.matrixBuffer?.dispose();
             this._thinInstanceInitializeUserStorage();
             this._thinInstanceDataStorage.instancesCount = buffer.length / stride;
             this._userThinInstanceBuffersStorage.data[kind] = buffer;

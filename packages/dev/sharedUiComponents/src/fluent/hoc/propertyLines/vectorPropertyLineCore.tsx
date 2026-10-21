@@ -75,6 +75,7 @@ export const ControlledTensorPropertyLine = <ValueT,>(props: ControlledTensorPro
                         unit={unit}
                         step={step}
                         precision={precision}
+                        disabled={props.disabled}
                         converted={converted}
                         onChange={onComponentChange}
                     />
@@ -94,12 +95,13 @@ type TensorSlidersProps<ValueT> = Readonly<{
     unit?: string;
     step?: number;
     precision?: number;
+    disabled?: boolean;
     converted: (value: number) => number;
     onChange: (value: number, component: TensorComponent) => void;
 }>;
 
 const TensorSliders = <ValueT,>(props: TensorSlidersProps<ValueT>) => {
-    const { value, adapter, min, max, unit, step, precision, converted, onChange } = props;
+    const { value, adapter, min, max, unit, step, precision, disabled, converted, onChange } = props;
 
     return (
         <>
@@ -114,6 +116,7 @@ const TensorSliders = <ValueT,>(props: TensorSlidersProps<ValueT>) => {
                     unit={unit}
                     step={step}
                     precision={precision}
+                    disabled={disabled}
                 />
             ))}
         </>

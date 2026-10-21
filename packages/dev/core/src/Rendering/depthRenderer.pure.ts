@@ -68,6 +68,7 @@ export class DepthRenderer {
 
     private _alphaBlendedDepth = false;
     private _alphaBlendedDepthMaterialCache: Map<number, boolean> = new Map();
+    private _gaussianSplattingDepthMaterials = new WeakSet<Material>();
 
     /**
      * Enable or disable the alpha blending for depth rendering. When enabled,
@@ -132,11 +133,23 @@ export class DepthRenderer {
             }
             const compoundMesh = (mesh as unknown as GaussianSplattingMesh).isCompound;
             renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage, this.alphaBlendedDepth, compoundMesh);
+            this._gaussianSplattingDepthMaterials.add(renderingMaterial);
             this.setMaterialForRendering(mesh, renderingMaterial);
             this._alphaBlendedDepthMaterialCache.set(mesh.uniqueId, this.alphaBlendedDepth);
         }
 
         return renderingMaterial;
+    }
+
+    /**
+     * Whether the material is a GaussianSplatting depth material created by this renderer, as opposed to
+     * a user override set through {@link setMaterialForRendering}.
+     * @param material the material to test
+     * @returns true when this renderer created the material
+     * @internal
+     */
+    public _isGaussianSplattingDepthMaterial(material: Material): boolean {
+        return this._gaussianSplattingDepthMaterials.has(material);
     }
 
     /**

@@ -24,6 +24,7 @@ import "core/Animations/animatable";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { CurveEditorButton } from "../../curveEditor/curveEditorButton";
+import { GetChildAnimations } from "../../curveEditor/animatableAnimations";
 
 export interface IAnimationRangeContainer {
     getAnimationRanges(): Nullable<AnimationRange>[];
@@ -45,10 +46,8 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
 
     // Track animations array changes via property interception
     const trackedAnimations = useProperty(entity as IAnimatable, "animations");
-    const animations = trackedAnimations ?? [];
     const ranges = entity.getAnimationRanges?.()?.filter((range) => !!range) ?? [];
-    const childAnimatablesAnimations = entity.getAnimatables?.().flatMap((animatable) => animatable.animations ?? []) ?? [];
-    animations.concat(childAnimatablesAnimations);
+    const animations = (trackedAnimations ?? []).concat(GetChildAnimations(entity));
 
     const lastFrom = useRef(0);
     const lastTo = useRef(0);
