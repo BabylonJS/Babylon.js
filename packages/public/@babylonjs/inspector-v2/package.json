@@ -50,6 +50,7 @@
         "@babylonjs/serializers": "^9.0.0",
         "@fluentui-contrib/react-resize-handle": "^0.8.4",
         "@fluentui-contrib/react-virtualizer": "^1.0.0",
+        "@fluentui/react-charts": "^9.3.27",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
         "@fluentui/react-motion-components-preview": "^0.15.2",

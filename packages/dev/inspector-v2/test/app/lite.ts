@@ -37,10 +37,12 @@ import {
     getViewProjectionMatrix,
     isGizmoDragging,
     isGizmoPickPending,
+    getRenderTaskGpuTimings,
     registerScene,
     registerSpriteRenderer,
     registerTextRenderer,
     setShadowTaskCasterMeshes,
+    setRenderTaskGpuTimingEnabled,
     startEngine,
     stopEngine,
     startAnimationManager,
@@ -216,6 +218,10 @@ await startEngine(engine);
 const inspectorToken = ShowInspector(engine);
 
 Object.assign(globalThis, {
+    liteInspectorToken: inspectorToken,
+    liteShowInspector: ShowInspector,
+    liteGetRenderTaskGpuTimings: getRenderTaskGpuTimings,
+    liteSetRenderTaskGpuTimingEnabled: setRenderTaskGpuTimingEnabled,
     liteCreateSceneContext: createSceneContext,
     liteDisposeScene: disposeScene,
     liteEngine: engine,
@@ -223,7 +229,6 @@ Object.assign(globalThis, {
     liteGetViewProjectionMatrix: getViewProjectionMatrix,
     liteIsGizmoDragging: isGizmoDragging,
     liteIsGizmoPickPending: isGizmoPickPending,
-    liteInspectorToken: inspectorToken,
     liteStopAnimationManager: stopAnimationManager,
     liteStopEngine: stopEngine,
     liteWaitForGpuResourceRetirements: waitForGpuResourceRetirements,
