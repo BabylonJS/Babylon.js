@@ -79,7 +79,7 @@ export class WebGLPipelineContext implements IPipelineContext {
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
             const sampler = effect.getUniform(samplerList[index]);
-            if (sampler == null) {
+            if (sampler == null && !engine._gl?.isContextLost()) {
                 samplerList.splice(index, 1);
                 index--;
             }
