@@ -33,10 +33,12 @@ import {
     disposeSurface,
     disposeTextRenderer,
     loadFont,
+    getRenderTaskGpuTimings,
     registerScene,
     registerSpriteRenderer,
     registerTextRenderer,
     setShadowTaskCasterMeshes,
+    setRenderTaskGpuTimingEnabled,
     startEngine,
     stopEngine,
     startAnimationManager,
@@ -211,6 +213,10 @@ await startEngine(engine);
 const inspectorToken = ShowInspector(engine);
 
 Object.assign(globalThis, {
+    liteInspectorToken: inspectorToken,
+    liteShowInspector: ShowInspector,
+    liteGetRenderTaskGpuTimings: getRenderTaskGpuTimings,
+    liteSetRenderTaskGpuTimingEnabled: setRenderTaskGpuTimingEnabled,
     liteCreateSceneContext: createSceneContext,
     liteDisposeScene: disposeScene,
     liteEngine: engine,
