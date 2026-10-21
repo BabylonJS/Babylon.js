@@ -209,6 +209,26 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
+                label="Specular Retroreflectivity"
+                target={material}
+                propertyKey="specularRetroreflectivity"
+                min={0}
+                max={1}
+                step={0.01}
+                description="Blends ordinary reflections with light reflected back toward its source."
+            />
+            <BoundProperty
+                component={MaterialTextureDebugPropertyLine}
+                label="Specular Retroreflectivity"
+                target={material}
+                propertyKey="specularRetroreflectivityTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
+                material={material}
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
                 label="Specular IOR"
                 target={material}
                 propertyKey="specularIor"
