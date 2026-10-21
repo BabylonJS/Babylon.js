@@ -56,6 +56,9 @@ describe("KTX2 encoder package integration", () => {
             writeFileSync(join(destination, filename), filename);
         }
         writeFileSync(join(destination, "package.json"), "{}");
+        const havok = join(fixture, "packages/tools/babylonServer/public/havok");
+        mkdirSync(havok, { recursive: true });
+        writeFileSync(join(havok, "LICENSE"), "Havok license fixture");
         process.chdir(fixture);
 
         prepareSnapshot();
@@ -66,5 +69,6 @@ describe("KTX2 encoder package integration", () => {
             expect(readFileSync(join(fixture, ".snapshot/basisEncoder/v2_50", filename), "utf8")).toBe(filename);
         }
         expect(() => readFileSync(join(fixture, ".snapshot/basisEncoder/v2_50/package.json"))).toThrow();
+        expect(readFileSync(join(fixture, ".snapshot/havok/LICENSE"), "utf8")).toBe("Havok license fixture");
     });
 });

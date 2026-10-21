@@ -256,6 +256,7 @@ export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: Abort
     await new Promise<void>((resolve, reject) => {
         const cleanup = () => {
             onLoadObservable.removeCallback(onLoad);
+            Texture.OnTextureLoadErrorObservable.remove(onError);
             signal?.removeEventListener("abort", onAbort);
             texture.onDisposeObservable.remove(onDispose);
         };
@@ -268,6 +269,11 @@ export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: Abort
             resolve();
         };
         const onAbort = () => fail(signal!.reason);
+        const onError = Texture.OnTextureLoadErrorObservable.add((failedTexture) => {
+            if (failedTexture === texture) {
+                fail(new Error(texture.errorObject?.message || `Texture ${texture.name} errored while loading.`));
+            }
+        });
         const onDispose = texture.onDisposeObservable.add(() => fail(new Error(`Texture ${texture.name} was disposed while waiting for readiness.`)));
         onLoadObservable.addOnce(onLoad);
         signal?.addEventListener("abort", onAbort, { once: true });
@@ -423,7 +429,7 @@ async function ReadPixelsUsingRTT(
  * @param lod if the texture has multiple LODs, the lod index to use for the source
  * @param forceRTT if true, forces the use of the RTT path for reading pixels (useful for cube maps to ensure correct orientation and gamma)
  * @param slice if the texture is 3D, the depth slice index to use for the source
- * @param applyGammaCorrection if true (default), converts linear RTT pixels to display gamma. If false, preserves stored channels, including undoing hardware sRGB decoding.
+ * @param applyGammaCorrection if true (default), converts linear RTT pixels to display gamma and previews single-channel data as grayscale. If false, preserves sampled channel semantics, including undoing hardware sRGB decoding.
  * @returns the 8-bit texture data
  */
 export async function GetTextureDataAsync(
@@ -487,22 +493,22 @@ export async function GetTextureDataAsync(
                 const c0 = data[src++];
 
                 if (componentCount === 1) {
-                    // Luminance/R-style data: replicate to RGB and use opaque alpha.
-                    normalizedData[dst] = c0;
-                    normalizedData[dst + 1] = c0;
-                    normalizedData[dst + 2] = c0;
-                    normalizedData[dst + 3] = 255;
+                    const alphaOnly = !applyGammaCorrection && texture.textureFormat === Constants.TEXTUREFORMAT_ALPHA;
+                    const redOnly = !applyGammaCorrection && (texture.textureFormat === Constants.TEXTUREFORMAT_R || texture.textureFormat === Constants.TEXTUREFORMAT_RED_INTEGER);
+                    normalizedData[dst] = alphaOnly ? 0 : c0;
+                    normalizedData[dst + 1] = alphaOnly || redOnly ? 0 : c0;
+                    normalizedData[dst + 2] = alphaOnly || redOnly ? 0 : c0;
+                    normalizedData[dst + 3] = alphaOnly ? c0 : 255;
                     continue;
                 }
 
                 const c1 = data[src++];
                 if (componentCount === 2) {
-                    // Two-channel data has no standard blue/alpha semantics for preview,
-                    // so preserve R/G, clear B, and force opaque alpha.
+                    const luminanceAlpha = !applyGammaCorrection && texture.textureFormat === Constants.TEXTUREFORMAT_LUMINANCE_ALPHA;
                     normalizedData[dst] = c0;
-                    normalizedData[dst + 1] = c1;
-                    normalizedData[dst + 2] = 0;
-                    normalizedData[dst + 3] = 255;
+                    normalizedData[dst + 1] = luminanceAlpha ? c0 : c1;
+                    normalizedData[dst + 2] = luminanceAlpha ? c0 : 0;
+                    normalizedData[dst + 3] = luminanceAlpha ? c1 : 255;
                     continue;
                 }
 

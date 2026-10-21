@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 import { GetTextureDataAsync, WhenTextureReadyAsync } from "core/Misc/textureTools";
 
@@ -94,6 +95,25 @@ describe("GetTextureDataAsync RTT", () => {
         expect(state.disposed).toBe(1);
     });
 
+    it.each([
+        [Constants.TEXTUREFORMAT_R, [80], [80, 0, 0, 255]],
+        [Constants.TEXTUREFORMAT_RG, [80, 120], [80, 120, 0, 255]],
+        [Constants.TEXTUREFORMAT_ALPHA, [80], [0, 0, 0, 80]],
+        [Constants.TEXTUREFORMAT_LUMINANCE, [80], [80, 80, 80, 255]],
+        [Constants.TEXTUREFORMAT_LUMINANCE_ALPHA, [80, 120], [80, 80, 80, 120]],
+    ])("preserves raw channel semantics for format %s", async (format, components, expected) => {
+        texture.getInternalTexture()!.format = format;
+        vi.spyOn(texture, "readPixels").mockResolvedValue(Uint8Array.from(Array.from({ length: 16 }, () => components).flat()));
+        const pixels = await GetTextureDataAsync(texture, 4, 4, 0, 0, false, 0, false);
+        expect(Array.from(pixels.slice(0, 4))).toEqual(expected);
+    });
+
+    it("retains grayscale previews for single-channel textures", async () => {
+        texture.getInternalTexture()!.format = Constants.TEXTUREFORMAT_R;
+        vi.spyOn(texture, "readPixels").mockResolvedValue(new Uint8Array(16).fill(80));
+        expect(Array.from((await GetTextureDataAsync(texture)).slice(0, 4))).toEqual([80, 80, 80, 255]);
+    });
+
     it.each([true, false])("restores hardware sRGB sampling with display conversion=%s", async (applyGammaCorrection) => {
         texture.getInternalTexture()!._useSRGBBuffer = true;
         texture.gammaSpace = true;
@@ -130,6 +150,39 @@ describe("GetTextureDataAsync RTT", () => {
 });
 
 describe("WhenTextureReadyAsync", () => {
+    it.each(["error", "load", "abort", "dispose"] as const)("cleans readiness observers after %s", async (outcome) => {
+        const engine = new NullEngine();
+        const texture = new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);
+        vi.spyOn(texture, "isReady").mockReturnValue(false);
+        const controller = new AbortController();
+        const errorsBefore = Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length;
+        try {
+            const pending = WhenTextureReadyAsync(texture, controller.signal);
+            const settled = pending.then(
+                () => "",
+                (error) => String(error)
+            );
+            if (outcome === "error") {
+                vi.spyOn(texture, "errorObject", "get").mockReturnValue({ message: "image returned 404" });
+                Texture.OnTextureLoadErrorObservable.notifyObservers(texture);
+            } else if (outcome === "load") {
+                texture.onLoadObservable.notifyObservers(texture);
+            } else if (outcome === "abort") {
+                controller.abort();
+            } else {
+                texture.dispose();
+            }
+            expect((await settled).length > 0).toBe(outcome !== "load");
+            expect(Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length).toBe(errorsBefore);
+            expect(texture.onLoadObservable.hasObservers()).toBe(false);
+            expect(texture.onDisposeObservable.hasObservers()).toBe(false);
+        } finally {
+            texture.dispose();
+            engine.dispose();
+            vi.restoreAllMocks();
+        }
+    });
+
     it("preserves event-based readiness without a signal or polling", async () => {
         const engine = new NullEngine();
         const texture = new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);

@@ -3,6 +3,115 @@ import { getGlobalConfig } from "@tools/test-tools";
 import { evaluateInitEngineForVisualization } from "../playwright/visualizationPlaywright.utils";
 import { type KTX2Encoder } from "../../../ktx2Encoder/src/ktx2Encoder";
 
+for (const engineName of ["webgl2", "webgpu"] as const) {
+    test(`KTX2 texture readback preserves R and RG channels on ${engineName}`, async ({ page }) => {
+        const { baseUrl } = getGlobalConfig();
+        await page.goto(baseUrl + "/empty.html");
+        await page.evaluate(evaluateInitEngineForVisualization, {
+            engineName,
+            useLargeWorldRendering: false,
+            useReverseDepthBuffer: "false",
+            useNonCompatibilityMode: "false",
+            baseUrl,
+        });
+        const result = await page.evaluate(async (baseUrl) => {
+            const B = window.BABYLON;
+            const scene = new B.Scene(window.engine!);
+            const encoder = new B.KhronosTextureContainer2Encoder({
+                numWorkers: 0,
+                jsEncoderModuleUrl: baseUrl + "/babylon.ktx2Encoder.js",
+                basisJsUrl: baseUrl + "/basisEncoder/v2_50/basis_encoder.js",
+                basisWasmUrl: baseUrl + "/basisEncoder/v2_50/basis_encoder.wasm",
+            });
+            const inputs: number[][] = [];
+            const encode = encoder.encodeAsync;
+            encoder.encodeAsync = async (rgba, width, height, options) => {
+                inputs.push(Array.from(rgba.slice(0, 4)));
+                return await encode.call(encoder, rgba, width, height, options);
+            };
+            const urls: string[] = [];
+            try {
+                const results: number[][] = [];
+                for (const [format, channels] of [
+                    [B.Constants.TEXTUREFORMAT_R, [80]],
+                    [B.Constants.TEXTUREFORMAT_RG, [80, 120]],
+                ] as const) {
+                    const texture = new B.RawTexture(Uint8Array.from(Array.from({ length: 16 }, () => channels).flat()), 4, 4, format, scene, false, false);
+                    const encoded = await B.EncodeTextureToKTX2Async(texture, { usage: "data", generateMipmaps: false }, encoder);
+                    const url = URL.createObjectURL(new Blob([encoded.slice().buffer]));
+                    urls.push(url);
+                    const decoded = new B.Texture(url, scene, { noMipmap: true, invertY: false, forcedExtension: ".ktx2" });
+                    const pixels = await B.GetTextureDataAsync(decoded, 4, 4, 0, 0, false, 0, false);
+                    results.push(Array.from(pixels.slice(0, 4)));
+                }
+                return { inputs, decoded: results };
+            } finally {
+                encoder.dispose();
+                scene.dispose();
+                window.engine!.dispose();
+                window.engine = null;
+                for (const url of urls) {
+                    URL.revokeObjectURL(url);
+                }
+            }
+        }, baseUrl);
+        const expected = [
+            [80, 0, 0, 255],
+            [80, 120, 0, 255],
+        ];
+        expect(result.inputs).toEqual(expected);
+        for (let index = 0; index < expected.length; index++) {
+            expect(Math.max(...result.decoded[index].map((value, channel) => Math.abs(value - expected[index][channel])))).toBeLessThanOrEqual(8);
+        }
+    });
+}
+
+test("KTX2 texture encoding rejects a load failure after readiness waiting starts", async ({ page }) => {
+    const { baseUrl } = getGlobalConfig();
+    let failImage!: () => void;
+    const imageRequested = new Promise<void>((resolve) => {
+        page.route("**/ktx2-missing-image.png", async (route) => {
+            await new Promise<void>((release) => {
+                failImage = release;
+                resolve();
+            });
+            await route.fulfill({ status: 404, body: "Not found" });
+        });
+    });
+    await page.goto(baseUrl + "/empty.html");
+    await page.evaluate(evaluateInitEngineForVisualization, {
+        engineName: "webgl2",
+        useLargeWorldRendering: false,
+        useReverseDepthBuffer: "false",
+        useNonCompatibilityMode: "false",
+        baseUrl,
+    });
+    const result = page.evaluate(async () => {
+        const B = window.BABYLON;
+        const scene = new B.Scene(window.engine!);
+        const texture = new B.Texture("/ktx2-missing-image.png", scene);
+        const observersBefore = B.Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length;
+        try {
+            await B.EncodeTextureToKTX2Async(texture, { usage: "color" });
+            throw new Error("Encoding unexpectedly succeeded");
+        } catch (error) {
+            return {
+                error: String(error),
+                loadingError: texture.loadingError,
+                cleaned: B.Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length === observersBefore,
+                loadCleaned: !texture.onLoadObservable.hasObservers(),
+            };
+        } finally {
+            scene.dispose();
+            window.engine!.dispose();
+            window.engine = null;
+        }
+    });
+    await imageRequested;
+    failImage();
+    expect(await result).toMatchObject({ error: expect.stringContaining("ktx2-missing-image.png"), loadingError: true, cleaned: true, loadCleaned: true });
+});
+
 test("KTX2 encoder lazily loads default assets and supports main-thread adapter encoding", async ({ page }) => {
     const { baseUrl } = getGlobalConfig();
     const requests: string[] = [];
