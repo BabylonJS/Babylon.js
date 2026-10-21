@@ -16,6 +16,7 @@ import { ConvertHandednessMatrix } from "../../exportUtils";
 import { type AreaLight } from "core/Lights/areaLight";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Texture } from "core/Materials/Textures/texture";
+import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 
 // Default values for comparison.
 export const DefaultTranslation = Vector3.ZeroReadOnly;
@@ -416,6 +417,83 @@ export function CopyTextureSampling(from: BaseTexture, to: Texture): void {
     to.vRotationCenter = source.vRotationCenter ?? 0.5;
     to.wRotationCenter = source.wRotationCenter ?? 0.5;
     to.homogeneousRotationInUVTransform = source.homogeneousRotationInUVTransform ?? false;
+}
+
+/**
+ * Lower bound on transmission color channels before taking -log(), matching the renderer's `Epsilon`
+ * (openpbrVolumeFunctions) and the glTF loader, so a zero channel maps to a finite extinction.
+ */
+export const MinTransmissionColor = 1e-7;
+
+/**
+ * Computes the KHR_materials_volume attenuation exported for a volumetric OpenPBR material, blending the
+ * transmission and subsurface slabs. The transmission extinction is the renderer's: absorption is shifted to be
+ * non-negative using the (untextured) transmission scatter factor, since glTF attenuation can't be textured.
+ * @param material The OpenPBR material
+ * @param transmissionVolume Whether the transmission slab contributes a volume
+ * @param subsurfaceVolume Whether the subsurface slab contributes a volume
+ * @returns The exported attenuation color and distance
+ */
+export function GetOpenPBRVolumeAttenuation(
+    material: OpenPBRMaterial,
+    transmissionVolume: boolean,
+    subsurfaceVolume: boolean
+): { attenuationColor: number[]; attenuationDistance: number } {
+    let transmissionAttenuationDistance;
+    const transmissionAttenuationColor = [1, 1, 1];
+    if (transmissionVolume && material.transmissionDepth > 0) {
+        const invDepth = 1.0 / material.transmissionDepth;
+        let transmissionExtinctionCoefficient = new Vector3(
+            -Math.log(Math.max(material.transmissionColor.r, MinTransmissionColor)) * invDepth,
+            -Math.log(Math.max(material.transmissionColor.g, MinTransmissionColor)) * invDepth,
+            -Math.log(Math.max(material.transmissionColor.b, MinTransmissionColor)) * invDepth
+        );
+        const transmissionScatteringCoefficient = new Vector3(
+            material.transmissionScatter.r * invDepth,
+            material.transmissionScatter.g * invDepth,
+            material.transmissionScatter.b * invDepth
+        );
+        const transmissionAbsorptionCoefficient = transmissionExtinctionCoefficient.subtract(transmissionScatteringCoefficient);
+        const minCoeff = Math.min(transmissionAbsorptionCoefficient.x, transmissionAbsorptionCoefficient.y, transmissionAbsorptionCoefficient.z);
+        if (minCoeff < 0) {
+            transmissionAbsorptionCoefficient.x = transmissionAbsorptionCoefficient.x - minCoeff;
+            transmissionAbsorptionCoefficient.y = transmissionAbsorptionCoefficient.y - minCoeff;
+            transmissionAbsorptionCoefficient.z = transmissionAbsorptionCoefficient.z - minCoeff;
+        }
+        transmissionExtinctionCoefficient = transmissionAbsorptionCoefficient.add(transmissionScatteringCoefficient);
+        const maxCoeff = Math.max(transmissionExtinctionCoefficient.x, transmissionExtinctionCoefficient.y, transmissionExtinctionCoefficient.z);
+        transmissionAttenuationDistance = 1.0 / maxCoeff;
+        transmissionAttenuationColor[0] = Math.exp(-transmissionExtinctionCoefficient.x * transmissionAttenuationDistance);
+        transmissionAttenuationColor[1] = Math.exp(-transmissionExtinctionCoefficient.y * transmissionAttenuationDistance);
+        transmissionAttenuationColor[2] = Math.exp(-transmissionExtinctionCoefficient.z * transmissionAttenuationDistance);
+    } else {
+        // transmissionDepth == 0
+        transmissionAttenuationDistance = Number.MAX_VALUE;
+    }
+    let subsurfaceAttenuationDistance = 1;
+    const subsurfaceAttenuationColor = [1, 1, 1];
+    if (subsurfaceVolume) {
+        const r = material.subsurfaceRadius;
+        const radiusScale = material.subsurfaceRadiusScale;
+        const mfp = new Vector3(radiusScale.r, radiusScale.g, radiusScale.b).multiplyByFloats(r, r, r);
+        const extinctionCoeff = new Vector3(1.0 / Math.max(mfp.x, 1e-6), 1.0 / Math.max(mfp.y, 1e-6), 1.0 / Math.max(mfp.z, 1e-6));
+        const maxCoeff = Math.max(extinctionCoeff.x, extinctionCoeff.y, extinctionCoeff.z);
+        subsurfaceAttenuationDistance = 1.0 / maxCoeff;
+        subsurfaceAttenuationColor[0] = Math.exp(-extinctionCoeff.x * subsurfaceAttenuationDistance);
+        subsurfaceAttenuationColor[1] = Math.exp(-extinctionCoeff.y * subsurfaceAttenuationDistance);
+        subsurfaceAttenuationColor[2] = Math.exp(-extinctionCoeff.z * subsurfaceAttenuationDistance);
+    }
+
+    const subsurfaceFractionOfDielectric = (1.0 - material.transmissionWeight) * material.subsurfaceWeight;
+    const subsurfaceAndTransmissionFractionOfDielectric = subsurfaceFractionOfDielectric + material.transmissionWeight;
+    const reciprocalOfSubsurfaceAndTransmissionFractionOfDielectric = 1.0 / Math.max(subsurfaceAndTransmissionFractionOfDielectric, 1e-6);
+    const transWeight = material.transmissionWeight * reciprocalOfSubsurfaceAndTransmissionFractionOfDielectric;
+    const subsurfWeight = subsurfaceFractionOfDielectric * reciprocalOfSubsurfaceAndTransmissionFractionOfDielectric;
+
+    return {
+        attenuationColor: transmissionAttenuationColor.map((c, i) => c * transWeight + subsurfaceAttenuationColor[i] * subsurfWeight),
+        attenuationDistance: transmissionAttenuationDistance * transWeight + subsurfaceAttenuationDistance * subsurfWeight,
+    };
 }
 
 function AreArraysEqual(array1: unknown[], array2: unknown[]): boolean {

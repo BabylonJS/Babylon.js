@@ -5891,6 +5891,18 @@
             "referenceImage": "flycamera-framerate-independent-movement.png",
             "renderCount": 1,
             "dependsOn": ["Cameras", "Materials", "Meshes"]
+        },
+        {
+            "title": "glTF Loader - PBRMaterial Scatter Color Density",
+            "playgroundId": "#GRQHVV#338",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "glTF Loader - PBRMaterial Scatter Strength Thin-Walled",
+            "playgroundId": "#GRQHVV#339",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         }
     ]
 }

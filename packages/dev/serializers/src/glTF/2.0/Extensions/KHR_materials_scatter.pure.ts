@@ -28,7 +28,7 @@ import { type Scene } from "core/scene";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
-import { CopyTextureSampling } from "../glTFUtilities";
+import { CopyTextureSampling, GetOpenPBRVolumeAttenuation, MinTransmissionColor } from "../glTFUtilities";
 
 const NAME = "KHR_materials_scatter";
 
@@ -219,8 +219,12 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
      * OpenPBR represents the two slabs as:
      *  - The transmission slab stores `transmission_scatter = extinction * singleScatterAlbedo` (OpenPBR 1.1),
      *    where the renderer's extinction is `-log(transmissionColor)` with the absorption shifted to be
-     *    non-negative. We recover the single-scatter albedo by dividing out that extinction, then convert it
-     *    to a multi-scatter albedo (the quantity KHR_materials_scatter stores).
+     *    non-negative. We recover the single-scatter albedo by dividing the scattering coefficient by the
+     *    extinction emitted by KHR_materials_volume (which the importer multiplies back), then convert it
+     *    to a multi-scatter albedo (the quantity KHR_materials_scatter stores). glTF attenuation can't be
+     *    textured, so the emitted extinction is derived from the untextured factors; texels whose scattering
+     *    coefficient exceeds it are approximated by clamping the albedo to one. Without a transmission depth
+     *    no extinction is emitted, so the per-texel renderer extinction is used instead.
      *  - The subsurface slab stores `subsurface_color`, which is already a multi-scatter albedo.
      *
      * The two are blended by `lerp(subsurface, transmission, transmissionFraction)` (the two fractions
@@ -242,18 +246,33 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
         if (transmissionWeight > 0) {
             const scatter = mat.transmissionScatter;
             const transmissionScatterOp = CreateTextureWithFactorOperand(mat.transmissionScatterTexture, new Color4(scatter.r, scatter.g, scatter.b, 1.0));
-            const color = mat.transmissionColor;
             const intermediateOptions = IntermediateOutputOptions(scene);
-            // Uses the renderer's extinction, which shifts negative absorption (per texel when textured).
-            const singleScatterOp = await TransmissionScatterToSingleScatterAlbedoAsync(
-                `scatter single-scatter (${mat.name})`,
-                CreateFactorOperand(new Color4(color.r, color.g, color.b, 1.0)),
-                transmissionScatterOp,
-                scene,
-                undefined,
-                undefined,
-                intermediateOptions
-            );
+            let singleScatterOp: ITextureProcessOperand;
+            if (mat.transmissionDepth > 0) {
+                // Divide by the extinction that KHR_materials_volume actually emits, so the importer's
+                // `extinction * albedo` reproduces the scattering coefficient.
+                const { attenuationColor, attenuationDistance } = GetOpenPBRVolumeAttenuation(mat, true, subsurfaceWeight > 0);
+                const scale = (scatterChannel: number, attenuationChannel: number) => {
+                    const extinction = -Math.log(Math.max(attenuationChannel, MinTransmissionColor)) / attenuationDistance;
+                    return extinction > 0 ? scatterChannel / (mat.transmissionDepth * extinction) : 0;
+                };
+                singleScatterOp = CreateTextureWithFactorOperand(
+                    mat.transmissionScatterTexture,
+                    new Color4(scale(scatter.r, attenuationColor[0]), scale(scatter.g, attenuationColor[1]), scale(scatter.b, attenuationColor[2]), 1.0)
+                );
+            } else {
+                const color = mat.transmissionColor;
+                // Uses the renderer's extinction, which shifts negative absorption (per texel when textured).
+                singleScatterOp = await TransmissionScatterToSingleScatterAlbedoAsync(
+                    `scatter single-scatter (${mat.name})`,
+                    CreateFactorOperand(new Color4(color.r, color.g, color.b, 1.0)),
+                    transmissionScatterOp,
+                    scene,
+                    undefined,
+                    undefined,
+                    intermediateOptions
+                );
+            }
             transmissionMultiOp = await SingleScatterToMultiScatterAlbedoAsync(
                 `scatter multi-scatter (${mat.name})`,
                 singleScatterOp,

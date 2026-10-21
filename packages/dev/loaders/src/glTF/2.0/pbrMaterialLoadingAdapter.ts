@@ -6,7 +6,35 @@ import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { Constants } from "core/Engines/constants";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 import { type GLTFLoader } from "./glTFLoader";
-import { CreateTextureWithFactorOperand, TextureChannel, ThinWalledScatterWeightsAsync } from "core/Materials/Textures/textureProcessor";
+import {
+    CreateFactorOperand,
+    CreateTextureWithFactorOperand,
+    ExtractMaxChannelAsync,
+    type ITextureProcessOperand,
+    type ITextureProcessorOutputOptions,
+    LerpTexturesAsync,
+    TextureChannel,
+    TextureColorSpace,
+    ThinWalledScatterWeightsAsync,
+} from "core/Materials/Textures/textureProcessor";
+import { type Scene } from "core/scene";
+
+/**
+ * Render-target options for intermediate texture processor passes: filterable floating point when the
+ * engine can render to it, so that only the final textures are quantized to 8 bits.
+ * @param scene the scene whose engine renders the passes
+ * @returns output options for an intermediate pass
+ */
+function IntermediateOutputOptions(scene: Scene): ITextureProcessorOutputOptions {
+    const caps = scene.getEngine().getCaps();
+    if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
+        return { textureType: Constants.TEXTURETYPE_FLOAT };
+    }
+    if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
+        return { textureType: Constants.TEXTURETYPE_HALF_FLOAT };
+    }
+    return { textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE };
+}
 
 /**
  * Material Loading Adapter for PBR materials that provides a unified OpenPBR-like interface.
@@ -56,13 +84,12 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this._disposeTextureIfUnused(loader, thinScatterTex);
         }
 
-        // Volumetric KHR_materials_scatter maps to PBR translucency. The shader already multiplies
-        // translucencyIntensity by the alpha of translucencyIntensityTexture and the translucency tint by
-        // translucencyColorTexture, so the staged textures don't need to be combined; they're applied here
-        // so they deterministically replace any KHR_materials_diffuse_transmission textures, whose async
-        // loads can otherwise resolve after these, matching how the scatter factors replace its factors.
+        // Volumetric KHR_materials_scatter maps to PBR translucency, applied only to the transmitted fraction
+        // of each texel (see _applyVolumetricScatterAsync). The staged textures are applied here, after every
+        // texture has loaded, so they deterministically replace any KHR_materials_diffuse_transmission
+        // textures, whose async loads can otherwise resolve after these.
         // The subsurface color texture (thin-walled KHR_materials_scatter, KHR_materials_volume_scatter)
-        // tints translucency in the same way and is applied here for the same reason.
+        // tints translucency through translucencyColorTexture and is applied here for the same reason.
         // Volumetric scatter only acts on transmitted light, so without transmission it has no visible
         // effect and must leave translucency (e.g. from KHR_materials_diffuse_transmission) untouched.
         const strengthTex = this._volumetricScatterStrengthTexture;
@@ -74,19 +101,14 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._transmissionScatterTexture = null;
         this._subsurfaceColorTexture = null;
         const applyScatter = scatterStrength !== null && this.transmissionWeight > 0;
-        const appliedStrengthTex = applyScatter ? strengthTex : null;
         const colorTex = (applyScatter ? transmissionScatterTex : null) ?? subsurfaceColorTex;
 
         const subSurface = this._material.subSurface;
         if (applyScatter) {
-            subSurface.isTranslucencyEnabled = scatterStrength > 0;
-            subSurface.translucencyIntensity = scatterStrength;
-        }
-        if (appliedStrengthTex && subSurface.translucencyIntensityTexture !== appliedStrengthTex) {
-            const oldIntensityTexture = subSurface.translucencyIntensityTexture;
-            subSurface.translucencyIntensityTexture = appliedStrengthTex;
-            subSurface.useGltfStyleTextures = true;
-            this._disposeTextureIfUnused(loader, oldIntensityTexture);
+            await this._applyVolumetricScatterAsync(loader, scatterStrength, strengthTex);
+            if (loader._disposed) {
+                return;
+            }
         }
         if (colorTex && subSurface.translucencyColorTexture !== colorTex) {
             const oldColorTexture = subSurface.translucencyColorTexture;
@@ -94,12 +116,80 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this._disposeTextureIfUnused(loader, oldColorTexture);
         }
 
-        // Dispose staged textures that weren't applied.
+        // Dispose staged textures that weren't applied. The strength texture is baked into the
+        // translucency intensity, so it's never applied directly.
         for (const texture of [strengthTex, transmissionScatterTex, subsurfaceColorTex]) {
-            if (texture !== appliedStrengthTex && texture !== colorTex) {
+            if (texture !== colorTex) {
                 this._disposeTextureIfUnused(loader, texture);
             }
         }
+    }
+
+    /**
+     * Converts volumetric scatter strength S into the PBR translucency intensity. Volumetric scatter only
+     * acts on the transmitted fraction T of the surface, so per texel the intensity blends from any
+     * independently configured diffuse transmission D (where T = 0) to S (where T = 1): D + T * (S - D).
+     * The staged strength texture isn't disposed here.
+     * @param loader The glTF loader that created the material
+     * @param scatterStrength The scatter strength factor
+     * @param strengthTex The scatter strength texture (alpha channel) or null
+     */
+    private async _applyVolumetricScatterAsync(loader: GLTFLoader, scatterStrength: number, strengthTex: Nullable<BaseTexture>): Promise<void> {
+        const subSurface = this._material.subSurface;
+        const scene = this._material.getScene();
+        const name = this._material.name;
+        const transmissionFactor = this.transmissionWeight;
+        const transmissionTex = subSurface.refractionIntensityTexture;
+        const oldIntensityTexture = subSurface.translucencyIntensityTexture;
+        const diffuseFactor = this.subsurfaceWeight;
+        const diffuseTex = diffuseFactor > 0 ? oldIntensityTexture : null;
+
+        // The translucency intensity is read from the alpha channel, but T is in the red channel of the
+        // transmission texture and the channel swizzles keep the source alpha. So T is first broadcast to all
+        // four channels (zeroing the source alpha before the max), in a floating point target when possible.
+        let transmission: ITextureProcessOperand;
+        if (transmissionTex) {
+            transmission = await ExtractMaxChannelAsync(
+                `${name}_scatterTransmission`,
+                CreateTextureWithFactorOperand(transmissionTex, new Color4(transmissionFactor, transmissionFactor, transmissionFactor, 0), TextureChannel.R),
+                scene,
+                true,
+                TextureColorSpace.Linear,
+                undefined,
+                IntermediateOutputOptions(scene)
+            );
+            if (loader._disposed) {
+                transmission.dispose?.();
+                return;
+            }
+        } else {
+            transmission = CreateFactorOperand(new Color4(transmissionFactor, transmissionFactor, transmissionFactor, transmissionFactor));
+        }
+
+        const intensity = await LerpTexturesAsync(
+            `${name}_scatterTranslucency`,
+            CreateTextureWithFactorOperand(diffuseTex, new Color4(diffuseFactor, diffuseFactor, diffuseFactor, diffuseFactor), TextureChannel.A),
+            CreateTextureWithFactorOperand(strengthTex, new Color4(scatterStrength, scatterStrength, scatterStrength, scatterStrength), TextureChannel.A),
+            transmission,
+            scene
+        );
+        if (loader._disposed) {
+            intensity.dispose?.();
+            return;
+        }
+
+        if (intensity.texture) {
+            subSurface.isTranslucencyEnabled = true;
+            subSurface.translucencyIntensity = 1.0;
+            subSurface.translucencyIntensityTexture = intensity.texture;
+            subSurface.useGltfStyleTextures = true;
+        } else {
+            const value = intensity.factor?.a ?? 0;
+            subSurface.isTranslucencyEnabled = value > 0;
+            subSurface.translucencyIntensity = value;
+            subSurface.translucencyIntensityTexture = null;
+        }
+        this._disposeTextureIfUnused(loader, oldIntensityTexture);
     }
 
     /**

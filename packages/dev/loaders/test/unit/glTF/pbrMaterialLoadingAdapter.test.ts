@@ -53,9 +53,14 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
 
         await adapter.finalizeAsync(loader);
 
+        // The strength texture is baked, together with the transmission, into a new intensity texture.
+        const intensityTexture = material.subSurface.translucencyIntensityTexture;
         expect(material.subSurface.isTranslucencyEnabled).toBe(true);
-        expect(material.subSurface.translucencyIntensity).toBe(0.5);
-        expect(material.subSurface.translucencyIntensityTexture).toBe(strength);
+        expect(material.subSurface.translucencyIntensity).toBe(1);
+        expect(intensityTexture).not.toBeNull();
+        expect(intensityTexture).not.toBe(strength);
+        expect(material.subSurface.useGltfStyleTextures).toBe(true);
+        expect(isDisposed(strength)).toBe(true);
         expect(material.subSurface.translucencyColorTexture).toBe(color);
         expect(adapter.volumetricScatterStrengthTexture).toBeNull();
         expect(adapter.transmissionScatterTexture).toBeNull();
@@ -75,7 +80,10 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
 
         await adapter.finalizeAsync(loader);
 
-        expect(material.subSurface.translucencyIntensityTexture).toBe(strength);
+        const intensityTexture = material.subSurface.translucencyIntensityTexture;
+        expect(intensityTexture).not.toBeNull();
+        expect(intensityTexture).not.toBe(strength);
+        expect(intensityTexture).not.toBe(diffuseTransmission);
         expect(material.subSurface.translucencyColorTexture).toBe(color);
         expect(isDisposed(diffuseTransmission)).toBe(true);
         expect(isDisposed(diffuseTransmissionTint)).toBe(true);
@@ -93,8 +101,36 @@ describe("PBRMaterialLoadingAdapter.finalizeAsync volumetric scatter", () => {
 
         await adapter.finalizeAsync(loader);
 
-        expect(material.subSurface.translucencyIntensityTexture).toBe(strength);
+        expect(material.subSurface.translucencyIntensityTexture).not.toBe(shared);
         expect(isDisposed(shared)).toBe(false);
+    });
+
+    it("scales constant volumetric scatter by the transmission factor", async () => {
+        const { material, adapter } = createAdapter("mat");
+        adapter.configureTransmission();
+        adapter.transmissionWeight = 0.5;
+        adapter.volumetricScatterStrengthFactor = 1;
+
+        await adapter.finalizeAsync(loader);
+
+        expect(material.subSurface.isTranslucencyEnabled).toBe(true);
+        expect(material.subSurface.translucencyIntensity).toBeCloseTo(0.5, 6);
+        expect(material.subSurface.translucencyIntensityTexture).toBeNull();
+    });
+
+    it("blends constant volumetric scatter with diffuse transmission by the transmission factor", async () => {
+        const { material, adapter } = createAdapter("mat");
+        adapter.configureTransmission();
+        adapter.transmissionWeight = 0.5;
+        adapter.configureSubsurface();
+        adapter.subsurfaceWeight = 0.4;
+        adapter.volumetricScatterStrengthFactor = 0.8;
+
+        await adapter.finalizeAsync(loader);
+
+        // D + T * (S - D) = 0.4 + 0.5 * (0.8 - 0.4)
+        expect(material.subSurface.isTranslucencyEnabled).toBe(true);
+        expect(material.subSurface.translucencyIntensity).toBeCloseTo(0.6, 6);
     });
 
     it("keeps volumetric scatter inert and preserves diffuse transmission when there is no transmission", async () => {

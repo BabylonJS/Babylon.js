@@ -633,6 +633,79 @@ test.describe("OpenPBR KHR_materials_scatter glTF round-trip", () => {
         }
     }
 
+    // KHR_materials_volume can't texture its attenuation, so it emits the extinction for the untextured scatter
+    // factor: with transmissionColor 0.5 and scatter (1, 1, 1) the absorption is shifted, giving an extinction of 1.
+    // A gray texel scales the coefficient below the shift boundary, where the renderer's per-texel extinction is
+    // -log(0.5). The baked albedo must be relative to the emitted extinction of 1, because the importer multiplies by
+    // it: dividing by the per-texel -log(0.5) instead would inflate the reimported coefficient by about 44%.
+    test("volumetric scatter texels crossing the absorption normalization boundary preserve the scattering coefficient", async () => {
+        const texels = [
+            [128, 128, 128],
+            [255, 255, 255],
+            [64, 64, 64],
+            [255, 128, 64],
+        ];
+        const result = await page.evaluate(async (texels) => {
+            const scene = window.scene!;
+            const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+            const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+            const mat = new BABYLON.OpenPBRMaterial("normalizationBoundary", scene);
+            mat.geometryThinWalled = 0;
+            mat.transmissionWeight = 1;
+            mat.subsurfaceWeight = 0;
+            mat.transmissionDepth = 1.0;
+            mat.geometryThickness = 1.0;
+            mat.transmissionColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+            mat.transmissionScatter = new BABYLON.Color3(1, 1, 1);
+            mat.transmissionScatterTexture = new BABYLON.RawTexture(new Uint8Array(texels.flatMap((t) => [...t, 255])), 2, 2, RGBA, scene, false, false, NEAREST);
+            box.material = mat;
+
+            const glb = await BABYLON.GLTF2Export.GLBAsync(scene, "rt");
+            const url = URL.createObjectURL(glb.files["rt.glb"] as Blob);
+            const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "rt");
+            const exported = JSON.parse(gltf.files["rt.gltf"] as string).materials[0].extensions;
+
+            const scene2 = new BABYLON.Scene(scene.getEngine());
+            let gltfLoader: { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> } | null = null;
+            BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
+                if (loader.name === "gltf") {
+                    gltfLoader = loader as unknown as { useOpenPBR: boolean; whenCompleteAsync: () => Promise<void> };
+                    gltfLoader.useOpenPBR = true;
+                }
+            });
+            await BABYLON.SceneLoader.AppendAsync("", url, scene2, undefined, ".glb");
+            await gltfLoader!.whenCompleteAsync();
+            URL.revokeObjectURL(url);
+
+            const reMat = scene2.materials.find((m) => m.getClassName() === "OpenPBRMaterial") as any;
+            const factor = reMat.transmissionScatter.asArray() as number[];
+            const texture = reMat.transmissionScatterTexture as InstanceType<typeof BABYLON.BaseTexture>;
+            const pixels = await texture.readPixels();
+            const values = pixels instanceof Uint8Array ? Array.from(pixels).map((v) => v / 255) : Array.from(pixels as Float32Array);
+            const depth = reMat.transmissionDepth as number;
+            return {
+                attenuationColor: exported.KHR_materials_volume.attenuationColor as number[],
+                attenuationDistance: exported.KHR_materials_volume.attenuationDistance as number,
+                // Scattering coefficient = transmission_scatter / transmission_depth (factor times texel).
+                coefficients: texels.map((_, t) => factor.map((f, i) => (f * values[t * 4 + i]) / depth)),
+            };
+        }, texels);
+
+        // The emitted extinction is the shifted one: -log(attenuationColor) / attenuationDistance = 1.
+        for (let i = 0; i < 3; i++) {
+            expect(-Math.log(result.attenuationColor[i]) / result.attenuationDistance).toBeCloseTo(1, 4);
+        }
+        for (let t = 0; t < texels.length; t++) {
+            for (let i = 0; i < 3; i++) {
+                const expected = texels[t][i] / 255;
+                const actual = result.coefficients[t][i];
+                expect(Math.abs(actual - expected) / expected, `texel ${t} channel ${i}: ${actual}`).toBeLessThanOrEqual(0.06);
+            }
+        }
+    });
+
     // The weight fraction T / (1 - (1-T)(1-S)) cancels catastrophically for small weights if its intermediates
     // are quantized: with T = S = 0.001 both inverted weights round to 1 in 8 bits and the fraction saturates.
     // Exporting textured weights must produce the same per-texel values as the constant-only export.
