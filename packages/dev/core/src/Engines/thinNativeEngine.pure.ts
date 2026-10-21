@@ -2887,6 +2887,7 @@ export class ThinNativeEngine extends ThinEngine {
         const samples = options.samples || 1;
 
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+        this._assertDepthAttachmentCompatible(nativeRTWrapper, samples);
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
         const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
@@ -3124,6 +3125,30 @@ export class ThinNativeEngine extends ThinEngine {
         }
     }
 
+    /**
+     * Rejects an explicit depth attachment the render target cannot use, before any attachment state is mutated.
+     * bgfx requires every framebuffer attachment to share one sample count.
+     * @internal
+     */
+    public _assertDepthAttachmentCompatible(rtWrapper: NativeRenderTargetWrapper, depthSamples: number): void {
+        if (rtWrapper.is3D) {
+            this._assertVolumeDepthAttachmentSupported();
+        }
+        if ((depthSamples || 1) !== (rtWrapper.samples || 1)) {
+            throw new Error(`NativeEngine: explicit depth attachments must use the render target's sample count (depth: ${depthSamples || 1}, color: ${rtWrapper.samples || 1}).`);
+        }
+    }
+
+    /**
+     * Whether the depth attachment carries stencil: an explicit depth texture decides from its own format (its handle
+     * may be unallocated after a sample-count change), otherwise the automatic depth buffer request does.
+     * @internal
+     */
+    public _getDepthAttachmentStencil(rtWrapper: NativeRenderTargetWrapper): boolean {
+        const depthTexture = rtWrapper._depthStencilTexture;
+        return depthTexture ? HasStencilAspect(depthTexture.format) : rtWrapper._generateStencilBuffer;
+    }
+
     /** @internal */
     public _assertVolumeDepthAttachmentSupported(depthSamples?: number, colorSamples?: number): void {
         if (!this._engine.createMultiFrameBuffer) {
@@ -3282,7 +3307,7 @@ export class ThinNativeEngine extends ThinEngine {
         const hardwareTexture = textures[0]._hardwareTexture as NativeHardwareTexture;
         const depthStencilTexture = nativeRTWrapper._depthStencilTexture;
         const generateDepthBuffer = !!depthStencilTexture || nativeRTWrapper._generateDepthBuffer;
-        const generateStencilBuffer = nativeRTWrapper._generateStencilBuffer;
+        const generateStencilBuffer = this._getDepthAttachmentStencil(nativeRTWrapper);
         const samples = textures[0].samples || nativeRTWrapper.samples || 1;
 
         // Like a GL framebuffer, an explicit depth-stencil texture is always attached as-is, so every pass that
@@ -3940,7 +3965,7 @@ export class ThinNativeEngine extends ThinEngine {
             colorHandles,
             width,
             height,
-            rtWrapper._generateStencilBuffer,
+            this._getDepthAttachmentStencil(rtWrapper),
             generateDepthBuffer,
             rtWrapper._samples,
             undefined,
@@ -4414,6 +4439,11 @@ export class ThinNativeEngine extends ThinEngine {
     // an increasingly-rough convolution of the environment into each mip via bindFramebuffer(faceIndex, lod).
     // The pre-built _framebuffers array only covers mip 0, so mips > 0 are built here on demand.
     private _getCubeFaceMipFramebuffer(nativeRTWrapper: NativeRenderTargetWrapper, face: number, mip: number): NativeFramebuffer {
+        // An explicit (sampleable) depth texture only covers mip 0 and native framebuffers cannot select a depth mip,
+        // so a per-mip framebuffer would silently render against unrelated depth instead of the attached texture.
+        if (nativeRTWrapper._depthStencilTexture) {
+            throw new Error("NativeEngine: explicit depth attachments on cube render targets only support rendering to mip 0.");
+        }
         if (!nativeRTWrapper._layerFramebuffers) {
             nativeRTWrapper._layerFramebuffers = new Map<number, NativeFramebuffer>();
         }
@@ -4517,7 +4547,7 @@ export class ThinNativeEngine extends ThinEngine {
                 colorTextures,
                 nativeRTWrapper.width,
                 nativeRTWrapper.height,
-                nativeRTWrapper._generateStencilBuffer,
+                this._getDepthAttachmentStencil(nativeRTWrapper),
                 !!depth || nativeRTWrapper._generateDepthBuffer,
                 samples,
                 layers,

@@ -1126,6 +1126,81 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.initializeTexture).not.toHaveBeenCalled();
         });
 
+        it("rejects explicit depth with a mismatched sample count before mutating the target", () => {
+            for (const multi of [false, true]) {
+                const { engine, created, released } = createEngine();
+                const create = (samples: number) =>
+                    (multi
+                        ? engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2, generateDepthBuffer: false, samples })
+                        : engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false, samples })) as NativeRenderTargetWrapper;
+                const source = create(1);
+                const destination = create(4);
+                const sourceDepth = source.createDepthStencilTexture(0, false, false, 1);
+                const destinationDepth = destination.createDepthStencilTexture(0, false, false, 4);
+                const framebuffer = destination._framebufferDepthStencil ?? destination._framebuffer;
+                const references = [sourceDepth._references, destinationDepth._references];
+                const createdCount = created.length;
+                const releasedCount = released.length;
+
+                expect(() => source.shareDepth(destination)).toThrow("must use the render target's sample count");
+                expect(() => destination.setDepthStencilTexture(sourceDepth, false)).toThrow("must use the render target's sample count");
+                expect(() => destination.createDepthStencilTexture(0, false, false, 1)).toThrow("must use the render target's sample count");
+
+                expect(destination._depthStencilTexture).toBe(destinationDepth);
+                expect([sourceDepth._references, destinationDepth._references]).toEqual(references);
+                expect(destination._framebufferDepthStencil ?? destination._framebuffer).toBe(framebuffer);
+                expect(created).toHaveLength(createdCount);
+                expect(released).toHaveLength(releasedCount);
+            }
+        });
+
+        it("keeps the explicit depth stencil aspect when recreating flat and layered MRT depth", () => {
+            for (const layered of [false, true]) {
+                const { engine, bound } = createEngine();
+                const rtWrapper = engine.createMultipleRenderTarget(
+                    { width: 64, height: 64 },
+                    layered
+                        ? { textureCount: 1, targetTypes: [Constants.TEXTURE_2D_ARRAY], layerCounts: [3], generateStencilBuffer: false }
+                        : { textureCount: 1, generateDepthBuffer: false, generateStencilBuffer: false }
+                ) as NativeRenderTargetWrapper;
+                const depth = rtWrapper.createDepthStencilTexture(0, false, true, 1);
+                expect(depth.format).toBe(Constants.TEXTUREFORMAT_DEPTH24_STENCIL8);
+                const previousDepth = resourceOf(depth);
+
+                engine.updateMultipleRenderTargetTextureSampleCount(rtWrapper, 4);
+                engine.bindFramebuffer(rtWrapper);
+
+                expect(resourceOf(depth)).not.toBe(previousDepth);
+                expect(bound().explicitDepth).toBe(resourceOf(depth));
+                expect(bound().stencil).toBe(true);
+            }
+        });
+
+        it("rejects nonzero cube mips while an explicit depth texture is attached", () => {
+            for (const attach of ["create", "share"] as const) {
+                const { engine, nativeEngine, bound } = createEngine();
+                const rtWrapper = engine.createRenderTargetCubeTexture(64, { generateMipMaps: true, generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+                let depth: InternalTexture;
+                if (attach === "create") {
+                    depth = rtWrapper.createDepthStencilTexture(0, false, false, 1);
+                } else {
+                    const source = engine.createRenderTargetCubeTexture(64, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+                    depth = source.createDepthStencilTexture(0, false, false, 1);
+                    source.shareDepth(rtWrapper);
+                }
+
+                engine.bindFramebuffer(rtWrapper, 0);
+                expect(bound().explicitDepth).toBe(resourceOf(depth));
+                nativeEngine.createFrameBuffer.mockClear();
+                nativeEngine.createMultiFrameBuffer.mockClear();
+
+                expect(() => engine.bindFramebuffer(rtWrapper, 0, undefined, undefined, undefined, 1)).toThrow("only support rendering to mip 0");
+                expect(rtWrapper._layerFramebuffers?.size ?? 0).toBe(0);
+                expect(nativeEngine.createFrameBuffer).not.toHaveBeenCalled();
+                expect(nativeEngine.createMultiFrameBuffer).not.toHaveBeenCalled();
+            }
+        });
+
         it("reattaches shared depth to an ordinary render target", () => {
             const { engine, bound } = createEngine();
             const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
