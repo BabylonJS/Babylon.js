@@ -22,6 +22,9 @@ import {
     type Vec3,
 } from "@babylonjs/lite";
 
+/** Inspector bounds helpers must retain their source-dependent transform and cannot participate in reparenting. */
+export const InspectorBoundsHelpers = new WeakSet<SceneNode>();
+
 /** Inspector-owned overlay scenes, excluded without affecting application-owned utility scenes. */
 export const InspectorUtilityScenes = new WeakSet<RenderingContext>();
 
