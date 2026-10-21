@@ -544,8 +544,9 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     /**
      * Minimum number of frames between two GPU sorts of the same camera view when only the view changed (the camera moved or the mesh world
-     * transform changed). Sorts caused by data changes (new splat data, parts, ranges) and the first sort of a view bypass this throttle and
-     * run immediately. The default of 1 re-sorts whenever the view changed. On a slow GPU the sort competes with rendering; a value of 2 or
+     * transform changed). Sorts caused by data changes (new splat data, parts, ranges) and the first sort of a view bypass this throttle.
+     * After the first render, requests are coalesced at the next scene pre-render; initial readiness checks can sort synchronously.
+     * The default of 1 re-sorts whenever the view changed. On a slow GPU the sort competes with rendering; a value of 2 or
      * more trades a slightly stale order during camera motion for a lower GPU cost, like the asynchronous CPU worker does.
      * @experimental
      */
@@ -1916,8 +1917,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._canPostToWorker = true;
             return;
         }
-        // The sort dispatches compute work, which cannot happen inside a render pass: the scene runs it before rendering.
-        if (!this._scene._isInRenderingMeshEvaluation() && !this._scene.getEngine()._currentRenderTarget) {
+        // Readiness polling must progress without a render loop. Once rendered, coalesce mutations at scene pre-render.
+        if ((!this._readyToDisplay || !this._hasRenderedOnce) && !this._scene._isInRenderingMeshEvaluation() && !this._scene.getEngine()._currentRenderTarget) {
             this._runGpuSort();
         }
     }
