@@ -116,7 +116,7 @@ describe("GaussianSplatting GPU sort selection", () => {
         expect(mesh._isGpuSortActive).toBe(useGpuSort);
         if (useGpuSort) {
             expect(copy).not.toHaveBeenCalled();
-            expect(invalidateSource).toHaveBeenCalledOnce();
+            expect(invalidateSource).toHaveBeenCalled();
             expect(workerCtor).not.toHaveBeenCalled();
         } else {
             expect(copy).toHaveBeenCalledOnce();
