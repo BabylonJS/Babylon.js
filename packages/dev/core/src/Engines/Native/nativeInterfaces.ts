@@ -32,6 +32,12 @@ export interface INativeEngine {
      */
     readonly supportsMultisampledMipmaps?: boolean;
 
+    /**
+     * True when the runtime can copy a canvas into a dynamic texture with a mip chain and
+     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps)`).
+     */
+    readonly supportsDynamicTextureMipMaps?: boolean;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
