@@ -424,9 +424,15 @@ export class GaussianSplattingGpuSortOutput {
 }
 
 function _Dispatch(cs: ComputeShader, groups: number): boolean {
-    return groups <= MaxDispatchGroupsPerDimension
-        ? cs.dispatch(Math.max(groups, 1), 1, 1)
-        : cs.dispatch(MaxDispatchGroupsPerDimension, Math.ceil(groups / MaxDispatchGroupsPerDimension), 1);
+    const dispatched =
+        groups <= MaxDispatchGroupsPerDimension
+            ? cs.dispatch(Math.max(groups, 1), 1, 1)
+            : cs.dispatch(MaxDispatchGroupsPerDimension, Math.ceil(groups / MaxDispatchGroupsPerDimension), 1);
+    if (dispatched) {
+        // The context check leaves this set when rebinding reuses the same resources.
+        cs.triggerContextRebuild = false;
+    }
+    return dispatched;
 }
 
 function _IsShaderReady(cs: ComputeShader): boolean {
@@ -1073,7 +1079,7 @@ export class GaussianSplattingGpuSorter {
         for (let pass = 0; pass < this._passCount; pass++) {
             _Dispatch(this._countCs[pass], numBlocks);
             _Dispatch(this._scanLocalCs, chunkCount);
-            this._scanSumsCs.dispatch(1, 1, 1);
+            _Dispatch(this._scanSumsCs, 1);
             _Dispatch(this._scatterCs[pass], numBlocks);
         }
         return true;

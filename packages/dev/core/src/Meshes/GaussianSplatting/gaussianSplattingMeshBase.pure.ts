@@ -3597,9 +3597,9 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         if (!firstTime && !textureSizeChanged && !needsMrtConversion) {
             this._setDelayedTextureUpdate(covA, covB, colorArray, sh);
-            const positions = Float32Array.from(this._splatPositions!);
-            const vertexCount = this._vertexCount;
             if (this._worker) {
+                const positions = Float32Array.from(this._splatPositions!);
+                const vertexCount = this._vertexCount;
                 this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
                 // Re-sync the active interval set in case the source splat count changed.
                 this._postIntervalsToWorker();
