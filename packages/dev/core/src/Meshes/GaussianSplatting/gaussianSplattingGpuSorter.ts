@@ -476,6 +476,7 @@ export class GaussianSplattingGpuSorter {
     private readonly _keyBits: number;
     private readonly _passCount: number;
     private readonly _maxSplatCount: number;
+    private readonly _maxIntervalCount: number;
 
     private _vertexCount = 0;
     private _textureWidth = 0;
@@ -592,6 +593,10 @@ export class GaussianSplattingGpuSorter {
         this._keyBits = _ClampGpuSortKeyBits(keyBits);
         this._passCount = _GetGpuSortPassCount(this._keyBits);
         this._maxSplatCount = GetGaussianSplattingGpuSorterMaxSplatCount(engine);
+        const limits = this._engine.currentLimits;
+        this._maxIntervalCount = Math.floor(
+            Math.min(limits?.maxStorageBufferBindingSize ?? DefaultMaxStorageBufferSize, limits?.maxBufferSize ?? DefaultMaxStorageBufferSize) / (2 * Uint32Array.BYTES_PER_ELEMENT)
+        );
 
         const passBindings: ComputeBindingMapping = { params: { group: 0, binding: 0 } };
         this._chunkSums = new StorageBuffer(this._engine, MaxScanChunks * Uint32Array.BYTES_PER_ELEMENT, Constants.BUFFER_CREATIONFLAG_READWRITE, name + "_chunkSums");
@@ -705,7 +710,7 @@ export class GaussianSplattingGpuSorter {
     /**
      * Restricts the sort to ranges of source splats, like the CPU worker's `intervals` message.
      * @param intervals flat `[start0, count0, start1, count1, ...]` (start, COUNT pairs), or null to sort every splat
-     * @returns false (and logs an error) if the packed, padded active count exceeds the scan or device storage-buffer limits.
+     * @returns false (and logs an error) if the packed intervals or padded active count exceed the scan or device storage-buffer limits.
      * Overlapping intervals count each occurrence. Sorting is disabled until valid intervals or a valid source are set.
      */
     public setIntervals(intervals: Nullable<ArrayLike<number>>): boolean {
@@ -848,6 +853,10 @@ export class GaussianSplattingGpuSorter {
         if (!this._intervalsValid) {
             Logger.Error(`${this._name}: ${this._activeCount} active splats exceeds the GPU sorter limit of ${this._maxSplatCount}.`);
         }
+        if (Math.max(this._intervalCount, 2) > this._maxIntervalCount) {
+            this._intervalsValid = false;
+            Logger.Error(`${this._name}: ${this._intervalCount} intervals exceeds the GPU sorter limit of ${this._maxIntervalCount}.`);
+        }
         return this._intervalsValid;
     }
 
@@ -886,7 +895,7 @@ export class GaussianSplattingGpuSorter {
             return;
         }
         this._intervalsBuffer?.dispose();
-        this._intervalsCapacity = Math.max(entries, Math.ceil(this._intervalsCapacity * 1.5));
+        this._intervalsCapacity = Math.max(entries, Math.min(Math.ceil(this._intervalsCapacity * 1.5), this._maxIntervalCount));
         this._intervalsBuffer = new StorageBuffer(
             this._engine,
             this._intervalsCapacity * 2 * Uint32Array.BYTES_PER_ELEMENT,
