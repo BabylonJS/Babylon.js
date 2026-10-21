@@ -233,9 +233,46 @@ describe("GaussianSplattingGpuSorter support", () => {
     const createValidationSorter = (maxSplatCount: number, vertexCount: number) => {
         // Exercise interval validation without allocating storage for millions of keys.
         const sorter = Object.create(GaussianSplattingGpuSorter.prototype) as GaussianSplattingGpuSorter;
-        Object.assign(sorter, { _name: "validation", _maxSplatCount: maxSplatCount, _vertexCount: vertexCount });
+        Object.assign(sorter, { _name: "validation", _maxSplatCount: maxSplatCount, _maxIntervalCount: maxSplatCount, _vertexCount: vertexCount });
         return sorter;
     };
+
+    it.each(["maxStorageBufferBindingSize", "maxBufferSize"])("caps repeated interval-buffer growth by %s and rejects an oversized footprint", (limit) => {
+        const engine = new NullEngine();
+        engine.getCaps().supportComputeShaders = true;
+        vi.spyOn(GaussianSplattingGpuSorter, "IsSupported").mockReturnValue(true);
+        const allocate = vi.fn((_size: number) => new DataBuffer());
+        Object.assign(engine, {
+            currentLimits: { maxStorageBufferBindingSize: 4096, maxBufferSize: 4096, [limit]: 1027 },
+            _storageBuffers: [],
+            createStorageBuffer: allocate,
+            createComputeContext: () => ({ clear: vi.fn() }),
+        });
+        const sorter = new GaussianSplattingGpuSorter(engine);
+        const output = sorter.createOutput();
+        onTestFinished(() => {
+            sorter.dispose();
+            engine.dispose();
+        });
+        sorter["_vertexCount"] = 128;
+        allocate.mockClear();
+
+        for (const count of [64, 96, 128]) {
+            expect(sorter.setIntervals(Array.from({ length: count * 2 }, (_, i) => i % 2))).toBe(true);
+            sorter["_ensureIntervalsBuffer"]();
+            expect(sorter["_intervalsCapacity"]).toBe(count);
+            expect(allocate.mock.lastCall![0]).toBe(count * 8);
+        }
+        const buffer = sorter["_intervalsBuffer"];
+        allocate.mockClear();
+        const error = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        expect(sorter.setIntervals(Array.from({ length: 129 * 2 }, (_, i) => i % 2))).toBe(false);
+        expect(sorter.sort(output, { m: Identity }, { m: Identity })).toBe(false);
+        expect(error).toHaveBeenCalledOnce();
+        expect(allocate).not.toHaveBeenCalled();
+        expect(sorter["_intervalsBuffer"]).toBe(buffer);
+        expect(sorter.setIntervals([0, 128])).toBe(true);
+    });
 
     it("rejects overlapping intervals exceeding the scan chunk capacity before allocating or dispatching", () => {
         vi.spyOn(Logger, "Error").mockImplementation(() => {});
