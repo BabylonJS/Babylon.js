@@ -2183,6 +2183,10 @@ export class ThinNativeEngine extends ThinEngine {
         compression: Nullable<string> = null,
         textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ): InternalTexture {
+        if (compression) {
+            throw new Error(`NativeEngine.createRawTexture3D: compressed raw volume uploads are not supported (${compression}).`);
+        }
+
         const texture = new InternalTexture(this, InternalTextureSource.Raw3D);
 
         texture.baseWidth = width;
@@ -2226,6 +2230,10 @@ export class ThinNativeEngine extends ThinEngine {
     ): void {
         if (!texture) {
             return;
+        }
+
+        if (compression) {
+            throw new Error(`NativeEngine.updateRawTexture3D: compressed raw volume uploads are not supported (${compression}).`);
         }
 
         texture.format = format;

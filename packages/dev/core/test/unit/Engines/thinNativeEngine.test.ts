@@ -21,6 +21,7 @@ import { KhronosTextureContainer2 } from "core/Misc/khronosTextureContainer2";
 import { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 import { FrameGraphTextureManager } from "core/FrameGraph/frameGraphTextureManager";
 import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
+import { _IblShadowsVoxelRenderer } from "core/Rendering/IBLShadows/iblShadowsVoxelRenderer.pure";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 type NativeFrameRequester = {
@@ -975,6 +976,38 @@ describe("ThinNativeEngine", () => {
             expect(bound().layers).toEqual([2]);
         });
 
+        it("defers voxelization slab attachments to the shared voxel grid without allocating placeholders", () => {
+            const { engine, nativeEngine, bound } = createEngine();
+            const resolution = 16;
+            const drawBuffers = 4;
+            const numSlabs = resolution / drawBuffers;
+            const voxelGrid = engine.createRenderTargetTexture(
+                { width: resolution, height: resolution, depth: resolution },
+                { generateMipMaps: false, generateDepthBuffer: false, type: Constants.TEXTURETYPE_UNSIGNED_BYTE, format: Constants.TEXTUREFORMAT_R }
+            ).texture!;
+            nativeEngine.initializeTexture.mockClear();
+
+            const slabs = Array.from({ length: numSlabs }, (_, slab) => {
+                const rtWrapper = engine.createMultipleRenderTarget(
+                    { width: resolution, height: resolution, depth: resolution },
+                    { textureCount: drawBuffers, ..._IblShadowsVoxelRenderer._CreateVoxelSlabMRTOptions(drawBuffers, resolution, slab) },
+                    true
+                ) as NativeRenderTargetWrapper;
+                for (let i = 0; i < drawBuffers; i++) {
+                    rtWrapper.setTexture(voxelGrid, i, false);
+                }
+                return rtWrapper;
+            });
+            expect(nativeEngine.initializeTexture).not.toHaveBeenCalled();
+
+            slabs.forEach((rtWrapper, slab) => {
+                engine.bindFramebuffer(rtWrapper);
+                expect(bound().colors).toEqual(new Array(drawBuffers).fill(resourceOf(voxelGrid)));
+                expect(bound().layers).toEqual(Array.from({ length: drawBuffers }, (_, i) => slab * drawBuffers + i));
+            });
+            expect(nativeEngine.initializeTexture).not.toHaveBeenCalled();
+        });
+
         it("keeps cube and array MRT attachments layered when the sample count changes", () => {
             const { engine, nativeEngine, bound } = createEngine();
             const rtWrapper = engine.createMultipleRenderTarget(
@@ -1476,6 +1509,36 @@ describe("ThinNativeEngine", () => {
                 previousBuffer,
             ]);
             expect(nativeEngine.updateTextureData).not.toHaveBeenCalled();
+        });
+
+        it("rejects compressed raw volume creation and updates before allocation or mutation", () => {
+            const { engine, nativeEngine } = createEngine();
+            const data = new Uint8Array(4 * 4 * 4 * 4);
+            const compression = "COMPRESSED_RGBA_S3TC_DXT1_EXT";
+            const cachedTextures = engine._internalTexturesCache.length;
+
+            expect(() => engine.createRawTexture3D(data, 4, 4, 4, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, compression)).toThrow(
+                "compressed raw volume uploads are not supported"
+            );
+            expect(nativeEngine.initializeTexture).not.toHaveBeenCalled();
+            expect(nativeEngine.loadRawTexture3D).not.toHaveBeenCalled();
+            expect(engine._internalTexturesCache.length).toBe(cachedTextures);
+
+            const texture = engine.createRawTexture3D(data, 4, 4, 4, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            const previousBuffer = texture._bufferView;
+            nativeEngine.loadRawTexture3D.mockClear();
+            expect(() => engine.updateRawTexture3D(texture, new Uint8Array(data.length), Constants.TEXTUREFORMAT_RG, true, compression, Constants.TEXTURETYPE_FLOAT)).toThrow(
+                "compressed raw volume uploads are not supported"
+            );
+            expect([texture.format, texture.type, texture.invertY, texture._compression, texture._bufferView]).toEqual([
+                Constants.TEXTUREFORMAT_RGBA,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                false,
+                null,
+                previousBuffer,
+            ]);
+            expect(nativeEngine.loadRawTexture3D).not.toHaveBeenCalled();
+            expect(nativeEngine.initializeTexture).not.toHaveBeenCalled();
         });
 
         it("preserves sRGB volume allocation through rebuilding", () => {
