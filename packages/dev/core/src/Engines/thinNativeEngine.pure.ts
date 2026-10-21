@@ -3270,15 +3270,13 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
 
-        const colorTextures: NativeTexture[] = [];
-        for (const texture of textures) {
-            const resource = texture?._hardwareTexture?.underlyingResource;
-            if (!resource) {
+        const textureCount = textures.length;
+        for (let i = 0; i < textureCount; i++) {
+            if (!textures[i]?._hardwareTexture?.underlyingResource) {
                 // A color texture is not yet backed by a hardware texture; leave the wrapper unbuilt (the base
                 // path will bind the back buffer). This wrapper will be retried on its next bind.
                 return;
             }
-            colorTextures.push(resource);
         }
 
         const hardwareTexture = textures[0]._hardwareTexture as NativeHardwareTexture;
@@ -3297,12 +3295,16 @@ export class ThinNativeEngine extends ThinEngine {
         // attachment, not only the primary one, needs a new framebuffer), the same sample count, depth/stencil
         // buffers when this pass needs them (a pass that does not need them can safely reuse a framebuffer that
         // has them), and the same shared depth texture (so a shared-depth pass never reuses an auto-depth
-        // framebuffer, and vice versa).
+        // framebuffer, and vice versa). History-texture swaps invalidate these wrappers every frame, so this check
+        // runs in the render loop: compare in place and only allocate the color list for a new framebuffer.
+        let sameColors = !!cachedMeta && cachedMeta.colorResources.length === textureCount;
+        for (let i = 0; sameColors && i < textureCount; i++) {
+            sameColors = cachedMeta!.colorResources[i] === textures[i]._hardwareTexture!.underlyingResource;
+        }
         if (
             cached &&
             cachedMeta &&
-            cachedMeta.colorResources.length === colorTextures.length &&
-            cachedMeta.colorResources.every((resource, index) => resource === colorTextures[index]) &&
+            sameColors &&
             cachedMeta.samples === samples &&
             (cachedMeta.hasDepth || !generateDepthBuffer) &&
             (cachedMeta.hasStencil || !generateStencilBuffer) &&
@@ -3311,6 +3313,11 @@ export class ThinNativeEngine extends ThinEngine {
             cachedMeta.count++;
             nativeRTWrapper._framebuffer = cached;
             return;
+        }
+
+        const colorTextures: NativeTexture[] = new Array(textureCount);
+        for (let i = 0; i < textureCount; i++) {
+            colorTextures[i] = textures[i]._hardwareTexture!.underlyingResource;
         }
 
         const framebuffer = sharedDepthResource
@@ -4834,9 +4841,13 @@ export class ThinNativeEngine extends ThinEngine {
 
         // Per-mip uploads (e.g. KTX2 decoded mip levels, called with that mip's dimensions in texture.width/height)
         // update only the requested level of the texture allocated by the lod 0 upload. Older runtimes without
-        // updateTextureData keep the mip chain generated from lod 0.
+        // updateTextureData cannot preserve authored mip content, so fail the load instead of silently
+        // substituting a chain generated from lod 0.
         if (lod > 0) {
-            this._engine.updateTextureData?.(underlyingResource, imageData, 0, 0, texture.width, texture.height, faceIndex, lod, texture.invertY, false);
+            if (!this._engine.updateTextureData) {
+                throw new Error("NativeEngine._uploadDataToTextureDirectly: uploading mip levels above 0 requires a Babylon Native runtime with updateTextureData.");
+            }
+            this._engine.updateTextureData(underlyingResource, imageData, 0, 0, texture.width, texture.height, faceIndex, lod, texture.invertY, false);
             return;
         }
 

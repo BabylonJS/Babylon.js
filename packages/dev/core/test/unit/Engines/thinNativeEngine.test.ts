@@ -1652,8 +1652,7 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.updateTextureData).toHaveBeenCalledWith(resourceOf(texture), mip, 0, 0, 2, 2, 0, 1, texture.invertY, false);
         });
 
-        it("keeps decoded multi-mip textures at their level-zero dimensions", async () => {
-            const { engine, nativeEngine } = createEngine();
+        const mockKtx2MipChain = () => {
             const useFallbackTexture = EngineStore.UseFallbackTexture;
             EngineStore.UseFallbackTexture = false;
             onTestFinished(() => {
@@ -1675,7 +1674,12 @@ describe("ThinNativeEngine", () => {
                 transcoderName: "mock",
             });
             vi.spyOn(AbstractEngine, "GetCompatibleTextureLoader").mockResolvedValue(new _KTXTextureLoader());
-            const ktx2Data = new Uint8Array([0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a]);
+            return new Uint8Array([0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a]);
+        };
+
+        it("keeps decoded multi-mip textures at their level-zero dimensions", async () => {
+            const { engine, nativeEngine } = createEngine();
+            const ktx2Data = mockKtx2MipChain();
 
             const texture = engine.createTexture("texture.ktx2", false, false, null, undefined, null, null, ktx2Data);
             await flushAsync();
@@ -1687,6 +1691,27 @@ describe("ThinNativeEngine", () => {
                 [1, 1, 0, 2],
             ]);
             expect(texture.isReady).toBe(true);
+        });
+
+        it("fails decoded multi-mip loads on runtimes without per-mip uploads", async () => {
+            const { engine, nativeEngine } = createEngine();
+            delete nativeEngine.updateTextureData;
+            vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const ktx2Data = mockKtx2MipChain();
+            const pending = new Set<InternalTexture>();
+            const scene = {
+                addPendingData: (texture: InternalTexture) => pending.add(texture),
+                removePendingData: (texture: InternalTexture) => pending.delete(texture),
+            };
+            const onError = vi.fn();
+
+            const texture = engine.createTexture("texture.ktx2", false, false, scene as any, undefined, null, onError, ktx2Data);
+            await flushAsync();
+
+            expect(texture.isReady).toBe(false);
+            expect(texture._loadError?.message).toContain("TextureLoader failed to load data");
+            expect(onError).toHaveBeenCalled();
+            expect(pending.has(texture)).toBe(false);
         });
 
         it("removes rejected loader textures from pending data without an error callback", async () => {
