@@ -13,6 +13,7 @@ import { type IEngineContext, EngineContextIdentity } from "./engineContext";
 import { EngineExplorerServiceDefinition } from "./engineExplorerService";
 import { EngineSelectionServiceDefinition } from "./engineSelectionService";
 import { PickingServiceDefinition } from "./services/pickingService";
+import { GizmoServiceDefinition } from "./services/gizmoService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { CaptureServiceDefinition } from "./services/panes/captureService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
@@ -108,6 +109,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 SelectionServiceDefinition,
                 EngineSelectionServiceDefinition,
                 PickingServiceDefinition,
+                GizmoServiceDefinition,
                 StatsServiceDefinition,
                 CaptureServiceDefinition,
                 DebugServiceDefinition,

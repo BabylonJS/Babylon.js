@@ -2,7 +2,7 @@ import { type EngineContext, type Mesh, type SceneContext } from "@babylonjs/lit
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DebugController } from "../../src/lite/services/panes/debugController";
-import { InspectorBoundsHelpers } from "../../src/lite/sceneEntityUtils";
+import { InspectorBoundsHelpers, InspectorUtilityScenes } from "../../src/lite/sceneEntityUtils";
 
 const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose, Parent } = vi.hoisted(() => ({
     Ground: vi.fn(),
@@ -160,6 +160,28 @@ describe("Babylon Lite debug helpers", () => {
         h.controller.dispose();
         expect(h.scene.meshes).toHaveLength(1);
         expect(auxiliaryScene.meshes).toHaveLength(1);
+    });
+
+    it("excludes Inspector gizmo overlays from helper controls without hiding application utility scenes", () => {
+        const h = Harness();
+        const gizmoScene = { name: "UtilityLayer", meshes: [SourceMesh("Gizmo")], surface: h.engine } as SceneContext;
+        const applicationScene = { name: "UtilityLayer", meshes: [SourceMesh("Application")], surface: h.engine } as SceneContext;
+        InspectorUtilityScenes.add(gizmoScene);
+        h.contexts.push(gizmoScene, applicationScene);
+        h.controller.refresh();
+
+        expect(h.controller.scenes).toEqual([h.scene, applicationScene]);
+        h.controller.selectScene(gizmoScene);
+        expect(h.controller.scene).toBe(h.scene);
+        h.controller.setBounds(true);
+        expect(Add.mock.calls[0][0]).toBe(h.scene);
+        expect(gizmoScene.meshes).toHaveLength(1);
+        h.controller.selectScene(applicationScene);
+        h.controller.setGrid(true);
+        expect(Add.mock.calls[1][0]).toBe(applicationScene);
+        h.controller.dispose();
+        expect(gizmoScene.meshes).toHaveLength(1);
+        expect(applicationScene.meshes).toHaveLength(1);
     });
 
     it("snapshots topology and local bounds only while bound helpers are enabled", () => {

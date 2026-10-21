@@ -13,18 +13,34 @@ import {
     type ObservableVec3,
     type PointLight,
     type Quat,
+    type RenderingContext,
     type SceneContext,
     type SceneNode,
     type ShadowGenerator,
     type SpotLight,
+    type SurfaceContext,
     type Vec3,
 } from "@babylonjs/lite";
 
 /** Inspector bounds helpers must retain their source-dependent transform and cannot participate in reparenting. */
 export const InspectorBoundsHelpers = new WeakSet<SceneNode>();
 
+/** Inspector-owned overlay scenes, excluded without affecting application-owned utility scenes. */
+export const InspectorUtilityScenes = new WeakSet<RenderingContext>();
+
+/**
+ * Gets registered rendering contexts other than Inspector-owned overlays.
+ * @param surface The surface to inspect.
+ * @returns The application's registered rendering contexts.
+ */
+export function GetInspectableRenderingContexts(surface: SurfaceContext): readonly RenderingContext[] {
+    return getRenderingContexts(surface).filter((context) => !InspectorUtilityScenes.has(context));
+}
+
 export function GetSceneContexts(engine: EngineContext): readonly SceneContext[] {
-    return engine.surfaces.flatMap((surface) => getRenderingContexts(surface).filter((context): context is SceneContext => getRenderingContextKind(context) === "scene"));
+    return engine.surfaces.flatMap((surface) =>
+        GetInspectableRenderingContexts(surface).filter((context): context is SceneContext => getRenderingContextKind(context) === "scene")
+    );
 }
 
 export function IsSceneNode(entity: unknown): entity is SceneNode {
