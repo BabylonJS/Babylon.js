@@ -244,9 +244,80 @@ describe("OpenPBRMaterial", () => {
 
             const uniform = (material as any)._uniformsArray.find((entry: { name: string }) => entry.name === "vSpecularColor");
             const value = new Vector4();
-            uniform.populateVectorFromLinkedProperties(value);
+            uniform.populateVectorFromLinkedProperties(value, true);
 
             expect(value.w).toBe(0.125);
+        });
+
+        it.each([0, 0.25])("binds retroreflection texture level %s only when scene textures are enabled", async (level) => {
+            new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+            scene.updateTransformMatrix(true);
+            const mesh = CreateBox("box", {}, scene);
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+            vi.spyOn(texture, "isReadyOrNotBlocking").mockReturnValue(true);
+            texture.level = level;
+            material.specularRetroreflectivity = 0.5;
+            material.specularRetroreflectivityTexture = texture;
+            mesh.material = material;
+            let boundFactor: number | undefined;
+            vi.spyOn(material._uniformBuffer, "updateVector4").mockImplementation((name, value) => {
+                if (name === "vSpecularColor") {
+                    boundFactor = value.w;
+                }
+            });
+
+            for (const texturesEnabled of [false, true, false]) {
+                scene.texturesEnabled = texturesEnabled;
+                await material.forceCompilationAsync(mesh);
+                expect(material.isReadyForSubMesh(mesh, mesh.subMeshes[0])).toBe(true);
+                boundFactor = undefined;
+                material.bindForSubMesh(mesh.getWorldMatrix(), mesh, mesh.subMeshes[0]);
+                expect(boundFactor).toBe(texturesEnabled ? 0.5 * level : 0.5);
+            }
+        });
+
+        it("leaves retroreflection defines clean when scene textures are disabled", () => {
+            scene.texturesEnabled = false;
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+            material.specularRetroreflectivity = 1;
+            material.specularRetroreflectivityTexture = texture;
+            const mesh = new Mesh("testMesh", scene);
+            const defines = new OpenPBRMaterialDefines();
+            material["_prepareDefines"](mesh, mesh, defines);
+            defines.markAsProcessed();
+
+            material["_prepareDefines"](mesh, mesh, defines);
+
+            expect(defines.SPECULAR_RETROREFLECTIVITY).toBeFalsy();
+            expect(defines.isDirty).toBe(false);
+            expect(defines._areTexturesDirty).toBe(false);
+        });
+
+        it("ignores Native retroreflection transform changes while scene textures are disabled", () => {
+            engine["_shaderPlatformName"] = "NATIVE";
+            scene.texturesEnabled = false;
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+            texture.uOffset = 0.2;
+            material.specularRetroreflectivity = 1;
+            material.specularRetroreflectivityTexture = texture;
+            const mesh = new Mesh("testMesh", scene);
+            const defines = new OpenPBRMaterialDefines();
+            material["_prepareDefines"](mesh, mesh, defines);
+            defines.markAsProcessed();
+            texture.uOffset = 0.4;
+
+            material["_prepareDefines"](mesh, mesh, defines);
+
+            expect(defines.isDirty).toBe(false);
+            expect(defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2).toBe(0);
+
+            scene.texturesEnabled = true;
+            material["_prepareDefines"](mesh, mesh, defines);
+            expect(defines.SPECULAR_RETROREFLECTIVITY).toBe(true);
+            expect(defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2).toBe(texture.getTextureMatrix().m[8]);
         });
 
         it("stores transformed texture coordinates in Native-compatible defines", () => {

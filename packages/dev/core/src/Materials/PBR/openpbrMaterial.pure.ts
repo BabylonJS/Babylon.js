@@ -111,7 +111,7 @@ class Uniform {
      * inside the same #ifdef block.
      */
     public requiredDefine?: string;
-    public populateVectorFromLinkedProperties(vector: Vector4 | Vector3 | Vector2): void {
+    public populateVectorFromLinkedProperties(vector: Vector4 | Vector3 | Vector2, texturesEnabled: boolean): void {
         const destinationSize = _GetComponentCount(vector);
         for (const propKey in this.linkedProperties) {
             const prop = this.linkedProperties[propKey];
@@ -125,7 +125,7 @@ class Uniform {
                 return;
             }
             if (typeof prop.value === "number") {
-                const textureLevel = prop.textureLevelSampler?.value?.level ?? 1;
+                const textureLevel = texturesEnabled ? (prop.textureLevelSampler?.value?.level ?? 1) : 1;
                 Uniform._tmpArray[prop.targetUniformComponentOffset] = prop.value * textureLevel;
             } else {
                 prop.value.toArray(Uniform._tmpArray, prop.targetUniformComponentOffset);
@@ -2693,13 +2693,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                     // If the property actually defines a uniform, update it.
                     if (uniform.numComponents === 4) {
-                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector4[0]);
+                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector4[0], scene.texturesEnabled);
                         ubo.updateVector4(uniform.name, TmpVectors.Vector4[0]);
                     } else if (uniform.numComponents === 3) {
-                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector3[0]);
+                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector3[0], scene.texturesEnabled);
                         ubo.updateVector3(uniform.name, TmpVectors.Vector3[0]);
                     } else if (uniform.numComponents === 2) {
-                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector2[0]);
+                        uniform.populateVectorFromLinkedProperties(TmpVectors.Vector2[0], scene.texturesEnabled);
                         ubo.updateFloat2(uniform.name, TmpVectors.Vector2[0].x, TmpVectors.Vector2[0].y);
                     } else if (uniform.numComponents === 1) {
                         ubo.updateFloat(uniform.name, uniform.linkedProperties[uniform.firstLinkedKey].value as number);
@@ -3234,7 +3234,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         MaterialHelperGeometryRendering.PrepareDefines(engine.currentRenderPassId, mesh, defines);
 
         const retroreflectionTexture = this._specularRetroreflectivityTexture.value;
-        if (retroreflectionTexture) {
+        if (scene.texturesEnabled && retroreflectionTexture) {
             const directUV =
                 retroreflectionTexture.optimizeUVAllocation && retroreflectionTexture.getTextureMatrix().isIdentityAs3x2() ? retroreflectionTexture.coordinatesIndex + 1 : 0;
             if (defines.SPECULAR_RETROREFLECTIVITYDIRECTUV !== directUV) {
@@ -3366,7 +3366,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
-        if (retroreflectionTexture && engine.shaderPlatformName === "NATIVE") {
+        if (scene.texturesEnabled && retroreflectionTexture && engine.shaderPlatformName === "NATIVE") {
             const matrix = retroreflectionTexture.getTextureMatrix().m;
             const matrixChanged =
                 defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0 !== matrix[0] ||
