@@ -62,10 +62,9 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
     }
 
     public override getUniforms(shaderLanguage = ShaderLanguage.GLSL) {
-        const ubo = [{ name: "taa_jitter", size: 2, type: "vec2" }];
         if (shaderLanguage === ShaderLanguage.GLSL) {
             return {
-                ubo,
+                ubo: [{ name: "taa_jitter", size: 2, type: "vec2" }],
                 vertex: `
                     #ifdef TAA_JITTER
                     uniform vec2 taa_jitter;
@@ -73,12 +72,13 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
                 `,
             };
         } else {
-            return { ubo };
+            // WGSL reads the jitter from the scene uniform buffer of the camera's color passes, written once a frame (Scene.finalizeSceneUbo)
+            return {};
         }
     }
 
     public override hardBindForSubMesh(uniformBuffer: UniformBuffer): void {
-        if (this.isEnabled) {
+        if (this.isEnabled && this._material.shaderLanguage !== ShaderLanguage.WGSL) {
             const jitter = this._manager!.jitter;
             uniformBuffer.updateFloat2("taa_jitter", jitter.x, jitter.y);
         }
@@ -93,7 +93,7 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
             return {
                 CUSTOM_VERTEX_MAIN_END: `
                     #ifdef TAA_JITTER
-                    vertexOutputs.position += vec4f(uniforms.taa_jitter * vertexOutputs.position.w, 0.0, 0.0);
+                    vertexOutputs.position += vec4f(scene.taaJitter * vertexOutputs.position.w, 0.0, 0.0);
                     #endif
                 `,
             };

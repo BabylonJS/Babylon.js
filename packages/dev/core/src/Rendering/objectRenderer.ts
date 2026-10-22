@@ -510,6 +510,9 @@ export class ObjectRenderer {
         ubo.addUniform("projection", 16);
         ubo.addUniform("vEyePosition", 4);
         ubo.addUniform("inverseProjection", 16);
+        // the temporal data of the view (see Scene.finalizeSceneUbo)
+        ubo.addUniform("previousViewProjection", 16);
+        ubo.addUniform("taaJitter", 2);
         return ubo;
     }
 

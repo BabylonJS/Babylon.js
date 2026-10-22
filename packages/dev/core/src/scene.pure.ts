@@ -10,7 +10,7 @@ import { type Observer, Observable } from "./Misc/observable.pure";
 import { type ISmartArrayLike, SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { type Vector2, Vector3, Vector4, Matrix } from "./Maths/math.vector.pure";
+import { Vector2, Vector3, Vector4, Matrix } from "./Maths/math.vector.pure";
 import { type IParticleSystem } from "./Particles/IParticleSystem";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration.pure";
 import { UniformBuffer } from "./Materials/uniformBuffer";
@@ -1309,9 +1309,43 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const offset = this.floatingOriginOffset;
         ubo.updateFloat4("vEyePosition", eyePosition.x - offset.x, eyePosition.y - offset.y, eyePosition.z - offset.z, eyePosition.w);
 
+        // The temporal data of the view, read by WGSL shaders: the camera's view-projection in the previous frame and its TAA jitter.
+        // A pass that does not render the camera's view (shadow map, mirror, probe face) gets no camera motion and no jitter.
+        const camera = this._activeCamera;
+        const cameraView = camera && this._viewMatrix === camera._computedViewMatrix ? camera : null;
+        ubo.updateMatrix("previousViewProjection", cameraView ? this._getPreviousViewProjection(cameraView) : this._transformMatrix);
+        // the TAA can compute the jitter after the draws of its frame (with the prepass): it applies until the end of the next frame
+        const jitter = cameraView && cameraView._taaJitterFrameId >= this._engine.frameId - 1 ? cameraView._taaJitter : Vector2.ZeroReadOnly;
+        ubo.updateFloat2("taaJitter", jitter.x, jitter.y);
+
         ubo.update();
 
         return ubo;
+    }
+
+    /**
+     * Gets the view-projection the camera rendered in the previous frame, advancing its history on its first pass of a frame.
+     * The history starts again from the current view-projection when the camera did not render in the previous frame (first frame, camera switch).
+     * @param camera the camera whose view is being rendered
+     * @returns the previous view-projection
+     */
+    private _getPreviousViewProjection(camera: Camera): Matrix {
+        const frameId = this._engine.frameId;
+        const transform = this._transformMatrix;
+        const history = camera._viewHistory;
+        if (!history) {
+            camera._viewHistory = { previous: transform.clone(), current: transform.clone(), frameId };
+            return camera._viewHistory.previous;
+        }
+        if (history.frameId !== frameId) {
+            history.previous.copyFrom(history.frameId === frameId - 1 ? history.current : transform);
+            history.current.copyFrom(transform);
+            history.frameId = frameId;
+        } else if (history.current.updateFlag !== transform.updateFlag) {
+            // the camera moved between two of its passes in this frame
+            history.current.copyFrom(transform);
+        }
+        return history.previous;
     }
 
     // Mirror
@@ -2972,6 +3006,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         sceneUbo.addUniform("projection", 16);
         sceneUbo.addUniform("vEyePosition", 4);
         sceneUbo.addUniform("inverseProjection", 16);
+        // the temporal data of the view (see finalizeSceneUbo)
+        sceneUbo.addUniform("previousViewProjection", 16);
+        sceneUbo.addUniform("taaJitter", 2);
         return sceneUbo;
     }
 
