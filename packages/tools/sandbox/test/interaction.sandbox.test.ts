@@ -488,6 +488,29 @@ test("loading a model using query parameters", async ({ page }) => {
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
 
+test("loading a model without an environment using query parameters", async ({ page }) => {
+    const trafficConeUrl = "https://assets.babylonjs.com/meshes/TrafficCone/TrafficCone.gltf";
+    const query = [`assetUrl=${trafficConeUrl}`, "camera=0", "environment=none", "skybox=false", "clearcolor=000000"].join("&");
+
+    await page.goto(url + (snapshot ? "&" : "?") + query, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
+    await waitForSandboxReady(page);
+    const scene = await getSandboxScene(page);
+    await scene.evaluate(async (loadedScene) => {
+        await loadedScene.whenReadyAsync();
+    });
+
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
+});
+
 test("selecting the default camera after loading a camera from query parameters", async ({ page }) => {
     const camerasUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Cameras/glTF/Cameras.gltf";
     const query = [`assetUrl=${camerasUrl}`, "camera=0"].join("&");

@@ -79,7 +79,7 @@ void main() {
     // Evaluate operand A
     #ifdef OPERAND_A_TEXTURE
     #ifdef OPERAND_A_MATRIX
-    vec4 a = texture2D(textureA, (textureAMatrix * vec4(uv, 0.0, 1.0)).xy);
+    vec4 a = texture2D(textureA, (textureAMatrix * vec4(uv, 1.0, 0.0)).xy);
     #else
     vec4 a = texture2D(textureA, uv);
     #endif
@@ -105,7 +105,7 @@ void main() {
     // Evaluate operand B
     #ifdef OPERAND_B_TEXTURE
     #ifdef OPERAND_B_MATRIX
-    vec4 b = texture2D(textureB, (textureBMatrix * vec4(uv, 0.0, 1.0)).xy);
+    vec4 b = texture2D(textureB, (textureBMatrix * vec4(uv, 1.0, 0.0)).xy);
     #else
     vec4 b = texture2D(textureB, uv);
     #endif
@@ -155,7 +155,7 @@ void main() {
     #elif defined(OP_LERP)
     #ifdef LERP_T_TEXTURE
     #ifdef LERP_T_MATRIX
-    vec4 t = texture2D(textureT, (textureTMatrix * vec4(uv, 0.0, 1.0)).xy);
+    vec4 t = texture2D(textureT, (textureTMatrix * vec4(uv, 1.0, 0.0)).xy);
     #else
     vec4 t = texture2D(textureT, uv);
     #endif

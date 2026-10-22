@@ -1,7 +1,7 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { Matrix, Quaternion, Vector3 } from "core/Maths";
+import { Matrix, Quaternion, Vector2, Vector3 } from "core/Maths";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import "core/Culling/ray";
@@ -11,7 +11,7 @@ import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
 import { _AddInteractivityObjectModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity";
-import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetPathToObjectConverter, _RetainGLTFMaterialTextureSources } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
@@ -20,6 +20,7 @@ import { MorphTargetManager } from "core/Morph/morphTargetManager";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { type IGLTF } from "loaders/glTF/2.0/glTFLoaderInterfaces";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
@@ -224,6 +225,360 @@ describe("glTF interactivity Object Model", () => {
         rotation.info.set!(0.3, rotation.object, undefined, payload);
         expect([triangleTexture.wAng, lineTexture.wAng]).toEqual([-0.8, -0.3]);
         expect(rotation.info.get(rotation.object, undefined, payload)).toBe(0.3);
+    });
+
+    describe("runtime OpenPBR material pointers", () => {
+        function createMaterialPointers(alphaMode: "OPAQUE" | "MASK" | "BLEND" = "BLEND", triangle = true) {
+            const pbr = new PBRMaterial("pbr", scene);
+            const openpbr = new OpenPBRMaterial("openpbr", scene);
+            openpbr.ambientOcclusionTexture = new Texture(null, scene);
+            const material = {
+                index: 0,
+                alphaMode,
+                pbrMetallicRoughness: { baseColorTexture: { index: 0 }, metallicRoughnessTexture: { index: 0 } },
+                normalTexture: { index: 0 },
+                occlusionTexture: { index: 0 },
+                emissiveTexture: { index: 0 },
+                extensions: {
+                    KHR_materials_anisotropy: { anisotropyTexture: { index: 0 } },
+                    KHR_materials_clearcoat: { clearcoatTexture: { index: 0 }, clearcoatNormalTexture: { index: 0 }, clearcoatRoughnessTexture: { index: 0 } },
+                    KHR_materials_dispersion: {},
+                    KHR_materials_emissive_strength: {},
+                    KHR_materials_ior: {},
+                    KHR_materials_iridescence: { iridescenceTexture: { index: 0 }, iridescenceThicknessTexture: { index: 0 } },
+                    KHR_materials_sheen: { sheenColorTexture: { index: 0 }, sheenRoughnessTexture: { index: 0 } },
+                    KHR_materials_specular: { specularTexture: { index: 0 }, specularColorTexture: { index: 0 } },
+                    KHR_materials_transmission: { transmissionTexture: { index: 0 } },
+                    KHR_materials_diffuse_transmission: { diffuseTransmissionTexture: { index: 0 }, diffuseTransmissionColorTexture: { index: 0 } },
+                    KHR_materials_volume: { thicknessTexture: { index: 0 } },
+                },
+                _data: {
+                    ...(triangle ? { [Constants.MATERIAL_TriangleFillMode]: { babylonMaterial: pbr, babylonMeshes: [], promise: Promise.resolve() } } : {}),
+                    [Constants.MATERIAL_LineListDrawMode]: { babylonMaterial: openpbr, babylonMeshes: [], promise: Promise.resolve() },
+                },
+            };
+            const gltf = { asset: { version: "2.0" }, materials: [material] };
+            const converter = GetPathToObjectConverter(gltf);
+            return {
+                pbr,
+                openpbr,
+                gltf,
+                pointer: (path: string) => converter.convert(`/materials/0/${path}`),
+                payload: Object.freeze({ fillMode: Constants.MATERIAL_LineListDrawMode }),
+            };
+        }
+
+        const scalarCases: [string, (material: OpenPBRMaterial) => number][] = [
+            ["alphaCutoff", (m) => m.alphaCutOff],
+            ["pbrMetallicRoughness/metallicFactor", (m) => m.baseMetalness],
+            ["pbrMetallicRoughness/roughnessFactor", (m) => m.specularRoughness],
+            ["occlusionTexture/strength", (m) => m.ambientOcclusionTexture!.level],
+            ["extensions/KHR_materials_anisotropy/anisotropyStrength", (m) => m.specularRoughnessAnisotropy],
+            ["extensions/KHR_materials_anisotropy/anisotropyRotation", (m) => m.geometryTangentAngle],
+            ["extensions/KHR_materials_clearcoat/clearcoatFactor", (m) => m.coatWeight],
+            ["extensions/KHR_materials_clearcoat/clearcoatRoughnessFactor", (m) => m.coatRoughness],
+            ["extensions/KHR_materials_dispersion/dispersion", (m) => m.transmissionDispersionScale],
+            ["extensions/KHR_materials_emissive_strength/emissiveStrength", (m) => m.emissionLuminance],
+            ["extensions/KHR_materials_ior/ior", (m) => m.specularIor],
+            ["extensions/KHR_materials_iridescence/iridescenceFactor", (m) => m.thinFilmWeight],
+            ["extensions/KHR_materials_iridescence/iridescenceIor", (m) => m.thinFilmIor],
+            ["extensions/KHR_materials_iridescence/iridescenceThicknessMinimum", (m) => m.thinFilmThicknessMin * 1000],
+            ["extensions/KHR_materials_iridescence/iridescenceThicknessMaximum", (m) => m.thinFilmThickness * 1000],
+            ["extensions/KHR_materials_sheen/sheenRoughnessFactor", (m) => m.fuzzRoughness],
+            ["extensions/KHR_materials_specular/specularFactor", (m) => m.specularWeight],
+            ["extensions/KHR_materials_transmission/transmissionFactor", (m) => m.transmissionWeight],
+            ["extensions/KHR_materials_diffuse_transmission/diffuseTransmissionFactor", (m) => m.subsurfaceWeight],
+            ["extensions/KHR_materials_volume/attenuationDistance", (m) => m.transmissionDepth],
+            ["extensions/KHR_materials_volume/thicknessFactor", (m) => m.geometryThickness],
+        ];
+        it.each(scalarCases)("reads and writes %s for mixed material implementations", (path, read) => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            const accessor = pointer(path);
+            accessor.info.set!(0.7, accessor.object);
+            expect(read(openpbr)).toBeCloseTo(0.7);
+            expect(accessor.info.get(accessor.object)).toBeCloseTo(0.7);
+            expect(accessor.info.get(accessor.object, undefined, payload)).toBeCloseTo(0.7);
+            accessor.info.set!(0.4, accessor.object, undefined, payload);
+            expect(read(openpbr)).toBeCloseTo(0.4);
+            expect(accessor.info.get(accessor.object)).toBeCloseTo(0.7);
+            expect(accessor.info.getTarget?.(accessor.object, undefined, payload)).toBe(openpbr);
+        });
+
+        const colorCases: [string, (material: OpenPBRMaterial) => Color3][] = [
+            ["emissiveFactor", (m) => m.emissionColor],
+            ["extensions/KHR_materials_sheen/sheenColorFactor", (m) => m.fuzzColor],
+            ["extensions/KHR_materials_specular/specularColorFactor", (m) => m.specularColor],
+            ["extensions/KHR_materials_diffuse_transmission/diffuseTransmissionColorFactor", (m) => m.subsurfaceColor],
+            ["extensions/KHR_materials_volume/attenuationColor", (m) => m.transmissionColor],
+        ];
+        it.each(colorCases)("reads and writes %s colors", (path, read) => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            const accessor = pointer(path);
+            accessor.info.set!(new Color3(0.2, 0.4, 0.6), accessor.object);
+            expect(read(openpbr).asArray()).toEqual([0.2, 0.4, 0.6]);
+            expect(accessor.info.get(accessor.object, undefined, payload).asArray()).toEqual([0.2, 0.4, 0.6]);
+            accessor.info.set!(Color3.White(), accessor.object, undefined, payload);
+            expect(read(openpbr).asArray()).toEqual([1, 1, 1]);
+        });
+
+        it.each(["OPAQUE", "MASK", "BLEND"] as const)("uses geometry opacity without changing material alpha for %s", (alphaMode) => {
+            const { pbr, openpbr, pointer, payload } = createMaterialPointers(alphaMode);
+            openpbr.alpha = 0.9;
+            const accessor = pointer("pbrMetallicRoughness/baseColorFactor");
+            accessor.info.set!(new Color4(0.2, 0.4, 0.6, 0.3), accessor.object);
+            expect(openpbr.baseColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+            expect(openpbr.geometryOpacity).toBe(alphaMode === "OPAQUE" ? 1 : 0.3);
+            expect(openpbr.alpha).toBe(0.9);
+            expect(pbr.alpha).toBe(0.3);
+            expect(accessor.info.get(accessor.object, undefined, payload).asArray()).toEqual([0.2, 0.4, 0.6, alphaMode === "OPAQUE" ? 1 : 0.3]);
+        });
+
+        it("updates thin-surface transmission tint, including transmission enabled after a color write", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            openpbr.geometryThinWalled = 1;
+            const base = pointer("pbrMetallicRoughness/baseColorFactor");
+            base.info.set!(new Color4(0.2, 0.4, 0.6, 1), base.object);
+            const transmission = pointer("extensions/KHR_materials_transmission/transmissionFactor");
+            transmission.info.set!(0.5, transmission.object);
+            expect(openpbr.transmissionColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+            base.info.set!(new Color4(0.3, 0.5, 0.7, 1), base.object, undefined, payload);
+            expect(openpbr.transmissionColor.asArray()).toEqual([0.3, 0.5, 0.7]);
+        });
+
+        it("preserves volumetric attenuation tint when base color changes", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            openpbr.geometryThinWalled = 0;
+            openpbr.transmissionDepth = 2;
+            openpbr.transmissionWeight = 0.5;
+            openpbr.transmissionColor = new Color3(0.7, 0.8, 0.9);
+            const accessor = pointer("pbrMetallicRoughness/baseColorFactor");
+            accessor.info.set!(new Color4(0.2, 0.4, 0.6, 1), accessor.object, undefined, payload);
+            expect(openpbr.transmissionColor.asArray()).toEqual([0.7, 0.8, 0.9]);
+        });
+
+        it("does not mutate base color when attenuation replaces a base-derived transmission tint", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            openpbr.transmissionWeight = 0.5;
+            openpbr.geometryThinWalled = 1;
+            const base = pointer("pbrMetallicRoughness/baseColorFactor");
+            base.info.set!(new Color4(0.2, 0.4, 0.6, 1), base.object, undefined, payload);
+            const attenuation = pointer("extensions/KHR_materials_volume/attenuationColor");
+            attenuation.info.set!(new Color3(0.7, 0.8, 0.9), attenuation.object, undefined, payload);
+            expect(openpbr.baseColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+            expect(openpbr.transmissionColor.asArray()).toEqual([0.7, 0.8, 0.9]);
+        });
+
+        it("updates base-derived transmission tint without attenuation depth even on a thick surface", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            openpbr.geometryThinWalled = 0;
+            openpbr.transmissionDepth = 0;
+            openpbr.transmissionWeight = 0.5;
+            const accessor = pointer("pbrMetallicRoughness/baseColorFactor");
+            accessor.info.set!(new Color4(0.2, 0.4, 0.6, 1), accessor.object, undefined, payload);
+            expect(openpbr.transmissionColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+        });
+
+        it("stops sharing base-derived tint when attenuation depth becomes positive", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            openpbr.geometryThinWalled = 0;
+            openpbr.transmissionDepth = 0;
+            openpbr.transmissionWeight = 0.5;
+            const base = pointer("pbrMetallicRoughness/baseColorFactor");
+            base.info.set!(new Color4(0.2, 0.4, 0.6, 1), base.object, undefined, payload);
+            const distance = pointer("extensions/KHR_materials_volume/attenuationDistance");
+            distance.info.set!(2, distance.object, undefined, payload);
+            base.info.set!(new Color4(0.3, 0.5, 0.7, 1), base.object, undefined, payload);
+            expect(openpbr.transmissionColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+            distance.info.set!(0, distance.object, undefined, payload);
+            expect(openpbr.transmissionColor.asArray()).toEqual([0.3, 0.5, 0.7]);
+        });
+
+        it("writes double-sided state to both implementations without adding PBR-only properties to OpenPBR", () => {
+            const { pbr, openpbr, pointer, payload } = createMaterialPointers();
+            const accessor = pointer("doubleSided");
+            accessor.info.set!(true, accessor.object);
+            expect([pbr.backFaceCulling, openpbr.backFaceCulling]).toEqual([false, false]);
+            expect(accessor.info.get(accessor.object, undefined, payload)).toBe(true);
+            expect("albedoColor" in openpbr).toBe(false);
+            expect("metallic" in openpbr).toBe(false);
+            expect("roughness" in openpbr).toBe(false);
+            expect("ambientTextureStrength" in openpbr).toBe(false);
+        });
+
+        it("treats an omitted alpha mode as opaque", () => {
+            const { openpbr, pointer, gltf, payload } = createMaterialPointers();
+            Reflect.deleteProperty(gltf.materials[0], "alphaMode");
+            const accessor = pointer("pbrMetallicRoughness/baseColorFactor");
+            accessor.info.set!(new Color4(0.2, 0.4, 0.6, 0.3), accessor.object, undefined, payload);
+            expect(openpbr.geometryOpacity).toBe(1);
+        });
+
+        it.each([true, false])("runs graph pointer/set and pointer/get with triangle material present: %s", async (triangle) => {
+            const { gltf, pbr, openpbr } = createMaterialPointers("BLEND", triangle);
+            await generateSimpleNodeGraph(
+                gltf,
+                [{ op: "pointer/set" }, { op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+                [
+                    {
+                        declaration: 0,
+                        configuration: { pointer: { value: ["/materials/0/pbrMetallicRoughness/metallicFactor"] } },
+                        flows: { out: { node: 2, socket: "in" } },
+                        values: { value: { value: [0.6], type: 0 } },
+                    },
+                    {
+                        declaration: 1,
+                        configuration: { pointer: { value: ["/materials/0/pbrMetallicRoughness/metallicFactor"] }, type: { value: [0] } },
+                    },
+                    { declaration: 2, values: { message: { node: 1, socket: "value" } } },
+                ],
+                [{ signature: "float" }]
+            );
+            expect(log).toHaveBeenCalledWith(0.6);
+            if (triangle) {
+                expect(pbr.metallic).toBe(0.6);
+            }
+            expect(openpbr.baseMetalness).toBe(0.6);
+        });
+
+        it("falls back to the actual available fill mode and never substitutes an explicitly missing mode", () => {
+            const { openpbr, pointer } = createMaterialPointers("BLEND", false);
+            const accessor = pointer("pbrMetallicRoughness/metallicFactor");
+            accessor.info.set!(0.6, accessor.object);
+            expect(openpbr.baseMetalness).toBe(0.6);
+            expect(accessor.info.get(accessor.object)).toBe(0.6);
+            expect(accessor.info.getTarget?.(accessor.object)).toBe(openpbr);
+            expect(accessor.info.getTarget?.(accessor.object, undefined, { fillMode: Constants.MATERIAL_TriangleFillMode })).toBeUndefined();
+        });
+
+        const textureCases: [string, (material: OpenPBRMaterial, texture: Texture | null) => void][] = [
+            ["pbrMetallicRoughness/baseColorTexture", (m, t) => (m.baseColorTexture = t)],
+            ["pbrMetallicRoughness/metallicRoughnessTexture", (m, t) => (m.baseMetalnessTexture = t)],
+            ["normalTexture", (m, t) => (m.geometryNormalTexture = t)],
+            ["occlusionTexture", (m, t) => (m.ambientOcclusionTexture = t)],
+            ["emissiveTexture", (m, t) => (m.emissionColorTexture = t)],
+            ["extensions/KHR_materials_anisotropy/anisotropyTexture", (m, t) => (m.geometryTangentTexture = t)],
+            ["extensions/KHR_materials_clearcoat/clearcoatTexture", (m, t) => (m.coatWeightTexture = t)],
+            ["extensions/KHR_materials_clearcoat/clearcoatRoughnessTexture", (m, t) => (m.coatRoughnessTexture = t)],
+            ["extensions/KHR_materials_clearcoat/clearcoatNormalTexture", (m, t) => (m.geometryCoatNormalTexture = t)],
+            ["extensions/KHR_materials_iridescence/iridescenceTexture", (m, t) => (m.thinFilmWeightTexture = t)],
+            ["extensions/KHR_materials_iridescence/iridescenceThicknessTexture", (m, t) => (m.thinFilmThicknessTexture = t)],
+            ["extensions/KHR_materials_sheen/sheenColorTexture", (m, t) => (m.fuzzColorTexture = t)],
+            ["extensions/KHR_materials_sheen/sheenRoughnessTexture", (m, t) => (m.fuzzRoughnessTexture = t)],
+            ["extensions/KHR_materials_specular/specularTexture", (m, t) => (m.specularWeightTexture = t)],
+            ["extensions/KHR_materials_specular/specularColorTexture", (m, t) => (m.specularColorTexture = t)],
+            ["extensions/KHR_materials_transmission/transmissionTexture", (m, t) => (m.transmissionWeightTexture = t)],
+            ["extensions/KHR_materials_diffuse_transmission/diffuseTransmissionTexture", (m, t) => (m.subsurfaceWeightTexture = t)],
+            ["extensions/KHR_materials_diffuse_transmission/diffuseTransmissionColorTexture", (m, t) => (m.subsurfaceColorTexture = t)],
+            ["extensions/KHR_materials_volume/thicknessTexture", (m, t) => (m.geometryThicknessTexture = t)],
+        ];
+        it.each(textureCases)("reads and writes %s texture transforms", (path, assign) => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            const texture = new Texture(null, scene);
+            assign(openpbr, texture);
+            const rotation = pointer(`${path}/extensions/KHR_texture_transform/rotation`);
+            rotation.info.set!(0.7, rotation.object);
+            expect(texture.wAng).toBe(-0.7);
+            expect(rotation.info.get(rotation.object, undefined, payload)).toBe(0.7);
+            const offset = pointer(`${path}/extensions/KHR_texture_transform/offset`);
+            offset.info.set!(new Vector2(0.2, 0.4), offset.object, undefined, payload);
+            expect([texture.uOffset, texture.vOffset]).toEqual([0.2, 0.4]);
+            expect(offset.info.get(offset.object, undefined, payload).asArray()).toEqual([0.2, 0.4]);
+            const scale = pointer(`${path}/extensions/KHR_texture_transform/scale`);
+            scale.info.set!(new Vector2(0.3, 0.5), scale.object, undefined, payload);
+            expect([texture.uScale, texture.vScale]).toEqual([0.3, 0.5]);
+            expect(scale.info.get(scale.object, undefined, payload).asArray()).toEqual([0.3, 0.5]);
+            expect(rotation.info.getTarget?.(rotation.object, undefined, payload)).toBe(openpbr);
+        });
+
+        it.each(textureCases)("retains %s source transforms after finalization replaces its slot", (path, assign) => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            const source = new Texture(null, scene);
+            const baked = new Texture(null, scene);
+            assign(openpbr, source);
+            _RetainGLTFMaterialTextureSources(openpbr);
+            assign(openpbr, baked);
+            _RetainGLTFMaterialTextureSources(openpbr);
+            const rotation = pointer(`${path}/extensions/KHR_texture_transform/rotation`);
+            rotation.info.set!(0.6, rotation.object, undefined, payload);
+            expect(source.wAng).toBe(-0.6);
+            expect(baked.wAng).toBe(0);
+            expect(rotation.info.get(rotation.object, undefined, payload)).toBe(0.6);
+            assign(openpbr, null);
+            rotation.info.set!(0.2, rotation.object, undefined, payload);
+            expect(source.wAng).toBe(-0.2);
+        });
+
+        it("resolves specular weight transforms packed into specular color alpha", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            const texture = new Texture(null, scene);
+            openpbr.specularColorTexture = texture;
+            openpbr.specularWeightTexture = null;
+            openpbr._useSpecularWeightFromSpecularColorTexture = true;
+            _RetainGLTFMaterialTextureSources(openpbr);
+            openpbr.specularColorTexture = new Texture(null, scene);
+            const accessor = pointer("extensions/KHR_materials_specular/specularTexture/extensions/KHR_texture_transform/rotation");
+            accessor.info.set!(0.2, accessor.object, undefined, payload);
+            expect(texture.wAng).toBe(-0.2);
+            expect(accessor.info.get(accessor.object, undefined, payload)).toBe(0.2);
+        });
+
+        it("returns unique original texture identities for dynamic processing, including after slot replacement", () => {
+            const { openpbr } = createMaterialPointers();
+            const source = new Texture(null, scene);
+            const baked = new Texture(null, scene);
+            openpbr.baseColorTexture = source;
+            openpbr.coatWeightTexture = source;
+            openpbr.specularColorTexture = source;
+            openpbr._useSpecularWeightFromSpecularColorTexture = true;
+            openpbr.ambientOcclusionTexture = null;
+            expect(_RetainGLTFMaterialTextureSources(openpbr)).toEqual([source]);
+            openpbr.baseColorTexture = baked;
+            openpbr.coatWeightTexture = null;
+            openpbr.specularColorTexture = baked;
+            expect(_RetainGLTFMaterialTextureSources(openpbr)).toEqual([source]);
+        });
+
+        it("returns no texture identities when all original bindings are empty", () => {
+            const { openpbr } = createMaterialPointers();
+            openpbr.ambientOcclusionTexture = null;
+            expect(_RetainGLTFMaterialTextureSources(openpbr)).toEqual([]);
+        });
+
+        it("does not retain or mark textures on the existing PBR implementation", () => {
+            const { pbr } = createMaterialPointers();
+            pbr.albedoTexture = new Texture(null, scene);
+            expect(_RetainGLTFMaterialTextureSources(pbr)).toEqual([]);
+        });
+
+        it("retains texture levels for normal and occlusion scale pointers", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            const source = new Texture(null, scene);
+            openpbr.geometryNormalTexture = source;
+            openpbr.geometryCoatNormalTexture = source;
+            openpbr.ambientOcclusionTexture = source;
+            _RetainGLTFMaterialTextureSources(openpbr);
+            openpbr.geometryNormalTexture = null;
+            openpbr.geometryCoatNormalTexture = null;
+            openpbr.ambientOcclusionTexture = null;
+            for (const path of ["normalTexture/scale", "extensions/KHR_materials_clearcoat/clearcoatNormalTexture/scale", "occlusionTexture/strength"]) {
+                const accessor = pointer(path);
+                source.level = 1;
+                accessor.info.set!(0.2, accessor.object, undefined, payload);
+                expect(source.level).toBe(0.2);
+                expect(accessor.info.get(accessor.object, undefined, payload)).toBe(0.2);
+            }
+        });
+
+        it.each(["normalTexture", "extensions/KHR_materials_clearcoat/clearcoatNormalTexture"])("updates %s scale", (path) => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            const texture = new Texture(null, scene);
+            openpbr.geometryNormalTexture = texture;
+            openpbr.geometryCoatNormalTexture = texture;
+            const accessor = pointer(`${path}/scale`);
+            accessor.info.set!(0.2, accessor.object, undefined, payload);
+            expect(texture.level).toBe(0.2);
+            expect(accessor.info.get(accessor.object, undefined, payload)).toBe(0.2);
+        });
     });
 
     it("should resolve the KHR_interactivity animation maxTime pointer even though the animation has no stored extensions object", () => {

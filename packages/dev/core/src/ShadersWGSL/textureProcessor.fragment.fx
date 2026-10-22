@@ -44,7 +44,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Evaluate operand A
     #ifdef OPERAND_A_TEXTURE
     #ifdef OPERAND_A_MATRIX
-    var a: vec4f = textureSample(textureA, textureASampler, (uniforms.textureAMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var a: vec4f = textureSample(textureA, textureASampler, (uniforms.textureAMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var a: vec4f = textureSample(textureA, textureASampler, uv);
     #endif
@@ -70,7 +70,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Evaluate operand B
     #ifdef OPERAND_B_TEXTURE
     #ifdef OPERAND_B_MATRIX
-    var b: vec4f = textureSample(textureB, textureBSampler, (uniforms.textureBMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var b: vec4f = textureSample(textureB, textureBSampler, (uniforms.textureBMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var b: vec4f = textureSample(textureB, textureBSampler, uv);
     #endif
@@ -120,7 +120,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #elif defined(OP_LERP)
     #ifdef LERP_T_TEXTURE
     #ifdef LERP_T_MATRIX
-    var t: vec4f = textureSample(textureT, textureTSampler, (uniforms.textureTMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var t: vec4f = textureSample(textureT, textureTSampler, (uniforms.textureTMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var t: vec4f = textureSample(textureT, textureTSampler, uv);
     #endif
