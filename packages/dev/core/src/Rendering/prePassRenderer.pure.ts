@@ -288,6 +288,8 @@ export class PrePassRenderer {
 
     private readonly _geometryBufferRenderList: AbstractMesh[] = [];
     private _needsCompositionForThisPass = false;
+    private _applyByPostProcessClaimed = false;
+    private _applyByPostProcessBeforeClaim = false;
     private readonly _postProcessesSourceForThisPass: PostProcess[] = [];
     private readonly _postProcessChainForThisPass: PostProcess[] = [];
     private readonly _postProcessesForUpdate: PostProcess[] = [];
@@ -766,7 +768,7 @@ export class PrePassRenderer {
         let firstPP = null;
 
         // Setting the scene-wide post process configuration
-        this._scene.imageProcessingConfiguration.applyByPostProcess = this._needsCompositionForThisPass || cameraHasImageProcessing;
+        this._setApplyByPostProcess(this._needsCompositionForThisPass, cameraHasImageProcessing);
 
         // Create composition effect if needed
         if (this._needsCompositionForThisPass && !prePassRenderTarget.imageProcessingPostProcess) {
@@ -894,10 +896,28 @@ export class PrePassRenderer {
         }
     }
 
+    private _setApplyByPostProcess(needsComposition: boolean, hasImageProcessing: boolean) {
+        // An image processing post process sets the flag itself, so its previous value is not the application's and the flag is released to false instead of restored.
+        const configuration = this._scene.imageProcessingConfiguration;
+        if (needsComposition || hasImageProcessing) {
+            if (!this._applyByPostProcessClaimed) {
+                this._applyByPostProcessBeforeClaim = configuration.applyByPostProcess;
+                this._applyByPostProcessClaimed = true;
+            }
+            if (hasImageProcessing) {
+                this._applyByPostProcessBeforeClaim = false;
+            }
+            configuration.applyByPostProcess = true;
+        } else if (this._applyByPostProcessClaimed) {
+            configuration.applyByPostProcess = this._applyByPostProcessBeforeClaim;
+            this._applyByPostProcessClaimed = false;
+        }
+    }
+
     private _update() {
         this._disable();
         let enablePrePass = false;
-        this._scene.imageProcessingConfiguration.applyByPostProcess = false;
+        let cameraHasImageProcessing = false;
 
         if (this._scene._depthPeelingRenderer && this._scene.useOrderIndependentTransparency) {
             this._scene._depthPeelingRenderer.setPrePassRenderer(this);
@@ -953,12 +973,11 @@ export class PrePassRenderer {
                     }
                 }
 
-                if (this._hasImageProcessing(postProcesses)) {
-                    this._scene.imageProcessingConfiguration.applyByPostProcess = true;
-                }
+                cameraHasImageProcessing = cameraHasImageProcessing || this._hasImageProcessing(postProcesses);
             }
         }
 
+        this._setApplyByPostProcess(false, cameraHasImageProcessing);
         this._markAllMaterialsAsPrePassDirty();
         this._isDirty = false;
 
