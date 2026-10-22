@@ -1,0 +1,51 @@
+{
+    "name": "@babylonjs/ktx2encoder",
+    "version": "9.32.0",
+    "main": "index.js",
+    "module": "index.js",
+    "types": "index.d.ts",
+    "files": [
+        "**/*.js",
+        "**/*.d.ts",
+        "**/*.map",
+        "**/*.wasm",
+        "wasm/package.json",
+        "wasm/LICENSE",
+        "wasm/NOTICE",
+        "wasm/LICENSES/*.txt",
+        "readme.md",
+        "license.md",
+        "NOTICE.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
+        "compile": "tsc -b tsconfig.build.json && build-tools -c tp --outDir . --buildType es6 --basePackage @babylonjs/ktx2encoder --appendJS",
+        "postcompile": "build-tools -c add-js-to-es6 && build-tools -c cp -f \"../../../dev/core/dist/Materials/Textures/ktx2encoderTypes.{js,js.map,d.ts}\" -t . && build-tools -c cp -f \"../../../tools/babylonServer/public/basisEncoder/v2_50/{basis_encoder.js,basis_encoder.wasm,LICENSE,NOTICE}\" -t ./wasm && build-tools -c cp -f \"../../../tools/babylonServer/public/basisEncoder/v2_50/LICENSES/*.txt\" -t ./wasm/LICENSES"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "^1.0.0",
+        "@tools/ktx2encoder": "^1.0.0"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js",
+        "KTX2",
+        "Basis Universal"
+    ],
+    "license": "Apache-2.0",
+    "esnext": "index.js",
+    "type": "module",
+    "sideEffects": false,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

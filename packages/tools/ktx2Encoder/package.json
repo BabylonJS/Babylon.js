@@ -1,0 +1,24 @@
+{
+    "name": "@tools/ktx2encoder",
+    "version": "1.0.0",
+    "private": true,
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "build:deployment": "npm run clean && rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
+        "compile": "tsc -b tsconfig.build.json",
+        "postcompile": "build-tools -c cp -f \"../../dev/core/dist/Materials/Textures/ktx2encoderTypes.{js,js.map,d.ts}\" -t ./dist",
+        "clean": "rimraf dist",
+        "test": "cd ../../.. && vitest run --project=unit packages/tools/ktx2Encoder/test/unit"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@dev/build-tools": "1.0.0",
+        "@dev/core": "1.0.0"
+    },
+    "sideEffects": false
+}
