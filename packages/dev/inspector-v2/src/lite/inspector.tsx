@@ -15,6 +15,8 @@ import { EngineSelectionServiceDefinition } from "./engineSelectionService";
 import { PickingServiceDefinition } from "./services/pickingService";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
+import { CaptureServiceDefinition } from "./services/panes/captureService";
+import { DebugServiceDefinition } from "./services/panes/debugService";
 import { EnginePropertiesServiceDefinition } from "./services/panes/properties/enginePropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
@@ -109,6 +111,8 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 PickingServiceDefinition,
                 GizmoServiceDefinition,
                 StatsServiceDefinition,
+                CaptureServiceDefinition,
+                DebugServiceDefinition,
             ];
 
             return {

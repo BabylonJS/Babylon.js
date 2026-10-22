@@ -18,7 +18,13 @@ const useSwitchStyles = makeStyles({
 });
 
 export type SwitchProps = PrimitiveProps<boolean> & {
-    /** When true, value controls the checked state without optimistic local updates. Defaults to false. */
+    /**
+     * Accessible name for switches whose visible label is rendered separately.
+     */
+    ariaLabel?: string;
+    /**
+     * When true, value controls the checked state without optimistic local updates. Defaults to false.
+     */
     controlled?: boolean;
 };
 
@@ -50,7 +56,8 @@ export const Switch: FunctionComponent<SwitchProps> = (props) => {
         <FluentSwitch
             className={mergeClasses(classes.switch, size === "small" && classes.switchSmall)}
             indicator={{ className: classes.indicator }}
-            checked={props.controlled ? props.value : checked}
+            checked={props.controlled ? (props.value ?? false) : checked}
+            aria-label={props.ariaLabel}
             disabled={props.disabled}
             onChange={onChange}
         />
