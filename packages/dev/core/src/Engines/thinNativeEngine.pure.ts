@@ -2065,12 +2065,16 @@ export class ThinNativeEngine extends ThinEngine {
             const context = canvas.getContext();
             // flush need to happen before getCanvasTexture: flush will create the render target synchronously (if it's not been created before)
             context.flush();
-            const source = canvas.getCanvasTexture(premulAlpha, texture.generateMipMaps);
+            // Older runtimes take no options and always copy with their legacy alpha handling.
+            const supportsOptions = this._engine.supportsDynamicTextureMipMaps === true;
+            const source = supportsOptions ? canvas.getCanvasTexture(premulAlpha, texture.generateMipMaps) : canvas.getCanvasTexture();
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);
             this._commandBufferEncoder.finishEncodingCommand();
-            texture._premulAlpha = premulAlpha;
+            if (supportsOptions) {
+                texture._premulAlpha = premulAlpha;
+            }
             texture.isReady = true;
         }
     }
@@ -4919,10 +4923,14 @@ export class ThinNativeEngine extends ThinEngine {
         // Older Canvas runtimes may expose only glyph bounds.
         try {
             if (!this._fontMeasureContext) {
-                this._fontMeasureCanvas = this.createCanvas(64, 64);
-                this._fontMeasureContext = this._fontMeasureCanvas.getContext("2d");
+                // Keep a canvas whose context failed so retries never orphan it before engine disposal.
+                this._fontMeasureCanvas ??= this.createCanvas(64, 64);
+                this._fontMeasureContext = this._fontMeasureCanvas.getContext("2d") || undefined;
             }
             const context = this._fontMeasureContext;
+            if (!context) {
+                throw new Error("2D canvas context is unavailable");
+            }
             context.font = font;
             const metrics: Partial<TextMetrics> = context.measureText("Hg");
             const ascent = Number(metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent);

@@ -46,6 +46,20 @@ describe("Native font layout metrics", () => {
         expect(createCanvas).toHaveBeenCalledOnce();
         expect(context.font).toBe("20px Arimo");
     });
+    it("reuses the measuring canvas when its 2D context is unavailable", () => {
+        const context = { font: "", measureText: vi.fn(() => ({ fontBoundingBoxAscent: 8, fontBoundingBoxDescent: 2 })) };
+        const getContext = vi.fn().mockReturnValueOnce(null).mockReturnValueOnce(context);
+        const createCanvas = vi.fn(() => ({ getContext }));
+        const engine: ThinNativeEngine = Object.create(ThinNativeEngine.prototype);
+        Object.assign(engine, { createCanvas });
+
+        expect(engine.getFontOffset("20px Arimo")).toEqual({ ascent: 16, height: 20, descent: 4 });
+        expect(engine.getFontOffset("10px Arimo")).toEqual({ ascent: 8, height: 10, descent: 2 });
+
+        expect(createCanvas).toHaveBeenCalledOnce();
+        expect(getContext).toHaveBeenCalledTimes(2);
+        expect(context.measureText).toHaveBeenCalledOnce();
+    });
 });
 
 describe("Native dynamic textures", () => {
@@ -68,22 +82,29 @@ describe("Native dynamic textures", () => {
         expect(createRawTexture).toHaveBeenCalledExactlyOnceWith(expect.any(Uint8Array), 10, 1, expect.any(Number), expected, false, 3);
     });
 
-    it("copies the canvas with the premultiplied-alpha and mip options", () => {
-        (globalThis as any)._native = { Engine: { COMMAND_COPYTEXTURE: 7 } };
-        const engine: ThinNativeEngine = Object.create(ThinNativeEngine.prototype);
-        const encoder = { startEncodingCommand: vi.fn(), encodeCommandArgAsNativeData: vi.fn(), finishEncodingCommand: vi.fn() };
-        Object.assign(engine, { _commandBufferEncoder: encoder });
-        const source = {};
-        const canvas = { getContext: () => ({ flush: vi.fn() }), getCanvasTexture: vi.fn(() => source) };
-        const texture = { _hardwareTexture: { underlyingResource: {} }, generateMipMaps: true, _premulAlpha: false, isReady: false } as any;
+    it.each([
+        { supportsDynamicTextureMipMaps: true, expectedArgs: [true, true], expectedPremulAlpha: true },
+        { supportsDynamicTextureMipMaps: false, expectedArgs: [], expectedPremulAlpha: false },
+        { supportsDynamicTextureMipMaps: undefined, expectedArgs: [], expectedPremulAlpha: false },
+    ])(
+        "copies the canvas with options only when the runtime supports them ($supportsDynamicTextureMipMaps)",
+        ({ supportsDynamicTextureMipMaps, expectedArgs, expectedPremulAlpha }) => {
+            (globalThis as any)._native = { Engine: { COMMAND_COPYTEXTURE: 7 } };
+            const engine: ThinNativeEngine = Object.create(ThinNativeEngine.prototype);
+            const encoder = { startEncodingCommand: vi.fn(), encodeCommandArgAsNativeData: vi.fn(), finishEncodingCommand: vi.fn() };
+            Object.assign(engine, { _engine: { supportsDynamicTextureMipMaps }, _commandBufferEncoder: encoder });
+            const source = {};
+            const canvas = { getContext: () => ({ flush: vi.fn() }), getCanvasTexture: vi.fn(() => source) };
+            const texture = { _hardwareTexture: { underlyingResource: {} }, generateMipMaps: true, _premulAlpha: false, isReady: false } as any;
 
-        engine.updateDynamicTexture(texture, canvas, false, true);
+            engine.updateDynamicTexture(texture, canvas, false, true);
 
-        expect(canvas.getCanvasTexture).toHaveBeenCalledExactlyOnceWith(true, true);
-        expect(encoder.startEncodingCommand).toHaveBeenCalledExactlyOnceWith(7);
-        expect(encoder.encodeCommandArgAsNativeData).toHaveBeenNthCalledWith(1, source);
-        expect(encoder.encodeCommandArgAsNativeData).toHaveBeenNthCalledWith(2, texture._hardwareTexture.underlyingResource);
-        expect(texture._premulAlpha).toBe(true);
-        expect(texture.isReady).toBe(true);
-    });
+            expect(canvas.getCanvasTexture).toHaveBeenCalledExactlyOnceWith(...expectedArgs);
+            expect(encoder.startEncodingCommand).toHaveBeenCalledExactlyOnceWith(7);
+            expect(encoder.encodeCommandArgAsNativeData).toHaveBeenNthCalledWith(1, source);
+            expect(encoder.encodeCommandArgAsNativeData).toHaveBeenNthCalledWith(2, texture._hardwareTexture.underlyingResource);
+            expect(texture._premulAlpha).toBe(expectedPremulAlpha);
+            expect(texture.isReady).toBe(true);
+        }
+    );
 });
