@@ -546,6 +546,33 @@ export function GetSupportedSimultaneousLights(scene: Scene, maxSimultaneousLigh
     return Math.min(maxSimultaneousLights, supported);
 }
 
+/**
+ * Decides, for each light with cascaded shadows (SHADOWCSM define), whether WGSL receivers read the cascades from the
+ * CascadedShadowGenerator's own uniform buffer (SHADOWCSMUBO define) or from effect uniforms, as GLSL receivers do.
+ *
+ * The cascades buffer is one more uniform buffer per CSM light, declared in both stages. It is only used while it fits
+ * within maxUniformBuffersPerShaderStage next to the light buffers and the four buffers GetSupportedSimultaneousLights
+ * reserves (in a WGSL material shader: Scene, Mesh, Internals and LeftOver). Every light that fits without cascades
+ * buffers still fits, and the CSM lights past the limit keep the effect uniforms.
+ * @param scene The scene that will be rendered
+ * @param defines The defines to update
+ * @param lightCount The number of lights the effect is prepared for
+ */
+function PrepareDefinesForCascadesUniformBuffers(scene: Scene, defines: any, lightCount: number): void {
+    const maxUniformBuffersPerShaderStage = scene.getEngine().getCaps().maxUniformBuffersPerShaderStage;
+
+    // Engines that do not report the limit (WebGL, native) have no WGSL receivers.
+    let freeUniformBuffers = maxUniformBuffersPerShaderStage == null ? 0 : maxUniformBuffersPerShaderStage - _NonLightVertexUniformBufferCount - lightCount;
+
+    for (let lightIndex = 0; lightIndex < lightCount; lightIndex++) {
+        const useCascadesBuffer = !!defines["SHADOWCSM" + lightIndex] && freeUniformBuffers > 0;
+        defines["SHADOWCSMUBO" + lightIndex] = useCascadesBuffer;
+        if (useCascadesBuffer) {
+            freeUniformBuffers--;
+        }
+    }
+}
+
 function WarnAboutClampedLights(engine: AbstractEngine, requested: number, supported: number, lightsInUse: number): void {
     let warned = _LightBudgetWarnedEngines.get(engine);
     if (!warned) {
@@ -801,6 +828,8 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
     defines["SPECULARTERM"] = state.specularEnabled;
     defines["SHADOWS"] = state.shadowEnabled;
 
+    PrepareDefinesForCascadesUniformBuffers(scene, defines, lightIndex);
+
     // Resetting all other lights if any
     const maxLightCount = Math.max(maxSimultaneousLights, defines["MAXLIGHTCOUNT"] || 0);
 
@@ -820,6 +849,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
             defines["SHADOWCSMNOBLEND" + index] = false;
             defines["SHADOWCSM_RIGHTHANDED" + index] = false;
+            defines["SHADOWCSMUBO" + index] = false;
             defines["SHADOWPCF" + index] = false;
             defines["SHADOWPCSS" + index] = false;
             defines["SHADOWPOISSON" + index] = false;
@@ -1066,6 +1096,9 @@ export function PrepareDefinesForLight(
     defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
     defines["SHADOWCSMNOBLEND" + lightIndex] = false;
     defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = false;
+    // set by PrepareDefinesForLights once it knows how many lights the effect has (PrepareDefinesForCascadesUniformBuffers):
+    // lights prepared one by one (node material light blocks) keep the effect uniforms
+    defines["SHADOWCSMUBO" + lightIndex] = false;
     defines["SHADOWPCF" + lightIndex] = false;
     defines["SHADOWPCSS" + lightIndex] = false;
     defines["SHADOWPOISSON" + lightIndex] = false;
@@ -1517,6 +1550,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param clusteredLightTextures defines if the clustered light textures must be used
  * @param rectAreaLightTexture defines if rect area light is using a emission texture.
  * @param clusteredLightStorageBuffer defines if the clustered light tile mask uses a storage buffer instead of a texture
+ * @param cascadesUniformBuffer defines if the shader reads the cascades of a CascadedShadowGenerator from its uniform buffer (SHADOWCSMUBO define)
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -1528,11 +1562,15 @@ export function PrepareUniformsAndSamplersForLight(
     iesLightTexture = false,
     clusteredLightTextures = false,
     rectAreaLightTexture = false,
-    clusteredLightStorageBuffer = false
+    clusteredLightStorageBuffer = false,
+    cascadesUniformBuffer = false
 ) {
     if (uniformBuffersList) {
-        // the cascades of a CascadedShadowGenerator, read from its own buffer by WGSL shaders
-        uniformBuffersList.push("Light" + lightIndex, "cascades" + lightIndex);
+        uniformBuffersList.push("Light" + lightIndex);
+        if (cascadesUniformBuffer) {
+            // the cascades of a CascadedShadowGenerator, read from its own buffer by WGSL shaders (SHADOWCSMUBO{X})
+            uniformBuffersList.push("cascades" + lightIndex);
+        }
     }
 
     if (updateOnlyBuffersList) {
@@ -1671,7 +1709,8 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             defines["IESLIGHTTEXTURE" + lightIndex],
             defines["CLUSTLIGHT" + lightIndex],
             defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
-            shaderLanguage === ShaderLanguage.WGSL
+            shaderLanguage === ShaderLanguage.WGSL,
+            !!defines["SHADOWCSMUBO" + lightIndex]
         );
     }
 

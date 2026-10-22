@@ -296,9 +296,17 @@
             for (var i:i32 = 0; i < SHADOWCSMNUM_CASCADES{X}; i++)
             {
                 #ifdef SHADOWCSM_RIGHTHANDED{X}
-                    diff{X} = cascades{X}.viewFrustumZ[i] + fragmentInputs.vPositionFromCamera{X}.z;
+                    #ifdef SHADOWCSMUBO{X}
+                        diff{X} = cascades{X}.viewFrustumZ[i] + fragmentInputs.vPositionFromCamera{X}.z;
+                    #else
+                        diff{X} = uniforms.viewFrustumZ{X}[i] + fragmentInputs.vPositionFromCamera{X}.z;
+                    #endif
                 #else
-                    diff{X} = cascades{X}.viewFrustumZ[i] - fragmentInputs.vPositionFromCamera{X}.z;
+                    #ifdef SHADOWCSMUBO{X}
+                        diff{X} = cascades{X}.viewFrustumZ[i] - fragmentInputs.vPositionFromCamera{X}.z;
+                    #else
+                        diff{X} = uniforms.viewFrustumZ{X}[i] - fragmentInputs.vPositionFromCamera{X}.z;
+                    #endif
                 #endif
                 if (diff{X} >= 0.) {
                     index{X} = i;
@@ -319,11 +327,23 @@
                     #endif
                 #elif defined(SHADOWPCSS{X})
                     #if defined(SHADOWLOWQUALITY{X})
-                        shadow = computeShadowWithCSMPCSS16(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                        #ifdef SHADOWCSMUBO{X}
+                            shadow = computeShadowWithCSMPCSS16(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                        #else
+                            shadow = computeShadowWithCSMPCSS16(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
+                        #endif
                     #elif defined(SHADOWMEDIUMQUALITY{X})
-                        shadow = computeShadowWithCSMPCSS32(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                        #ifdef SHADOWCSMUBO{X}
+                            shadow = computeShadowWithCSMPCSS32(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                        #else
+                            shadow = computeShadowWithCSMPCSS32(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
+                        #endif
                     #else
-                        shadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                        #ifdef SHADOWCSMUBO{X}
+                            shadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                        #else
+                            shadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
+                        #endif
                     #endif
                 #else
                     shadow = computeShadowCSM(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
@@ -334,8 +354,16 @@
                 #endif
 
                 #ifndef SHADOWCSMNOBLEND{X}
-                    var frustumLength:f32 = cascades{X}.frustumLengths[index{X}];
-                    var diffRatio:f32 = clamp(diff{X} / frustumLength, 0., 1.) * cascades{X}.cascadeBlendFactor;
+                    #ifdef SHADOWCSMUBO{X}
+                        var frustumLength:f32 = cascades{X}.frustumLengths[index{X}];
+                    #else
+                        var frustumLength:f32 = uniforms.frustumLengths{X}[index{X}];
+                    #endif
+                    #ifdef SHADOWCSMUBO{X}
+                        var diffRatio:f32 = clamp(diff{X} / frustumLength, 0., 1.) * cascades{X}.cascadeBlendFactor;
+                    #else
+                        var diffRatio:f32 = clamp(diff{X} / frustumLength, 0., 1.) * uniforms.cascadeBlendFactor{X};
+                    #endif
                     if (index{X} < (SHADOWCSMNUM_CASCADES{X} - 1) && diffRatio < 1.)
                     {
                         index{X} += 1;
@@ -350,11 +378,23 @@
                             #endif
                         #elif defined(SHADOWPCSS{X})
                             #if defined(SHADOWLOWQUALITY{X})
-                                nextShadow = computeShadowWithCSMPCSS16(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                                #ifdef SHADOWCSMUBO{X}
+                                    nextShadow = computeShadowWithCSMPCSS16(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                                #else
+                                    nextShadow = computeShadowWithCSMPCSS16(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
+                                #endif
                             #elif defined(SHADOWMEDIUMQUALITY{X})
-                                nextShadow = computeShadowWithCSMPCSS32(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                                #ifdef SHADOWCSMUBO{X}
+                                    nextShadow = computeShadowWithCSMPCSS32(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                                #else
+                                    nextShadow = computeShadowWithCSMPCSS32(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
+                                #endif
                             #else
-                                nextShadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                                #ifdef SHADOWCSMUBO{X}
+                                    nextShadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, cascades{X}.lightSizeUVCorrection[index{X}].xy, cascades{X}.depthCorrection[index{X}], cascades{X}.penumbraDarkness);
+                                #else
+                                    nextShadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
+                                #endif
                             #endif
                         #else
                             nextShadow = computeShadowCSM(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);

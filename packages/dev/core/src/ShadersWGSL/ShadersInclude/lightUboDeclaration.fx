@@ -48,18 +48,26 @@ var<uniform> light{X} : Light{X};
 
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
-		// written by the CascadedShadowGenerator once each time it computes the cascades, shared by every receiver
-		struct Cascades{X} {
-			viewFrustumZ: vec4f,
-			frustumLengths: vec4f,
-			cascadeBlendFactor: f32,
-			penumbraDarkness: f32,
-			depthCorrection: vec4f,
-			lightSizeUVCorrection: array<vec4f, 4>,
-			lightMatrix: array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>,
-		};
+		#ifdef SHADOWCSMUBO{X}
+			// written by the CascadedShadowGenerator once each time it computes the cascades, shared by every receiver
+			struct Cascades{X} {
+				viewFrustumZ: vec4f,
+				frustumLengths: vec4f,
+				cascadeBlendFactor: f32,
+				penumbraDarkness: f32,
+				depthCorrection: vec4f,
+				lightSizeUVCorrection: array<vec4f, 4>,
+				lightMatrix: array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>,
+			};
 
-		var<uniform> cascades{X} : Cascades{X};
+			var<uniform> cascades{X} : Cascades{X};
+		#else
+			// the cascades buffer does not fit within the uniform buffers per stage of the device: effect uniforms
+			uniform lightMatrix{X}:  array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>;
+			uniform viewFrustumZ{X}:  array<f32, SHADOWCSMNUM_CASCADES{X}>;
+			uniform frustumLengths{X}:  array<f32, SHADOWCSMNUM_CASCADES{X}>;
+			uniform cascadeBlendFactor{X}: f32;
+		#endif
 
 		// Because WGSL does not allow us to have arrays as varying...
 		varying vPositionFromLight{X}_0: vec4f;
@@ -80,10 +88,15 @@ var<uniform> light{X} : Light{X};
 			var shadowTexture{X}: texture_depth_2d_array;
 			var depthTexture{X}Sampler: sampler;
 			var depthTexture{X}: texture_2d_array<f32>;
+			#ifndef SHADOWCSMUBO{X}
+				uniform lightSizeUVCorrection{X}: array<vec2f, SHADOWCSMNUM_CASCADES{X}>;
+				uniform depthCorrection{X}: array<f32, SHADOWCSMNUM_CASCADES{X}>;
+				uniform penumbraDarkness{X}: f32;
+			#endif
 		#elif defined(SHADOWPCF{X})
 			var shadowTexture{X}Sampler: sampler_comparison;
 			var shadowTexture{X}: texture_depth_2d_array;
-		#else			
+		#else
 			var shadowTexture{X}Sampler: sampler;			
 			var shadowTexture{X}: texture_2d_array<f32>;
 		#endif

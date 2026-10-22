@@ -41,6 +41,22 @@ const TmpMatrix = /*#__PURE__*/ new Matrix();
 // The cascades a receiving shader can read (vPositionFromLight{X}_0 to _3): the size of the arrays in the cascades buffer
 const CascadesUboSize = 4;
 
+// A buffer holding the cascades of a camera: the computation of the cascades it holds, the floating origin offset its light
+// matrices were written for, and the last frame a view bound it in
+interface ICascadesBuffer {
+    ubo: UniformBuffer;
+    computeId: number;
+    origin: Vector3;
+    frameId: number;
+}
+
+// The cascades buffers of a camera, and the number of times the cascades were computed for it
+interface ICascadesBuffers {
+    buffers: ICascadesBuffer[];
+    computeId: number;
+    observer: Nullable<Observer<Node>>;
+}
+
 /**
  * A CSM implementation allowing casting shadows on large scenes.
  * Documentation : https://doc.babylonjs.com/babylon101/cascadedShadows
@@ -86,10 +102,19 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         return ShadowGenerator.FILTER_NONE;
     }
 
+    private _penumbraDarkness: number;
+
     /**
      * Gets or sets the actual darkness of the soft shadows while using PCSS filtering (value between 0. and 1.)
      */
-    public penumbraDarkness: number;
+    public get penumbraDarkness(): number {
+        return this._penumbraDarkness;
+    }
+
+    public set penumbraDarkness(value: number) {
+        this._penumbraDarkness = value;
+        this._updateCascadesSettings();
+    }
 
     private _numCascades: number;
 
@@ -276,9 +301,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _shadowCameraPos: Array<Vector3>;
 
     // WGSL receivers read the cascades from a buffer owned by this generator, one per camera its shadow map renders for, written
-    // once each time the cascades are computed: every receiver shares it, and a FAST snapshot replay reads the current values
-    private _cascadesUbos: Nullable<Map<Nullable<Camera>, { ubo: UniformBuffer; observer: Nullable<Observer<Node>> }>> = null;
-    private _cascadesUbo: Nullable<UniformBuffer> = null;
+    // once each time the cascades are computed: every receiver shares it, and a FAST snapshot replay reads the current values.
+    // In floating origin mode the light matrices are also offset by the eye the receivers are rendered for, and a mirror or a
+    // reflection probe renders them for another eye than the camera's: each eye gets its own buffer (_getCascadesBufferForEye)
+    private _cascadesUbos: Nullable<Map<Nullable<Camera>, ICascadesBuffers>> = null;
+    private _cascadesBuffers: Nullable<ICascadesBuffers> = null;
     private _cascadesMatrices = new Float32Array(16 * CascadesUboSize);
 
     private _shadowMaxZ: number;
@@ -355,6 +382,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     public set cascadeBlendPercentage(value: number) {
         this._cascadeBlendPercentage = value;
         this._light._markMeshesAsLightDirty();
+        this._updateCascadesSettings();
     }
 
     private _lambda: number;
@@ -793,7 +821,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     protected override _initializeGenerator(): void {
-        this.penumbraDarkness = this.penumbraDarkness ?? 1.0;
+        this._penumbraDarkness = this._penumbraDarkness ?? 1.0;
         this._numCascades = this._numCascades ?? CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
         this.stabilizeCascades = this.stabilizeCascades ?? false;
         this._freezeShadowCastersBoundingInfoObservable = this._freezeShadowCastersBoundingInfoObservable ?? null;
@@ -993,12 +1021,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         const width = shadowMap.getSize().width;
 
-        if (effect.shaderLanguage === ShaderLanguage.WGSL) {
-            if (!this._cascadesUbo) {
+        // WGSL receivers compiled with the cascades buffer (SHADOWCSMUBO{X}, when it fits within the device's uniform buffers
+        // per stage); the others get the cascades as effect uniforms
+        if (effect.shaderLanguage === ShaderLanguage.WGSL && effect._uniformBuffersNames["cascades" + lightIndex] !== undefined) {
+            if (!this._cascadesBuffers) {
                 this._cascadesUbos = this._cascadesUbos || new Map();
                 this._updateCascadesUbo();
             }
-            const cascadesUbo = this._cascadesUbo!;
+            const cascades = this._cascadesBuffers!;
+            const cascadesUbo = (scene.floatingOriginMode ? this._getCascadesBufferForEye(cascades, scene.floatingOriginOffset) : cascades.buffers[0]).ubo;
             cascadesUbo.bindToEffect(effect, "cascades" + lightIndex);
             cascadesUbo.bindUniformBuffer();
         } else {
@@ -1065,55 +1096,128 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _updateCascadesUbo(): void {
         const scene = this._scene;
         const camera = this._getCamera();
-        let entry = this._cascadesUbos!.get(camera);
-        if (!entry) {
-            const ubo = new UniformBuffer(scene.getEngine(), undefined, false, "CascadedShadowGenerator", false, false);
-            ubo.addUniform("viewFrustumZ", 4);
-            ubo.addUniform("frustumLengths", 4);
-            ubo.addUniform("cascadeBlendFactor", 1);
-            ubo.addUniform("penumbraDarkness", 1);
-            ubo.addUniform("depthCorrection", 4);
-            ubo.addUniform("lightSizeUVCorrection", 2, CascadesUboSize);
-            ubo.addUniform("lightMatrix", 16, CascadesUboSize);
-            ubo.create();
-            entry = { ubo, observer: camera ? camera.onDisposeObservable.addOnce(() => this._releaseCascadesUbo(camera)) : null };
-            this._cascadesUbos!.set(camera, entry);
+        let cascades = this._cascadesUbos!.get(camera);
+        if (!cascades) {
+            cascades = { buffers: [], computeId: 0, observer: camera ? camera.onDisposeObservable.addOnce(() => this._releaseCascadesUbo(camera)) : null };
+            this._cascadesUbos!.set(camera, cascades);
         }
 
-        const ubo = entry.ubo;
+        cascades.computeId++;
+        if (scene.floatingOriginMode) {
+            this._getCascadesBufferForEye(cascades, scene.floatingOriginOffset);
+        } else {
+            this._writeCascades(cascades, cascades.buffers[0] ?? this._createCascadesBuffer(cascades), Vector3.ZeroReadOnly);
+        }
+        this._cascadesBuffers = cascades;
+    }
+
+    /**
+     * In floating origin mode, the light matrices are offset by the eye the receivers are rendered for, which a mirror or a
+     * reflection probe moves (scene._forcedViewPosition). Receivers rendered for the same eye share a buffer. Another eye in the
+     * same frame gets another buffer, since the commands of every view run after all the writes of the frame, and a buffer no
+     * view bound in this frame is the one rewritten for a new eye.
+     * @param cascades the cascades buffers of the camera the cascades were last computed for
+     * @param origin the floating origin offset of the eye
+     * @returns the buffer holding the last computed cascades for that eye
+     */
+    private _getCascadesBufferForEye(cascades: ICascadesBuffers, origin: Vector3): ICascadesBuffer {
+        const frameId = this._scene.getEngine().frameId;
+        let unused: Nullable<ICascadesBuffer> = null;
+        for (const buffer of cascades.buffers) {
+            if (buffer.computeId === cascades.computeId && buffer.origin.equals(origin)) {
+                buffer.frameId = frameId;
+                return buffer;
+            }
+            if (!unused && buffer.frameId !== frameId) {
+                unused = buffer;
+            }
+        }
+        const buffer = unused ?? this._createCascadesBuffer(cascades);
+        this._writeCascades(cascades, buffer, origin);
+        return buffer;
+    }
+
+    private _createCascadesBuffer(cascades: ICascadesBuffers): ICascadesBuffer {
+        const ubo = new UniformBuffer(this._scene.getEngine(), undefined, false, "CascadedShadowGenerator", false, false);
+        ubo.addUniform("viewFrustumZ", 4);
+        ubo.addUniform("frustumLengths", 4);
+        ubo.addUniform("cascadeBlendFactor", 1);
+        ubo.addUniform("penumbraDarkness", 1);
+        ubo.addUniform("depthCorrection", 4);
+        ubo.addUniform("lightSizeUVCorrection", 2, CascadesUboSize);
+        ubo.addUniform("lightMatrix", 16, CascadesUboSize);
+        ubo.create();
+        const buffer = { ubo, computeId: 0, origin: new Vector3(), frameId: -1 };
+        cascades.buffers.push(buffer);
+        return buffer;
+    }
+
+    /**
+     * Writes the cascades last computed in a buffer, with the light matrices offset by the given floating origin offset
+     * @param cascades the cascades buffers the buffer belongs to
+     * @param buffer the buffer to write
+     * @param origin the floating origin offset of the eye the buffer is for (zero outside of floating origin mode)
+     */
+    private _writeCascades(cascades: ICascadesBuffers, buffer: ICascadesBuffer, origin: Vector3): void {
+        const ubo = buffer.ubo;
         const z = this._viewSpaceFrustumsZ;
         const lengths = this._frustumLengths;
         this._cascadesMatrices.set(
-            scene.floatingOriginMode
-                ? GetOffsetTransformMatrices(scene.floatingOriginOffset, this._viewMatrices, this._projectionMatrices, this._numCascades, this._tempTransformMatricesAsArray)
+            this._scene.floatingOriginMode
+                ? GetOffsetTransformMatrices(origin, this._viewMatrices, this._projectionMatrices, this._numCascades, this._tempTransformMatricesAsArray)
                 : this._transformMatricesAsArray
         );
         ubo.updateFloat4("viewFrustumZ", z[0] ?? 0, z[1] ?? 0, z[2] ?? 0, z[3] ?? 0);
         ubo.updateFloat4("frustumLengths", lengths[0] ?? 0, lengths[1] ?? 0, lengths[2] ?? 0, lengths[3] ?? 0);
-        ubo.updateFloat("cascadeBlendFactor", this.cascadeBlendPercentage === 0 ? 10000 : 1 / this.cascadeBlendPercentage);
-        if (this._filter === ShadowGenerator.FILTER_PCSS) {
-            this._computePCSSCorrections();
-            const depth = this._depthCorrection;
-            ubo.updateFloat("penumbraDarkness", this.penumbraDarkness);
-            ubo.updateFloat4("depthCorrection", depth[0] ?? 0, depth[1] ?? 0, depth[2] ?? 0, depth[3] ?? 0);
-            ubo.updateArray("lightSizeUVCorrection", this._lightSizeUVCorrection);
-        }
+        ubo.updateFloat("cascadeBlendFactor", this._getCascadeBlendFactor());
+        // the PCSS values are written whatever the filter, so that switching to PCSS does not wait for the shadow map to render
+        this._computePCSSCorrections();
+        const depth = this._depthCorrection;
+        ubo.updateFloat("penumbraDarkness", this._penumbraDarkness);
+        ubo.updateFloat4("depthCorrection", depth[0] ?? 0, depth[1] ?? 0, depth[2] ?? 0, depth[3] ?? 0);
+        ubo.updateArray("lightSizeUVCorrection", this._lightSizeUVCorrection);
         ubo.updateMatrices("lightMatrix", this._cascadesMatrices);
         // written outside of any draw: the last receiver bound must not get this buffer bound again
         ubo.unbindEffect();
         ubo.update();
-        this._cascadesUbo = ubo;
+        buffer.computeId = cascades.computeId;
+        buffer.origin.copyFrom(origin);
+        buffer.frameId = this._scene.getEngine().frameId;
+    }
+
+    /**
+     * cascadeBlendPercentage and penumbraDarkness only matter to the receivers, and the shadow map may not render again
+     * (refreshRate 0): they are written in the cascades buffers when they change, not for each receiver
+     */
+    private _updateCascadesSettings(): void {
+        if (!this._cascadesUbos) {
+            return;
+        }
+        for (const cascades of this._cascadesUbos.values()) {
+            for (const { ubo } of cascades.buffers) {
+                ubo.updateFloat("cascadeBlendFactor", this._getCascadeBlendFactor());
+                ubo.updateFloat("penumbraDarkness", this._penumbraDarkness);
+                ubo.unbindEffect();
+                ubo.update();
+            }
+        }
+    }
+
+    private _getCascadeBlendFactor(): number {
+        return this.cascadeBlendPercentage === 0 ? 10000 : 1 / this.cascadeBlendPercentage;
     }
 
     private _releaseCascadesUbo(camera: Camera): void {
-        const entry = this._cascadesUbos?.get(camera);
-        if (!entry) {
+        const cascades = this._cascadesUbos?.get(camera);
+        if (!cascades) {
             return;
         }
-        entry.ubo.dispose();
+        for (const { ubo } of cascades.buffers) {
+            ubo.dispose();
+        }
         this._cascadesUbos!.delete(camera);
-        if (this._cascadesUbo === entry.ubo) {
-            this._cascadesUbo = null;
+        if (this._cascadesBuffers === cascades) {
+            this._cascadesBuffers = null;
         }
     }
 
@@ -1144,12 +1248,14 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         if (this._cascadesUbos) {
-            for (const [camera, entry] of this._cascadesUbos) {
-                entry.ubo.dispose();
-                camera?.onDisposeObservable.remove(entry.observer);
+            for (const [camera, cascades] of this._cascadesUbos) {
+                for (const { ubo } of cascades.buffers) {
+                    ubo.dispose();
+                }
+                camera?.onDisposeObservable.remove(cascades.observer);
             }
             this._cascadesUbos = null;
-            this._cascadesUbo = null;
+            this._cascadesBuffers = null;
         }
     }
 
