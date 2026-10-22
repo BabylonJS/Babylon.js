@@ -491,7 +491,7 @@
         },
         {
             "title": "glTF TrafficCone Retroreflection",
-            "playgroundId": "#FQAHXK#0",
+            "playgroundId": "#FQAHXK#1",
             "referenceImage": "gltf-trafficcone-retroreflection.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["PBR", "Textures", "Lights", "Cameras", "Loaders", "glTF"],

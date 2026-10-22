@@ -489,8 +489,7 @@ test("loading a model using query parameters", async ({ page }) => {
 });
 
 test("loading a model without an environment using query parameters", async ({ page }) => {
-    const trafficConeUrl =
-        "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/f36bfdabd1031c3cf6689a50570b8cdf3678b49c/Models/TrafficCone/glTF-Binary/TrafficCone.glb";
+    const trafficConeUrl = "https://assets.babylonjs.com/meshes/TrafficCone/TrafficCone.gltf";
     const query = [`assetUrl=${trafficConeUrl}`, "camera=0", "environment=none", "skybox=false", "clearcolor=000000"].join("&");
 
     await page.goto(url + (snapshot ? "&" : "?") + query, {
