@@ -1,22 +1,37 @@
 {
-    "fromTag": "9.31.2",
+    "fromTag": "9.31.3",
     "changelog": {
-        "9.31.2": [
+        "9.32.0": [
             {
-                "pr": "19030",
-                "title": "fix(ci): authenticate publish Git operations with a header",
-                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nUpdate only `.azure-pipelines/cd-publish.yml` so publish-job Git authentication no longer depends on credentials embedded in the remote URL.\n\n- Keep `origin` credential-free and pass `GitHubPAT` through the prepare task's secret environment.\n- Store a repository-scoped HTTP authorization header in the checkout's local Git configuration, preserving authentication for later fetch, merge, and push tasks.\n- Mask the encoded credential, disable shell tracing before handling it, fail promptly on errors, and quote the branch argument.\n\nThe updated hosted Ubuntu image includes a libcurl security patch that strips credentials from `CURLINFO_EFFECTIVE_URL`. Git 2.55.0 can mistake that for a redirect and discard URL credentials, even when the PAT is valid. The mechanism is documented in [Git's upstream fix](https://github.com/git/git/commit/76524c2604bceee48481909e7824494498c39a34), the [affected runner image release](https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261018.339), and [curl's security advisory](https://curl.se/docs/CVE-2026-94266.html).\n\nThis hardens the publish job against the regression observed in [minor-version build 61117](https://dev.azure.com/babylonjs/ContinousIntegration/_build/results?buildId=61117). It does not modify the classic minor-version pipeline, Lite comment authentication, release metadata, or recover/re-publish an existing npm version.\n\n## Validation\n\nExtracted the exact prepare script from the YAML and exercised it against a temporary loopback-only Git HTTP server using dummy credentials:\n\n- Bash syntax, secret environment mapping, and masking remain correct even when the shell starts with tracing enabled.\n- Repeated preparation retains exactly one header, scoped only to the target repository.\n- Separate processes without the PAT environment successfully fetch, merge, and push a commit and tag using the persisted header.\n- Invalid and empty credentials fail explicitly without exposing credentials in normal output.\n\nFocused review found no issues. Repository-wide lint/build checks were stopped and no engine unit suite was run for this YAML-only change; formatting/linting were explicitly waived by the user. No real release pipeline was executed.",
+                "pr": "19016",
+                "title": "Inspector Lite: add debug helpers and capture tools (P7b)",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nImplements the debug and capture tools milestone (P7b) of [BabylonJS/Babylon-Lite#55](https://github.com/BabylonJS/Babylon-Lite/issues/55).\n\n- Add a **Debug** pane with per-scene, non-pickable ground grids and bounding boxes, including auxiliary surfaces. Bounding boxes inherit live world transforms instead of rebuilding on the Inspector polling interval, so animated and parented meshes stay synchronized even in manual watch mode without changing the application's node hierarchy.\n- Add **Tools** controls for native-resolution PNG screenshots and browser canvas video capture on primary or auxiliary surfaces. Service-owned controllers preserve state across pane changes, report failures, release media tracks, and suppress stale downloads after removal or disposal.\n- Forward disabled state through the shared toggle button, add accessible switch names, document capabilities and limitations, and cover the new behavior with unit and browser regressions.\n\nUses the published Lite 1.32.0 API without private GPU-device reads or dependency changes. Geometry/visibility updates retain Inspector's watch cadence; skeletal/morph deformation and individual thin-instance bounds are not included.\n\n## Screenshots\n\n**Debug:** ground grid and live bounding boxes enabled in the Inspector Lite test app.\n\n![Inspector Lite Debug pane with ground grid and live bounding boxes enabled](https://github.com/user-attachments/assets/70b1364b-f07f-45aa-8b81-c788bad4ca45)\n\n**Tools:** primary/auxiliary surface selection, native-resolution PNG screenshots, and canvas video recording.\n\n![Inspector Lite Tools pane with primary surface selection and screenshot and video capture controls](https://github.com/user-attachments/assets/6ccfc089-2e1b-4248-850e-586301e768e3)\n\n## Validation\n\n- Repository formatting, lint/tree-shaking, advisory lint, and source build completed successfully.\n- Focused controller, service, and shared-control unit tests passed.\n- All four Chrome/software-WebGPU integration tests passed: primary/auxiliary PNG dimensions and pixels, playable video across pane changes, helper rendering/cleanup, and animated bounds in manual watch mode. The animation regression samples 30 frames and requires transform error below 0.000001.\n- **The full local unit command did not finish cleanly.** Attempts encountered failures in untouched Windows build-tool tests, a probabilistic flow multi-gate assertion, and Atmosphere shader imports racing test teardown. A clean-baseline comparison has not been established. Unrelated validation fixes are deliberately excluded from this PR; per request, PR CI will establish the final check results.",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    ".azure-pipelines/cd-publish.yml"
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/sceneEntityUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/captureController.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/captureService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/debugController.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/debugService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/meshExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/integration/liteDebugCapture.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteCapture.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteCaptureService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteDebugController.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteDebugService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteSceneEntities.test.ts",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/switch.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/fluent/switch.test.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/fluent/toggleButton.test.tsx"
                 ],
                 "tags": [
-                    "bug",
-                    "build",
-                    "skip changelog"
+                    "inspector",
+                    "new feature"
                 ]
             }
         ],
@@ -102,6 +117,25 @@
                 "tags": [
                     "inspector",
                     "new feature"
+                ]
+            }
+        ],
+        "9.31.2": [
+            {
+                "pr": "19030",
+                "title": "fix(ci): authenticate publish Git operations with a header",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nUpdate only `.azure-pipelines/cd-publish.yml` so publish-job Git authentication no longer depends on credentials embedded in the remote URL.\n\n- Keep `origin` credential-free and pass `GitHubPAT` through the prepare task's secret environment.\n- Store a repository-scoped HTTP authorization header in the checkout's local Git configuration, preserving authentication for later fetch, merge, and push tasks.\n- Mask the encoded credential, disable shell tracing before handling it, fail promptly on errors, and quote the branch argument.\n\nThe updated hosted Ubuntu image includes a libcurl security patch that strips credentials from `CURLINFO_EFFECTIVE_URL`. Git 2.55.0 can mistake that for a redirect and discard URL credentials, even when the PAT is valid. The mechanism is documented in [Git's upstream fix](https://github.com/git/git/commit/76524c2604bceee48481909e7824494498c39a34), the [affected runner image release](https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261018.339), and [curl's security advisory](https://curl.se/docs/CVE-2026-94266.html).\n\nThis hardens the publish job against the regression observed in [minor-version build 61117](https://dev.azure.com/babylonjs/ContinousIntegration/_build/results?buildId=61117). It does not modify the classic minor-version pipeline, Lite comment authentication, release metadata, or recover/re-publish an existing npm version.\n\n## Validation\n\nExtracted the exact prepare script from the YAML and exercised it against a temporary loopback-only Git HTTP server using dummy credentials:\n\n- Bash syntax, secret environment mapping, and masking remain correct even when the shell starts with tracing enabled.\n- Repeated preparation retains exactly one header, scoped only to the target repository.\n- Separate processes without the PAT environment successfully fetch, merge, and push a commit and tag using the persisted header.\n- Invalid and empty credentials fail explicitly without exposing credentials in normal output.\n\nFocused review found no issues. Repository-wide lint/build checks were stopped and no engine unit suite was run for this YAML-only change; formatting/linting were explicitly waived by the user. No real release pipeline was executed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/cd-publish.yml"
+                ],
+                "tags": [
+                    "bug",
+                    "build",
+                    "skip changelog"
                 ]
             }
         ],
