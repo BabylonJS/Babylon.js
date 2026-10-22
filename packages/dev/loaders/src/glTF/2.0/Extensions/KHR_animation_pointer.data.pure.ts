@@ -11,6 +11,7 @@ import { SetInterpolationForKey } from "./objectModelMapping";
 import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
 import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { type IAnimationKey } from "core/Animations/animationKey";
+import { MaterialAlphaMode } from "babylonjs-gltf2interface";
 
 const OpenPBRPropertyNames: Readonly<Record<string, string | undefined>> = {
     albedoColor: "baseColor",
@@ -115,13 +116,24 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
             let propertyName = this.name;
             let materialKeys = keys;
             if (material.getClassName() === "OpenPBRMaterial") {
+                if (this.name === "alpha" && (target.alphaMode === undefined || target.alphaMode === MaterialAlphaMode.OPAQUE)) {
+                    continue;
+                }
+                const openPbrMaterial = material as OpenPBRMaterial;
                 // Texture component paths append one member to the mapped texture property.
                 const separator = this.name.lastIndexOf(".");
                 const parentName = this.name.substring(0, separator);
                 propertyName =
                     OpenPBRPropertyNames[this.name] ?? (OpenPBRPropertyNames[parentName] ? OpenPBRPropertyNames[parentName] + this.name.substring(separator) : this.name);
-                if (parentName === "metallicReflectanceTexture" && (material as OpenPBRMaterial)._useSpecularWeightFromSpecularColorTexture) {
+                if (parentName === "metallicReflectanceTexture" && openPbrMaterial._useSpecularWeightFromSpecularColorTexture) {
                     propertyName = "specularColorTexture" + this.name.substring(separator);
+                }
+                if (this.name === "albedoColor" && openPbrMaterial.transmissionWeight > 0 && (openPbrMaterial.geometryThinWalled || openPbrMaterial.transmissionDepth === 0)) {
+                    // The loading adapter derives transmission tint from base color for these materials.
+                    babylonAnimations.push({
+                        babylonAnimatable: material,
+                        babylonAnimation: this._buildAnimation(name, fps, materialKeys, "transmissionColor"),
+                    });
                 }
                 if (this.name === "iridescence.minimumThickness" || this.name === "iridescence.maximumThickness") {
                     // glTF stores nanometers; OpenPBR stores micrometers, including spline tangents.

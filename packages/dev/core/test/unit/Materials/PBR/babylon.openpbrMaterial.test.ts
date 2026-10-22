@@ -42,6 +42,32 @@ describe("OpenPBRMaterial", () => {
         scene = new Scene(engine);
     });
 
+    describe("Alpha testing", () => {
+        it.each([false, true])("does not blend cutout opacity with an opacity texture=%s", (withTexture) => {
+            const material = new OpenPBRMaterial("cutout", scene);
+            const mesh = new Mesh("cutout", scene);
+            mesh.material = material;
+            material.transparencyMode = OpenPBRMaterial.MATERIAL_ALPHATEST;
+            material.geometryOpacity = 0.25;
+            if (withTexture) {
+                material.geometryOpacityTexture = new Texture(null, scene);
+            }
+            expect(material.needAlphaBlending()).toBe(false);
+            expect(material.needAlphaBlendingForMesh(mesh)).toBe(false);
+            expect(material.needAlphaTestingForMesh(mesh)).toBe(true);
+        });
+
+        it("preserves explicit OpenPBR geometry opacity outside cutout mode", () => {
+            const material = new OpenPBRMaterial("coverage", scene);
+            const mesh = new Mesh("coverage", scene);
+            mesh.material = material;
+            material.geometryOpacity = 0.25;
+            expect(material.transparencyMode).toBe(OpenPBRMaterial.MATERIAL_OPAQUE);
+            expect(material.needAlphaBlending()).toBe(true);
+            expect(material.needAlphaBlendingForMesh(mesh)).toBe(true);
+        });
+    });
+
     describe("SSS texture readiness blocking", () => {
         it("isReadyForSubMesh returns false when sssIrradianceTexture is assigned but not ready", () => {
             const material = new OpenPBRMaterial("mat", scene);

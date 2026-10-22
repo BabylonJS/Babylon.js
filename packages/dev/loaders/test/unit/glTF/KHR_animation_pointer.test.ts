@@ -7,12 +7,13 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Texture } from "core/Materials/Textures/texture";
-import { type Material } from "core/Materials/material";
+import { Material } from "core/Materials/material";
 import { type IMaterial } from "loaders/glTF/2.0/glTFLoaderInterfaces";
 import { GetMappingForKey } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { _RegisterKHRAnimationPointerData } from "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data.pure";
 import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialLoadingAdapter";
 import { Color3 } from "core/Maths/math.color";
+import { type IGLTF, MaterialAlphaMode } from "babylonjs-gltf2interface";
 
 registerBuiltInLoaders();
 
@@ -136,6 +137,86 @@ describe("KHR_animation_pointer material implementations", () => {
         } else {
             expect(pointer === "roughnessFactor" ? retro.specularRoughness : retro.baseMetalness).toBeCloseTo(0.5);
             expect(pointer === "roughnessFactor" ? ordinary.roughness : ordinary.metallic).toBeCloseTo(0.5);
+        }
+    });
+
+    it.each(
+        [undefined, MaterialAlphaMode.OPAQUE, MaterialAlphaMode.MASK, MaterialAlphaMode.BLEND].flatMap((alphaMode) =>
+            [false, true].map((withTexture) => ({ alphaMode, withTexture }))
+        )
+    )("preserves $alphaMode with texture=$withTexture during import and base-color playback", async ({ alphaMode, withTexture }) => {
+        const gltf = JSON.parse(buildAnimatedMaterialsGltf("pbrMetallicRoughness/baseColorFactor", [1, 1, 1, 0.25, 1, 0, 0, 0.75], "VEC4")) as IGLTF;
+        for (const material of gltf.materials!) {
+            material.alphaMode = alphaMode;
+            material.pbrMetallicRoughness!.baseColorFactor = [1, 1, 1, 0.25];
+            if (!withTexture) {
+                delete material.pbrMetallicRoughness!.baseColorTexture;
+            }
+        }
+        gltf.materials![0].extensions!["KHR_materials_retroreflection"] = { retroreflectionFactor: 0 };
+        const result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+        const retroMesh = result.meshes.find((mesh) => mesh.material?.name === "retro")!;
+        const ordinaryMesh = result.meshes.find((mesh) => mesh.material?.name === "ordinary")!;
+        const retro = retroMesh.material as OpenPBRMaterial;
+        const ordinary = ordinaryMesh.material as PBRMaterial;
+        expect(retro).toBeInstanceOf(OpenPBRMaterial);
+        expect(ordinary).toBeInstanceOf(PBRMaterial);
+        const opaque = alphaMode === undefined || alphaMode === MaterialAlphaMode.OPAQUE;
+        expect(retro.geometryOpacity).toBeCloseTo(opaque ? 1 : 0.25);
+        expect(ordinary.alpha).toBeCloseTo(opaque ? 1 : 0.25);
+
+        const group = result.animationGroups[0];
+        expect(group.isStarted).toBe(true);
+        group.pause();
+        for (const frame of [0, 30, 60]) {
+            group.goToFrame(frame);
+            expect(retro.baseColor.asArray()).toEqual(ordinary.albedoColor.asArray());
+            expect(retro.geometryOpacity).toBeCloseTo(opaque ? 1 : 0.25 + frame / 120);
+            for (const mesh of [retroMesh, ordinaryMesh]) {
+                expect(mesh.material!.needAlphaBlendingForMesh(mesh)).toBe(alphaMode === MaterialAlphaMode.BLEND);
+                expect(mesh.material!.needAlphaTestingForMesh(mesh)).toBe(alphaMode === MaterialAlphaMode.MASK);
+            }
+        }
+        expect(retro.transparencyMode).toBe(opaque ? Material.MATERIAL_OPAQUE : alphaMode === MaterialAlphaMode.MASK ? Material.MATERIAL_ALPHATEST : Material.MATERIAL_ALPHABLEND);
+    });
+
+    it.each([
+        { name: "thin-walled transmission", transmissionFactor: 1, volume: undefined, derivedTint: true },
+        { name: "volume without attenuation", transmissionFactor: 1, volume: { thicknessFactor: 1 }, derivedTint: true },
+        {
+            name: "attenuating volume",
+            transmissionFactor: 1,
+            volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] },
+            derivedTint: false,
+        },
+        { name: "zero transmission", transmissionFactor: 0, volume: undefined, derivedTint: false },
+    ])("preserves converted transmission tint during $name playback", async ({ transmissionFactor, volume, derivedTint }) => {
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf("pbrMetallicRoughness/baseColorFactor", [1, 1, 1, 1, 1, 0, 0, 1], "VEC4", {
+                KHR_materials_transmission: { transmissionFactor },
+                ...(volume ? { KHR_materials_volume: volume } : {}),
+            })
+        ) as IGLTF;
+        for (const material of gltf.materials!) {
+            delete material.pbrMetallicRoughness!.baseColorTexture;
+        }
+        const result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+        const retro = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        const ordinary = result.meshes.find((mesh) => mesh.material?.name === "ordinary")!.material as PBRMaterial;
+        expect(retro).toBeInstanceOf(OpenPBRMaterial);
+        expect(ordinary).toBeInstanceOf(PBRMaterial);
+        expect(retro.transmissionWeight).toBe(transmissionFactor);
+        const initialTint = retro.transmissionColor.clone();
+        const group = result.animationGroups[0];
+        expect(group.isStarted).toBe(true);
+        group.pause();
+        for (const frame of [0, 15, 30, 60]) {
+            group.goToFrame(frame);
+            expect(retro.baseColor.asArray()).toEqual(ordinary.albedoColor.asArray());
+            expect(retro.baseColor.r).toBeCloseTo(1);
+            expect(retro.baseColor.g).toBeCloseTo(1 - frame / 60);
+            expect(retro.baseColor.b).toBeCloseTo(1 - frame / 60);
+            expect(retro.transmissionColor.asArray()).toEqual((derivedTint ? retro.baseColor : initialTint).asArray());
         }
     });
 

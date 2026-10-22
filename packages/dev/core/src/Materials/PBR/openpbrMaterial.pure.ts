@@ -2231,22 +2231,20 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     }
 
     /**
-     * @returns true when the material needs alpha blending — i.e. when geometry_opacity < 1
-     * or a geometry opacity texture is present.
+     * @returns true when geometry opacity requires blending, except in alpha-test-only mode.
      */
     public override needAlphaBlending(): boolean {
-        return this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null;
+        return this._transparencyMode !== Material.MATERIAL_ALPHATEST && (this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null);
     }
 
     /**
      * Specifies if the mesh will require alpha blending.
-     * Overridden to check geometry_opacity before the _hasTransparencyMode short-circuit in the
-     * base class, which would otherwise always return false when _transparencyMode is MATERIAL_OPAQUE.
+     * Geometry opacity can require blending even in opaque mode, but never in alpha-test-only mode.
      * @param mesh The mesh to check
      * @returns true if alpha blending is needed for the mesh
      */
     public override needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        return this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null || super.needAlphaBlendingForMesh(mesh);
+        return this._transparencyMode !== Material.MATERIAL_ALPHATEST && (this.needAlphaBlending() || super.needAlphaBlendingForMesh(mesh));
     }
 
     /**
