@@ -9,6 +9,57 @@ import { AnimationPropertyInfo, RegisterGLTFLoaderAnimation } from "../glTFLoade
 import { Color3 } from "core/Maths/math.color.pure";
 import { SetInterpolationForKey } from "./objectModelMapping";
 import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
+import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { type IAnimationKey } from "core/Animations/animationKey";
+
+const OpenPBRPropertyNames: Readonly<Record<string, string | undefined>> = {
+    albedoColor: "baseColor",
+    alpha: "geometryOpacity",
+    metallic: "baseMetalness",
+    roughness: "specularRoughness",
+    albedoTexture: "baseColorTexture",
+    metallicTexture: "baseMetalnessTexture",
+    emissiveColor: "emissionColor",
+    emissiveIntensity: "emissionLuminance",
+    emissiveTexture: "emissionColorTexture",
+    bumpTexture: "geometryNormalTexture",
+    ambientTexture: "ambientOcclusionTexture",
+    ambientTextureStrength: "ambientOcclusionTexture.level",
+    "anisotropy.intensity": "specularRoughnessAnisotropy",
+    "anisotropy.angle": "geometryTangentAngle",
+    "anisotropy.texture": "geometryTangentTexture",
+    "clearCoat.intensity": "coatWeight",
+    "clearCoat.roughness": "coatRoughness",
+    "clearCoat.texture": "coatWeightTexture",
+    "clearCoat.textureRoughness": "coatRoughnessTexture",
+    "clearCoat.bumpTexture": "geometryCoatNormalTexture",
+    indexOfRefraction: "specularIor",
+    "iridescence.intensity": "thinFilmWeight",
+    "iridescence.indexOfRefraction": "thinFilmIor",
+    "iridescence.minimumThickness": "thinFilmThicknessMin",
+    "iridescence.maximumThickness": "thinFilmThickness",
+    "iridescence.texture": "thinFilmWeightTexture",
+    "iridescence.thicknessTexture": "thinFilmThicknessTexture",
+    "sheen.color": "fuzzColor",
+    "sheen.roughness": "fuzzRoughness",
+    "sheen.texture": "fuzzColorTexture",
+    "sheen.textureRoughness": "fuzzRoughnessTexture",
+    metallicF0Factor: "specularWeight",
+    metallicReflectanceColor: "specularColor",
+    metallicReflectanceTexture: "specularWeightTexture",
+    reflectanceTexture: "specularColorTexture",
+    "subSurface.dispersion": "transmissionDispersionScale",
+    "subSurface.refractionIntensity": "transmissionWeight",
+    "subSurface.refractionIntensityTexture": "transmissionWeightTexture",
+    "subSurface.tintColor": "transmissionColor",
+    "subSurface.tintColorAtDistance": "transmissionDepth",
+    "subSurface.maximumThickness": "geometryThickness",
+    "subSurface.thicknessTexture": "geometryThicknessTexture",
+    "subSurface.translucencyIntensity": "subsurfaceWeight",
+    "subSurface.translucencyIntensityTexture": "subsurfaceWeightTexture",
+    "subSurface.translucencyColor": "subsurfaceColor",
+    "subSurface.translucencyColorTexture": "subsurfaceColorTexture",
+};
 
 function getColor3(_target: any, source: Float32Array, offset: number, scale: number): Color3 {
     return Color3.FromArray(source, offset).scale(scale);
@@ -57,12 +108,34 @@ class CameraAnimationPropertyInfo extends AnimationPropertyInfo {
 
 class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
-    public buildAnimations(target: IMaterial, name: string, fps: number, keys: any[]) {
+    public buildAnimations(target: IMaterial, name: string, fps: number, keys: IAnimationKey[]) {
         const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
         for (const fillMode in target._data!) {
+            const material = target._data[fillMode].babylonMaterial;
+            let propertyName = this.name;
+            let materialKeys = keys;
+            if (material.getClassName() === "OpenPBRMaterial") {
+                // Texture component paths append one member to the mapped texture property.
+                const separator = this.name.lastIndexOf(".");
+                const parentName = this.name.substring(0, separator);
+                propertyName =
+                    OpenPBRPropertyNames[this.name] ?? (OpenPBRPropertyNames[parentName] ? OpenPBRPropertyNames[parentName] + this.name.substring(separator) : this.name);
+                if (parentName === "metallicReflectanceTexture" && (material as OpenPBRMaterial)._useSpecularWeightFromSpecularColorTexture) {
+                    propertyName = "specularColorTexture" + this.name.substring(separator);
+                }
+                if (this.name === "iridescence.minimumThickness" || this.name === "iridescence.maximumThickness") {
+                    // glTF stores nanometers; OpenPBR stores micrometers, including spline tangents.
+                    materialKeys = keys.map((key) => ({
+                        ...key,
+                        value: key.value / 1000,
+                        inTangent: key.inTangent === undefined ? undefined : key.inTangent / 1000,
+                        outTangent: key.outTangent === undefined ? undefined : key.outTangent / 1000,
+                    }));
+                }
+            }
             babylonAnimations.push({
-                babylonAnimatable: target._data[fillMode].babylonMaterial,
-                babylonAnimation: this._buildAnimation(name, fps, keys),
+                babylonAnimatable: material,
+                babylonAnimation: this._buildAnimation(name, fps, materialKeys, propertyName),
             });
         }
         return babylonAnimations;
