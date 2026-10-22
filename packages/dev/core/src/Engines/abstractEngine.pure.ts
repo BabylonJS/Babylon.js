@@ -2583,6 +2583,29 @@ export abstract class AbstractEngine {
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls?.addCount(numDrawCalls, false);
     }
+
+    /**
+     * @internal While a snapshot records, encodes again the draw last recorded for this draw wrapper, if it is still valid,
+     * instead of binding its mesh and material. Returns false when the draw must be rendered normally.
+     */
+    public _replayRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+        return false;
+    }
+
+    /**
+     * @internal Whether the draw just done for a draw wrapper wrote its per-draw values (what its effect sets when it binds) in a
+     * slot of its own, which a draw recorded with it keeps referencing
+     */
+    public _canKeepRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+        return false;
+    }
+
+    /**
+     * @internal Whether the per-draw values of a draw wrapper are the same bytes as the ones of another draw wrapper of the same effect
+     */
+    public _hasSameDrawValues(_drawWrapper: DrawWrapper, _reference: DrawWrapper): boolean {
+        return false;
+    }
     /**
      * Gets the current framerate
      * @returns a number representing the framerate

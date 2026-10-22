@@ -2690,6 +2690,187 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Gets the draw wrapper of a draw recorded by a snapshot that can be encoded again without rendering the mesh: nothing runs
+     * per draw outside of the engine (instances, bones, morph targets, baked animations, occlusion queries, render observers) and
+     * the draw did not change since it was recorded (see _isRecordedDrawUnchanged)
+     * @param subMesh the sub mesh to render
+     * @param batch the instances batch of the sub mesh
+     * @param effectiveMeshReplacement the mesh used in place of this one, if any
+     * @returns the draw wrapper, or null when the mesh must be rendered
+     */
+    private _getUnchangedRecordedDraw(subMesh: SubMesh, batch: _InstancesBatch, effectiveMeshReplacement?: AbstractMesh): Nullable<DrawWrapper> {
+        const material = subMesh.getMaterial();
+        const info = this._internalMeshDataInfo;
+        if (
+            !material?._canReplayRecordedDraw() ||
+            effectiveMeshReplacement ||
+            batch.hardwareInstancedRendering[subMesh._id] ||
+            !this._canRecordThinInstances() ||
+            this._userInstancedBuffersStorage ||
+            this.skeleton ||
+            this.morphTargetManager ||
+            this.bakedVertexAnimationManager ||
+            this.ignoreCameraMaxZ ||
+            this.occlusionType !== AbstractMesh.OCCLUSION_TYPE_NONE ||
+            info._onBeforeRenderObservable?.hasObservers() ||
+            info._onBeforeBindObservable?.hasObservers() ||
+            info._onBetweenPassObservable?.hasObservers() ||
+            info._onAfterRenderObservable?.hasObservers()
+        ) {
+            return null;
+        }
+        const drawWrapper = subMesh._drawWrapper;
+        return this._isRecordedDrawUnchanged(drawWrapper, subMesh, material, this, true) ? drawWrapper : null;
+    }
+
+    /**
+     * Whether the thin instances of the mesh, if any, can be drawn from recorded commands: their buffers are bound as they are
+     * (their content can change), but not when their previous matrices are written from the current ones after each draw
+     * @returns true if they can
+     * @internal
+     */
+    public _canRecordThinInstances(): boolean {
+        return !this.hasThinInstances || !this._scene.needsPreviousWorldMatrices || !!this._thinInstanceDataStorage.previousMatrixData;
+    }
+
+    /**
+     * Whether a draw a snapshot recorded did not change since then: its per-draw values (what its effect sets when it binds: the
+     * material's values, fog, shadow matrices...) are the same bytes a full bind of a draw of the same material wrote in this frame,
+     * and it has the same material (version, GPU textures), world matrix, visibility, sub mesh range, geometry and thin instance
+     * buffers and instance count; with lights, the lights were bound in this frame (their uniform buffers are shared: the first bind of the
+     * frame writes them), and their shadow maps and the buffers their generators bind to receivers (the cascades of a camera) are the same
+     * @param drawWrapper the draw wrapper of the recorded draw
+     * @param subMesh the sub mesh
+     * @param material the material of the draw
+     * @param effectiveMesh the mesh providing the world matrix and the lights
+     * @param withLights whether the draw binds the lights (not in the shadow maps)
+     * @returns true if the draw can be encoded again
+     * @internal
+     */
+    public _isRecordedDrawUnchanged(drawWrapper: DrawWrapper, subMesh: SubMesh, material: Material, effectiveMesh: AbstractMesh, withLights: boolean): boolean {
+        const recordedVertexBuffers = drawWrapper._recordedVertexBuffers;
+        const recordedLights = drawWrapper._recordedLights;
+        if (
+            !recordedVertexBuffers ||
+            !recordedLights ||
+            subMesh.materialDefines?.isDirty ||
+            drawWrapper._recordedMaterial !== material ||
+            drawWrapper._recordedMaterialVersion !== material._drawCacheVersion ||
+            drawWrapper._recordedTexturesVersion !== material._getTexturesVersion() ||
+            drawWrapper._recordedWorldFlag !== effectiveMesh.getWorldMatrix().updateFlag ||
+            drawWrapper._recordedVisibility !== effectiveMesh.visibility ||
+            drawWrapper._recordedStart !== subMesh.indexStart ||
+            drawWrapper._recordedCount !== subMesh.indexCount ||
+            drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
+            drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0)
+        ) {
+            return false;
+        }
+        const reference = material._getRecordedDrawReference(drawWrapper.effect!);
+        if (!reference || !this.getScene().getEngine()._hasSameDrawValues(drawWrapper, reference)) {
+            return false;
+        }
+        const vertexBuffers = this._geometry?.getVertexBuffers();
+        let count = 0;
+        for (const kind in vertexBuffers) {
+            if (recordedVertexBuffers[count++] !== vertexBuffers[kind]) {
+                return false;
+            }
+        }
+        if (this.hasThinInstances) {
+            const thinInstances = this._thinInstanceDataStorage;
+            if (recordedVertexBuffers[count++] !== thinInstances.matrixBuffer || recordedVertexBuffers[count++] !== thinInstances.previousMatrixBuffer) {
+                return false;
+            }
+            const userVertexBuffers = this._userThinInstanceBuffersStorage?.vertexBuffers;
+            for (const kind in userVertexBuffers) {
+                if (recordedVertexBuffers[count++] !== userVertexBuffers[kind]) {
+                    return false;
+                }
+            }
+        }
+        if (count !== recordedVertexBuffers.length) {
+            return false;
+        }
+        if (withLights) {
+            const scene = this.getScene();
+            const renderId = scene.getRenderId();
+            count = 0;
+            for (const light of effectiveMesh.lightSources) {
+                const generator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
+                if (
+                    light._renderId !== renderId ||
+                    recordedLights[count++] !== (generator?.getShadowMap()?.getInternalTexture() ?? null) ||
+                    recordedLights[count++] !== (generator?._getReceiversUniformBuffer?.() ?? null)
+                ) {
+                    return false;
+                }
+            }
+            return count === recordedLights.length;
+        }
+        return true;
+    }
+
+    /**
+     * Keeps what a draw recorded by a snapshot was rendered with (see _isRecordedDrawUnchanged). A draw that used a later buffer of
+     * a shared uniform buffer in its frame (scene, mesh, lights) depends on the order of the frame's writes: it is not kept. Nor in
+     * floating origin mode, where a bind writes the world matrix minus the eye in the mesh's uniform buffer
+     * @param drawWrapper the draw wrapper of the recorded draw
+     * @param subMesh the sub mesh
+     * @param material the material of the draw
+     * @param effectiveMesh the mesh providing the world matrix and the lights
+     * @param withLights whether the draw binds the lights (not in the shadow maps)
+     * @internal
+     */
+    public _keepRecordedDraw(drawWrapper: DrawWrapper, subMesh: SubMesh, material: Material, effectiveMesh: AbstractMesh, withLights: boolean): void {
+        const scene = this.getScene();
+        // the per-draw values this full bind wrote: the reference of this frame for the draws of this material with this effect
+        const canKeep = scene.getEngine()._canKeepRecordedDraw(drawWrapper);
+        material._keepRecordedDrawReference(drawWrapper.effect!, canKeep ? drawWrapper : null);
+        let kept = canKeep && !scene.floatingOriginMode && scene.getSceneUniformBuffer()._isFirstBufferBound() && effectiveMesh.getMeshUniformBuffer()._isFirstBufferBound();
+        if (withLights) {
+            for (const light of effectiveMesh.lightSources) {
+                kept &&= light._uniformBuffer._isFirstBufferBound();
+            }
+        }
+        if (!kept) {
+            drawWrapper._recordedMaterial = null;
+            return;
+        }
+        drawWrapper._recordedMaterial = material;
+        drawWrapper._recordedMaterialVersion = material._drawCacheVersion;
+        drawWrapper._recordedTexturesVersion = material._getTexturesVersion();
+        drawWrapper._recordedWorldFlag = effectiveMesh.getWorldMatrix().updateFlag;
+        drawWrapper._recordedVisibility = effectiveMesh.visibility;
+        drawWrapper._recordedStart = subMesh.indexStart;
+        drawWrapper._recordedCount = subMesh.indexCount;
+        drawWrapper._recordedIndexBuffer = this._geometry?.getIndexBuffer() ?? null;
+        const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
+        recordedVertexBuffers.length = 0;
+        const vertexBuffers = this._geometry?.getVertexBuffers();
+        for (const kind in vertexBuffers) {
+            recordedVertexBuffers.push(vertexBuffers[kind]);
+        }
+        if (this.hasThinInstances) {
+            const thinInstances = this._thinInstanceDataStorage;
+            recordedVertexBuffers.push(thinInstances.matrixBuffer, thinInstances.previousMatrixBuffer);
+            const userVertexBuffers = this._userThinInstanceBuffersStorage?.vertexBuffers;
+            for (const kind in userVertexBuffers) {
+                recordedVertexBuffers.push(userVertexBuffers[kind]);
+            }
+        }
+        drawWrapper._recordedInstances = this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0;
+        const recordedLights = (drawWrapper._recordedLights ??= []);
+        recordedLights.length = 0;
+        if (withLights) {
+            for (const light of effectiveMesh.lightSources) {
+                const generator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
+                recordedLights.push(generator?.getShadowMap()?.getInternalTexture() ?? null, generator?._getReceiversUniformBuffer?.() ?? null);
+            }
+        }
+    }
+
+    /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
@@ -2727,6 +2908,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Checking geometry state
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
+        }
+
+        // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with
+        if (engine.snapshotRendering) {
+            const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh, batch, effectiveMeshReplacement);
+            if (recordedDrawWrapper && engine._replayRecordedDraw(recordedDrawWrapper)) {
+                return this;
+            }
         }
 
         let oldCameraMaxZ = 0;
@@ -2889,6 +3078,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Unbind
         this._internalMeshDataInfo._effectiveMaterial.unbind();
+
+        if (engine.snapshotRendering && drawWrapper === subMesh._drawWrapper) {
+            this._keepRecordedDraw(drawWrapper, subMesh, effectiveMaterial, effectiveMesh, true);
+        }
 
         for (const step of scene._afterRenderingMeshStage) {
             step.action(this, subMesh, batch, effect);

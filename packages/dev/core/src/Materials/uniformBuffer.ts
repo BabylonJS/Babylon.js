@@ -850,6 +850,53 @@ export class UniformBuffer {
         this._freeSlots.push(idx);
     }
 
+    /**
+     * Whether the slots owned by two draw contexts hold the same bytes (see WebGPUEngine._hasSameDrawValues). Two slots flushed
+     * with the same data generation do; otherwise their CPU copies are compared, and a slot found equal takes the generation of
+     * the other one (the data generation changes on every change, also when the data comes back to what it was)
+     * @param owner the draw context
+     * @param reference the draw context it is compared to
+     * @returns true if the slots hold the same bytes
+     * @internal
+     */
+    public _isOwnerSlotEqual(owner: WebGPUDrawContext, reference: WebGPUDrawContext): boolean {
+        const idx = this._slotByOwner?.get(owner);
+        const referenceIdx = this._slotByOwner?.get(reference);
+        if (idx === undefined || referenceIdx === undefined) {
+            return false;
+        }
+        if (this._slotGeneration[idx] === this._slotGeneration[referenceIdx]) {
+            return true;
+        }
+        const data = this._buffers[idx][1];
+        const referenceData = this._buffers[referenceIdx][1];
+        if (!data || !referenceData || !this._buffersEqual(data, referenceData)) {
+            return false;
+        }
+        this._slotGeneration[idx] = this._slotGeneration[referenceIdx];
+        return true;
+    }
+
+    /**
+     * Whether the last flush on behalf of a draw context used the slot it owns (and not a slot taken for a second flush in the frame)
+     * @param owner the draw context
+     * @returns true if the owned slot is bound
+     * @internal
+     */
+    public _isOwnerSlotBound(owner: WebGPUDrawContext): boolean {
+        return this._slotByOwner?.get(owner) === this._bufferIndex;
+    }
+
+    /**
+     * Whether the buffer bound last is the first one of the frame: a draw recorded with a later one depends on the order of the
+     * frame's writes
+     * @returns true if it is the first buffer
+     * @internal
+     */
+    public _isFirstBufferBound(): boolean {
+        return this._noUBO || !this._trackUBOsInFrame || this._bufferIndex <= 0;
+    }
+
     private _removeOwnerBacklink(list: UniformBuffer[]): void {
         const index = list.indexOf(this);
         if (index !== -1) {

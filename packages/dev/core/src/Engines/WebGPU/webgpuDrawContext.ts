@@ -12,6 +12,23 @@ import * as WebGPUConstants from "./webgpuConstants";
  * WebGPU implementation of the IDrawContext interface.
  * This class manages the draw context for WebGPU, including buffers and indirect draw data.
  */
+/** @internal The commands of a draw encoded while a snapshot recorded, to encode it again in a later recording without binding its mesh */
+export interface IWebGPURecordedDraw {
+    renderTarget: Nullable<object>;
+    sampleCount: number;
+    pipeline: GPURenderPipeline;
+    bindGroups: GPUBindGroup[];
+    indexBuffer: Nullable<GPUBuffer>;
+    indexFormat: GPUIndexFormat;
+    vertexBuffers: Nullable<GPUBuffer>[];
+    vertexOffsets: number[];
+    indirectBuffer: Nullable<GPUBuffer>;
+    indexed: boolean;
+    count: number;
+    instances: number;
+    start: number;
+}
+
 export class WebGPUDrawContext implements IDrawContext {
     private static _Counter = 0;
 
@@ -23,6 +40,9 @@ export class WebGPUDrawContext implements IDrawContext {
      * Cache of the bind groups. Will be reused for the next draw if isDirty==false (and materialContext.isDirty==false)
      */
     public bindGroups?: GPUBindGroup[];
+
+    /** @internal */
+    public _recordedDraw?: IWebGPURecordedDraw;
 
     public uniqueId: number;
 
@@ -147,6 +167,7 @@ export class WebGPUDrawContext implements IDrawContext {
         this._isDirty = true;
         this._materialContextUpdateId = 0;
         this.fastBundle = undefined;
+        this._recordedDraw = undefined;
         this.bindGroups = undefined;
         this._vertexPullingEnabled = false;
     }
@@ -163,19 +184,22 @@ export class WebGPUDrawContext implements IDrawContext {
     }
 
     public setIndirectData(indexOrVertexCount: number, instanceCount: number, firstIndexOrVertex: number, forceUpdate = false): void {
-        if ((!forceUpdate && instanceCount === this._currentInstanceCount) || !this.indirectDrawBuffer || !this._indirectDrawData) {
+        const data = this._indirectDrawData;
+        if (!this.indirectDrawBuffer || !data) {
+            return;
+        }
+        if (!forceUpdate && instanceCount === this._currentInstanceCount && indexOrVertexCount === data[0] && firstIndexOrVertex === data[2]) {
             // The current buffer is already up to date so do nothing
-            // Note that we only check for instanceCount and not indexOrVertexCount nor firstIndexOrVertex because those values
-            // are supposed to not change during the lifetime of a draw context
+            // (the index or vertex range is checked too: a sub mesh can move its range and keep its instance count)
             return;
         }
         this._currentInstanceCount = instanceCount;
 
-        this._indirectDrawData[0] = indexOrVertexCount;
-        this._indirectDrawData[1] = instanceCount;
-        this._indirectDrawData[2] = firstIndexOrVertex;
+        data[0] = indexOrVertexCount;
+        data[1] = instanceCount;
+        data[2] = firstIndexOrVertex;
 
-        this._bufferManager.setRawData(this.indirectDrawBuffer, 0, this._indirectDrawData, 0, 20);
+        this._bufferManager.setRawData(this.indirectDrawBuffer, 0, data, 0, 20);
     }
 
     /**
@@ -243,6 +267,7 @@ export class WebGPUDrawContext implements IDrawContext {
             this._indirectDrawData = undefined;
         }
         this.fastBundle = undefined;
+        this._recordedDraw = undefined;
         this.bindGroups = undefined;
         this.buffers = undefined as any;
         this._enableIndirectDraw = false;

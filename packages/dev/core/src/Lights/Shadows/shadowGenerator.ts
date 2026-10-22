@@ -112,6 +112,11 @@ export interface IShadowGenerator {
      */
     bindShadowLight(lightIndex: string, effect: Effect): void;
     /**
+     * @internal The uniform buffer of the generator that a receiver bound now gets (the cascades of the camera, or of the eye in
+     * floating origin mode), if any: a draw recorded by a snapshot with another one is bound again
+     */
+    _getReceiversUniformBuffer?(): Nullable<UniformBuffer>;
+    /**
      * Gets the transformation matrix used to project the meshes into the map from the light point of view.
      * (eq to shadow projection matrix * light transform matrix)
      * @returns The transform matrix used to create the shadow map
@@ -1404,6 +1409,29 @@ export class ShadowGenerator implements IShadowGenerator {
             return;
         }
 
+        // While a snapshot records again, a draw whose mesh, material and per-draw values did not change is encoded from the commands
+        // it was recorded with
+        const replayable =
+            engine.snapshotRendering &&
+            !material.shadowDepthWrapper &&
+            (!hardwareInstancedRendering || (renderingMesh.hasThinInstances && !batch.visibleInstances[subMesh._id])) &&
+            renderingMesh._canRecordThinInstances() &&
+            !renderingMesh.skeleton &&
+            !renderingMesh.morphTargetManager &&
+            !renderingMesh.bakedVertexAnimationManager &&
+            !(isTransparent && this.enableSoftTransparentShadow) &&
+            !this.onBeforeShadowMapRenderMeshObservable.hasObservers() &&
+            !this.onBeforeShadowMapRenderObservable.hasObservers() &&
+            !this.onAfterShadowMapRenderObservable.hasObservers() &&
+            !this.onAfterShadowMapRenderMeshObservable.hasObservers();
+        if (replayable) {
+            const recorded = subMesh._getDrawWrapper();
+            if (recorded && renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false) && engine._replayRecordedDraw(recorded)) {
+                subMesh._renderId = scene.getRenderId();
+                return;
+            }
+        }
+
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
             subMesh._renderId = scene.getRenderId();
 
@@ -1510,6 +1538,10 @@ export class ShadowGenerator implements IShadowGenerator {
             // Observables
             this.onAfterShadowMapRenderObservable.notifyObservers(effect);
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
+
+            if (replayable) {
+                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false);
+            }
         } else {
             // Need to reset refresh rate of the shadowMap
             if (this._shadowMap) {
