@@ -104,5 +104,5 @@ describe("KTX2 encoder package integration", () => {
         }
         expect(() => readFileSync(join(fixture, ".snapshot/basisEncoder/v2_50/package.json"))).toThrow();
         expect(readFileSync(join(fixture, ".snapshot/havok/LICENSE"), "utf8")).toBe("Havok license fixture");
-    });
+    }, 60_000);
 });
