@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-ktx2encoder",
-    "version": "9.30.0",
+    "version": "9.32.0",
     "main": "babylon.ktx2Encoder.js",
     "types": "babylon.ktx2Encoder.module.d.ts",
     "files": [

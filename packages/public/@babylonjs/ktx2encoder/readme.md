@@ -43,3 +43,7 @@ Both dimensions must be multiples of 4 from 4 through 16,384, with at most 12,58
 Each worker starts with about 128 MiB of WASM memory. Main-thread compression is synchronous. HDR, threaded WASM, progress reporting, and glTF export are not included.
 
 The official Basis v2_50 factory requires CSP `'unsafe-eval'` for Embind.
+
+## Packaged codec
+
+As in the KTX2 decoder package, `wasm/` contains the codec's JavaScript and WASM assets. The encoder also includes the upstream license files. Its `wasm/package.json` sets `"type": "commonjs"` so Node can import the unmodified Basis factory from the surrounding ES-module package. It is package metadata, not a separate npm package or workspace.

@@ -32,10 +32,44 @@ describe("KTX2 encoder package integration", () => {
     });
 
     it("discovers both public packages without treating the CommonJS scope as a workspace", () => {
-        const workspaces = JSON.parse(execFileSync("npm", ["pkg", "get", "name", "--workspaces"], { cwd: RepositoryRoot, encoding: "utf8" }));
+        const npmCLI = process.env.npm_execpath;
+        if (!npmCLI) {
+            throw new Error("Run this workspace-discovery test through npm or npx so npm_execpath identifies the npm CLI.");
+        }
+        const workspaces = JSON.parse(
+            execFileSync(process.execPath, [npmCLI, "pkg", "get", "name", "--workspaces"], {
+                cwd: RepositoryRoot,
+                encoding: "utf8",
+                env: { ...process.env, PATH: "" },
+            })
+        );
         expect(workspaces["@babylonjs/ktx2encoder"]).toBe("@babylonjs/ktx2encoder");
         expect(workspaces["babylonjs-ktx2encoder"]).toBe("babylonjs-ktx2encoder");
         expect(workspaces).not.toHaveProperty("wasm");
+    });
+
+    it("imports the unmodified packaged Basis factory from Node ESM and CommonJS", () => {
+        fixture = mkdtempSync(join(tmpdir(), "bjs-ktx2-factory-"));
+        writeFileSync(join(fixture, "package.json"), JSON.stringify({ type: "module" }));
+        const wasm = join(fixture, "wasm");
+        mkdirSync(wasm);
+        writeFileSync(join(wasm, "package.json"), readFileSync(join(RepositoryRoot, "packages/public/@babylonjs/ktx2encoder/wasm/package.json")));
+        writeFileSync(join(wasm, "basis_encoder.js"), readFileSync(join(RepositoryRoot, "packages/tools/babylonServer/public/basisEncoder/v2_50/basis_encoder.js")));
+        const output = execFileSync(
+            process.execPath,
+            [
+                "--input-type=module",
+                "--eval",
+                `import assert from "node:assert/strict";
+                import { createRequire } from "node:module";
+                import BASIS from "./wasm/basis_encoder.js";
+                const require = createRequire(import.meta.url);
+                assert.equal(typeof BASIS, "function");
+                assert.equal(require("./wasm/basis_encoder.js"), BASIS);`,
+            ],
+            { cwd: fixture, encoding: "utf8" }
+        );
+        expect(output).toBe("");
     });
 
     it("collects the root bundle, declarations and complete versioned codec payload into a clean snapshot", () => {
