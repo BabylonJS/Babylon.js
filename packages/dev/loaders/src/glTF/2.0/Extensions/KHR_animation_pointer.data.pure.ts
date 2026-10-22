@@ -12,6 +12,7 @@ import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
 import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { type IAnimationKey } from "core/Animations/animationKey";
 import { MaterialAlphaMode } from "babylonjs-gltf2interface";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 
 const OpenPBRPropertyNames: Readonly<Record<string, string | undefined>> = {
     albedoColor: "baseColor",
@@ -143,6 +144,15 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                         inTangent: key.inTangent === undefined ? undefined : key.inTangent / 1000,
                         outTangent: key.outTangent === undefined ? undefined : key.outTangent / 1000,
                     }));
+                }
+                const texture = openPbrMaterial[propertyName.substring(0, propertyName.lastIndexOf(".")) as keyof OpenPBRMaterial];
+                if (texture && typeof texture === "object" && "getTextureMatrix" in texture && "animations" in texture) {
+                    // Finalization can replace this slot with baked textures; retain the animated source.
+                    const animation = this._buildAnimation(name, fps, materialKeys, propertyName.substring(propertyName.lastIndexOf(".") + 1));
+                    const sourceTexture = texture as BaseTexture;
+                    sourceTexture.animations.push(animation);
+                    babylonAnimations.push({ babylonAnimatable: sourceTexture, babylonAnimation: animation });
+                    continue;
                 }
             }
             babylonAnimations.push({

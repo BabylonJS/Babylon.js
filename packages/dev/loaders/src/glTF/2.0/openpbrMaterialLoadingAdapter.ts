@@ -5,6 +5,7 @@ import { type Nullable } from "core/types";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 import { type GLTFLoader } from "./glTFLoader";
+import { _RetainGLTFMaterialTextureSources } from "./Extensions/objectModelMapping";
 import {
     MultiplyTexturesAsync,
     LerpTexturesAsync,
@@ -15,6 +16,7 @@ import {
     ExtractChannelAsync,
     ChannelMask,
     ExtractMaxChannelAsync,
+    _MarkTextureAsDynamic,
 } from "core/Materials/Textures/textureProcessor";
 
 /**
@@ -1263,6 +1265,12 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public async finalizeAsync(loader: GLTFLoader): Promise<void> {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
+        const sources = _RetainGLTFMaterialTextureSources(this._material);
+        if (loader._isExtensionEnabled("KHR_interactivity")) {
+            for (const texture of sources) {
+                _MarkTextureAsDynamic(texture);
+            }
+        }
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
         if ((this._diffuseTransmissionTint && !this._diffuseTransmissionTint.equals(Color3.White())) || this._diffuseTransmissionTintTexture) {
@@ -1475,6 +1483,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             return;
         }
         this.coatIor = newCoatIor.factor ? newCoatIor.factor.r : this.coatIor;
+        newCoatIor.texture?.dispose();
 
         const newCoatRoughness = await LerpTexturesAsync(
             "newCoatRoughness (" + this._material.name + ")",
@@ -1506,6 +1515,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             return;
         }
         this.coatDarkening = newCoatDarkening.factor ? newCoatDarkening.factor.r : this.coatDarkening;
+        newCoatDarkening.texture?.dispose();
 
         if (diffuseTransmission) {
             const newSpecularRoughness = await LerpTexturesAsync(

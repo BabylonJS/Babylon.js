@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
-import { ImportMeshAsync } from "core/Loading/sceneLoader";
+import { ImportMeshAsync, SceneLoader } from "core/Loading/sceneLoader";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { registerBuiltInLoaders } from "loaders/dynamic";
@@ -9,11 +9,14 @@ import { AnimationGroup } from "core/Animations/animationGroup";
 import { Texture } from "core/Materials/Textures/texture";
 import { Material } from "core/Materials/material";
 import { type IMaterial } from "loaders/glTF/2.0/glTFLoaderInterfaces";
-import { GetMappingForKey } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetMappingForKey, GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { _RegisterKHRAnimationPointerData } from "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data.pure";
 import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialLoadingAdapter";
 import { Color3 } from "core/Maths/math.color";
 import { type IGLTF, MaterialAlphaMode } from "babylonjs-gltf2interface";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import { Vector2 } from "core/Maths/math.vector";
 
 registerBuiltInLoaders();
 
@@ -104,6 +107,7 @@ describe("KHR_animation_pointer material implementations", () => {
     });
 
     afterEach(() => {
+        vi.restoreAllMocks();
         scene.dispose();
         engine.dispose();
     });
@@ -137,6 +141,99 @@ describe("KHR_animation_pointer material implementations", () => {
         } else {
             expect(pointer === "roughnessFactor" ? retro.specularRoughness : retro.baseMetalness).toBeCloseTo(0.5);
             expect(pointer === "roughnessFactor" ? ordinary.roughness : ordinary.metallic).toBeCloseTo(0.5);
+        }
+    });
+
+    it("imports and plays a clearcoat texture transform after merging attenuating transmission", async () => {
+        // NullEngine cannot render the texture-processing passes; keep their real output textures and conversion flow.
+        vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
+            callback(this);
+        });
+        const render = vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
+        const setMatrix = vi.spyOn(ProceduralTexture.prototype, "setMatrix");
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf("extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/offset", [0, 0, 0.8, 0.6], "VEC2", {
+                KHR_materials_clearcoat: { clearcoatFactor: 0.5, clearcoatTexture: { index: 0, extensions: { KHR_texture_transform: {} } } },
+                KHR_materials_transmission: { transmissionFactor: 1 },
+                KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] },
+            })
+        ) as IGLTF;
+        for (const material of gltf.materials!) {
+            material.pbrMetallicRoughness!.baseColorFactor = [0.8, 0.6, 0.4, 1];
+            delete material.pbrMetallicRoughness!.baseColorTexture;
+        }
+        const result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+        const retro = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        const ordinary = result.meshes.find((mesh) => mesh.material?.name === "ordinary")!.material as PBRMaterial;
+        const group = result.animationGroups[0];
+        expect(group.isStarted).toBe(true);
+        await vi.waitFor(() => {
+            expect(retro.coatColorTexture).not.toBeNull();
+            expect(retro.coatRoughnessTexture).not.toBeNull();
+        });
+        render.mockClear();
+        setMatrix.mockClear();
+        group.pause().goToFrame(30);
+        const source = group.targetedAnimations.find(({ target }) => target instanceof Texture)!.target as Texture;
+        expect(source.uOffset).toBeCloseTo(0.4);
+        expect(source.vOffset).toBeCloseTo(0.3);
+        expect(ordinary.clearCoat.texture!.uOffset).toBeCloseTo(0.4);
+        expect(ordinary.clearCoat.texture!.vOffset).toBeCloseTo(0.3);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(setMatrix).toHaveBeenCalledWith("textureTMatrix", source.getTextureMatrix());
+        expect(render.mock.contexts).toContain(retro.coatColorTexture);
+        expect(render.mock.contexts).toContain(retro.coatRoughnessTexture);
+        expect(retro.coatColorTexture!.getTextureMatrix().equals(new Texture(null, scene).getTextureMatrix())).toBe(true);
+        const renders = render.mock.calls.length;
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(render).toHaveBeenCalledTimes(renders);
+    });
+
+    it.each([true, false])("retains runtime texture access after conversion with interactivity enabled=%s", async (enabled) => {
+        vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
+            callback(this);
+        });
+        const render = vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf("extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/offset", [0, 0, 0.8, 0.6], "VEC2", {
+                KHR_materials_clearcoat: { clearcoatFactor: 0.5, clearcoatTexture: { index: 0, extensions: { KHR_texture_transform: {} } } },
+                KHR_materials_transmission: { transmissionFactor: 1 },
+                KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] },
+            })
+        ) as IGLTF;
+        gltf.extensionsUsed!.push("KHR_interactivity");
+        delete gltf.animations;
+        for (const material of gltf.materials!) {
+            material.pbrMetallicRoughness!.baseColorFactor = [0.8, 0.6, 0.4, 1];
+            delete material.pbrMetallicRoughness!.baseColorTexture;
+        }
+        let parsed: IGLTF | undefined;
+        const activation = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as IGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, {
+                pluginOptions: { gltf: { useOpenPBR: false, extensionOptions: { KHR_interactivity: { enabled } } } },
+            });
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(activation);
+        }
+        const retro = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        await vi.waitFor(() => expect(retro.coatRoughnessTexture).not.toBeNull());
+        const accessor = GetPathToObjectConverter(parsed!).convert("/materials/0/extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/offset");
+        render.mockClear();
+        accessor.info.set!(new Vector2(0.4, 0.3), accessor.object);
+        expect(accessor.info.get!(accessor.object)).toEqual(new Vector2(0.4, 0.3));
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        if (enabled) {
+            expect(render.mock.contexts).toContain(retro.coatRoughnessTexture);
+        } else {
+            expect(render).not.toHaveBeenCalled();
         }
     });
 
@@ -292,7 +389,7 @@ describe("KHR_animation_pointer material implementations", () => {
             { frame: 60, value: isRotation ? 0.8 : 800, inTangent: 0.4, outTangent: 0.4 },
         ];
         const animations = info.buildAnimations(target, "material", 60, keys);
-        expect(animations.map(({ babylonAnimation }) => babylonAnimation.targetProperty)).toEqual([openPbrPath, pbrPath]);
+        expect(animations.map(({ babylonAnimation }) => babylonAnimation.targetProperty)).toEqual([openPbrPath.endsWith(".level") ? "level" : openPbrPath, pbrPath]);
         const scale = pointer.includes("iridescenceThickness") ? 0.001 : 1;
         expect(animations[0].babylonAnimation.getKeys()[0].outTangent).toBeCloseTo(0.4 * scale);
         expect(animations[1].babylonAnimation.getKeys()[0].outTangent).toBeCloseTo(0.4);
@@ -414,7 +511,7 @@ describe("KHR_animation_pointer material implementations", () => {
         const group = new AnimationGroup("packed", scene);
         group.addTargetedAnimation(babylonAnimation, babylonAnimatable);
         group.start().pause().goToFrame(30);
-        expect(babylonAnimation.targetProperty).toBe("specularColorTexture.uOffset");
+        expect(babylonAnimation.targetProperty).toBe("uOffset");
         expect(material.specularColorTexture!.uOffset).toBeCloseTo(0.5);
     });
 

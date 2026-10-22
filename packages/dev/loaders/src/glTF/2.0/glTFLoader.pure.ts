@@ -3254,6 +3254,11 @@ export class GLTFLoader implements IGLTFLoader {
         return !!this._gltf.extensionsUsed && this._gltf.extensionsUsed.indexOf(name) !== -1;
     }
 
+    /** @internal */
+    public _isExtensionEnabled(name: string): boolean {
+        return this._extensions.some((extension) => extension.name === name && extension.enabled);
+    }
+
     /**
      * Increments the indentation level and logs a message.
      * @param message The message to log
