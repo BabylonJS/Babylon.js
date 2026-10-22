@@ -31,6 +31,7 @@ import { TextLayerPropertiesServiceDefinition } from "./services/panes/propertie
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { CameraExplorerServiceDefinition } from "./services/panes/scene/cameraExplorerService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { FlowGraphExplorerServiceDefinition } from "./services/panes/scene/flowGraphExplorerService";
 import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
@@ -89,6 +90,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TextLayerExplorerServiceDefinition,
                 SpriteLayerExplorerServiceDefinition,
                 AnimationGroupExplorerServiceDefinition,
+                FlowGraphExplorerServiceDefinition,
                 PropertiesServiceDefinition,
                 EnginePropertiesServiceDefinition,
                 RenderingContextPropertiesServiceDefinition,
