@@ -19,7 +19,10 @@ import { DepthReducer } from "../../Misc/depthReducer";
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
 import { type Camera } from "../../Cameras/camera";
+import { type Node } from "../../node";
 import { FloatingOriginCurrentScene, GetOffsetTransformMatrices } from "../../Materials/floatingOriginMatrixOverrides";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -34,6 +37,9 @@ const ZeroVec = /*#__PURE__*/ Vector3.Zero();
 const Tmpv1 = /*#__PURE__*/ new Vector3();
 const Tmpv2 = /*#__PURE__*/ new Vector3();
 const TmpMatrix = /*#__PURE__*/ new Matrix();
+
+// The cascades a receiving shader can read (vPositionFromLight{X}_0 to _3): the size of the arrays in the cascades buffer
+const CascadesUboSize = 4;
 
 /**
  * A CSM implementation allowing casting shadows on large scenes.
@@ -268,6 +274,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _frustumCornersWorldSpace: Array<Array<Vector3>>;
     private _frustumCenter: Array<Vector3>;
     private _shadowCameraPos: Array<Vector3>;
+
+    // WGSL receivers read the cascades from a buffer owned by this generator, one per camera its shadow map renders for, written
+    // once each time the cascades are computed: every receiver shares it, and a FAST snapshot replay reads the current values
+    private _cascadesUbos: Nullable<Map<Nullable<Camera>, { ubo: UniformBuffer; observer: Nullable<Observer<Node>> }>> = null;
+    private _cascadesUbo: Nullable<UniformBuffer> = null;
+    private _cascadesMatrices = new Float32Array(16 * CascadesUboSize);
 
     private _shadowMaxZ: number;
     /**
@@ -908,6 +920,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 this._splitFrustum();
             }
             this._computeMatrices();
+            if (this._cascadesUbos) {
+                this._updateCascadesUbo();
+            }
         });
 
         this._splitFrustum();
@@ -978,42 +993,41 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         const width = shadowMap.getSize().width;
 
-        const transform = this._transformMatricesAsArray;
-        // Doing the check for floatingOrigin here to avoid unnecessary matrix operations when offset is 0
-        const lightMatrix = scene.floatingOriginMode
-            ? GetOffsetTransformMatrices(this._scene.floatingOriginOffset, this._viewMatrices, this._projectionMatrices, this._numCascades, this._tempTransformMatricesAsArray)
-            : transform;
+        if (effect.shaderLanguage === ShaderLanguage.WGSL) {
+            if (!this._cascadesUbo) {
+                this._cascadesUbos = this._cascadesUbos || new Map();
+                this._updateCascadesUbo();
+            }
+            const cascadesUbo = this._cascadesUbo!;
+            cascadesUbo.bindToEffect(effect, "cascades" + lightIndex);
+            cascadesUbo.bindUniformBuffer();
+        } else {
+            const transform = this._transformMatricesAsArray;
+            // Doing the check for floatingOrigin here to avoid unnecessary matrix operations when offset is 0
+            const lightMatrix = scene.floatingOriginMode
+                ? GetOffsetTransformMatrices(this._scene.floatingOriginOffset, this._viewMatrices, this._projectionMatrices, this._numCascades, this._tempTransformMatricesAsArray)
+                : transform;
 
-        effect.setMatrices("lightMatrix" + lightIndex, lightMatrix);
-        effect.setArray("viewFrustumZ" + lightIndex, this._viewSpaceFrustumsZ);
-        effect.setFloat("cascadeBlendFactor" + lightIndex, this.cascadeBlendPercentage === 0 ? 10000 : 1 / this.cascadeBlendPercentage);
-        effect.setArray("frustumLengths" + lightIndex, this._frustumLengths);
+            effect.setMatrices("lightMatrix" + lightIndex, lightMatrix);
+            effect.setArray("viewFrustumZ" + lightIndex, this._viewSpaceFrustumsZ);
+            effect.setFloat("cascadeBlendFactor" + lightIndex, this.cascadeBlendPercentage === 0 ? 10000 : 1 / this.cascadeBlendPercentage);
+            effect.setArray("frustumLengths" + lightIndex, this._frustumLengths);
+
+            if (this._filter === ShadowGenerator.FILTER_PCSS) {
+                this._computePCSSCorrections();
+                effect.setArray2("lightSizeUVCorrection" + lightIndex, this._lightSizeUVCorrection);
+                effect.setArray("depthCorrection" + lightIndex, this._depthCorrection);
+                effect.setFloat("penumbraDarkness" + lightIndex, this.penumbraDarkness);
+            }
+        }
 
         // Only PCF uses depth stencil texture.
         if (this._filter === ShadowGenerator.FILTER_PCF) {
             effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMap);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         } else if (this._filter === ShadowGenerator.FILTER_PCSS) {
-            for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
-                this._lightSizeUVCorrection[cascadeIndex * 2 + 0] =
-                    cascadeIndex === 0
-                        ? 1
-                        : (this._cascadeMaxExtents[0].x - this._cascadeMinExtents[0].x) / (this._cascadeMaxExtents[cascadeIndex].x - this._cascadeMinExtents[cascadeIndex].x); // x correction
-                this._lightSizeUVCorrection[cascadeIndex * 2 + 1] =
-                    cascadeIndex === 0
-                        ? 1
-                        : (this._cascadeMaxExtents[0].y - this._cascadeMinExtents[0].y) / (this._cascadeMaxExtents[cascadeIndex].y - this._cascadeMinExtents[cascadeIndex].y); // y correction
-                this._depthCorrection[cascadeIndex] =
-                    cascadeIndex === 0
-                        ? 1
-                        : (this._cascadeMaxExtents[cascadeIndex].z - this._cascadeMinExtents[cascadeIndex].z) / (this._cascadeMaxExtents[0].z - this._cascadeMinExtents[0].z);
-            }
             effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMap);
             effect.setTexture("depthTexture" + lightIndex, shadowMap);
-
-            effect.setArray2("lightSizeUVCorrection" + lightIndex, this._lightSizeUVCorrection);
-            effect.setArray("depthCorrection" + lightIndex, this._depthCorrection);
-            effect.setFloat("penumbraDarkness" + lightIndex, this.penumbraDarkness);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / width, this._contactHardeningLightSizeUVRatio * width, this.frustumEdgeFalloff, lightIndex);
         } else {
             effect.setTexture("shadowTexture" + lightIndex, shadowMap);
@@ -1026,6 +1040,81 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera),
             lightIndex
         );
+    }
+
+    private _computePCSSCorrections(): void {
+        for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
+            this._lightSizeUVCorrection[cascadeIndex * 2 + 0] =
+                cascadeIndex === 0
+                    ? 1
+                    : (this._cascadeMaxExtents[0].x - this._cascadeMinExtents[0].x) / (this._cascadeMaxExtents[cascadeIndex].x - this._cascadeMinExtents[cascadeIndex].x); // x correction
+            this._lightSizeUVCorrection[cascadeIndex * 2 + 1] =
+                cascadeIndex === 0
+                    ? 1
+                    : (this._cascadeMaxExtents[0].y - this._cascadeMinExtents[0].y) / (this._cascadeMaxExtents[cascadeIndex].y - this._cascadeMinExtents[cascadeIndex].y); // y correction
+            this._depthCorrection[cascadeIndex] =
+                cascadeIndex === 0
+                    ? 1
+                    : (this._cascadeMaxExtents[cascadeIndex].z - this._cascadeMinExtents[cascadeIndex].z) / (this._cascadeMaxExtents[0].z - this._cascadeMinExtents[0].z);
+        }
+    }
+
+    /**
+     * Writes the cascades just computed in the buffer of the camera they were computed for, and makes it the one receivers bind
+     */
+    private _updateCascadesUbo(): void {
+        const scene = this._scene;
+        const camera = this._getCamera();
+        let entry = this._cascadesUbos!.get(camera);
+        if (!entry) {
+            const ubo = new UniformBuffer(scene.getEngine(), undefined, false, "CascadedShadowGenerator", false, false);
+            ubo.addUniform("viewFrustumZ", 4);
+            ubo.addUniform("frustumLengths", 4);
+            ubo.addUniform("cascadeBlendFactor", 1);
+            ubo.addUniform("penumbraDarkness", 1);
+            ubo.addUniform("depthCorrection", 4);
+            ubo.addUniform("lightSizeUVCorrection", 2, CascadesUboSize);
+            ubo.addUniform("lightMatrix", 16, CascadesUboSize);
+            ubo.create();
+            entry = { ubo, observer: camera ? camera.onDisposeObservable.addOnce(() => this._releaseCascadesUbo(camera)) : null };
+            this._cascadesUbos!.set(camera, entry);
+        }
+
+        const ubo = entry.ubo;
+        const z = this._viewSpaceFrustumsZ;
+        const lengths = this._frustumLengths;
+        this._cascadesMatrices.set(
+            scene.floatingOriginMode
+                ? GetOffsetTransformMatrices(scene.floatingOriginOffset, this._viewMatrices, this._projectionMatrices, this._numCascades, this._tempTransformMatricesAsArray)
+                : this._transformMatricesAsArray
+        );
+        ubo.updateFloat4("viewFrustumZ", z[0] ?? 0, z[1] ?? 0, z[2] ?? 0, z[3] ?? 0);
+        ubo.updateFloat4("frustumLengths", lengths[0] ?? 0, lengths[1] ?? 0, lengths[2] ?? 0, lengths[3] ?? 0);
+        ubo.updateFloat("cascadeBlendFactor", this.cascadeBlendPercentage === 0 ? 10000 : 1 / this.cascadeBlendPercentage);
+        if (this._filter === ShadowGenerator.FILTER_PCSS) {
+            this._computePCSSCorrections();
+            const depth = this._depthCorrection;
+            ubo.updateFloat("penumbraDarkness", this.penumbraDarkness);
+            ubo.updateFloat4("depthCorrection", depth[0] ?? 0, depth[1] ?? 0, depth[2] ?? 0, depth[3] ?? 0);
+            ubo.updateArray("lightSizeUVCorrection", this._lightSizeUVCorrection);
+        }
+        ubo.updateMatrices("lightMatrix", this._cascadesMatrices);
+        // written outside of any draw: the last receiver bound must not get this buffer bound again
+        ubo.unbindEffect();
+        ubo.update();
+        this._cascadesUbo = ubo;
+    }
+
+    private _releaseCascadesUbo(camera: Camera): void {
+        const entry = this._cascadesUbos?.get(camera);
+        if (!entry) {
+            return;
+        }
+        entry.ubo.dispose();
+        this._cascadesUbos!.delete(camera);
+        if (this._cascadesUbo === entry.ubo) {
+            this._cascadesUbo = null;
+        }
     }
 
     /**
@@ -1052,6 +1141,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         if (this._depthReducer) {
             this._depthReducer.dispose();
             this._depthReducer = null;
+        }
+
+        if (this._cascadesUbos) {
+            for (const [camera, entry] of this._cascadesUbos) {
+                entry.ubo.dispose();
+                camera?.onDisposeObservable.remove(entry.observer);
+            }
+            this._cascadesUbos = null;
+            this._cascadesUbo = null;
         }
     }
 

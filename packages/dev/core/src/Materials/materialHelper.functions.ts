@@ -1531,7 +1531,8 @@ export function PrepareUniformsAndSamplersForLight(
     clusteredLightStorageBuffer = false
 ) {
     if (uniformBuffersList) {
-        uniformBuffersList.push("Light" + lightIndex);
+        // the cascades of a CascadedShadowGenerator, read from its own buffer by WGSL shaders
+        uniformBuffersList.push("Light" + lightIndex, "cascades" + lightIndex);
     }
 
     if (updateOnlyBuffersList) {

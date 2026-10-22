@@ -6,7 +6,7 @@
 			vertexOutputs.vPositionFromCamera{X} = uniforms.view * worldPos;
 		#endif
 		#if SHADOWCSMNUM_CASCADES{X} > 0
-			vertexOutputs.vPositionFromLight{X}_0 = uniforms.lightMatrix{X}[0] * worldPos;
+			vertexOutputs.vPositionFromLight{X}_0 = cascades{X}.lightMatrix[0] * worldPos;
             #ifdef USE_REVERSE_DEPTHBUFFER
 			    vertexOutputs.vDepthMetric{X}_0 = (-vertexOutputs.vPositionFromLight{X}_0.z + light{X}.depthValues.x) / light{X}.depthValues.y;
             #else
@@ -14,7 +14,7 @@
             #endif
 		#endif
 		#if SHADOWCSMNUM_CASCADES{X} > 1
-			vertexOutputs.vPositionFromLight{X}_1 = uniforms.lightMatrix{X}[1] * worldPos;
+			vertexOutputs.vPositionFromLight{X}_1 = cascades{X}.lightMatrix[1] * worldPos;
             #ifdef USE_REVERSE_DEPTHBUFFER
 			    vertexOutputs.vDepthMetric{X}_1 = (-vertexOutputs.vPositionFromLight{X}_1.z + light{X}.depthValues.x) / light{X}.depthValues.y;
             #else
@@ -22,7 +22,7 @@
             #endif
 		#endif		
 		#if SHADOWCSMNUM_CASCADES{X} > 2
-			vertexOutputs.vPositionFromLight{X}_2 = uniforms.lightMatrix{X}[2] * worldPos;
+			vertexOutputs.vPositionFromLight{X}_2 = cascades{X}.lightMatrix[2] * worldPos;
             #ifdef USE_REVERSE_DEPTHBUFFER
 			    vertexOutputs.vDepthMetric{X}_2 = (-vertexOutputs.vPositionFromLight{X}_2.z + light{X}.depthValues.x) / light{X}.depthValues.y;
             #else
@@ -30,7 +30,7 @@
             #endif
 		#endif		
 		#if SHADOWCSMNUM_CASCADES{X} > 3
-			vertexOutputs.vPositionFromLight{X}_3 = uniforms.lightMatrix{X}[3] * worldPos;
+			vertexOutputs.vPositionFromLight{X}_3 = cascades{X}.lightMatrix[3] * worldPos;
             #ifdef USE_REVERSE_DEPTHBUFFER
 			    vertexOutputs.vDepthMetric{X}_3 = (-vertexOutputs.vPositionFromLight{X}_3.z + light{X}.depthValues.x) / light{X}.depthValues.y;
             #else
