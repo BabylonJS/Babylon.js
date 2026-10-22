@@ -2,6 +2,7 @@ import {
     type FgAccessor,
     type FgNodeSpec,
     type FgRuntime,
+    type GpuPicker,
     FgBlockType,
     FgType,
     addFlowGraph,
@@ -18,6 +19,7 @@ import {
     createDirectionalLight,
     createEngine,
     createGridSpriteAtlas,
+    createGpuPicker,
     createHemisphericLight,
     createPcfDirectionalShadowGenerator,
     createPbrMaterial,
@@ -38,6 +40,7 @@ import {
     dispatchFlowGraphEvent,
     disposeDefaultTextData,
     disposeEngine,
+    disposePicker,
     disposeScene,
     disposeSpriteRenderer,
     disposeSurface,
@@ -49,6 +52,7 @@ import {
     isGizmoDragging,
     isGizmoPickPending,
     markMaterialUboDirty,
+    pickAsync,
     pickWithRay,
     getRenderTaskGpuTimings,
     registerScene,
@@ -215,6 +219,33 @@ const camera = createDefaultCamera(primaryScene);
 camera.name = "Main Camera";
 const detachCameraControl = attachControl(camera, canvas, primaryScene);
 
+let spherePicker: GpuPicker | undefined;
+let spherePicksPending = 0;
+let spherePickerRetired = false;
+let spherePickCount = 0;
+const pickSphereAsync = async (x: number, y: number) => {
+    if (spherePickerRetired) {
+        return;
+    }
+    spherePicker ??= createGpuPicker(primaryScene);
+    spherePicksPending++;
+    try {
+        const result = await pickAsync(spherePicker, x, y, { filter: (mesh) => mesh.visible !== false && mesh.pickable !== false });
+        if (!spherePickerRetired && result.hit && result.pickedMesh === sphere) {
+            dispatchFlowGraphEvent(primaryScene, "blueSphereClicked");
+        }
+    } catch (error) {
+        if (!spherePickerRetired) {
+            throw error;
+        }
+    } finally {
+        spherePicksPending--;
+        spherePickCount++;
+        if (spherePickerRetired && spherePicksPending === 0) {
+            disposePicker(spherePicker);
+        }
+    }
+};
 let spherePointerDown: { pointerId: number; x: number; y: number } | undefined;
 const onSpherePointerDown = (event: PointerEvent) => {
     if (event.button === 0) {
@@ -242,7 +273,7 @@ const onSpherePointerUp = (event: PointerEvent) => {
     }
     const ray = createPickingRay(event.offsetX, event.offsetY, getViewProjectionMatrix(camera, canvas.clientWidth / canvas.clientHeight), canvas.clientWidth, canvas.clientHeight);
     if (ray && pickWithRay(primaryScene, ray, { predicate: (mesh) => mesh === sphere }).hit) {
-        dispatchFlowGraphEvent(primaryScene, "blueSphereClicked");
+        void pickSphereAsync(event.offsetX, event.offsetY);
     }
 };
 canvas.addEventListener("pointerdown", onSpherePointerDown);
@@ -340,6 +371,7 @@ Object.assign(globalThis, {
     liteFlowGraphCount: () => flowGraphRuntimes(primaryScene).length,
     liteFlowGraphRuntimes: () => [...flowGraphRuntimes(primaryScene)],
     liteBlueSphereGlowing: () => sphereGlowAccessor.get() === true,
+    liteBlueSpherePickCount: () => spherePickCount,
     liteInspectorToken: inspectorToken,
     liteShowInspector: ShowInspector,
     liteGetRenderTaskGpuTimings: getRenderTaskGpuTimings,
@@ -376,6 +408,10 @@ Object.assign(globalThis, {
 window.addEventListener(
     "beforeunload",
     () => {
+        spherePickerRetired = true;
+        if (spherePicker && spherePicksPending === 0) {
+            disposePicker(spherePicker);
+        }
         canvas.removeEventListener("pointerdown", onSpherePointerDown);
         canvas.removeEventListener("pointermove", onSpherePointerMove);
         canvas.removeEventListener("pointerup", onSpherePointerUp);
