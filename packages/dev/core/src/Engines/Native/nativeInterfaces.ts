@@ -32,6 +32,12 @@ export interface INativeEngine {
      */
     readonly supportsMultisampledMipmaps?: boolean;
 
+    /**
+     * True when the runtime can copy a canvas into a dynamic texture with a mip chain and
+     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps)`).
+     */
+    readonly supportsDynamicTextureMipMaps?: boolean;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -467,9 +473,17 @@ interface INativeCameraConstructor {
 }
 
 /** @internal */
+export interface INativeCanvas extends ICanvas {
+    /**
+     * Releases the native resources held by the canvas.
+     */
+    dispose(): void;
+}
+
+/** @internal */
 interface INativeCanvasConstructor {
-    prototype: ICanvas;
-    new (): ICanvas;
+    prototype: INativeCanvas;
+    new (): INativeCanvas;
 
     loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
 }

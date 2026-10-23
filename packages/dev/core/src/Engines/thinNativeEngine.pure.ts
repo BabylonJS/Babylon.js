@@ -35,13 +35,14 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { NativeShaderProcessor } from "./Native/nativeShaderProcessors";
 import { type IMaterialContext } from "./IMaterialContext";
 import { type IDrawContext } from "./IDrawContext";
-import { type ICanvas, type IImage, type IPath2D } from "./ICanvas";
+import { type ICanvasRenderingContext, type IImage, type IPath2D } from "./ICanvas";
 import { type IStencilState } from "../States/IStencilState";
 import { type RenderTargetWrapper } from "./renderTargetWrapper";
 import { type NativeData, NativeDataStream } from "./Native/nativeDataStream";
 import {
     type INative,
     type INativeCamera,
+    type INativeCanvas,
     type INativeEngine,
     type NativeFramebuffer,
     type NativeFrameStats,
@@ -244,6 +245,8 @@ export class ThinNativeEngine extends ThinEngine {
     private _commandBufferEncoder: CommandBufferEncoder;
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
+    private _fontMeasureCanvas?: INativeCanvas;
+    private _fontMeasureContext?: ICanvasRenderingContext;
     private _transformFeedbackBuffer: Nullable<NativeDataBuffer> = null;
     private _transformFeedbackActive = false;
     /**
@@ -587,6 +590,9 @@ export class ThinNativeEngine extends ThinEngine {
         if (this._boundBuffersVertexArray) {
             this._deleteVertexArray(this._boundBuffersVertexArray);
         }
+        this._fontMeasureCanvas?.dispose();
+        this._fontMeasureCanvas = undefined;
+        this._fontMeasureContext = undefined;
         this._engine.dispose();
     }
 
@@ -2060,11 +2066,16 @@ export class ThinNativeEngine extends ThinEngine {
             const context = canvas.getContext();
             // flush need to happen before getCanvasTexture: flush will create the render target synchronously (if it's not been created before)
             context.flush();
-            const source = canvas.getCanvasTexture();
+            // Older runtimes take no options and always copy with their legacy alpha handling.
+            const supportsOptions = this._engine.supportsDynamicTextureMipMaps === true;
+            const source = supportsOptions ? canvas.getCanvasTexture(premulAlpha, texture.generateMipMaps) : canvas.getCanvasTexture();
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);
             this._commandBufferEncoder.finishEncodingCommand();
+            if (supportsOptions) {
+                texture._premulAlpha = premulAlpha;
+            }
             texture.isReady = true;
         }
     }
@@ -2074,7 +2085,9 @@ export class ThinNativeEngine extends ThinEngine {
         // Keep at least 1x1 because many bgfx methods assume a non-zero texture size.
         width = Math.max(Math.floor(width), 1);
         height = Math.max(Math.floor(height), 1);
-        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
+        // Older runtimes cannot regenerate mips when the canvas contents are copied into the texture.
+        generateMipMaps = generateMipMaps && this._engine.supportsDynamicTextureMipMaps === true;
+        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, generateMipMaps, false, samplingMode);
     }
 
     public override createVideoElement(constraints: MediaTrackConstraints): any {
@@ -4757,9 +4770,9 @@ export class ThinNativeEngine extends ThinEngine {
      * Create a canvas
      * @param width width
      * @param height height
-     * @returns ICanvas interface
+     * @returns INativeCanvas interface
      */
-    public override createCanvas(width: number, height: number): ICanvas {
+    public override createCanvas(width: number, height: number): INativeCanvas {
         if (!_native.Canvas) {
             throw new Error("Native Canvas plugin not available.");
         }
@@ -4907,9 +4920,36 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     public override getFontOffset(font: string): { ascent: number; height: number; descent: number } {
-        // TODO
-        const result = { ascent: 0, height: 0, descent: 0 };
-        return result;
+        // Match the browser's font line box for GUI layout, not just the ink in "Hg".
+        // Older Canvas runtimes may expose only glyph bounds.
+        try {
+            if (!this._fontMeasureContext) {
+                // Keep a canvas whose context failed so retries never orphan it before engine disposal.
+                this._fontMeasureCanvas ??= this.createCanvas(64, 64);
+                this._fontMeasureContext = this._fontMeasureCanvas.getContext("2d") || undefined;
+            }
+            const context = this._fontMeasureContext;
+            if (!context) {
+                throw new Error("2D canvas context is unavailable");
+            }
+            context.font = font;
+            const metrics: Partial<TextMetrics> = context.measureText("Hg");
+            const ascent = Number(metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent);
+            const descent = Number(metrics.fontBoundingBoxDescent ?? metrics.actualBoundingBoxDescent);
+            if (isFinite(ascent) && isFinite(descent) && ascent + descent > 0) {
+                return { ascent, height: ascent + descent, descent };
+            }
+        } catch (error) {
+            Logger.Warn(`Native font measurement failed; using an estimated line height: ${String(error)}`, 1);
+        }
+
+        // No canvas or an unmeasurable font: approximate from the CSS px size the same way the
+        // shared GetFallbackFontOffset does, so text still gets a sane non-zero line height.
+        const match = /(?:^|\s)([0-9]+(?:\.[0-9]+)?)px(?:\/|\s|$)/.exec(String(font || ""));
+        const size = Math.max(1, match ? parseFloat(match[1]) : 12);
+        const ascent = size * 0.8;
+        const descent = size * 0.2;
+        return { ascent, height: ascent + descent, descent };
     }
 
     /**
