@@ -169,6 +169,8 @@ export class ThinTAAPostProcess extends EffectWrapper {
     private _hs: Halton2DSequence;
     private _firstUpdate = true;
     private _taaMaterialManager: Nullable<TAAMaterialManager>;
+    private _viewHistoryCamera: Nullable<Camera> = null;
+    private _viewHistoryResetId = 0;
 
     /**
      * Constructs a new TAA post process
@@ -204,7 +206,19 @@ export class ThinTAAPostProcess extends EffectWrapper {
         if (this.reprojectHistory && this._taaMaterialManager) {
             // Applying jitter to the projection matrix messes with the velocity buffer,
             // so we do it as a final vertex step in a material plugin instead
-            this._nextJitterOffset(this._taaMaterialManager.jitter);
+            const jitter = this._nextJitterOffset(this._taaMaterialManager.jitter);
+            // WGSL materials read it from the scene uniform buffer of this camera's color passes
+            const camera = this.camera;
+            if (camera) {
+                const frameId = this._scene.getEngine().frameId;
+                camera._taaJitter.copyFrom(jitter);
+                camera._taaJitterFrameId = frameId;
+                // rig cameras (stereo) draw their own views: same jitter
+                for (const rigCamera of camera._rigCameras) {
+                    rigCamera._taaJitter.copyFrom(jitter);
+                    rigCamera._taaJitterFrameId = frameId;
+                }
+            }
         } else {
             // Use the projection matrix by default since it supports most materials
             this._updateProjectionMatrix();
@@ -247,7 +261,13 @@ export class ThinTAAPostProcess extends EffectWrapper {
 
         const effect = this._drawWrapper.effect!;
 
-        effect.setFloat("factor", (this.camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate ? 1 : this.factor);
+        // camera.resetViewHistory (a cut): drop the history in the same frame
+        const camera = this.camera;
+        const viewHistoryReset = !!camera && camera === this._viewHistoryCamera && camera._viewHistoryResetId !== this._viewHistoryResetId;
+        this._viewHistoryCamera = camera;
+        this._viewHistoryResetId = camera ? camera._viewHistoryResetId : 0;
+
+        effect.setFloat("factor", (camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate || viewHistoryReset ? 1 : this.factor);
 
         this._firstUpdate = false;
     }
