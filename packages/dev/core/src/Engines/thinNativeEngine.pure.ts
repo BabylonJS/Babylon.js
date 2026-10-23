@@ -35,13 +35,14 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { NativeShaderProcessor } from "./Native/nativeShaderProcessors";
 import { type IMaterialContext } from "./IMaterialContext";
 import { type IDrawContext } from "./IDrawContext";
-import { type ICanvas, type ICanvasRenderingContext, type IImage, type IPath2D } from "./ICanvas";
+import { type ICanvasRenderingContext, type IImage, type IPath2D } from "./ICanvas";
 import { type IStencilState } from "../States/IStencilState";
 import { type RenderTargetWrapper } from "./renderTargetWrapper";
 import { type NativeData, NativeDataStream } from "./Native/nativeDataStream";
 import {
     type INative,
     type INativeCamera,
+    type INativeCanvas,
     type INativeEngine,
     type NativeFramebuffer,
     type NativeFrameStats,
@@ -244,7 +245,7 @@ export class ThinNativeEngine extends ThinEngine {
     private _commandBufferEncoder: CommandBufferEncoder;
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
-    private _fontMeasureCanvas?: ICanvas;
+    private _fontMeasureCanvas?: INativeCanvas;
     private _fontMeasureContext?: ICanvasRenderingContext;
     private _transformFeedbackBuffer: Nullable<NativeDataBuffer> = null;
     private _transformFeedbackActive = false;
@@ -589,7 +590,7 @@ export class ThinNativeEngine extends ThinEngine {
         if (this._boundBuffersVertexArray) {
             this._deleteVertexArray(this._boundBuffersVertexArray);
         }
-        (this._fontMeasureCanvas as Partial<{ dispose(): void }> | undefined)?.dispose?.();
+        this._fontMeasureCanvas?.dispose();
         this._fontMeasureCanvas = undefined;
         this._fontMeasureContext = undefined;
         this._engine.dispose();
@@ -4769,9 +4770,9 @@ export class ThinNativeEngine extends ThinEngine {
      * Create a canvas
      * @param width width
      * @param height height
-     * @returns ICanvas interface
+     * @returns INativeCanvas interface
      */
-    public override createCanvas(width: number, height: number): ICanvas {
+    public override createCanvas(width: number, height: number): INativeCanvas {
         if (!_native.Canvas) {
             throw new Error("Native Canvas plugin not available.");
         }

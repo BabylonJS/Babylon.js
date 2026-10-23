@@ -473,9 +473,17 @@ interface INativeCameraConstructor {
 }
 
 /** @internal */
+export interface INativeCanvas extends ICanvas {
+    /**
+     * Releases the native resources held by the canvas.
+     */
+    dispose(): void;
+}
+
+/** @internal */
 interface INativeCanvasConstructor {
-    prototype: ICanvas;
-    new (): ICanvas;
+    prototype: INativeCanvas;
+    new (): INativeCanvas;
 
     loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
 }
