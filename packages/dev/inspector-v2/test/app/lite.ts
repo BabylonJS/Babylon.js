@@ -1,7 +1,15 @@
 import {
+    type FgAccessor,
+    type FgNodeSpec,
+    type FgRuntime,
+    type GpuPicker,
+    FgBlockType,
+    FgType,
+    addFlowGraph,
     addSprite2DIndex,
     addToScene,
     attachControl,
+    buildFgGraph,
     createBox,
     createAnimationManager,
     createPropertyAnimationClip,
@@ -11,10 +19,12 @@ import {
     createDirectionalLight,
     createEngine,
     createGridSpriteAtlas,
+    createGpuPicker,
     createHemisphericLight,
     createPcfDirectionalShadowGenerator,
     createPbrMaterial,
     createPointLight,
+    createPickingRay,
     createSceneContext,
     createSolidTexture2D,
     createSphere,
@@ -26,23 +36,31 @@ import {
     createTextLayer,
     createTextRenderer,
     createTransformNode,
+    detachFlowGraph,
+    dispatchFlowGraphEvent,
     disposeDefaultTextData,
     disposeEngine,
+    disposePicker,
     disposeScene,
     disposeSpriteRenderer,
     disposeSurface,
     disposeTextRenderer,
+    flowGraphRuntimes,
     loadFont,
     getRenderingContexts,
     getViewProjectionMatrix,
     isGizmoDragging,
     isGizmoPickPending,
+    markMaterialUboDirty,
+    pickAsync,
+    pickWithRay,
     getRenderTaskGpuTimings,
     registerScene,
     registerSpriteRenderer,
     registerTextRenderer,
     setShadowTaskCasterMeshes,
     setRenderTaskGpuTimingEnabled,
+    setPbrEmissive,
     startEngine,
     stopEngine,
     startAnimationManager,
@@ -52,6 +70,53 @@ import {
 } from "@babylonjs/lite";
 
 import { ShowInspector } from "../../src/lite/inspector";
+
+const inertFlowGraphSpecs: readonly FgNodeSpec[] = [
+    {
+        id: "sceneReady",
+        type: FgBlockType.SceneStart,
+        signalTargets: { out: [{ blockId: "noOp", socket: "in" }] },
+    },
+    { id: "noOp", type: FgBlockType.NoOp },
+];
+
+const defaultFlowGraphSpecs: readonly FgNodeSpec[] = [
+    ...inertFlowGraphSpecs,
+    {
+        id: "sphereClicked",
+        type: FgBlockType.ReceiveCustomEvent,
+        config: { eventId: "blueSphereClicked" },
+        signalTargets: { out: [{ blockId: "toggleGlow", socket: "in" }] },
+    },
+    {
+        id: "isGlowing",
+        type: FgBlockType.GetProperty,
+        config: { accessor: "/blueSphere/glowing", type: FgType.Boolean },
+    },
+    {
+        id: "toggleGlow",
+        type: FgBlockType.Branch,
+        dataSources: { condition: { blockId: "isGlowing", socket: "value" } },
+        signalTargets: {
+            onTrue: [{ blockId: "glowOff", socket: "in" }],
+            onFalse: [{ blockId: "glowOn", socket: "in" }],
+        },
+    },
+    {
+        id: "glowOn",
+        type: FgBlockType.SetProperty,
+        config: { accessor: "/blueSphere/glowing", type: FgType.Boolean },
+        dataDefaults: { value: true },
+    },
+    {
+        id: "glowOff",
+        type: FgBlockType.SetProperty,
+        config: { accessor: "/blueSphere/glowing", type: FgType.Boolean },
+        dataDefaults: { value: false },
+    },
+];
+
+const sphereEmissive: [number, number, number] = [0, 0, 0];
 
 const canvas = document.getElementById("canvas");
 if (!(canvas instanceof HTMLCanvasElement)) {
@@ -79,6 +144,7 @@ const pbrMaterial = createPbrMaterial({
     metallicFactor: 0.1,
     roughnessFactor: 0.6,
 });
+setPbrEmissive(pbrMaterial, sphereEmissive);
 
 const box = createBox(engine);
 box.name = "Red Box";
@@ -153,6 +219,82 @@ const camera = createDefaultCamera(primaryScene);
 camera.name = "Main Camera";
 const detachCameraControl = attachControl(camera, canvas, primaryScene);
 
+let spherePicker: GpuPicker | undefined;
+let spherePicksPending = 0;
+let spherePickerRetired = false;
+let spherePickCount = 0;
+const pickSphereAsync = async (x: number, y: number) => {
+    if (spherePickerRetired) {
+        return;
+    }
+    spherePicker ??= createGpuPicker(primaryScene);
+    spherePicksPending++;
+    try {
+        const result = await pickAsync(spherePicker, x, y, { filter: (mesh) => mesh.visible !== false && mesh.pickable !== false });
+        if (!spherePickerRetired && result.hit && result.pickedMesh === sphere) {
+            dispatchFlowGraphEvent(primaryScene, "blueSphereClicked");
+        }
+    } catch (error) {
+        if (!spherePickerRetired) {
+            throw error;
+        }
+    } finally {
+        spherePicksPending--;
+        spherePickCount++;
+        if (spherePickerRetired && spherePicksPending === 0) {
+            disposePicker(spherePicker);
+        }
+    }
+};
+let spherePointerDown: { pointerId: number; x: number; y: number } | undefined;
+const onSpherePointerDown = (event: PointerEvent) => {
+    if (event.button === 0) {
+        spherePointerDown = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+    }
+};
+const onSpherePointerMove = (event: PointerEvent) => {
+    if (spherePointerDown?.pointerId === event.pointerId && Math.hypot(event.clientX - spherePointerDown.x, event.clientY - spherePointerDown.y) > 5) {
+        spherePointerDown = undefined;
+    }
+};
+const onSpherePointerCancel = (event: PointerEvent) => {
+    if (spherePointerDown?.pointerId === event.pointerId) {
+        spherePointerDown = undefined;
+    }
+};
+const onSpherePointerUp = (event: PointerEvent) => {
+    const down = spherePointerDown;
+    if (!down || down.pointerId !== event.pointerId || event.button !== 0) {
+        return;
+    }
+    spherePointerDown = undefined;
+    if (Math.hypot(event.clientX - down.x, event.clientY - down.y) > 5) {
+        return;
+    }
+    const ray = createPickingRay(event.offsetX, event.offsetY, getViewProjectionMatrix(camera, canvas.clientWidth / canvas.clientHeight), canvas.clientWidth, canvas.clientHeight);
+    if (ray && pickWithRay(primaryScene, ray, { predicate: (mesh) => mesh === sphere }).hit) {
+        void pickSphereAsync(event.offsetX, event.offsetY);
+    }
+};
+canvas.addEventListener("pointerdown", onSpherePointerDown);
+canvas.addEventListener("pointermove", onSpherePointerMove);
+canvas.addEventListener("pointerup", onSpherePointerUp);
+canvas.addEventListener("pointercancel", onSpherePointerCancel);
+
+const sphereGlowAccessor: FgAccessor = {
+    type: FgType.Boolean,
+    get: () => sphereEmissive[0] > 0,
+    set: (value) => {
+        sphereEmissive[0] = value === true ? 1 : 0;
+        sphereEmissive[1] = value === true ? 0.55 : 0;
+        sphereEmissive[2] = 0;
+        markMaterialUboDirty(pbrMaterial);
+    },
+    target: pbrMaterial,
+};
+const defaultFlowGraph = await addFlowGraph(primaryScene, await buildFgGraph(defaultFlowGraphSpecs), {
+    accessors: { "/blueSphere/glowing": sphereGlowAccessor },
+});
 await registerScene(primaryScene);
 
 const overlayFont = await loadFont("/fonts/Roboto-Regular.ttf");
@@ -218,6 +360,18 @@ await startEngine(engine);
 const inspectorToken = ShowInspector(engine);
 
 Object.assign(globalThis, {
+    liteDefaultFlowGraph: defaultFlowGraph,
+    liteAttachFlowGraph: async () => addFlowGraph(primaryScene, await buildFgGraph(inertFlowGraphSpecs)),
+    liteDetachFlowGraph: (runtime: FgRuntime) => {
+        if (runtime === defaultFlowGraph) {
+            throw new Error("The default flow graph belongs to the Lite test scene and must not be detached.");
+        }
+        detachFlowGraph(primaryScene, runtime);
+    },
+    liteFlowGraphCount: () => flowGraphRuntimes(primaryScene).length,
+    liteFlowGraphRuntimes: () => [...flowGraphRuntimes(primaryScene)],
+    liteBlueSphereGlowing: () => sphereGlowAccessor.get() === true,
+    liteBlueSpherePickCount: () => spherePickCount,
     liteInspectorToken: inspectorToken,
     liteShowInspector: ShowInspector,
     liteGetRenderTaskGpuTimings: getRenderTaskGpuTimings,
@@ -254,6 +408,14 @@ Object.assign(globalThis, {
 window.addEventListener(
     "beforeunload",
     () => {
+        spherePickerRetired = true;
+        if (spherePicker && spherePicksPending === 0) {
+            disposePicker(spherePicker);
+        }
+        canvas.removeEventListener("pointerdown", onSpherePointerDown);
+        canvas.removeEventListener("pointermove", onSpherePointerMove);
+        canvas.removeEventListener("pointerup", onSpherePointerUp);
+        canvas.removeEventListener("pointercancel", onSpherePointerCancel);
         void inspectorToken.dispose();
         detachCameraControl();
         stopEngine(engine);
