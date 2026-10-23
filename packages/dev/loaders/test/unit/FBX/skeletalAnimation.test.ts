@@ -54,7 +54,130 @@ describe("FBX skeletal animation loading", () => {
         scene.dispose();
         engine.dispose();
     });
+
+    it("does not grow the sample times with every bone of an inherited-scale rig", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const refineInputSizes: number[] = [];
+        const refine = (FBXFileLoader as any)._refineSampleTimes;
+        (FBXFileLoader as any)._refineSampleTimes = (times: number[], ...args: unknown[]) => {
+            refineInputSizes.push(times.length);
+            return refine(times, ...args);
+        };
+
+        try {
+            await new FBXFileLoader().importMeshAsync(null, scene, curvedBoneChainFbx(8), "");
+        } finally {
+            (FBXFileLoader as any)._refineSampleTimes = refine;
+        }
+
+        expect(refineInputSizes.length).toBeGreaterThan(1);
+        expect(Math.max(...refineInputSizes)).toBe(refineInputSizes[0]);
+
+        scene.dispose();
+        engine.dispose();
+    });
 });
+
+function curvedBoneChainFbx(boneCount: number): string {
+    const seconds = (value: number) => Math.round(value * 46186158000);
+    const bones = Array.from({ length: boneCount }, (_, i) => {
+        const id = 10 + i;
+        return `    Model: ${id}, "Model::Bone${i}", "LimbNode" {
+        Properties70: {
+            P: "Lcl Translation", "Lcl Translation", "", "A",0,1,0
+            P: "InheritType", "enum", "", "",2
+        }
+    }`;
+    }).join("\n");
+    const curves = Array.from({ length: boneCount }, (_, i) => {
+        const nodeId = 100 + i * 10;
+        return `    AnimationCurveNode: ${nodeId}, "AnimCurveNode::R", "" {
+    }
+    AnimationCurve: ${nodeId + 1}, "AnimCurve::Z", "" {
+        KeyTime: *3 {
+            a: 0,${seconds(1 + i * 0.1)},${seconds(2 + i * 0.3)}
+        }
+        KeyValueFloat: *3 {
+            a: 0,${90 + i * 7},0
+        }
+        KeyAttrFlags: *1 {
+            a: 1032
+        }
+        KeyAttrDataFloat: *4 {
+            a: 0,0,0,0
+        }
+        KeyAttrRefCount: *1 {
+            a: 3
+        }
+    }`;
+    }).join("\n");
+    const connections = Array.from({ length: boneCount }, (_, i) => {
+        const id = 10 + i;
+        const nodeId = 100 + i * 10;
+        return `    C: "OO", ${id}, ${i === 0 ? 0 : id - 1}
+    C: "OO", ${id}, 4
+    C: "OO", ${nodeId}, 21
+    C: "OP", ${nodeId}, ${id}, "Lcl Rotation"
+    C: "OP", ${nodeId + 1}, ${nodeId}, "d|Z"`;
+    }).join("\n");
+    return `; FBX 7.4.0 project file
+GlobalSettings: {
+    Version: 1000
+    Properties70: {
+        P: "UpAxis", "int", "Integer", "",1
+        P: "UpAxisSign", "int", "Integer", "",1
+        P: "FrontAxis", "int", "Integer", "",2
+        P: "FrontAxisSign", "int", "Integer", "",1
+        P: "CoordAxis", "int", "Integer", "",0
+        P: "CoordAxisSign", "int", "Integer", "",1
+        P: "UnitScaleFactor", "double", "Number", "",1
+    }
+}
+Objects: {
+    Geometry: 1, "Geometry::Triangle", "Mesh" {
+        Vertices: *9 {
+            a: 0,0,0,1,0,0,0,1,0
+        }
+        PolygonVertexIndex: *3 {
+            a: 0,1,-3
+        }
+    }
+    Model: 2, "Model::Triangle", "Mesh" {
+    }
+${bones}
+    Deformer: 3, "Deformer::Skin", "Skin" {
+    }
+    Deformer: 4, "SubDeformer::Bone0", "Cluster" {
+        Indexes: *3 {
+            a: 0,1,2
+        }
+        Weights: *3 {
+            a: 1,1,1
+        }
+        Transform: *16 {
+            a: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
+        }
+        TransformLink: *16 {
+            a: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
+        }
+        Mode: "Normalize"
+    }
+    AnimationStack: 20, "AnimStack::Take 001", "" {
+    }
+    AnimationLayer: 21, "AnimLayer::BaseLayer", "" {
+    }
+${curves}
+}
+Connections: {
+    C: "OO", 1, 2
+    C: "OO", 2, 0
+    C: "OO", 3, 1
+    C: "OO", 4, 3
+    C: "OO", 21, 20
+${connections}
+}`;
+}
 
 function minimalAnimatedSkinFbx(): string {
     return `; FBX 7.4.0 project file
