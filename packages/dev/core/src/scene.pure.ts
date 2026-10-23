@@ -1324,25 +1324,50 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * Gets the view-projection the camera rendered in the previous frame, advancing its history on its first pass of a frame.
-     * The history starts again from the current view-projection when the camera did not render in the previous frame (first frame, camera switch).
+     * @internal
+     * The logical pass the scene uniform buffer is finalized for: a camera keeps one view history per pass it renders in.
+     * Object renderers set their own for the time of their passes; the camera passes of the scene use RENDERPASS_MAIN.
+     */
+    public _viewPassId: number = Constants.RENDERPASS_MAIN;
+
+    /**
+     * @internal
+     * True while the scene uniform buffer is only prepared, with no draw (readiness checks): the view histories are read but do not advance.
+     */
+    public _viewHistoryIsReadOnly = false;
+
+    /**
+     * Gets the view-projection the camera rendered in the previous frame in the current logical pass, advancing that history on its
+     * first use in a frame. It starts again from the current view-projection when the camera did not render in that pass in the previous
+     * frame (first frame, camera switch).
      * @param camera the camera whose view is being rendered
      * @returns the previous view-projection
      */
     private _getPreviousViewProjection(camera: Camera): Matrix {
         const frameId = this._engine.frameId;
         const transform = this._transformMatrix;
-        const history = camera._viewHistory;
-        if (!history) {
-            camera._viewHistory = { previous: transform.clone(), current: transform.clone(), frameId };
-            return camera._viewHistory.previous;
+        const histories = camera._viewHistories;
+        const history = histories.get(this._viewPassId);
+        if (this._viewHistoryIsReadOnly) {
+            return history && history.frameId === frameId ? history.previous : transform;
+        }
+        if (!history || history.frameId < frameId - 1) {
+            // the histories of the passes this camera stopped rendering in are dropped
+            histories.forEach((other, passId) => {
+                if (other.frameId < frameId - 1) {
+                    histories.delete(passId);
+                }
+            });
+            const started = { previous: transform.clone(), current: transform.clone(), frameId };
+            histories.set(this._viewPassId, started);
+            return started.previous;
         }
         if (history.frameId !== frameId) {
-            history.previous.copyFrom(history.frameId === frameId - 1 ? history.current : transform);
+            history.previous.copyFrom(history.current);
             history.current.copyFrom(transform);
             history.frameId = frameId;
         } else if (history.current.updateFlag !== transform.updateFlag) {
-            // the camera moved between two of its passes in this frame
+            // the transform changed during the pass (the camera moved, or the pass applied the aspect ratio of its target)
             history.current.copyFrom(transform);
         }
         return history.previous;

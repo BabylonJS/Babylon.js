@@ -608,11 +608,18 @@ export class ObjectRenderer {
      */
     public isReadyForRendering(viewportWidth: number, viewportHeight: number): boolean {
         this.prepareRenderList();
+
+        // nothing is drawn: the scene uniform buffer is prepared, but the cameras' view histories must not advance
+        const viewHistoryIsReadOnly = this._scene._viewHistoryIsReadOnly;
+        this._scene._viewHistoryIsReadOnly = true;
+
         this.initRender(viewportWidth, viewportHeight);
 
         const isReady = this._checkReadiness();
 
         this.finishRender();
+
+        this._scene._viewHistoryIsReadOnly = viewHistoryIsReadOnly;
 
         return isReady;
     }
@@ -665,6 +672,7 @@ export class ObjectRenderer {
 
     private _defaultRenderListPrepared: boolean;
     private _currentSceneCamera: Nullable<Camera> = null;
+    private _currentViewPassId = Constants.RENDERPASS_MAIN;
 
     /**
      * This method makes sure everything is setup before "render" can be called
@@ -693,6 +701,10 @@ export class ObjectRenderer {
             this._engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, viewportWidth, viewportHeight);
         }
 
+        // the cameras keep a view history per object renderer, for all of its passes (until finishRender)
+        this._currentViewPassId = this._scene._viewPassId;
+        this._scene._viewPassId = this.renderPassId;
+
         if (this._useUBO) {
             this._scene.finalizeSceneUbo();
         }
@@ -709,6 +721,8 @@ export class ObjectRenderer {
         if (this._useUBO) {
             this._scene.setSceneUniformBuffer(this._currentSceneUBO);
         }
+
+        this._scene._viewPassId = this._currentViewPassId;
 
         if (this._disableImageProcessing) {
             scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;

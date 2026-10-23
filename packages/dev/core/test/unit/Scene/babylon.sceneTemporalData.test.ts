@@ -1,11 +1,23 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { Constants } from "core/Engines/constants";
 import { RegisterEngineMultiview } from "core/Engines/Extensions/engine.multiview.pure";
+import { Initialize, Process } from "core/Engines/Processors/shaderProcessor";
+import { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { type _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import { ShaderStore } from "core/Engines/shaderStore";
+import { WebGPUShaderProcessingContext } from "core/Engines/WebGPU/webgpuShaderProcessingContext";
+import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProcessorsWGSL";
+import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
+import { FrameGraph } from "core/FrameGraph/frameGraph";
+import { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
+import { FrameGraphTAATask } from "core/FrameGraph/Tasks/PostProcesses/taaTask";
+import { FrameGraphObjectRendererTask } from "core/FrameGraph/Tasks/Rendering/objectRendererTask";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PrePassConfiguration } from "core/Materials/prePassConfiguration";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { type Effect } from "core/Materials/effect";
 import { type Mesh } from "core/Meshes/mesh";
@@ -13,6 +25,9 @@ import { TAAMaterialManager } from "core/PostProcesses/RenderPipeline/Pipelines/
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { Scene } from "core/scene";
 import { vi } from "vitest";
+
+import "core/Engines/Extensions/engine.multiRender";
+import "core/ShadersWGSL/gaussianSplatting.vertex";
 
 describe("Scene uniform buffer: temporal data of the view", () => {
     let engine: NullEngine;
@@ -43,10 +58,12 @@ describe("Scene uniform buffer: temporal data of the view", () => {
         return written(scene.getSceneUniformBuffer());
     };
 
-    const written = (ubo: UniformBuffer) => {
+    const written = (ubo: UniformBuffer) => writtenBy(ubo, () => scene.finalizeSceneUbo());
+
+    const writtenBy = (ubo: UniformBuffer, finalize: () => UniformBuffer) => {
         const updateMatrix = vi.spyOn(ubo, "updateMatrix");
         const updateFloat2 = vi.spyOn(ubo, "updateFloat2");
-        scene.finalizeSceneUbo();
+        finalize();
         const previous = updateMatrix.mock.calls.find((c) => c[0] === "previousViewProjection")![1] as Matrix;
         const jitter = updateFloat2.mock.calls.find((c) => c[0] === "taaJitter")!;
         const result = { viewProjection: Array.from(scene.getTransformMatrix().asArray()), previous: Array.from(previous.asArray()), jitter: [jitter[1], jitter[2]] };
@@ -128,6 +145,185 @@ describe("Scene uniform buffer: temporal data of the view", () => {
         // the TAA stopped computing it
         engine.endFrame();
         expect(pass(camA).jitter).toEqual([0, 0]);
+    });
+
+    // an object renderer that draws camA's view
+    const renderer = (name: string) => {
+        const objectRenderer = new ObjectRenderer(name, scene);
+        objectRenderer.activeCamera = camA;
+        objectRenderer.renderList = [];
+        return objectRenderer;
+    };
+
+    // renders camA's view through the object renderer into a target of this aspect ratio, and returns what was written for it
+    const rendered = (objectRenderer: ObjectRenderer, aspect: number) => {
+        const getAspectRatio = vi.spyOn(engine, "getAspectRatio").mockReturnValue(aspect);
+        objectRenderer.initRender(256, 256);
+        const result = written(scene.getSceneUniformBuffer());
+        objectRenderer.finishRender();
+        getAspectRatio.mockRestore();
+        return result;
+    };
+
+    it("keeps one history per pass for two passes of a camera with different aspect ratios", () => {
+        const wide = renderer("wide");
+        const square = renderer("square");
+        const wide1 = rendered(wide, 2);
+        const square1 = rendered(square, 1);
+        expect(wide1.viewProjection).not.toEqual(square1.viewProjection);
+        // nothing moves: no camera motion in either pass
+        engine.endFrame();
+        const wide2 = rendered(wide, 2);
+        const square2 = rendered(square, 1);
+        expect(wide2.previous).toEqual(wide2.viewProjection);
+        expect(square2.previous).toEqual(square2.viewProjection);
+        // the camera moves: each pass gets its own view-projection of the previous frame
+        engine.endFrame();
+        camA.position.x = 1;
+        expect(rendered(wide, 2).previous).toEqual(wide2.viewProjection);
+        expect(rendered(square, 1).previous).toEqual(square2.viewProjection);
+        wide.dispose();
+        square.dispose();
+    });
+
+    describe("readiness checks", () => {
+        it("do not advance the history: a check at one pose and the first render at another, in the same frame", () => {
+            const objectRenderer = renderer("renderer");
+            objectRenderer.isReadyForRendering(256, 256);
+            camA.position.x = 3;
+            const first = rendered(objectRenderer, 1);
+            expect(first.previous).toEqual(first.viewProjection);
+            // the history goes on from the first render
+            engine.endFrame();
+            camA.position.x = 4;
+            expect(rendered(objectRenderer, 1).previous).toEqual(first.viewProjection);
+            objectRenderer.dispose();
+        });
+
+        it("do not make a camera that was only checked look like it rendered in the previous frames", () => {
+            const objectRenderer = renderer("renderer");
+            for (const x of [0, 1, 2]) {
+                camA.position.x = x;
+                objectRenderer.isReadyForRendering(256, 256);
+                engine.endFrame();
+            }
+            camA.position.x = 3;
+            objectRenderer.isReadyForRendering(256, 256);
+            const first = rendered(objectRenderer, 1);
+            expect(first.previous).toEqual(first.viewProjection);
+            objectRenderer.dispose();
+        });
+    });
+
+    describe("frame graph TAA with a stereo rig", () => {
+        it("gives the TAA jitter to each eye, and keeps a history per eye", async () => {
+            vi.spyOn(engine, "buildTextureLayout").mockImplementation((textureStatus) => textureStatus.map((enabled, index) => (enabled ? index + 1 : 0)));
+            const rig = new FreeCamera("rig", new Vector3(0, 2, -10), scene);
+            rig.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, { interaxialDistance: 0.0637 });
+            scene.activeCamera = rig;
+
+            const frameGraph = new FrameGraph(scene);
+            const color = frameGraph.textureManager.createRenderTargetTexture("color", {
+                size: { width: 64, height: 64 },
+                options: {
+                    createMipMaps: false,
+                    types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                    formats: [Constants.TEXTUREFORMAT_RGBA],
+                    samples: 1,
+                    useSRGBBuffers: [false],
+                    creationFlags: [0],
+                    labels: ["color"],
+                },
+                sizeIsPercentage: false,
+            });
+            const objects = new FrameGraphObjectRendererTask("objects", frameGraph, scene);
+            objects.targetTexture = color;
+            objects.camera = rig;
+            objects.objectList = { meshes: [], particleSystems: [] };
+            frameGraph.addTask(objects);
+            const taa = new FrameGraphTAATask("taa", frameGraph);
+            taa.sourceTexture = objects.outputTexture;
+            taa.objectRendererTask = objects;
+            taa.postProcess.reprojectHistory = true;
+            frameGraph.addTask(taa);
+            // the null engine creates no GPU textures: the graph gets empty ones, and the TAA resolve itself is not drawn
+            vi.spyOn(engine, "_createInternalTexture").mockImplementation(
+                (_size, _options, _delay, source) => new InternalTexture(engine, source ?? InternalTextureSource.RenderTarget)
+            );
+            vi.spyOn(engine, "createMultipleRenderTarget").mockImplementation((size, options) => {
+                const target = new RenderTargetWrapper(true, false, size, engine);
+                target.setTextures(Array.from({ length: options.textureCount ?? 1 }, () => new InternalTexture(engine, InternalTextureSource.MultiRenderTarget)));
+                return target;
+            });
+            vi.spyOn(FrameGraphRenderContext.prototype, "setTextureSamplingMode").mockImplementation(() => {});
+            vi.spyOn(FrameGraphRenderContext.prototype, "applyFullScreenEffect").mockImplementation(() => true);
+            await frameGraph.buildAsync(false);
+            scene.frameGraph = frameGraph;
+
+            // what each eye's passes get written, frame by frame
+            const eyes: Record<string, ReturnType<typeof written>[]> = {};
+            const finalize = scene.finalizeSceneUbo.bind(scene);
+            vi.spyOn(scene, "finalizeSceneUbo").mockImplementation(() => {
+                const name = scene.activeCamera?.name;
+                if (name === "rig_L" || name === "rig_R") {
+                    (eyes[name] ??= [])[engine.frameId] = writtenBy(scene.getSceneUniformBuffer(), finalize);
+                    return scene.getSceneUniformBuffer();
+                }
+                return finalize();
+            });
+
+            // the TAA learns its camera in the first frame and computes the jitter before the draws of the next ones
+            for (let frame = 0; frame < 3; frame++) {
+                scene.render();
+                engine.endFrame();
+            }
+            const last = engine.frameId - 1;
+            const jitter = [rig._taaJitter.x, rig._taaJitter.y];
+            expect(jitter).not.toEqual([0, 0]);
+            for (const eye of ["rig_L", "rig_R"]) {
+                expect(eyes[eye][last].jitter).toEqual(jitter);
+                // a still rig: no camera motion in either eye, each one with its own view
+                expect(eyes[eye][last].previous).toEqual(eyes[eye][last].viewProjection);
+            }
+            expect(eyes["rig_L"][last].viewProjection).not.toEqual(eyes["rig_R"][last].viewProjection);
+            scene.frameGraph = null;
+            frameGraph.dispose();
+        });
+    });
+
+    describe("Gaussian splatting velocity in WGSL", () => {
+        // the splat vertex shader as the WebGPU shader processor builds it for a geometry pass with velocity
+        const processed = (compound: boolean) => {
+            const processingContext = new WebGPUShaderProcessingContext(ShaderLanguage.WGSL);
+            const options = {
+                defines: ["#define PREPASS", "#define PREPASS_VELOCITY", `#define IS_COMPOUND ${compound ? 1 : 0}`, "#define MAX_PART_COUNT 16", "#define SH_DEGREE 0"],
+                indexParameters: {},
+                isFragment: false,
+                shouldUseHighPrecisionShader: true,
+                processor: new WebGPUShaderProcessorWGSL(),
+                supportsUniformBuffers: true,
+                shadersRepository: "",
+                includesShadersStore: ShaderStore.IncludesShadersStoreWGSL,
+                version: "100",
+                platformName: "WEBGPU",
+                processingContext,
+                isNDCHalfZRange: true,
+                useReverseDepthBuffer: false,
+            } as unknown as _IProcessingOptions;
+            let code = "";
+            Initialize(options);
+            Process(ShaderStore.ShadersStoreWGSL["gaussianSplattingVertexShader"], options, (processedCode) => (code = processedCode), engine);
+            return { code, leftOverUniforms: processingContext.leftOverUniforms.map((uniform) => uniform.name) };
+        };
+
+        it.each([false, true])("reads the previous view-projection from the scene uniform buffer (compound: %s)", (compound) => {
+            const { code, leftOverUniforms } = processed(compound);
+            expect(code).toContain("scene.previousViewProjection");
+            expect(code).not.toContain("uniforms.previousViewProjection");
+            expect(leftOverUniforms).not.toContain("previousViewProjection");
+            // the world matrices of the previous frame are still the material's
+            expect(leftOverUniforms).toContain(compound ? "previousPartWorld" : "previousWorld");
+        });
     });
 
     describe("TAA jitter plugin", () => {
