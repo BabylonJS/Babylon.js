@@ -609,7 +609,7 @@ export class ObjectRenderer {
     public isReadyForRendering(viewportWidth: number, viewportHeight: number): boolean {
         this.prepareRenderList();
 
-        // nothing is drawn: the scene uniform buffer is prepared, but the cameras' view histories must not advance
+        // no draw: the view histories must not advance
         const viewHistoryIsReadOnly = this._scene._viewHistoryIsReadOnly;
         this._scene._viewHistoryIsReadOnly = true;
 
@@ -701,7 +701,7 @@ export class ObjectRenderer {
             this._engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, viewportWidth, viewportHeight);
         }
 
-        // the cameras keep a view history per object renderer, for all of its passes (until finishRender)
+        // the cameras keep a view history per object renderer
         this._currentViewPassId = this._scene._viewPassId;
         this._scene._viewPassId = this.renderPassId;
 

@@ -1323,23 +1323,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return ubo;
     }
 
-    /**
-     * @internal
-     * The logical pass the scene uniform buffer is finalized for: a camera keeps one view history per pass it renders in.
-     * Object renderers set their own for the time of their passes; the camera passes of the scene use RENDERPASS_MAIN.
-     */
+    /** @internal The pass the scene UBO is finalized for: cameras keep a view history per pass (object renderers set theirs) */
     public _viewPassId: number = Constants.RENDERPASS_MAIN;
 
-    /**
-     * @internal
-     * True while the scene uniform buffer is only prepared, with no draw (readiness checks): the view histories are read but do not advance.
-     */
+    /** @internal True during readiness checks: the view histories are read, not advanced */
     public _viewHistoryIsReadOnly = false;
 
     /**
-     * Gets the view-projection the camera rendered in the previous frame in the current logical pass, advancing that history on its
-     * first use in a frame. It starts again from the current view-projection when the camera did not render in that pass in the previous
-     * frame (first frame, camera switch).
+     * Gets the camera's view-projection of the previous frame in the current pass, advancing the history on its first use in a frame.
+     * It starts again when the camera did not render in that pass in the previous frame.
      * @param camera the camera whose view is being rendered
      * @returns the previous view-projection
      */
@@ -1352,7 +1344,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return history && history.frameId === frameId ? history.previous : transform;
         }
         if (!history || history.frameId < frameId - 1) {
-            // the histories of the passes this camera stopped rendering in are dropped
+            // drop the histories of passes the camera stopped rendering in
             histories.forEach((other, passId) => {
                 if (other.frameId < frameId - 1) {
                     histories.delete(passId);
@@ -1367,7 +1359,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             history.current.copyFrom(transform);
             history.frameId = frameId;
         } else if (history.current.updateFlag !== transform.updateFlag) {
-            // the transform changed during the pass (the camera moved, or the pass applied the aspect ratio of its target)
+            // the transform changed within the pass (camera moved, or the target's aspect ratio applied)
             history.current.copyFrom(transform);
         }
         return history.previous;

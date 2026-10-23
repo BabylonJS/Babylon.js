@@ -213,7 +213,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
                 const frameId = this._scene.getEngine().frameId;
                 camera._taaJitter.copyFrom(jitter);
                 camera._taaJitterFrameId = frameId;
-                // the cameras of a rig (stereo) draw their own views, each one with its own view history: they get the same jitter
+                // rig cameras (stereo) draw their own views: same jitter
                 for (const rigCamera of camera._rigCameras) {
                     rigCamera._taaJitter.copyFrom(jitter);
                     rigCamera._taaJitterFrameId = frameId;
@@ -261,7 +261,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
 
         const effect = this._drawWrapper.effect!;
 
-        // the camera's view history was reset (camera.resetViewHistory, a cut): the accumulated history is dropped in the same frame
+        // camera.resetViewHistory (a cut): drop the history in the same frame
         const camera = this.camera;
         const viewHistoryReset = !!camera && camera === this._viewHistoryCamera && camera._viewHistoryResetId !== this._viewHistoryResetId;
         this._viewHistoryCamera = camera;
