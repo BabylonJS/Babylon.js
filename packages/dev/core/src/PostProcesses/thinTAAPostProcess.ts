@@ -169,6 +169,8 @@ export class ThinTAAPostProcess extends EffectWrapper {
     private _hs: Halton2DSequence;
     private _firstUpdate = true;
     private _taaMaterialManager: Nullable<TAAMaterialManager>;
+    private _viewHistoryCamera: Nullable<Camera> = null;
+    private _viewHistoryResetId = 0;
 
     /**
      * Constructs a new TAA post process
@@ -259,7 +261,13 @@ export class ThinTAAPostProcess extends EffectWrapper {
 
         const effect = this._drawWrapper.effect!;
 
-        effect.setFloat("factor", (this.camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate ? 1 : this.factor);
+        // the camera's view history was reset (camera.resetViewHistory, a cut): the accumulated history is dropped in the same frame
+        const camera = this.camera;
+        const viewHistoryReset = !!camera && camera === this._viewHistoryCamera && camera._viewHistoryResetId !== this._viewHistoryResetId;
+        this._viewHistoryCamera = camera;
+        this._viewHistoryResetId = camera ? camera._viewHistoryResetId : 0;
+
+        effect.setFloat("factor", (camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate || viewHistoryReset ? 1 : this.factor);
 
         this._firstUpdate = false;
     }

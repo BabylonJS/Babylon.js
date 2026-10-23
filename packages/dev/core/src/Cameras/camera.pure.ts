@@ -465,6 +465,8 @@ export class Camera extends Node {
     public _computedViewMatrix = Matrix.Identity();
     /** @internal The view-projection this camera rendered in the previous and in the current frame, per logical pass (see Scene.finalizeSceneUbo) */
     public _viewHistories = new Map<number, { previous: Matrix; current: Matrix; frameId: number }>();
+    /** @internal Counts the calls to resetViewHistory, for the temporal effects of this camera's views */
+    public _viewHistoryResetId = 0;
     /** @internal The TAA jitter (clip space) of this camera's color passes, computed in the frame _taaJitterFrameId and applied until the next one */
     public _taaJitter = new Vector2();
     /** @internal */
@@ -545,6 +547,19 @@ export class Camera extends Node {
         }
 
         return false;
+    }
+
+    /**
+     * Resets the view history of the camera and of the cameras of its rig: the view-projection of the previous frame, in every pass
+     * they render in. Call it when the view jumps (a cut, a teleport): the next frame is rendered with no camera motion, and a TAA
+     * rendering this camera drops its accumulated history in the same frame instead of reprojecting it.
+     */
+    public resetViewHistory(): void {
+        this._viewHistories.clear();
+        this._viewHistoryResetId++;
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.resetViewHistory();
+        }
     }
 
     /**

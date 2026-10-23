@@ -22,6 +22,7 @@ import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { type Effect } from "core/Materials/effect";
 import { type Mesh } from "core/Meshes/mesh";
 import { TAAMaterialManager } from "core/PostProcesses/RenderPipeline/Pipelines/taaMaterialManager";
+import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { Scene } from "core/scene";
 import { vi } from "vitest";
@@ -212,6 +213,64 @@ describe("Scene uniform buffer: temporal data of the view", () => {
             const first = rendered(objectRenderer, 1);
             expect(first.previous).toEqual(first.viewProjection);
             objectRenderer.dispose();
+        });
+    });
+
+    describe("explicit reset", () => {
+        // the history weight the TAA binds for its resolve: 1 drops the accumulated color
+        const taaFactor = (taa: ThinTAAPostProcess) => {
+            const effect = taa.drawWrapper.effect!;
+            const setFloat = vi.spyOn(effect, "setFloat").mockImplementation(() => effect);
+            // no default bindings: the null engine compiles no pipeline for the effect
+            taa.bind(true);
+            const factor = setFloat.mock.calls.find((c) => c[0] === "factor")![1];
+            setFloat.mockRestore();
+            return factor;
+        };
+
+        it("starts the camera's history again in every pass, and the TAA drops its color history in the same frame", () => {
+            const taa = new ThinTAAPostProcess("taa", scene);
+            taa.camera = camA;
+            // it keeps its history while the camera moves (reprojected with the velocity)
+            taa.disableOnCameraMove = false;
+            const objectRenderer = renderer("renderer");
+            const frame = (x: number) => {
+                camA.position.x = x;
+                const result = { main: pass(camA), renderer: rendered(objectRenderer, 1), factor: taaFactor(taa) };
+                engine.endFrame();
+                return result;
+            };
+            frame(0);
+            expect(frame(1).factor).toBe(taa.factor);
+            // a cut: the view jumps
+            camA.resetViewHistory();
+            const cut = frame(50);
+            expect(cut.main.previous).toEqual(cut.main.viewProjection);
+            expect(cut.renderer.previous).toEqual(cut.renderer.viewProjection);
+            expect(cut.factor).toBe(1);
+            // then the history and the accumulation go on
+            const after = frame(51);
+            expect(after.main.previous).toEqual(cut.main.viewProjection);
+            expect(after.renderer.previous).toEqual(cut.renderer.viewProjection);
+            expect(after.factor).toBe(taa.factor);
+            objectRenderer.dispose();
+            taa.dispose();
+        });
+
+        it("resets the cameras of the rig with their parent", () => {
+            const rig = new FreeCamera("rig", new Vector3(0, 2, -10), scene);
+            rig.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, { interaxialDistance: 0.0637 });
+            const eyes = rig._rigCameras as FreeCamera[];
+            for (const eye of eyes) {
+                pass(eye);
+            }
+            engine.endFrame();
+            rig.resetViewHistory();
+            for (const eye of eyes) {
+                eye.position.x += 50;
+                const cut = pass(eye);
+                expect(cut.previous).toEqual(cut.viewProjection);
+            }
         });
     });
 
