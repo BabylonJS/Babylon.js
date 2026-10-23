@@ -63,6 +63,8 @@ export const Samplers = [
     "diffuseSampler",
     "bumpSampler",
     "reflectivitySampler",
+    "metallicSampler",
+    "roughnessSampler",
     "albedoSampler",
     "morphTargets",
     "boneSampler",
@@ -84,7 +86,11 @@ export const Uniforms = [
     "mPreviousBones",
     "bumpMatrix",
     "reflectivityMatrix",
+    "metallicMatrix",
+    "roughnessMatrix",
     "albedoMatrix",
+    "transmissionWeightMatrix",
+    "subsurfaceWeightMatrix",
     "reflectivityColor",
     "albedoColor",
     "reflectionMatrix",
@@ -1002,14 +1008,14 @@ export class GeometryBufferRenderer {
                     if (openpbrMaterial.subsurfaceWeight > 0) {
                         if (openpbrMaterial.subsurfaceWeightTexture) {
                             defines.push("#define SUBSURFACE_WEIGHT");
-                            defines.push(`#define SUBSURFACEWEIGHT_UV${openpbrMaterial.subsurfaceWeightTexture.coordinatesIndex + 1}`);
+                            defines.push(`#define SUBSURFACE_WEIGHT_UV${openpbrMaterial.subsurfaceWeightTexture.coordinatesIndex + 1}`);
                             needUv = true;
                         }
                     }
                     if (openpbrMaterial.transmissionWeight > 0) {
                         if (openpbrMaterial.transmissionWeightTexture) {
                             defines.push("#define TRANSMISSION_WEIGHT");
-                            defines.push(`#define TRANSMISSIONWEIGHT_UV${openpbrMaterial.transmissionWeightTexture.coordinatesIndex + 1}`);
+                            defines.push(`#define TRANSMISSION_WEIGHT_UV${openpbrMaterial.transmissionWeightTexture.coordinatesIndex + 1}`);
                             needUv = true;
                         }
                     }
