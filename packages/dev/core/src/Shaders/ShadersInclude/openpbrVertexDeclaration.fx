@@ -157,6 +157,11 @@ uniform vec2 vGeometryCoatNormalInfos;
 uniform mat4 geometryCoatNormalMatrix;
 #endif
 
+#ifdef GEOMETRY_COAT_TANGENT
+uniform vec2 vGeometryCoatTangentInfos;
+uniform mat4 geometryCoatTangentMatrix;
+#endif
+
 #ifdef THIN_FILM_WEIGHT
 uniform vec2 vThinFilmWeightInfos;
 uniform mat4 thinFilmWeightMatrix;

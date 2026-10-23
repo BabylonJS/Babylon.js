@@ -8,6 +8,7 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
+import { GetSampledTextureKey } from "../glTFUtilities";
 
 const NAME = "KHR_materials_anisotropy";
 
@@ -23,17 +24,15 @@ function OpenpbrAnisotropyStrengthToGltf(baseRoughness: number, anisotropy: numb
 }
 
 /**
- * Generate a unique ID for the merged anisotropy textures based on the internal texture data.
+ * Generate a unique ID for the merged anisotropy textures based on the internal texture data and sampling state.
  * This is used for caching merged textures.
  * @param babylonMaterial Source OpenPBR material
  * @returns A unique ID string for the merged anisotropy textures
  * @internal
  */
 function GetAnisoTextureId(babylonMaterial: OpenPBRMaterial): string {
-    const anisoStrengthTexture: Nullable<BaseTexture> = babylonMaterial.specularRoughnessAnisotropyTexture;
-    const tangentTexture = babylonMaterial.geometryTangentTexture;
-    const strengthId = anisoStrengthTexture && anisoStrengthTexture.getInternalTexture() ? anisoStrengthTexture!.getInternalTexture()!.uniqueId : "NoStrength";
-    const tangentId = tangentTexture && tangentTexture.getInternalTexture() ? tangentTexture!.getInternalTexture()!.uniqueId : "NoTangent";
+    const strengthId = GetSampledTextureKey(babylonMaterial.specularRoughnessAnisotropyTexture, "NoStrength");
+    const tangentId = GetSampledTextureKey(babylonMaterial.geometryTangentTexture, "NoTangent");
     return `${strengthId}_${tangentId}`;
 }
 
@@ -169,7 +168,7 @@ export class KHR_materials_anisotropy implements IGLTFExporterExtensionV2 {
                     if (babylonMaterial._useRoughnessFromMetallicTextureGreen) {
                         roughnessTexture = babylonMaterial.baseMetalnessTexture;
                     }
-                    const mergedAnisoTexture = this._anisoTexturesMap[babylonMaterial.id];
+                    const mergedAnisoTexture = this._anisoTexturesMap[GetAnisoTextureId(babylonMaterial)];
 
                     // If no textures are being used, we'll always output glTF-style anisotropy.
                     // If using OpenPBR anisotropy, convert the constants. Otherwise, just export what we have.

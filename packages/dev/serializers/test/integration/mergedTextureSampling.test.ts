@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, type ConsoleMessage, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 
 // The page (empty.html) exposes the full Babylon bundle, including the glTF serializer (GLTF2Export).
@@ -277,4 +277,153 @@ test.describe("Merged texture sampling", () => {
             expect(alphas[x]).toBeGreaterThan(alphas[x - 1]);
         }
     });
+
+    // Two materials share the same tangent (and strength) images but sample them differently. The merged (coat)
+    // anisotropy texture copies or bakes its inputs' sampling, so the second material must not reuse the first
+    // material's merged texture. Shader errors are collected because WebGPU reports them asynchronously, after the
+    // scene has already reported that it is ready.
+    const exportSharedAnisotropyAsync = async (extension: "coat" | "specular", withStrength: boolean) => {
+        const shaderErrors: string[] = [];
+        const onConsole = (message: ConsoleMessage) => {
+            if ((message.type() === "error" || message.type() === "warning") && /shader|WGSL|varying/i.test(message.text())) {
+                shaderErrors.push(message.text());
+            }
+        };
+        page.on("console", onConsole);
+        try {
+            const result = await page.evaluate(
+                async ({ extension, withStrength }) => {
+                    const scene = window.scene!;
+                    const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+                    const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+
+                    // 4x4 tangent map whose columns all differ.
+                    const columns = [
+                        [255, 128, 0],
+                        [128, 255, 0],
+                        [0, 128, 0],
+                        [128, 0, 0],
+                    ];
+                    const data = new Uint8Array(4 * 4 * 4);
+                    for (let y = 0; y < 4; y++) {
+                        for (let x = 0; x < 4; x++) {
+                            data.set([...columns[x], 255], (y * 4 + x) * 4);
+                        }
+                    }
+                    const tangent = new BABYLON.RawTexture(data, 4, 4, RGBA, scene, false, false, NEAREST);
+                    const strength = withStrength ? new BABYLON.RawTexture(new Uint8Array(64).fill(200), 4, 4, RGBA, scene, false, false, NEAREST) : null;
+                    // A second texture object referencing the same image data.
+                    const share = (source: InstanceType<typeof BABYLON.BaseTexture>) => {
+                        const texture = new BABYLON.Texture(null, scene, false, false, NEAREST);
+                        const internalTexture = source.getInternalTexture()!;
+                        internalTexture.incrementReferences();
+                        texture._texture = internalTexture;
+                        return texture;
+                    };
+                    const transformedTangent = share(tangent);
+                    transformedTangent.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+                    transformedTangent.uScale = 2;
+
+                    const createMaterial = (
+                        name: string,
+                        tangentTexture: InstanceType<typeof BABYLON.BaseTexture>,
+                        strengthTexture: InstanceType<typeof BABYLON.BaseTexture> | null
+                    ) => {
+                        const mat = new BABYLON.OpenPBRMaterial(name, scene);
+                        if (extension === "coat") {
+                            mat.coatWeight = 1;
+                            mat.coatRoughnessAnisotropy = 0.5;
+                            mat.geometryCoatTangentTexture = tangentTexture;
+                            mat.coatRoughnessAnisotropyTexture = strengthTexture;
+                        } else {
+                            mat.specularRoughnessAnisotropy = 0.5;
+                            mat.geometryTangentTexture = tangentTexture;
+                            mat.specularRoughnessAnisotropyTexture = strengthTexture;
+                        }
+                        const box = BABYLON.MeshBuilder.CreateBox(name, { size: 1 }, scene);
+                        box.material = mat;
+                    };
+                    createMaterial("identity", tangent, strength);
+                    createMaterial("transformed", transformedTangent, strength ? share(strength) : null);
+
+                    const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "aniso");
+                    const json = JSON.parse(gltf.files["aniso.gltf"] as string);
+                    const readAsync = async (name: string) => {
+                        const extensions = json.materials.find((m: { name: string }) => m.name === name).extensions;
+                        const info = extension === "coat" ? extensions.KHR_materials_coat.coatAnisotropyTexture : extensions.KHR_materials_anisotropy.anisotropyTexture;
+                        const uri = json.images[json.textures[info.index].source].uri as string;
+                        const bitmap = await createImageBitmap(gltf.files[uri] as Blob, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+                        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                        const context = canvas.getContext("2d")!;
+                        context.drawImage(bitmap, 0, 0);
+                        const row = Array.from(context.getImageData(0, 0, bitmap.width, 1).data);
+                        const texels: number[][] = [];
+                        for (let x = 0; x < bitmap.width; x++) {
+                            texels.push(row.slice(x * 4, x * 4 + 3));
+                        }
+                        return { transform: info.extensions?.KHR_texture_transform ?? null, texels };
+                    };
+                    const identity = await readAsync("identity");
+                    const transformed = await readAsync("transformed");
+                    // Give asynchronous (WebGPU) shader errors time to be reported.
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                    return { identity, transformed };
+                },
+                { extension, withStrength }
+            );
+            return { ...result, shaderErrors };
+        } finally {
+            page.off("console", onConsole);
+        }
+    };
+
+    const sameTexel = (a: number[], b: number[]) => a.every((value, i) => near(value, b[i]));
+
+    // Exporting waits for the scene to be ready, so these also check that the tangent textures compile in the GLSL
+    // (WebGL2) and WGSL (WebGPU) OpenPBR shaders.
+    const initEngineAsync = async (engineName: string) => {
+        if (engineName === "webgpu") {
+            const hasWebGPU = await page.evaluate(async () => !!(await (navigator as any).gpu?.requestAdapter()));
+            test.skip(!hasWebGPU, "WebGPU is not available");
+            // The canvas already has a WebGL context, so start over on a fresh page.
+            await page.goto(getGlobalConfig().baseUrl + `/empty.html`, { waitUntil: "load", timeout: 0 });
+            await page.evaluate(evaluateInitEngine, { engineName });
+            await page.evaluate(evaluateCreateScene);
+        }
+    };
+
+    for (const engineName of ["webgl2", "webgpu"]) {
+        for (const extension of ["coat", "specular"] as const) {
+            test(`${extension} anisotropy materials sharing a tangent image keep their own transforms (${engineName})`, async () => {
+                await initEngineAsync(engineName);
+                const result = await exportSharedAnisotropyAsync(extension, false);
+
+                expect(result.shaderErrors).toEqual([]);
+                expect(result.identity.transform).toBeNull();
+                expect(result.transformed.transform).not.toBeNull();
+                expect(result.transformed.transform.scale[0]).toBeCloseTo(2, 5);
+                // The transform is propagated, so both materials export the same, untransformed tangent texels.
+                expect(result.transformed.texels.length).toBe(4);
+                result.transformed.texels.forEach((texel, x) => expect(sameTexel(texel, result.identity.texels[x])).toBe(true));
+            });
+
+            test(`${extension} anisotropy materials sharing tangent and strength images bake their own transforms (${engineName})`, async () => {
+                await initEngineAsync(engineName);
+                const result = await exportSharedAnisotropyAsync(extension, true);
+
+                expect(result.shaderErrors).toEqual([]);
+                // Only the tangent is scaled, so its transform is baked into the merged texture rather than propagated.
+                expect(result.identity.transform).toBeNull();
+                expect(result.transformed.transform).toBeNull();
+                expect(result.identity.texels.length).toBe(4);
+                expect(new Set(result.identity.texels.map((t) => t.join(","))).size).toBe(4);
+                // uScale = 2 repeats the tangent map twice, so the second material's columns alternate.
+                const texels = result.transformed.texels;
+                expect(texels.length).toBe(4);
+                expect(sameTexel(texels[0], texels[2])).toBe(true);
+                expect(sameTexel(texels[1], texels[3])).toBe(true);
+                expect(sameTexel(texels[0], texels[1])).toBe(false);
+            });
+        }
+    }
 });

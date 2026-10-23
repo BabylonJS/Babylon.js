@@ -9,6 +9,7 @@ import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, Create
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { type Nullable } from "core/types";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { GetSampledTextureKey } from "../glTFUtilities";
 
 const NAME = "KHR_materials_coat";
 
@@ -24,17 +25,15 @@ function OpenpbrAnisotropyStrengthToGltf(baseRoughness: number, anisotropy: numb
 }
 
 /**
- * Generate a unique ID for the merged anisotropy textures based on the internal texture data.
+ * Generate a unique ID for the merged anisotropy textures based on the internal texture data and sampling state.
  * This is used for caching merged textures.
  * @param babylonMaterial Source OpenPBR material
  * @returns A unique ID string for the merged anisotropy textures
  * @internal
  */
 function GetAnisoTextureId(babylonMaterial: OpenPBRMaterial): string {
-    const anisoStrengthTexture: Nullable<BaseTexture> = babylonMaterial.coatRoughnessAnisotropyTexture;
-    const tangentTexture = babylonMaterial.geometryCoatTangentTexture;
-    const strengthId = anisoStrengthTexture && anisoStrengthTexture.getInternalTexture() ? anisoStrengthTexture!.getInternalTexture()!.uniqueId : "NoStrength";
-    const tangentId = tangentTexture && tangentTexture.getInternalTexture() ? tangentTexture!.getInternalTexture()!.uniqueId : "NoTangent";
+    const strengthId = GetSampledTextureKey(babylonMaterial.coatRoughnessAnisotropyTexture, "NoStrength");
+    const tangentId = GetSampledTextureKey(babylonMaterial.geometryCoatTangentTexture, "NoTangent");
     return `${strengthId}_${tangentId}`;
 }
 

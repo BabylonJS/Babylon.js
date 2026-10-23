@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { type INode, AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import { type FloatArray, type DataArray, type IndicesArray, type DeepImmutable } from "core/types";
+import { type FloatArray, type DataArray, type IndicesArray, type DeepImmutable, type Nullable } from "core/types";
 import { type Vector4, Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Material } from "core/Materials/material";
@@ -417,6 +417,22 @@ export function CopyTextureSampling(from: BaseTexture, to: Texture): void {
     to.vRotationCenter = source.vRotationCenter ?? 0.5;
     to.wRotationCenter = source.wRotationCenter ?? 0.5;
     to.homogeneousRotationInUVTransform = source.homogeneousRotationInUVTransform ?? false;
+}
+
+/**
+ * Generate a key identifying a texture's image data together with its sampling state (UV set, wrap modes and
+ * UV transform). A merge with shared sampling copies or bakes this state, so its result can only be reused for
+ * inputs that are sampled identically.
+ * @param texture The texture to generate a key for
+ * @param missing The key to use when there is no texture
+ * @returns A key for the texture and its sampling state
+ */
+export function GetSampledTextureKey(texture: Nullable<BaseTexture>, missing: string): string {
+    const internalTexture = texture?.getInternalTexture();
+    if (!texture || !internalTexture) {
+        return missing;
+    }
+    return `${internalTexture.uniqueId}:${texture.coordinatesIndex}:${texture.wrapU}:${texture.wrapV}:${texture.getTextureMatrix().asArray().join(",")}`;
 }
 
 /**
