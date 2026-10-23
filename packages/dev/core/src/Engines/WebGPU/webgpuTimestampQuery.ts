@@ -1,11 +1,6 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-// writeTimestamp is an experimental Chrome extension not yet part of the WebGPU spec typings
-interface GPUCommandEncoderWithTimestamp extends GPUCommandEncoder {
-    writeTimestamp?(querySet: GPUQuerySet, queryIndex: number): void;
-}
-
 import { type WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
@@ -96,7 +91,7 @@ export class WebGPUTimestampQuery {
         const currentFrameId = this._engine.frameId;
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-        this._measureDuration.stopPass(index).then((duration_) => {
+        this._measureDuration.stopPass(index, this._engine._renderEncoder).then((duration_) => {
             gpuPerfCounter._addDuration(currentFrameId, duration_ !== null && duration_ > 0 ? duration_ : 0);
         });
     }
@@ -110,20 +105,25 @@ export class WebGPUTimestampQuery {
 export class WebGPUDurationMeasure {
     private _querySet: WebGPUQuerySet;
     private _count: number;
+    private _startDescriptor: GPUComputePassDescriptor;
+    private _stopDescriptor: GPUComputePassDescriptor;
 
     constructor(engine: WebGPUEngine, device: GPUDevice, bufferManager: WebGPUBufferManager, count = 2, querySetLabel?: string) {
         this._count = count;
         this._querySet = new WebGPUQuerySet(engine, count, WebGPUConstants.QueryType.Timestamp, device, bufferManager, true, querySetLabel);
+        // timestamps are written by passes: an empty compute pass stamps the start of the commands, another one their end
+        this._startDescriptor = { timestampWrites: { querySet: this._querySet.querySet, beginningOfPassWriteIndex: 0 } };
+        this._stopDescriptor = { timestampWrites: { querySet: this._querySet.querySet, endOfPassWriteIndex: 1 } };
     }
 
     public start(encoder: GPUCommandEncoder): void {
-        (encoder as GPUCommandEncoderWithTimestamp).writeTimestamp?.(this._querySet.querySet, 0);
+        encoder.beginComputePass(this._startDescriptor).end();
     }
 
     public async stop(encoder: GPUCommandEncoder): Promise<number | null> {
-        (encoder as GPUCommandEncoderWithTimestamp).writeTimestamp?.(this._querySet.querySet, 1);
+        encoder.beginComputePass(this._stopDescriptor).end();
 
-        return (encoder as GPUCommandEncoderWithTimestamp).writeTimestamp ? await this._querySet.readTwoValuesAndSubtract(0) : 0;
+        return await this._querySet.readTwoValuesAndSubtract(0, encoder);
     }
 
     public startPass(descriptor: GPURenderPassDescriptor | GPUComputePassDescriptor, index: number): void {
@@ -138,8 +138,8 @@ export class WebGPUDurationMeasure {
         };
     }
 
-    public async stopPass(index: number): Promise<number | null> {
-        return await this._querySet.readTwoValuesAndSubtract(index + 2);
+    public async stopPass(index: number, encoder?: GPUCommandEncoder): Promise<number | null> {
+        return await this._querySet.readTwoValuesAndSubtract(index + 2, encoder);
     }
 
     public dispose() {
