@@ -75,10 +75,10 @@ export class SystemBlock extends NodeParticleBlock {
     public preWarmCycles = 0;
 
     /**
-     * Gets or sets the time step multiplier used for pre-warm
+     * Gets or sets the time step multiplier used for pre-warm (default is 1)
      */
     @editableInPropertyPage("Pre-warm step multiplier", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
-    public preWarmStepOffset = 0;
+    public preWarmStepOffset = 1;
 
     /**
      * Gets or sets a boolean indicating if the system is billboard based
@@ -362,9 +362,11 @@ export class SystemBlock extends NodeParticleBlock {
 
         this.capacity = serializationObject.capacity;
         this.manualEmitCount = serializationObject.manualEmitCount ?? -1;
-        this.updateSpeed = serializationObject.updateSpeed ?? 0.0167;
+        // Graphs saved before updateSpeed/preWarmStepOffset were serialized (Nov 2025) ran with
+        // ParticleSystem's defaults (updateSpeed 0.01, preWarmStepOffset 1), so restore those.
+        this.updateSpeed = serializationObject.updateSpeed ?? 0.01;
         this.preWarmCycles = serializationObject.preWarmCycles ?? 0;
-        this.preWarmStepOffset = serializationObject.preWarmStepOffset ?? 0;
+        this.preWarmStepOffset = serializationObject.preWarmStepOffset ?? 1;
         this.isBillboardBased = serializationObject.isBillboardBased ?? true;
         this.billBoardMode = serializationObject.billBoardMode ?? Constants.PARTICLES_BILLBOARDMODE_ALL;
         this.isLocal = serializationObject.isLocal ?? false;

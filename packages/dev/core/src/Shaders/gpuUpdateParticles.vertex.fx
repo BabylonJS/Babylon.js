@@ -299,7 +299,7 @@ void main() {
     float randZ = sin(phi) * sin(theta);
 
     newPosition = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, abs(randY), randZ);
-    newDirection = newPosition + directionRandomizer * randoms3;    
+    newDirection = normalize(newPosition + directionRandomizer * randoms3);
 #elif defined(SPHEREEMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
     vec3 randoms3 = getRandomVec3(seed.z);
