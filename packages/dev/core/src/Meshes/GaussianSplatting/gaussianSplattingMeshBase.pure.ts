@@ -10,7 +10,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Matrix, TmpVectors, Vector2, Vector3, type Quaternion } from "core/Maths/math.vector.pure";
 
 import { Logger } from "core/Misc/logger";
-import { Observable } from "core/Misc/observable";
+import { Observable, type Observer } from "core/Misc/observable";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget.pure";
@@ -600,6 +600,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
+    private _cameraRemovedObserver: Nullable<Observer<Camera>> = null;
 
     protected static readonly _DefaultViewUpdateThreshold = 1e-4;
 
@@ -1221,7 +1222,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._material = gaussianSplattingMaterial;
 
         // delete meshes created for cameras on camera removal
-        this._scene.onCameraRemovedObservable.add((camera: Camera) => {
+        this._cameraRemovedObserver = this._scene.onCameraRemovedObservable.add((camera: Camera) => {
             const cameraId = camera.uniqueId;
             // delete mesh for this camera
             const cameraViewInfos = this._cameraViewInfos.get(cameraId);
@@ -2522,6 +2523,9 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         this.onPartCountChangedObservable.clear();
         this.onPartRemovedObservable.clear();
+
+        this._scene.onCameraRemovedObservable.remove(this._cameraRemovedObserver);
+        this._cameraRemovedObserver = null;
 
         // delete meshes created for each camera
         this._cameraViewInfos.forEach((cameraViewInfo) => {
