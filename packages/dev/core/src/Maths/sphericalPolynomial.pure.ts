@@ -404,6 +404,8 @@ export class SphericalPolynomial {
         this.xx.addInPlace(colorVector);
         this.yy.addInPlace(colorVector);
         this.zz.addInPlace(colorVector);
+        // The cached harmonics no longer match the coefficients; rebuild them on next use.
+        this._harmonics = null;
     }
 
     /**
@@ -420,6 +422,8 @@ export class SphericalPolynomial {
         this.yz.scaleInPlace(scale);
         this.zx.scaleInPlace(scale);
         this.xy.scaleInPlace(scale);
+        // The cached harmonics no longer match the coefficients; rebuild them on next use.
+        this._harmonics = null;
     }
 
     /**
