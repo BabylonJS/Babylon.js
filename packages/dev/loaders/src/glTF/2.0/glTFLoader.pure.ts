@@ -1326,7 +1326,6 @@ export class GLTFLoader implements IGLTFLoader {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             const name = targetNames ? targetNames[index] : `morphTarget${index}`;
             babylonMesh.morphTargetManager.addTarget(new MorphTarget(name, weight, babylonMesh.getScene()));
-            // TODO: tell the target whether it has positions, normals, tangents
         }
     }
 
@@ -1337,10 +1336,18 @@ export class GLTFLoader implements IGLTFLoader {
 
         const promises = new Array<Promise<unknown>>();
 
+        // Vertex-attribute morphing requires positions, even for targets that only change other attributes.
+        const targetAttributes = new Set(["POSITION"]);
+        for (const target of primitive.targets) {
+            for (const attribute of Object.keys(target)) {
+                targetAttributes.add(attribute);
+            }
+        }
+
         const morphTargetManager = babylonMesh.morphTargetManager!;
         for (let index = 0; index < morphTargetManager.numTargets; index++) {
             const babylonMorphTarget = morphTargetManager.getTarget(index);
-            promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonGeometry, primitive.targets[index], babylonMorphTarget));
+            promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonGeometry, primitive.targets[index], targetAttributes, babylonMorphTarget));
         }
 
         return Promise.all(promises).then(() => {
@@ -1366,17 +1373,24 @@ export class GLTFLoader implements IGLTFLoader {
         context: string,
         babylonGeometry: Geometry,
         attributes: { [name: string]: number },
+        targetAttributes: Set<string>,
         babylonMorphTarget: MorphTarget
     ): Promise<void> {
         const promises = new Array<Promise<unknown>>();
 
         const loadAttribute = (attribute: string, kind: string, setData: (babylonVertexBuffer: VertexBuffer, data: Float32Array) => void) => {
-            if (attributes[attribute] == undefined) {
+            if (!targetAttributes.has(attribute)) {
                 return;
             }
 
             const babylonVertexBuffer = babylonGeometry.getVertexBuffer(kind);
             if (!babylonVertexBuffer) {
+                return;
+            }
+
+            if (attributes[attribute] == undefined) {
+                const size = attribute === "TANGENT" ? 3 : babylonVertexBuffer.getSize();
+                setData(babylonVertexBuffer, new Float32Array(babylonGeometry.getTotalVertices() * size));
                 return;
             }
 
