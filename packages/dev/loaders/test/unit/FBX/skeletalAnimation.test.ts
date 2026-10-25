@@ -54,7 +54,113 @@ describe("FBX skeletal animation loading", () => {
         scene.dispose();
         engine.dispose();
     });
+
+    it("bounds inherited rig refinement independently of the number of animated bones", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+
+        try {
+            const result = await new FBXFileLoader().importMeshAsync(null, scene, animatedInheritedRigFbx(), "");
+            const group = result.animationGroups[0];
+            expect(group).toBeDefined();
+            expect(group.from).toBe(0);
+            expect(group.to).toBe(30);
+
+            const rotations = group.targetedAnimations.filter(({ animation }) => animation.targetProperty === "rotationQuaternion");
+            expect(rotations).toHaveLength(4);
+            for (const { animation } of rotations) {
+                const keys = animation.getKeys();
+                expect(keys.length).toBeGreaterThan(31);
+                expect(keys.length).toBeLessThanOrEqual(121);
+                expect(keys[0].frame).toBe(0);
+                expect(keys[keys.length - 1].frame).toBe(30);
+                for (let i = 1; i < keys.length; i++) {
+                    expect(keys[i].frame).toBeGreaterThan(keys[i - 1].frame);
+                }
+            }
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
 });
+
+function animatedInheritedRigFbx(): string {
+    const models: string[] = [];
+    const curves: string[] = [];
+    const connections: string[] = [];
+    for (let i = 0; i < 4; i++) {
+        const modelId = 10 + i;
+        const curveNodeId = 100 + i * 4;
+        models.push(`Model: ${modelId}, "Model::Bone${i}", "LimbNode" {
+            Properties70: {
+                P: "Lcl Translation", "Lcl Translation", "", "A",0,1,0
+                P: "InheritType", "enum", "", "",2
+            }
+        }`);
+        curves.push(`AnimationCurveNode: ${curveNodeId}, "AnimCurveNode::R", "" {
+        }`);
+        connections.push(`C: "OO", ${modelId}, ${i === 0 ? 0 : modelId - 1}
+            C: "OO", ${curveNodeId}, 21
+            C: "OP", ${curveNodeId}, ${modelId}, "Lcl Rotation"`);
+        for (let axis = 0; axis < 3; axis++) {
+            const curveId = curveNodeId + axis + 1;
+            curves.push(`AnimationCurve: ${curveId}, "AnimCurve::${axis}", "" {
+                KeyTime: *2 {
+                    a: 0,46186158000
+                }
+                KeyValueFloat: *2 {
+                    a: 0,${(axis + 1) * 180 * 2 ** i}
+                }
+            }`);
+            connections.push(`C: "OP", ${curveId}, ${curveNodeId}, "d|${"XYZ"[axis]}"`);
+        }
+    }
+    return `; FBX 7.4.0 project file
+Objects: {
+    Geometry: 1, "Geometry::Triangle", "Mesh" {
+        Vertices: *9 {
+            a: 0,0,0,1,0,0,0,1,0
+        }
+        PolygonVertexIndex: *3 {
+            a: 0,1,-3
+        }
+    }
+    Model: 2, "Model::Triangle", "Mesh" {
+    }
+    ${models.join("\n")}
+    Deformer: 3, "Deformer::Skin", "Skin" {
+    }
+    Deformer: 4, "SubDeformer::Bone3", "Cluster" {
+        Indexes: *3 {
+            a: 0,1,2
+        }
+        Weights: *3 {
+            a: 1,1,1
+        }
+        Transform: *16 {
+            a: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
+        }
+        TransformLink: *16 {
+            a: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
+        }
+    }
+    AnimationStack: 20, "AnimStack::Take", "" {
+    }
+    AnimationLayer: 21, "AnimLayer::Base", "" {
+    }
+    ${curves.join("\n")}
+}
+Connections: {
+    C: "OO", 1, 2
+    C: "OO", 2, 0
+    C: "OO", 3, 1
+    C: "OO", 4, 3
+    C: "OO", 13, 4
+    C: "OO", 21, 20
+    ${connections.join("\n")}
+}`;
+}
 
 function minimalAnimatedSkinFbx(): string {
     return `; FBX 7.4.0 project file
