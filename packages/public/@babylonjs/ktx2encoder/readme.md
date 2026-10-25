@@ -26,23 +26,27 @@ const ktx2 = await encoder.encode(rgba, width, height, { usage: "color" });
 
 Configure `JSModule`, `WasmBinary`, `JSModuleURL`, and `WasmModuleURL` before constructing an encoder. Each instance captures those settings and initializes lazily once. Injected resources take precedence over URLs. Each call releases its native encoder; the standalone instance has no `dispose` method.
 
-## Encode a Babylon texture
+## Options and defaults
 
-Also install `@babylonjs/core` for the texture adapter.
+Per-call options are `usage` (required), the codec settings for that usage, `flipY` (default `false`) and `generateMipmaps` (default `true`). Options that do not apply to the usage throw.
+
+`KTX2Encoder.DefaultEncoderOptions` forces `etc1sQualityLevel`, `etc1sCompressionLevel`, `uastcQualityLevel` and `zstandard` for every later call. Like the KTX2 decoder's defaults, defined values override per-call values. They apply only to matching usages: ETC1S settings to `color`, UASTC settings to `data` and `normal`. Set a field to `undefined` to clear it. `usage`, `flipY` and `generateMipmaps` are never defaults.
 
 ```js
-import { EncodeTextureToKTX2Async } from "@babylonjs/core/Misc/khronosTextureContainer2Encoder.js";
-
-const ktx2 = await EncodeTextureToKTX2Async(texture, { usage: "normal" });
+KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 200, zstandard: false };
 ```
+
+## Babylon textures
+
+Core's `KhronosTextureContainer2Encoder` configuration is groundwork for the upcoming glTF exporter, which will be the public entry point for encoding Babylon textures. This release has no public texture-encoding helper and no public worker bootstrap.
 
 ## Limits
 
-Both dimensions must be multiples of 4 from 4 through 16,384, with at most 12,582,912 pixels. Pixels are not resized. The texture adapter accepts 2D unsigned-byte textures with straight alpha; compressed textures require a scene.
+Both dimensions must be multiples of 4 from 4 through 16,384, with at most 12,582,912 pixels. This cap comes from the Basis v2_50 wasm32 build, so 4096x4096 is unsupported. Pixels are not resized.
 
 Each worker starts with about 128 MiB of WASM memory. Main-thread compression is synchronous. HDR, threaded WASM, progress reporting, and glTF export are not included.
 
-The official Basis v2_50 factory requires CSP `'unsafe-eval'` for Embind.
+The official Basis v2_50 factory requires CSP `'unsafe-eval'` for Embind (BinomialLLC/basis_universal#464 and #474).
 
 ## Packaged codec
 
