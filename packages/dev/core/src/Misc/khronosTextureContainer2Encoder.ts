@@ -454,7 +454,7 @@ export class KhronosTextureContainer2Encoder {
             jsEncoderModuleUrl: Tools.GetBabylonScriptURL(urls.jsEncoderModule, true),
             basisJsUrl: Tools.GetBabylonScriptURL(urls.jsBasisEncoder, true),
             basisWasmUrl: Tools.GetBabylonScriptURL(urls.wasmBasisEncoder, true),
-            dependencies,
+            dependencies: dependencies ? { ...dependencies } : undefined,
         };
         if (!UsesWorkers(numWorkers)) {
             KhronosTextureContainer2Encoder._MainThreadSettings = settings;

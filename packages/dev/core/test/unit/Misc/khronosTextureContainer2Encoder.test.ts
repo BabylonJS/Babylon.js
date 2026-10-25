@@ -675,6 +675,25 @@ describe("KhronosTextureContainer2Encoder", () => {
             expect(Tools.LoadFileAsync).not.toHaveBeenCalled();
         });
 
+        it("captures main-thread dependency entries at first construction", async () => {
+            const captured: unknown[] = [];
+            const Encoder = StubEncoder(
+                () => new Uint8Array([7]),
+                async function (this: { configuration: unknown }) {
+                    captured.push(this.configuration);
+                }
+            );
+            const originalFactory = () => ({});
+            const originalWasm = new ArrayBuffer(4);
+            const dependencies = { jsEncoderModule: { KTX2Encoder: Encoder }, jsBasisEncoder: originalFactory, wasmBasisEncoder: originalWasm };
+            const encoder = new KhronosTextureContainer2Encoder({ numWorkers: 0, binariesAndModulesContainer: dependencies });
+            dependencies.jsEncoderModule = { KTX2Encoder: StubEncoder(() => new Uint8Array([9])) };
+            dependencies.jsBasisEncoder = () => ({});
+            dependencies.wasmBasisEncoder = new ArrayBuffer(8);
+            await expect(encoder._encodeAsync(CreateTexture(), { usage: "color" })).resolves.toEqual(new Uint8Array([7]));
+            expect(captured).toEqual([expect.objectContaining({ JSModule: originalFactory, WasmBinary: originalWasm })]);
+        });
+
         it("yields between main-thread encodes so a pending job can be cancelled", async () => {
             const abort = new AbortController();
             const encode = vi.fn(() => {
