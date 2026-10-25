@@ -277,12 +277,14 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Removes a specific vertex data
+     * Invalidates cached WebGPU draws that may reference the removed buffer.
      * @param kind defines the data kind (Position, normal, etc...)
      */
     public removeVerticesData(kind: string) {
         if (this._vertexBuffers[kind]) {
             this._vertexBuffers[kind].dispose();
             delete this._vertexBuffers[kind];
+            this._resetDrawCache();
         }
 
         if (this._vertexArrayObjects) {
@@ -292,6 +294,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Affect a vertex buffer to the geometry. the vertexBuffer.getKind() function is used to determine where to store the data
+     * Invalidates cached WebGPU draws so they use the new vertex buffer.
      * @param buffer defines the vertex buffer to use
      * @param totalVertices defines the total number of vertices for position kind (could be null)
      * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
@@ -329,6 +332,7 @@ export class Geometry implements IGetSetVerticesData {
             }
         }
 
+        this._resetDrawCache();
         this._notifyUpdate(kind);
     }
 
@@ -817,6 +821,17 @@ export class Geometry implements IGetSetVerticesData {
 
         // instances
         mesh.synchronizeInstances();
+    }
+
+    private _resetDrawCache(): void {
+        if (!this._engine.isWebGPU) {
+            return;
+        }
+
+        // Render bundles retain buffer bindings even when the vertex layout does not change.
+        for (const mesh of this._meshes) {
+            mesh.resetDrawCache();
+        }
     }
 
     private _notifyUpdate(kind?: string) {
