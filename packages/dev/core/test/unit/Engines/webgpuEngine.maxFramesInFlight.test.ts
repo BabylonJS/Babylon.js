@@ -126,4 +126,25 @@ describe("WebGPUEngine.maxFramesInFlight", () => {
         await finishOldest();
         expect(engine["_framesInFlight"]).toBe(1);
     });
+
+    it("neither starts nor counts a frame the page skips in the background, and counts one it renders there", async () => {
+        const { engine, device, finishOldest } = CreateWebGPULikeEngine();
+        engine.maxFramesInFlight = 2;
+        const begin = vi.spyOn(engine, "beginFrame");
+        engine["_windowIsBackground"] = true;
+        engine.renderEvenInBackground = false;
+        engine["_processFrame"]();
+        expect(begin).not.toHaveBeenCalled();
+        expect(device.queue.onSubmittedWorkDone).not.toHaveBeenCalled();
+
+        engine.renderEvenInBackground = true;
+        engine["_processFrame"]();
+        expect(begin).toHaveBeenCalledTimes(1);
+        expect(engine["_framesInFlight"]).toBe(1);
+
+        // back in front, the GPU released it
+        engine["_windowIsBackground"] = false;
+        await finishOldest();
+        expect(engine["_framesInFlight"]).toBe(0);
+    });
 });
