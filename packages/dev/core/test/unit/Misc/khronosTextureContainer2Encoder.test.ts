@@ -52,6 +52,7 @@ class FakeWorker {
     public messages: Message[] = [];
     public transfers: Transferable[][] = [];
     public terminated = false;
+    public failed = false;
     private readonly _listeners = new Map<string, Set<(event: Event) => void>>();
 
     constructor() {
@@ -75,14 +76,19 @@ class FakeWorker {
     public postMessage(message: Message, transfer: Transferable[] = []) {
         this.messages.push(message);
         this.transfers.push(transfer);
+        if (this.failed || this.terminated) {
+            return;
+        }
         if (message.action === "init") {
             const error = FakeWorker.initError;
             queueMicrotask(() => this.reply(error ? { action: "error", id: message.id, message: error } : { action: "init", id: message.id }));
         }
     }
 
-    public fail(message: string) {
-        this._listeners.get("error")?.forEach((listener) => listener({ type: "error", message } as unknown as ErrorEvent));
+    public fail(message: string, type = "error") {
+        this.failed = true;
+        const event = Object.assign(new Event(type), { message });
+        this._listeners.get(type)?.forEach((listener) => listener(event));
     }
 
     public reply(data: object) {
@@ -276,7 +282,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             worker.finish();
             await second;
             expect(worker.messages.filter((message) => message.action === "init")).toHaveLength(1);
-            expect(worker.listenerCount).toBe(0);
+            expect(worker.listenerCount).toBe(2);
         });
 
         it("rejects initialization failures and retries on the next job", async () => {
@@ -305,40 +311,173 @@ describe("KhronosTextureContainer2Encoder", () => {
             expect(Tools.LoadFileAsync).toHaveBeenCalledTimes(2);
         });
 
-        it("rejects worker startup errors raised while the WASM is loading", async () => {
+        it("replaces a failed startup worker for queued and continued jobs before idle expiry", async () => {
+            vi.useFakeTimers();
+            const now = Date.now();
             let resolveWasm: (data: ArrayBuffer) => void = () => {};
             vi.mocked(Tools.LoadFileAsync).mockReturnValueOnce(new Promise((resolve) => (resolveWasm = resolve)));
             const encoder = new KhronosTextureContainer2Encoder(1);
-            const result = encoder._encodeAsync(CreateTexture(), { usage: "color" });
-            await vi.waitFor(() => expect(FakeWorker.instances).toHaveLength(1));
-            FakeWorker.instances[0].fail("Worker script failed");
+            const texture = CreateTexture();
+            const first = encoder._encodeAsync(texture, { usage: "color" });
+            const rejected = expect(first).rejects.toThrow("Worker script failed");
+            const queued = encoder._encodeAsync(texture, { usage: "data" });
+            await vi.advanceTimersByTimeAsync(0);
+            expect(FakeWorker.instances).toHaveLength(1);
+            const failed = FakeWorker.instances[0];
+            failed.fail("Worker script failed");
+            await rejected;
+            await vi.advanceTimersByTimeAsync(0);
+            expect(failed.terminated).toBe(true);
+            expect(failed.listenerCount).toBe(0);
+            expect(FakeWorker.instances).toHaveLength(2);
             resolveWasm(new ArrayBuffer(8));
-            await expect(result).rejects.toThrow("Worker script failed");
+            await vi.advanceTimersByTimeAsync(0);
+            const replacement = FakeWorker.instances[1];
+            expect(failed.messages).toHaveLength(0);
+            expect(replacement.encodes).toHaveLength(1);
+            replacement.finish();
+            await expect(queued).resolves.toEqual(new Uint8Array([1, 2, 3]));
+            for (let i = 0; i < 3; i++) {
+                const next = encoder._encodeAsync(texture, { usage: "color" });
+                await vi.advanceTimersByTimeAsync(0);
+                expect(replacement.encodes).toHaveLength(i + 2);
+                replacement.finish();
+                await expect(next).resolves.toEqual(new Uint8Array([1, 2, 3]));
+            }
+            expect(FakeWorker.instances).toHaveLength(2);
+            expect(failed.messages).toHaveLength(0);
+            expect(Date.now()).toBe(now);
         });
 
-        it("rejects encode errors, keeps the worker, and removes its listeners", async () => {
+        it.each(["error", "messageerror"])("replaces a worker after an uncaught %s without stranding queued jobs", async (type) => {
+            vi.useFakeTimers();
+            const now = Date.now();
             const encoder = new KhronosTextureContainer2Encoder(1);
-            const result = encoder._encodeAsync(CreateTexture(), { usage: "color" });
-            await vi.waitFor(() => expect(FakeWorker.instances[0]?.encodes).toHaveLength(1));
+            const texture = CreateTexture();
+            const first = encoder._encodeAsync(texture, { usage: "color" });
+            const rejected = expect(first).rejects.toThrow(type === "error" ? "Worker crashed" : "deserialized");
+            const queued = encoder._encodeAsync(texture, { usage: "data" });
+            await vi.advanceTimersByTimeAsync(0);
+            expect(FakeWorker.instances).toHaveLength(1);
+            const failed = FakeWorker.instances[0];
+            expect(failed.encodes).toHaveLength(1);
+            const messageCount = failed.messages.length;
+            failed.fail("Worker crashed", type);
+            await rejected;
+            await vi.advanceTimersByTimeAsync(0);
+            expect(failed.terminated).toBe(true);
+            expect(failed.listenerCount).toBe(0);
+            expect(FakeWorker.instances).toHaveLength(2);
+            const replacement = FakeWorker.instances[1];
+            expect(replacement.encodes).toHaveLength(1);
+            replacement.finish();
+            await expect(queued).resolves.toEqual(new Uint8Array([1, 2, 3]));
+            for (let i = 0; i < 3; i++) {
+                const next = encoder._encodeAsync(texture, { usage: "color" });
+                await vi.advanceTimersByTimeAsync(0);
+                expect(replacement.encodes).toHaveLength(i + 2);
+                replacement.finish();
+                await expect(next).resolves.toEqual(new Uint8Array([1, 2, 3]));
+            }
+            expect(failed.messages).toHaveLength(messageCount);
+            expect(FakeWorker.instances).toHaveLength(2);
+            expect(Date.now()).toBe(now);
+        });
+
+        it("replaces a worker that fails between jobs without advancing the idle timer", async () => {
+            vi.useFakeTimers();
+            const now = Date.now();
+            const encoder = new KhronosTextureContainer2Encoder(1);
+            const texture = CreateTexture();
+            const first = encoder._encodeAsync(texture, { usage: "color" });
+            await vi.advanceTimersByTimeAsync(0);
+            const failed = FakeWorker.instances[0];
+            failed.finish();
+            await first;
+            const messageCount = failed.messages.length;
+            failed.fail("Idle worker crashed");
+            expect(failed.terminated).toBe(true);
+            const queued = [encoder._encodeAsync(texture, { usage: "data" }), encoder._encodeAsync(texture, { usage: "normal" })];
+            for (let i = 0; i < queued.length; i++) {
+                await vi.advanceTimersByTimeAsync(0);
+                expect(FakeWorker.instances).toHaveLength(2);
+                const replacement = FakeWorker.instances[1];
+                expect(replacement.encodes).toHaveLength(i + 1);
+                replacement.finish();
+                await expect(queued[i]).resolves.toEqual(new Uint8Array([1, 2, 3]));
+            }
+            expect(failed.messages).toHaveLength(messageCount);
+            expect(failed.listenerCount).toBe(0);
+            expect(Date.now()).toBe(now);
+        });
+
+        it("replaces a worker that fails while waiting for its initialization reply", async () => {
+            vi.useFakeTimers();
+            vi.spyOn(FakeWorker.prototype, "postMessage").mockImplementationOnce(function (this: FakeWorker, message) {
+                this.messages.push(message);
+            });
+            const encoder = new KhronosTextureContainer2Encoder(1);
+            const first = encoder._encodeAsync(CreateTexture(), { usage: "color" });
+            const rejected = expect(first).rejects.toThrow("Init crashed");
+            const queued = encoder._encodeAsync(CreateTexture(), { usage: "data" });
+            await vi.advanceTimersByTimeAsync(0);
+            const failed = FakeWorker.instances[0];
+            expect(failed.messages.map(({ action }) => action)).toEqual(["init"]);
+            failed.fail("Init crashed");
+            await rejected;
+            await vi.advanceTimersByTimeAsync(0);
+            expect(failed.terminated).toBe(true);
+            expect(failed.listenerCount).toBe(0);
+            expect(FakeWorker.instances).toHaveLength(2);
+            expect(FakeWorker.instances[1].encodes).toHaveLength(1);
+            FakeWorker.instances[1].finish();
+            await expect(queued).resolves.toEqual(new Uint8Array([1, 2, 3]));
+            expect(failed.encodes).toHaveLength(0);
+        });
+
+        it("rejects normal encode-error replies and reuses the healthy worker", async () => {
+            vi.useFakeTimers();
+            const encoder = new KhronosTextureContainer2Encoder(1);
+            const texture = CreateTexture();
+            const result = encoder._encodeAsync(texture, { usage: "color" });
+            const rejected = expect(result).rejects.toThrow("Encode failed");
+            const queued = encoder._encodeAsync(texture, { usage: "data" });
+            await vi.advanceTimersByTimeAsync(0);
             const worker = FakeWorker.instances[0];
             worker.reply({ action: "encoded", id: -1, data: new Uint8Array() });
             worker.finish("Encode failed");
-            await expect(result).rejects.toThrow("Encode failed");
+            await rejected;
+            await vi.advanceTimersByTimeAsync(0);
+            expect(FakeWorker.instances).toHaveLength(1);
+            expect(worker.encodes).toHaveLength(2);
+            worker.finish();
+            await expect(queued).resolves.toEqual(new Uint8Array([1, 2, 3]));
             expect(worker.terminated).toBe(false);
-            expect(worker.listenerCount).toBe(0);
         });
 
-        it.each(["init", "encode"])("rejects %s postMessage failures", async (action) => {
+        it.each(["init", "setDefaultEncoderOptions", "encode"])("recovers queued jobs after a %s postMessage failure", async (action) => {
+            vi.useFakeTimers();
             const postMessage = FakeWorker.prototype.postMessage;
+            let failed = false;
             vi.spyOn(FakeWorker.prototype, "postMessage").mockImplementation(function (this: FakeWorker, message, transfer) {
-                if (message.action === action) {
+                if (!failed && message.action === action) {
+                    failed = true;
                     throw new Error("Transfer failed");
                 }
                 postMessage.call(this, message, transfer);
             });
             const encoder = new KhronosTextureContainer2Encoder(1);
-            await expect(encoder._encodeAsync(CreateTexture(), { usage: "color" })).rejects.toThrow("Transfer failed");
+            const first = encoder._encodeAsync(CreateTexture(), { usage: "color" });
+            const rejected = expect(first).rejects.toThrow("Transfer failed");
+            const queued = encoder._encodeAsync(CreateTexture(), { usage: "data" });
+            await vi.advanceTimersByTimeAsync(0);
+            await rejected;
+            expect(FakeWorker.instances[0].terminated).toBe(true);
             expect(FakeWorker.instances[0].listenerCount).toBe(0);
+            expect(FakeWorker.instances).toHaveLength(2);
+            expect(FakeWorker.instances[1].encodes).toHaveLength(1);
+            FakeWorker.instances[1].finish();
+            await expect(queued).resolves.toEqual(new Uint8Array([1, 2, 3]));
         });
 
         it("rejects worker construction failures", async () => {
@@ -352,6 +491,33 @@ describe("KhronosTextureContainer2Encoder", () => {
             );
             const encoder = new KhronosTextureContainer2Encoder(1);
             await expect(encoder._encodeAsync(CreateTexture(), { usage: "color" })).rejects.toThrow("Worker construction failed");
+        });
+
+        it("recovers queued jobs after a single worker construction failure", async () => {
+            vi.useFakeTimers();
+            let attempts = 0;
+            vi.stubGlobal(
+                "Worker",
+                class extends FakeWorker {
+                    constructor() {
+                        if (attempts++ === 0) {
+                            throw new Error("Worker construction failed");
+                        }
+                        super();
+                    }
+                }
+            );
+            const encoder = new KhronosTextureContainer2Encoder(1);
+            const first = encoder._encodeAsync(CreateTexture(), { usage: "color" });
+            const rejected = expect(first).rejects.toThrow("Worker construction failed");
+            const queued = encoder._encodeAsync(CreateTexture(), { usage: "data" });
+            await vi.advanceTimersByTimeAsync(0);
+            await rejected;
+            expect(attempts).toBe(2);
+            expect(FakeWorker.instances).toHaveLength(1);
+            expect(FakeWorker.instances[0].encodes).toHaveLength(1);
+            FakeWorker.instances[0].finish();
+            await expect(queued).resolves.toEqual(new Uint8Array([1, 2, 3]));
         });
 
         it("skips a cancelled queued job", async () => {
@@ -391,6 +557,28 @@ describe("KhronosTextureContainer2Encoder", () => {
             await expect(second).resolves.toEqual(new Uint8Array([1, 2, 3]));
         });
 
+        it("recovers queued work when a cooperatively cancelled worker subsequently crashes", async () => {
+            vi.useFakeTimers();
+            const encoder = new KhronosTextureContainer2Encoder(1);
+            const abort = new AbortController();
+            const first = encoder._encodeAsync(CreateTexture(), { usage: "color", signal: abort.signal });
+            const rejected = ExpectAbortAsync(first);
+            const queued = encoder._encodeAsync(CreateTexture(), { usage: "data" });
+            await vi.advanceTimersByTimeAsync(0);
+            const failed = FakeWorker.instances[0];
+            abort.abort();
+            await rejected;
+            expect(failed.terminated).toBe(false);
+            expect(failed.encodes).toHaveLength(1);
+            failed.fail("Cancelled worker crashed");
+            await vi.advanceTimersByTimeAsync(0);
+            expect(failed.terminated).toBe(true);
+            expect(FakeWorker.instances).toHaveLength(2);
+            expect(FakeWorker.instances[1].encodes).toHaveLength(1);
+            FakeWorker.instances[1].finish();
+            await expect(queued).resolves.toEqual(new Uint8Array([1, 2, 3]));
+        });
+
         it("rejects an already-aborted signal before readback", async () => {
             const encoder = new KhronosTextureContainer2Encoder(1);
             const texture = CreateTexture();
@@ -416,6 +604,23 @@ describe("KhronosTextureContainer2Encoder", () => {
             expect(worker.messages.map((message) => message.action)).toEqual(["setDefaultEncoderOptions", "encode"]);
             expect(dispose).not.toHaveBeenCalled();
             expect(URL.createObjectURL).not.toHaveBeenCalled();
+        });
+
+        it.each(["error", "messageerror"])("leaves caller-owned cleanup to the caller after %s", async (type) => {
+            vi.useFakeTimers();
+            const worker = new FakeWorker();
+            const pool = new AutoReleaseWorkerPool(1, async () => worker as unknown as Worker);
+            const dispose = vi.spyOn(pool, "dispose");
+            const terminate = vi.spyOn(worker, "terminate");
+            const encoder = new KhronosTextureContainer2Encoder({ workerPool: pool });
+            const result = encoder._encodeAsync(CreateTexture(), { usage: "color" });
+            const rejected = expect(result).rejects.toThrow(type === "error" ? "Caller worker failed" : "deserialized");
+            await vi.advanceTimersByTimeAsync(0);
+            worker.fail("Caller worker failed", type);
+            await rejected;
+            expect(terminate).not.toHaveBeenCalled();
+            expect(dispose).not.toHaveBeenCalled();
+            expect(worker.listenerCount).toBe(0);
         });
 
         it("keeps the pool a job started with", async () => {

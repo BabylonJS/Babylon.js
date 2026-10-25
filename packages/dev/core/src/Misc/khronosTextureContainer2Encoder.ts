@@ -187,7 +187,9 @@ interface IMainThreadEncoder {
 interface IAutomaticWorkerState {
     initialize: (worker: Worker) => Promise<void>;
     ready?: Promise<void>;
-    creationError?: Error;
+    failure: AbortController;
+    fail: (error: Error) => void;
+    used: boolean;
 }
 
 const AutomaticWorkers = new WeakMap<Worker, IAutomaticWorkerState>();
@@ -226,11 +228,11 @@ function ValidateTexture(texture: BaseTexture, allowUninitialized: boolean): voi
     }
 }
 
-async function WithAbortAsync<T>(operation: (signal: AbortSignal) => Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+async function WithAbortAsync<T>(operation: (signal: AbortSignal) => Promise<T>, signal: AbortSignal | undefined, abortError: () => Error = AbortError): Promise<T> {
     return await new Promise<T>((resolve, reject) => {
         const controller = new AbortController();
         const onAbort = () => {
-            const error = AbortError();
+            const error = abortError();
             controller.abort(error);
             reject(error);
         };
@@ -253,10 +255,12 @@ async function WithAbortAsync<T>(operation: (signal: AbortSignal) => Promise<T>,
 
 async function PostRequestAsync(worker: Worker, request: KTX2EncoderWorkerRequest & { id: number }, transfer: Transferable[] = []): Promise<KTX2EncoderWorkerReply> {
     return await new Promise((resolve, reject) => {
+        const failureSignal = AutomaticWorkers.get(worker)?.failure.signal;
         const cleanup = () => {
             worker.removeEventListener("message", onMessage);
             worker.removeEventListener("error", onError);
             worker.removeEventListener("messageerror", onMessageError);
+            failureSignal?.removeEventListener("abort", onFailure);
         };
         const fail = (error: Error) => {
             cleanup();
@@ -276,42 +280,77 @@ async function PostRequestAsync(worker: Worker, request: KTX2EncoderWorkerReques
         };
         const onError = (event: ErrorEvent) => fail(new Error(event.message || "KTX2 encoder worker failed."));
         const onMessageError = () => fail(new Error("KTX2 encoder worker message could not be deserialized."));
+        const onFailure = () => fail(ToError(failureSignal?.reason));
+        if (failureSignal?.aborted) {
+            onFailure();
+            return;
+        }
         worker.addEventListener("message", onMessage);
         worker.addEventListener("error", onError);
         worker.addEventListener("messageerror", onMessageError);
+        failureSignal?.addEventListener("abort", onFailure);
         try {
             worker.postMessage(request, transfer);
         } catch (error) {
-            fail(ToError(error));
+            const failure = ToError(error);
+            AutomaticWorkers.get(worker)?.fail(failure);
+            fail(failure);
         }
     });
 }
 
 function CreateAutomaticWorker(workerUrl: string, initialize: (worker: Worker) => Promise<void>): Worker {
+    const failure = new AbortController();
+    let worker: Worker;
     try {
-        const worker = new Worker(workerUrl);
-        // Startup errors can fire while the WASM is still loading, before init has listeners.
-        let onStartupError: (event: Event) => void = () => {};
-        const startupFailure = new Promise<never>((_, reject) => {
-            onStartupError = (event) => reject(new Error((event as ErrorEvent).message || "KTX2 encoder worker failed to start."));
-            worker.addEventListener("error", onStartupError);
-        });
-        // eslint-disable-next-line github/no-then
-        startupFailure.catch(() => {});
-        const initializeUntilStartupFailure = async (target: Worker) => {
-            try {
-                await Promise.race([initialize(target), startupFailure]);
-            } finally {
-                target.removeEventListener("error", onStartupError);
-            }
-        };
-        AutomaticWorkers.set(worker, { initialize: initializeUntilStartupFailure });
-        return worker;
+        worker = new Worker(workerUrl);
     } catch (error) {
-        // AutoReleaseWorkerPool never runs actions for a rejected worker promise, so a placeholder reports the failure to each job.
+        // A rejected factory promise never reaches a pool action. Report construction failure to this job, then replace the slot.
         const placeholder = { postMessage: () => {}, terminate: () => {}, addEventListener: () => {}, removeEventListener: () => {} } as unknown as Worker;
-        AutomaticWorkers.set(placeholder, { initialize, creationError: ToError(error) });
+        failure.abort(ToError(error));
+        AutomaticWorkers.set(placeholder, { initialize, failure, fail: (error) => failure.abort(error), used: false });
         return placeholder;
+    }
+    const fail = (error: Error) => {
+        if (!failure.signal.aborted) {
+            worker.removeEventListener("error", onError);
+            worker.removeEventListener("messageerror", onMessageError);
+            failure.abort(error);
+            worker.terminate();
+        }
+    };
+    const onError = (event: ErrorEvent) => fail(new Error(event.message || "KTX2 encoder worker failed."));
+    const onMessageError = () => fail(new Error("KTX2 encoder worker message could not be deserialized."));
+    AutomaticWorkers.set(worker, { initialize, failure, fail, used: false });
+    // Keep fatal-error listeners between jobs and while initialization is waiting for the WASM.
+    worker.addEventListener("error", onError);
+    worker.addEventListener("messageerror", onMessageError);
+    return worker;
+}
+
+class KTX2EncoderWorkerPool extends AutoReleaseWorkerPool {
+    private readonly _createEncoderWorker: () => Worker;
+
+    constructor(numWorkers: number, workerUrl: string, initialize: (worker: Worker) => Promise<void>) {
+        const createWorker = () => CreateAutomaticWorker(workerUrl, initialize);
+        super(numWorkers, async () => createWorker());
+        this._createEncoderWorker = createWorker;
+    }
+
+    protected override _execute(workerInfo: KTX2EncoderWorkerPool["_workerInfos"][number], action: (worker: Worker, onComplete: () => void) => void): void {
+        super._execute(workerInfo, (worker, onComplete) => {
+            let currentWorker = worker;
+            let state = AutomaticWorkers.get(currentWorker);
+            if (state?.used && state.failure.signal.aborted) {
+                currentWorker = this._createEncoderWorker();
+                workerInfo.workerPromise = Promise.resolve(currentWorker);
+                state = AutomaticWorkers.get(currentWorker);
+            }
+            if (state) {
+                state.used = true;
+            }
+            action(currentWorker, onComplete);
+        });
     }
 }
 
@@ -320,10 +359,12 @@ async function EnsureWorkerReadyAsync(worker: Worker): Promise<void> {
     if (!state) {
         return;
     }
-    if (state.creationError) {
-        throw state.creationError;
-    }
-    state.ready ??= state.initialize(worker);
+    state.failure.signal.throwIfAborted();
+    state.ready ??= WithAbortAsync(
+        async () => await state.initialize(worker),
+        state.failure.signal,
+        () => ToError(state.failure.signal.reason)
+    );
     try {
         await state.ready;
     } catch (error) {
@@ -358,6 +399,8 @@ export function _GetKTX2TextureFlipY(texture: BaseTexture): boolean {
  * Encodes Babylon textures to KTX2 through a shared pool of Basis Universal workers.
  * This is groundwork for future glTF export; encoding is internal for now.
  * Configure URLConfig, WorkerPool, and constructor options before the first construction, which fixes the automatic configuration.
+ * Fatally failed automatic workers are terminated and replaced for the next job.
+ * Normal encode-error replies and cancellation do not terminate healthy workers. Caller-provided pools remain caller-owned.
  * Each worker starts with approximately 128 MiB of WASM memory.
  * The official Basis v2_50 factory requires CSP 'unsafe-eval' for Embind.
  * @experimental
@@ -436,7 +479,7 @@ export class KhronosTextureContainer2Encoder {
             await PostRequestAsync(worker, { action: "init", id: NextRequestId++, jsEncoderModuleUrl: settings.jsEncoderModuleUrl, basisJsUrl: settings.basisJsUrl, wasmBinary });
         };
         const workerUrl = URL.createObjectURL(new Blob([`(${KTX2EncoderWorkerFunction.toString()})()`], { type: "application/javascript" }));
-        KhronosTextureContainer2Encoder._WorkerPoolPromise = Promise.resolve(new AutoReleaseWorkerPool(numWorkers, async () => CreateAutomaticWorker(workerUrl, initialize)));
+        KhronosTextureContainer2Encoder._WorkerPoolPromise = Promise.resolve(new KTX2EncoderWorkerPool(numWorkers, workerUrl, initialize));
     }
 
     private static async _CreateMainThreadEncoderAsync(settings: IEncoderSettings): Promise<IMainThreadEncoder> {
@@ -561,7 +604,14 @@ export class KhronosTextureContainer2Encoder {
                     try {
                         await EnsureWorkerReadyAsync(worker);
                         if (!settled) {
-                            worker.postMessage({ action: "setDefaultEncoderOptions", options: KhronosTextureContainer2Encoder.DefaultEncoderOptions._getKTX2EncoderOptions() });
+                            const defaults = KhronosTextureContainer2Encoder.DefaultEncoderOptions._getKTX2EncoderOptions();
+                            try {
+                                AutomaticWorkers.get(worker)?.failure.signal.throwIfAborted();
+                                worker.postMessage({ action: "setDefaultEncoderOptions", options: defaults });
+                            } catch (error) {
+                                AutomaticWorkers.get(worker)?.fail(ToError(error));
+                                throw error;
+                            }
                             const reply = await PostRequestAsync(worker, { action: "encode", id: NextRequestId++, rgba, width, height, options }, [rgba.buffer as ArrayBuffer]);
                             if (reply.action !== "encoded") {
                                 throw new Error("KTX2 encoder worker sent an unexpected reply.");
