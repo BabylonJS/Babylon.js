@@ -21,7 +21,7 @@ declare var ElementImage: {
 };
 
 /**
- * Source rectangle and sizing configuration for `WebGLRenderingContext.texElementImage2D`.
+ * Source rectangle and sizing configuration for HTML-in-Canvas WebGL uploads.
  */
 interface WebGLCopyElementImageConfig {
     sx?: number;
@@ -33,7 +33,7 @@ interface WebGLCopyElementImageConfig {
 }
 
 /**
- * Event dispatched on a `<canvas layoutsubtree>` when the rendering of one of its children changes.
+ * Event dispatched on a drawable canvas when the rendering of one of its drawable descendants changes.
  */
 interface PaintEvent extends Event {
     readonly changedElements: ReadonlyArray<Element>;
@@ -44,6 +44,8 @@ interface HTMLCanvasElementEventMap {
 }
 
 interface HTMLCanvasElement {
+    /** Opts canvas descendants into layout when set to "drawable" (defaults to "fallback"). */
+    content: string;
     /** Opts canvas descendants into layout and hit testing so they can be drawn into the canvas. */
     layoutSubtree: boolean;
     /** Fired when the rendering of any canvas child has changed. */
@@ -73,14 +75,18 @@ interface CanvasRenderingContext2D {
 }
 
 interface WebGLRenderingContext {
-    /** Uploads a rendered element (or snapshot) into the currently bound 2D texture (current WICG signature). */
+    /** Draws a rendered element (or snapshot) into an allocated 2D texture. */
+    texElementSubImage2D(target: number, level: number, xoffset: number, yoffset: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void;
+    /** Older WICG upload signature, retained for browsers and polyfills exposing the legacy name. */
     texElementImage2D(target: number, internalformat: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void;
     /** Legacy texImage2D-shaped overload still shipped by some Chrome Canary builds. */
     texElementImage2D(target: number, level: number, internalformat: number, format: number, type: number, element: Element | ElementImage): void;
 }
 
 interface WebGL2RenderingContext {
-    /** Uploads a rendered element (or snapshot) into the currently bound 2D texture (current WICG signature). */
+    /** Draws a rendered element (or snapshot) into an allocated 2D texture. */
+    texElementSubImage2D(target: number, level: number, xoffset: number, yoffset: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void;
+    /** Older WICG upload signature, retained for browsers and polyfills exposing the legacy name. */
     texElementImage2D(target: number, internalformat: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void;
     /** Legacy texImage2D-shaped overload still shipped by some Chrome Canary builds. */
     texElementImage2D(target: number, level: number, internalformat: number, format: number, type: number, element: Element | ElementImage): void;
@@ -106,7 +112,27 @@ interface GPUCopyElementImageDestination {
     height?: number;
 }
 
+/**
+ * Source descriptor for `GPUQueue.drawElementImageToTexture`.
+ */
+interface GPUDrawElementImageSource {
+    source: Element | ElementImage;
+    sourceX?: number;
+    sourceY?: number;
+    sourceWidth?: number;
+    sourceHeight?: number;
+}
+
+/**
+ * Destination descriptor for `GPUQueue.drawElementImageToTexture`.
+ */
+interface GPUDrawElementImageDestination extends GPUCopyExternalImageDestInfo {
+    size?: GPUExtent3D;
+}
+
 interface GPUQueue {
+    /** Draws a rendered element (or snapshot) into a destination GPU texture. */
+    drawElementImageToTexture(source: GPUDrawElementImageSource, destination: GPUDrawElementImageDestination): void;
     /** Uploads a rendered element (or snapshot) into a destination GPU texture. */
     copyElementImageToTexture(source: GPUCopyElementImageSource, destination: GPUCopyElementImageDestination): void;
 }

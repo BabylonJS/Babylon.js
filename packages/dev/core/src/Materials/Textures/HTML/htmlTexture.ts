@@ -47,7 +47,7 @@ function _WarnUploadFailure(error: unknown): void {
     _HasWarnedAboutUploadFailure = true;
     const message = error instanceof Error ? error.message : String(error);
     Logger.Warn(
-        `HTML-in-Canvas: the native upload failed (${message}). The element must be a direct child of the engine's rendering canvas, which must carry the \`layoutsubtree\` attribute, and the upload must run during a paint event.`
+        `HTML-in-Canvas: the native upload failed (${message}). The element must be drawable inside the engine's rendering canvas with content="drawable" (or layoutsubtree on older implementations), and the first upload must wait for a paint event.`
     );
 }
 
@@ -60,11 +60,11 @@ function _WarnUploadFailure(error: unknown): void {
 export function IsHtmlInCanvasUploadSupported(engine: AbstractEngine): boolean {
     if (engine.isWebGPU) {
         const queue = (engine as WebGPUEngine)._device?.queue;
-        return !!queue && typeof queue.copyElementImageToTexture === "function";
+        return !!queue && (typeof queue.drawElementImageToTexture === "function" || typeof queue.copyElementImageToTexture === "function");
     }
 
     const gl = (engine as ThinEngine)._gl as Nullable<WebGL2RenderingContext>;
-    return !!gl && typeof gl.texElementImage2D === "function";
+    return !!gl && (typeof gl.texElementSubImage2D === "function" || typeof gl.texElementImage2D === "function");
 }
 
 /**
@@ -73,9 +73,9 @@ export function IsHtmlInCanvasUploadSupported(engine: AbstractEngine): boolean {
  *
  * This is a side-effect-free helper - it is only reachable when {@link HtmlTexture} (or a direct caller)
  * is imported, so it adds nothing to bundles that do not use it. It relies on
- * `WebGLRenderingContext.texElementImage2D` (WebGL) or `GPUQueue.copyElementImageToTexture` (WebGPU),
- * available either natively (behind chrome://flags/#canvas-draw-element) or through the
- * three-html-render polyfill.
+ * `WebGLRenderingContext.texElementSubImage2D` (WebGL) or `GPUQueue.drawElementImageToTexture` (WebGPU),
+ * with support for their older `texElementImage2D` / `copyElementImageToTexture` counterparts, including
+ * the three-html-render polyfill.
  * @param engine defines the engine that owns the texture
  * @param texture defines the internal texture to update
  * @param element defines the source HTML element (or captured ElementImage) to upload
@@ -101,13 +101,9 @@ export function UploadHtmlElementToTexture(
     return _UploadHtmlElementToWebGLTexture(engine as ThinEngine, texture, element, invertY, config);
 }
 
-// The texElementImage2D signature was changed mid-flight in the WICG proposal (see
-// https://github.com/WICG/html-in-canvas#idl-changes): the current spec form is
-// texElementImage2D(target, internalformat, element, config?), but older Chrome Canary builds (and the
-// three-html-render polyfill) still ship the legacy texImage2D-shaped overload
-// texElementImage2D(target, level, internalformat, format, type, element). We prefer the new form and
-// fall back to the legacy one when the implementation rejects it for the wrong number of arguments. The
-// detected shape is cached so we only pay the failed call once.
+// Before texElementSubImage2D, the proposal used two incompatible texElementImage2D signatures.
+// Prefer the shorter form and fall back to the texImage2D-shaped overload used by older Chrome builds
+// and three-html-render when the implementation rejects the argument count.
 let _UseLegacyTexElementImage2D = false;
 
 function _CallTexElementImage2D(gl: WebGL2RenderingContext, internalFormat: number, element: Element | ElementImage, config?: WebGLCopyElementImageConfig): void {
@@ -138,11 +134,10 @@ function _UploadHtmlElementToWebGLTexture(
     invertY: boolean,
     config?: WebGLCopyElementImageConfig
 ): boolean {
-    // texElementImage2D is provided either natively (behind a flag) or by the three-html-render polyfill.
     // Engines without a WebGL context (e.g. NullEngine) have no _gl and are handled by this guard.
     const gl = engine._gl as Nullable<WebGL2RenderingContext>;
-    if (!gl || typeof gl.texElementImage2D !== "function") {
-        _WarnMissingApi("texElementImage2D");
+    if (!gl || (typeof gl.texElementSubImage2D !== "function" && typeof gl.texElementImage2D !== "function")) {
+        _WarnMissingApi("texElementSubImage2D / texElementImage2D");
         return false;
     }
 
@@ -153,14 +148,28 @@ function _UploadHtmlElementToWebGLTexture(
     engine._unpackFlipY(invertY);
 
     try {
-        _CallTexElementImage2D(gl, internalFormat, element, config);
+        if (typeof gl.texElementSubImage2D === "function") {
+            // Unlike texElementImage2D, the current API updates existing storage rather than defining it.
+            if (!texture.isReady) {
+                gl.texImage2D(
+                    gl.TEXTURE_2D,
+                    0,
+                    internalFormat,
+                    texture.width,
+                    texture.height,
+                    0,
+                    engine._getInternalFormat(texture.format),
+                    engine._getWebGLTextureType(texture.type),
+                    null
+                );
+            }
+            gl.texElementSubImage2D(gl.TEXTURE_2D, 0, 0, 0, element, config ?? { width: texture.width, height: texture.height });
+        } else {
+            _CallTexElementImage2D(gl, internalFormat, element, config);
+        }
 
         if (texture.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D);
-        }
-
-        if (!wasPreviouslyBound) {
-            engine._bindTextureDirectly(gl.TEXTURE_2D, null);
         }
 
         texture.invertY = invertY;
@@ -168,11 +177,15 @@ function _UploadHtmlElementToWebGLTexture(
         return true;
     } catch (error) {
         // Reaching here means the snapshot upload failed - usually a real misconfiguration (the element is
-        // not a child of the rendering canvas, or `layoutsubtree` is missing), though a stray call before
+        // not drawable in the rendering canvas), though a stray call before
         // the first paint snapshot can also throw. Either way we must NOT disable the texture, so a later
         // paint-driven update can still succeed; we surface a one-time diagnostic to help debugging.
         _WarnUploadFailure(error);
         return false;
+    } finally {
+        if (!wasPreviouslyBound) {
+            engine._bindTextureDirectly(gl.TEXTURE_2D, null);
+        }
     }
 }
 
@@ -183,11 +196,10 @@ function _UploadHtmlElementToWebGPUTexture(
     invertY: boolean,
     config?: WebGLCopyElementImageConfig
 ): boolean {
-    // copyElementImageToTexture is provided either natively (behind a flag) or by the three-html-render polyfill.
     const device = engine._device;
     const queue = device && device.queue;
-    if (!device || !queue || typeof queue.copyElementImageToTexture !== "function") {
-        _WarnMissingApi("GPUQueue.copyElementImageToTexture");
+    if (!device || !queue || (typeof queue.drawElementImageToTexture !== "function" && typeof queue.copyElementImageToTexture !== "function")) {
+        _WarnMissingApi("GPUQueue.drawElementImageToTexture / GPUQueue.copyElementImageToTexture");
         return false;
     }
 
@@ -197,32 +209,45 @@ function _UploadHtmlElementToWebGPUTexture(
     }
 
     try {
-        const source: GPUCopyElementImageSource = { source: element };
-        if (config) {
-            source.sx = config.sx;
-            source.sy = config.sy;
-            source.swidth = config.swidth;
-            source.sheight = config.sheight;
+        if (typeof queue.drawElementImageToTexture === "function") {
+            const source: GPUDrawElementImageSource = { source: element };
+            if (config) {
+                source.sourceX = config.sx;
+                source.sourceY = config.sy;
+                source.sourceWidth = config.swidth;
+                source.sourceHeight = config.sheight;
+            }
+            queue.drawElementImageToTexture(source, {
+                texture: gpuTexture,
+                size: { width: config?.width ?? texture.width, height: config?.height ?? texture.height },
+            });
+        } else {
+            const source: GPUCopyElementImageSource = { source: element };
+            if (config) {
+                source.sx = config.sx;
+                source.sy = config.sy;
+                source.swidth = config.swidth;
+                source.sheight = config.sheight;
+            }
+            queue.copyElementImageToTexture(source, {
+                destination: { texture: gpuTexture },
+                width: config?.width ?? texture.width,
+                height: config?.height ?? texture.height,
+            });
         }
-
-        queue.copyElementImageToTexture(source, {
-            destination: { texture: gpuTexture },
-            width: config?.width ?? texture.width,
-            height: config?.height ?? texture.height,
-        });
 
         if (texture.generateMipMaps) {
             engine._generateMipmaps(texture);
         }
 
-        // The WICG copyElementImageToTexture API has no flipY option; the destination orientation is
+        // The WICG element upload APIs have no flipY option; the destination orientation is
         // determined by the source. We record the requested value for downstream sampling conventions.
         texture.invertY = invertY;
         texture.isReady = true;
         return true;
     } catch (error) {
         // Reaching here means the snapshot upload failed - usually a real misconfiguration (the element is
-        // not a child of the rendering canvas, or `layoutsubtree` is missing), though a stray call before
+        // not drawable in the rendering canvas), though a stray call before
         // the first paint snapshot can also throw. Either way we must NOT disable the texture, so a later
         // paint-driven update can still succeed; we surface a one-time diagnostic to help debugging.
         _WarnUploadFailure(error);
@@ -262,11 +287,10 @@ export interface IHtmlTextureOptions {
  * A texture whose content is rendered from a live HTML element using the WICG HTML-in-Canvas API
  * (https://github.com/WICG/html-in-canvas).
  *
- * The element is hosted as a child of the engine's rendering canvas (which is marked `layoutsubtree`) so
- * the browser can lay it out and snapshot it; the WICG API requires the source element to be a direct
- * child of the canvas whose context performs the upload. Content is uploaded through
- * `WebGLRenderingContext.texElementImage2D` (WebGL) or `GPUQueue.copyElementImageToTexture` (WebGPU),
- * available either natively (behind chrome://flags/#canvas-draw-element) or via the three-html-render
+ * The element is hosted as a drawable child of the engine's rendering canvas (marked `content="drawable"`,
+ * or `layoutsubtree` on older implementations) so the browser can lay it out and snapshot it.
+ * Content is uploaded through `WebGLRenderingContext.texElementSubImage2D` (WebGL) or
+ * `GPUQueue.drawElementImageToTexture` (WebGPU), with support for older browsers and the three-html-render
  * polyfill (https://github.com/repalash/three-html-render). When neither is present, a built-in SVG
  * `<foreignObject>` fallback is used instead (see `useSvgFallback`).
  *
@@ -309,6 +333,8 @@ export class HtmlTexture extends BaseTexture {
     private _originalParent: Nullable<Node & ParentNode> = null;
     private _originalNextSibling: Nullable<ChildNode> = null;
     private _addedInert: boolean = false;
+    private _addedDrawable: boolean = false;
+    private _updateRequested: boolean = false;
     private _width: number;
     private _height: number;
 
@@ -351,23 +377,23 @@ export class HtmlTexture extends BaseTexture {
 
         this.host = this._createHost();
 
-        // The native WICG API has no content until the first paint snapshot is recorded, so the initial
-        // upload must happen from a paint event. The rendering canvas emits `paint`; listen for at least the
-        // first one and, when auto-update is disabled, detach after that first refresh. A non-canvas helper
-        // host never emits `paint`, so this listener is simply never invoked there.
+        // Native uploads need an initial paint snapshot. Keep the listener for explicit requests even when
+        // auto-update is disabled; helper div hosts never emit paint.
         if (this.host) {
+            let hasPainted = false;
             this._paintHandler = (event: PaintEvent) => {
                 // A single `paint` event covers every changed child of the shared rendering canvas. When the
                 // browser reports which elements changed, skip the upload unless ours is among them, so that
                 // multiple HTML textures hosted on the same canvas don't all re-upload on every unrelated change.
-                if (event.changedElements && !event.changedElements.some((changed) => this.element === changed || this.element.contains(changed))) {
+                if (!autoUpdate && !this._updateRequested && hasPainted) {
                     return;
                 }
-                this.update();
-                if (!autoUpdate && this._paintHandler && this.host) {
-                    this.host.removeEventListener("paint", this._paintHandler as EventListener);
-                    this._paintHandler = null;
+                if (!this._updateRequested && event.changedElements && !event.changedElements.some((changed) => this.element === changed || this.element.contains(changed))) {
+                    return;
                 }
+                this._updateRequested = false;
+                hasPainted = true;
+                this.update();
             };
             this.host.addEventListener("paint", this._paintHandler as EventListener);
         }
@@ -385,15 +411,18 @@ export class HtmlTexture extends BaseTexture {
         this._originalParent = this.element.parentNode;
         this._originalNextSibling = this.element.nextSibling;
 
-        // Per the WICG spec, the source element must be a *direct child* of the same canvas whose WebGL/WebGPU
-        // context performs the upload, and that canvas must opt its subtree into layout via `layoutsubtree`.
-        // The engine already owns our texture through its rendering canvas, so the element has to live inside
-        // that canvas: it is the only one whose context can snapshot the element via texElementImage2D /
-        // copyElementImageToTexture. A separate canvas would lay the element out but could never be captured
-        // into the engine's texture (this is why nothing rendered on the native path before).
+        // Older WICG implementations require a direct canvas child; current implementations require a
+        // drawable descendant and content="drawable" on the same canvas whose context performs the upload.
+        // A separate canvas cannot supply snapshots to the engine's context.
         const renderingCanvas = this._getEngine()?.getRenderingCanvas() ?? null;
         if (renderingCanvas) {
-            renderingCanvas.layoutSubtree = true;
+            if (typeof renderingCanvas.content === "string") {
+                renderingCanvas.content = "drawable";
+                this._addedDrawable = !this.element.hasAttribute("drawable");
+                this.element.setAttribute("drawable", "");
+            } else {
+                renderingCanvas.layoutSubtree = true;
+            }
             // `layoutsubtree` opts children into hit testing; mark ours inert so it never steals pointer events
             // from the canvas (e.g. camera controls). Synthetic event dispatch still reaches inert elements, so
             // HtmlRaycastInteractionManager keeps working; HtmlInteractionManager clears it to enable native input.
@@ -446,15 +475,16 @@ export class HtmlTexture extends BaseTexture {
     }
 
     /**
-     * Requests the host canvas to emit a paint event on the next rendering update. When auto-update is
-     * enabled, this triggers a texture refresh in sync with the DOM. Falls back to an immediate update
-     * when the WICG API is not available.
+     * Requests a texture refresh in sync with the host canvas's next paint event, even when auto-update is
+     * disabled. Updates immediately when the engine's WICG upload API is not available.
      */
     public requestUpdate(): void {
-        // `requestPaint` only exists on a WICG-capable rendering canvas; the helper <div> host has no such
-        // method, so fall back to an immediate update there.
+        // A browser can expose requestPaint without an upload API supported by this engine. In that case
+        // do not wait for native paint: update() must still reach the SVG fallback or the missing-API warning.
+        const engine = this._getEngine();
         const canvasHost = this.host as Nullable<HTMLCanvasElement>;
-        if (canvasHost && typeof canvasHost.requestPaint === "function") {
+        if (engine && IsHtmlInCanvasUploadSupported(engine) && canvasHost && typeof canvasHost.requestPaint === "function") {
+            this._updateRequested = true;
             canvasHost.requestPaint();
         } else {
             this.update();
@@ -565,6 +595,10 @@ export class HtmlTexture extends BaseTexture {
             if (this._addedInert) {
                 this.element.removeAttribute("inert");
                 this._addedInert = false;
+            }
+            if (this._addedDrawable) {
+                this.element.removeAttribute("drawable");
+                this._addedDrawable = false;
             }
             // Restore the element to where the caller had it before we re-parented it into the host, rather
             // than silently deleting their node from the document.
