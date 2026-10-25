@@ -47,6 +47,60 @@ export interface IKTX2EncoderOptions {
     zstandard?: boolean;
 }
 
+/**
+ * Encoder-wide option overrides. Each field applies only to the usages that accept it.
+ * @internal
+ */
+export type _IKTX2EncoderDefaultOptions = Pick<IKTX2EncoderOptions, "etc1sQualityLevel" | "etc1sCompressionLevel" | "uastcQualityLevel" | "zstandard">;
+
+const ColorDefaultKeys = ["etc1sQualityLevel", "etc1sCompressionLevel"] as const;
+const UASTCDefaultKeys = ["uastcQualityLevel", "zstandard"] as const;
+
+const ValidateIntegerRange = (name: string, value: number | undefined, minimum: number, maximum: number): void => {
+    if (value !== undefined && (!Number.isInteger(value) || value < minimum || value > maximum)) {
+        throw new Error(`${name} must be an integer from ${minimum} through ${maximum}.`);
+    }
+};
+
+/**
+ * Validates encoding options, including options that do not apply to the selected usage.
+ * @param options Options to validate.
+ * @internal
+ */
+export function _ValidateKTX2EncoderOptions(options: IKTX2EncoderOptions): void {
+    if (options.usage !== "color" && options.usage !== "data" && options.usage !== "normal") {
+        throw new Error("usage must be 'color', 'data', or 'normal'.");
+    }
+    ValidateIntegerRange("etc1sQualityLevel", options.etc1sQualityLevel, 1, 255);
+    ValidateIntegerRange("etc1sCompressionLevel", options.etc1sCompressionLevel, 0, 6);
+    ValidateIntegerRange("uastcQualityLevel", options.uastcQualityLevel, 0, 4);
+    if (options.usage === "color") {
+        if (options.uastcQualityLevel !== undefined || options.zstandard !== undefined) {
+            throw new Error("UASTC options cannot be used when usage is 'color'.");
+        }
+    } else if (options.etc1sQualityLevel !== undefined || options.etc1sCompressionLevel !== undefined) {
+        throw new Error("ETC1S options can only be used when usage is 'color'.");
+    }
+}
+
+/**
+ * Overrides options with the defined defaults that apply to their usage.
+ * @param options Per-call options.
+ * @param defaults Encoder-wide defaults, which take priority.
+ * @returns The effective options.
+ * @internal
+ */
+export function _ApplyKTX2EncoderDefaultOptions(options: IKTX2EncoderOptions, defaults: _IKTX2EncoderDefaultOptions | undefined): IKTX2EncoderOptions {
+    const effective: IKTX2EncoderOptions = { ...options };
+    for (const key of options.usage === "color" ? ColorDefaultKeys : UASTCDefaultKeys) {
+        const value = defaults?.[key];
+        if (value !== undefined) {
+            (effective as Record<string, unknown>)[key] = value;
+        }
+    }
+    return effective;
+}
+
 const DimensionMultiple = 4;
 const MaxDimension = 16_384;
 const MaxPixels = 12_582_912;

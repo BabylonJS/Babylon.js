@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { _ValidateKTX2EncoderDimensions, type IKTX2EncoderOptions } from "./ktx2encoderTypes";
+import { _ApplyKTX2EncoderDefaultOptions, _ValidateKTX2EncoderDimensions, _ValidateKTX2EncoderOptions, type IKTX2EncoderOptions } from "./ktx2encoderTypes";
 
 export type { IKTX2EncoderOptions, KTX2EncoderUsage } from "./ktx2encoderTypes";
 const OutputBufferPadding = 65_536;
@@ -42,12 +42,6 @@ interface IBasisModule {
 }
 
 type BasisFactory = (options: { wasmBinary: ArrayBuffer | Uint8Array }) => IBasisModule | Promise<IBasisModule>;
-
-const ValidateIntegerRange = (name: string, value: number | undefined, minimum: number, maximum: number): void => {
-    if (value !== undefined && (!Number.isInteger(value) || value < minimum || value > maximum)) {
-        throw new Error(`${name} must be an integer from ${minimum} through ${maximum}.`);
-    }
-};
 
 const PatchDFDPrimaries = (data: Uint8Array): void => {
     if (data.byteLength < KTX2DFDOffsetPosition + 4) {
@@ -109,6 +103,13 @@ export class KTX2Encoder {
      * @experimental
      */
     public static JSModule: unknown = null;
+    /**
+     * Encoder-wide options that override per-call options, as KTX2Decoder.DefaultDecoderOptions does.
+     * ETC1S fields apply only to color usage; uastcQualityLevel and zstandard apply only to data and normal usage.
+     * Undefined fields leave per-call options and built-in defaults in effect. Read at each encode call.
+     * @experimental
+     */
+    public static DefaultEncoderOptions: Pick<IKTX2EncoderOptions, "etc1sQualityLevel" | "etc1sCompressionLevel" | "uastcQualityLevel" | "zstandard"> = {};
 
     private readonly _configuration = {
         jsModule: KTX2Encoder.JSModule as BasisFactory | null,
@@ -167,7 +168,7 @@ export class KTX2Encoder {
      * @param rgba RGBA8 source pixels, top-down unless `flipY` is true.
      * @param width Source width in pixels.
      * @param height Source height in pixels.
-     * @param options Encoding options.
+     * @param options Encoding options. Defined DefaultEncoderOptions fields for this usage take priority.
      * @returns The encoded KTX2 file.
      * @experimental
      */
@@ -177,19 +178,9 @@ export class KTX2Encoder {
         if (rgba.byteLength !== expectedByteLength) {
             throw new Error(`RGBA input byte length must be ${expectedByteLength} for a ${width}x${height} image, but received ${rgba.byteLength}.`);
         }
-        if (options.usage !== "color" && options.usage !== "data" && options.usage !== "normal") {
-            throw new Error("usage must be 'color', 'data', or 'normal'.");
-        }
-        ValidateIntegerRange("etc1sQualityLevel", options.etc1sQualityLevel, 1, 255);
-        ValidateIntegerRange("etc1sCompressionLevel", options.etc1sCompressionLevel, 0, 6);
-        ValidateIntegerRange("uastcQualityLevel", options.uastcQualityLevel, 0, 4);
-        if (options.usage === "color") {
-            if (options.uastcQualityLevel !== undefined || options.zstandard !== undefined) {
-                throw new Error("UASTC options cannot be used when usage is 'color'.");
-            }
-        } else if (options.etc1sQualityLevel !== undefined || options.etc1sCompressionLevel !== undefined) {
-            throw new Error("ETC1S options can only be used when usage is 'color'.");
-        }
+        _ValidateKTX2EncoderOptions(options);
+        const effectiveOptions = _ApplyKTX2EncoderDefaultOptions(options, KTX2Encoder.DefaultEncoderOptions);
+        _ValidateKTX2EncoderOptions(effectiveOptions);
 
         if (!this._basisModule) {
             await this._initializeAsync();
@@ -197,8 +188,8 @@ export class KTX2Encoder {
         const basisModule = this._basisModule!;
         const encoder = new basisModule.BasisEncoder();
         try {
-            const isColor = options.usage === "color";
-            if (options.usage === "normal") {
+            const isColor = effectiveOptions.usage === "color";
+            if (effectiveOptions.usage === "normal") {
                 encoder.setNormalMapPreset();
             }
 
@@ -208,15 +199,15 @@ export class KTX2Encoder {
             encoder.setPerceptual(isColor);
             encoder.setMipSRGB(isColor);
             encoder.setKTX2AndBasisSRGBTransferFunc(isColor);
-            encoder.setMipGen(options.generateMipmaps ?? true);
-            encoder.setYFlip(options.flipY ?? false);
+            encoder.setMipGen(effectiveOptions.generateMipmaps ?? true);
+            encoder.setYFlip(effectiveOptions.flipY ?? false);
 
             if (isColor) {
-                encoder.setQualityLevel(options.etc1sQualityLevel ?? 128);
-                encoder.setETC1SCompressionLevel(options.etc1sCompressionLevel ?? 2);
+                encoder.setQualityLevel(effectiveOptions.etc1sQualityLevel ?? 128);
+                encoder.setETC1SCompressionLevel(effectiveOptions.etc1sCompressionLevel ?? 2);
             } else {
-                encoder.setPackUASTCFlags(options.uastcQualityLevel ?? 2);
-                encoder.setKTX2UASTCSupercompression(options.zstandard ?? true);
+                encoder.setPackUASTCFlags(effectiveOptions.uastcQualityLevel ?? 2);
+                encoder.setKTX2UASTCSupercompression(effectiveOptions.zstandard ?? true);
             }
 
             if (!encoder.setSliceSourceImage(0, rgba, width, height, 0)) {
@@ -230,7 +221,7 @@ export class KTX2Encoder {
                 encodedByteLength = encoder.encode(output);
             }
             if (encodedByteLength === 0) {
-                throw new Error(`Basis failed to encode the ${width}x${height} '${options.usage}' texture.`);
+                throw new Error(`Basis failed to encode the ${width}x${height} '${effectiveOptions.usage}' texture.`);
             }
 
             const encoded = output.slice(0, encodedByteLength);

@@ -1,11 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type IKTX2EncoderOptions } from "../Materials/Textures/ktx2encoderTypes";
+import { type _IKTX2EncoderDefaultOptions, type IKTX2EncoderOptions } from "../Materials/Textures/ktx2encoderTypes";
 
 /** @internal */
 export interface IKTX2EncoderInstance {
     _initializeAsync(): Promise<void>;
     encode(rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): Promise<Uint8Array>;
 }
+
+/**
+ * Basis Universal encoder factory, such as the BASIS global defined by basis_encoder.js.
+ * @internal
+ */
+export type _KTX2EncoderBasisFactory = (options: { wasmBinary: ArrayBuffer | Uint8Array }) => unknown;
 
 /** @internal */
 export interface IKTX2EncoderModule {
@@ -15,12 +21,14 @@ export interface IKTX2EncoderModule {
         WasmBinary: ArrayBuffer | null;
         JSModuleURL: string;
         WasmModuleURL: string;
+        DefaultEncoderOptions: _IKTX2EncoderDefaultOptions;
     };
 }
 
 /** @internal */
 export type KTX2EncoderWorkerRequest =
     | { action: "init"; id: number; jsEncoderModuleUrl: string; basisJsUrl: string; wasmBinary: ArrayBuffer }
+    | { action: "setDefaultEncoderOptions"; options: _IKTX2EncoderDefaultOptions }
     | { action: "encode"; id: number; rgba: Uint8Array; width: number; height: number; options: IKTX2EncoderOptions };
 
 /** @internal */
@@ -39,10 +47,21 @@ export function KTX2EncoderWorkerFunction(): void {
     let encoder: IKTX2EncoderInstance | undefined;
     onmessage = (event: MessageEvent<KTX2EncoderWorkerRequest>) => {
         const request = event.data;
+        if (request.action === "setDefaultEncoderOptions") {
+            if (typeof KTX2ENCODER !== "undefined") {
+                KTX2ENCODER.KTX2Encoder.DefaultEncoderOptions = request.options;
+            }
+            return;
+        }
         const fail = (error: unknown) => postMessage({ action: "error", id: request.id, message: error instanceof Error ? error.message : String(error) });
         try {
             if (request.action === "init") {
-                importScripts(request.jsEncoderModuleUrl, request.basisJsUrl);
+                if (typeof KTX2ENCODER === "undefined") {
+                    importScripts(request.jsEncoderModuleUrl);
+                }
+                if (typeof BASIS === "undefined") {
+                    importScripts(request.basisJsUrl);
+                }
                 // Avoid async helpers outside this serialized function in ES2015 bundles.
                 KTX2ENCODER.KTX2Encoder.JSModule = BASIS;
                 KTX2ENCODER.KTX2Encoder.WasmBinary = request.wasmBinary;
