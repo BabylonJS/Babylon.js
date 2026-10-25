@@ -284,7 +284,7 @@ export class Geometry implements IGetSetVerticesData {
         if (this._vertexBuffers[kind]) {
             this._vertexBuffers[kind].dispose();
             delete this._vertexBuffers[kind];
-            this._resetDrawCache();
+            this._invalidateVertexBuffers();
         }
 
         if (this._vertexArrayObjects) {
@@ -332,7 +332,7 @@ export class Geometry implements IGetSetVerticesData {
             }
         }
 
-        this._resetDrawCache();
+        this._invalidateVertexBuffers();
         this._notifyUpdate(kind);
     }
 
@@ -823,14 +823,19 @@ export class Geometry implements IGetSetVerticesData {
         mesh.synchronizeInstances();
     }
 
-    private _resetDrawCache(): void {
+    private _invalidateVertexBuffers(): void {
         if (!this._engine.isWebGPU) {
             return;
         }
 
         // Render bundles retain buffer bindings even when the vertex layout does not change.
         for (const mesh of this._meshes) {
-            mesh.resetDrawCache();
+            for (const subMesh of mesh.subMeshes) {
+                for (const drawWrapper of subMesh._drawWrappers) {
+                    drawWrapper?.drawContext?._invalidateVertexBuffers?.();
+                }
+                subMesh._drawWrapperOverride?.drawContext?._invalidateVertexBuffers?.();
+            }
         }
     }
 
