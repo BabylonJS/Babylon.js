@@ -2,10 +2,13 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { type Engine, NullEngine } from "core/Engines";
+import { Engine, NullEngine } from "core/Engines";
 import { HtmlTexture, IsHtmlInCanvasUploadSupported, UploadHtmlElementToTexture } from "core/Materials";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Scene } from "core/scene";
+import { Constants } from "core/Engines/constants";
+import { InstallHtmlInCanvasPolyfill, UninstallHtmlInCanvasPolyfill } from "core/Materials/Textures/HTML/htmlInCanvasPolyfill";
+import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 
 describe("HtmlTexture", () => {
     let engine: Engine;
@@ -26,6 +29,7 @@ describe("HtmlTexture", () => {
     });
 
     afterEach(() => {
+        UninstallHtmlInCanvasPolyfill();
         scene.dispose();
         engine.dispose();
         document.body.innerHTML = "";
@@ -284,10 +288,39 @@ describe("HtmlTexture", () => {
         texture.dispose();
         expect(element.hasAttribute("drawable")).toBe(false);
 
-        element.setAttribute("drawable", "");
+        element.setAttribute("drawable", "drawable");
         const alreadyDrawable = new HtmlTexture("html", element, { scene });
+        expect(element.getAttribute("drawable")).toBe("drawable");
         alreadyDrawable.dispose();
-        expect(element.hasAttribute("drawable")).toBe(true);
+        expect(element.getAttribute("drawable")).toBe("drawable");
+    });
+
+    it("keeps the legacy polyfill paint opt-in when canvas.content also exists", async () => {
+        const canvas = document.createElement("canvas");
+        canvas.content = "fallback";
+        Object.defineProperty(canvas, "layoutSubtree", {
+            get: () => canvas.hasAttribute("layoutsubtree"),
+            set: (value: boolean) => canvas.toggleAttribute("layoutsubtree", value),
+        });
+        canvas.requestPaint = vi.fn(() => {
+            if (canvas.hasAttribute("layoutsubtree")) {
+                canvas.dispatchEvent(new Event("paint"));
+            }
+        });
+        vi.spyOn(engine, "getRenderingCanvas").mockReturnValue(canvas);
+        Object.defineProperty(engine, "_gl", { value: { texElementImage2D: vi.fn() } });
+        const update = vi.spyOn(HtmlTexture.prototype, "update").mockImplementation(() => {});
+        const removeChild = vi.spyOn(canvas, "removeChild");
+        await InstallHtmlInCanvasPolyfill({ force: true, polyfillModule: { installHtmlInCanvasPolyfill: vi.fn() } });
+
+        const texture = new HtmlTexture("html", element, { scene, autoUpdate: false });
+        expect(canvas.hasAttribute("layoutsubtree")).toBe(true);
+        expect(canvas.content).toBe("fallback");
+        expect(update).toHaveBeenCalledTimes(1);
+        texture.requestUpdate();
+        expect(update).toHaveBeenCalledTimes(2);
+        texture.dispose();
+        expect(removeChild).toHaveBeenCalledWith(element);
     });
 
     it("keeps using layoutSubtree on legacy canvas implementations", () => {
@@ -371,6 +404,85 @@ describe("HtmlTexture", () => {
         internal.dispose();
     });
 
+    it.each([
+        { format: Constants.TEXTUREFORMAT_RGB, internalFormat: 0x8051, glFormat: 0x1907 },
+        { format: Constants.TEXTUREFORMAT_RGBA, internalFormat: 0x8058, glFormat: 0x1908 },
+        { format: Constants.TEXTUREFORMAT_RED, internalFormat: 0x8229, glFormat: 0x1903 },
+        { format: Constants.TEXTUREFORMAT_RG, internalFormat: 0x822b, glFormat: 0x8227 },
+    ])("normalizes an unset type when allocating WebGL format $format", ({ format, internalFormat, glFormat }) => {
+        const gl = {
+            TEXTURE_2D: 0x0de1,
+            RGB: 0x1907,
+            RGB8: 0x8051,
+            RGBA: 0x1908,
+            RGBA8: 0x8058,
+            RED: 0x1903,
+            R8: 0x8229,
+            RG: 0x8227,
+            RG8: 0x822b,
+            UNSIGNED_BYTE: 0x1401,
+            texImage2D: vi.fn(),
+            texElementSubImage2D: vi.fn(),
+        };
+        const webglEngine = {
+            isWebGPU: false,
+            _webGLVersion: 2,
+            _gl: gl,
+            _getRGBABufferInternalSizedFormat: Engine.prototype._getRGBABufferInternalSizedFormat,
+            _getInternalFormat: Engine.prototype._getInternalFormat,
+            _getWebGLTextureType: Engine.prototype._getWebGLTextureType,
+            _bindTextureDirectly: vi.fn().mockReturnValue(false),
+            _unpackFlipY: vi.fn(),
+        } as unknown as Engine;
+        const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
+        internal.width = 64;
+        internal.height = 32;
+        internal.format = format;
+        expect(internal.type).toBe(-1);
+
+        expect(UploadHtmlElementToTexture(webglEngine, internal, element)).toBe(true);
+        expect(gl.texImage2D).toHaveBeenCalledWith(gl.TEXTURE_2D, 0, internalFormat, 64, 32, 0, glFormat, gl.UNSIGNED_BYTE, null);
+        internal.dispose();
+    });
+
+    it("uses the installed legacy WebGL polyfill instead of a remaining native upload API", async () => {
+        const currentUpload = vi.fn();
+        const legacyUpload = vi.fn();
+        const webglEngine = {
+            isWebGPU: false,
+            _gl: { TEXTURE_2D: 0x0de1, texElementSubImage2D: currentUpload, texElementImage2D: legacyUpload },
+            _getRGBABufferInternalSizedFormat: () => 0x8058,
+            _bindTextureDirectly: vi.fn().mockReturnValue(false),
+            _unpackFlipY: vi.fn(),
+        } as unknown as Engine;
+        const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
+        await InstallHtmlInCanvasPolyfill({ force: true, polyfillModule: { installHtmlInCanvasPolyfill: vi.fn() } });
+
+        expect(UploadHtmlElementToTexture(webglEngine, internal, element)).toBe(true);
+        expect(legacyUpload).toHaveBeenCalledTimes(1);
+        expect(currentUpload).not.toHaveBeenCalled();
+        internal.dispose();
+    });
+
+    it("uses the installed WebGPU polyfill's element overload instead of the remaining native API", async () => {
+        const currentUpload = vi.fn();
+        const legacyUpload = vi.fn();
+        const gpuTexture = {};
+        const webgpuEngine = {
+            isWebGPU: true,
+            _device: { queue: { drawElementImageToTexture: currentUpload, copyElementImageToTexture: legacyUpload } },
+        } as unknown as Engine;
+        const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
+        internal.width = 64;
+        internal.height = 32;
+        Object.defineProperty(internal, "_hardwareTexture", { value: { underlyingResource: gpuTexture } });
+        await InstallHtmlInCanvasPolyfill({ force: true, polyfillModule: { installHtmlInCanvasPolyfill: vi.fn() } });
+
+        expect(UploadHtmlElementToTexture(webgpuEngine, internal, element)).toBe(true);
+        expect(legacyUpload).toHaveBeenCalledWith(element, 64, 32, { texture: gpuTexture });
+        expect(currentUpload).not.toHaveBeenCalled();
+    });
+
     it.each([true, false])("preserves WebGL binding state and permits retry after a current-API failure (previously bound: %s)", (wasPreviouslyBound) => {
         const gl = {
             TEXTURE_2D: 0x0de1,
@@ -413,7 +525,7 @@ describe("HtmlTexture", () => {
             isWebGPU: true,
             _device: { queue: { drawElementImageToTexture: draw, copyElementImageToTexture: legacyCopy } },
             _generateMipmaps: vi.fn(),
-        } as unknown as Engine;
+        } as unknown as WebGPUEngine;
         const internal = new InternalTexture(engine, InternalTextureSource.Dynamic);
         internal.width = 64;
         internal.height = 32;

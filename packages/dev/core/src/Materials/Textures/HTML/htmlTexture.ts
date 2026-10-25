@@ -8,6 +8,7 @@ import { Observable } from "../../../Misc/observable.pure";
 import { Logger } from "../../../Misc/logger";
 import { IsWindowObjectExist } from "../../../Misc/domManagement";
 import { RegisterEnginesExtensionsEngineDynamicTexture } from "../../../Engines/Extensions/engine.dynamicTexture.pure";
+import { _IsHtmlInCanvasPolyfillInstalled } from "./htmlInCanvasPolyfill";
 
 import { type AbstractEngine } from "../../../Engines/abstractEngine.pure";
 import { type ThinEngine } from "../../../Engines/thinEngine.pure";
@@ -143,12 +144,13 @@ function _UploadHtmlElementToWebGLTexture(
 
     // texElementImage2D requires a *sized* internal format (RGBA8, SRGB8_ALPHA8, RGBA16F or RGBA32F);
     // the unsized gl.RGBA returned by _getInternalFormat is rejected.
-    const internalFormat = engine._getRGBABufferInternalSizedFormat(texture.type, texture.format, texture._useSRGBBuffer);
+    const type = texture.type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : texture.type;
+    const internalFormat = engine._getRGBABufferInternalSizedFormat(type, texture.format, texture._useSRGBBuffer);
     const wasPreviouslyBound = engine._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
     engine._unpackFlipY(invertY);
 
     try {
-        if (typeof gl.texElementSubImage2D === "function") {
+        if (typeof gl.texElementSubImage2D === "function" && !(_IsHtmlInCanvasPolyfillInstalled() && typeof gl.texElementImage2D === "function")) {
             // Unlike texElementImage2D, the current API updates existing storage rather than defining it.
             if (!texture.isReady) {
                 gl.texImage2D(
@@ -159,7 +161,7 @@ function _UploadHtmlElementToWebGLTexture(
                     texture.height,
                     0,
                     engine._getInternalFormat(texture.format),
-                    engine._getWebGLTextureType(texture.type),
+                    engine._getWebGLTextureType(type),
                     null
                 );
             }
@@ -209,7 +211,9 @@ function _UploadHtmlElementToWebGPUTexture(
     }
 
     try {
-        if (typeof queue.drawElementImageToTexture === "function") {
+        if (_IsHtmlInCanvasPolyfillInstalled() && typeof queue.copyElementImageToTexture === "function") {
+            queue.copyElementImageToTexture(element, config?.width ?? texture.width, config?.height ?? texture.height, { texture: gpuTexture });
+        } else if (typeof queue.drawElementImageToTexture === "function") {
             const source: GPUDrawElementImageSource = { source: element };
             if (config) {
                 source.sourceX = config.sx;
@@ -416,10 +420,12 @@ export class HtmlTexture extends BaseTexture {
         // A separate canvas cannot supply snapshots to the engine's context.
         const renderingCanvas = this._getEngine()?.getRenderingCanvas() ?? null;
         if (renderingCanvas) {
-            if (typeof renderingCanvas.content === "string") {
+            if (typeof renderingCanvas.content === "string" && !_IsHtmlInCanvasPolyfillInstalled()) {
                 renderingCanvas.content = "drawable";
                 this._addedDrawable = !this.element.hasAttribute("drawable");
-                this.element.setAttribute("drawable", "");
+                if (this._addedDrawable) {
+                    this.element.setAttribute("drawable", "");
+                }
             } else {
                 renderingCanvas.layoutSubtree = true;
             }
@@ -599,6 +605,10 @@ export class HtmlTexture extends BaseTexture {
             if (this._addedDrawable) {
                 this.element.removeAttribute("drawable");
                 this._addedDrawable = false;
+            }
+            // The polyfill redirects children into a helper host and tracks removals through this API.
+            if (this.element.parentNode === this.host) {
+                this.host.removeChild(this.element);
             }
             // Restore the element to where the caller had it before we re-parented it into the host, rather
             // than silently deleting their node from the document.

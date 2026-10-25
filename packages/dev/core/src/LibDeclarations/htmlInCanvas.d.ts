@@ -43,6 +43,15 @@ interface HTMLCanvasElementEventMap {
     paint: PaintEvent;
 }
 
+/**
+ * Geometry used to synchronize a drawable element's hit testing with its canvas rendering.
+ */
+interface UpdateElementGeometryOptions {
+    preserveHitTestOrder?: boolean;
+    canvasTransform?: DOMMatrixInit;
+    canvasClip?: DOMRectInit;
+}
+
 interface HTMLCanvasElement {
     /** Opts canvas descendants into layout when set to "drawable" (defaults to "fallback"). */
     content: string;
@@ -54,6 +63,10 @@ interface HTMLCanvasElement {
     requestPaint(): void;
     /** Captures a transferable snapshot of the given element. */
     captureElementImage(element: Element): ElementImage;
+    /** Registers a drawable descendant's geometry for hit testing and accessibility. */
+    updateElementGeometry(element: Element | ElementImage, options?: UpdateElementGeometryOptions): void;
+    /** Clears the registered hit-testing and accessibility geometry of a drawable descendant. */
+    clearElementGeometry(element: Element | ElementImage): void;
     /** Returns the CSS transform that keeps the element's DOM location in sync with its drawn location. */
     getElementTransform(element: Element | ElementImage, drawTransform: DOMMatrix): DOMMatrix;
 }
@@ -135,4 +148,6 @@ interface GPUQueue {
     drawElementImageToTexture(source: GPUDrawElementImageSource, destination: GPUDrawElementImageDestination): void;
     /** Uploads a rendered element (or snapshot) into a destination GPU texture. */
     copyElementImageToTexture(source: GPUCopyElementImageSource, destination: GPUCopyElementImageDestination): void;
+    /** Legacy polyfill overload using an element and an explicit destination size. */
+    copyElementImageToTexture(element: Element | ElementImage, width: number, height: number, destination: GPUCopyExternalImageDestInfo): void;
 }

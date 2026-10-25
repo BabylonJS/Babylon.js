@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
 
 import { Observable } from "core/Misc/observable";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -12,6 +12,12 @@ import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
 import { GetElementPixelFromUv, HtmlRaycastInteractionManager } from "core/Materials/Textures/HTML/htmlRaycastInteractionManager";
 import { ComputeOverlayCssTransform, HtmlInteractionManager } from "core/Materials/Textures/HTML/htmlInteractionManager";
+import { HtmlTexture } from "core/Materials/Textures/HTML/htmlTexture";
+
+afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+});
 
 // jsdom historically does not implement PointerEvent; provide a minimal stand-in so the dispatch path runs.
 let _installedPointerEventShim = false;
@@ -240,6 +246,34 @@ describe("HtmlRaycastInteractionManager", () => {
 });
 
 describe("HtmlInteractionManager", () => {
+    function createDrawableScene() {
+        vi.stubGlobal(
+            "DOMMatrix",
+            class {
+                public a = 1;
+                public b = 0;
+                public c = 0;
+                public d = 1;
+                public e = 0;
+                public f = 0;
+            }
+        );
+        const engine = new NullEngine({ renderHeight: 256, renderWidth: 256, textureSize: 256, deterministicLockstep: false, lockstepMaxSteps: 1 });
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+        camera.setTarget(Vector3.Zero());
+        const plane = CreatePlane("plane", { size: 2 }, scene);
+        const canvas = document.createElement("canvas");
+        canvas.content = "drawable";
+        canvas.updateElementGeometry = vi.fn();
+        canvas.clearElementGeometry = vi.fn();
+        vi.spyOn(engine, "getRenderingCanvas").mockReturnValue(canvas);
+        const element = document.createElement("div");
+        Object.defineProperties(element, { offsetWidth: { value: 200 }, offsetHeight: { value: 100 } });
+        const texture = new HtmlTexture("html", element, { scene });
+        return { engine, scene, plane, canvas, element, texture };
+    }
+
     it("prepares the element for overlay and cleans up on dispose", () => {
         const scene = { onAfterRenderObservable: new Observable<any>(), activeCamera: null } as any;
         const element = document.createElement("div");
@@ -283,6 +317,71 @@ describe("HtmlInteractionManager", () => {
         expect(element.style.transform).toContain("translate");
 
         manager.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it.each([1, 2])("registers and clears native geometry at hardware scaling %s without changing CSS", (hardwareScalingLevel) => {
+        const { engine, scene, plane, canvas, element, texture } = createDrawableScene();
+        vi.spyOn(engine, "getHardwareScalingLevel").mockReturnValue(hardwareScalingLevel);
+        const canvasPointerDown = vi.fn();
+        canvas.addEventListener("pointerdown", canvasPointerDown);
+        const manager = new HtmlInteractionManager(scene, texture, plane);
+        scene.render();
+
+        expect(canvas.updateElementGeometry).toHaveBeenCalledTimes(1);
+        const options = vi.mocked(canvas.updateElementGeometry).mock.calls[0][1]!;
+        const matrix = options.canvasTransform!;
+        expect(matrix.e! + matrix.a! * 100 + matrix.c! * 50).toBeCloseTo(128 * hardwareScalingLevel);
+        expect(matrix.f! + matrix.b! * 100 + matrix.d! * 50).toBeCloseTo(128 * hardwareScalingLevel);
+        expect(options.preserveHitTestOrder).toBe(true);
+        expect(element.style.transform).toBe("");
+        element.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        expect(canvasPointerDown).not.toHaveBeenCalled();
+        scene.render();
+        expect(canvas.updateElementGeometry).toHaveBeenCalledTimes(1);
+
+        plane.position.x = 1;
+        scene.render();
+        expect(canvas.updateElementGeometry).toHaveBeenCalledTimes(2);
+        expect(vi.mocked(canvas.updateElementGeometry).mock.calls[1][1]).toBe(options);
+
+        plane.position.z = -10;
+        scene.render();
+        scene.render();
+        expect(canvas.clearElementGeometry).toHaveBeenCalledTimes(1);
+        plane.position.z = 0;
+        scene.render();
+        expect(canvas.updateElementGeometry).toHaveBeenCalledTimes(3);
+
+        manager.dispose();
+        expect(canvas.clearElementGeometry).toHaveBeenCalledTimes(2);
+        expect(element.hasAttribute("inert")).toBe(true);
+        element.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        expect(canvasPointerDown).toHaveBeenCalledTimes(1);
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps using CSS for a custom target outside the drawable canvas", () => {
+        const { engine, scene, plane, canvas, texture } = createDrawableScene();
+        const targetElement = document.createElement("div");
+        const manager = new HtmlInteractionManager(scene, texture, plane, { targetElement });
+        scene.render();
+        expect(targetElement.style.transform).toContain("translate");
+        expect(canvas.updateElementGeometry).not.toHaveBeenCalled();
+        manager.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("can be disposed after its texture has already removed the drawable element", () => {
+        const { engine, scene, plane, canvas, texture } = createDrawableScene();
+        const manager = new HtmlInteractionManager(scene, texture, plane);
+        scene.render();
+        texture.dispose();
+        expect(() => manager.dispose()).not.toThrow();
+        expect(canvas.clearElementGeometry).not.toHaveBeenCalled();
         scene.dispose();
         engine.dispose();
     });
