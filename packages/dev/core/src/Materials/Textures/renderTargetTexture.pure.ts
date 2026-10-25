@@ -1079,6 +1079,11 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         this._objectRenderer.prepareRenderList();
 
+        // no draw: the view histories must not advance
+        const scene = this.getScene()!;
+        const viewHistoryIsReadOnly = scene._viewHistoryIsReadOnly;
+        scene._viewHistoryIsReadOnly = true;
+
         this.onBeforeBindObservable.notifyObservers(this);
 
         this._objectRenderer.initRender(this.getRenderWidth(), this.getRenderHeight());
@@ -1088,6 +1093,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this.onAfterUnbindObservable.notifyObservers(this);
 
         this._objectRenderer.finishRender();
+
+        scene._viewHistoryIsReadOnly = viewHistoryIsReadOnly;
 
         return isReady;
     }

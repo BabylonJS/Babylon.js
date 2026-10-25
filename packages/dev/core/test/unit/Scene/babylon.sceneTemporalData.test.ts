@@ -18,6 +18,7 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PrePassConfiguration } from "core/Materials/prePassConfiguration";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { type Effect } from "core/Materials/effect";
 import { type Mesh } from "core/Meshes/mesh";
@@ -203,32 +204,54 @@ describe("Scene uniform buffer: temporal data of the view", () => {
         objectRenderer.dispose();
     });
 
-    describe("readiness checks", () => {
-        it("do not advance the history: a check at one pose and the first render at another, in the same frame", () => {
-            const objectRenderer = renderer("renderer");
-            objectRenderer.isReadyForRendering(256, 256);
+    // camA's view behind each public readiness check: the object renderer's, and the render target texture's, with its bind observables
+    const readinessChecks: Array<[string, () => { objectRenderer: ObjectRenderer; check: () => void; dispose: () => void }]> = [
+        [
+            "ObjectRenderer.isReadyForRendering",
+            () => {
+                const objectRenderer = renderer("renderer");
+                return { objectRenderer, check: () => objectRenderer.isReadyForRendering(256, 256), dispose: () => objectRenderer.dispose() };
+            },
+        ],
+        [
+            "RenderTargetTexture.isReadyForRendering",
+            () => {
+                const texture = new RenderTargetTexture("texture", 256, scene);
+                texture.activeCamera = camA;
+                texture.renderList = [];
+                return { objectRenderer: (texture as any)._objectRenderer, check: () => texture.isReadyForRendering(), dispose: () => texture.dispose() };
+            },
+        ],
+    ];
+
+    describe.each(readinessChecks)("readiness checks: %s", (_, checked) => {
+        it("do not advance the history: checks at other poses before and after the first render, in the same frame", () => {
+            const { objectRenderer, check, dispose } = checked();
+            check();
             camA.position.x = 3;
             const first = rendered(objectRenderer, 1);
             expect(first.previous).toEqual(first.viewProjection);
+            camA.position.x = 5;
+            check();
             // the history goes on from the first render
             engine.endFrame();
             camA.position.x = 4;
             expect(rendered(objectRenderer, 1).previous).toEqual(first.viewProjection);
-            objectRenderer.dispose();
+            dispose();
         });
 
         it("do not make a camera that was only checked look like it rendered in the previous frames", () => {
-            const objectRenderer = renderer("renderer");
+            const { objectRenderer, check, dispose } = checked();
             for (const x of [0, 1, 2]) {
                 camA.position.x = x;
-                objectRenderer.isReadyForRendering(256, 256);
+                check();
                 engine.endFrame();
             }
             camA.position.x = 3;
-            objectRenderer.isReadyForRendering(256, 256);
+            check();
             const first = rendered(objectRenderer, 1);
             expect(first.previous).toEqual(first.viewProjection);
-            objectRenderer.dispose();
+            dispose();
         });
     });
 
