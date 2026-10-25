@@ -7,6 +7,7 @@ const DefaultSettings = {
     WasmBinary: KTX2Encoder.WasmBinary,
     JSModuleURL: KTX2Encoder.JSModuleURL,
     WasmModuleURL: KTX2Encoder.WasmModuleURL,
+    DefaultEncoderOptions: KTX2Encoder.DefaultEncoderOptions,
 };
 
 class FakeBasisEncoder {
@@ -295,6 +296,76 @@ describe("KTX2Encoder presets", () => {
         expect(output[93]).toBe(0);
         expect(output.buffer.byteLength).toBe(output.byteLength);
         expect(context.basisEncoder.deleted).toBe(true);
+    });
+});
+
+describe("KTX2Encoder DefaultEncoderOptions", () => {
+    it("starts empty", () => {
+        expect(DefaultSettings.DefaultEncoderOptions).toEqual({});
+    });
+
+    it("overrides per-call ETC1S options for color usage, preserving zero", async () => {
+        const context = _createEncoder();
+        KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 1, etc1sCompressionLevel: 0, uastcQualityLevel: 4, zstandard: false };
+        await context.encoder.encode(_rgba(), 4, 4, { usage: "color", etc1sQualityLevel: 200, etc1sCompressionLevel: 5 });
+        expect(context.basisEncoder.calls).toEqual(
+            expect.arrayContaining([
+                ["setQualityLevel", 1],
+                ["setETC1SCompressionLevel", 0],
+            ])
+        );
+        expect(context.basisEncoder.calls.some(([name]) => name === "setPackUASTCFlags" || name === "setKTX2UASTCSupercompression")).toBe(false);
+    });
+
+    it.each(["data", "normal"] as const)("overrides per-call UASTC options for %s usage, preserving false and zero", async (usage) => {
+        const context = _createEncoder();
+        KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 1, etc1sCompressionLevel: 0, uastcQualityLevel: 0, zstandard: false };
+        await context.encoder.encode(_rgba(), 4, 4, { usage, uastcQualityLevel: 4, zstandard: true });
+        expect(context.basisEncoder.calls).toEqual(
+            expect.arrayContaining([
+                ["setPackUASTCFlags", 0],
+                ["setKTX2UASTCSupercompression", false],
+            ])
+        );
+        expect(context.basisEncoder.calls.some(([name]) => name === "setQualityLevel" || name === "setETC1SCompressionLevel")).toBe(false);
+    });
+
+    it("leaves per-call options and built-in defaults in effect for undefined fields", async () => {
+        const context = _createEncoder();
+        KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 64, etc1sCompressionLevel: undefined };
+        await context.encoder.encode(_rgba(), 4, 4, { usage: "color", etc1sCompressionLevel: 4 });
+        expect(context.basisEncoder.calls).toEqual(
+            expect.arrayContaining([
+                ["setQualityLevel", 64],
+                ["setETC1SCompressionLevel", 4],
+            ])
+        );
+        KTX2Encoder.DefaultEncoderOptions.etc1sQualityLevel = undefined;
+        await context.encoder.encode(_rgba(), 4, 4, { usage: "color" });
+        expect(context.basisEncoder.calls).toEqual(
+            expect.arrayContaining([
+                ["setQualityLevel", 128],
+                ["setETC1SCompressionLevel", 2],
+            ])
+        );
+    });
+
+    it("still rejects per-call options that do not apply to the usage", async () => {
+        const context = _createEncoder();
+        KTX2Encoder.DefaultEncoderOptions = { uastcQualityLevel: 1 };
+        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "color", uastcQualityLevel: 1 })).rejects.toThrow("UASTC options");
+        expect(() => context.basisEncoder).toThrow("has not been created");
+    });
+
+    it.each([
+        [{ etc1sQualityLevel: 0 }, "color", "etc1sQualityLevel"],
+        [{ etc1sCompressionLevel: 1.5 }, "color", "etc1sCompressionLevel"],
+        [{ uastcQualityLevel: 5 }, "data", "uastcQualityLevel"],
+    ] as const)("rejects an invalid effective default %o", async (defaults, usage, message) => {
+        const context = _createEncoder();
+        KTX2Encoder.DefaultEncoderOptions = { ...defaults };
+        await expect(context.encoder.encode(_rgba(), 4, 4, { usage })).rejects.toThrow(message);
+        expect(() => context.basisEncoder).toThrow("has not been created");
     });
 });
 
