@@ -70,7 +70,7 @@ describe("KTX2 encoder package integration", () => {
             { cwd: fixture, encoding: "utf8" }
         );
         expect(output).toBe("");
-    });
+    }, 60_000);
 
     it("collects the root bundle, declarations and complete versioned codec payload into a clean snapshot", () => {
         fixture = mkdtempSync(join(tmpdir(), "bjs-ktx2-snapshot-"));

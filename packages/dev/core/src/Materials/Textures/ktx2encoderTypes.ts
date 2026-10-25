@@ -92,11 +92,14 @@ export function _ValidateKTX2EncoderOptions(options: IKTX2EncoderOptions): void 
  */
 export function _ApplyKTX2EncoderDefaultOptions(options: IKTX2EncoderOptions, defaults: _IKTX2EncoderDefaultOptions | undefined): IKTX2EncoderOptions {
     const effective: IKTX2EncoderOptions = { ...options };
-    for (const key of options.usage === "color" ? ColorDefaultKeys : UASTCDefaultKeys) {
+    const applyDefault = <K extends keyof _IKTX2EncoderDefaultOptions>(key: K) => {
         const value = defaults?.[key];
         if (value !== undefined) {
-            (effective as Record<string, unknown>)[key] = value;
+            effective[key] = value;
         }
+    };
+    for (const key of options.usage === "color" ? ColorDefaultKeys : UASTCDefaultKeys) {
+        applyDefault(key);
     }
     return effective;
 }

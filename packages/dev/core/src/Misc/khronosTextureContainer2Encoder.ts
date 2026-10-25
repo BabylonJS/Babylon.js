@@ -474,12 +474,12 @@ export class KhronosTextureContainer2Encoder {
                 throw error;
             }
         };
-        const initialize = async (worker: Worker) => {
+        const initializeAsync = async (worker: Worker) => {
             const wasmBinary = await loadWasmAsync();
             await PostRequestAsync(worker, { action: "init", id: NextRequestId++, jsEncoderModuleUrl: settings.jsEncoderModuleUrl, basisJsUrl: settings.basisJsUrl, wasmBinary });
         };
         const workerUrl = URL.createObjectURL(new Blob([`(${KTX2EncoderWorkerFunction.toString()})()`], { type: "application/javascript" }));
-        KhronosTextureContainer2Encoder._WorkerPoolPromise = Promise.resolve(new KTX2EncoderWorkerPool(numWorkers, workerUrl, initialize));
+        KhronosTextureContainer2Encoder._WorkerPoolPromise = Promise.resolve(new KTX2EncoderWorkerPool(numWorkers, workerUrl, initializeAsync));
     }
 
     private static async _CreateMainThreadEncoderAsync(settings: IEncoderSettings): Promise<IMainThreadEncoder> {

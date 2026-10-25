@@ -15,6 +15,10 @@ async function ExpectAbortAsync(promise: Promise<unknown>) {
     await expect(promise).rejects.toMatchObject({ name: "AbortError" });
 }
 
+async function ExpectFailureAsync(promise: Promise<unknown>, message: string | RegExp) {
+    await expect(promise).rejects.toThrow(message);
+}
+
 function ResetEncoder() {
     const statics = KhronosTextureContainer2Encoder as unknown as Record<string, unknown>;
     statics._WorkerPoolPromise = undefined;
@@ -204,8 +208,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             await vi.waitFor(() => expect(FakeWorker.instances.map((worker) => worker.encodes.length)).toEqual([1, 1]));
             FakeWorker.instances.forEach((worker) => worker.finish());
             await Promise.all(results);
-            expect(Tools.LoadFileAsync).toHaveBeenCalledOnce();
-            expect(Tools.LoadFileAsync).toHaveBeenCalledWith(Tools.GetBabylonScriptURL("https://example.test/custom.wasm", true));
+            expect(Tools.LoadFileAsync).toHaveBeenCalledExactlyOnceWith(Tools.GetBabylonScriptURL("https://example.test/custom.wasm", true));
         });
     });
 
@@ -319,7 +322,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             const encoder = new KhronosTextureContainer2Encoder(1);
             const texture = CreateTexture();
             const first = encoder._encodeAsync(texture, { usage: "color" });
-            const rejected = expect(first).rejects.toThrow("Worker script failed");
+            const rejected = ExpectFailureAsync(first, "Worker script failed");
             const queued = encoder._encodeAsync(texture, { usage: "data" });
             await vi.advanceTimersByTimeAsync(0);
             expect(FakeWorker.instances).toHaveLength(1);
@@ -355,7 +358,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             const encoder = new KhronosTextureContainer2Encoder(1);
             const texture = CreateTexture();
             const first = encoder._encodeAsync(texture, { usage: "color" });
-            const rejected = expect(first).rejects.toThrow(type === "error" ? "Worker crashed" : "deserialized");
+            const rejected = ExpectFailureAsync(first, type === "error" ? "Worker crashed" : "deserialized");
             const queued = encoder._encodeAsync(texture, { usage: "data" });
             await vi.advanceTimersByTimeAsync(0);
             expect(FakeWorker.instances).toHaveLength(1);
@@ -418,7 +421,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             });
             const encoder = new KhronosTextureContainer2Encoder(1);
             const first = encoder._encodeAsync(CreateTexture(), { usage: "color" });
-            const rejected = expect(first).rejects.toThrow("Init crashed");
+            const rejected = ExpectFailureAsync(first, "Init crashed");
             const queued = encoder._encodeAsync(CreateTexture(), { usage: "data" });
             await vi.advanceTimersByTimeAsync(0);
             const failed = FakeWorker.instances[0];
@@ -440,7 +443,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             const encoder = new KhronosTextureContainer2Encoder(1);
             const texture = CreateTexture();
             const result = encoder._encodeAsync(texture, { usage: "color" });
-            const rejected = expect(result).rejects.toThrow("Encode failed");
+            const rejected = ExpectFailureAsync(result, "Encode failed");
             const queued = encoder._encodeAsync(texture, { usage: "data" });
             await vi.advanceTimersByTimeAsync(0);
             const worker = FakeWorker.instances[0];
@@ -468,7 +471,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             });
             const encoder = new KhronosTextureContainer2Encoder(1);
             const first = encoder._encodeAsync(CreateTexture(), { usage: "color" });
-            const rejected = expect(first).rejects.toThrow("Transfer failed");
+            const rejected = ExpectFailureAsync(first, "Transfer failed");
             const queued = encoder._encodeAsync(CreateTexture(), { usage: "data" });
             await vi.advanceTimersByTimeAsync(0);
             await rejected;
@@ -509,7 +512,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             );
             const encoder = new KhronosTextureContainer2Encoder(1);
             const first = encoder._encodeAsync(CreateTexture(), { usage: "color" });
-            const rejected = expect(first).rejects.toThrow("Worker construction failed");
+            const rejected = ExpectFailureAsync(first, "Worker construction failed");
             const queued = encoder._encodeAsync(CreateTexture(), { usage: "data" });
             await vi.advanceTimersByTimeAsync(0);
             await rejected;
@@ -614,7 +617,7 @@ describe("KhronosTextureContainer2Encoder", () => {
             const terminate = vi.spyOn(worker, "terminate");
             const encoder = new KhronosTextureContainer2Encoder({ workerPool: pool });
             const result = encoder._encodeAsync(CreateTexture(), { usage: "color" });
-            const rejected = expect(result).rejects.toThrow(type === "error" ? "Caller worker failed" : "deserialized");
+            const rejected = ExpectFailureAsync(result, type === "error" ? "Caller worker failed" : "deserialized");
             await vi.advanceTimersByTimeAsync(0);
             worker.fail("Caller worker failed", type);
             await rejected;
@@ -771,7 +774,7 @@ describe("KhronosTextureContainer2Encoder", () => {
                 vi.spyOn(texture, "errorObject", "get").mockReturnValue({ message: "load failed" });
             }
             const result = encoder._encodeAsync(texture, { usage: "data", signal: abort.signal });
-            const rejected = reason === "abort" ? ExpectAbortAsync(result) : expect(result).rejects.toThrow(/load failed|disposed/);
+            const rejected = reason === "abort" ? ExpectAbortAsync(result) : ExpectFailureAsync(result, /load failed|disposed/);
             if (reason === "abort") {
                 abort.abort();
             } else if (reason === "dispose") {
