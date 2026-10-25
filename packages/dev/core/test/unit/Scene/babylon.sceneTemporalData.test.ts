@@ -187,6 +187,22 @@ describe("Scene uniform buffer: temporal data of the view", () => {
         square.dispose();
     });
 
+    it("seeds a new history from the pass's final view: the target's projection applied after initRender", () => {
+        const objectRenderer = renderer("renderer");
+        objectRenderer.initRender(256, 256);
+        // the target recomputes the projection for its own size before the draws, which finalize the scene UBO again
+        const getAspectRatio = vi.spyOn(engine, "getAspectRatio").mockReturnValue(3);
+        scene.setTransformMatrix(camA.getViewMatrix(), camA.getProjectionMatrix(true));
+        const first = written(scene.getSceneUniformBuffer());
+        getAspectRatio.mockRestore();
+        objectRenderer.finishRender();
+        expect(first.previous).toEqual(first.viewProjection);
+        // the history goes on from that final view
+        engine.endFrame();
+        expect(rendered(objectRenderer, 3).previous).toEqual(first.viewProjection);
+        objectRenderer.dispose();
+    });
+
     describe("readiness checks", () => {
         it("do not advance the history: a check at one pose and the first render at another, in the same frame", () => {
             const objectRenderer = renderer("renderer");
@@ -257,6 +273,38 @@ describe("Scene uniform buffer: temporal data of the view", () => {
             taa.dispose();
         });
 
+        it("drops the color history at a reset of the camera it switches to", () => {
+            const taa = new ThinTAAPostProcess("taa", scene);
+            taa.disableOnCameraMove = false;
+            taa.camera = camA;
+            taaFactor(taa);
+            expect(taaFactor(taa)).toBe(taa.factor);
+            taa.camera = camB;
+            camB.resetViewHistory();
+            expect(taaFactor(taa)).toBe(1);
+            expect(taaFactor(taa)).toBe(taa.factor);
+            taa.dispose();
+        });
+
+        it("keeps the reset of each eye when it alternates between the eyes of a rig", () => {
+            const rig = new FreeCamera("rig", new Vector3(0, 2, -10), scene);
+            rig.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, { interaxialDistance: 0.0637 });
+            const [left, right] = rig._rigCameras;
+            const taa = new ThinTAAPostProcess("taa", scene);
+            taa.disableOnCameraMove = false;
+            const factorFor = (eye: Camera) => {
+                taa.camera = eye;
+                return taaFactor(taa);
+            };
+            factorFor(left);
+            factorFor(right);
+            right.resetViewHistory();
+            expect(factorFor(left)).toBe(taa.factor);
+            expect(factorFor(right)).toBe(1);
+            expect(factorFor(right)).toBe(taa.factor);
+            taa.dispose();
+        });
+
         it("resets the cameras of the rig with their parent", () => {
             const rig = new FreeCamera("rig", new Vector3(0, 2, -10), scene);
             rig.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, { interaxialDistance: 0.0637 });
@@ -274,13 +322,11 @@ describe("Scene uniform buffer: temporal data of the view", () => {
         });
     });
 
-    describe("frame graph TAA with a stereo rig", () => {
-        it("gives the TAA jitter to each eye, and keeps a history per eye", async () => {
+    describe("frame graph TAA", () => {
+        // an object renderer task drawing the camera and a reprojecting TAA task, built in the null engine
+        const taaGraph = async (camera: Camera) => {
             vi.spyOn(engine, "buildTextureLayout").mockImplementation((textureStatus) => textureStatus.map((enabled, index) => (enabled ? index + 1 : 0)));
-            const rig = new FreeCamera("rig", new Vector3(0, 2, -10), scene);
-            rig.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, { interaxialDistance: 0.0637 });
-            scene.activeCamera = rig;
-
+            scene.activeCamera = camera;
             const frameGraph = new FrameGraph(scene);
             const color = frameGraph.textureManager.createRenderTargetTexture("color", {
                 size: { width: 64, height: 64 },
@@ -297,7 +343,7 @@ describe("Scene uniform buffer: temporal data of the view", () => {
             });
             const objects = new FrameGraphObjectRendererTask("objects", frameGraph, scene);
             objects.targetTexture = color;
-            objects.camera = rig;
+            objects.camera = camera;
             objects.objectList = { meshes: [], particleSystems: [] };
             frameGraph.addTask(objects);
             const taa = new FrameGraphTAATask("taa", frameGraph);
@@ -318,6 +364,13 @@ describe("Scene uniform buffer: temporal data of the view", () => {
             vi.spyOn(FrameGraphRenderContext.prototype, "applyFullScreenEffect").mockImplementation(() => true);
             await frameGraph.buildAsync(false);
             scene.frameGraph = frameGraph;
+            return { frameGraph, objects };
+        };
+
+        it("gives the TAA jitter to each eye of a stereo rig, and keeps a history per eye", async () => {
+            const rig = new FreeCamera("rig", new Vector3(0, 2, -10), scene);
+            rig.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, { interaxialDistance: 0.0637 });
+            const { frameGraph } = await taaGraph(rig);
 
             // what each eye's passes get written, frame by frame
             const eyes: Record<string, ReturnType<typeof written>[]> = {};
@@ -345,6 +398,20 @@ describe("Scene uniform buffer: temporal data of the view", () => {
                 expect(eyes[eye][last].previous).toEqual(eyes[eye][last].viewProjection);
             }
             expect(eyes["rig_L"][last].viewProjection).not.toEqual(eyes["rig_R"][last].viewProjection);
+            scene.frameGraph = null;
+            frameGraph.dispose();
+        });
+
+        it("writes the jitter for the camera the object renderer draws, also in the first frame after a switch", async () => {
+            const { frameGraph, objects } = await taaGraph(camA);
+            for (let frame = 0; frame < 2; frame++) {
+                scene.render();
+                engine.endFrame();
+            }
+            objects.camera = camB;
+            scene.render();
+            expect(camB._taaJitterFrameId).toBe(engine.frameId);
+            expect([camB._taaJitter.x, camB._taaJitter.y]).not.toEqual([0, 0]);
             scene.frameGraph = null;
             frameGraph.dispose();
         });

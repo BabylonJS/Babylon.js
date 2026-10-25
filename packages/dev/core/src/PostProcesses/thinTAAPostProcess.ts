@@ -169,8 +169,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
     private _hs: Halton2DSequence;
     private _firstUpdate = true;
     private _taaMaterialManager: Nullable<TAAMaterialManager>;
-    private _viewHistoryCamera: Nullable<Camera> = null;
-    private _viewHistoryResetId = 0;
+    private _viewHistoryResetIds = new WeakMap<Camera, number>();
 
     /**
      * Constructs a new TAA post process
@@ -261,11 +260,15 @@ export class ThinTAAPostProcess extends EffectWrapper {
 
         const effect = this._drawWrapper.effect!;
 
-        // camera.resetViewHistory (a cut): drop the history in the same frame
+        // camera.resetViewHistory (a cut): drop the history in the same frame. The resets are tracked per camera, so that the reset of a
+        // camera the TAA switches to, or of one of the eyes it alternates between, is not lost
         const camera = this.camera;
-        const viewHistoryReset = !!camera && camera === this._viewHistoryCamera && camera._viewHistoryResetId !== this._viewHistoryResetId;
-        this._viewHistoryCamera = camera;
-        this._viewHistoryResetId = camera ? camera._viewHistoryResetId : 0;
+        let viewHistoryReset = false;
+        if (camera) {
+            const resetId = camera._viewHistoryResetId;
+            viewHistoryReset = resetId !== (this._viewHistoryResetIds.get(camera) ?? 0);
+            this._viewHistoryResetIds.set(camera, resetId);
+        }
 
         effect.setFloat("factor", (camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate || viewHistoryReset ? 1 : this.factor);
 

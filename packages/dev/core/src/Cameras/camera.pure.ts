@@ -464,7 +464,7 @@ export class Camera extends Node {
     /** @internal */
     public _computedViewMatrix = Matrix.Identity();
     /** @internal This camera's view-projection in the previous and current frame, per pass (see Scene.finalizeSceneUbo) */
-    public _viewHistories = new Map<number, { previous: Matrix; current: Matrix; frameId: number }>();
+    public _viewHistories = new Map<number, { previous: Matrix; current: Matrix; frameId: number; seeded: boolean }>();
     /** @internal Incremented by resetViewHistory */
     public _viewHistoryResetId = 0;
     /** @internal The TAA jitter (clip space) of this camera's color passes, computed in the frame _taaJitterFrameId and applied until the next one */

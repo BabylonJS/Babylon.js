@@ -1350,7 +1350,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                     histories.delete(passId);
                 }
             });
-            const started = { previous: transform.clone(), current: transform.clone(), frameId };
+            const started = { previous: transform.clone(), current: transform.clone(), frameId, seeded: true };
             histories.set(this._viewPassId, started);
             return started.previous;
         }
@@ -1358,9 +1358,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             history.previous.copyFrom(history.current);
             history.current.copyFrom(transform);
             history.frameId = frameId;
+            history.seeded = false;
         } else if (history.current.updateFlag !== transform.updateFlag) {
-            // the transform changed within the pass (camera moved, or the target's aspect ratio applied)
+            // the transform changed within the pass (camera moved, or the target's aspect ratio applied); a history seeded in this
+            // frame has no rendered view before it, so both follow the final view
             history.current.copyFrom(transform);
+            if (history.seeded) {
+                history.previous.copyFrom(transform);
+            }
         }
         return history.previous;
     }
