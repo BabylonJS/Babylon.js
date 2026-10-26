@@ -41,7 +41,7 @@ export interface IKTX2EncoderOptions {
      */
     uastcQualityLevel?: number;
     /**
-     * Use Zstandard with UASTC. Defaults to true for data and normal. Omit for color, including when false.
+     * Use Zstandard with UASTC. Defaults to true for data and normal. Ignored for color.
      * @experimental
      */
     zstandard?: boolean;
@@ -52,76 +52,3 @@ export interface IKTX2EncoderOptions {
  * @internal
  */
 export type _IKTX2EncoderDefaultOptions = Pick<IKTX2EncoderOptions, "etc1sQualityLevel" | "etc1sCompressionLevel" | "uastcQualityLevel" | "zstandard">;
-
-const ColorDefaultKeys = ["etc1sQualityLevel", "etc1sCompressionLevel"] as const;
-const UASTCDefaultKeys = ["uastcQualityLevel", "zstandard"] as const;
-
-const ValidateIntegerRange = (name: string, value: number | undefined, minimum: number, maximum: number): void => {
-    if (value !== undefined && (!Number.isInteger(value) || value < minimum || value > maximum)) {
-        throw new Error(`${name} must be an integer from ${minimum} through ${maximum}.`);
-    }
-};
-
-/**
- * Validates encoding options, including options that do not apply to the selected usage.
- * @param options Options to validate.
- * @internal
- */
-export function _ValidateKTX2EncoderOptions(options: IKTX2EncoderOptions): void {
-    if (options.usage !== "color" && options.usage !== "data" && options.usage !== "normal") {
-        throw new Error("usage must be 'color', 'data', or 'normal'.");
-    }
-    ValidateIntegerRange("etc1sQualityLevel", options.etc1sQualityLevel, 1, 255);
-    ValidateIntegerRange("etc1sCompressionLevel", options.etc1sCompressionLevel, 0, 6);
-    ValidateIntegerRange("uastcQualityLevel", options.uastcQualityLevel, 0, 4);
-    if (options.usage === "color") {
-        if (options.uastcQualityLevel !== undefined || options.zstandard !== undefined) {
-            throw new Error("UASTC options cannot be used when usage is 'color'.");
-        }
-    } else if (options.etc1sQualityLevel !== undefined || options.etc1sCompressionLevel !== undefined) {
-        throw new Error("ETC1S options can only be used when usage is 'color'.");
-    }
-}
-
-/**
- * Overrides options with the defined defaults that apply to their usage.
- * @param options Per-call options.
- * @param defaults Encoder-wide defaults, which take priority.
- * @returns The effective options.
- * @internal
- */
-export function _ApplyKTX2EncoderDefaultOptions(options: IKTX2EncoderOptions, defaults: _IKTX2EncoderDefaultOptions | undefined): IKTX2EncoderOptions {
-    const effective: IKTX2EncoderOptions = { ...options };
-    const applyDefault = <K extends keyof _IKTX2EncoderDefaultOptions>(key: K) => {
-        const value = defaults?.[key];
-        if (value !== undefined) {
-            effective[key] = value;
-        }
-    };
-    for (const key of options.usage === "color" ? ColorDefaultKeys : UASTCDefaultKeys) {
-        applyDefault(key);
-    }
-    return effective;
-}
-
-const DimensionMultiple = 4;
-const MaxDimension = 16_384;
-const MaxPixels = 12_582_912;
-
-/**
- * Validates the dimensions supported by the pinned Basis encoder.
- * @param width Source width in pixels.
- * @param height Source height in pixels.
- * @internal
- */
-export function _ValidateKTX2EncoderDimensions(width: number, height: number): void {
-    if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0 || width % DimensionMultiple !== 0 || height % DimensionMultiple !== 0) {
-        throw new Error("KTX2 encoder width and height must be positive multiples of 4.");
-    }
-    if (width > MaxDimension || height > MaxDimension) {
-        throw new Error(`KTX2 encoder width and height cannot exceed ${MaxDimension.toLocaleString("en-US")} pixels.`);
-    }
-    if (width * height > MaxPixels) {
-        throw new Error(`KTX2 encoder images cannot exceed ${MaxPixels.toLocaleString("en-US")} pixels.`);
-    }
-}

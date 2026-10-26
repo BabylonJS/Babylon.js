@@ -5,7 +5,7 @@ import { Constants } from "../Engines/constants";
 import { GetTextureDataAsync, _IsCompressedTextureFormat, WhenTextureReadyAsync } from "./textureTools";
 import { AsyncLock } from "./asyncLock";
 import { AutoReleaseWorkerPool } from "./workerPool";
-import { _ValidateKTX2EncoderDimensions, _ValidateKTX2EncoderOptions, type _IKTX2EncoderDefaultOptions, type IKTX2EncoderOptions } from "../Materials/Textures/ktx2encoderTypes";
+import { type _IKTX2EncoderDefaultOptions, type IKTX2EncoderOptions } from "../Materials/Textures/ktx2encoderTypes";
 import {
     KTX2EncoderWorkerFunction,
     type _KTX2EncoderBasisFactory,
@@ -221,10 +221,6 @@ function ValidateTexture(texture: BaseTexture, allowUninitialized: boolean): voi
     }
     if (_IsCompressedTextureFormat(texture.textureFormat) && !texture.getScene()) {
         throw new Error("KTX2 encoding compressed textures requires a scene for GPU readback.");
-    }
-    const { width, height } = texture.getSize();
-    if (!allowUninitialized || width > 0 || height > 0) {
-        _ValidateKTX2EncoderDimensions(width, height);
     }
 }
 
@@ -549,7 +545,6 @@ export class KhronosTextureContainer2Encoder {
         if (signal?.aborted) {
             throw AbortError();
         }
-        _ValidateKTX2EncoderOptions(requestedOptions);
         const workerPoolPromise = KhronosTextureContainer2Encoder._WorkerPoolPromise;
         const settings = KhronosTextureContainer2Encoder._MainThreadSettings;
         if (!workerPoolPromise && !settings) {

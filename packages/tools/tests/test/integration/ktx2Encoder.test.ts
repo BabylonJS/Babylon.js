@@ -206,20 +206,15 @@ test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ pa
         };
         try {
             const raw = new B.RawTexture(pixels, 8, 8, B.Constants.TEXTUREFORMAT_RGBA, scene, false, false);
-            let invalidOptions = "";
-            try {
-                await encoder._encodeAsync(raw, { usage: "color", etc1sQualityLevel: 0 });
-            } catch (error) {
-                invalidOptions = String(error);
-            }
-            const source = await load(await encoder._encodeAsync(raw, { usage: "color" }));
+            B.KhronosTextureContainer2Encoder.DefaultEncoderOptions.etc1sQualityLevel = 128;
+            const source = await load(await encoder._encodeAsync(raw, { usage: "color", etc1sQualityLevel: 0, zstandard: false }));
+            B.KhronosTextureContainer2Encoder.DefaultEncoderOptions.etc1sQualityLevel = undefined;
             const first = await B.GetTextureDataAsync(source, 8, 8, 0, 0, false, 0, false);
             const encoded = await encoder._encodeAsync(source, { usage: "color" });
             const roundTrip = await load(encoded);
             const second = await B.GetTextureDataAsync(roundTrip, 8, 8, 0, 0, false, 0, false);
             return {
                 exactConversions: window.engine!.useExactSrgbConversions,
-                invalidOptions,
                 compressed: B._IsCompressedTextureFormat(source.textureFormat),
                 hardwareSRGB: source.getInternalTexture()!._useSRGBBuffer,
                 firstDifference: Math.max(...first.map((value, index) => Math.abs(value - pixels[index]))),
@@ -235,7 +230,6 @@ test("KTX2 workers preserve compressed sRGB with exact conversions", async ({ pa
         }
     }, baseUrl);
     expect(result.exactConversions).toBe(true);
-    expect(result.invalidOptions).toContain("etc1sQualityLevel");
     expect(result.compressed).toBe(true);
     expect(result.hardwareSRGB).toBe(true);
     expect(result.firstDifference).toBeLessThanOrEqual(8);

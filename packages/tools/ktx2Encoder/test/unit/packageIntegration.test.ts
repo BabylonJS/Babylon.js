@@ -3,6 +3,8 @@ import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import * as CoreEncoderTypes from "core/Materials/Textures/ktx2encoderTypes";
+import * as EncoderTypes from "../../src/ktx2encoderTypes";
 import { prepareSnapshot } from "../../../../dev/buildTools/src/prepareSnapshot";
 
 const RepositoryRoot = resolve(import.meta.dirname, "../../../../..");
@@ -17,6 +19,11 @@ describe("KTX2 encoder package integration", () => {
             rmSync(fixture, { recursive: true, force: true });
             fixture = undefined;
         }
+    });
+
+    it("shares only types with core, without runtime helper exports", () => {
+        expect(Object.keys(CoreEncoderTypes)).toEqual([]);
+        expect(Object.keys(EncoderTypes)).toEqual([]);
     });
 
     it("registers the shared core leaf as a build prerequisite without a public runtime dependency", () => {

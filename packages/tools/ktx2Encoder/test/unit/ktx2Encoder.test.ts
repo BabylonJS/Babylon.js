@@ -205,13 +205,8 @@ describe("KTX2Encoder validation", () => {
         { rgba: _rgba(), width: 4, height: 16388, options: { usage: "color" }, message: "16,384" },
         { rgba: new Uint8Array(63), width: 4, height: 4, options: { usage: "color" }, message: "byte length must be 64" },
         { rgba: new Uint8Array(1), width: 4096, height: 3076, options: { usage: "color" }, message: "12,582,912" },
+        { rgba: new Uint8Array(1), width: 4096, height: 4096, options: { usage: "color" }, message: "12,582,912" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "other" }, message: "usage must be" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", etc1sQualityLevel: 0 }, message: "etc1sQualityLevel" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", etc1sCompressionLevel: 7 }, message: "etc1sCompressionLevel" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "data", uastcQualityLevel: 5 }, message: "uastcQualityLevel" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", zstandard: true }, message: "UASTC options" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "color", zstandard: false }, message: "UASTC options" },
-        { rgba: _rgba(), width: 4, height: 4, options: { usage: "data", etc1sQualityLevel: 128 }, message: "ETC1S options" },
     ])("rejects invalid input before creating BasisEncoder", async ({ rgba, width, height, options, message }) => {
         const context = _createEncoder();
         await expect(context.encoder.encode(rgba, width, height, options as IKTX2EncoderOptions)).rejects.toThrow(message);
@@ -220,6 +215,33 @@ describe("KTX2Encoder validation", () => {
 });
 
 describe("KTX2Encoder presets", () => {
+    it.each(["color", "data", "normal"] as const)("ignores codec settings unrelated to %s usage", async (usage) => {
+        const context = _createEncoder();
+        await context.encoder.encode(_rgba(), 4, 4, {
+            usage,
+            etc1sQualityLevel: 200,
+            etc1sCompressionLevel: 5,
+            uastcQualityLevel: 4,
+            zstandard: false,
+        });
+        const calls = context.basisEncoder.calls;
+        expect(calls.some(([name]) => name === "setQualityLevel" || name === "setETC1SCompressionLevel")).toBe(usage === "color");
+        expect(calls.some(([name]) => name === "setPackUASTCFlags" || name === "setKTX2UASTCSupercompression")).toBe(usage !== "color");
+        expect(calls).toEqual(
+            expect.arrayContaining(
+                usage === "color"
+                    ? [
+                          ["setQualityLevel", 200],
+                          ["setETC1SCompressionLevel", 5],
+                      ]
+                    : [
+                          ["setPackUASTCFlags", 4],
+                          ["setKTX2UASTCSupercompression", false],
+                      ]
+            )
+        );
+    });
+
     it.each([
         [16384, 4],
         [4, 16384],
@@ -350,22 +372,23 @@ describe("KTX2Encoder DefaultEncoderOptions", () => {
         );
     });
 
-    it("still rejects per-call options that do not apply to the usage", async () => {
+    it("applies defaults before passing codec settings to Basis", async () => {
         const context = _createEncoder();
-        KTX2Encoder.DefaultEncoderOptions = { uastcQualityLevel: 1 };
-        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "color", uastcQualityLevel: 1 })).rejects.toThrow("UASTC options");
-        expect(() => context.basisEncoder).toThrow("has not been created");
+        KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 128, uastcQualityLevel: 1 };
+        await context.encoder.encode(_rgba(), 4, 4, { usage: "color", etc1sQualityLevel: 0, uastcQualityLevel: 1 });
+        expect(context.basisEncoder.calls).toContainEqual(["setQualityLevel", 128]);
+        expect(context.basisEncoder.calls.some(([name]) => name === "setPackUASTCFlags")).toBe(false);
     });
 
     it.each([
-        [{ etc1sQualityLevel: 0 }, "color", "etc1sQualityLevel"],
-        [{ etc1sCompressionLevel: 1.5 }, "color", "etc1sCompressionLevel"],
-        [{ uastcQualityLevel: 5 }, "data", "uastcQualityLevel"],
-    ] as const)("rejects an invalid effective default %o", async (defaults, usage, message) => {
+        [{ etc1sQualityLevel: 0 }, "color", "setQualityLevel", 0],
+        [{ etc1sCompressionLevel: 1.5 }, "color", "setETC1SCompressionLevel", 1.5],
+        [{ uastcQualityLevel: 5 }, "data", "setPackUASTCFlags", 5],
+    ] as const)("delegates codec setting handling to Basis for %o", async (defaults, usage, setter, value) => {
         const context = _createEncoder();
         KTX2Encoder.DefaultEncoderOptions = { ...defaults };
-        await expect(context.encoder.encode(_rgba(), 4, 4, { usage })).rejects.toThrow(message);
-        expect(() => context.basisEncoder).toThrow("has not been created");
+        await context.encoder.encode(_rgba(), 4, 4, { usage });
+        expect(context.basisEncoder.calls).toContainEqual([setter, value]);
     });
 });
 

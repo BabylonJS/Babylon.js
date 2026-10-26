@@ -738,17 +738,16 @@ describe("KhronosTextureContainer2Encoder", () => {
             expect(texture.readPixels).not.toHaveBeenCalled();
         });
 
-        it.each([
-            [3, 4],
-            [4, 7],
-            [4096, 4096],
-            [16388, 4],
-            [4, 16388],
-        ])("rejects %s by %s textures before readback", async (width, height) => {
-            const texture = new RawTexture(null, width, height, Constants.TEXTUREFORMAT_RGBA, engine);
-            const readPixels = vi.spyOn(texture, "readPixels");
-            await expect(encoder._encodeAsync(texture, { usage: "data" })).rejects.toThrow(/multiples of 4|12,582,912|16,384/);
-            expect(readPixels).not.toHaveBeenCalled();
+        it("leaves image dimension validation to the standalone encoder", async () => {
+            const texture = CreateTexture();
+            vi.spyOn(texture, "getSize").mockReturnValue({ width: 3, height: 4 });
+            const result = encoder._encodeAsync(texture, { usage: "data" });
+            const rejected = ExpectFailureAsync(result, "KTX2 encoder width and height must be positive multiples of 4.");
+            await vi.waitFor(() => expect(FakeWorker.instances[0]?.encodes).toHaveLength(1));
+            expect(FakeWorker.instances[0].encodes[0]).toMatchObject({ width: 3, height: 4 });
+            FakeWorker.instances[0].finish("KTX2 encoder width and height must be positive multiples of 4.");
+            await rejected;
+            expect(texture.readPixels).toHaveBeenCalledOnce();
         });
 
         it("rejects engine-backed compressed textures before readback with a descriptive error", async () => {
@@ -758,14 +757,18 @@ describe("KhronosTextureContainer2Encoder", () => {
             expect(texture.readPixels).not.toHaveBeenCalled();
         });
 
-        it.each([
-            [{ usage: "color", etc1sQualityLevel: 0 }, /etc1sQualityLevel/],
-            [{ usage: "color", zstandard: true }, /UASTC options/],
-            [{ usage: "other" }, /usage/],
-        ] as const)("validates per-call options %j before readback", async (options, message) => {
+        it("forwards codec settings without duplicating standalone processing", async () => {
+            const options: IKTX2EncoderOptions = { usage: "color", etc1sQualityLevel: 0, zstandard: true };
             const texture = CreateTexture();
-            await expect(encoder._encodeAsync(texture, options as unknown as IKTX2EncoderOptions)).rejects.toThrow(message);
-            expect(texture.readPixels).not.toHaveBeenCalled();
+            const result = encoder._encodeAsync(texture, options);
+            await Promise.all([
+                expect(result).resolves.toEqual(new Uint8Array([1, 2, 3])),
+                (async () => {
+                    await vi.waitFor(() => expect(FakeWorker.instances[0]?.encodes).toHaveLength(1));
+                    expect(FakeWorker.instances[0].encodes[0].options).toMatchObject(options);
+                    FakeWorker.instances[0].finish();
+                })(),
+            ]);
         });
 
         it.each([

@@ -28,7 +28,7 @@ Configure `JSModule`, `WasmBinary`, `JSModuleURL`, and `WasmModuleURL` before co
 
 ## Options and defaults
 
-Per-call options are `usage` (required), the codec settings for that usage, `flipY` (default `false`) and `generateMipmaps` (default `true`). Options that do not apply to the usage throw.
+Per-call options are `usage` (required), the codec settings for that usage, `flipY` (default `false`) and `generateMipmaps` (default `true`). Codec settings that do not apply to the usage are ignored. As with the decoder, tuning options are passed to the codec without extra range checks; use the ranges documented by their types. Image dimensions and RGBA byte length are checked before encoding.
 
 `KTX2Encoder.DefaultEncoderOptions` forces `etc1sQualityLevel`, `etc1sCompressionLevel`, `uastcQualityLevel` and `zstandard` for every later call. Like the KTX2 decoder's defaults, defined values override per-call values. They apply only to matching usages: ETC1S settings to `color`, UASTC settings to `data` and `normal`. Set a field to `undefined` to clear it. `usage`, `flipY` and `generateMipmaps` are never defaults.
 

@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { _ApplyKTX2EncoderDefaultOptions, _ValidateKTX2EncoderDimensions, _ValidateKTX2EncoderOptions, type IKTX2EncoderOptions } from "./ktx2encoderTypes";
+import { type IKTX2EncoderOptions } from "./ktx2encoderTypes";
 
 export type { IKTX2EncoderOptions, KTX2EncoderUsage } from "./ktx2encoderTypes";
 const OutputBufferPadding = 65_536;
 const KTX2DFDOffsetPosition = 48;
 const KTX2PrimariesOffsetInDFD = 13;
 const BasisInitialized = Symbol("KTX2EncoderBasisInitialized");
+const MaxDimension = 16_384;
+const MaxPixels = 12_582_912;
 
 type BasisEnumValue = { value: number };
 
@@ -173,14 +175,35 @@ export class KTX2Encoder {
      * @experimental
      */
     public async encode(rgba: Uint8Array, width: number, height: number, options: IKTX2EncoderOptions): Promise<Uint8Array> {
-        _ValidateKTX2EncoderDimensions(width, height);
+        if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0 || width % 4 !== 0 || height % 4 !== 0) {
+            throw new Error("KTX2 encoder width and height must be positive multiples of 4.");
+        }
+        if (width > MaxDimension || height > MaxDimension) {
+            throw new Error(`KTX2 encoder width and height cannot exceed ${MaxDimension.toLocaleString("en-US")} pixels.`);
+        }
+        if (width * height > MaxPixels) {
+            throw new Error(`KTX2 encoder images cannot exceed ${MaxPixels.toLocaleString("en-US")} pixels.`);
+        }
         const expectedByteLength = width * height * 4;
         if (rgba.byteLength !== expectedByteLength) {
             throw new Error(`RGBA input byte length must be ${expectedByteLength} for a ${width}x${height} image, but received ${rgba.byteLength}.`);
         }
-        _ValidateKTX2EncoderOptions(options);
-        const effectiveOptions = _ApplyKTX2EncoderDefaultOptions(options, KTX2Encoder.DefaultEncoderOptions);
-        _ValidateKTX2EncoderOptions(effectiveOptions);
+        if (options.usage !== "color" && options.usage !== "data" && options.usage !== "normal") {
+            throw new Error("usage must be 'color', 'data', or 'normal'.");
+        }
+        const defaults = KTX2Encoder.DefaultEncoderOptions;
+        const effectiveOptions = {
+            ...options,
+            ...(options.usage === "color"
+                ? {
+                      etc1sQualityLevel: defaults.etc1sQualityLevel ?? options.etc1sQualityLevel,
+                      etc1sCompressionLevel: defaults.etc1sCompressionLevel ?? options.etc1sCompressionLevel,
+                  }
+                : {
+                      uastcQualityLevel: defaults.uastcQualityLevel ?? options.uastcQualityLevel,
+                      zstandard: defaults.zstandard ?? options.zstandard,
+                  }),
+        };
 
         if (!this._basisModule) {
             await this._initializeAsync();
