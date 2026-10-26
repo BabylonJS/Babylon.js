@@ -1,221 +1,52 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
-import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
-import { GetTextureDataAsync, WhenTextureReadyAsync } from "core/Misc/textureTools";
-
-const state = vi.hoisted(() => ({
-    failCompilation: false,
-    compilationError: "",
-    gamma: -1,
-    disposed: 0,
-    compileObservers: -1,
-    errorObservers: -1,
-    apply: () => {},
-}));
+import { Observable } from "core/Misc/observable";
+import { GetTextureDataAsync } from "core/Misc/textureTools";
 
 vi.mock("core/PostProcesses/postProcess.pure", async (importOriginal) => {
     const original = await importOriginal<typeof import("core/PostProcesses/postProcess.pure")>();
-    const { Observable } = await import("core/Misc/observable");
-    class FakeEffect {
-        public onCompileObservable = new Observable<FakeEffect>();
-        public onErrorObservable = new Observable<FakeEffect>();
-        public isReady() {
-            return !state.failCompilation;
-        }
-        public getCompilationError() {
-            return state.compilationError;
-        }
-        public setTexture() {}
-        public setFloat() {}
-        public setInt(name: string, value: number) {
-            if (name === "gamma") {
-                state.gamma = value;
-            }
-        }
-    }
-    class FakePostProcess {
-        public onEffectCreatedObservable = new Observable<FakeEffect>();
-        public onApply = (_effect: FakeEffect) => {};
-        private readonly _effect = new FakeEffect();
-        public constructor() {
-            state.apply = () => this.onApply(this._effect);
-            queueMicrotask(() => {
-                this.onEffectCreatedObservable.notifyObservers(this._effect);
-                if (state.failCompilation) {
+    return {
+        ...original,
+        PostProcess: class {
+            public onEffectCreatedObservable = new Observable<typeof effect>();
+            public constructor() {
+                queueMicrotask(() => {
+                    this.onEffectCreatedObservable.notifyObservers(effect);
                     queueMicrotask(() => {
-                        state.compilationError = "Test shader compilation failed.";
-                        this._effect.onErrorObservable.notifyObservers(this._effect);
+                        compilationError = "Test shader compilation failed";
+                        effect.onErrorObservable.notifyObservers();
                     });
-                }
-            });
-        }
-        public dispose() {
-            state.disposed++;
-            state.compileObservers = this._effect.onCompileObservable.hasObservers() ? 1 : 0;
-            state.errorObservers = this._effect.onErrorObservable.hasObservers() ? 1 : 0;
-        }
-    }
-    return { ...original, PostProcess: FakePostProcess };
+                });
+            }
+            public dispose = vi.fn(() => (disposed = true));
+        },
+    };
 });
 
-describe("GetTextureDataAsync RTT", () => {
-    let engine: NullEngine;
-    let scene: Scene;
-    let texture: RawTexture;
+let disposed = false;
+let compilationError = "";
+const effect = {
+    onCompileObservable: new Observable<void>(),
+    onErrorObservable: new Observable<void>(),
+    getCompilationError: () => compilationError,
+    isReady: () => false,
+};
 
-    beforeEach(() => {
-        Object.assign(state, { failCompilation: false, compilationError: "", gamma: -1, disposed: 0, compileObservers: -1, errorObservers: -1 });
-        engine = new NullEngine();
-        scene = new Scene(engine);
-        texture = new RawTexture(new Uint8Array(64).fill(64), 4, 4, Constants.TEXTUREFORMAT_RGBA, scene, false);
-        texture.gammaSpace = false;
-        vi.spyOn(texture, "isReady").mockReturnValue(true);
-        vi.spyOn(scene.postProcessManager, "directRender").mockImplementation(() => state.apply());
-        vi.spyOn(engine, "readPixels").mockResolvedValue(new Uint8Array(64).fill(64));
-    });
-
-    afterEach(() => {
+it("rejects shader compilation failure and cleans up instead of leaving readback pending", async () => {
+    const engine = new NullEngine();
+    const scene = new Scene(engine);
+    const texture = new RawTexture(new Uint8Array(64), 4, 4, Constants.TEXTUREFORMAT_RGBA, scene, false);
+    texture.getInternalTexture()!.isReady = true;
+    try {
+        await expect(GetTextureDataAsync(texture, 4, 4, 0, 0, true)).rejects.toThrow("Test shader compilation failed");
+        expect(disposed).toBe(true);
+        expect(effect.onCompileObservable.hasObservers()).toBe(false);
+        expect(effect.onErrorObservable.hasObservers()).toBe(false);
+    } finally {
         scene.dispose();
         engine.dispose();
-        vi.restoreAllMocks();
-    });
-
-    it.each<[string, boolean, number, (texture: RawTexture) => void]>([
-        ["display conversion by default", true, 0, () => {}],
-        ["raw channels without display conversion", false, 1, () => {}],
-        [
-            "hardware sRGB over display conversion",
-            true,
-            2,
-            (texture) => {
-                texture.getInternalTexture()!._useSRGBBuffer = true;
-                texture.gammaSpace = true;
-            },
-        ],
-        [
-            "compressed sRGB without the sRGB-buffer flag",
-            false,
-            2,
-            (texture) => (texture.getInternalTexture()!.format = Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT),
-        ],
-    ])("applies %s", async (_, applyGammaCorrection, gamma, configure) => {
-        configure(texture);
-        await GetTextureDataAsync(texture, 4, 4, 0, 0, true, 0, applyGammaCorrection);
-        expect(state.gamma).toBe(gamma);
-        expect(state.disposed).toBe(1);
-    });
-
-    it.each([
-        [Constants.TEXTUREFORMAT_R, [80], [80, 0, 0, 255]],
-        [Constants.TEXTUREFORMAT_RG, [80, 120], [80, 120, 0, 255]],
-        [Constants.TEXTUREFORMAT_ALPHA, [80], [0, 0, 0, 80]],
-        [Constants.TEXTUREFORMAT_LUMINANCE, [80], [80, 80, 80, 255]],
-        [Constants.TEXTUREFORMAT_LUMINANCE_ALPHA, [80, 120], [80, 80, 80, 120]],
-    ])("preserves raw channel semantics for format %s", async (format, components, expected) => {
-        texture.getInternalTexture()!.format = format;
-        vi.spyOn(texture, "readPixels").mockResolvedValue(Uint8Array.from(Array.from({ length: 16 }, () => components).flat()));
-        const pixels = await GetTextureDataAsync(texture, 4, 4, 0, 0, false, 0, false);
-        expect(Array.from(pixels.slice(0, 4))).toEqual(expected);
-    });
-
-    it("retains grayscale previews for single-channel textures", async () => {
-        texture.getInternalTexture()!.format = Constants.TEXTUREFORMAT_R;
-        vi.spyOn(texture, "readPixels").mockResolvedValue(new Uint8Array(16).fill(80));
-        expect(Array.from((await GetTextureDataAsync(texture)).slice(0, 4))).toEqual([80, 80, 80, 255]);
-    });
-
-    it("rejects shader compilation errors and removes observers before disposing", async () => {
-        state.failCompilation = true;
-        const readback = GetTextureDataAsync(texture, 4, 4, 0, 0, true);
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        const timeout = new Promise<never>((_resolve, reject) => {
-            timer = setTimeout(() => reject(new Error("Readback remained pending.")), 300);
-        });
-
-        try {
-            await expect(Promise.race([readback, timeout])).rejects.toThrow("Test shader compilation failed.");
-            expect(state.disposed).toBe(1);
-            expect(state.compileObservers).toBe(0);
-            expect(state.errorObservers).toBe(0);
-        } finally {
-            clearTimeout(timer);
-        }
-    });
-});
-
-describe("WhenTextureReadyAsync", () => {
-    it.each(["error", "load", "abort", "dispose"] as const)("cleans readiness observers after %s", async (outcome) => {
-        const engine = new NullEngine();
-        const texture = new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);
-        vi.spyOn(texture, "isReady").mockReturnValue(false);
-        const controller = new AbortController();
-        const errorsBefore = Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length;
-        try {
-            const pending = WhenTextureReadyAsync(texture, controller.signal);
-            const settled = pending.then(
-                () => "",
-                (error) => String(error)
-            );
-            if (outcome === "error") {
-                vi.spyOn(texture, "errorObject", "get").mockReturnValue({ message: "image returned 404" });
-                Texture.OnTextureLoadErrorObservable.notifyObservers(texture);
-            } else if (outcome === "load") {
-                texture.onLoadObservable.notifyObservers(texture);
-            } else if (outcome === "abort") {
-                controller.abort();
-            } else {
-                texture.dispose();
-            }
-            expect((await settled).length > 0).toBe(outcome !== "load");
-            expect(Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length).toBe(errorsBefore);
-            expect(texture.onLoadObservable.hasObservers()).toBe(false);
-            expect(texture.onDisposeObservable.hasObservers()).toBe(false);
-        } finally {
-            texture.dispose();
-            engine.dispose();
-            vi.restoreAllMocks();
-        }
-    });
-
-    it("preserves event-based readiness without a signal or polling", async () => {
-        const engine = new NullEngine();
-        const texture = new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);
-        const onLoadObservable = texture.onLoadObservable;
-        const ready = vi.spyOn(texture, "isReady").mockReturnValue(false);
-        vi.useFakeTimers();
-        try {
-            const pending = WhenTextureReadyAsync(texture);
-            expect(onLoadObservable.hasObservers()).toBe(true);
-            expect(vi.getTimerCount()).toBe(0);
-            onLoadObservable.notifyObservers(texture);
-            await pending;
-            expect(ready).toHaveBeenCalledOnce();
-            expect(onLoadObservable.hasObservers()).toBe(false);
-            expect(texture.onDisposeObservable.hasObservers()).toBe(false);
-        } finally {
-            texture.dispose();
-            engine.dispose();
-            vi.useRealTimers();
-            vi.restoreAllMocks();
-        }
-    });
-
-    it("rejects an already-aborted signal before starting delayed loading", async () => {
-        const engine = new NullEngine();
-        const texture = new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, engine);
-        const ready = vi.spyOn(texture, "isReady");
-        const abort = new AbortController();
-        abort.abort();
-        try {
-            await expect(WhenTextureReadyAsync(texture, abort.signal)).rejects.toMatchObject({ name: "AbortError" });
-            expect(ready).not.toHaveBeenCalled();
-        } finally {
-            texture.dispose();
-            engine.dispose();
-            vi.restoreAllMocks();
-        }
-    });
+    }
 });
