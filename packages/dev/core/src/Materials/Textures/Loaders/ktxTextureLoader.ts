@@ -117,12 +117,14 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      * @param options
+     * @param ownsData defines whether nothing else holds data, so its buffer can be transferred
      */
     public loadData(
         data: ArrayBufferView,
         texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void,
-        options?: any
+        options?: any,
+        ownsData?: boolean
     ): void {
         if (KhronosTextureContainer.IsValid(data)) {
             // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
@@ -151,7 +153,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
         } else if (KhronosTextureContainer2.IsValid(data)) {
             const ktx2 = new KhronosTextureContainer2(texture.getEngine());
             // eslint-disable-next-line github/no-then
-            ktx2._uploadAsync(data, texture, options).then(
+            ktx2._uploadAsync(data, texture, options, ownsData).then(
                 () => {
                     callback(texture.width, texture.height, texture.generateMipMaps, true, () => {}, false);
                 },

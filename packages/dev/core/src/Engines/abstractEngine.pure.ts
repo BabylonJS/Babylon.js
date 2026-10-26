@@ -1758,7 +1758,7 @@ export abstract class AbstractEngine {
 
         // processing for non-image formats
         if (loaderPromise) {
-            const callbackAsync = async (data: ArrayBufferView) => {
+            const callbackAsync = async (data: ArrayBufferView, ownsData = false) => {
                 const loader = await loaderPromise;
                 loader.loadData(
                     data,
@@ -1783,7 +1783,8 @@ export abstract class AbstractEngine {
                             );
                         }
                     },
-                    loaderOptions
+                    loaderOptions,
+                    ownsData
                 );
             };
 
@@ -1792,7 +1793,7 @@ export abstract class AbstractEngine {
                     url,
                     async (data) => {
                         try {
-                            await callbackAsync(new Uint8Array(data as ArrayBuffer));
+                            await callbackAsync(new Uint8Array(data as ArrayBuffer), true);
                         } catch (reason) {
                             onInternalError("Failed to parse texture data", reason);
                         }
