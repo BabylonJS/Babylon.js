@@ -3,6 +3,7 @@ import { DataBuffer } from "core/Buffers/dataBuffer";
 import { ComputeShader } from "core/Compute/computeShader";
 import { NullEngine } from "core/Engines/nullEngine";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Matrix } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import {
@@ -22,6 +23,75 @@ const Identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 describe("GaussianSplattingGpuSorter shader readiness", () => {
     afterEach(() => vi.restoreAllMocks());
+
+    it.each(["centers", "meansHigh", "partIndices"] as const)("refreshes every output when the %s texture view changes behind the same BaseTexture", async (input) => {
+        await GaussianSplattingGpuSorter.LoadDependenciesAsync();
+        const engine = new NullEngine();
+        engine["_isWebGPU"] = true;
+        engine.getCaps().supportComputeShaders = true;
+        Object.assign(engine, {
+            _storageBuffers: [],
+            createStorageBuffer: () => new DataBuffer(),
+            updateStorageBuffer: vi.fn(),
+            createComputeContext: () => ({ clear: vi.fn() }),
+            createComputeEffect: () => ({ isReady: () => true }),
+            computeDispatch: vi.fn(),
+        });
+        const createTexture = () => {
+            const texture = new BaseTexture(engine);
+            const hardware = {
+                underlyingResource: null,
+                view: {} as GPUTextureView,
+                set: vi.fn(),
+                setUsage: vi.fn(),
+                reset: vi.fn(),
+                release: vi.fn(),
+            };
+            texture._texture = new InternalTexture(engine, InternalTextureSource.Raw, true);
+            texture._texture._hardwareTexture = hardware;
+            vi.spyOn(texture, "isReady").mockReturnValue(true);
+            return { texture, hardware };
+        };
+        const textures = { centers: createTexture(), meansHigh: createTexture(), partIndices: createTexture() };
+        const sorter = new GaussianSplattingGpuSorter(engine);
+        onTestFinished(() => {
+            sorter.dispose();
+            Object.values(textures).forEach(({ texture }) => texture.dispose());
+            engine.dispose();
+        });
+        const source = {
+            vertexCount: 2,
+            textureWidth: 2,
+            centersTexture: textures.centers.texture,
+            sog: { meansHighTexture: textures.meansHigh.texture, meansMin: [0, 0, 0], meansMax: [1, 1, 1] },
+            partIndicesTexture: textures.partIndices.texture,
+        };
+        const identity = Matrix.Identity();
+        expect(sorter.setSource(source)).toBe(true);
+        sorter.setPartMatrices([identity]);
+        const outputs = [sorter.createOutput(), sorter.createOutput()];
+        outputs.forEach((output) => expect(sorter.sort(output, identity, identity)).toBe(true));
+        const oldContexts = outputs.map((output) => output._keysCs!["_context"]);
+        oldContexts.forEach((context) => vi.mocked(context.clear).mockClear());
+        const outputBuffers = outputs.map((output) => output.buffer);
+        const dispatchContexts = new Set<unknown>();
+        const dispatch = vi.mocked(engine.computeDispatch);
+        dispatch.mockImplementation((_effect, context) => {
+            dispatchContexts.add(context);
+        });
+
+        textures[input].hardware.view = {} as GPUTextureView;
+        expect(sorter.setSource(source)).toBe(true);
+        outputs.forEach((output) => expect(sorter.sort(output, identity, identity)).toBe(true));
+        oldContexts.forEach((context) => {
+            expect(dispatchContexts.has(context) && vi.mocked(context.clear).mock.calls.length === 0, "a reused keys context must be cleared after replacing the view").toBe(false);
+        });
+        outputs.forEach((output, i) => {
+            expect(output.buffer).toBe(outputBuffers[i]);
+            expect(output._keysCs!.fastMode).toBe(true);
+            expect(output._keysCs!.triggerContextRebuild).toBe(false);
+        });
+    });
 
     it("returns to the fast path after refreshing the source with unchanged resources", async () => {
         await GaussianSplattingGpuSorter.LoadDependenciesAsync();

@@ -291,8 +291,102 @@ const stage = (vertexCount: number, intervals: number[] | null = null, cameras: 
     cameras,
 });
 
+const runTextureRefreshCase = async () => {
+    const B = window.BABYLON;
+    const engine = window.engine as import("core/Engines/webgpuEngine").WebGPUEngine;
+    const scene = new B.Scene(engine);
+    const texture = new B.RenderTargetTexture("gpuSortCenters", { width: 2, height: 1 }, scene, {
+        type: B.Constants.TEXTURETYPE_FLOAT,
+        samplingMode: B.Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        generateDepthBuffer: false,
+    });
+    const sorter = new B.GaussianSplattingGpuSorter(engine, "gpuSortTextureRefresh");
+    const orders: number[][][] = [];
+    const identity = B.Matrix.Identity();
+    let keptOutputBuffers = true;
+    const validationErrors: string[] = [];
+    const onError = (event: GPUUncapturedErrorEvent) => validationErrors.push(event.error.message);
+    engine._device.addEventListener("uncapturederror", onError);
+    try {
+        await B.GaussianSplattingGpuSorter.LoadDependenciesAsync();
+        const source = { vertexCount: 2, textureWidth: 2, centersTexture: texture, boundsMin: [0, 0, 0], boundsMax: [0, 0, 3] };
+        sorter.setSource(source);
+        const outputs = [sorter.createOutput(), sorter.createOutput()];
+        const buffers = outputs.map((output) => output.buffer);
+        for (let stage = 0; stage < 3; stage++) {
+            if (stage > 0) {
+                texture.resize({ width: 2 << stage, height: 1 });
+            }
+            source.textureWidth = texture.getSize().width;
+            const data = new Float32Array(source.textureWidth * 4);
+            data[2] = stage === 1 ? 3 : 1;
+            data[3] = data[7] = 1;
+            data[6] = stage === 1 ? 0 : 2;
+            engine.updateRawTexture(texture.getInternalTexture()!, data, B.Constants.TEXTUREFORMAT_RGBA, false, undefined, B.Constants.TEXTURETYPE_FLOAT);
+            sorter.setSource(source);
+            let sorted = false;
+            for (let frame = 0; frame < 1000 && !sorted; frame++) {
+                engine.beginFrame();
+                const enqueued = outputs.map((output) => sorter.sort(output, identity, identity));
+                engine.endFrame();
+                sorted = enqueued.every(Boolean);
+                await new Promise<void>((resolve) => setTimeout(resolve, 8));
+            }
+            if (!sorted) {
+                throw new Error("sort() never enqueued after refreshing the texture");
+            }
+            const stageOrders: number[][] = [];
+            for (const [index, output] of outputs.entries()) {
+                const actual = new Float32Array(output.paddedCount);
+                await output.buffer!.read(0, actual.byteLength, actual, true);
+                stageOrders.push(Array.from(actual.subarray(0, 2)));
+                keptOutputBuffers &&= output.buffer === buffers[index];
+            }
+            orders.push(stageOrders);
+        }
+        await engine._device.queue.onSubmittedWorkDone();
+        return { orders, keptOutputBuffers, validationErrors };
+    } finally {
+        engine._device.removeEventListener("uncapturederror", onError);
+        sorter.dispose();
+        texture.dispose();
+        scene.dispose();
+        engine.dispose();
+        window.engine = null;
+    }
+};
+
 test.describe("WebGPU Gaussian Splatting GPU sort", () => {
     test.describe.configure({ timeout: 60000 });
+
+    test("refreshes resized centers behind the same texture and outputs", async ({ page }) => {
+        const errors: string[] = [];
+        page.on("pageerror", (error) => errors.push(error.message));
+        page.on("console", (message) => {
+            if (message.type() === "error" || /validation.*error|WebGPU.*(?:error|invalid)/i.test(message.text())) {
+                errors.push(message.text());
+            }
+        });
+        await initPage(page);
+        const result = await page.evaluate(runTextureRefreshCase);
+        expect(result.validationErrors).toEqual([]);
+        expect(errors).toEqual([]);
+        expect(result.orders).toEqual([
+            [
+                [1, 0],
+                [1, 0],
+            ],
+            [
+                [0, 1],
+                [0, 1],
+            ],
+            [
+                [1, 0],
+                [1, 0],
+            ],
+        ]);
+        expect(result.keptOutputBuffers).toBe(true);
+    });
 
     test("empty input only writes padding over previous results", async ({ page }) => {
         const results = await runCase(page, {
