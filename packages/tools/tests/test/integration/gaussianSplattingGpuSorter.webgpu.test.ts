@@ -322,7 +322,7 @@ const runTextureRefreshCase = async () => {
             data[2] = stage === 1 ? 3 : 1;
             data[3] = data[7] = 1;
             data[6] = stage === 1 ? 0 : 2;
-            engine.updateRawTexture(texture.getInternalTexture()!, data, B.Constants.TEXTUREFORMAT_RGBA, false, undefined, B.Constants.TEXTURETYPE_FLOAT);
+            engine.updateRawTexture(texture.getInternalTexture()!, data, B.Constants.TEXTUREFORMAT_RGBA, false, null, B.Constants.TEXTURETYPE_FLOAT, false);
             sorter.setSource(source);
             let sorted = false;
             for (let frame = 0; frame < 1000 && !sorted; frame++) {
