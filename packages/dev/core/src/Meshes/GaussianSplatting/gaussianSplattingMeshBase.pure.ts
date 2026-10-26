@@ -2979,11 +2979,12 @@ export class GaussianSplattingMeshBase extends Mesh {
             // below. That commit uploads every existing data, rotation and SH texture, so don't upload them here too.
             const commitWithoutWorker = !this._worker;
 
-            // Handle SH textures in update path - create if they don't exist. Skip when the SH atlas is
-            // render-backed (_useShMrtAtlas): those targets are created/managed by _createShMrtAtlas, not here.
-            if (sh && !this._shTextures && !this._useShMrtAtlas) {
-                this._shTextures = [];
-                for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
+            // Handle SH textures in update path - create any that don't exist yet (including when a higher SH
+            // degree needs more textures than are allocated). Skip when the SH atlas is render-backed
+            // (_useShMrtAtlas): those targets are created/managed by _createShMrtAtlas, not here.
+            if (sh && !this._useShMrtAtlas && (!this._shTextures || this._shTextures.length < sh.length)) {
+                this._shTextures ??= [];
+                for (let textureIndex = this._shTextures.length; textureIndex < sh.length; textureIndex++) {
                     const shTexture = createEmptyTextureU32(textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
                     shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;

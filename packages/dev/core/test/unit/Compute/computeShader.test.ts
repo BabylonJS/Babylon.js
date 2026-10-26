@@ -1,4 +1,5 @@
 import { ComputeShader } from "core/Compute/computeShader.pure";
+import { ComputeBindingType } from "core/Engines/Extensions/engine.computeShader.pure";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 type TestComputeShader = {
@@ -124,5 +125,51 @@ describe("ComputeShader.dispatchWhenReady", () => {
         await Promise.all([expect(promise).rejects.toThrow("Operation timed out after maximum retries."), vi.advanceTimersByTimeAsync(31000)]);
 
         expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("compiles the requested variant while a resource is loading instead of rejecting with an obsolete variant's error", async () => {
+        vi.useFakeTimers();
+        const createdEffects: { defines: string; isReady: () => boolean; getCompilationError: () => string }[] = [];
+        const engine = {
+            createComputeEffect: vi.fn((_: unknown, options: { defines: string }) => {
+                const failed = options.defines.includes("BROKEN");
+                const effect = {
+                    defines: options.defines,
+                    isReady: () => !failed,
+                    getCompilationError: () => (failed ? "obsolete variant failed" : ""),
+                };
+                createdEffects.push(effect);
+                return effect;
+            }),
+            computeDispatch: vi.fn(),
+        };
+        let textureReady = true;
+        const computeShader = Object.create(ComputeShader.prototype) as ComputeShader;
+        Object.assign(computeShader, {
+            name: "test",
+            _engine: engine,
+            _shaderPath: "test",
+            _options: { entryPoint: "main", defines: ["#define BROKEN"], bindingsMapping: { tex: { group: 0, binding: 0 } } },
+            _bindings: { tex: { type: ComputeBindingType.TextureWithoutSampler, object: { isReady: () => textureReady } } },
+            _samplers: {},
+            _context: { clear: vi.fn() },
+            _contextIsDirty: false,
+            fastMode: false,
+            triggerContextRebuild: false,
+        });
+
+        await expect(computeShader.dispatchWhenReady(1)).rejects.toThrow("obsolete variant failed");
+
+        (computeShader as unknown as { _options: { defines: string[] } })._options.defines = ["#define FIXED"];
+        textureReady = false;
+        const promise = computeShader.dispatchWhenReady(1, undefined, undefined, 10);
+        await vi.advanceTimersByTimeAsync(10);
+        textureReady = true;
+        await vi.advanceTimersByTimeAsync(10);
+
+        await expect(promise).resolves.toBeUndefined();
+        expect(createdEffects.map((effect) => effect.defines.includes("FIXED"))).toEqual([false, true]);
+        expect(engine.computeDispatch).toHaveBeenCalledOnce();
+        expect(engine.computeDispatch.mock.calls[0][0]).toBe(createdEffects[1]);
     });
 });

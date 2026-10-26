@@ -165,6 +165,31 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         engine.dispose();
     });
 
+    it("grows existing spherical harmonics textures when an update raises the SH degree without a sort worker", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const textureSize = (mesh as any)._getTextureSize(4);
+        const shTextureBytes = textureSize.x * textureSize.y * 16;
+        mesh.updateData(createSplatData(4), [new Uint8Array(shTextureBytes)], { flipY: true }, undefined, 1);
+        const firstShTexture = (mesh as any)._shTextures[0];
+        expect((mesh as any)._shTextures).toHaveLength(1);
+
+        const sh = [new Uint8Array(shTextureBytes), new Uint8Array(shTextureBytes)];
+        const updateShTextureData = vi.spyOn(mesh as any, "_updateShTextureData");
+        expect(() => mesh.updateData(createSplatData(4), sh, { flipY: true }, undefined, 2)).not.toThrow();
+
+        const shTextures = (mesh as any)._shTextures;
+        expect(shTextures).toHaveLength(2);
+        expect(shTextures[0]).toBe(firstShTexture);
+        expect((mesh as any)._delayedTextureUpdate).toBeNull();
+        expect(updateShTextureData.mock.calls.map((call) => call[0])).toEqual(shTextures);
+
+        scene.dispose();
+        engine.dispose();
+    }, 30000);
+
     it("uploads existing rotation and scale textures once per update when there is no sort worker", async () => {
         const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
         const { engine, scene } = await createScene();

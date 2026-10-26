@@ -312,7 +312,9 @@ export class ComputeShader {
      * @returns true if the compute shader is ready to be executed
      */
     public isReady(): boolean {
-        let effect = this._effect;
+        // Select the effect for the current defines before checking resources, so the effect (and any compilation
+        // error) always belongs to the requested variant, and compilation can proceed while resources load.
+        const effect = this._getRequestedEffect();
 
         for (const key in this._bindings) {
             const binding = this._bindings[key],
@@ -339,6 +341,14 @@ export class ComputeShader {
             }
         }
 
+        if (!effect.isReady()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private _getRequestedEffect(): ComputeEffect {
         const defines = ["#define " + this._options.entryPoint];
 
         const shaderName = this._shaderPath;
@@ -354,22 +364,16 @@ export class ComputeShader {
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
 
-            effect = this._engine.createComputeEffect(shaderName, <IComputeEffectCreationOptions>{
+            this._effect = this._engine.createComputeEffect(shaderName, <IComputeEffectCreationOptions>{
                 defines: join,
                 entryPoint: this._options.entryPoint,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 useExplicitComputePipelineLayout: this._options.useExplicitComputePipelineLayout,
             });
-
-            this._effect = effect;
         }
 
-        if (!effect.isReady()) {
-            return false;
-        }
-
-        return true;
+        return this._effect;
     }
 
     /**
