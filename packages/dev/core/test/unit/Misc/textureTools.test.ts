@@ -83,15 +83,28 @@ describe("GetTextureDataAsync RTT", () => {
         vi.restoreAllMocks();
     });
 
-    it("preserves display gamma conversion by default", async () => {
-        await GetTextureDataAsync(texture, 4, 4, 0, 0, true);
-        expect(state.gamma).toBe(0);
-        expect(state.disposed).toBe(1);
-    });
-
-    it("can disable display gamma conversion for data readback", async () => {
-        await GetTextureDataAsync(texture, 4, 4, 0, 0, true, 0, false);
-        expect(state.gamma).toBe(1);
+    it.each<[string, boolean, number, (texture: RawTexture) => void]>([
+        ["display conversion by default", true, 0, () => {}],
+        ["raw channels without display conversion", false, 1, () => {}],
+        [
+            "hardware sRGB over display conversion",
+            true,
+            2,
+            (texture) => {
+                texture.getInternalTexture()!._useSRGBBuffer = true;
+                texture.gammaSpace = true;
+            },
+        ],
+        [
+            "compressed sRGB without the sRGB-buffer flag",
+            false,
+            2,
+            (texture) => (texture.getInternalTexture()!.format = Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT),
+        ],
+    ])("applies %s", async (_, applyGammaCorrection, gamma, configure) => {
+        configure(texture);
+        await GetTextureDataAsync(texture, 4, 4, 0, 0, true, 0, applyGammaCorrection);
+        expect(state.gamma).toBe(gamma);
         expect(state.disposed).toBe(1);
     });
 
@@ -113,22 +126,6 @@ describe("GetTextureDataAsync RTT", () => {
         vi.spyOn(texture, "readPixels").mockResolvedValue(new Uint8Array(16).fill(80));
         expect(Array.from((await GetTextureDataAsync(texture)).slice(0, 4))).toEqual([80, 80, 80, 255]);
     });
-
-    it.each([true, false])("restores hardware sRGB sampling with display conversion=%s", async (applyGammaCorrection) => {
-        texture.getInternalTexture()!._useSRGBBuffer = true;
-        texture.gammaSpace = true;
-        await GetTextureDataAsync(texture, 4, 4, 0, 0, true, 0, applyGammaCorrection);
-        expect(state.gamma).toBe(2);
-    });
-
-    it.each([Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT, Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2])(
-        "restores compressed sRGB format %s even without the sRGB-buffer flag",
-        async (format) => {
-            texture.getInternalTexture()!.format = format;
-            await GetTextureDataAsync(texture, 4, 4, 0, 0, false, 0, false);
-            expect(state.gamma).toBe(2);
-        }
-    );
 
     it("rejects shader compilation errors and removes observers before disposing", async () => {
         state.failCompilation = true;

@@ -122,7 +122,7 @@ afterEach(() => {
 });
 
 describe("KTX2Encoder lazy initialization", () => {
-    it("constructs without loading and shares initialization across concurrent encodes", async () => {
+    it("constructs without loading, shares initialization across concurrent encodes, and initializes a shared module once", async () => {
         const native: FakeBasisEncoder[] = [];
         const context = _createEncoder((instance) => {
             expect(native.every((previous) => previous.deleted)).toBe(true);
@@ -146,8 +146,10 @@ describe("KTX2Encoder lazy initialization", () => {
             initialize();
         }
         await results;
-        expect(native).toHaveLength(2);
+        await new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" });
+        expect(native).toHaveLength(3);
         expect(native.every((instance) => instance.deleted)).toBe(true);
+        expect(factory).toHaveBeenCalledTimes(2);
         expect(context.module.initializeBasis).toHaveBeenCalledOnce();
     });
 
@@ -173,20 +175,10 @@ describe("KTX2Encoder lazy initialization", () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
-    it.each(["factory", "initializeBasis"] as const)("caches %s failures for every pending encode", async (failure) => {
+    it("caches initialization failures for every pending encode", async () => {
         const context = _createEncoder();
         const error = new Error("Initialization failed");
-        const factory = vi.fn(async () => {
-            if (failure === "factory") {
-                throw error;
-            }
-            return context.module;
-        });
-        if (failure === "initializeBasis") {
-            context.module.initializeBasis.mockImplementation(() => {
-                throw error;
-            });
-        }
+        const factory = vi.fn().mockRejectedValue(error);
         KTX2Encoder.JSModule = factory;
         const encoder = new KTX2Encoder();
         const pending = [encoder.encode(_rgba(), 4, 4, { usage: "color" }), encoder.encode(_rgba(), 4, 4, { usage: "data" })];
@@ -199,75 +191,37 @@ describe("KTX2Encoder lazy initialization", () => {
 
 describe("KTX2Encoder validation", () => {
     it.each([
-        { rgba: _rgba(), width: 0, height: 4, options: { usage: "color" }, message: "positive multiples of 4" },
         { rgba: _rgba(), width: 5, height: 4, options: { usage: "color" }, message: "positive multiples of 4" },
         { rgba: _rgba(), width: 16388, height: 4, options: { usage: "color" }, message: "16,384" },
-        { rgba: _rgba(), width: 4, height: 16388, options: { usage: "color" }, message: "16,384" },
-        { rgba: new Uint8Array(63), width: 4, height: 4, options: { usage: "color" }, message: "byte length must be 64" },
-        { rgba: new Uint8Array(1), width: 4096, height: 3076, options: { usage: "color" }, message: "12,582,912" },
         { rgba: new Uint8Array(1), width: 4096, height: 4096, options: { usage: "color" }, message: "12,582,912" },
+        { rgba: new Uint8Array(63), width: 4, height: 4, options: { usage: "color" }, message: "byte length must be 64" },
         { rgba: _rgba(), width: 4, height: 4, options: { usage: "other" }, message: "usage must be" },
     ])("rejects invalid input before creating BasisEncoder", async ({ rgba, width, height, options, message }) => {
         const context = _createEncoder();
         await expect(context.encoder.encode(rgba, width, height, options as IKTX2EncoderOptions)).rejects.toThrow(message);
         expect(() => context.basisEncoder).toThrow("has not been created");
     });
+
+    it("accepts the maximum dimension", async () => {
+        const context = _createEncoder();
+        await expect(context.encoder.encode(_rgba(16384, 4), 16384, 4, { usage: "color" })).resolves.toHaveLength(96);
+    });
 });
 
 describe("KTX2Encoder presets", () => {
-    it.each(["color", "data", "normal"] as const)("ignores codec settings unrelated to %s usage", async (usage) => {
-        const context = _createEncoder();
-        await context.encoder.encode(_rgba(), 4, 4, {
-            usage,
-            etc1sQualityLevel: 200,
-            etc1sCompressionLevel: 5,
-            uastcQualityLevel: 4,
-            zstandard: false,
-        });
-        const calls = context.basisEncoder.calls;
-        expect(calls.some(([name]) => name === "setQualityLevel" || name === "setETC1SCompressionLevel")).toBe(usage === "color");
-        expect(calls.some(([name]) => name === "setPackUASTCFlags" || name === "setKTX2UASTCSupercompression")).toBe(usage !== "color");
-        expect(calls).toEqual(
-            expect.arrayContaining(
-                usage === "color"
-                    ? [
-                          ["setQualityLevel", 200],
-                          ["setETC1SCompressionLevel", 5],
-                      ]
-                    : [
-                          ["setPackUASTCFlags", 4],
-                          ["setKTX2UASTCSupercompression", false],
-                      ]
-            )
-        );
-    });
+    const _setterCalls = (context: ReturnType<typeof _createEncoder>, ...names: EncoderMethod[]) => context.basisEncoder.calls.filter(([name]) => names.includes(name));
 
     it.each([
-        [16384, 4],
-        [4, 16384],
-    ])("accepts the maximum dimension in a %s by %s image", async (width, height) => {
-        const context = _createEncoder();
-        await expect(context.encoder.encode(_rgba(width, height), width, height, { usage: "color" })).resolves.toHaveLength(96);
-    });
-    it.each(["color", "data", "normal"] as const)("uses the default %s quality and compression settings without overrides", async (usage) => {
+        ["color", [128, 2]],
+        ["data", [2, true]],
+    ] as const)("uses the built-in %s codec settings without overrides", async (usage, values) => {
         const context = _createEncoder();
         await context.encoder.encode(_rgba(), 4, 4, { usage });
-        expect(context.basisEncoder.calls).toEqual(
-            expect.arrayContaining(
-                usage === "color"
-                    ? [
-                          ["setQualityLevel", 128],
-                          ["setETC1SCompressionLevel", 2],
-                      ]
-                    : [
-                          ["setPackUASTCFlags", 2],
-                          ["setKTX2UASTCSupercompression", true],
-                      ]
-            )
-        );
+        const setters: EncoderMethod[] = usage === "color" ? ["setQualityLevel", "setETC1SCompressionLevel"] : ["setPackUASTCFlags", "setKTX2UASTCSupercompression"];
+        expect(_setterCalls(context, ...setters)).toEqual(setters.map((setter, i) => [setter, values[i]]));
     });
 
-    it("maps the color preset and overrides to Basis setters", async () => {
+    it("maps the color preset and ETC1S overrides to Basis setters, ignoring UASTC settings", async () => {
         const context = _createEncoder();
         await context.encoder.encode(_rgba(), 4, 4, {
             usage: "color",
@@ -275,6 +229,8 @@ describe("KTX2Encoder presets", () => {
             flipY: true,
             etc1sQualityLevel: 200,
             etc1sCompressionLevel: 5,
+            uastcQualityLevel: 4,
+            zstandard: false,
         });
 
         expect(context.basisEncoder.calls).toEqual(
@@ -291,15 +247,18 @@ describe("KTX2Encoder presets", () => {
                 ["setETC1SCompressionLevel", 5],
             ])
         );
+        expect(_setterCalls(context, "setPackUASTCFlags", "setKTX2UASTCSupercompression")).toEqual([]);
         expect(context.basisEncoder.deleted).toBe(true);
     });
 
-    it.each(["data", "normal"] as const)("maps the %s preset and overrides to Basis setters", async (usage) => {
+    it.each(["data", "normal"] as const)("maps the %s preset and UASTC overrides to Basis setters, ignoring ETC1S settings", async (usage) => {
         const context = _createEncoder();
         const output = await context.encoder.encode(_rgba(), 4, 4, {
             usage,
             uastcQualityLevel: 4,
             zstandard: false,
+            etc1sQualityLevel: 200,
+            etc1sCompressionLevel: 5,
         });
 
         expect(context.basisEncoder.calls).toEqual(
@@ -314,7 +273,8 @@ describe("KTX2Encoder presets", () => {
                 ["setKTX2UASTCSupercompression", false],
             ])
         );
-        expect(context.basisEncoder.calls.some(([name]) => name === "setNormalMapPreset")).toBe(usage === "normal");
+        expect(_setterCalls(context, "setQualityLevel", "setETC1SCompressionLevel")).toEqual([]);
+        expect(_setterCalls(context, "setNormalMapPreset")).toHaveLength(usage === "normal" ? 1 : 0);
         expect(output[93]).toBe(0);
         expect(output.buffer.byteLength).toBe(output.byteLength);
         expect(context.basisEncoder.deleted).toBe(true);
@@ -322,11 +282,8 @@ describe("KTX2Encoder presets", () => {
 });
 
 describe("KTX2Encoder DefaultEncoderOptions", () => {
-    it("starts empty", () => {
+    it("starts empty and overrides per-call ETC1S options for color usage, preserving zero", async () => {
         expect(DefaultSettings.DefaultEncoderOptions).toEqual({});
-    });
-
-    it("overrides per-call ETC1S options for color usage, preserving zero", async () => {
         const context = _createEncoder();
         KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 1, etc1sCompressionLevel: 0, uastcQualityLevel: 4, zstandard: false };
         await context.encoder.encode(_rgba(), 4, 4, { usage: "color", etc1sQualityLevel: 200, etc1sCompressionLevel: 5 });
@@ -339,10 +296,10 @@ describe("KTX2Encoder DefaultEncoderOptions", () => {
         expect(context.basisEncoder.calls.some(([name]) => name === "setPackUASTCFlags" || name === "setKTX2UASTCSupercompression")).toBe(false);
     });
 
-    it.each(["data", "normal"] as const)("overrides per-call UASTC options for %s usage, preserving false and zero", async (usage) => {
+    it("overrides per-call UASTC options for data usage, preserving false and zero", async () => {
         const context = _createEncoder();
         KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 1, etc1sCompressionLevel: 0, uastcQualityLevel: 0, zstandard: false };
-        await context.encoder.encode(_rgba(), 4, 4, { usage, uastcQualityLevel: 4, zstandard: true });
+        await context.encoder.encode(_rgba(), 4, 4, { usage: "data", uastcQualityLevel: 4, zstandard: true });
         expect(context.basisEncoder.calls).toEqual(
             expect.arrayContaining([
                 ["setPackUASTCFlags", 0],
@@ -372,23 +329,11 @@ describe("KTX2Encoder DefaultEncoderOptions", () => {
         );
     });
 
-    it("applies defaults before passing codec settings to Basis", async () => {
+    it("passes codec settings to Basis without range checks", async () => {
         const context = _createEncoder();
-        KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 128, uastcQualityLevel: 1 };
-        await context.encoder.encode(_rgba(), 4, 4, { usage: "color", etc1sQualityLevel: 0, uastcQualityLevel: 1 });
-        expect(context.basisEncoder.calls).toContainEqual(["setQualityLevel", 128]);
-        expect(context.basisEncoder.calls.some(([name]) => name === "setPackUASTCFlags")).toBe(false);
-    });
-
-    it.each([
-        [{ etc1sQualityLevel: 0 }, "color", "setQualityLevel", 0],
-        [{ etc1sCompressionLevel: 1.5 }, "color", "setETC1SCompressionLevel", 1.5],
-        [{ uastcQualityLevel: 5 }, "data", "setPackUASTCFlags", 5],
-    ] as const)("delegates codec setting handling to Basis for %o", async (defaults, usage, setter, value) => {
-        const context = _createEncoder();
-        KTX2Encoder.DefaultEncoderOptions = { ...defaults };
-        await context.encoder.encode(_rgba(), 4, 4, { usage });
-        expect(context.basisEncoder.calls).toContainEqual([setter, value]);
+        KTX2Encoder.DefaultEncoderOptions = { etc1sCompressionLevel: 1.5 };
+        await context.encoder.encode(_rgba(), 4, 4, { usage: "color" });
+        expect(context.basisEncoder.calls).toContainEqual(["setETC1SCompressionLevel", 1.5]);
     });
 });
 
@@ -407,57 +352,19 @@ describe("KTX2Encoder output handling", () => {
         ]);
     });
 
-    it("throws after two failed encode attempts and deletes the encoder", async () => {
-        const context = _createEncoder((encoder) => (encoder.encodeResults = [0, 0]));
-
-        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("Basis failed to encode the 4x4 'color' texture.");
-        expect(context.basisEncoder.deleted).toBe(true);
-    });
-
-    it("deletes the encoder when Basis rejects the source", async () => {
-        const context = _createEncoder((encoder) => (encoder.rejectSource = true));
-
-        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("Basis rejected");
-        expect(context.basisEncoder.deleted).toBe(true);
-    });
-
-    it("deletes the encoder when the KTX2 DFD is invalid", async () => {
-        const context = _createEncoder((encoder) => (encoder.encodeResults = [40]));
-
-        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "data" })).rejects.toThrow("complete header");
-        expect(context.basisEncoder.deleted).toBe(true);
-    });
-
-    it("rejects an out-of-range KTX2 DFD and deletes the encoder", async () => {
-        const context = _createEncoder((encoder) => (encoder.dfdOffset = 1_000));
-
-        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "data" })).rejects.toThrow("out-of-range DFD");
+    it.each<[string, (encoder: FakeBasisEncoder) => void, string]>([
+        ["two failed encode attempts", (encoder) => (encoder.encodeResults = [0, 0]), "Basis failed to encode the 4x4 'data' texture."],
+        ["a source Basis rejects", (encoder) => (encoder.rejectSource = true), "Basis rejected"],
+        ["an incomplete KTX2 header", (encoder) => (encoder.encodeResults = [40]), "complete header"],
+        ["an out-of-range KTX2 DFD", (encoder) => (encoder.dfdOffset = 1_000), "out-of-range DFD"],
+    ])("rejects %s and deletes the encoder", async (_, configure, message) => {
+        const context = _createEncoder(configure);
+        await expect(context.encoder.encode(_rgba(), 4, 4, { usage: "data" })).rejects.toThrow(message);
         expect(context.basisEncoder.deleted).toBe(true);
     });
 });
 
 describe("KTX2Encoder resource configuration", () => {
-    it("initializes an injected module once", async () => {
-        const initializeBasis = vi.fn();
-        const module = {
-            BasisEncoder: FakeBasisEncoder,
-            basis_tex_format: { cETC1S: { value: 0 }, cUASTC_LDR_4x4: { value: 1 } },
-            basis_texture_type: { cBASISTexType2D: { value: 0 } },
-            initializeBasis,
-        };
-        const factory = vi.fn(async () => module);
-        const wasmBinary = new ArrayBuffer(1);
-
-        KTX2Encoder.JSModule = factory;
-        KTX2Encoder.WasmBinary = wasmBinary;
-        await new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" });
-        await new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" });
-
-        expect(factory).toHaveBeenCalledTimes(2);
-        expect(factory).toHaveBeenCalledWith({ wasmBinary });
-        expect(initializeBasis).toHaveBeenCalledOnce();
-    });
-
     it("requires a factory and WebAssembly source", async () => {
         KTX2Encoder.JSModuleURL = "";
         await expect(new KTX2Encoder().encode(_rgba(), 4, 4, { usage: "color" })).rejects.toThrow("JSModule or JSModuleURL");

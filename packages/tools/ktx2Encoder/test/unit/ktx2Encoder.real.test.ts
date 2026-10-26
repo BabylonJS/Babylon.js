@@ -66,38 +66,27 @@ describe("KTX2Encoder with Basis v2.50", () => {
     });
 
     it.each([
-        { usage: "color", supercompressionScheme: 1, colorModel: 163, primaries: 1, transferFunction: 2 },
-        { usage: "data", supercompressionScheme: 2, colorModel: 166, primaries: 0, transferFunction: 1 },
-        { usage: "normal", supercompressionScheme: 2, colorModel: 166, primaries: 0, transferFunction: 1 },
-    ] satisfies Array<{ usage: KTX2EncoderUsage; supercompressionScheme: number; colorModel: number; primaries: number; transferFunction: number }>)(
-        "encodes $usage KTX2 output",
-        async ({ usage, ...expected }) => {
-            const encoded = await encoder.encode(_createPixels(), 8, 8, { usage, generateMipmaps: false });
+        { usage: "color", generateMipmaps: true, levelCount: 4, supercompressionScheme: 1, colorModel: 163, primaries: 1, transferFunction: 2 },
+        { usage: "data", generateMipmaps: false, levelCount: 1, supercompressionScheme: 2, colorModel: 166, primaries: 0, transferFunction: 1 },
+        { usage: "normal", generateMipmaps: false, levelCount: 1, supercompressionScheme: 2, colorModel: 166, primaries: 0, transferFunction: 1 },
+    ] satisfies Array<{
+        usage: KTX2EncoderUsage;
+        generateMipmaps: boolean;
+        levelCount: number;
+        supercompressionScheme: number;
+        colorModel: number;
+        primaries: number;
+        transferFunction: number;
+    }>)(
+        "encodes $usage KTX2 output with $levelCount level(s)",
+        async ({ usage, generateMipmaps, ...expected }) => {
+            const encoded = await encoder.encode(_createPixels(), 8, 8, { usage, generateMipmaps });
 
             expect(encoded.byteLength).toBeGreaterThan(80);
-            CheckKTX2(encoded, {
-                width: 8,
-                height: 8,
-                levelCount: 1,
-                ...expected,
-            });
+            CheckKTX2(encoded, { width: 8, height: 8, ...expected });
         },
         30_000
     );
-
-    it("generates the expected mip chain", async () => {
-        const encoded = await encoder.encode(_createPixels(), 8, 8, { usage: "color", generateMipmaps: true });
-
-        CheckKTX2(encoded, {
-            width: 8,
-            height: 8,
-            levelCount: 4,
-            supercompressionScheme: 1,
-            colorModel: 163,
-            primaries: 1,
-            transferFunction: 2,
-        });
-    });
 
     it("round trips UASTC pixels through the existing decoder", async () => {
         const source = _createPixels();
