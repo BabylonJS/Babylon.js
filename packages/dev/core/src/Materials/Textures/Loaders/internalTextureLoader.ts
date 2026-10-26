@@ -34,7 +34,7 @@ export interface IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      * @param options options to be passed to the loader
-     * @param ownsData defines whether nothing else holds data (the engine loaded it from the texture's url), so its buffer can be transferred
+     * @param ownsData defines whether nothing else holds data (the engine loaded it from the texture's url, with no offline provider), so its buffer can be transferred
      */
     loadData(
         data: ArrayBufferView,

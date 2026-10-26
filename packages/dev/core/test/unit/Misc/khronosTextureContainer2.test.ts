@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { KhronosTextureContainer2 } from "core/Misc/khronosTextureContainer2";
+import { Scene } from "core/scene";
 
 const KTX2_IDENTIFIER = [0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a];
 
@@ -28,8 +29,9 @@ const decodedData = () => ({
     ],
 });
 
-// a pool of one worker that answers each decode with new levels; it keeps the decode messages and the levels it sent
-const workerPool = () => {
+// a pool of one worker that answers each decode with new levels; it keeps the decode messages and the levels it sent, and with
+// detach, the buffers posted to it are detached, as a real postMessage does with its transfer list
+const workerPool = (detach = false) => {
     const decodes: Array<{ data: Uint8Array; transfer: Transferable[] }> = [];
     const sent: Array<ReturnType<typeof decodedData>> = [];
     const listeners: Record<string, (event: any) => void> = {};
@@ -39,6 +41,9 @@ const workerPool = () => {
         postMessage: (message: any, transfer: Transferable[] = []) => {
             if (message.action === "decode") {
                 decodes.push({ data: message.data, transfer });
+                if (detach) {
+                    structuredClone(transfer, { transfer });
+                }
                 const levels = decodedData();
                 sent.push(levels);
                 queueMicrotask(() => listeners.message({ data: { action: "decoded", success: true, decodedData: levels } }));
@@ -141,6 +146,44 @@ describe("KhronosTextureContainer2", () => {
         await create("created.ktx2", ktx2File().buffer as ArrayBuffer);
 
         expect(uploadAsync.mock.calls.map((call) => call[3])).toEqual([true, false]);
+        engine.dispose();
+    });
+
+    it("copies a file an offline provider serves, since the provider can keep it in its cache", async () => {
+        const { decodes } = workerPool(true);
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const cached = ktx2File().buffer as ArrayBuffer;
+        // a provider that serves the same cached buffer for every load
+        scene.offlineProvider = {
+            enableSceneOffline: true,
+            enableTexturesOffline: true,
+            open: (success: () => void) => success(),
+            loadImage: () => {},
+            loadFile: (_url: string, loaded: (data: any) => void) => loaded(cached),
+        };
+        const load = async () =>
+            await new Promise<void>((resolve) => {
+                (engine as any)._createTextureBase(
+                    "cached.ktx2",
+                    true,
+                    false,
+                    scene,
+                    undefined,
+                    null,
+                    () => resolve(),
+                    () => resolve(),
+                    () => {}
+                );
+            });
+
+        await load();
+        await load();
+
+        expect(cached.byteLength).toBe(64);
+        expect(decodes.length).toBe(2);
+        expect(decodes.map((decode) => decode.data.buffer === cached)).toEqual([false, false]);
+        scene.dispose();
         engine.dispose();
     });
 });
