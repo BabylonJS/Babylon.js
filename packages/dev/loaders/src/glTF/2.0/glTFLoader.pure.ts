@@ -1326,6 +1326,7 @@ export class GLTFLoader implements IGLTFLoader {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
             const name = targetNames ? targetNames[index] : `morphTarget${index}`;
             babylonMesh.morphTargetManager.addTarget(new MorphTarget(name, weight, babylonMesh.getScene()));
+            // TODO: tell the target whether it has positions, normals, tangents
         }
     }
 
