@@ -154,10 +154,33 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
 
         const textureSize = (mesh as any)._getTextureSize(4);
         const sh = [new Uint8Array(textureSize.x * textureSize.y * 16)];
+        const updateShTextureData = vi.spyOn(mesh as any, "_updateShTextureData");
         expect(() => mesh.updateData(createSplatData(4), sh, { flipY: true }, undefined, 1)).not.toThrow();
 
         expect((mesh as any)._shTextures).toHaveLength(1);
         expect((mesh as any)._delayedTextureUpdate).toBeNull();
+        expect(updateShTextureData).toHaveBeenCalledOnce();
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("uploads existing rotation and scale textures once per update when there is no sort worker", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.needsRotationScaleTextures = true;
+        mesh.updateData(createSplatData(4));
+        const rotationTextures = [(mesh as any)._rotationsATexture, (mesh as any)._rotationsBTexture, (mesh as any)._rotationScaleTexture];
+        expect(rotationTextures.every((texture) => !!texture)).toBe(true);
+
+        const updateTextureFromData = vi.spyOn(mesh as any, "_updateTextureFromData");
+        mesh.updateData(createSplatData(4));
+
+        for (const texture of rotationTextures) {
+            expect(updateTextureFromData.mock.calls.filter((call) => call[0] === texture)).toHaveLength(1);
+        }
 
         scene.dispose();
         engine.dispose();

@@ -362,9 +362,10 @@ export class SystemBlock extends NodeParticleBlock {
 
         this.capacity = serializationObject.capacity;
         this.manualEmitCount = serializationObject.manualEmitCount ?? -1;
-        // Graphs saved before updateSpeed/preWarmStepOffset were serialized (Nov 2025) ran with
-        // ParticleSystem's defaults (updateSpeed 0.01, preWarmStepOffset 1), so restore those.
-        this.updateSpeed = serializationObject.updateSpeed ?? 0.01;
+        // SystemBlock had no preWarmStepOffset before it was serialized (Nov 2025), so graphs without the field ran
+        // with ParticleSystem's default step multiplier of 1. A missing updateSpeed is ambiguous (graphs saved before
+        // Nov 3, 2025 ran at 0.01, later ones at 0.0167), so it keeps the SystemBlock default.
+        this.updateSpeed = serializationObject.updateSpeed ?? 0.0167;
         this.preWarmCycles = serializationObject.preWarmCycles ?? 0;
         this.preWarmStepOffset = serializationObject.preWarmStepOffset ?? 1;
         this.isBillboardBased = serializationObject.isBillboardBased ?? true;
