@@ -1448,10 +1448,11 @@ const MaterialTextureSources = new WeakMap<Material, Map<string, Nullable<BaseTe
 /**
  * Retains glTF texture bindings before OpenPBR finalization replaces material texture slots.
  * @param material The material whose source textures must remain addressable at runtime.
+ * @param diffuseTransmissionColorTexture The authored tint texture staged outside the material until finalization.
  * @returns Unique original textures, including on subsequent calls after finalization, or an empty array for other material implementations.
  * @internal
  */
-export function _RetainGLTFMaterialTextureSources(material: Material): readonly BaseTexture[] {
+export function _RetainGLTFMaterialTextureSources(material: Material, diffuseTransmissionColorTexture?: Nullable<BaseTexture>): readonly BaseTexture[] {
     if (!_IsOpenPBRMaterial(material)) {
         return [];
     }
@@ -1483,6 +1484,9 @@ export function _RetainGLTFMaterialTextureSources(material: Material): readonly 
     const sources = new Map<string, Nullable<BaseTexture> | undefined>();
     for (const [textureType, textureInObject] of bindings) {
         sources.set(_MaterialTextureKey(textureType, textureInObject), _GetMaterialTextureSlot(material, textureType, textureInObject));
+    }
+    if (diffuseTransmissionColorTexture !== undefined) {
+        sources.set(_MaterialTextureKey("subSurface", "translucencyColorTexture"), diffuseTransmissionColorTexture);
     }
     MaterialTextureSources.set(material, sources);
     return _GetUniqueMaterialTextureSources(sources);

@@ -32,6 +32,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _convertedCoatRoughness?: ITextureProcessOperand;
     private _convertedCoatIor?: ITextureProcessOperand;
     private _convertedCoatDarkening?: ITextureProcessOperand;
+    private _convertedCoatNormal?: ITextureProcessOperand;
     /**
      * Creates a new instance of the OpenPBRMaterialLoadingAdapter.
      * @param material - The OpenPBR material to adapt.
@@ -1272,7 +1273,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public async finalizeAsync(loader: GLTFLoader): Promise<void> {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
-        const sources = _RetainGLTFMaterialTextureSources(this._material);
+        const sources = _RetainGLTFMaterialTextureSources(this._material, this._diffuseTransmissionTintTexture);
         if (loader._isExtensionEnabled("KHR_interactivity")) {
             for (const texture of sources) {
                 _MarkTextureAsDynamic(texture);
@@ -1390,6 +1391,38 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             oldSpecularColorTexture?.dispose();
             this.specularColorTexture = null;
         }
+    }
+
+    private async createNormalOperandAsync(texture: Nullable<BaseTexture>): Promise<ITextureProcessOperand> {
+        const neutral = CreateTextureWithFactorOperand(null, new Color4(0.5, 0.5, 1, 1));
+        if (!texture) {
+            return neutral;
+        }
+        const factor = new Color4(texture.level, texture.level, 1, 1);
+        const onChangedObservable = new Observable<void>();
+        const scene = this._material.getScene();
+        const observer = scene.onBeforeRenderObservable.add(() => {
+            if (factor.r !== texture.level) {
+                factor.r = factor.g = texture.level;
+                onChangedObservable.notifyObservers();
+            }
+        });
+        // Scale encoded tangent-space X/Y about 0.5 without changing the normal's Z component.
+        return await LerpTexturesAsync(
+            "scaledNormal (" + texture.name + ")",
+            neutral,
+            CreateTextureWithFactorOperand(texture, new Color4(1, 1, 1, 1)),
+            {
+                texture: null,
+                factor,
+                onChangedObservable,
+                dispose: () => {
+                    scene.onBeforeRenderObservable.remove(observer);
+                    onChangedObservable.clear();
+                },
+            },
+            scene
+        );
     }
 
     private async copySurfaceToCoatAsync(
@@ -1601,14 +1634,18 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
 
         if (origCoatNormalTexture || this.geometryNormalTexture) {
+            const baseNormal = await this.createNormalOperandAsync(this.geometryNormalTexture);
+            let coatNormal: ITextureProcessOperand;
+            try {
+                coatNormal = this._convertedCoatNormal ? { ...this._convertedCoatNormal, dispose: undefined } : await this.createNormalOperandAsync(origCoatNormalTexture);
+            } catch (error) {
+                baseNormal.dispose?.();
+                throw error;
+            }
             const newCoatNormal = await LerpTexturesAsync(
                 "newCoatNormal (" + this._material.name + ")",
-                CreateTextureWithFactorOperand(
-                    this.geometryNormalTexture,
-                    this.geometryNormalTexture ? new Color4(1, 1, 1, 1) : new Color4(0.5, 0.5, 1.0, 1.0),
-                    TextureChannel.RGBA
-                ),
-                CreateTextureWithFactorOperand(origCoatNormalTexture, origCoatNormalTexture ? new Color4(1, 1, 1, 1) : new Color4(0.5, 0.5, 1.0, 1.0), TextureChannel.RGBA),
+                baseNormal,
+                coatNormal,
                 createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
                 this._material.getScene()
             );
@@ -1616,6 +1653,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 newCoatNormal.dispose?.();
                 return;
             }
+            this._convertedCoatNormal = newCoatNormal;
             bindResult(newCoatNormal, () => {
                 if (newCoatNormal.texture) {
                     this.geometryCoatNormalTexture = newCoatNormal.texture;

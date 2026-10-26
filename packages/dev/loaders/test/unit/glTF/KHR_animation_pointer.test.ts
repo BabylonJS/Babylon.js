@@ -10,7 +10,7 @@ import { Animation } from "core/Animations/animation";
 import { Texture } from "core/Materials/Textures/texture";
 import { Material } from "core/Materials/material";
 import { type IMaterial } from "loaders/glTF/2.0/glTFLoaderInterfaces";
-import { GetMappingForKey, GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { _GetMaterialTexture, GetMappingForKey, GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { _RegisterKHRAnimationPointerData } from "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data.pure";
 import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialLoadingAdapter";
 import { Color3 } from "core/Maths/math.color";
@@ -309,6 +309,127 @@ describe("KHR_animation_pointer material implementations", () => {
         } finally {
             coordinator.dispose();
         }
+    });
+
+    it.each([false, true])("retains the staged diffuse transmission color texture with volumetric=%s", async (volumetric) => {
+        vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
+            callback(this);
+        });
+        const render = vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
+        const pointer = "extensions/KHR_materials_diffuse_transmission/diffuseTransmissionColorTexture/extensions/KHR_texture_transform/offset";
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf(pointer, [0, 0, 0.8, 0.6], "VEC2", {
+                KHR_materials_diffuse_transmission: {
+                    diffuseTransmissionFactor: 0.5,
+                    diffuseTransmissionColorTexture: { index: 0, extensions: { KHR_texture_transform: {} } },
+                },
+                ...(volumetric ? { KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] } } : {}),
+            })
+        ) as IGLTF;
+        delete gltf.animations;
+        gltf.extensionsUsed!.push("KHR_interactivity");
+        let parsed: IGLTF | undefined;
+        let completion: Promise<void> | undefined;
+        const activation = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                completion = plugin.whenCompleteAsync();
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as IGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false } } });
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(activation);
+        }
+        await completion;
+        const retro = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        const source = _GetMaterialTexture(retro, "subSurface", "translucencyColorTexture") as Texture;
+        expect(source).toBeInstanceOf(Texture);
+        const accessor = GetPathToObjectConverter(parsed!).convert(`/materials/0/${pointer}`);
+        render.mockClear();
+        accessor.info.set!(new Vector2(0.4, 0.3), accessor.object);
+        expect(source.uOffset).toBeCloseTo(0.4);
+        expect(source.vOffset).toBeCloseTo(0.3);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        if (volumetric) {
+            expect(render.mock.contexts).toContain(retro.coatColorTexture);
+        } else {
+            expect(retro.subsurfaceColorTexture).toBe(source);
+        }
+    });
+
+    it.each(
+        ["normalTexture/scale", "extensions/KHR_materials_clearcoat/clearcoatNormalTexture/scale"].flatMap((pointer) => [false, true].map((diffuse) => [pointer, diffuse] as const))
+    )("propagates animated and runtime %s into the converted coat normal with diffuse transmission=%s", async (pointer, diffuse) => {
+        vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
+            callback(this);
+        });
+        const render = vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
+        const setColor4 = vi.spyOn(ProceduralTexture.prototype, "setColor4");
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf(pointer, [0.5, 0], "SCALAR", {
+                KHR_materials_clearcoat: { clearcoatFactor: 0.5, clearcoatNormalTexture: { index: 0, scale: 0.5 } },
+                KHR_materials_transmission: { transmissionFactor: 1 },
+                KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] },
+                ...(diffuse ? { KHR_materials_diffuse_transmission: { diffuseTransmissionFactor: 0.5, diffuseTransmissionColorFactor: [0.8, 0.6, 0.4] } } : {}),
+            })
+        ) as IGLTF;
+        for (const material of gltf.materials!) {
+            material.normalTexture = { index: 0, scale: 0.5 };
+            material.pbrMetallicRoughness!.baseColorFactor = [0.8, 0.6, 0.4, 1];
+            delete material.pbrMetallicRoughness!.baseColorTexture;
+        }
+        let parsed: IGLTF | undefined;
+        let completion: Promise<void> | undefined;
+        const activation = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                completion = plugin.whenCompleteAsync();
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as IGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(activation);
+        }
+        await completion;
+        const retro = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        expect(retro.geometryCoatNormalTexture).toBeInstanceOf(ProceduralTexture);
+        expect(retro.geometryCoatNormalTexture!.level).toBe(1);
+        expect(setColor4.mock.calls.some(([name, value]) => name === "factorT" && value.r === 0.5 && value.b === 1)).toBe(true);
+        const accessor = GetPathToObjectConverter(parsed!).convert(`/materials/0/${pointer}`);
+        const group = result.animationGroups[0];
+        group.pause();
+        for (const frame of [30, 60]) {
+            render.mockClear();
+            setColor4.mockClear();
+            group.goToFrame(frame);
+            expect(accessor.info.get!(accessor.object)).toBeCloseTo(frame === 30 ? 0.25 : 0);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(render.mock.contexts).toContain(retro.geometryCoatNormalTexture);
+            expect(setColor4.mock.calls.some(([name, value]) => name === "factorT" && value.r === (frame === 30 ? 0.25 : 0) && value.b === 1)).toBe(true);
+            const count = render.mock.calls.length;
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(render).toHaveBeenCalledTimes(count);
+        }
+        group.stop();
+        render.mockClear();
+        accessor.info.set!(0.75, accessor.object);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(render.mock.contexts).toContain(retro.geometryCoatNormalTexture);
+        expect(accessor.info.get!(accessor.object)).toBeCloseTo(0.75);
+        const normalPasses = scene.textures.filter((texture) => texture.name.startsWith("scaledNormal") || texture.name.startsWith("newCoatNormal"));
+        retro.dispose();
+        render.mockClear();
+        accessor.info.set!(0.25, accessor.object);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(render.mock.contexts.some((texture) => normalPasses.includes(texture))).toBe(false);
     });
 
     it("does not retain transient runtime texture animations after group disposal", () => {
