@@ -1,6 +1,7 @@
 import { type Nullable } from "core/types";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type WebGPUEngine } from "core/Engines/webgpuEngine.pure";
+import { type WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture";
 import { type Matrix } from "core/Maths/math.vector.pure";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture.pure";
 import { Constants } from "core/Engines/constants";
@@ -298,6 +299,12 @@ export class GaussianSplattingGpuSortOutput {
     public _keysCsSog = false;
     /** @internal */
     public _keysCsCompound = false;
+    /** @internal Texture views used by the keys context, which may change without replacing their BaseTexture objects. */
+    public _keysCsCentersView: Nullable<GPUTextureView> = null;
+    /** @internal */
+    public _keysCsMeansHighView: Nullable<GPUTextureView> = null;
+    /** @internal */
+    public _keysCsPartIndicesView: Nullable<GPUTextureView> = null;
     /** @internal */
     public _outputCs: ComputeShader;
     /** @internal Sorter binding version the compute shaders of this output were last bound with. */
@@ -921,7 +928,17 @@ export class GaussianSplattingGpuSorter {
     }
 
     private _getKeysComputeShader(output: GaussianSplattingGpuSortOutput, sog: boolean, compound: boolean): ComputeShader {
-        if (!output._keysCs || output._keysCsSog !== sog || output._keysCsCompound !== compound) {
+        const centersView = (this._centersTexture?.getInternalTexture()?._hardwareTexture as Nullable<WebGPUHardwareTexture>)?.view ?? null;
+        const meansHighView = sog ? ((this._meansHighTexture?.getInternalTexture()?._hardwareTexture as Nullable<WebGPUHardwareTexture>)?.view ?? null) : null;
+        const partIndicesView = compound ? ((this._partIndicesTexture?.getInternalTexture()?._hardwareTexture as Nullable<WebGPUHardwareTexture>)?.view ?? null) : null;
+        if (
+            !output._keysCs ||
+            output._keysCsSog !== sog ||
+            output._keysCsCompound !== compound ||
+            output._keysCsCentersView !== centersView ||
+            output._keysCsMeansHighView !== meansHighView ||
+            output._keysCsPartIndicesView !== partIndicesView
+        ) {
             const bindingsMapping: ComputeBindingMapping = {
                 params: { group: 0, binding: 0 },
                 intervals: { group: 0, binding: 1 },
@@ -943,6 +960,9 @@ export class GaussianSplattingGpuSorter {
             output._keysCs = new ComputeShader(this._name + "_keys" + key, this._engine, "gsSortKeys", { bindingsMapping, defines, useExplicitComputePipelineLayout: true });
             output._keysCsSog = sog;
             output._keysCsCompound = compound;
+            output._keysCsCentersView = centersView;
+            output._keysCsMeansHighView = meansHighView;
+            output._keysCsPartIndicesView = partIndicesView;
         }
         return output._keysCs;
     }
