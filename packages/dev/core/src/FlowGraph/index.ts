@@ -18,6 +18,7 @@ export * from "./flowGraphDelayRegistry";
 export * from "./flowGraphAnimationHelpers";
 export * from "./flowGraphLogger";
 export * from "./flowGraphValidator";
+export { defaultValueParseFunction } from "./serialization";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export * from "./Blocks/index";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
