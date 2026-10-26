@@ -426,4 +426,99 @@ test.describe("Merged texture sampling", () => {
             });
         }
     }
+
+    // Two materials share base color, opacity, metalness and roughness images, but the second scales its base color
+    // and metalness. Each merge then has inputs with different transforms, so it bakes them, and the second material
+    // must not reuse the first material's merged (untransformed) textures.
+    test("base color/opacity and metallic/roughness merges of shared images bake each material's transforms", async () => {
+        const result = await page.evaluate(async () => {
+            const scene = window.scene!;
+            const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
+            const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
+            const createTexture = (texel: (x: number) => number[]) => {
+                const data = new Uint8Array(4 * 4 * 4);
+                for (let y = 0; y < 4; y++) {
+                    for (let x = 0; x < 4; x++) {
+                        data.set(texel(x), (y * 4 + x) * 4);
+                    }
+                }
+                return new BABYLON.RawTexture(data, 4, 4, RGBA, scene, false, false, NEAREST);
+            };
+            // Nonuniform base color and metalness columns; uniform opacity and roughness.
+            const baseColor = createTexture((x) =>
+                [
+                    [255, 0, 0],
+                    [0, 255, 0],
+                    [0, 0, 255],
+                    [255, 255, 0],
+                ][x].concat(255)
+            );
+            const opacity = createTexture(() => [255, 255, 255, 255]);
+            const metalness = createTexture((x) => [[0, 85, 170, 255][x], 0, 0, 255]);
+            const roughness = createTexture(() => [128, 128, 128, 255]);
+            // A second texture object referencing the same image data.
+            const share = (source: InstanceType<typeof BABYLON.BaseTexture>, uScale: number) => {
+                const texture = new BABYLON.Texture(null, scene, false, false, NEAREST);
+                const internalTexture = source.getInternalTexture()!;
+                internalTexture.incrementReferences();
+                texture._texture = internalTexture;
+                texture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+                texture.uScale = uScale;
+                return texture;
+            };
+
+            const createMaterial = (name: string, uScale: number) => {
+                const mat = new BABYLON.OpenPBRMaterial(name, scene);
+                mat.baseColorTexture = uScale === 1 ? baseColor : share(baseColor, uScale);
+                mat.geometryOpacityTexture = uScale === 1 ? opacity : share(opacity, 1);
+                mat.baseMetalnessTexture = uScale === 1 ? metalness : share(metalness, uScale);
+                mat.specularRoughnessTexture = uScale === 1 ? roughness : share(roughness, 1);
+                const box = BABYLON.MeshBuilder.CreateBox(name, { size: 1 }, scene);
+                box.material = mat;
+            };
+            createMaterial("identity", 1);
+            createMaterial("transformed", 2);
+
+            const gltf = await BABYLON.GLTF2Export.GLTFAsync(scene, "shared");
+            const json = JSON.parse(gltf.files["shared.gltf"] as string);
+            const readAsync = async (name: string, slot: "baseColorTexture" | "metallicRoughnessTexture") => {
+                const info = json.materials.find((m: { name: string }) => m.name === name).pbrMetallicRoughness[slot];
+                const uri = json.images[json.textures[info.index].source].uri as string;
+                const bitmap = await createImageBitmap(gltf.files[uri] as Blob, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+                const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+                const context = canvas.getContext("2d")!;
+                context.drawImage(bitmap, 0, 0);
+                const row = Array.from(context.getImageData(0, 0, bitmap.width, 1).data);
+                const texels: number[][] = [];
+                for (let x = 0; x < bitmap.width; x++) {
+                    texels.push(row.slice(x * 4, x * 4 + 3));
+                }
+                return { index: info.index as number, transform: info.extensions?.KHR_texture_transform ?? null, texels };
+            };
+            return {
+                baseColor: { identity: await readAsync("identity", "baseColorTexture"), transformed: await readAsync("transformed", "baseColorTexture") },
+                metallicRoughness: {
+                    identity: await readAsync("identity", "metallicRoughnessTexture"),
+                    transformed: await readAsync("transformed", "metallicRoughnessTexture"),
+                },
+            };
+        });
+
+        for (const slot of [result.baseColor, result.metallicRoughness]) {
+            // Each material gets its own merged texture, with the transform baked rather than propagated.
+            expect(slot.transformed.index).not.toBe(slot.identity.index);
+            expect(slot.identity.transform).toBeNull();
+            expect(slot.transformed.transform).toBeNull();
+            expect(slot.identity.texels.length).toBe(4);
+            expect(new Set(slot.identity.texels.map((t) => t.join(","))).size).toBe(4);
+            // uScale = 2 repeats the source twice, so the second material's columns alternate.
+            const texels = slot.transformed.texels;
+            expect(texels.length).toBe(4);
+            const sourceTexels = slot.identity.texels;
+            texels.forEach((texel) => expect(sourceTexels.some((source) => sameTexel(texel, source))).toBe(true));
+            expect(sameTexel(texels[0], texels[2])).toBe(true);
+            expect(sameTexel(texels[1], texels[3])).toBe(true);
+            expect(sameTexel(texels[0], texels[1])).toBe(false);
+        }
+    });
 });

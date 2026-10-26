@@ -38,7 +38,7 @@ import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper"
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 import { GetCachedImageAsync, GetFileExtensionFromMimeType } from "../../exportImageUtils";
-import { CopyTextureSampling } from "./glTFUtilities";
+import { CopyTextureSampling, GetSampledTextureKey } from "./glTFUtilities";
 import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 
 const Epsilon = 1e-6;
@@ -215,7 +215,8 @@ async function CreateOcclusionMetallicRoughnessTextureAsync(
  */
 export class GLTFMaterialExporter {
     // Mapping to store textures
-    private _textureMap = new Map<number, ITextureInfo>();
+    // Keyed by texture uniqueId, or by a string key describing the inputs (and their sampling) of a merged texture
+    private _textureMap = new Map<number | string, ITextureInfo>();
 
     // Mapping of internal textures to images to avoid exporting duplicate images
     private _internalTextureToImage: { [uniqueId: number]: { [mimeType: string]: Promise<number> } } = {};
@@ -614,12 +615,8 @@ export class GLTFMaterialExporter {
                 if (!skipBaseColorTexture) {
                     if (babylonPBRMaterial.geometryOpacityTexture) {
                         // Merge baseColor and opacity
-                        const albedoId = albedoTexture && albedoTexture.getInternalTexture() ? albedoTexture.getInternalTexture()!.uniqueId : 0;
-                        const opacityId =
-                            babylonPBRMaterial.geometryOpacityTexture && babylonPBRMaterial.geometryOpacityTexture.getInternalTexture()
-                                ? babylonPBRMaterial.geometryOpacityTexture.getInternalTexture()!.uniqueId
-                                : 0;
-                        const mergedId = Number(`${albedoId}${opacityId}`);
+                        // The merge bakes input transforms, so the cache key must include each input's sampling state
+                        const mergedId = `baseColorOpacity|${GetSampledTextureKey(albedoTexture, "none")}|${GetSampledTextureKey(babylonPBRMaterial.geometryOpacityTexture, "none")}`;
                         const glTFTexture = this._textureMap.get(mergedId);
                         if (glTFTexture) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
@@ -666,9 +663,8 @@ export class GLTFMaterialExporter {
                         })
                     );
                 } else if (roughnessTexture || metallicTexture) {
-                    const metallicId = metallicTexture && metallicTexture.getInternalTexture() ? metallicTexture.getInternalTexture()!.uniqueId : 0;
-                    const roughnessId = roughnessTexture && roughnessTexture.getInternalTexture() ? roughnessTexture.getInternalTexture()!.uniqueId : 0;
-                    const mergedId = Number(`${metallicId}${roughnessId}`);
+                    // The merge bakes input transforms (and packs occlusion), so the cache key must include every input's sampling state
+                    const mergedId = `occlusionMetallicRoughness|${GetSampledTextureKey(babylonPBRMaterial.ambientOcclusionTexture, "none")}|${GetSampledTextureKey(metallicTexture, "none")}|${GetSampledTextureKey(roughnessTexture, "none")}`;
                     const glTFTexture = this._textureMap.get(mergedId);
                     if (glTFTexture) {
                         glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
@@ -1052,7 +1048,7 @@ export class GLTFMaterialExporter {
         return materials.length - 1;
     }
 
-    public async exportTextureAsync(babylonTexture: BaseTexture, overrideId: Nullable<number> = null): Promise<Nullable<ITextureInfo>> {
+    public async exportTextureAsync(babylonTexture: BaseTexture, overrideId: Nullable<number | string> = null): Promise<Nullable<ITextureInfo>> {
         let textureInfo = this._textureMap.get(overrideId ?? babylonTexture.uniqueId);
         if (textureInfo) {
             return textureInfo;
