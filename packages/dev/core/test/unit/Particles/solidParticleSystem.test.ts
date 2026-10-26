@@ -72,6 +72,23 @@ describe.each([false, true])("SolidParticleSystem winding (right-handed scene: %
         expect(Array.from(model.getVerticesData(VertexBuffer.NormalKind)!)).toEqual(originalNormals);
     });
 
+    it.each([false, true])("recomputes outward normals when the model has no normals (opposite orientation: %s)", (oppositeOrientation) => {
+        const model = createModel(oppositeOrientation);
+        model.removeVerticesData(VertexBuffer.NormalKind);
+        const originalIndices = Array.from(model.getIndices()!);
+        const system = new SolidParticleSystem("sps", scene);
+
+        system.addShape(model, 1);
+        expect(system.recomputeNormals).toBe(true);
+        const mesh = system.buildMesh();
+        system.setParticles();
+
+        expect(Array.from(mesh.getIndices()!)).toEqual([0, 1, 2]);
+        expect(Array.from(mesh.getVerticesData(VertexBuffer.NormalKind)!)).toEqual([0, 0, -1, 0, 0, -1, 0, 0, -1]);
+        expect(model.getVerticesData(VertexBuffer.NormalKind)).toBeNull();
+        expect(Array.from(model.getIndices()!)).toEqual(originalIndices);
+    });
+
     it.each([1, -1])("does not use the source world determinant (%s) to determine local winding", (parentScale) => {
         const model = createModel(true);
         const parent = new Mesh("root", scene);
