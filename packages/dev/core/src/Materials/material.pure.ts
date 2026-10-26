@@ -1882,9 +1882,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                 continue;
             }
             for (const subMesh of mesh.subMeshes) {
+                const drawWrappers = subMesh._drawWrappers;
+                // Skip the submeshes that have not rendered yet, and those with no render pass that can resolve to this material,
+                // without resolving each pass
+                if (!drawWrappers.length || !subMesh._mayRenderWithMaterial(this)) {
+                    continue;
+                }
+
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
-                for (let passId = 0; passId < subMesh._drawWrappers.length; passId++) {
-                    const drawWrapper = subMesh._drawWrappers[passId];
+                for (let passId = 0; passId < drawWrappers.length; passId++) {
+                    const drawWrapper = drawWrappers[passId];
                     if (!drawWrapper) {
                         continue;
                     }

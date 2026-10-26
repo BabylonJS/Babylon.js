@@ -6,6 +6,9 @@ import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGener
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { Logger } from "core/Misc/logger";
+import { vi } from "vitest";
 
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
@@ -49,6 +52,54 @@ describe("ShadowGenerator", () => {
 
             expect(CascadedShadowGenerator.IsSupported).toBe(false);
             expect(() => new CascadedShadowGenerator(1024, light)).toThrow("CascadedShadowMap is not supported by the current engine.");
+        });
+    });
+
+    describe("cascaded", () => {
+        let engine: Engine;
+
+        beforeEach(function () {
+            engine = new NullEngine({
+                renderHeight: 256,
+                renderWidth: 256,
+                textureSize: 256,
+                deterministicLockstep: false,
+                lockstepMaxSteps: 1,
+            });
+            engine._features.supportCSM = true;
+            // NullEngine cannot allocate the depth texture CSM requests for its shadow map.
+            vi.spyOn(engine, "_createDepthStencilTexture").mockImplementation(() => new InternalTexture(engine, InternalTextureSource.DepthStencil));
+        });
+
+        afterEach(function () {
+            vi.restoreAllMocks();
+            engine.dispose();
+        });
+
+        const createGenerator = () => {
+            const scene = new Scene(engine);
+            const light = new DirectionalLight("Directional", new Vector3(0, -1, 0), scene);
+            return new CascadedShadowGenerator(1024, light);
+        };
+
+        it("defaults to no filtering without comparison samplers and logs no error", () => {
+            engine._features.supportShadowSamplers = false;
+            const error = vi.spyOn(Logger, "Error");
+
+            const generator = createGenerator();
+
+            expect(generator.filter).toBe(ShadowGenerator.FILTER_NONE);
+            expect(error).not.toHaveBeenCalled();
+        });
+
+        it("keeps the PCF default when comparison samplers are supported", () => {
+            engine._features.supportShadowSamplers = true;
+            const error = vi.spyOn(Logger, "Error");
+
+            const generator = createGenerator();
+
+            expect(generator.filter).toBe(ShadowGenerator.FILTER_PCF);
+            expect(error).not.toHaveBeenCalled();
         });
     });
 });

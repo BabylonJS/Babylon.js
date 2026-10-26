@@ -13,6 +13,10 @@ import { type IEngineContext, EngineContextIdentity } from "./engineContext";
 import { EngineExplorerServiceDefinition } from "./engineExplorerService";
 import { EngineSelectionServiceDefinition } from "./engineSelectionService";
 import { PickingServiceDefinition } from "./services/pickingService";
+import { GizmoServiceDefinition } from "./services/gizmoService";
+import { StatsServiceDefinition } from "./services/panes/statsService";
+import { CaptureServiceDefinition } from "./services/panes/captureService";
+import { DebugServiceDefinition } from "./services/panes/debugService";
 import { EnginePropertiesServiceDefinition } from "./services/panes/properties/enginePropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
@@ -27,6 +31,7 @@ import { TextLayerPropertiesServiceDefinition } from "./services/panes/propertie
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { CameraExplorerServiceDefinition } from "./services/panes/scene/cameraExplorerService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { FlowGraphExplorerServiceDefinition } from "./services/panes/scene/flowGraphExplorerService";
 import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
@@ -85,6 +90,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TextLayerExplorerServiceDefinition,
                 SpriteLayerExplorerServiceDefinition,
                 AnimationGroupExplorerServiceDefinition,
+                FlowGraphExplorerServiceDefinition,
                 PropertiesServiceDefinition,
                 EnginePropertiesServiceDefinition,
                 RenderingContextPropertiesServiceDefinition,
@@ -105,6 +111,10 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 SelectionServiceDefinition,
                 EngineSelectionServiceDefinition,
                 PickingServiceDefinition,
+                GizmoServiceDefinition,
+                StatsServiceDefinition,
+                CaptureServiceDefinition,
+                DebugServiceDefinition,
             ];
 
             return {

@@ -88,6 +88,17 @@ describe("ToggleButton", () => {
         expect(onChange.mock.calls).toEqual([[false], [true]]);
     });
 
+    it("does not request a state change while disabled", () => {
+        const onChange = vi.fn<(checked: boolean) => void>();
+        const { root, container } = MakeRoot();
+        act(() => root.render(<ToggleButton title="Toggle" checkedIcon={TargetRegular} value={false} disabled onChange={onChange} />));
+        const button = container.querySelector("button")!;
+        expect(button.disabled).toBe(true);
+        act(() => button.click());
+        expect(onChange).not.toHaveBeenCalled();
+        expect(button.getAttribute("aria-pressed")).toBe("false");
+    });
+
     it("notifies a controlled parent once per click outside render and renders the accepted value", () => {
         const consoleError = vi.spyOn(console, "error");
         const onChange = vi.fn<(checked: boolean) => void>();

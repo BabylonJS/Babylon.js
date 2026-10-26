@@ -8,6 +8,14 @@ import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutio
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "../../../../Misc/typeStore";
+
+/**
+ * Configuration for the throttle block.
+ */
+export interface IFlowGraphThrottleBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /** Whether a zero duration is accepted and always activates the output. Defaults to false. */
+    allowZeroDuration?: boolean;
+}
 /**
  * A block that throttles the execution of its output flow.
  */
@@ -25,7 +33,11 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
      */
     public readonly lastRemainingTime: FlowGraphDataConnection<number>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    /**
+     * Creates a throttle block.
+     * @param config optional duration handling
+     */
+    constructor(config?: IFlowGraphThrottleBlockConfiguration) {
         super(config);
         this.reset = this._registerSignalInput("reset");
         this.duration = this.registerDataInput("duration", RichTypeNumber);
@@ -40,7 +52,7 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
         }
         // in seconds
         const durationValue = this.duration.getValue(context);
-        if (durationValue <= 0 || isNaN(durationValue) || !isFinite(durationValue)) {
+        if (durationValue < 0 || (durationValue === 0 && !this.config?.allowZeroDuration) || isNaN(durationValue) || !isFinite(durationValue)) {
             return this._reportError(context, "Invalid duration in Throttle block");
         }
         const lastRemainingTime = context._getExecutionVariable(this, "lastRemainingTime", NaN);

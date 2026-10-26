@@ -206,8 +206,6 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                     forward.negateInPlace();
                 }
 
-                // Preserve the hand menu's front axis and the pose used by palm visibility.
-                forward.negateInPlace();
                 if (this._scene.useRightHandedSystem) {
                     Quaternion.FromLookDirectionRHToRef(forward, up, handPose.quaternion);
                 } else {
@@ -254,13 +252,12 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
 
                 const cameraLookAtQuaternion = TmpVectors.Quaternion[0];
                 if (camera && (this.zoneOrientationMode === HandConstraintOrientation.LOOK_AT_CAMERA || this.nodeOrientationMode === HandConstraintOrientation.LOOK_AT_CAMERA)) {
-                    // The hand menu's front is -Z in LH and +Z in RH.
-                    const cameraToHand = TmpVectors.Vector3[1];
-                    cameraToHand.copyFrom(pose.position).subtractInPlace(camera.position).normalize();
+                    const toCamera = TmpVectors.Vector3[1];
+                    toCamera.copyFrom(camera.position).subtractInPlace(pose.position).normalize();
                     if (this._scene.useRightHandedSystem) {
-                        Quaternion.FromLookDirectionRHToRef(cameraToHand, Vector3.UpReadOnly, cameraLookAtQuaternion);
+                        Quaternion.FromLookDirectionRHToRef(toCamera, Vector3.UpReadOnly, cameraLookAtQuaternion);
                     } else {
-                        Quaternion.FromLookDirectionLHToRef(cameraToHand, Vector3.UpReadOnly, cameraLookAtQuaternion);
+                        Quaternion.FromLookDirectionLHToRef(toCamera, Vector3.UpReadOnly, cameraLookAtQuaternion);
                     }
                 }
 

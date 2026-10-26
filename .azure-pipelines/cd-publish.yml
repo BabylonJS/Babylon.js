@@ -37,6 +37,7 @@ pool:
 jobs:
     - job: PublishToNpm
       displayName: "Publish to npm"
+      timeoutInMinutes: 120
       steps:
           - checkout: self
             clean: true
@@ -49,13 +50,26 @@ jobs:
                 version: "24.x"
 
           - bash: |
+                set -euo pipefail
+                set +x
+
                 git config --global user.email "$(BOT_EMAIL)"
                 git config --global user.name "Babylon.js Platform"
-                git remote rm origin
-                git remote add origin https://$(GitHubPAT)@github.com/BabylonJS/Babylon.js.git
+
+                repoUrl="https://github.com/BabylonJS/Babylon.js.git"
+                git remote set-url origin "$repoUrl"
+
+                auth=$(printf 'x-access-token:%s' "$GITHUB_PAT" | base64 | tr -d '\r\n')
+                echo "##vso[task.setsecret]${auth}"
+                git config --local --replace-all \
+                    "http.${repoUrl}.extraheader" \
+                    "Authorization: Basic ${auth}"
+
                 git fetch origin
-                git checkout $(Build.SourceBranchName)
+                git checkout "$(Build.SourceBranchName)"
             displayName: "prepare git"
+            env:
+                GITHUB_PAT: $(GitHubPAT)
 
           - bash: npm ci
             displayName: "npm ci"

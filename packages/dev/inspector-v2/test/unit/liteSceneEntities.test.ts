@@ -64,7 +64,7 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
 import { BuildExplorerTree, type ExplorerCommandProvider } from "../../src/components/explorer/explorerModel";
 import { type IEngineExplorerService, type RenderingContextNodeProvider } from "../../src/lite/engineExplorerService";
 import { type IEngineContext } from "../../src/lite/engineContext";
-import { GetSceneNodeRoots, SetQuaternionValue, SetVector3Value } from "../../src/lite/sceneEntityUtils";
+import { GetSceneNodeRoots, InspectorBoundsHelpers, SetQuaternionValue, SetVector3Value } from "../../src/lite/sceneEntityUtils";
 import { CameraPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/cameraPropertiesService";
 import { LightPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/lightPropertiesService";
 import { SceneNodePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/sceneNodePropertiesService";
@@ -135,6 +135,62 @@ describe("Babylon Lite scene entities", () => {
 
         expect(node.position.set).toHaveBeenCalledWith(1, 2, 3);
         expect(node.rotationQuaternion.set).toHaveBeenCalledWith(0.1, 0.2, 0.3, 0.9);
+    });
+
+    it("rejects Explorer reparenting through bounds helpers, including a source and its ancestor", () => {
+        const root = CreateMesh("Root");
+        const child = CreateMesh("Child");
+        root.children.push(child);
+        child.parent = root;
+        const bounds = CreateMesh("Inspector Bounds: Child");
+        const proxy = {
+            get worldMatrix() {
+                return child.worldMatrix;
+            },
+            get worldMatrixVersion() {
+                return child.worldMatrixVersion;
+            },
+        };
+        bounds.parent = proxy;
+        InspectorBoundsHelpers.add(bounds);
+        const ordinary = CreateMesh("Inspector Bounds: Application Mesh");
+        const scene = { _kind: "scene", meshes: [root, child, bounds, ordinary] } as SceneContext;
+        const engine = { _renderingContexts: [scene], surfaces: [] as unknown[] };
+        engine.surfaces.push(engine);
+        let provider!: RenderingContextNodeProvider<SceneContext>;
+        const registration = MeshExplorerServiceDefinition.factory(
+            {
+                addRenderingContextNodeProvider: (value: typeof provider) => {
+                    provider = value;
+                    return { dispose: vi.fn() };
+                },
+            } as IEngineExplorerService,
+            { addItemCommand: () => ({ dispose: vi.fn() }) } as unknown as IExplorerService,
+            {} as IWatcherService,
+            { selectedEntity: null } as ISelectionService,
+            { engine } as unknown as IEngineContext
+        );
+        try {
+            const dragDrop = provider.getNodes(scene)[0].dragDropConfig!;
+            expect(dragDrop.canDrag(bounds)).toBe(false);
+            expect(dragDrop.canDrag(ordinary)).toBe(true);
+            for (const source of [child, root, ordinary]) {
+                expect(dragDrop.canDrop(source, bounds)).toBe(false);
+                dragDrop.onDrop(source, bounds);
+            }
+            expect(dragDrop.canDrop(bounds, ordinary)).toBe(false);
+            dragDrop.onDrop(bounds, ordinary);
+            expect(root.parent).toBeNull();
+            expect(child.parent).toBe(root);
+            expect(ordinary.parent).toBeNull();
+            expect(bounds.parent).toBe(proxy);
+            expect(dragDrop.canDrop(root, child)).toBe(false);
+            expect(dragDrop.canDrop(child, ordinary)).toBe(true);
+            dragDrop.onDrop(child, ordinary);
+            expect(child.parent).toBe(ordinary);
+        } finally {
+            registration?.dispose?.();
+        }
     });
 
     it("contributes nodes, cameras, lights, shadows, commands, and cleans up", () => {
