@@ -1217,11 +1217,13 @@ export abstract class AbstractEngine {
 
     /**
      * Observable raised when the engine is about to compile a shader
+     * In WebGL, the event state's target identifies the pipeline context being compiled.
      */
     public onBeforeShaderCompilationObservable = new Observable<AbstractEngine>();
 
     /**
      * Observable raised when the engine has just compiled a shader
+     * In WebGL, this waits for parallel compilation to complete successfully, and the event state's target identifies the pipeline context.
      */
     public onAfterShaderCompilationObservable = new Observable<AbstractEngine>();
 
