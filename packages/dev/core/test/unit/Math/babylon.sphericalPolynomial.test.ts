@@ -1,17 +1,47 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 
-function MakePolynomial() {
+function MakeHarmonics(scale = 1) {
     const harmonics = new SphericalHarmonics();
-    harmonics.l00 = new Vector3(1, 0.8, 0.6);
-    harmonics.l10 = new Vector3(0.4, 0.3, 0.2);
-    harmonics.l22 = new Vector3(0.1, 0.05, 0.02);
-    return SphericalPolynomial.FromHarmonics(harmonics);
+    harmonics.l00 = new Vector3(1, 0.8, 0.6).scaleInPlace(scale);
+    harmonics.l10 = new Vector3(0.4, 0.3, 0.2).scaleInPlace(scale);
+    harmonics.l22 = new Vector3(0.1, 0.05, 0.02).scaleInPlace(scale);
+    return harmonics;
+}
+
+function MakePolynomial() {
+    return SphericalPolynomial.FromHarmonics(MakeHarmonics());
 }
 
 describe("SphericalPolynomial", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("FromHarmonics keeps the supplied harmonics for rendering", () => {
+        const fromPolynomial = vi.spyOn(SphericalHarmonics, "FromPolynomial");
+        const harmonics = MakeHarmonics();
+        const polynomial = SphericalPolynomial.FromHarmonics(harmonics);
+
+        expect(polynomial.preScaledHarmonics).toBe(harmonics);
+        expect(fromPolynomial).not.toHaveBeenCalled();
+    });
+
+    it("updateFromHarmonics keeps each newly supplied harmonics for rendering", () => {
+        const fromPolynomial = vi.spyOn(SphericalHarmonics, "FromPolynomial");
+        const polynomial = MakePolynomial();
+
+        for (let i = 2; i <= 3; i++) {
+            const harmonics = MakeHarmonics(i);
+            polynomial.updateFromHarmonics(harmonics);
+
+            expect(polynomial.preScaledHarmonics).toBe(harmonics);
+        }
+        expect(fromPolynomial).not.toHaveBeenCalled();
+    });
+
     it("scaleInPlace updates the harmonics bound for rendering", () => {
         const reference = MakePolynomial().preScaledHarmonics;
         const scaled = MakePolynomial();

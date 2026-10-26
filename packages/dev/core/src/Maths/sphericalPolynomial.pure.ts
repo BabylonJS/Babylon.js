@@ -432,8 +432,6 @@ export class SphericalPolynomial {
      * @returns the spherical polynomial
      */
     public updateFromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial {
-        this._harmonics = harmonics;
-
         this.x.copyFrom(harmonics.l11);
         this.x.scaleInPlace(1.02333).scaleInPlace(-1);
         this.y.copyFrom(harmonics.l1_1);
@@ -459,6 +457,9 @@ export class SphericalPolynomial {
         this.xy.scaleInPlace(0.858086);
 
         this.scaleInPlace(1.0 / Math.PI);
+
+        // Set after the normalization above, as scaleInPlace() clears it. The coefficients now match the harmonics.
+        this._harmonics = harmonics;
 
         return this;
     }
