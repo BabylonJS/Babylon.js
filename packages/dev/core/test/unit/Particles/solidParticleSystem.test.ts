@@ -3,10 +3,12 @@ import { VertexBuffer } from "core/Buffers/buffer";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Material } from "core/Materials/material";
+import { MultiMaterial } from "core/Materials/multiMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Vector3 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
+import { SubMesh } from "core/Meshes/subMesh";
 import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import { Scene } from "core/scene";
 import "core/Meshes/instancedMesh";
@@ -38,6 +40,18 @@ describe.each([false, true])("SolidParticleSystem winding (right-handed scene: %
             mesh.sideOrientation = mesh.sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         }
         return mesh;
+    }
+
+    function expectTrianglePositions(mesh: Mesh, model: Mesh, expectedIndices: number[]): void {
+        const positions = mesh.getVerticesData(VertexBuffer.PositionKind)!;
+        const modelPositions = model.getVerticesData(VertexBuffer.PositionKind)!;
+        const indices = mesh.getIndices()!;
+        expect(indices.length).toBe(expectedIndices.length);
+        for (let i = 0; i < indices.length; i++) {
+            for (let component = 0; component < 3; component++) {
+                expect(positions[indices[i] * 3 + component]).toBeCloseTo(modelPositions[expectedIndices[i] * 3 + component], 6);
+            }
+        }
     }
 
     it.each([false, true])("normalizes model winding without changing source geometry (opposite orientation: %s)", (oppositeOrientation) => {
@@ -180,5 +194,93 @@ describe.each([false, true])("SolidParticleSystem winding (right-handed scene: %
 
         expect(Array.from(mesh.getIndices()!)).toEqual([0, 2, 1]);
         expect(system.materials).toContain(material);
+    });
+
+    it.each(["mesh", "material", "default material"])("keeps a stable winding convention after changing the SPS %s orientation", (target) => {
+        const model = createModel();
+        const system = new SolidParticleSystem("sps", scene, { expandable: true });
+        system.addShape(model, 1);
+        const mesh = system.buildMesh();
+        const oppositeOrientation = mesh.sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+        if (target === "mesh") {
+            mesh.sideOrientation = oppositeOrientation;
+        } else {
+            const material = target === "default material" ? scene.defaultMaterial : new StandardMaterial("target", scene);
+            mesh.material = material;
+            material.sideOrientation = oppositeOrientation;
+        }
+
+        system.addShape(model, 1);
+        system.buildMesh();
+        system.setParticles();
+
+        expect(Array.from(mesh.getIndices()!)).toEqual([0, 1, 2, 3, 4, 5]);
+    });
+
+    it.each(["addShape", "digest"])("resolves mixed submaterial orientations in %s", (method) => {
+        const model = createModel(true);
+        const data = new VertexData();
+        data.positions = [0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 2, 1, 0];
+        data.normals = [0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1];
+        data.indices = [0, 2, 1, 3, 4, 5];
+        data.applyToMesh(model);
+        const material = new MultiMaterial("multi", scene);
+        const first = new StandardMaterial("first", scene);
+        const second = new StandardMaterial("second", scene);
+        first.sideOrientation = rightHanded ? Material.ClockWiseSideOrientation : Material.CounterClockWiseSideOrientation;
+        second.sideOrientation = model.sideOrientation;
+        material.subMaterials = [first, second];
+        model.material = material;
+        model.releaseSubMeshes();
+        new SubMesh(0, 0, 3, 0, 3, model);
+        new SubMesh(1, 3, 3, 3, 3, model);
+        const system = new SolidParticleSystem("sps", scene);
+
+        if (method === "addShape") {
+            system.addShape(model, 1);
+        } else {
+            system.digest(model);
+        }
+        const mesh = system.buildMesh();
+        system.setParticles();
+
+        expectTrianglePositions(mesh, model, [0, 2, 1, 3, 5, 4]);
+        expect(Array.from(model.getIndices()!)).toEqual([0, 2, 1, 3, 4, 5]);
+    });
+
+    it.each(["addShape", "digest"])("uses the shared scene default material orientation in %s", (method) => {
+        const model = createModel(true);
+        scene.defaultMaterial.sideOrientation = model.sideOrientation;
+        const system = new SolidParticleSystem("sps", scene);
+
+        if (method === "addShape") {
+            system.addShape(model, 1);
+        } else {
+            system.digest(model);
+        }
+        const mesh = system.buildMesh();
+        system.setParticles();
+
+        expectTrianglePositions(mesh, model, [0, 2, 1]);
+    });
+
+    it.each(["addShape", "digest"])("uses the target default material when the source has an explicit material in %s", (method) => {
+        const model = createModel();
+        scene.defaultMaterial.sideOrientation =
+            model.sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+        const material = new StandardMaterial("source", scene);
+        model.material = material;
+        material.sideOrientation = model.sideOrientation;
+        const system = new SolidParticleSystem("sps", scene);
+
+        if (method === "addShape") {
+            system.addShape(model, 1);
+        } else {
+            system.digest(model);
+        }
+        const mesh = system.buildMesh();
+        system.setParticles();
+
+        expectTrianglePositions(mesh, model, [0, 2, 1]);
     });
 });

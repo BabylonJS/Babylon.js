@@ -135,6 +135,8 @@ export class SolidParticleSystem implements IDisposable {
     protected _computeParticleVertex: boolean = false;
     protected _computeBoundingBox: boolean = false;
     protected _autoFixFaceOrientation: boolean = false;
+    private _modelSideOrientation: Nullable<number> = null;
+    private _modelDefaultMaterialSideOrientation: Nullable<number> = null;
     protected _depthSortParticles: boolean = true;
     protected _camera: TargetCamera;
     protected _mustUnrotateFixedNormals = false;
@@ -357,7 +359,8 @@ export class SolidParticleSystem implements IDisposable {
      * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
      * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
      * Thus the particles generated from `digest()` have their property `position` set yet.
-     * Source transforms are not applied, and winding is adapted to the SPS face orientation.
+     * Source transforms are not applied, and winding is normalized to the initial SPS face-orientation convention.
+     * Later changes to the SPS mesh or material orientation apply to the whole system, including newly added models.
      * @param mesh ( Mesh ) is the mesh to be digested
      * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overridden by the parameter `number` if any
      * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
@@ -806,16 +809,29 @@ export class SolidParticleSystem implements IDisposable {
     private _getModelIndices(mesh: AbstractMesh): number[] {
         const indices = Array.from(mesh.getIndices()!);
         const model = mesh.isAnInstance ? (mesh as InstancedMesh).sourceMesh : mesh;
-        const meshOrientation =
-            this.mesh?.sideOrientation ?? (this._scene.useRightHandedSystem ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation);
-        const modelOrientation = mesh.material?.sideOrientation ?? (model instanceof Mesh ? model.sideOrientation : meshOrientation);
-        const material = this._useModelMaterial ? mesh.material : this.mesh?.material;
-        const targetOrientation = material?.sideOrientation ?? meshOrientation;
-        if (modelOrientation !== targetOrientation) {
-            for (let i = 0; i < indices.length; i += 3) {
-                const second = indices[i + 1];
-                indices[i + 1] = indices[i + 2];
-                indices[i + 2] = second;
+        const meshOrientation = this._scene.useRightHandedSystem ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation;
+        if (this._modelSideOrientation === null) {
+            this._modelDefaultMaterialSideOrientation = this._useModelMaterial ? null : this._scene.defaultMaterial.sideOrientation;
+            this._modelSideOrientation = this._modelDefaultMaterialSideOrientation ?? meshOrientation;
+        }
+        const sourceMaterial = mesh.material ?? mesh.getScene().defaultMaterial;
+        const targetMaterial = this._useModelMaterial ? (mesh.material ?? this._setDefaultMaterial()) : null;
+        const targetOrientation = targetMaterial?.sideOrientation ?? this._modelSideOrientation;
+        const modelOrientation = model instanceof Mesh ? model.sideOrientation : meshOrientation;
+        const subMeshCount = Math.max(1, model.subMeshes.length);
+        for (let subMeshIndex = 0; subMeshIndex < subMeshCount; subMeshIndex++) {
+            const subMesh = model.subMeshes[subMeshIndex];
+            const material = subMesh?.getMaterial() ?? sourceMaterial;
+            // A shared default-material override changes rendering globally, not the stored geometry convention.
+            const materialOrientation = !this._useModelMaterial && material === this._scene.defaultMaterial ? this._modelDefaultMaterialSideOrientation : material.sideOrientation;
+            if ((materialOrientation ?? modelOrientation) !== targetOrientation) {
+                const start = subMesh?.indexStart ?? 0;
+                const end = subMesh ? start + subMesh.indexCount : indices.length;
+                for (let i = start; i < end; i += 3) {
+                    const second = indices[i + 1];
+                    indices[i + 1] = indices[i + 2];
+                    indices[i + 2] = second;
+                }
             }
         }
         return indices;
@@ -825,7 +841,8 @@ export class SolidParticleSystem implements IDisposable {
      * Adds some particles to the SPS from the model shape. Returns the shape id.
      * Please read the doc : https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/immutable_sps
      * @param mesh is any Mesh object that will be used as a model for the solid particles. If the mesh does not have vertex normals, it will turn on the recomputeNormals attribute.
-     * Only local geometry is copied: source transforms are not applied, and winding is adapted to the SPS face orientation.
+     * Only local geometry is copied: source transforms are not applied, and winding is normalized to the initial SPS face-orientation convention.
+     * Later changes to the SPS mesh or material orientation apply to the whole system, including newly added models.
      * @param nb (positive integer) the number of particles to be created from this model
      * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
      * {vertexFunction} is an optional javascript function to called for each vertex of each particle on SPS creation
