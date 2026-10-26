@@ -3056,18 +3056,23 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
         }
         const rigCurveNodes = rig.bones.filter((bone) => sampledModelIds.has(bone.modelId)).flatMap((bone) => boneCurves.get(bone.modelId) ?? []);
-        let times = collectAnimationSampleTimes(rigCurveNodes, fps, startTime, stopTime);
-        if (times.length === 0) {
+        const baseTimes = collectAnimationSampleTimes(rigCurveNodes, fps, startTime, stopTime);
+        if (baseTimes.length === 0) {
             return [];
         }
+        const refinedTimes = new Set(baseTimes);
         for (const boneData of rig.bones) {
             const md = modelIdToData.get(boneData.modelId);
             const cn = boneCurves.get(boneData.modelId) ?? [];
             if (!sampledModelIds.has(boneData.modelId) || !md || cn.length === 0) {
                 continue;
             }
-            times = FBXFileLoader._refineSampleTimes(times, (time) => this._sampleModelLocalMatrix(md, cn, time));
+            // Refine the original intervals for every bone so the depth limit applies to the whole rig.
+            for (const time of FBXFileLoader._refineSampleTimes(baseTimes, (time) => this._sampleModelLocalMatrix(md, cn, time))) {
+                refinedTimes.add(time);
+            }
         }
+        const times = Array.from(refinedTimes).sort((a, b) => a - b);
 
         const keysByBone = rig.bones.map(() => ({
             posKeys: [] as { frame: number; value: Vector3 }[],
@@ -3308,7 +3313,8 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /**
      * Baked keys are interpolated linearly by Babylon. Between two frames an FBX cubic segment can deviate from that
      * line, so sample times are refined (midpoints inserted, up to two levels) wherever the interpolated transform
-     * differs noticeably from the curve. Flat and linear segments stay at frame resolution.
+     * differs noticeably from the curve. Rotations are normalized so quaternion length error cannot trigger subdivision.
+     * Flat and linear segments stay at frame resolution.
      */
     private static _refineSampleTimes(times: number[], sample: (time: number) => Matrix, maxDepth = 2): number[] {
         const decompose = (time: number) => {
@@ -3316,6 +3322,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             const r = new Quaternion();
             const t = new Vector3();
             sample(time).decompose(s, r, t);
+            r.normalize();
             return { s, r, t };
         };
         const out: number[] = [];
@@ -3330,7 +3337,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             const dm = decompose(tm);
             const lerpT = Vector3.Lerp(d0.t, d1.t, 0.5);
             const lerpS = Vector3.Lerp(d0.s, d1.s, 0.5);
-            const slerpR = Quaternion.Slerp(d0.r, d1.r, 0.5);
+            const slerpR = Quaternion.Slerp(d0.r, d1.r, 0.5).normalize();
             const posErr = Vector3.Distance(lerpT, dm.t);
             const sclErr = Vector3.Distance(lerpS, dm.s);
             const dot = Math.min(1, Math.abs(Quaternion.Dot(slerpR, dm.r)));
