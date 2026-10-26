@@ -2593,6 +2593,19 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._platform.contextLost();
         this._rebuildingAfterContextLost = true;
 
+        // The draw contexts can still hold resources of the lost device (in WebGPU, the indirect draw buffer used for the instanced draws)
+        for (const drawWrappers of this._drawWrappers) {
+            if (!drawWrappers) {
+                continue;
+            }
+            for (const drawWrapper of drawWrappers) {
+                drawWrapper?._recreateDrawContext(this._engine);
+            }
+        }
+        for (const blendMode in this._customWrappers) {
+            this._customWrappers[blendMode]?._recreateDrawContext(this._engine);
+        }
+
         checkUpdateEffect();
     }
 
