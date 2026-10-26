@@ -2275,6 +2275,11 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._createVertexBuffers();
 
         this.resetDrawCache();
+
+        // The draw contexts can still hold resources of the lost device (in WebGPU, the indirect draw buffer used for the instanced draws)
+        for (const blendMode in this._customWrappers) {
+            this._customWrappers[blendMode]?._recreateDrawContext(this._engine);
+        }
     }
 
     private _shadersLoaded = false;
