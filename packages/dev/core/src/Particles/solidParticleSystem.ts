@@ -19,6 +19,8 @@ import { MultiMaterial } from "../Materials/multiMaterial.pure";
 import { type PickingInfo } from "../Collisions/pickingInfo";
 import { type PBRMaterial } from "../Materials/PBR/pbrMaterial";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
+import { type InstancedMesh } from "../Meshes/instancedMesh";
+import { Constants } from "../Engines/constants";
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces of this big mesh.
@@ -355,6 +357,7 @@ export class SolidParticleSystem implements IDisposable {
      * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
      * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
      * Thus the particles generated from `digest()` have their property `position` set yet.
+     * Source transforms are not applied, and winding is adapted to the SPS face orientation.
      * @param mesh ( Mesh ) is the mesh to be digested
      * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overridden by the parameter `number` if any
      * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
@@ -373,7 +376,7 @@ export class SolidParticleSystem implements IDisposable {
         let number: number = (options && options.number) || 0;
         let delta: number = (options && options.delta) || 0;
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
-        const meshInd = <IndicesArray>mesh.getIndices();
+        const meshInd = this._getModelIndices(mesh);
         const meshUV = <FloatArray>mesh.getVerticesData(this._getUVKind(mesh, options?.uvKind ?? 0));
         let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
@@ -800,10 +803,29 @@ export class SolidParticleSystem implements IDisposable {
         return rgba;
     }
 
+    private _getModelIndices(mesh: AbstractMesh): number[] {
+        const indices = Array.from(mesh.getIndices()!);
+        const model = mesh.isAnInstance ? (mesh as InstancedMesh).sourceMesh : mesh;
+        const meshOrientation =
+            this.mesh?.sideOrientation ?? (this._scene.useRightHandedSystem ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation);
+        const modelOrientation = mesh.material?.sideOrientation ?? (model instanceof Mesh ? model.sideOrientation : meshOrientation);
+        const material = this._useModelMaterial ? mesh.material : this.mesh?.material;
+        const targetOrientation = material?.sideOrientation ?? meshOrientation;
+        if (modelOrientation !== targetOrientation) {
+            for (let i = 0; i < indices.length; i += 3) {
+                const second = indices[i + 1];
+                indices[i + 1] = indices[i + 2];
+                indices[i + 2] = second;
+            }
+        }
+        return indices;
+    }
+
     /**
      * Adds some particles to the SPS from the model shape. Returns the shape id.
      * Please read the doc : https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/immutable_sps
      * @param mesh is any Mesh object that will be used as a model for the solid particles. If the mesh does not have vertex normals, it will turn on the recomputeNormals attribute.
+     * Only local geometry is copied: source transforms are not applied, and winding is adapted to the SPS face orientation.
      * @param nb (positive integer) the number of particles to be created from this model
      * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
      * {vertexFunction} is an optional javascript function to called for each vertex of each particle on SPS creation
@@ -815,7 +837,7 @@ export class SolidParticleSystem implements IDisposable {
      */
     public addShape(mesh: AbstractMesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any; storage?: [] }): number {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
-        const meshInd = <IndicesArray>mesh.getIndices();
+        const indices = this._getModelIndices(mesh);
         const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
         let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
@@ -823,7 +845,6 @@ export class SolidParticleSystem implements IDisposable {
         // Normalize vertex colors to RGBA (4 components) since _meshBuilder always reads 4 components per color.
         // Source meshes (e.g. from glTF) may provide RGB (3 components) vertex colors.
         meshCol = this._normalizeMeshVertexColors(mesh, meshPos, meshCol)!;
-        const indices = Array.from(meshInd);
         const shapeNormals = meshNor ? Array.from(meshNor) : [];
         const shapeColors = meshCol ? Array.from(meshCol) : [];
         const storage = options && options.storage ? options.storage : null;
@@ -845,7 +866,7 @@ export class SolidParticleSystem implements IDisposable {
 
         // particles
         for (let i = 0; i < nb; i++) {
-            this._insertNewParticle(this.nbParticles, i, modelShape, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, storage, options);
+            this._insertNewParticle(this.nbParticles, i, modelShape, shape, indices, meshUV, meshCol, meshNor, bbInfo, storage, options);
         }
         this._shapeCounter++;
         this._isNotBuilt = true; // buildMesh() call is now expected for setParticles() to work
