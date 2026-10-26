@@ -7,7 +7,15 @@ describe("Effect pipeline name", () => {
         const engine = new NullEngine();
         const effect = engine.createEffect(
             { vertexSource: "void main() {}", fragmentSource: "void main() {}" },
-            { attributes: [], uniformsNames: [], samplers: [], defines: "#define A\r\n#define B\n#define C" },
+            {
+                attributes: [],
+                uniformsNames: [],
+                samplers: [],
+                defines: "#define A\r\n#define B\n#define C",
+                fallbacks: null,
+                onCompiled: null,
+                onError: null,
+            },
             engine
         );
         await new Promise<void>((resolve) => effect.executeWhenCompiled(() => resolve()));
