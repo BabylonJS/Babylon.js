@@ -187,6 +187,85 @@ describe.each([
         expect(instrumentation.shaderCompilationTimeCounter.average).toBe(60);
     });
 
+    it("preserves the outer target when a before observer starts another compilation", () => {
+        const { engine, createProgram, complete, instrumentation } = createEngine();
+        const outer = new WebGLPipelineContext();
+        const nested = new WebGLPipelineContext();
+        let now = 10;
+        vi.spyOn(PrecisionDate, "Now", "get").mockImplementation(() => now);
+        instrumentation.captureShaderCompilationTime = false;
+        engine.onBeforeShaderCompilationObservable.add((_engine, state) => {
+            if (state.target === outer) {
+                now = 20;
+                createProgram(nested);
+                now = 30;
+                expect(state.target).toBe(outer);
+            }
+        });
+        instrumentation.captureShaderCompilationTime = true;
+        const targets: WebGLPipelineContext[] = [];
+        engine.onBeforeShaderCompilationObservable.add((_engine, state) => targets.push(state.target));
+
+        createProgram(outer);
+        expect(targets).toEqual([nested, outer]);
+        now = 50;
+        expect(complete(nested)).toBe(true);
+        expect(instrumentation.shaderCompilationTimeCounter.current).toBe(30);
+        now = 100;
+        expect(complete(outer)).toBe(true);
+        expect(instrumentation.shaderCompilationTimeCounter.current).toBe(70);
+        expect(instrumentation.shaderCompilationTimeCounter.count).toBe(2);
+        expect(instrumentation.shaderCompilationTimeCounter.total).toBe(100);
+    });
+
+    it("preserves the outer target when an after observer checks another completed pipeline", () => {
+        const { engine, createProgram, complete, instrumentation } = createEngine();
+        const outer = new WebGLPipelineContext();
+        const nested = new WebGLPipelineContext();
+        let now = 10;
+        vi.spyOn(PrecisionDate, "Now", "get").mockImplementation(() => now);
+        instrumentation.captureShaderCompilationTime = false;
+        engine.onAfterShaderCompilationObservable.add((_engine, state) => {
+            if (state.target === outer) {
+                now = 80;
+                expect(complete(nested)).toBe(true);
+                now = 90;
+                expect(state.target).toBe(outer);
+            }
+        });
+        instrumentation.captureShaderCompilationTime = true;
+        const targets: WebGLPipelineContext[] = [];
+        engine.onAfterShaderCompilationObservable.add((_engine, state) => targets.push(state.target));
+        createProgram(outer);
+        now = 20;
+        createProgram(nested);
+
+        now = 50;
+        expect(complete(outer)).toBe(true);
+        expect(targets).toEqual([nested, outer]);
+        expect(instrumentation.shaderCompilationTimeCounter.current).toBe(80);
+        expect(instrumentation.shaderCompilationTimeCounter.count).toBe(2);
+        expect(instrumentation.shaderCompilationTimeCounter.total).toBe(140);
+    });
+
+    it.each(["before", "after"])("restores the previous %s target when an observer throws", (notification) => {
+        const { engine, createProgram, complete } = createEngine();
+        const observable = notification === "before" ? engine.onBeforeShaderCompilationObservable : engine.onAfterShaderCompilationObservable;
+        const previousTarget = {};
+        observable._eventState.target = previousTarget;
+        observable.add(() => {
+            throw new Error("Observer failed");
+        });
+
+        if (notification === "before") {
+            expect(() => createProgram()).toThrow("Observer failed");
+        } else {
+            const pipelineContext = createProgram();
+            expect(() => complete(pipelineContext)).toThrow("Observer failed");
+        }
+        expect(observable._eventState.target).toBe(previousTarget);
+    });
+
     it("ignores compilations started before capture was enabled or during a previous capture", () => {
         const { createProgram, complete, instrumentation } = createEngine();
         const previousCapture = createProgram();
