@@ -937,15 +937,21 @@ export class SpriteRenderer {
             cache?.drawWrapperDepth._recreateDrawContext(this._engine);
         }
 
-        this._buffer._rebuild();
-
+        // Rebuild each backing buffer once: the vertex buffers are views of _buffer and _spriteBuffer, and VertexBuffer._rebuild() rebuilds its backing buffer
+        const buffers = new Set<Buffer>([this._buffer]);
         for (const key in this._vertexBuffers) {
-            const vertexBuffer = this._vertexBuffers[key];
-            vertexBuffer._rebuild();
+            buffers.add(this._vertexBuffers[key].getWrapperBuffer());
+        }
+        if (this._spriteBuffer) {
+            buffers.add(this._spriteBuffer);
+        }
+        if (this._previousBuffer) {
+            buffers.add(this._previousBuffer);
         }
 
-        this._spriteBuffer?._rebuild();
-        this._previousBuffer?._rebuild();
+        for (const buffer of buffers) {
+            buffer._rebuild();
+        }
     }
 
     /**

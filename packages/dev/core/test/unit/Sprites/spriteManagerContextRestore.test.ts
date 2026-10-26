@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Buffer, type VertexBuffer } from "core/Buffers/buffer";
 import { type IDrawContext } from "core/Engines/IDrawContext";
 import { NullEngine } from "core/Engines/nullEngine";
 import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
@@ -24,6 +25,7 @@ describe("SpriteManager across WebGPU restorations", () => {
     afterEach(() => {
         scene.dispose();
         engine.dispose();
+        vi.restoreAllMocks();
     });
 
     async function CreateSpriteManagerAsync(): Promise<{ manager: SpriteManager; renderer: SpriteRenderer }> {
@@ -66,6 +68,37 @@ describe("SpriteManager across WebGPU restorations", () => {
         webgpu.restore();
         ExpectOnCurrentDevice(base.drawContext);
         ExpectOnCurrentDevice(depth.drawContext);
+
+        manager.dispose();
+    });
+
+    it.each([
+        { instancing: true, label: "instanced (WebGPU)" },
+        { instancing: false, label: "not instanced" },
+    ])("rebuilds each backing buffer once per restoration, $label", async ({ instancing }) => {
+        engine.getCaps().instancedArrays = instancing;
+        const { manager, renderer } = await CreateSpriteManagerAsync();
+        const internals = renderer as any;
+        const mainBuffer: Buffer = internals._buffer;
+        const spriteBuffer: Buffer | null = internals._spriteBuffer;
+        expect(!!spriteBuffer).toBe(instancing);
+
+        const rebuild = vi.spyOn(Buffer.prototype, "_rebuild");
+        const createDynamicVertexBuffer = vi.spyOn(engine, "createDynamicVertexBuffer");
+        const createVertexBuffer = vi.spyOn(engine, "createVertexBuffer");
+
+        webgpu.restore();
+
+        // One allocation for the main (dynamic) buffer, and one for the static sprite corner buffer when instanced
+        expect(rebuild.mock.contexts.filter((buffer) => buffer === mainBuffer)).toHaveLength(1);
+        expect(rebuild.mock.contexts.filter((buffer) => buffer === spriteBuffer)).toHaveLength(instancing ? 1 : 0);
+        expect(createDynamicVertexBuffer).toHaveBeenCalledTimes(1);
+        expect(createVertexBuffer).toHaveBeenCalledTimes(instancing ? 1 : 0);
+        // and every vertex buffer reads the rebuilt data buffers
+        for (const key in internals._vertexBuffers) {
+            const vertexBuffer: VertexBuffer = internals._vertexBuffers[key];
+            expect(vertexBuffer.getBuffer()).toBe(vertexBuffer.getWrapperBuffer().getBuffer());
+        }
 
         manager.dispose();
     });
