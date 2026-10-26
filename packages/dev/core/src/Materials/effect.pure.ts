@@ -336,7 +336,8 @@ export class Effect implements IDisposable {
     ) {
         this.name = baseName;
         this._key = key;
-        const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
+        // split and join make a flat string: a global replace makes a rope of pieces, which the pipeline context keeps
+        const pipelineName = this._key.replace(/\r/g, "").split("\n").join("|");
         let cachedPipeline: IPipelineContext | undefined = undefined;
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
@@ -844,7 +845,7 @@ export class Effect implements IDisposable {
                     ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError),
                     defines,
                     transformFeedbackVaryings: this._transformFeedbackVaryings,
-                    name: this._key.replace(/\r/g, "").replace(/\n/g, "|"),
+                    name: this._key.replace(/\r/g, "").split("\n").join("|"),
                     createAsRaw: overrides,
                     disableParallelCompilation: this._disableParallelShaderCompilation,
                     shaderProcessingContext: this._processingContext,
