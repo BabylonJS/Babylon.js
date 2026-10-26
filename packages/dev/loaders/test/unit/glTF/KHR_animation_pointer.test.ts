@@ -9,7 +9,7 @@ import { AnimationGroup } from "core/Animations/animationGroup";
 import { Animation } from "core/Animations/animation";
 import { Texture } from "core/Materials/Textures/texture";
 import { Material } from "core/Materials/material";
-import { type IMaterial } from "loaders/glTF/2.0/glTFLoaderInterfaces";
+import { type IGLTF as ILoadedGLTF, type IMaterial } from "loaders/glTF/2.0/glTFLoaderInterfaces";
 import { _GetMaterialTexture, GetMappingForKey, GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { _RegisterKHRAnimationPointerData } from "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data.pure";
 import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialLoadingAdapter";
@@ -53,7 +53,7 @@ function prepareTexture(material: Material, path: string, scene: Scene): void {
 function buildAnimatedMaterialsGltf(
     pointer: string,
     values: number[],
-    type: "SCALAR" | "VEC2" | "VEC4",
+    type: "SCALAR" | "VEC2" | "VEC3" | "VEC4",
     materialExtensions: Record<string, unknown> = {},
     cubicSpline = false
 ): string {
@@ -432,17 +432,24 @@ describe("KHR_animation_pointer material implementations", () => {
         expect(render.mock.contexts.some((texture) => normalPasses.includes(texture))).toBe(false);
     });
 
-    it.each(["color", "weight"].flatMap((property) => [false, true].flatMap((textured) => [false, true].map((diffuse) => ({ property, textured, diffuse })))))(
-        "updates converted volumetric surface $property with textures=$textured and diffuse transmission=$diffuse",
-        async ({ property, textured, diffuse }) => {
+    it.each(
+        ["color", "weight"].flatMap((property) =>
+            [false, true].flatMap((textured) =>
+                [false, true].flatMap((diffuse) => (property === "color" ? [false, true] : [false]).map((initiallyWhite) => ({ property, textured, diffuse, initiallyWhite })))
+            )
+        )
+    )(
+        "updates converted volumetric surface $property with textures=$textured, diffuse transmission=$diffuse and initially white=$initiallyWhite",
+        async ({ property, textured, diffuse, initiallyWhite }) => {
             vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
                 callback(this);
             });
             const render = vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
             const setColor4 = vi.spyOn(ProceduralTexture.prototype, "setColor4");
             const pointer = property === "color" ? "pbrMetallicRoughness/baseColorFactor" : "extensions/KHR_materials_transmission/transmissionFactor";
+            const initialColor = initiallyWhite ? [1, 1, 1, 1] : [0.8, 0.6, 0.4, 1];
             const gltf = JSON.parse(
-                buildAnimatedMaterialsGltf(pointer, property === "color" ? [0.8, 0.6, 0.4, 1, 0.2, 0.4, 0.6, 1] : [0.5, 1], property === "color" ? "VEC4" : "SCALAR", {
+                buildAnimatedMaterialsGltf(pointer, property === "color" ? [...initialColor, 0.2, 0.4, 0.6, 1] : [0.5, 1], property === "color" ? "VEC4" : "SCALAR", {
                     KHR_materials_clearcoat: { clearcoatFactor: 0.5 },
                     KHR_materials_transmission: { transmissionFactor: 0.5 },
                     KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] },
@@ -450,7 +457,7 @@ describe("KHR_animation_pointer material implementations", () => {
                 })
             ) as IGLTF;
             for (const material of gltf.materials!) {
-                material.pbrMetallicRoughness!.baseColorFactor = [0.8, 0.6, 0.4, 1];
+                material.pbrMetallicRoughness!.baseColorFactor = initialColor;
                 if (!textured) {
                     delete material.pbrMetallicRoughness!.baseColorTexture;
                 }
@@ -503,6 +510,100 @@ describe("KHR_animation_pointer material implementations", () => {
             setColor4.mockClear();
             accessor.info.set!(property === "color" ? new Color4(0.3, 0.2, 0.7, 1) : 0.25, accessor.object);
             check();
+        }
+    );
+
+    it.each(
+        [false, true].flatMap((thin) =>
+            [false, true].flatMap((textured) => [false, true].flatMap((initiallyWhite) => [false, true].map((transmission) => ({ thin, textured, initiallyWhite, transmission }))))
+        )
+    )(
+        "retains diffuse transmission color with thin=$thin, textures=$textured, initially white=$initiallyWhite and specular transmission=$transmission",
+        async ({ thin, textured, initiallyWhite, transmission }) => {
+            vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
+                callback(this);
+            });
+            const render = vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
+            const setColor4 = vi.spyOn(ProceduralTexture.prototype, "setColor4");
+            const initial = initiallyWhite ? [1, 1, 1] : [0.8, 0.6, 0.4];
+            const pointer = "extensions/KHR_materials_diffuse_transmission/diffuseTransmissionColorFactor";
+            const gltf = JSON.parse(
+                buildAnimatedMaterialsGltf(pointer, [...initial, 0.2, 0.4, 0.6], "VEC3", {
+                    KHR_materials_diffuse_transmission: {
+                        diffuseTransmissionFactor: 0.5,
+                        diffuseTransmissionColorFactor: initial,
+                        ...(textured ? { diffuseTransmissionColorTexture: { index: 0 } } : {}),
+                    },
+                    ...(!thin ? { KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] } } : {}),
+                    ...(transmission ? { KHR_materials_transmission: { transmissionFactor: 0.5 } } : {}),
+                })
+            ) as IGLTF;
+            for (const material of gltf.materials!) {
+                material.pbrMetallicRoughness!.baseColorFactor = [0.8, 0.6, 0.4, 1];
+                delete material.pbrMetallicRoughness!.baseColorTexture;
+                delete material.pbrMetallicRoughness!.metallicRoughnessTexture;
+            }
+            let parsed: ILoadedGLTF | undefined;
+            let completion: Promise<void> | undefined;
+            const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+                if (plugin instanceof GLTFFileLoader) {
+                    completion = plugin.whenCompleteAsync();
+                    plugin.onParsedObservable.addOnce((data) => {
+                        parsed = data.json as ILoadedGLTF;
+                    });
+                }
+            });
+            let result;
+            try {
+                result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+                await completion;
+            } finally {
+                SceneLoader.OnPluginActivatedObservable.remove(observer);
+            }
+            const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+            const accessor = GetPathToObjectConverter(parsed!).convert(`/materials/0/${pointer}`);
+            const group = result.animationGroups[0].pause();
+            const initialRead = accessor.info.get!(accessor.object) as Color3;
+            expect(initialRead.r).toBeCloseTo(initial[0]);
+            expect(initialRead.g).toBeCloseTo(initial[1]);
+            expect(initialRead.b).toBeCloseTo(initial[2]);
+            const scatterColor = new Color3(0.1, 0.2, 0.3);
+            if (!thin) {
+                material.subsurfaceColor = scatterColor;
+            }
+            const check = (expected: Color3) => {
+                scene.onBeforeRenderObservable.notifyObservers(scene);
+                const actual = accessor.info.get!(accessor.object) as Color3;
+                expect(actual.r).toBeCloseTo(expected.r);
+                expect(actual.g).toBeCloseTo(expected.g);
+                expect(actual.b).toBeCloseTo(expected.b);
+                if (thin) {
+                    expect(material.subsurfaceColor.asArray()).toEqual(actual.asArray());
+                } else {
+                    expect(material.subsurfaceColor).toBe(scatterColor);
+                    if (textured) {
+                        expect(render.mock.contexts).toContain(material.coatColorTexture);
+                        expect(
+                            setColor4.mock.calls.some(([name, value], i) => {
+                                const texture = setColor4.mock.contexts[i];
+                                return name === "factorB" && texture instanceof ProceduralTexture && texture.name === "lerpSurfaceColor" && Math.abs(value.r - expected.r) < 1e-6;
+                            })
+                        ).toBe(true);
+                    } else {
+                        expect(material.coatColor.r).toBeCloseTo((0.5 + 0.5 * expected.r) * (transmission ? 0.9 : 1));
+                        expect(material.coatColor.g).toBeCloseTo((0.5 + 0.5 * expected.g) * (transmission ? 0.8 : 1));
+                    }
+                }
+            };
+            render.mockClear();
+            setColor4.mockClear();
+            group.goToFrame(30);
+            check(new Color3((initial[0] + 0.2) / 2, (initial[1] + 0.4) / 2, (initial[2] + 0.6) / 2));
+            group.stop();
+            render.mockClear();
+            setColor4.mockClear();
+            accessor.info.set!(new Color3(0.3, 0.2, 0.7), accessor.object);
+            check(new Color3(0.3, 0.2, 0.7));
         }
     );
 
@@ -676,6 +777,10 @@ describe("KHR_animation_pointer material implementations", () => {
         },
         { name: "zero transmission", transmissionFactor: 0, volume: undefined, derivedTint: false },
     ])("preserves converted transmission tint during $name playback", async ({ transmissionFactor, volume, derivedTint }) => {
+        vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
+            callback(this);
+        });
+        vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
         const gltf = JSON.parse(
             buildAnimatedMaterialsGltf("pbrMetallicRoughness/baseColorFactor", [1, 1, 1, 1, 1, 0, 0, 1], "VEC4", {
                 KHR_materials_transmission: { transmissionFactor },
@@ -685,7 +790,19 @@ describe("KHR_animation_pointer material implementations", () => {
         for (const material of gltf.materials!) {
             delete material.pbrMetallicRoughness!.baseColorTexture;
         }
-        const result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+        let completion: Promise<void> | undefined;
+        const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                completion = plugin.whenCompleteAsync();
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+            await completion;
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(observer);
+        }
         const retro = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
         const ordinary = result.meshes.find((mesh) => mesh.material?.name === "ordinary")!.material as PBRMaterial;
         expect(retro).toBeInstanceOf(OpenPBRMaterial);

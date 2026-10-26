@@ -942,21 +942,22 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._material.subsurfaceColorTexture = value;
     }
 
-    private _diffuseTransmissionTint: Color3 = Color3.White();
+    private _hasDiffuseTransmissionTint = false;
     private _diffuseTransmissionTintTexture: Nullable<BaseTexture> = null;
 
     /**
      * Sets the diffuse transmission tint of the material
      */
     public set diffuseTransmissionTint(value: Color3) {
-        this._diffuseTransmissionTint = value;
+        this._hasDiffuseTransmissionTint = true;
+        _GetGLTFMaterialCoatState(this._material).retainDiffuseTransmissionTint(value);
     }
 
     /**
      * Gets the diffuse transmission tint of the material
      */
     public get diffuseTransmissionTint(): Color3 {
-        return this._diffuseTransmissionTint;
+        return _GetGLTFMaterialCoatState(this._material).diffuseTransmissionTint;
     }
 
     /**
@@ -1282,10 +1283,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
-        if ((this._diffuseTransmissionTint && !this._diffuseTransmissionTint.equals(Color3.White())) || this._diffuseTransmissionTintTexture) {
+        if (this._hasDiffuseTransmissionTint || this._diffuseTransmissionTintTexture) {
             if (this._material.geometryThinWalled) {
                 // Use the subsurface slab for surface tinting.
-                this.subsurfaceColor = this._diffuseTransmissionTint;
+                this.subsurfaceColor = this.diffuseTransmissionTint;
                 this.subsurfaceColorTexture = this._diffuseTransmissionTintTexture;
             } else {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
@@ -1294,7 +1295,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                     () => this.subsurfaceWeight,
                     this.subsurfaceWeightTexture,
                     TextureChannel.A,
-                    () => this._diffuseTransmissionTint,
+                    () => this.diffuseTransmissionTint,
                     this._diffuseTransmissionTintTexture,
                     true
                 );
@@ -1309,7 +1310,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 // If the material is thin-walled or has no attenuation depth, we can use the base color as the transmission color directly.
                 this._material.transmissionColor = this._material.baseColor;
                 this._material.transmissionColorTexture = this._material.baseColorTexture;
-            } else if (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null) {
+            } else {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
                 await this.copySurfaceToCoatAsync(
                     loader,

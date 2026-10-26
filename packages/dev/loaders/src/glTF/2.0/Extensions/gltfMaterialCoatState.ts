@@ -2,10 +2,11 @@ import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { type Animation } from "core/Animations/animation";
 import { Observable } from "core/Misc/observable.pure";
+import { type Color3 } from "core/Maths/math.color.pure";
 
 const CoatStates = new WeakMap<OpenPBRMaterial, GLTFMaterialCoatState>();
 
-/** Authored coat scalars remain animation targets when conversion replaces the rendered coat. @internal */
+/** Authored coat scalars and surface tint remain animation targets after coat conversion. @internal */
 export class GLTFMaterialCoatState implements IAnimatable {
     /** Animation target metadata. */
     public animations: Animation[] = [];
@@ -15,6 +16,7 @@ export class GLTFMaterialCoatState implements IAnimatable {
     public converted = false;
     private _weight: number;
     private _roughness: number;
+    private _diffuseTransmissionTint?: Color3;
 
     /**
      * Creates a source binding for one material.
@@ -56,6 +58,30 @@ export class GLTFMaterialCoatState implements IAnimatable {
             this._material.coatRoughness = value;
         }
         this.onChangedObservable.notifyObservers();
+    }
+
+    /** Authored diffuse-transmission surface tint, separate from volumetric scattering color. */
+    public get diffuseTransmissionTint(): Color3 {
+        return this._diffuseTransmissionTint ?? this._material.subsurfaceColor;
+    }
+
+    public set diffuseTransmissionTint(value: Color3) {
+        if (this._diffuseTransmissionTint) {
+            this._diffuseTransmissionTint = value;
+            if (this._material.geometryThinWalled) {
+                this._material.subsurfaceColor = value;
+            }
+        } else {
+            this._material.subsurfaceColor = value;
+        }
+    }
+
+    /**
+     * Retains the glTF surface tint before finalization chooses its rendered layer.
+     * @param color The authored diffuse-transmission color.
+     */
+    public retainDiffuseTransmissionTint(color: Color3): void {
+        this._diffuseTransmissionTint = color;
     }
 
     /** Captures the source values before converting the rendered coat. */

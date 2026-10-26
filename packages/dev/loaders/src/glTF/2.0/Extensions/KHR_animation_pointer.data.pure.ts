@@ -123,10 +123,15 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                     continue;
                 }
                 const openPbrMaterial = material as OpenPBRMaterial;
-                if (this.name === "clearCoat.intensity" || this.name === "clearCoat.roughness") {
+                if (this.name === "clearCoat.intensity" || this.name === "clearCoat.roughness" || this.name === "subSurface.translucencyColor") {
                     babylonAnimations.push({
                         babylonAnimatable: _GetGLTFMaterialCoatState(openPbrMaterial),
-                        babylonAnimation: this._buildAnimation(name, fps, keys, OpenPBRPropertyNames[this.name]),
+                        babylonAnimation: this._buildAnimation(
+                            name,
+                            fps,
+                            keys,
+                            this.name === "subSurface.translucencyColor" ? "diffuseTransmissionTint" : OpenPBRPropertyNames[this.name]
+                        ),
                     });
                     continue;
                 }

@@ -1220,10 +1220,11 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 diffuseTransmissionColorFactor: {
                     type: "Color3",
-                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? mat.subsurfaceColor : mat.subSurface.translucencyColor)),
+                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? _GetGLTFMaterialCoatState(mat).diffuseTransmissionTint : mat.subSurface.translucencyColor)),
                     getTarget: GetMaterial,
                     set: /*#__PURE__*/ _CreateMaterialSetter(
-                        (value, mat) => value && (_IsOpenPBRMaterial(mat) ? mat.subsurfaceColor : mat.subSurface.translucencyColor)?.copyFrom(value)
+                        (value, mat) =>
+                            value && (_IsOpenPBRMaterial(mat) ? _GetGLTFMaterialCoatState(mat).diffuseTransmissionTint : mat.subSurface.translucencyColor)?.copyFrom(value)
                     ),
                 },
                 diffuseTransmissionColorTexture: {
