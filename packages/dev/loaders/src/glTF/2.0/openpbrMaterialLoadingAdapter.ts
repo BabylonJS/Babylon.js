@@ -19,6 +19,7 @@ import {
     ChannelMask,
     ExtractMaxChannelAsync,
     _MarkTextureAsDynamic,
+    _ScaleNormalTextureAsync,
     type ITextureProcessOperand,
 } from "core/Materials/Textures/textureProcessor";
 
@@ -1290,10 +1291,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
                 await this.copySurfaceToCoatAsync(
                     loader,
-                    this.subsurfaceWeight,
+                    () => this.subsurfaceWeight,
                     this.subsurfaceWeightTexture,
                     TextureChannel.A,
-                    this._diffuseTransmissionTint,
+                    () => this._diffuseTransmissionTint,
                     this._diffuseTransmissionTintTexture,
                     true
                 );
@@ -1310,7 +1311,15 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 this._material.transmissionColorTexture = this._material.baseColorTexture;
             } else if (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null) {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
-                await this.copySurfaceToCoatAsync(loader, this.transmissionWeight, this.transmissionWeightTexture, TextureChannel.R, this.baseColor, this.baseColorTexture, false);
+                await this.copySurfaceToCoatAsync(
+                    loader,
+                    () => this.transmissionWeight,
+                    this.transmissionWeightTexture,
+                    TextureChannel.R,
+                    () => this.baseColor,
+                    this.baseColorTexture,
+                    false
+                );
                 if (loader._disposed) {
                     return;
                 }
@@ -1407,10 +1416,8 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 onChangedObservable.notifyObservers();
             }
         });
-        // Scale encoded tangent-space X/Y about 0.5 without changing the normal's Z component.
-        return await LerpTexturesAsync(
+        return await _ScaleNormalTextureAsync(
             "scaledNormal (" + texture.name + ")",
-            neutral,
             CreateTextureWithFactorOperand(texture, new Color4(1, 1, 1, 1)),
             {
                 texture: null,
@@ -1427,10 +1434,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     private async copySurfaceToCoatAsync(
         loader: GLTFLoader,
-        weight: number,
+        getWeight: () => number,
         weightTexture: Nullable<BaseTexture>,
         weightTextureChannel: TextureChannel,
-        color: Color3,
+        getColor: () => Color3,
         colorTexture: Nullable<BaseTexture>,
         diffuseTransmission: boolean = false
     ): Promise<void> {
@@ -1453,13 +1460,28 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         if (firstConversion) {
             source.retain();
         }
-        const createOperand = (texture: Nullable<BaseTexture>, getFactor: () => Color4, channel = TextureChannel.RGBA, colorSpace = TextureColorSpace.Linear) => {
-            const factor = getFactor();
+        const createOperand = (
+            texture: Nullable<BaseTexture>,
+            readFactor: (factor: Color4) => void,
+            channel = TextureChannel.RGBA,
+            colorSpace = TextureColorSpace.Linear,
+            poll = false
+        ) => {
+            const factor = new Color4();
+            const nextFactor = new Color4();
+            readFactor(factor);
             const onChangedObservable = new Observable<void>();
-            const observer = source.onChangedObservable.add(() => {
-                factor.copyFrom(getFactor());
-                onChangedObservable.notifyObservers();
-            });
+            const update = () => {
+                readFactor(nextFactor);
+                if (!factor.equals(nextFactor)) {
+                    factor.copyFrom(nextFactor);
+                    onChangedObservable.notifyObservers();
+                }
+            };
+            const scene = this._material.getScene();
+            const observer = poll ? null : source.onChangedObservable.add(update);
+            // Surface factors have no property observable and may be replaced by animation or pointer writes.
+            const frameObserver = poll ? scene.onBeforeRenderObservable.add(update) : null;
             return {
                 texture,
                 factor,
@@ -1468,6 +1490,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 onChangedObservable,
                 dispose: () => {
                     source.onChangedObservable.remove(observer);
+                    scene.onBeforeRenderObservable.remove(frameObserver);
                     onChangedObservable.clear();
                 },
             };
@@ -1477,17 +1500,27 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             result.onChangedObservable?.add(apply);
             this._material.onDisposeObservable.addOnce(() => result.dispose?.());
         };
-        const coatWeight = () => {
+        const coatWeight = (factor: Color4) => {
             const value = firstConversion ? source.coatWeight : origCoatWeight;
-            return new Color4(value, value, value, value);
+            factor.set(value, value, value, value);
         };
-        const coatRoughness = () => {
+        const coatRoughness = (factor: Color4) => {
             const value = source.coatRoughness;
-            return new Color4(value, value, value, 1);
+            factor.set(value, value, value, 1);
         };
         const origCoatIor = this.coatIor;
         const origCoatDarkening = this.coatDarkening;
-        const weightCol4 = new Color4(weight, weight, weight, weight);
+        const surfaceWeight = () =>
+            createOperand(
+                weightTexture,
+                (factor) => {
+                    const value = getWeight();
+                    factor.set(value, value, value, value);
+                },
+                weightTextureChannel,
+                TextureColorSpace.Linear,
+                true
+            );
 
         this.coatWeightTexture = null;
         this.coatWeight = 1.0;
@@ -1506,8 +1539,17 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             LerpTexturesAsync(
                 "lerpSurfaceColor",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
-                CreateTextureWithFactorOperand(colorTexture, color.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
-                CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
+                createOperand(
+                    colorTexture,
+                    (factor) => {
+                        const color = getColor();
+                        factor.set(color.r, color.g, color.b, 1);
+                    },
+                    TextureChannel.RGBA,
+                    TextureColorSpace.SRGB,
+                    true
+                ),
+                surfaceWeight(),
                 this._material.getScene(),
                 TextureColorSpace.SRGB
             ),
@@ -1622,15 +1664,17 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                     TextureChannel.G
                 ),
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1.0), TextureChannel.R),
-                CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
+                surfaceWeight(),
                 this._material.getScene()
             );
             if (loader._disposed) {
-                newSpecularRoughness.texture?.dispose();
+                newSpecularRoughness.dispose?.();
                 return;
             }
-            this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
-            this.specularRoughnessTexture = newSpecularRoughness.texture;
+            bindResult(newSpecularRoughness, () => {
+                this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
+                this.specularRoughnessTexture = newSpecularRoughness.texture;
+            });
         }
 
         if (origCoatNormalTexture || this.geometryNormalTexture) {

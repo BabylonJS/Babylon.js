@@ -1,5 +1,5 @@
 // Texture processing fragment shader
-// Supports multiply, max, lerp, and invert operations with texture/constant/combined operands.
+// Supports multiply, max, lerp, invert, channel maximum, and normal scaling with texture/constant/combined operands.
 //
 // Defines:
 //   OPERAND_A_TEXTURE      - operand A has a texture
@@ -23,6 +23,7 @@
 //   INVERT_B               - invert the blue channel (used with OP_INVERT)
 //   INVERT_A               - invert the alpha channel (used with OP_INVERT)
 //   OP_CHANNEL_MAX         - unary: broadcast max(r,g,b[,a]) of operand A to all output channels
+//   OP_NORMAL_SCALE        - decode A normal, scale X/Y by B.r, normalize and re-encode
 //   CHANNEL_MAX_INCLUDE_ALPHA - include alpha in the max computation and broadcast to all four channels
 //   LERP_T_TEXTURE         - t operand has a texture
 //   LERP_T_FACTOR          - t operand has a constant vec4 factor (combined with texture when both are set)
@@ -129,7 +130,10 @@ void main() {
     #endif
 
     // Apply operation
-    #ifdef OP_CHANNEL_MAX
+    #ifdef OP_NORMAL_SCALE
+    vec3 normal = (a.rgb * 2.0 - 1.0) * vec3(b.r, b.r, 1.0);
+    vec4 result = vec4(normal / max(length(normal), 1e-8) * 0.5 + 0.5, a.a);
+    #elif defined(OP_CHANNEL_MAX)
     float _cmax = max(max(a.r, a.g), a.b);
     #ifdef CHANNEL_MAX_INCLUDE_ALPHA
     _cmax = max(_cmax, a.a);

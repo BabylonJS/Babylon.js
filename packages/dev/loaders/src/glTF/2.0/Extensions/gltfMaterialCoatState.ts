@@ -32,6 +32,9 @@ export class GLTFMaterialCoatState implements IAnimatable {
     }
 
     public set coatWeight(value: number) {
+        if (value === this.coatWeight) {
+            return;
+        }
         this._weight = value;
         if (!this.converted) {
             this._material.coatWeight = value;
@@ -45,6 +48,9 @@ export class GLTFMaterialCoatState implements IAnimatable {
     }
 
     public set coatRoughness(value: number) {
+        if (value === this.coatRoughness) {
+            return;
+        }
         this._roughness = value;
         if (!this.converted) {
             this._material.coatRoughness = value;

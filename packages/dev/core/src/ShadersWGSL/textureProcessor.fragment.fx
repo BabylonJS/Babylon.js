@@ -1,5 +1,5 @@
 // Texture processing fragment shader (WGSL)
-// Supports multiply, max, lerp, and invert operations with texture/constant/combined operands.
+// Supports multiply, max, lerp, invert, channel maximum, and normal scaling with texture/constant/combined operands.
 // See GLSL counterpart for define documentation (OPERAND_A/B_SRGB, OPERAND_A/B_CHANNEL_R/G/B/A, LERP_T_SRGB, LERP_T_CHANNEL_R/G/B/A, OUTPUT_SRGB, OP_INVERT, and INVERT_R/G/B/A also apply).
 
 #ifdef OPERAND_A_TEXTURE
@@ -94,7 +94,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     // Apply operation
-    #ifdef OP_CHANNEL_MAX
+    #ifdef OP_NORMAL_SCALE
+    let normal: vec3f = (a.rgb * 2.0 - vec3f(1.0)) * vec3f(b.r, b.r, 1.0);
+    var result: vec4f = vec4f(normal / max(length(normal), 1e-8) * 0.5 + vec3f(0.5), a.a);
+    #elif defined(OP_CHANNEL_MAX)
     var _cmax: f32 = max(max(a.r, a.g), a.b);
     #ifdef CHANNEL_MAX_INCLUDE_ALPHA
     _cmax = max(_cmax, a.a);

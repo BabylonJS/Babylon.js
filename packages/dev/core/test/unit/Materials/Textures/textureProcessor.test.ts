@@ -35,6 +35,7 @@ import {
     TextureChannel,
     TextureColorSpace,
     _MarkTextureAsDynamic,
+    _ScaleNormalTextureAsync,
     type ITextureProcessOperand,
 } from "core/Materials/Textures/textureProcessor";
 
@@ -232,6 +233,55 @@ function makeFakeTexture(opts: FakeTextureOpts = {}): ITextureProcessOperand["te
 describe("dynamic texture processing", () => {
     beforeEach(() => {
         _capturedPTs.length = 0;
+    });
+
+    it.each([0, 0.5, 2, 4])("normalizes encoded normals before output at strength %s", async (strength) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const onChangedObservable = new Observable<void>();
+        const scale = { texture: null, factor: new Color4(strength, strength, 1, 1), onChangedObservable };
+        try {
+            const result = await _ScaleNormalTextureAsync("normal", CreateFactorOperand(new Color4(0.8, 0.5, 0.9, 1)), scale, scene);
+            const normal = [0.6 * strength, 0, 0.8];
+            const length = Math.hypot(...normal);
+            expect(result.factor!.r).toBeCloseTo(0.5 + (normal[0] / length) * 0.5);
+            expect(result.factor!.g).toBe(0.5);
+            expect(result.factor!.b).toBeCloseTo(0.5 + (normal[2] / length) * 0.5);
+            scale.factor.r = 0;
+            onChangedObservable.notifyObservers();
+            expect(result.factor!.asArray()).toEqual([0.5, 0.5, 1, 1]);
+            result.dispose!();
+            await vi.waitFor(() => expect(onChangedObservable.hasObservers()).toBe(false));
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("scales dynamic normal textures without clipping intermediates and releases the strength binding", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        const changes = new Observable<void>();
+        const scale = { texture: null, factor: new Color4(2, 2, 1, 1), onChangedObservable: changes, dispose: vi.fn() };
+        try {
+            const result = await _ScaleNormalTextureAsync("normal", { texture }, scale, scene);
+            const pt = _capturedPTs[0];
+            expect(pt.getDefines()).toContain("OP_NORMAL_SCALE");
+            expect(pt.render).toHaveBeenCalledTimes(1);
+            scale.factor.r = 4;
+            changes.notifyObservers();
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            result.dispose!();
+            expect(scale.dispose).toHaveBeenCalledOnce();
+            await vi.waitFor(() => expect(changes.hasObservers()).toBe(false));
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
     });
 
     it("propagates factor changes through constant and textured results and releases subscriptions", async () => {

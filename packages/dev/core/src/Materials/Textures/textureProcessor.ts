@@ -891,6 +891,60 @@ export async function LerpTexturesAsync(
 }
 
 /**
+ * Scales tangent-space normal X/Y, normalizes, and re-encodes before writing a bounded texture.
+ * @param name - Name of the processed texture
+ * @param input - Encoded normal operand
+ * @param scale - Strength operand, read from its red channel
+ * @param scene - Scene owning the processed texture
+ * @returns The normalized encoded normal, retaining dynamic inputs until disposal
+ * @internal
+ */
+export async function _ScaleNormalTextureAsync(name: string, input: ITextureProcessOperand, scale: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
+    if (!input.texture && !scale.texture) {
+        return _FoldConstants([input, scale], () => {
+            const normal = _EvalConstant(input);
+            const strength = _EvalConstant(scale).r;
+            const x = (normal.r * 2 - 1) * strength;
+            const y = (normal.g * 2 - 1) * strength;
+            const z = normal.b * 2 - 1;
+            const length = Math.max(Math.hypot(x, y, z), 1e-8);
+            return new Color4((x / length) * 0.5 + 0.5, (y / length) * 0.5 + 0.5, (z / length) * 0.5 + 0.5, normal.a);
+        });
+    }
+    const operands = [input, scale];
+    const textures = operands.flatMap((operand) => (operand.texture ? [operand.texture] : []));
+    const dynamic = _HasDynamicInputs(textures) || !!(input.onChangedObservable || scale.onChangedObservable);
+    const canPropagate = !dynamic && _AllTransformsMatch(textures);
+    const bakeTransform = !canPropagate;
+    const pt = _CreateProcessorTexture(
+        name,
+        ["OP_NORMAL_SCALE", ..._BuildOperandDefines(input, "A", bakeTransform, dynamic), ..._BuildOperandDefines(scale, "B", bakeTransform, dynamic)],
+        _ResolveOutputSize(operands),
+        scene
+    );
+    const updateUniforms = () => {
+        _SetOperandUniforms(pt, input, "textureA", "factorA", bakeTransform, dynamic);
+        _SetOperandUniforms(pt, scale, "textureB", "factorB", bakeTransform, dynamic);
+    };
+    updateUniforms();
+    try {
+        await _RenderAsync(pt);
+    } catch (error) {
+        input.dispose?.();
+        scale.dispose?.();
+        throw error;
+    }
+    if (dynamic) {
+        _TrackDynamicInputs(pt, operands, updateUniforms);
+    } else {
+        input.dispose?.();
+        scale.dispose?.();
+    }
+    _CopyTextureMetadata(textures[0], pt, canPropagate);
+    return { texture: pt, dispose: () => pt.dispose() };
+}
+
+/**
  * Invert selected channels of a texture operand: `result[ch] = 1 - input[ch]`.
  *
  * The `channels` bitmask selects which channels are inverted; unselected channels pass through
