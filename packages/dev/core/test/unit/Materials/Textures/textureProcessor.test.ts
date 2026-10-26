@@ -234,6 +234,34 @@ describe("dynamic texture processing", () => {
         _capturedPTs.length = 0;
     });
 
+    it("propagates factor changes through constant and textured results and releases subscriptions", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        const onChangedObservable = new Observable<void>();
+        const weight = CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 0.5));
+        weight.onChangedObservable = onChangedObservable;
+        try {
+            const folded = await LerpTexturesAsync("constant", CreateFactorOperand(new Color4(0, 0, 0, 0)), CreateFactorOperand(new Color4(1, 1, 1, 1)), weight, scene);
+            const output = await MultiplyTexturesAsync("textured", { texture }, folded, scene);
+            const pt = _capturedPTs.find((candidate) => candidate.name === "textured")!;
+            expect(folded.factor!.r).toBe(0.5);
+            weight.factor!.set(0.25, 0.25, 0.25, 0.25);
+            onChangedObservable.notifyObservers();
+            expect(folded.factor!.r).toBe(0.25);
+            expect(pt.render).toHaveBeenCalledTimes(1);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            output.dispose!();
+            await vi.waitFor(() => expect(onChangedObservable.hasObservers()).toBe(false));
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
     it.each(["animation", "runtime"])("updates %s inputs only when changed and retains intermediates until output disposal", async (mode) => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

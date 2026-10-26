@@ -7,12 +7,14 @@ import { type ICamera, type IEXTLightsArea_Light, type IKHRLightsPunctual_Light,
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationPropertyInfo, RegisterGLTFLoaderAnimation } from "../glTFLoaderAnimation.pure";
 import { Color3 } from "core/Maths/math.color.pure";
-import { SetInterpolationForKey } from "./objectModelMapping";
+import { _GetMaterialTexture, SetInterpolationForKey } from "./objectModelMapping";
+import { _GetGLTFMaterialCoatState } from "./gltfMaterialCoatState";
 import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
 import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { type IAnimationKey } from "core/Animations/animationKey";
 import { MaterialAlphaMode } from "babylonjs-gltf2interface";
-import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { _MarkTextureAsDynamic } from "core/Materials/Textures/textureProcessor";
 
 const OpenPBRPropertyNames: Readonly<Record<string, string | undefined>> = {
     albedoColor: "baseColor",
@@ -121,6 +123,13 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                     continue;
                 }
                 const openPbrMaterial = material as OpenPBRMaterial;
+                if (this.name === "clearCoat.intensity" || this.name === "clearCoat.roughness") {
+                    babylonAnimations.push({
+                        babylonAnimatable: _GetGLTFMaterialCoatState(openPbrMaterial),
+                        babylonAnimation: this._buildAnimation(name, fps, keys, OpenPBRPropertyNames[this.name]),
+                    });
+                    continue;
+                }
                 // Texture component paths append one member to the mapped texture property.
                 const separator = this.name.lastIndexOf(".");
                 const parentName = this.name.substring(0, separator);
@@ -145,13 +154,16 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                         outTangent: key.outTangent === undefined ? undefined : key.outTangent / 1000,
                     }));
                 }
-                const texture = openPbrMaterial[propertyName.substring(0, propertyName.lastIndexOf(".")) as keyof OpenPBRMaterial];
+                const texturePath = (this.name === "ambientTextureStrength" ? "ambientTexture" : parentName).split(".");
+                const component = propertyName.substring(propertyName.lastIndexOf(".") + 1);
+                const texture = ["uScale", "vScale", "uOffset", "vOffset", "wAng", "level"].includes(component)
+                    ? _GetMaterialTexture(openPbrMaterial, texturePath[0] as keyof PBRMaterial, texturePath[1])
+                    : null;
                 if (texture && typeof texture === "object" && "getTextureMatrix" in texture && "animations" in texture) {
                     // Finalization can replace this slot with baked textures; retain the animated source.
                     const animation = this._buildAnimation(name, fps, materialKeys, propertyName.substring(propertyName.lastIndexOf(".") + 1));
-                    const sourceTexture = texture as BaseTexture;
-                    sourceTexture.animations.push(animation);
-                    babylonAnimations.push({ babylonAnimatable: sourceTexture, babylonAnimation: animation });
+                    _MarkTextureAsDynamic(texture);
+                    babylonAnimations.push({ babylonAnimatable: texture, babylonAnimation: animation });
                     continue;
                 }
             }

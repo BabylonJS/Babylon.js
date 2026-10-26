@@ -6,6 +6,8 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 import { type GLTFLoader } from "./glTFLoader";
 import { _RetainGLTFMaterialTextureSources } from "./Extensions/objectModelMapping";
+import { _GetGLTFMaterialCoatState } from "./Extensions/gltfMaterialCoatState";
+import { Observable } from "core/Misc/observable.pure";
 import {
     MultiplyTexturesAsync,
     LerpTexturesAsync,
@@ -17,6 +19,7 @@ import {
     ChannelMask,
     ExtractMaxChannelAsync,
     _MarkTextureAsDynamic,
+    type ITextureProcessOperand,
 } from "core/Materials/Textures/textureProcessor";
 
 /**
@@ -25,6 +28,10 @@ import {
 export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: OpenPBRMaterial;
     private _specWorkflow: boolean = false;
+    private _convertedCoatColor?: ITextureProcessOperand;
+    private _convertedCoatRoughness?: ITextureProcessOperand;
+    private _convertedCoatIor?: ITextureProcessOperand;
+    private _convertedCoatDarkening?: ITextureProcessOperand;
     /**
      * Creates a new instance of the OpenPBRMaterialLoadingAdapter.
      * @param material - The OpenPBR material to adapt.
@@ -1408,8 +1415,45 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         const origCoatColor = this._material.coatColor.clone();
         const origCoatColorTexture = this._material.coatColorTexture;
         const origCoatNormalTexture = this._material.geometryCoatNormalTexture;
-
-        const origCoatWeightCol4 = new Color4(origCoatWeight, origCoatWeight, origCoatWeight, origCoatWeight);
+        const source = _GetGLTFMaterialCoatState(this._material);
+        const firstConversion = !source.converted;
+        if (firstConversion) {
+            source.retain();
+        }
+        const createOperand = (texture: Nullable<BaseTexture>, getFactor: () => Color4, channel = TextureChannel.RGBA, colorSpace = TextureColorSpace.Linear) => {
+            const factor = getFactor();
+            const onChangedObservable = new Observable<void>();
+            const observer = source.onChangedObservable.add(() => {
+                factor.copyFrom(getFactor());
+                onChangedObservable.notifyObservers();
+            });
+            return {
+                texture,
+                factor,
+                channel,
+                colorSpace,
+                onChangedObservable,
+                dispose: () => {
+                    source.onChangedObservable.remove(observer);
+                    onChangedObservable.clear();
+                },
+            };
+        };
+        const bindResult = (result: ITextureProcessOperand, apply: () => void) => {
+            apply();
+            result.onChangedObservable?.add(apply);
+            this._material.onDisposeObservable.addOnce(() => result.dispose?.());
+        };
+        const coatWeight = () => {
+            const value = firstConversion ? source.coatWeight : origCoatWeight;
+            return new Color4(value, value, value, value);
+        };
+        const coatRoughness = () => {
+            const value = source.coatRoughness;
+            return new Color4(value, value, value, 1);
+        };
+        const origCoatIor = this.coatIor;
+        const origCoatDarkening = this.coatDarkening;
         const weightCol4 = new Color4(weight, weight, weight, weight);
 
         this.coatWeightTexture = null;
@@ -1419,8 +1463,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             LerpTexturesAsync(
                 "lerpExistingCoat",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
-                CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
-                CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+                this._convertedCoatColor
+                    ? { ...this._convertedCoatColor, dispose: undefined }
+                    : CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
+                createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
                 this._material.getScene(),
                 TextureColorSpace.SRGB
             ),
@@ -1437,7 +1483,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         if (rejected) {
             for (const r of results) {
                 if (r.status === "fulfilled") {
-                    r.value.texture?.dispose();
+                    r.value.dispose?.();
                 }
             }
             throw rejected.reason;
@@ -1446,8 +1492,8 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             (r) => (r as PromiseFulfilledResult<(typeof results)[number] extends PromiseSettledResult<infer T> ? T : never>).value
         );
         if (loader._disposed) {
-            lerpCoatColor.texture?.dispose();
-            lerpSurfaceColor.texture?.dispose();
+            lerpCoatColor.dispose?.();
+            lerpSurfaceColor.dispose?.();
             return;
         }
 
@@ -1459,31 +1505,37 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             TextureColorSpace.SRGB
         );
         if (loader._disposed) {
-            newCoatColor.texture?.dispose();
+            newCoatColor.dispose?.();
             return;
         }
 
-        if (newCoatColor.texture) {
+        this._convertedCoatColor = newCoatColor;
+        bindResult(newCoatColor, () => {
             this.coatColorTexture = newCoatColor.texture;
-            this.coatColor = Color3.White();
-        } else if (newCoatColor.factor) {
-            this.coatColorTexture = null;
-            this.coatColor.fromArray([newCoatColor.factor.r, newCoatColor.factor.g, newCoatColor.factor.b]);
-        }
+            this.coatColor = newCoatColor.factor ? new Color3(newCoatColor.factor.r, newCoatColor.factor.g, newCoatColor.factor.b) : Color3.White();
+        });
 
         const newCoatIor = await LerpTexturesAsync(
             "newCoatIor (" + this._material.name + ")",
             CreateTextureWithFactorOperand(null, new Color4(this._material.specularIor, this._material.specularIor, this._material.specularIor, 1.0), TextureChannel.R),
-            CreateTextureWithFactorOperand(null, new Color4(this.coatIor, this.coatIor, this.coatIor, 1.0), TextureChannel.R),
-            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            this._convertedCoatIor
+                ? { ...this._convertedCoatIor, dispose: undefined }
+                : CreateTextureWithFactorOperand(null, new Color4(origCoatIor, origCoatIor, origCoatIor, 1.0), TextureChannel.R),
+            createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
             this._material.getScene()
         );
         if (loader._disposed) {
-            newCoatIor.texture?.dispose();
+            newCoatIor.dispose?.();
             return;
         }
-        this.coatIor = newCoatIor.factor ? newCoatIor.factor.r : this.coatIor;
-        newCoatIor.texture?.dispose();
+        this._convertedCoatIor = newCoatIor.factor ? newCoatIor : undefined;
+        if (newCoatIor.factor) {
+            bindResult(newCoatIor, () => {
+                this.coatIor = newCoatIor.factor!.r;
+            });
+        } else {
+            newCoatIor.dispose?.();
+        }
 
         const newCoatRoughness = await LerpTexturesAsync(
             "newCoatRoughness (" + this._material.name + ")",
@@ -1492,30 +1544,41 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 new Color4(this.specularRoughness, this.specularRoughness, this.specularRoughness, 1.0),
                 TextureChannel.G
             ),
-            CreateTextureWithFactorOperand(this.coatRoughnessTexture, new Color4(this.coatRoughness, this.coatRoughness, this.coatRoughness, 1.0), TextureChannel.G),
-            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            this._convertedCoatRoughness ? { ...this._convertedCoatRoughness, dispose: undefined } : createOperand(this.coatRoughnessTexture, coatRoughness, TextureChannel.G),
+            createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
             this._material.getScene()
         );
         if (loader._disposed) {
-            newCoatRoughness.texture?.dispose();
+            newCoatRoughness.dispose?.();
             return;
         }
-        this.coatRoughness = newCoatRoughness.factor ? newCoatRoughness.factor.r : 1.0;
-        this.coatRoughnessTexture = newCoatRoughness.texture;
+        this._convertedCoatRoughness = newCoatRoughness;
+        bindResult(newCoatRoughness, () => {
+            this.coatRoughness = newCoatRoughness.factor ? newCoatRoughness.factor.r : 1.0;
+            this.coatRoughnessTexture = newCoatRoughness.texture;
+        });
 
         const newCoatDarkening = await LerpTexturesAsync(
             "newCoatDarkening (" + this._material.name + ")",
             CreateTextureWithFactorOperand(null, new Color4(0, 0, 0, 1.0), TextureChannel.R),
-            CreateTextureWithFactorOperand(null, new Color4(this.coatDarkening, this.coatDarkening, this.coatDarkening, 1.0), TextureChannel.R),
-            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            this._convertedCoatDarkening
+                ? { ...this._convertedCoatDarkening, dispose: undefined }
+                : CreateTextureWithFactorOperand(null, new Color4(origCoatDarkening, origCoatDarkening, origCoatDarkening, 1.0), TextureChannel.R),
+            createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
             this._material.getScene()
         );
         if (loader._disposed) {
-            newCoatDarkening.texture?.dispose();
+            newCoatDarkening.dispose?.();
             return;
         }
-        this.coatDarkening = newCoatDarkening.factor ? newCoatDarkening.factor.r : this.coatDarkening;
-        newCoatDarkening.texture?.dispose();
+        this._convertedCoatDarkening = newCoatDarkening.factor ? newCoatDarkening : undefined;
+        if (newCoatDarkening.factor) {
+            bindResult(newCoatDarkening, () => {
+                this.coatDarkening = newCoatDarkening.factor!.r;
+            });
+        } else {
+            newCoatDarkening.dispose?.();
+        }
 
         if (diffuseTransmission) {
             const newSpecularRoughness = await LerpTexturesAsync(
@@ -1546,16 +1609,18 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                     TextureChannel.RGBA
                 ),
                 CreateTextureWithFactorOperand(origCoatNormalTexture, origCoatNormalTexture ? new Color4(1, 1, 1, 1) : new Color4(0.5, 0.5, 1.0, 1.0), TextureChannel.RGBA),
-                CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+                createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
                 this._material.getScene()
             );
             if (loader._disposed) {
-                newCoatNormal.texture?.dispose();
+                newCoatNormal.dispose?.();
                 return;
             }
-            if (newCoatNormal.texture) {
-                this.geometryCoatNormalTexture = newCoatNormal.texture;
-            }
+            bindResult(newCoatNormal, () => {
+                if (newCoatNormal.texture) {
+                    this.geometryCoatNormalTexture = newCoatNormal.texture;
+                }
+            });
         }
     }
 }

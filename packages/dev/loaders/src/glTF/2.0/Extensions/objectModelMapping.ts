@@ -37,6 +37,7 @@ import { type Mesh } from "core/Meshes/mesh";
 import { type Camera } from "core/Cameras/camera";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
+import { _GetGLTFMaterialCoatState } from "./gltfMaterialCoatState";
 
 /**
  * Top-level shape of the glTF Object Model accessor tree. Each property
@@ -1008,10 +1009,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             KHR_materials_clearcoat: {
                 clearcoatFactor: {
                     type: "number",
-                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? mat.coatWeight : mat.clearCoat.intensity)),
+                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? _GetGLTFMaterialCoatState(mat).coatWeight : mat.clearCoat.intensity)),
                     set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                         if (_IsOpenPBRMaterial(mat)) {
-                            mat.coatWeight = value;
+                            _GetGLTFMaterialCoatState(mat).coatWeight = value;
                         } else {
                             mat.clearCoat.intensity = value;
                         }
@@ -1021,10 +1022,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 clearcoatRoughnessFactor: {
                     type: "number",
-                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? mat.coatRoughness : mat.clearCoat.roughness)),
+                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? _GetGLTFMaterialCoatState(mat).coatRoughness : mat.clearCoat.roughness)),
                     set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                         if (_IsOpenPBRMaterial(mat)) {
-                            mat.coatRoughness = value;
+                            _GetGLTFMaterialCoatState(mat).coatRoughness = value;
                         } else {
                             mat.clearCoat.roughness = value;
                         }
@@ -1498,7 +1499,12 @@ function _GetUniqueMaterialTextureSources(sources: ReadonlyMap<string, Nullable<
 function _MaterialTextureKey(textureType: keyof PBRMaterial, textureInObject?: string): string {
     return textureInObject ? `${textureType}.${textureInObject}` : textureType;
 }
-function _GetMaterialTexture(material: PBRMaterial | OpenPBRMaterial | undefined, textureType: keyof PBRMaterial, textureInObject?: string): Nullable<BaseTexture> | undefined {
+/** @internal */
+export function _GetMaterialTexture(
+    material: PBRMaterial | OpenPBRMaterial | undefined,
+    textureType: keyof PBRMaterial,
+    textureInObject?: string
+): Nullable<BaseTexture> | undefined {
     if (!material) {
         return undefined;
     }

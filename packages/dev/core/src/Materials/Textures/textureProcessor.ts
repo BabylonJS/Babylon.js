@@ -8,6 +8,7 @@ import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
 import { Color4 } from "core/Maths/math.color.pure";
+import { Observable } from "../../Misc/observable.pure";
 
 const _ShaderName = "textureProcessor";
 
@@ -133,6 +134,9 @@ export interface ITextureProcessOperand {
      * is no longer needed (or skip it if transferring ownership to a material).
      */
     dispose?: () => void;
+
+    /** @internal Notifies dependent processing operations after a factor changes. */
+    onChangedObservable?: Observable<void>;
 }
 
 /**
@@ -294,12 +298,20 @@ function _TrackDynamicInputs(pt: ProceduralTexture, operands: ITextureProcessOpe
     _DynamicTextures.set(pt, 0);
     const matrices = operands.map((operand) => operand.texture?.getTextureMatrix().clone());
     const versions = operands.map((operand) => (operand.texture ? _DynamicTextures.get(operand.texture) : undefined));
+    const trackTransforms = operands.some((operand) => operand.texture && (_DynamicTextures.has(operand.texture) || operand.texture.animations.length > 0));
+    let factorsChanged = false;
+    const factorObservers = operands.map((operand) =>
+        operand.onChangedObservable?.add(() => {
+            factorsChanged = true;
+        })
+    );
     const scene = pt.getScene()!;
     const observer = scene.onBeforeRenderObservable.add(() => {
-        let changed = false;
+        let changed = factorsChanged;
+        factorsChanged = false;
         for (let i = 0; i < operands.length; i++) {
             const texture = operands[i].texture;
-            if (texture) {
+            if (texture && trackTransforms) {
                 const matrix = texture.getTextureMatrix();
                 const version = _DynamicTextures.get(texture);
                 if (!matrices[i]!.equals(matrix) || versions[i] !== version) {
@@ -317,10 +329,37 @@ function _TrackDynamicInputs(pt: ProceduralTexture, operands: ITextureProcessOpe
     });
     pt.onDisposeObservable.add(() => {
         scene.onBeforeRenderObservable.remove(observer);
-        for (const operand of operands) {
-            operand.dispose?.();
+        for (let i = 0; i < operands.length; i++) {
+            operands[i].onChangedObservable?.remove(factorObservers[i] ?? null);
+            operands[i].dispose?.();
         }
     });
+}
+
+function _FoldConstants(operands: ITextureProcessOperand[], evaluate: () => Color4): ITextureProcessOperand {
+    const factor = evaluate();
+    if (!operands.some((operand) => operand.onChangedObservable)) {
+        return { texture: null, factor };
+    }
+    const onChangedObservable = new Observable<void>();
+    const observers = operands.map((operand) =>
+        operand.onChangedObservable?.add(() => {
+            factor.copyFrom(evaluate());
+            onChangedObservable.notifyObservers();
+        })
+    );
+    return {
+        texture: null,
+        factor,
+        onChangedObservable,
+        dispose: () => {
+            for (let i = 0; i < operands.length; i++) {
+                operands[i].onChangedObservable?.remove(observers[i] ?? null);
+                operands[i].dispose?.();
+            }
+            onChangedObservable.clear();
+        },
+    };
 }
 
 /**
@@ -618,8 +657,10 @@ export async function MultiplyTexturesAsync(
     outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture) {
-        const factor = _MultiplyConstants(_EvalConstant(a), _EvalConstant(b));
-        return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
+        return _FoldConstants([a, b], () => {
+            const factor = _MultiplyConstants(_EvalConstant(a), _EvalConstant(b));
+            return outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor;
+        });
     }
 
     const allTextures: BaseTexture[] = [];
@@ -629,7 +670,7 @@ export async function MultiplyTexturesAsync(
     if (b.texture) {
         allTextures.push(b.texture);
     }
-    const dynamic = _HasDynamicInputs(allTextures);
+    const dynamic = _HasDynamicInputs(allTextures) || !!(a.onChangedObservable || b.onChangedObservable);
     const canPropagate = !dynamic && _AllTransformsMatch(allTextures);
     const bakeTransform = !canPropagate;
 
@@ -787,8 +828,10 @@ export async function LerpTexturesAsync(
     outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture && !t.texture) {
-        const factor = _LerpConstants(_EvalConstant(a), _EvalConstant(b), _EvalConstant(t));
-        return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
+        return _FoldConstants([a, b, t], () => {
+            const factor = _LerpConstants(_EvalConstant(a), _EvalConstant(b), _EvalConstant(t));
+            return outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor;
+        });
     }
 
     const allTextures: BaseTexture[] = [];
@@ -801,7 +844,7 @@ export async function LerpTexturesAsync(
     if (t.texture) {
         allTextures.push(t.texture);
     }
-    const dynamic = _HasDynamicInputs(allTextures);
+    const dynamic = _HasDynamicInputs(allTextures) || !!(a.onChangedObservable || b.onChangedObservable || t.onChangedObservable);
     const canPropagate = !dynamic && _AllTransformsMatch(allTextures);
     const bakeTransform = !canPropagate;
 
