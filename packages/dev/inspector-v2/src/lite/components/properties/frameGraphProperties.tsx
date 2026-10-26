@@ -1,4 +1,4 @@
-import { getFrameGraphTasks, type FrameGraph } from "@babylonjs/lite";
+import { getFrameGraphTasks, type FrameGraph, type Task } from "@babylonjs/lite";
 import { type FunctionComponent } from "react";
 
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -11,6 +11,20 @@ const GetTaskIdentities = (frameGraph: FrameGraph) =>
     getFrameGraphTasks(frameGraph)
         .map((task) => GetEntityId(task))
         .join(",");
+
+/**
+ * Builds a task assignment for a scope importing `getFrameGraphTasks` from `@babylonjs/lite`.
+ * @param frameGraph The selected frame graph.
+ * @param task The task whose current execution gate is copied.
+ * @returns A task-relative assignment, or an explanatory comment if the task was removed.
+ */
+function GetTaskCopyString(frameGraph: FrameGraph, task: Task): string {
+    const index = getFrameGraphTasks(frameGraph).indexOf(task);
+    if (index === -1) {
+        return "// Task is no longer in the selected frame graph.";
+    }
+    return `getFrameGraphTasks(globalThis.debugNode)[${index}].executionEnabled = ${task.executionEnabled !== false}; // (getFrameGraphTasks from "@babylonjs/lite")`;
+}
 
 /**
  * Renders execution switches for every task in a Lite frame graph.
@@ -34,6 +48,7 @@ export const FrameGraphTaskProperties: FunctionComponent<{ frameGraph: FrameGrap
                     defaultValue={null}
                     convertTo={(value) => value !== false}
                     convertFrom={(value) => value}
+                    onCopy={() => GetTaskCopyString(frameGraph, task)}
                 />
             ))}
         </>

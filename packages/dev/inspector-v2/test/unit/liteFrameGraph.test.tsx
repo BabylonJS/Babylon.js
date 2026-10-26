@@ -6,6 +6,7 @@ import {
     createFrameGraphContext,
     createSceneContext,
     getFrameGraph,
+    getFrameGraphTasks,
     type EngineContext,
     type FrameGraph,
     type RenderingContext,
@@ -14,7 +15,7 @@ import {
 } from "@babylonjs/lite";
 import { FluentProvider, tokens, webLightTheme } from "@fluentui/react-components";
 import { FrameRegular } from "@fluentui/react-icons";
-import { act, createElement, type ReactNode } from "react";
+import { act, createElement, type ComponentProps, type FunctionComponent, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -27,7 +28,7 @@ vi.hoisted(() => {
     );
 });
 
-const { TaskLists } = vi.hoisted(() => ({ TaskLists: new WeakMap<object, Task[]>() }));
+const { TaskLists, TaskCopies } = vi.hoisted(() => ({ TaskLists: new WeakMap<object, Task[]>(), TaskCopies: new Map<string, () => string>() }));
 
 vi.mock("@babylonjs/lite", async (importOriginal) => {
     const original = await importOriginal<typeof import("@babylonjs/lite")>();
@@ -35,6 +36,18 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
         ...original,
         getFrameGraphTasks: (graph: FrameGraph) => TaskLists.get(graph) ?? original.getFrameGraphTasks(graph),
     };
+});
+
+vi.mock("shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine", async (importOriginal) => {
+    const original = await importOriginal<typeof import("shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine")>();
+    const SwitchPropertyLine: FunctionComponent<ComponentProps<typeof original.SwitchPropertyLine>> = (props) => {
+        const { label, onCopy } = props;
+        if (onCopy) {
+            TaskCopies.set(label, onCopy);
+        }
+        return createElement(original.SwitchPropertyLine, props);
+    };
+    return { ...original, SwitchPropertyLine };
 });
 
 import { BuildExplorerTree } from "../../src/components/explorer/explorerModel";
@@ -175,6 +188,7 @@ describe("Babylon Lite frame graph task properties", () => {
     afterEach(() => {
         roots.splice(0).forEach((root) => act(() => root.unmount()));
         containers.splice(0).forEach((container) => container.remove());
+        TaskCopies.clear();
     });
 
     function Render(content: ReactNode, watcher: IWatcherService): HTMLElement {
@@ -228,6 +242,31 @@ describe("Babylon Lite frame graph task properties", () => {
             watcher.refresh();
         });
         expect(getSwitch().checked).toBe(false);
+    });
+
+    it("copies effective task gates through the public getter using the live task index", () => {
+        const { engine, standalone } = CreateContexts();
+        const tasks = [CreateTask(engine, "a"), CreateTask(engine, "b", false)];
+        const [a, b] = tasks;
+        TaskLists.set(standalone.frameGraph, tasks);
+        Render(<FrameGraphTaskProperties frameGraph={standalone.frameGraph} />, CreateWatcher());
+        const copyA = TaskCopies.get("1. a")!;
+        const copyB = TaskCopies.get("2. b")!;
+        expect(copyA()).toBe('getFrameGraphTasks(globalThis.debugNode)[0].executionEnabled = true; // (getFrameGraphTasks from "@babylonjs/lite")');
+        const command = copyB();
+        expect(command).toBe('getFrameGraphTasks(globalThis.debugNode)[1].executionEnabled = false; // (getFrameGraphTasks from "@babylonjs/lite")');
+        b.executionEnabled = true;
+        expect(copyB()).toBe('getFrameGraphTasks(globalThis.debugNode)[1].executionEnabled = true; // (getFrameGraphTasks from "@babylonjs/lite")');
+        const apply = new Function("globalThis", "getFrameGraphTasks", command);
+        act(() => apply({ debugNode: standalone.frameGraph }, getFrameGraphTasks));
+        expect(b.executionEnabled).toBe(false);
+        expect(Object.hasOwn(standalone.frameGraph, "executionEnabled")).toBe(false);
+        expect(a.executionEnabled).toBeUndefined();
+        expect(Object.hasOwn(a, "executionEnabled")).toBe(false);
+        tasks.splice(0, 1);
+        expect(copyB()).toBe('getFrameGraphTasks(globalThis.debugNode)[0].executionEnabled = false; // (getFrameGraphTasks from "@babylonjs/lite")');
+        tasks.length = 0;
+        expect(copyB()).toBe("// Task is no longer in the selected frame graph.");
     });
 
     it("refreshes a live task list after push, splice and emptying without rebinding surviving task switches", () => {
