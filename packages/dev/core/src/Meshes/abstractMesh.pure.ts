@@ -1911,6 +1911,12 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             return null;
         }
 
+        const transform = !!(
+            (options.applyMorph && this.morphTargetManager) ||
+            (options.applySkeleton && this.skeleton) ||
+            (options.applyBakedVertexAnimation && this.bakedVertexAnimationManager?.isEnabled)
+        );
+
         if (cache) {
             if (cache._outputData) {
                 cache._outputData.set(data);
@@ -1919,11 +1925,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             }
 
             data = cache._outputData;
-        } else if (
-            (options.applyMorph && this.morphTargetManager) ||
-            (options.applySkeleton && this.skeleton) ||
-            (options.applyBakedVertexAnimation && this.bakedVertexAnimationManager?.isEnabled)
-        ) {
+        } else if (transform) {
             data = data.slice();
         }
 
@@ -1966,7 +1968,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             }
         }
 
-        if (options.updatePositionsArray !== false && kind === VertexBuffer.PositionKind) {
+        if (options.updatePositionsArray !== false && kind === VertexBuffer.PositionKind && !transform) {
+            // untransformed, these are the geometry's positions: picking and collisions use the geometry's points, made when they
+            // need them and shared by its meshes, so the mesh keeps no Vector3 per vertex of its own
+            this._internalAbstractMeshDataInfo._positions = null;
+        } else if (options.updatePositionsArray !== false && kind === VertexBuffer.PositionKind) {
             const positions = this._internalAbstractMeshDataInfo._positions || [];
             const previousLength = positions.length;
             positions.length = data.length / 3;
