@@ -38,19 +38,24 @@ export const FrameGraphTaskProperties: FunctionComponent<{ frameGraph: FrameGrap
 
     return (
         <>
-            {tasks.map((task, index) => (
-                <BoundProperty
-                    key={GetEntityId(task)}
-                    component={SwitchPropertyLine}
-                    label={`${index + 1}. ${task.name}`}
-                    target={task}
-                    propertyKey="executionEnabled"
-                    defaultValue={null}
-                    convertTo={(value) => value !== false}
-                    convertFrom={(value) => value}
-                    onCopy={() => GetTaskCopyString(frameGraph, task)}
-                />
-            ))}
+            {tasks.map((task, index) => {
+                const label = `${index + 1}. ${task.name}`;
+                return (
+                    <BoundProperty
+                        key={GetEntityId(task)}
+                        component={SwitchPropertyLine}
+                        label={label}
+                        ariaLabel={label}
+                        controlled
+                        target={task}
+                        propertyKey="executionEnabled"
+                        defaultValue={null}
+                        convertTo={(value) => value !== false}
+                        convertFrom={(value) => value}
+                        onCopy={() => GetTaskCopyString(frameGraph, task)}
+                    />
+                );
+            })}
         </>
     );
 };

@@ -214,6 +214,7 @@ describe("Babylon Lite frame graph task properties", () => {
         const container = Render(<FrameGraphTaskProperties frameGraph={standalone.frameGraph} />, CreateWatcher());
         expect(container.textContent).toBe("1. a2. b3. c");
         expect([...container.querySelectorAll<HTMLInputElement>("[role='switch']")].map((input) => input.checked)).toEqual([true, true, false]);
+        expect([...container.querySelectorAll("[role='switch']")].map((input) => input.getAttribute("aria-label"))).toEqual(["1. a", "2. b", "3. c"]);
     });
 
     it("writes false then true through BoundProperty when executionEnabled was never set, and watches external writes", () => {
@@ -223,7 +224,7 @@ describe("Babylon Lite frame graph task properties", () => {
         expect(Object.hasOwn(task, "executionEnabled")).toBe(false);
         const watcher = CreateWatcher();
         const container = Render(<FrameGraphTaskProperties frameGraph={standalone.frameGraph} />, watcher);
-        const getSwitch = () => container.querySelector<HTMLInputElement>("[role='switch']")!;
+        const getSwitch = () => container.querySelector<HTMLInputElement>("[role='switch'][aria-label='1. a']")!;
         expect(getSwitch().disabled).toBe(false);
         act(() => {
             getSwitch().click();
@@ -242,6 +243,24 @@ describe("Babylon Lite frame graph task properties", () => {
             watcher.refresh();
         });
         expect(getSwitch().checked).toBe(false);
+    });
+
+    it.each([true, false])("keeps the switch at %s when the runtime restores its gate before polling", (initialGate) => {
+        const { engine, standalone } = CreateContexts();
+        const task = CreateTask(engine, "a", initialGate);
+        TaskLists.set(standalone.frameGraph, [task]);
+        const watcher = CreateWatcher();
+        const container = Render(<FrameGraphTaskProperties frameGraph={standalone.frameGraph} />, watcher);
+        const input = container.querySelector<HTMLInputElement>("[role='switch']")!;
+        expect(input.checked).toBe(initialGate);
+        act(() => {
+            input.click();
+            expect(task.executionEnabled).toBe(!initialGate);
+            task.executionEnabled = initialGate;
+            watcher.refresh();
+        });
+        expect(task.executionEnabled).toBe(initialGate);
+        expect(input.checked).toBe(initialGate);
     });
 
     it("copies effective task gates through the public getter using the live task index", () => {
@@ -288,6 +307,7 @@ describe("Babylon Lite frame graph task properties", () => {
         expect(container.textContent).toBe("1. b2. c");
         expect(container.querySelector("[role='switch']")).toBe(survivingSwitch);
         expect((survivingSwitch as HTMLInputElement).checked).toBe(false);
+        expect(survivingSwitch.getAttribute("aria-label")).toBe("1. b");
         act(() => {
             tasks.length = 0;
             watcher.refresh();
