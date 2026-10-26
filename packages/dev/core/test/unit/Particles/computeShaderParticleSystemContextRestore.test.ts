@@ -90,6 +90,41 @@ describe("ComputeShaderParticleSystem storage buffers across WebGPU restorations
         other.dispose();
         expect(webgpu.storageBuffers()).toHaveLength(0);
     });
+
+    it("does not recreate its buffers when it is disposed while a rebuild waits for the update effect", () => {
+        vi.useFakeTimers();
+        try {
+            const ps = CreateInitializedSystem(scene);
+            const initialize = vi.spyOn(ps as any, "_initialize");
+            // The update compute shader of the new device is still compiling: rebuild() retries every 10 ms
+            const recreateUpdateEffect = vi.spyOn(ps, "_recreateUpdateEffect").mockReturnValue(false);
+
+            webgpu.restore();
+            vi.advanceTimersByTime(25);
+            expect(recreateUpdateEffect.mock.calls.length).toBeGreaterThan(1);
+            expect(initialize).not.toHaveBeenCalled();
+            expect(webgpu.storageBuffers()).toHaveLength(0);
+            const storageBufferCount = webgpu.createStorageBuffer.mock.calls.length;
+            const uniformBufferCount = (engine as any)._uniformBuffers.length;
+            const updateEffectCount = recreateUpdateEffect.mock.calls.length;
+
+            ps.dispose();
+
+            // Compilation completes after the disposal
+            recreateUpdateEffect.mockReturnValue(true);
+            vi.advanceTimersByTime(100);
+
+            // No more retries: no update effect (and its uniform buffer), no particle buffers, no storage pair
+            expect(recreateUpdateEffect).toHaveBeenCalledTimes(updateEffectCount);
+            expect(initialize).not.toHaveBeenCalled();
+            expect(webgpu.createStorageBuffer).toHaveBeenCalledTimes(storageBufferCount);
+            expect(webgpu.storageBuffers()).toHaveLength(0);
+            expect((engine as any)._uniformBuffers).toHaveLength(uniformBufferCount);
+            expect(vi.getTimerCount()).toBe(0);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
 });
 
 describe("Particle system draw contexts across WebGPU restorations", () => {

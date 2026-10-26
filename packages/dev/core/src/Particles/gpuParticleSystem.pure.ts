@@ -104,6 +104,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _platform: IGPUParticleSystemPlatform;
     private _rebuildingAfterContextLost = false;
+    private _rebuildRetryTimeout: Nullable<ReturnType<typeof setTimeout>> = null;
 
     /**
      * Whether the particle buffer needs to store the initial emission direction.
@@ -2575,13 +2576,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public rebuild(): void {
         const checkUpdateEffect = () => {
+            this._rebuildRetryTimeout = null;
             if (!this._recreateUpdateEffect() || !this._platform.isUpdateBufferReady()) {
-                setTimeout(checkUpdateEffect, 10);
+                this._rebuildRetryTimeout = setTimeout(checkUpdateEffect, 10);
             } else {
                 this._initialize(true);
                 this._rebuildingAfterContextLost = false;
             }
         };
+
+        // A previous rebuild still waiting for the update effect is superseded by this one
+        this._cancelRebuildRetry();
 
         this._createIndexBuffer();
 
@@ -2609,6 +2614,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         checkUpdateEffect();
     }
 
+    private _cancelRebuildRetry() {
+        if (this._rebuildRetryTimeout !== null) {
+            clearTimeout(this._rebuildRetryTimeout);
+            this._rebuildRetryTimeout = null;
+        }
+    }
+
     private _releaseBuffers() {
         if (this._buffer0) {
             this._buffer0.dispose();
@@ -2630,6 +2642,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
+        // A rebuild waiting for the update effect would recreate the particle buffers after the disposal
+        this._cancelRebuildRetry();
         this._engine._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
         this._renderPassObserver = null;
         for (const drawWrappers of this._drawWrappers) {
