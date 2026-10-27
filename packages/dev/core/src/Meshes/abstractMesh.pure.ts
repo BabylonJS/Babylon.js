@@ -1970,8 +1970,10 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
         if (options.updatePositionsArray !== false && kind === VertexBuffer.PositionKind && !transform) {
             // untransformed, these are the geometry's positions: picking and collisions use the geometry's points, made when they
-            // need them and shared by its meshes, so the mesh keeps no Vector3 per vertex of its own
+            // need them and shared by its meshes, so the mesh keeps no Vector3 per vertex of its own. A refresh means the positions
+            // may have changed in place (updateVerticesDataDirectly, VertexBuffer.update), so those points are made again when needed
             this._internalAbstractMeshDataInfo._positions = null;
+            this.geometry?._resetPointsArrayCache();
         } else if (options.updatePositionsArray !== false && kind === VertexBuffer.PositionKind) {
             const positions = this._internalAbstractMeshDataInfo._positions || [];
             const previousLength = positions.length;

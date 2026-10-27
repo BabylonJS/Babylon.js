@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Ray } from "core/Culling/ray";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Vector3 } from "core/Maths/math.vector";
+import { type Mesh } from "core/Meshes/mesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { MorphTarget } from "core/Morph/morphTarget";
@@ -48,6 +49,23 @@ describe("AbstractMesh positions", () => {
         expect(hit?.distance).toBeCloseTo(4);
         expect(box._positions).toBe(box.geometry!._positions);
         expect(clone._positions).toBe(box._positions);
+    });
+
+    // the geometry's points made by a first pick, then every position moved 10 units back in place and the bounds refreshed
+    it.each([
+        ["Geometry.updateVerticesDataDirectly", (box: Mesh, moved: Float32Array) => box.geometry!.updateVerticesDataDirectly(VertexBuffer.PositionKind, moved, 0)],
+        ["VertexBuffer.update", (box: Mesh, moved: Float32Array) => box.getVertexBuffer(VertexBuffer.PositionKind)!.update(moved)],
+    ])("picks the positions written in place with %s once its bounding info is refreshed", (_, update) => {
+        const box = MeshBuilder.CreateBox("box", { size: 2, updatable: true }, scene);
+        expect(scene.pickWithRay(ray(), (mesh) => mesh === box)?.distance).toBeCloseTo(4);
+        expect(box.geometry!._positions).not.toBeNull();
+
+        const moved = Float32Array.from(box.getVerticesData(VertexBuffer.PositionKind)!, (value, index) => (index % 3 === 2 ? value + 10 : value));
+        update(box, moved);
+        box.refreshBoundingInfo();
+
+        expect(box.getBoundingInfo().boundingBox.minimum.z).toBeCloseTo(9);
+        expect(scene.pickWithRay(ray(), (mesh) => mesh === box)?.distance).toBeCloseTo(14);
     });
 
     it("collides with its geometry's points", () => {
