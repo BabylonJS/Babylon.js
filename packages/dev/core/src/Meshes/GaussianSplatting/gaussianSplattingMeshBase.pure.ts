@@ -683,6 +683,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
+    private _cameraRemovedObserver: Nullable<Observer<Camera>> = null;
 
     protected static readonly _DefaultViewUpdateThreshold = 1e-4;
 
@@ -1335,7 +1336,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._material = gaussianSplattingMaterial;
 
         // delete meshes created for cameras on camera removal
-        this._scene.onCameraRemovedObservable.add((camera: Camera) => {
+        this._cameraRemovedObserver = this._scene.onCameraRemovedObservable.add((camera: Camera) => {
             const cameraId = camera.uniqueId;
             // delete mesh for this camera
             const cameraViewInfos = this._cameraViewInfos.get(cameraId);
@@ -1648,6 +1649,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                         cameraViewInfos.sortAppliedId = cameraViewInfos.sortRequestId;
                         this._canPostToWorker = true;
                         this._readyToDisplay = true;
+                        this._sortIsDirty = false;
                     }
                 }
             });
@@ -3105,6 +3107,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         this.onPartCountChangedObservable.clear();
         this.onPartRemovedObservable.clear();
 
+        this._scene.onCameraRemovedObservable.remove(this._cameraRemovedObserver);
+        this._cameraRemovedObserver = null;
+
         // delete meshes created for each camera
         this._cameraViewInfos.forEach((cameraViewInfo) => {
             cameraViewInfo.mesh.dispose();
@@ -3614,24 +3619,40 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._markGpuSourceDirty();
             }
 
-            // Handle SH textures in update path - create if they don't exist. Skip when the SH atlas is
-            // render-backed (_useShMrtAtlas): those targets are created/managed by _createShMrtAtlas, not here.
-            if (sh && !this._shTextures && !this._useShMrtAtlas) {
-                this._shTextures = [];
-                for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
+            // No sort-worker reply will flush the delayed upload (Native / no-worker path), so it is committed
+            // below. That commit uploads every existing data, rotation and SH texture, so don't upload them here too.
+            const commitWithoutWorker = !this._worker;
+
+            // Handle SH textures in update path - create any that don't exist yet (including when a higher SH
+            // degree needs more textures than are allocated). Skip when the SH atlas is render-backed
+            // (_useShMrtAtlas): those targets are created/managed by _createShMrtAtlas, not here.
+            if (sh && !this._useShMrtAtlas && (!this._shTextures || this._shTextures.length < sh.length)) {
+                this._shTextures ??= [];
+                for (let textureIndex = this._shTextures.length; textureIndex < sh.length; textureIndex++) {
                     const shTexture = createEmptyTextureU32(textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
                     shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
-                    this._updateShTextureData(shTexture, sh[textureIndex], textureSize.x, 0, textureSize.y);
+                    if (!commitWithoutWorker) {
+                        this._updateShTextureData(shTexture, sh[textureIndex], textureSize.x, 0, textureSize.y);
+                    }
                 }
+            }
+
+            if (commitWithoutWorker) {
+                // Commit after the SH textures exist (the upload writes them) but before any rotation textures
+                // are created below, since those are created with their data already.
+                this._commitDelayedTextureUpdate();
             }
 
             if (this._needsRotationScaleTextures && this._rotationDataA) {
                 if (this._rotationsATexture) {
-                    this._updateTextureFromData(this._rotationsATexture, this._rotationDataA, textureSize.x, 0, textureSize.y);
-                    this._updateTextureFromData(this._rotationsBTexture!, this._rotationDataB!, textureSize.x, 0, textureSize.y);
-                    this._updateTextureFromData(this._rotationScaleTexture!, this._rotationScaleData!, textureSize.x, 0, textureSize.y);
+                    // Without a worker, the commit above already uploaded the rotation data.
+                    if (!commitWithoutWorker) {
+                        this._updateTextureFromData(this._rotationsATexture, this._rotationDataA, textureSize.x, 0, textureSize.y);
+                        this._updateTextureFromData(this._rotationsBTexture!, this._rotationDataB!, textureSize.x, 0, textureSize.y);
+                        this._updateTextureFromData(this._rotationScaleTexture!, this._rotationScaleData!, textureSize.x, 0, textureSize.y);
+                    }
                 } else {
                     // Rotation textures not yet created (needsRotationScaleTextures was enabled after initial load).
                     this._rotationsATexture = createTextureFromDataF16(this._rotationDataA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);

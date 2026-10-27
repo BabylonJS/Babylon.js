@@ -27,7 +27,23 @@ var<uniform> light{X} : Light{X};
 
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
-		uniform lightMatrix{X}: array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>;
+		#ifdef SHADOWCSMUBO{X}
+			// written by the CascadedShadowGenerator once each time it computes the cascades, shared by every receiver
+			struct Cascades{X} {
+				viewFrustumZ: vec4f,
+				frustumLengths: vec4f,
+				cascadeBlendFactor: f32,
+				penumbraDarkness: f32,
+				depthCorrection: vec4f,
+				lightSizeUVCorrection: array<vec4f, 4>,
+				lightMatrix: array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>,
+			};
+
+			var<uniform> cascades{X} : Cascades{X};
+		#else
+			// the cascades buffer does not fit within the uniform buffers per stage of the device: effect uniforms
+			uniform lightMatrix{X}: array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>;
+		#endif
 
 		// Because WGSL does not allow us to have arrays as varying...
 		varying vPositionFromLight{X}_0: vec4f;

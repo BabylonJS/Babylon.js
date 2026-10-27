@@ -1,8 +1,11 @@
 import { Tools } from "../../Misc/tools.pure";
 import { type IDisposable } from "../../scene";
 import { type Nullable } from "../../types";
+import { type INative } from "../../Engines/Native/nativeInterfaces";
 
 declare let MeshoptDecoder: any;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 let NumberOfWorkers = 0;
 let WorkerTimeout: Nullable<ReturnType<typeof setTimeout>> = null;
@@ -46,6 +49,7 @@ export interface IMeshoptCompressionConfiguration {
  */
 export class MeshoptCompression implements IDisposable {
     private _decoderModulePromise?: Promise<any>;
+    private readonly _useNativeDecoder: boolean = typeof _native !== "undefined" && !!_native.decodeMeshopt;
 
     /**
      * The configuration. Defaults to the following:
@@ -78,6 +82,12 @@ export class MeshoptCompression implements IDisposable {
      * Constructor
      */
     constructor() {
+        // When the native meshopt decoder is available (Babylon Native), skip
+        // loading the WebAssembly module entirely and decode synchronously.
+        if (this._useNativeDecoder) {
+            return;
+        }
+
         const decoder = MeshoptCompression.Configuration.decoder;
 
         // eslint-disable-next-line github/no-then
@@ -105,6 +115,9 @@ export class MeshoptCompression implements IDisposable {
      * @returns a Promise<Uint8Array> that resolves to the decoded data
      */
     public async decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
+        if (this._useNativeDecoder) {
+            return _native.decodeMeshopt!(source, count, stride, mode, filter);
+        }
         await this._decoderModulePromise!;
         if (NumberOfWorkers === 0) {
             MeshoptDecoder.useWorkers(1);

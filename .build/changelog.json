@@ -1,5 +1,5 @@
 {
-    "fromTag": "9.31.3",
+    "fromTag": "9.32.0",
     "changelog": {
         "9.32.0": [
             {
@@ -33,6 +33,292 @@
                     "inspector",
                     "new feature"
                 ]
+            }
+        ],
+        "9.32.1": [
+            {
+                "pr": "19062",
+                "title": "Inspector Lite: add FrameGraph task inspection (P8b)",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nAdds FrameGraph inspection parity to Inspector Lite for P8b of [BabylonJS/Babylon-Lite#55](https://github.com/BabylonJS/Babylon-Lite/issues/55). This uses the public task-discovery API from [BabylonJS/Babylon-Lite#846](https://github.com/BabylonJS/Babylon-Lite/pull/846), now published in `@babylonjs/lite@1.37.0`; it does not close the umbrella issue.\n\n### Changes\n\n- Add a green **Frame Graphs** explorer section under inspectable scenes and standalone FrameGraph contexts, with one selectable graph per context.\n- Add a **Tasks** section with indexed task-name switches bound to `executionEnabled`. An unset value displays as enabled; polling keeps task membership and switch state current.\n- Update the five exact Lite dependency pins and Inspector's minimum peer range to 1.37.0. Viewer dependencies, the shared-UI peer range, and the root override are unchanged.\n- Migrate existing bounding-box helper visibility to Lite's supported `setSubtreeVisible` API, including the dependent test mocks. This preserves visibility cache invalidation with the new read-only `SceneNode.visible` contract.\n\nTasks are not explorer entities and have no per-kind parameter panes. No General, Optimize Texture Allocation, Make Active, post-process/pipeline, or graph-editor controls are added. Both editor launchers remain excluded; FlowGraph editor parity is explicitly deferred. Existing shared Pinned and Animation sections are unchanged, and the merged P8c Flow Graphs section is preserved.\n\n### Behavioral differences\n\nLite skips disabled tasks instead of running full Babylon.js disabled passthrough passes. Downstream output can therefore be stale, and disabling the scene render task can freeze or blank its output. Lite compute scheduling can also overwrite `executionEnabled`. Graph names are fixed to **Frame Graph**, and each rendering context exposes its single graph.\n\n### Validation\n\n- Verified the published Lite 1.37.0 tarball integrity and all 2,513 installed package files, including the exact public `getFrameGraphTasks(frameGraph: FrameGraph): readonly Task[]` contract.\n- Final source build and all 428 Inspector unit tests (43 files) pass, including the 65 focused Lite cases. Formatting and lint pass; advisory lint has no new warnings on changed lines.\n- FrameGraph integration and real Chrome/WARP checks cover task toggling, standalone contexts, live task insertion/removal, graph/context disposal, and coexistence with FlowGraphs.\n- Bounding-box visibility was checked through show/hide/show rendering: 3,581 yellow helper pixels become zero when hidden and return to the identical initial image when revealed.\n\n**Known full-suite failures, explicitly accepted for PR creation:** unrelated loader/UMD import timeouts and eight Lite gizmo failures on WARP remain unresolved. The last full Lite integration run passed all 21 non-gizmo cases. Earlier unchanged-baseline comparisons reproduced all eight gizmo failures and the nested glTF2 UMD timeout; those comparisons are evidence, not a claim that every current full-suite failure is waived or fixed. The existing module-size test's no-file-sizes guard also means actual size coverage was skipped. No assertions, skips, retries, or timeouts were weakened.\n\n### Screenshot\n\n![Inspector Lite with Frame Graph selected, its Tasks switch, and the rendered scene](https://github.com/user-attachments/assets/00aeb18e-8613-4bcb-a715-b5ff4e089ff4)",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/src/lite/components/properties/frameGraphProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/debugController.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/frameGraphPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/frameGraphExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/integration/liteFrameGraph.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteDebugController.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteDebugService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteFrameGraph.test.tsx",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/public/@babylonjs/inspector-v2/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "19043",
+                "title": "Native parity fixes: shaders, compute, particles, codecs, clustered lights",
+                "description": "This PR has 11 independent fixes and tests found while bringing Babylon Native's visual tests up to parity with Babylon.js. Each commit stands alone and can be reviewed on its own.\n\n| Commit | Change |\n|---|---|\n| Fix transitive core shader include resolution | Shader includes nested inside other includes now resolve correctly. |\n| Add cascaded shadow comparison-sampler tests | Unit tests only. |\n| Propagate shader preparation failures without invalid fallbacks | When an effect fails to compile, the error is reported instead of falling back to an invalid shader. |\n| Reject failed or timed-out compute dispatch readiness | Compute dispatch readiness rejects when it fails or times out. |\n| Add GPU particle wireframe geometry tests | Unit tests only. |\n| Render clustered-light tile masks with the requested camera | Clustered-light tile masks use the camera that was requested. |\n| Gate node-material instance matrix attributes on `INSTANCES` | Instance matrix attributes are only bound when the `INSTANCES` define is set. |\n| Use native Draco and meshopt codecs when available | Uses the synchronous `_native` codecs when the host provides them (BabylonJS/BabylonNative#1214). Browsers are unchanged. |\n| Flush Gaussian-splat texture updates without a sort worker | Splat texture updates are flushed on hosts without a sort worker. |\n| Preserve legacy node-particle timing defaults | Node particle systems keep their previous timing defaults. |\n| Normalize hemisphere-emitter GPU particle directions | GPU particle directions from hemisphere emitters are normalized. |\n\n**Validation**\n- tsc passes for core.\n- Unit tests for the affected areas pass (1080/1080).\n- Prettier and ESLint report no errors.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/buildTools/test/unit/buildShaders.test.ts",
+                    "packages/dev/core/src/Compute/computeShader.pure.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Lights/Clustered/clusteredLightContainer.pure.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.pure.ts",
+                    "packages/dev/core/src/Materials/effect.pure.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCodec.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoDecoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoEncoder.ts",
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/src/Particles/Node/Blocks/systemBlock.pure.ts",
+                    "packages/dev/core/src/Shaders/gpuUpdateParticles.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/gpuUpdateParticles.compute.fx",
+                    "packages/dev/core/test/unit/Compute/computeShader.test.ts",
+                    "packages/dev/core/test/unit/Lights/Clustered/clusteredLightContainer.test.ts",
+                    "packages/dev/core/test/unit/Lights/Shadows/babylon.shadowGenerator.test.ts",
+                    "packages/dev/core/test/unit/Materials/effect.shaderPreparation.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.nativeDisableDepthSort.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.nativeMeshCodecs.test.ts",
+                    "packages/dev/core/test/unit/Particles/gpuParticleSystemGeometry.test.ts",
+                    "packages/dev/core/test/unit/Particles/nodeParticleSystemSet.test.ts",
+                    "packages/tools/npe-mcp-server/examples/BasicParticles.json",
+                    "packages/tools/npe-mcp-server/examples/ColoredParticles.json",
+                    "packages/tools/npe-mcp-server/examples/ConeFountain.json",
+                    "packages/tools/npe-mcp-server/examples/GravityFountain.json",
+                    "packages/tools/npe-mcp-server/examples/MathParticles.json",
+                    "packages/tools/npe-mcp-server/examples/MultiSystemParticles.json",
+                    "packages/tools/npe-mcp-server/src/blockRegistry.ts",
+                    "packages/tools/npe-mcp-server/test/unit/npeParse.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "native"
+                ]
+            },
+            {
+                "pr": "19046",
+                "title": "Allow WebGPUEngine.dispose() when initialization did not complete",
+                "description": "### Issue\n\n`WebGPUEngine.dispose()` throws if the engine never finished `initAsync()`:\n\n```\nTypeError: Cannot read properties of undefined (reading 'dispose')\n```\n\nA common way to hit this is a WebGPU-to-WebGL fallback. The app creates a `WebGPUEngine`, `initAsync()` rejects (no adapter, or `requestDevice()` fails), and the app calls `dispose()` before creating a WebGL `Engine`. It also happens if an engine is disposed before `initAsync()` is called at all.\n\nThe throw also skips the rest of cleanup. `_CommonDispose()` and `AbstractEngine.dispose()` never run, so:\n- the failed engine stays in `EngineStore.Instances`;\n- its canvas, window and document listeners stay attached.\n\n### Cause\n\n`_timestampQuery`, `_textureHelper`, `_bufferManager` and `_device` are only assigned inside the `initAsync()` promise chain. `dispose()` calls methods on them unconditionally. Its neighbours `_mainTexture` and `_depthTexture` are already guarded with `?.`.\n\n### Fix\n\nUse optional chaining for those four calls. When initialization did complete, behaviour is unchanged: everything that was allocated is still destroyed. When it did not, disposal runs to the end.\n\nOut of scope: if `dispose()` is called while `initAsync()` is still pending, the pending chain still finishes afterwards and creates a device on the disposed engine. This PR only makes `dispose()` itself safe. I can follow up with an `_isDisposed` check in the init chain if you want it.\n\n### Tests\n\n`test/unit/Engines/webgpuEngine.dispose.test.ts` now also covers:\n- engines whose initialization never ran, acquired only a device, or also created the buffer manager: `dispose()` completes, the engine leaves `EngineStore.Instances`, and the members that exist are released (the device is destroyed);\n- a real `WebGPUEngine` constructed on a mocked `navigator.gpu` whose `requestDevice()` rejects: after `initAsync()` rejects, `dispose()` removes every canvas, window and document listener the constructor added. The file now runs in jsdom for this case.\n\nThe four new cases fail on master and pass with this change.\n\n### Verification\n\nReproduced with `@babylonjs/core` 9.32.0 using an injected GPU adapter whose `requestDevice()` rejects, and also with a failure after device acquisition. Before the change, `dispose()` threw and the engine stayed in `EngineStore.Instances` with its listeners attached. After applying the same change to the published `Engines/webgpuEngine.pure.js`, `dispose()` completes, the engine is removed from `EngineStore.Instances`, listeners are removed, and an acquired device is destroyed. I confirmed by reading the code that `dispose()` is the same on current master.\n\nRun locally on this branch: `npm run build:dev`, `npm run test:unit` (all pass apart from `umdRollupCompatibility.test.ts`, which hit its 5 s timeout under full-suite load and passes on its own), plus Prettier and ESLint on the changed files.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\n",
+                "author": {
+                    "name": "Bboissen",
+                    "url": "https://github.com/Bboissen"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/webgpuEngine.dispose.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19059",
+                "title": "KTX2: transfer a loaded file to the worker, and free the levels once uploaded",
+                "description": "Forum: [64298](https://forum.babylonjs.com/t/64298) #2 and #11: isolated PRs with measured gains, each benefit measured separately.\n\nWhen a KTX2 texture is decoded in a worker (the default), Babylon copies the file before posting it to the worker, and the levels the worker sends back stay in memory until a garbage collection finds them, long after they were uploaded to the GPU. V8 counts ArrayBuffer memory toward its next full GC, so an app that loads many KTX2 textures runs full GCs far more often than its JavaScript needs. This PR removes the copy when nothing else holds the file, and frees the levels once they are uploaded.\n\n**What it does.**\n- When the engine loaded the file from the texture's url with no offline provider involved, nothing else holds it: the worker gets its buffer (transferred) instead of a copy. The engine says so with a new optional argument of `IInternalTextureLoader.loadData`, `ownsData`, passed only on that path. A provider can keep the buffers it serves in a cache, so a file it serves is still copied. Data a texture is created from (`buffer`) is still copied, and so is a view on part of a buffer: it can belong to the caller, and with `doNotHandleContextLost` a texture does not keep it, so the texture alone cannot tell.\n- Once the levels a worker sent are uploaded, their buffers are released with `ArrayBuffer.prototype.transfer(0)` where it exists, which frees the memory at once. Nothing else holds them: the worker transferred them, and the uploads copy them (WebGL's `texImage2D` and `compressedTexImage2D`, WebGPU's `writeTexture` or a mapped buffer).\n- The decoder on the main thread (no workers) is unchanged: there, the levels can belong to the decoder.\n- Context loss is unaffected: a texture loaded from its url loads it again, and one created from data keeps that data (`_buffer`).\n\n**Measured.** In our app, which streams KTX2 textures as the player moves, these two changes took full GCs from 30.2 to 17.0 per minute (2 runs each). The numbers below come from a test page made for this PR, which we can share.\n\nChromium 147, RTX 3080 Laptop GPU, Windows 11, 1280×720. A page that keeps rendering a scene loads 64 KTX2 textures, 4 at a time. They are 2048×2048 UASTC with zstd and a full mip chain, about 5.1 MB each: 8 files of our own procedural content, each url loaded anew from a local server. Babylon's KTX2 decoder and transcoders are served locally, with the default worker pool. A Chrome trace counts V8's garbage collections on the main thread, from the first load to 2 s after the last. The external memory is `backingStorageSize` from `Runtime.getHeapUsage`, sampled every 50 ms. Each arm ran 4 times, the arms alternating, with a new browser for each run. Ranges are over the 4 runs, on master as of today (dbd14a5).\n\nWebGPU with `enableAllFeatures` (the levels are transcoded to BC7, 5.6 MB per texture):\n\n|  | full GCs on the main thread | their pauses, per run | external memory, peak | 2 s after the loads | load time |\n|---|---|---|---|---|---|\n| master | 11 | 30-42 ms | 107-128 MB | 29-71 MB | 1657-1780 ms |\n| this PR | 0-1 | 0-3 ms | 28.8 MB | 8.5 MB | 1605-1646 ms |\n\nWebGL2 (BC7):\n\n|  | full GCs on the main thread | their pauses, per run | external memory, peak | 2 s after the loads | load time |\n|---|---|---|---|---|---|\n| master | 10-11 | 30-35 ms | 118-199 MB | 40-102 MB | 1435-1693 ms |\n| this PR | 0 | 0 | 28.8 MB | 8.4 MB | 1239-1419 ms |\n\nWebGPU as created by default (no optional features, so no BC: the levels are RGBA8, 22.4 MB per texture):\n\n|  | full GCs on the main thread | their pauses, per run | external memory, peak | 2 s after the loads | load time |\n|---|---|---|---|---|---|\n| master | 26-27 | 74-90 ms | 177-199 MB | 114-141 MB | 2317-2561 ms |\n| this PR | 0-2 | 0-10 ms | 8.5-28.8 MB | 8.5 MB | 1940-2231 ms |\n\nEach change alone, measured the same way on c9e77a1, three commits before today's master (none of the three touches this code). \"Levels only\" and \"transfer only\" are this PR with one of its two changes taken out. Full GCs on the main thread:\n\n|  | WebGPU, BC7 | WebGPU, RGBA8 |\n|---|---|---|\n| master | 11-12 | 25-28 |\n| levels only | 6-7 | 8-10 |\n| transfer only | 5-6 | 22-25 |\n| this PR | 0 | 0-3 |\n\nWhat the numbers say:\n- On master, each texture leaves three buffers for the GC: its file (5.1 MB), the copy of the file, and its levels (5.6 MB in BC7, 22.4 MB in RGBA8). For 64 textures that brought 10-11 full GCs with BC7 and 26-27 with RGBA8. With this PR there were 0 to 2.\n- Each change does part of it. With BC7 the two weigh about the same. With RGBA8 the levels dominate.\n- What the loads leave in external memory falls from 29-141 MB to 8.4-8.5 MB, and its peak from 107-199 MB to 8.5-28.8 MB.\n- Here each full GC pauses the main thread about 3 ms, because this page's JavaScript heap is small. In an app with a large heap, each one marks much more.\n- The loads took as long or less.\n- The images are the same: in every configuration, each arm's last frame is identical to master's, byte for byte.\n\n**Unit tests.** `khronosTextureContainer2.test.ts`, 4: a worker gets the buffer of a file nothing else holds, and a copy of data that is not owned or that is a view on part of a buffer; the levels a worker sent are freed once they are uploaded (after the uploads read them in full); the levels of the decoder on the main thread are kept; and the engine says it owns the data of a texture loaded from its url, not the data a texture is created from. The first, second and fourth fail on master; the third passes on both. Engines, Materials and Misc unit suites: 756 passed, 1 expected fail (already marked on master).\n\nProgress videos: https://forum.babylonjs.com/t/64298/1\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.pure.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/internalTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/test/unit/Misc/khronosTextureContainer2.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19041",
+                "title": "Integrate native canvas texture updates and font metrics",
+                "description": "Babylon Native GUI text renders differently from the browser in two ways. This PR fixes both in `ThinNativeEngine`.\n\n### Font metrics\n`getFontOffset` returned all zeros (it was a TODO). As a result, GUI controls computed zero line heights, and text was mis-positioned or clipped.\n\nIt now measures the font with the native Canvas, using font bounding-box metrics for line layout as browsers do. On older runtimes it falls back to glyph bounds, and then to an estimate from the CSS px size. The measuring canvas is created once, reused, and disposed with the engine.\n\n### Dynamic texture flags\n`createDynamicTexture` ignored `generateMipMaps`, and `updateDynamicTexture` ignored `premulAlpha`. Minified GUI and text textures therefore aliased, and alpha blending differed from the browser.\n\nBoth flags are now passed to `Canvas.getCanvasTexture`. This is gated on the runtime advertising `supportsDynamicTextureMipMaps`, so older Babylon Native runtimes keep the previous behavior.\n\n### Tests\n- Added `nativeEngine.fontMetrics.test.ts`.\n- `packages/dev/core/test/unit/Engines/`: 30 files, 261 passed, 1 expected fail.\n- `tsc` and `eslint` are clean.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/nativeEngine.fontMetrics.test.ts"
+                ],
+                "tags": [
+                    "native"
+                ]
+            },
+            {
+                "pr": "19055",
+                "title": "Rebuild scene geometries when the WebGPU engine restores its buffers",
+                "description": "\nForum report: https://forum.babylonjs.com/t/64407. Thanks to Evgeni_Popov for reproducing it on 9.32.0 and confirming the diagnosis and the fix there.\n\nThis is a long-standing omission from when `WebGPUEngine` stopped inheriting from `Engine`, not a regression from #18962. #18962 fixed the asynchronous initialization ordering, so the restore now waits for the new GPU device before rebuilding; the missing geometry rebuild is the remaining issue. On 9.32.0 the restore gets that far and `onContextRestoredObservable` fires, but the canvas stays black.\n\n## Root cause\n\n`WebGPUEngine` stopped extending `Engine` in 7.2.3. It now extends `ThinWebGPUEngine` → `AbstractEngine`, so its `_rebuildBuffers()` override reaches `AbstractEngine._rebuildBuffers()`, which only rebuilds uniform buffers. `Engine._rebuildBuffers()` is the only place that calls `scene._rebuildGeometries()`, and the WebGPU path never reaches it. After a device loss, every mesh keeps the index and vertex buffers of the old device (same `uniqueId`s as before the loss), so every draw fails validation:\n\n```\n[Buffer \"BabylonWebGPUDevice0_DataBufferUniqueId=11-Geometry_<id>_IndexBuffer_CopyDst_Index_Storage_size27744\"]\nis associated with [Device \"BabylonWebGPUDevice0\"], and cannot be used with [Device \"BabylonWebGPUDevice1\"].\n - While encoding [RenderPassEncoder \"[74|1] - MainRenderPass\"].SetIndexBuffer(...)\n```\n\nThe storage-buffer loop in `WebGPUEngine._rebuildBuffers()` already expects `_rebuildGeometries()` to have run (its comment says the ComputeShaderParticleSystem's buffers may already be rebuilt by it). The restoration test from #18962 uses a `NullEngine`, which extends `Engine`, so it couldn't catch this.\n\n## Changes\n\n- `WebGPUEngine._rebuildBuffers()` now does the same index/vertex pass as `Engine._rebuildBuffers()` before calling `super._rebuildBuffers()`: `resetCachedMaterial()` and `_rebuildGeometries()` on every scene and virtual scene. `_rebuildGeometries()` also rebuilds instance buffers, the post-process manager, scene components, particle systems and sprite managers, so those come back too.\n\nNothing changes for WebGL, Native or Null engines, and the new loop only runs during a context restore.\n\n### Alternative considered\n\nMoving the loop into `AbstractEngine._rebuildBuffers()` and removing `Engine`'s override, the way `AbstractEngine._rebuildTextures()` already handles textures for every engine. It's a few lines shorter and would stop the two engines drifting apart again. I didn't do it because it also changes `ThinEngine` (and `ThinNativeEngine`): a `ThinEngine` with scenes would start rebuilding geometries on context restore, where today it doesn't. That's probably correct, but it's a behavior change outside the bug being fixed, so I kept this PR to WebGPU. I'm happy to switch to that version if you prefer it.\n\n## Testing\n\n- Repro (Playground, WebGPU engine): https://playground.babylonjs.com/?webgpu#SO3MD6#1. \"Lose device\" calls `engine._device.destroy()`; \"Apply fix\" patches `_rebuildBuffers` the same way as this PR. Measured on Chrome 156, Intel Iris Xe, Linux, 4 s after the loss:\n\n  | | 9.32.0 | 9.32.0 with the fix |\n  |---|---|---|\n  | `onContextRestoredObservable` fires | yes | yes |\n  | Canvas | black | scene back |\n  | WebGPU validation errors | ~470 in 4 s (2 per frame) | 0 |\n  | Mesh index buffer recreated | no | yes |\n\n  With the fix, the scene also comes back after a second loss.\n- New unit test `Engines/webgpuEngine.rebuildBuffers.test.ts`: it calls `WebGPUEngine.prototype._rebuildBuffers` on a stub engine with one scene, one virtual scene, one uniform buffer and two storage buffers (no GPU needed, like `webgpuEngine.dispose.test.ts`). It checks that both scenes get `resetCachedMaterial()` and `_rebuildGeometries()` before the uniform and storage buffers are rebuilt, and that a storage buffer already rebuilt by `_rebuildGeometries()` isn't rebuilt a second time. With the old `_rebuildBuffers()`, the test fails (`expected \"vi.fn()\" to be called once, but got 0 times`, on `scene._rebuildGeometries`).\n- `npm run build:dev`: no errors.\n- `npm run test:unit`: 486 of 486 files passed (7296 tests passed, 1 expected fail, 34 skipped).\n- `prettier --check` and `eslint` on the changed files pass (eslint reports only existing \"unused eslint-disable directive\" warnings in `webgpuEngine.pure.ts`, on lines this PR doesn't touch).\n",
+                "author": {
+                    "name": "christabone",
+                    "url": "https://github.com/christabone"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Materials/drawWrapper.ts",
+                    "packages/dev/core/src/Particles/computeShaderParticleSystem.pure.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.pure.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.pure.ts",
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts",
+                    "packages/dev/core/test/unit/Engines/helpers/webgpuLikeNullEngine.ts",
+                    "packages/dev/core/test/unit/Engines/webgpuEngine.rebuildBuffers.test.ts",
+                    "packages/dev/core/test/unit/Particles/computeShaderParticleSystemContextRestore.test.ts",
+                    "packages/dev/core/test/unit/Sprites/spriteManagerContextRestore.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19057",
+                "title": "Fix early shader compilation notifications with parallel WebGL compilation",
+                "description": "## Summary\n\nFixes BabylonJS/ThePirateCove#743.\n\n- Notify `onAfterShaderCompilationObservable` only after successful WebGL pipeline compilation, using the existing completion callback chain. Synchronous compilation remains synchronous, and raw-program creation keeps its existing behavior.\n- Clear the completion callback before invoking it so an after-compilation observer can safely query pipeline readiness without recursively invoking callbacks.\n- Identify the WebGL pipeline through `EventState.target` while preserving the observable's engine payload. Track instrumentation start times per pipeline so overlapping compilations remain accurate even when they complete out of order.\n- Save and restore the shared event target around both shader notifications, including when observers throw, so nested compilations cannot corrupt later observers or instrumentation.\n- Document the WebGL event target and completion semantics, and add regression coverage for both `ThinEngine` and `Engine`, compilation/link/validation failures, callback preservation, nested notifications, capture toggling, disposal, and raw programs.\n\n## Validation\n\n- 27 focused instrumentation/shader-compilation unit tests passed. The eight nested-notification/exception regression cases failed before the review fix and pass afterward.\n- Core package TypeScript check and focused regression-test typecheck passed.\n- ESLint and Prettier checks passed for the changed files.\n- Verified real WebGL2 compilation in devhost (`?exp=testScene`): three parallel programs produced `before → before → before → after → after → after`; a synchronous program still produced its after event immediately. All four instrumentation samples were recorded, and after observers safely queried readiness.\n- Verified nested notifications with real WebGL2 shaders: a before observer started a nested compilation, and an after observer queried another completed pipeline. Later observers retained the correct pipeline targets and instrumentation recorded both samples.\n- Temporary devhost changes were reverted and the validation server was stopped. Full-repository builds and test suites were not run.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.pure.ts",
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.pure.ts",
+                    "packages/dev/core/src/Instrumentation/engineInstrumentation.ts",
+                    "packages/dev/core/test/unit/Instrumentation/engineInstrumentation.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "19042",
+                "title": "Fix FBX import running out of memory on rigs with inherited bone scale",
+                "description": "Importing an animated FBX whose skeleton has bones with InheritType 2, such as a Mixamo character, never finishes and ends in an out of memory error (https://forum.babylonjs.com/t/64382).\n\n`_buildInheritedRigBoneAnimations` passed the refined sample times of each bone as the input of the next bone's `_refineSampleTimes`, so the midpoints piled up and the list grew with every bone. On the Mixamo file from the thread the input reached 115k times after 30 bones.\n\nEach bone is now refined from the same base times and the results are merged, like `_buildBoneAnimations` and `_buildNodeAnimations` already do. The same file now imports in about 3 s.\n\nAdded a test in `skeletalAnimation.test.ts` that loads a chain of 8 inherited scale bones with cubic curves and checks the refine input size stays the same for every bone. `npx vitest run --project=unit packages/dev/loaders/test/unit/FBX` passes.\n\nAssisted by Claude/Codex.\n",
+                "author": {
+                    "name": "Arthur031221",
+                    "url": "https://github.com/Arthur031221"
+                },
+                "files": [
+                    "packages/dev/loaders/src/FBX/fbxFileLoader.pure.ts",
+                    "packages/dev/loaders/test/unit/FBX/skeletalAnimation.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19037",
+                "title": "CSM: cascades in a per-generator uniform buffer for WGSL receivers",
+                "description": "Forum: [64298](https://forum.babylonjs.com/t/64298) #9 and #11, the first of the shared-data PRs.\n\nWith WGSL receivers, the cascades of a `CascadedShadowGenerator` (matrices, split depths, frustum lengths, blend factor and the PCSS corrections) were effect uniforms: every receiving draw had them written into its own uniform storage when it was bound. With this change they live in a uniform buffer owned by the generator, written once each time the cascades are computed (in the shadow map's `onBeforeBindObservable`, which also runs while a FAST snapshot replays). WGSL receivers bind that buffer as `cascades{X}` whenever it fits within the device's uniform buffers per stage. Everything else keeps the effect uniforms, unchanged: WebGL, GLSL materials on WebGPU, and the CSM lights of a WGSL receiver that has no room left for the buffer.\n\n**Uniform buffer budget.** The cascades buffer is one more binding per CSM light, visible in both stages.\n- `PrepareDefinesForLights` gives a CSM light its buffer (the `SHADOWCSMUBO{X}` define) only while it fits within `maxUniformBuffersPerShaderStage`. The budget counts the light buffers and the four buffers `GetSupportedSimultaneousLights` already reserves (Scene, Mesh, Internals and LeftOver in a WGSL material shader).\n- A CSM light past that budget keeps the effect uniforms, through the WGSL code master has today. The light count is never reduced: every configuration that fit before still fits, with all its lights.\n- The effect's uniform buffer list names `cascades{X}` only when the shader declares it, and `bindShadowLight` picks the path from that list.\n- Node material light blocks that prepare one light at a time keep the effect uniforms, since they don't know how many lights the material has.\n\n**Ownership: per generator, per camera, and per eye in floating origin mode.**\n- Each generator owns its buffers. A generator whose cascades follow the active camera (no camera given) keeps buffers for each camera it computes them for, and receivers bind the ones of the cascades computed last, which is what they read today through the uniforms.\n- Outside of floating origin, a camera has a single buffer, created with `trackUBOsInFrame = false`. A recorded bundle keeps binding it, and the next write is visible on replay. The buffer is not dynamic, so a write with unchanged values (a still camera) is skipped.\n- In floating origin mode, the light matrices are also offset by the eye the receivers are rendered for, and a mirror or a reflection probe moves that eye (`scene._forcedViewPosition`). Each eye a camera's receivers are rendered for in a frame gets its own buffer, written at the first bind of that eye in the frame, so no view writes another view's matrices before its commands run. A buffer that no view bound in the current frame is the one reused for a new eye, so a camera keeps as many buffers as eyes it renders in a frame.\n- The same check keeps the matrices on the current eye when the shadow map doesn't render again (`refreshRate = 0`) and the camera moves, which had the same gap.\n- The buffers are released with the generator, and when their camera is disposed.\n\n**Receiver-only settings.**\n- `cascadeBlendPercentage` and `penumbraDarkness` (now an accessor) are written into the generator's buffers when they change: once per change, not per receiver. They apply while the shadow map doesn't render again, and during a FAST replay.\n- The PCSS corrections are written whatever the filter, so a switch to PCSS doesn't wait for the next shadow map render either.\n\n**Layout.** On the CPU (`UniformBuffer`): `viewFrustumZ` vec4, `frustumLengths` vec4, `cascadeBlendFactor`, `penumbraDarkness`, `depthCorrection` vec4, `lightSizeUVCorrection` vec2[4] (padded), then `lightMatrix` mat4[4]. The WGSL struct `Cascades{X}` declares the same fields in the same order. `lightMatrix` comes last as `array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>`; the receiving shaders already assume at most 4 cascades.\n\n**Files.**\n- `cascadedShadowGenerator.pure.ts`.\n- `materialHelper.functions.ts`: the budget in `PrepareDefinesForLights`, and `cascades{X}` in `PrepareUniformsAndSamplersForLight` when the define is set. The node material light and PBR blocks pass the define the same way.\n- The WGSL includes `lightUboDeclaration`, `lightVxUboDeclaration`, `lightFragment` and `shadowsVertex`. Each read of the cascades has both paths, and the effect-uniform one is master's line.\n\n**Unit tests.**\n- `babylon.cascadedShadowGenerator.uniformBudget.test.ts` (new, 19 tests): it runs the default material's WGSL shaders through the WebGPU shader processor and counts the uniform buffers in each stage of the pipeline layout.\n  - Device limits of 8, 10, 12 and 16 uniform buffers per stage, with 4 to 12 lights, 1 to 4 of them with CSM.\n  - Every configuration fits within the limit without cascades buffers, which was the budget for lights before this change.\n  - Each case checks that every light and every cascaded shadow is kept, and that each stage stays within the limit.\n  - It also checks that the cascades buffers that fit are used, and that the effect's uniform buffer list matches what the shader declares.\n  - A WGSL receiver compiled without the buffer gets the effect uniforms.\n- `babylon.shadowGenerator.test.ts` adds 8 tests:\n  - A WGSL receiver binds the generator's buffer and gets no cascade uniforms.\n  - A GLSL receiver still gets the uniforms.\n  - Each camera gets its own buffer, and the first camera's buffer comes back when the cascades follow it again.\n  - The buffers are released on dispose.\n  - In floating origin mode, reflected and main-view receivers each read the light matrices the effect-uniform path gives them for their eye, from distinct buffers. A real `MirrorTexture` sets the reflected eye.\n  - In floating origin mode, the matrices follow the eye while the shadow map doesn't render again.\n  - Outside of floating origin, a mirror pass keeps using the camera's single buffer.\n  - With the shadow map rendering once, changing `cascadeBlendPercentage` from 0.1 to 0.5 and `penumbraDarkness` applies to every receiver (`cascadeBlendFactor` 2, not 10), without an upload per receiver.\n\nLights and Materials suites: 46 files, 462 tests passed. Full unit suite: 7,261 passed and 1 failed, plus 1 file that did not load. Neither is related to this change:\n- the Inspector Lite test file cannot resolve `@fluentui/react-charts`, a dependency added on master that is not installed in my checkout;\n- the UMD rollup compatibility test hit its 5 s timeout.\n\n**Rendering check.** The two arms:\n- 9.31.3 from the CDN;\n- 9.31.3 with this change, built locally (`master` 449e8a7 + this branch).\n\nBoth run in Chromium 147 on an RTX 3080 Laptop GPU, WebGPU, at 800×450. The scene is deterministic: 300 receivers that also cast shadows (StandardMaterial and PBRMaterial), a directional light with a 4-cascade CSM, and the camera on a fixed path. 60 frames are rendered one by one and read back, first in normal mode, then with a FAST snapshot recorded at frame 0 and replayed over the same path. Every mesh has `alwaysSelectAsActiveMesh`, so the recorded draw list covers the whole path; without it the replay keeps frame 0's list, which is expected snapshot behavior and unrelated to this change.\n\nThe four new variants:\n- `7 lights` and `8 lights` add point lights next to the sun and the sky. This GPU reports 12 uniform buffers per stage, so the cascades buffer fits with 7 lights and not with 8.\n- `Mirror, floating origin` uses `useFloatingOrigin` and a mirror wall that reflects the ground and the receivers with their shadows.\n- `Shadow map rendered once` sets `refreshRate = 0` under a still camera, and changes `cascadeBlendPercentage` (0.1 → 0.5) and `penumbraDarkness` (1 → 0.3) at frame 30.\n\n| Variant | Normal mode: 9.31.3 vs this change | FAST vs normal: 9.31.3 | FAST vs normal: this change | `writeBuffer` per frame, normal mode: 9.31.3 → this change |\n|---|---|---|---|---|\n| PCF | identical | up to 67.9/255 mean difference per frame | 0 in all 60 frames | 302 calls, 718 KB → 7 calls, 2.0 KB |\n| PCSS | identical | up to 60.0/255 | 0 in all 60 frames | 302 calls, 761 KB → 7 calls, 2.0 KB |\n| Two cameras, one generator per camera | identical | (see below) | (see below) | 604 calls, 1.44 MB → 14 calls, 4.0 KB |\n| Two cameras, one generator whose cascades follow each camera | identical | (see below) | (see below) | 599 calls, 1.43 MB → 8 calls, 2.3 KB |\n| GLSL materials on WebGPU | identical | up to 67.9/255 | up to 67.9/255 (path unchanged) | unchanged |\n| WebGL2 | identical | n/a | n/a | n/a |\n| 7 lights (the cascades buffer fits) | identical | up to 61.8/255 | 0 in all 60 frames | 302 calls, 718 KB → 7 calls, 2.0 KB |\n| 8 lights (it doesn't: effect uniforms) | identical | up to 61.0/255 | up to 61.0/255 (path unchanged) | unchanged |\n| Mirror, floating origin | identical | (see below) | (see below) | 2,377 calls, 1.58 MB → 2,083 calls, 748 KB |\n| Shadow map rendered once, settings changed at frame 30 | identical | up to 4.3/255 (frames 30 to 59) | 0 in all 60 frames | 5 calls, 12.9 KB → 0 calls (2 writes in all, one per change) |\n\n\"Identical\" means every pixel is equal at frames 0, 30 and 59. No arm logged a WebGPU or WebGL error, and in the WebGL2 variant `getError()` is 0 after the run in both arms.\n\nWith 9.31.3, a FAST replay keeps the cascades of the frame it recorded, so the shadows drift as soon as the camera moves. With this change, the replay matches normal rendering frame for frame wherever the cascades buffer is used. The `8 lights` row is the budget at work: with the cascades buffer this GPU would need 13 uniform buffers in the vertex stage, so that light keeps the effect uniforms and behaves exactly as in 9.31.3.\n\nThe two-camera variants are compared in normal mode only. With two active cameras in FAST mode, the second viewport renders nothing, with 9.31.3 and with this change alike, so that comparison would not say anything about this change. In normal mode, both views' commands run in the same frame, and with the shared generator, the cascades follow each camera in turn. That is the case where one allocation would be overwritten before the first view's commands execute; the images are identical to 9.31.3.\n\nThe mirror variant is also compared in normal mode only. In floating origin mode, every mesh's world matrix is offset when it is bound as well, so a FAST replay with a moving eye drifts with 9.31.3 and with this change alike, and the cascades are not what that comparison would measure.\n\nPrepared by Mema (formerly Memo), the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.pure.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.pure.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.pure.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightVxUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowsVertex.fx",
+                    "packages/dev/core/test/unit/Lights/Shadows/babylon.cascadedShadowGenerator.uniformBudget.test.ts",
+                    "packages/dev/core/test/unit/Lights/Shadows/babylon.shadowGenerator.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19047",
+                "title": "Fix disposed Gaussian splat meshes staying in memory with their splat data",
+                "description": "Apps that load and unload Gaussian splats in one scene keep the full CPU splat buffer of every disposed `GaussianSplattingMesh` in memory until the scene is disposed.\n\nThe constructor adds an observer to `scene.onCameraRemovedObservable` and never removes it. The observer holds the mesh, and `dispose()` deliberately keeps `_splatsData` alive, so each disposed mesh stays reachable. In a NullEngine run, 20 cycles of `updateData` with 250k splats followed by `dispose()` left 304 MB of ArrayBuffers behind. With this change it stays at 14.5 MB.\n\nThe observer is now kept in a field and removed in `dispose()`, like `_budgetObserver` in `GaussianSplattingMesh`.\n\nAdded `babylon.gaussianSplatting.cameraRemovedObserver.test.ts`. `npx vitest run --project=unit packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting` passes.\n\nLabel: bug\n\nAssisted by Claude/Codex.\n",
+                "author": {
+                    "name": "Arthur031221",
+                    "url": "https://github.com/Arthur031221"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.cameraRemovedObserver.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19012",
+                "title": "Fix GUI editor loading slowdown with adaptive scaling",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nFix the severe GUI editor startup slowdown reported when `AdvancedDynamicTexture.useSmallestIdeal` is enabled on a GUI containing many controls.\n\nThe editor clones the live controls on startup. `Control.serialize()` previously disabled and restored adaptive scaling through the public `idealWidth` and `idealHeight` setters for every serialized control. Each setter recursively invalidates the entire GUI and refreshes font caches. This repeats full-tree work for each rectangle and nested text block and is particularly expensive with smallest-ideal scaling.\n\n- Temporarily suspend adaptive scaling through the internal backing fields without invoking layout-invalidating setters.\n- Restore the original ideal dimensions in `finally`, including when serialization throws.\n- Share the existing font-declaration construction and compute unscaled serialized font metrics separately, without modifying live font caches or dirtying descendants.\n- Respect `allowCanvas = false` without indirectly measuring fonts through adaptive-scaling setters.\n- Add regression coverage for pixel/percentage values, portrait/landscape orientation, cloning multiple controls, forced serialization, single-axis/disabled scaling, detached controls before their first render, failure restoration, and disabled canvas access.\n\nThe public adaptive-scaling setters keep their existing behavior. No GUI editor-specific workaround or change to the meaning of `useSmallestIdeal` is required.\n\nForum report: https://forum.babylonjs.com/t/10x-loading-time-for-opening-of-gui-editor-when-usesmallestideal-true/64335\n\nReproduction: https://playground.babylonjs.com/#V8JAPO\n\n## Performance\n\nMeasured in Edge using a temporary devhost scene reproducing the forum's rectangle/text-block setup. These numbers measure the **control-cloning step**, not total editor startup or module loading:\n\n| Rectangles, each with a text block | `useSmallestIdeal` | Before | After |\n| --- | --- | --- | --- |\n| 1,000 | `false` | ~302 ms | ~56 ms |\n| 1,000 | `true` | ~27.4 s | ~51 ms |\n| 2,000 | `false` | Not measured | ~137 ms |\n| 2,000 | `true` | Not measured | ~131 ms |\n\nFor the 1,000-rectangle case, full-root invalidations during cloning dropped from 8,000 to zero. The actual GUI editor successfully opened with 2,000 rectangles and their text blocks. Source-canvas screenshots were identical before and after cloning. The temporary devhost scene was removed and its server stopped.\n\n## Validation\n\n- All GUI unit tests: `npx vitest run --project=unit packages/dev/gui/test/unit` — 60 tests passed across 8 files.\n- Changed-file Prettier check passed.\n- Changed-file ESLint passed with no errors; 15 existing warnings outside the changed logic.\n- Focused TypeScript check of the changed GUI source and regression tests, including the repository's ambient declarations: zero diagnostics.\n- Full-repository builds and suites were intentionally not run, per the requested validation scope.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.pure.ts",
+                    "packages/dev/gui/test/unit/serialization.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "optimizations"
+                ]
+            },
+            {
+                "pr": "19044",
+                "title": "Fix WGSL preLightingInfo struct when iridescence and area lights are both used",
+                "description": "### Issue\n\nOn WebGPU, a `PBRMaterial` with iridescence enabled that is lit by a `RectAreaLight` fails to compile its fragment shader:\n\n```\nError while parsing WGSL: expected '}' for struct declaration\nareaLightDiffuse: vec3f,\n```\n\nThe material never renders. WebGL is not affected.\n\n### Cause\n\nIn `ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.fx`, the `iridescenceIntensity` member of `struct preLightingInfo` has no trailing comma:\n\n```wgsl\n#ifdef IRIDESCENCE\n    iridescenceIntensity: f32\n#endif\n\n#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)\nareaLightDiffuse: vec3f,\n...\n```\n\nWhen only `IRIDESCENCE` is defined it is the last member, so it compiles. When the area light members are also present, they follow it directly without a separator.\n\n### Fix\n\nAdd the trailing comma. WGSL accepts a trailing comma before the closing `}` of a struct, so the struct stays valid for every define combination. Line endings are unchanged.\n\nI also scanned every `struct` in the WGSL `.fx` files under `packages/dev` for the same pattern: a member without a comma followed by another member, which happens when the members are in different `#ifdef` blocks. This was the only one.\n\n### Repro\n\n1. Create a `WebGPUEngine`.\n2. Add a mesh with a `PBRMaterial` and set `material.iridescence.isEnabled = true`.\n3. Light it with a `RectAreaLight`, so `AREALIGHTUSED` and `AREALIGHTSUPPORTED` are defined.\n4. The fragment shader fails with the WGSL parse error above. With this change it compiles and renders.\n\n### Verification\n\nI hit this in an app on `@babylonjs/core` 9.32.0 in Chrome (WebGPU). I patched the same one-character change into the published `ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.js`, and the shader compiled and rendered. I have not run the Babylon.js build or visualization tests locally for this change.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "Bboissen",
+                    "url": "https://github.com/Bboissen"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19040",
+                "title": "Inspector Lite: add Flow Graphs explorer parity (P8c)",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nInspector Lite currently has no way to discover running flow graphs in the scene explorer. This adds the explorer-only P8c parity item from [BabylonJS/Babylon-Lite#55](https://github.com/BabylonJS/Babylon-Lite/issues/55), using the existing Lite runtime-list API without dependency or public API changes.\n\nThe new **Flow Graphs** section uses the full Inspector's green Flowchart icon, supports runtime selection, and refreshes on attach/detach. The normal Lite test scene includes one running graph: clicking the Blue Sphere repeatedly toggles its orange emissive tint through actual graph execution. Clicks are confirmed against the nearest visible, pickable geometry before the event is dispatched; the graph decides and applies the color change.\n\n## Parity boundaries\n\n- **Edit Graph is explicitly deferred**, as approved by the user. This adds no editor command/button, JSON bridge, or FlowGraph-specific properties.\n- All runtime labels are **Unnamed Flow Graph** because Lite runtimes have no name.\n- Updates use the existing 250 ms Lite polling rather than full-Inspector observables.\n- Each Lite runtime represents one execution context, so imported editor JSON with multiple contexts produces multiple entries.\n\n## Validation\n\n- Independent Tech Lead review approved the final changes and picking correction with no blocking findings.\n- Source build, targeted app/test TypeScript checks, 24 explorer unit tests, and all four FlowGraph integration tests pass. The original explorer implementation also passed the full unit suite.\n- Integration coverage verifies startup visibility, selection, live attach/remove without removing the default graph, repeatable pixel-verified interaction, ignored drags/other objects, inert helper graphs, bounding-box-only silhouette misses, and foreground occlusion.\n- **The full Lite integration suite is not green: 20 passed / 8 failed.** All 19 non-gizmo tests pass. The eight unchanged gizmo failures match baseline assertions/errors on both attempts: pixel preservation, rapid taps, four immediate handle-drag cases, local scaling, and canvas selection. They also reproduce without P8c and have not been fixed or waived here. A previously observed intermittent GPU-buffer shutdown error did not recur in this run; no new or changed failures were observed after the picking correction.\n\n## Screenshot\n\nFlow Graphs discovery and the sphere's orange state after executing the graph:\n\n![Inspector Lite with the Flow Graphs section expanded, its runtime selected, and the sphere orange after graph execution](https://github.com/user-attachments/assets/5b1c6fb7-9457-466a-859f-105e7e7c89b4)",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/flowGraphExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/integration/liteFlowGraph.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteExplorerServices.test.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "19035",
+                "title": "Fix MirrorTexture.dispose leaking its imageProcessing observer",
+                "description": "Forum report: https://forum.babylonjs.com/t/64370. Thanks to Evgeni_Popov for confirming the bug there.\n\n`MirrorTexture.dispose()` called `super.dispose()` first and then `this.getScene()` to remove its `imageProcessingConfiguration.onUpdateParameters` observer. `BaseTexture.dispose()` sets `_scene` to `null`, so `getScene()` returned `null`, the observer was never removed, and every disposed MirrorTexture stayed reachable through the scene's image processing configuration.\n\n## Changes\n\n- `MirrorTexture.dispose()` now removes the observer before calling `super.dispose()` and sets `_imageProcessingConfigChangeObserver` to `null`. `_sceneUBO` is still disposed. This is the same order `VideoTexture.dispose()` already uses for its snapshot rendering observer.\n\nI also looked for the same pattern elsewhere (`super.dispose()` followed by `getScene()` or `_scene` to remove an observer). `CascadedShadowGenerator` and the GUI `HandleMaterial` do this, but their base classes don't clear the scene reference, so they aren't affected. I didn't find another texture with this bug.\n\n## Testing\n\n- New unit test `Materials/Textures/babylon.mirrorTexture.test.ts` (NullEngine): it creates 5 MirrorTextures, checks that `onUpdateParameters` gained 5 observers, disposes them, waits one tick for `Observable.remove()`'s deferred removal, and checks that the count is back to the baseline. With the old `dispose()` order, the test fails (`expected 5 to be +0`).\n- `npm run build:dev`: no errors.\n- `npm run test:unit`: 484 of 485 files passed (7291 tests passed, 1 expected fail, 34 skipped). The one failure was `umdRollupCompatibility.test.ts` (\"keeps the glTF2 legacy export compatible…\"), which hit the 5 s timeout while importing the loaders. It passes when run alone with a longer timeout (5.3 s). It's unrelated to this change.\n- `prettier --check` and `eslint` on the changed files pass (eslint reports only an existing doc warning on `resize`, which this PR doesn't touch).\n",
+                "author": {
+                    "name": "christabone",
+                    "url": "https://github.com/christabone"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/mirrorTexture.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/babylon.mirrorTexture.test.ts"
+                ],
+                "tags": []
             }
         ],
         "9.31.3": [

@@ -32,6 +32,12 @@ export interface INativeEngine {
      */
     readonly supportsMultisampledMipmaps?: boolean;
 
+    /**
+     * True when the runtime can copy a canvas into a dynamic texture with a mip chain and
+     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps)`).
+     */
+    readonly supportsDynamicTextureMipMaps?: boolean;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -467,9 +473,17 @@ interface INativeCameraConstructor {
 }
 
 /** @internal */
+export interface INativeCanvas extends ICanvas {
+    /**
+     * Releases the native resources held by the canvas.
+     */
+    dispose(): void;
+}
+
+/** @internal */
 interface INativeCanvasConstructor {
-    prototype: ICanvas;
-    new (): ICanvas;
+    prototype: INativeCanvas;
+    new (): INativeCanvas;
 
     loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
 }
@@ -551,4 +565,27 @@ export interface INative {
 
     // GaussianSplatting
     sortSplats?(modelViewMatrix: Matrix, splatPositions: Float32Array, splatIndex: Float32Array, useRightHandedSystem: boolean): void;
+
+    // NativeDraco plugin — synchronous native replacement for the WASM Draco decoder.
+    decodeDracoMesh?(
+        data: Int8Array,
+        attributes?: { [kind: string]: number }
+    ): {
+        indices: Uint16Array | Uint32Array | null;
+        attributes: Array<{ kind: string; data: ArrayBufferView; size: number; byteOffset: number; byteStride: number; normalized: boolean }>;
+        totalVertices: number;
+    };
+
+    // NativeDraco plugin — synchronous native replacement for the WASM Draco encoder.
+    encodeDracoMesh?(
+        attributes: Array<{ kind: string; dracoName: string; size: number; data: ArrayBufferView }>,
+        indices: Uint16Array | Uint32Array | null,
+        options: { method?: string; encodeSpeed?: number; decodeSpeed?: number; quantizationBits?: { [name: string]: number } }
+    ): {
+        data: Int8Array;
+        attributeIds: { [kind: string]: number };
+    };
+
+    // NativeMeshopt plugin — synchronous native replacement for the WASM meshopt decoder.
+    decodeMeshopt?(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Uint8Array;
 }
