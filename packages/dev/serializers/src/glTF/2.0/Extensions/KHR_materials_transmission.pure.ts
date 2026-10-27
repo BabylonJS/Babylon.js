@@ -159,8 +159,13 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     );
                 }
 
-                // Imported glTF inputs already contain the surface tint expected by glTF.
-                if (babylonMaterial._gltfTransmissionSurfaceToCoat) {
+                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
+                // Imported glTF inputs already contain the surface tint unless the non-volume transmission tint was edited independently.
+                if (
+                    babylonMaterial._gltfTransmissionSurfaceToCoat &&
+                    (usesVolume ||
+                        (babylonMaterial.transmissionColor.equals(babylonMaterial.baseColor) && babylonMaterial.transmissionColorTexture === babylonMaterial.baseColorTexture))
+                ) {
                     if (baseColorTexture && babylonMaterial.geometryOpacityTexture && babylonMaterial.baseColorTexture && !babylonMaterial.baseColorTexture.gammaSpace) {
                         // Opacity packing copies hardware-decoded RGB; glTF still requires sRGB texels.
                         const packedTexture = baseColorTexture;
@@ -190,7 +195,6 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 // entirely. In that case, export the base color (with opacity packed) without the lerp.
                 const metalness = babylonMaterial.baseMetalness;
                 const metalnessTexture = babylonMaterial.baseMetalnessTexture;
-                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
                 if (baseColorTexture) {
                     const otherTextures = [transWeightResult.texture, metalness > 0 ? metalnessTexture : null, usesVolume ? null : babylonMaterial.transmissionColorTexture];
                     if (otherTextures.some((texture) => texture && texture.coordinatesIndex !== baseColorTexture!.coordinatesIndex)) {
