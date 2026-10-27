@@ -1382,7 +1382,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * Gets the TAA jitter of a camera's view: the jitter of the scene's TAA material manager. A TAA post-process computes it for its camera, and
+     * Gets the TAA jitter of a camera's view, from the scene's TAA material manager. A TAA post-process computes it for each of its cameras, and
      * the views of that camera (each eye of a rig) get it. With the prepass, it computes it after the draws of its frame: the jitter applies until
      * the end of the next frame. The jitter of a manager used on its own applies to every camera's view.
      * @param camera the camera whose view is being rendered
@@ -1393,12 +1393,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (!manager?.isEnabled) {
             return Vector2.ZeroReadOnly;
         }
-        // the eyes are found in the rig of the TAA's camera: the frame graph unsets their rigParent while they render
-        const taaCamera = manager._jitterCamera;
-        if (taaCamera && ((camera !== taaCamera && !taaCamera._rigCameras.includes(camera)) || manager._jitterFrameId < this._engine.frameId - 1)) {
-            return Vector2.ZeroReadOnly;
-        }
-        return manager.jitter;
+        return manager._getCameraJitter(camera, this._engine.frameId);
     }
 
     // Mirror

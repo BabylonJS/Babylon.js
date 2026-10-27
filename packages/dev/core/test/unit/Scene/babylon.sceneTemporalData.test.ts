@@ -23,6 +23,7 @@ import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { type Effect } from "core/Materials/effect";
 import { type Mesh } from "core/Meshes/mesh";
 import { TAAMaterialManager } from "core/PostProcesses/RenderPipeline/Pipelines/taaMaterialManager";
+import { TAARenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { Scene } from "core/scene";
@@ -157,6 +158,44 @@ describe("Scene uniform buffer: temporal data of the view", () => {
         engine.endFrame();
         expect(pass(camA).jitter).toEqual([0, 0]);
         taa.dispose();
+    });
+
+    it("gives each camera of a TAA pipeline shared by two cameras the jitter computed for it", () => {
+        // the pipeline's TAA reprojects, so it runs after the draws of each camera (prepass) and computes that camera's jitter for its next frame
+        engine.getCaps().texelFetch = true;
+        engine.getCaps().drawBuffersExtension = true;
+        vi.spyOn(engine, "createMultipleRenderTarget").mockImplementation((size, options) => {
+            const target = new RenderTargetWrapper(true, false, size, engine);
+            target.setTextures(Array.from({ length: options.textureCount ?? 1 }, () => new InternalTexture(engine, InternalTextureSource.MultiRenderTarget)));
+            return target;
+        });
+        const pipeline = new TAARenderingPipeline("taa", scene, [camA, camB]);
+        pipeline.reprojectHistory = true;
+        pipeline.disableOnCameraMove = false;
+        const taa = (pipeline as any)._taaPostProcess;
+        const manager = (pipeline as any)._taaThinPostProcess._taaMaterialManager as TAAMaterialManager;
+        // a frame: the draws of each camera, then the TAA of that camera
+        const computed: Record<string, number[]> = {};
+        const frame = () => {
+            const drawn: Record<string, number[]> = {};
+            for (const camera of [camA, camB]) {
+                drawn[camera.name] = pass(camera).jitter;
+                taa.onActivateObservable.notifyObservers(camera);
+                computed[camera.name] = [manager.jitter.x, manager.jitter.y];
+            }
+            engine.endFrame();
+            return drawn;
+        };
+        frame();
+        for (let i = 0; i < 3; i++) {
+            const expected = { ...computed };
+            const drawn = frame();
+            expect(drawn).toEqual(expected);
+            expect(drawn["camA"]).not.toEqual([0, 0]);
+            expect(drawn["camB"]).not.toEqual([0, 0]);
+            expect(drawn["camA"]).not.toEqual(drawn["camB"]);
+        }
+        pipeline.dispose();
     });
 
     // an object renderer that draws camA's view
@@ -571,7 +610,9 @@ describe("Scene uniform buffer: temporal data of the view", () => {
 
     describe("prepass velocity", () => {
         it("binds the previous view-projection to GLSL effects only", () => {
+            // supported: once a TAA pipeline registered the prepass scene component, its setter keeps a supported renderer only
             (scene as any).prePassRenderer = {
+                isSupported: true,
                 enabled: true,
                 currentRTisSceneRT: true,
                 getIndex: (type: number) => (type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE ? 0 : -1),
@@ -585,6 +626,7 @@ describe("Scene uniform buffer: temporal data of the view", () => {
                 expect(names).toEqual(shaderLanguage === ShaderLanguage.WGSL ? ["previousWorld"] : ["previousViewProjection", "previousWorld"]);
             }
             (scene as any).prePassRenderer = null;
+            (scene as any)._prePassRenderer = null;
         });
     });
 

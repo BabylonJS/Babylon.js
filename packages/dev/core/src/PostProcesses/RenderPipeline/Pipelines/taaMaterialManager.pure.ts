@@ -9,7 +9,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector2 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene.pure";
-import { type Nullable } from "core/types";
+import { type DeepImmutable, type Nullable } from "core/types";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 class TAAJitterMaterialDefines extends MaterialDefines {
@@ -147,12 +147,55 @@ export class TAAMaterialManager {
     public readonly jitter = new Vector2();
 
     /**
-     * @internal Set by a TAA post-process: the camera it computed the jitter for, in the frame _jitterFrameId. In WGSL, only the views of that
-     * camera (each eye of a rig) get it then, until the end of the next frame. Without it, every camera's view gets the jitter.
+     * @internal The jitter a TAA post-process computed for each of its cameras, and the frame it computed it in. In WGSL, the views of a camera
+     * (each eye of its rig) get that camera's jitter, until the end of the next frame. With none, every camera's view gets the manager's jitter.
      */
-    public _jitterCamera: Nullable<Camera> = null;
-    /** @internal */
-    public _jitterFrameId = -1;
+    public readonly _cameraJitters = new Map<Camera, { jitter: Vector2; frameId: number }>();
+
+    /**
+     * @internal Keeps the manager's jitter as the one a TAA post-process computed for its camera in this frame. The records of cameras that
+     * stopped rendering are dropped: they would give no jitter anymore.
+     * @param camera the camera the jitter was computed for (the parent of a rig)
+     * @param frameId the engine's frame id
+     */
+    public _setCameraJitter(camera: Camera, frameId: number): void {
+        for (const [other, record] of this._cameraJitters) {
+            if (record.frameId < frameId - 1) {
+                this._cameraJitters.delete(other);
+            }
+        }
+        let record = this._cameraJitters.get(camera);
+        if (!record) {
+            record = { jitter: new Vector2(), frameId };
+            this._cameraJitters.set(camera, record);
+        }
+        record.jitter.copyFrom(this.jitter);
+        record.frameId = frameId;
+    }
+
+    /**
+     * @internal Gets the jitter of a camera's view (WGSL): the jitter computed for that camera, or for the rig it is an eye of, in this frame or
+     * the previous one. A manager used on its own, with no TAA post-process, gives its jitter to every camera's view.
+     * @param camera the camera whose view is being rendered
+     * @param frameId the engine's frame id
+     * @returns the jitter, in clip space
+     */
+    public _getCameraJitter(camera: Camera, frameId: number): DeepImmutable<Vector2> {
+        if (this._cameraJitters.size === 0) {
+            return this.jitter;
+        }
+        let record = this._cameraJitters.get(camera);
+        if (!record) {
+            // the eyes are found in the rig of the TAA's camera: the frame graph unsets their rigParent while they render
+            for (const [taaCamera, taaRecord] of this._cameraJitters) {
+                if (taaCamera._rigCameras.includes(camera)) {
+                    record = taaRecord;
+                    break;
+                }
+            }
+        }
+        return record && record.frameId >= frameId - 1 ? record.jitter : Vector2.ZeroReadOnly;
+    }
 
     /** @internal */
     public readonly _materialPlugins: TAAJitterMaterialPlugin[] = [];
@@ -180,6 +223,7 @@ export class TAAMaterialManager {
             this._scene._taaMaterialManager = null;
         }
         UnregisterMaterialPlugin(TAAJitterMaterialPlugin.Name);
+        this._cameraJitters.clear();
         const plugins = this._materialPlugins.splice(0, this._materialPlugins.length);
         for (const plugin of plugins) {
             plugin.manager = null;
