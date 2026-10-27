@@ -379,7 +379,9 @@ export class SolidParticleSystem implements IDisposable {
         let number: number = (options && options.number) || 0;
         let delta: number = (options && options.delta) || 0;
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
-        const meshInd = this._getModelIndices(mesh);
+        const material = this._useModelMaterial ? (mesh.material ?? this._setDefaultMaterial()) : null;
+        const indicesSideOrientation = this._getModelIndicesSideOrientation(material);
+        const meshInd = this._getModelIndices(mesh, indicesSideOrientation);
         const meshUV = <FloatArray>mesh.getVerticesData(this._getUVKind(mesh, options?.uvKind ?? 0));
         let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
@@ -467,11 +469,8 @@ export class SolidParticleSystem implements IDisposable {
             if (this._particlesIntersect) {
                 bInfo = new BoundingInfo(minimum, maximum);
             }
-            let material = null;
-            if (this._useModelMaterial) {
-                material = mesh.material ? mesh.material : this._setDefaultMaterial();
-            }
             const modelShape = new ModelShape(this._shapeCounter, shape, shapeInd, shapeNor, shapeCol, shapeUV, null, null, material);
+            modelShape._indicesSideOrientation = indicesSideOrientation;
 
             // add the particle in the SPS
             const currentPos = this._positions.length;
@@ -806,32 +805,46 @@ export class SolidParticleSystem implements IDisposable {
         return rgba;
     }
 
-    private _getModelIndices(mesh: AbstractMesh): number[] {
-        const indices = Array.from(mesh.getIndices()!);
-        const model = mesh.isAnInstance ? (mesh as InstancedMesh).sourceMesh : mesh;
+    private _getModelIndicesSideOrientation(material: Nullable<Material>): number {
         const meshOrientation = this._scene.useRightHandedSystem ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation;
         if (this._modelSideOrientation === null) {
-            this._modelDefaultMaterialSideOrientation = this._useModelMaterial ? null : this._scene.defaultMaterial.sideOrientation;
+            const defaultMaterial = !this._useModelMaterial && this._scene._hasDefaultMaterial ? this._scene.defaultMaterial : null;
+            this._modelDefaultMaterialSideOrientation = defaultMaterial?.sideOrientation ?? null;
             this._modelSideOrientation = this._modelDefaultMaterialSideOrientation ?? meshOrientation;
         }
-        const sourceMaterial = mesh.material ?? mesh.getScene().defaultMaterial;
-        const targetMaterial = this._useModelMaterial ? (mesh.material ?? this._setDefaultMaterial()) : null;
-        const targetOrientation = targetMaterial?.sideOrientation ?? this._modelSideOrientation;
+        const targetOrientation = (this._useModelMaterial ? material?.sideOrientation : null) ?? this._modelSideOrientation;
+        // Store a scene-independent convention for transfers between left- and right-handed scenes.
+        return targetOrientation === meshOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
+    }
+
+    private _flipModelIndices(indices: number[], start = 0, end = indices.length): void {
+        for (let i = start; i < end; i += 3) {
+            const second = indices[i + 1];
+            indices[i + 1] = indices[i + 2];
+            indices[i + 2] = second;
+        }
+    }
+
+    private _getModelIndices(mesh: AbstractMesh, targetOrientation: number): number[] {
+        const indices = Array.from(mesh.getIndices()!);
+        const model = mesh.isAnInstance ? (mesh as InstancedMesh).sourceMesh : mesh;
+        const sourceScene = mesh.getScene();
+        const meshOrientation = sourceScene.useRightHandedSystem ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation;
+        const defaultMaterial = !this._useModelMaterial && this._scene._hasDefaultMaterial ? this._scene.defaultMaterial : null;
+        const sourceMaterial = mesh.material ?? (sourceScene._hasDefaultMaterial ? sourceScene.defaultMaterial : null);
         const modelOrientation = model instanceof Mesh ? model.sideOrientation : meshOrientation;
         const subMeshCount = Math.max(1, model.subMeshes.length);
         for (let subMeshIndex = 0; subMeshIndex < subMeshCount; subMeshIndex++) {
             const subMesh = model.subMeshes[subMeshIndex];
             const material = subMesh?.getMaterial() ?? sourceMaterial;
             // A shared default-material override changes rendering globally, not the stored geometry convention.
-            const materialOrientation = !this._useModelMaterial && material === this._scene.defaultMaterial ? this._modelDefaultMaterialSideOrientation : material.sideOrientation;
-            if ((materialOrientation ?? modelOrientation) !== targetOrientation) {
+            const materialOrientation = !this._useModelMaterial && material === defaultMaterial ? this._modelDefaultMaterialSideOrientation : material?.sideOrientation;
+            const orientation = materialOrientation ?? modelOrientation;
+            const indicesOrientation = orientation === meshOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
+            if (indicesOrientation !== targetOrientation) {
                 const start = subMesh?.indexStart ?? 0;
                 const end = subMesh ? start + subMesh.indexCount : indices.length;
-                for (let i = start; i < end; i += 3) {
-                    const second = indices[i + 1];
-                    indices[i + 1] = indices[i + 2];
-                    indices[i + 2] = second;
-                }
+                this._flipModelIndices(indices, start, end);
             }
         }
         return indices;
@@ -854,7 +867,9 @@ export class SolidParticleSystem implements IDisposable {
      */
     public addShape(mesh: AbstractMesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any; storage?: [] }): number {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
-        const indices = this._getModelIndices(mesh);
+        const material = this._useModelMaterial ? (mesh.material ?? this._setDefaultMaterial()) : null;
+        const indicesSideOrientation = this._getModelIndicesSideOrientation(material);
+        const indices = this._getModelIndices(mesh, indicesSideOrientation);
         const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
         let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
@@ -875,11 +890,8 @@ export class SolidParticleSystem implements IDisposable {
 
         const posfunc = options ? options.positionFunction : null;
         const vtxfunc = options ? options.vertexFunction : null;
-        let material = null;
-        if (this._useModelMaterial) {
-            material = mesh.material ? mesh.material : this._setDefaultMaterial();
-        }
         const modelShape = new ModelShape(this._shapeCounter, shape, indices, shapeNormals, shapeColors, shapeUV, posfunc, vtxfunc, material);
+        modelShape._indicesSideOrientation = indicesSideOrientation;
 
         // particles
         for (let i = 0; i < nb; i++) {
@@ -1036,6 +1048,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Inserts some pre-created particles in the solid particle system so that they can be managed by setParticles().
+     * Stored model winding is adapted to this SPS without modifying the source model.
      * @param solidParticleArray an array populated with Solid Particles objects
      * @returns the SPS
      */
@@ -1046,9 +1059,31 @@ export class SolidParticleSystem implements IDisposable {
         let idxInShape = 0;
         let currentShapeId = solidParticleArray[0].shapeId;
         const nb = solidParticleArray.length;
+        const models = new Map<ModelShape, ModelShape>();
         for (let i = 0; i < nb; i++) {
             const sp = solidParticleArray[i];
-            const model = sp._model;
+            let model = models.get(sp._model);
+            if (!model) {
+                model = sp._model;
+                const indicesSideOrientation = this._getModelIndicesSideOrientation(model._material);
+                if (model._indicesSideOrientation !== null && model._indicesSideOrientation !== indicesSideOrientation) {
+                    const indices = model._indices.slice();
+                    this._flipModelIndices(indices);
+                    model = new ModelShape(
+                        model.shapeId,
+                        model._shape,
+                        indices,
+                        model._normals,
+                        model._shapeColors,
+                        model._shapeUV,
+                        model._positionFunction,
+                        model._vertexFunction,
+                        model._material
+                    );
+                    model._indicesSideOrientation = indicesSideOrientation;
+                }
+                models.set(sp._model, model);
+            }
             const shape = model._shape;
             const meshInd = model._indices;
             const meshUV = model._shapeUV;

@@ -146,6 +146,128 @@ describe.each([false, true])("SolidParticleSystem winding (right-handed scene: %
         expect(Array.from(target.buildMesh().getIndices()!)).toEqual([0, 1, 2]);
     });
 
+    it.each([
+        ["addShape", false],
+        ["addShape", true],
+        ["digest", false],
+        ["digest", true],
+    ] as const)("reconciles transferred model conventions from %s (source reversed: %s)", (method, sourceReversed) => {
+        const model = createModel(sourceReversed);
+        if (sourceReversed) {
+            scene.defaultMaterial.sideOrientation = model.sideOrientation;
+        }
+        const source = new SolidParticleSystem("source", scene, { expandable: true });
+        if (method === "addShape") {
+            source.addShape(model, 3);
+        } else {
+            source.digest(model);
+            source.digest(model);
+            source.digest(model);
+        }
+        source.buildMesh();
+        source.setParticles();
+        const particles = source.removeParticles(0, 1);
+        const sourceModel = particles[0]._model;
+        const sourceIndices = sourceModel._indices.slice();
+        const targetScene = new Scene(engine);
+        targetScene.useRightHandedSystem = rightHanded;
+
+        try {
+            if (!sourceReversed) {
+                targetScene.defaultMaterial.sideOrientation = rightHanded ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+            }
+            const target = new SolidParticleSystem("target", targetScene, { expandable: true });
+            target.insertParticlesFromArray(particles);
+            target.buildMesh();
+            target.setParticles();
+            const targetIndices = sourceReversed ? [0, 1, 2] : [0, 2, 1];
+            expectTrianglePositions(target.mesh, model, [...targetIndices, ...targetIndices]);
+            expect(sourceModel._indices).toEqual(sourceIndices);
+            expect(target.particles[0]._model).not.toBe(sourceModel);
+            if (method === "addShape") {
+                expect(target.particles[0]._model).toBe(target.particles[1]._model);
+            }
+
+            const returned = target.removeParticles(0, 0);
+            source.insertParticlesFromArray(returned);
+            source.buildMesh();
+            source.setParticles();
+            const originalIndices = sourceReversed ? [0, 2, 1] : [0, 1, 2];
+            expectTrianglePositions(source.mesh, model, [...originalIndices, ...originalIndices]);
+            expect(sourceModel._indices).toEqual(sourceIndices);
+            target.buildMesh();
+            target.setParticles();
+            expectTrianglePositions(target.mesh, model, targetIndices);
+        } finally {
+            targetScene.dispose();
+        }
+    });
+
+    it("preserves native geometry when transferring between scene handedness modes", () => {
+        const model = createModel();
+        const source = new SolidParticleSystem("source", scene, { expandable: true });
+        source.addShape(model, 2);
+        source.buildMesh();
+        const particles = source.removeParticles(0, 0);
+        const targetScene = new Scene(engine);
+        targetScene.useRightHandedSystem = !rightHanded;
+
+        try {
+            const target = new SolidParticleSystem("target", targetScene, { expandable: true });
+            target.insertParticlesFromArray(particles);
+            target.buildMesh();
+            target.setParticles();
+
+            expectTrianglePositions(target.mesh, model, [0, 1, 2]);
+        } finally {
+            targetScene.dispose();
+        }
+    });
+
+    it("reconciles conventions for stored particles whose source SPS was never built", () => {
+        const model = createModel(true);
+        scene.defaultMaterial.sideOrientation = model.sideOrientation;
+        const source = new SolidParticleSystem("source", scene);
+        const storage: [] = [];
+        source.addShape(model, 2, { storage });
+        expect(source.nbParticles).toBe(0);
+        expect(source.mesh).toBeUndefined();
+        const targetScene = new Scene(engine);
+        targetScene.useRightHandedSystem = rightHanded;
+
+        try {
+            const target = new SolidParticleSystem("target", targetScene, { expandable: true });
+            target.insertParticlesFromArray(storage);
+            target.buildMesh();
+            target.setParticles();
+
+            expectTrianglePositions(target.mesh, model, [0, 1, 2, 0, 1, 2]);
+            expect(Array.from(model.getIndices()!)).toEqual([0, 2, 1]);
+        } finally {
+            targetScene.dispose();
+        }
+    });
+
+    it("reconciles the actual stored material convention rather than just the source SPS default", () => {
+        const model = createModel(true);
+        const material = new StandardMaterial("source material", scene);
+        model.material = material;
+        material.sideOrientation = model.sideOrientation;
+        const source = new SolidParticleSystem("source", scene, { expandable: true, useModelMaterial: true });
+        source.addShape(model, 2);
+        source.buildMesh();
+        const particles = source.removeParticles(0, 0);
+        const sourceModel = particles[0]._model;
+        const target = new SolidParticleSystem("target", scene, { expandable: true });
+
+        target.insertParticlesFromArray(particles);
+        target.buildMesh();
+        target.setParticles();
+
+        expectTrianglePositions(target.mesh, model, [0, 1, 2]);
+        expect(sourceModel._indices).toEqual([0, 2, 1]);
+    });
+
     it("keeps normalized winding after depth sorting", () => {
         const system = new SolidParticleSystem("sps", scene, { enableDepthSort: true });
         system.addShape(createModel(true), 1);

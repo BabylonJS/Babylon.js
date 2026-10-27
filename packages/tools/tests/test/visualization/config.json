@@ -3,7 +3,7 @@
     "tests": [
         {
             "title": "Solid Particle System Mixed Model Winding",
-            "playgroundId": "#B1NNWI#1",
+            "playgroundId": "#B1NNWI#2",
             "referenceImage": "sps-mixed-model-winding.png",
             "renderCount": 1,
             "dependsOn": ["Particles", "Meshes", "Materials", "Cameras"]
