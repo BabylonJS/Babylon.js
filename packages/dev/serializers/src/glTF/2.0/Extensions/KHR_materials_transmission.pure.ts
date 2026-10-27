@@ -159,6 +159,19 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     );
                 }
 
+                // Imported glTF inputs already contain the surface tint expected by glTF.
+                if (babylonMaterial._gltfTransmissionSurfaceToCoat) {
+                    this._baseColorOperands.set(babylonMaterial, {
+                        factor: new Color4(babylonMaterial.baseColor.r, babylonMaterial.baseColor.g, babylonMaterial.baseColor.b, geometryOpacity),
+                        texture: baseColorTexture,
+                        ownsTexture: !!babylonMaterial.geometryOpacityTexture,
+                    });
+                    if (baseColorTexture) {
+                        additionalTextures.push(baseColorTexture);
+                    }
+                    return additionalTextures;
+                }
+
                 // The lerp combines the base color with the transmission weight (and the metalness and
                 // transmission color textures). If any of those use a different UV set from the base color,
                 // the texture processor would have to drop one of them, which can wash out the base color

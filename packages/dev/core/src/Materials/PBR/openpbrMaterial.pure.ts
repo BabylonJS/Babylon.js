@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
+import { serialize, serializeAsColor3, serializeAsTexture, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentFuzzBRDFTexture, GetOpenPBREnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { type Nullable } from "../../types";
 import { type Scene } from "../../scene.pure";
@@ -289,6 +289,8 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = false;
     public SUBSURFACE_WEIGHT_FROM_TEXTURE_ALPHA = false;
     public GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL = false;
+    public GLTF_TRANSMISSION_SURFACE_TO_COAT = false;
+    public GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT = false;
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
@@ -1606,6 +1608,32 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useCoatRoughnessFromGreenChannel = false;
 
     /**
+     * Evaluates glTF volumetric transmission's surface tint in the coat without replacing authored inputs.
+     * @internal
+     */
+    @serialize()
+    public _gltfTransmissionSurfaceToCoat = false;
+
+    /**
+     * Evaluates glTF volumetric diffuse transmission's surface tint in the coat.
+     * @internal
+     */
+    @serialize()
+    public _gltfDiffuseTransmissionSurfaceToCoat = false;
+
+    /** @internal */
+    @serializeAsColor3()
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "_gltfDiffuseTransmissionColorProperty")
+    accessor _gltfDiffuseTransmissionColor: Color3;
+    private _gltfDiffuseTransmissionColorProperty = new Property<Color3>("gltf_diffuse_transmission_color", Color3.White(), "vGltfDiffuseTransmissionColor", 3);
+
+    /** @internal */
+    @serializeAsTexture()
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "_gltfDiffuseTransmissionColorSampler")
+    accessor _gltfDiffuseTransmissionColorTexture: Nullable<BaseTexture>;
+    private _gltfDiffuseTransmissionColorSampler = new Sampler("gltf_diffuse_transmission_color", "gltfDiffuseTransmissionColor", "GLTF_DIFFUSE_TRANSMISSION_COLOR");
+
+    /**
      * Assume the anisotropy data is stored in the format specified by
      * KHR_materials_anisotropy.
      * @internal
@@ -2034,6 +2062,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         // Arg. Why do I have to add these references to get rid of the linting errors?
         this._baseWeight;
+        this._gltfDiffuseTransmissionColorProperty;
+        this._gltfDiffuseTransmissionColorSampler;
         this._baseWeightTexture;
         this._baseColor;
         this._baseColorTexture;
@@ -3147,6 +3177,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         const scene = this.getScene();
         const engine = scene.getEngine();
+
+        defines.GLTF_TRANSMISSION_SURFACE_TO_COAT =
+            this._gltfTransmissionSurfaceToCoat &&
+            !this.geometryThinWalled &&
+            this.transmissionDepth > 0 &&
+            this.transmissionWeight > 0 &&
+            (!!this.baseColorTexture || !this.baseColor.equalsFloats(1, 1, 1));
+        defines.GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT =
+            this._gltfDiffuseTransmissionSurfaceToCoat &&
+            !this.geometryThinWalled &&
+            this.subsurfaceWeight > 0 &&
+            (!!this._gltfDiffuseTransmissionColorTexture || !this._gltfDiffuseTransmissionColor.equalsFloats(1, 1, 1));
 
         // Lights
         PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);

@@ -86,7 +86,40 @@ geometry_coat_tangent = vGeometryCoatTangent.rg;
 }
 #endif
 
+#if defined(GLTF_TRANSMISSION_SURFACE_TO_COAT) || defined(GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT)
+    // Keep authored inputs separate: unrelated mesh UV sets cannot be combined in image space.
+    coat_color = mix(vec3(1.0), coat_color, coat_weight);
+    coat_roughness = mix(specular_roughness, coat_roughness, coat_weight);
+    coat_ior = mix(specular_ior, coat_ior, coat_weight);
+    coat_darkening *= coat_weight;
+    coatNormalW = normalize(mix(normalW, coatNormalW, coat_weight));
+    coat_weight = 1.0;
+
+    #ifdef GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT
+        vec3 diffuseTransmissionColor = vGltfDiffuseTransmissionColor;
+        #ifdef GLTF_DIFFUSE_TRANSMISSION_COLOR
+            vec3 diffuseTransmissionTextureColor = TEXRD(gltfDiffuseTransmissionColorSampler, vGltfDiffuseTransmissionColorUV + uvOffset).rgb;
+            #ifdef GLTF_DIFFUSE_TRANSMISSION_COLOR_GAMMA
+                diffuseTransmissionTextureColor = toLinearSpace(diffuseTransmissionTextureColor);
+            #endif
+            diffuseTransmissionColor *= diffuseTransmissionTextureColor * vGltfDiffuseTransmissionColorInfos.y;
+        #endif
+        coat_color *= mix(vec3(1.0), diffuseTransmissionColor, subsurface_weight);
+        specular_roughness = mix(specular_roughness, 1.0, subsurface_weight);
+    #endif
+
+    #ifdef GLTF_TRANSMISSION_SURFACE_TO_COAT
+        coat_color *= mix(vec3(1.0), base_color, transmission_weight);
+    #endif
+#endif
+
 #ifdef USE_GLTF_STYLE_ANISOTROPY
+    float baseAlpha = specular_roughness * specular_roughness;
+    float roughnessT = mix(baseAlpha, 1.0, specular_roughness_anisotropy * specular_roughness_anisotropy);
+    float roughnessB = baseAlpha;
+    specular_roughness_anisotropy = 1.0 - roughnessB / max(roughnessT, 0.00001);
+    specular_roughness = sqrt(roughnessT / sqrt(2.0 / (1.0 + (1.0 - specular_roughness_anisotropy) * (1.0 - specular_roughness_anisotropy))));
+
     float coatAlpha = coat_roughness * coat_roughness;
 
     // From glTF to OpenPBR
