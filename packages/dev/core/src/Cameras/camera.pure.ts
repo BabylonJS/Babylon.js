@@ -6,7 +6,7 @@ import { Observable } from "../Misc/observable.pure";
 import { type DeepImmutable, type Nullable } from "../types";
 import { type CameraInputsManager } from "./cameraInputsManager";
 import { type Scene } from "../scene.pure";
-import { Matrix, Vector2, Vector3, Quaternion } from "../Maths/math.vector.pure";
+import { Matrix, Vector3, Quaternion } from "../Maths/math.vector.pure";
 import { Node } from "../node";
 import { type Mesh } from "../Meshes/mesh.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
@@ -467,10 +467,6 @@ export class Camera extends Node {
     public _viewHistories = new Map<number, { previous: Matrix; current: Matrix; frameId: number; seeded: boolean }>();
     /** @internal Incremented by resetViewHistory */
     public _viewHistoryResetId = 0;
-    /** @internal The TAA jitter (clip space) of this camera's color passes, computed in the frame _taaJitterFrameId and applied until the next one */
-    public _taaJitter = new Vector2();
-    /** @internal */
-    public _taaJitterFrameId = -1;
     private _doNotComputeProjectionMatrix = false;
     private _transformMatrix = Matrix.Zero();
     /** @internal */

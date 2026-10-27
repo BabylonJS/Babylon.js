@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { type Nullable } from "./types";
+import { type DeepImmutable, type Nullable } from "./types";
 import { Tools } from "./Misc/tools.pure";
 import { TimingTools, _RetryWithInterval } from "./Misc/timingTools";
 import { type IAnimatable } from "./Animations/animatable.interface";
@@ -71,6 +71,7 @@ import { type PerformanceViewerCollector } from "./Misc/PerformanceViewer/perfor
 import { type MorphTarget } from "./Morph/morphTarget";
 import { type MorphTargetManager } from "./Morph/morphTargetManager";
 import { type PostProcess } from "./PostProcesses/postProcess.pure";
+import { type TAAMaterialManager } from "./PostProcesses/RenderPipeline/Pipelines/taaMaterialManager.pure";
 import { type Material } from "./Materials/material.pure";
 import { type BaseTexture } from "./Materials/Textures/baseTexture.pure";
 import { type Geometry } from "./Meshes/geometry";
@@ -1309,14 +1310,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const offset = this.floatingOriginOffset;
         ubo.updateFloat4("vEyePosition", eyePosition.x - offset.x, eyePosition.y - offset.y, eyePosition.z - offset.z, eyePosition.w);
 
-        // The temporal data of the view, read by WGSL shaders: the camera's view-projection in the previous frame and its TAA jitter.
+        // The temporal data of the view, read by WGSL shaders only (WebGPU): the camera's view-projection in the previous frame and the TAA jitter.
         // A pass that does not render the camera's view (shadow map, mirror, probe face) gets no camera motion and no jitter.
-        const camera = this._activeCamera;
-        const cameraView = camera && this._viewMatrix === camera._computedViewMatrix ? camera : null;
-        ubo.updateMatrix("previousViewProjection", cameraView ? this._getPreviousViewProjection(cameraView) : this._transformMatrix);
-        // the TAA can compute the jitter after the draws of its frame (with the prepass): it applies until the end of the next frame
-        const jitter = cameraView && cameraView._taaJitterFrameId >= this._engine.frameId - 1 ? cameraView._taaJitter : Vector2.ZeroReadOnly;
-        ubo.updateFloat2("taaJitter", jitter.x, jitter.y);
+        if (this._engine.isWebGPU) {
+            const camera = this._activeCamera;
+            const cameraView = camera && this._viewMatrix === camera._computedViewMatrix ? camera : null;
+            ubo.updateMatrix("previousViewProjection", cameraView ? this._getPreviousViewProjection(cameraView) : this._transformMatrix);
+            const jitter = cameraView ? this._getTaaJitter(cameraView) : Vector2.ZeroReadOnly;
+            ubo.updateFloat2("taaJitter", jitter.x, jitter.y);
+        }
 
         ubo.update();
 
@@ -1328,6 +1330,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /** @internal True during readiness checks: the view histories are read, not advanced */
     public _viewHistoryIsReadOnly = false;
+
+    /** @internal The TAA material manager of the scene's materials (the last one created): WGSL materials get its jitter from the scene UBO */
+    public _taaMaterialManager: Nullable<TAAMaterialManager> = null;
 
     /**
      * Gets the camera's view-projection of the previous frame in the current pass, advancing the history on its first use in a frame.
@@ -1343,8 +1348,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this._viewHistoryIsReadOnly) {
             return history && history.frameId === frameId ? history.previous : transform;
         }
-        if (!history || history.frameId < frameId - 1) {
-            // drop the histories of passes the camera stopped rendering in
+        if (!history) {
+            // the first render of the camera in this pass: drop the histories of the passes it stopped rendering in
             histories.forEach((other, passId) => {
                 if (other.frameId < frameId - 1) {
                     histories.delete(passId);
@@ -1354,7 +1359,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             histories.set(this._viewPassId, started);
             return started.previous;
         }
-        if (history.frameId !== frameId) {
+        if (history.frameId < frameId - 1) {
+            // the camera did not render in this pass in the previous frame (a refresh rate, a camera switch): start again, in the same matrices
+            history.previous.copyFrom(transform);
+            history.current.copyFrom(transform);
+            history.frameId = frameId;
+            history.seeded = true;
+        } else if (history.frameId !== frameId) {
             history.previous.copyFrom(history.current);
             history.current.copyFrom(transform);
             history.frameId = frameId;
@@ -1368,6 +1379,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
         return history.previous;
+    }
+
+    /**
+     * Gets the TAA jitter of a camera's view: the jitter of the scene's TAA material manager. A TAA post-process computes it for its camera, and
+     * the views of that camera (each eye of a rig) get it. With the prepass, it computes it after the draws of its frame: the jitter applies until
+     * the end of the next frame. The jitter of a manager used on its own applies to every camera's view.
+     * @param camera the camera whose view is being rendered
+     * @returns the jitter, in clip space
+     */
+    private _getTaaJitter(camera: Camera): DeepImmutable<Vector2> {
+        const manager = this._taaMaterialManager;
+        if (!manager?.isEnabled) {
+            return Vector2.ZeroReadOnly;
+        }
+        // the eyes are found in the rig of the TAA's camera: the frame graph unsets their rigParent while they render
+        const taaCamera = manager._jitterCamera;
+        if (taaCamera && ((camera !== taaCamera && !taaCamera._rigCameras.includes(camera)) || manager._jitterFrameId < this._engine.frameId - 1)) {
+            return Vector2.ZeroReadOnly;
+        }
+        return manager.jitter;
     }
 
     // Mirror
@@ -3028,9 +3059,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         sceneUbo.addUniform("projection", 16);
         sceneUbo.addUniform("vEyePosition", 4);
         sceneUbo.addUniform("inverseProjection", 16);
-        // the temporal data of the view (see finalizeSceneUbo)
-        sceneUbo.addUniform("previousViewProjection", 16);
-        sceneUbo.addUniform("taaJitter", 2);
+        // the temporal data of the view, for WGSL shaders (see finalizeSceneUbo)
+        if (this._engine.isWebGPU) {
+            sceneUbo.addUniform("previousViewProjection", 16);
+            sceneUbo.addUniform("taaJitter", 2);
+        }
         return sceneUbo;
     }
 

@@ -1,5 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
+import { type Camera } from "core/Cameras/camera.pure";
 import { type Material } from "core/Materials/material.pure";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
@@ -72,7 +73,7 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
                 `,
             };
         } else {
-            // WGSL reads the jitter from the scene uniform buffer of the camera's color passes, written once a frame (Scene.finalizeSceneUbo)
+            // WGSL reads the jitter from the scene uniform buffer of the pass (Scene.finalizeSceneUbo)
             return {};
         }
     }
@@ -145,13 +146,26 @@ export class TAAMaterialManager {
      */
     public readonly jitter = new Vector2();
 
+    /**
+     * @internal Set by a TAA post-process: the camera it computed the jitter for, in the frame _jitterFrameId. In WGSL, only the views of that
+     * camera (each eye of a rig) get it then, until the end of the next frame. Without it, every camera's view gets the jitter.
+     */
+    public _jitterCamera: Nullable<Camera> = null;
+    /** @internal */
+    public _jitterFrameId = -1;
+
     /** @internal */
     public readonly _materialPlugins: TAAJitterMaterialPlugin[] = [];
+
+    private readonly _scene: Scene;
 
     /**
      * @param scene All materials in this scene will have a jitter offset applied to them.
      */
     constructor(scene: Scene) {
+        this._scene = scene;
+        // WGSL materials read the jitter of the scene's manager from its uniform buffer (Scene.finalizeSceneUbo)
+        scene._taaMaterialManager = this;
         for (const material of scene.materials) {
             this._getPlugin(material);
         }
@@ -162,6 +176,9 @@ export class TAAMaterialManager {
      * Disposes of the material manager.
      */
     public dispose(): void {
+        if (this._scene._taaMaterialManager === this) {
+            this._scene._taaMaterialManager = null;
+        }
         UnregisterMaterialPlugin(TAAJitterMaterialPlugin.Name);
         const plugins = this._materialPlugins.splice(0, this._materialPlugins.length);
         for (const plugin of plugins) {

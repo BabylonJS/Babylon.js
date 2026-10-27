@@ -205,19 +205,11 @@ export class ThinTAAPostProcess extends EffectWrapper {
         if (this.reprojectHistory && this._taaMaterialManager) {
             // Applying jitter to the projection matrix messes with the velocity buffer,
             // so we do it as a final vertex step in a material plugin instead
-            const jitter = this._nextJitterOffset(this._taaMaterialManager.jitter);
-            // WGSL materials read it from the scene uniform buffer of this camera's color passes
+            this._nextJitterOffset(this._taaMaterialManager.jitter);
+            // in WGSL, the jitter is for the views of this camera only, with each eye of its rig (Scene.finalizeSceneUbo)
             const camera = this.camera;
-            if (camera) {
-                const frameId = this._scene.getEngine().frameId;
-                camera._taaJitter.copyFrom(jitter);
-                camera._taaJitterFrameId = frameId;
-                // rig cameras (stereo) draw their own views: same jitter
-                for (const rigCamera of camera._rigCameras) {
-                    rigCamera._taaJitter.copyFrom(jitter);
-                    rigCamera._taaJitterFrameId = frameId;
-                }
-            }
+            this._taaMaterialManager._jitterCamera = camera ? (camera.rigParent ?? camera) : null;
+            this._taaMaterialManager._jitterFrameId = this._scene.getEngine().frameId;
         } else {
             // Use the projection matrix by default since it supports most materials
             this._updateProjectionMatrix();

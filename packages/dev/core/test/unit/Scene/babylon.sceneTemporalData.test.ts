@@ -40,6 +40,8 @@ describe("Scene uniform buffer: temporal data of the view", () => {
     beforeEach(() => {
         engine = new NullEngine();
         vi.spyOn(engine, "supportsUniformBuffers", "get").mockReturnValue(true);
+        // the temporal data is for WGSL shaders, so it is kept on WebGPU only
+        vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
         scene = new Scene(engine);
         camA = new FreeCamera("camA", new Vector3(0, 2, -10), scene);
         camB = new FreeCamera("camB", new Vector3(5, 2, -10), scene);
@@ -74,16 +76,9 @@ describe("Scene uniform buffer: temporal data of the view", () => {
         return result;
     };
 
-    it("has the temporal fields in the scene, render target and multiview layouts", () => {
-        RegisterEngineMultiview();
-        (scene as any)._createMultiviewUbo();
+    it("has the temporal fields in the scene and render target layouts", () => {
         const renderer = new ObjectRenderer("renderer", scene);
-        const ubos: UniformBuffer[] = [
-            scene.createSceneUniformBuffer(),
-            (scene as any)._multiviewSceneUbo,
-            (renderer as any)._createSceneUBO("rt", false),
-            (renderer as any)._createSceneUBO("rt mv", true),
-        ];
+        const ubos: UniformBuffer[] = [scene.createSceneUniformBuffer(), (renderer as any)._createSceneUBO("rt", false)];
         for (const ubo of ubos) {
             expect(ubo.has("previousViewProjection")).toBe(true);
             expect(ubo.has("taaJitter")).toBe(true);
@@ -126,27 +121,42 @@ describe("Scene uniform buffer: temporal data of the view", () => {
     });
 
     it("gives no camera motion and no jitter to a pass that does not render the camera's view", () => {
+        const manager = new TAAMaterialManager(scene);
+        manager.jitter.set(0.25, -0.5);
         pass(camA, 0);
         engine.endFrame();
-        pass(camA, 1);
-        camA._taaJitter.set(0.25, -0.5);
-        camA._taaJitterFrameId = engine.frameId;
+        expect(pass(camA, 1).jitter).toEqual([0.25, -0.5]);
         scene.setTransformMatrix(Matrix.LookAtLH(new Vector3(0, 50, 0), Vector3.Zero(), Vector3.Forward()), Matrix.OrthoLH(20, 20, 1, 100));
         const other = written(scene.getSceneUniformBuffer());
         expect(other.previous).toEqual(other.viewProjection);
         expect(other.jitter).toEqual([0, 0]);
+        manager.dispose();
     });
 
-    it("writes the TAA jitter of the camera in the frame it was computed in and in the next one only", () => {
-        camA._taaJitter.set(0.25, -0.5);
-        camA._taaJitterFrameId = engine.frameId;
-        expect(pass(camA).jitter).toEqual([0.25, -0.5]);
+    // a reprojecting TAA of camA: its material manager holds the jitter
+    const reprojectingTAA = () => {
+        const taa = new ThinTAAPostProcess("taa", scene);
+        taa.textureWidth = 64;
+        taa.textureHeight = 64;
+        taa.reprojectHistory = true;
+        taa.camera = camA;
+        return { taa, manager: (taa as any)._taaMaterialManager as TAAMaterialManager };
+    };
+
+    it("gives the jitter of a TAA to its camera's views only, in the frame it computed it and in the next one", () => {
+        const { taa, manager } = reprojectingTAA();
+        taa._updateJitter();
+        const jitter = [manager.jitter.x, manager.jitter.y];
+        expect(jitter).not.toEqual([0, 0]);
+        expect(pass(camA).jitter).toEqual(jitter);
+        expect(pass(camB).jitter).toEqual([0, 0]);
         // computed after the draws of its frame (prepass): the next frame still applies it
         engine.endFrame();
-        expect(pass(camA).jitter).toEqual([0.25, -0.5]);
+        expect(pass(camA).jitter).toEqual(jitter);
         // the TAA stopped computing it
         engine.endFrame();
         expect(pass(camA).jitter).toEqual([0, 0]);
+        taa.dispose();
     });
 
     // an object renderer that draws camA's view
@@ -202,6 +212,43 @@ describe("Scene uniform buffer: temporal data of the view", () => {
         engine.endFrame();
         expect(rendered(objectRenderer, 3).previous).toEqual(first.viewProjection);
         objectRenderer.dispose();
+    });
+
+    it("reuses the history of a pass that renders every other frame: no camera motion when it resumes, in the same matrices", () => {
+        const texture = new RenderTargetTexture("texture", 256, scene);
+        texture.activeCamera = camA;
+        texture.renderList = [];
+        texture.refreshRate = 2;
+        scene.customRenderTargets.push(texture);
+        scene.activeCamera = camA;
+        // what the render target's pass gets written, frame by frame
+        const frames: ReturnType<typeof written>[] = [];
+        const finalize = scene.finalizeSceneUbo.bind(scene);
+        vi.spyOn(scene, "finalizeSceneUbo").mockImplementation(() => {
+            if (scene._viewPassId === texture.renderPassId) {
+                frames[engine.frameId] = writtenBy(scene.getSceneUniformBuffer(), finalize);
+                return scene.getSceneUniformBuffer();
+            }
+            return finalize();
+        });
+        // the camera moves every frame
+        const histories: unknown[][] = [];
+        for (let frame = 0; frame < 5; frame++) {
+            camA.position.x = frame;
+            scene.render();
+            const history = camA._viewHistories.get(texture.renderPassId)!;
+            histories.push([history, history.previous, history.current]);
+            engine.endFrame();
+        }
+        expect(Object.keys(frames)).toEqual(["0", "2", "4"]);
+        for (const frame of [2, 4]) {
+            // the pass did not render in the previous frame: no camera motion
+            expect(frames[frame].previous).toEqual(frames[frame].viewProjection);
+            expect(frames[frame].viewProjection).not.toEqual(frames[frame - 2].viewProjection);
+            // the same record, with the same matrices
+            histories[frame].forEach((object, index) => expect(object).toBe(histories[0][index]));
+        }
+        texture.dispose();
     });
 
     // camA's view behind each public readiness check: the object renderer's, and the render target texture's, with its bind observables
@@ -387,33 +434,37 @@ describe("Scene uniform buffer: temporal data of the view", () => {
             vi.spyOn(FrameGraphRenderContext.prototype, "applyFullScreenEffect").mockImplementation(() => true);
             await frameGraph.buildAsync(false);
             scene.frameGraph = frameGraph;
-            return { frameGraph, objects };
+            return { frameGraph, objects, manager: (taa.postProcess as any)._taaMaterialManager as TAAMaterialManager };
+        };
+
+        // what the passes of these cameras get written, frame by frame
+        const capture = (...names: string[]) => {
+            const cameras: Record<string, ReturnType<typeof written>[]> = {};
+            const finalize = scene.finalizeSceneUbo.bind(scene);
+            vi.spyOn(scene, "finalizeSceneUbo").mockImplementation(() => {
+                const name = scene.activeCamera?.name;
+                if (name !== undefined && names.includes(name)) {
+                    (cameras[name] ??= [])[engine.frameId] = writtenBy(scene.getSceneUniformBuffer(), finalize);
+                    return scene.getSceneUniformBuffer();
+                }
+                return finalize();
+            });
+            return cameras;
         };
 
         it("gives the TAA jitter to each eye of a stereo rig, and keeps a history per eye", async () => {
             const rig = new FreeCamera("rig", new Vector3(0, 2, -10), scene);
             rig.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, { interaxialDistance: 0.0637 });
-            const { frameGraph } = await taaGraph(rig);
+            const { frameGraph, manager } = await taaGraph(rig);
+            const eyes = capture("rig_L", "rig_R");
 
-            // what each eye's passes get written, frame by frame
-            const eyes: Record<string, ReturnType<typeof written>[]> = {};
-            const finalize = scene.finalizeSceneUbo.bind(scene);
-            vi.spyOn(scene, "finalizeSceneUbo").mockImplementation(() => {
-                const name = scene.activeCamera?.name;
-                if (name === "rig_L" || name === "rig_R") {
-                    (eyes[name] ??= [])[engine.frameId] = writtenBy(scene.getSceneUniformBuffer(), finalize);
-                    return scene.getSceneUniformBuffer();
-                }
-                return finalize();
-            });
-
-            // the TAA learns its camera in the first frame and computes the jitter before the draws of the next ones
+            // the TAA computes the jitter before the draws of each frame
             for (let frame = 0; frame < 3; frame++) {
                 scene.render();
                 engine.endFrame();
             }
             const last = engine.frameId - 1;
-            const jitter = [rig._taaJitter.x, rig._taaJitter.y];
+            const jitter = [manager.jitter.x, manager.jitter.y];
             expect(jitter).not.toEqual([0, 0]);
             for (const eye of ["rig_L", "rig_R"]) {
                 expect(eyes[eye][last].jitter).toEqual(jitter);
@@ -425,16 +476,18 @@ describe("Scene uniform buffer: temporal data of the view", () => {
             frameGraph.dispose();
         });
 
-        it("writes the jitter for the camera the object renderer draws, also in the first frame after a switch", async () => {
-            const { frameGraph, objects } = await taaGraph(camA);
+        it("gives the jitter to the camera the object renderer draws, also in the first frame after a switch", async () => {
+            const { frameGraph, objects, manager } = await taaGraph(camA);
+            const cameras = capture("camB");
             for (let frame = 0; frame < 2; frame++) {
                 scene.render();
                 engine.endFrame();
             }
             objects.camera = camB;
             scene.render();
-            expect(camB._taaJitterFrameId).toBe(engine.frameId);
-            expect([camB._taaJitter.x, camB._taaJitter.y]).not.toEqual([0, 0]);
+            const switched = cameras["camB"][engine.frameId];
+            expect(switched.jitter).not.toEqual([0, 0]);
+            expect(switched.jitter).toEqual([manager.jitter.x, manager.jitter.y]);
             scene.frameGraph = null;
             frameGraph.dispose();
         });
@@ -485,6 +538,35 @@ describe("Scene uniform buffer: temporal data of the view", () => {
             expect(plugin.getUniforms(ShaderLanguage.GLSL).ubo).toEqual([{ name: "taa_jitter", size: 2, type: "vec2" }]);
             manager.dispose();
         });
+
+        it("gives the jitter of a manager used on its own to the WGSL passes of every camera's view, until it changes", () => {
+            const material = new StandardMaterial("std", scene);
+            const manager = new TAAMaterialManager(scene);
+            manager.jitter.set(0.25, -0.5);
+            // the WGSL material gets it from the scene uniform buffer only
+            expect(material.shaderLanguage).toBe(ShaderLanguage.WGSL);
+            const materialUbo = { updateFloat2: vi.fn() } as unknown as UniformBuffer;
+            material.pluginManager!.getPlugin<any>("TAAJitter")!.hardBindForSubMesh(materialUbo);
+            expect(materialUbo.updateFloat2).not.toHaveBeenCalled();
+            // the passes of the scene's cameras, and of a render target
+            expect(pass(camA).jitter).toEqual([0.25, -0.5]);
+            expect(pass(camB).jitter).toEqual([0.25, -0.5]);
+            const objectRenderer = renderer("renderer");
+            expect(rendered(objectRenderer, 1).jitter).toEqual([0.25, -0.5]);
+            // no frame limit: it applies until the application changes it
+            engine.endFrame();
+            engine.endFrame();
+            expect(pass(camA).jitter).toEqual([0.25, -0.5]);
+            manager.jitter.set(-0.125, 0.375);
+            expect(pass(camA).jitter).toEqual([-0.125, 0.375]);
+            // disabled, then disposed: no jitter
+            manager.isEnabled = false;
+            expect(pass(camA).jitter).toEqual([0, 0]);
+            manager.isEnabled = true;
+            manager.dispose();
+            expect(pass(camA).jitter).toEqual([0, 0]);
+            objectRenderer.dispose();
+        });
     });
 
     describe("prepass velocity", () => {
@@ -503,6 +585,41 @@ describe("Scene uniform buffer: temporal data of the view", () => {
                 expect(names).toEqual(shaderLanguage === ShaderLanguage.WGSL ? ["previousWorld"] : ["previousViewProjection", "previousWorld"]);
             }
             (scene as any).prePassRenderer = null;
+        });
+    });
+
+    describe("WebGL", () => {
+        it("keeps the scene uniform buffers and the cameras as they were: GLSL shaders do not read the temporal data", () => {
+            const webGLEngine = new NullEngine();
+            vi.spyOn(webGLEngine, "supportsUniformBuffers", "get").mockReturnValue(true);
+            const webGLScene = new Scene(webGLEngine);
+            const camera = new FreeCamera("camera", new Vector3(0, 2, -10), webGLScene);
+            webGLScene.activeCamera = camera;
+            webGLScene.updateTransformMatrix();
+            const ubo = webGLScene.getSceneUniformBuffer();
+            const updateMatrix = vi.spyOn(ubo, "updateMatrix");
+            const updateFloat2 = vi.spyOn(ubo, "updateFloat2");
+            webGLScene.finalizeSceneUbo();
+            expect(updateMatrix).not.toHaveBeenCalled();
+            expect(updateFloat2).not.toHaveBeenCalled();
+            expect(camera._viewHistories.size).toBe(0);
+            // the layouts: scene, multiview and render targets
+            RegisterEngineMultiview();
+            (webGLScene as any)._createMultiviewUbo();
+            const renderer = new ObjectRenderer("renderer", webGLScene);
+            const ubos: UniformBuffer[] = [
+                webGLScene.createSceneUniformBuffer(),
+                (webGLScene as any)._multiviewSceneUbo,
+                (renderer as any)._createSceneUBO("rt", false),
+                (renderer as any)._createSceneUBO("rt mv", true),
+            ];
+            for (const layout of ubos) {
+                expect(layout.has("previousViewProjection")).toBe(false);
+                expect(layout.has("taaJitter")).toBe(false);
+            }
+            renderer.dispose();
+            webGLScene.dispose();
+            webGLEngine.dispose();
         });
     });
 });
