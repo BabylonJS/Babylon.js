@@ -78,14 +78,6 @@ export class WebGPUQuerySet {
         return buffer;
     }
 
-    // With an encoder, the resolve goes in it after the queries were written, so the buffer can only be mapped once that
-    // encoder is submitted: at the end of the frame
-    private async _afterSubmitAsync(encoder?: GPUCommandEncoder): Promise<void> {
-        if (encoder) {
-            await new Promise<void>((resolve) => this._engine.onEndFrameObservable.addOnce(() => resolve()));
-        }
-    }
-
     public async readValues(firstQuery = 0, queryCount = 1, encoder?: GPUCommandEncoder): Promise<BigUint64Array | null> {
         const buffer = this._getBuffer(firstQuery, queryCount, encoder);
         if (buffer === null) {
@@ -94,7 +86,10 @@ export class WebGPUQuerySet {
         const engineId = this._engine.uniqueId;
 
         try {
-            await this._afterSubmitAsync(encoder);
+            if (encoder) {
+                // resolved in that encoder after its queries: mapped once the engine submits it, a wait its readbacks share
+                await this._engine._whenSubmittedAsync();
+            }
             await buffer.mapAsync(WebGPUConstants.MapMode.Read);
             const arrayBuf = new BigUint64Array(buffer.getMappedRange()).slice();
 
@@ -120,7 +115,10 @@ export class WebGPUQuerySet {
         const engineId = this._engine.uniqueId;
 
         try {
-            await this._afterSubmitAsync(encoder);
+            if (encoder) {
+                // resolved in that encoder after its queries: mapped once the engine submits it, a wait its readbacks share
+                await this._engine._whenSubmittedAsync();
+            }
             await buffer.mapAsync(WebGPUConstants.MapMode.Read);
             const arrayBuf = new BigUint64Array(buffer.getMappedRange());
             const value = Number(arrayBuf[0]);
@@ -147,7 +145,10 @@ export class WebGPUQuerySet {
         const engineId = this._engine.uniqueId;
 
         try {
-            await this._afterSubmitAsync(encoder);
+            if (encoder) {
+                // resolved in that encoder after its queries: mapped once the engine submits it, a wait its readbacks share
+                await this._engine._whenSubmittedAsync();
+            }
             await buffer.mapAsync(WebGPUConstants.MapMode.Read);
             const arrayBuf = new BigUint64Array(buffer.getMappedRange());
             const value = Number(arrayBuf[1] - arrayBuf[0]);
