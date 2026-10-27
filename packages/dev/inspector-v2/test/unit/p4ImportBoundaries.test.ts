@@ -22,6 +22,22 @@ const RemovedLiteInspectionApi =
 const RemovedAwaitedRebuildContract = /\b(?:AwaitedRebuildMaterialOptions|awaitCompletion)\b/;
 
 describe("P4 Inspector import boundaries", () => {
+    it("keeps P9 skeleton, morph and particle property components lazy and runtime-neutral", () => {
+        const skeletonService = ReadInspectorSource("lite/services/panes/properties/skeletonPropertiesService.tsx");
+        const particleService = ReadInspectorSource("lite/services/panes/properties/particleSystemPropertiesService.tsx");
+        for (const component of ["skeletonProperties", "morphTargetProperties"]) {
+            expect(skeletonService).toContain(`import("../../../components/properties/${component}")`);
+            expect(skeletonService).not.toMatch(new RegExp(`^import .*components/properties/${component}`, "m"));
+        }
+        expect(particleService).toContain('import("../../../components/properties/particleSystemProperties")');
+        expect(particleService).not.toMatch(/^import .*components\/properties\/particleSystemProperties/m);
+        for (const file of ["skeletonProperties", "morphTargetProperties", "particleSystemProperties"]) {
+            const source = ReadInspectorSource(`lite/components/properties/${file}.tsx`);
+            expect(source).not.toMatch(NativeRuntimeImplementation);
+            expect(source).not.toMatch(PreviewOrEditorDependency);
+            expect(source).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);
+        }
+    });
     it("keeps every material family and texture metadata adapter behind its own lazy entrypoint", () => {
         const materialService = ReadInspectorSource("lite/services/panes/properties/materialPropertiesService.tsx");
         const textureService = ReadInspectorSource("lite/services/panes/properties/texturePropertiesService.tsx");

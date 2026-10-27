@@ -6,6 +6,7 @@ import {
     disposeMeshGpu,
     removeFromScene,
     setParent,
+    setMeshVisible,
     updateLineSystem,
     type EngineContext,
     type Mesh,
@@ -264,7 +265,7 @@ export class DebugController {
                 } else {
                     updateLineSystem(this._engine, box, { lines });
                 }
-                box.visible = mesh.visible !== false;
+                setMeshVisible(box, mesh.visible !== false);
             }
         } catch (error) {
             helpers.showBounds = false;

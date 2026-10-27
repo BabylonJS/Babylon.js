@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DebugController } from "../../src/lite/services/panes/debugController";
 import { InspectorBoundsHelpers, InspectorUtilityScenes } from "../../src/lite/sceneEntityUtils";
 
-const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose, Parent } = vi.hoisted(() => ({
+const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose, Parent, SetVisible } = vi.hoisted(() => ({
     Ground: vi.fn(),
     GridMaterial: vi.fn(),
     Lines: vi.fn(),
@@ -13,6 +13,7 @@ const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose, Parent }
     Remove: vi.fn(),
     Dispose: vi.fn(),
     Parent: vi.fn(),
+    SetVisible: vi.fn(),
 }));
 
 vi.mock("@babylonjs/lite", () => ({
@@ -24,6 +25,7 @@ vi.mock("@babylonjs/lite", () => ({
     removeFromScene: Remove,
     disposeMeshGpu: Dispose,
     setParent: Parent,
+    setMeshVisible: SetVisible,
     getRenderingContexts: (surface: { contexts: SceneContext[] }) => surface.contexts,
     getRenderingContextKind: () => "scene",
 }));
@@ -71,6 +73,7 @@ describe("Babylon Lite debug helpers", () => {
             parent?.children.push(child);
         });
         UpdateLines.mockReset();
+        SetVisible.mockImplementation((mesh: Mesh, visible: boolean) => Object.assign(mesh, { visible }));
     });
 
     it("creates a non-pickable grid in the selected scene and only removes its own resources", () => {
@@ -114,8 +117,9 @@ describe("Babylon Lite debug helpers", () => {
         expect(h.controller.getSnapshot()).toEqual(snapshot);
         expect(UpdateLines).not.toHaveBeenCalled();
         expect(mesh.children).toEqual([]);
-        mesh.visible = false;
+        Object.assign(mesh, { visible: false });
         h.controller.refresh();
+        expect(SetVisible).toHaveBeenLastCalledWith(box, false);
         expect(box.visible).toBe(false);
         expect(Lines).toHaveBeenCalledTimes(1);
         expect(UpdateLines).toHaveBeenCalledTimes(1);
@@ -124,6 +128,27 @@ describe("Babylon Lite debug helpers", () => {
         expect(h.scene.meshes).toHaveLength(2);
         h.controller.dispose();
         expect(h.scene.meshes).toEqual([mesh]);
+    });
+
+    it("uses the supported visibility setter without assigning a readonly helper property", () => {
+        const h = Harness();
+        h.controller.setBounds(true);
+        const source = h.scene.meshes[0];
+        const helper = h.scene.meshes[1];
+        Object.defineProperty(helper, "visible", {
+            get: () => true,
+            set: () => {
+                throw new Error("Direct helper visibility assignment");
+            },
+        });
+        SetVisible.mockImplementation(() => undefined);
+        Object.assign(source, { visible: false });
+        expect(() => h.controller.refresh()).not.toThrow();
+        expect(SetVisible).toHaveBeenLastCalledWith(helper, false);
+        Object.assign(source, { visible: undefined });
+        h.controller.refresh();
+        expect(SetVisible).toHaveBeenLastCalledWith(helper, true);
+        h.controller.dispose();
     });
 
     it("adds and removes bounds as mesh topology changes and releases helpers when their scene is unregistered", () => {

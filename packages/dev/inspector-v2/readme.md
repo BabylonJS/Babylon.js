@@ -2,6 +2,22 @@
 
 This document covers the high level aspects of the Inspector V2 architecture. Note that much of this may move to a shared tooling package as it is intended to be usable by other tools (Sandbox, Playground, NME, etc.) in the future if we find enough value in integrating the framework into those tools.
 
+## Babylon Lite Skeletons and Morph Targets
+
+The Lite Explorer lists skeletons and their bone hierarchy. Skeleton properties show the bone count and links to meshes; bone properties show read-only Name, derived Index, Skeleton and Parent links. Mesh **Skinning** links back to the skeleton. Bone editing, reset, debug rendering and gizmos are not supported.
+
+Skeleton discovery requires the application to call `enableBoneControl()` or `enableBoneControlForSkinnedAssets()` **before** loading its glTF. Inspector does not enable bone control itself. USD, authored and non-opt-in skins do not expose public skeletons. Cloned meshes share a skeleton.
+
+Mesh **Morph Targets** provides one weight slider per target. Labels use glTF `extras.targetNames`, USD target names or authored morph names when supplied, with numbered fallbacks. Changes use Lite's morph setter and affect every mesh sharing the data. Playing morph animations overwrite the weights each frame.
+
+## Babylon Lite Particle Systems
+
+The Lite Explorer lists CPU systems registered through `registerNodeParticleSet`, in first-registration order, using the NPE SystemBlock name when available. Start/Stop is available on the item and in **Commands**. **General** shows Name, Capacity, Active Particles and Started; stopped systems can still contain draining particles. **Emission** edits Emit Rate, Update Speed and Target Stop Duration (0 means run until stopped). A particle graph may override Emit Rate.
+
+Discovery is add-only until scene disposal. There is no particle removal, reset, lifetime/size/color editing, GPU particle support or particle editor.
+
+These features require the unreleased P9 Lite discovery APIs; the existing dependency pins remain unchanged pending a separately authorized Lite release.
+
 ## Babylon Lite Picking
 
 The Lite Inspector's **Enable Picking** toolbar toggle is available only while the engine has a registered scene context. It selects a mesh by tapping its scene canvas. Picks update the Explorer, Properties pane, and `debugNode` through the shared selection service. Camera drags and empty-space taps leave the selection unchanged. Press **Escape**, including from an undocked toolbar, or toggle picking off to exit; pending GPU results cannot change selection after exiting. Removing the last scene also exits picking and removes the toggle; registering another scene restores it with picking disabled.

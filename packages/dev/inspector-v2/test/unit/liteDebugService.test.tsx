@@ -40,6 +40,7 @@ vi.mock("@babylonjs/lite", () => ({
     updateLineSystem: vi.fn(),
     disposeMeshGpu: vi.fn(),
     setParent: vi.fn(),
+    setMeshVisible: (mesh: Mesh, visible: boolean) => Object.assign(mesh, { visible }),
     addToScene: (scene: SceneContext, mesh: Mesh) => scene.meshes.push(mesh),
     removeFromScene: (scene: SceneContext, mesh: Mesh) => scene.meshes.splice(scene.meshes.indexOf(mesh), 1),
     getRenderingContexts: (surface: { contexts: SceneContext[] }) => surface.contexts,
