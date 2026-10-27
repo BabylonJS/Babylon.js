@@ -4056,7 +4056,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (useFastPath || this._snapshotRendering.record) {
             this._applyRenderPassChanges(bundleList);
             if (!this._snapshotRendering.record) {
-                if (this.asynchronousPipelineCreation && this._lastPipelineWaitFrameId >= this.frameId - 1) {
+                if (this.asynchronousPipelineCreation && this._drawsMayWait && this._lastPipelineWaitFrameId >= this.frameId - 1) {
                     const waitOwner = this._currentDrawContext._pipelineWait;
                     if (waitOwner && waitOwner._pipelinePendingFrameId >= this.frameId - 1) {
                         // the bundle of this draw exists, but its mesh waits for the pipeline of another pass
@@ -4093,7 +4093,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._currentMaterialContext.textureState = textureState;
 
         let pipeline: Nullable<GPURenderPipeline>;
-        const waitOwner = this.asynchronousPipelineCreation ? this._currentDrawContext._pipelineWait : null;
+        // a draw waits only in a pass rendered again in the next frames: a pass rendered once draws every mesh
+        const waitOwner = this.asynchronousPipelineCreation && this._drawsMayWait ? this._currentDrawContext._pipelineWait : null;
         if (waitOwner) {
             pipeline = this._cacheRenderPipeline.tryGetRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
             // the state of the mesh is only read while draws waited (in this frame or the previous one)

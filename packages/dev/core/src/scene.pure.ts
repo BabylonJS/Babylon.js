@@ -5667,8 +5667,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        // Render the graph
+        // Render the graph: its passes are rendered again in the next frames, so their mesh draws may wait for their pipelines
+        const drawsMayWait = this._engine._drawsMayWait;
+        this._engine._drawsMayWait = this._engine._renderingOnce === 0;
         this.frameGraph?.execute();
+        this._engine._drawsMayWait = drawsMayWait;
     }
 
     /**
@@ -5691,7 +5694,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // Camera
             this.updateTransformMatrix();
 
+            // rendered by the scene's frame: its mesh draws may wait for their pipelines, unless it renders once (RenderTargetTexture.render)
+            const drawsMayWait = this._engine._drawsMayWait;
+            this._engine._drawsMayWait = this._engine._renderingOnce === 0;
             renderTarget.render(useCameraPostProcess, dumpForDebug);
+            this._engine._drawsMayWait = drawsMayWait;
         }
         this._intermediateRendering = false;
     }
@@ -5834,18 +5841,23 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 step.action(this._renderTargets);
             }
 
-            // Multi-cameras?
+            // Multi-cameras? The cameras are rendered again in the next frames: their mesh draws may wait for their pipelines, unless this
+            // frame is rendered once (a screenshot)
+            const drawsMayWait = this._engine._drawsMayWait;
+            this._engine._drawsMayWait = this._engine._renderingOnce === 0;
             if (this.activeCameras && this.activeCameras.length > 0) {
                 for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
                 }
             } else {
                 if (!this.activeCamera) {
+                    this._engine._drawsMayWait = drawsMayWait;
                     throw new Error("No camera defined");
                 }
 
                 this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
             }
+            this._engine._drawsMayWait = drawsMayWait;
         }
 
         this._inputManager._updateMeshUnderPointer();
