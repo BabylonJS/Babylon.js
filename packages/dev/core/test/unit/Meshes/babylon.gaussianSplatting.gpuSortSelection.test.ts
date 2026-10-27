@@ -3,12 +3,14 @@ import { FreeCamera } from "core/Cameras/freeCamera";
 import { FrameGraph } from "core/FrameGraph/frameGraph";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
+import "core/Materials/standardMaterial";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingGpuSorter, type IGaussianSplattingGpuSortSource } from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { GaussianSplattingMeshBase } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { GaussianSplattingSortWorkerCommand } from "core/Meshes/GaussianSplatting/gaussianSplattingSortWorker";
+import { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -484,6 +486,61 @@ describe("GaussianSplatting GPU sort selection", () => {
         expect(sorter.sort).toHaveBeenCalledOnce();
         expect(sorter.setSource).not.toHaveBeenCalled();
         expect(mesh._isDepthSortSettled).toBe(true);
+    });
+
+    it("sorts a parsed compound with its restored part matrices after the part-index texture was cached", () => {
+        scene.activeCamera = new FreeCamera("main", new Vector3(0, 0, -5), scene);
+        const sources = [0, 1].map((i) => {
+            const source = new GaussianSplattingMesh("source" + i, null, scene);
+            source.updateData(createSplatData(20));
+            return source;
+        });
+        const compound = new GaussianSplattingCompoundMesh("compound", null, scene);
+        const proxies = compound.addParts(sources, true);
+        proxies[1].position = new Vector3(0, 0, -2);
+        proxies[1].computeWorldMatrix(true);
+        const serialized = compound.serialize();
+        compound.dispose();
+
+        // Warm the mesh while Parse restores the proxies: the source is applied (and the null part-index texture cached) before the first part matrix arrives.
+        let sorter: ReturnType<typeof installSorter> | undefined;
+        const setWorldMatrixForPart = GaussianSplattingMesh.prototype.setWorldMatrixForPart;
+        vi.spyOn(GaussianSplattingMesh.prototype, "setWorldMatrixForPart").mockImplementation(function (this: GaussianSplattingMesh, partIndex: number, matrix: Matrix) {
+            if (!sorter) {
+                sorter = installSorter(this);
+                this.alwaysSelectAsActiveMesh = true;
+                vi.spyOn(this as any, "_drawColorPass").mockImplementation((cameraMesh: any) => cameraMesh);
+                this._postToWorker(true);
+                for (let frame = 0; frame < 3; frame++) {
+                    scene.render();
+                }
+                expect(this["_hasRenderedOnce"]).toBe(true);
+                expect(sorter.setSource.mock.lastCall![0].partIndicesTexture).toBeUndefined();
+                sorter.setSource.mockClear();
+                sorter.sort.mockClear();
+            }
+            setWorldMatrixForPart.call(this, partIndex, matrix);
+        });
+
+        const parsed = Mesh.Parse(serialized, scene, "") as GaussianSplattingCompoundMesh;
+        expect(parsed).toBeInstanceOf(GaussianSplattingCompoundMesh);
+        expect(parsed.partIndicesTexture).not.toBeNull();
+        expect(sorter).toBeDefined();
+        scene.render();
+
+        expect(parsed.isCompound).toBe(true);
+        expect(sorter!.setSource).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ partIndicesTexture: parsed.partIndicesTexture }));
+        expect(sorter!.setPartMatrices.mock.lastCall![0][1].m[14]).toBe(-2);
+        expect(parsed._isDepthSortSettled).toBe(true);
+
+        sorter!.setSource.mockClear();
+        sorter!.sort.mockClear();
+        parsed["_partProxies"][1].position.z = -3;
+        scene.render();
+
+        expect(sorter!.sort).toHaveBeenCalledOnce();
+        expect(sorter!.setSource).not.toHaveBeenCalled();
+        expect(sorter!.setPartMatrices.mock.lastCall![0][1].m[14]).toBe(-3);
     });
 
     it("keeps GPU sort bootstrap progressing without a render loop", () => {
