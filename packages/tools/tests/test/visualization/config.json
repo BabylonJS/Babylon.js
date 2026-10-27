@@ -2,6 +2,13 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Solid Particle System Mixed Model Winding",
+            "playgroundId": "#B1NNWI#2",
+            "referenceImage": "sps-mixed-model-winding.png",
+            "renderCount": 1,
+            "dependsOn": ["Particles", "Meshes", "Materials", "Cameras"]
+        },
+        {
             "title": "Raw Texture 2D Array Mipmaps",
             "playgroundId": "#I5RZPG#1",
             "referenceImage": "raw-texture-2d-array-mipmaps.png",
