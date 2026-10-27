@@ -556,6 +556,14 @@ export class KhronosTextureContainer2Encoder {
         const { width, height } = texture.getSize();
         const readback = await WithAbortAsync(async () => await GetTextureDataAsync(texture, width, height, 0, 0, false, 0, false), signal);
         const rgba = readback.buffer instanceof ArrayBuffer ? readback : readback.slice();
+        // WebGPU reads BGRA textures back in storage order.
+        if (texture.textureFormat === Constants.TEXTUREFORMAT_BGRA && texture.getInternalTexture()?.getEngine().isWebGPU) {
+            for (let index = 0; index < rgba.length; index += 4) {
+                const blue = rgba[index];
+                rgba[index] = rgba[index + 2];
+                rgba[index + 2] = blue;
+            }
+        }
         const encodingOptions: IKTX2EncoderOptions = {
             ...requestedOptions,
             generateMipmaps: !texture.noMipmap && (texture.getInternalTexture()?.generateMipMaps ?? true),

@@ -227,6 +227,18 @@ it("captures main-thread dependencies at construction and refreshes defaults aft
     }
 });
 
+it("encodes WebGPU BGRA readback as RGBA", async () => {
+    vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
+    texture.getInternalTexture()!.format = Constants.TEXTUREFORMAT_BGRA;
+    vi.mocked(texture.readPixels).mockResolvedValue(Uint8Array.from({ length: 64 }, (_, index) => [10, 20, 30, 40][index % 4]));
+    const result = EncodeAsync(new KhronosTextureContainer2Encoder(1));
+    await FlushAsync();
+    const worker = FakeWorker.instances[0];
+    expect(worker.encodes[0].rgba).toEqual(Uint8Array.from({ length: 64 }, (_, index) => [30, 20, 10, 40][index % 4]));
+    worker.finish();
+    await expect(result).resolves.toEqual(new Uint8Array([7]));
+});
+
 it("only compensates an actual upload flip for inverted UVs", () => {
     const internal = texture.getInternalTexture()!;
     internal.invertY = true;
