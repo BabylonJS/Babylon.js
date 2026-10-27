@@ -38,10 +38,13 @@ for (const backend of ["webgl2", "webgpu"]) {
                             }
                             return image.toDataURL();
                         };
+                        const geometry = [-1, -1, 0, -1, 1, 0, 1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1];
                         const data = new Float32Array([
-                            -1, -1, 0, -1, 1, 0, 1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1,
+                            ...geometry,
+                            ...Array.from({ length: 6 }, () => [0, 0, -1]).flat(),
+                            ...Array.from({ length: 6 }, () => [0, 1, 0, 1]).flat(),
                         ]);
-                        const source = (uv: number, pattern: "white" | "columns" | "rows", transform = false, withDiffuse = diffuse) => ({
+                        const source = (uv: number, pattern: "white" | "columns" | "rows", transform = false, withDiffuse = diffuse, withTangents = false) => ({
                             asset: { version: "2.0" },
                             extensionsUsed: [
                                 "KHR_materials_transmission",
@@ -53,7 +56,9 @@ for (const backend of ["webgl2", "webgpu"]) {
                             scene: 0,
                             scenes: [{ nodes: [0] }],
                             nodes: [{ mesh: 0 }],
-                            meshes: [{ primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1, TEXCOORD_1: 2 }, material: 0 }] }],
+                            meshes: [
+                                { primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1, TEXCOORD_1: 2, NORMAL: 3, ...(withTangents ? { TANGENT: 4 } : {}) }, material: 0 }] },
+                            ],
                             materials: [
                                 {
                                     doubleSided: true,
@@ -99,16 +104,21 @@ for (const backend of ["webgl2", "webgpu"]) {
                                 { bufferView: 0, componentType: 5126, count: 6, type: "VEC3", min: [-1, -1, 0], max: [1, 1, 0] },
                                 { bufferView: 1, componentType: 5126, count: 6, type: "VEC2" },
                                 { bufferView: 2, componentType: 5126, count: 6, type: "VEC2" },
+                                { bufferView: 3, componentType: 5126, count: 6, type: "VEC3" },
+                                { bufferView: 4, componentType: 5126, count: 6, type: "VEC4" },
                             ],
                             bufferViews: [
                                 { buffer: 0, byteLength: 72 },
                                 { buffer: 0, byteOffset: 72, byteLength: 48 },
                                 { buffer: 0, byteOffset: 120, byteLength: 48 },
+                                { buffer: 0, byteOffset: 168, byteLength: 72 },
+                                { buffer: 0, byteOffset: 240, byteLength: 96 },
                             ],
                             buffers: [{ byteLength: data.byteLength, uri: "data:application/octet-stream;base64," + btoa(String.fromCharCode(...new Uint8Array(data.buffer))) }],
                         });
                         const capture = async (scene: InstanceType<typeof BABYLON.Scene>) => {
                             for (let frame = 0; frame < 3; frame++) {
+                                await new Promise(requestAnimationFrame);
                                 await scene.whenReadyAsync();
                                 engine.beginFrame();
                                 scene.render();
@@ -126,6 +136,8 @@ for (const backend of ["webgl2", "webgpu"]) {
                                 pluginOptions: { gltf: { useOpenPBR: true } },
                             });
                             const material = loaded.meshes.find((mesh) => mesh.material)!.material as InstanceType<typeof BABYLON.OpenPBRMaterial>;
+                            // Readiness must wait for the edited shader, not keep rendering the previous effect.
+                            material.allowShaderHotSwapping = false;
                             const background = BABYLON.MeshBuilder.CreatePlane("background", { size: 4 }, scene);
                             background.position.z = 1;
                             const white = new BABYLON.StandardMaterial("white", scene);
@@ -183,7 +195,46 @@ for (const backend of ["webgl2", "webgpu"]) {
                                 g.scene.dispose();
                             }
                             const different = (left: number[], right: number[]) => left.filter((value, i) => i % 4 !== 3 && Math.abs(value - right[i]) > 3).length;
+                            const liveColor = await load(source(0, "white"));
+                            liveColor.material.baseColorTexture = null;
+                            liveColor.material.baseColor.set(1, 1, 1);
+                            liveColor.material._gltfDiffuseTransmissionColorTexture = null;
+                            liveColor.material._gltfDiffuseTransmissionColor.set(1, 1, 1);
+                            const whiteColor = await capture(liveColor.scene);
+                            const color = diffuse ? liveColor.material._gltfDiffuseTransmissionColor : liveColor.material.baseColor;
+                            color.set(0.2, 0.6, 0.8);
+                            const tintedColor = await capture(liveColor.scene);
+                            const colorReference = await load(source(0, "white"));
+                            colorReference.material.baseColorTexture = null;
+                            colorReference.material.baseColor.set(1, 1, 1);
+                            colorReference.material._gltfDiffuseTransmissionColorTexture = null;
+                            colorReference.material._gltfDiffuseTransmissionColor.set(1, 1, 1);
+                            (diffuse ? colorReference.material._gltfDiffuseTransmissionColor : colorReference.material.baseColor).set(0.2, 0.6, 0.8);
+                            const referenceColor = await capture(colorReference.scene);
+                            color.set(1, 1, 1);
+                            const restoredColor = await capture(liveColor.scene);
+                            liveColor.scene.dispose();
+                            colorReference.scene.dispose();
+                            const tangentSource = source(0, "white", false, false, true);
+                            tangentSource.images[0].uri = texture("white");
+                            tangentSource.materials[0].pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1];
+                            tangentSource.materials[0].extensions.KHR_materials_clearcoat.clearcoatNormalTexture.texCoord = 0;
+                            tangentSource.materials[0].extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor = 0.3;
+                            tangentSource.materials[0].extensions.KHR_materials_transmission.transmissionFactor = 0.5;
+                            const tangentMaterial = await load(tangentSource);
+                            new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0.3, 0.4, 1), tangentMaterial.scene).intensity = 5;
+                            const convertedTangents = await capture(tangentMaterial.scene);
+                            tangentMaterial.scene.dispose();
+                            const tangentReference = await load(tangentSource);
+                            tangentReference.material._gltfTransmissionSurfaceToCoat = false;
+                            new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0.3, 0.4, 1), tangentReference.scene).intensity = 5;
+                            const referenceTangents = await capture(tangentReference.scene);
+                            tangentReference.scene.dispose();
                             return {
+                                liveColorDifference: different(whiteColor, tintedColor),
+                                liveColorReferenceDifference: different(tintedColor, referenceColor),
+                                restoredColorDifference: different(whiteColor, restoredColor),
+                                tangentDifference: different(convertedTangents, referenceTangents),
                                 whiteDifference: different(whiteUV0, whiteUV1),
                                 patternDifference: different(rowsUV0, columnsUV1),
                                 transformDifference: different(columnsUV1, transformed),
@@ -214,6 +265,10 @@ for (const backend of ["webgl2", "webgpu"]) {
             );
             expect(result.distinctColors, JSON.stringify(result)).toBeGreaterThan(2);
             expect(result.whiteDifference, JSON.stringify(result)).toBe(0);
+            expect(result.liveColorDifference, JSON.stringify(result)).toBeGreaterThan(100);
+            expect(result.liveColorReferenceDifference, JSON.stringify(result)).toBe(0);
+            expect(result.restoredColorDifference, JSON.stringify(result)).toBe(0);
+            expect(result.tangentDifference, JSON.stringify(result)).toBe(0);
             expect(result.patternDifference, JSON.stringify(result)).toBe(0);
             expect(result.transformDifference).toBeGreaterThan(100);
             expect(result.editDifference).toBeGreaterThan(100);

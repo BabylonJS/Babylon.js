@@ -187,6 +187,8 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
         adapter.configureVolume();
         adapter.subsurfaceWeight = 0.5;
         adapter.diffuseTransmissionTint = new Color3(0.2, 0.4, 0.6);
+        adapter.coatRoughnessTexture = new Texture(null, scene);
+        adapter.coatRoughnessTexture.name = "packedCoat";
         await adapter.finalizeAsync(loader);
 
         const clone = material.clone("clone");
@@ -196,6 +198,7 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
             expect(copy._gltfDiffuseTransmissionSurfaceToCoat).toBe(true);
             expect(copy._gltfDiffuseTransmissionColor.asArray()).toEqual([0.2, 0.4, 0.6]);
             expect(copy.coatWeight).toBe(material.coatWeight);
+            expect(copy._useCoatRoughnessFromGreenChannel).toBe(true);
         }
     });
 

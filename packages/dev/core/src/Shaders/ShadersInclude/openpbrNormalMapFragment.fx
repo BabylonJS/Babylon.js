@@ -54,7 +54,7 @@
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL
-    #if defined(GLTF_TRANSMISSION_SURFACE_TO_COAT) || defined(GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT)
+    #ifdef GLTF_COAT_NORMAL_INDEPENDENT_TBN
         vec2 coatTBNUV = gl_FrontFacing ? vGeometryCoatNormalUV : -vGeometryCoatNormalUV;
         mat3 coatTBN = cotangent_frame(normalW, vPositionW, coatTBNUV, vTangentSpaceParams);
         coatNormalW = perturbNormal(coatTBN, TEXRD(geometryCoatNormalSampler, vGeometryCoatNormalUV + uvOffset).xyz, vGeometryCoatNormalInfos.y);

@@ -186,15 +186,18 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
         expect(result.baseColorTexCoord).toBe(0);
     });
 
-    // The rebaked base color must decode the source base color according to its gammaSpace. A texture in a
-    // hardware sRGB buffer is already linear when sampled, so decoding it again would darken the export.
-    // With an opacity texture, the base color is first merged into an intermediate texture that keeps the
-    // source encoding, so that path must use the source texture's color space too.
-    for (const useSRGBBuffer of [false, true]) {
+    // Hardware-sRGB sources sample as linear RGB, but exported base color images must contain sRGB texels,
+    // including after opacity packing and when imported glTF inputs bypass native OpenPBR tint rebaking.
+    for (const { useSRGBBuffer, imported } of [
+        { useSRGBBuffer: false, imported: false },
+        { useSRGBBuffer: true, imported: false },
+        { useSRGBBuffer: false, imported: true },
+        { useSRGBBuffer: true, imported: true },
+    ]) {
         for (const withOpacityTexture of [false, true]) {
-            test(`rebaked base color texels are correct (sRGB buffer: ${useSRGBBuffer}, opacity texture: ${withOpacityTexture})`, async () => {
+            test(`exported base color texels are correct (imported: ${imported}, sRGB buffer: ${useSRGBBuffer}, opacity texture: ${withOpacityTexture})`, async () => {
                 const result = await page.evaluate(
-                    async ({ useSRGBBuffer, withOpacityTexture }) => {
+                    async ({ useSRGBBuffer, withOpacityTexture, imported }) => {
                         const scene = window.scene!;
                         const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
                         const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
@@ -204,13 +207,14 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
 
                         const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
                         const mat = new BABYLON.OpenPBRMaterial("srgbBaseColor", scene);
+                        mat._gltfTransmissionSurfaceToCoat = imported;
                         mat.geometryThinWalled = 1;
                         mat.baseColor = BABYLON.Color3.White();
                         const baseColorTexture = solid(128, useSRGBBuffer);
                         baseColorTexture.name = "baseColor";
                         mat.baseColorTexture = baseColorTexture;
                         if (withOpacityTexture) {
-                            const opacityTexture = solid(255, false);
+                            const opacityTexture = solid(128, false);
                             opacityTexture.name = "opacity";
                             mat.geometryOpacityTexture = opacityTexture;
                         }
@@ -233,20 +237,21 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                             texel,
                         };
                     },
-                    { useSRGBBuffer, withOpacityTexture }
+                    { useSRGBBuffer, withOpacityTexture, imported }
                 );
 
                 if (useSRGBBuffer) {
                     expect(result.supportsSRGBBuffers).toBe(true);
                 }
                 expect(result.gammaSpace).toBe(!useSRGBBuffer);
-                // lerp(decode(128), white, 0.5), encoded as sRGB.
+                // Native inputs neutralize transmission tint; imported glTF inputs keep their authored RGB.
                 const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
                 const toSRGB = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
-                const expected = toSRGB(toLinear(128 / 255) * 0.5 + 0.5) * 255;
+                const expected = imported ? 128 : toSRGB(toLinear(128 / 255) * 0.5 + 0.5) * 255;
                 for (let i = 0; i < 3; i++) {
                     expect(Math.abs(result.texel[i] - expected)).toBeLessThanOrEqual(2);
                 }
+                expect(Math.abs(result.texel[3] - 128)).toBeLessThanOrEqual(2);
             });
         }
     }

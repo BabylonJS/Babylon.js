@@ -291,6 +291,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL = false;
     public GLTF_TRANSMISSION_SURFACE_TO_COAT = false;
     public GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT = false;
+    public GLTF_COAT_NORMAL_INDEPENDENT_TBN = false;
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
@@ -1605,6 +1606,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * This is for compatibility with glTF's KHR_materials_clearcoat and KHR_materials_coat extensions.
      * @internal
      */
+    @serialize()
     public _useCoatRoughnessFromGreenChannel = false;
 
     /**
@@ -3178,17 +3180,33 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         const scene = this.getScene();
         const engine = scene.getEngine();
 
-        defines.GLTF_TRANSMISSION_SURFACE_TO_COAT =
+        const transmissionSurfaceToCoat =
             this._gltfTransmissionSurfaceToCoat &&
             !this.geometryThinWalled &&
             this.transmissionDepth > 0 &&
             this.transmissionWeight > 0 &&
             (!!this.baseColorTexture || !this.baseColor.equalsFloats(1, 1, 1));
-        defines.GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT =
+        const diffuseTransmissionSurfaceToCoat =
             this._gltfDiffuseTransmissionSurfaceToCoat &&
             !this.geometryThinWalled &&
             this.subsurfaceWeight > 0 &&
             (!!this._gltfDiffuseTransmissionColorTexture || !this._gltfDiffuseTransmissionColor.equalsFloats(1, 1, 1));
+        const independentCoatNormalTBN =
+            (transmissionSurfaceToCoat || diffuseTransmissionSurfaceToCoat) &&
+            !!this.geometryNormalTexture &&
+            !!this.geometryCoatNormalTexture &&
+            (this.geometryNormalTexture.coordinatesIndex !== this.geometryCoatNormalTexture.coordinatesIndex ||
+                !this.geometryNormalTexture.getTextureMatrix().equals(this.geometryCoatNormalTexture.getTextureMatrix()));
+        if (
+            defines.GLTF_TRANSMISSION_SURFACE_TO_COAT !== transmissionSurfaceToCoat ||
+            defines.GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT !== diffuseTransmissionSurfaceToCoat ||
+            defines.GLTF_COAT_NORMAL_INDEPENDENT_TBN !== independentCoatNormalTBN
+        ) {
+            defines.GLTF_TRANSMISSION_SURFACE_TO_COAT = transmissionSurfaceToCoat;
+            defines.GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT = diffuseTransmissionSurfaceToCoat;
+            defines.GLTF_COAT_NORMAL_INDEPENDENT_TBN = independentCoatNormalTBN;
+            defines.markAsUnprocessed();
+        }
 
         // Lights
         PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);

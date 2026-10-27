@@ -161,6 +161,18 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
                 // Imported glTF inputs already contain the surface tint expected by glTF.
                 if (babylonMaterial._gltfTransmissionSurfaceToCoat) {
+                    if (baseColorTexture && babylonMaterial.geometryOpacityTexture && babylonMaterial.baseColorTexture && !babylonMaterial.baseColorTexture.gammaSpace) {
+                        // Opacity packing copies hardware-decoded RGB; glTF still requires sRGB texels.
+                        const packedTexture = baseColorTexture;
+                        const encoded = await MultiplyTexturesAsync(
+                            `base color encoding (${babylonMaterial.name})`,
+                            { texture: packedTexture, dispose: () => packedTexture.dispose() },
+                            CreateFactorOperand(new Color4(1, 1, 1, 1)),
+                            babylonMaterial.getScene(),
+                            TextureColorSpace.SRGB
+                        );
+                        baseColorTexture = encoded.texture ?? null;
+                    }
                     this._baseColorOperands.set(babylonMaterial, {
                         factor: new Color4(babylonMaterial.baseColor.r, babylonMaterial.baseColor.g, babylonMaterial.baseColor.b, geometryOpacity),
                         texture: baseColorTexture,
