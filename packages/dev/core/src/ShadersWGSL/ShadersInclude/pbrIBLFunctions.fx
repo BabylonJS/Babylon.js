@@ -20,6 +20,28 @@
     }
 #endif
 
+#if defined(BENTNORMAL) && defined(REFLECTION)
+    fn bentNormalSGLogIntegral(concentration: f32) -> f32 {
+        if (concentration < 0.001) {
+            return 0.69314718056 + concentration * concentration / 6.0;
+        }
+        return concentration + log(1.0 - exp(-2.0 * concentration)) - log(concentration);
+    }
+
+    fn environmentBentNormalOcclusion(bentNormal: vec3f, reflectionDirection: vec3f, normal: vec3f, view: vec3f, ambientOcclusion: f32, roughness: f32) -> f32 {
+        // Independently evaluated spherical-Gaussian product integrals, normalized by an unoccluded hemisphere.
+        // Log space avoids overflow for narrow visibility and reflection lobes.
+        // https://therealmjp.github.io/posts/sg-series-part-2-spherical-gaussians-101/
+        let visibilityConcentration = 1.0 / max(1.0 - sqrt(1.0 - saturate(ambientOcclusion)), 0.001);
+        let alpha = roughness * roughness;
+        let reflectionConcentration = 0.5 / max(alpha * alpha * dot(normal, view), 0.001);
+        let reflectionAxis = reflectionDirection * reflectionConcentration;
+        let visibleIntegral = bentNormalSGLogIntegral(length(reflectionAxis + visibilityConcentration * bentNormal));
+        let hemisphereIntegral = bentNormalSGLogIntegral(length(reflectionAxis + 0.8 * normal));
+        return exp(min(0.0, visibleIntegral - hemisphereIntegral + 0.8 - visibilityConcentration));
+    }
+#endif
+
 #if defined(ENVIRONMENTBRDF) && defined(HORIZONOCCLUSION)
     fn environmentHorizonOcclusion(view: vec3f, normal: vec3f, geometricNormal: vec3f) -> f32 {
         // http://marmosetco.tumblr.com/post/81245981087

@@ -33,9 +33,16 @@ uniform vec2 vBaseDiffuseRoughnessInfos;
 uniform vec4 vAmbientInfos;
 #endif
 
+#if defined(BUMP) || defined(BENTNORMAL)
+uniform vec2 vTangentSpaceParams;
+#endif
+
+#ifdef BENTNORMAL
+uniform vec2 vBentNormalInfos;
+#endif
+
 #ifdef BUMP
 uniform vec3 vBumpInfos;
-uniform vec2 vTangentSpaceParams;
 #endif
 
 #ifdef OPACITY

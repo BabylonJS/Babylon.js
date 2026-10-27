@@ -288,6 +288,16 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
             />
             <BoundProperty
                 component={MaterialTextureDebugPropertyLine}
+                label="Bent Normal"
+                target={material}
+                propertyKey="_bentNormalTexture"
+                scene={scene}
+                onLink={selectEntity}
+                defaultValue={null}
+                material={material}
+            />
+            <BoundProperty
+                component={MaterialTextureDebugPropertyLine}
                 label="Lightmap"
                 target={material}
                 propertyKey="_lightmapTexture"

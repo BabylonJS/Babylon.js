@@ -18,7 +18,7 @@
         vec3 colorSpecularEnvironmentReflectance = getReflectanceFromBRDFLookup(clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, environmentBrdf);
     #endif
 
-    #ifdef RADIANCEOCCLUSION
+    #if defined(RADIANCEOCCLUSION) && !defined(BENTNORMAL)
         colorSpecularEnvironmentReflectance *= seo;
     #endif
 

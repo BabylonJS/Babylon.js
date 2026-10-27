@@ -115,6 +115,20 @@ export class PBRMaterial extends PBRBaseMaterial {
     public accessor ambientTexture: Nullable<BaseTexture>;
 
     /**
+     * Tangent-space bent normals in linear RGB, used with ambientTexture (or metallic texture AO)
+     * to directionally occlude environment reflections using a spherical-Gaussian approximation
+     * of visibility and the specular lobe.
+     * Bake the bent normal and cosine-weighted AO with matching occlusion distances.
+     * Without an AO texture the map has no effect; direct lighting and diffuse AO are unchanged.
+     * Set gammaSpace to false when loading a bent normal texture.
+     * The texture's level blends between unoccluded and fully bent-normal-occluded reflections (0..1).
+     * @see https://playground.babylonjs.com/#8N2ROI#5
+     */
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public accessor bentNormalTexture: Nullable<BaseTexture>;
+
+    /**
      * AKA Occlusion Texture Intensity in other nomenclature.
      */
     @serialize()
