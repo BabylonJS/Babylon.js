@@ -4801,7 +4801,7 @@
         },
         {
             "title": "OpenPBR Subsurface Scatter Strength Thin-Walled - glTF",
-            "playgroundId": "#GRQHVV#335",
+            "playgroundId": "#GRQHVV#343",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
