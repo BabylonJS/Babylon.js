@@ -211,18 +211,20 @@ export function CreateTextureWithFactorOperand(texture: Nullable<BaseTexture>, f
     return op;
 }
 
+const _DefaultFactor = new Color4(1, 1, 1, 1);
+
 /**
  * @internal
  * Evaluate the effective constant Color4 of an operand.
  * When a texture-only operand omits factor, the implicit value is (1, 1, 1, 1).
  */
 function _EvalConstant(op: ITextureProcessOperand): Color4 {
-    return op.factor ?? new Color4(1, 1, 1, 1);
+    return op.factor ?? _DefaultFactor;
 }
 
 /** @internal */
-function _MultiplyConstants(a: Color4, b: Color4): Color4 {
-    return new Color4(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a);
+function _MultiplyConstants(a: Color4, b: Color4, result = new Color4()): Color4 {
+    return result.set(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a);
 }
 
 /** @internal */
@@ -237,8 +239,8 @@ function _DivideConstants(a: Color4, b: Color4): Color4 {
 }
 
 /** @internal */
-function _LerpConstants(a: Color4, b: Color4, t: Color4): Color4 {
-    return new Color4(a.r + (b.r - a.r) * t.r, a.g + (b.g - a.g) * t.g, a.b + (b.b - a.b) * t.b, a.a + (b.a - a.a) * t.a);
+function _LerpConstants(a: Color4, b: Color4, t: Color4, result = new Color4()): Color4 {
+    return result.set(a.r + (b.r - a.r) * t.r, a.g + (b.g - a.g) * t.g, a.b + (b.b - a.b) * t.b, a.a + (b.a - a.a) * t.a);
 }
 
 /**
@@ -355,16 +357,21 @@ function _TrackDynamicInputs(pt: ProceduralTexture, operands: ITextureProcessOpe
     });
 }
 
-function _FoldConstants(operands: ITextureProcessOperand[], evaluate: () => Color4): ITextureProcessOperand {
-    const factor = evaluate();
+function _FoldConstants(operands: ITextureProcessOperand[], evaluate: (result: Color4) => void): ITextureProcessOperand {
+    const factor = new Color4();
+    evaluate(factor);
     if (!operands.some((operand) => operand.onChangedObservable)) {
         return { texture: null, factor };
     }
     const onChangedObservable = new Observable<void>();
+    const scratch = new Color4();
     const observers = operands.map((operand) =>
         operand.onChangedObservable?.add(() => {
-            factor.copyFrom(evaluate());
-            onChangedObservable.notifyObservers();
+            evaluate(scratch);
+            if (!factor.equals(scratch)) {
+                factor.copyFrom(scratch);
+                onChangedObservable.notifyObservers();
+            }
         })
     );
     return {
@@ -478,8 +485,8 @@ function _BuildOutputChannelMaskDefines(mask: ChannelMask): string[] {
  * Apply a ChannelMask to a constant Color4: included channels pass through,
  * excluded color channels become 0, excluded alpha becomes 1.
  */
-function _ApplyOutputChannelMask(c: Color4, mask: ChannelMask): Color4 {
-    return new Color4(mask & ChannelMask.R ? c.r : 0, mask & ChannelMask.G ? c.g : 0, mask & ChannelMask.B ? c.b : 0, mask & ChannelMask.A ? c.a : 1);
+function _ApplyOutputChannelMask(c: Color4, mask: ChannelMask, result = new Color4()): Color4 {
+    return result.set(mask & ChannelMask.R ? c.r : 0, mask & ChannelMask.G ? c.g : 0, mask & ChannelMask.B ? c.b : 0, mask & ChannelMask.A ? c.a : 1);
 }
 
 /**
@@ -614,13 +621,16 @@ function _CreateProcessorTexture(
 /**
  * @internal
  * Wait for a procedural texture's shader to compile then render it. Uniforms must be set
- * on the texture before calling this.
+ * on the texture before calling this. Live inputs are refreshed immediately before drawing,
+ * and tracking starts before resolving to avoid capturing changes after the draw.
  */
-async function _RenderAsync(pt: ProceduralTexture): Promise<void> {
+async function _RenderAsync(pt: ProceduralTexture, updateUniforms?: () => void, trackInputs?: () => void): Promise<void> {
     return await new Promise<void>((resolve, reject) => {
         pt.executeWhenReady(() => {
             try {
+                updateUniforms?.();
                 pt.render();
+                trackInputs?.();
                 resolve();
             } catch (error) {
                 reject(error instanceof Error ? error : new Error(String(error)));
@@ -664,9 +674,11 @@ export async function MultiplyTexturesAsync(
     outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture) {
-        return _FoldConstants([a, b], () => {
-            const factor = _MultiplyConstants(_EvalConstant(a), _EvalConstant(b));
-            return outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor;
+        return _FoldConstants([a, b], (factor) => {
+            _MultiplyConstants(_EvalConstant(a), _EvalConstant(b), factor);
+            if (outputChannelMask) {
+                _ApplyOutputChannelMask(factor, outputChannelMask, factor);
+            }
         });
     }
 
@@ -697,16 +709,14 @@ export async function MultiplyTexturesAsync(
     };
     updateUniforms();
     try {
-        await _RenderAsync(pt);
+        await _RenderAsync(pt, updateUniforms, dynamic ? () => _TrackDynamicInputs(pt, [a, b], updateUniforms) : undefined);
     } catch (error) {
         a.dispose?.();
         b.dispose?.();
         throw error;
     }
 
-    if (dynamic) {
-        _TrackDynamicInputs(pt, [a, b], updateUniforms);
-    } else {
+    if (!dynamic) {
         a.dispose?.();
         b.dispose?.();
     }
@@ -1086,9 +1096,11 @@ export async function LerpTexturesAsync(
     outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture && !t.texture) {
-        return _FoldConstants([a, b, t], () => {
-            const factor = _LerpConstants(_EvalConstant(a), _EvalConstant(b), _EvalConstant(t));
-            return outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor;
+        return _FoldConstants([a, b, t], (factor) => {
+            _LerpConstants(_EvalConstant(a), _EvalConstant(b), _EvalConstant(t), factor);
+            if (outputChannelMask) {
+                _ApplyOutputChannelMask(factor, outputChannelMask, factor);
+            }
         });
     }
 
@@ -1125,7 +1137,7 @@ export async function LerpTexturesAsync(
     };
     updateUniforms();
     try {
-        await _RenderAsync(pt);
+        await _RenderAsync(pt, updateUniforms, dynamic ? () => _TrackDynamicInputs(pt, [a, b, t], updateUniforms) : undefined);
     } catch (error) {
         a.dispose?.();
         b.dispose?.();
@@ -1133,9 +1145,7 @@ export async function LerpTexturesAsync(
         throw error;
     }
 
-    if (dynamic) {
-        _TrackDynamicInputs(pt, [a, b, t], updateUniforms);
-    } else {
+    if (!dynamic) {
         a.dispose?.();
         b.dispose?.();
         t.dispose?.();
@@ -1160,14 +1170,14 @@ export async function LerpTexturesAsync(
  */
 export async function _ScaleNormalTextureAsync(name: string, input: ITextureProcessOperand, scale: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
     if (!input.texture && !scale.texture) {
-        return _FoldConstants([input, scale], () => {
+        return _FoldConstants([input, scale], (result) => {
             const normal = _EvalConstant(input);
             const strength = _EvalConstant(scale).r;
             const x = (normal.r * 2 - 1) * strength;
             const y = (normal.g * 2 - 1) * strength;
             const z = normal.b * 2 - 1;
             const length = Math.max(Math.hypot(x, y, z), 1e-8);
-            return new Color4((x / length) * 0.5 + 0.5, (y / length) * 0.5 + 0.5, (z / length) * 0.5 + 0.5, normal.a);
+            result.set((x / length) * 0.5 + 0.5, (y / length) * 0.5 + 0.5, (z / length) * 0.5 + 0.5, normal.a);
         });
     }
     const operands = [input, scale];
@@ -1187,15 +1197,13 @@ export async function _ScaleNormalTextureAsync(name: string, input: ITextureProc
     };
     updateUniforms();
     try {
-        await _RenderAsync(pt);
+        await _RenderAsync(pt, updateUniforms, dynamic ? () => _TrackDynamicInputs(pt, operands, updateUniforms) : undefined);
     } catch (error) {
         input.dispose?.();
         scale.dispose?.();
         throw error;
     }
-    if (dynamic) {
-        _TrackDynamicInputs(pt, operands, updateUniforms);
-    } else {
+    if (!dynamic) {
         input.dispose?.();
         scale.dispose?.();
     }

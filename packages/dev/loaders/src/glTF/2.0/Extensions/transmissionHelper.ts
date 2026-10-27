@@ -104,6 +104,7 @@ export class TransmissionHelper {
     private _materialObservers: { [id: string]: Nullable<Observer<AbstractMesh>> } = {};
     private _newMeshObserver: Nullable<Observer<AbstractMesh>> = null;
     private _removedMeshObserver: Nullable<Observer<AbstractMesh>> = null;
+    private _translucencyObserver: Nullable<Observer<Scene>> = null;
     private _disposed = false;
 
     // Material implementations registered by loaders. Each entry maps a material class
@@ -111,6 +112,7 @@ export class TransmissionHelper {
     // independently of whichever loader originally created them.
     private readonly _materialImpls: ITransmissionHelperMaterialImpl[] = [];
     private readonly _adapterCache: WeakMap<Material, IMaterialLoadingAdapter> = new WeakMap();
+    private readonly _translucencyStates = new Map<Material, { adapter: IMaterialLoadingAdapter; translucent: boolean; disposeObserver: Nullable<Observer<Material>> }>();
 
     /**
      * This observable will be notified with any error during the creation of the environment,
@@ -146,6 +148,21 @@ export class TransmissionHelper {
 
         this._parseScene();
         this._setupRenderTargets();
+        this._translucencyObserver = scene.onBeforeRenderObservable.add(() => {
+            let changed = false;
+            for (const state of this._translucencyStates.values()) {
+                const translucent = state.adapter.isTranslucent();
+                if (state.translucent !== translucent) {
+                    state.translucent = translucent;
+                    changed = true;
+                }
+            }
+            if (changed) {
+                for (const mesh of this._scene.meshes) {
+                    this._onMeshMaterialChanged(mesh);
+                }
+            }
+        });
     }
 
     /**
@@ -208,6 +225,8 @@ export class TransmissionHelper {
                 if (material instanceof impl.materialClass) {
                     adapter = new impl.adapterClass(material);
                     this._adapterCache.set(material, adapter);
+                    const disposeObserver = material.onDisposeObservable.addOnce(() => this._translucencyStates.delete(material));
+                    this._translucencyStates.set(material, { adapter, translucent: adapter.isTranslucent(), disposeObserver });
                     break;
                 }
             }
@@ -475,8 +494,14 @@ export class TransmissionHelper {
         // Unregister scene-level observers so this helper stops reacting to mesh changes.
         this._newMeshObserver?.remove();
         this._removedMeshObserver?.remove();
+        this._translucencyObserver?.remove();
         this._newMeshObserver = null;
         this._removedMeshObserver = null;
+        this._translucencyObserver = null;
+        for (const [material, state] of this._translucencyStates) {
+            material.onDisposeObservable.remove(state.disposeObserver);
+        }
+        this._translucencyStates.clear();
 
         // Remove per-mesh material-change observers for all tracked meshes.
         const allTracked = [...this._transparentMeshesCache, ...this._opaqueMeshesCache];

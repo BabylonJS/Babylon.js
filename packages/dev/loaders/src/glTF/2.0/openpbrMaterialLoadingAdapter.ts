@@ -1861,8 +1861,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 return;
             }
             bindResult(newSpecularRoughness, () => {
+                source.specularRoughnessIsBaked = !!newSpecularRoughness.texture;
                 this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
                 this.specularRoughnessTexture = newSpecularRoughness.texture;
+                this.useRoughnessFromMetallicTextureGreen = false;
             });
         }
 

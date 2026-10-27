@@ -16,6 +16,8 @@ import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialL
 import { Color3, Color4 } from "core/Maths/math.color";
 import { type IGLTF, MaterialAlphaMode, AccessorType, AnimationSamplerInterpolation, AnimationChannelTargetPath } from "babylonjs-gltf2interface";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { type ITransmissionHelperHolder } from "loaders/glTF/2.0/Extensions/transmissionHelper";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Vector2 } from "core/Maths/math.vector";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
@@ -561,10 +563,18 @@ describe("KHR_animation_pointer material implementations", () => {
         const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
         expect(!!material.geometryThinWalled).toBe(thin);
         expect(material.transmissionWeight).toBe(0);
+        const mesh = result.meshes.find((mesh) => mesh.material === material)!;
+        const target = (scene as Scene & ITransmissionHelperHolder)._transmissionHelper!.getOpaqueTarget();
+        if (!(target instanceof RenderTargetTexture)) {
+            throw new Error("Missing transmission background target");
+        }
+        await vi.waitFor(() => expect(target.renderList).toContain(mesh));
         const group = result.animationGroups[0].pause();
         group.goToFrame(30);
         scene.onBeforeRenderObservable.notifyObservers(scene);
         expect(material.transmissionWeight).toBeCloseTo(0.5);
+        expect(material.backgroundRefractionTexture).toBe(target);
+        expect(target.renderList).not.toContain(mesh);
         expect(thin ? material.transmissionColor.r : material.coatColor.r).toBeCloseTo(thin ? 0.6 : 0.8);
         group.stop();
         const converter = GetPathToObjectConverter(parsed!);
@@ -574,6 +584,60 @@ describe("KHR_animation_pointer material implementations", () => {
         weight.info.set!(0.25, weight.object);
         scene.onBeforeRenderObservable.notifyObservers(scene);
         expect(thin ? material.transmissionColor.r : material.coatColor.r).toBeCloseTo(thin ? 0.3 : 0.825);
+        weight.info.set!(0, weight.object);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(target.renderList).toContain(mesh);
+    });
+
+    it.each([false, true])("retains textured converted base roughness with metallic texture=%s", async (metallicTexture) => {
+        vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
+            callback(this);
+        });
+        vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf("pbrMetallicRoughness/roughnessFactor", [0.2, 0.8], "SCALAR", {
+                KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] },
+                KHR_materials_diffuse_transmission: { diffuseTransmissionFactor: 0.5, diffuseTransmissionTexture: { index: 0 } },
+            })
+        ) as ILoadedGLTF;
+        for (const material of gltf.materials!) {
+            delete material.pbrMetallicRoughness!.baseColorTexture;
+            if (!metallicTexture) {
+                delete material.pbrMetallicRoughness!.metallicRoughnessTexture;
+            }
+        }
+        let parsed: ILoadedGLTF | undefined;
+        let completion: Promise<void> | undefined;
+        const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                completion = plugin.whenCompleteAsync();
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as ILoadedGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+            await completion;
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(observer);
+        }
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        expect(material.specularRoughnessTexture).toBeInstanceOf(ProceduralTexture);
+        expect(material._useRoughnessFromMetallicTextureGreen).toBe(false);
+        expect(!!material.baseMetalnessTexture).toBe(metallicTexture);
+        const accessor = GetPathToObjectConverter(parsed!).convert("/materials/0/pbrMetallicRoughness/roughnessFactor");
+        const group = result.animationGroups[0].pause();
+        group.goToFrame(30);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(accessor.info.get!(accessor.object)).toBeCloseTo(0.5);
+        expect(material.specularRoughness).toBe(1);
+        group.stop();
+        accessor.info.set!(0.8, accessor.object);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(accessor.info.get!(accessor.object)).toBeCloseTo(0.8);
+        expect(material.specularRoughness).toBe(1);
     });
 
     it.each(["roughness", "ior"].flatMap((property) => [false, true].map((diffuse) => ({ property, diffuse }))))(

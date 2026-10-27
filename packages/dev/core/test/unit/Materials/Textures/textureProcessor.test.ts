@@ -74,6 +74,7 @@ function linearToSrgb(v: number): number {
 // inside the factory must also be hoisted with vi.hoisted().
 
 const _capturedPTs = vi.hoisted(() => [] as InstanceType<ReturnType<typeof _makeFakePTClass>>[]); // filled by constructor
+const _delayedReadiness = vi.hoisted(() => ({ enabled: false, callbacks: [] as (() => void)[] }));
 
 // Factory separated so TypeScript can infer the instance type for assertions.
 function _makeFakePTClass() {
@@ -116,8 +117,11 @@ function _makeFakePTClass() {
             return true;
         }
         executeWhenReady(func: (texture: unknown) => void) {
-            // isReady() always returns true in this mock, so the callback fires immediately.
-            func(this);
+            if (_delayedReadiness.enabled) {
+                _delayedReadiness.callbacks.push(() => func(this));
+            } else {
+                func(this);
+            }
         }
         getEffect() {
             return fakeEffect;
@@ -248,6 +252,68 @@ function makeFakeTexture(opts: FakeTextureOpts = {}): ITextureProcessOperand["te
 describe("dynamic texture processing", () => {
     beforeEach(() => {
         _capturedPTs.length = 0;
+        _delayedReadiness.enabled = false;
+        _delayedReadiness.callbacks.length = 0;
+    });
+
+    it.each(["multiply", "lerp", "normal"])("refreshes live %s inputs after delayed compilation and tracks the initial draw", async (operation) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        _MarkTextureAsDynamic(texture);
+        texture.uOffset = 0.1;
+        _delayedReadiness.enabled = true;
+        try {
+            const factor = CreateFactorOperand(new Color4(1, 1, 1, 1));
+            const resultPromise =
+                operation === "multiply"
+                    ? MultiplyTexturesAsync("delayed", { texture }, factor, scene)
+                    : operation === "lerp"
+                      ? LerpTexturesAsync("delayed", factor, { texture }, factor, scene)
+                      : _ScaleNormalTextureAsync("delayed", { texture }, factor, scene);
+            const pt = _capturedPTs[0];
+            const snapshots: number[][] = [];
+            vi.spyOn(pt, "setMatrix").mockImplementation((_name, value) => snapshots.push(Array.from((value as Matrix).asArray())));
+            texture.uOffset = 0.4;
+            const initialMatrix = Array.from(texture.getTextureMatrix().asArray());
+            expect(_delayedReadiness.callbacks).toHaveLength(1);
+            _delayedReadiness.callbacks[0]();
+            texture.uOffset = 0.6;
+            const result = await resultPromise;
+            expect(snapshots.at(-1)).toEqual(initialMatrix);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(snapshots.at(-1)).toEqual(Array.from(texture.getTextureMatrix().asArray()));
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            result.dispose!();
+        } finally {
+            vi.restoreAllMocks();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("does not redraw downstream textures when a live folded result is unchanged", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        const changes = new Observable<void>();
+        const weight = { texture: null, factor: new Color4(0.5, 0.5, 0.5, 1), onChangedObservable: changes };
+        try {
+            const white = CreateFactorOperand(new Color4(1, 1, 1, 1));
+            const folded = await LerpTexturesAsync("white", white, white, weight, scene);
+            const changed = vi.fn();
+            folded.onChangedObservable!.add(changed);
+            const output = await MultiplyTexturesAsync("downstream", { texture }, folded, scene);
+            weight.factor.set(0.8, 0.8, 0.8, 1);
+            changes.notifyObservers();
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(changed).not.toHaveBeenCalled();
+            expect(_capturedPTs[0].render).toHaveBeenCalledTimes(1);
+            output.dispose!();
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
     });
 
     it("does not decode hardware-linearized color operands a second time", async () => {
