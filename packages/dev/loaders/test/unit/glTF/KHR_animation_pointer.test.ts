@@ -693,6 +693,66 @@ describe("KHR_animation_pointer material implementations", () => {
         }
     });
 
+    it.each([false, true])("keeps a zero-weight textured conversion coat inactive with consecutive conversions=%s", async (diffuse) => {
+        vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
+            callback(this);
+        });
+        vi.spyOn(ProceduralTexture.prototype, "render").mockImplementation(() => {});
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf("extensions/KHR_materials_transmission/transmissionFactor", [0, 1], "SCALAR", {
+                KHR_materials_clearcoat: { clearcoatFactor: 0 },
+                KHR_materials_transmission: { transmissionFactor: 0 },
+                KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1 },
+                ...(diffuse ? { KHR_materials_diffuse_transmission: { diffuseTransmissionFactor: 0, diffuseTransmissionColorTexture: { index: 0 } } } : {}),
+            })
+        ) as ILoadedGLTF;
+        let parsed: ILoadedGLTF | undefined;
+        let completion: Promise<void> | undefined;
+        const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                completion = plugin.whenCompleteAsync();
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as ILoadedGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+            await completion;
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(observer);
+        }
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        const texture = material.coatColorTexture;
+        const group = result.animationGroups[0].pause();
+        const converter = GetPathToObjectConverter(parsed!);
+        const coat = converter.convert("/materials/0/extensions/KHR_materials_clearcoat/clearcoatFactor");
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(texture).not.toBeNull();
+        expect(material.coatWeight).toBe(0);
+        group.goToFrame(30);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(material.coatWeight).toBe(1);
+        group.goToFrame(0);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(material.coatWeight).toBe(0);
+        expect(material.coatColorTexture).toBe(texture);
+        coat.info.set!(0.5, coat.object);
+        expect(material.coatWeight).toBe(1);
+        coat.info.set!(0, coat.object);
+        expect(material.coatWeight).toBe(0);
+        if (diffuse) {
+            const weight = converter.convert("/materials/0/extensions/KHR_materials_diffuse_transmission/diffuseTransmissionFactor");
+            weight.info.set!(0.5, weight.object);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(material.coatWeight).toBe(1);
+            weight.info.set!(0, weight.object);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(material.coatWeight).toBe(0);
+        }
+    });
+
     it.each(
         [false, true].flatMap((thin) =>
             [false, true].flatMap((textured) => [false, true].flatMap((initiallyWhite) => [false, true].map((transmission) => ({ thin, textured, initiallyWhite, transmission }))))

@@ -31,6 +31,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _specWorkflow: boolean = false;
     private _hasTransmission: boolean = false;
     private _convertedCoatColor?: ITextureProcessOperand;
+    private _convertedCoatIsNeutral?: () => boolean;
     private _convertedCoatRoughness?: ITextureProcessOperand;
     private _convertedCoatIor?: ITextureProcessOperand;
     private _convertedCoatDarkening?: ITextureProcessOperand;
@@ -1445,8 +1446,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         diffuseTransmission: boolean = false
     ): Promise<void> {
         // Blend coat properties using:
-        // New coat will cover all areas that previously had coat or transmission.
-        //   new_coat_weight = max(weight, existing_coat_weight)
+        // A full-weight coat carries the blended tint unless the unauthored layer is neutral.
         // New coat color is the multiplication of the base color tint and the existing coat tint, each blended by their respective weights:
         //   new_coat_color  = lerp(white, existing_coat_color, existing_coat_weight)
         //                   * lerp(white, color, weight)
@@ -1588,14 +1588,20 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
 
         this._convertedCoatColor = newCoatColor;
+        const previousCoatIsNeutral = this._convertedCoatIsNeutral;
+        this._convertedCoatIsNeutral = () => (previousCoatIsNeutral?.() ?? true) && (getWeight() === 0 || (!colorTexture && getColor().equalsFloats(1, 1, 1)));
         const updateCoatWeight = () => {
-            const color = this._convertedCoatColor;
             // A neutral conversion coat still changes subsurface scattering, so retain bindings without enabling an unauthored layer.
-            this.coatWeight = source.coatWeight === 0 && !color?.texture && color?.factor?.r === 1 && color.factor.g === 1 && color.factor.b === 1 ? 0 : 1;
+            this.coatWeight = source.coatWeight === 0 && this._convertedCoatIsNeutral?.() ? 0 : 1;
         };
         if (firstConversion) {
             const observer = source.onChangedObservable.add(updateCoatWeight);
-            this._material.onDisposeObservable.addOnce(() => source.onChangedObservable.remove(observer));
+            const scene = this._material.getScene();
+            const frameObserver = scene.onBeforeRenderObservable.add(updateCoatWeight);
+            this._material.onDisposeObservable.addOnce(() => {
+                source.onChangedObservable.remove(observer);
+                scene.onBeforeRenderObservable.remove(frameObserver);
+            });
         }
         bindResult(newCoatColor, () => {
             this.coatColorTexture = newCoatColor.texture;
