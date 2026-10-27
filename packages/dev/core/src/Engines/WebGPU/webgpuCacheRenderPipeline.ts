@@ -91,7 +91,32 @@ export abstract class WebGPUCacheRenderPipeline {
 
     public disabled: boolean;
 
+    /**
+     * The pipeline being created for the last tryGetRenderPipeline call that returned null
+     */
+    public lastPendingPipeline: Nullable<Promise<GPURenderPipeline>> = null;
+
     private static _NumPipelineCreationCurrentFrame = 0;
+
+    // pipelines being created asynchronously, by cache token (the cache is shared): one creation per pipeline configuration
+    private static _PendingPipelines = new Map<any, Promise<GPURenderPipeline>>();
+    // cache tokens whose asynchronous creation failed: created synchronously at their next miss, which reports the error as usual
+    private static _FailedPipelines = new Set<any>();
+
+    /**
+     * The number of pipelines being created asynchronously
+     */
+    public static get NumPendingPipelines(): number {
+        return WebGPUCacheRenderPipeline._PendingPipelines.size;
+    }
+
+    /**
+     * Forgets the failed asynchronous creations (the cache was reset). Pending creations complete into tokens of the old cache.
+     * @internal
+     */
+    public static _ResetAsyncCreations(): void {
+        WebGPUCacheRenderPipeline._FailedPipelines.clear();
+    }
 
     protected _states: number[];
     protected _statesLength: number;
@@ -265,6 +290,35 @@ export abstract class WebGPUCacheRenderPipeline {
         WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
 
         return this._parameter.pipeline;
+    }
+
+    /**
+     * Like getRenderPipeline, but a pipeline missing from the cache is created asynchronously (preWarmPipeline) and null is returned
+     * until it is cached; the pending creation is then in lastPendingPipeline. A pipeline whose asynchronous creation failed is
+     * created synchronously at its next miss, so that its error is reported as with getRenderPipeline.
+     * @param fillMode defines the fill mode used to configure the rasterization state
+     * @param effect defines the effect containing the shader and vertex input layout
+     * @param sampleCount defines the number of samples to use for MSAA
+     * @param textureState defines the encoded texture state used for the pipeline cache key
+     * @returns the pipeline, or null while it is being created
+     */
+    public tryGetRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): Nullable<GPURenderPipeline> {
+        if (this.disabled) {
+            return this.getRenderPipeline(fillMode, effect, sampleCount, textureState);
+        }
+
+        const cached = this._lookupRenderPipeline(fillMode, effect, WebGPUTextureHelper.GetSample(sampleCount), textureState);
+        if (cached) {
+            return cached;
+        }
+
+        if (WebGPUCacheRenderPipeline._FailedPipelines.delete(this._parameter.token)) {
+            return this.getRenderPipeline(fillMode, effect, sampleCount, textureState);
+        }
+
+        this.lastPendingPipeline = this.preWarmPipeline(fillMode, effect, sampleCount, textureState);
+
+        return null;
     }
 
     public endFrame(): void {
@@ -1235,21 +1289,40 @@ export abstract class WebGPUCacheRenderPipeline {
             return null;
         }
 
-        const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
-
         // Capture the cache token before any subsequent cache operations overwrite it
-        const capturedParam = { token: this._parameter.token, pipeline: null as Nullable<GPURenderPipeline> };
+        const token = this._parameter.token;
 
-        const promise = this._device.createRenderPipelineAsync(this._buildRenderPipelineDescriptor(effect, topology, sampleCount));
+        // the same pipeline configuration is created once
+        const pending = WebGPUCacheRenderPipeline._PendingPipelines.get(token);
+        if (pending) {
+            return pending;
+        }
+
+        const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
+        const descriptor = this._buildRenderPipelineDescriptor(effect, topology, sampleCount);
 
         // eslint-disable-next-line github/no-then
-        return promise.then((pipeline) => {
-            capturedParam.pipeline = pipeline;
-            this._setRenderPipeline(capturedParam);
+        const promise = this._device.createRenderPipelineAsync(descriptor).then(
+            (pipeline) => {
+                WebGPUCacheRenderPipeline._PendingPipelines.delete(token);
+                this._setRenderPipeline({ token, pipeline });
 
-            WebGPUCacheRenderPipeline.NumCacheMiss++;
+                WebGPUCacheRenderPipeline.NumCacheMiss++;
 
-            return pipeline;
-        });
+                return pipeline;
+            },
+            (error) => {
+                WebGPUCacheRenderPipeline._PendingPipelines.delete(token);
+                WebGPUCacheRenderPipeline._FailedPipelines.add(token);
+                Logger.Error(`WebGPU: the asynchronous creation of the render pipeline "${descriptor.label}" failed: ${error?.message ?? error}`);
+                throw error;
+            }
+        );
+        WebGPUCacheRenderPipeline._PendingPipelines.set(token, promise);
+        // the error is reported above; callers still get the rejection
+        // eslint-disable-next-line github/no-then
+        promise.catch(() => {});
+
+        return promise;
     }
 }

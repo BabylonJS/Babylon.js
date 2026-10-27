@@ -6,6 +6,7 @@ import { type VertexBuffer } from "core/Buffers/buffer";
 import { type WebGPUPipelineContext } from "core/Engines/WebGPU/webgpuPipelineContext";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "core/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure";
+import { Logger } from "core/Misc/logger";
 
 // Minimal mock types for the pipeline cache tests
 function createMockDevice(): GPUDevice {
@@ -345,6 +346,59 @@ describe("WebGPUCacheRenderPipeline", () => {
             cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect3, 1, 0);
 
             expect(device.createRenderPipeline).not.toHaveBeenCalled();
+        });
+
+        it("should create a pipeline configuration once while it is pending", async () => {
+            const p1 = cache.preWarmPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+            const p2 = cache.preWarmPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(p2).toBe(p1);
+            expect(device.createRenderPipelineAsync).toHaveBeenCalledTimes(1);
+            expect(WebGPUCacheRenderPipelineTree.NumPendingPipelines).toBe(1);
+
+            await p1;
+            expect(WebGPUCacheRenderPipelineTree.NumPendingPipelines).toBe(0);
+        });
+    });
+
+    describe("tryGetRenderPipeline", () => {
+        it("should return null while the pipeline is created asynchronously, then the cached pipeline", async () => {
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            expect(device.createRenderPipelineAsync).toHaveBeenCalledTimes(1);
+
+            const pipeline = await cache.lastPendingPipeline!;
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBe(pipeline);
+            expect(device.createRenderPipeline).not.toHaveBeenCalled();
+        });
+
+        it("should share the creation started by preWarmPipeline", () => {
+            const prewarm = cache.preWarmPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            expect(cache.lastPendingPipeline).toBe(prewarm);
+            expect(device.createRenderPipelineAsync).toHaveBeenCalledTimes(1);
+        });
+
+        it("should report a failed creation and create the pipeline synchronously at the next miss", async () => {
+            vi.mocked(device.createRenderPipelineAsync).mockImplementationOnce(() => Promise.reject(new Error("invalid pipeline")));
+            const error = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            await expect(cache.lastPendingPipeline!).rejects.toThrow("invalid pipeline");
+            expect(error).toHaveBeenCalledTimes(1);
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).not.toBeNull();
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(1);
+            error.mockRestore();
+        });
+
+        it("should create the pipeline synchronously when the cache is disabled", () => {
+            cache.disabled = true;
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).not.toBeNull();
+            expect(device.createRenderPipelineAsync).not.toHaveBeenCalled();
         });
     });
 });
