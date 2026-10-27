@@ -2,6 +2,8 @@ import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Texture } from "core/Materials/Textures/texture";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader";
@@ -148,6 +150,75 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
 
         expect(material.coatColorTexture).not.toBe(coatColor);
         expect(isDisposed(coatColor)).toBe(false);
+    });
+
+    it.each(["mask", "color", "normal"])("disposes the retained original coat %s resource with its material", async (slot) => {
+        const { material, adapter } = createVolumetricTransmissionAdapter();
+        const source = RawTexture.CreateRGBATexture(new Uint8Array([128, 128, 255, 255]), 1, 1, scene, false);
+        if (slot === "mask") {
+            adapter.coatWeightTexture = source;
+            adapter.coatRoughnessTexture = source;
+        } else if (slot === "color") {
+            adapter.coatColorTexture = source;
+        } else {
+            adapter.geometryCoatNormalTexture = source;
+        }
+        const disposed = vi.fn();
+        source.onDisposeObservable.add(disposed);
+        await adapter.finalizeAsync(loader);
+        expect(source.getInternalTexture()).not.toBeNull();
+        expect(isDisposed(source)).toBe(false);
+        material.dispose(false, true);
+        expect(isDisposed(source)).toBe(true);
+        expect(source.getInternalTexture()).toBeNull();
+        expect(disposed).toHaveBeenCalledTimes(1);
+    });
+
+    it("releases a shared retained coat mask only after the last conversion is disposed", async () => {
+        const first = createVolumetricTransmissionAdapter();
+        const second = createVolumetricTransmissionAdapter();
+        const source = RawTexture.CreateRGBATexture(new Uint8Array([128, 128, 255, 255]), 1, 1, scene, false);
+        const disposed = vi.fn();
+        source.onDisposeObservable.add(disposed);
+        first.adapter.coatWeightTexture = source;
+        second.adapter.coatWeightTexture = source;
+        await first.adapter.finalizeAsync(loader);
+        await second.adapter.finalizeAsync(loader);
+        const resource = source.getInternalTexture();
+        first.material.dispose(false, true);
+        expect(isDisposed(source)).toBe(false);
+        expect(source.getInternalTexture()).toBe(resource);
+        expect(disposed).not.toHaveBeenCalled();
+        second.material.dispose(false, true);
+        expect(isDisposed(source)).toBe(true);
+        expect(source.getInternalTexture()).toBeNull();
+        expect(disposed).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps a retained coat mask used by another material outside the loader", async () => {
+        const { material, adapter } = createVolumetricTransmissionAdapter();
+        const other = new PBRMaterial("other", scene);
+        const source = RawTexture.CreateRGBATexture(new Uint8Array([128, 128, 255, 255]), 1, 1, scene, false);
+        adapter.coatWeightTexture = source;
+        other.albedoTexture = source;
+        await adapter.finalizeAsync(loader);
+        material.dispose(false, true);
+        expect(isDisposed(source)).toBe(false);
+        expect(source.getInternalTexture()).not.toBeNull();
+        other.dispose(false, true);
+        expect(isDisposed(source)).toBe(true);
+        expect(source.getInternalTexture()).toBeNull();
+    });
+
+    it("preserves retained texture resources when texture disposal is not requested", async () => {
+        const { material, adapter } = createVolumetricTransmissionAdapter();
+        const source = RawTexture.CreateRGBATexture(new Uint8Array([128, 128, 255, 255]), 1, 1, scene, false);
+        adapter.coatWeightTexture = source;
+        await adapter.finalizeAsync(loader);
+        material.dispose();
+        expect(isDisposed(source)).toBe(false);
+        expect(source.getInternalTexture()).not.toBeNull();
+        source.dispose();
     });
 
     describe("thin-walled scatter staging", () => {

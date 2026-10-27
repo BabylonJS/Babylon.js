@@ -484,6 +484,7 @@ describe("KHR_animation_pointer material implementations", () => {
             const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
             const accessor = GetPathToObjectConverter(parsed!).convert(`/materials/0/${pointer}`);
             const group = result.animationGroups[0].pause();
+            const coatColor = material.coatColor;
             const check = () => {
                 scene.onBeforeRenderObservable.notifyObservers(scene);
                 if (textured) {
@@ -496,6 +497,7 @@ describe("KHR_animation_pointer material implementations", () => {
                     );
                     expect(index).toBeGreaterThanOrEqual(0);
                 } else {
+                    expect(material.coatColor).toBe(coatColor);
                     expect(material.coatColor.r).toBeCloseTo((1 - material.transmissionWeight + material.transmissionWeight * material.baseColor.r) * (diffuse ? 0.9 : 1));
                     expect(material.coatColor.g).toBeCloseTo((1 - material.transmissionWeight + material.transmissionWeight * material.baseColor.g) * (diffuse ? 0.8 : 1));
                 }
@@ -587,6 +589,56 @@ describe("KHR_animation_pointer material implementations", () => {
         weight.info.set!(0, weight.object);
         scene.onBeforeRenderObservable.notifyObservers(scene);
         expect(target.renderList).toContain(mesh);
+    });
+
+    it.each([0.5, 1])("retains constant converted base roughness with diffuse transmission=%s", async (weight) => {
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf("pbrMetallicRoughness/roughnessFactor", [0.2, 0.8], "SCALAR", {
+                KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] },
+                KHR_materials_diffuse_transmission: { diffuseTransmissionFactor: weight },
+            })
+        ) as ILoadedGLTF;
+        for (const material of gltf.materials!) {
+            delete material.pbrMetallicRoughness!.baseColorTexture;
+            delete material.pbrMetallicRoughness!.metallicRoughnessTexture;
+        }
+        let parsed: ILoadedGLTF | undefined;
+        let completion: Promise<void> | undefined;
+        const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                completion = plugin.whenCompleteAsync();
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as ILoadedGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+            await completion;
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(observer);
+        }
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        const accessor = GetPathToObjectConverter(parsed!).convert("/materials/0/pbrMetallicRoughness/roughnessFactor");
+        expect(material.specularRoughnessTexture).toBeNull();
+        const group = result.animationGroups[0].pause();
+        for (const frame of [15, 30, 60]) {
+            group.goToFrame(frame);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            const authored = 0.2 + (0.6 * frame) / 60;
+            expect(accessor.info.get!(accessor.object)).toBeCloseTo(authored);
+            expect(material.specularRoughness).toBeCloseTo(authored * (1 - weight) + weight);
+        }
+        group.stop();
+        for (const authored of [0.3, 0.8]) {
+            accessor.info.set!(authored, accessor.object);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(accessor.info.get!(accessor.object)).toBeCloseTo(authored);
+            expect(material.specularRoughness).toBeCloseTo(authored * (1 - weight) + weight);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(material.specularRoughness).toBeCloseTo(authored * (1 - weight) + weight);
+        }
     });
 
     it.each([false, true])("retains textured converted base roughness with metallic texture=%s", async (metallicTexture) => {

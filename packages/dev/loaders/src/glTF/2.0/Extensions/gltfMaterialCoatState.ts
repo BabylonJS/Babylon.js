@@ -14,8 +14,8 @@ export class GLTFMaterialCoatState implements IAnimatable {
     public readonly onChangedObservable = new Observable<void>();
     /** Whether the rendered coat has been replaced by conversion. */
     public converted = false;
-    /** Whether the rendered base roughness texture already includes its authored factor. */
-    public specularRoughnessIsBaked = false;
+    /** Whether conversion owns the rendered base roughness rather than the authored scalar. */
+    public specularRoughnessIsConverted = false;
     private _weight: number;
     private _roughness: number;
     private _surfaceRoughness: number;
@@ -76,7 +76,9 @@ export class GLTFMaterialCoatState implements IAnimatable {
             return;
         }
         this._surfaceRoughness = value;
-        this._material.specularRoughness = this.specularRoughnessIsBaked ? 1 : value;
+        if (!this.specularRoughnessIsConverted) {
+            this._material.specularRoughness = value;
+        }
         this.onChangedObservable.notifyObservers();
     }
 

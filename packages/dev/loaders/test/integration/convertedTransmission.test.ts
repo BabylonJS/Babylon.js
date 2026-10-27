@@ -181,6 +181,7 @@ for (const backend of ["webgl2", "webgpu"] as const) {
                                     changed: actual.filter((value, i) => i % 4 !== 3 && Math.abs(value - reference[i]) > 3).length,
                                 });
                                 material.specularRoughnessTexture = processed;
+                                material.specularRoughness = scalar;
                             }
                             return { greens: [], roughnessSamples };
                         } finally {

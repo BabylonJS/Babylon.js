@@ -22,6 +22,7 @@ import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { type Material } from "core/Materials/material";
+import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
 import { type Light } from "core/Lights/light";
 import { type Nullable } from "core/types";
 import { SpotLight } from "core/Lights/spotLight.pure";
@@ -1447,6 +1448,47 @@ function _HasTextureTransform(texture: BaseTexture): texture is Texture {
     return "uOffset" in texture && "vOffset" in texture && "uScale" in texture && "vScale" in texture && "wAng" in texture;
 }
 const MaterialTextureSources = new WeakMap<Material, Map<string, Nullable<BaseTexture> | undefined>>();
+const MaterialTextureSourceOwners = new WeakMap<BaseTexture, Set<Material>>();
+
+class GLTFMaterialTextureSources extends MaterialPluginBase {
+    public override doNotSerialize = true;
+
+    constructor(
+        material: Material,
+        private readonly _textures: BaseTexture[]
+    ) {
+        super(material, "GLTFMaterialTextureSources", 500);
+        for (const texture of _textures) {
+            let owners = MaterialTextureSourceOwners.get(texture);
+            if (!owners) {
+                owners = new Set();
+                MaterialTextureSourceOwners.set(texture, owners);
+            }
+            owners.add(material);
+        }
+    }
+
+    public override isCompatible(): boolean {
+        return true;
+    }
+
+    public override dispose(forceDisposeTextures?: boolean): void {
+        MaterialTextureSources.delete(this._material);
+        const scene = this._material.getScene();
+        for (const texture of this._textures) {
+            const owners = MaterialTextureSourceOwners.get(texture)!;
+            owners.delete(this._material);
+            if (!owners.size) {
+                MaterialTextureSourceOwners.delete(texture);
+                // Active slots are disposed by the material itself. Only release replaced sources here.
+                if (forceDisposeTextures && scene.textures.includes(texture) && !scene.materials.some((material) => material.hasTexture(texture))) {
+                    texture.dispose();
+                }
+            }
+        }
+        this._textures.length = 0;
+    }
+}
 
 /**
  * Retains glTF texture bindings before OpenPBR finalization replaces material texture slots.
@@ -1491,8 +1533,11 @@ export function _RetainGLTFMaterialTextureSources(material: Material, diffuseTra
     if (diffuseTransmissionColorTexture !== undefined) {
         sources.set(_MaterialTextureKey("subSurface", "translucencyColorTexture"), diffuseTransmissionColorTexture);
     }
+    sources.set("coatColorTexture", material.coatColorTexture);
     MaterialTextureSources.set(material, sources);
-    return _GetUniqueMaterialTextureSources(sources);
+    const textures = _GetUniqueMaterialTextureSources(sources);
+    new GLTFMaterialTextureSources(material, textures);
+    return textures;
 }
 function _GetUniqueMaterialTextureSources(sources: ReadonlyMap<string, Nullable<BaseTexture> | undefined>): BaseTexture[] {
     const textures = new Set<BaseTexture>();

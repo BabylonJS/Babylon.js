@@ -8,6 +8,7 @@ import { type GLTFLoader } from "./glTFLoader";
 import { _RetainGLTFMaterialTextureSources } from "./Extensions/objectModelMapping";
 import { _GetGLTFMaterialCoatState } from "./Extensions/gltfMaterialCoatState";
 import { Observable } from "core/Misc/observable.pure";
+import { Constants } from "core/Engines/constants";
 import {
     MultiplyTexturesAsync,
     LerpTexturesAsync,
@@ -1779,7 +1780,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
         bindResult(newCoatColor, () => {
             this.coatColorTexture = newCoatColor.texture;
-            this.coatColor = newCoatColor.factor ? new Color3(newCoatColor.factor.r, newCoatColor.factor.g, newCoatColor.factor.b) : Color3.White();
+            const factor = newCoatColor.factor;
+            const r = factor?.r ?? 1;
+            const g = factor?.g ?? 1;
+            const b = factor?.b ?? 1;
+            if (!this.coatColor.equalsFloats(r, g, b)) {
+                this.coatColor.set(r, g, b);
+                this._material.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            }
             updateCoatWeight();
         });
 
@@ -1861,7 +1869,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 return;
             }
             bindResult(newSpecularRoughness, () => {
-                source.specularRoughnessIsBaked = !!newSpecularRoughness.texture;
+                source.specularRoughnessIsConverted = true;
                 this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
                 this.specularRoughnessTexture = newSpecularRoughness.texture;
                 this.useRoughnessFromMetallicTextureGreen = false;
