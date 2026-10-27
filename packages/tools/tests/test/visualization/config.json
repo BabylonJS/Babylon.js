@@ -1777,29 +1777,25 @@
         },
         {
             "title": "GLTF Serializer camera rotation animation, RH -> LH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = false;",
+            "playgroundId": "#DM9YI8#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, RH -> RH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = true;",
+            "playgroundId": "#9Y82AK#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, LH -> RH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = true;",
+            "playgroundId": "#ZZQCYZ#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, LH -> LH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = false;",
+            "playgroundId": "#UUOR2W#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
