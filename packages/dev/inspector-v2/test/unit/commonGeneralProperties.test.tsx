@@ -11,7 +11,11 @@ vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     vi.stubGlobal(
         "matchMedia",
-        vi.fn(() => ({ matches: false }))
+        vi.fn(() => ({
+            matches: false,
+            addEventListener: () => {},
+            removeEventListener: () => {},
+        }))
     );
 });
 
