@@ -123,7 +123,13 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                     continue;
                 }
                 const openPbrMaterial = material as OpenPBRMaterial;
-                if (this.name === "clearCoat.intensity" || this.name === "clearCoat.roughness" || this.name === "subSurface.translucencyColor") {
+                if (
+                    this.name === "clearCoat.intensity" ||
+                    this.name === "clearCoat.roughness" ||
+                    this.name === "subSurface.translucencyColor" ||
+                    this.name === "roughness" ||
+                    this.name === "indexOfRefraction"
+                ) {
                     babylonAnimations.push({
                         babylonAnimatable: _GetGLTFMaterialCoatState(openPbrMaterial),
                         babylonAnimation: this._buildAnimation(
@@ -143,7 +149,11 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                 if (parentName === "metallicReflectanceTexture" && openPbrMaterial._useSpecularWeightFromSpecularColorTexture) {
                     propertyName = "specularColorTexture" + this.name.substring(separator);
                 }
-                if (this.name === "albedoColor" && openPbrMaterial.transmissionWeight > 0 && (openPbrMaterial.geometryThinWalled || openPbrMaterial.transmissionDepth === 0)) {
+                if (
+                    this.name === "albedoColor" &&
+                    (target.extensions?.KHR_materials_transmission || openPbrMaterial.transmissionWeight > 0) &&
+                    (openPbrMaterial.geometryThinWalled || openPbrMaterial.transmissionDepth === 0)
+                ) {
                     // The loading adapter derives transmission tint from base color for these materials.
                     babylonAnimations.push({
                         babylonAnimatable: material,

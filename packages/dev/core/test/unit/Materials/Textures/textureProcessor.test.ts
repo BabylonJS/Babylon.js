@@ -22,6 +22,7 @@ import { Matrix } from "core/Maths/math.vector";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { Texture } from "core/Materials/Textures/texture";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Animation } from "core/Animations/animation";
 import {
     MultiplyTexturesAsync,
@@ -127,6 +128,9 @@ function _makeFakePTClass() {
         getSize() {
             return { width: 4, height: 4 };
         }
+        getInternalTexture() {
+            return null;
+        }
         getTextureMatrix() {
             // Identity — no UV transform on a freshly-created output texture.
             return Matrix.Identity();
@@ -215,6 +219,7 @@ function makeFakeTexture(opts: FakeTextureOpts = {}): ITextureProcessOperand["te
     return {
         animations: [],
         getSize: () => ({ width: 4, height: 4 }),
+        getInternalTexture: () => null,
         getTextureMatrix: () => mat,
         // Properties read by _CopyTextureMetadata
         coordinatesIndex: 0,
@@ -233,6 +238,60 @@ function makeFakeTexture(opts: FakeTextureOpts = {}): ITextureProcessOperand["te
 describe("dynamic texture processing", () => {
     beforeEach(() => {
         _capturedPTs.length = 0;
+    });
+
+    it("does not decode hardware-linearized color operands a second time", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        const internal = new InternalTexture(engine, InternalTextureSource.Raw);
+        internal._useSRGBBuffer = true;
+        vi.spyOn(texture, "getInternalTexture").mockReturnValue(internal);
+        try {
+            const operand = { texture, colorSpace: TextureColorSpace.SRGB };
+            const output = await LerpTexturesAsync("linearized", operand, operand, operand, scene);
+            expect(_capturedPTs[0].getDefines().some((define) => define.endsWith("_SRGB"))).toBe(false);
+            output.dispose!();
+        } finally {
+            vi.restoreAllMocks();
+            scene.dispose();
+            internal.dispose();
+            engine.dispose();
+        }
+    });
+
+    it.each(["multiply", "lerp", "normal"])("preserves static UV transforms through live %s factors and downstream passes", async (operation) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        texture.uScale = 0.5;
+        texture.vOffset = 0.25;
+        const changes = new Observable<void>();
+        const factor = { texture: null, factor: new Color4(0.5, 0.5, 0.5, 1), onChangedObservable: changes };
+        try {
+            const input = { texture };
+            const first =
+                operation === "multiply"
+                    ? await MultiplyTexturesAsync("first", input, factor, scene)
+                    : operation === "lerp"
+                      ? await LerpTexturesAsync("first", CreateFactorOperand(new Color4(1, 1, 1, 1)), input, factor, scene)
+                      : await _ScaleNormalTextureAsync("first", input, factor, scene);
+            const output = await MultiplyTexturesAsync("second", first, CreateFactorOperand(new Color4(1, 1, 1, 1)), scene);
+            for (const pt of _capturedPTs) {
+                expect(pt.uScale).toBe(0.5);
+                expect(pt.vOffset).toBe(0.25);
+                expect(pt.getDefines().some((define) => define.endsWith("_MATRIX"))).toBe(false);
+            }
+            factor.factor.r = 0.25;
+            changes.notifyObservers();
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(_capturedPTs.every((pt) => pt.render.mock.calls.length === 2)).toBe(true);
+            expect(output.texture!.wrapU).toBe(texture.wrapU);
+            output.dispose!();
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
     });
 
     it.each([0, 0.5, 2, 4])("normalizes encoded normals before output at strength %s", async (strength) => {

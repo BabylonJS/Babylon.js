@@ -949,11 +949,11 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             },
             roughnessFactor: {
                 type: "number",
-                get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? mat.specularRoughness : mat.roughness)),
+                get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? _GetGLTFMaterialCoatState(mat).specularRoughness : mat.roughness)),
                 set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                     if (mat) {
                         if (_IsOpenPBRMaterial(mat)) {
-                            mat.specularRoughness = value ?? 1;
+                            _GetGLTFMaterialCoatState(mat).specularRoughness = value ?? 1;
                         } else {
                             mat.roughness = value;
                         }
@@ -1081,9 +1081,11 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             KHR_materials_ior: {
                 ior: {
                     type: "number",
-                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? mat.specularIor : mat.indexOfRefraction)),
+                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? _GetGLTFMaterialCoatState(mat).specularIor : mat.indexOfRefraction)),
                     getTarget: GetMaterial,
-                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => (_IsOpenPBRMaterial(mat) ? (mat.specularIor = value) : (mat.indexOfRefraction = value))),
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) =>
+                        _IsOpenPBRMaterial(mat) ? (_GetGLTFMaterialCoatState(mat).specularIor = value) : (mat.indexOfRefraction = value)
+                    ),
                 },
             },
             KHR_materials_iridescence: {
@@ -1588,7 +1590,7 @@ function _IsPBRMaterial(material: Material): material is PBRMaterial {
     return "albedoColor" in material && "clearCoat" in material && "subSurface" in material;
 }
 function _UpdateTransmissionTint(material: OpenPBRMaterial): void {
-    if (material.transmissionWeight > 0 && (material.geometryThinWalled || material.transmissionDepth === 0)) {
+    if (material.geometryThinWalled || material.transmissionDepth === 0) {
         // Loading derives this tint from base color rather than glTF volume attenuation.
         material.transmissionColor = material.baseColor;
         material.transmissionColorTexture = material.baseColorTexture;

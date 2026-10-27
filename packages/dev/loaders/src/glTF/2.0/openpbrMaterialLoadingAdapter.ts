@@ -29,6 +29,7 @@ import {
 export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: OpenPBRMaterial;
     private _specWorkflow: boolean = false;
+    private _hasTransmission: boolean = false;
     private _convertedCoatColor?: ITextureProcessOperand;
     private _convertedCoatRoughness?: ITextureProcessOperand;
     private _convertedCoatIor?: ITextureProcessOperand;
@@ -700,6 +701,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Configures transmission for OpenPBR material.
      */
     public configureTransmission(): void {
+        this._hasTransmission = true;
         // Material is thin-walled until otherwise specified by the glTF volume extension.
         this._material.geometryThinWalled = 1.0;
         this._material.transmissionDepth = 0.0;
@@ -1305,7 +1307,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             }
         }
         // If the material has transmission, we need to use the base color to tint the transmission.
-        if (this.transmissionWeight > 0) {
+        if (this._hasTransmission || this.transmissionWeight > 0) {
             if (this._material.geometryThinWalled || this._material.transmissionDepth === 0) {
                 // If the material is thin-walled or has no attenuation depth, we can use the base color as the transmission color directly.
                 this._material.transmissionColor = this._material.baseColor;
@@ -1451,7 +1453,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // Snapshot the original coat properties before mutating them, so both lerps
         // use the pre-merge values (the first lerp blends the *existing* coat color
         // by the *existing* coat weight; we must not use the merged weight here).
-        const origCoatWeight = this._material.coatWeight;
+        const origCoatWeight = this._convertedCoatColor ? 1 : this._material.coatWeight;
         const origCoatWeightTexture = this._material.coatWeightTexture;
         const origCoatColor = this._material.coatColor.clone();
         const origCoatColorTexture = this._material.coatColorTexture;
@@ -1586,14 +1588,24 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
 
         this._convertedCoatColor = newCoatColor;
+        const updateCoatWeight = () => {
+            const color = this._convertedCoatColor;
+            // A neutral conversion coat still changes subsurface scattering, so retain bindings without enabling an unauthored layer.
+            this.coatWeight = source.coatWeight === 0 && !color?.texture && color?.factor?.r === 1 && color.factor.g === 1 && color.factor.b === 1 ? 0 : 1;
+        };
+        if (firstConversion) {
+            const observer = source.onChangedObservable.add(updateCoatWeight);
+            this._material.onDisposeObservable.addOnce(() => source.onChangedObservable.remove(observer));
+        }
         bindResult(newCoatColor, () => {
             this.coatColorTexture = newCoatColor.texture;
             this.coatColor = newCoatColor.factor ? new Color3(newCoatColor.factor.r, newCoatColor.factor.g, newCoatColor.factor.b) : Color3.White();
+            updateCoatWeight();
         });
 
         const newCoatIor = await LerpTexturesAsync(
             "newCoatIor (" + this._material.name + ")",
-            CreateTextureWithFactorOperand(null, new Color4(this._material.specularIor, this._material.specularIor, this._material.specularIor, 1.0), TextureChannel.R),
+            createOperand(null, (factor) => factor.set(source.specularIor, source.specularIor, source.specularIor, 1), TextureChannel.R),
             this._convertedCoatIor
                 ? { ...this._convertedCoatIor, dispose: undefined }
                 : CreateTextureWithFactorOperand(null, new Color4(origCoatIor, origCoatIor, origCoatIor, 1.0), TextureChannel.R),
@@ -1615,11 +1627,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
         const newCoatRoughness = await LerpTexturesAsync(
             "newCoatRoughness (" + this._material.name + ")",
-            CreateTextureWithFactorOperand(
-                this.specularRoughnessTexture,
-                new Color4(this.specularRoughness, this.specularRoughness, this.specularRoughness, 1.0),
-                TextureChannel.G
-            ),
+            createOperand(this.specularRoughnessTexture, (factor) => factor.set(source.specularRoughness, source.specularRoughness, source.specularRoughness, 1), TextureChannel.G),
             this._convertedCoatRoughness ? { ...this._convertedCoatRoughness, dispose: undefined } : createOperand(this.coatRoughnessTexture, coatRoughness, TextureChannel.G),
             createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
             this._material.getScene()
@@ -1659,9 +1667,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         if (diffuseTransmission) {
             const newSpecularRoughness = await LerpTexturesAsync(
                 "newSpecularRoughness (" + this._material.name + ")",
-                CreateTextureWithFactorOperand(
+                createOperand(
                     this.specularRoughnessTexture,
-                    new Color4(this._material.specularRoughness, this._material.specularRoughness, this._material.specularRoughness, 1.0),
+                    (factor) => factor.set(source.specularRoughness, source.specularRoughness, source.specularRoughness, 1),
                     TextureChannel.G
                 ),
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1.0), TextureChannel.R),

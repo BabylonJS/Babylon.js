@@ -6,7 +6,7 @@ import { type Color3 } from "core/Maths/math.color.pure";
 
 const CoatStates = new WeakMap<OpenPBRMaterial, GLTFMaterialCoatState>();
 
-/** Authored coat scalars and surface tint remain animation targets after coat conversion. @internal */
+/** Authored surface and coat properties remain animation targets after coat conversion. @internal */
 export class GLTFMaterialCoatState implements IAnimatable {
     /** Animation target metadata. */
     public animations: Animation[] = [];
@@ -16,6 +16,8 @@ export class GLTFMaterialCoatState implements IAnimatable {
     public converted = false;
     private _weight: number;
     private _roughness: number;
+    private _surfaceRoughness: number;
+    private _surfaceIor: number;
     private _diffuseTransmissionTint?: Color3;
 
     /**
@@ -25,6 +27,8 @@ export class GLTFMaterialCoatState implements IAnimatable {
     constructor(private readonly _material: OpenPBRMaterial) {
         this._weight = _material.coatWeight;
         this._roughness = _material.coatRoughness;
+        this._surfaceRoughness = _material.specularRoughness;
+        this._surfaceIor = _material.specularIor;
         _material.onDisposeObservable.addOnce(() => this.onChangedObservable.clear());
     }
 
@@ -60,6 +64,34 @@ export class GLTFMaterialCoatState implements IAnimatable {
         this.onChangedObservable.notifyObservers();
     }
 
+    /** Authored base roughness, before diffuse transmission changes the rendered base. */
+    public get specularRoughness(): number {
+        return this.converted ? this._surfaceRoughness : this._material.specularRoughness;
+    }
+
+    public set specularRoughness(value: number) {
+        if (value === this.specularRoughness) {
+            return;
+        }
+        this._surfaceRoughness = value;
+        this._material.specularRoughness = value;
+        this.onChangedObservable.notifyObservers();
+    }
+
+    /** Authored base index of refraction. */
+    public get specularIor(): number {
+        return this.converted ? this._surfaceIor : this._material.specularIor;
+    }
+
+    public set specularIor(value: number) {
+        if (value === this.specularIor) {
+            return;
+        }
+        this._surfaceIor = value;
+        this._material.specularIor = value;
+        this.onChangedObservable.notifyObservers();
+    }
+
     /** Authored diffuse-transmission surface tint, separate from volumetric scattering color. */
     public get diffuseTransmissionTint(): Color3 {
         return this._diffuseTransmissionTint ?? this._material.subsurfaceColor;
@@ -88,6 +120,8 @@ export class GLTFMaterialCoatState implements IAnimatable {
     public retain(): void {
         this._weight = this.coatWeight;
         this._roughness = this.coatRoughness;
+        this._surfaceRoughness = this.specularRoughness;
+        this._surfaceIor = this.specularIor;
         this.converted = true;
     }
 }

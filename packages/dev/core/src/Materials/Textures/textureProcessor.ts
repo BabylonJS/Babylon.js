@@ -281,9 +281,11 @@ function _AllTransformsMatch(textures: BaseTexture[]): boolean {
 }
 
 const _DynamicTextures = new WeakMap<BaseTexture, number>();
+const _DynamicTransforms = new WeakSet<BaseTexture>();
 
 /** @internal */
 export function _MarkTextureAsDynamic(texture: BaseTexture): void {
+    _DynamicTransforms.add(texture);
     if (!_DynamicTextures.has(texture)) {
         _DynamicTextures.set(texture, 0);
     }
@@ -291,6 +293,10 @@ export function _MarkTextureAsDynamic(texture: BaseTexture): void {
 
 function _HasDynamicInputs(textures: BaseTexture[]): boolean {
     return textures.some((texture) => texture.animations.length > 0 || _DynamicTextures.has(texture));
+}
+
+function _HasDynamicTransforms(textures: BaseTexture[]): boolean {
+    return textures.some((texture) => texture.animations.length > 0 || _DynamicTransforms.has(texture));
 }
 
 function _TrackDynamicInputs(pt: ProceduralTexture, operands: ITextureProcessOperand[], updateUniforms: () => void): void {
@@ -487,7 +493,7 @@ function _BuildOperandDefines(operand: ITextureProcessOperand, prefix: "A" | "B"
         if (bakeTransform && (dynamic || _HasNonIdentityTransform(operand.texture))) {
             defines.push(`OPERAND_${prefix}_MATRIX`);
         }
-        if (operand.colorSpace) {
+        if (operand.colorSpace && !operand.texture.getInternalTexture()?._useSRGBBuffer) {
             defines.push(`OPERAND_${prefix}_SRGB`);
         }
         if (operand.channel) {
@@ -515,7 +521,7 @@ function _BuildLerpBlendDefines(t: ITextureProcessOperand, bakeTransform: boolea
         if (t.factor !== undefined) {
             defines.push("LERP_T_FACTOR");
         }
-        if (t.colorSpace) {
+        if (t.colorSpace && !t.texture.getInternalTexture()?._useSRGBBuffer) {
             defines.push("LERP_T_SRGB");
         }
         if (t.channel) {
@@ -671,7 +677,7 @@ export async function MultiplyTexturesAsync(
         allTextures.push(b.texture);
     }
     const dynamic = _HasDynamicInputs(allTextures) || !!(a.onChangedObservable || b.onChangedObservable);
-    const canPropagate = !dynamic && _AllTransformsMatch(allTextures);
+    const canPropagate = !_HasDynamicTransforms(allTextures) && _AllTransformsMatch(allTextures);
     const bakeTransform = !canPropagate;
 
     const defines = [
@@ -845,7 +851,7 @@ export async function LerpTexturesAsync(
         allTextures.push(t.texture);
     }
     const dynamic = _HasDynamicInputs(allTextures) || !!(a.onChangedObservable || b.onChangedObservable || t.onChangedObservable);
-    const canPropagate = !dynamic && _AllTransformsMatch(allTextures);
+    const canPropagate = !_HasDynamicTransforms(allTextures) && _AllTransformsMatch(allTextures);
     const bakeTransform = !canPropagate;
 
     const defines = [
@@ -914,7 +920,7 @@ export async function _ScaleNormalTextureAsync(name: string, input: ITextureProc
     const operands = [input, scale];
     const textures = operands.flatMap((operand) => (operand.texture ? [operand.texture] : []));
     const dynamic = _HasDynamicInputs(textures) || !!(input.onChangedObservable || scale.onChangedObservable);
-    const canPropagate = !dynamic && _AllTransformsMatch(textures);
+    const canPropagate = !_HasDynamicTransforms(textures) && _AllTransformsMatch(textures);
     const bakeTransform = !canPropagate;
     const pt = _CreateProcessorTexture(
         name,
