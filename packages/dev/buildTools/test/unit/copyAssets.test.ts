@@ -17,7 +17,7 @@ describe("asset directory watchers", () => {
     let previousArgs: string[];
 
     beforeEach(() => {
-        tempDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "bjs-asset-watch-")));
+        tempDir = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "bjs-asset-watch-")));
         previousDirectory = process.cwd();
         previousArgs = externalArgs.splice(0);
         process.chdir(tempDir);
