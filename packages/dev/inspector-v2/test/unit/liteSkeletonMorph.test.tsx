@@ -291,4 +291,65 @@ describe("Babylon Lite skeleton and morph properties", () => {
         Renders.pop();
         expect(checks.size).toBe(0);
     });
+
+    it("commits unbounded numeric weights as full copies shared by clones without clamped write-back", () => {
+        const h = SkeletonFixture();
+        const data = { count: 2, names: ["Smile", "Frown"], weights: new Float32Array([0.25, 0.75]) } as unknown as MorphTargetData;
+        const clone = CreateP9Mesh("Clone");
+        Object.assign(h.mesh, { morphTargets: data });
+        Object.assign(clone, { morphTargets: data });
+        SetWeights.mockImplementation((_engine, targets: MorphTargetData, weights: Float32Array) => targets.weights.set(weights));
+        const { watcher } = CreateP9Watcher();
+        const render = RenderP9Properties(
+            <>
+                <MeshMorphTargetProperties scene={h.scene} mesh={h.mesh} />
+                <MeshMorphTargetProperties scene={h.scene} mesh={clone} />
+            </>,
+            watcher
+        );
+        Renders.push(render);
+        const ranges = render.container.querySelectorAll<HTMLInputElement>('input[type="range"]');
+        expect(ranges).toHaveLength(4);
+        // Slider scales the 0..1 bounds by 0.01 and uses the native default step of 1.
+        for (const range of ranges) {
+            expect([range.min, range.max, range.step]).toEqual(["0", "100", ""]);
+        }
+        const inputs = render.container.querySelectorAll<HTMLInputElement>('input[type="text"]');
+        const commit = (input: HTMLInputElement, value: string) => {
+            act(() => {
+                input.focus();
+                Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, value);
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            });
+            act(() => input.blur());
+        };
+        commit(inputs[0], "-0.5");
+        expect(SetWeights).toHaveBeenCalledTimes(1);
+        expect(SetWeights.mock.calls[0][2]).not.toBe(data.weights);
+        expect([...SetWeights.mock.calls[0][2]]).toEqual([-0.5, 0.75]);
+        expect([...data.weights]).toEqual([-0.5, 0.75]);
+        expect(inputs[0].value).toBe("-0.5");
+        expect(inputs[2].value).toBe("-0.5");
+
+        commit(inputs[1], "1.5");
+        expect(SetWeights).toHaveBeenCalledTimes(2);
+        expect(SetWeights.mock.calls[1][2]).not.toBe(data.weights);
+        expect([...SetWeights.mock.calls[1][2]]).toEqual([-0.5, 1.5]);
+        expect([...data.weights]).toEqual([-0.5, 1.5]);
+        expect(inputs[1].value).toBe("1.5");
+        expect(inputs[3].value).toBe("1.5");
+
+        act(() => {
+            data.weights[0] = 2;
+            watcher.refresh();
+        });
+        expect(inputs[0].value).toBe("2");
+        expect(inputs[2].value).toBe("2");
+        expect([...data.weights]).toEqual([2, 1.5]);
+        expect(SetWeights).toHaveBeenCalledTimes(2);
+        commit(inputs[0], "abc");
+        expect(inputs[0].value).toBe("2");
+        expect([...data.weights]).toEqual([2, 1.5]);
+        expect(SetWeights).toHaveBeenCalledTimes(2);
+    });
 });

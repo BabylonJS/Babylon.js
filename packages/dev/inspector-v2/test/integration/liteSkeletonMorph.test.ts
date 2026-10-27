@@ -107,6 +107,10 @@ test("Lite Inspector named morph sliders update shared weights and retain them w
     // Let several renderer and watcher cycles pass; this fixture has no morph animation.
     await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     await expect(widen).toHaveValue("0.6");
+    await widen.fill("-0.5");
+    await widen.press("Enter");
+    await expect.poll(() => page.evaluate(() => [...(window as LiteTestWindow).liteSkinnedMesh.morphTargets!.weights])).toEqual([expect.closeTo(-0.5), expect.closeTo(0.3)]);
+    await expect(widen).toHaveValue("-0.5");
     expect(errors).toEqual([]);
 });
 

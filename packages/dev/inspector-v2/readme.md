@@ -8,7 +8,7 @@ The Lite Explorer lists skeletons and their bone hierarchy. Skeleton properties 
 
 Skeleton discovery requires the application to call `enableBoneControl()` or `enableBoneControlForSkinnedAssets()` **before** loading its glTF. Inspector does not enable bone control itself. USD, authored and non-opt-in skins do not expose public skeletons. Cloned meshes share a skeleton.
 
-Mesh **Morph Targets** provides one weight slider per target. Labels use glTF `extras.targetNames`, USD target names or authored morph names when supplied, with numbered fallbacks. Changes use Lite's morph setter and affect every mesh sharing the data. Playing morph animations overwrite the weights each frame.
+Mesh **Morph Targets** provides one weight slider per target. The slider spans 0–1. The numeric field accepts any finite weight, including negative values and values above 1. Labels use glTF `extras.targetNames`, USD target names or authored morph names when supplied, with numbered fallbacks. Changes use Lite's morph setter and affect every mesh sharing the data. Playing morph animations overwrite the weights each frame.
 
 ## Babylon Lite Particle Systems
 
@@ -16,7 +16,7 @@ The Lite Explorer lists CPU systems registered through `registerNodeParticleSet`
 
 Discovery is add-only until scene disposal. There is no particle removal, reset, lifetime/size/color editing, GPU particle support or particle editor.
 
-These features require the unreleased P9 Lite discovery APIs; the existing dependency pins remain unchanged pending a separately authorized Lite release.
+These features require `@babylonjs/lite` 1.37.1 or later, which matches the Inspector's optional `@babylonjs/lite` peer dependency (`^1.37.1`).
 
 ## Babylon Lite Picking
 
