@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
 import { Light } from "core/Lights/light";
@@ -31,6 +32,25 @@ describe("ClusteredLightContainer", () => {
     afterEach(() => {
         vi.restoreAllMocks();
         engine.dispose();
+    });
+
+    it("renders new and reused tile masks with the requested camera", () => {
+        Object.assign(engine.getCaps(), { texelFetch: true, colorBufferFloat: true, blendFloat: true, shaderFloatPrecision: 24 });
+        vi.spyOn(engine, "version", "get").mockReturnValue(2);
+        const first = new FreeCamera("first", Vector3.Zero(), scene);
+        const second = new FreeCamera("second", Vector3.Zero(), scene);
+        const container = new ClusteredLightContainer("cluster", [], scene);
+        const target = container._updateBatches(first);
+        expect(target.activeCamera).toBe(first);
+
+        expect(container._updateBatches(second)).toBe(target);
+        expect(target.activeCamera).toBe(second);
+        expect(container._updateBatches().activeCamera).toBeNull();
+
+        container.horizontalTiles++;
+        const resized = container._updateBatches(second);
+        expect(resized).not.toBe(target);
+        expect(resized.activeCamera).toBe(second);
     });
 
     describe("serialize", () => {
@@ -301,7 +321,7 @@ describe("ClusteredLightContainer", () => {
                 {
                     shaderLanguage: ShaderLanguage.GLSL,
                     setTexture,
-                },
+                } as any,
                 "0"
             );
 
@@ -324,7 +344,7 @@ describe("ClusteredLightContainer", () => {
                 {
                     shaderLanguage: ShaderLanguage.WGSL,
                     setTexture,
-                },
+                } as any,
                 "0"
             );
 

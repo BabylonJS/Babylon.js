@@ -44,6 +44,10 @@ const attributeAsUniform: { [name: string]: boolean } = {
 };
 
 const attributeDefine: { [name: string]: string } = {
+    world0: "INSTANCES",
+    world1: "INSTANCES",
+    world2: "INSTANCES",
+    world3: "INSTANCES",
     normal: "NORMAL",
     tangent: "TANGENT",
     uv: "UV1",
