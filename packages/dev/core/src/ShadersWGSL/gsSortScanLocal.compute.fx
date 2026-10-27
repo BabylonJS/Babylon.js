@@ -24,7 +24,10 @@ fn main(@builtin(local_invocation_id) lid : vec3u, @builtin(workgroup_id) wid : 
     var v : array<u32, 4>;
     var total = 0u;
     for (var j = 0u; j < 4u; j++) {
-        v[j] = select(0u, sumTable[base + j], base + j < n);
+        v[j] = 0u;
+        if (base + j < n) {
+            v[j] = sumTable[base + j];
+        }
         total += v[j];
     }
 

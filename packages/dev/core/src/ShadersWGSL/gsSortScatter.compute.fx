@@ -47,7 +47,13 @@ fn main(@builtin(local_invocation_id) lid : vec3u, @builtin(workgroup_id) wid : 
         globalOffset[t] = sumTable[bin] + chunkSums[bin >> 10u];
     }
 
-    let key = keysIn[block * 256u + t];
+    // The last block may extend past the allocated buffers; its out-of-range threads still take part in the barriers.
+    let vecIndex = block * 256u + t;
+    let inRange = vecIndex < arrayLength(&keysIn);
+    var key = vec4u(0u);
+    if (inRange) {
+        key = keysIn[vecIndex];
+    }
     var digit : array<u32, 4>;
     var rank : array<u32, 4>;
     for (var j = 0u; j < 4u; j++) {
@@ -84,7 +90,10 @@ fn main(@builtin(local_invocation_id) lid : vec3u, @builtin(workgroup_id) wid : 
         workgroupBarrier();
     }
 
-    let val = valsIn[block * 256u + t];
+    var val = vec4u(0u);
+    if (inRange) {
+        val = valsIn[vecIndex];
+    }
     let seg = t >> 3u;
     for (var j = 0u; j < 4u; j++) {
         if (base + j < params.count) {
