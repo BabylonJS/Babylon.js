@@ -128,7 +128,7 @@
         "start:devhost": "npm run serve -w @tools/dev-host"
     },
     "engines": {
-        "node": ">=22.22.2 <23.0.0 || >=24.15.0 <25.0.0",
+        "node": ">=22.22.2 <23.0.0 || >=24.16.0 <25.0.0",
         "npm": ">=11.18.0"
     },
     "changelog": {

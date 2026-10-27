@@ -107,7 +107,7 @@ window.addEventListener('resize', function(){
 ## Contributing
 
 Building and developing this repository requires Node.js 22.22.2 or newer within
-the Node 22 line, or Node.js 24.15.0 or newer within the Node 24 line, and npm 11.18.0
+the Node 22 line, or Node.js 24.16.0 or newer within the Node 24 line, and npm 11.18.0
 or newer. These are development-tool requirements; they do not change the runtime
 requirements of the published Babylon.js libraries.
 
