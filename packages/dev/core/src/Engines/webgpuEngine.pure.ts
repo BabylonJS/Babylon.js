@@ -1274,6 +1274,17 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     protected override _rebuildBuffers(): void {
+        // Index / Vertex (WebGPUEngine does not extend Engine, so it must do what Engine._rebuildBuffers does)
+        for (const scene of this.scenes) {
+            scene.resetCachedMaterial();
+            scene._rebuildGeometries();
+        }
+
+        for (const scene of this._virtualScenes) {
+            scene.resetCachedMaterial();
+            scene._rebuildGeometries();
+        }
+
         super._rebuildBuffers();
 
         for (const storageBuffer of this._storageBuffers) {
@@ -4119,12 +4130,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public override dispose(): void {
         this._isDisposed = true;
         this.hideLoadingUI?.();
-        this._timestampQuery.dispose();
+        this._timestampQuery?.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();
-        this._textureHelper.destroyDeferredTextures();
-        this._bufferManager.destroyDeferredBuffers();
-        this._device.destroy();
+        this._textureHelper?.destroyDeferredTextures();
+        this._bufferManager?.destroyDeferredBuffers();
+        this._device?.destroy();
 
         _CommonDispose(this, this._renderingCanvas);
 

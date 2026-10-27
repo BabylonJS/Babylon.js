@@ -36,6 +36,11 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     /** @internal */
     public contextLost(): void {
         this._updateComputeShader = undefined as any;
+        // Dispose the storage buffers before dropping them, so they don't stay registered in engine._storageBuffers
+        // (the engine would rebuild them after a context restoration, and they would never be released)
+        for (const buffer of this._bufferComputeShader) {
+            buffer.dispose();
+        }
         this._bufferComputeShader.length = 0;
         this._renderVertexBuffers.length = 0;
     }

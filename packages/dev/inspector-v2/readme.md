@@ -6,9 +6,15 @@ This document covers the high level aspects of the Inspector V2 architecture. No
 
 The Lite Inspector's **Enable Picking** toolbar toggle is available only while the engine has a registered scene context. It selects a mesh by tapping its scene canvas. Picks update the Explorer, Properties pane, and `debugNode` through the shared selection service. Camera drags and empty-space taps leave the selection unchanged. Press **Escape**, including from an undocked toolbar, or toggle picking off to exit; pending GPU results cannot change selection after exiting. Removing the last scene also exits picking and removes the toggle; registering another scene restores it with picking disabled.
 
-Picking supports registered scenes on the engine's primary and auxiliary HTML canvases, including canvases created in same-origin iframes or popup windows and scenes added while picking is active. Non-scene rendering contexts, offscreen canvases, and non-mesh pick contributors are not selected. Selection visuals and transform gizmos are not included.
+Picking supports registered scenes on the engine's primary and auxiliary HTML canvases, including canvases created in same-origin iframes or popup windows and scenes added while picking is active. Non-scene rendering contexts, offscreen canvases, non-mesh pick contributors, and Inspector-owned gizmo utility scenes are not selected. Gizmo interactions do not trigger mesh selection. Selection visuals are not included.
 
 For the Inspector v2 test app, run `npm run serve -w @dev/inspector` and open `http://localhost:9001/?experience=lite`. Set `INSPECTOR_TEST_PORT` to use a separate port when running multiple worktrees.
+
+## Babylon Lite Transform Gizmos
+
+Select a mesh or a mesh-hierarchy transform node in Explorer, then enable **Translate**, **Rotate**, **Scale**, or **Bounding Box** in the toolbar. Clicking the active mode again disables it. Translation and rotation support the **Local Coordinates** / **World Coordinates** toggle. Scale always follows the node's local axes because Lite applies scaling to local components; its coordinate toggle is hidden. Bounding-box handles follow the target's bounds and rotation. Gizmos edit the actual Lite node, so the Properties pane follows those changes in polling mode (or after an explicit refresh in manual mode).
+
+Gizmos use Lite's public native utility-layer and pointer-drag APIs, without Babylon.js gizmo implementations or proxy nodes. They currently support registered scenes on the engine's primary HTML canvas only: Lite's utility-layer and gizmo factories target that canvas. Lite supports one gizmo utility layer per canvas, so Inspector controls should not be used simultaneously with application-owned gizmos on that canvas. Cameras, lights, non-node resources, offscreen canvases, and auxiliary-surface nodes have disabled transform controls. Gizmo utility scenes and their resources are hidden from Inspector discovery and picking. Selection changes reattach or dispose gizmos; mode changes, removed scenes/nodes, and Inspector disposal release their utility layers and pointer bindings. If Inspector is replaced during registration, its replacement waits for the previous layer to settle and retire before creating gizmos on the same canvas. Removing the last supported scene resets the mode.
 
 One of the goals of the Inspector V2 architecture is to allow new functionality to easily be added to the Inspector in one of two ways:
 1. **Modularity**: In code, using `Inspector.Show`. For example, the Sandbox might want to include additional features in the Inspector that make sense in the context of the Sandbox.
@@ -48,6 +54,91 @@ do not require an Inspector server. On a GPU-less machine, set
 `CUSTOM_FLAGS=--use-webgpu-adapter=swiftshader` to use Chrome's software WebGPU adapter.
 These tests explicitly select Chromium with the Chrome channel even when the
 integration project's default browser is Firefox.
+
+## Babylon Lite debug and capture
+
+The Lite **Debug** pane offers a ground grid and mesh bounding boxes for any
+registered scene, including scenes on auxiliary surfaces. Helpers are non-pickable
+meshes named `Inspector Ground Grid` and `Inspector Bounds: <mesh name>` in Explorer.
+Each scene retains its own helper settings across tab changes. Bounding boxes inherit
+the mesh's live world transform, keeping animation synchronized every frame without
+changing the application's node hierarchy. Geometry, visibility, and topology updates
+follow Inspector's polling/manual watch mode; skeletal/morph deformations and individual thin instances are not
+included. Removing a source mesh or unregistering a scene releases its helpers;
+closing Inspector removes only the meshes it created. Cleanup detaches any
+application nodes parented under helpers while preserving their world transforms.
+Deleting a grid in Explorer disables it; deleting a bounding-box helper recreates
+that box on the next Inspector refresh while Bounding Boxes remains enabled.
+Bounds helpers cannot be dragged or used as parenting targets in Explorer, preventing
+cycles through their source-dependent transforms. Failed helper creation leaves its
+switch off and displays an error so it can be retried.
+
+The **Tools** pane captures the primary or an auxiliary surface. **Capture Screenshot**
+downloads a PNG of the final presented frame at the canvas's native resolution,
+including canvas-rendered text, sprites, and post-processing but not HTML overlays.
+It uses Lite's GPU readback API, works for offscreen surfaces, and requires an active
+render loop. It does not resize or re-render the scene at a custom resolution.
+
+**Record Video** records an HTML canvas using `captureStream` and `MediaRecorder`;
+**Stop Recording** downloads WebM (or MP4 when that is the available format).
+Recording continues when changing Inspector tabs or closing an undocked pane to
+redock it. Screenshots and videos download through a live document rather than an
+unloaded popup. Surface changes are disabled during capture; surface-list updates
+follow Inspector's watch mode. Removing the surface or closing Inspector cancels
+the operation, releases recording tracks, and prevents stale downloads. Capture
+failures appear in the pane. Offscreen canvases and browsers without these media
+APIs show video recording as unavailable.
+
+Lite does not expose the full Inspector's global feature switches, physics/name
+helpers, equirectangular capture, or scene replay APIs. These tools are not imported
+from the full Babylon.js runtime. Physics visualization belongs to the physics
+inspection milestone; custom-resolution rendering and GIF capture are not included
+in this initial surface-capture implementation. The published Lite runtime also
+does not expose GPU-error/device-loss subscriptions, so Inspector does not access
+private GPU device fields to emulate those APIs.
+
+## Babylon Lite statistics and performance
+
+The Lite **Statistics** pane reports the runtime version, latest engine draw count,
+registered surfaces and rendering contexts, and distinct scene meshes, lights,
+source materials, reachable texture wrappers, animation groups, and shadow generators.
+Standalone text and sprite layers are counted too. Counts span all registered
+surfaces and deduplicate shared entities; scene texture counts are not a census of
+every GPU allocation. Telemetry refreshes independently of Preferred Watch Mode.
+
+**Profile GPU Tasks** explicitly enables Lite's lazy timestamp-query profiler.
+The pane shows unsupported, disabled, pending, available, and error states, the
+GPU task span, individual task durations, and dropped-task counts. Overlapping task
+durations are not summed. Profiling and its bounded history survive tab switches;
+closing Inspector stops only profiling Inspector enabled. Profiling enabled
+by the application, including after Inspector opens, is read-only and remains enabled on close.
+The profiling switch follows the actual profiler state after failed toggles, allowing
+a one-click retry. Toggle failures and ownership changes detected at click time are
+reported in the pane and logged without unhandled promise rejections.
+
+The graph retains up to 120 distinct asynchronous GPU readbacks sampled at most
+four times per second. **Export GPU Samples to CSV** exports that retained window,
+not every rendered frame. The Fluent line chart plots GPU task span in milliseconds
+in a fixed 30-second window: -30 is 30 seconds ago and 0 is now. It scrolls at up to
+30 display updates per second independently of the GPU readback sampling cadence,
+without hover markers, guide lines, or callouts. Collapsing Performance suspends chart
+animation without stopping session sampling; reopening resumes from the profiling clock.
+Both Y-axis bounds fit the visible
+samples with 10% padding (at least 0.5 ms), with the lower bound clamped to zero.
+Stopped histories stay frozen at
+the last readback. Refreshing the app starts with profiling disabled; enable **Profile GPU
+Tasks** again to collect a new history.
+Its module and `@fluentui/react-charts` are loaded only when the
+Statistics performance section is displayed. ES module consumers must install the
+required `@fluentui/react-charts` peer dependency (for example,
+`npm install @fluentui/react-charts@^9.3.27`), even if they never open Statistics:
+bundlers resolve the lazy chart chunk at build time.
+GPU frame indices refer to readbacks; draw counts refer to
+the latest CPU-side render and may be from a different frame. System Info lists
+timestamp-query support, precision settings, and each surface's live dimensions,
+format, and MSAA sample count. The published Lite runtime has no public device-limit,
+driver-information, engine FPS, or CPU frame-step instrumentation APIs,
+so this pane does not substitute browser refresh rate or synthetic CPU durations.
 
 ## Modularity
 

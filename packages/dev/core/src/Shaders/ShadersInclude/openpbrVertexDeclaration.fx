@@ -76,6 +76,11 @@ uniform vec2 vTransmissionDepthInfos;
 uniform mat4 transmissionDepthMatrix;
 #endif
 
+#ifdef TRANSMISSION_SCATTER
+uniform vec2 vTransmissionScatterInfos;
+uniform mat4 transmissionScatterMatrix;
+#endif
+
 #ifdef TRANSMISSION_DISPERSION_SCALE
 uniform vec2 vTransmissionDispersionScaleInfos;
 uniform mat4 transmissionDispersionScaleMatrix;
@@ -154,6 +159,11 @@ uniform mat4 geometryTangentMatrix;
 #ifdef GEOMETRY_COAT_NORMAL
 uniform vec2 vGeometryCoatNormalInfos;
 uniform mat4 geometryCoatNormalMatrix;
+#endif
+
+#ifdef GEOMETRY_COAT_TANGENT
+uniform vec2 vGeometryCoatTangentInfos;
+uniform mat4 geometryCoatTangentMatrix;
 #endif
 
 #ifdef THIN_FILM_WEIGHT

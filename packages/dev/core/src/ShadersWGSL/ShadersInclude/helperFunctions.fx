@@ -251,12 +251,15 @@ fn singleScatterToMultiScatterAlbedo(rho_ss: vec3f) -> vec3f {
 }
 
 fn multiScatterToSingleScatterAlbedo(rho_ms: vec3f) -> vec3f {
-    let s: vec3f = 4.09712f + 4.20863f * rho_ms - sqrt(9.59217f + 41.6808f * rho_ms + 17.7126f * rho_ms * rho_ms);
+    var s: vec3f = 4.09712f + 4.20863f * rho_ms - sqrt(9.59217f + 41.6808f * rho_ms + 17.7126f * rho_ms * rho_ms);
+    // The fit gives s slightly below 1 at rho_ms = 0; force s = 1 so the single-scatter albedo is exactly 0.
+    s = select(s, vec3f(1.0f), rho_ms <= vec3f(0.0f));
     return 1.0f - s * s;
 }
 
 fn multiScatterToSingleScatterAlbedoWithAniso(rho_ms: vec3f, aniso: f32) -> vec3f {
-    let s: vec3f = 4.09712 + 4.20863f * rho_ms - sqrt(9.59217f + 41.6808f * rho_ms + 17.7126f * rho_ms * rho_ms);
+    var s: vec3f = 4.09712 + 4.20863f * rho_ms - sqrt(9.59217f + 41.6808f * rho_ms + 17.7126f * rho_ms * rho_ms);
+    s = select(s, vec3f(1.0f), rho_ms <= vec3f(0.0f));
     return (vec3f(1.0f) - s * s) / maxEpsVec3(vec3f(1.0f) - vec3f(aniso) * s * s);
 }
 

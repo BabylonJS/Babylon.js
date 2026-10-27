@@ -9,8 +9,11 @@ import { type Scene } from "../../scene";
 import { type Nullable } from "../../types";
 import { DecodeMesh, DecoderWorkerFunction } from "./dracoCompressionWorker";
 import { type IAttributeData, type MeshData, type DecoderMessage } from "./dracoDecoder.types";
+import { type INative } from "../../Engines/Native/nativeInterfaces";
 
 declare let DracoDecoderModule: DracoDecoderModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 /**
  * @experimental This class is an experimental version of `DracoCompression` and is subject to change.
@@ -88,6 +91,10 @@ export class DracoDecoder extends DracoCodec {
         return typeof DracoDecoderModule !== "undefined";
     }
 
+    protected override _isNativeAvailable(): boolean {
+        return typeof _native !== "undefined" && !!_native.decodeDracoMesh;
+    }
+
     protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: unknown /** DracoDecoderModule */): Promise<{ module: unknown /** DecoderModule */ }> {
         const module = await ((jsModule as DracoDecoderModule) || DracoDecoderModule)({ wasmBinary });
         return { module };
@@ -133,6 +140,30 @@ export class DracoDecoder extends DracoCodec {
                 return normalized;
             }
         };
+
+        // Native decode path: NativeDraco decodes synchronously and returns the same
+        // { indices, attributes, totalVertices } shape as the WASM worker/module paths.
+        if (this._useNativeCodec) {
+            try {
+                const result = _native.decodeDracoMesh!(dataView, attributes);
+                const resultAttributes: Array<IAttributeData> = [];
+                for (const attribute of result.attributes) {
+                    resultAttributes.push({
+                        kind: attribute.kind,
+                        data: attribute.data,
+                        size: attribute.size,
+                        byteOffset: attribute.byteOffset,
+                        byteStride: attribute.byteStride,
+                        normalized: applyGltfNormalizedOverride(attribute.kind, attribute.normalized),
+                    });
+                }
+                return Promise.resolve<MeshData>({ indices: result.indices ?? undefined, attributes: resultAttributes, totalVertices: result.totalVertices });
+            } catch (e) {
+                // Keep the async contract: callers handle failures via the returned promise.
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                return Promise.reject(e);
+            }
+        }
 
         if (this._workerPoolPromise) {
             // eslint-disable-next-line github/no-then

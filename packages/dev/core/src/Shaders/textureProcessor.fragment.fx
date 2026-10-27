@@ -17,6 +17,14 @@
 //   OPERAND_B_MATRIX       - operand B texture has a UV transform to bake; uses textureBMatrix uniform
 //   OP_LERP                - use mix(a, b, t) instead of a * b
 //   OP_MAX                 - use max(a, b) instead of a * b
+//   OP_DIVIDE              - component-wise safe division: result = a / max(b, 0.00001)
+//   OP_TRANSMISSION_FRACTION - component-wise result = a / max(a + b * (1 - a), 0.00001) in a single pass
+//   OP_THIN_WALLED_TRANSMISSION_WEIGHT - thin-walled scatter transmission weight from transmission A.r and scatter strength B.r,
+//                            broadcast to RGBA: result = a.r * (1 - b.r)
+//   OP_THIN_WALLED_SUBSURFACE_WEIGHT - thin-walled scatter subsurface weight from transmission A.r and scatter strength B.r,
+//                            broadcast to RGBA: result = a.r * b.r / max((1 - a.r) + a.r * b.r, 0.00001), equal to a.r * b.r / (1 - a.r * (1 - b.r))
+//   OP_TRANSMISSION_SCATTER_ALBEDO - single-scatter albedo from transmission color A and transmission scatter B, using the
+//                            renderer's extinction (absorption shifted to be non-negative); alpha is taken from B
 //   OP_INVERT              - unary: invert selected channels of operand A (operand B is ignored)
 //   INVERT_R               - invert the red channel (used with OP_INVERT)
 //   INVERT_G               - invert the green channel (used with OP_INVERT)
@@ -24,6 +32,9 @@
 //   INVERT_A               - invert the alpha channel (used with OP_INVERT)
 //   OP_CHANNEL_MAX         - unary: broadcast max(r,g,b[,a]) of operand A to all output channels
 //   OP_NORMAL_SCALE        - decode A normal, scale X/Y by B.r, normalize and re-encode
+//   OP_MULTI_SCATTER_TO_SINGLE_SCATTER - unary: convert multi-scatter albedo A.rgb to single-scatter albedo (uses scatterAniso uniform)
+//   MULTI_SCATTER_SCALE_B  - multiply operand A by operand B before OP_MULTI_SCATTER_TO_SINGLE_SCATTER
+//   OP_SINGLE_SCATTER_TO_MULTI_SCATTER - unary: convert single-scatter albedo A.rgb to multi-scatter albedo (inverse of the above; uses scatterAniso uniform)
 //   CHANNEL_MAX_INCLUDE_ALPHA - include alpha in the max computation and broadcast to all four channels
 //   LERP_T_TEXTURE         - t operand has a texture
 //   LERP_T_FACTOR          - t operand has a constant vec4 factor (combined with texture when both are set)
@@ -70,6 +81,9 @@ uniform vec4 factorB;
 #endif
 #if defined(OP_LERP) && (!defined(LERP_T_TEXTURE) || defined(LERP_T_FACTOR))
 uniform vec4 factorT;
+#endif
+#if defined(OP_MULTI_SCATTER_TO_SINGLE_SCATTER) || defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
+uniform float scatterAniso;
 #endif
 
 varying vec2 vUV;
@@ -133,6 +147,22 @@ void main() {
     #ifdef OP_NORMAL_SCALE
     vec3 normal = (a.rgb * 2.0 - 1.0) * vec3(b.r, b.r, 1.0);
     vec4 result = vec4(normal / max(length(normal), 1e-8) * 0.5 + 0.5, a.a);
+    #elif defined(OP_MULTI_SCATTER_TO_SINGLE_SCATTER)
+    #ifdef MULTI_SCATTER_SCALE_B
+    vec4 multiScatter = a * b;
+    #else
+    vec4 multiScatter = a;
+    #endif
+    vec3 rhoMs = clamp(multiScatter.rgb, vec3(0.0), vec3(1.0));
+    vec3 s = vec3(4.09712) + 4.20863 * rhoMs - sqrt(vec3(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+    // The fit gives s slightly below 1 at rhoMs = 0; force s = 1 so the single-scatter albedo is exactly 0.
+    s = mix(s, vec3(1.0), vec3(equal(rhoMs, vec3(0.0))));
+    vec4 result = vec4((vec3(1.0) - s * s) / max(vec3(1.0) - scatterAniso * s * s, vec3(0.0000001)), multiScatter.a);
+    #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
+    vec3 ssAlbedo = clamp(a.rgb, vec3(0.0), vec3(1.0));
+    vec3 s2 = (vec3(1.0) - ssAlbedo) / max(vec3(1.0) - scatterAniso * ssAlbedo, vec3(0.0000001));
+    vec3 sq = sqrt(max(s2, vec3(0.0)));
+    vec4 result = vec4((vec3(1.0) - sq) * (vec3(1.0) - 0.139 * sq) / (vec3(1.0) + 1.17 * sq), a.a);
     #elif defined(OP_CHANNEL_MAX)
     float _cmax = max(max(a.r, a.g), a.b);
     #ifdef CHANNEL_MAX_INCLUDE_ALPHA
@@ -184,6 +214,21 @@ void main() {
     vec4 result = mix(a, b, t);
     #elif defined(OP_MAX)
     vec4 result = max(a, b);
+    #elif defined(OP_DIVIDE)
+    vec4 result = a / max(b, vec4(0.00001));
+    #elif defined(OP_TRANSMISSION_FRACTION)
+    vec4 result = a / max(a + b * (vec4(1.0) - a), vec4(0.00001));
+    #elif defined(OP_THIN_WALLED_TRANSMISSION_WEIGHT)
+    vec4 result = vec4(a.r * (1.0 - b.r));
+    #elif defined(OP_THIN_WALLED_SUBSURFACE_WEIGHT)
+    float _transmittedScatter = a.r * b.r;
+    vec4 result = vec4(_transmittedScatter / max(1.0 - a.r + _transmittedScatter, 0.00001));
+    #elif defined(OP_TRANSMISSION_SCATTER_ALBEDO)
+    // Matches openpbrVolumeFunctions; the transmission depth cancels out of scatter / extinction.
+    vec3 _extinction = -log(max(a.rgb, vec3(0.0000001)));
+    vec3 _absorption = _extinction - b.rgb;
+    _extinction -= vec3(min(min(min(_absorption.r, _absorption.g), _absorption.b), 0.0));
+    vec4 result = vec4(b.rgb / max(_extinction, vec3(0.00001)), b.a);
     #else
     vec4 result = a * b;
     #endif

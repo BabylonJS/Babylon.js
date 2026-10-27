@@ -21,6 +21,8 @@ function multiScatterToSingleScatterAlbedo(multiScatter: Color3): Vector3 {
     p.addInPlace(new Vector3(41.6808, 41.6808, 41.6808).multiplyInPlace(multiScatterAlbedo));
     p.addInPlace(new Vector3(17.7126, 17.7126, 17.7126).multiplyInPlace(multiScatterAlbedo.multiply(multiScatterAlbedo)));
     s.subtractInPlace(new Vector3(Math.sqrt(p.x), Math.sqrt(p.y), Math.sqrt(p.z)));
+    // The fit gives s slightly below 1 at zero multiscatter; force s = 1 so the single-scatter albedo is exactly 0.
+    s.set(multiScatter.r <= 0 ? 1 : s.x, multiScatter.g <= 0 ? 1 : s.y, multiScatter.b <= 0 ? 1 : s.z);
     return new Vector3(1.0, 1.0, 1.0).subtract(s.multiply(s));
 }
 
