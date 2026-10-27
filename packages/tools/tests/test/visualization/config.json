@@ -4806,6 +4806,12 @@
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
+            "title": "OpenPBR Subsurface Scatter Strength - glTF",
+            "playgroundId": "#GRQHVV#344",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
             "playgroundId": "#BY1IOY#0",
             "excludedEngines": ["webgl1"],
