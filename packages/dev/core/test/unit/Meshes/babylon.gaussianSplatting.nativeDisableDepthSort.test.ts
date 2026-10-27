@@ -108,4 +108,106 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         scene.dispose();
         engine.dispose();
     });
+
+    it("settles the depth sort after synchronous native sorting", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.updateData(createSplatData(4));
+
+        sortSplats.mockClear();
+        mesh.position.x = 1;
+        mesh._postToWorker(true);
+
+        expect(sortSplats).toHaveBeenCalledOnce();
+        expect(mesh._isDepthSortSettled).toBe(true);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("uploads updated splat data immediately when there is no sort worker", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.updateData(createSplatData(4));
+
+        const updateSubTextures = vi.spyOn(mesh as any, "_updateSubTextures");
+        mesh.updateData(createSplatData(4));
+
+        expect(updateSubTextures).toHaveBeenCalledOnce();
+        expect((mesh as any)._delayedTextureUpdate).toBeNull();
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("uploads updated splat data that adds spherical harmonics when there is no sort worker", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.updateData(createSplatData(4));
+        expect((mesh as any)._shTextures).toBeNull();
+
+        const textureSize = (mesh as any)._getTextureSize(4);
+        const sh = [new Uint8Array(textureSize.x * textureSize.y * 16)];
+        const updateShTextureData = vi.spyOn(mesh as any, "_updateShTextureData");
+        expect(() => mesh.updateData(createSplatData(4), sh, { flipY: true }, undefined, 1)).not.toThrow();
+
+        expect((mesh as any)._shTextures).toHaveLength(1);
+        expect((mesh as any)._delayedTextureUpdate).toBeNull();
+        expect(updateShTextureData).toHaveBeenCalledOnce();
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("grows existing spherical harmonics textures when an update raises the SH degree without a sort worker", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const textureSize = (mesh as any)._getTextureSize(4);
+        const shTextureBytes = textureSize.x * textureSize.y * 16;
+        mesh.updateData(createSplatData(4), [new Uint8Array(shTextureBytes)], { flipY: true }, undefined, 1);
+        const firstShTexture = (mesh as any)._shTextures[0];
+        expect((mesh as any)._shTextures).toHaveLength(1);
+
+        const sh = [new Uint8Array(shTextureBytes), new Uint8Array(shTextureBytes)];
+        const updateShTextureData = vi.spyOn(mesh as any, "_updateShTextureData");
+        expect(() => mesh.updateData(createSplatData(4), sh, { flipY: true }, undefined, 2)).not.toThrow();
+
+        const shTextures = (mesh as any)._shTextures;
+        expect(shTextures).toHaveLength(2);
+        expect(shTextures[0]).toBe(firstShTexture);
+        expect((mesh as any)._delayedTextureUpdate).toBeNull();
+        expect(updateShTextureData.mock.calls.map((call) => call[0])).toEqual(shTextures);
+
+        scene.dispose();
+        engine.dispose();
+    }, 30000);
+
+    it("uploads existing rotation and scale textures once per update when there is no sort worker", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.needsRotationScaleTextures = true;
+        mesh.updateData(createSplatData(4));
+        const rotationTextures = [(mesh as any)._rotationsATexture, (mesh as any)._rotationsBTexture, (mesh as any)._rotationScaleTexture];
+        expect(rotationTextures.every((texture) => !!texture)).toBe(true);
+
+        const updateTextureFromData = vi.spyOn(mesh as any, "_updateTextureFromData");
+        mesh.updateData(createSplatData(4));
+
+        for (const texture of rotationTextures) {
+            expect(updateTextureFromData.mock.calls.filter((call) => call[0] === texture)).toHaveLength(1);
+        }
+
+        scene.dispose();
+        engine.dispose();
+    });
 });

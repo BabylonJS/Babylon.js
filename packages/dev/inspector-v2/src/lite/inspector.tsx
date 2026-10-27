@@ -21,6 +21,7 @@ import { EnginePropertiesServiceDefinition } from "./services/panes/properties/e
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
 import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
+import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesService";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
@@ -36,6 +37,7 @@ import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/
 import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
 import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
 import { FlowGraphExplorerServiceDefinition } from "./services/panes/scene/flowGraphExplorerService";
+import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
 import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
@@ -96,6 +98,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 AnimationGroupExplorerServiceDefinition,
                 SkeletonExplorerServiceDefinition,
                 ParticleSystemExplorerServiceDefinition,
+                FrameGraphExplorerServiceDefinition,
                 FlowGraphExplorerServiceDefinition,
                 PropertiesServiceDefinition,
                 EnginePropertiesServiceDefinition,
@@ -112,6 +115,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 AnimationPropertiesServiceDefinition,
                 SkeletonPropertiesServiceDefinition,
                 ParticleSystemPropertiesServiceDefinition,
+                FrameGraphPropertiesServiceDefinition,
                 SettingsServiceDefinition,
                 watcherSettingsServiceDefinition,
                 ShellSettingsServiceDefinition,

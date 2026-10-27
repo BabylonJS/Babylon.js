@@ -31,6 +31,14 @@ export interface IInstallHtmlInCanvasPolyfillOptions {
 let _InstalledModule: Nullable<IHtmlInCanvasPolyfillModule> = null;
 
 /**
+ * Tracks the installer-owned polyfill so consumers use its legacy snapshot APIs even when newer native APIs remain exposed.
+ * @internal
+ */
+export function _IsHtmlInCanvasPolyfillInstalled(): boolean {
+    return _InstalledModule !== null;
+}
+
+/**
  * Detects whether the browser supports the WICG HTML-in-Canvas API natively (or already has it installed).
  * @returns true when an HTMLCanvasElement exposes `captureElementImage`
  */

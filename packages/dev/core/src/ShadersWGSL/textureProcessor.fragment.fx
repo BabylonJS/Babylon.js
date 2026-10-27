@@ -1,6 +1,6 @@
 // Texture processing fragment shader (WGSL)
 // Supports multiply, max, lerp, and invert operations with texture/constant/combined operands.
-// See GLSL counterpart for define documentation (OPERAND_A/B_SRGB, OPERAND_A/B_CHANNEL_R/G/B/A, LERP_T_SRGB, LERP_T_CHANNEL_R/G/B/A, OUTPUT_SRGB, OP_INVERT, and INVERT_R/G/B/A also apply).
+// See GLSL counterpart for define documentation (OPERAND_A/B_SRGB, OPERAND_A/B_CHANNEL_R/G/B/A, LERP_T_SRGB, LERP_T_CHANNEL_R/G/B/A, OUTPUT_SRGB, OP_INVERT, INVERT_R/G/B/A, OP_TRANSMISSION_FRACTION, OP_THIN_WALLED_TRANSMISSION_WEIGHT, OP_THIN_WALLED_SUBSURFACE_WEIGHT, and OP_TRANSMISSION_SCATTER_ALBEDO also apply).
 
 #ifdef OPERAND_A_TEXTURE
 var textureASampler: sampler;
@@ -34,6 +34,9 @@ uniform factorB: vec4f;
 #if defined(OP_LERP) && (!defined(LERP_T_TEXTURE) || defined(LERP_T_FACTOR))
 uniform factorT: vec4f;
 #endif
+#if defined(OP_MULTI_SCATTER_TO_SINGLE_SCATTER) || defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
+uniform scatterAniso: f32;
+#endif
 
 varying vUV: vec2f;
 
@@ -44,7 +47,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Evaluate operand A
     #ifdef OPERAND_A_TEXTURE
     #ifdef OPERAND_A_MATRIX
-    var a: vec4f = textureSample(textureA, textureASampler, (uniforms.textureAMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var a: vec4f = textureSample(textureA, textureASampler, (uniforms.textureAMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var a: vec4f = textureSample(textureA, textureASampler, uv);
     #endif
@@ -70,7 +73,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Evaluate operand B
     #ifdef OPERAND_B_TEXTURE
     #ifdef OPERAND_B_MATRIX
-    var b: vec4f = textureSample(textureB, textureBSampler, (uniforms.textureBMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var b: vec4f = textureSample(textureB, textureBSampler, (uniforms.textureBMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var b: vec4f = textureSample(textureB, textureBSampler, uv);
     #endif
@@ -94,7 +97,23 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     // Apply operation
-    #ifdef OP_CHANNEL_MAX
+    #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
+    #ifdef MULTI_SCATTER_SCALE_B
+    let multiScatter: vec4f = a * b;
+    #else
+    let multiScatter: vec4f = a;
+    #endif
+    let rhoMs: vec3f = clamp(multiScatter.rgb, vec3f(0.0), vec3f(1.0));
+    var s: vec3f = vec3f(4.09712) + 4.20863 * rhoMs - sqrt(vec3f(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+    // The fit gives s slightly below 1 at rhoMs = 0; force s = 1 so the single-scatter albedo is exactly 0.
+    s = select(s, vec3f(1.0), rhoMs == vec3f(0.0));
+    var result: vec4f = vec4f((vec3f(1.0) - s * s) / max(vec3f(1.0) - uniforms.scatterAniso * s * s, vec3f(0.0000001)), multiScatter.a);
+    #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
+    let ssAlbedo: vec3f = clamp(a.rgb, vec3f(0.0), vec3f(1.0));
+    let s2: vec3f = (vec3f(1.0) - ssAlbedo) / max(vec3f(1.0) - uniforms.scatterAniso * ssAlbedo, vec3f(0.0000001));
+    let sq: vec3f = sqrt(max(s2, vec3f(0.0)));
+    var result: vec4f = vec4f((vec3f(1.0) - sq) * (vec3f(1.0) - 0.139 * sq) / (vec3f(1.0) + 1.17 * sq), a.a);
+    #elif defined(OP_CHANNEL_MAX)
     var _cmax: f32 = max(max(a.r, a.g), a.b);
     #ifdef CHANNEL_MAX_INCLUDE_ALPHA
     _cmax = max(_cmax, a.a);
@@ -120,7 +139,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #elif defined(OP_LERP)
     #ifdef LERP_T_TEXTURE
     #ifdef LERP_T_MATRIX
-    var t: vec4f = textureSample(textureT, textureTSampler, (uniforms.textureTMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var t: vec4f = textureSample(textureT, textureTSampler, (uniforms.textureTMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var t: vec4f = textureSample(textureT, textureTSampler, uv);
     #endif
@@ -145,6 +164,20 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var result: vec4f = mix(a, b, t);
     #elif defined(OP_MAX)
     var result: vec4f = max(a, b);
+    #elif defined(OP_DIVIDE)
+    var result: vec4f = a / max(b, vec4f(0.00001));
+    #elif defined(OP_TRANSMISSION_FRACTION)
+    var result: vec4f = a / max(a + b * (vec4f(1.0) - a), vec4f(0.00001));
+    #elif defined(OP_THIN_WALLED_TRANSMISSION_WEIGHT)
+    var result: vec4f = vec4f(a.r * (1.0 - b.r));
+    #elif defined(OP_THIN_WALLED_SUBSURFACE_WEIGHT)
+    let _transmittedScatter: f32 = a.r * b.r;
+    var result: vec4f = vec4f(_transmittedScatter / max(1.0 - a.r + _transmittedScatter, 0.00001));
+    #elif defined(OP_TRANSMISSION_SCATTER_ALBEDO)
+    var _extinction: vec3f = -log(max(a.rgb, vec3f(0.0000001)));
+    let _absorption: vec3f = _extinction - b.rgb;
+    _extinction -= vec3f(min(min(min(_absorption.r, _absorption.g), _absorption.b), 0.0));
+    var result: vec4f = vec4f(b.rgb / max(_extinction, vec3f(0.00001)), b.a);
     #else
     var result: vec4f = a * b;
     #endif

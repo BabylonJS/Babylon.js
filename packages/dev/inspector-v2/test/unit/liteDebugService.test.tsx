@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import { type EngineContext, type Mesh, type SceneContext } from "@babylonjs/lite";
+import { type EngineContext, type Mesh, type SceneContext, type SceneNode } from "@babylonjs/lite";
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -40,7 +40,10 @@ vi.mock("@babylonjs/lite", () => ({
     updateLineSystem: vi.fn(),
     disposeMeshGpu: vi.fn(),
     setParent: vi.fn(),
-    setMeshVisible: (mesh: Mesh, visible: boolean) => Object.assign(mesh, { visible }),
+    setSubtreeVisible: vi.fn(function SetSubtreeVisible(node: SceneNode, visible: boolean) {
+        Object.assign(node, { visible });
+        node.children.forEach((child) => SetSubtreeVisible(child, visible));
+    }),
     addToScene: (scene: SceneContext, mesh: Mesh) => scene.meshes.push(mesh),
     removeFromScene: (scene: SceneContext, mesh: Mesh) => scene.meshes.splice(scene.meshes.indexOf(mesh), 1),
     getRenderingContexts: (surface: { contexts: SceneContext[] }) => surface.contexts,

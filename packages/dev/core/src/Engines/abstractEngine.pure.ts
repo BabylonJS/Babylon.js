@@ -1760,7 +1760,7 @@ export abstract class AbstractEngine {
 
         // processing for non-image formats
         if (loaderPromise) {
-            const callbackAsync = async (data: ArrayBufferView) => {
+            const callbackAsync = async (data: ArrayBufferView, ownsData = false) => {
                 const loader = await loaderPromise;
                 loader.loadData(
                     data,
@@ -1785,16 +1785,20 @@ export abstract class AbstractEngine {
                             );
                         }
                     },
-                    loaderOptions
+                    loaderOptions,
+                    ownsData
                 );
             };
 
             if (!buffer) {
+                // an offline provider can keep the buffers it serves (a cache), and LoadFile falls back to the last created scene's:
+                // only a file loaded without any provider is held by nothing else
+                const ownsData = !scene?.offlineProvider && !EngineStore.LastCreatedScene?.offlineProvider;
                 this._loadFile(
                     url,
                     async (data) => {
                         try {
-                            await callbackAsync(new Uint8Array(data as ArrayBuffer));
+                            await callbackAsync(new Uint8Array(data as ArrayBuffer), ownsData);
                         } catch (reason) {
                             onInternalError("Failed to parse texture data", reason);
                         }
@@ -2019,14 +2023,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.32.0";
+        return "babylonjs@9.32.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.32.0";
+        return "9.32.1";
     }
 
     /**
