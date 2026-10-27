@@ -1,4 +1,4 @@
-{
+﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -5978,7 +5978,7 @@
         },
         {
             "title": "glTF Loader - PBRMaterial Scatter Strength Thin-Walled",
-            "playgroundId": "#GRQHVV#339",
+            "playgroundId": "#GRQHVV#341",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         }
