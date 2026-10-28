@@ -42,7 +42,7 @@ export * from "./Processors/iShaderProcessor";
 export * from "./engine.common";
 export * from "./engineRegistration.pure";
 export * from "./nullEngineRegistration.pure";
-export * from "./thinEngine.scissor.pure";
 export * from "./renderCommandBatcher.pure";
+export * from "./thinEngine.scissor.pure";
 export * from "./Processors/pure";
 export * from "./WebGPU/pure";
