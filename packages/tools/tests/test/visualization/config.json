@@ -4179,6 +4179,13 @@
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {
+            "title": "Clustered Lighting (pbr sheen)",
+            "playgroundId": "#40VFIF#0",
+            "referenceImage": "clustered-lighting-pbr-sheen.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Materials", "Meshes", "PBR"]
+        },
+        {
             "title": "StandardMaterial skips out-of-range lighting",
             "playgroundId": "#5LPD6E#1",
             "dependsOn": ["Lights", "Materials", "Meshes"]
