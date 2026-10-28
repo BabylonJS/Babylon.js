@@ -463,6 +463,10 @@ export class Camera extends Node {
 
     /** @internal */
     public _computedViewMatrix = Matrix.Identity();
+    /** @internal This camera's view-projection in the previous and current frame, per pass (see Scene.finalizeSceneUbo) */
+    public _viewHistories = new Map<number, { previous: Matrix; current: Matrix; frameId: number; seeded: boolean }>();
+    /** @internal Incremented by resetViewHistory */
+    public _viewHistoryResetId = 0;
     private _doNotComputeProjectionMatrix = false;
     private _transformMatrix = Matrix.Zero();
     /** @internal */
@@ -539,6 +543,18 @@ export class Camera extends Node {
         }
 
         return false;
+    }
+
+    /**
+     * Resets the view history of the camera and its rig, in every pass. Call it when the view jumps (cut, teleport):
+     * the next frame has no camera motion, and a TAA rendering this camera drops its history in the same frame.
+     */
+    public resetViewHistory(): void {
+        this._viewHistories.clear();
+        this._viewHistoryResetId++;
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.resetViewHistory();
+        }
     }
 
     /**

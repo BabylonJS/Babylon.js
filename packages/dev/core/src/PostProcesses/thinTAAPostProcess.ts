@@ -169,6 +169,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
     private _hs: Halton2DSequence;
     private _firstUpdate = true;
     private _taaMaterialManager: Nullable<TAAMaterialManager>;
+    private _viewHistoryResetIds = new WeakMap<Camera, number>();
 
     /**
      * Constructs a new TAA post process
@@ -205,6 +206,12 @@ export class ThinTAAPostProcess extends EffectWrapper {
             // Applying jitter to the projection matrix messes with the velocity buffer,
             // so we do it as a final vertex step in a material plugin instead
             this._nextJitterOffset(this._taaMaterialManager.jitter);
+            // in WGSL, the jitter is for the views of this camera only, with each eye of its rig (Scene.finalizeSceneUbo); a TAA shared by
+            // several cameras computes each camera's jitter in turn
+            const camera = this.camera;
+            if (camera) {
+                this._taaMaterialManager._setCameraJitter(camera.rigParent ?? camera, this._scene.getEngine().frameId);
+            }
         } else {
             // Use the projection matrix by default since it supports most materials
             this._updateProjectionMatrix();
@@ -247,7 +254,17 @@ export class ThinTAAPostProcess extends EffectWrapper {
 
         const effect = this._drawWrapper.effect!;
 
-        effect.setFloat("factor", (this.camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate ? 1 : this.factor);
+        // camera.resetViewHistory (a cut): drop the history in the same frame. The resets are tracked per camera, so that the reset of a
+        // camera the TAA switches to, or of one of the eyes it alternates between, is not lost
+        const camera = this.camera;
+        let viewHistoryReset = false;
+        if (camera) {
+            const resetId = camera._viewHistoryResetId;
+            viewHistoryReset = resetId !== (this._viewHistoryResetIds.get(camera) ?? 0);
+            this._viewHistoryResetIds.set(camera, resetId);
+        }
+
+        effect.setFloat("factor", (camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate || viewHistoryReset ? 1 : this.factor);
 
         this._firstUpdate = false;
     }
