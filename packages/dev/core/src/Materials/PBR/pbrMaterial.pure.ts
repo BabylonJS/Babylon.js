@@ -662,7 +662,8 @@ export class PBRMaterial extends PBRBaseMaterial {
      * If set to true, no lighting calculations will be applied.
      */
     @serialize()
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    // Textures are also invalidated because lit-only texture features (bent normals) depend on unlit.
+    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
     public accessor unlit = false;
 
     /**

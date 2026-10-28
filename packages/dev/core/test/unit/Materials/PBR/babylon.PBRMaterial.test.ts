@@ -177,6 +177,63 @@ describe("PBRMaterial", () => {
             scene.texturesEnabled = false;
             expect(bentEnabled()).toBe(false);
         });
+
+        it("re-evaluates the bent map when unlit toggles", () => {
+            subject.getCaps().standardDerivatives = true;
+            const material = new PBRMaterial("bent", scene);
+            material.unlit = true;
+            const mesh = CreatePlane("plane", {}, scene);
+            mesh.material = material;
+            material.bentNormalTexture = new Texture(null, scene);
+            material.ambientTexture = new Texture(null, scene);
+            scene.environmentTexture = new RenderTargetTexture("environment", 16, scene);
+            vi.spyOn(material.ambientTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+            vi.spyOn(scene.environmentTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+            const bentReady = vi.spyOn(material.bentNormalTexture, "isReadyOrNotBlocking").mockReturnValue(false);
+            const subMesh = mesh.subMeshes[0];
+            const defines = () => subMesh.materialDefines as PBRMaterialDefines;
+            const isReady = () => {
+                scene.incrementRenderId();
+                return material.isReadyForSubMesh(mesh, subMesh);
+            };
+
+            isReady();
+            expect(bentReady).not.toHaveBeenCalled();
+            expect(defines().BENTNORMAL).toBe(false);
+
+            material.unlit = false;
+            expect(isReady()).toBe(false);
+            expect(bentReady).toHaveBeenCalled();
+
+            bentReady.mockReturnValue(true);
+            isReady();
+            expect(defines().BENTNORMAL).toBe(true);
+            expect(defines().UNLIT).toBe(false);
+
+            material.unlit = true;
+            bentReady.mockClear();
+            isReady();
+            expect(defines().BENTNORMAL).toBe(false);
+            expect(defines().UNLIT).toBe(true);
+            expect(bentReady).not.toHaveBeenCalled();
+        });
+
+        it("keeps unlit toggles unchanged without a bent map", () => {
+            const material = new PBRMaterial("unlit", scene);
+            material.unlit = true;
+            const mesh = CreatePlane("plane", {}, scene);
+            mesh.material = material;
+            const subMesh = mesh.subMeshes[0];
+            const defines = () => subMesh.materialDefines as PBRMaterialDefines;
+
+            material.isReadyForSubMesh(mesh, subMesh);
+            expect(defines().UNLIT).toBe(true);
+            material.unlit = false;
+            scene.incrementRenderId();
+            material.isReadyForSubMesh(mesh, subMesh);
+            expect(defines().UNLIT).toBe(false);
+            expect(defines().BENTNORMAL).toBe(false);
+        });
     });
 
     describe("getAnimatables", () => {

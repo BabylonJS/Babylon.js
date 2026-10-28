@@ -14,6 +14,12 @@
             "dependsOn": ["PBR", "Textures", "Materials", "Meshes", "NodeMaterial"]
         },
         {
+            "title": "PBR Bent Normal Visibility Invariants",
+            "playgroundId": "#3PC7QS#0",
+            "referenceImage": "pbr-bent-normal-visibility-invariants.png",
+            "dependsOn": ["PBR", "Textures", "Materials", "Meshes"]
+        },
+        {
             "title": "Solid Particle System Mixed Model Winding",
             "playgroundId": "#B1NNWI#2",
             "referenceImage": "sps-mixed-model-winding.png",

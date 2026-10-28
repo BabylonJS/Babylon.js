@@ -131,7 +131,14 @@ describe("PBRMetallicRoughnessBlock", () => {
             expect(subSurfaceDeclarationIndex).toBeLessThan(clusteredLightingFunctionsIndex);
             expect(shaders).toContain("bentNormalW");
             expect(shaders).toMatch(/bentNormalStrength[^;\n]*=\s*1\.0/);
-            expect(shaders).toMatch(/environmentBentNormalOcclusion\(bentNormalW,\s*reflectedDirection,\s*normalW,\s*viewDirectionW,\s*bentAO,\s*roughness\)/);
+            expect(shaders).toMatch(/environmentBentNormalOcclusion\(bentNormalW,\s*reflectedDirection,\s*normalW,\s*NdotVUnclamped,\s*bentAO,\s*alphaG\)/);
+            // The SG lobe uses the effective alphaG, including the specular antialiasing broadening used by reflection sampling.
+            const occlusionIndex = shaders.search(/environmentBentNormalOcclusion\(bentNormalW/);
+            const broadeningIndex = shaders.search(/#ifdef SPECULARAA\s+(?:\/\/[^\n]*\s+)?alphaG\s*\+=\s*AARoughnessFactors\.y;/);
+            expect(broadeningIndex).toBeGreaterThanOrEqual(0);
+            expect(broadeningIndex).toBeLessThan(occlusionIndex);
+            const alphaGAssignments = shaders.substring(broadeningIndex, occlusionIndex).match(/\balphaG\s*[-+*/]?=/g) ?? [];
+            expect(alphaGAssignments.map((assignment) => assignment.replace(/\s/g, ""))).toEqual(["alphaG+="]);
             expect(shaders).toContain("#include<pbrIBLFunctions>");
             const facingIndex = shaders.search(/bentNormalW\s*\*=\s*sign\(dot\(normalW,\s*faceNormal\)\)/);
             const bentDeclarationIndex = shaders.indexOf("= normalize(" + bentNormal.output.associatedVariableName);
@@ -145,6 +152,15 @@ describe("PBRMetallicRoughnessBlock", () => {
             const mesh = CreatePlane("plane", {}, scene);
             pbr.prepareDefines(defines, nodeMaterial, mesh);
             expect(defines.toString()).toContain("#define BENTNORMAL");
+            expect(defines.toString()).not.toContain("#define SPECULARAA");
+            engine.getCaps().standardDerivatives = true;
+            pbr.enableSpecularAntiAliasing = true;
+            pbr.prepareDefines(defines, nodeMaterial, mesh);
+            expect(defines.toString()).toContain("#define SPECULARAA");
+            expect(defines.toString()).toContain("#define BENTNORMAL");
+            pbr.enableSpecularAntiAliasing = false;
+            pbr.prepareDefines(defines, nodeMaterial, mesh);
+            expect(defines.toString()).not.toContain("#define SPECULARAA");
             ambient.output.disconnectFrom(pbr.ambientOcc);
             pbr.prepareDefines(defines, nodeMaterial, mesh);
             expect(defines.toString()).not.toContain("#define BENTNORMAL");

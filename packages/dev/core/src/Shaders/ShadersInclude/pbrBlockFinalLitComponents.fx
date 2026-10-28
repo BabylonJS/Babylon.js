@@ -98,7 +98,7 @@ aggShadow = aggShadow / numLights;
         #else
             vec3 reflectedDirection = reflect(-viewDirectionW, normalW);
         #endif
-        finalRadiance *= mix(1.0, environmentBentNormalOcclusion(bentNormalW, reflectedDirection, normalW, viewDirectionW, bentAO, roughness), bentNormalStrength);
+        finalRadiance *= mix(1.0, environmentBentNormalOcclusion(bentNormalW, reflectedDirection, normalW, NdotVUnclamped, bentAO, alphaG), bentNormalStrength);
     #endif
     
     vec3 finalRadianceScaled = finalRadiance * vLightingIntensity.z;
