@@ -1122,19 +1122,22 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         this._objectRenderer.initRender(this.getRenderWidth(), this.getRenderHeight());
 
+        // a fresh render id before each pass: a submesh skips its draw when its render id is the scene's (so that a pass draws it
+        // once), and an earlier render, from the scene or by hand, may have drawn it with the current one
         if ((this.is2DArray || this.is3D) && !this.isMulti) {
             for (let layer = 0; layer < this.getRenderLayers(); layer++) {
-                this._renderToTarget(0, useCameraPostProcess, dumpForDebug, layer);
                 scene.incrementRenderId();
+                this._renderToTarget(0, useCameraPostProcess, dumpForDebug, layer);
                 scene.resetCachedMaterial();
             }
         } else if (this.isCube && !this.isMulti) {
             for (let face = 0; face < 6; face++) {
-                this._renderToTarget(face, useCameraPostProcess, dumpForDebug);
                 scene.incrementRenderId();
+                this._renderToTarget(face, useCameraPostProcess, dumpForDebug);
                 scene.resetCachedMaterial();
             }
         } else {
+            scene.incrementRenderId();
             this._renderToTarget(0, useCameraPostProcess, dumpForDebug);
         }
 
