@@ -48,12 +48,12 @@ export class WebGPUQuerySet {
         }
     }
 
-    private _getBuffer(firstQuery: number, queryCount: number): GPUBuffer | null {
+    private _getBuffer(firstQuery: number, queryCount: number, encoder?: GPUCommandEncoder): GPUBuffer | null {
         if (!this._canUseMultipleBuffers && this._dstBuffers.length === 0) {
             return null;
         }
 
-        const encoderResult = this._device.createCommandEncoder();
+        const encoderResult = encoder ?? this._device.createCommandEncoder();
 
         let buffer: GPUBuffer;
         if (this._dstBuffers.length === 0) {
@@ -71,19 +71,25 @@ export class WebGPUQuerySet {
         encoderResult.resolveQuerySet(this._querySet, firstQuery, queryCount, this._queryBuffer, 0);
         encoderResult.copyBufferToBuffer(this._queryBuffer, 0, buffer, 0, 8 * queryCount);
 
-        this._device.queue.submit([encoderResult.finish()]);
+        if (!encoder) {
+            this._device.queue.submit([encoderResult.finish()]);
+        }
 
         return buffer;
     }
 
-    public async readValues(firstQuery = 0, queryCount = 1): Promise<BigUint64Array | null> {
-        const buffer = this._getBuffer(firstQuery, queryCount);
+    public async readValues(firstQuery = 0, queryCount = 1, encoder?: GPUCommandEncoder): Promise<BigUint64Array | null> {
+        const buffer = this._getBuffer(firstQuery, queryCount, encoder);
         if (buffer === null) {
             return null;
         }
         const engineId = this._engine.uniqueId;
 
         try {
+            if (encoder) {
+                // resolved in that encoder after its queries: mapped once the engine submits it, a wait its readbacks share
+                await this._engine._whenSubmittedAsync();
+            }
             await buffer.mapAsync(WebGPUConstants.MapMode.Read);
             const arrayBuf = new BigUint64Array(buffer.getMappedRange()).slice();
 
@@ -101,14 +107,18 @@ export class WebGPUQuerySet {
         }
     }
 
-    public async readValue(firstQuery = 0): Promise<number | null> {
-        const buffer = this._getBuffer(firstQuery, 1);
+    public async readValue(firstQuery = 0, encoder?: GPUCommandEncoder): Promise<number | null> {
+        const buffer = this._getBuffer(firstQuery, 1, encoder);
         if (buffer === null) {
             return null;
         }
         const engineId = this._engine.uniqueId;
 
         try {
+            if (encoder) {
+                // resolved in that encoder after its queries: mapped once the engine submits it, a wait its readbacks share
+                await this._engine._whenSubmittedAsync();
+            }
             await buffer.mapAsync(WebGPUConstants.MapMode.Read);
             const arrayBuf = new BigUint64Array(buffer.getMappedRange());
             const value = Number(arrayBuf[0]);
@@ -127,14 +137,18 @@ export class WebGPUQuerySet {
         }
     }
 
-    public async readTwoValuesAndSubtract(firstQuery = 0): Promise<number | null> {
-        const buffer = this._getBuffer(firstQuery, 2);
+    public async readTwoValuesAndSubtract(firstQuery = 0, encoder?: GPUCommandEncoder): Promise<number | null> {
+        const buffer = this._getBuffer(firstQuery, 2, encoder);
         if (buffer === null) {
             return null;
         }
         const engineId = this._engine.uniqueId;
 
         try {
+            if (encoder) {
+                // resolved in that encoder after its queries: mapped once the engine submits it, a wait its readbacks share
+                await this._engine._whenSubmittedAsync();
+            }
             await buffer.mapAsync(WebGPUConstants.MapMode.Read);
             const arrayBuf = new BigUint64Array(buffer.getMappedRange());
             const value = Number(arrayBuf[1] - arrayBuf[0]);

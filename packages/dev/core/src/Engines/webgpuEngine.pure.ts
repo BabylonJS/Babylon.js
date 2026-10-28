@@ -406,6 +406,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public _ubDontInvertY: WebGPUDataBuffer;
 
     private _commandBuffers: GPUCommandBuffer[] = [null as any, null as any];
+    private _submitted: Nullable<Promise<void>> = null;
+    private _resolveSubmitted: Nullable<() => void> = null;
 
     // Frame Buffer Life Cycle (recreated for each render target pass)
 
@@ -829,6 +831,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                                 return;
                             }
                             this._contextWasLost = true;
+                            // the commands of the lost device will not be submitted: their readbacks go on, and fail as lost
+                            this._notifySubmitted();
                             Logger.Warn("WebGPU context lost. " + info);
                             this.onContextLostObservable.notifyObservers(this);
                             // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -3246,6 +3250,30 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
+     * @internal Resolves once the commands recorded until now are submitted, by the next flushFramebuffer (from endFrame or not),
+     * or once the device is lost or the engine disposed. The waits of one submission share one promise.
+     * @returns a promise resolved after the next submission
+     */
+    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async -- every wait of a submission shares this one promise, where an async method would make one per wait
+    public _whenSubmittedAsync(): Promise<void> {
+        if (!this._submitted) {
+            this._submitted = new Promise<void>((resolve) => {
+                this._resolveSubmitted = resolve;
+            });
+        }
+        return this._submitted;
+    }
+
+    private _notifySubmitted(): void {
+        const resolve = this._resolveSubmitted;
+        if (resolve) {
+            this._submitted = null;
+            this._resolveSubmitted = null;
+            resolve();
+        }
+    }
+
+    /**
      * Force a WebGPU flush (ie. a flush of all waiting commands)
      * @internal @param _fromEndFrame defines whether the flush is triggered from endFrame or not (default: false)
      */
@@ -3259,6 +3287,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._commandBuffers[1] = this._renderEncoder.finish();
 
         this._device.queue.submit(this._commandBuffers);
+        this._notifySubmitted();
 
         const frameCounter = this._internalFrameCounter++;
 
@@ -4129,6 +4158,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public override dispose(): void {
         this._isDisposed = true;
+        // the commands not submitted yet never will be: their readbacks go on, and return nothing
+        this._resolveSubmitted?.();
         this.hideLoadingUI?.();
         this._timestampQuery?.dispose();
         this._mainTexture?.destroy();
