@@ -41,6 +41,33 @@ beforeEach(() => {
 afterEach(() => {
     Object.assign(KTX2Encoder, OriginalSettings);
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
+});
+
+it.each(["factory", "WASM fetch"])("retries lazy initialization after %s failure while sharing concurrent attempts", async (stage) => {
+    const originalFactory = KTX2Encoder.JSModule as () => unknown;
+    const factory = vi.fn(async () => originalFactory());
+    KTX2Encoder.JSModule = factory;
+    if (stage === "factory") {
+        factory.mockRejectedValueOnce(new Error("Temporary codec failure"));
+    } else {
+        KTX2Encoder.WasmBinary = null;
+        vi.stubGlobal(
+            "fetch",
+            vi
+                .fn()
+                .mockResolvedValueOnce(new Response(null, { status: 503 }))
+                .mockResolvedValue(new Response(new Uint8Array(8)))
+        );
+    }
+    const encoder = new KTX2Encoder();
+    const encode = () => encoder.encode(new Uint8Array(64), 4, 4, { usage: "data" });
+    const error = stage === "factory" ? "Temporary codec failure" : "503";
+    await Promise.all([expect(encode()).rejects.toThrow(error), expect(encode()).rejects.toThrow(error)]);
+    expect(factory).toHaveBeenCalledTimes(stage === "factory" ? 1 : 0);
+    await Promise.all([encode(), encode()]);
+    expect(factory).toHaveBeenCalledTimes(stage === "factory" ? 2 : 1);
+    expect(Native.encode).toHaveBeenCalledTimes(2);
 });
 
 it.each(["color", "data", "normal"] as const)("forces only %s-relevant defaults, preserves falsy values and allows clearing", async (usage) => {

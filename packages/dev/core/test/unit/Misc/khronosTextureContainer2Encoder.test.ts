@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { DefaultKTX2EncoderOptions, KhronosTextureContainer2Encoder, _GetKTX2TextureFlipY } from "core/Misc/khronosTextureContainer2Encoder";
-import { type KTX2EncoderWorkerRequest } from "core/Misc/khronosTextureContainer2EncoderWorker";
+import { KTX2EncoderWorkerFunction, type KTX2EncoderWorkerRequest } from "core/Misc/khronosTextureContainer2EncoderWorker";
 import { NullEngine } from "core/Engines/nullEngine";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
@@ -10,6 +10,7 @@ import { KTX2Encoder } from "../../../../../tools/ktx2Encoder/src/ktx2Encoder";
 
 class FakeWorker extends EventTarget {
     public static instances: FakeWorker[] = [];
+    public static initializationError: string | undefined;
     public messages: KTX2EncoderWorkerRequest[] = [];
     public dead = false;
     public terminate = vi.fn(() => (this.dead = true));
@@ -20,16 +21,17 @@ class FakeWorker extends EventTarget {
     public postMessage(message: KTX2EncoderWorkerRequest) {
         this.messages.push(message);
         if (!this.dead && message.action === "init") {
-            this.dispatchEvent(new MessageEvent("message", { data: { action: "init", id: message.id } }));
+            const data = FakeWorker.initializationError ? { action: "error", id: message.id, message: FakeWorker.initializationError } : { action: "init", id: message.id };
+            this.dispatchEvent(new MessageEvent("message", { data }));
         }
     }
     public get encodes() {
         return this.messages.filter((message) => message.action === "encode");
     }
-    public finish(error?: string) {
+    public finish(error?: string, fatal = false) {
         if (!this.dead) {
             const id = this.encodes.at(-1)!.id;
-            const data = error ? { action: "error", id, message: error } : { action: "encoded", id, data: new Uint8Array([7]) };
+            const data = error ? { action: "error", id, message: error, fatal } : { action: "encoded", id, data: new Uint8Array([7]) };
             this.dispatchEvent(new MessageEvent("message", { data }));
         }
     }
@@ -58,6 +60,7 @@ beforeEach(() => {
     KhronosTextureContainer2Encoder.WorkerPool = undefined;
     KhronosTextureContainer2Encoder.DefaultEncoderOptions = new DefaultKTX2EncoderOptions();
     FakeWorker.instances = [];
+    FakeWorker.initializationError = undefined;
     vi.useFakeTimers();
     vi.stubGlobal("Worker", FakeWorker);
     vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:encoder");
@@ -140,6 +143,50 @@ it("reuses a healthy worker after encode rejection and replaces defaults snapsho
     expect(worker.terminate).not.toHaveBeenCalled();
 });
 
+it.each(["WASM download", "initialization reply", "codec abort"])("replaces a worker after a failed %s", async (stage) => {
+    if (stage === "WASM download") {
+        vi.mocked(Tools.LoadFileAsync).mockRejectedValueOnce(new Error("Initialization failed"));
+    } else if (stage === "initialization reply") {
+        FakeWorker.initializationError = "Initialization failed";
+    }
+    const encoder = new KhronosTextureContainer2Encoder(1);
+    const first = ExpectFailureAsync(EncodeAsync(encoder), stage === "codec abort" ? "Aborted" : "Initialization failed");
+    await FlushAsync();
+    const failed = FakeWorker.instances[0];
+    if (stage === "codec abort") {
+        failed.finish("Aborted", true);
+    }
+    await first;
+    expect(failed.terminate).toHaveBeenCalledOnce();
+    FakeWorker.initializationError = undefined;
+    const next = EncodeAsync(encoder);
+    await FlushAsync();
+    expect(FakeWorker.instances).toHaveLength(2);
+    FakeWorker.instances[1].finish();
+    await expect(next).resolves.toEqual(new Uint8Array([7]));
+});
+
+it.each([new Error("Invalid input"), new WebAssembly.RuntimeError("Aborted")])("classifies worker encode failure %s", async (error) => {
+    vi.stubGlobal("KTX2ENCODER", { KTX2Encoder });
+    vi.stubGlobal("BASIS", () => {});
+    vi.stubGlobal("onmessage", undefined);
+    const post = vi.fn();
+    vi.stubGlobal("postMessage", post);
+    vi.spyOn(KTX2Encoder.prototype, "_initializeAsync").mockResolvedValue();
+    vi.spyOn(KTX2Encoder.prototype, "encode").mockRejectedValue(error);
+    const settings = { JSModule: KTX2Encoder.JSModule, WasmBinary: KTX2Encoder.WasmBinary };
+    try {
+        KTX2EncoderWorkerFunction();
+        onmessage!(new MessageEvent("message", { data: { action: "init", id: 1, wasmBinary: new ArrayBuffer(8) } }));
+        await FlushAsync();
+        onmessage!(new MessageEvent("message", { data: { action: "encode", id: 2, rgba: new Uint8Array(64), width: 4, height: 4, options: { usage: "data" } } }));
+        await FlushAsync();
+        expect(post).toHaveBeenLastCalledWith({ action: "error", id: 2, message: error.message, fatal: error instanceof WebAssembly.RuntimeError });
+    } finally {
+        Object.assign(KTX2Encoder, settings);
+    }
+});
+
 it("rejects cancellation promptly, skips queued work and drains the active job before reuse", async () => {
     const encoder = new KhronosTextureContainer2Encoder(1);
     const active = new AbortController();
@@ -180,9 +227,11 @@ it("keeps each job's injected pool and leaves failed caller workers caller-owned
     const pools = workers.map((worker) => new AutoReleaseWorkerPool(1, async () => worker as unknown as Worker));
     const disposals = pools.map((pool) => vi.spyOn(pool, "dispose"));
     KhronosTextureContainer2Encoder.WorkerPool = pools[0];
+    const firstEncoder = new KhronosTextureContainer2Encoder(-1);
+    const secondEncoder = new KhronosTextureContainer2Encoder({ workerPool: pools[1], numWorkers: -1 });
     texture.getInternalTexture()!.isReady = false;
-    const rejected = ExpectFailureAsync(EncodeAsync(new KhronosTextureContainer2Encoder(-1)));
-    const second = EncodeAsync(new KhronosTextureContainer2Encoder({ workerPool: pools[1], numWorkers: -1 }));
+    const rejected = ExpectFailureAsync(EncodeAsync(firstEncoder));
+    const second = EncodeAsync(secondEncoder);
     texture.getInternalTexture()!.isReady = true;
     texture.onLoadObservable.notifyObservers(texture);
     await FlushAsync();
@@ -196,6 +245,12 @@ it("keeps each job's injected pool and leaves failed caller workers caller-owned
     await expect(second).resolves.toEqual(new Uint8Array([7]));
     workers.forEach((worker) => expect(worker.terminate).not.toHaveBeenCalled());
     disposals.forEach((dispose) => expect(dispose).not.toHaveBeenCalled());
+    KhronosTextureContainer2Encoder.WorkerPool = undefined;
+    const automatic = EncodeAsync(new KhronosTextureContainer2Encoder(1));
+    await FlushAsync();
+    expect(FakeWorker.instances).toHaveLength(3);
+    FakeWorker.instances[2].finish();
+    await expect(automatic).resolves.toEqual(new Uint8Array([7]));
     pools.forEach((pool) => pool.dispose());
 });
 
@@ -207,25 +262,82 @@ it("captures main-thread dependencies at construction and refreshes defaults aft
     dependencies.jsEncoderModule = { KTX2Encoder: class extends KTX2Encoder {} };
     dependencies.jsBasisEncoder = vi.fn();
     dependencies.wasmBasisEncoder = new ArrayBuffer(16);
+    const snapshots: (typeof KTX2Encoder.DefaultEncoderOptions)[] = [];
     vi.spyOn(KTX2Encoder.prototype, "encode").mockImplementation(async function (this: KTX2Encoder) {
         expect(this.constructor).toBe(KTX2Encoder);
+        snapshots.push(KTX2Encoder.DefaultEncoderOptions);
+        await new Promise<void>((resolve) => setTimeout(resolve, 1));
+        expect(KTX2Encoder.DefaultEncoderOptions).toBe(standaloneDefaults);
         return new Uint8Array([7]);
     });
     const originalDefaults = KTX2Encoder.DefaultEncoderOptions;
+    const standaloneDefaults = { uastcQualityLevel: 3 };
+    KTX2Encoder.DefaultEncoderOptions = standaloneDefaults;
     try {
         for (const value of [0, undefined]) {
             KhronosTextureContainer2Encoder.DefaultEncoderOptions.uastcQualityLevel = value;
             const result = EncodeAsync(encoder);
             await FlushAsync();
+            expect(KTX2Encoder.DefaultEncoderOptions).toBe(standaloneDefaults);
+            await vi.advanceTimersByTimeAsync(1);
             await expect(result).resolves.toEqual(new Uint8Array([7]));
-            expect(KTX2Encoder.DefaultEncoderOptions).toEqual(value === undefined ? {} : { uastcQualityLevel: value });
         }
+        expect(snapshots).toEqual([{ uastcQualityLevel: 0 }, {}]);
         expect(factory).toHaveBeenCalledExactlyOnceWith({ wasmBinary: binary });
         expect(dependencies.jsBasisEncoder).not.toHaveBeenCalled();
     } finally {
         KTX2Encoder.DefaultEncoderOptions = originalDefaults;
     }
 });
+
+it("retries failed main-thread initialization without losing captured settings or sharing", async () => {
+    vi.mocked(Tools.LoadFileAsync).mockRejectedValueOnce(new Error("Temporary codec failure"));
+    const factory = vi.fn(() => ({ initializeBasis: vi.fn() }));
+    const dependencies = { jsEncoderModule: { KTX2Encoder }, jsBasisEncoder: factory };
+    const encoder = new KhronosTextureContainer2Encoder({ numWorkers: 0, binariesAndModulesContainer: dependencies });
+    await Promise.all([ExpectFailureAsync(EncodeAsync(encoder), "Temporary codec failure"), ExpectFailureAsync(EncodeAsync(encoder), "Temporary codec failure")]);
+    expect(factory).not.toHaveBeenCalled();
+    dependencies.jsBasisEncoder = vi.fn();
+    vi.spyOn(KTX2Encoder.prototype, "encode").mockResolvedValue(new Uint8Array([7]));
+    const retry = EncodeAsync(new KhronosTextureContainer2Encoder(0));
+    const concurrent = EncodeAsync(encoder);
+    await vi.advanceTimersByTimeAsync(1);
+    await expect(retry).resolves.toEqual(new Uint8Array([7]));
+    await expect(concurrent).resolves.toEqual(new Uint8Array([7]));
+    expect(factory).toHaveBeenCalledOnce();
+    expect(Tools.LoadFileAsync).toHaveBeenCalledTimes(2);
+    expect(dependencies.jsBasisEncoder).not.toHaveBeenCalled();
+});
+
+it("does not evict in-flight main-thread initialization when a caller cancels", async () => {
+    let initialize!: (module: { initializeBasis: () => void }) => void;
+    const factory = vi.fn(() => new Promise((resolve) => (initialize = resolve)));
+    const encoder = new KhronosTextureContainer2Encoder({
+        numWorkers: 0,
+        binariesAndModulesContainer: { jsEncoderModule: { KTX2Encoder }, jsBasisEncoder: factory, wasmBasisEncoder: new ArrayBuffer(8) },
+    });
+    vi.spyOn(KTX2Encoder.prototype, "encode").mockResolvedValue(new Uint8Array([7]));
+    const controller = new AbortController();
+    const cancelled = ExpectAbortAsync(EncodeAsync(encoder, controller.signal));
+    await FlushAsync();
+    controller.abort();
+    await cancelled;
+    const next = EncodeAsync(encoder);
+    initialize({ initializeBasis: vi.fn() });
+    await FlushAsync();
+    await expect(next).resolves.toEqual(new Uint8Array([7]));
+    expect(factory).toHaveBeenCalledOnce();
+});
+
+it.each([Constants.TEXTUREFORMAT_R_INTEGER, Constants.TEXTUREFORMAT_RG_INTEGER, Constants.TEXTUREFORMAT_RGB_INTEGER, Constants.TEXTUREFORMAT_RGBA_INTEGER])(
+    "rejects integer format %s before readback",
+    async (format) => {
+        texture.getInternalTexture()!.format = format;
+        await expect(EncodeAsync(new KhronosTextureContainer2Encoder(1))).rejects.toThrow("integer texture formats");
+        expect(texture.readPixels).not.toHaveBeenCalled();
+        expect(FakeWorker.instances).toHaveLength(0);
+    }
+);
 
 it("encodes WebGPU BGRA readback as RGBA", async () => {
     vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);

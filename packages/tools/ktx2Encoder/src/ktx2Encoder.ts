@@ -130,7 +130,15 @@ export class KTX2Encoder {
 
     /** @internal */
     public async _initializeAsync(): Promise<void> {
-        await (this._initializationPromise ??= this._loadAsync());
+        const initialization = (this._initializationPromise ??= this._loadAsync());
+        try {
+            await initialization;
+        } catch (error) {
+            if (this._initializationPromise === initialization) {
+                this._initializationPromise = undefined;
+            }
+            throw error;
+        }
     }
 
     private async _loadAsync(): Promise<void> {

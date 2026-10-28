@@ -140,7 +140,7 @@ export interface IKhronosTextureContainer2EncoderOptions {
      */
     numWorkers?: number;
     /**
-     * Worker pool whose workers are already initialized with the encoder worker protocol. If set, `numWorkers` is ignored.
+     * Worker pool captured by this instance, whose workers are already initialized with the encoder worker protocol. If set, `numWorkers` is ignored.
      * This release has no public worker bootstrap.
      * @experimental
      */
@@ -216,6 +216,13 @@ function ValidateTexture(texture: BaseTexture, allowUninitialized: boolean): voi
     if (texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE && (!allowUninitialized || hasKnownType)) {
         throw new Error("KTX2 encoding requires an unsigned byte texture.");
     }
+    switch (texture.textureFormat) {
+        case Constants.TEXTUREFORMAT_R_INTEGER:
+        case Constants.TEXTUREFORMAT_RG_INTEGER:
+        case Constants.TEXTUREFORMAT_RGB_INTEGER:
+        case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+            throw new Error("KTX2 encoding does not support integer texture formats.");
+    }
     if (internalTexture?._premulAlpha) {
         throw new Error("KTX2 encoding does not support premultiplied alpha.");
     }
@@ -268,7 +275,11 @@ async function PostRequestAsync(worker: Worker, request: KTX2EncoderWorkerReques
                 return;
             }
             if (reply.action === "error") {
-                fail(new Error(reply.message));
+                const error = new Error(reply.message);
+                fail(error);
+                if (reply.fatal) {
+                    AutomaticWorkers.get(worker)?.fail(error);
+                }
             } else {
                 cleanup();
                 resolve(reply);
@@ -364,6 +375,7 @@ async function EnsureWorkerReadyAsync(worker: Worker): Promise<void> {
     try {
         await state.ready;
     } catch (error) {
+        state.fail(ToError(error));
         state.ready = undefined;
         throw error;
     }
@@ -419,7 +431,7 @@ export class KhronosTextureContainer2Encoder {
 
     /**
      * Worker pool to use instead of creating one. Its workers must already be initialized with the encoder worker protocol;
-     * this release has no public worker bootstrap. The encoder never disposes this pool.
+     * this release has no public worker bootstrap. Each instance captures this setting at construction and never disposes the pool.
      * @experimental
      */
     public static WorkerPool?: AutoReleaseWorkerPool;
@@ -440,6 +452,7 @@ export class KhronosTextureContainer2Encoder {
     private static _MainThreadSettings?: IEncoderSettings;
     private static _MainThreadEncoderPromise?: Promise<IMainThreadEncoder>;
     private static readonly _MainThreadLock = new AsyncLock();
+    private readonly _workerPool?: AutoReleaseWorkerPool;
 
     private static _Initialize(numWorkers: number, dependencies: EncoderDependencies | undefined): void {
         if (KhronosTextureContainer2Encoder._WorkerPoolPromise || KhronosTextureContainer2Encoder._MainThreadSettings) {
@@ -515,9 +528,8 @@ export class KhronosTextureContainer2Encoder {
      */
     public constructor(numWorkersOrOptions: number | IKhronosTextureContainer2EncoderOptions = KhronosTextureContainer2Encoder.DefaultNumWorkers) {
         const options = typeof numWorkersOrOptions === "number" ? { numWorkers: numWorkersOrOptions } : numWorkersOrOptions;
-        const workerPool = options.workerPool ?? KhronosTextureContainer2Encoder.WorkerPool;
-        if (workerPool) {
-            KhronosTextureContainer2Encoder._WorkerPoolPromise = Promise.resolve(workerPool);
+        this._workerPool = options.workerPool ?? KhronosTextureContainer2Encoder.WorkerPool;
+        if (this._workerPool) {
             return;
         }
         const numWorkers = options.numWorkers ?? KhronosTextureContainer2Encoder.DefaultNumWorkers;
@@ -545,7 +557,7 @@ export class KhronosTextureContainer2Encoder {
         if (signal?.aborted) {
             throw AbortError();
         }
-        const workerPoolPromise = KhronosTextureContainer2Encoder._WorkerPoolPromise;
+        const workerPoolPromise = this._workerPool ? Promise.resolve(this._workerPool) : KhronosTextureContainer2Encoder._WorkerPoolPromise;
         const settings = KhronosTextureContainer2Encoder._MainThreadSettings;
         if (!workerPoolPromise && !settings) {
             throw new Error("KTX2 encoder is not initialized.");
@@ -639,16 +651,30 @@ export class KhronosTextureContainer2Encoder {
         options: IKTX2EncoderOptions,
         signal: AbortSignal | undefined
     ): Promise<Uint8Array> {
-        const { module, encoder } = await WithAbortAsync(
-            async () => await (KhronosTextureContainer2Encoder._MainThreadEncoderPromise ??= KhronosTextureContainer2Encoder._CreateMainThreadEncoderAsync(settings)),
-            signal
-        );
+        const { module, encoder } = await WithAbortAsync(async () => {
+            const initialization = (KhronosTextureContainer2Encoder._MainThreadEncoderPromise ??= KhronosTextureContainer2Encoder._CreateMainThreadEncoderAsync(settings));
+            try {
+                return await initialization;
+            } catch (error) {
+                if (KhronosTextureContainer2Encoder._MainThreadEncoderPromise === initialization) {
+                    KhronosTextureContainer2Encoder._MainThreadEncoderPromise = undefined;
+                }
+                throw error;
+            }
+        }, signal);
         return await WithAbortAsync(async (abortSignal) => {
             return await KhronosTextureContainer2Encoder._MainThreadLock.lockAsync(async () => {
                 await new Promise<void>((resolve) => setTimeout(resolve, 0));
                 abortSignal.throwIfAborted();
-                module.KTX2Encoder.DefaultEncoderOptions = KhronosTextureContainer2Encoder.DefaultEncoderOptions._getKTX2EncoderOptions();
-                return await encoder.encode(rgba, width, height, options);
+                const defaults = module.KTX2Encoder.DefaultEncoderOptions;
+                let encoding: Promise<Uint8Array>;
+                try {
+                    module.KTX2Encoder.DefaultEncoderOptions = KhronosTextureContainer2Encoder.DefaultEncoderOptions._getKTX2EncoderOptions();
+                    encoding = encoder.encode(rgba, width, height, options);
+                } finally {
+                    module.KTX2Encoder.DefaultEncoderOptions = defaults;
+                }
+                return await encoding;
             }, abortSignal);
         }, signal);
     }

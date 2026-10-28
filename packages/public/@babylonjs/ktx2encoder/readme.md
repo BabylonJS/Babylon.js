@@ -24,7 +24,7 @@ const encoder = new KTX2Encoder();
 const ktx2 = await encoder.encode(rgba, width, height, { usage: "color" });
 ```
 
-Configure `JSModule`, `WasmBinary`, `JSModuleURL`, and `WasmModuleURL` before constructing an encoder. Each instance captures those settings and initializes lazily once. Injected resources take precedence over URLs. Each call releases its native encoder; the standalone instance has no `dispose` method.
+Configure `JSModule`, `WasmBinary`, `JSModuleURL`, and `WasmModuleURL` before constructing an encoder. Each instance captures those settings and initializes lazily, sharing concurrent attempts and retrying after initialization failures. Injected resources take precedence over URLs. Each call releases its native encoder; the standalone instance has no `dispose` method.
 
 ## Options and defaults
 
@@ -39,6 +39,8 @@ KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 200, zstandard: false }
 ## Babylon textures
 
 Core's `KhronosTextureContainer2Encoder` configuration is groundwork for the upcoming glTF exporter, which will be the public entry point for encoding Babylon textures. This release has no public texture-encoding helper and no public worker bootstrap.
+
+The internal adapter accepts 2D unsigned-byte textures and explicitly rejects integer texture formats before readback. Injected worker pools are captured per instance and do not replace the shared automatic pool. Automatic workers are replaced after initialization failures or fatal WASM errors; ordinary encode errors and cancellation preserve healthy workers.
 
 ## Limits
 

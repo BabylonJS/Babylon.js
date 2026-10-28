@@ -32,7 +32,8 @@ export type KTX2EncoderWorkerRequest =
     | { action: "encode"; id: number; rgba: Uint8Array; width: number; height: number; options: IKTX2EncoderOptions };
 
 /** @internal */
-export type KTX2EncoderWorkerReply = { action: "init"; id: number } | { action: "encoded"; id: number; data: Uint8Array } | { action: "error"; id: number; message: string };
+export type KTX2EncoderWorkerReply =
+    { action: "init"; id: number } | { action: "encoded"; id: number; data: Uint8Array } | { action: "error"; id: number; message: string; fatal?: boolean };
 
 declare const KTX2ENCODER: IKTX2EncoderModule;
 declare const BASIS: unknown;
@@ -53,7 +54,8 @@ export function KTX2EncoderWorkerFunction(): void {
             }
             return;
         }
-        const fail = (error: unknown) => postMessage({ action: "error", id: request.id, message: error instanceof Error ? error.message : String(error) });
+        const fail = (error: unknown) =>
+            postMessage({ action: "error", id: request.id, message: error instanceof Error ? error.message : String(error), fatal: error instanceof WebAssembly.RuntimeError });
         try {
             if (request.action === "init") {
                 if (typeof KTX2ENCODER === "undefined") {

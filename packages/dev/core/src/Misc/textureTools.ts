@@ -182,6 +182,8 @@ export function ApplyPostProcess(
 /** @internal */
 export function _IsCompressedTextureFormat(format: number): boolean {
     switch (format) {
+        case 0x8c00: // COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+        case 0x8c02: // COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
         case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
         case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
@@ -246,8 +248,9 @@ export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: Abort
     if (texture.isReady()) {
         return;
     }
-    if (texture.loadingError) {
-        throw new Error(texture.errorObject?.message || `Texture ${texture.name} errored while loading.`);
+    const internalTexture = texture.getInternalTexture();
+    if (texture.loadingError || internalTexture?._loadError) {
+        throw new Error(texture.errorObject?.message || internalTexture?._loadError?.message || `Texture ${texture.name} errored while loading.`);
     }
     const onLoadObservable = (texture as Texture).onLoadObservable ?? texture._texture?.onLoadedObservable;
     if (!onLoadObservable) {
@@ -257,6 +260,7 @@ export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: Abort
         const cleanup = () => {
             onLoadObservable.removeCallback(onLoad);
             Texture.OnTextureLoadErrorObservable.remove(onError);
+            internalTexture?.onErrorObservable.remove(onInternalError ?? null);
             signal?.removeEventListener("abort", onAbort);
             texture.onDisposeObservable.remove(onDispose);
         };
@@ -274,6 +278,7 @@ export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: Abort
                 fail(new Error(texture.errorObject?.message || `Texture ${texture.name} errored while loading.`));
             }
         });
+        const onInternalError = internalTexture?.onErrorObservable.add((error) => fail(new Error(error.message || `Texture ${texture.name} errored while loading.`)));
         const onDispose = texture.onDisposeObservable.add(() => fail(new Error(`Texture ${texture.name} was disposed while waiting for readiness.`)));
         onLoadObservable.addOnce(onLoad);
         signal?.addEventListener("abort", onAbort, { once: true });

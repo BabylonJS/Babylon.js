@@ -67,18 +67,8 @@ for (const engineName of ["webgl2", "webgpu"] as const) {
     });
 }
 
-test("KTX2 texture encoding rejects a load failure after readiness waiting starts", async ({ page }) => {
+test("KTX2 texture encoding rejects integer textures before WebGL2 readback", async ({ page }) => {
     const { baseUrl } = getGlobalConfig();
-    let failImage!: () => void;
-    const imageRequested = new Promise<void>((resolve) => {
-        page.route("**/ktx2-missing-image.png", async (route) => {
-            await new Promise<void>((release) => {
-                failImage = release;
-                resolve();
-            });
-            await route.fulfill({ status: 404, body: "Not found" });
-        });
-    });
     await page.goto(baseUrl + "/empty.html");
     await page.evaluate(evaluateInitEngineForVisualization, {
         engineName: "webgl2",
@@ -87,31 +77,87 @@ test("KTX2 texture encoding rejects a load failure after readiness waiting start
         useNonCompatibilityMode: "false",
         baseUrl,
     });
-    const result = page.evaluate(async () => {
+    const result = await page.evaluate(async () => {
         const B = window.BABYLON;
         const scene = new B.Scene(window.engine!);
-        const texture = new B.Texture("/ktx2-missing-image.png", scene);
-        const observersBefore = B.Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length;
+        const texture = new B.RawTexture(new Uint8Array(64).fill(80), 4, 4, B.Constants.TEXTUREFORMAT_RGBA_INTEGER, scene, false, false, B.Texture.NEAREST_SAMPLINGMODE);
+        const gl = window.canvas!.getContext("webgl2")!;
         try {
-            await new B.KhronosTextureContainer2Encoder(0)._encodeAsync(texture, { usage: "color" });
-            throw new Error("Encoding unexpectedly succeeded");
+            const ready = texture.isReady();
+            await new B.KhronosTextureContainer2Encoder(0)._encodeAsync(texture, { usage: "data" });
+            return { ready, error: "Encoding unexpectedly succeeded", glError: gl.getError() };
         } catch (error) {
-            return {
-                error: String(error),
-                loadingError: texture.loadingError,
-                cleaned: B.Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length === observersBefore,
-                loadCleaned: !texture.onLoadObservable.hasObservers(),
-            };
+            return { ready: texture.isReady(), error: String(error), glError: gl.getError() };
         } finally {
             scene.dispose();
             window.engine!.dispose();
             window.engine = null;
         }
     });
-    await imageRequested;
-    failImage();
-    expect(await result).toMatchObject({ error: expect.stringContaining("ktx2-missing-image.png"), loadingError: true, cleaned: true, loadCleaned: true });
+    expect(result).toEqual({ ready: true, error: expect.stringContaining("integer texture formats"), glError: 0 });
 });
+
+for (const shared of [false, true]) {
+    test(`KTX2 texture encoding rejects a ${shared ? "shared " : ""}load failure after readiness waiting starts`, async ({ page }) => {
+        const { baseUrl } = getGlobalConfig();
+        let failImage!: () => void;
+        const imageRequested = new Promise<void>((resolve) => {
+            page.route("**/ktx2-missing-image.png", async (route) => {
+                await new Promise<void>((release) => {
+                    failImage = release;
+                    resolve();
+                });
+                await route.fulfill({ status: 404, body: "Not found" });
+            });
+        });
+        await page.goto(baseUrl + "/empty.html");
+        await page.evaluate(evaluateInitEngineForVisualization, {
+            engineName: "webgl2",
+            useLargeWorldRendering: false,
+            useReverseDepthBuffer: "false",
+            useNonCompatibilityMode: "false",
+            baseUrl,
+        });
+        const result = page.evaluate(async (shared) => {
+            const B = window.BABYLON;
+            const scene = new B.Scene(window.engine!);
+            scene.useDelayedTextureLoading = shared;
+            const texture = new B.Texture("/ktx2-missing-image.png", scene);
+            scene.useDelayedTextureLoading = false;
+            const original = shared ? new B.Texture("/ktx2-missing-image.png", scene) : texture;
+            const internal = original.getInternalTexture()!;
+            const internalObserversBefore = internal.onErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length;
+            const observersBefore = B.Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length;
+            try {
+                await new B.KhronosTextureContainer2Encoder(0)._encodeAsync(texture, { usage: "color" });
+                throw new Error("Encoding unexpectedly succeeded");
+            } catch (error) {
+                return {
+                    error: String(error),
+                    loadingError: texture.loadingError,
+                    cleaned: B.Texture.OnTextureLoadErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length === observersBefore,
+                    loadCleaned: !texture.onLoadObservable.hasObservers(),
+                    shared: texture.getInternalTexture() === internal,
+                    internalCleaned: internal.onErrorObservable.observers.filter((observer) => !observer._willBeUnregistered).length === internalObserversBefore,
+                };
+            } finally {
+                scene.dispose();
+                window.engine!.dispose();
+                window.engine = null;
+            }
+        }, shared);
+        await imageRequested;
+        failImage();
+        expect(await result).toMatchObject({
+            error: expect.stringContaining("ktx2-missing-image.png"),
+            loadingError: !shared,
+            cleaned: true,
+            loadCleaned: true,
+            shared: true,
+            internalCleaned: true,
+        });
+    });
+}
 
 test("KTX2 encoder lazily loads default assets and matches main-thread texture encoding", async ({ page }) => {
     const { baseUrl } = getGlobalConfig();
