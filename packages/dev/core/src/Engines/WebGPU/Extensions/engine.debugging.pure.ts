@@ -107,6 +107,11 @@ export function RegisterWebGPUDebugging(): void {
             return;
         }
 
+        if (this._currentRenderPass) {
+            // Record batched draws before opening the group so they stay attributed to the enclosing scope.
+            this._flushRenderPassCommands();
+        }
+
         const debugCommands = this._currentRenderPass ?? this._renderEncoder;
 
         debugCommands.pushDebugGroup(groupName);
@@ -127,6 +132,11 @@ export function RegisterWebGPUDebugging(): void {
     WebGPUEngine.prototype._debugPopGroup = function (): void {
         if (!this._enableGPUDebugMarkers) {
             return;
+        }
+
+        if (this._currentRenderPass) {
+            // Record batched draws before closing the group so they stay attributed to it.
+            this._flushRenderPassCommands();
         }
 
         const debugCommands = this._currentRenderPass ?? this._renderEncoder;
@@ -177,6 +187,11 @@ export function RegisterWebGPUDebugging(): void {
     WebGPUEngine.prototype._debugInsertMarker = function (text: string): void {
         if (!this._enableGPUDebugMarkers) {
             return;
+        }
+
+        if (this._currentRenderPass) {
+            // Keep the marker positioned after the draws that were issued before it.
+            this._flushRenderPassCommands();
         }
 
         const debugCommands = this._currentRenderPass ?? this._renderEncoder;
