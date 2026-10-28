@@ -451,12 +451,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private _renderPassCommandRecorderProvider: Nullable<IWebGPURenderPassCommandRecorderProvider> = null;
-    private _renderPassCommandLowering = new WebGPURenderPassCommandStream({
-        getProvider: () => this._renderPassCommandRecorderProvider,
-    });
-    private _renderPassDrawBatcher = new RenderCommandBatcher<IWebGPURenderPassDrawCommand>(this._renderPassCommandLowering, ApplyWebGPURenderPassDrawCommand);
-    private readonly _scratchIndexedDrawCommand = CreateWebGPURenderPassIndexedDrawCommand();
-    private readonly _scratchNonIndexedDrawCommand = CreateWebGPURenderPassNonIndexedDrawCommand();
+    private _renderPassCommandBatching: Nullable<{
+        batcher: RenderCommandBatcher<IWebGPURenderPassDrawCommand>;
+        indexedDrawCommand: ReturnType<typeof CreateWebGPURenderPassIndexedDrawCommand>;
+        nonIndexedDrawCommand: ReturnType<typeof CreateWebGPURenderPassNonIndexedDrawCommand>;
+    }> = null;
     private _dummyIndexBuffer: WebGPUDataBuffer;
     private _colorWriteLocal = true;
     private _forceEnableEffect = false;
@@ -468,7 +467,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * where every render-pass encoder call crosses the JS/native boundary, install a provider to
      * amortize that cost across many draws — the same pattern the bgfx-based NativeEngine uses with
      * its CommandBufferEncoder. When no provider is set (the default, and always the case in
-     * browsers), draws are submitted through the standard WebGPU encoder calls.
+     * browsers), draws are submitted directly through the standard WebGPU encoder calls without
+     * constructing batched draw commands. Command-stream storage is allocated only when a provider
+     * is first installed.
      */
     public get renderPassCommandRecorderProvider(): Nullable<IWebGPURenderPassCommandRecorderProvider> {
         return this._renderPassCommandRecorderProvider;
@@ -478,6 +479,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         // Record anything batched under the previous provider before swapping contracts.
         this._flushRenderPassCommands();
         this._renderPassCommandRecorderProvider = provider;
+        if (provider && !this._renderPassCommandBatching) {
+            const lowering = new WebGPURenderPassCommandStream({
+                getProvider: () => this._renderPassCommandRecorderProvider,
+            });
+            this._renderPassCommandBatching = {
+                batcher: new RenderCommandBatcher<IWebGPURenderPassDrawCommand>(lowering, ApplyWebGPURenderPassDrawCommand),
+                indexedDrawCommand: CreateWebGPURenderPassIndexedDrawCommand(),
+                nonIndexedDrawCommand: CreateWebGPURenderPassNonIndexedDrawCommand(),
+            };
+        }
     }
 
     /**
@@ -1451,7 +1462,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /** @internal */
     public override _flushRenderPassCommands(): void {
-        this._renderPassDrawBatcher.flush();
+        this._renderPassCommandBatching?.batcher.flush();
     }
 
     //------------------------------------------------------------------------------
@@ -4035,34 +4046,69 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
         }
 
-        // Reused scratch commands keep this hot path allocation-free; both the lowering and the
-        // replay paths consume the command synchronously, so the instances never escape this call.
-        let drawCommand: IWebGPURenderPassDrawCommand;
-        if (drawKind === WebGPURenderPassDrawKind.INDEXED) {
-            const indexedDrawCommand = this._scratchIndexedDrawCommand;
-            indexedDrawCommand.indexBuffer = this._currentIndexBuffer!;
-            indexedDrawCommand.indexFormat = this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
-            drawCommand = indexedDrawCommand;
-        } else {
-            drawCommand = this._scratchNonIndexedDrawCommand;
-        }
-        drawCommand.renderPass = renderPass2;
-        drawCommand.pipeline = pipeline;
-        drawCommand.bindGroups = bindGroups;
-        drawCommand.vertexBuffers = vertexBuffers;
-        drawCommand.count = count;
-        drawCommand.instancesCount = instancesCount;
-        drawCommand.start = start;
-        drawCommand.indirectDrawBuffer = indirectDrawBuffer;
+        const commandBatching = this._renderPassCommandRecorderProvider && this._renderPassCommandBatching;
+        if (commandBatching && this.compatibilityMode && !this._snapshotRendering.record) {
+            let drawCommand: IWebGPURenderPassDrawCommand;
+            if (drawKind === WebGPURenderPassDrawKind.INDEXED) {
+                const indexedDrawCommand = commandBatching.indexedDrawCommand;
+                indexedDrawCommand.indexBuffer = this._currentIndexBuffer!;
+                indexedDrawCommand.indexFormat = this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
+                drawCommand = indexedDrawCommand;
+            } else {
+                drawCommand = commandBatching.nonIndexedDrawCommand;
+            }
+            drawCommand.renderPass = renderPass2;
+            drawCommand.pipeline = pipeline;
+            drawCommand.bindGroups = bindGroups;
+            drawCommand.vertexBuffers = vertexBuffers;
+            drawCommand.count = count;
+            drawCommand.instancesCount = instancesCount;
+            drawCommand.start = start;
+            drawCommand.indirectDrawBuffer = indirectDrawBuffer;
 
-        if (this.compatibilityMode && !this._snapshotRendering.record) {
-            this._renderPassDrawBatcher.submit(drawCommand);
+            commandBatching.batcher.submit(drawCommand);
             this._reportDrawCall();
             return;
         }
 
-        this._flushRenderPassCommands();
-        ApplyWebGPURenderPassDrawCommand(drawCommand);
+        // A provider can have pending compatibility-mode draws when switching to bundle recording.
+        if (commandBatching) {
+            commandBatching.batcher.flush();
+        }
+
+        renderPass2.setPipeline(pipeline);
+
+        if (this._currentIndexBuffer) {
+            renderPass2.setIndexBuffer(
+                this._currentIndexBuffer.underlyingResource,
+                this._currentIndexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16,
+                0
+            );
+        }
+
+        for (let index = 0; index < vertexBuffers.length; index++) {
+            const vertexBuffer = vertexBuffers[index];
+            const buffer = vertexBuffer.effectiveBuffer;
+            if (buffer) {
+                renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset);
+            }
+        }
+
+        for (let i = 0; i < bindGroups.length; i++) {
+            renderPass2.setBindGroup(i, bindGroups[i]);
+        }
+
+        if (indirectDrawBuffer) {
+            if (drawKind === WebGPURenderPassDrawKind.INDEXED) {
+                renderPass2.drawIndexedIndirect(indirectDrawBuffer, 0);
+            } else {
+                renderPass2.drawIndirect(indirectDrawBuffer, 0);
+            }
+        } else if (drawKind === WebGPURenderPassDrawKind.INDEXED) {
+            renderPass2.drawIndexed(count, instancesCount || 1, start, 0, 0);
+        } else {
+            renderPass2.draw(count, instancesCount || 1, start, 0);
+        }
 
         if (nonCompatMode) {
             this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
