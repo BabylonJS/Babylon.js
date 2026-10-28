@@ -21,12 +21,16 @@ const read = async (bytes: ArrayBuffer, width: number, height: number, bytesPerR
     )) as Float32Array;
 };
 
+// Float16Array is missing from some supported runtimes (Node 22): the cases that need the native one are skipped there, the fallback's
+// always run
+const hasFloat16Array = typeof (globalThis as any).Float16Array !== "undefined";
+
 describe("WebGPU half-float readback", () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
 
-    it("converts with the browser's Float16Array where it exists, once per readback", async () => {
+    it.skipIf(!hasFloat16Array)("converts with the browser's Float16Array where it exists, once per readback", async () => {
         const native = (globalThis as any).Float16Array;
         let made = 0;
         vi.stubGlobal(
@@ -50,6 +54,9 @@ describe.each([
     ["with Float16Array", false],
     ["without Float16Array", true],
 ])("WebGPU half-float readback, %s", (_, withoutFloat16Array) => {
+    // with Float16Array: only where the runtime has it
+    const skipNative = !withoutFloat16Array && !hasFloat16Array;
+
     beforeEach(() => {
         if (withoutFloat16Array) {
             vi.stubGlobal("Float16Array", undefined);
@@ -60,7 +67,7 @@ describe.each([
         vi.unstubAllGlobals();
     });
 
-    it("converts every half-float bit pattern to the value FromHalfFloat gives", async () => {
+    it.skipIf(skipNative)("converts every half-float bit pattern to the value FromHalfFloat gives", async () => {
         const patterns = Uint16Array.from({ length: 65536 }, (_, i) => i);
         // 16384 RGBA texels in one row
         const data = await read(patterns.buffer, 16384, 1, 16384 * 8, 16384 * 8);
@@ -76,7 +83,7 @@ describe.each([
         expect(differing).toBe(0);
     });
 
-    it("gives zeros, infinities, NaN, subnormals and the largest values", async () => {
+    it.skipIf(skipNative)("gives zeros, infinities, NaN, subnormals and the largest values", async () => {
         const values = new Uint16Array([0x0000, 0x8000, 0x7c00, 0xfc00, 0x7e00, 0x0001, 0x8001, 0x03ff, 0x0400, 0x7bff, 0xfbff, 0x3c00]);
         const data = await read(values.buffer, 3, 1, 24, 24);
 
@@ -94,7 +101,7 @@ describe.each([
         expect(data[11]).toBe(1);
     });
 
-    it("writes into a given destination as many values as it holds", async () => {
+    it.skipIf(skipNative)("writes into a given destination as many values as it holds", async () => {
         const values = Uint16Array.from({ length: 8 }, (_, i) => 0x3c00 + i);
         const destination = new Float32Array(6).fill(-7);
 
@@ -104,7 +111,7 @@ describe.each([
         expect(Array.from(destination)).toEqual(Array.from(values.subarray(0, 6), (value) => FromHalfFloat(value)));
     });
 
-    it("drops the padding of rows aligned to 256 bytes", async () => {
+    it.skipIf(skipNative)("drops the padding of rows aligned to 256 bytes", async () => {
         // 2 rows of 3 RGBA texels (24 bytes), each row starting every 256 bytes; the padding holds NaN
         const width = 3,
             height = 2,
