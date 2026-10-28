@@ -15,6 +15,8 @@ import { type IntersectionInfo } from "../Collisions/intersectionInfo";
 import { type ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { type Material } from "../Materials/material.pure";
 import { type MaterialDefines } from "../Materials/materialDefines";
+import { type MultiMaterial } from "../Materials/multiMaterial.pure";
+import { type DrawWrapper } from "../Materials/drawWrapper";
 import { type Light } from "../Lights/light";
 import { type Skeleton } from "../Bones/skeleton";
 import { type MorphTargetManager } from "../Morph/morphTargetManager";
@@ -816,6 +818,42 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         if (material && material.meshMap) {
             material.meshMap[this.uniqueId] = this;
         }
+    }
+
+    /**
+     * Checks whether a submesh rendered by this mesh can resolve to the given material in a render pass it has a draw wrapper for.
+     * SubMesh.getMaterial resolves a pass to the mesh's material for that pass (or its material), the scene's default material when
+     * there is none, or a sub-material of a multi-material: any other material can never resolve to the given one. A mesh that
+     * customizes getMaterialForRenderPass is always a candidate.
+     * @param material defines the material to check
+     * @param drawWrappers defines the draw wrappers of the submesh, indexed by render pass id
+     * @returns false when no render pass with a draw wrapper can resolve to the material
+     * @internal
+     */
+    public _mayRenderWithMaterial(material: Material, drawWrappers: Array<DrawWrapper>): boolean {
+        if (this.getMaterialForRenderPass !== AbstractMesh.prototype.getMaterialForRenderPass) {
+            return true;
+        }
+
+        const meshMaterial = this.material;
+        if (meshMaterial === material || !meshMaterial || (meshMaterial as MultiMaterial).getSubMaterial !== undefined) {
+            return true;
+        }
+
+        const materialForRenderPass = this._internalAbstractMeshDataInfo._materialForRenderPass;
+        if (materialForRenderPass) {
+            // The array is indexed by render pass id and keeps its length when an override is removed: only the passes with a draw
+            // wrapper matter
+            const passCount = Math.min(drawWrappers.length, materialForRenderPass.length);
+            for (let passId = 0; passId < passCount; passId++) {
+                const passMaterial = materialForRenderPass[passId];
+                if (passMaterial && drawWrappers[passId] && (passMaterial === material || (passMaterial as MultiMaterial).getSubMaterial !== undefined)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1873,6 +1911,12 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             return null;
         }
 
+        const transform = !!(
+            (options.applyMorph && this.morphTargetManager) ||
+            (options.applySkeleton && this.skeleton) ||
+            (options.applyBakedVertexAnimation && this.bakedVertexAnimationManager?.isEnabled)
+        );
+
         if (cache) {
             if (cache._outputData) {
                 cache._outputData.set(data);
@@ -1881,11 +1925,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             }
 
             data = cache._outputData;
-        } else if (
-            (options.applyMorph && this.morphTargetManager) ||
-            (options.applySkeleton && this.skeleton) ||
-            (options.applyBakedVertexAnimation && this.bakedVertexAnimationManager?.isEnabled)
-        ) {
+        } else if (transform) {
             data = data.slice();
         }
 
@@ -1928,7 +1968,13 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             }
         }
 
-        if (options.updatePositionsArray !== false && kind === VertexBuffer.PositionKind) {
+        if (options.updatePositionsArray !== false && kind === VertexBuffer.PositionKind && !transform) {
+            // untransformed, these are the geometry's positions: picking and collisions use the geometry's points, made when they
+            // need them and shared by its meshes, so the mesh keeps no Vector3 per vertex of its own. A refresh means the positions
+            // may have changed in place (updateVerticesDataDirectly, VertexBuffer.update), so those points are made again when needed
+            this._internalAbstractMeshDataInfo._positions = null;
+            this.geometry?._resetPointsArrayCache();
+        } else if (options.updatePositionsArray !== false && kind === VertexBuffer.PositionKind) {
             const positions = this._internalAbstractMeshDataInfo._positions || [];
             const previousLength = positions.length;
             positions.length = data.length / 3;

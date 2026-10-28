@@ -1,8 +1,10 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { Vector3 } from "core/Maths";
+import { Matrix, Quaternion, Vector3 } from "core/Maths";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import "core/Culling/ray";
 import { Logger } from "core/Misc";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
@@ -15,6 +17,13 @@ import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { type IGLTF } from "loaders/glTF/2.0/glTFLoaderInterfaces";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { Constants } from "core/Engines/constants";
+import { Texture } from "core/Materials/Textures/texture";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * These tests will check the connection between interactivity's object model and pointers to the flow graph.
@@ -142,6 +151,79 @@ describe("glTF interactivity Object Model", () => {
 
         expect(accessor.info.get(accessor.object)).toBeUndefined();
         expect(() => accessor.info.set?.(0.5, accessor.object)).not.toThrow();
+    });
+
+    it("writes material scalars, colors and flags to all loaded variants while preserving explicit fill-mode selection", () => {
+        const triangle = new PBRMaterial("triangle", scene);
+        const lines = new PBRMaterial("lines", scene);
+        triangle.metallic = 0.2;
+        lines.metallic = 0.4;
+        const gltf: IGLTF = {
+            asset: { version: "2.0" },
+            materials: [
+                {
+                    index: 0,
+                    pbrMetallicRoughness: {},
+                    _data: {
+                        [Constants.MATERIAL_TriangleFillMode]: { babylonMaterial: triangle, babylonMeshes: [], promise: Promise.resolve() },
+                        [Constants.MATERIAL_LineListDrawMode]: { babylonMaterial: lines, babylonMeshes: [], promise: Promise.resolve() },
+                    },
+                },
+            ],
+        };
+        const converter = GetPathToObjectConverter(gltf);
+        const metallic = converter.convert("/materials/0/pbrMetallicRoughness/metallicFactor");
+        const payload = Object.freeze({ fillMode: Constants.MATERIAL_LineListDrawMode });
+        expect(metallic.info.get(metallic.object)).toBe(0.2);
+        expect(metallic.info.get(metallic.object, undefined, payload)).toBe(0.4);
+        metallic.info.set!(0.9, metallic.object);
+        expect([triangle.metallic, lines.metallic]).toEqual([0.9, 0.9]);
+        metallic.info.set!(0.7, metallic.object, undefined, payload);
+        expect([triangle.metallic, lines.metallic]).toEqual([0.9, 0.7]);
+        const color = converter.convert("/materials/0/pbrMetallicRoughness/baseColorFactor");
+        color.info.set!(new Color4(0.2, 0.4, 0.6, 0.8), color.object);
+        const flag = converter.convert("/materials/0/doubleSided");
+        flag.info.set!(true, flag.object);
+        for (const material of [triangle, lines]) {
+            expect(material.albedoColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+            expect(material.alpha).toBe(0.8);
+            expect(material.backFaceCulling).toBe(false);
+        }
+    });
+
+    it("writes material texture values to all loaded variants and reads the selected variant", () => {
+        const triangle = new PBRMaterial("triangle", scene);
+        const lines = new PBRMaterial("lines", scene);
+        const triangleTexture = new Texture(null, scene);
+        const lineTexture = new Texture(null, scene);
+        triangle.bumpTexture = triangleTexture;
+        lines.bumpTexture = lineTexture;
+        triangleTexture.level = 0.2;
+        lineTexture.level = 0.4;
+        const converter = GetPathToObjectConverter({
+            asset: { version: "2.0" },
+            materials: [
+                {
+                    index: 0,
+                    normalTexture: { index: 0 },
+                    _data: {
+                        [Constants.MATERIAL_TriangleFillMode]: { babylonMaterial: triangle, babylonMeshes: [], promise: Promise.resolve() },
+                        [Constants.MATERIAL_LineListDrawMode]: { babylonMaterial: lines, babylonMeshes: [], promise: Promise.resolve() },
+                    },
+                },
+            ],
+        });
+        const payload = Object.freeze({ fillMode: Constants.MATERIAL_LineListDrawMode });
+        const scale = converter.convert("/materials/0/normalTexture/scale");
+        expect(scale.info.get(scale.object, undefined, payload)).toBe(0.4);
+        scale.info.set!(0.6, scale.object);
+        expect([triangleTexture.level, lineTexture.level]).toEqual([0.6, 0.6]);
+        const rotation = converter.convert("/materials/0/normalTexture/extensions/KHR_texture_transform/rotation");
+        rotation.info.set!(0.8, rotation.object);
+        expect([triangleTexture.wAng, lineTexture.wAng]).toEqual([-0.8, -0.8]);
+        rotation.info.set!(0.3, rotation.object, undefined, payload);
+        expect([triangleTexture.wAng, lineTexture.wAng]).toEqual([-0.8, -0.3]);
+        expect(rotation.info.get(rotation.object, undefined, payload)).toBe(0.3);
     });
 
     it("should resolve the KHR_interactivity animation maxTime pointer even though the animation has no stored extensions object", () => {
@@ -596,6 +678,47 @@ describe("glTF interactivity Object Model", () => {
         expect(manager.getTarget(0).influence).toBe(0.9);
     });
 
+    it.each([
+        { nodeWeights: [0.6, 0.2], meshWeights: [0.1, 0.3], expected: [0.6, 0.2] },
+        { nodeWeights: undefined, meshWeights: [0.1, 0.3], expected: [0.1, 0.3] },
+        { nodeWeights: undefined, meshWeights: undefined, expected: [0, 0] },
+    ])("retains independent off-scene morph weights with defaults $expected", ({ nodeWeights, meshWeights, expected }) => {
+        const gltf: IGLTF = {
+            asset: { version: "2.0" },
+            nodes: [
+                { index: 0, mesh: 0, weights: nodeWeights },
+                { index: 1, mesh: 0 },
+            ],
+            meshes: [
+                {
+                    index: 0,
+                    weights: meshWeights,
+                    primitives: [{ attributes: { POSITION: 0 }, targets: [{ POSITION: 0 }, { POSITION: 0 }] }],
+                },
+            ],
+            scenes: [{ index: 0, nodes: [] }],
+            scene: 0,
+        };
+        const converter = GetPathToObjectConverter(gltf);
+        const length = converter.convert("/nodes/0/weights.length");
+        expect(length.info.get(length.object)).toEqual(new FlowGraphInteger(2));
+        const weights = converter.convert("/nodes/0/weights");
+        expect(weights.info.get(weights.object)).toEqual(expected);
+        const weight = converter.convert("/nodes/0/weights/1");
+        expect(weight.info.get(weight.object)).toBe(expected[1]);
+        weight.info.set!(0.9, weight.object);
+        expect(weight.info.get(weight.object)).toBe(0.9);
+        expect(weight.info.getTarget!(weight.object)).toEqual([expected[0], 0.9]);
+        expect(weight.info.getPropertyName![0](weight.object)).toBe("1");
+        const invalid = converter.convert("/nodes/0/weights/2");
+        expect(invalid.info.get(invalid.object)).toBeUndefined();
+        const other = converter.convert("/nodes/1/weights/1");
+        expect(other.info.get(other.object)).toBe(meshWeights?.[1] ?? 0);
+        const reimported = GetPathToObjectConverter(gltf).convert("/nodes/0/weights/1");
+        expect(reimported.info.get(reimported.object)).toBe(0.9);
+        expect(scene.meshes).toHaveLength(0);
+    });
+
     // use variables to store the pointer
     it("should find a node's translation using a template variable", async () => {
         const mesh = new Mesh("mesh", scene);
@@ -697,7 +820,7 @@ describe("glTF interactivity Object Model", () => {
                     declaration: 0,
                     configuration: {
                         pointer: { value: ["/extensions/KHR_interactivity/activeCamera/rotation"] },
-                        type: { value: [1] },
+                        type: { value: [0] },
                     },
                 },
             ],
@@ -705,11 +828,47 @@ describe("glTF interactivity Object Model", () => {
         );
 
         const lastCallValue = log.mock.calls[log.mock.calls.length - 1][0];
-        // should be 0,1,0,0
         expect(lastCallValue.x).toBeCloseTo(0);
-        expect(lastCallValue.y).toBeCloseTo(1);
+        expect(lastCallValue.y).toBeCloseTo(0);
         expect(lastCallValue.z).toBeCloseTo(0);
-        expect(lastCallValue.w).toBeCloseTo(0);
+        expect(Math.abs(lastCallValue.w)).toBeCloseTo(1);
+    });
+
+    it.each([false, true])("active camera rotation preserves glTF forward and up directions (right handed: %s)", async (rightHanded) => {
+        scene.useRightHandedSystem = rightHanded;
+        const parent = new TransformNode("cameraParent", scene);
+        parent.rotationQuaternion = Quaternion.RotationYawPitchRoll(0.3, -0.4, 0.2);
+        const camera = new FreeCamera("active", new Vector3(2, 3, 4), scene);
+        camera.parent = parent;
+        camera.rotationQuaternion = Quaternion.RotationYawPitchRoll(-0.7, 0.5, -0.6);
+        scene.activeCamera = camera;
+        await generateSimpleNodeGraph(
+            { extensions: { KHR_interactivity: {} } },
+            [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
+            [
+                { declaration: 1, values: { message: { node: 1, socket: "value" } } },
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/extensions/KHR_interactivity/activeCamera/rotation"] },
+                        type: { value: [0] },
+                    },
+                },
+            ],
+            [{ signature: "float4" }]
+        );
+        const rotation: Quaternion = log.mock.calls[log.mock.calls.length - 1][0];
+        const matrix = Matrix.FromQuaternionToRef(rotation, Matrix.Identity());
+        const forward = Vector3.TransformNormal(new Vector3(0, 0, -1), matrix);
+        const up = Vector3.TransformNormal(Vector3.Up(), matrix);
+        const expectedForward = camera.getForwardRay().direction;
+        const expectedUp = Vector3.TransformNormal(Vector3.Up(), camera.getWorldMatrix()).normalize();
+        if (!rightHanded) {
+            expectedForward.x *= -1;
+            expectedUp.x *= -1;
+        }
+        expect(Vector3.Distance(forward, expectedForward)).toBeCloseTo(0);
+        expect(Vector3.Distance(up, expectedUp)).toBeCloseTo(0);
     });
 
     it("keeps active camera accessors scoped to the converter's scene", () => {
@@ -853,6 +1012,61 @@ describe("glTF interactivity Object Model", () => {
         );
 
         expect(log).toHaveBeenCalledWith(new Vector3(2, 3, 4));
+    });
+
+    it.each(["literal", "variable", "pointer"] as const)("interpolates baseColorFactor from a %s value without corrupting alpha", async (source) => {
+        const material = new PBRMaterial("target", scene);
+        material.albedoColor = new Color3(0.2, 0.4, 0.6);
+        material.alpha = 0.5;
+        const sourceMaterial = new PBRMaterial("source", scene);
+        sourceMaterial.albedoColor = new Color3(0.8, 0.6, 0.4);
+        sourceMaterial.alpha = 0.9;
+        const mockGltf = {
+            materials: [material, sourceMaterial].map((babylonMaterial) => ({
+                pbrMetallicRoughness: {},
+                _data: { 0: { babylonMaterial } },
+            })),
+        };
+        await generateSimpleNodeGraph(
+            mockGltf,
+            [{ op: "pointer/interpolate" }, { op: "variable/get" }, { op: "pointer/get" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/materials/0/pbrMetallicRoughness/baseColorFactor"] },
+                        type: { value: [0] },
+                    },
+                    values: {
+                        value: source === "literal" ? { type: 0, value: [0.8, 0.6, 0.4, 0.9] } : { node: 1, socket: "value" },
+                        duration: { type: 1, value: [1] },
+                    },
+                },
+                source === "pointer"
+                    ? {
+                          declaration: 2,
+                          configuration: {
+                              pointer: { value: ["/materials/1/pbrMetallicRoughness/baseColorFactor"] },
+                              type: { value: [0] },
+                          },
+                      }
+                    : { declaration: 1, configuration: { variable: { value: [0] } } },
+            ],
+            [{ signature: "float4" }, { signature: "float" }],
+            [{ type: 0, value: [0.8, 0.6, 0.4, 0.9] }]
+        );
+
+        const group = scene.animationGroups[0];
+        expect(group.targetedAnimations.map(({ animation }) => animation.targetProperty)).toEqual(["albedoColor", "alpha"]);
+        group.goToFrame(30);
+        for (const component of material.albedoColor.asArray()) {
+            expect(component).toBeCloseTo(0.5);
+        }
+        expect(material.alpha).toBeCloseTo(0.7);
+        group.goToFrame(60);
+        expect(material.albedoColor).toEqual(sourceMaterial.albedoColor);
+        expect(material.alpha).toBeCloseTo(0.9);
+        expect(errorLog).not.toHaveBeenCalled();
     });
 
     // simple pointer/interpolate

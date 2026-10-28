@@ -308,8 +308,6 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         if (!super.attach()) {
             return false;
         }
-        this._xrSessionManager.scene.needsPreviousWorldMatrices = true;
-
         const graphicsBinding = this._xrSessionManager._getGraphicsBinding();
         if (graphicsBinding.bindingType !== WebXRGraphicsBindingType.WebGL) {
             throw new Error("Expected a WebGL graphics binding for WebXR Space Warp.");
@@ -319,12 +317,14 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         this.spaceWarpRTTProvider = new WebXRSpaceWarpRenderTargetTextureProvider(this._xrSessionManager.scene, this._xrSessionManager, this._xrWebGLBinding);
 
         this._onAfterRenderObserver = this._xrSessionManager.scene.onAfterRenderObservable.add(() => this._onAfterRender());
+        this._xrSessionManager.scene._setPreviousWorldMatricesRequired(this, true);
 
         return true;
     }
 
     public override detach(): boolean {
         this._xrSessionManager.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+        this._xrSessionManager.scene._setPreviousWorldMatricesRequired(this, false);
         return super.detach();
     }
 

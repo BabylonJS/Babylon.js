@@ -5,7 +5,10 @@ import { Scene } from "core/scene";
 import { type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
 import { GlobalState } from "flow-graph-editor/globalState";
 import { SerializationTools } from "flow-graph-editor/serializationTools";
+import { SceneContext } from "flow-graph-editor/sceneContext";
 import { _RegisterKHRInteractivityRuntime } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
+import { CompositePathToObjectConverter } from "loaders/glTF/2.0/Extensions/compositePathToObjectConverter";
+import { InteractivityHostResolver } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityHostResolver";
 import {
     _CaptureKHRInteractivityRuntimeInputDefaults,
     CreateKHRInteractivityDocument,
@@ -224,6 +227,72 @@ describe("SerializationTools coordinator ownership", () => {
             })
         );
 
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps the retained source format stable while reading the file asynchronously", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        globalState.sceneContext = new SceneContext(scene, false);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        globalState.coordinator = coordinator;
+        const extension = { graphs: [{}] };
+        const asset = { asset: { version: "2.0" }, extensionsUsed: ["KHR_interactivity"], extensions: { KHR_interactivity: extension } };
+        globalState.khrInteractivityImportResult = {
+            assetIndex: 0,
+            document: CreateKHRInteractivityDocument(extension),
+            graphs: [],
+            glTF: asset,
+            pathConverter: new CompositePathToObjectConverter([], {
+                convert: () => {
+                    throw new Error("This graph has no pointer inputs.");
+                },
+            }),
+            hostResolver: new InteractivityHostResolver(),
+        };
+        const bytes = new TextEncoder().encode(JSON.stringify(asset));
+        const file = new File([bytes], "original.gltf");
+        globalState.sourceGltf = { file, externalResourceUris: [] };
+        vi.spyOn(file, "arrayBuffer").mockImplementation(async () => {
+            globalState.sourceGltf = null;
+            globalState.sourceGlb = {
+                file: new File([], "replacement.glb"),
+                nodeCount: 0,
+                hasAnimations: false,
+                authoredBehavior: false,
+                externalResourceUris: [],
+            };
+            return bytes.buffer;
+        });
+        const analysis = { representable: true, nodes: [], diagnostics: [] };
+        vi.stubGlobal("BABYLON", {
+            GLTF2: {
+                Loader: {
+                    Extensions: {
+                        CreateKHRInteractivityExportPlan: () => ({
+                            additionalExtensionsUsed: [],
+                            additionalExtensionsRequired: [],
+                            analyze: () => analysis,
+                            buildWithSourceIndices: () => extension,
+                        }),
+                    },
+                },
+            },
+        });
+        const captureDownload = vi.fn((_blob: Blob) => {
+            throw new Error("Download captured.");
+        });
+        vi.stubGlobal("URL", { createObjectURL: captureDownload });
+
+        await expect(SerializationTools.ExportKhrInteractivityAsync(globalState, "gltf")).rejects.toThrow("Download captured.");
+        expect(captureDownload).toHaveBeenCalledTimes(1);
+        expect(await captureDownload.mock.calls[0][0].text()).toBe(JSON.stringify(asset));
+
+        globalState.sceneContext.dispose();
         coordinator.dispose();
         scene.dispose();
         engine.dispose();

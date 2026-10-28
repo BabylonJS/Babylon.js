@@ -2,6 +2,55 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Solid Particle System Mixed Model Winding",
+            "playgroundId": "#B1NNWI#2",
+            "referenceImage": "sps-mixed-model-winding.png",
+            "renderCount": 1,
+            "dependsOn": ["Particles", "Meshes", "Materials", "Cameras"]
+        },
+        {
+            "title": "Raw Texture 2D Array Mipmaps",
+            "playgroundId": "#I5RZPG#1",
+            "referenceImage": "raw-texture-2d-array-mipmaps.png",
+            "renderCount": 1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Textures"]
+        },
+        {
+            "title": "Gaussian Point Splatting Raw SOG Fallback",
+            "playgroundId": "#J65EJG#0",
+            "referenceImage": "gsplat-point-sog-raw.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "SPLATLoader", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Stream Fallback",
+            "playgroundId": "#QD5HD9#0",
+            "referenceImage": "gsplat-point-sog-stream.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "SPLATLoader", "Loaders"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Right-Handed Depth",
+            "playgroundId": "#F39YWU#2",
+            "referenceImage": "gsplat-point-rh-depth.png",
+            "renderCount": 96,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "Meshes", "Rendering"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Point Splatting Scaled Depth",
+            "playgroundId": "#O4L9TF#0",
+            "referenceImage": "gsplat-point-scaled-depth.png",
+            "renderCount": 245,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "Meshes", "Rendering"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting GLTF",
             "playgroundId": "#WSAFDA#0",
             "referenceImage": "gsplat-splat-gltf.png",
@@ -12,6 +61,13 @@
             "playgroundId": "#418POI#12",
             "renderCount": 15,
             "referenceImage": "gsplat-lod.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting Ranged Source Row Boundary",
+            "playgroundId": "#7AZH52#1",
+            "referenceImage": "gsplat-ranged-source-row-boundary.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
             "excludeFromPerformance": true
         },
@@ -89,6 +145,18 @@
             "playgroundId": "#XSNFXP#2",
             "referenceImage": "gsplat-spz-sh.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader"]
+        },
+        {
+            "title": "Gaussian Splatting Projected Size",
+            "playgroundId": "#8FOB3C#0",
+            "referenceImage": "gsplat-debug-projected-size.png",
+            "dependsOn": ["GaussianSplatting", "Materials", "Loaders", "SPLATLoader"]
+        },
+        {
+            "title": "Gaussian Splatting Overdraw",
+            "playgroundId": "#D4U720#1",
+            "referenceImage": "gsplat-debug-overdraw.png",
+            "dependsOn": ["GaussianSplatting", "Materials", "Loaders", "SPLATLoader"]
         },
         {
             "title": "Gaussian Splatting SPZ SH No WASM",
@@ -2975,6 +3043,23 @@
             "dependsOn": ["Rendering", "Particles"]
         },
         {
+            "title": "Fluid rendering GPU particle system without diffuse texture",
+            "playgroundId": "#NAW8JS#0",
+            "referenceImage": "fluidGpuParticleSystemWithoutDiffuseTexture.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system with diffuse texture",
+            "playgroundId": "#NAW8JS#0",
+            "replace": "var generateDiffuseTexture = false;, var generateDiffuseTexture = true;",
+            "referenceImage": "fluidGpuParticleSystemWithDiffuseTexture.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
             "title": "Export GLTF Extension KHR_texture_transform",
             "playgroundId": "#20OAV9#15148",
             "referenceImage": "exportGltfKHRTextureTransform.png",
@@ -4094,6 +4179,16 @@
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {
+            "title": "StandardMaterial skips out-of-range lighting",
+            "playgroundId": "#5LPD6E#1",
+            "dependsOn": ["Lights", "Materials", "Meshes"]
+        },
+        {
+            "title": "CellMaterial point lights with finite range",
+            "playgroundId": "#R8MA0W",
+            "dependsOn": ["LibMaterials", "Lights", "Materials", "Meshes"]
+        },
+        {
             "title": "Clustered Light Serialization",
             "playgroundId": "#QRQPNN#0",
             "referenceImage": "clustered-light-serialization.png",
@@ -4700,6 +4795,30 @@
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
+            "title": "OpenPBR Subsurface Scatter Anisotropy - glTF",
+            "playgroundId": "#GRQHVV#333",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Color Density - glTF",
+            "playgroundId": "#GRQHVV#332",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Strength Thin-Walled - glTF",
+            "playgroundId": "#GRQHVV#343",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Strength - glTF",
+            "playgroundId": "#GRQHVV#344",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
             "playgroundId": "#BY1IOY#0",
             "excludedEngines": ["webgl1"],
@@ -4747,6 +4866,18 @@
             "playgroundId": "#URIA5X#0",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Volume Blending with Textures",
+            "playgroundId": "#SXXR4T#3",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Thin-walled Blending with Textures",
+            "playgroundId": "#SXXR4T#4",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface SSS Frame Graph - Shadows - IBL",
@@ -5851,6 +5982,18 @@
             "referenceImage": "flycamera-framerate-independent-movement.png",
             "renderCount": 1,
             "dependsOn": ["Cameras", "Materials", "Meshes"]
+        },
+        {
+            "title": "glTF Loader - PBRMaterial Scatter Color Density",
+            "playgroundId": "#GRQHVV#338",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "glTF Loader - PBRMaterial Scatter Strength Thin-Walled",
+            "playgroundId": "#GRQHVV#341",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         }
     ]
 }

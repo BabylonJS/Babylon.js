@@ -6,6 +6,7 @@ import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declara
 import { type INode } from "../glTFLoaderInterfaces";
 import { AddObjectAccessorToKey } from "./objectModelMapping";
 import { GetInteractivityNodeState, InitializeInteractivityNodeState, SetInteractivityNodeState } from "./KHR_interactivity/interactivityNodeState";
+import { GetInteractivityNodeRuntimeReference } from "./KHR_interactivity/interactivityNodeReference";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 
 const NAME = "KHR_node_hoverability";
@@ -81,6 +82,7 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
                 event: "ref",
             },
         },
+        declarationSchemaVariants: [{ inputValueSockets: {}, outputValueSockets: { hoveredNode: "ref", controllerIndex: "int" } }],
         configuration: {
             nodeIndex: {
                 name: "variable",
@@ -155,11 +157,7 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;
             context._userVariables[variableName] = validNodeIndex
-                ? {
-                      className: "Mesh",
-                      id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
-                      uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
-                  }
+                ? GetInteractivityNodeRuntimeReference(globalGLTF?.nodes?.[nodeIndex])
                 : { type: FlowGraphTypes.Any, value: [{}] };
             const eventKey = `${NAME}:event/onHoverIn:${nodeIndex}`;
             serializedObjects[0].config.eventKey = eventKey;
@@ -185,6 +183,7 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
                 event: "ref",
             },
         },
+        declarationSchemaVariants: [{ inputValueSockets: {}, outputValueSockets: { hoveredNode: "ref", controllerIndex: "int" } }],
         configuration: {
             nodeIndex: {
                 name: "variable",
@@ -258,11 +257,7 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;
             context._userVariables[variableName] = validNodeIndex
-                ? {
-                      className: "Mesh",
-                      id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
-                      uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
-                  }
+                ? GetInteractivityNodeRuntimeReference(globalGLTF?.nodes?.[nodeIndex])
                 : { type: FlowGraphTypes.Any, value: [{}] };
             const eventKey = `${NAME}:event/onHoverOut:${nodeIndex}`;
             serializedObjects[0].config.eventKey = eventKey;

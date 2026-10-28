@@ -6,6 +6,7 @@ import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declara
 import { type INode } from "../glTFLoaderInterfaces";
 import { AddObjectAccessorToKey } from "./objectModelMapping";
 import { GetInteractivityNodeState, InitializeInteractivityNodeState, SetInteractivityNodeState } from "./KHR_interactivity/interactivityNodeState";
+import { GetInteractivityNodeRuntimeReference } from "./KHR_interactivity/interactivityNodeReference";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 
 const NAME = "KHR_node_selectability";
@@ -81,6 +82,16 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
                 event: "ref",
             },
         },
+        declarationSchemaVariants: [
+            {
+                inputValueSockets: {},
+                outputValueSockets: { selectedNode: "ref", selectionRayOrigin: "float3", selectionPoint: "float3", controllerIndex: "int" },
+            },
+            {
+                inputValueSockets: {},
+                outputValueSockets: { selectedNode: "ref", rayOrigin: "float3", selectionPoint: "float3", controllerIndex: "int" },
+            },
+        ],
         configuration: {
             nodeIndex: {
                 name: "variable",
@@ -103,6 +114,7 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
                 controllerIndex: { name: "controllerIndex", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
                 selectionPoint: { name: "selectionPoint", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
                 selectionRayOrigin: { name: "selectionRayOrigin", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                rayOrigin: { name: "selectionRayOrigin", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
                 event: { name: "value", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
             },
             flows: {
@@ -174,11 +186,7 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;
             context._userVariables[variableName] = validNodeIndex
-                ? {
-                      className: "Mesh",
-                      id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
-                      uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
-                  }
+                ? GetInteractivityNodeRuntimeReference(globalGLTF?.nodes?.[nodeIndex])
                 : { type: FlowGraphTypes.Any, value: [{}] };
             const eventKey = `${NAME}:event/onSelect:${nodeIndex}`;
             serializedObjects[0].config.eventKey = eventKey;

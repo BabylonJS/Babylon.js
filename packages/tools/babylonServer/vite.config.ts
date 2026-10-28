@@ -277,7 +277,7 @@ function babylonServerPlugin(): Plugin {
                 const srcDirs = sourceToPackage.map((s) => s.srcDir);
                 const srcWatcher = chokidarWatch(srcDirs, {
                     ignoreInitial: true,
-                    ignored: ["**/node_modules/**", "**/.git/**"],
+                    ignored: /(^|[/\\])(node_modules|\.git)([/\\]|$)/,
                 });
 
                 srcWatcher.on("change", (file) => {

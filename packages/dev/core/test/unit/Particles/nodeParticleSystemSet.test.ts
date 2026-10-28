@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { Vector3 } from "core/Maths/math.vector";
+import { Particle } from "core/Particles/particle";
+import { ParticleSystem } from "core/Particles/particleSystem";
+import { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 import { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
@@ -9,6 +14,7 @@ import { UpdateNoiseBlock } from "core/Particles/Node/Blocks/Update/updateNoiseB
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type INodeParticleTextureData, ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 import { Observable } from "core/Misc/observable";
+import { FreeCamera } from "core/Cameras/freeCamera";
 
 import "core/Shaders/particles.vertex";
 import "core/Shaders/particles.fragment";
@@ -31,6 +37,81 @@ describe("NodeParticleSystemSet", () => {
     afterEach(() => {
         scene.dispose();
         engine.dispose();
+    });
+
+    async function buildSystem(systemBlock: SystemBlock): Promise<ParticleSystem> {
+        new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        const nodeParticleSet = new NodeParticleSystemSet("timing");
+        const createParticleBlock = new CreateParticleBlock("Create");
+        const particleTextureBlock = new ParticleTextureSourceBlock("Texture");
+        createParticleBlock.particle.connectTo(systemBlock.particle);
+        particleTextureBlock.textureOutput.connectTo(systemBlock.texture);
+        nodeParticleSet.systemBlocks.push(systemBlock);
+        const set = await nodeParticleSet.buildAsync(scene);
+        const system = set.systems[0];
+        if (!(system instanceof ParticleSystem)) {
+            throw new Error("Expected a CPU particle system");
+        }
+        return system;
+    }
+
+    it("advances prewarm time for a newly created system block", async () => {
+        const block = new SystemBlock("System");
+        expect(block.updateSpeed).toBe(0.0167);
+        expect(block.preWarmStepOffset).toBe(1);
+        const system = await buildSystem(block);
+        system.preWarmCycles = 50;
+        system.start();
+        expect(system.getActiveCount()).toBeGreaterThan(0);
+        expect(system.particles.some((particle) => particle.age > 0)).toBe(true);
+    });
+
+    it("loads system blocks serialized before update timing fields existed", async () => {
+        const current = new SystemBlock("System").serialize();
+        // SystemBlock.serialize() before ed4c7ca18c (Nov 5, 2025) only wrote these fields.
+        const legacy = {
+            customType: current.customType,
+            id: current.id,
+            name: current.name,
+            inputs: current.inputs,
+            outputs: current.outputs,
+            capacity: current.capacity,
+            emitRate: current.emitRate,
+            blendMode: current.blendMode,
+            doNoStart: current.doNoStart,
+            targetStopDuration: current.targetStopDuration,
+            startDelay: current.startDelay,
+        };
+        const block = new SystemBlock("Legacy");
+        block._deserialize(legacy);
+
+        expect(block.updateSpeed).toBe(0.0167);
+        expect(block.preWarmStepOffset).toBe(1);
+        const system = await buildSystem(block);
+        system.preWarmCycles = 500;
+        system.start();
+        expect(system.updateSpeed).toBe(0.0167);
+        expect(system.preWarmStepOffset).toBe(1);
+        expect(system.getActiveCount()).toBeGreaterThan(0);
+        expect(system.particles.some((particle) => particle.age > 0)).toBe(true);
+    });
+
+    it.each([
+        [0, 0],
+        [0.025, 2],
+        [0.0167, 1],
+    ])("round-trips explicit update speed %s and prewarm multiplier %s", async (updateSpeed, preWarmStepOffset) => {
+        const source = new SystemBlock("Source");
+        source.updateSpeed = updateSpeed;
+        source.preWarmStepOffset = preWarmStepOffset;
+        const block = new SystemBlock("Restored");
+        block._deserialize(source.serialize());
+        const system = await buildSystem(block);
+        expect(system.updateSpeed).toBe(updateSpeed);
+        expect(system.preWarmStepOffset).toBe(preWarmStepOffset);
+        system.preWarmCycles = 50;
+        system.start();
+        expect(system.getActiveCount() > 0).toBe(updateSpeed * preWarmStepOffset > 0);
     });
 
     it("waits for flow-map texture extraction before resolving buildAsync", async () => {
@@ -181,5 +262,135 @@ describe("NodeParticleSystemSet", () => {
         const builtSet = await nodeParticleSet.buildAsync(scene);
 
         expect(builtSet.systems.length).toBe(1);
+    });
+
+    it("retries a rejected noise update readback on the next frame without an unhandled rejection", async () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        const pixels = new Uint8Array(2 * 2 * 4);
+        vi.spyOn(texture, "isReady").mockReturnValue(true);
+        const readPixelsSpy = vi.spyOn(texture, "readPixels").mockRejectedValueOnce(new Error("readback failed")).mockResolvedValue(pixels);
+        const frameIdSpy = vi.spyOn(scene, "getFrameId").mockReturnValue(0);
+        const textureBlock = new ParticleTextureSourceBlock("Noise Texture");
+        textureBlock.textureOutput._storedValue = texture;
+        vi.spyOn(textureBlock, "extractTextureContentAsync").mockResolvedValue(null);
+        const noiseBlock = new UpdateNoiseBlock("Noise Update");
+        textureBlock.textureOutput.connectTo(noiseBlock.noiseTexture);
+        const system = new ParticleSystem("noise", 10, scene);
+        vi.spyOn(noiseBlock.particle, "getConnectedValue").mockReturnValue(system);
+        const state = new NodeParticleBuildState();
+        noiseBlock._build(state);
+        await state.waitForBuildPromisesAsync();
+        const particle = new Particle(system);
+        particle._properties.randomNoiseCoordinates1 = Vector3.Zero();
+        particle._properties.randomNoiseCoordinates2 = Vector3.Zero();
+        let noiseProcessing = system._updateQueueStart!;
+        while (noiseProcessing.nextItem) {
+            noiseProcessing = noiseProcessing.nextItem;
+        }
+        const processNoise = noiseProcessing.process;
+        const fetchSpy = vi.spyOn(system, "_fetchR");
+
+        processNoise(particle, system);
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        expect(fetchSpy).not.toHaveBeenCalled();
+
+        frameIdSpy.mockReturnValue(1);
+        processNoise(particle, system);
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        processNoise(particle, system);
+
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+        expect(fetchSpy).toHaveBeenCalledTimes(3);
+        expect(fetchSpy).toHaveBeenLastCalledWith(0, 0, 2, 2, pixels);
+    });
+
+    it("keeps the newer noise readback when the old readback completes last after a same-size in-place resize", async () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        const pending: Array<(data: Uint8Array) => void> = [];
+        vi.spyOn(texture, "isReady").mockReturnValue(true);
+        const readPixelsSpy = vi.spyOn(texture, "readPixels").mockImplementation(() => new Promise((resolve) => pending.push(resolve)));
+        const frameIdSpy = vi.spyOn(scene, "getFrameId").mockReturnValue(0);
+        const textureBlock = new ParticleTextureSourceBlock("Noise Texture");
+        textureBlock.textureOutput._storedValue = texture;
+        vi.spyOn(textureBlock, "extractTextureContentAsync").mockResolvedValue(null);
+        const noiseBlock = new UpdateNoiseBlock("Noise Update");
+        textureBlock.textureOutput.connectTo(noiseBlock.noiseTexture);
+        const system = new ParticleSystem("noise", 10, scene);
+        vi.spyOn(noiseBlock.particle, "getConnectedValue").mockReturnValue(system);
+        const state = new NodeParticleBuildState();
+        noiseBlock._build(state);
+        await state.waitForBuildPromisesAsync();
+        const particle = new Particle(system);
+        particle._properties.randomNoiseCoordinates1 = Vector3.Zero();
+        particle._properties.randomNoiseCoordinates2 = Vector3.Zero();
+        let noiseProcessing = system._updateQueueStart!;
+        while (noiseProcessing.nextItem) {
+            noiseProcessing = noiseProcessing.nextItem;
+        }
+        const processNoise = noiseProcessing.process;
+        const fetchSpy = vi.spyOn(system, "_fetchR");
+
+        processNoise(particle, system);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(1);
+        texture.resize({ width: 2, height: 2 }, false);
+        frameIdSpy.mockReturnValue(1);
+        processNoise(particle, system);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+
+        const pixels = new Uint8Array(2 * 2 * 4).fill(2);
+        pending[1](pixels);
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        processNoise(particle, system);
+        expect(fetchSpy).toHaveBeenCalledTimes(3);
+        expect(fetchSpy).toHaveBeenLastCalledWith(0, 0, 2, 2, pixels);
+
+        pending[0](new Uint8Array(2 * 2 * 4).fill(1));
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        processNoise(particle, system);
+        expect(fetchSpy).toHaveBeenCalledTimes(6);
+        expect(fetchSpy).toHaveBeenLastCalledWith(0, 0, 2, 2, pixels);
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps extracted procedural texture dimensions paired with the buffer when resized while pending", async () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        vi.spyOn(texture, "isReady").mockReturnValue(true);
+        vi.spyOn(texture, "render").mockImplementation(() => {});
+        let resolveReadback: (data: ArrayBufferView) => void;
+        vi.spyOn(texture, "readPixels").mockReturnValue(new Promise((resolve) => (resolveReadback = resolve)));
+        const textureBlock = new ParticleTextureSourceBlock("Noise Texture");
+        textureBlock.sourceTexture = texture;
+
+        const extraction = textureBlock.extractTextureContentAsync();
+        texture.resize(4, false);
+        resolveReadback!(new Uint8Array(2 * 2 * 4));
+        const content = await extraction;
+
+        expect(content!.width).toBe(2);
+        expect(content!.height).toBe(2);
+        expect(content!.data.length).toBe(content!.width * content!.height * 4);
+    });
+
+    it("discards an extracted buffer that does not match its dimensions and allows a later retry", async () => {
+        const texture = new ProceduralTexture("noise", 4, null, scene);
+        const pixels = new Uint8Array(4 * 4 * 4);
+        vi.spyOn(texture, "isReady").mockReturnValue(true);
+        vi.spyOn(texture, "render").mockImplementation(() => {});
+        const readPixelsSpy = vi
+            .spyOn(texture, "readPixels")
+            .mockResolvedValueOnce(new Uint8Array(2 * 2 * 4))
+            .mockResolvedValue(pixels);
+        const textureBlock = new ParticleTextureSourceBlock("Noise Texture");
+        textureBlock.sourceTexture = texture;
+
+        await expect(textureBlock.extractTextureContentAsync()).resolves.toBeNull();
+        (texture as unknown as { _frameId: number })._frameId++;
+        await expect(textureBlock.extractTextureContentAsync()).resolves.toBeNull();
+        const content = await textureBlock.extractTextureContentAsync();
+
+        expect(content!.width).toBe(4);
+        expect(content!.height).toBe(4);
+        expect(content!.data).toEqual(new Uint8ClampedArray(pixels));
+        expect(readPixelsSpy).toHaveBeenCalledTimes(2);
     });
 });

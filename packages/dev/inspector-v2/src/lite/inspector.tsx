@@ -12,7 +12,16 @@ import { MakeWatcherServiceDefinitions } from "../services/watcherService";
 import { type IEngineContext, EngineContextIdentity } from "./engineContext";
 import { EngineExplorerServiceDefinition } from "./engineExplorerService";
 import { EngineSelectionServiceDefinition } from "./engineSelectionService";
+import { PickingServiceDefinition } from "./services/pickingService";
+import { GizmoServiceDefinition } from "./services/gizmoService";
+import { StatsServiceDefinition } from "./services/panes/statsService";
+import { CaptureServiceDefinition } from "./services/panes/captureService";
+import { DebugServiceDefinition } from "./services/panes/debugService";
 import { EnginePropertiesServiceDefinition } from "./services/panes/properties/enginePropertiesService";
+import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
+import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
+import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesService";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
@@ -24,9 +33,15 @@ import { SpriteLayerPropertiesServiceDefinition } from "./services/panes/propert
 import { TextLayerPropertiesServiceDefinition } from "./services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { CameraExplorerServiceDefinition } from "./services/panes/scene/cameraExplorerService";
+import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
+import { FlowGraphExplorerServiceDefinition } from "./services/panes/scene/flowGraphExplorerService";
+import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
 import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
+import { SceneResourceIndexServiceDefinition } from "./services/panes/scene/sceneResourceIndexService";
 import { ShadowGeneratorExplorerServiceDefinition } from "./services/panes/scene/shadowGeneratorExplorerService";
 import { SpriteLayerExplorerServiceDefinition } from "./services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textLayerExplorerService";
@@ -71,6 +86,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 engineContextServiceDefinition,
                 watcherServiceDefinition,
                 EngineExplorerServiceDefinition,
+                SceneResourceIndexServiceDefinition,
                 MeshExplorerServiceDefinition,
                 CameraExplorerServiceDefinition,
                 LightExplorerServiceDefinition,
@@ -79,6 +95,11 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TextureExplorerServiceDefinition,
                 TextLayerExplorerServiceDefinition,
                 SpriteLayerExplorerServiceDefinition,
+                AnimationGroupExplorerServiceDefinition,
+                SkeletonExplorerServiceDefinition,
+                ParticleSystemExplorerServiceDefinition,
+                FrameGraphExplorerServiceDefinition,
+                FlowGraphExplorerServiceDefinition,
                 PropertiesServiceDefinition,
                 EnginePropertiesServiceDefinition,
                 RenderingContextPropertiesServiceDefinition,
@@ -91,12 +112,21 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TexturePropertiesServiceDefinition,
                 TextLayerPropertiesServiceDefinition,
                 SpriteLayerPropertiesServiceDefinition,
+                AnimationPropertiesServiceDefinition,
+                SkeletonPropertiesServiceDefinition,
+                ParticleSystemPropertiesServiceDefinition,
+                FrameGraphPropertiesServiceDefinition,
                 SettingsServiceDefinition,
                 watcherSettingsServiceDefinition,
                 ShellSettingsServiceDefinition,
                 watcherRefreshToolbarServiceDefinition,
                 SelectionServiceDefinition,
                 EngineSelectionServiceDefinition,
+                PickingServiceDefinition,
+                GizmoServiceDefinition,
+                StatsServiceDefinition,
+                CaptureServiceDefinition,
+                DebugServiceDefinition,
             ];
 
             return {

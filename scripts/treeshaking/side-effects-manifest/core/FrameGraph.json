@@ -39,6 +39,7 @@
         "FrameGraph/Node/Blocks/Textures/clearBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/Textures/copyTextureBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/Textures/generateMipmapsBlock.ts": ["top-level-call"],
+        "FrameGraph/Node/Blocks/Textures/minMaxReducerBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/allBlocks.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/computeShaderBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/cullObjectsBlock.ts": ["top-level-call"],

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "9.28.0",
+    "version": "9.32.1",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -40,7 +40,7 @@
         "@babylonjs/core": "^9.0.0",
         "@babylonjs/gui": "^9.0.0",
         "@babylonjs/gui-editor": "^9.0.0",
-        "@babylonjs/lite": "^1.27.0",
+        "@babylonjs/lite": "^1.37.1",
         "@babylonjs/loaders": "^9.0.0",
         "@babylonjs/materials": "^9.0.0",
         "@babylonjs/node-editor": "^9.0.0",
@@ -50,6 +50,7 @@
         "@babylonjs/serializers": "^9.0.0",
         "@fluentui-contrib/react-resize-handle": "^0.8.4",
         "@fluentui-contrib/react-virtualizer": "^1.0.0",
+        "@fluentui/react-charts": "^9.3.27",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
         "@fluentui/react-motion-components-preview": "^0.15.2",
@@ -64,18 +65,18 @@
         }
     },
     "devDependencies": {
-        "@babylonjs/lite": "1.27.0",
+        "@babylonjs/lite": "1.37.1",
         "@dev/build-tools": "^1.0.0",
         "@dev/inspector": "1.0.0",
-        "@rollup/plugin-alias": "^5.1.0",
-        "@rollup/plugin-commonjs": "^26.0.1",
-        "@rollup/plugin-node-resolve": "^15.2.3",
-        "@rollup/plugin-typescript": "^11.1.6",
-        "@types/ws": "^8.5.0",
-        "chalk": "^5.3.0",
-        "rollup": "^4.59.0",
-        "rollup-plugin-dts": "^6.1.1",
-        "ws": "^8.18.0"
+        "@rollup/plugin-alias": "^6.0.0",
+        "@rollup/plugin-commonjs": "^29.0.3",
+        "@rollup/plugin-node-resolve": "^16.0.3",
+        "@rollup/plugin-typescript": "^12.3.0",
+        "@types/ws": "^8.18.1",
+        "chalk": "^6.0.1",
+        "rollup": "^4.63.4",
+        "rollup-plugin-dts": "^6.5.1",
+        "ws": "^8.21.3"
     },
     "keywords": [
         "3D",

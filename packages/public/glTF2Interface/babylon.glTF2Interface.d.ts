@@ -1175,6 +1175,7 @@ declare namespace BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_volume_scatter extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @internal */
@@ -1182,6 +1183,20 @@ declare namespace BABYLON.GLTF2 {
         scatterAnisotropy?: number;
         multiscatterColorFactor?: number[];
         multiscatterColorTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_scatter extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @internal */
+    interface IKHRMaterialsScatter {
+        scatterStrengthFactor?: number;
+        scatterStrengthTexture?: ITextureInfo;
+        multiscatterColorFactor?: number[];
+        multiscatterColorTexture?: ITextureInfo;
+        scatterAnisotropy?: number;
     }
 
     /**

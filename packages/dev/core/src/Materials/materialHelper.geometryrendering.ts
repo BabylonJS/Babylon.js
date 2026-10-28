@@ -1,6 +1,7 @@
 import { type MaterialDefines, type Effect, type Mesh, type AbstractMesh, type Material, type AbstractEngine } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { Matrix } from "core/Maths/math.vector.pure";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Provides the object ID written by geometry rendering for a mesh.
@@ -516,23 +517,27 @@ export class MaterialHelperGeometryRendering {
             }
             currentWorldMatrices[mesh.uniqueId].copyFrom(world);
 
-            if (configuration.lastUpdateFrameId === -1) {
-                configuration.lastUpdateFrameId = engine.frameId;
-                configuration.previousViewProjection.copyFrom(scene.getTransformMatrix());
-                configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
-            } else if (configuration.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
-                // First update of the prepass configuration for this rendering pass
-                configuration.lastUpdateFrameId = engine.frameId;
-                configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
-                configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
-            } else if (configuration.lastUpdateFrameId !== engine.frameId) {
-                // The scene transformation did not change from the previous frame (so no camera motion), we must update previousViewProjection accordingly
-                configuration.lastUpdateFrameId = engine.frameId;
-                configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
+            // WGSL shaders read the camera's previous view-projection from the scene uniform buffer (Scene.finalizeSceneUbo)
+            if (effect.shaderLanguage !== ShaderLanguage.WGSL) {
+                if (configuration.lastUpdateFrameId === -1) {
+                    configuration.lastUpdateFrameId = engine.frameId;
+                    configuration.previousViewProjection.copyFrom(scene.getTransformMatrix());
+                    configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
+                } else if (configuration.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
+                    // First update of the prepass configuration for this rendering pass
+                    configuration.lastUpdateFrameId = engine.frameId;
+                    configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
+                    configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
+                } else if (configuration.lastUpdateFrameId !== engine.frameId) {
+                    // The scene transformation did not change from the previous frame (so no camera motion), we must update previousViewProjection accordingly
+                    configuration.lastUpdateFrameId = engine.frameId;
+                    configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
+                }
+
+                effect.setMatrix("previousViewProjection", configuration.previousViewProjection);
             }
 
             effect.setMatrix("previousWorld", configuration.previousWorldMatrices[mesh.uniqueId]);
-            effect.setMatrix("previousViewProjection", configuration.previousViewProjection);
 
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 const skeleton = mesh.skeleton;

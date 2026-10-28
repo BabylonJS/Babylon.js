@@ -3,6 +3,8 @@ import { PerfCounter } from "../Misc/perfCounter";
 import { type Nullable } from "../types";
 import { type IDisposable } from "../scene";
 import { type AbstractEngine } from "../Engines/abstractEngine";
+import { type IPipelineContext } from "../Engines/IPipelineContext";
+import { PrecisionDate } from "../Misc/precisionDate";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
@@ -12,6 +14,7 @@ export class EngineInstrumentation implements IDisposable {
 
     private _captureShaderCompilationTime = false;
     private _shaderCompilationTime = new PerfCounter();
+    private _shaderCompilationStartTimes = new WeakMap<IPipelineContext, number>();
 
     // Observers
     private _onBeginFrameObserver: Nullable<Observer<AbstractEngine>> = null;
@@ -73,20 +76,34 @@ export class EngineInstrumentation implements IDisposable {
         this._captureShaderCompilationTime = value;
 
         if (value) {
-            this._onBeforeShaderCompilationObserver = this.engine.onBeforeShaderCompilationObservable.add(() => {
-                this._shaderCompilationTime.fetchNewFrame();
-                this._shaderCompilationTime.beginMonitoring();
+            this._onBeforeShaderCompilationObserver = this.engine.onBeforeShaderCompilationObservable.add((_engine, state) => {
+                if (state.target) {
+                    this._shaderCompilationStartTimes.set(state.target, PrecisionDate.Now);
+                } else {
+                    this._shaderCompilationTime.fetchNewFrame();
+                    this._shaderCompilationTime.beginMonitoring();
+                }
             });
 
-            this._onAfterShaderCompilationObserver = this.engine.onAfterShaderCompilationObservable.add(() => {
-                this._shaderCompilationTime.endMonitoring(false);
-                this._shaderCompilationTime.endFrame();
+            this._onAfterShaderCompilationObserver = this.engine.onAfterShaderCompilationObservable.add((_engine, state) => {
+                if (state.target) {
+                    const startTime = this._shaderCompilationStartTimes.get(state.target);
+                    if (startTime !== undefined) {
+                        this._shaderCompilationStartTimes.delete(state.target);
+                        this._shaderCompilationTime.fetchNewFrame();
+                        this._shaderCompilationTime.addCount(PrecisionDate.Now - startTime, true);
+                    }
+                } else {
+                    this._shaderCompilationTime.endMonitoring(false);
+                    this._shaderCompilationTime.endFrame();
+                }
             });
         } else {
             this.engine.onBeforeShaderCompilationObservable.remove(this._onBeforeShaderCompilationObserver);
             this._onBeforeShaderCompilationObserver = null;
             this.engine.onAfterShaderCompilationObservable.remove(this._onAfterShaderCompilationObserver);
             this._onAfterShaderCompilationObserver = null;
+            this._shaderCompilationStartTimes = new WeakMap();
         }
     }
 
@@ -122,6 +139,7 @@ export class EngineInstrumentation implements IDisposable {
 
         this.engine.onAfterShaderCompilationObservable.remove(this._onAfterShaderCompilationObserver);
         this._onAfterShaderCompilationObserver = null;
+        this._shaderCompilationStartTimes = new WeakMap();
 
         (<any>this.engine) = null;
         this._disposed = true;

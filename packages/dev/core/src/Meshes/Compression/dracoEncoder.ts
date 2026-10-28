@@ -10,11 +10,14 @@ import { Logger } from "../../Misc/logger";
 import { deepMerge } from "../../Misc/deepMerger";
 import { type EncoderModule } from "draco3d";
 import { AreIndices32Bits, GetTypedArrayData } from "core/Buffers/bufferUtils";
+import { type INative } from "../../Engines/Native/nativeInterfaces";
 
 // Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.
 type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
 
 declare let DracoEncoderModule: DracoEncoderModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 /**
  * Map the Babylon.js attribute kind to the Draco attribute kind, defined by the `GeometryAttributeType` enum.
@@ -182,6 +185,10 @@ export class DracoEncoder extends DracoCodec {
         return typeof DracoEncoderModule !== "undefined";
     }
 
+    protected override _isNativeAvailable(): boolean {
+        return typeof _native !== "undefined" && !!_native.encodeDracoMesh;
+    }
+
     protected override async _createModuleAsync(wasmBinary?: ArrayBuffer, jsModule?: unknown /** DracoEncoderModule */): Promise<{ module: unknown /** EncoderModule */ }> {
         const module = await ((jsModule as DracoEncoderModule) || DracoEncoderModule)({ wasmBinary });
         return { module };
@@ -208,6 +215,12 @@ export class DracoEncoder extends DracoCodec {
         options?: IDracoEncoderOptions
     ): Promise<IDracoEncodedMeshData> {
         const mergedOptions = options ? deepMerge(DefaultEncoderOptions, options) : DefaultEncoderOptions;
+
+        // Native encode path: NativeDraco encodes synchronously and returns the same
+        // { data, attributeIds } shape as the WASM worker/module paths.
+        if (this._useNativeCodec) {
+            return _native.encodeDracoMesh!(attributes, indices, mergedOptions);
+        }
 
         if (this._workerPoolPromise) {
             const workerPool = await this._workerPoolPromise;

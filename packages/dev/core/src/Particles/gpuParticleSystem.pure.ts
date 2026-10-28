@@ -104,6 +104,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _platform: IGPUParticleSystemPlatform;
     private _rebuildingAfterContextLost = false;
+    private _rebuildRetryTimeout: Nullable<ReturnType<typeof setTimeout>> = null;
 
     /**
      * Whether the particle buffer needs to store the initial emission direction.
@@ -232,6 +233,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Limited by the fixed-size uniform arrays in the update shaders.
      */
     public readonly maxAttractors: number;
+
+    /** Precomputed per-slot uniform names, avoiding per-attractor string concatenation every frame. */
+    private readonly _attractorUniformNames: string[] = [];
 
     /**
      * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
@@ -1144,6 +1148,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
         this.emitRateControl = !!options.emitRateControl;
         this.maxAttractors = options.maxAttractors ?? 8;
+        for (let attractorIndex = 0; attractorIndex < this.maxAttractors; attractorIndex++) {
+            this._attractorUniformNames.push("attractorPositionAndStrength[" + attractorIndex + "]");
+        }
 
         this.particleEmitterType = new BoxParticleEmitter();
 
@@ -2245,10 +2252,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
-        if (this._scene?.forceWireframe) {
-            this._engine.unbindInstanceAttributes();
-        }
-
         return rendered ? this._currentActiveCount : 0;
     }
 
@@ -2329,7 +2332,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             for (let i = 0; i < this._attractors.length; i++) {
                 const attractor = this._attractors[i];
-                const name = "attractorPositionAndStrength[" + i + "]";
+                const name = this._attractorUniformNames[i];
                 if (invWorld) {
                     const localPos = TmpVectors.Vector3[0];
                     Vector3.TransformCoordinatesToRef(attractor.position, invWorld, localPos);
@@ -2556,6 +2559,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 outparticles = this._render(this.blendMode, emitterWM);
             }
 
+            // bindDrawBuffers() binds onto the default VAO whenever the render effect differs from the one
+            // the render VAO was recorded with. Reset the instance divisors once all passes are drawn, so the
+            // next non-instanced draw (e.g. the post-process quad) does not inherit them. Resetting between
+            // the MULTIPLYADD passes would break the second pass: bindBuffers() skips rebinding when its
+            // buffers and effect are unchanged, so it would draw with divisor 0.
+            this._engine.unbindInstanceAttributes();
             this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
@@ -2567,13 +2576,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public rebuild(): void {
         const checkUpdateEffect = () => {
+            this._rebuildRetryTimeout = null;
             if (!this._recreateUpdateEffect() || !this._platform.isUpdateBufferReady()) {
-                setTimeout(checkUpdateEffect, 10);
+                this._rebuildRetryTimeout = setTimeout(checkUpdateEffect, 10);
             } else {
                 this._initialize(true);
                 this._rebuildingAfterContextLost = false;
             }
         };
+
+        // A previous rebuild still waiting for the update effect is superseded by this one
+        this._cancelRebuildRetry();
 
         this._createIndexBuffer();
 
@@ -2585,7 +2598,27 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._platform.contextLost();
         this._rebuildingAfterContextLost = true;
 
+        // The draw contexts can still hold resources of the lost device (in WebGPU, the indirect draw buffer used for the instanced draws)
+        for (const drawWrappers of this._drawWrappers) {
+            if (!drawWrappers) {
+                continue;
+            }
+            for (const drawWrapper of drawWrappers) {
+                drawWrapper?._recreateDrawContext(this._engine);
+            }
+        }
+        for (const blendMode in this._customWrappers) {
+            this._customWrappers[blendMode]?._recreateDrawContext(this._engine);
+        }
+
         checkUpdateEffect();
+    }
+
+    private _cancelRebuildRetry() {
+        if (this._rebuildRetryTimeout !== null) {
+            clearTimeout(this._rebuildRetryTimeout);
+            this._rebuildRetryTimeout = null;
+        }
     }
 
     private _releaseBuffers() {
@@ -2609,6 +2642,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
+        // A rebuild waiting for the update effect would recreate the particle buffers after the disposal
+        this._cancelRebuildRetry();
         this._engine._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
         this._renderPassObserver = null;
         for (const drawWrappers of this._drawWrappers) {

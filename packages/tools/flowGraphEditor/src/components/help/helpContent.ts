@@ -65,6 +65,11 @@ export const HelpTopics: IHelpTopic[] = [
 <p>If the playground builds its flow graph from a snippet (e.g. <code>ParseFlowGraphCoordinatorFromSnippetAsync</code>), that flow graph is automatically opened in the editor for editing. Saving it to the snippet server then publishes a new version of that same snippet.</p>`,
             },
             {
+                heading: "Loading a Scene from File",
+                html: `<p>Drop a <code>.glb</code>, <code>.gltf</code>, or <code>.babylon</code> file onto the <strong>Scene Preview</strong> pane. For files that reference separate buffers or textures, drop all files together.</p>
+<p>The preview preserves the scene's active camera, or selects its first imported camera if none is active. A default orbit camera is created only when the scene has no camera. If loading fails, the previous preview remains available.</p>`,
+            },
+            {
                 heading: "Saving and Loading Graphs",
                 html: `<ul>
 <li><b>Save to file</b> — Downloads a <code>flowGraph.json</code> file to your machine.</li>
@@ -86,7 +91,7 @@ export const HelpTopics: IHelpTopic[] = [
 <tr><td>▶</td><td><b>Start</b></td><td>Starts executing the flow graph. Enabled when the graph is stopped or paused.</td></tr>
 <tr><td>⏸</td><td><b>Pause</b></td><td>Pauses execution. The graph can be resumed with Start.</td></tr>
 <tr><td>⏹</td><td><b>Stop</b></td><td>Stops execution and resets execution state.</td></tr>
-<tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and recreates the default scene or reloads the loaded snippet.</td></tr>
+<tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and recreates the default scene, reloads a snippet, or restores imported visibility, selectability, and hoverability defaults.</td></tr>
 </table>
 <p>The <b>state indicator</b> next to the controls shows the current graph state: <code>Stopped</code>, <code>Running</code>, <code>Paused</code>, or <code>Breakpoint</code>.</p>`,
             },
@@ -460,6 +465,12 @@ export const HelpTopics: IHelpTopic[] = [
         title: "glTF Import and Export",
         sections: [
             {
+                heading: "Authoring a behavior",
+                html: `<p>With one empty graph and the default scene, a Playground scene, or a graphless <code>.glb</code>, select <strong>New behavior</strong> in Scene Preview. <strong>Select to reveal</strong> uses a visible, pickable trigger mesh and a different enabled mesh. <strong>Two-step procedure</strong> uses five distinct roles: first part, second part, next-step cue, completion cue, and Reset control. Selecting the parts in order advances the cues; selecting Reset starts over.</p>
+<p><strong>Create behavior</strong> reloads an editable <code>KHR_interactivity</code> GLB. An imported <code>.glb</code> is patched and downloaded without reserializing its scene or binary chunks. Keep any external image or buffer files at their referenced paths; they are not included in the GLB download. Default and Playground scenes use glTF scene export, which may omit Babylon-only features. Imported <code>.gltf</code> and <code>.babylon</code> files do not support New behavior.</p>
+<p>Reset replays the authored behavior without replacing graph edits. It restores source <code>KHR_node_visibility</code>, <code>KHR_node_selectability</code>, and <code>KHR_node_hoverability</code> values, including implicit defaults actually changed by pointer operations. Reopen an imported asset to restore other scene changes.</p>`,
+            },
+            {
                 heading: "Importing from glTF",
                 html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
 <p>Files that contain a <strong>BABYLON_flow_graph</strong> custom extension are also detected and imported on drop.</p>
@@ -467,7 +478,8 @@ export const HelpTopics: IHelpTopic[] = [
             },
             {
                 heading: "Exporting KHR_interactivity",
-                html: `<p>Use <strong>Export KHR glTF</strong> or <strong>Export KHR GLB</strong> to export an imported graph set through the standards-compliant <code>KHR_interactivity</code> serializer. The editor validates every logical node and imported composite before export and reports the exact graph, node, or socket that cannot be represented.</p>
+                html: `<p>Use <strong>Export KHR glTF</strong> or <strong>Export KHR GLB</strong> to save graph edits, choosing the output format. For an asset loaded into the preview, both actions patch its retained source document rather than rebuild the scene. Unrelated asset data and original entity indices are preserved, including extension-backed pointers, computed pointer roots, and imported compatibility connections. Literal entity references are checked against the retained source collections. The editor validates every logical node and imported composite and reports edits that cannot be represented.</p>
+<p>This exports graph edits, not changes to preview geometry, materials, or scene hierarchy. External resources must remain available at their original referenced paths. Converting GLB to glTF embeds its binary buffer; GLBs containing additional binary chunks must remain GLB. Converting glTF to GLB preserves existing resource URIs rather than packing companion files.</p>
 <p>Imported multi-block operations must remain structurally intact. Unknown operations supplied by additional glTF extensions remain typed no-op blocks and round-trip without claiming runtime support.</p>
 <p><strong>Export BABYLON_flow_graph GLB</strong> remains a separate Babylon-specific option for ordinary Flow Graph JSON. It does not emit <code>KHR_interactivity</code>.</p>`,
             },

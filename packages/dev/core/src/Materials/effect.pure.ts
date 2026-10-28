@@ -336,7 +336,8 @@ export class Effect implements IDisposable {
     ) {
         this.name = baseName;
         this._key = key;
-        const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
+        // split and join make a flat string: a global replace makes a rope of pieces, which the pipeline context keeps
+        const pipelineName = this._key.replace(/\r/g, "").split("\n").join("|");
         let cachedPipeline: IPipelineContext | undefined = undefined;
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
@@ -400,7 +401,8 @@ export class Effect implements IDisposable {
                 if (error && typeof error.stack === "string") {
                     asyncError.stack = `${asyncError.message}\nCaused by: ${error.stack}`;
                 }
-                this._processCompilationErrors(asyncError);
+                // Define fallbacks cannot recover a failure before shader sources have been prepared.
+                this._processCompilationErrors(asyncError, null, false);
             });
         } else {
             this._pipelineContext = cachedPipeline;
@@ -844,7 +846,7 @@ export class Effect implements IDisposable {
                     ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError),
                     defines,
                     transformFeedbackVaryings: this._transformFeedbackVaryings,
-                    name: this._key.replace(/\r/g, "").replace(/\n/g, "|"),
+                    name: this._key.replace(/\r/g, "").split("\n").join("|"),
                     createAsRaw: overrides,
                     disableParallelCompilation: this._disableParallelShaderCompilation,
                     shaderProcessingContext: this._processingContext,
@@ -889,7 +891,7 @@ export class Effect implements IDisposable {
         return [code, errorLine];
     }
 
-    private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null) {
+    private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null, allowFallbacks = true) {
         this._compilationError = typeof e?.stack === "string" ? e.stack : (e?.message ?? String(e));
         const attributesNames = this._attributesNames;
         const fallbacks = this._fallbacks;
@@ -942,7 +944,7 @@ export class Effect implements IDisposable {
         }
 
         // Lets try to compile fallbacks as long as we have some.
-        if (fallbacks) {
+        if (fallbacks && allowFallbacks) {
             this._pipelineContext = null;
             if (fallbacks.hasMoreFallbacks) {
                 this._allFallbacksProcessed = false;
@@ -967,6 +969,7 @@ export class Effect implements IDisposable {
             if (!previousPipelineContext) {
                 notifyErrors();
             }
+            fallbacks?.unBindMesh();
         }
     }
 

@@ -25,6 +25,7 @@ import { Tools } from "../Misc/tools.pure";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
 import { AbstractEngine, type ISceneLike, type AbstractEngineOptions } from "./abstractEngine.pure";
+import { EngineStore } from "./engineStore";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -199,6 +200,19 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
      * Defines the requested Swap Chain Format.
      */
     swapChainFormat?: GPUTextureFormat;
+
+    /**
+     * Defines the canvas presentation tone mapping. Default: `{ mode: "standard" }`.
+     * Extended mode allows HDR presentation with swapChainFormat: "rgba16float" on supported browsers and displays.
+     * This does not replace material or post-process tone mapping; the rendering pipeline must preserve values above 1 for HDR output.
+     */
+    canvasToneMapping?: GPUCanvasToneMapping;
+
+    /**
+     * Defines the canvas output color space. Default: "srgb".
+     * Selecting "display-p3" changes how output colors are interpreted; it does not convert the rendering pipeline's colors to Display P3.
+     */
+    canvasColorSpace?: PredefinedColorSpace;
 
     /**
      * Defines whether we should generate debug markers in the gpu command lists (can be seen with PIX for eg). Default: false
@@ -1217,6 +1231,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
             alphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasAlphaMode.Premultiplied : WebGPUConstants.CanvasAlphaMode.Opaque,
+            toneMapping: this._options.canvasToneMapping,
+            colorSpace: this._options.canvasColorSpace,
         });
     }
 
@@ -1293,6 +1309,17 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     protected override _rebuildBuffers(): void {
+        // Index / Vertex (WebGPUEngine does not extend Engine, so it must do what Engine._rebuildBuffers does)
+        for (const scene of this.scenes) {
+            scene.resetCachedMaterial();
+            scene._rebuildGeometries();
+        }
+
+        for (const scene of this._virtualScenes) {
+            scene.resetCachedMaterial();
+            scene._rebuildGeometries();
+        }
+
         super._rebuildBuffers();
 
         for (const storageBuffer of this._storageBuffers) {
@@ -1303,7 +1330,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
     }
 
-    protected override _restoreEngineAfterContextLost(initEngine: () => void) {
+    protected override _restoreEngineAfterContextLost(initEngine: () => void | Promise<void>) {
         WebGPUCacheRenderPipelineTree.ResetCache();
         WebGPUCacheBindGroups.ResetCache();
 
@@ -4152,16 +4179,22 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public override dispose(): void {
         this._isDisposed = true;
         this.hideLoadingUI?.();
-        this._timestampQuery.dispose();
+        this._timestampQuery?.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();
-        this._textureHelper.destroyDeferredTextures();
-        this._bufferManager.destroyDeferredBuffers();
-        this._device.destroy();
+        this._textureHelper?.destroyDeferredTextures();
+        this._bufferManager?.destroyDeferredBuffers();
+        this._device?.destroy();
 
         _CommonDispose(this, this._renderingCanvas);
 
         super.dispose();
+
+        // If this was the last WebGPU engine, reset the static caches shared by all WebGPU engines
+        if (!EngineStore.Instances.some((engine) => engine.isWebGPU)) {
+            WebGPUCacheRenderPipelineTree.ResetCache();
+            WebGPUCacheBindGroups.ResetCache();
+        }
     }
 
     //------------------------------------------------------------------------------

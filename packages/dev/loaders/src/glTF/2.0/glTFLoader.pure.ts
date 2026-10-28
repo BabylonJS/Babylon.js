@@ -338,6 +338,21 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
+     * Checks whether a texture is still referenced by any material created by this loader.
+     * @param texture The texture to check
+     * @returns True if at least one loaded material still references the texture
+     * @internal
+     */
+    public _isTextureUsedByMaterials(texture: BaseTexture): boolean {
+        for (const adapter of this._materialAdapters) {
+            if (adapter.material.hasTexture(texture)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Creates or gets a cached material loading adapter with dynamic imports
      * @param material The material to adapt
      * @returns Promise that resolves to the appropriate adapter
@@ -1337,10 +1352,18 @@ export class GLTFLoader implements IGLTFLoader {
 
         const promises = new Array<Promise<unknown>>();
 
+        // Vertex-attribute morphing requires positions, even for targets that only change other attributes.
+        const targetAttributes = new Set(["POSITION"]);
+        for (const target of primitive.targets) {
+            for (const attribute of Object.keys(target)) {
+                targetAttributes.add(attribute);
+            }
+        }
+
         const morphTargetManager = babylonMesh.morphTargetManager!;
         for (let index = 0; index < morphTargetManager.numTargets; index++) {
             const babylonMorphTarget = morphTargetManager.getTarget(index);
-            promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonGeometry, primitive.targets[index], babylonMorphTarget));
+            promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonGeometry, primitive.targets[index], targetAttributes, babylonMorphTarget));
         }
 
         return Promise.all(promises).then(() => {
@@ -1366,17 +1389,24 @@ export class GLTFLoader implements IGLTFLoader {
         context: string,
         babylonGeometry: Geometry,
         attributes: { [name: string]: number },
+        targetAttributes: Set<string>,
         babylonMorphTarget: MorphTarget
     ): Promise<void> {
         const promises = new Array<Promise<unknown>>();
 
         const loadAttribute = (attribute: string, kind: string, setData: (babylonVertexBuffer: VertexBuffer, data: Float32Array) => void) => {
-            if (attributes[attribute] == undefined) {
+            if (!targetAttributes.has(attribute)) {
                 return;
             }
 
             const babylonVertexBuffer = babylonGeometry.getVertexBuffer(kind);
             if (!babylonVertexBuffer) {
+                return;
+            }
+
+            if (attributes[attribute] == undefined) {
+                const size = attribute === "TANGENT" ? 3 : babylonVertexBuffer.getSize();
+                setData(babylonVertexBuffer, new Float32Array(babylonGeometry.getTotalVertices() * size));
                 return;
             }
 

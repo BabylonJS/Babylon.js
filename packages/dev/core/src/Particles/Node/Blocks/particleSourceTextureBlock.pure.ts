@@ -192,12 +192,13 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                 }
 
                 proceduralTexture.render();
+                const textureSize = proceduralTexture.getSize();
+                const size = { width: textureSize.width, height: textureSize.height };
                 const data = await proceduralTexture.getContent();
-                if (!data) {
+                if (!data || data.byteLength !== size.width * size.height * 4) {
                     return null;
                 }
 
-                const size = proceduralTexture.getSize();
                 return {
                     width: size.width,
                     height: size.height,

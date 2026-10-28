@@ -35,7 +35,7 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
      * @param maxPartCount The maximum number of parts supported for compound meshes.
      */
     constructor(material: GaussianSplattingMaterial, maxPartCount?: number) {
-        super(material, "GaussianSplatGpuPicking", 200, {
+        super(material, "GaussianSplatGpuPicking", 230, {
             GPUPICKER_DEPTH: false,
             GPUPICKER_PACK_DEPTH: false,
         });

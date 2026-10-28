@@ -37,6 +37,7 @@ test.beforeEach(async () => {
 
     await page.evaluate(evaluateInitEngineForVisualization, {
         engineName: "webgl1",
+        useLargeWorldRendering: false,
         useReverseDepthBuffer: "false",
         useNonCompatibilityMode: " false",
         baseUrl: getGlobalConfig().baseUrl,
@@ -49,6 +50,70 @@ test.afterEach(async () => {
         window.scene = null;
         window.engine = null;
     });
+});
+
+test("WebGL1 compiles and renders image source dimensions", async () => {
+    const result = await page.evaluate(async () => {
+        const engine = window.engine;
+        if (!(engine instanceof window.BABYLON.Engine)) {
+            throw new Error("Expected a WebGL engine.");
+        }
+        const scene = new window.BABYLON.Scene(engine);
+
+        try {
+            new window.BABYLON.FreeCamera("camera", new window.BABYLON.Vector3(0, 0, -2), scene);
+            const plane = window.BABYLON.MeshBuilder.CreatePlane("plane", { size: 2 }, scene);
+            const material = new window.BABYLON.NodeMaterial("imageSize", scene);
+
+            const position = new window.BABYLON.InputBlock("position");
+            position.setAsAttribute("position");
+            const one = new window.BABYLON.InputBlock("one");
+            one.value = 1;
+            const vertexPosition = new window.BABYLON.VectorMergerBlock("vertexPosition");
+            position.output.connectTo(vertexPosition.xyzIn);
+            one.output.connectTo(vertexPosition.w);
+            const vertexOutput = new window.BABYLON.VertexOutputBlock("vertexOutput");
+            vertexPosition.xyzw.connectTo(vertexOutput.vector);
+
+            const image = new window.BABYLON.ImageSourceBlock("image");
+            image.texture = new window.BABYLON.RenderTargetTexture("dimensions", { width: 256, height: 128 }, scene, false);
+            const divisor = new window.BABYLON.InputBlock("divisor");
+            divisor.value = new window.BABYLON.Vector2(512, 512);
+            const normalized = new window.BABYLON.DivideBlock("normalized");
+            image.dimensions.connectTo(normalized.left);
+            divisor.output.connectTo(normalized.right);
+            const color = new window.BABYLON.VectorMergerBlock("color");
+            normalized.output.connectTo(color.xyIn);
+            const fragmentOutput = new window.BABYLON.FragmentOutputBlock("fragmentOutput");
+            color.xyzOut.connectTo(fragmentOutput.rgb);
+            material.addOutputNode(vertexOutput);
+            material.addOutputNode(fragmentOutput);
+
+            const built = new Promise<void>((resolve, reject) => {
+                material.onBuildObservable.addOnce(() => resolve());
+                material.onBuildErrorObservable.addOnce((error) => reject(new Error(error)));
+            });
+            material.build();
+            await built;
+            plane.material = material;
+            await material.forceCompilationAsync(plane);
+            scene.render();
+
+            const pixels = await engine.readPixels(Math.floor(engine.getRenderWidth() / 2), Math.floor(engine.getRenderHeight() / 2), 1, 1);
+            return {
+                webGLVersion: engine.webGLVersion,
+                pixel: Array.from(new Uint8Array(pixels.buffer, pixels.byteOffset, pixels.byteLength)),
+            };
+        } finally {
+            scene.dispose();
+        }
+    });
+
+    expect(result.webGLVersion).toBe(1);
+    // RGB encodes (width / 512, height / 512, 0), allowing one byte of rounding.
+    for (const [channel, expected] of [128, 64, 0, 255].entries()) {
+        expect(Math.abs(result.pixel[channel] - expected)).toBeLessThanOrEqual(1);
+    }
 });
 
 test("can process InputManager pointer events", async () => {

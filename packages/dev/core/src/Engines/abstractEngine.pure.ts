@@ -181,6 +181,21 @@ export interface AbstractEngineOptions {
     useExactSrgbConversions?: boolean;
 
     /**
+     * Defines whether the depth buffer should be reversed, going from far (0) to near (1) (default: false).
+     * This is the same as setting `engine.useReverseDepthBuffer = true` right after the engine is created, but it is
+     * applied during construction, so it is already in effect for the first frame.
+     *
+     * A reversed depth buffer gives more depth precision to distant objects and reduces z-fighting, especially when the
+     * camera covers a large depth range. It is recommended for WebGPU. With WebGL it brings little or no gain, because the
+     * [-1, 1] clip space depth range loses the extra precision.
+     * For the best precision, pair it with a floating-point depth buffer (on WebGPU, creating the engine with `stencil: false`
+     * makes the main depth buffer `depth32float` instead of `depth24plus-stencil8`).
+     *
+     * Custom shaders that write or read depth values must account for the reversed range (see the `USE_REVERSE_DEPTHBUFFER` define).
+     */
+    useReverseDepthBuffer?: boolean;
+
+    /**
      * Defines the tab index to set on the rendering canvas (default: 1).
      * Any value >= 0 makes the canvas focusable so it can capture keyboard events and places it in the
      * document's sequential tab order (0 follows DOM order, a positive value forces an explicit order).
@@ -713,9 +728,10 @@ export abstract class AbstractEngine {
         this._contextWasLost = false;
     }
 
-    protected _restoreEngineAfterContextLost(initEngine: () => void): void {
+    protected _restoreEngineAfterContextLost(initEngine: () => void | Promise<void>): void {
         // Adding a timeout to avoid race condition at browser level
-        setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        setTimeout(async () => {
             this._clearEmptyResources();
 
             const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
@@ -724,7 +740,12 @@ export abstract class AbstractEngine {
             const stencilTest = this._stencilState.stencilTest;
 
             // Rebuild context
-            initEngine();
+            try {
+                await initEngine();
+            } catch (error) {
+                Logger.Error(`${this.name}: context restoration failed: ${String(error)}`);
+                return;
+            }
             this._rebuildGraphicsResources();
 
             this._depthCullingState.depthTest = depthTest;
@@ -1196,11 +1217,13 @@ export abstract class AbstractEngine {
 
     /**
      * Observable raised when the engine is about to compile a shader
+     * In WebGL, the event state's target identifies the pipeline context being compiled.
      */
     public onBeforeShaderCompilationObservable = new Observable<AbstractEngine>();
 
     /**
      * Observable raised when the engine has just compiled a shader
+     * In WebGL, this waits for parallel compilation to complete successfully, and the event state's target identifies the pipeline context.
      */
     public onAfterShaderCompilationObservable = new Observable<AbstractEngine>();
 
@@ -1737,7 +1760,7 @@ export abstract class AbstractEngine {
 
         // processing for non-image formats
         if (loaderPromise) {
-            const callbackAsync = async (data: ArrayBufferView) => {
+            const callbackAsync = async (data: ArrayBufferView, ownsData = false) => {
                 const loader = await loaderPromise;
                 loader.loadData(
                     data,
@@ -1762,16 +1785,20 @@ export abstract class AbstractEngine {
                             );
                         }
                     },
-                    loaderOptions
+                    loaderOptions,
+                    ownsData
                 );
             };
 
             if (!buffer) {
+                // an offline provider can keep the buffers it serves (a cache), and LoadFile falls back to the last created scene's:
+                // only a file loaded without any provider is held by nothing else
+                const ownsData = !scene?.offlineProvider && !EngineStore.LastCreatedScene?.offlineProvider;
                 this._loadFile(
                     url,
                     async (data) => {
                         try {
-                            await callbackAsync(new Uint8Array(data as ArrayBuffer));
+                            await callbackAsync(new Uint8Array(data as ArrayBuffer), ownsData);
                         } catch (reason) {
                             onInternalError("Failed to parse texture data", reason);
                         }
@@ -1996,14 +2023,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.28.0";
+        return "babylonjs@9.32.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.28.0";
+        return "9.32.1";
     }
 
     /**
@@ -2151,6 +2178,7 @@ export abstract class AbstractEngine {
         this._doNotHandleContextLost = !!options.doNotHandleContextLost;
         this._isStencilEnable = options.stencil ? true : false;
         this.useExactSrgbConversions = options.useExactSrgbConversions ?? false;
+        this.useReverseDepthBuffer = options.useReverseDepthBuffer ?? false;
         this.canvasTabIndex = options.canvasTabIndex ?? this.canvasTabIndex;
 
         const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;

@@ -199,7 +199,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Set compensation default value is `GaussianSplattingMaterial.Compensation`
      */
     public set compensation(value: boolean) {
-        this._isDirty = this._isDirty != value;
+        this._isDirty = this._isDirty || this._compensation !== value;
         this._compensation = value;
     }
 
@@ -417,7 +417,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         // Compensation
         const splatMaterial = gsMesh.material as GaussianSplattingMaterial;
-        defines["COMPENSATION"] = splatMaterial && splatMaterial.compensation ? splatMaterial.compensation : GaussianSplattingMaterial.Compensation;
+        defines["COMPENSATION"] = splatMaterial?.compensation ?? GaussianSplattingMaterial.Compensation;
 
         // Get correct effect
         if (defines.isDirty) {
