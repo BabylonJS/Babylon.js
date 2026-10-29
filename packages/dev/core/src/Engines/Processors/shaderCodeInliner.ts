@@ -5,26 +5,137 @@ interface IInlineFunctionDescr {
     name: string;
     type: string;
     parameters: string[];
-    /** Types of the by-value parameters the body assigns to (indexed like parameters), which must be copied at each call site */
+    /** Declarations (type with precision qualifiers) of the by-value parameters the body writes to (indexed like parameters), which must be copied at each call site */
     copiedParameterTypes: (string | null)[];
     body: string;
     callIndex: number;
 }
 
-const ParameterQualifiers = new Set(["in", "out", "inout", "const", "highp", "mediump", "lowp", "precise"]);
+const PrecisionQualifiers = new Set(["highp", "mediump", "lowp", "precise"]);
+const OpaqueTypeRegexp = /^(?:[iu]?(?:sampler|image|texture)|atomic_uint)/;
+const BuiltinsWithOutputParameters = ["modf", "frexp", "uaddCarry", "usubBorrow", "umulExtended", "imulExtended"];
+const FunctionHeaderRegexp = /(\w+)\s*\(([^()]*)\)\s*[{;]/g;
+const AssignmentOperatorRegexp = /^(?:(?:[-+*/%&|^]|<<|>>)?=(?!=)|\+\+|--)/;
 
 /**
- * Checks whether a function body writes to a variable, e.g. "name = ...", "name.x += ...", "name[i]++" or "--name"
- * @param body code of the function body
- * @param name name of the variable
- * @returns true if the variable is assigned in the body
+ * Collects the names of the functions that have out or inout parameters, including the built-in ones
+ * @param code code without comments
+ * @returns the function names
  */
-function IsAssignedInBody(body: string, name: string): boolean {
-    const n = EscapeRegExp(name);
-    const access = `(?:\\s*(?:\\.\\s*\\w+|\\[[^\\]]*\\]))*`;
-    const assignment = new RegExp(`(?<![\\w.])${n}(?!\\w)${access}\\s*(?:(?:[-+*/%&|^]|<<|>>)?=(?!=)|\\+\\+|--)`);
-    const preIncrement = new RegExp(`(?:\\+\\+|--)\\s*${n}(?!\\w)`);
-    return assignment.test(body) || preIncrement.test(body);
+function FindFunctionsWithOutputParameters(code: string): Set<string> {
+    const names = new Set(BuiltinsWithOutputParameters);
+    FunctionHeaderRegexp.lastIndex = 0;
+    let match;
+    while ((match = FunctionHeaderRegexp.exec(code)) !== null) {
+        if (/\b(?:out|inout)\b/.test(match[2])) {
+            names.add(match[1]);
+        }
+    }
+    return names;
+}
+
+function SkipWhitespacesBackward(s: string, index: number): number {
+    while (index >= 0 && SkipWhitespaces(s, index) !== index) {
+        index--;
+    }
+    return index;
+}
+
+/**
+ * Skips member accesses and (possibly nested) subscripts, e.g. ".xy" or "[indices[0]]"
+ * @param s code to parse
+ * @param index index just after a variable name
+ * @returns the index of the first character after the accesses that is not a whitespace
+ */
+function SkipAccessors(s: string, index: number): number {
+    index = SkipWhitespaces(s, index);
+    for (;;) {
+        if (s.charAt(index) === ".") {
+            index = SkipWhitespaces(s, index + 1);
+            while (index < s.length && IsIdentifierChar(s.charAt(index))) {
+                index++;
+            }
+        } else if (s.charAt(index) === "[") {
+            const closeIndex = ExtractBetweenMarkers("[", "]", s, index);
+            if (closeIndex < 0) {
+                return index;
+            }
+            index = closeIndex + 1;
+        } else {
+            return index;
+        }
+        index = SkipWhitespaces(s, index);
+    }
+}
+
+/**
+ * Finds the name of the function whose argument list contains the given position
+ * @param s code to parse
+ * @param index position of a "(" or "," in the argument list
+ * @returns the function name, or null if the position is not inside a function call
+ */
+function FindEnclosingCallee(s: string, index: number): string | null {
+    let depth = 0;
+    for (let i = index; i >= 0; --i) {
+        const c = s.charAt(i);
+        if (c === ")" || c === "]") {
+            depth++;
+        } else if (c === "(" || c === "[") {
+            if (depth === 0) {
+                if (c === "[") {
+                    return null;
+                }
+                const nameEnd = SkipWhitespacesBackward(s, i - 1) + 1;
+                let nameStart = nameEnd;
+                while (nameStart > 0 && IsIdentifierChar(s.charAt(nameStart - 1))) {
+                    nameStart--;
+                }
+                return nameStart < nameEnd ? s.substring(nameStart, nameEnd) : null;
+            }
+            depth--;
+        } else if (depth === 0 && (c === ";" || c === "{" || c === "}")) {
+            return null;
+        }
+    }
+    return null;
+}
+
+/**
+ * Checks whether a function body may write to a variable: assignments ("name = ...", "name.x += ...", "name[i[0]]++", "--name")
+ * and arguments of functions with out or inout parameters
+ * @param body code of the function body, without comments
+ * @param name name of the variable
+ * @param functionsWithOutputParameters names of the functions that have out or inout parameters
+ * @returns true if the variable may be written in the body
+ */
+function IsWrittenInBody(body: string, name: string, functionsWithOutputParameters: Set<string>): boolean {
+    for (let index = body.indexOf(name); index >= 0; index = body.indexOf(name, index + name.length)) {
+        const end = index + name.length;
+        if ((index > 0 && IsIdentifierChar(body.charAt(index - 1))) || (end < body.length && IsIdentifierChar(body.charAt(end)))) {
+            continue;
+        }
+        const previousIndex = SkipWhitespacesBackward(body, index - 1);
+        const previous = body.charAt(previousIndex);
+        if (previous === ".") {
+            continue;
+        }
+        const previousTwo = body.substring(previousIndex - 1, previousIndex + 1);
+        if (previousTwo === "++" || previousTwo === "--") {
+            return true;
+        }
+        const nextIndex = SkipAccessors(body, end);
+        if (AssignmentOperatorRegexp.test(body.substring(nextIndex, nextIndex + 3))) {
+            return true;
+        }
+        const next = body.charAt(nextIndex);
+        if ((previous === "(" || previous === ",") && (next === "," || next === ")")) {
+            const callee = FindEnclosingCallee(body, previousIndex);
+            if (callee !== null && functionsWithOutputParameters.has(callee)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /**
@@ -77,6 +188,7 @@ export class ShaderCodeInliner {
 
     private _collectFunctions() {
         let startIndex = 0;
+        const functionsWithOutputParameters = FindFunctionsWithOutputParameters(RemoveComments(this._sourceCode));
 
         while (startIndex < this._sourceCode.length) {
             // locate the function to inline and extract its name
@@ -143,6 +255,7 @@ export class ShaderCodeInliner {
             const params = RemoveComments(funcParams).split(",");
             const paramNames = [];
             const copiedParameterTypes: (string | null)[] = [];
+            const analyzedBody = RemoveComments(funcBody);
 
             for (let p = 0; p < params.length; ++p) {
                 const param = params[p].trim();
@@ -156,9 +269,15 @@ export class ShaderCodeInliner {
                     // writes to would modify the caller's variable. Such parameters get a local copy instead.
                     const tokens = param.substring(0, idx).trim().split(/\s+/);
                     const isByValue = !tokens.includes("out") && !tokens.includes("inout") && !tokens.includes("const");
-                    const typeTokens = tokens.filter((token) => !ParameterQualifiers.has(token));
-                    const needsCopy = isByValue && typeTokens.length === 1 && !paramName.includes("[") && IsAssignedInBody(funcBody, paramName);
-                    copiedParameterTypes.push(needsCopy ? typeTokens[0] : null);
+                    const declarationTokens = tokens.filter((token) => token !== "in");
+                    const typeTokens = declarationTokens.filter((token) => !PrecisionQualifiers.has(token));
+                    const needsCopy =
+                        isByValue &&
+                        typeTokens.length === 1 &&
+                        !OpaqueTypeRegexp.test(typeTokens[0]) &&
+                        !paramName.includes("[") &&
+                        IsWrittenInBody(analyzedBody, paramName, functionsWithOutputParameters);
+                    copiedParameterTypes.push(needsCopy ? declarationTokens.join(" ") : null);
                 }
             }
 
@@ -294,7 +413,12 @@ export class ShaderCodeInliner {
                     paramNames.push(param);
                 }
 
-                const retParamName = type !== "void" ? name + "_" + func.callIndex++ : null;
+                let retParamName: string | null = null;
+                if (type !== "void") {
+                    do {
+                        retParamName = name + "_" + func.callIndex++;
+                    } while (this._isIdentifierUsed(retParamName));
+                }
 
                 if (retParamName) {
                     paramNames.push(retParamName + " =");
@@ -316,7 +440,11 @@ export class ShaderCodeInliner {
                 for (let p = 0; p < copiedParameterTypes.length; ++p) {
                     const copiedType = copiedParameterTypes[p];
                     if (copiedType) {
-                        const localName = `${name}_${parameters[p]}_${this._copyIndex++}`;
+                        // The "_c" suffix keeps copies distinct from return temporaries, which end with "_<number>"
+                        let localName: string;
+                        do {
+                            localName = `${name}_${parameters[p]}_c${this._copyIndex++}`;
+                        } while (this._isIdentifierUsed(localName));
                         copies.push(`${copiedType} ${localName} = ${paramNames[p]};`);
                         paramNames[p] = localName;
                     }
@@ -364,6 +492,11 @@ export class ShaderCodeInliner {
         }
 
         return doAgain;
+    }
+
+    private _isIdentifierUsed(identifier: string): boolean {
+        const regexp = new RegExp(`(?<!\\w)${identifier}(?!\\w)`);
+        return regexp.test(this._sourceCode) || this._functionDescr.some((func) => regexp.test(func.body));
     }
 
     private _replaceNames(code: string, sources: string[], destinations: string[]): string {
