@@ -105,6 +105,32 @@ function IsFiniteVector3(value: Vec3): boolean {
     return Number.isFinite(value.x) && Number.isFinite(value.y) && Number.isFinite(value.z);
 }
 
+function EditMassProperties(world: PhysicsWorld, body: PhysicsBody, edited: PhysicsMassProperties): void {
+    const checkInertia = (properties: Required<PhysicsMassProperties>) => {
+        if (properties.inertia.x === 0 || properties.inertia.y === 0 || properties.inertia.z === 0) {
+            // Readback contains the locked tensor, not Lite's hidden pre-lock
+            // tensor. Feeding it back would permanently zero axes on unlock.
+            throw new Error("Cannot safely edit mass properties with zero inertia. Lite does not expose the original inertia needed to preserve rotation-lock restoration.");
+        }
+    };
+    // Lite rebuilds omitted fields from the shape, rather than the current body.
+    const current = structuredClone(getPhysicsBodyMassPropertiesToRef(world, body, MassScratch, 0));
+    checkInertia(current);
+    const next = { ...current, ...edited };
+    // There is no public per-instance setter. Preflight every instance before any
+    // write so a fan-out edit cannot replace another instance's unedited values.
+    for (let index = 1; index < getPhysicsBodyInstanceCount(body); index++) {
+        const instance = getPhysicsBodyMassPropertiesToRef(world, body, MassScratch, index);
+        checkInertia(instance);
+        for (const field of ["mass", "centerOfMass", "inertia", "inertiaOrientation"] as const) {
+            if (!(field in edited) && JSON.stringify(instance[field]) !== JSON.stringify(current[field])) {
+                throw new Error("Cannot edit mass properties: instances have different unedited values. Lite only supports writing mass properties to all instances.");
+            }
+        }
+    }
+    setPhysicsBodyMassProperties(world, body, next);
+}
+
 type WorldProps = { scene: SceneContext; world: PhysicsWorld; selectionService: ISelectionService };
 type BodyProps = WorldProps & { body: PhysicsBody };
 type ConstraintProps = WorldProps & { constraint: PhysicsConstraint };
@@ -301,7 +327,10 @@ export const PhysicsBodyGeneralProperties: FunctionComponent<BodyProps> = (props
     const { scene, world, body, selectionService } = props;
     const live = () => IsPhysicsBodyLive(scene, world, body);
     return (
-        <PhysicsRead live={live} read={() => `${body.node.name},${body.motionType},${getPhysicsBodyPrestepType(body)},${getPhysicsBodyInstanceCount(body)}`}>
+        <PhysicsRead
+            live={live}
+            read={() => `${body.node.name},${body.motionType},${getPhysicsBodyPrestepType(body)},${getPhysicsBodyInstanceCount(body)},${GetPhysicsWorldDisplayName(scene, world)}`}
+        >
             {(_value, mutate) => {
                 const count = getPhysicsBodyInstanceCount(body);
                 return (
@@ -381,6 +410,9 @@ export const PhysicsBodyShapeProperties: FunctionComponent<BodyProps> = (props) 
                 return (
                     <>
                         <TextPropertyLine label="Type" value={GetPhysicsShapeTypeName(info.type)} />
+                        {getPhysicsBodyInstanceCount(body) > 1 ? (
+                            <MessageBar intent="info" message="Only the base shape is reported; per-instance shapes are not available." />
+                        ) : null}
                         {parameters ? (
                             <>
                                 {(["center", "pointA", "pointB", "extents"] as const)
@@ -524,7 +556,7 @@ export const PhysicsBodyVelocityProperties: FunctionComponent<BodyProps> = (prop
 };
 
 /**
- * Isolates mass failures and writes only the edited field, preserving rotation locks.
+ * Isolates mass failures and preserves current unedited mass properties and rotation locks.
  * @param props The body and owning world.
  * @returns Mass controls and read-only inertia orientation.
  */
@@ -544,7 +576,7 @@ export const PhysicsBodyMassProperties: FunctionComponent<BodyProps> = (props) =
                             description={BodyHint(body)}
                             onChange={(next) => {
                                 if (Number.isFinite(next)) {
-                                    mutate(() => setPhysicsBodyMassProperties(world, body, { mass: next }));
+                                    mutate(() => EditMassProperties(world, body, { mass: next }));
                                 }
                             }}
                         />
@@ -555,7 +587,7 @@ export const PhysicsBodyMassProperties: FunctionComponent<BodyProps> = (props) =
                             onChange={(next) => {
                                 const centerOfMass = ToVec3(next);
                                 if (IsFiniteVector3(centerOfMass)) {
-                                    mutate(() => setPhysicsBodyMassProperties(world, body, { centerOfMass }));
+                                    mutate(() => EditMassProperties(world, body, { centerOfMass }));
                                 }
                             }}
                         />
@@ -566,7 +598,7 @@ export const PhysicsBodyMassProperties: FunctionComponent<BodyProps> = (props) =
                             onChange={(next) => {
                                 const inertia = ToVec3(next);
                                 if (IsFiniteVector3(inertia)) {
-                                    mutate(() => setPhysicsBodyMassProperties(world, body, { inertia }));
+                                    mutate(() => EditMassProperties(world, body, { inertia }));
                                 }
                             }}
                         />
@@ -720,7 +752,7 @@ export const NodePhysicsProperties: FunctionComponent<{ scene: SceneContext; nod
             live={() => true}
             read={() =>
                 GetNodePhysicsBodies(scene, node)
-                    .map((body) => `${GetEntityId(body)}:${GetPhysicsBodyDisplayName(body)}`)
+                    .map((body) => `${GetEntityId(body)}:${GetPhysicsBodyDisplayName(body)}:${GetSceneWorldIndex(scene, body)}`)
                     .join(",")
             }
         >

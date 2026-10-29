@@ -32,7 +32,7 @@ const State = vi.hoisted(() => {
         owners: new Map<PhysicsBody, PhysicsWorld>(),
         instances: new Map<PhysicsBody, number>(),
         material: { friction: 0.2, staticFriction: 0.7, restitution: 0.3 },
-        mass: { mass: 2, centerOfMass: { x: 1, y: 2, z: 3 }, inertia: { x: 0, y: 4, z: 5 }, inertiaOrientation: { x: 0, y: 0, z: 0, w: 1 } },
+        mass: { mass: 2, centerOfMass: { x: 1, y: 2, z: 3 }, inertia: { x: 3, y: 4, z: 5 }, inertiaOrientation: { x: 0, y: 0, z: 0, w: 1 } },
         massRead: vi.fn(),
         materialRead: vi.fn(),
         linearRead: vi.fn(),
@@ -216,6 +216,7 @@ beforeEach(() => {
     State.shapes.clear();
     State.owners.clear();
     State.instances.clear();
+    State.setMass.mockReset();
     Object.assign(State.material, { friction: 0.2, staticFriction: 0.7, restitution: 0.3 });
     State.massRead.mockImplementation((_world, _body, out: Required<PhysicsMassProperties>) => {
         Object.assign(out, State.mass);
@@ -239,6 +240,24 @@ beforeEach(() => {
 afterEach(() => Renders.splice(0).forEach((render) => render.dispose()));
 
 describe("Lite physics discovery and Explorer", () => {
+    it("builds body membership once per snapshot rather than scanning bodies for each constraint endpoint", () => {
+        const h = Fixture();
+        const bodies = Array.from({ length: 1000 }, (_, index) => ({ node: CreateP9Mesh(String(index)) }) as PhysicsBody);
+        const constraints = bodies.slice(1).map((body) => ({ ...h.constraint, bodyA: bodies[0], bodyB: body }));
+        constraints.push({ ...h.constraint, bodyA: bodies[0], bodyB: h.other });
+        State.bodies.set(h.world, bodies);
+        State.constraints.set(h.world, constraints);
+        const includes = vi.spyOn(bodies, "includes");
+        const iterator = vi.spyOn(bodies, Symbol.iterator);
+        expect(Utils.GetScenePhysicsSnapshot(h.scene).worlds[0].constraints).toHaveLength(999);
+        expect(includes).not.toHaveBeenCalled();
+        expect(iterator).toHaveBeenCalledOnce();
+        iterator.mockClear();
+        expect(Utils.GetPhysicsWorldConstraints(h.world)).toHaveLength(999);
+        expect(includes).not.toHaveBeenCalled();
+        expect(iterator).toHaveBeenCalledOnce();
+    });
+
     it("uses only list membership, copies snapshots and filters dead constraint endpoints without native reads", () => {
         const h = Fixture();
         const snapshot = Utils.GetScenePhysicsSnapshot(h.scene);
@@ -378,7 +397,7 @@ describe("Lite physics property parity", () => {
         expect(container.textContent).toBe("");
     });
 
-    it("shows all body fields with instance-zero values, editable fan-out hints, and single-field mass writes", () => {
+    it("shows all body fields with instance-zero values, editable fan-out hints, and complete mass writes", () => {
         const h = Fixture();
         State.instances.set(h.body, 3);
         const container = Render(
@@ -398,7 +417,7 @@ describe("Lite physics property parity", () => {
         expect(Value(container, "Angular Damping")).toBe(0.2);
         expect(Value(container, "Gravity Factor")).toBe(1.5);
         expect(Value(container, "Linear Velocity")).toEqual({ x: 1, y: 2, z: 3 });
-        expect(Value(container, "Inertia")).toEqual({ x: 0, y: 4, z: 5 });
+        expect(Value(container, "Inertia")).toEqual(State.mass.inertia);
         for (const label of [
             "Motion Type",
             "Prestep Type",
@@ -428,11 +447,11 @@ describe("Lite physics property parity", () => {
         Edit(container, "Angular Velocity", vector);
         expect(State.setAngularVelocity).toHaveBeenCalledWith(h.world, h.body, vector);
         Edit(container, "Mass", 3);
-        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { mass: 3 });
+        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { ...State.mass, mass: 3 });
         Edit(container, "Center of Mass", vector);
-        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { centerOfMass: vector });
+        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { ...State.mass, centerOfMass: vector });
         Edit(container, "Inertia", vector);
-        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { inertia: vector });
+        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { ...State.mass, inertia: vector });
         Edit(container, "Node", null);
         expect(h.selectionService.selectedEntity).toBe(h.body.node);
         Edit(container, "World", null);
@@ -442,13 +461,13 @@ describe("Lite physics property parity", () => {
         for (const read of [State.linearRead, State.angularRead, State.gravityRead]) {
             read.mock.calls.forEach((args) => expect(args[2]).toBe(0));
         }
-        for (const read of [State.massRead, State.linearVelocityRead, State.angularVelocityRead]) {
+        for (const read of [State.linearVelocityRead, State.angularVelocityRead]) {
             read.mock.calls.forEach((args) => expect(args[3]).toBe(0));
             expect(new Set(read.mock.calls.map((args) => args[2])).size).toBe(1);
         }
     });
 
-    it("rejects non-finite mass and vector components while preserving valid single-field writes", () => {
+    it("rejects non-finite mass and vector components while preserving valid mass writes", () => {
         const h = Fixture();
         const container = Render(<Properties.PhysicsBodyMassProperties {...h} />, h);
         for (const invalid of [NaN, Infinity, -Infinity]) {
@@ -466,12 +485,93 @@ describe("Lite physics property parity", () => {
         }
         expect(State.setMass).not.toHaveBeenCalled();
         Edit(container, "Mass", 0);
-        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { mass: 0 });
+        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { ...State.mass, mass: 0 });
         Edit(container, "Center of Mass", [0, -2, 3]);
-        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { centerOfMass: { x: 0, y: -2, z: 3 } });
+        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { ...State.mass, centerOfMass: { x: 0, y: -2, z: 3 } });
         Edit(container, "Inertia", { x: 0, y: 4, z: 5 });
-        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { inertia: { x: 0, y: 4, z: 5 } });
+        expect(State.setMass).toHaveBeenLastCalledWith(h.world, h.body, { ...State.mass, inertia: { x: 0, y: 4, z: 5 } });
         expect(State.setMass).toHaveBeenCalledTimes(3);
+    });
+
+    it.each([1, 3])("reads back sequential edits while preserving unedited fields for %i instance(s)", (count) => {
+        const h = Fixture();
+        State.instances.set(h.body, count);
+        let instances = Array.from({ length: count }, () => structuredClone(State.mass));
+        State.massRead.mockImplementation((_world, _body, out, index) => Object.assign(out, structuredClone(instances[index])));
+        State.setMass.mockImplementation((_world, _body, properties: PhysicsMassProperties) => {
+            // Match Lite: omitted properties are rebuilt, not merged with previous edits.
+            instances = instances.map(() => ({ ...structuredClone(State.mass), ...structuredClone(properties) }));
+        });
+        const container = Render(<Properties.PhysicsBodyMassProperties {...h} />, h);
+        Edit(container, "Mass", 7);
+        const center = { x: 8, y: 9, z: 10 };
+        Edit(container, "Center of Mass", center);
+        expect(Value(container, "Mass")).toBe(7);
+        expect(Value(container, "Center of Mass")).toEqual(center);
+        expect(Value(container, "Inertia")).toEqual(State.mass.inertia);
+        // Change current values without a watcher tick: the next write must read them again.
+        instances.forEach((instance) => (instance.mass = 11));
+        const inertia = { x: 3, y: 12, z: 13 };
+        Edit(container, "Inertia", inertia);
+        for (const instance of instances) {
+            expect(instance).toEqual({ ...State.mass, mass: 11, centerOfMass: center, inertia });
+        }
+        expect(Value(container, "Mass")).toBe(11);
+        State.setMass.mockReset();
+    });
+
+    it("refuses a thin fan-out mass edit before writing if it would replace another instance's unedited values", () => {
+        const h = Fixture();
+        State.instances.set(h.body, 3);
+        const instances = [structuredClone(State.mass), { ...structuredClone(State.mass), inertia: { x: 6, y: 7, z: 8 } }, structuredClone(State.mass)];
+        const before = structuredClone(instances);
+        State.massRead.mockImplementation((_world, _body, out, index) => Object.assign(out, instances[index]));
+        const container = Render(<Properties.PhysicsBodyMassProperties {...h} />, h);
+        Edit(container, "Mass", 7);
+        expect(State.setMass).not.toHaveBeenCalled();
+        expect(instances).toEqual(before);
+        expect(container.textContent).toContain("instances have different unedited values");
+    });
+
+    it.each([0, 1])("refuses mass edits when instance %i has locked/zero inertia, without overwriting the pre-lock restoration tensor", (lockedIndex) => {
+        const h = Fixture();
+        State.instances.set(h.body, 2);
+        const instances = [structuredClone(State.mass), structuredClone(State.mass)];
+        instances[lockedIndex].inertia.x = 0;
+        const before = structuredClone(instances);
+        State.massRead.mockImplementation((_world, _body, out, index) => Object.assign(out, instances[index]));
+        const container = Render(<Properties.PhysicsBodyMassProperties {...h} />, h);
+        for (const [label, value] of [
+            ["Mass", 7],
+            ["Center of Mass", { x: 8, y: 9, z: 10 }],
+            ["Inertia", { x: 11, y: 12, z: 13 }],
+        ] as const) {
+            Edit(container, label, value);
+            expect(State.setMass).not.toHaveBeenCalled();
+            expect(instances).toEqual(before);
+            expect(container.textContent).toContain("Cannot safely edit mass properties with zero inertia");
+        }
+    });
+
+    it("updates body and node world links when an earlier world is removed, with the selected body still live", () => {
+        const h = Fixture();
+        const earlier = {} as PhysicsWorld;
+        State.worlds.set(h.scene, [earlier, h.world]);
+        const container = Render(
+            <>
+                <Properties.PhysicsBodyGeneralProperties {...h} />
+                <Properties.NodePhysicsProperties {...h} node={h.body.node} />
+            </>,
+            h
+        );
+        h.selectionService.selectedEntity = h.body;
+        expect(Value(container, "World")).toBe("Physics World [1]");
+        expect(Value(container, "Physics Body (World [1])")).toBe("A (Body)");
+        State.worlds.set(h.scene, [h.world]);
+        act(() => h.watcher.refresh());
+        expect(Value(container, "World")).toBe("Physics World [0]");
+        expect(Value(container, "Physics Body (World [0])")).toBe("A (Body)");
+        expect(h.selectionService.selectedEntity).toBe(h.body);
     });
 
     it("uses fresh shapes for edits, preserves the other material values, sanitizes masks and explains sharing", () => {

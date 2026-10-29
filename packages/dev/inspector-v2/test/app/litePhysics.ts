@@ -18,6 +18,9 @@ import {
     releasePhysicsConstraint,
     removePhysicsBody,
     setPhysicsBodyLinearDamping,
+    setPhysicsBodyMassProperties,
+    lockPhysicsBodyRotationAxes,
+    unlockPhysicsBodyRotationAxes,
     setThinInstances,
     type SceneContext,
     type PhysicsBody,
@@ -27,7 +30,7 @@ import {
 import { InspectorPhysicsHelpers } from "../../src/lite/sceneEntityUtils";
 
 /**
- * Loads real Havok only after Inspector opens, keeping other Lite fixtures unchanged.
+ * Loads real Havok after Inspector opens, by default or on demand with physics=off.
  * @param scene The registered scene to augment.
  * @returns Handles and deterministic queries for physics integration assertions.
  */
@@ -84,6 +87,21 @@ export async function CreateLitePhysicsFixture(scene: SceneContext) {
             friction: getPhysicsShapeMaterialToRef(world, getPhysicsBodyShape(boxAggregate.body)!, materialScratch).friction,
             thinMasses: [0, 1, 2].map((index) => readMass(thinAggregate.body, index)),
         }),
+        prepareMassEdits: (thinBody: boolean) => {
+            const body = thinBody ? thinAggregate.body : boxAggregate.body;
+            setPhysicsBodyMassProperties(world, body, {
+                mass: 2,
+                centerOfMass: { x: 1, y: 2, z: 3 },
+                inertia: { x: 3, y: 4, z: 5 },
+                inertiaOrientation: { x: 0, y: 0, z: 0, w: 1 },
+            });
+        },
+        lockMassEdits: (thinBody: boolean) => lockPhysicsBodyRotationAxes(world, thinBody ? thinAggregate.body : boxAggregate.body, ["x"]),
+        unlockMassEdits: (thinBody: boolean) => unlockPhysicsBodyRotationAxes(world, thinBody ? thinAggregate.body : boxAggregate.body, ["x"]),
+        readMassProperties: (thinBody: boolean) =>
+            Array.from({ length: thinBody ? 3 : 1 }, (_, index) =>
+                structuredClone(getPhysicsBodyMassPropertiesToRef(world, thinBody ? thinAggregate.body : boxAggregate.body, massScratch, index))
+            ),
         helperCount: () => scene.meshes.filter((mesh) => InspectorPhysicsHelpers.has(mesh)).length,
         bodyCount: () => getPhysicsBodies(world).length,
         worldCount: () => getPhysicsWorlds(scene).length,

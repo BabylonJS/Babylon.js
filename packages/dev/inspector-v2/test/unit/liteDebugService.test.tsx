@@ -107,6 +107,7 @@ describe("Babylon Lite debug service", () => {
         expect(constraints.disabled).toBe(false);
         act(() => bodies.click());
         expect(bodies.checked).toBe(true);
+        expect(container.textContent).toContain("Thin-instance body wireframes are omitted");
         expect(constraints.checked).toBe(false);
         act(() => constraints.click());
         act(() => bodies.click());

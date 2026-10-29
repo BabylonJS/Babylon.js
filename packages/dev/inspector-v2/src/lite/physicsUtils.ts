@@ -45,8 +45,11 @@ export function GetPhysicsWorldBodies(world: PhysicsWorld): PhysicsBody[] {
  * @returns Its constraints with live endpoints.
  */
 export function GetPhysicsWorldConstraints(world: PhysicsWorld): PhysicsConstraint[] {
-    const bodies = getPhysicsBodies(world);
-    return [...getPhysicsConstraints(world)].filter((constraint) => bodies.includes(constraint.bodyA) && bodies.includes(constraint.bodyB));
+    return FilterLiveConstraints(world, new Set(getPhysicsBodies(world)));
+}
+
+function FilterLiveConstraints(world: PhysicsWorld, bodies: ReadonlySet<PhysicsBody>): PhysicsConstraint[] {
+    return [...getPhysicsConstraints(world)].filter((constraint) => bodies.has(constraint.bodyA) && bodies.has(constraint.bodyB));
 }
 
 /**
@@ -93,11 +96,10 @@ export function IsPhysicsConstraintLive(scene: SceneContext, world: PhysicsWorld
  */
 export function GetScenePhysicsSnapshot(scene: SceneContext) {
     return {
-        worlds: GetScenePhysicsWorlds(scene).map((world) => ({
-            world,
-            bodies: GetPhysicsWorldBodies(world),
-            constraints: GetPhysicsWorldConstraints(world),
-        })),
+        worlds: GetScenePhysicsWorlds(scene).map((world) => {
+            const bodies = GetPhysicsWorldBodies(world);
+            return { world, bodies, constraints: FilterLiveConstraints(world, new Set(bodies)) };
+        }),
     };
 }
 

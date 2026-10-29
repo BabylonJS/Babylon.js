@@ -16,6 +16,9 @@ import {
     hidePhysicsConstraint,
     getPhysicsConstraintDebug,
     getPhysicsBodyShape,
+    getPhysicsShapeType,
+    getPhysicsShapeChildCount,
+    PhysicsShapeType,
     type EngineContext,
     type Mesh,
     type SceneContext,
@@ -48,7 +51,8 @@ const BoxEdges = [
 ] as const;
 
 // Retain shape identity only to invalidate helper geometry, never for native reads.
-type BodyViewer = { viewer: PhysicsViewer; entities: Map<PhysicsBody, PhysicsShape | null>; meshes: Set<Mesh> };
+type BodyGeometry = { shape: PhysicsShape | null; children: number };
+type BodyViewer = { viewer: PhysicsViewer; entities: Map<PhysicsBody, BodyGeometry>; meshes: Set<Mesh> };
 type ConstraintViewer = { viewer: PhysicsViewer; entities: Set<PhysicsConstraint>; meshes: Set<Mesh> };
 type Helpers = {
     grid?: Mesh;
@@ -59,6 +63,15 @@ type Helpers = {
     bodyViewers: Map<PhysicsWorld, BodyViewer>;
     constraintViewers: Map<PhysicsWorld, ConstraintViewer>;
 };
+
+function IsThinBody(body: PhysicsBody): boolean {
+    return "thinInstances" in body.node && !!body.node.thinInstances;
+}
+
+function GetBodyGeometry(world: PhysicsWorld, body: PhysicsBody): BodyGeometry {
+    const shape = getPhysicsBodyShape(body);
+    return { shape, children: shape && getPhysicsShapeType(shape) === PhysicsShapeType.CONTAINER ? getPhysicsShapeChildCount(world, shape) : 0 };
+}
 
 function GetBoundsLines(mesh: Mesh): Vec3[][] {
     const min = mesh.boundMin;
@@ -225,14 +238,22 @@ export class DebugController {
         const snapshot: unknown[] = [];
         for (const scene of this.scenes) {
             snapshot.push(scene);
+            const helpers = this._helpers.get(scene);
             for (const { world, bodies, constraints } of GetScenePhysicsSnapshot(scene).worlds) {
                 snapshot.push(world, ...bodies, ...constraints);
                 // Shape discovery is JS-only; a later attachment/replacement must trigger reconciliation.
                 for (const body of bodies) {
-                    snapshot.push(getPhysicsBodyShape(body));
+                    snapshot.push(getPhysicsBodyShape(body), IsThinBody(body));
+                    if (helpers?.physicsBodies && !IsThinBody(body) && IsPhysicsBodyLive(scene, world, body)) {
+                        try {
+                            snapshot.push(GetBodyGeometry(world, body).children);
+                        } catch (error) {
+                            // Reconciliation reports native failures and releases the viewer.
+                            snapshot.push(`Physics geometry failed: ${error instanceof Error ? error.message : String(error)}`);
+                        }
+                    }
                 }
             }
-            const helpers = this._helpers.get(scene);
             if (!helpers || (!helpers.grid && !helpers.showBounds)) {
                 continue;
             }
@@ -454,19 +475,21 @@ export class DebugController {
                     if (!entry) {
                         continue;
                     }
-                    for (const [body, shape] of entry.entities) {
-                        if (!IsPhysicsBodyLive(scene, world, body) || getPhysicsBodyShape(body) !== shape) {
+                    for (const [body, geometry] of entry.entities) {
+                        const live = IsPhysicsBodyLive(scene, world, body) && !IsThinBody(body);
+                        const current = live ? GetBodyGeometry(world, body) : undefined;
+                        if (!current || current.shape !== geometry.shape || current.children !== geometry.children) {
                             hidePhysicsBody(entry.viewer, body);
                             entry.entities.delete(body);
                         }
                     }
                     for (const body of bodies) {
-                        if (!entry.entities.has(body) && IsPhysicsBodyLive(scene, world, body)) {
-                            const shape = getPhysicsBodyShape(body);
+                        if (!entry.entities.has(body) && !IsThinBody(body) && IsPhysicsBodyLive(scene, world, body)) {
+                            const geometry = GetBodyGeometry(world, body);
                             const mesh = showPhysicsBody(entry.viewer, body);
                             if (mesh) {
                                 this._trackPhysicsMeshes(entry, [mesh]);
-                                entry.entities.set(body, shape);
+                                entry.entities.set(body, geometry);
                             }
                         }
                     }
@@ -487,7 +510,18 @@ export class DebugController {
                     }
                     for (const constraint of constraints) {
                         if (!entry.entities.has(constraint) && IsPhysicsConstraintLive(scene, world, constraint)) {
-                            this._trackPhysicsMeshes(entry, showPhysicsConstraint(entry.viewer, getPhysicsConstraintDebug(constraint)));
+                            // Lite returns the axes/disks but not their six arrowheads.
+                            // Capture the synchronous viewer mutation, including partial creation
+                            // on failure, without relying on private viewer fields or mesh names.
+                            const before = new Set(scene.meshes);
+                            try {
+                                showPhysicsConstraint(entry.viewer, getPhysicsConstraintDebug(constraint));
+                            } finally {
+                                this._trackPhysicsMeshes(
+                                    entry,
+                                    scene.meshes.filter((mesh) => !before.has(mesh))
+                                );
+                            }
                             entry.entities.add(constraint);
                         }
                     }
