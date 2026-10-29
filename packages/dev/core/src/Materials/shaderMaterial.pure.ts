@@ -41,6 +41,13 @@ import { RegisterClass } from "../Misc/typeStore";
 
 const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
+// vp_*_info uniforms are bound through the metadata, so callers must pass a copy of the array rather than the shared options one
+function AddVertexPullingUniforms(uniforms: string[], metadata: Map<string, IVertexPullingMetadata>): void {
+    metadata.forEach((_, attribute) => {
+        uniforms.push(`vp_${attribute}_info`);
+    });
+}
+
 interface IShaderMaterialMatrixArrayAccess {
     _matrixArrays: { [name: string]: Float32Array | Array<number> };
 }
@@ -907,18 +914,13 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         const renderingMesh = subMesh ? subMesh.getRenderingMesh() : mesh;
+        // Metadata prepared by this call only; this._vertexPullingMetadata can be stale from a previous call
+        let vertexPullingMetadata: Nullable<Map<string, IVertexPullingMetadata>> = null;
         if (renderingMesh && this.useVertexPulling) {
             // Add vertex buffer metadata defines for proper stride/offset handling
             const geometry = renderingMesh.geometry;
             if (geometry) {
-                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
-                if (this._vertexPullingMetadata) {
-                    // vp_*_info uniforms are bound through the metadata, so keep them out of the shared options array
-                    uniforms = uniforms.slice();
-                    this._vertexPullingMetadata.forEach((_, attribute) => {
-                        uniforms.push(`vp_${attribute}_info`);
-                    });
-                }
+                vertexPullingMetadata = this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
             }
 
             defines.push("#define USE_VERTEX_PULLING");
@@ -932,10 +934,15 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
+        let hasVertexPullingUniforms = false;
         if (this.customShaderNameResolve) {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
             samplers = samplers.slice();
+            if (vertexPullingMetadata) {
+                AddVertexPullingUniforms(uniforms, vertexPullingMetadata);
+                hasVertexPullingUniforms = true;
+            }
             shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
@@ -946,6 +953,11 @@ export class ShaderMaterial extends PushMaterial {
 
         let effect = previousEffect;
         if (previousDefines !== join) {
+            if (vertexPullingMetadata && !hasVertexPullingUniforms) {
+                // Copy only when creating the effect, as the array may be shared with the material options
+                uniforms = uniforms.slice();
+                AddVertexPullingUniforms(uniforms, vertexPullingMetadata);
+            }
             effect = engine.createEffect(
                 shaderName,
                 <IEffectCreationOptions>{

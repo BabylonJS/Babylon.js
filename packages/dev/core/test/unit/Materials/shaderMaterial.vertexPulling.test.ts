@@ -61,4 +61,40 @@ describe("ShaderMaterial vertex pulling", () => {
         expect(options.uniformsNames).toContain("vp_position_info");
         expect(options.uniformsNames).toContain("worldViewProjection");
     });
+
+    it("gives customShaderNameResolve the vertex pulling uniforms without touching the material options", () => {
+        const material = createMaterial(["worldViewProjection"]);
+        const resolvedUniforms: string[][] = [];
+        material.customShaderNameResolve = (shaderName, uniforms) => {
+            resolvedUniforms.push([...uniforms]);
+            return shaderName;
+        };
+        const createEffect = vi.spyOn(engine, "createEffect");
+
+        for (let i = 0; i < 5; i++) {
+            material.isReady(mesh);
+        }
+
+        expect(resolvedUniforms.length).toBeGreaterThan(0);
+        for (const uniforms of resolvedUniforms) {
+            expect(uniforms.filter((name) => name === "vp_position_info")).toHaveLength(1);
+        }
+        const options = createEffect.mock.calls[0][1] as IEffectCreationOptions;
+        expect(options.uniformsNames!.filter((name) => name === "vp_position_info")).toHaveLength(1);
+        expect(material.options.uniforms).toEqual(["worldViewProjection"]);
+    });
+
+    it("creates the effect once and leaves the options untouched when defines do not change", () => {
+        const material = createMaterial(["worldViewProjection"]);
+        const createEffect = vi.spyOn(engine, "createEffect");
+
+        for (let i = 0; i < 10; i++) {
+            material.isReady(mesh);
+        }
+
+        expect(createEffect).toHaveBeenCalledTimes(1);
+        const options = createEffect.mock.calls[0][1] as IEffectCreationOptions;
+        expect(options.uniformsNames!.filter((name) => name === "vp_position_info")).toHaveLength(1);
+        expect(material.options.uniforms).toEqual(["worldViewProjection"]);
+    });
 });
