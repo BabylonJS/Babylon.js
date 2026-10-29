@@ -616,11 +616,11 @@ export class WebGPURenderPassCommandStream {
         const loggedMessage = `${message} Subsequent draws fall back to direct encoder calls.`;
         Logger.Error(loggedMessage);
 
-        const onDisabled = this._options.getProvider()?.onDisabled;
-        if (onDisabled) {
+        const provider = this._options.getProvider();
+        if (provider?.onDisabled) {
             // A diagnostics hook must never take the frame down with it.
             try {
-                onDisabled({ reason, message: loggedMessage, hostError, replayedDrawCount });
+                provider.onDisabled({ reason, message: loggedMessage, hostError, replayedDrawCount });
             } catch (error) {
                 Logger.Error(`WebGPU render pass command stream onDisabled handler threw: ${error instanceof Error ? error.message : String(error)}`);
             }

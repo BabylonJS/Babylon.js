@@ -5,6 +5,7 @@ import { type Nullable } from "core/types";
 import {
     ApplyWebGPURenderPassDrawCommand,
     type IWebGPURenderPassCommandRecorderProvider,
+    type IWebGPURenderPassCommandStreamDisableInfo,
     type IWebGPURenderPassIndexedDrawCommand,
     type IWebGPURenderPassNonIndexedDrawCommand,
     WebGPURenderPassCommandOpcode,
@@ -672,6 +673,45 @@ describe("WebGPURenderPassCommandStream", () => {
             expect(calls).toHaveLength(0);
             expect(onDisabled).toHaveBeenCalledTimes(1);
             expect(onDisabled).toHaveBeenCalledWith(expect.objectContaining({ reason: "protocol-mismatch", hostError: undefined, replayedDrawCount: 0 }));
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("invokes onDisabled on its provider so class-based handlers keep their state", () => {
+        class StatefulProvider implements IWebGPURenderPassCommandRecorderProvider {
+            public protocolVersion = WebGPURenderPassCommandStreamProtocolVersion;
+            public enabled = true;
+            public reports: IWebGPURenderPassCommandStreamDisableInfo[] = [];
+
+            public isEnabled(): boolean {
+                return this.enabled;
+            }
+
+            public getResourceId(resource: Nullable<object>): number {
+                return getBackendResourceId(resource);
+            }
+
+            public onDisabled(info: IWebGPURenderPassCommandStreamDisableInfo): void {
+                this.enabled = false;
+                this.reports.push(info);
+            }
+        }
+
+        const { renderPass, calls } = createRecordingRenderPass(false);
+        const provider = new StatefulProvider();
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(true);
+            expect(stream.flush()).toBe(false);
+
+            expect(provider.enabled).toBe(false);
+            expect(provider.reports).toHaveLength(1);
+            expect(provider.reports[0]).toMatchObject({ reason: "recording-rejected", replayedDrawCount: 1 });
+            expect(calls.map((call) => call[0])).toContain("drawIndexed");
+            expect(errorSpy).toHaveBeenCalledTimes(1);
         } finally {
             errorSpy.mockRestore();
         }
