@@ -1351,7 +1351,7 @@
         },
         {
             "title": "Displacement map",
-            "playgroundId": "#WZ8JL4#0",
+            "playgroundId": "#WZ8JL4#1",
             "referenceImage": "displacementMap.png",
             "dependsOn": ["Materials", "Textures"]
         },
@@ -2721,7 +2721,7 @@
         {
             "title": "Instances + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#547",
+            "playgroundId": "#YB006J#800",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-mb.png",
             "dependsOn": ["Collisions", "Lights", "Loaders", "Materials", "Meshes", "PostProcesses", "Shadows", "Textures"]
@@ -2729,7 +2729,7 @@
         {
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#549",
+            "playgroundId": "#YB006J#801",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-gbr-mb.png",
             "dependsOn": ["Collisions", "Lights", "Loaders", "Materials", "Meshes", "PostProcesses", "Shadows", "Textures"]
