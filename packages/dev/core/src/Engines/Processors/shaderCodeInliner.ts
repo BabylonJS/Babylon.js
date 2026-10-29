@@ -12,7 +12,7 @@ interface IInlineFunctionDescr {
 }
 
 const PrecisionQualifiers = new Set(["highp", "mediump", "lowp", "precise"]);
-const OpaqueTypeRegexp = /^(?:[iu]?(?:sampler|image|texture)|atomic_uint)/;
+const OpaqueTypeRegexp = /^(?:[iu]?(?:sampler|image|texture)(?:[123]D|Cube|2DRect|Buffer|ExternalOES)(?:MS)?(?:Array)?(?:Shadow)?|sampler(?:Shadow)?|atomic_uint)$/;
 const BuiltinsWithOutputParameters = ["modf", "frexp", "uaddCarry", "usubBorrow", "umulExtended", "imulExtended"];
 const FunctionHeaderRegexp = /(\w+)\s*\(([^()]*)\)\s*[{;]/g;
 const AssignmentOperatorRegexp = /^(?:(?:[-+*/%&|^]|<<|>>)?=(?!=)|\+\+|--)/;

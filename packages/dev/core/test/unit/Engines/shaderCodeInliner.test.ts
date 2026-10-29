@@ -95,6 +95,25 @@ void main() {
         expect(code).toMatch(/texture\(tex, vec2\(0\.0\)\)/);
     });
 
+    it("copies struct parameters whose type names start like opaque types", () => {
+        const code = Inline(`
+struct textureState { float lod; };
+struct samplerParams { float bias; };
+#define inline
+float f(textureState t, samplerParams s) {
+    t.lod = 1.0;
+    s.bias = 2.0;
+    return t.lod + s.bias;
+}
+void main() {
+    textureState x = textureState(0.0);
+    samplerParams y = samplerParams(0.0);
+    gl_FragColor = vec4(f(x, y));
+}
+`);
+        expect(code).toMatch(/textureState f_t_c\d+ = x;/);
+        expect(code).toMatch(/samplerParams f_s_c\d+ = y;/);
+    });
     it("preserves the precision qualifiers of copied parameters", () => {
         const code = Inline(`
 precision mediump float;
