@@ -400,5 +400,38 @@ describe("WebGPUCacheRenderPipeline", () => {
             expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).not.toBeNull();
             expect(device.createRenderPipelineAsync).not.toHaveBeenCalled();
         });
+
+        it("should forget a pending creation when the cache is reset (a device change), and ignore it when it completes", async () => {
+            let resolve!: (pipeline: GPURenderPipeline) => void;
+            vi.mocked(device.createRenderPipelineAsync).mockImplementationOnce(() => new Promise((r) => (resolve = r)));
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            const late = cache.lastPendingPipeline!;
+            WebGPUCacheRenderPipelineTree.ResetCache();
+            expect(WebGPUCacheRenderPipelineTree.NumPendingPipelines).toBe(0);
+
+            const misses = WebGPUCacheRenderPipelineTree.NumCacheMiss;
+            resolve({ label: "from the previous device" } as unknown as GPURenderPipeline);
+            await late;
+            expect(WebGPUCacheRenderPipelineTree.NumCacheMiss).toBe(misses);
+        });
+
+        it("should neither report nor mark as failed a creation that fails after the cache was reset", async () => {
+            let reject!: (error: Error) => void;
+            vi.mocked(device.createRenderPipelineAsync).mockImplementationOnce(() => new Promise((_, r) => (reject = r)));
+            const error = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            const late = cache.lastPendingPipeline!;
+            WebGPUCacheRenderPipelineTree.ResetCache();
+            reject(new Error("device lost"));
+            await expect(late).rejects.toThrow("device lost");
+            expect(error).not.toHaveBeenCalled();
+
+            // the next miss is created asynchronously again, not synchronously as after a failure
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            expect(device.createRenderPipeline).not.toHaveBeenCalled();
+            error.mockRestore();
+        });
     });
 });

@@ -102,6 +102,8 @@ export abstract class WebGPUCacheRenderPipeline {
     private static _PendingPipelines = new Map<any, Promise<GPURenderPipeline>>();
     // cache tokens whose asynchronous creation failed: created synchronously at their next miss, which reports the error as usual
     private static _FailedPipelines = new Set<any>();
+    // bumped when the cache is reset (a device change, the last engine disposed): a creation that completes after it is ignored
+    private static _AsyncGeneration = 0;
 
     /**
      * The number of pipelines being created asynchronously
@@ -111,10 +113,13 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     /**
-     * Forgets the failed asynchronous creations (the cache was reset). Pending creations complete into tokens of the old cache.
+     * Forgets the asynchronous creations, pending and failed (the cache was reset): one that completes later, on the device it was
+     * started on, is ignored, neither kept nor reported.
      * @internal
      */
     public static _ResetAsyncCreations(): void {
+        WebGPUCacheRenderPipeline._AsyncGeneration++;
+        WebGPUCacheRenderPipeline._PendingPipelines.clear();
         WebGPUCacheRenderPipeline._FailedPipelines.clear();
     }
 
@@ -1300,10 +1305,14 @@ export abstract class WebGPUCacheRenderPipeline {
 
         const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
         const descriptor = this._buildRenderPipelineDescriptor(effect, topology, sampleCount);
+        const generation = WebGPUCacheRenderPipeline._AsyncGeneration;
 
         // eslint-disable-next-line github/no-then
         const promise = this._device.createRenderPipelineAsync(descriptor).then(
             (pipeline) => {
+                if (generation !== WebGPUCacheRenderPipeline._AsyncGeneration) {
+                    return pipeline;
+                }
                 WebGPUCacheRenderPipeline._PendingPipelines.delete(token);
                 this._setRenderPipeline({ token, pipeline });
 
@@ -1312,6 +1321,9 @@ export abstract class WebGPUCacheRenderPipeline {
                 return pipeline;
             },
             (error) => {
+                if (generation !== WebGPUCacheRenderPipeline._AsyncGeneration) {
+                    throw error;
+                }
                 WebGPUCacheRenderPipeline._PendingPipelines.delete(token);
                 WebGPUCacheRenderPipeline._FailedPipelines.add(token);
                 Logger.Error(`WebGPU: the asynchronous creation of the render pipeline "${descriptor.label}" failed: ${error?.message ?? error}`);
