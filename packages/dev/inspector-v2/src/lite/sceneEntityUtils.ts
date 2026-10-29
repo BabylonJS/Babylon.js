@@ -25,6 +25,9 @@ import {
 /** Inspector bounds helpers must retain their source-dependent transform and cannot participate in reparenting. */
 export const InspectorBoundsHelpers = new WeakSet<SceneNode>();
 
+/** Inspector-owned physics helpers are non-pickable and excluded from scene discovery. */
+export const InspectorPhysicsHelpers = new WeakSet<SceneNode>();
+
 /** Inspector-owned overlay scenes, excluded without affecting application-owned utility scenes. */
 export const InspectorUtilityScenes = new WeakSet<RenderingContext>();
 
@@ -95,7 +98,7 @@ export function IsHemisphericLight(entity: unknown): entity is HemisphericLight 
 export function GetSceneNodes(scene: SceneContext): readonly SceneNode[] {
     const nodes = new Set<SceneNode>();
     const addNode = (node: SceneNode) => {
-        if (nodes.has(node)) {
+        if (nodes.has(node) || InspectorPhysicsHelpers.has(node)) {
             return;
         }
 
@@ -106,6 +109,9 @@ export function GetSceneNodes(scene: SceneContext): readonly SceneNode[] {
     };
 
     for (const mesh of scene.meshes) {
+        if (InspectorPhysicsHelpers.has(mesh)) {
+            continue;
+        }
         let root: SceneNode = mesh;
         while (IsSceneNode(root.parent)) {
             root = root.parent;

@@ -487,6 +487,10 @@ await startEngine(engine);
 const inspectorToken = ShowInspector(engine);
 
 Object.assign(globalThis, {
+    liteCreatePhysics: async () => {
+        const { CreateLitePhysicsFixture } = await import("./litePhysics");
+        Object.assign(globalThis, { litePhysics: await CreateLitePhysicsFixture(primaryScene) });
+    },
     liteSkinnedMesh: skinnedMesh,
     liteMorphClone: morphClone,
     liteSkeleton: getMeshSkeleton(skinnedMesh),

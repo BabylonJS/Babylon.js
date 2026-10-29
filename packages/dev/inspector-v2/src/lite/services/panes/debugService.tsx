@@ -18,7 +18,16 @@ const DebugPane: FunctionComponent<{ controller: DebugController }> = (props) =>
     const { controller } = props;
     const state = useObservableState(
         useCallback(
-            () => ({ scenes: controller.scenes, scene: controller.scene, grid: controller.gridEnabled, bounds: controller.boundsEnabled, error: controller.error }),
+            () => ({
+                scenes: controller.scenes,
+                scene: controller.scene,
+                grid: controller.gridEnabled,
+                bounds: controller.boundsEnabled,
+                physicsBodies: controller.physicsBodiesEnabled,
+                physicsConstraints: controller.physicsConstraintsEnabled,
+                hasPhysics: controller.hasPhysicsWorlds,
+                error: controller.error,
+            }),
             [controller]
         ),
         controller.onChanged
@@ -51,6 +60,22 @@ const DebugPane: FunctionComponent<{ controller: DebugController }> = (props) =>
                             description="Show mesh-local bounds that follow transforms every frame. Geometry and visibility updates follow Inspector's watch mode; deformations and individual thin instances are not included."
                             value={state.bounds}
                             onChange={(value) => controller.setBounds(value)}
+                        />
+                        <SwitchPropertyLine
+                            label="Physics Bodies"
+                            ariaLabel="Physics Bodies"
+                            controlled
+                            value={state.physicsBodies}
+                            disabled={!state.hasPhysics}
+                            onChange={(value) => controller.setPhysicsBodies(value)}
+                        />
+                        <SwitchPropertyLine
+                            label="Physics Constraints"
+                            ariaLabel="Physics Constraints"
+                            controlled
+                            value={state.physicsConstraints}
+                            disabled={!state.hasPhysics}
+                            onChange={(value) => controller.setPhysicsConstraints(value)}
                         />
                     </>
                 )}
