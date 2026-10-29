@@ -10,6 +10,7 @@ import { MeshBuilder } from "core/Meshes/meshBuilder";
 import "core/Meshes/thinInstanceMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MaterialDefines } from "core/Materials/materialDefines";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { DrawWrapper } from "core/Materials/drawWrapper";
@@ -111,6 +112,32 @@ describe("Mesh recorded draws", () => {
     it("sees a dirty material", () => {
         material.markAsDirty(StandardMaterial.TextureDirtyFlag);
         expect(unchanged()).toBe(false);
+    });
+
+    it("is not encoded again through a shader hot swap, and is again once the new effect is drawn in full", () => {
+        // the defines as the full draw left them: processed
+        const defines = new MaterialDefines();
+        defines.markAsProcessed();
+        subMesh.materialDefines = defines;
+        expect(unchanged()).toBe(true);
+
+        // a frame of hot swapping (StandardMaterial.isReadyForSubMesh): the previous effect draws in full while the new one
+        // compiles, and the defines stay unprocessed
+        nextFrame();
+        defines.markAsUnprocessed();
+        fullDraw();
+        expect(unchanged()).toBe(false);
+
+        // the new effect compiled: the defines are processed and the sub mesh gets the new effect. Another draw of the material,
+        // still on the previous effect, keeps its reference of the frame, which is not the new effect's
+        nextFrame();
+        light._renderId = scene.getRenderId();
+        material._keepRecordedDrawReference(drawWrapper.effect!, new DrawWrapper(engine));
+        defines.markAsProcessed();
+        drawWrapper.setEffect({} as Effect);
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
     });
 
     it("sees a texture that swaps its GPU texture without dirtying the material", () => {
