@@ -25,6 +25,7 @@ import {
     type SceneContext,
     type PhysicsBody,
     type PhysicsMassProperties,
+    type Material,
 } from "@babylonjs/lite";
 
 import { InspectorPhysicsHelpers } from "../../src/lite/sceneEntityUtils";
@@ -32,24 +33,34 @@ import { InspectorPhysicsHelpers } from "../../src/lite/sceneEntityUtils";
 /**
  * Loads real Havok after Inspector opens, by default or on demand with physics=off.
  * @param scene The registered scene to augment.
+ * @param boxMaterial The existing scene material for the box meshes.
+ * @param sphereMaterial The existing scene material for the sphere.
  * @returns Handles and deterministic queries for physics integration assertions.
  */
-export async function CreateLitePhysicsFixture(scene: SceneContext) {
+export async function CreateLitePhysicsFixture(scene: SceneContext, boxMaterial: Material, sphereMaterial: Material) {
     const { default: HavokPhysics } = await import("@babylonjs/havok");
     const havok = await HavokPhysics({ locateFile: () => new URL("/HavokPhysics.wasm", location.href).href });
     const world = createHavokWorld(scene, havok, { x: 0, y: 0, z: 0 });
     await enableHavokThinInstancePhysics(world);
-    const box = createBox(scene.surface.engine);
+    // Keep the dynamic bodies separated above the original scene objects and inside the default camera.
+    const box = createBox(scene.surface.engine, 0.6);
     box.name = "P10 Box";
-    box.position.y = 2;
-    const sphere = createSphere(scene.surface.engine);
+    box.position.x = -0.25;
+    box.position.y = 1.8;
+    box.material = boxMaterial;
+    const sphere = createSphere(scene.surface.engine, { diameter: 0.6 });
     sphere.name = "P10 Sphere";
-    sphere.position.y = 2;
-    const shared = createBox(scene.surface.engine);
+    sphere.position.x = 1;
+    sphere.position.y = 1.8;
+    sphere.material = sphereMaterial;
+    const shared = createBox(scene.surface.engine, 0.6);
     shared.name = "P10 Shared";
-    shared.position.y = 2;
+    shared.position.x = 1.75;
+    shared.position.y = 1.8;
+    shared.material = boxMaterial;
     const thin = createBox(scene.surface.engine);
     thin.name = "P10 Thin";
+    thin.material = boxMaterial;
     const matrices = new Float32Array(16 * 3);
     for (let index = 0; index < 3; index++) {
         matrices.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, index * 2 - 2, 4, 0, 1], index * 16);
@@ -63,9 +74,15 @@ export async function CreateLitePhysicsFixture(scene: SceneContext) {
     const sharedAggregate = createPhysicsAggregate(world, shared, PhysicsShapeType.BOX, { mass: 1, shape: boxAggregate.shape });
     const thinAggregate = createPhysicsAggregate(world, thin, PhysicsShapeType.BOX, { mass: 1 });
     setPhysicsBodyLinearDamping(world, boxAggregate.body, 0.2);
-    const hinge = createPhysicsConstraint(world, boxAggregate.body, sphereAggregate.body, PhysicsConstraintType.HINGE, {}, [
-        { axis: PhysicsConstraintAxis.ANGULAR_X, minLimit: -0.5, maxLimit: 0.5 },
-    ]);
+    // Both hinge pivots meet between the bodies, and the distance constraint starts satisfied.
+    const hinge = createPhysicsConstraint(
+        world,
+        boxAggregate.body,
+        sphereAggregate.body,
+        PhysicsConstraintType.HINGE,
+        { pivotA: { x: 0.625, y: 0, z: 0 }, pivotB: { x: -0.625, y: 0, z: 0 } },
+        [{ axis: PhysicsConstraintAxis.ANGULAR_X, minLimit: -0.5, maxLimit: 0.5 }]
+    );
     const distance = createPhysicsConstraint(world, boxAggregate.body, sharedAggregate.body, PhysicsConstraintType.DISTANCE, { maxDistance: 2 }, [
         { axis: PhysicsConstraintAxis.LINEAR_DISTANCE, minLimit: 0, maxLimit: 2 },
     ]);

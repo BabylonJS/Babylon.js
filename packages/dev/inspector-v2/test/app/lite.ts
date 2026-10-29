@@ -490,7 +490,7 @@ let physicsFixture: Promise<void> | undefined;
 const createPhysicsFixture = () =>
     (physicsFixture ??= (async () => {
         const { CreateLitePhysicsFixture } = await import("./litePhysics");
-        Object.assign(globalThis, { litePhysics: await CreateLitePhysicsFixture(primaryScene) });
+        Object.assign(globalThis, { litePhysics: await CreateLitePhysicsFixture(primaryScene, standardMaterial, pbrMaterial) });
     })());
 
 Object.assign(globalThis, {

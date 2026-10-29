@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { type EngineContext, type SceneContext, type getViewProjectionMatrix } from "@babylonjs/lite";
 
 import { type CreateLitePhysicsFixture } from "../app/litePhysics";
 
@@ -6,6 +7,9 @@ type LitePhysicsWindow = Window &
     typeof globalThis & {
         liteCreatePhysics: () => Promise<void>;
         litePhysics: Awaited<ReturnType<typeof CreateLitePhysicsFixture>>;
+        liteEngine: EngineContext;
+        litePrimaryScene: SceneContext;
+        liteGetViewProjectionMatrix: typeof getViewProjectionMatrix;
         debugNode: object | null;
     };
 const TestUrl = `http://localhost:${process.env.INSPECTOR_TEST_PORT ?? "9001"}/?experience=lite&physics=off`;
@@ -78,6 +82,66 @@ test("Lite physics test fixture loads by default and is created only once", asyn
     await expect(page.getByRole("treeitem", { name: "Physics", exact: true })).toBeVisible();
     await page.evaluate(() => Promise.all([(window as LitePhysicsWindow).liteCreatePhysics(), (window as LitePhysicsWindow).liteCreatePhysics()]));
     expect(await counts()).toEqual([1, 4]);
+    expect(errors).toEqual([]);
+});
+
+test("Lite physics debug helpers stay finite and in view during manual inspection", async ({ page }) => {
+    const errors = WatchPhysicsErrors(page);
+    await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204 }));
+    await page.goto(TestUrl.replace("&physics=off", ""));
+    await page.waitForFunction(() => "litePhysics" in window);
+    await page.locator('[role="radio"][value="Debug"]').click();
+    await page.getByRole("switch", { name: "Physics Bodies", exact: true }).check();
+    await page.getByRole("switch", { name: "Physics Constraints", exact: true }).check();
+    const readView = () =>
+        page.evaluate(() => {
+            const state = window as LitePhysicsWindow;
+            const scene = state.litePrimaryScene;
+            const canvas = state.liteEngine.canvas;
+            const viewProjection = state.liteGetViewProjectionMatrix(scene.camera!, canvas.width / canvas.height);
+            const helpers = scene.meshes.filter((mesh) => mesh.name === "physicsBodyDebug" || mesh.name.startsWith("constraint"));
+            const outsideView = helpers.filter((mesh) => {
+                if (!mesh.boundMin || !mesh.boundMax || mesh.visible === false) {
+                    return true;
+                }
+                const world = mesh.worldMatrix;
+                for (let corner = 0; corner < 8; corner++) {
+                    const x = (corner & 1 ? mesh.boundMax : mesh.boundMin)[0];
+                    const y = (corner & 2 ? mesh.boundMax : mesh.boundMin)[1];
+                    const z = (corner & 4 ? mesh.boundMax : mesh.boundMin)[2];
+                    const wx = world[0] * x + world[4] * y + world[8] * z + world[12];
+                    const wy = world[1] * x + world[5] * y + world[9] * z + world[13];
+                    const wz = world[2] * x + world[6] * y + world[10] * z + world[14];
+                    const w = viewProjection[3] * wx + viewProjection[7] * wy + viewProjection[11] * wz + viewProjection[15];
+                    const clipX = viewProjection[0] * wx + viewProjection[4] * wy + viewProjection[8] * wz + viewProjection[12];
+                    const clipY = viewProjection[1] * wx + viewProjection[5] * wy + viewProjection[9] * wz + viewProjection[13];
+                    const clipZ = viewProjection[2] * wx + viewProjection[6] * wy + viewProjection[10] * wz + viewProjection[14];
+                    if (![wx, wy, wz, w, clipX, clipY, clipZ].every(Number.isFinite) || w <= 0 || Math.abs(clipX) > w || Math.abs(clipY) > w || clipZ < 0 || clipZ > w) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+            return {
+                bodyHelpers: helpers.filter((mesh) => mesh.name === "physicsBodyDebug").length,
+                constraintHelpers: helpers.filter((mesh) => mesh.name.startsWith("constraint")).length,
+                outsideView: outsideView.map((mesh) => mesh.name),
+                visibleSources: state.litePhysics.bodies.slice(0, 3).every((body) => "material" in body.node && !!body.node.material),
+                positions: state.litePhysics.bodies.slice(0, 3).map((body) => [body.node.position.x, body.node.position.y, body.node.position.z]),
+            };
+        });
+    const initial = await readView();
+    expect(initial.bodyHelpers).toBe(3); // Thin-instance carrier wireframes remain omitted.
+    expect(initial.constraintHelpers).toBeGreaterThan(0);
+    expect(initial.visibleSources).toBe(true);
+    expect(initial.outsideView).toEqual([]);
+    // The previous overlapping fixture had already left the fixed camera after one second.
+    await page.waitForTimeout(5000);
+    const later = await readView();
+    expect(later.bodyHelpers).toBe(3);
+    expect(later.constraintHelpers).toBe(initial.constraintHelpers);
+    expect(later.outsideView).toEqual([]);
+    later.positions.forEach((position, body) => position.forEach((value, axis) => expect(value).toBeCloseTo(initial.positions[body][axis], 2)));
     expect(errors).toEqual([]);
 });
 
