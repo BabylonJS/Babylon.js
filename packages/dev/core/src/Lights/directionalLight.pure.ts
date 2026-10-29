@@ -179,14 +179,20 @@ export class DirectionalLight extends ShadowLight {
      */
     protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void {
         const activeCamera = this.getScene().activeCamera;
+        const engine = this.getScene().getEngine();
+
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera ? activeCamera.minZ : Constants.ShadowMinZ;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera ? activeCamera.maxZ : Constants.ShadowMaxZ;
+
+        const useReverseDepthBuffer = engine.useReverseDepthBuffer;
 
         Matrix.OrthoLHToRef(
             this.shadowFrustumSize,
             this.shadowFrustumSize,
-            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera ? activeCamera.minZ : Constants.ShadowMinZ,
-            this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera ? activeCamera.maxZ : Constants.ShadowMaxZ,
+            useReverseDepthBuffer ? maxZ : minZ,
+            useReverseDepthBuffer ? minZ : maxZ,
             matrix,
-            this.getScene().getEngine().isNDCHalfZRange
+            engine.isNDCHalfZRange
         );
     }
 
