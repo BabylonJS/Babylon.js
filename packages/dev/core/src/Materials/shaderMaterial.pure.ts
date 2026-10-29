@@ -913,6 +913,8 @@ export class ShaderMaterial extends PushMaterial {
             if (geometry) {
                 this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
                 if (this._vertexPullingMetadata) {
+                    // vp_*_info uniforms are bound through the metadata, so keep them out of the shared options array
+                    uniforms = uniforms.slice();
                     this._vertexPullingMetadata.forEach((_, attribute) => {
                         uniforms.push(`vp_${attribute}_info`);
                     });
