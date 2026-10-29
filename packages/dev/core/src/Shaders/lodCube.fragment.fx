@@ -1,11 +1,14 @@
 precision highp float;
 
-const float GammaEncodePowerApprox = 1.0 / 2.2;
+#ifndef USE_EXACT_SRGB_CONVERSIONS
+#define USE_EXACT_SRGB_CONVERSIONS
+#endif
+#include<helperFunctions>
 
 varying vec2 vUV;
 uniform samplerCube textureSampler;
 uniform float lod;
-uniform int gamma;
+uniform int gamma; // 0: display gamma, 1: preserve channels, 2: restore hardware sRGB.
 void main(void)
 {
     vec2 uv=vUV*2.0-1.0;
@@ -29,5 +32,7 @@ void main(void)
     #endif
     if (gamma == 0) {
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(GammaEncodePowerApprox));
+    } else if (gamma == 2) {
+        gl_FragColor.rgb = toGammaSpaceExact(gl_FragColor.rgb);
     }
 }

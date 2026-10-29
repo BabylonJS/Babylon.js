@@ -55,6 +55,7 @@
             "accessibility/*": ["./packages/tools/accessibility/dist/*"],
             "viewer/*": ["./packages/tools/viewer/dist/*"],
             "ktx2decoder/*": ["./packages/tools/ktx2Decoder/dist/*"],
+            "ktx2encoder/*": ["./packages/tools/ktx2Encoder/dist/*"],
             "vsm": ["./packages/tools/vsm/dist/*"],
             "smart-filters": ["./packages/dev/smartFilters/dist"],
             "smart-filters/*": ["./packages/dev/smartFilters/dist/*"],
