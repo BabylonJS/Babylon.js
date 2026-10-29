@@ -5,8 +5,26 @@ interface IInlineFunctionDescr {
     name: string;
     type: string;
     parameters: string[];
+    /** Types of the by-value parameters the body assigns to (indexed like parameters), which must be copied at each call site */
+    copiedParameterTypes: (string | null)[];
     body: string;
     callIndex: number;
+}
+
+const ParameterQualifiers = new Set(["in", "out", "inout", "const", "highp", "mediump", "lowp", "precise"]);
+
+/**
+ * Checks whether a function body writes to a variable, e.g. "name = ...", "name.x += ...", "name[i]++" or "--name"
+ * @param body code of the function body
+ * @param name name of the variable
+ * @returns true if the variable is assigned in the body
+ */
+function IsAssignedInBody(body: string, name: string): boolean {
+    const n = EscapeRegExp(name);
+    const access = `(?:\\s*(?:\\.\\s*\\w+|\\[[^\\]]*\\]))*`;
+    const assignment = new RegExp(`(?<![\\w.])${n}(?!\\w)${access}\\s*(?:(?:[-+*/%&|^]|<<|>>)?=(?!=)|\\+\\+|--)`);
+    const preIncrement = new RegExp(`(?:\\+\\+|--)\\s*${n}(?!\\w)`);
+    return assignment.test(body) || preIncrement.test(body);
 }
 
 /**
@@ -18,6 +36,7 @@ export class ShaderCodeInliner {
     private _sourceCode: string;
     private _functionDescr: IInlineFunctionDescr[];
     private _numMaxIterations: number;
+    private _copyIndex = 0;
 
     /** Gets or sets the token used to mark the functions to inline */
     public inlineToken: string;
@@ -123,13 +142,23 @@ export class ShaderCodeInliner {
             // process the parameters: extract each names
             const params = RemoveComments(funcParams).split(",");
             const paramNames = [];
+            const copiedParameterTypes: (string | null)[] = [];
 
             for (let p = 0; p < params.length; ++p) {
                 const param = params[p].trim();
                 const idx = param.lastIndexOf(" ");
 
                 if (idx >= 0) {
-                    paramNames.push(param.substring(idx + 1));
+                    const paramName = param.substring(idx + 1);
+                    paramNames.push(paramName);
+
+                    // Inlining substitutes the call argument for the parameter name, so a by-value parameter the body
+                    // writes to would modify the caller's variable. Such parameters get a local copy instead.
+                    const tokens = param.substring(0, idx).trim().split(/\s+/);
+                    const isByValue = !tokens.includes("out") && !tokens.includes("inout") && !tokens.includes("const");
+                    const typeTokens = tokens.filter((token) => !ParameterQualifiers.has(token));
+                    const needsCopy = isByValue && typeTokens.length === 1 && !paramName.includes("[") && IsAssignedInBody(funcBody, paramName);
+                    copiedParameterTypes.push(needsCopy ? typeTokens[0] : null);
                 }
             }
 
@@ -143,6 +172,7 @@ export class ShaderCodeInliner {
                 name: funcName,
                 type: funcType,
                 parameters: paramNames,
+                copiedParameterTypes,
                 body: funcBody,
                 callIndex: 0,
             });
@@ -181,7 +211,7 @@ export class ShaderCodeInliner {
         let doAgain = false;
 
         for (const func of this._functionDescr) {
-            const { name, type, parameters, body } = func;
+            const { name, type, parameters, copiedParameterTypes, body } = func;
 
             let startIndex = 0;
 
@@ -282,8 +312,21 @@ export class ShaderCodeInliner {
 
                 startIndex = callParamsEndIndex + 1;
 
+                const copies: string[] = [];
+                for (let p = 0; p < copiedParameterTypes.length; ++p) {
+                    const copiedType = copiedParameterTypes[p];
+                    if (copiedType) {
+                        const localName = `${name}_${parameters[p]}_${this._copyIndex++}`;
+                        copies.push(`${copiedType} ${localName} = ${paramNames[p]};`);
+                        paramNames[p] = localName;
+                    }
+                }
+
                 // replace the function call by the body function
-                const funcBody = this._replaceNames(body, parameters, paramNames);
+                let funcBody = this._replaceNames(body, parameters, paramNames);
+                if (copies.length > 0) {
+                    funcBody = "{\n" + copies.join("\n") + "\n" + funcBody + "\n}";
+                }
 
                 let partBefore = functionCallIndex > 0 ? this._sourceCode.substring(0, functionCallIndex) : "";
                 const partAfter = callParamsEndIndex + 1 < this._sourceCode.length - 1 ? this._sourceCode.substring(callParamsEndIndex + 1) : "";
