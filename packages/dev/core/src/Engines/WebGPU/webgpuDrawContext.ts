@@ -151,6 +151,13 @@ export class WebGPUDrawContext implements IDrawContext {
         this._vertexPullingEnabled = false;
     }
 
+    /** Invalidates cached vertex bindings without releasing draw resources. @internal */
+    public _invalidateVertexBuffers(): void {
+        this.fastBundle = undefined;
+        // Refresh storage-buffer bindings on the next vertex-pulling draw.
+        this._vertexPullingEnabled = false;
+    }
+
     /**
      * Associates a buffer to the draw context.
      * @param name The name of the buffer.
