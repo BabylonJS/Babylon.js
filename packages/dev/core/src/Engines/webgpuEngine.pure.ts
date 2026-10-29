@@ -4020,7 +4020,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
 
         if (this._snapshotRendering.record && this._snapshotCachedDraws) {
-            this._keepRecordedDraw(pipeline, bindGroups, drawType, count, instancesCount, start);
+            this._keepRecordedDraw(pipeline, bindGroups, drawKind, count, instancesCount, start);
         }
 
         if (!this._snapshotRendering.record) {
@@ -4082,7 +4082,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._reportDrawCall();
     }
 
-    private _keepRecordedDraw(pipeline: GPURenderPipeline, bindGroups: GPUBindGroup[], drawType: number, count: number, instancesCount: number, start: number): void {
+    private _keepRecordedDraw(
+        pipeline: GPURenderPipeline,
+        bindGroups: GPUBindGroup[],
+        drawKind: WebGPURenderPassDrawKind,
+        count: number,
+        instancesCount: number,
+        start: number
+    ): void {
         const drawContext = this._currentDrawContext;
         // the per-draw values of the effect are checked through the slot the draw context owns in the leftover uniform buffer
         const leftOver = (this._currentEffect!._pipelineContext as WebGPUPipelineContext).uniformBuffer;
@@ -4102,7 +4109,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             vertexBuffers: vertexBuffers.map((vertexBuffer) => vertexBuffer.effectiveBuffer?.underlyingResource ?? null),
             vertexOffsets: vertexBuffers.map((vertexBuffer) => (vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset)),
             indirectBuffer: drawContext._enableIndirectDrawInCompatMode ? (drawContext.indirectDrawBuffer ?? null) : null,
-            indexed: drawType === 0,
+            indexed: drawKind === WebGPURenderPassDrawKind.INDEXED,
             count,
             instances: instancesCount || 1,
             start,
@@ -4130,6 +4137,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const bundleList = this._bundleList;
         this._getCurrentRenderPass();
         this._applyRenderPassChanges(bundleList);
+        // as before a full draw: the draws the batcher holds go first
+        this._flushRenderPassCommands();
         const encoder = bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount);
         bundleList.numDrawCalls++;
 

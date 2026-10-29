@@ -32,6 +32,7 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
             _cacheRenderPipeline: { colorFormats: [] },
             _getCurrentRenderPass: () => {},
             _applyRenderPassChanges: () => {},
+            _flushRenderPassCommands: () => {},
             _reportDrawCall: () => {},
         };
         const replay = () => WebGPUEngine.prototype._replayRecordedDraw.call(engine as any, drawWrapper);
