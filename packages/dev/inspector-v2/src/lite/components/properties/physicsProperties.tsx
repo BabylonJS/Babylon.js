@@ -47,7 +47,7 @@ import {
     type PhysicsShapeMaterial,
     type Vec3,
 } from "@babylonjs/lite";
-import { type FunctionComponent, type ReactNode, useCallback, useState } from "react";
+import { Fragment, type FunctionComponent, type ReactNode, useCallback, useState } from "react";
 
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -96,6 +96,8 @@ const ShapeScratch: { type: number; parameters: ReturnType<typeof getPhysicsShap
 const Zero: Vec3 = { x: 0, y: 0, z: 0 };
 // Tensor controls require a callback even when all of their inputs are disabled.
 const ReadOnly = () => undefined;
+// Tensor controls synchronize on expandedContent identity, so keep this slot stable.
+const EmptyExpandedContent = <></>;
 
 function ToVec3(value: Vector3Value): Vec3 {
     return "x" in value ? value : { x: value[0], y: value[1], z: value[2] };
@@ -134,7 +136,8 @@ function EditMassProperties(world: PhysicsWorld, body: PhysicsBody, edited: Phys
 type WorldProps = { scene: SceneContext; world: PhysicsWorld; selectionService: ISelectionService };
 type BodyProps = WorldProps & { body: PhysicsBody };
 type ConstraintProps = WorldProps & { constraint: PhysicsConstraint };
-type Mutate = (operation: () => void) => void;
+type Mutate = (operation: () => void, row?: string) => void;
+type ResetKey = (row?: string) => number;
 
 function ErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
@@ -149,11 +152,13 @@ function ErrorMessage(error: unknown): string {
 const PhysicsRead: FunctionComponent<{
     live: () => boolean;
     read: () => unknown;
-    children: (value: string, mutate: Mutate) => ReactNode;
+    children: (value: string, mutate: Mutate, resetKey: ResetKey) => ReactNode;
 }> = (props) => {
     const { live, read, children } = props;
     const watcher = useWatcher();
     const [writeError, setWriteError] = useState<string>();
+    const [writeRevisions, setWriteRevisions] = useState<Record<string, number>>({});
+    const resetKey: ResetKey = (row = "") => writeRevisions[row] ?? 0;
     const getValue = useCallback(() => {
         if (!live()) {
             return "gone";
@@ -165,7 +170,7 @@ const PhysicsRead: FunctionComponent<{
         }
     }, [live, read]);
     const value = useWatchedValue(null, getValue);
-    const mutate: Mutate = (operation) => {
+    const mutate: Mutate = (operation, row = "") => {
         try {
             setWriteError(undefined);
             // Never use the last render's liveness or shape as permission to write.
@@ -174,6 +179,9 @@ const PhysicsRead: FunctionComponent<{
             }
         } catch (error) {
             setWriteError(ErrorMessage(error));
+            // Controls optimistically cache committed edits. Reset that state even
+            // when both the native readback and the repeated error are unchanged.
+            setWriteRevisions((revisions) => ({ ...revisions, [row]: (revisions[row] ?? 0) + 1 }));
         } finally {
             watcher.refresh();
         }
@@ -184,7 +192,11 @@ const PhysicsRead: FunctionComponent<{
     return (
         <>
             {writeError ? <MessageBar intent="error" message={writeError} /> : null}
-            {value.startsWith("error:") ? <MessageBar intent="error" message={value.slice(6)} /> : children(value.slice(6), mutate)}
+            {value.startsWith("error:") ? (
+                <MessageBar intent="error" message={value.slice(6)} />
+            ) : (
+                <Fragment key={resetKey()}>{children(value.slice(6), mutate, resetKey)}</Fragment>
+            )}
         </>
     );
 };
@@ -232,12 +244,14 @@ const PhysicsVector: FunctionComponent<{
     const { label, live, read, write, description } = props;
     return (
         <PhysicsRead live={live} read={read}>
-            {(value, mutate) => (
+            {(value, mutate, resetKey) => (
                 <Vector3PropertyLine
                     label={label}
                     value={JSON.parse(value)}
                     disabled={!write}
                     description={description}
+                    expandedContent={EmptyExpandedContent}
+                    expandByDefault={resetKey() > 0}
                     onChange={write ? (next) => mutate(() => write(ToVec3(next))) : ReadOnly}
                 />
             )}
@@ -564,11 +578,12 @@ export const PhysicsBodyMassProperties: FunctionComponent<BodyProps> = (props) =
     const { scene, world, body } = props;
     return (
         <PhysicsRead live={() => IsPhysicsBodyLive(scene, world, body)} read={() => getPhysicsBodyMassPropertiesToRef(world, body, MassScratch, 0)}>
-            {(value, mutate) => {
+            {(value, mutate, resetKey) => {
                 const mass = JSON.parse(value) as Required<PhysicsMassProperties>;
                 return (
                     <>
                         <NumberInputPropertyLine
+                            key={`mass:${resetKey("mass")}`}
                             label="Mass"
                             value={mass.mass}
                             min={0}
@@ -576,29 +591,35 @@ export const PhysicsBodyMassProperties: FunctionComponent<BodyProps> = (props) =
                             description={BodyHint(body)}
                             onChange={(next) => {
                                 if (Number.isFinite(next)) {
-                                    mutate(() => EditMassProperties(world, body, { mass: next }));
+                                    mutate(() => EditMassProperties(world, body, { mass: next }), "mass");
                                 }
                             }}
                         />
                         <Vector3PropertyLine
+                            key={`centerOfMass:${resetKey("centerOfMass")}`}
                             label="Center of Mass"
                             value={mass.centerOfMass}
                             description={BodyHint(body)}
+                            expandedContent={EmptyExpandedContent}
+                            expandByDefault={resetKey("centerOfMass") > 0}
                             onChange={(next) => {
                                 const centerOfMass = ToVec3(next);
                                 if (IsFiniteVector3(centerOfMass)) {
-                                    mutate(() => EditMassProperties(world, body, { centerOfMass }));
+                                    mutate(() => EditMassProperties(world, body, { centerOfMass }), "centerOfMass");
                                 }
                             }}
                         />
                         <Vector3PropertyLine
+                            key={`inertia:${resetKey("inertia")}`}
                             label="Inertia"
                             value={mass.inertia}
                             description={[BodyHint(body), "Locked axes read 0"].filter(Boolean).join("; ")}
+                            expandedContent={EmptyExpandedContent}
+                            expandByDefault={resetKey("inertia") > 0}
                             onChange={(next) => {
                                 const inertia = ToVec3(next);
                                 if (IsFiniteVector3(inertia)) {
-                                    mutate(() => EditMassProperties(world, body, { inertia }));
+                                    mutate(() => EditMassProperties(world, body, { inertia }), "inertia");
                                 }
                             }}
                         />

@@ -243,10 +243,18 @@ for (const thinBody of [false, true]) {
         expect(locked.every((properties) => properties.inertia.x === 0)).toBe(true);
         await EditNumber(page, "Mass", "99");
         await expect(page.getByText("Cannot safely edit mass properties with zero inertia", { exact: false })).toBeVisible();
+        const massInput = page.getByText("Mass", { exact: true }).last().locator("xpath=ancestor::div[.//input][1]").getByRole("textbox");
+        await expect(massInput).toHaveValue("7");
         expect(await page.evaluate((thin) => (window as LitePhysicsWindow).litePhysics.readMassProperties(thin), thinBody)).toEqual(locked);
         await page.evaluate((thin) => (window as LitePhysicsWindow).litePhysics.unlockMassEdits(thin), thinBody);
         const unlocked = await page.evaluate((thin) => (window as LitePhysicsWindow).litePhysics.readMassProperties(thin), thinBody);
         expect(unlocked.every((properties) => properties.mass === 7 && properties.inertia.x === 3 && properties.inertia.y === 12)).toBe(true);
+        await EditNumber(page, "Mass", "99");
+        await expect(massInput).toHaveValue("99");
+        await expect
+            .poll(() => page.evaluate((thin) => (window as LitePhysicsWindow).litePhysics.readMassProperties(thin), thinBody))
+            .toEqual(unlocked.map((properties) => ({ ...properties, mass: 99 })));
+        await expect(page.getByText("Cannot safely edit mass properties with zero inertia", { exact: false })).toHaveCount(0);
         expect(errors).toEqual([]);
     });
 }
