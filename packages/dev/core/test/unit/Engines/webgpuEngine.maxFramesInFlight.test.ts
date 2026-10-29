@@ -72,6 +72,28 @@ describe("WebGPUEngine.maxFramesInFlight", () => {
         expect(begin).toHaveBeenCalledTimes(3);
     });
 
+    it("counts a frame once, whatever its intermediate flushes (a submit is not a frame)", async () => {
+        const { engine, device, finishOldest } = CreateWebGPULikeEngine();
+        engine.maxFramesInFlight = 2;
+        // each frame submits its work twice before its endFrame does (a readback, a render target flushed on its own...)
+        engine["_activeRenderLoops"].push(() => {
+            engine.flushFramebuffer();
+            engine.flushFramebuffer();
+        });
+        const begin = vi.spyOn(engine, "beginFrame");
+        engine["_processFrame"]();
+        engine["_processFrame"]();
+        expect(engine.flushFramebuffer).toHaveBeenCalledTimes(6);
+        expect(device.queue.onSubmittedWorkDone).toHaveBeenCalledTimes(2);
+
+        engine["_processFrame"]();
+        expect(begin).toHaveBeenCalledTimes(2);
+
+        await finishOldest();
+        engine["_processFrame"]();
+        expect(begin).toHaveBeenCalledTimes(3);
+    });
+
     it("asks again at the next animation frame, and a frame the GPU finishes never queues one (a stopped loop stays stopped)", async () => {
         const { engine, finishOldest } = CreateWebGPULikeEngine();
         engine.maxFramesInFlight = 1;
