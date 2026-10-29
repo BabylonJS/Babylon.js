@@ -1,37 +1,406 @@
 {
-    "fromTag": "9.32.0",
+    "fromTag": "9.32.1",
     "changelog": {
-        "9.32.0": [
+        "9.33.0": [
             {
-                "pr": "19016",
-                "title": "Inspector Lite: add debug helpers and capture tools (P7b)",
-                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nImplements the debug and capture tools milestone (P7b) of [BabylonJS/Babylon-Lite#55](https://github.com/BabylonJS/Babylon-Lite/issues/55).\n\n- Add a **Debug** pane with per-scene, non-pickable ground grids and bounding boxes, including auxiliary surfaces. Bounding boxes inherit live world transforms instead of rebuilding on the Inspector polling interval, so animated and parented meshes stay synchronized even in manual watch mode without changing the application's node hierarchy.\n- Add **Tools** controls for native-resolution PNG screenshots and browser canvas video capture on primary or auxiliary surfaces. Service-owned controllers preserve state across pane changes, report failures, release media tracks, and suppress stale downloads after removal or disposal.\n- Forward disabled state through the shared toggle button, add accessible switch names, document capabilities and limitations, and cover the new behavior with unit and browser regressions.\n\nUses the published Lite 1.32.0 API without private GPU-device reads or dependency changes. Geometry/visibility updates retain Inspector's watch cadence; skeletal/morph deformation and individual thin-instance bounds are not included.\n\n## Screenshots\n\n**Debug:** ground grid and live bounding boxes enabled in the Inspector Lite test app.\n\n![Inspector Lite Debug pane with ground grid and live bounding boxes enabled](https://github.com/user-attachments/assets/70b1364b-f07f-45aa-8b81-c788bad4ca45)\n\n**Tools:** primary/auxiliary surface selection, native-resolution PNG screenshots, and canvas video recording.\n\n![Inspector Lite Tools pane with primary surface selection and screenshot and video capture controls](https://github.com/user-attachments/assets/6ccfc089-2e1b-4248-850e-586301e768e3)\n\n## Validation\n\n- Repository formatting, lint/tree-shaking, advisory lint, and source build completed successfully.\n- Focused controller, service, and shared-control unit tests passed.\n- All four Chrome/software-WebGPU integration tests passed: primary/auxiliary PNG dimensions and pixels, playable video across pane changes, helper rendering/cleanup, and animated bounds in manual watch mode. The animation regression samples 30 frames and requires transform error below 0.000001.\n- **The full local unit command did not finish cleanly.** Attempts encountered failures in untouched Windows build-tool tests, a probabilistic flow multi-gate assertion, and Atmosphere shader imports racing test teardown. A clean-baseline comparison has not been established. Unrelated validation fixes are deliberately excluded from this PR; per request, PR CI will establish the final check results.",
+                "pr": "19075",
+                "title": "Add render-pass command stream batching for native hosts",
+                "description": "> Supersedes #18562, which GitHub cannot reopen because its head branch moved after it was closed. Same change, brought up to date with current master; the measurements below are new.\n\n## Summary\n\nThis PR adds an internal render-command batching layer for WebGPU draw submission, bringing the WebGPU engine into congruence with a pattern Babylon.js core already ships: the bgfx-based NativeEngine batches its engine commands through a `CommandBufferEncoder` (`thinNativeEngine.pure.ts`) and flushes them across the JS/native bridge in bulk, rather than paying one Node-API crossing per call. The WebGPU engine has no equivalent layer, so on hosts that run it over a JS/native boundary every `setPipeline`, `setBindGroup`, `setVertexBuffer`, `setIndexBuffer` and `draw*` crosses that boundary individually. That per-draw bridge traffic is the CPU cost profiled in [this forum post](https://forum.babylonjs.com/t/solving-cpu-bottleneck-in-nativexr-hill-valley-ar-portal-scene/63558) (iPhone XS / iPhone 12, Hill Valley AR portal scene).\n\nThis is also the architecture browsers use one layer down for the identical boundary problem: Chromium's Dawn wire protocol serializes WebGPU commands into batched buffers across the renderer-to-GPU-process boundary, and Unreal's `FRHICommandList` records on the render thread and translates on the RHI thread. The boundary here is N-API or JSI rather than IPC or a thread hop; the remedy is the same.\n\n**Browsers are unaffected, and this is now measured rather than asserted** (see *Browser cost* below): the no-provider path costs about 5 ns per draw in isolation, and a 3,000-draw-per-frame scene in Chrome 152 shows no measurable frame-time difference between this branch and master.\n\n**Scope note:** this is transport-level, order-preserving submission batching, not draw merging. It does not reorder, sort or combine draws, so it composes with instancing rather than competing with it, and the stream format reserves multi-draw fields for future multi-draw-indirect lowering.\n\n## Why the engine is the right layer\n\nEvery native WebGPU host for JavaScript binds the render-pass encoder one call at a time, because none of them owns the draw loop:\n\n- BabylonNative's Dawn backend ([BabylonJS/BabylonNative#1781](https://github.com/BabylonJS/BabylonNative/pull/1781)) binds each `GPURenderPassEncoder` method as its own N-API callback; `setBindGroup` reads its dynamic offsets into a fresh `std::vector` on every call ([NativeDawn.cpp#L2295-L2340](https://github.com/BabylonJS/BabylonNative/blob/da15f7ae1a6f5c59a4d6f1fd322145a3d308f70f/Plugins/NativeDawn/Source/NativeDawn.cpp#L2295-L2340)).\n- react-native-webgpu binds the same methods as per-call JSI host functions ([GPURenderPassEncoder.h#L103-L112](https://github.com/wcandillon/react-native-webgpu/blob/24cf75ba084cb23fb477053fc310ecbfceae6bb2/packages/webgpu/cpp/rnwgpu/api/GPURenderPassEncoder.h#L103-L112)). Its optimizations (prototype caches, import-once native buffers, async work pumped on the owning instance) target per-object and per-frame costs; per-draw crossings are out of its reach for the same reason.\n- The wgpu-native backend this PR was developed against is the same shape.\n\nThe Babylon Lite native plan treats this as a first-class metric: every prototype must report \"JS↔C crossing count and cost per frame\", and option S0d is a purpose-built JS↔C wire that crosses once per frame ([BABYLON_LITE_PLAN.md](https://github.com/bghgary/BabylonNative/blob/bghgary/babylon-lite-plan/BABYLON_LITE_PLAN.md)). This PR is that wire for the existing engine: it lives in the transport layer, behind the standard WebGPU API, and a host opts in by installing a provider.\n\nThe benefit scales with draws per frame, which is the honest way to read the native numbers below: a frame with ten draws gains nothing; the full Hill Valley scene at 81 draws per frame gains about 8% on iPhone 12; the stress scene at thousands of draws per second cuts draw-level bridge crossings by about 95%.\n\n## Architecture\n\n- `RenderCommandBatcher`: a small generic lower-or-replay adapter. It tries the optional lowering path; for a draw that cannot lower, it flushes pending lowered work first, then replays the original command exactly once. Ordering is preserved unconditionally.\n- `WebGPURenderPassCommandStream`: the WebGPU-specific lowerer. It encodes compatibility-mode draws as opcode words into a reused `Uint32Array`, state-diffing pipeline, index/vertex buffers and bind groups so redundant state is elided before it is recorded, then submits the whole batch through a single `_recordCommands` call on the render pass.\n- Flush boundaries: batched draws are recorded before every direct render-pass mutation (viewport, scissor, stencil reference, blend constant, full-quad clears, occlusion query begin/end, debug marker push/pop/insert, and render-pass end) through a `ThinWebGPUEngine._flushRenderPassCommands()` seam that is a no-op for engines that do not batch. Without these boundaries a draw batched inside an occlusion-query bracket would be recorded after the bracket closes (the query reports zero samples and the mesh wrongly disappears as occluded), and GPU captures would attribute draws to the wrong debug group. The occlusion-query flush sits inside the `_occlusionQueryActive` guard introduced by #18918.\n- The draw hot path is allocation-free: the engine reuses two scratch draw-command objects (both the lowering and replay paths consume commands synchronously), and the stream reuses scratch id arrays. `_draw` now has one apply site, `ApplyWebGPURenderPassDrawCommand`, so indirect and multi-draw lowering plug in at one place rather than at each encoder call.\n- Failure policy: a protocol-version mismatch or a backend recording failure logs one error (enriched with the provider's diagnostics) and permanently falls back to direct encoder calls for that engine; nothing throws from the render loop. Resource ids returned by the provider are validated as positive safe integers at the trust boundary; an out-of-range id makes the draw replay directly.\n- Typed indexed/non-indexed draw command variants instead of a magic numeric draw type.\n\n## Host contract\n\nA host opts in by installing a provider on the engine:\n\n```js\nengine.renderPassCommandRecorderProvider = {\n    protocolVersion: 1,                       // must equal WebGPURenderPassCommandStreamProtocolVersion in the decoder build\n    isEnabled: () => true,                    // host-controlled toggle\n    getResourceId: (resource) => /* host handle id for a pipeline/buffer/bind group, or 0 */,\n    getLastError: () => /* optional backend diagnostics for failure logs */,\n};\n```\n\nand exposing a `_recordCommands(words, drawCount, multiDrawCallCount, multiDrawDrawCount, wordCount)` hook on its render-pass encoders. The recorder must consume the words synchronously; the buffer is reused after the call returns. The `protocolVersion` handshake mirrors the `PROTOCOL_VERSION` guard the bgfx-based NativeEngine uses to keep the JS encoder and native decoder from drifting, soft-failing here because this transport is an optimization rather than the engine's only path.\n\n## Browser cost\n\nWith no provider installed (always the case in browsers) a compatibility-mode draw fills the scratch command, calls `submit`, which returns at the provider null check, and replays through `ApplyWebGPURenderPassDrawCommand`, which issues the same encoder calls the old inline code did.\n\n- Isolated microbenchmark of exactly that path against the inline encoder calls, on a stub render pass (V8 / Node 24, Apple M4 Max, 2,000,000 draws per round, three rounds): inline 8.0–8.3 ns per draw, no-provider path 13.1–13.4 ns per draw. The added cost is about 5 ns per draw, or 15 µs for a 3,000-draw frame.\n- Chrome 152 (WebGPU on Metal, Apple M4 Max), UMD bundles built from this branch and from its master base, a scene of 3,000 meshes with 64 materials (2,996 draws per frame), compatibility mode, 600 timed frames after 150 warm-up frames, measuring main-thread time from `beginFrame()` through `scene.render()`:\n\n| Bundle | mean | p50 | p90 | p99 |\n|---|---:|---:|---:|---:|\n| master | 38.9 ms | 44.5 ms | 50.9 ms | 69.9 ms |\n| this branch | 38.1 ms | 43.4 ms | 51.9 ms | 59.6 ms |\n\nThe two are indistinguishable within run-to-run noise; Chrome's own cost in that scene is about 13 µs per draw, three orders of magnitude above the added path.\n\n## Test coverage\n\n- Contract-level unit coverage of the batcher and stream: lowering absent/present/disabled, fallback replay with flush-before-replay ordering, state-diff behavior per state kind, indexed/non-indexed/indirect draws, late and out-of-range resource ids, command storage growth, render-pass boundary flushing, no-provider behavior, protocol-version mismatch, and permanent fallback with diagnostics when backend recording fails.\n- Flush-boundary scenario tests (`webgpuRenderPassFlushBoundaries.test.ts`) drive the real registered engine prototype methods against a semantic model of the native render pass: a GPU timeline that executes direct calls and decoded command-stream batches in submission order, attributing each executed draw to the occlusion query and debug groups open at execution time. Assertions are on user-visible outcomes (\"which draws did query N observe\", \"which draws are inside group X\", \"did the draws stay on the batched path\"), not on encoder-call ordinality.\n\n## Validation\n\n- `npx vitest run --project=unit` over `packages/dev/core/test/unit` with this branch merged with current master: 289 files, 4,793 tests pass plus the one pre-existing expected failure, including 39 focused tests across `renderCommandBatcher.test.ts`, `webgpuRenderPassCommandStream.test.ts`, `webgpuRenderPassFlushBoundaries.test.ts` and `engine.query.test.ts`.\n- `npx eslint --quiet` over all changed source and test files: clean. The `pure.ts` barrel entry is in the generator's order.\n- `nx build babylonjs`: passes; the resulting bundle is the one measured above.\n\nNative integration validation (BabylonNative, WebGPU backed by wgpu-native):\n\n- macOS Release/LTO Playground, non-AR Hill Valley stress scene, material parity checks passing (`issues=0`), SSAO2 enabled in `mode=prepass`. Command stream enabled, steady windows: about 13,920 draws per 2 s grouped into about 720 command-stream bridge calls, about 94.8% fewer draw-level bridge traversals, at 59.5–60.5 native fps. Command stream disabled: same draw volume, `cmdStreams=0`, about 59–60 native fps. The M4 path is vsync-bound, so this run demonstrates the bridge-call reduction rather than an fps gain.\n- iPhone 12 (A14), full Hill Valley scene forced non-XR (112 active meshes, 81 draws per frame with SSAO2): 18 fps → 19.5 fps with the command stream enabled; no change in the pre-placement phase, which draws about 10 meshes per frame.\n- iPhone XS (A12): about 40 fps → 45 fps with improved 1% lows, as documented in the forum post.\n\n## Related work\n\nThis continues the Hill Valley NativeXR AR Portal optimization series already merged from this validation effort:\n\n- #18539 — Support SSAO2 with world-space normals\n- #18521 — Move custom frame requester to AbstractEngine to enable 120fps support in BabylonNative\n- #18538 — Fix KTX noMipmap flip for compressed sRGB mipmaps\n\n## Future work\n\n- Multi-draw-indirect lowering through the reserved `multiDrawCallCount`/`multiDrawDrawCount` stream fields (wgpu-native exposes MDI; the WebGPU spec does not yet).\n- Lower debug markers (`pushDebugGroup`/`popDebugGroup`/`insertDebugMarker`) into stream opcodes so that enabling GPU profiler markers does not fragment batches with boundary flushes; today markers stay correct (flushed) but each marker costs a bridge crossing and splits the batch, which is acceptable for profiling sessions only.\n- The command-stream types already admit `GPURenderBundleEncoder`, so the same lowering could batch bundle construction under `compatibilityMode = false` if profiling justifies it.\n",
+                "author": {
+                    "name": "matthargett",
+                    "url": "https://github.com/matthargett"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.debugging.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuRenderPassCommandStream.ts",
+                    "packages/dev/core/src/Engines/pure.ts",
+                    "packages/dev/core/src/Engines/renderCommandBatcher.pure.ts",
+                    "packages/dev/core/src/Engines/thinWebGPUEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/Extensions/engine.query.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuRenderPassCommandStream.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuRenderPassFlushBoundaries.test.ts",
+                    "packages/dev/core/test/unit/Engines/renderCommandBatcher.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19049",
+                "title": "Clustered lighting: sheen uses the out-of-scope normalW (WGSL/GLSL compile error)",
+                "description": "Fixes a shader compile failure when a **PBR material with sheen** is lit by a **`ClusteredLightContainer`**.\n\nIn `computeClusteredLighting(...)` (`pbrClusteredLightingFunctions.fx`, both the WGSL and the GLSL copy), the `#ifdef SHEEN` branch passes `normalW` to `computeSheenLighting`. `normalW` is a local of the fragment `main()` and isn't in scope inside this function. The function's normal parameter is `N`, which every other lighting call in it already uses.\n\nOn WebGPU this fails with:\n\n```\nError while parsing WGSL: :964:41 error: unresolved value 'normalW'\ninfo.sheen=computeSheenLighting(preInfo,normalW,sheenOut.sheenColor,...\n```\n\nfollowed by an invalid pipeline and every later command buffer being rejected, so the canvas goes black.\n\n**Repro** (WebGPU engine; reproduced on 9.32.0 from the CDN, failing on frame 4):\n\n```js\nconst light = new BABYLON.PointLight(\"p\", new BABYLON.Vector3(0, 2, -2), scene);\nnew BABYLON.ClusteredLightContainer(\"clustered\", [light], scene);\nconst mat = new BABYLON.PBRMaterial(\"m\", scene);\nmat.sheen.isEnabled = true;\nBABYLON.MeshBuilder.CreateSphere(\"s\", { diameter: 1.5 }, scene).material = mat;\n```\n\n**Fix:** `normalW` → `N` in both copies. We have shipped this exact change as a patch in production (poqpoq World, a glTF crystal ball using `KHR_materials_sheen`): the material compiles and renders correctly under clustered lights.\n",
+                "author": {
+                    "name": "increasinglyHuman",
+                    "url": "https://github.com/increasinglyHuman"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrClusteredLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrClusteredLightingFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/clustered-lighting-pbr-sheen.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19066",
+                "title": "WebGPU: GPU frame time with timestamp writes, read after the frame's submit",
+                "description": "Forum: [53519](https://forum.babylonjs.com/t/53519) #8 and #10: on WebGPU in Chromium, the GPU frame time reads 0.\n\n**What it fixes.**\n- The frame measure no longer depends on `writeTimestamp`. It stamped its start and end with `GPUCommandEncoder.writeTimestamp`, which is not in the WebGPU spec. Where it is missing (Chromium 147, even with every adapter feature requested), `start()` wrote nothing, `stop()` returned 0, and `endFrame()` recorded that 0. So `gpuFrameTimeCounter` and the Inspector's GPU frame time read 0.\n- The value read is the frame's own. The resolve was submitted on its own encoder right away, ahead of the frame's commands, so it read the previous measurement.\n\n**The change.**\n- `WebGPUDurationMeasure.start/stop`: two empty compute passes with `timestampWrites` (`beginningOfPassWriteIndex: 0`, then `endOfPassWriteIndex: 1`), the standard way to write timestamps. It needs only the `timestamp-query` feature, and no browser flag.\n- `stop()` and `stopPass()` resolve and copy in the frame's encoder (per-pass timings use the render encoder). The buffer is mapped once the engine submits that encoder: `flushFramebuffer()` releases the waits right after `queue.submit`, from `endFrame` or not, and a wait asked after a submission is for the next one. A device loss and `dispose()` release them too.\n- The readbacks of one submission share a single promise kept by the engine (`_whenSubmittedAsync()`), with no observer, closure or timer per readback. A readback without an encoder does not wait at all.\n- `WebGPUQuerySet.readValues`, `readValue` and `readTwoValuesAndSubtract` take that encoder as an optional last argument. Without it, they resolve and submit on their own, as before.\n\n**Measured.** The repro Playground of the forum post (https://playground.babylonjs.com/#W2203S#1: the engine created with `enableAllFeatures: true`, timing on, a log after 3 seconds), Chromium 147, RTX 3080 Laptop GPU, Windows 11: on 9.32.0 it reads `current 0.000 ms, average 0.000 ms over 242 readings`; with this PR's build, `current 0.418 ms, average 0.526 ms over 206 readings`.\n\nWith the same two passes in a page, on full-screen clears of a 2560×1440 RGBA16F target:\n\n| Clears | Measured time |\n|---|---|\n| 0 | 0 ms |\n| 10 | 0.12 ms |\n| 100 | 1.29 ms |\n| 400 | 5.2 ms |\n\nOn a full scene with snapshot rendering, the measured frames read 8-11 ms against the 16.7 ms budget, with no validation errors.\n\n**Unit tests.** `webgpuTimestampQuery.test.ts`, 8 tests: the passes and their write indices; the resolve in the given encoder, mapped only after that encoder is submitted; a readback recorded by an end of frame observer, mapped only after the next submission; a flush outside `endFrame` that maps its readbacks; one shared wait for the readbacks of a submission, with no observer; the frame counter fed with the frame's own duration; the path without an encoder, which does not wait; and `flushFramebuffer()` releasing a wait right after its submit. On the first revision of this branch (eb6fd9e), all but the first fail. The Engines unit suite: 259 passed, 1 expected fail (already marked on master).\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTimestampQuery.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuTimestampQuery.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19074",
+                "title": "Fix WGSL StandardMaterial fresnel blend and area light check",
+                "description": "Fixes #19063\n\n## What\n\nTwo spots where the WGSL StandardMaterial shaders had drifted from GLSL:\n\n- Reflection and refraction fresnel in `ShadersWGSL/default.fragment.fx` (the three reflection variants and the refraction one).\n- The area light branch in `ShadersWGSL/ShadersInclude/lightFragment.fx`.\n\n## Why\n\nGLSL does `reflectionColor.rgb *= left * (1 - F) + F * right`, so the whole left/right blend tints the reflection. The WGSL lines dropped the grouping and computed `rgb * left * (1 - F) + F * right`, which adds the right color on top instead of multiplying it. On WebGPU, a StandardMaterial with reflection or refraction fresnel parameters ends up brighter than on WebGL whenever the right color isn't black.\n\nThe area light line had `#elif define(AREALIGHT{X})`, which only worked because the preprocessor happens to treat it as true, and it was missing the `AREALIGHTUSED` check that GLSL and the other WGSL area light branches have. Today `AREALIGHTUSED` is always set together with `AREALIGHT{i}`, so I don't think this one changes output. It's there for parity and so the typo doesn't bite later.\n\n## How\n\nI wrapped the blend in parentheses on the four WGSL fresnel lines, which matches the emissive fresnel a few lines further down. I also changed the area light condition to `defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)`, the same as GLSL.\n\n## How I tested\n\nI added `test/unit/Materials/standardMaterial.wgslParity.test.ts`. It runs the real shader preprocessor (`PreProcess` with a `NullEngine`) on the StandardMaterial sources:\n\n- With the reflection, specular-reflection and refraction fresnel defines, it checks that the generated WGSL multiplies the whole blend.\n- For both GLSL and WGSL, it checks that `lightFragment` only emits `computeAreaLighting` when `AREALIGHTUSED` is defined.\n\nWithout the shader changes, the four WGSL cases fail and the GLSL ones pass. With the changes, everything passes, and `npx vitest run --project=unit packages/dev/core/test/unit/Materials/` is 437/437. I didn't render this on a GPU or build a Playground repro, so the visual difference is something I've reasoned through, not compared on screen.\n",
+                "author": {
+                    "name": "RizgarOzan",
+                    "url": "https://github.com/RizgarOzan"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/test/unit/Materials/standardMaterial.wgslParity.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19073",
+                "title": "RenderTargetTexture: a fresh render id before each pass",
+                "description": "Forum: [64422](https://forum.babylonjs.com/t/64422) #1 and #2.\n\nA submesh skips its draw in a shadow map when its render id is the scene's (`ShadowGenerator._renderSubMeshForShadowMap`), which keeps a pass from drawing it twice. The scene's render target loop increments the render id before each target, but `RenderTargetTexture.render()` called by hand did not for a 2D target, and incremented it only after each face or layer of a cube or array target. So two shadow maps rendered by hand, one after the other, shared a render id, and the second one skipped the casters the first had drawn; and the first face or layer of a cube or array target could inherit an id an earlier render had used.\n\n**The change.** `RenderTargetTexture.render()` increments the render id before each pass: before the render of a 2D target, and before each face or layer, the first one included. The id stays the same during a pass, so a submesh is still drawn once in it. In the scene's loop, the passes of a target get fresh ids as before, with one more increment for a 2D target.\n\n**Measured.** The repro Playground of the forum post (https://playground.babylonjs.com/#Q5U9HP#1) counts the shadow map texels the caster covers, in a page that runs its code with a given build. On 9.32.0 the two maps rendered by hand count 30388 and 0 texels; with this branch, 30388 and 30388. With `scene.incrementRenderId()` between the two renders, 9.32.0 gives 0 and 30388 (the first map took the id the second one had used) and this branch 30388 and 30388; with it before each render, both give 30388 and 30388.\n\n**Unit tests.** `renderTargetTexture.renderId.test.ts`, 4 tests: two 2D targets rendered by hand both draw a submesh another render drew with the current id, as two shadow maps sharing a caster; the first face of a cube target and the first layer of an array target get a fresh id, and each face or layer its own; and the render id stays the same from the start to the end of each pass. On master, the first three fail and the last one passes. The Materials, Lights, Scene, Rendering and PostProcesses unit suites: 619 passed.\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/renderTargetTexture.renderId.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19038",
+                "title": "Temporal view data in the scene uniform buffer for WGSL: camera history and TAA jitter",
+                "description": "Forum: [64298](https://forum.babylonjs.com/t/64298) #9, the second of the shared-data PRs: temporal view data. It is independent of the cascades PR.\n\nWith WGSL materials, the two temporal values of the view were per-draw data:\n- the prepass binding set `previousViewProjection` on every effect, from a history kept per material;\n- the TAA reprojection plugin wrote `taa_jitter` into every material's uniform buffer.\n\nWith this change both live in the scene uniform buffer of the pass (`previousViewProjection`, `taaJitter`). `Scene.finalizeSceneUbo` writes them, and it also runs during a FAST replay. GLSL shaders keep the effect and material uniforms, unchanged: WebGL, and GLSL materials on WebGPU. The two fields and the view history exist on WebGPU only, where WGSL shaders read them. On WebGL, the scene uniform buffers keep their layout and no history is kept.\n\n**Ownership: per camera and per pass.**\n- The history belongs to the camera and to the logical pass it renders in: its view-projection in the previous frame and in the current one. An `ObjectRenderer` keys it with its render pass id from `initRender` to `finishRender`, and the scene's own camera passes use `RENDERPASS_MAIN`. Each camera of a rig (each eye) has its own history.\n- A pass \"renders the camera's view\" when the scene's view matrix is the camera's computed view matrix. Passes that render another view get the current view-projection as the previous one (no camera motion) and no jitter: shadow maps, mirrors, reflection probe faces, and any `setTransformMatrix` with another view.\n- Per-object history (previous world matrices, instance and bone history) is unchanged.\n\n**History lifetime.**\n- A history advances on its first use in a frame. Readiness checks (`ObjectRenderer.isReadyForRendering` and `RenderTargetTexture.isReadyForRendering`, with its bind observables) prepare the scene uniform buffer with the histories read-only: nothing is created or advanced until a real render.\n- Initialization: the first frame of a camera in a pass uses its current view-projection as the previous one. While it is the frame the history started in, the history follows the pass's final view, for example a target that applies its own projection after `initRender`.\n- A camera that stops moving: from the next frame, previous = current.\n- Camera switch, or a pass that did not render the camera in the previous frame (a refresh rate): the history starts again in the same record and matrices, with nothing allocated. A record is allocated only at a camera's first render in a pass, and that also drops the records of the passes the camera stopped rendering in.\n- A cut: `camera.resetViewHistory()` drops the history of the camera and its rig cameras in every pass, so the next frame has no camera motion. A TAA rendering that camera drops its accumulated history in the same frame instead of reprojecting it. The TAA tracks the resets per camera, so it keeps the reset of a camera it switches to, or of one of the eyes it alternates between. There is no movement threshold: the application knows when it cuts, and distance alone cannot tell a cut from fast motion.\n\n**The jitter: the TAA material manager's.** WGSL materials apply the `jitter` of the scene's `TAAMaterialManager`, which GLSL materials read from their own buffer. A manager registers on its scene when it is created, and the scene keeps the last one created, as the plugin factory does.\n- A TAA post-process records on its manager the jitter it computed for its camera, and the frame, one record per camera. The views of a camera, or of the eyes of its rig, get that camera's jitter, so a pipeline shared by several cameras gives each one its own. `FrameGraphTAATask` takes that camera from its object renderer before computing the jitter, so after a camera switch the new camera's first frame gets it.\n- With the prepass, the TAA computes the jitter after the draws of its frame (in the post-process activation), and today the materials apply it in the next frame. To keep that timing, the jitter applies until the end of the next frame, and then expires.\n- A manager used on its own gives its jitter to every camera's view, with no frame limit, as in GLSL.\n\nThe velocity is still computed from unjittered positions: the jitter is added to the clip position after the velocity varyings, as before.\n\n**Layout.**\n- On WebGPU, `previousViewProjection` (mat4) and `taaJitter` (vec2) come after `inverseProjection` in the scene uniform buffers: `Scene.createSceneUniformBuffer` and the render target buffers of `ObjectRenderer`.\n- The WGSL `Scene` struct declares the same fields in the same order.\n- On WebGL, and in the multiview buffer, which is WebGL only, the layouts are unchanged.\n- The GLSL `Scene` block is unchanged. On WebGPU its members are a prefix of the buffer, so the std140 offsets are the same. GLSL shaders keep `previousViewProjection` as an effect uniform, and a block member with the same name would collide with it.\n\n**Files.**\n- `scene.pure.ts`: the layout, `finalizeSceneUbo`, the view history per camera and pass, and the jitter of the TAA material manager.\n- `camera.pure.ts`: the internal history fields, and `resetViewHistory()`.\n- `objectRenderer.ts`: the layout, the pass key of the history, and read-only histories during readiness checks.\n- `renderTargetTexture.pure.ts`: read-only histories during its readiness check.\n- `taaMaterialManager.pure.ts`: the manager registers on its scene and holds the jitter a TAA computed for each of its cameras. WGSL reads `scene.taaJitter`, and the material buffer no longer gets `taa_jitter`.\n- `thinTAAPostProcess.ts`: records on its manager the jitter it computed for its camera and the frame, and drops the history after `resetViewHistory()`, tracked per camera.\n- `taaTask.ts`: the frame graph TAA computes the jitter for the camera its object renderer draws.\n- `prePassConfiguration.ts`, `materialHelper.geometryrendering.ts`: the previous view-projection is bound to GLSL effects only.\n- WGSL `sceneUboDeclaration`, `prePassVertexDeclaration`, `prePassVertex`, the `default`, `pbr` and `openpbr` vertex shaders, and `gaussianSplatting.vertex.fx` (single and compound splats).\n\n**Unit tests.** `babylon.sceneTemporalData.test.ts`, 27 tests:\n- the temporal fields are in the scene and render target layouts on WebGPU; on WebGL the scene, multiview and render target layouts are unchanged, and no history is kept;\n- a camera's history starts with its current view-projection;\n- a moving camera gets its view-projection of the previous frame, and no motion once it stops;\n- two cameras in one frame keep separate histories;\n- the history starts again for a camera that did not render in the previous frame;\n- a pass of another view gets no camera motion and no jitter;\n- the jitter of a TAA applies to its camera's views only, in the frame it was computed in and in the next one;\n- a reprojecting `TAARenderingPipeline` shared by two cameras gives each camera's views the jitter computed for that camera;\n- two still passes of one camera with different aspect ratios keep separate histories;\n- a new history follows the pass's final view (the target's projection applied after `initRender`);\n- a render target with `refreshRate = 2` has no camera motion when it resumes, and keeps its record and its matrices;\n- readiness checks, through `ObjectRenderer.isReadyForRendering` and `RenderTargetTexture.isReadyForRendering`: checks at other poses before and after the first render do not advance the history, and checks alone over several frames do not make the camera look like it rendered (4 tests);\n- `resetViewHistory()` starts the history again in every pass, and the TAA drops its color history in the same frame; the TAA also drops it at a reset of a camera it switches to, and of one of the eyes it alternates between; a rig resets its cameras (4 tests);\n- a frame graph TAA with a stereo rig gives the jitter to both eyes, each with its own history; after a camera switch, the new camera's first frame gets the jitter;\n- the WGSL splat vertex shader, single and compound, reads the previous view-projection from the scene buffer (2 tests);\n- the TAA plugin reads the jitter from the scene buffer in WGSL and from the material in GLSL;\n- a TAA material manager constructed on its own gives its jitter to the WGSL passes of every camera's view, until it changes;\n- the prepass binds the previous view-projection to GLSL effects only.\n\nFull unit suite: 7,269 passed and 2 failed, plus 1 file that did not load. None of them is related to this change:\n- the Inspector Lite chart test cannot resolve `@fluentui/react-charts`, a dependency added on master that is not installed in my checkout;\n- the two UMD rollup compatibility tests hit their 5 s timeout. Run alone, the tree-shaking one passes; the glTF2 one still times out, as it does on master (449e8a7) run alone the same way;\n- in the full run, the setup of the repository lint configuration test (the production TypeScript project service) hit its 60 s hook timeout, so 25 of its tests were skipped; run alone, it passes, 27 of 27.\n\n**Rendering check.** Three arms:\n- 9.31.3 from the CDN;\n- the previous revision of this PR (a9e915e on 449e8a7), built locally;\n- this revision (0e10eda), built locally.\n\nAll three run in Chromium 147 on an RTX 3080 Laptop GPU, WebGPU, at 800×450.\n\n*The scene from the first revision.* It is deterministic:\n- 150 meshes (StandardMaterial and PBRMaterial) with moving shadows from a fixed light frustum;\n- the camera on a fixed path that moves for 30 frames and then stays still;\n- the TAA jitter in the materials and the prepass velocity target.\n\nThe same 60 frames are rendered one by one and read back (canvas, prepass color, prepass velocity), first in normal mode, then with a FAST snapshot recorded at frame 0. Both runs start from the same state: two frames at the first pose, then the TAA history and the jitter sequence start again.\n\nThe jitter is driven as the frame graph TAA task does it: `ThinTAAPostProcess._updateJitter()` before each render, with reprojected history. A pass post-process sends the prepass color to the canvas.\n\n0e10eda is byte-identical to a9e915e on every target in all 60 frames of the 7 variants, with the same `writeBuffer` counts. So is each later revision against the one before it: febcff3 against 0e10eda, b309772 against febcff3, and 2852aab against b309772 (in `jitterGLSL` the `writeBuffer` count varies by 2 writes in 60 frames between runs of the same build; run again with each build twice, all four gave the same count). The comparison with 9.31.3 is unchanged:\n\n| Variant | Normal mode: 9.31.3 vs this change | FAST vs normal: 9.31.3 | FAST vs normal: this change | `writeBuffer` per frame, normal mode: 9.31.3 → this change |\n|---|---|---|---|---|\n| One view | identical | color up to 0.012 mean difference (max 0.98); velocity up to 0.31 mean (max 2.19); canvas up to 3.09/255 | 0 on every target in all 60 frames | 151 calls, 331 KB → 3 calls, 1.1 KB |\n| One view, plus a second view: a render target of the scene from another camera, with the same materials | canvas and color identical; velocity and second view differ, where 9.31.3 is wrong (see below) | color up to 0.012 (max 0.98); velocity up to 0.0019 (max 0.61); second view up to 0.016 (max 0.93) | 0 on every target in all 60 frames | 228 calls, 500 KB → 4 calls, 1.4 KB |\n| Moving and spinning meshes | identical | (see below) | (see below) | 201 calls, 335 KB → 91 calls, 86 KB |\n| `TAARenderingPipeline` with moving meshes | identical | (see below) | (see below) | 204 calls, 341 KB → 91 calls, 86 KB |\n| GLSL materials on WebGPU, with the second view | identical | color up to 0.012, velocity up to 0.0019 | same as 9.31.3 (path unchanged) | 80.5 calls, 17.6 KB → 80.5 calls, 17.9 KB |\n| WebGL2, `TAARenderingPipeline` with moving meshes | identical | n/a | n/a | n/a |\n\n\"Identical\" means the same bytes on every target in all 60 frames: the canvas, the prepass color and the prepass velocity. The color and velocity differences are mean absolute differences per channel on the float targets; the canvas differences are on 0-255.\n\nMoving meshes are compared in normal mode only. In FAST mode they need their own per-object updates (world and previous world matrices), which this PR does not change.\n\nWhat the FAST columns show is limited to this scene: the shared view data replays in FAST. They do not mean that the whole TAA pipeline replays in FAST. `TAARenderingPipeline` still cannot, with or without this change: its history ping-pong is recorded in the bundle, so the replay samples the texture it renders into, and WebGPU rejects the frame.\n\n**Two things this fixes in normal mode**, both caused by the second view rendering the same materials:\n- The history kept per material takes the other view's view-projection. In the still part of the path, the velocity target of 9.31.3 reads 0.2 on average on 70% of the pixels, where it should be 0. With this change it reads exactly 0 in the still frames, and without the second view both builds produce the same velocity target.\n- The second view receives the main camera's jitter. In the still part of the path, its image changes by 0.010 per frame with 9.31.3, and by 0 with this change.\n\n*The cases from the review*, in a frame graph with WGSL materials, read back frame by frame for 30 frames. Velocity is the length of the xy velocity in a linear velocity target, as the mean over the pixels and the max.\n\n| Case | 9.31.3 | a9e915e | 0e10eda |\n|---|---|---|---|\n| Two still `FrameGraphGeometryRendererTask`s of one camera, 800×450 and 450×450, `doNotChangeAspectRatio: false` | no motion | motion in the 800×450 pass in 29 of 30 frames (max 0.39), and in the 450×450 pass in 1 | no motion |\n| Readiness check at one pose (`buildAsync` waits for it), first render at another | no motion | first frame: mean 0.19, max 0.69 | no motion |\n| Still stereo rig with `FrameGraphTAATask`: each eye's change from one frame to the next | about 2.5e-3 (jittered) | 0 in all 29 frames (no jitter) | about 2.5e-3 |\n| Camera jump at frame 10, with `resetViewHistory()` where it exists | frame 10: mean 1.31, max 4.63 | same | frame 10: 0; frames 9 and 11 equal to the other arms |\n\n*A TAA material manager constructed on its own* (third review), with a jitter of exactly one pixel in x (`2 / width`) set by the page and no TAA post-process: 60 meshes with StandardMaterial and PBRMaterial, in master (449e8a7), b309772 and 2852aab. The UMD bundle, and so the Playground, does not expose `TAAMaterialManager` (the pipelines' `index.ts` does not export it), so the page takes its class from a TAA pipeline made in a scene of its own and disposed before the manager is constructed. A frame with the jitter is compared with a frame without it, first as rendered, then moved one pixel to the right (pixels that differ, out of 359,550):\n\n| Shader path | Build | As rendered | Moved one pixel |\n|---|---|---|---|\n| WGSL, WebGPU | master (449e8a7) | 3,960 | 0 |\n| | b309772 | 0 | 3,960 |\n| | 2852aab | 3,960 | 0 |\n| GLSL, WebGPU | each of the three | 3,960 | 0 |\n| WebGL2 | each of the three | 23,519 | 4 |\n\nOn b309772 the WGSL frame did not move: the manager's jitter was not applied. With this commit it moves by exactly one pixel, as on master and in GLSL. On WebGL2, 4 pixels still differ after the move, in every build.\n\nProgress videos: https://forum.babylonjs.com/t/64298/1\nRelated: #19037 (merged), #19059 (merged), #19060 (approved).\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/taaTask.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.pure.ts",
+                    "packages/dev/core/src/Materials/materialHelper.geometryrendering.ts",
+                    "packages/dev/core/src/Materials/prePassConfiguration.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaMaterialManager.pure.ts",
+                    "packages/dev/core/src/PostProcesses/thinTAAPostProcess.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/sceneUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/openpbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/core/src/scene.pure.ts",
+                    "packages/dev/core/test/unit/Scene/babylon.sceneTemporalData.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19065",
+                "title": "Meshes: keep no Vector3 per vertex when a mesh's positions are its geometry's",
+                "description": "Forum: [64298](https://forum.babylonjs.com/t/64298) #2 and #11: isolated PRs with measured gains, each benefit measured separately.\n\n`refreshBoundingInfo()` runs for every mesh when its vertex data is set. Besides the bounding info, it fills the mesh's positions with one `Vector3` per vertex, which the mesh keeps. Picking and collisions read those points. But when the positions are not transformed (no morph targets, skeleton or baked vertex animation applied), they are the geometry's own positions. The geometry already makes its own `Vector3` points the first time picking or collisions need them (`Geometry._generatePointsArray`), and all its meshes share them. So today every mesh holds an extra copy, one `Vector3` per vertex, whether it is ever picked or not, and each clone of a mesh holds its own.\n\n**What it does.** In `AbstractMesh._getData`, when the positions are not transformed, the mesh keeps none of its own. `Mesh._positions` already falls back to the geometry's points. Picking, collisions and the WebXR near interaction already call `_generatePointsArray()` before they read them. With morph targets, a skeleton or baked vertex animation applied, the mesh keeps the transformed positions, as before.\n\n**Measured.** In our app, this change took the heap from 2.03 M to 1.95 M nodes (-4%); 25 meshes held 39,691 of these `Vector3`. The numbers below come from a test page made for this PR, which we can share.\n\nChromium 147, RTX 3080 Laptop GPU, Windows 11. The page makes 20 sphere geometries (16 to 54 segments), each used by 10 meshes, the first one and its 9 clones: 200 meshes and 623,200 vertices in all. It times the creation of the meshes. Once the scene is ready and 60 frames have run, the runner forces 2 full GCs, reads the JS heap, traces 5 more forced full GCs and takes a heap snapshot. Then it picks every mesh once with a ray through its center, and reads the heap again after 2 more forced GCs. Each arm ran 4 times, the arms alternating, with a new browser for each run, on master as of today (dbd14a5). Ranges are over the runs; the GC times are the median of all the forced GCs.\n\nWebGPU:\n\n|  | heap snapshot nodes | JS heap in use | after picking every mesh | full GC pause | its mark | creating the meshes |\n|---|---|---|---|---|---|---|\n| master | 2,552,763-2,554,816 | 56.9-57.0 MB | 61.1-61.2 MB | 18.3 ms | 14.0 ms | 155-177 ms |\n| this PR | 308,832-310,968 | 20.5-20.6 MB | 24.7-25.0 MB | 6.1 ms | 3.9 ms | 116-140 ms |\n\nWebGL2:\n\n|  | heap snapshot nodes | JS heap in use | after picking every mesh | full GC pause | its mark | creating the meshes |\n|---|---|---|---|---|---|---|\n| master | 2,541,312-2,543,598 | 56.0-56.2 MB | 60.2-60.4 MB | 17.3 ms | 12.6 ms | 145-163 ms |\n| this PR | 297,481-299,678 | 19.7-19.8 MB | 23.8-24.0 MB | 4.9 ms | 3.1 ms | 114-140 ms |\n\nWhat the numbers say:\n- On master every mesh keeps a `Vector3` per vertex. Here that is 2.24 M of the 2.55 M heap objects (each vector and its numbers), and 36 MB of the heap. With this PR the meshes keep none.\n- Once every mesh has been picked, the geometries have made their points, 4.2 MB, once per geometry. On master the meshes still hold their own copies too: 61 MB against 25 MB.\n- Each forced full GC pauses about a third as long: 18.3 → 6.1 ms on WebGPU, 17.3 → 4.9 ms on WebGL2.\n- The meshes are made faster, since there are no vectors to fill, and picking took as long or less. Picking also hits the same points: every run of both arms gave the same 200 hits and the same checksum of distances and faces.\n- The images are the same: on both engines, this PR's last frame is identical to master's, byte for byte.\n\n**Unit tests.** `abstractMesh.positions.test.ts` has 6:\n- a mesh keeps no positions of its own when they are its geometry's;\n- picking uses the geometry's points, which its clones share;\n- collisions work with them;\n- with morph targets applied, the mesh keeps the morphed positions and picking uses them;\n- after a first pick, positions written in place and a refreshed bounding info: the next pick uses them, with `Geometry.updateVerticesDataDirectly` and with `VertexBuffer.update` (a refresh resets the geometry's points).\n\nThe first two fail on master; the others pass on both, and the last two failed on the first revision of this branch (ad25a8b). The Meshes, Culling, Collisions, Engines, Materials and Misc unit suites have 1,088 passing tests and 1 expected fail, already marked on master.\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/abstractMesh.positions.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19071",
+                "title": "Add Inspector Lite skeleton, morph, and particle inspection",
+                "description": "Adds the P9 Inspector UI for skeletons, morph targets, and particle systems, allowing Lite applications to inspect these runtime features through public APIs. This completes the Inspector-side work for P9b/P9d in BabylonJS/Babylon-Lite#55.\n\n## Changes\n\n- Add a Skeletons explorer with parent/child bone navigation, mesh links, and read-only skeleton and bone properties. Skeleton discovery requires bone control to be enabled before loading glTF assets.\n- Add named morph-weight controls to mesh properties. Updates use the public full-weight setter and reflect shared morph data across clones.\n- Add particle discovery, started state, start/stop controls, and editable emission rate, update speed, and stop duration. Advanced particle graph properties and removal are outside this change.\n- Keep property panels lazy-loaded, clear unreachable selections, and dispose registrations and watchers.\n- Add self-contained skinned/morphed GLB and particle fixtures, unit and browser coverage, and documentation. Use the supported visibility setter for bounds helpers.\n- Update development dependencies to official `@babylonjs/lite@1.37.1` and raise Inspector's optional Lite peer minimum to `^1.37.1`.\n\n## Validation\n\nAgainst the published Lite 1.37.1 package:\n\n- Source build, formatting, lint, and tree-shaking checks passed.\n- 234 focused unit tests passed.\n- 19 Chrome/WebGPU integration tests passed, including skeleton/bone navigation, rendered shared morph deformation, particle controls and lifecycle, debug/capture, and statistics.\n- Independent feature and dependency reviews found no blocking issues.\n\nBroader suites are not entirely green: all eight gizmo browser failures also reproduced on clean master with the same Lite package and WARP configuration. UMD compatibility tests have intermittent five-second timeouts; the nested-namespace timeout also reproduced on clean master. These failures were not hidden or fixed as part of P9. An additional browser probe observed a resource 404 and a React `inert` warning, with no uncaught page errors; their baseline status remains unconfirmed.",
                 "author": {
                     "name": "ryantrem",
                     "url": "https://github.com/ryantrem"
                 },
                 "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/inspector-v2/package.json",
                     "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/lite/components/properties/morphTargetProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/components/properties/particleSystemProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/components/properties/skeletonProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/explorerDisplayInfo.ts",
                     "packages/dev/inspector-v2/src/lite/inspector.tsx",
-                    "packages/dev/inspector-v2/src/lite/sceneEntityUtils.ts",
-                    "packages/dev/inspector-v2/src/lite/services/panes/captureController.ts",
-                    "packages/dev/inspector-v2/src/lite/services/panes/captureService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/debugController.ts",
-                    "packages/dev/inspector-v2/src/lite/services/panes/debugService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/scene/meshExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/morphTargetUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/particleUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/particleSystemPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/skeletonPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/particleSystemExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/skeletonExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/skeletonUtils.ts",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
                     "packages/dev/inspector-v2/test/integration/liteDebugCapture.test.ts",
-                    "packages/dev/inspector-v2/test/unit/liteCapture.test.ts",
-                    "packages/dev/inspector-v2/test/unit/liteCaptureService.test.tsx",
+                    "packages/dev/inspector-v2/test/integration/liteParticleSystems.test.ts",
+                    "packages/dev/inspector-v2/test/integration/liteSkeletonMorph.test.ts",
+                    "packages/dev/inspector-v2/test/integration/liteStatistics.test.ts",
                     "packages/dev/inspector-v2/test/unit/liteDebugController.test.ts",
-                    "packages/dev/inspector-v2/test/unit/liteDebugService.test.tsx",
-                    "packages/dev/inspector-v2/test/unit/liteSceneEntities.test.ts",
-                    "packages/dev/sharedUiComponents/src/fluent/primitives/switch.tsx",
-                    "packages/dev/sharedUiComponents/test/unit/fluent/switch.test.tsx",
-                    "packages/dev/sharedUiComponents/test/unit/fluent/toggleButton.test.tsx"
+                    "packages/dev/inspector-v2/test/unit/liteP9TestUtils.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteParticleSystems.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteSkeletonMorph.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/p4ImportBoundaries.test.ts",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/syncedSlider.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/fluent/syncedSlider.test.tsx",
+                    "packages/public/@babylonjs/inspector-v2/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19068",
+                "title": "Raise the Node 24 development minimum to 24.16.0",
+                "description": "*[Created by Copilot on behalf of @bghgary]*\r\n\r\nNode 24.15.0 can crash during network-connection setup on Windows. A dependency-free reproduction crashed in 8 of 1,000 fresh processes on 24.15.0 and none of 1,000 on 24.16.0; a native dump matches the [upstream fix](https://github.com/nodejs/node/pull/62561) included in 24.16.0.\r\n\r\nRaise the Node 24 development minimum to exclude this defect. Node 22 support and the runtime requirements of published Babylon.js libraries remain unchanged.\r\n\r\nThe asset-watcher tests also encounter a separate [Node 24.16.0 file-watcher defect](https://github.com/nodejs/node/issues/63638) with shortened Windows temporary-directory names.\r\n\r\nThe original Vitest worker failure had no native stack and remains unattributed.\r\n",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml",
+                    ".github/instructions/tests.instructions.md",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/test/unit/copyAssets.test.ts",
+                    "readme.md"
                 ],
                 "tags": [
-                    "inspector",
-                    "new feature"
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18810",
+                "title": "KHR_materials_scatter import/export",
+                "description": "This adds import and export for the new glTF extension, `KHR_materials_scatter`. This extension replaces both KHR_materials_volume_scatter and KHR_materials_diffuse_transmission, which were non-ratified. These extensions are still supported for import, of course.\r\n\r\nIn addition to the new extension, I improved the export of KHR_materials_transmission for OpenPBR. Since glTF uses baseColor for transmission tinting and OpenPBR doesn't, we need to bake the colour out of baseColor wherever transmission is on.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/openpbrMaterial.pure.ts",
+                    "packages/dev/core/src/Materials/Textures/textureMerger.ts",
+                    "packages/dev/core/src/Materials/Textures/textureProcessor.ts",
+                    "packages/dev/core/src/Materials/Textures/textureSampling.functions.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.pure.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/openpbrBackgroundTransmission.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/openpbrVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx",
+                    "packages/dev/core/src/Shaders/openpbr.vertex.fx",
+                    "packages/dev/core/src/Shaders/textureMerger.fragment.fx",
+                    "packages/dev/core/src/Shaders/textureProcessor.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/openpbrBackgroundTransmission.fx",
+                    "packages/dev/core/src/ShadersWGSL/openpbr.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/textureMerger.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/textureProcessor.fragment.fx",
+                    "packages/dev/core/test/integration/textureProcessor.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/textureMerger.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/textureProcessor.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/textureSampling.functions.test.ts",
+                    "packages/dev/inspector/src/components/globalState.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_scatter.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_scatter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_scatter.types.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume_scatter.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/dynamic.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/materialLoadingAdapter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/openpbrMaterialLoadingAdapter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/pbrMaterialLoadingAdapter.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
+                    "packages/dev/loaders/test/unit/glTF/openpbrMaterialLoadingAdapter.test.ts",
+                    "packages/dev/loaders/test/unit/glTF/pbrMaterialLoadingAdapter.test.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_anisotropy.pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_coat.pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_scatter.pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_scatter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_transmission.pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_volume.pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_volume_scatter.pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_volume_scatter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/dev/serializers/test/integration/mergedTextureSampling.test.ts",
+                    "packages/dev/serializers/test/integration/openpbrMetallicTransmissionExport.test.ts",
+                    "packages/dev/serializers/test/integration/openpbrScatterRoundTrip.test.ts",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-Subsurface-Scatter-Anisotropy---glTF.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-Subsurface-Scatter-Color-Density---glTF.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-Subsurface-Scatter-Strength---glTF.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-Subsurface-Scatter-Strength-Thin-Walled---glTF.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-Subsurface-Transmission-Thin-walled-Blending-with-Textures.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-Subsurface-Transmission-Volume-Blending-with-Textures.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-glTF-Surface-Tinting.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTF-Loader---PBRMaterial-Scatter-Color-Density.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTF-Loader---PBRMaterial-Scatter-Strength-Thin-Walled.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "scripts/treeshaking/side-effects-manifest/loaders/glTF.json",
+                    "scripts/treeshaking/side-effects-manifest/serializers/glTF.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "19064",
+                "title": "Handle omitted glTF morph target attributes",
+                "description": "*[Created by Copilot on behalf of @bghgary]*\r\n\r\nAn empty glTF morph target disables attributes supplied by other targets on the same primitive. Omitted attributes should leave the base values unchanged, not disable morphing for the primitive.\r\n\r\nAddresses the sample in [the empty morph target discussion](https://github.com/KhronosGroup/glTF/issues/2651#issuecomment-6375472293). The empty-target and zero-delta-accessor versions render identically with this change in WebGL 1 and both WebGL 2 morph storage modes.\r\n",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.pure.ts",
+                    "packages/dev/loaders/test/unit/glTF/morphTargets.test.ts"
+                ],
+                "tags": [
+                    "loaders",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "19060",
+                "title": "Materials: keep pipeline names and plugin declarations as flat strings",
+                "description": "Forum: [64298](https://forum.babylonjs.com/t/64298) #2 and #11: isolated PRs with measured gains, each benefit measured separately.\n\nAn effect's pipeline name and a material's plugin declarations live as long as the effect and the material. Today V8 keeps them as ropes, strings made of many pieces. The pipeline name comes from a global `replace` of each line break (`replace(/\\n/g, \"|\")`), and the plugin declarations grow with `+=`, one line per uniform. A rope is one heap object per piece, and every full garbage collection marks all of them. This PR builds the same strings with `split` and `join`, which V8 keeps as one flat string each.\n\n**What it does.**\n- `Effect`: the pipeline name is `key.replace(/\\r/g, \"\").split(\"\\n\").join(\"|\")` instead of `.replace(/\\n/g, \"|\")`, in the constructor and when the pipeline context is created. The same applies in `effect.webgl.functions`. The string itself does not change.\n- `MaterialPluginManager`: the ubo, vertex and fragment declarations of the plugins are pushed into arrays and joined once, instead of being grown with `+=`. The strings do not change either.\n- On WebGL, the pipeline name is also a key of the pipeline cache, and V8 flattens a string used as a key, so the effect part matters mostly on WebGPU.\n\n**Measured.** In our app (WebGPU), a heap snapshot had 220k concatenated strings: 132k under plugin declarations and 54k under pipeline names. With this change the heap had 13% fewer nodes. The numbers below come from a test page made for this PR, which we can share.\n\nChromium 147, RTX 3080 Laptop GPU, Windows 11. The page has 512 spheres, each with its own PBR material. The bits of the material's index turn on clear coat, sheen, iridescence, anisotropy, translucency and specular anti-aliasing, so the scene compiles 64 effects. Once every material is ready and 60 frames have run, the runner forces 2 full GCs, then 5 more inside a Chrome trace (for each, the main thread's pause and its atomic mark), and takes a heap snapshot. Each arm ran 4 times, the arms alternating, with a new browser for each run, on master as of today (dbd14a5). Ranges are over the runs; the GC times are the median of all the forced GCs.\n\nWebGPU:\n\n|  | heap snapshot nodes | of which concatenated strings | JS heap in use | full GC pause | its mark |\n|---|---|---|---|---|---|\n| master | 795,266-797,446 | 139,531-139,533 | 76.4-76.6 MB | 12.5 ms | 9.6 ms |\n| this PR | 659,336-661,713 | 22,073-22,090 | 74.7-74.9 MB | 10.7 ms | 7.5 ms |\n\nWebGL2:\n\n|  | heap snapshot nodes | of which concatenated strings | JS heap in use | full GC pause | its mark |\n|---|---|---|---|---|---|\n| master | 690,852-692,955 | 83,602-83,608 | 71.8-71.9 MB | 10.3 ms | 7.7 ms |\n| this PR | 607,464-609,570 | 20,818 | 70.7-70.8 MB | 9.5 ms | 6.8 ms |\n\nWhat the numbers say:\n- On WebGPU there are 117k fewer concatenated strings (-84%) and 136k fewer heap nodes (-17%). Each forced full GC pauses 14% less: 12.5 → 10.7 ms, with the mark going from 9.6 to 7.5 ms. The GC times move with the machine's state: an earlier session, on c9e77a1, gave 14.8 → 11.9 ms. The node counts were the same to a few nodes.\n- Each part's share, from master's snapshot, counted by the first holder of each concatenated string that is not a string: on WebGPU, 104,892 are under `MaterialPluginManager._uboDeclaration`, about 205 per material, and 12,546 under the pipeline contexts' `_name`, about 196 per effect. Together they make up the whole drop (117,461). The 22k left belong to other holders, the same in both arms.\n- On WebGL2 the drop is smaller: 63k concatenated strings (-75%), 12% of the nodes, and the pause goes from 10.3 to 9.5 ms (10.4 to 9.0 ms in the earlier session). All of it comes from the plugin declarations: 62,784 under `_uboDeclaration`, about 123 per material, and none under `_name`, because the pipeline cache's key flattens it there.\n- Only the materials and effects change here. In an app, the share depends on how many materials and effects it has against the rest of its heap.\n\n**Unit tests.** `materialPluginManager.declarations.test.ts` has 3: the declarations in GLSL and in WGSL, with an array, a matrix and a float, in plugin order, and not doubled when the layout is built again. `effect.pipelineName.test.ts` has 1: the pipeline name. They pass on master too, because the strings do not change, only how V8 stores them, which a unit test cannot see. The bench's heap snapshots show it. The Engines, Materials and Misc unit suites have 756 passing tests and 1 expected fail, already marked on master.\n\nProgress videos: https://forum.babylonjs.com/t/64298/1\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.pure.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.pure.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.pure.ts",
+                    "packages/dev/core/test/unit/Materials/effect.pipelineName.test.ts",
+                    "packages/dev/core/test/unit/Materials/materialPluginManager.declarations.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19058",
+                "title": "Fix solid particle winding for glTF model meshes",
+                "description": "## Summary\n\nSPS copies a model's local geometry but previously discarded its face-orientation convention. In a left-handed scene, glTF meshes use clockwise faces while the generated SPS mesh defaults to counterclockwise. This also affects detached models with a positive world determinant, so checking the model's determinant is not sufficient.\n\n- Normalize triangle winding once per model in both `addShape()` and `digest()`, without changing source geometry, vertex normals, or source transforms.\n- Record the normalized indices' scene-independent convention in `ModelShape` and reconcile it during particle transfers, cloning model indices only when conversion is required.\n- Resolve source orientation per submesh, including material overrides and scene-default materials, without requiring an unregistered default-material factory for explicit-material applications.\n- Keep a stable initial normalization convention so changing an expandable SPS mesh or material does not give later additions different winding.\n- Respect scene handedness, instance source meshes, and the existing negative-particle-scaling option.\n- Add unit coverage and a Playground-based visual regression for mixed native/opposite-winding models and transfers in both directions.\n- Refresh the existing no-normal SPS reference image, which previously captured inward-facing geometry and inward-pointing regenerated normals.\n\nRegression scene: https://playground.babylonjs.com/#B1NNWI#2\n\n## Validation\n\n- 68 focused SPS unit tests passed: 64 winding/transfer cases and 4 isolated cases without StandardMaterial registration. Coverage includes source-model immutability, round trips, stored particles from unbuilt source systems, differing scene handedness, material overrides, and missing vertex normals.\n- Both SPS visualization cases passed on WebGL2 and WebGPU against the committed reference images, without changing screenshot tolerances. The mixed-winding fixture now covers both transfer directions.\n- For the existing no-normal glTF asset, generated normal/radius dot products changed from negative before winding correction to positive afterward, confirming outward-facing normals.\n- Core-package TypeScript check passed.\n- Changed-file lint and formatting passed, including the repository's pre-commit hooks.\n- Devhost rendered all eight explicit-material/transfer triangles in both handedness modes without registering the default-material factory. Temporary scene changes were removed and validation servers stopped.\n\nValidation was scoped to the affected packages and test cases; full-repository suites were not run.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticle.ts",
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts",
+                    "packages/dev/core/test/unit/Particles/solidParticleSystem.sideEffects.test.ts",
+                    "packages/dev/core/test/unit/Particles/solidParticleSystem.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/AddmeshwithoutvertexnormalstoSPS.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/sps-mixed-model-winding.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "18998",
+                "title": "fix(inspector-v2): fall back to Unknown class name when getClassName is absent",
+                "description": "## Problem\n\nWhen the inspected entity does not implement `getClassName`, the optional call returned `undefined`, so the `Class` row of the General section rendered an empty value. Reported by @eldinor at https://github.com/BabylonJS/Babylon.js/issues/17293#issuecomment-.\n\n## Change\n\nCo-locate the existing fallback convention from `sharedUiComponents/src/copyCommandToClipboard.ts` in `packages/dev/inspector-v2/src/components/properties/commonGeneralProperties.tsx`: `commonEntity.getClassName?.() ?? \"Unknown\"`. One line.\n\n## Test\n\n`tsc -b tsconfig.build.json` in `packages/dev/inspector-v2` (0 new errors), ESLint clean, Vitest suite passes (2 pre-existing env-dependent failures unrelated to this change reproduce on master without it).",
+                "author": {
+                    "name": "peda-cos",
+                    "url": "https://github.com/peda-cos"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/commonGeneralProperties.tsx",
+                    "packages/dev/inspector-v2/test/unit/commonGeneralProperties.test.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19013",
+                "title": "Gaussian Splatting: fix WebGPU texture fetch performance and add opt-in GPU depth sort",
+                "description": "Gaussian Splatting data-texture reads can make WebGPU rendering substantially slower than WebGL2 on some GPUs. This change avoids unnecessary render-target usage for sampled-only data textures and adds experimental, opt-in GPU depth sorting that keeps the sorted indices on the GPU.\n\nOn an NVIDIA T400 with a static camera and about 932,000 splats, the texture change improved WebGPU performance from 14.5 to 54.3 FPS for an SPZ scene with multisample anti-aliasing enabled, compared with 58.2 FPS on WebGL2. This is hardware-dependent evidence, not a general performance guarantee.\n\nGPU sorting remains off by default because it competes with rendering; the asynchronous CPU worker was faster during camera motion on the T400. Enable it before loading through `GaussianSplattingMeshBase.UseGpuSort` or a mesh's `useGpuSort` override. `GpuSortMinFrameInterval` can trade ordering freshness during camera motion for lower GPU cost; data changes bypass that throttle.\n\nSampled-only Gaussian Splatting data textures exposed through getters are no longer render-target-capable on WebGPU. Streaming atlases retain the render-target usage needed for GPU decoding. WebGL, Native, unsupported devices, streaming meshes, and custom scene render functions outside the frame graph retain CPU sorting. Enabling point splatting or disabling depth sorting also moves a GPU-sorted mesh back to the CPU path.\n\nLocal visualization coverage has two known limitations: the WebGPU Gaussian Splatting image-based-lighting shadow tests hang the D3D12 driver on the baseline as well, and the WebGL2 compound level-of-detail test is flaky on the baseline. GPU sorting for streaming remains follow-up work.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingGpuSorter.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/pure.ts",
+                    "packages/dev/core/src/ShadersWGSL/gsSortCount.compute.fx",
+                    "packages/dev/core/src/ShadersWGSL/gsSortKeys.compute.fx",
+                    "packages/dev/core/src/ShadersWGSL/gsSortOutput.compute.fx",
+                    "packages/dev/core/src/ShadersWGSL/gsSortScanLocal.compute.fx",
+                    "packages/dev/core/src/ShadersWGSL/gsSortScanSums.compute.fx",
+                    "packages/dev/core/src/ShadersWGSL/gsSortScatter.compute.fx",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.gpuSortSelection.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.gpuSorter.test.ts",
+                    "packages/dev/loaders/src/SPLAT/gaussianSplattingWorkBuffer.ts",
+                    "packages/dev/loaders/src/SPLAT/sog.pure.ts",
+                    "packages/tools/tests/test/integration/gaussianSplattingGpuSortRendering.webgpu.test.ts",
+                    "packages/tools/tests/test/integration/gaussianSplattingGpuSorter.webgpu.test.ts",
+                    "scripts/treeshaking/side-effects-manifest/core/ShadersWGSL.json"
+                ],
+                "tags": [
+                    "optimizations",
+                    "loaders",
+                    "new feature",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "19052",
+                "title": "Fix HtmlTexture rendering with current HTML-in-Canvas APIs",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nFix the blank `HtmlTexture` reported with default settings in Chrome 157:\nhttps://forum.babylonjs.com/t/htmltexture-with-default-settings-is-blank-on-chrome-157-where-156-draws-it-through-the-svg-fallback-157-is-on-early-stable-now-stable-november-3/64387\n\nChrome exposes `requestPaint()` while Babylon only recognizes the older native upload names. Consequently, construction waits for native paint instead of reaching the SVG fallback. The older `layoutSubtree` setup also no longer opts the canvas into drawable content.\n\n- Support `content=\"drawable\"` and the source element's `drawable` attribute, while retaining `layoutSubtree` for older implementations. Preserve caller-owned attribute values during use and disposal.\n- Prefer `texElementSubImage2D` for WebGL and `drawElementImageToTexture` for WebGPU, including their current allocation/descriptor requirements. Normalize an unset dynamic texture type before allocating non-default WebGL formats.\n- Keep installer-owned forced polyfills on their legacy opt-in and snapshot/upload APIs even when newer native APIs remain exposed, including the WebGPU element/size overload and polyfill-aware element removal.\n- Update immediately through the SVG fallback when the engine has no supported native upload API, even if `requestPaint()` exists.\n- Honor explicit refresh requests with empty `changedElements`, including after the first paint when `autoUpdate` is disabled, and remove the paint listener on disposal.\n- Register and clear native drawable geometry in `HtmlInteractionManager`, account for hardware scaling, and prevent canvas pointer capture from retargeting HTML button clicks. Retain CSS transforms for legacy/polyfilled implementations and custom targets outside the drawable canvas.\n- Add regressions for API detection, fallback scheduling, attribute ownership, explicit paints, upload descriptors, allocation reuse, transient failures, binding cleanup, polyfill coexistence, native pointer interaction, and disposal.\n\nThe manual `tex.update()` call used in the report is no longer required for the initial render. SVG fallback limitations remain unchanged.\n\n## Validation\n\n- Reproduced the original blank texture using the base implementation in Chrome **157.0.8103.15**, then confirmed initial rendering and a green-to-magenta update with the fix.\n- Verified native WebGL, SVG fallback, and explicit refreshes with `autoUpdate: false` in Chrome 157.0.8103.15 and Chrome 155.0.8059.85.\n- Verified native WebGPU readback before and after updating the HTML in both browser versions with a SwiftShader adapter.\n- **66 focused unit tests passed** across HTML textures, interaction managers, and the polyfill installer.\n- **Two browser interaction tests passed** in Chrome 157 with real pointer input, mesh movement, disposal, and hardware scaling levels 1 and 2. These tests are feature-gated for browsers exposing the current geometry API.\n- Verified native RGB allocation/rendering with no WebGL error and preservation of an existing nonempty `drawable` attribute.\n- Verified the actual `three-html-render` **0.1.2** forced polyfill on Chrome 157 for WebGL and WebGPU: initial snapshot, explicit color refresh with `autoUpdate: false`, disposal, and uninstall cleanup.\n- Core-only and changed-test TypeScript checks, changed-file ESLint, Prettier, standard precommit hooks, and `git diff --check` passed.\n\nValidation was deliberately scoped to the affected package and files; full-repository builds/checks were not run. Temporary browser assets were removed and the validation server was stopped.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/htmlInCanvas.d.ts",
+                    "packages/dev/core/src/Materials/Textures/HTML/htmlInCanvasPolyfill.ts",
+                    "packages/dev/core/src/Materials/Textures/HTML/htmlInteractionManager.ts",
+                    "packages/dev/core/src/Materials/Textures/HTML/htmlTexture.ts",
+                    "packages/dev/core/test/integration/htmlInteractionManager.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/HTML/htmlTexture.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/HTML/interactionManagers.test.ts"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],
@@ -319,6 +688,40 @@
                     "packages/dev/core/test/unit/Materials/Textures/babylon.mirrorTexture.test.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "9.32.0": [
+            {
+                "pr": "19016",
+                "title": "Inspector Lite: add debug helpers and capture tools (P7b)",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nImplements the debug and capture tools milestone (P7b) of [BabylonJS/Babylon-Lite#55](https://github.com/BabylonJS/Babylon-Lite/issues/55).\n\n- Add a **Debug** pane with per-scene, non-pickable ground grids and bounding boxes, including auxiliary surfaces. Bounding boxes inherit live world transforms instead of rebuilding on the Inspector polling interval, so animated and parented meshes stay synchronized even in manual watch mode without changing the application's node hierarchy.\n- Add **Tools** controls for native-resolution PNG screenshots and browser canvas video capture on primary or auxiliary surfaces. Service-owned controllers preserve state across pane changes, report failures, release media tracks, and suppress stale downloads after removal or disposal.\n- Forward disabled state through the shared toggle button, add accessible switch names, document capabilities and limitations, and cover the new behavior with unit and browser regressions.\n\nUses the published Lite 1.32.0 API without private GPU-device reads or dependency changes. Geometry/visibility updates retain Inspector's watch cadence; skeletal/morph deformation and individual thin-instance bounds are not included.\n\n## Screenshots\n\n**Debug:** ground grid and live bounding boxes enabled in the Inspector Lite test app.\n\n![Inspector Lite Debug pane with ground grid and live bounding boxes enabled](https://github.com/user-attachments/assets/70b1364b-f07f-45aa-8b81-c788bad4ca45)\n\n**Tools:** primary/auxiliary surface selection, native-resolution PNG screenshots, and canvas video recording.\n\n![Inspector Lite Tools pane with primary surface selection and screenshot and video capture controls](https://github.com/user-attachments/assets/6ccfc089-2e1b-4248-850e-586301e768e3)\n\n## Validation\n\n- Repository formatting, lint/tree-shaking, advisory lint, and source build completed successfully.\n- Focused controller, service, and shared-control unit tests passed.\n- All four Chrome/software-WebGPU integration tests passed: primary/auxiliary PNG dimensions and pixels, playable video across pane changes, helper rendering/cleanup, and animated bounds in manual watch mode. The animation regression samples 30 frames and requires transform error below 0.000001.\n- **The full local unit command did not finish cleanly.** Attempts encountered failures in untouched Windows build-tool tests, a probabilistic flow multi-gate assertion, and Atmosphere shader imports racing test teardown. A clean-baseline comparison has not been established. Unrelated validation fixes are deliberately excluded from this PR; per request, PR CI will establish the final check results.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/sceneEntityUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/captureController.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/captureService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/debugController.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/debugService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/meshExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/integration/liteDebugCapture.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteCapture.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteCaptureService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteDebugController.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteDebugService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteSceneEntities.test.ts",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/switch.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/fluent/switch.test.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/fluent/toggleButton.test.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature"
+                ]
             }
         ],
         "9.31.3": [
