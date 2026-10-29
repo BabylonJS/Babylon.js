@@ -40,7 +40,7 @@ KTX2Encoder.DefaultEncoderOptions = { etc1sQualityLevel: 200, zstandard: false }
 
 Core's `KhronosTextureContainer2Encoder` configuration is groundwork for the upcoming glTF exporter, which will be the public entry point for encoding Babylon textures. This release has no public texture-encoding helper and no public worker bootstrap.
 
-The internal adapter accepts 2D unsigned-byte textures and explicitly rejects integer texture formats before readback. Injected worker pools are captured per instance and do not replace the shared automatic pool. Automatic workers are replaced after initialization failures or fatal WASM errors; ordinary encode errors and cancellation preserve healthy workers.
+The internal adapter accepts 2D unsigned-byte textures and explicitly rejects integer texture formats before readback. On WebGL, it also rejects legacy alpha, luminance, and luminance-alpha formats because they cannot be read as color framebuffer attachments. Injected worker pools are captured per instance and do not replace the shared automatic pool. Automatic workers are replaced after initialization failures or fatal WASM errors; ordinary encode errors and cancellation preserve healthy workers.
 
 ## Limits
 

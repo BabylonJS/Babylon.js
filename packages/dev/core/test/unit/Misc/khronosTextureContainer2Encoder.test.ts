@@ -351,6 +351,16 @@ it("encodes WebGPU BGRA readback as RGBA", async () => {
     await expect(result).resolves.toEqual(new Uint8Array([7]));
 });
 
+it.each([Constants.TEXTUREFORMAT_ALPHA, Constants.TEXTUREFORMAT_LUMINANCE, Constants.TEXTUREFORMAT_LUMINANCE_ALPHA])(
+    "rejects legacy format %s on WebGL before readback",
+    async (format) => {
+        texture.getInternalTexture()!.format = format;
+        await expect(EncodeAsync(new KhronosTextureContainer2Encoder(1))).rejects.toThrow("alpha or luminance texture formats on WebGL");
+        expect(texture.readPixels).not.toHaveBeenCalled();
+        expect(FakeWorker.instances).toHaveLength(0);
+    }
+);
+
 it("only compensates an actual upload flip for inverted UVs", () => {
     const internal = texture.getInternalTexture()!;
     internal.invertY = true;

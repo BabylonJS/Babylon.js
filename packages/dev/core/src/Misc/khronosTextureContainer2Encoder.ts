@@ -209,6 +209,7 @@ function UsesWorkers(numWorkers: number): boolean {
 
 function ValidateTexture(texture: BaseTexture, allowUninitialized: boolean): void {
     const internalTexture = texture.getInternalTexture();
+    const engine = internalTexture?.getEngine();
     if (texture.isCube || texture.is3D || texture.is2DArray || internalTexture?.isCube || internalTexture?.is3D || internalTexture?.is2DArray) {
         throw new Error("KTX2 encoding supports only 2D textures, not cube, 3D, or array textures.");
     }
@@ -217,6 +218,13 @@ function ValidateTexture(texture: BaseTexture, allowUninitialized: boolean): voi
         throw new Error("KTX2 encoding requires an unsigned byte texture.");
     }
     switch (texture.textureFormat) {
+        case Constants.TEXTUREFORMAT_ALPHA:
+        case Constants.TEXTUREFORMAT_LUMINANCE:
+        case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
+            if (engine && "webGLVersion" in engine) {
+                throw new Error("KTX2 encoding does not support alpha or luminance texture formats on WebGL.");
+            }
+            break;
         case Constants.TEXTUREFORMAT_R_INTEGER:
         case Constants.TEXTUREFORMAT_RG_INTEGER:
         case Constants.TEXTUREFORMAT_RGB_INTEGER:

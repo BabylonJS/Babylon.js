@@ -97,6 +97,50 @@ test("KTX2 texture encoding rejects integer textures before WebGL2 readback", as
     expect(result).toEqual({ ready: true, error: expect.stringContaining("integer texture formats"), glError: 0 });
 });
 
+for (const engineName of ["webgl1", "webgl2"] as const) {
+    test(`KTX2 texture encoding rejects legacy alpha and luminance textures on ${engineName}`, async ({ page }) => {
+        const { baseUrl } = getGlobalConfig();
+        await page.goto(baseUrl + "/empty.html");
+        await page.evaluate(evaluateInitEngineForVisualization, {
+            engineName,
+            useLargeWorldRendering: false,
+            useReverseDepthBuffer: "false",
+            useNonCompatibilityMode: "false",
+            baseUrl,
+        });
+        const result = await page.evaluate(async () => {
+            const B = window.BABYLON;
+            const scene = new B.Scene(window.engine!);
+            const gl = (window.canvas!.getContext("webgl2") ?? window.canvas!.getContext("webgl"))!;
+            const encoder = new B.KhronosTextureContainer2Encoder(0);
+            try {
+                const results = [];
+                for (const [format, channels] of [
+                    [B.Constants.TEXTUREFORMAT_ALPHA, 1],
+                    [B.Constants.TEXTUREFORMAT_LUMINANCE, 1],
+                    [B.Constants.TEXTUREFORMAT_LUMINANCE_ALPHA, 2],
+                ] as const) {
+                    const texture = new B.RawTexture(new Uint8Array(16 * channels).fill(128), 4, 4, format, scene, false, false, B.Texture.NEAREST_SAMPLINGMODE);
+                    try {
+                        await encoder._encodeAsync(texture, { usage: "data" });
+                        results.push({ ready: texture.isReady(), error: "Encoding unexpectedly succeeded", glError: gl.getError() });
+                    } catch (error) {
+                        results.push({ ready: texture.isReady(), error: String(error), glError: gl.getError() });
+                    } finally {
+                        texture.dispose();
+                    }
+                }
+                return results;
+            } finally {
+                scene.dispose();
+                window.engine!.dispose();
+                window.engine = null;
+            }
+        });
+        expect(result).toEqual(Array.from({ length: 3 }, () => ({ ready: true, error: expect.stringContaining("alpha or luminance texture formats on WebGL"), glError: 0 })));
+    });
+}
+
 for (const shared of [false, true]) {
     test(`KTX2 texture encoding rejects a ${shared ? "shared " : ""}load failure after readiness waiting starts`, async ({ page }) => {
         const { baseUrl } = getGlobalConfig();
