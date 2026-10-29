@@ -102,6 +102,9 @@ const umdUrlMap: Record<string, { dir: string; file: string }> = {
 
     // KTX2 Decoder
     "babylon.ktx2Decoder.js": { dir: "babylonjs-ktx2decoder", file: "babylon.ktx2Decoder.max.js" },
+
+    // KTX2 Encoder
+    "babylon.ktx2Encoder.js": { dir: "babylonjs-ktx2encoder", file: "babylon.ktx2Encoder.max.js" },
 };
 
 /**
@@ -167,6 +170,7 @@ function babylonServerPlugin(): Plugin {
     const sourceToPackage: Array<{ srcDir: string; packages: string[] }> = [
         { srcDir: path.join(DEV_ROOT, "core/src"), packages: ["babylonjs"] },
         { srcDir: path.join(DEV_ROOT, "core/src/Materials/Textures/ktx2decoderTypes.ts"), packages: ["babylonjs-ktx2decoder"] },
+        { srcDir: path.join(DEV_ROOT, "core/src/Materials/Textures/ktx2encoderTypes.ts"), packages: ["babylonjs-ktx2encoder"] },
         { srcDir: path.join(DEV_ROOT, "gui/src"), packages: ["babylonjs-gui"] },
         { srcDir: path.join(DEV_ROOT, "loaders/src"), packages: ["babylonjs-loaders"] },
         { srcDir: path.join(DEV_ROOT, "serializers/src"), packages: ["babylonjs-serializers"] },
@@ -195,6 +199,7 @@ function babylonServerPlugin(): Plugin {
         { srcDir: path.join(TOOLS_ROOT, "guiEditor/src"), packages: ["babylonjs-gui-editor"] },
         { srcDir: path.join(TOOLS_ROOT, "accessibility/src"), packages: ["babylonjs-accessibility"] },
         { srcDir: path.join(TOOLS_ROOT, "ktx2Decoder/src"), packages: ["babylonjs-ktx2decoder"] },
+        { srcDir: path.join(TOOLS_ROOT, "ktx2Encoder/src"), packages: ["babylonjs-ktx2encoder"] },
     ];
 
     /** Tracks in-flight builds to avoid overlapping rebuilds of the same package. */
