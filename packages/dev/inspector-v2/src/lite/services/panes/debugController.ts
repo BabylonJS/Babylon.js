@@ -18,6 +18,9 @@ import {
     getPhysicsBodyShape,
     getPhysicsShapeType,
     getPhysicsShapeChildCount,
+    getPhysicsWorlds,
+    getPhysicsBodies,
+    getPhysicsConstraints,
     PhysicsShapeType,
     type EngineContext,
     type Mesh,
@@ -33,7 +36,7 @@ import {
 import { Observable } from "core/Misc/observable";
 
 import { GetSceneContexts, InspectorBoundsHelpers, InspectorPhysicsHelpers } from "../../sceneEntityUtils";
-import { GetScenePhysicsSnapshot, GetScenePhysicsWorlds, IsPhysicsBodyLive, IsPhysicsConstraintLive, IsPhysicsWorldLive } from "../../physicsUtils";
+import { GetScenePhysicsWorlds } from "../../physicsUtils";
 
 const BoxEdges = [
     [0, 1],
@@ -66,6 +69,16 @@ type Helpers = {
 
 function IsThinBody(body: PhysicsBody): boolean {
     return "thinInstances" in body.node && !!body.node.thinInstances;
+}
+
+function CaptureMembership<T>(values: readonly T[]) {
+    const members = new Set(values);
+    const indices = new Map<T, number>();
+    values.forEach((value, index) => indices.set(value, index));
+    // Lite's registration lists mutate in place. Check the captured slot as well:
+    // a synchronous scene-change listener may release physics during viewer changes.
+    // Shifted live entries are conservatively deferred until the next fresh capture.
+    return { members, has: (value: T) => members.has(value) && values[indices.get(value)!] === value };
 }
 
 function GetBodyGeometry(world: PhysicsWorld, body: PhysicsBody): BodyGeometry {
@@ -239,12 +252,18 @@ export class DebugController {
         for (const scene of this.scenes) {
             snapshot.push(scene);
             const helpers = this._helpers.get(scene);
-            for (const { world, bodies, constraints } of GetScenePhysicsSnapshot(scene).worlds) {
-                snapshot.push(world, ...bodies, ...constraints);
+            const worlds = CaptureMembership(getPhysicsWorlds(scene));
+            for (const world of worlds.members) {
+                if (!worlds.has(world)) {
+                    continue;
+                }
+                const bodies = CaptureMembership(getPhysicsBodies(world));
+                const constraints = getPhysicsConstraints(world).filter((constraint) => bodies.has(constraint.bodyA) && bodies.has(constraint.bodyB));
+                snapshot.push(world, ...bodies.members, ...constraints);
                 // Shape discovery is JS-only; a later attachment/replacement must trigger reconciliation.
-                for (const body of bodies) {
+                for (const body of bodies.members) {
                     snapshot.push(getPhysicsBodyShape(body), IsThinBody(body));
-                    if (helpers?.physicsBodies && !IsThinBody(body) && IsPhysicsBodyLive(scene, world, body)) {
+                    if (helpers?.physicsBodies && !IsThinBody(body) && worlds.has(world) && bodies.has(body)) {
                         try {
                             snapshot.push(GetBodyGeometry(world, body).children);
                         } catch (error) {
@@ -455,9 +474,10 @@ export class DebugController {
     private _refreshPhysics(scene: SceneContext, helpers: Helpers, kind: "physicsBodies" | "physicsConstraints"): void {
         const viewers = kind === "physicsBodies" ? helpers.bodyViewers : helpers.constraintViewers;
         try {
+            const worlds = CaptureMembership(getPhysicsWorlds(scene));
             // Cleanup is JS-only and remains safe after native world/body/constraint release.
             for (const [world, entry] of viewers) {
-                if (!helpers[kind] || !IsPhysicsWorldLive(scene, world)) {
+                if (!helpers[kind] || !worlds.has(world)) {
                     this._releaseViewer(entry);
                     viewers.delete(world);
                 }
@@ -465,10 +485,15 @@ export class DebugController {
             if (!helpers[kind]) {
                 return;
             }
-            for (const { world, bodies, constraints } of GetScenePhysicsSnapshot(scene).worlds) {
+            for (const world of worlds.members) {
+                if (!worlds.has(world)) {
+                    continue;
+                }
+                const bodies = CaptureMembership(getPhysicsBodies(world));
+                const isBodyLive = (body: PhysicsBody) => worlds.has(world) && bodies.has(body);
                 if (kind === "physicsBodies") {
                     let entry = helpers.bodyViewers.get(world);
-                    if (!entry && IsPhysicsWorldLive(scene, world)) {
+                    if (!entry) {
                         entry = { viewer: createPhysicsViewer(scene, world), entities: new Map(), meshes: new Set() };
                         helpers.bodyViewers.set(world, entry);
                     }
@@ -476,15 +501,15 @@ export class DebugController {
                         continue;
                     }
                     for (const [body, geometry] of entry.entities) {
-                        const live = IsPhysicsBodyLive(scene, world, body) && !IsThinBody(body);
+                        const live = isBodyLive(body) && !IsThinBody(body);
                         const current = live ? GetBodyGeometry(world, body) : undefined;
                         if (!current || current.shape !== geometry.shape || current.children !== geometry.children) {
                             hidePhysicsBody(entry.viewer, body);
                             entry.entities.delete(body);
                         }
                     }
-                    for (const body of bodies) {
-                        if (!entry.entities.has(body) && !IsThinBody(body) && IsPhysicsBodyLive(scene, world, body)) {
+                    for (const body of bodies.members) {
+                        if (!entry.entities.has(body) && !IsThinBody(body) && isBodyLive(body)) {
                             const geometry = GetBodyGeometry(world, body);
                             const mesh = showPhysicsBody(entry.viewer, body);
                             if (mesh) {
@@ -494,8 +519,10 @@ export class DebugController {
                         }
                     }
                 } else {
+                    const constraints = CaptureMembership(getPhysicsConstraints(world));
+                    const isConstraintLive = (constraint: PhysicsConstraint) => constraints.has(constraint) && isBodyLive(constraint.bodyA) && isBodyLive(constraint.bodyB);
                     let entry = helpers.constraintViewers.get(world);
-                    if (!entry && IsPhysicsWorldLive(scene, world)) {
+                    if (!entry) {
                         entry = { viewer: createPhysicsViewer(scene, world), entities: new Set(), meshes: new Set() };
                         helpers.constraintViewers.set(world, entry);
                     }
@@ -503,26 +530,29 @@ export class DebugController {
                         continue;
                     }
                     for (const constraint of entry.entities) {
-                        if (!IsPhysicsConstraintLive(scene, world, constraint)) {
+                        if (!isConstraintLive(constraint)) {
                             hidePhysicsConstraint(entry.viewer, getPhysicsConstraintDebug(constraint));
                             entry.entities.delete(constraint);
                         }
                     }
-                    for (const constraint of constraints) {
-                        if (!entry.entities.has(constraint) && IsPhysicsConstraintLive(scene, world, constraint)) {
-                            // Lite returns the axes/disks but not their six arrowheads.
-                            // Capture the synchronous viewer mutation, including partial creation
-                            // on failure, without relying on private viewer fields or mesh names.
-                            const before = new Set(scene.meshes);
-                            try {
-                                showPhysicsConstraint(entry.viewer, getPhysicsConstraintDebug(constraint));
-                            } finally {
-                                this._trackPhysicsMeshes(
-                                    entry,
-                                    scene.meshes.filter((mesh) => !before.has(mesh))
-                                );
+                    const pending = [...constraints.members].filter((constraint) => !entry.entities.has(constraint) && isConstraintLive(constraint));
+                    if (pending.length) {
+                        // Lite omits six arrowheads from each returned mesh group.
+                        // Capture one combined synchronous delta per world batch, including
+                        // partial creation on failure, without private fields or mesh names.
+                        const before = new Set(scene.meshes);
+                        try {
+                            for (const constraint of pending) {
+                                if (isConstraintLive(constraint)) {
+                                    showPhysicsConstraint(entry.viewer, getPhysicsConstraintDebug(constraint));
+                                    entry.entities.add(constraint);
+                                }
                             }
-                            entry.entities.add(constraint);
+                        } finally {
+                            this._trackPhysicsMeshes(
+                                entry,
+                                scene.meshes.filter((mesh) => !before.has(mesh))
+                            );
                         }
                     }
                 }

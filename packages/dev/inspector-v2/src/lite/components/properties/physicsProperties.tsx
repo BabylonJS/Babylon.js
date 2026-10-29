@@ -265,14 +265,14 @@ export const PhysicsWorldGeneralProperties: FunctionComponent<WorldProps> = (pro
     const { scene, world, selectionService } = props;
     const live = () => IsPhysicsWorldLive(scene, world);
     return (
-        <PhysicsRead live={live} read={() => `${GetPhysicsWorldBodies(world).length},${GetPhysicsWorldConstraints(world).length}`}>
+        <PhysicsRead live={live} read={() => [GetPhysicsWorldBodies(world).length, GetPhysicsWorldConstraints(world).length, scene.name || "Scene"]}>
             {(value) => {
-                const [bodies, constraints] = (JSON.parse(value) as string).split(",");
+                const [bodies, constraints, sceneName] = JSON.parse(value) as [number, number, string];
                 return (
                     <>
-                        <TextPropertyLine label="Bodies" value={bodies} />
-                        <TextPropertyLine label="Constraints" value={constraints} />
-                        <EntityLink label="Scene" name={scene.name || "Scene"} entity={scene} selectionService={selectionService} />
+                        <TextPropertyLine label="Bodies" value={String(bodies)} />
+                        <TextPropertyLine label="Constraints" value={String(constraints)} />
+                        <EntityLink label="Scene" name={sceneName} entity={scene} selectionService={selectionService} />
                     </>
                 );
             }}

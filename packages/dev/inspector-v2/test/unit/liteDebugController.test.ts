@@ -31,6 +31,7 @@ const Physics = vi.hoisted(() => ({
     hideBody: vi.fn(),
     showConstraint: vi.fn(),
     hideConstraint: vi.fn(),
+    childCount: vi.fn(),
     meshes: new Map<PhysicsViewer, Map<PhysicsBody | PhysicsConstraintDebug, Mesh[]>>(),
 }));
 
@@ -64,7 +65,7 @@ vi.mock("@babylonjs/lite", async (importOriginal) => ({
     getPhysicsConstraints: (world: PhysicsWorld) => Physics.constraints.get(world) ?? [],
     getPhysicsBodyShape: (body: PhysicsBody) => Physics.shapes.get(body) ?? null,
     getPhysicsShapeType: (shape: { type?: number }) => shape.type ?? 3,
-    getPhysicsShapeChildCount: (_world: PhysicsWorld, shape: PhysicsShape) => Physics.childCounts.get(shape) ?? 0,
+    getPhysicsShapeChildCount: Physics.childCount,
     createPhysicsViewer: Physics.create,
     disposePhysicsViewer: Physics.dispose,
     showPhysicsBody: Physics.showBody,
@@ -125,6 +126,7 @@ describe("Babylon Lite debug helpers", () => {
         Physics.constraints.clear();
         Physics.shapes.clear();
         Physics.childCounts.clear();
+        Physics.childCount.mockImplementation((_world: PhysicsWorld, shape: PhysicsShape) => Physics.childCounts.get(shape) ?? 0);
         Physics.meshes.clear();
         Physics.create.mockImplementation((scene: SceneContext, world: PhysicsWorld) => {
             const viewer = { scene, world } as PhysicsViewer;
@@ -251,6 +253,178 @@ describe("Babylon Lite debug helpers", () => {
         expect(iterator).toHaveBeenCalledTimes(2);
         iterator.mockRestore();
         includes.mockRestore();
+        h.controller.dispose();
+    });
+
+    it.each([16, 256])("does not rescan body registration lists while visualizing and polling %i bodies", (count) => {
+        const h = PhysicsFixture();
+        const bodies = Array.from({ length: count }, () => ({ ...h.body }));
+        const shape = { type: 5 } as unknown as PhysicsShape;
+        bodies.forEach((body) => Physics.shapes.set(body, shape));
+        Physics.bodies.set(h.world, bodies);
+        Physics.constraints.set(h.world, []);
+        const includes = vi.spyOn(bodies, "includes");
+        const iterator = vi.spyOn(bodies, Symbol.iterator);
+        const forEach = vi.spyOn(bodies, "forEach");
+        const worldIncludes = vi.spyOn(Physics.worlds.get(h.scene)!, "includes");
+        h.controller.setPhysicsBodies(true);
+        expect(Physics.showBody).toHaveBeenCalledTimes(count);
+        expect(iterator).toHaveBeenCalledOnce();
+        expect(forEach).toHaveBeenCalledOnce();
+        expect(includes).not.toHaveBeenCalled();
+        expect(worldIncludes).not.toHaveBeenCalled();
+
+        for (const update of [() => h.controller.getSnapshot(), () => h.controller.refresh()]) {
+            iterator.mockClear();
+            forEach.mockClear();
+            Physics.childCount.mockClear();
+            update();
+            expect(iterator).toHaveBeenCalledOnce();
+            expect(forEach).toHaveBeenCalledOnce();
+            expect(Physics.childCount).toHaveBeenCalledTimes(count);
+            expect(includes).not.toHaveBeenCalled();
+            expect(worldIncludes).not.toHaveBeenCalled();
+            expect(Physics.showBody).toHaveBeenCalledTimes(count);
+        }
+        iterator.mockRestore();
+        forEach.mockRestore();
+        includes.mockRestore();
+        worldIncludes.mockRestore();
+        h.controller.dispose();
+    });
+
+    it.each(["body", "world"])("does not read or show a released %s after a synchronous viewer callback", (kind) => {
+        const h = PhysicsFixture();
+        const shape = { type: 5 } as unknown as PhysicsShape;
+        Physics.shapes.set(h.body, shape);
+        Physics.shapes.set(h.other, shape);
+        const show = Physics.showBody.getMockImplementation()!;
+        Physics.showBody.mockImplementationOnce((viewer: PhysicsViewer, body: PhysicsBody) => {
+            const mesh = show(viewer, body);
+            if (kind === "body") {
+                Physics.bodies.get(h.world)!.splice(1, 1);
+            } else {
+                Physics.worlds.get(h.scene)!.splice(0, 1);
+            }
+            return mesh;
+        });
+        h.controller.setPhysicsBodies(true);
+        expect(Physics.showBody).toHaveBeenCalledOnce();
+        expect(Physics.childCount).toHaveBeenCalledOnce();
+        h.controller.refresh();
+        expect(Physics.showBody).toHaveBeenCalledOnce();
+        expect(h.controller.error).toBeUndefined();
+        h.controller.dispose();
+    });
+
+    it("defers shifted live bodies safely after reentrant removal and recaptures membership on the next pass", () => {
+        const h = PhysicsFixture();
+        const third = { ...h.body };
+        Physics.bodies.get(h.world)!.push(third);
+        const show = Physics.showBody.getMockImplementation()!;
+        Physics.showBody.mockImplementationOnce((viewer: PhysicsViewer, body: PhysicsBody) => {
+            const mesh = show(viewer, body);
+            Physics.bodies.get(h.world)!.splice(1, 1);
+            return mesh;
+        });
+        h.controller.setPhysicsBodies(true);
+        expect(Physics.showBody).toHaveBeenCalledOnce();
+        h.controller.refresh();
+        expect(Physics.showBody).toHaveBeenCalledTimes(2);
+        expect(Physics.showBody).toHaveBeenLastCalledWith(Physics.showBody.mock.calls[0][0], third);
+        h.controller.dispose();
+    });
+
+    it.each([8, 64])("captures one complete mesh delta per world batch for %i constraints without registration rescans", (count) => {
+        const h = PhysicsFixture();
+        const constraints = Array.from({ length: count }, () => ({ ...h.constraint }));
+        Physics.constraints.set(h.world, constraints);
+        // Make the scene size independent of the constraint count.
+        const meshes = h.scene.meshes;
+        meshes.push(...Array.from({ length: 100 }, () => SourceMesh()));
+        const sourceCount = meshes.length;
+        Physics.showConstraint.mockImplementation((viewer: PhysicsViewer, constraint: PhysicsConstraintDebug) => {
+            const axis = SourceMesh("Axis");
+            const head = SourceMesh("Unreturned Head");
+            Add(viewer.scene, axis);
+            Add(viewer.scene, head);
+            Physics.meshes.get(viewer)!.set(constraint, [axis, head]);
+            return [axis];
+        });
+        const bodyIncludes = vi.spyOn(Physics.bodies.get(h.world)!, "includes");
+        const constraintIncludes = vi.spyOn(constraints, "includes");
+        const bodyIterator = vi.spyOn(Physics.bodies.get(h.world)!, Symbol.iterator);
+        const constraintIterator = vi.spyOn(constraints, Symbol.iterator);
+        const meshIterator = vi.spyOn(meshes, Symbol.iterator);
+        const meshFilter = vi.spyOn(meshes, "filter");
+        h.controller.setPhysicsConstraints(true);
+        expect(Physics.showConstraint).toHaveBeenCalledTimes(count);
+        expect(meshIterator).toHaveBeenCalledTimes(2); // One batch capture, one final pruning set.
+        expect(meshFilter).toHaveBeenCalledOnce();
+        expect(bodyIterator).toHaveBeenCalledOnce();
+        expect(constraintIterator).toHaveBeenCalledOnce();
+        expect(bodyIncludes).not.toHaveBeenCalled();
+        expect(constraintIncludes).not.toHaveBeenCalled();
+        for (const mesh of meshes.slice(sourceCount)) {
+            expect(InspectorPhysicsHelpers.has(mesh)).toBe(true);
+            expect(mesh.pickable).toBe(false);
+        }
+
+        constraints.push(...Array.from({ length: count }, () => ({ ...h.constraint })));
+        meshIterator.mockClear();
+        meshFilter.mockClear();
+        bodyIterator.mockClear();
+        constraintIterator.mockClear();
+        h.controller.refresh();
+        expect(Physics.showConstraint).toHaveBeenCalledTimes(count * 2);
+        expect(meshIterator).toHaveBeenCalledTimes(3); // Bounds refresh, one batch capture, final pruning.
+        expect(meshFilter).toHaveBeenCalledOnce();
+        expect(bodyIterator).toHaveBeenCalledOnce();
+        expect(constraintIterator).toHaveBeenCalledOnce();
+        expect(bodyIncludes).not.toHaveBeenCalled();
+        expect(constraintIncludes).not.toHaveBeenCalled();
+
+        Physics.bodies.get(h.world)!.splice(1, 1);
+        h.controller.refresh();
+        expect(Physics.hideConstraint).toHaveBeenCalledTimes(count * 2);
+        expect(Physics.dispose).not.toHaveBeenCalled();
+        expect(meshes).toHaveLength(sourceCount);
+        meshIterator.mockRestore();
+        meshFilter.mockRestore();
+        bodyIterator.mockRestore();
+        constraintIterator.mockRestore();
+        bodyIncludes.mockRestore();
+        constraintIncludes.mockRestore();
+        h.controller.dispose();
+    });
+
+    it("tracks the whole constraint batch before rolling back partial creation without disturbing body helpers", () => {
+        const h = PhysicsFixture();
+        Physics.constraints.get(h.world)!.push({ ...h.constraint }, { ...h.constraint });
+        h.controller.setPhysicsBodies(true);
+        const show = Physics.showConstraint.getMockImplementation()!;
+        let shown = 0;
+        Physics.showConstraint.mockImplementation((viewer: PhysicsViewer, constraint: PhysicsConstraintDebug) => {
+            const meshes = show(viewer, constraint);
+            if (++shown === 2) {
+                throw new Error("Partial constraint creation");
+            }
+            return meshes;
+        });
+        const dispose = Physics.dispose.getMockImplementation()!;
+        const trackedAtDisposal: boolean[][] = [];
+        Physics.dispose.mockImplementation((viewer: PhysicsViewer) => {
+            trackedAtDisposal.push([...Physics.meshes.get(viewer)!.values()].flat().map((mesh) => InspectorPhysicsHelpers.has(mesh)));
+            dispose(viewer);
+        });
+        h.controller.setPhysicsConstraints(true);
+        expect(h.controller.error).toContain("Partial constraint creation");
+        expect(h.controller.physicsConstraintsEnabled).toBe(false);
+        expect(h.controller.physicsBodiesEnabled).toBe(true);
+        expect(trackedAtDisposal).toEqual([[true, true]]);
+        expect(h.scene.meshes).toHaveLength(3); // Original source plus two body helpers.
+        const created = Physics.showConstraint.mock.results[0].value as Mesh[];
+        expect(InspectorPhysicsHelpers.has(created[0])).toBe(false);
         h.controller.dispose();
     });
 

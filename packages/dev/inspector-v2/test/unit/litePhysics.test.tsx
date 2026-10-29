@@ -370,6 +370,25 @@ describe("Lite physics discovery and Explorer", () => {
 });
 
 describe("Lite physics property parity", () => {
+    it("refreshes the selected world's scene link on rename with unchanged body and constraint counts", () => {
+        const h = Fixture();
+        h.scene.name = "Original Scene";
+        h.selectionService.selectedEntity = h.world;
+        const container = Render(<Properties.PhysicsWorldGeneralProperties {...h} />, h);
+        expect(Value(container, "Scene")).toBe("Original Scene");
+        expect(container.textContent).toContain("Bodies2Constraints1");
+        h.scene.name = "Renamed, Scene";
+        act(() => h.watcher.refresh());
+        expect(Value(container, "Scene")).toBe("Renamed, Scene");
+        expect(container.textContent).toContain("Bodies2Constraints1");
+        expect(h.selectionService.selectedEntity).toBe(h.world);
+        h.scene.name = "";
+        act(() => h.watcher.refresh());
+        expect(Value(container, "Scene")).toBe("Scene");
+        Edit(container, "Scene", null);
+        expect(h.selectionService.selectedEntity).toBe(h.scene);
+    });
+
     it("edits gravity and timestep, preserves the other velocity limit and gates stale world callbacks", () => {
         const h = Fixture();
         const container = Render(
