@@ -91,6 +91,16 @@ aggShadow = aggShadow / numLights;
     var finalRadiance: vec3f = reflectionOut.environmentRadiance.rgb;
     finalRadiance *= colorSpecularEnvironmentReflectance;;
 
+    #ifdef BENTNORMAL
+        let bentAO: f32 = saturate(getLuminance(aoOut.ambientOcclusionColor));
+        #ifdef ANISOTROPIC
+            let reflectedDirection: vec3f = reflect(-viewDirectionW, anisotropicOut.anisotropicNormal);
+        #else
+            let reflectedDirection: vec3f = reflect(-viewDirectionW, normalW);
+        #endif
+        finalRadiance *= mix(1.0, environmentBentNormalOcclusion(bentNormalW, reflectedDirection, normalW, NdotVUnclamped, bentAO, alphaG), bentNormalStrength);
+    #endif
+
     var finalRadianceScaled: vec3f = finalRadiance * uniforms.vLightingIntensity.z;
 
     #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)

@@ -1,6 +1,12 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Animation } from "core/Animations";
 import { type Engine, NullEngine } from "core/Engines";
 import { ImageProcessingConfiguration, PBRMaterial, RenderTargetTexture, Texture } from "core/Materials";
+import { PBRMetallicRoughnessMaterial } from "core/Materials/PBR/pbrMetallicRoughnessMaterial";
+import { PBRSpecularGlossinessMaterial } from "core/Materials/PBR/pbrSpecularGlossinessMaterial";
+import { type PBRMaterialDefines } from "core/Materials/PBR/pbrBaseMaterial";
+import { MaterialFlags } from "core/Materials/materialFlags";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { PrePassRenderer } from "core/Rendering";
 import "core/Rendering/prePassRendererSceneComponent";
 import "core/Rendering/subSurfaceSceneComponent";
@@ -19,6 +25,215 @@ describe("PBRMaterial", () => {
             lockstepMaxSteps: 1,
         });
         scene = new Scene(subject);
+    });
+
+    describe("bent normal texture", () => {
+        afterEach(() => {
+            vi.restoreAllMocks();
+            scene.dispose();
+            subject.dispose();
+        });
+
+        it("tracks, animates, clones and serializes the texture on PBR materials", () => {
+            const material = new PBRMaterial("bent", scene);
+            const texture = new Texture("bentNormals.png", scene);
+            texture.level = 0.45;
+            texture.animations = [new Animation("bend", "level", 1, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE)];
+            texture.animations[0].setKeys([{ frame: 0, value: 1 }]);
+            material.bentNormalTexture = texture;
+
+            expect(material.hasTexture(texture)).toBe(true);
+            expect(material.getActiveTextures()).toContain(texture);
+            expect(material.getAnimatables()).toContain(texture);
+            expect(material.serialize().bentNormalTexture.name).toBe(texture.name);
+            expect(material.serialize().bentNormalTexture.level).toBe(texture.level);
+            expect(material.clone("clone").bentNormalTexture?.level).toBe(texture.level);
+            const parsed = PBRMaterial.Parse(material.serialize(), scene, "");
+            expect(parsed.bentNormalTexture?.name).toBe(texture.name);
+            expect(parsed.bentNormalTexture?.level).toBe(texture.level);
+
+            const dispose = vi.spyOn(texture, "dispose");
+            material.dispose(false, true);
+            expect(dispose).toHaveBeenCalledOnce();
+        });
+
+        it.each([
+            ["metallic-roughness", PBRMetallicRoughnessMaterial],
+            ["specular-glossiness", PBRSpecularGlossinessMaterial],
+        ] as const)("round-trips the texture on %s materials", (_name, MaterialType) => {
+            const material = new MaterialType("bent", scene);
+            material.bentNormalTexture = new Texture("bentNormals.png", scene);
+            material.bentNormalTexture.level = 0.45;
+
+            expect(material.serialize().bentNormalTexture.name).toBe(material.bentNormalTexture.name);
+            expect(material.clone("clone").bentNormalTexture?.level).toBe(material.bentNormalTexture.level);
+            const parsed = MaterialType.Parse(material.serialize(), scene, "");
+            expect(parsed.bentNormalTexture?.name).toBe(material.bentNormalTexture.name);
+            expect(parsed.bentNormalTexture?.level).toBe(material.bentNormalTexture.level);
+        });
+
+        it("does not dispose a shared bent map by default", () => {
+            const material = new PBRMaterial("bent", scene);
+            material.bentNormalTexture = new Texture(null, scene);
+            const dispose = vi.spyOn(material.bentNormalTexture, "dispose");
+
+            material.dispose();
+
+            expect(dispose).not.toHaveBeenCalled();
+        });
+
+        it.each(["reflection", "AO", "unlit", "derivatives", "bent flag", "reflection flag", "ambient flag", "textures"] as const)(
+            "does not wait for an unused bent map: %s",
+            (inactiveReason) => {
+                subject.getCaps().standardDerivatives = true;
+                const material = new PBRMaterial("bent", scene);
+                const mesh = CreatePlane("plane", {}, scene);
+                mesh.material = material;
+                material.bentNormalTexture = new Texture(null, scene);
+                material.ambientTexture = new Texture(null, scene);
+                scene.environmentTexture = new RenderTargetTexture("environment", 16, scene);
+                vi.spyOn(material.ambientTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+                vi.spyOn(scene.environmentTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+                const bentReady = vi.spyOn(material.bentNormalTexture, "isReadyOrNotBlocking").mockReturnValue(false);
+
+                switch (inactiveReason) {
+                    case "reflection":
+                        scene.environmentTexture = null;
+                        break;
+                    case "AO":
+                        material.ambientTexture = null;
+                        break;
+                    case "unlit":
+                        material.unlit = true;
+                        break;
+                    case "derivatives":
+                        subject.getCaps().standardDerivatives = false;
+                        break;
+                    case "bent flag":
+                        vi.spyOn(MaterialFlags, "BentNormalTextureEnabled", "get").mockReturnValue(false);
+                        break;
+                    case "reflection flag":
+                        vi.spyOn(MaterialFlags, "ReflectionTextureEnabled", "get").mockReturnValue(false);
+                        break;
+                    case "ambient flag":
+                        vi.spyOn(MaterialFlags, "AmbientTextureEnabled", "get").mockReturnValue(false);
+                        break;
+                    case "textures":
+                        scene.texturesEnabled = false;
+                        break;
+                }
+
+                material.isReadyForSubMesh(mesh, mesh.subMeshes[0]);
+                expect(bentReady).not.toHaveBeenCalled();
+                expect((mesh.subMeshes[0].materialDefines as PBRMaterialDefines).BENTNORMAL).toBe(false);
+            }
+        );
+
+        it.each(["ambient", "metallic"] as const)("waits for the bent map when %s AO and reflections are active", (source) => {
+            subject.getCaps().standardDerivatives = true;
+            const material = new PBRMaterial("bent", scene);
+            const mesh = CreatePlane("plane", {}, scene);
+            mesh.material = material;
+            material.bentNormalTexture = new Texture(null, scene);
+            scene.environmentTexture = new RenderTargetTexture("environment", 16, scene);
+            if (source === "ambient") {
+                material.ambientTexture = new Texture(null, scene);
+                vi.spyOn(material.ambientTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+            } else {
+                material.metallicTexture = new Texture(null, scene);
+                material.useAmbientOcclusionFromMetallicTextureRed = true;
+            }
+            const bentReady = vi.spyOn(material.bentNormalTexture, "isReadyOrNotBlocking").mockReturnValue(false);
+
+            expect(material.isReadyForSubMesh(mesh, mesh.subMeshes[0])).toBe(false);
+            expect(bentReady).toHaveBeenCalledOnce();
+        });
+
+        it("updates the bent define when AO sources and scene textures change", () => {
+            subject.getCaps().standardDerivatives = true;
+            const material = new PBRMaterial("bent", scene);
+            const mesh = CreatePlane("plane", {}, scene);
+            mesh.material = material;
+            material.bentNormalTexture = new Texture(null, scene);
+            material.metallicTexture = new Texture(null, scene);
+            scene.environmentTexture = new RenderTargetTexture("environment", 16, scene);
+            for (const texture of [material.bentNormalTexture, material.metallicTexture, scene.environmentTexture]) {
+                vi.spyOn(texture, "isReadyOrNotBlocking").mockReturnValue(true);
+            }
+            const subMesh = mesh.subMeshes[0];
+            const bentEnabled = () => {
+                scene.incrementRenderId();
+                material.isReadyForSubMesh(mesh, subMesh);
+                return (subMesh.materialDefines as PBRMaterialDefines).BENTNORMAL;
+            };
+
+            expect(bentEnabled()).toBe(false);
+            material.useAmbientOcclusionFromMetallicTextureRed = true;
+            expect(bentEnabled()).toBe(true);
+            material.useAmbientOcclusionFromMetallicTextureRed = false;
+            expect(bentEnabled()).toBe(false);
+            material.ambientTexture = material.metallicTexture;
+            expect(bentEnabled()).toBe(true);
+            scene.texturesEnabled = false;
+            expect(bentEnabled()).toBe(false);
+        });
+
+        it("re-evaluates the bent map when unlit toggles", () => {
+            subject.getCaps().standardDerivatives = true;
+            const material = new PBRMaterial("bent", scene);
+            material.unlit = true;
+            const mesh = CreatePlane("plane", {}, scene);
+            mesh.material = material;
+            material.bentNormalTexture = new Texture(null, scene);
+            material.ambientTexture = new Texture(null, scene);
+            scene.environmentTexture = new RenderTargetTexture("environment", 16, scene);
+            vi.spyOn(material.ambientTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+            vi.spyOn(scene.environmentTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+            const bentReady = vi.spyOn(material.bentNormalTexture, "isReadyOrNotBlocking").mockReturnValue(false);
+            const subMesh = mesh.subMeshes[0];
+            const defines = () => subMesh.materialDefines as PBRMaterialDefines;
+            const isReady = () => {
+                scene.incrementRenderId();
+                return material.isReadyForSubMesh(mesh, subMesh);
+            };
+
+            isReady();
+            expect(bentReady).not.toHaveBeenCalled();
+            expect(defines().BENTNORMAL).toBe(false);
+
+            material.unlit = false;
+            expect(isReady()).toBe(false);
+            expect(bentReady).toHaveBeenCalled();
+
+            bentReady.mockReturnValue(true);
+            isReady();
+            expect(defines().BENTNORMAL).toBe(true);
+            expect(defines().UNLIT).toBe(false);
+
+            material.unlit = true;
+            bentReady.mockClear();
+            isReady();
+            expect(defines().BENTNORMAL).toBe(false);
+            expect(defines().UNLIT).toBe(true);
+            expect(bentReady).not.toHaveBeenCalled();
+        });
+
+        it("keeps unlit toggles unchanged without a bent map", () => {
+            const material = new PBRMaterial("unlit", scene);
+            material.unlit = true;
+            const mesh = CreatePlane("plane", {}, scene);
+            mesh.material = material;
+            const subMesh = mesh.subMeshes[0];
+            const defines = () => subMesh.materialDefines as PBRMaterialDefines;
+
+            material.isReadyForSubMesh(mesh, subMesh);
+            expect(defines().UNLIT).toBe(true);
+            material.unlit = false;
+            scene.incrementRenderId();
+            material.isReadyForSubMesh(mesh, subMesh);
+            expect(defines().UNLIT).toBe(false);
+            expect(defines().BENTNORMAL).toBe(false);
+        });
     });
 
     describe("getAnimatables", () => {

@@ -163,6 +163,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("iridescence", this, NodeMaterialConnectionPointDirection.Input, IridescenceBlock, "IridescenceBlock")
         );
+        this.registerInput("bentNormal", NodeMaterialBlockConnectionPointTypes.Vector3, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("ambientClr", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -420,6 +421,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._excludeVariableName("alpha");
 
         state._excludeVariableName("aoOut");
+        state._excludeVariableName("bentNormalW");
+        state._excludeVariableName("bentNormalStrength");
+        state._excludeVariableName("bentAO");
+        state._excludeVariableName("reflectedDirection");
 
         state._excludeVariableName("baseColor");
         state._excludeVariableName("reflectivityOut");
@@ -541,6 +546,17 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     public get ambientOcc(): NodeMaterialConnectionPoint {
         return this._inputs[8];
+    }
+
+    /**
+     * Gets the world-space bent normal input used for indirect specular occlusion.
+     * Requires ambientOcc. Supply the same unoriented world space as worldNormal;
+     * forceNormalForward is applied to both the shading normal and the bent normal.
+     * Uses a spherical-Gaussian approximation of visibility and the specular lobe
+     * with cosine-weighted AO.
+     */
+    public get bentNormal(): NodeMaterialConnectionPoint {
+        return this._inputs[18];
     }
 
     /**
@@ -802,6 +818,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("LEGACY_SPECULAR_ENERGY_CONSERVATION", true);
         defines.setValue("MS_BRDF_ENERGY_CONSERVATION", this.useEnergyConservation, true);
         defines.setValue("RADIANCEOCCLUSION", this.useRadianceOcclusion, true);
+        defines.setValue("BENTNORMAL", this.bentNormal.isConnected && this.ambientOcc.isConnected && !this.unlit, true);
         defines.setValue("HORIZONOCCLUSION", this.useHorizonOcclusion, true);
         defines.setValue("UNLIT", this.unlit, true);
         defines.setValue("FORCENORMALFORWARD", this.forceNormalForward, true);
@@ -1294,10 +1311,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._invertNormalName, NodeMaterialBlockConnectionPointTypes.Float);
 
+        if (this.bentNormal.isConnected) {
+            state.compilationString += `#ifdef BENTNORMAL\n${state._declareLocalVar("bentNormalW", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${this.bentNormal.associatedVariableName});\n${state._declareLocalVar("bentNormalStrength", NodeMaterialBlockConnectionPointTypes.Float)} = 1.0;\n#endif\n`;
+        }
+
         state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
             replaceStrings: [
-                { search: /vPositionW/g, replace: worldPosVarName + ".xyz" },
-                { search: /vEyePosition.w/g, replace: this._invertNormalName },
+                { search: /(?:fragmentInputs\.)?vPositionW/g, replace: worldPosVarName + ".xyz" },
+                { search: /(?:scene\.)?vEyePosition\.w/g, replace: (isWebGPU ? "uniforms." : "") + this._invertNormalName },
             ],
         });
 

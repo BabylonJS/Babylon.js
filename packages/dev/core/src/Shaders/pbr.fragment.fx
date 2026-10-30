@@ -2,7 +2,7 @@
 
 #define CUSTOM_FRAGMENT_EXTENSION
 
-#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+#if defined(BUMP) || defined(BENTNORMAL) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -86,7 +86,22 @@ void main(void) {
     // _____________________________ Geometry Information ____________________________
     #include<pbrBlockNormalGeometric>
 
+    #ifdef BENTNORMAL
+        vec3 bentNormalBaseW = normalW;
+    #endif
+
     #include<bumpFragment>
+
+    #ifdef BENTNORMAL
+        #if defined(TANGENT) && defined(NORMAL)
+            mat3 bentNormalTBN = vTBN;
+        #else
+            vec2 bentNormalUV = gl_FrontFacing ? vBentNormalUV : -vBentNormalUV;
+            mat3 bentNormalTBN = cotangent_frame(bentNormalBaseW, vPositionW, bentNormalUV, vTangentSpaceParams);
+        #endif
+        vec3 bentNormalW = normalize(bentNormalTBN * (TEXRD(bentNormalSampler, vBentNormalUV + uvOffset).rgb * 2.0 - 1.0));
+        float bentNormalStrength = saturate(vBentNormalInfos.y);
+    #endif
 
     #include<pbrBlockNormalFinal>
 

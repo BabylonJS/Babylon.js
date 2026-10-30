@@ -2,6 +2,24 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "PBR Bent Normal Reflection Occlusion",
+            "playgroundId": "#ZH5HB3#3",
+            "referenceImage": "pbr-bent-normal-reflection-occlusion.png",
+            "dependsOn": ["PBR", "Textures", "Materials", "glTF", "Loaders", "Meshes"]
+        },
+        {
+            "title": "PBR Bent Normal Regression Cases",
+            "playgroundId": "#R7QHEO#3",
+            "referenceImage": "pbr-bent-normal-regression-cases.png",
+            "dependsOn": ["PBR", "Textures", "Materials", "Meshes", "NodeMaterial"]
+        },
+        {
+            "title": "PBR Bent Normal Visibility Invariants",
+            "playgroundId": "#3PC7QS#0",
+            "referenceImage": "pbr-bent-normal-visibility-invariants.png",
+            "dependsOn": ["PBR", "Textures", "Materials", "Meshes"]
+        },
+        {
             "title": "Solid Particle System Mixed Model Winding",
             "playgroundId": "#B1NNWI#2",
             "referenceImage": "sps-mixed-model-winding.png",

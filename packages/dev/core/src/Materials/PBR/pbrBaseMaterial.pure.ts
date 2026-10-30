@@ -104,6 +104,8 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public AMBIENTINGRAYSCALE = false;
+    public BENTNORMAL = false;
+    public BENTNORMALDIRECTUV = 0;
 
     public OPACITY = false;
     public VERTEXALPHA = false;
@@ -403,6 +405,12 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
      * @internal
      */
     public _ambientTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Tangent-space bent normals for directional reflection occlusion.
+     * @internal
+     */
+    public _bentNormalTexture: Nullable<BaseTexture> = null;
 
     /**
      * AKA Occlusion Texture Intensity in other nomenclature.
@@ -1024,6 +1032,21 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         return this._albedoTexture;
     }
 
+    private _isBentNormalTextureEnabled(): boolean {
+        const scene = this.getScene();
+        return !!(
+            this._bentNormalTexture &&
+            !this._unlit &&
+            scene.texturesEnabled &&
+            MaterialFlags.BentNormalTextureEnabled &&
+            MaterialFlags.ReflectionTextureEnabled &&
+            this._getReflectionTexture() &&
+            scene.getEngine().getCaps().standardDerivatives &&
+            ((this._ambientTexture && MaterialFlags.AmbientTextureEnabled) ||
+                (this._metallicTexture && this._useAmbientOcclusionFromMetallicTextureRed && MaterialFlags.SpecularTextureEnabled))
+        );
+    }
+
     /**
      * Specifies that the submesh is ready to be used.
      * @param mesh - BJS mesh.
@@ -1084,6 +1107,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                     if (!this._ambientTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
+                }
+
+                if (this._bentNormalTexture && this._isBentNormalTextureEnabled() && !this._bentNormalTexture.isReadyOrNotBlocking()) {
+                    return false;
                 }
 
                 if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
@@ -1407,6 +1434,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             "vBaseWeightInfos",
             "vBaseDiffuseRoughnessInfos",
             "vAmbientInfos",
+            "vBentNormalInfos",
             "vOpacityInfos",
             "vEmissiveInfos",
             "vReflectivityInfos",
@@ -1420,6 +1448,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             "baseWeightMatrix",
             "baseDiffuseRoughnessMatrix",
             "ambientMatrix",
+            "bentNormalMatrix",
             "opacityMatrix",
             "emissiveMatrix",
             "reflectivityMatrix",
@@ -1446,6 +1475,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             "baseDiffuseRoughnessSampler",
             "reflectivitySampler",
             "ambientSampler",
+            "bentNormalSampler",
             "emissiveSampler",
             "bumpSampler",
             "lightmapSampler",
@@ -1583,11 +1613,14 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
                 defines["MAINUV" + i] = false;
             }
+            defines.BENTNORMAL = false;
+            defines.BENTNORMALDIRECTUV = 0;
             if (scene.texturesEnabled) {
                 defines.ALBEDODIRECTUV = 0;
                 defines.BASE_WEIGHTDIRECTUV = 0;
                 defines.BASE_DIFFUSE_ROUGHNESSDIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
+                defines.BENTNORMALDIRECTUV = 0;
                 defines.OPACITYDIRECTUV = 0;
                 defines.EMISSIVEDIRECTUV = 0;
                 defines.REFLECTIVITYDIRECTUV = 0;
@@ -1642,6 +1675,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                     engine.getCaps().maxVaryingVectors <= 8 ||
                     this._baseDiffuseRoughnessTexture != null;
                 PrepareDefinesForIBL(scene, reflectionTexture, defines, this.realTimeFiltering, this.realTimeFilteringQuality, !useSHInFragment);
+
+                if (this._bentNormalTexture && this._isBentNormalTextureEnabled() && defines.REFLECTION) {
+                    PrepareDefinesForMergedUV(this._bentNormalTexture, defines, "BENTNORMAL");
+                }
 
                 if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                     PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
@@ -1880,6 +1917,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         ubo.addUniform("vBaseWeightInfos", 2);
         ubo.addUniform("vBaseDiffuseRoughnessInfos", 2);
         ubo.addUniform("vAmbientInfos", 4);
+        ubo.addUniform("vBentNormalInfos", 2);
         ubo.addUniform("vOpacityInfos", 2);
         ubo.addUniform("vEmissiveInfos", 2);
         ubo.addUniform("vLightmapInfos", 2);
@@ -1890,6 +1928,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         ubo.addUniform("baseWeightMatrix", 16);
         ubo.addUniform("baseDiffuseRoughnessMatrix", 16);
         ubo.addUniform("ambientMatrix", 16);
+        ubo.addUniform("bentNormalMatrix", 16);
         ubo.addUniform("opacityMatrix", 16);
         ubo.addUniform("emissiveMatrix", 16);
         ubo.addUniform("lightmapMatrix", 16);
@@ -2021,6 +2060,11 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                         BindTextureMatrix(this._ambientTexture, ubo, "ambient");
                     }
 
+                    if (defines.BENTNORMAL && this._bentNormalTexture) {
+                        ubo.updateFloat2("vBentNormalInfos", this._bentNormalTexture.coordinatesIndex, this._bentNormalTexture.level);
+                        BindTextureMatrix(this._bentNormalTexture, ubo, "bentNormal");
+                    }
+
                     if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                         ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                         BindTextureMatrix(this._opacityTexture, ubo, "opacity");
@@ -2064,7 +2108,9 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                     if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                         ubo.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
                         BindTextureMatrix(this._bumpTexture, ubo, "bump");
+                    }
 
+                    if (defines.BUMP || defines.BENTNORMAL) {
                         if (scene._mirroredCameraPosition) {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                         } else {
@@ -2141,6 +2187,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
 
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
                     ubo.setTexture("ambientSampler", this._ambientTexture);
+                }
+
+                if (defines.BENTNORMAL && this._bentNormalTexture) {
+                    ubo.setTexture("bentNormalSampler", this._bentNormalTexture);
                 }
 
                 if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
@@ -2268,6 +2318,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             results.push(this._ambientTexture);
         }
 
+        if (this._bentNormalTexture && this._bentNormalTexture.animations && this._bentNormalTexture.animations.length > 0) {
+            results.push(this._bentNormalTexture);
+        }
+
         if (this._opacityTexture && this._opacityTexture.animations && this._opacityTexture.animations.length > 0) {
             results.push(this._opacityTexture);
         }
@@ -2344,6 +2398,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             activeTextures.push(this._ambientTexture);
         }
 
+        if (this._bentNormalTexture) {
+            activeTextures.push(this._bentNormalTexture);
+        }
+
         if (this._opacityTexture) {
             activeTextures.push(this._opacityTexture);
         }
@@ -2410,6 +2468,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         }
 
         if (this._ambientTexture === texture) {
+            return true;
+        }
+
+        if (this._bentNormalTexture === texture) {
             return true;
         }
 
@@ -2491,6 +2553,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             this._baseWeightTexture?.dispose();
             this._baseDiffuseRoughnessTexture?.dispose();
             this._ambientTexture?.dispose();
+            this._bentNormalTexture?.dispose();
             this._opacityTexture?.dispose();
             this._reflectionTexture?.dispose();
             this._emissiveTexture?.dispose();

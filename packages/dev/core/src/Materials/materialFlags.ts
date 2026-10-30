@@ -102,6 +102,22 @@ export class MaterialFlags {
         AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private static _BentNormalTextureEnabled = true;
+    /**
+     * Are bent normal textures enabled in the application.
+     */
+    public static get BentNormalTextureEnabled(): boolean {
+        return this._BentNormalTextureEnabled;
+    }
+    public static set BentNormalTextureEnabled(value: boolean) {
+        if (this._BentNormalTextureEnabled === value) {
+            return;
+        }
+
+        this._BentNormalTextureEnabled = value;
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     private static _OpacityTextureEnabled = true;
     /**
      * Are opacity textures enabled in the application.

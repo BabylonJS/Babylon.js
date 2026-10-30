@@ -67,7 +67,22 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Geometry Information ____________________________
     #include<pbrBlockNormalGeometric>
 
+    #ifdef BENTNORMAL
+        let bentNormalBaseW: vec3f = normalW;
+    #endif
+
     #include<bumpFragment>
+
+    #ifdef BENTNORMAL
+        #if defined(TANGENT) && defined(NORMAL)
+            let bentNormalTBN: mat3x3f = mat3x3f(input.vTBN0, input.vTBN1, input.vTBN2);
+        #else
+            let bentNormalUV: vec2f = select(-fragmentInputs.vBentNormalUV, fragmentInputs.vBentNormalUV, fragmentInputs.frontFacing);
+            let bentNormalTBN: mat3x3f = cotangent_frame(bentNormalBaseW, input.vPositionW, bentNormalUV, uniforms.vTangentSpaceParams);
+        #endif
+        var bentNormalW: vec3f = normalize(bentNormalTBN * (TEXRD(bentNormalSampler, bentNormalSamplerSampler, fragmentInputs.vBentNormalUV + uvOffset).rgb * 2.0 - 1.0));
+        let bentNormalStrength: f32 = saturate(uniforms.vBentNormalInfos.y);
+    #endif
 
     #include<pbrBlockNormalFinal>
 
