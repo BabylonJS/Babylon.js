@@ -8,17 +8,6 @@ const version = "9.33.1";
 const releaseCommit = "c542f49e880526a9a09b850952c6a2332f26ed8c";
 const baselineCommit = "87f2cd495ce016b39caa84bd00243311018086ed";
 const encoderManifest = "packages/public/umd/babylonjs-ktx2encoder/package.json";
-const allowedPackages = [
-    "babylonjs-loaders",
-    "babylonjs-materials",
-    "babylonjs-node-editor",
-    "babylonjs-node-geometry-editor",
-    "babylonjs-node-particle-editor",
-    "babylonjs-node-render-graph-editor",
-    "babylonjs-post-process",
-    "babylonjs-procedural-textures",
-    "babylonjs-serializers",
-];
 const artifacts = process.env.ARTIFACT_DIRECTORY;
 assert(artifacts && path.isAbsolute(artifacts), "ARTIFACT_DIRECTORY must be absolute");
 
@@ -55,25 +44,9 @@ async function registry(name, requestedVersion) {
     return manifest;
 }
 
-function checkPublished(manifest, name, integrity) {
+function checkPublished(manifest, name) {
     assert(manifest, `${name}@${version} is missing`);
     assert.equal(manifest.gitHead, releaseCommit, `Unexpected gitHead for ${name}@${version}`);
-    if (integrity) {
-        assert.equal(manifest.dist?.integrity, integrity, `Published bytes differ from the retained archive for ${name}`);
-    }
-}
-
-function readPlan() {
-    const plan = readJson(path.join(artifacts, "npm-plan.json"));
-    assert.equal(plan.version, version);
-    assert.equal(plan.releaseCommit, releaseCommit);
-    assert.equal(new Set(plan.pending.map((pkg) => pkg.name)).size, plan.pending.length);
-    const packages = publicPackages();
-    for (const pkg of plan.pending) {
-        assert(allowedPackages.includes(pkg.name), `Publishing ${pkg.name} is not allowed`);
-        assert(packages.some((candidate) => candidate.name === pkg.name && candidate.directory === pkg.directory));
-    }
-    return plan;
 }
 
 async function main() {
@@ -82,77 +55,22 @@ async function main() {
         assert.equal(readJson(encoderManifest).private, true, "The repair branch must include the private flag");
         assert.equal(process.version, "v24.22.1");
         assert.equal(execFileSync("npm", ["--version"], { encoding: "utf8" }).trim(), "11.19.1");
+        assert.deepEqual(
+            readJson(path.join(artifacts, "source.json")),
+            { version, releaseCommit, baselineCommit, node: process.version, npm: "11.19.1" },
+            "Unexpected retained recovery source"
+        );
         git("checkout", "--detach", releaseCommit);
         assert.equal(readJson("packages/public/umd/babylonjs/package.json").version, version);
         const encoder = readJson(encoderManifest);
         encoder.private = true;
         writeJson(encoderManifest, encoder);
-        fs.mkdirSync(artifacts, { recursive: true });
-        writeJson(path.join(artifacts, "source.json"), { version, releaseCommit, baselineCommit, node: process.version, npm: "11.19.1" });
-        fs.copyFileSync(".build/release-notes.md", path.join(artifacts, "release-notes.md"));
         return;
     }
 
     assert.equal(git("rev-parse", "HEAD"), releaseCommit, "Recovery must use the exact original release commit");
 
-    if (action === "plan") {
-        const pending = [];
-        for (const pkg of publicPackages()) {
-            const published = await registry(pkg.name, version);
-            if (published) {
-                checkPublished(published, pkg.name);
-            } else {
-                assert(allowedPackages.includes(pkg.name), `Unexpected missing package ${pkg.name}; refusing to extend recovery`);
-                assert(await registry(pkg.name, "9.33.0"), `Refusing to first-publish ${pkg.name}`);
-                pending.push({ name: pkg.name, directory: pkg.directory });
-            }
-        }
-        writeJson(path.join(artifacts, "npm-plan.json"), { version, releaseCommit, baselineCommit, pending });
-        console.log(`Verified existing npm provenance; ${pending.length} established packages remain to publish.`);
-    } else if (action === "pack") {
-        const plan = readPlan();
-        const directory = path.join(artifacts, "npm");
-        fs.mkdirSync(directory, { recursive: true });
-        for (const pkg of plan.pending) {
-            const manifest = readJson(path.join(pkg.directory, "package.json"));
-            for (const hook of ["prepublishOnly", "prepack", "prepare", "postpack", "publish", "postpublish"]) {
-                assert(!manifest.scripts?.[hook], `Unexpected publication hook in ${pkg.name}: ${hook}`);
-            }
-            for (const file of [manifest.main, manifest.types]) {
-                assert(file && fs.statSync(path.join(pkg.directory, file)).size > 0, `Missing build output for ${pkg.name}: ${file}`);
-            }
-            const [packed] = JSON.parse(execFileSync("npm", ["pack", "--workspace", pkg.name, "--json", "--pack-destination", directory], { encoding: "utf8" }));
-            assert.equal(packed.name, pkg.name);
-            assert.equal(packed.version, version);
-            assert.equal(packed.filename, `${pkg.name}-${version}.tgz`);
-            pkg.archive = packed.filename;
-            pkg.integrity = packed.integrity;
-        }
-        writeJson(path.join(artifacts, "npm-plan.json"), plan);
-    } else if (action === "publish") {
-        const plan = readPlan();
-        for (const pkg of plan.pending) {
-            const archive = fs.readFileSync(path.join(artifacts, "npm", pkg.archive));
-            const integrity = "sha512-" + crypto.createHash("sha512").update(archive).digest("base64");
-            assert.equal(integrity, pkg.integrity, `Retained archive changed for ${pkg.name}`);
-            let published = await registry(pkg.name, version);
-            if (!published) {
-                assert(await registry(pkg.name, "9.33.0"), `Refusing to first-publish ${pkg.name}`);
-                // Directory publication preserves the original gitHead; verify its bytes against the retained pack.
-                execFileSync("npm", ["publish", "--workspace", pkg.name, "--access=public", "--loglevel=error"], { stdio: "inherit" });
-                console.log(`Waiting up to 10 minutes for npm registry visibility of ${pkg.name}@${version}.`);
-                for (let attempt = 0; attempt < 120; ++attempt) {
-                    published = await registry(pkg.name, version);
-                    if (published) {
-                        break;
-                    }
-                    await new Promise((resolve) => setTimeout(resolve, 5000));
-                }
-            }
-            checkPublished(published, pkg.name, integrity);
-            console.log(`Verified ${pkg.name}@${version}: original gitHead and retained archive integrity.`);
-        }
-    } else if (action === "verify-npm") {
+    if (action === "verify-npm") {
         for (const pkg of publicPackages()) {
             checkPublished(await registry(pkg.name, version), pkg.name);
         }
@@ -163,8 +81,11 @@ async function main() {
         git("fetch", "--no-tags", "origin", "master");
         git("worktree", "add", "--detach", directory, "origin/master");
         const currentVersion = readJson(path.join(directory, "packages/public/umd/babylonjs/package.json")).version;
-        const semver = require(path.join(process.cwd(), "node_modules/semver"));
-        if (semver.gte(currentVersion, version)) {
+        assert(/^\d+\.\d+\.\d+$/.test(currentVersion), "Unexpected master version format");
+        const currentParts = currentVersion.split(".").map(Number);
+        const releaseParts = version.split(".").map(Number);
+        const changedPart = currentParts.findIndex((part, index) => part !== releaseParts[index]);
+        if (changedPart === -1 || currentParts[changedPart] > releaseParts[changedPart]) {
             console.log(`Master is already at ${currentVersion}; no baseline change is needed.`);
             return;
         }

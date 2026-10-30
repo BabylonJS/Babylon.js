@@ -1,4 +1,5 @@
-# Temporary 9.33.1 repair. Run definition 50 manually from this branch only.
+# Finish 9.33.1 from run 61710 artifacts. No rebuild or npm publication.
+# Run definition 50 manually from this branch only.
 # Never merge this pipeline into master.
 trigger: none
 pr: none
@@ -6,7 +7,6 @@ pr: none
 variables:
     - group: BabylonJS-CI-Infrastructure
     - group: BabylonJS-Deployment
-    - group: NPM_Publish
     - name: RECOVERY_SCRIPT
       value: $(Agent.TempDirectory)/repair-9.33.1.cjs
     - name: ARTIFACT_DIRECTORY
@@ -17,7 +17,7 @@ pool:
 
 jobs:
     - job: RecoverRelease9331
-      displayName: "Resume the original 9.33.1 release"
+      displayName: "Finish 9.33.1 from run 61710 artifacts"
       timeoutInMinutes: 180
       steps:
           - checkout: self
@@ -30,63 +30,37 @@ jobs:
             inputs:
                 version: "24.22.1"
 
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download the exact recovery kit retained by run 61710"
+            inputs:
+                buildType: "specific"
+                project: "243fb099-542d-4655-b246-4dfd67131bd4"
+                definition: "50"
+                buildVersionToDownload: "specific"
+                pipelineId: "61710"
+                artifactName: "release-9.33.1-recovery-1"
+                targetPath: "$(ARTIFACT_DIRECTORY)"
+
           - bash: |
                 set -euo pipefail
+                (cd "$ARTIFACT_DIRECTORY" && sha256sum --check SHA256SUMS)
                 cp .azure-pipelines/repair-9.33.1.cjs "$RECOVERY_SCRIPT"
                 node "$RECOVERY_SCRIPT" checkout
-                node "$RECOVERY_SCRIPT" plan
-            displayName: "Pin the recovered source and check every existing npm version"
+                node "$RECOVERY_SCRIPT" verify-npm
+            displayName: "Validate retained inputs, pin their source, and confirm npm is complete"
 
           - bash: |
                 set -euo pipefail
-                npm ci
-                npm run format:fix
-                npm run build:umd
-                npm run build:es6
-                npm run build -w @tools/tests
-                npm run generate-file-size-report -w @tools/tests
-                npm run prepare-snapshot
-                node "$RECOVERY_SCRIPT" pack
-            displayName: "Rebuild the original release and retain the missing npm packages"
-            env:
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-                PUPPETEER_SKIP_DOWNLOAD: "true"
-
-          - bash: |
-                set -euo pipefail
-                requiredFiles=(
-                    babylon.js
-                    babylon.max.js
-                    babylon.d.ts
-                    documentation.d.ts
-                    gui/babylon.gui.min.js
-                    loaders/babylonjs.loaders.min.js
-                    materialsLibrary/babylonjs.materials.min.js
-                    nodeEditor/babylon.nodeEditor.js
-                    nodeGeometryEditor/babylon.nodeGeometryEditor.js
-                    nodeParticleEditor/babylon.nodeParticleEditor.js
-                    nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js
-                    postProcessesLibrary/babylonjs.postProcess.min.js
-                    proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js
-                    serializers/babylonjs.serializers.min.js
-                    draco_wasm_wrapper_gltf.js
-                    draco_decoder_gltf.wasm
-                    timestamp.js
-                    fileSizes.json
-                )
-                for file in "${requiredFiles[@]}"; do
+                unzip -q "$ARTIFACT_DIRECTORY/snapshot.zip" -d .snapshot
+                [[ -s "$ARTIFACT_DIRECTORY/required-files.txt" ]]
+                while IFS= read -r file; do
                     if [[ ! -s ".snapshot/$file" ]]; then
                         echo "##vso[task.logissue type=error]Snapshot is missing or has an empty $file."
                         exit 1
                     fi
-                done
-                printf '%s\n' "${requiredFiles[@]}" > "$ARTIFACT_DIRECTORY/required-files.txt"
-                (cd .snapshot && zip -qr "$ARTIFACT_DIRECTORY/snapshot.zip" .)
-                zip -qr "$ARTIFACT_DIRECTORY/cdnSnapshot.zip" .snapshot
-                unzip -tq "$ARTIFACT_DIRECTORY/snapshot.zip"
+                done < "$ARTIFACT_DIRECTORY/required-files.txt"
                 unzip -tq "$ARTIFACT_DIRECTORY/cdnSnapshot.zip"
-                (cd "$ARTIFACT_DIRECTORY" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
-            displayName: "Validate and archive CDN contents and recovery provenance"
+            displayName: "Extract and validate the retained CDN snapshot without rebuilding"
 
           - task: PublishPipelineArtifact@1
             displayName: "Retain recovery inputs before any publication"
@@ -119,16 +93,6 @@ jobs:
             displayName: "Restore and verify the tag at the original npm gitHead"
             env:
                 GITHUB_PAT: $(GitHubPAT)
-
-          - bash: |
-                set -euo pipefail
-                set +x
-                printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" > ./.npmrc
-                node "$RECOVERY_SCRIPT" publish
-                node "$RECOVERY_SCRIPT" verify-npm
-            displayName: "Publish only missing established packages with existing npm authentication"
-            env:
-                NPM_TOKEN: $(NPM_TOKEN)
 
           - bash: |
                 set -euo pipefail
