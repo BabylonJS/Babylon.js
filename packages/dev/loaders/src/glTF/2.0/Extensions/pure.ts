@@ -16,6 +16,7 @@ export * from "./KHR_materials_unlit.pure";
 export * from "./KHR_materials_clearcoat.pure";
 export * from "./KHR_materials_coat.pure";
 export * from "./KHR_materials_iridescence.pure";
+export * from "./KHR_materials_retroreflection.pure";
 export * from "./KHR_materials_anisotropy.pure";
 export * from "./KHR_materials_emissive_strength.pure";
 export * from "./KHR_materials_sheen.pure";

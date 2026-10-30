@@ -95,6 +95,7 @@
             , noise
             , false // isRefraction
             , 1.0 // ior (not used for reflection)
+            , false // useDirectionMapping
             , reflectionSampler
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
@@ -119,6 +120,65 @@
         baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
     #endif
 
+    #ifdef RETROREFLECTION
+        vec3 baseSpecularEnvironmentLightRetro = baseSpecularEnvironmentLight;
+        vec3 retroViewDirectionW = normalize(reflect(-viewDirectionW, normalW));
+        #ifdef ANISOTROPIC_BASE
+            geometryInfoAnisoOutParams baseGeoInfoRetro = geometryInfoAniso(
+                normalW,
+                retroViewDirectionW,
+                specular_roughness,
+                geometricNormalW,
+                vec3(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy),
+                TBN
+            );
+            baseSpecularEnvironmentLightRetro = sampleRadianceAnisotropic(
+                specularAlphaG,
+                vReflectionMicrosurfaceInfos.rgb,
+                vReflectionInfos,
+                baseGeoInfoRetro,
+                normalW,
+                retroViewDirectionW,
+                vPositionW,
+                noise,
+                false,
+                1.0,
+                true,
+                reflectionSampler
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+        #else
+            #ifdef REFLECTIONMAP_3D
+                vec3 retroReflectionCoords = createReflectionCoordsFromDirection(vPositionW, viewDirectionW);
+            #else
+                vec2 retroReflectionCoords = createReflectionCoordsFromDirection(vPositionW, viewDirectionW);
+            #endif
+            baseSpecularEnvironmentLightRetro = sampleRadiance(
+                specularAlphaG,
+                vReflectionMicrosurfaceInfos.rgb,
+                vReflectionInfos,
+                baseGeoInfo,
+                reflectionSampler,
+                retroReflectionCoords
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+        #endif
+
+        #ifdef ANISOTROPIC_BASE
+            baseSpecularEnvironmentLightRetro = mix(
+                baseSpecularEnvironmentLightRetro,
+                baseDiffuseEnvironmentLight,
+                specularAlphaG * specularAlphaG * max(1.0 - baseGeoInfoRetro.anisotropy, 0.3)
+            );
+        #else
+            baseSpecularEnvironmentLightRetro = mix(baseSpecularEnvironmentLightRetro, baseDiffuseEnvironmentLight, specularAlphaG);
+        #endif
+    #endif
+
     vec3 coatEnvironmentLight = vec3(0., 0., 0.);
     if (coat_weight > 0.0) {
         #ifdef REFLECTIONMAP_3D
@@ -137,6 +197,7 @@
                 , noise
                 , false // isRefraction
                 , 1.0 // ior (not used for reflection)
+                , false // useDirectionMapping
                 , reflectionSampler
                 #ifdef REALTIME_FILTERING
                     , vReflectionFilteringInfo
@@ -314,6 +375,10 @@
     vec3 slab_glossy_ibl = vec3(0., 0., 0.);
     vec3 slab_metal_ibl = vec3(0., 0., 0.);
     vec3 slab_coat_ibl = vec3(0., 0., 0.);
+    #ifdef RETROREFLECTION
+        vec3 slab_glossy_retro_ibl = vec3(0.0);
+        vec3 slab_metal_retro_ibl = vec3(0.0);
+    #endif
 
     slab_diffuse_ibl = baseDiffuseEnvironmentLight * vLightingIntensity.z;
     
@@ -323,9 +388,15 @@
 
     // Add the specular environment light
     slab_glossy_ibl = baseSpecularEnvironmentLight * vLightingIntensity.z;
+    #ifdef RETROREFLECTION
+        slab_glossy_retro_ibl = baseSpecularEnvironmentLightRetro * vLightingIntensity.z;
+    #endif
     
     // _____________________________ Metal Layer IBL ____________________________
     slab_metal_ibl = baseSpecularEnvironmentLight * conductorIblFresnel * vLightingIntensity.z;
+    #ifdef RETROREFLECTION
+        slab_metal_retro_ibl = baseSpecularEnvironmentLightRetro * conductorIblFresnel * vLightingIntensity.z;
+    #endif
 
     // _____________________________ Coat Layer IBL _____________________________
     if (coat_weight > 0.0) {
@@ -363,6 +434,7 @@
                 #else
                     , specular_ior // Used for refraction
                 #endif
+                , false // useDirectionMapping
                 , reflectionSampler
                 #ifdef REALTIME_FILTERING
                     , vReflectionFilteringInfo
@@ -500,10 +572,20 @@
     slab_diffuse_ibl *= ambient_occlusion;
     slab_metal_ibl *= specular_ambient_occlusion;
     slab_glossy_ibl *= specular_ambient_occlusion;
+    #ifdef RETROREFLECTION
+        slab_metal_retro_ibl *= specular_ambient_occlusion;
+        slab_glossy_retro_ibl *= specular_ambient_occlusion;
+    #endif
     slab_coat_ibl *= coat_specular_ambient_occlusion;
 
     vec3 material_dielectric_base_ibl = mix(slab_diffuse_ibl * base_color.rgb, slab_translucent_base_ibl, surface_translucency_weight);
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
+    #ifdef RETROREFLECTION
+        vec3 material_dielectric_gloss_retro_ibl =
+            material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_retro_ibl * dielectricIblColoredFresnel;
+        material_dielectric_gloss_ibl = mix(material_dielectric_gloss_ibl, material_dielectric_gloss_retro_ibl, specular_retroreflectivity);
+        slab_metal_ibl = mix(slab_metal_ibl, slab_metal_retro_ibl, specular_retroreflectivity);
+    #endif
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));
     #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)

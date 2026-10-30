@@ -5,6 +5,10 @@ import { type Nullable } from "core/types";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 import { type GLTFLoader } from "./glTFLoader";
+import { _RetainGLTFMaterialTextureSources } from "./Extensions/objectModelMapping";
+import { _GetGLTFMaterialCoatState } from "./Extensions/gltfMaterialCoatState";
+import { Observable } from "core/Misc/observable.pure";
+import { Constants } from "core/Engines/constants";
 import {
     MultiplyTexturesAsync,
     LerpTexturesAsync,
@@ -15,6 +19,9 @@ import {
     ExtractChannelAsync,
     ChannelMask,
     ExtractMaxChannelAsync,
+    _MarkTextureAsDynamic,
+    _ScaleNormalTextureAsync,
+    type ITextureProcessOperand,
     ThinWalledScatterWeightsAsync,
     MultiScatterToSingleScatterAlbedoAsync,
 } from "core/Materials/Textures/textureProcessor";
@@ -36,6 +43,13 @@ function GetColorTextureSpace(texture: Nullable<BaseTexture>): TextureColorSpace
 export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: OpenPBRMaterial;
     private _specWorkflow: boolean = false;
+    private _hasTransmission: boolean = false;
+    private _convertedCoatColor?: ITextureProcessOperand;
+    private _convertedCoatIsNeutral?: () => boolean;
+    private _convertedCoatRoughness?: ITextureProcessOperand;
+    private _convertedCoatIor?: ITextureProcessOperand;
+    private _convertedCoatDarkening?: ITextureProcessOperand;
+    private _convertedCoatNormal?: ITextureProcessOperand;
     /**
      * Creates a new instance of the OpenPBRMaterialLoadingAdapter.
      * @param material - The OpenPBR material to adapt.
@@ -702,6 +716,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Configures transmission for OpenPBR material.
      */
     public configureTransmission(): void {
+        this._hasTransmission = true;
         // Material is thin-walled until otherwise specified by the glTF volume extension.
         this._material.geometryThinWalled = 1.0;
         this._material.transmissionDepth = 0.0;
@@ -991,21 +1006,22 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._material.subsurfaceColorTexture = value;
     }
 
-    private _diffuseTransmissionTint: Color3 = Color3.White();
+    private _hasDiffuseTransmissionTint = false;
     private _diffuseTransmissionTintTexture: Nullable<BaseTexture> = null;
 
     /**
      * Sets the diffuse transmission tint of the material
      */
     public set diffuseTransmissionTint(value: Color3) {
-        this._diffuseTransmissionTint = value;
+        this._hasDiffuseTransmissionTint = true;
+        _GetGLTFMaterialCoatState(this._material).retainDiffuseTransmissionTint(value);
     }
 
     /**
      * Gets the diffuse transmission tint of the material
      */
     public get diffuseTransmissionTint(): Color3 {
-        return this._diffuseTransmissionTint;
+        return _GetGLTFMaterialCoatState(this._material).diffuseTransmissionTint;
     }
 
     /**
@@ -1323,6 +1339,12 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public async finalizeAsync(loader: GLTFLoader): Promise<void> {
         // Do final configuration for the material to handle any interactions/dependencies between properties that we had to defer until all properties were loaded.
+        const sources = _RetainGLTFMaterialTextureSources(this._material, this._diffuseTransmissionTintTexture);
+        if (loader._isExtensionEnabled("KHR_interactivity")) {
+            for (const texture of sources) {
+                _MarkTextureAsDynamic(texture);
+            }
+        }
 
         // Thin-walled scatter: KHR_materials_scatter explicitly stages scatter strength S. Only staged
         // values are converted; live material values may have been changed by user code in
@@ -1332,7 +1354,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         const thinScatterTex = this._thinWalledScatterStrengthTexture;
         this._thinWalledScatterStrengthFactor = null;
         this._thinWalledScatterStrengthTexture = null;
-        if (thinScatterStrength !== null && !this._diffuseTransmissionTint.equals(Color3.White())) {
+        if (thinScatterStrength !== null && this._hasDiffuseTransmissionTint && !this.diffuseTransmissionTint.equals(Color3.White())) {
             // Tinted diffuse transmission: use the scatter strength directly as the subsurface weight.
             this.subsurfaceWeight = thinScatterStrength;
             if (thinScatterTex) {
@@ -1425,19 +1447,19 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.
-        if ((this._diffuseTransmissionTint && !this._diffuseTransmissionTint.equals(Color3.White())) || this._diffuseTransmissionTintTexture) {
+        if (this._hasDiffuseTransmissionTint || this._diffuseTransmissionTintTexture) {
             if (this._material.geometryThinWalled) {
                 // Use the subsurface slab for surface tinting.
-                this.subsurfaceColor = this._diffuseTransmissionTint;
+                this.subsurfaceColor = this.diffuseTransmissionTint;
                 this.subsurfaceColorTexture = this._diffuseTransmissionTintTexture;
             } else {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
                 await this.copySurfaceToCoatAsync(
                     loader,
-                    this.subsurfaceWeight,
+                    () => this.subsurfaceWeight,
                     this.subsurfaceWeightTexture,
                     TextureChannel.A,
-                    this._diffuseTransmissionTint,
+                    () => this.diffuseTransmissionTint,
                     this._diffuseTransmissionTintTexture,
                     true
                 );
@@ -1447,14 +1469,22 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             }
         }
         // If the material has transmission, we need to use the base color to tint the transmission.
-        if (this.transmissionWeight > 0) {
+        if (this._hasTransmission || this.transmissionWeight > 0) {
             if (this._material.geometryThinWalled || this._material.transmissionDepth === 0) {
                 // If the material is thin-walled or has no attenuation depth, we can use the base color as the transmission color directly.
                 this._material.transmissionColor = this._material.baseColor;
                 this._material.transmissionColorTexture = this._material.baseColorTexture;
-            } else if (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null) {
+            } else {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
-                await this.copySurfaceToCoatAsync(loader, this.transmissionWeight, this.transmissionWeightTexture, TextureChannel.R, this.baseColor, this.baseColorTexture, false);
+                await this.copySurfaceToCoatAsync(
+                    loader,
+                    () => this.transmissionWeight,
+                    this.transmissionWeightTexture,
+                    TextureChannel.R,
+                    () => this.baseColor,
+                    this.baseColorTexture,
+                    false
+                );
                 if (loader._disposed) {
                     return;
                 }
@@ -1550,41 +1580,126 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
     }
 
+    private async createNormalOperandAsync(texture: Nullable<BaseTexture>): Promise<ITextureProcessOperand> {
+        const neutral = CreateTextureWithFactorOperand(null, new Color4(0.5, 0.5, 1, 1));
+        if (!texture) {
+            return neutral;
+        }
+        const factor = new Color4(texture.level, texture.level, 1, 1);
+        const onChangedObservable = new Observable<void>();
+        const scene = this._material.getScene();
+        const observer = scene.onBeforeRenderObservable.add(() => {
+            if (factor.r !== texture.level) {
+                factor.r = factor.g = texture.level;
+                onChangedObservable.notifyObservers();
+            }
+        });
+        return await _ScaleNormalTextureAsync(
+            "scaledNormal (" + texture.name + ")",
+            CreateTextureWithFactorOperand(texture, new Color4(1, 1, 1, 1)),
+            {
+                texture: null,
+                factor,
+                onChangedObservable,
+                dispose: () => {
+                    scene.onBeforeRenderObservable.remove(observer);
+                    onChangedObservable.clear();
+                },
+            },
+            scene
+        );
+    }
+
     private async copySurfaceToCoatAsync(
         loader: GLTFLoader,
-        weight: number,
+        getWeight: () => number,
         weightTexture: Nullable<BaseTexture>,
         weightTextureChannel: TextureChannel,
-        color: Color3,
+        getColor: () => Color3,
         colorTexture: Nullable<BaseTexture>,
         diffuseTransmission: boolean = false
     ): Promise<void> {
         // Blend coat properties using:
-        // New coat will cover all areas that previously had coat or transmission.
-        //   new_coat_weight = max(weight, existing_coat_weight)
+        // A full-weight coat carries the blended tint unless the unauthored layer is neutral.
         // New coat color is the multiplication of the base color tint and the existing coat tint, each blended by their respective weights:
         //   new_coat_color  = lerp(white, existing_coat_color, existing_coat_weight)
         //                   * lerp(white, color, weight)
         // Snapshot the original coat properties before mutating them, so both lerps
         // use the pre-merge values (the first lerp blends the *existing* coat color
         // by the *existing* coat weight; we must not use the merged weight here).
-        const origCoatWeight = this._material.coatWeight;
+        const origCoatWeight = this._convertedCoatColor ? 1 : this._material.coatWeight;
         const origCoatWeightTexture = this._material.coatWeightTexture;
         const origCoatColor = this._material.coatColor.clone();
         const origCoatColorTexture = this._material.coatColorTexture;
         const origCoatNormalTexture = this._material.geometryCoatNormalTexture;
-
-        const origCoatWeightCol4 = new Color4(origCoatWeight, origCoatWeight, origCoatWeight, origCoatWeight);
-        const weightCol4 = new Color4(weight, weight, weight, weight);
-
-        // Textures removed from material slots are collected here and disposed only at the end, because
-        // they may still be needed as inputs to later passes (e.g. origCoatWeightTexture, or a packed
-        // texture that is shared between several coat slots).
-        const replacedTextures = new Set<BaseTexture>();
-        if (origCoatWeightTexture) {
-            replacedTextures.add(origCoatWeightTexture);
+        const source = _GetGLTFMaterialCoatState(this._material);
+        const firstConversion = !source.converted;
+        if (firstConversion) {
+            source.retain();
         }
+        const createOperand = (
+            texture: Nullable<BaseTexture>,
+            readFactor: (factor: Color4) => void,
+            channel = TextureChannel.RGBA,
+            colorSpace = TextureColorSpace.Linear,
+            poll = false
+        ) => {
+            const factor = new Color4();
+            const nextFactor = new Color4();
+            readFactor(factor);
+            const onChangedObservable = new Observable<void>();
+            const update = () => {
+                readFactor(nextFactor);
+                if (!factor.equals(nextFactor)) {
+                    factor.copyFrom(nextFactor);
+                    onChangedObservable.notifyObservers();
+                }
+            };
+            const scene = this._material.getScene();
+            const observer = poll ? null : source.onChangedObservable.add(update);
+            // Surface factors have no property observable and may be replaced by animation or pointer writes.
+            const frameObserver = poll ? scene.onBeforeRenderObservable.add(update) : null;
+            return {
+                texture,
+                factor,
+                channel,
+                colorSpace,
+                onChangedObservable,
+                dispose: () => {
+                    source.onChangedObservable.remove(observer);
+                    scene.onBeforeRenderObservable.remove(frameObserver);
+                    onChangedObservable.clear();
+                },
+            };
+        };
+        const bindResult = (result: ITextureProcessOperand, apply: () => void) => {
+            apply();
+            result.onChangedObservable?.add(apply);
+            this._material.onDisposeObservable.addOnce(() => result.dispose?.());
+        };
+        const coatWeight = (factor: Color4) => {
+            const value = firstConversion ? source.coatWeight : origCoatWeight;
+            factor.set(value, value, value, value);
+        };
+        const coatRoughness = (factor: Color4) => {
+            const value = source.coatRoughness;
+            factor.set(value, value, value, 1);
+        };
+        const origCoatIor = this.coatIor;
+        const origCoatDarkening = this.coatDarkening;
+        const surfaceWeight = () =>
+            createOperand(
+                weightTexture,
+                (factor) => {
+                    const value = getWeight();
+                    factor.set(value, value, value, value);
+                },
+                weightTextureChannel,
+                TextureColorSpace.Linear,
+                true
+            );
 
+        // Converted inputs remain live for animation, even after their material slots are replaced.
         this.coatWeightTexture = null;
         this.coatWeight = 1.0;
 
@@ -1592,16 +1707,27 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             LerpTexturesAsync(
                 "lerpExistingCoat",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
-                CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(origCoatColorTexture)),
-                CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+                this._convertedCoatColor
+                    ? { ...this._convertedCoatColor, dispose: undefined }
+                    : CreateTextureWithFactorOperand(origCoatColorTexture, origCoatColor.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(origCoatColorTexture)),
+                createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
                 this._material.getScene(),
                 TextureColorSpace.SRGB
             ),
             LerpTexturesAsync(
                 "lerpSurfaceColor",
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1)),
-                CreateTextureWithFactorOperand(colorTexture, color.toColor4(), TextureChannel.RGBA, GetColorTextureSpace(colorTexture)),
-                CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
+                createOperand(
+                    colorTexture,
+                    (factor) => {
+                        const color = getColor();
+                        factor.set(color.r, color.g, color.b, 1);
+                    },
+                    TextureChannel.RGBA,
+                    GetColorTextureSpace(colorTexture),
+                    true
+                ),
+                surfaceWeight(),
                 this._material.getScene(),
                 TextureColorSpace.SRGB
             ),
@@ -1610,7 +1736,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         if (rejected) {
             for (const r of results) {
                 if (r.status === "fulfilled") {
-                    r.value.texture?.dispose();
+                    r.value.dispose?.();
                 }
             }
             throw rejected.reason;
@@ -1619,8 +1745,8 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             (r) => (r as PromiseFulfilledResult<(typeof results)[number] extends PromiseSettledResult<infer T> ? T : never>).value
         );
         if (loader._disposed) {
-            lerpCoatColor.texture?.dispose();
-            lerpSurfaceColor.texture?.dispose();
+            lerpCoatColor.dispose?.();
+            lerpSurfaceColor.dispose?.();
             return;
         }
 
@@ -1632,119 +1758,150 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             TextureColorSpace.SRGB
         );
         if (loader._disposed) {
-            newCoatColor.texture?.dispose();
+            newCoatColor.dispose?.();
             return;
         }
 
-        if (newCoatColor.texture) {
+        this._convertedCoatColor = newCoatColor;
+        const previousCoatIsNeutral = this._convertedCoatIsNeutral;
+        this._convertedCoatIsNeutral = () => (previousCoatIsNeutral?.() ?? true) && (getWeight() === 0 || (!colorTexture && getColor().equalsFloats(1, 1, 1)));
+        const updateCoatWeight = () => {
+            // A neutral conversion coat still changes subsurface scattering, so retain bindings without enabling an unauthored layer.
+            this.coatWeight = source.coatWeight === 0 && this._convertedCoatIsNeutral?.() ? 0 : 1;
+        };
+        if (firstConversion) {
+            const observer = source.onChangedObservable.add(updateCoatWeight);
+            const scene = this._material.getScene();
+            const frameObserver = scene.onBeforeRenderObservable.add(updateCoatWeight);
+            this._material.onDisposeObservable.addOnce(() => {
+                source.onChangedObservable.remove(observer);
+                scene.onBeforeRenderObservable.remove(frameObserver);
+            });
+        }
+        bindResult(newCoatColor, () => {
             this.coatColorTexture = newCoatColor.texture;
-            this.coatColor = Color3.White();
-        } else if (newCoatColor.factor) {
-            this.coatColorTexture = null;
-            this.coatColor.fromArray([newCoatColor.factor.r, newCoatColor.factor.g, newCoatColor.factor.b]);
-        }
-        if (origCoatColorTexture) {
-            replacedTextures.add(origCoatColorTexture);
-        }
+            const factor = newCoatColor.factor;
+            const r = factor?.r ?? 1;
+            const g = factor?.g ?? 1;
+            const b = factor?.b ?? 1;
+            if (!this.coatColor.equalsFloats(r, g, b)) {
+                this.coatColor.set(r, g, b);
+                this._material.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            }
+            updateCoatWeight();
+        });
 
         const newCoatIor = await LerpTexturesAsync(
             "newCoatIor (" + this._material.name + ")",
-            CreateTextureWithFactorOperand(null, new Color4(this._material.specularIor, this._material.specularIor, this._material.specularIor, 1.0), TextureChannel.R),
-            CreateTextureWithFactorOperand(null, new Color4(this.coatIor, this.coatIor, this.coatIor, 1.0), TextureChannel.R),
-            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            createOperand(null, (factor) => factor.set(source.specularIor, source.specularIor, source.specularIor, 1), TextureChannel.R),
+            this._convertedCoatIor
+                ? { ...this._convertedCoatIor, dispose: undefined }
+                : CreateTextureWithFactorOperand(null, new Color4(origCoatIor, origCoatIor, origCoatIor, 1.0), TextureChannel.R),
+            createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
             this._material.getScene()
         );
         if (loader._disposed) {
-            newCoatIor.texture?.dispose();
+            newCoatIor.dispose?.();
             return;
         }
-        this.coatIor = newCoatIor.factor ? newCoatIor.factor.r : this.coatIor;
+        this._convertedCoatIor = newCoatIor.factor ? newCoatIor : undefined;
+        if (newCoatIor.factor) {
+            bindResult(newCoatIor, () => {
+                this.coatIor = newCoatIor.factor!.r;
+            });
+        } else {
+            newCoatIor.dispose?.();
+        }
 
         const newCoatRoughness = await LerpTexturesAsync(
             "newCoatRoughness (" + this._material.name + ")",
-            CreateTextureWithFactorOperand(
-                this.specularRoughnessTexture,
-                new Color4(this.specularRoughness, this.specularRoughness, this.specularRoughness, 1.0),
-                TextureChannel.G
-            ),
-            CreateTextureWithFactorOperand(this.coatRoughnessTexture, new Color4(this.coatRoughness, this.coatRoughness, this.coatRoughness, 1.0), TextureChannel.G),
-            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            createOperand(this.specularRoughnessTexture, (factor) => factor.set(source.specularRoughness, source.specularRoughness, source.specularRoughness, 1), TextureChannel.G),
+            this._convertedCoatRoughness ? { ...this._convertedCoatRoughness, dispose: undefined } : createOperand(this.coatRoughnessTexture, coatRoughness, TextureChannel.G),
+            createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
             this._material.getScene()
         );
         if (loader._disposed) {
-            newCoatRoughness.texture?.dispose();
+            newCoatRoughness.dispose?.();
             return;
         }
-        const oldCoatRoughnessTexture = this.coatRoughnessTexture;
-        this.coatRoughness = newCoatRoughness.factor ? newCoatRoughness.factor.r : 1.0;
-        this.coatRoughnessTexture = newCoatRoughness.texture;
-        if (oldCoatRoughnessTexture) {
-            replacedTextures.add(oldCoatRoughnessTexture);
-        }
+        this._convertedCoatRoughness = newCoatRoughness;
+        bindResult(newCoatRoughness, () => {
+            this.coatRoughness = newCoatRoughness.factor ? newCoatRoughness.factor.r : 1.0;
+            this.coatRoughnessTexture = newCoatRoughness.texture;
+        });
 
         const newCoatDarkening = await LerpTexturesAsync(
             "newCoatDarkening (" + this._material.name + ")",
             CreateTextureWithFactorOperand(null, new Color4(0, 0, 0, 1.0), TextureChannel.R),
-            CreateTextureWithFactorOperand(null, new Color4(this.coatDarkening, this.coatDarkening, this.coatDarkening, 1.0), TextureChannel.R),
-            CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+            this._convertedCoatDarkening
+                ? { ...this._convertedCoatDarkening, dispose: undefined }
+                : CreateTextureWithFactorOperand(null, new Color4(origCoatDarkening, origCoatDarkening, origCoatDarkening, 1.0), TextureChannel.R),
+            createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
             this._material.getScene()
         );
         if (loader._disposed) {
-            newCoatDarkening.texture?.dispose();
+            newCoatDarkening.dispose?.();
             return;
         }
-        this.coatDarkening = newCoatDarkening.factor ? newCoatDarkening.factor.r : this.coatDarkening;
+        this._convertedCoatDarkening = newCoatDarkening.factor ? newCoatDarkening : undefined;
+        if (newCoatDarkening.factor) {
+            bindResult(newCoatDarkening, () => {
+                this.coatDarkening = newCoatDarkening.factor!.r;
+            });
+        } else {
+            newCoatDarkening.dispose?.();
+        }
 
         if (diffuseTransmission) {
             const newSpecularRoughness = await LerpTexturesAsync(
                 "newSpecularRoughness (" + this._material.name + ")",
-                CreateTextureWithFactorOperand(
+                createOperand(
                     this.specularRoughnessTexture,
-                    new Color4(this._material.specularRoughness, this._material.specularRoughness, this._material.specularRoughness, 1.0),
+                    (factor) => factor.set(source.specularRoughness, source.specularRoughness, source.specularRoughness, 1),
                     TextureChannel.G
                 ),
                 CreateTextureWithFactorOperand(null, new Color4(1, 1, 1, 1.0), TextureChannel.R),
-                CreateTextureWithFactorOperand(weightTexture, weightCol4, weightTextureChannel),
+                surfaceWeight(),
                 this._material.getScene()
             );
             if (loader._disposed) {
-                newSpecularRoughness.texture?.dispose();
+                newSpecularRoughness.dispose?.();
                 return;
             }
-            const oldSpecularRoughnessTexture = this.specularRoughnessTexture;
-            this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
-            this.specularRoughnessTexture = newSpecularRoughness.texture;
-            if (oldSpecularRoughnessTexture) {
-                replacedTextures.add(oldSpecularRoughnessTexture);
-            }
+            bindResult(newSpecularRoughness, () => {
+                source.specularRoughnessIsConverted = true;
+                this.specularRoughness = newSpecularRoughness.factor ? newSpecularRoughness.factor.r : 1.0;
+                this.specularRoughnessTexture = newSpecularRoughness.texture;
+                this.useRoughnessFromMetallicTextureGreen = false;
+            });
         }
 
         if (origCoatNormalTexture || this.geometryNormalTexture) {
+            const baseNormal = await this.createNormalOperandAsync(this.geometryNormalTexture);
+            let coatNormal: ITextureProcessOperand;
+            try {
+                coatNormal = this._convertedCoatNormal ? { ...this._convertedCoatNormal, dispose: undefined } : await this.createNormalOperandAsync(origCoatNormalTexture);
+            } catch (error) {
+                baseNormal.dispose?.();
+                throw error;
+            }
             const newCoatNormal = await LerpTexturesAsync(
                 "newCoatNormal (" + this._material.name + ")",
-                CreateTextureWithFactorOperand(
-                    this.geometryNormalTexture,
-                    this.geometryNormalTexture ? new Color4(1, 1, 1, 1) : new Color4(0.5, 0.5, 1.0, 1.0),
-                    TextureChannel.RGBA
-                ),
-                CreateTextureWithFactorOperand(origCoatNormalTexture, origCoatNormalTexture ? new Color4(1, 1, 1, 1) : new Color4(0.5, 0.5, 1.0, 1.0), TextureChannel.RGBA),
-                CreateTextureWithFactorOperand(origCoatWeightTexture, origCoatWeightCol4, TextureChannel.R),
+                baseNormal,
+                coatNormal,
+                createOperand(origCoatWeightTexture, coatWeight, TextureChannel.R),
                 this._material.getScene()
             );
             if (loader._disposed) {
-                newCoatNormal.texture?.dispose();
+                newCoatNormal.dispose?.();
                 return;
             }
-            if (newCoatNormal.texture) {
-                this.geometryCoatNormalTexture = newCoatNormal.texture;
-                if (origCoatNormalTexture) {
-                    replacedTextures.add(origCoatNormalTexture);
+            this._convertedCoatNormal = newCoatNormal;
+            bindResult(newCoatNormal, () => {
+                if (newCoatNormal.texture) {
+                    this.geometryCoatNormalTexture = newCoatNormal.texture;
                 }
-            }
-        }
-
-        for (const texture of replacedTextures) {
-            this._disposeTextureIfUnused(loader, texture);
+            });
         }
     }
 }

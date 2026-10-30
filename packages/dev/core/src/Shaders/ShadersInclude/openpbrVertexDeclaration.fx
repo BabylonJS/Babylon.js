@@ -57,6 +57,10 @@ uniform vec2 vSpecularRoughnessAnisotropyInfos;
 uniform mat4 specularRoughnessAnisotropyMatrix;
 #endif
 
+#if defined(SPECULAR_RETROREFLECTIVITY) && SPECULAR_RETROREFLECTIVITYDIRECTUV == 0 && !defined(NATIVE)
+uniform mat4 specularRetroreflectivityMatrix;
+#endif
+
 #ifdef TRANSMISSION_WEIGHT
 uniform vec2 vTransmissionWeightInfos;
 uniform mat4 transmissionWeightMatrix;

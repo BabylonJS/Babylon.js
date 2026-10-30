@@ -2,6 +2,8 @@ import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Texture } from "core/Materials/Textures/texture";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader";
@@ -30,6 +32,7 @@ vi.mock("core/Materials/Textures/textureProcessor", async (importOriginal) => {
         ExtractChannelAsync: vi.fn(makeResult),
         ExtractMaxChannelAsync: vi.fn(makeResult),
         LerpTexturesAsync: vi.fn(makeResult),
+        _ScaleNormalTextureAsync: vi.fn(makeResult),
         MultiplyTexturesAsync: vi.fn(async (name: string, a: any, b: any, ...rest: any[]) =>
             a.texture || b.texture ? await makeResult(name, a, b, ...rest) : await actual.MultiplyTexturesAsync(name, a, b, ...(rest as [any]))
         ),
@@ -114,7 +117,7 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
         return { material, adapter };
     }
 
-    it("disposes replaced coat textures only after they are no longer needed as inputs", async () => {
+    it("keeps replaced coat textures that remain inputs to live conversion passes", async () => {
         const { material, adapter } = createVolumetricTransmissionAdapter();
         // A packed coat texture (weight in R, roughness in G) shared between two slots.
         const packedCoat = new Texture(null, scene);
@@ -132,9 +135,9 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
         expect(material.coatRoughnessTexture).not.toBe(packedCoat);
         expect(material.coatColorTexture).not.toBe(coatColor);
         expect(material.geometryCoatNormalTexture).not.toBe(coatNormal);
-        expect(isDisposed(packedCoat)).toBe(true);
-        expect(isDisposed(coatColor)).toBe(true);
-        expect(isDisposed(coatNormal)).toBe(true);
+        expect(isDisposed(packedCoat)).toBe(false);
+        expect(isDisposed(coatColor)).toBe(false);
+        expect(isDisposed(coatNormal)).toBe(false);
     });
 
     it("keeps a replaced coat texture that is still referenced by another slot", async () => {
@@ -147,6 +150,75 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
 
         expect(material.coatColorTexture).not.toBe(coatColor);
         expect(isDisposed(coatColor)).toBe(false);
+    });
+
+    it.each(["mask", "color", "normal"])("disposes the retained original coat %s resource with its material", async (slot) => {
+        const { material, adapter } = createVolumetricTransmissionAdapter();
+        const source = RawTexture.CreateRGBATexture(new Uint8Array([128, 128, 255, 255]), 1, 1, scene, false);
+        if (slot === "mask") {
+            adapter.coatWeightTexture = source;
+            adapter.coatRoughnessTexture = source;
+        } else if (slot === "color") {
+            adapter.coatColorTexture = source;
+        } else {
+            adapter.geometryCoatNormalTexture = source;
+        }
+        const disposed = vi.fn();
+        source.onDisposeObservable.add(disposed);
+        await adapter.finalizeAsync(loader);
+        expect(source.getInternalTexture()).not.toBeNull();
+        expect(isDisposed(source)).toBe(false);
+        material.dispose(false, true);
+        expect(isDisposed(source)).toBe(true);
+        expect(source.getInternalTexture()).toBeNull();
+        expect(disposed).toHaveBeenCalledTimes(1);
+    });
+
+    it("releases a shared retained coat mask only after the last conversion is disposed", async () => {
+        const first = createVolumetricTransmissionAdapter();
+        const second = createVolumetricTransmissionAdapter();
+        const source = RawTexture.CreateRGBATexture(new Uint8Array([128, 128, 255, 255]), 1, 1, scene, false);
+        const disposed = vi.fn();
+        source.onDisposeObservable.add(disposed);
+        first.adapter.coatWeightTexture = source;
+        second.adapter.coatWeightTexture = source;
+        await first.adapter.finalizeAsync(loader);
+        await second.adapter.finalizeAsync(loader);
+        const resource = source.getInternalTexture();
+        first.material.dispose(false, true);
+        expect(isDisposed(source)).toBe(false);
+        expect(source.getInternalTexture()).toBe(resource);
+        expect(disposed).not.toHaveBeenCalled();
+        second.material.dispose(false, true);
+        expect(isDisposed(source)).toBe(true);
+        expect(source.getInternalTexture()).toBeNull();
+        expect(disposed).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps a retained coat mask used by another material outside the loader", async () => {
+        const { material, adapter } = createVolumetricTransmissionAdapter();
+        const other = new PBRMaterial("other", scene);
+        const source = RawTexture.CreateRGBATexture(new Uint8Array([128, 128, 255, 255]), 1, 1, scene, false);
+        adapter.coatWeightTexture = source;
+        other.albedoTexture = source;
+        await adapter.finalizeAsync(loader);
+        material.dispose(false, true);
+        expect(isDisposed(source)).toBe(false);
+        expect(source.getInternalTexture()).not.toBeNull();
+        other.dispose(false, true);
+        expect(isDisposed(source)).toBe(true);
+        expect(source.getInternalTexture()).toBeNull();
+    });
+
+    it("preserves retained texture resources when texture disposal is not requested", async () => {
+        const { material, adapter } = createVolumetricTransmissionAdapter();
+        const source = RawTexture.CreateRGBATexture(new Uint8Array([128, 128, 255, 255]), 1, 1, scene, false);
+        adapter.coatWeightTexture = source;
+        await adapter.finalizeAsync(loader);
+        material.dispose();
+        expect(isDisposed(source)).toBe(false);
+        expect(source.getInternalTexture()).not.toBeNull();
+        source.dispose();
     });
 
     describe("thin-walled scatter staging", () => {
@@ -177,6 +249,25 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
             // transW = T*(1-S) = 0.5; ssW = T*S/(1-transW) = 1.
             expect(material.transmissionWeight).toBeCloseTo(0.5);
             expect(material.subsurfaceWeight).toBeCloseTo(1);
+            expect(adapter.thinWalledScatterStrengthFactor).toBeNull();
+        });
+
+        it("uses the retained authored diffuse-transmission tint for staged scatter", async () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const adapter = loader._getOrCreateMaterialAdapter(material) as OpenPBRMaterialLoadingAdapter;
+            adapter.configureTransmission();
+            adapter.transmissionWeight = 1;
+            adapter.configureSubsurface();
+            const tint = new Color3(0.2, 0.3, 0.4);
+            adapter.diffuseTransmissionTint = tint;
+            material.subsurfaceColor = Color3.White();
+            adapter.thinWalledScatterStrengthFactor = 0.5;
+
+            await adapter.finalizeAsync(loader);
+
+            expect(material.transmissionWeight).toBe(1);
+            expect(material.subsurfaceWeight).toBe(0.5);
+            expect(material.subsurfaceColor).toEqual(tint);
             expect(adapter.thinWalledScatterStrengthFactor).toBeNull();
         });
     });
