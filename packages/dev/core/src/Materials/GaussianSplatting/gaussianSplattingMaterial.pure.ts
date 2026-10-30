@@ -425,9 +425,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             //Attributes
-            PrepareAttributesForInstances(GaussianSplattingMaterial._Attribs, defines);
-
             const attribs = GaussianSplattingMaterial._Attribs.slice();
+            PrepareAttributesForInstances(attribs, defines);
+
             const uniforms = GaussianSplattingMaterial._Uniforms.slice();
             const samplers = GaussianSplattingMaterial._Samplers.slice();
             const uniformBuffers = GaussianSplattingMaterial._UniformBuffers.slice();
@@ -876,7 +876,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 fragment: "gaussianSplattingVoxel",
             },
             {
-                attributes: GaussianSplattingMaterial._Attribs,
+                attributes: GaussianSplattingMaterial._Attribs.slice(),
                 uniforms: GaussianSplattingMaterial._VoxelUniforms,
                 samplers: GaussianSplattingMaterial._VoxelSamplers,
                 uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
@@ -933,7 +933,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 fragment: "gaussianSplattingDepth",
             },
             {
-                attributes: GaussianSplattingMaterial._Attribs,
+                attributes: GaussianSplattingMaterial._Attribs.slice(),
                 uniforms: GaussianSplattingMaterial._Uniforms,
                 samplers: GaussianSplattingMaterial._Samplers,
                 uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
@@ -963,7 +963,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 fragment: "gaussianSplattingDepth",
             },
             {
-                attributes: GaussianSplattingMaterial._Attribs,
+                attributes: GaussianSplattingMaterial._Attribs.slice(),
                 uniforms: GaussianSplattingMaterial._Uniforms,
                 samplers: GaussianSplattingMaterial._Samplers,
                 uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
