@@ -499,26 +499,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
-     * The most frames the GPU may have in flight when a frame starts, that frame included (0, the default: no limit).
-     * A frame over the limit is not started, and the render loop asks again at the next animation frame. With 2, a frame starts
-     * once the GPU has finished every frame but the previous one. Without a limit, a page whose GPU work takes longer than its
-     * frame can queue that work far ahead of the GPU, and the screen then shows frames that far behind
-     */
-    public maxFramesInFlight = 0;
-
-    private _framesInFlight = 0;
-    private _framesInFlightDevice: Nullable<GPUDevice> = null;
-
-    protected override _processFrame(timestamp?: number) {
-        if (this.maxFramesInFlight > 0 && this._framesInFlightDevice === this._device && this._framesInFlight >= this.maxFramesInFlight) {
-            // nothing of the frame has started and maxFPS has not counted it
-            this._frameHandler = 0;
-            return;
-        }
-        super._processFrame(timestamp);
-    }
-
-    /**
      * Enables or disables the snapshot rendering mode
      * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
      */
@@ -3268,6 +3248,26 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public get performanceMonitor(): PerformanceMonitor {
         return this._performanceMonitor;
+    }
+
+    /**
+     * The most frames the GPU may have in flight when a frame starts, that frame included (0, the default: no limit).
+     * A frame over the limit is not started, and the render loop asks again at the next animation frame. With 2, a frame starts
+     * once the GPU has finished every frame but the previous one. Without a limit, a page whose GPU work takes longer than its
+     * frame can queue that work far ahead of the GPU, and the screen then shows frames that far behind
+     */
+    public maxFramesInFlight = 0;
+
+    private _framesInFlight = 0;
+    private _framesInFlightDevice: Nullable<GPUDevice> = null;
+
+    protected override _processFrame(timestamp?: number) {
+        if (this.maxFramesInFlight > 0 && this._framesInFlightDevice === this._device && this._framesInFlight >= this.maxFramesInFlight) {
+            // nothing of the frame has started and maxFPS has not counted it
+            this._frameHandler = 0;
+            return;
+        }
+        super._processFrame(timestamp);
     }
 
     /**
