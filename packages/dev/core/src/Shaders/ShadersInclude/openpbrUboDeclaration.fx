@@ -76,6 +76,7 @@ uniform Material {
     float vThinFilmWeight;
     vec2 vThinFilmThickness;
     float vThinFilmIor;
+    vec3 vGltfDiffuseTransmissionColor;
 
     vec2 vBaseWeightInfos;
     mat4 baseWeightMatrix;
@@ -145,6 +146,8 @@ uniform Material {
     mat4 thinFilmThicknessMatrix;
     vec2 vAmbientOcclusionInfos;
     mat4 ambientOcclusionMatrix;
+    vec2 vGltfDiffuseTransmissionColorInfos;
+    mat4 gltfDiffuseTransmissionColorMatrix;
 
 #define ADDITIONAL_UBO_DECLARATION
 };

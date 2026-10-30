@@ -159,13 +159,42 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     );
                 }
 
+                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
+                // Imported glTF inputs already contain the surface tint unless the non-volume transmission tint was edited independently.
+                if (
+                    babylonMaterial._gltfTransmissionSurfaceToCoat &&
+                    (usesVolume ||
+                        (babylonMaterial.transmissionColor.equals(babylonMaterial.baseColor) && babylonMaterial.transmissionColorTexture === babylonMaterial.baseColorTexture))
+                ) {
+                    if (baseColorTexture && babylonMaterial.geometryOpacityTexture && babylonMaterial.baseColorTexture && !babylonMaterial.baseColorTexture.gammaSpace) {
+                        // Opacity packing copies hardware-decoded RGB; glTF still requires sRGB texels.
+                        const packedTexture = baseColorTexture;
+                        const encoded = await MultiplyTexturesAsync(
+                            `base color encoding (${babylonMaterial.name})`,
+                            { texture: packedTexture, dispose: () => packedTexture.dispose() },
+                            CreateFactorOperand(new Color4(1, 1, 1, 1)),
+                            babylonMaterial.getScene(),
+                            TextureColorSpace.SRGB
+                        );
+                        baseColorTexture = encoded.texture ?? null;
+                    }
+                    this._baseColorOperands.set(babylonMaterial, {
+                        factor: new Color4(babylonMaterial.baseColor.r, babylonMaterial.baseColor.g, babylonMaterial.baseColor.b, geometryOpacity),
+                        texture: baseColorTexture,
+                        ownsTexture: !!babylonMaterial.geometryOpacityTexture,
+                    });
+                    if (baseColorTexture) {
+                        additionalTextures.push(baseColorTexture);
+                    }
+                    return additionalTextures;
+                }
+
                 // The lerp combines the base color with the transmission weight (and the metalness and
                 // transmission color textures). If any of those use a different UV set from the base color,
                 // the texture processor would have to drop one of them, which can wash out the base color
                 // entirely. In that case, export the base color (with opacity packed) without the lerp.
                 const metalness = babylonMaterial.baseMetalness;
                 const metalnessTexture = babylonMaterial.baseMetalnessTexture;
-                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
                 if (baseColorTexture) {
                     const otherTextures = [transWeightResult.texture, metalness > 0 ? metalnessTexture : null, usesVolume ? null : babylonMaterial.transmissionColorTexture];
                     if (otherTextures.some((texture) => texture && texture.coordinatesIndex !== baseColorTexture!.coordinatesIndex)) {

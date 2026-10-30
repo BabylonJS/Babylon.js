@@ -6,6 +6,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader";
 import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialLoadingAdapter";
+import "core/Materials/colorCurves";
 
 // The texture processor renders on the GPU, which NullEngine can't do. Replace the async passes
 // with stubs that return a fresh output texture, matching the real (non-pass-through) contract.
@@ -114,7 +115,7 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
         return { material, adapter };
     }
 
-    it("disposes replaced coat textures only after they are no longer needed as inputs", async () => {
+    it("keeps authored coat inputs on independent coordinates for shader-side conversion", async () => {
         const { material, adapter } = createVolumetricTransmissionAdapter();
         // A packed coat texture (weight in R, roughness in G) shared between two slots.
         const packedCoat = new Texture(null, scene);
@@ -125,19 +126,28 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
         adapter.coatRoughnessTexture = packedCoat;
         adapter.coatColorTexture = coatColor;
         material.geometryCoatNormalTexture = coatNormal;
+        packedCoat.coordinatesIndex = 1;
+        packedCoat.uOffset = 0.25;
+        adapter.coatWeight = 0.4;
+        adapter.coatRoughness = 0.6;
 
         await adapter.finalizeAsync(loader);
 
-        expect(material.coatWeightTexture).toBeNull();
-        expect(material.coatRoughnessTexture).not.toBe(packedCoat);
-        expect(material.coatColorTexture).not.toBe(coatColor);
-        expect(material.geometryCoatNormalTexture).not.toBe(coatNormal);
-        expect(isDisposed(packedCoat)).toBe(true);
-        expect(isDisposed(coatColor)).toBe(true);
-        expect(isDisposed(coatNormal)).toBe(true);
+        expect(material._gltfTransmissionSurfaceToCoat).toBe(true);
+        expect(material.coatWeightTexture).toBe(packedCoat);
+        expect(material.coatRoughnessTexture).toBe(packedCoat);
+        expect(material.coatColorTexture).toBe(coatColor);
+        expect(material.geometryCoatNormalTexture).toBe(coatNormal);
+        expect(material.coatWeight).toBe(0.4);
+        expect(material.coatRoughness).toBe(0.6);
+        expect(packedCoat.coordinatesIndex).toBe(1);
+        expect(packedCoat.uOffset).toBe(0.25);
+        expect(isDisposed(packedCoat)).toBe(false);
+        expect(isDisposed(coatColor)).toBe(false);
+        expect(isDisposed(coatNormal)).toBe(false);
     });
 
-    it("keeps a replaced coat texture that is still referenced by another slot", async () => {
+    it("keeps authored coat textures shared with another slot", async () => {
         const { material, adapter } = createVolumetricTransmissionAdapter();
         const coatColor = new Texture(null, scene);
         adapter.coatColorTexture = coatColor;
@@ -145,8 +155,51 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
 
         await adapter.finalizeAsync(loader);
 
-        expect(material.coatColorTexture).not.toBe(coatColor);
+        expect(material.coatColorTexture).toBe(coatColor);
         expect(isDisposed(coatColor)).toBe(false);
+    });
+
+    it("keeps diffuse surface tint separate from volumetric subsurface color", async () => {
+        const { material, adapter } = createVolumetricTransmissionAdapter();
+        adapter.configureSubsurface();
+        adapter.configureVolume();
+        adapter.subsurfaceWeight = 0.75;
+        const volumeColor = new Color3(0.2, 0.3, 0.4);
+        adapter.subsurfaceColor = volumeColor;
+        adapter.diffuseTransmissionTint = new Color3(0.8, 0.6, 0.4);
+        const tint = new Texture(null, scene);
+        tint.coordinatesIndex = 1;
+        adapter.diffuseTransmissionTintTexture = tint;
+
+        await adapter.finalizeAsync(loader);
+
+        expect(material._gltfDiffuseTransmissionSurfaceToCoat).toBe(true);
+        expect(material._gltfDiffuseTransmissionColor).toBe(adapter.diffuseTransmissionTint);
+        expect(material._gltfDiffuseTransmissionColorTexture).toBe(tint);
+        expect(material.subsurfaceColor).toBe(volumeColor);
+        expect(material.getActiveTextures()).toContain(tint);
+        expect(isDisposed(tint)).toBe(false);
+    });
+
+    it("preserves surface conversion modes and tint through cloning and scene serialization", async () => {
+        const { material, adapter } = createVolumetricTransmissionAdapter();
+        adapter.configureSubsurface();
+        adapter.configureVolume();
+        adapter.subsurfaceWeight = 0.5;
+        adapter.diffuseTransmissionTint = new Color3(0.2, 0.4, 0.6);
+        adapter.coatRoughnessTexture = new Texture(null, scene);
+        adapter.coatRoughnessTexture.name = "packedCoat";
+        await adapter.finalizeAsync(loader);
+
+        const clone = material.clone("clone");
+        const parsed = OpenPBRMaterial.Parse(material.serialize(), scene, "");
+        for (const copy of [clone, parsed]) {
+            expect(copy._gltfTransmissionSurfaceToCoat).toBe(true);
+            expect(copy._gltfDiffuseTransmissionSurfaceToCoat).toBe(true);
+            expect(copy._gltfDiffuseTransmissionColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+            expect(copy.coatWeight).toBe(material.coatWeight);
+            expect(copy._useCoatRoughnessFromGreenChannel).toBe(true);
+        }
     });
 
     describe("thin-walled scatter staging", () => {

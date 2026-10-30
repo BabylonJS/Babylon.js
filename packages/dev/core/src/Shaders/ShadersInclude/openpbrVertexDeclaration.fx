@@ -1,6 +1,11 @@
 // Scene uniforms (view, viewProjection, etc.) are included via sceneVertexDeclaration or sceneUboDeclaration
 #include<sceneVertexDeclaration>
 
+#ifdef GLTF_DIFFUSE_TRANSMISSION_COLOR
+uniform vec2 vGltfDiffuseTransmissionColorInfos;
+uniform mat4 gltfDiffuseTransmissionColorMatrix;
+#endif
+
 #ifdef BASE_COLOR
 uniform vec2 vBaseColorInfos;
 uniform mat4 baseColorMatrix;

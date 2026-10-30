@@ -29,6 +29,7 @@ export * from "./renderTargetTexture.pure";
 export * from "./textureMerger";
 export * from "./textureSampler";
 export * from "./textureProcessor";
+export { _CopyTextureMetadata } from "./textureSampling.functions";
 export * from "./texture.pure";
 export * from "./thinTexture";
 export * from "./thinRenderTargetTexture";

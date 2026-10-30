@@ -55,7 +55,13 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL
-	coatNormalW = perturbNormal(TBN, TEXRD(geometryCoatNormalSampler, geometryCoatNormalSamplerSampler, fragmentInputs.vGeometryCoatNormalUV + uvOffset).xyz, uniforms.vGeometryCoatNormalInfos.y);
+    #ifdef GLTF_COAT_NORMAL_INDEPENDENT_TBN
+        let coatTBNUV: vec2f = select(-fragmentInputs.vGeometryCoatNormalUV, fragmentInputs.vGeometryCoatNormalUV, fragmentInputs.frontFacing);
+        let coatTBN: mat3x3f = cotangent_frame(normalW, input.vPositionW, coatTBNUV, uniforms.vTangentSpaceParams);
+        coatNormalW = perturbNormal(coatTBN, TEXRD(geometryCoatNormalSampler, geometryCoatNormalSamplerSampler, fragmentInputs.vGeometryCoatNormalUV + uvOffset).xyz, uniforms.vGeometryCoatNormalInfos.y);
+    #else
+        coatNormalW = perturbNormal(TBN, TEXRD(geometryCoatNormalSampler, geometryCoatNormalSamplerSampler, fragmentInputs.vGeometryCoatNormalUV + uvOffset).xyz, uniforms.vGeometryCoatNormalInfos.y);
+    #endif
 #endif
 
 #ifdef GEOMETRY_NORMAL
