@@ -486,7 +486,15 @@ await startEngine(engine);
 
 const inspectorToken = ShowInspector(engine);
 
+let physicsFixture: Promise<void> | undefined;
+const createPhysicsFixture = () =>
+    (physicsFixture ??= (async () => {
+        const { CreateLitePhysicsFixture } = await import("./litePhysics");
+        Object.assign(globalThis, { litePhysics: await CreateLitePhysicsFixture(primaryScene, standardMaterial, pbrMaterial) });
+    })());
+
 Object.assign(globalThis, {
+    liteCreatePhysics: createPhysicsFixture,
     liteSkinnedMesh: skinnedMesh,
     liteMorphClone: morphClone,
     liteSkeleton: getMeshSkeleton(skinnedMesh),
@@ -573,3 +581,7 @@ window.addEventListener(
     },
     { once: true }
 );
+
+if (new URLSearchParams(window.location.search).get("physics") !== "off") {
+    await createPhysicsFixture();
+}

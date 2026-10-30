@@ -22,6 +22,22 @@ const RemovedLiteInspectionApi =
 const RemovedAwaitedRebuildContract = /\b(?:AwaitedRebuildMaterialOptions|awaitCompletion)\b/;
 
 describe("P4 Inspector import boundaries", () => {
+    it("keeps Lite physics lazy and free of Babylon.js physics implementation imports", () => {
+        const service = ReadInspectorSource("lite/services/panes/properties/physicsPropertiesService.tsx");
+        expect(service).toContain('import("../../../components/properties/physicsProperties")');
+        expect(service).not.toMatch(/^import .*components\/properties\/physicsProperties/m);
+        for (const file of [
+            "lite/physicsUtils.ts",
+            "lite/components/properties/physicsProperties.tsx",
+            "lite/services/panes/properties/physicsPropertiesService.tsx",
+            "lite/services/panes/scene/physicsExplorerService.tsx",
+        ]) {
+            const source = ReadInspectorSource(file);
+            expect(source).not.toMatch(NativeRuntimeImplementation);
+            expect(source).not.toMatch(/(?:core|@dev\/core)\/Physics/);
+            expect(source).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);
+        }
+    });
     it("keeps P9 skeleton, morph and particle property components lazy and runtime-neutral", () => {
         const skeletonService = ReadInspectorSource("lite/services/panes/properties/skeletonPropertiesService.tsx");
         const particleService = ReadInspectorSource("lite/services/panes/properties/particleSystemPropertiesService.tsx");

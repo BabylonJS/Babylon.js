@@ -16,7 +16,27 @@ The Lite Explorer lists CPU systems registered through `registerNodeParticleSet`
 
 Discovery is add-only until scene disposal. There is no particle removal, reset, lifetime/size/color editing, GPU particle support or particle editor.
 
-These features require `@babylonjs/lite` 1.37.1 or later, which matches the Inspector's optional `@babylonjs/lite` peer dependency (`^1.37.1`).
+These features require `@babylonjs/lite` 1.37.1 or later.
+
+## Babylon Lite Physics
+
+The Lite Explorer discovers worlds created after Inspector opens under **Physics › Physics World [N] › Bodies / Constraints**. Worlds expose body and live-constraint counts, a Scene link, editable Gravity, Timestep (seconds; 0 uses the frame delta), and Max Linear / Angular Velocity. A node's **Physics** section links every body on the node, including bodies in different worlds, or shows **No Physics Body**.
+
+Body sections follow Inspector v2's order: **General** (Node, World, Motion Type, Prestep Type, Instances), **Shape** (Type, primitive parameters, Dynamic Friction, Static Friction, Restitution, Membership / Collide masks, Density, and container Child Count), **Damping** (Linear, Angular, Gravity Factor), **Velocity** (Linear and Angular), **Mass** (Mass, Center of Mass, Inertia, read-only Inertia Orientation), and live **Constraints** links. Quaternion displays use Euler degrees. Mass edits read current properties before writing to preserve unedited fields. Locked inertia axes read 0. Mass edits are rejected with an explanation if any instance has zero inertia: Lite's public readback does not expose the original pre-lock tensor, so writing the locked tensor back would corrupt later rotation unlocking. Unlock rotation in the application before editing mass properties.
+
+Thin bodies show **Instance 0 of K**. Every editable control stays editable, with **Applies to all K instances**: reads use instance 0 and edits fan out to all instances. Mass edits are rejected with an explanation if instances have different unedited mass properties: Lite has no public per-instance mass setter, so those values cannot safely be preserved in a fan-out write. Only the base shape is inspected. Shared shapes remain editable with a **Shape shared by N bodies** warning; material and filter edits affect every user of that shape. The warning counts bodies in the current world only, not other worlds.
+
+Constraints are labelled `Hinge (A ↔ B)` and expose Type, Body A / B links, editable Enabled, and read-only Collision, pivots, axes, perpendicular axes, Max Distance and Limits. Omitted pivots display zero. Constraints on thin bodies bind instance 0 only. Removing either endpoint hides the constraint from Explorer, properties and visualization, even if Lite still lists the constraint.
+
+The Debug pane's independent **Physics Bodies** and **Physics Constraints** switches maintain separate viewers per world. Helpers, including constraint arrowheads, are non-pickable and excluded from Explorer and bounding boxes. Thin-instance body wireframes are omitted because Lite's viewer follows only the carrier node, not individual instance transforms. Container wireframes rebuild when children are added. Both switches are disabled when no worlds exist. Viewer reconciliation and property reads follow Inspector's watch mode; native errors are surfaced and failed helper switches roll back without disabling the other viewer.
+
+For manual physics inspection, run `npm run serve -w @dev/inspector` and open `http://localhost:9001/?experience=lite`. The test app loads the Havok fixture by default (four bodies, including shared shapes and three thin instances, plus hinge and distance constraints). Open **Physics** in Explorer or enable the Debug pane's physics switches. Use `?experience=lite&physics=off` to start without physics; `await window.liteCreatePhysics()` then creates the fixture once, allowing late-discovery testing without reloading. `INSPECTOR_TEST_PORT` selects a different server port when needed.
+
+The three ordinary fixture bodies form a stationary, zero-gravity row above the original scene objects at `y=1.8` (Box `x=-0.25`, Sphere `x=1`, Shared `x=1.75`). They reuse the scene's red/blue materials and start separated with satisfied constraints, so their white body wireframes and colored constraint helpers stay in the default camera view. Enable both **Physics Bodies** and **Physics Constraints** in **Debug** to inspect them; ordinary **Bounding Boxes** are not required. Thin instances remain at `(-2,4,0)`, `(0,4,0)` and `(2,4,0)`, outside this row, with their misleading carrier wireframe intentionally omitted.
+
+Limitations: Lite has no physics-engine enable flag. Mesh, convex-hull, heightfield and container shape parameters are unavailable. Material combine modes, motors, sleep state, per-instance editing, pivot editing, creating/releasing physics objects, character controllers, raycasts and impulses are not exposed. Releasing a shape still attached to a live body violates Lite's lifetime contract and cannot be made safe by Inspector.
+
+Physics inspection requires `@babylonjs/lite` 1.37.2 or later for the discovery/readback APIs (including constraint enable, density, child count, stable constraint debug data and constraint hide), matching the Inspector's optional `@babylonjs/lite` peer dependency (`^1.37.2`).
 
 ## Babylon Lite Picking
 
