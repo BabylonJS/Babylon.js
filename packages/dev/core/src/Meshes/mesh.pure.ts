@@ -2691,13 +2691,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Gets the draw wrapper of a draw recorded by a snapshot that can be encoded again without rendering the mesh: nothing runs
-     * per draw outside of the engine (instances, bones, morph targets, baked animations, occlusion queries, render observers) and
-     * the draw did not change since it was recorded (see _isRecordedDrawUnchanged)
+     * per draw outside of the engine (instances, bones, morph targets, baked animations, occlusion queries, render and draw observers,
+     * an outline or an overlay) and the draw did not change since it was recorded (see _isRecordedDrawUnchanged)
      * @param subMesh the sub mesh to render
      * @param batch the instances batch of the sub mesh
      * @param effectiveMeshReplacement the mesh used in place of this one, if any
      * @returns the draw wrapper, or null when the mesh must be rendered
      */
+    /**
+     * @internal Whether a full draw of the mesh notifies draw observers (onBeforeDrawObservable, in _draw), without creating the
+     * observable: a draw recorded by a snapshot is not encoded again for such a mesh, in its passes nor in the shadow maps
+     */
+    public _hasDrawObservers(): boolean {
+        return !!this._internalMeshDataInfo._onBeforeDrawObservable?.hasObservers();
+    }
+
     private _getUnchangedRecordedDraw(subMesh: SubMesh, batch: _InstancesBatch, effectiveMeshReplacement?: AbstractMesh): Nullable<DrawWrapper> {
         const material = subMesh.getMaterial();
         const info = this._internalMeshDataInfo;
@@ -2711,11 +2719,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.morphTargetManager ||
             this.bakedVertexAnimationManager ||
             this.ignoreCameraMaxZ ||
-            this.occlusionType !== AbstractMesh.OCCLUSION_TYPE_NONE ||
+            // without the occlusion queries module, occlusionType is undefined: no occlusion query
+            (this.occlusionType ?? AbstractMesh.OCCLUSION_TYPE_NONE) !== AbstractMesh.OCCLUSION_TYPE_NONE ||
             info._onBeforeRenderObservable?.hasObservers() ||
             info._onBeforeBindObservable?.hasObservers() ||
             info._onBetweenPassObservable?.hasObservers() ||
-            info._onAfterRenderObservable?.hasObservers()
+            info._onAfterRenderObservable?.hasObservers() ||
+            this._hasDrawObservers() ||
+            // the outline renderer draws the outline and the overlay of the mesh around its full draw, changing the depth, color and
+            // stencil states around it (its steps do nothing for the other meshes)
+            this.renderOutline ||
+            this.renderOverlay
         ) {
             return null;
         }
@@ -2736,7 +2750,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Whether a draw a snapshot recorded did not change since then: its per-draw values (what its effect sets when it binds: the
      * material's values, fog, shadow matrices...) are the same bytes a full bind of a draw of the same material wrote in this frame,
-     * and it has the same material (version, GPU textures), world matrix, visibility, sub mesh range, geometry and thin instance
+     * and it has the same material (version, GPU textures, the pipeline state it sets from plain fields), world matrix, visibility,
+     * sub mesh ranges (indices and vertices), geometry and thin instance
      * buffers and instance count; with lights, the lights were bound in this frame (their uniform buffers are shared: the first bind of the
      * frame writes them), and their shadow maps and the buffers their generators bind to receivers (the cascades of a camera) are the same
      * @param drawWrapper the draw wrapper of the recorded draw
@@ -2761,6 +2776,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedVisibility !== effectiveMesh.visibility ||
             drawWrapper._recordedStart !== subMesh.indexStart ||
             drawWrapper._recordedCount !== subMesh.indexCount ||
+            drawWrapper._recordedVerticesStart !== subMesh.verticesStart ||
+            drawWrapper._recordedVerticesCount !== subMesh.verticesCount ||
+            drawWrapper._recordedMaterialState !== material._getPipelineStateKey() ||
+            drawWrapper._recordedZOffset !== material.zOffset ||
+            drawWrapper._recordedZOffsetUnits !== material.zOffsetUnits ||
             drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
             drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0)
         ) {
@@ -2844,6 +2864,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         drawWrapper._recordedVisibility = effectiveMesh.visibility;
         drawWrapper._recordedStart = subMesh.indexStart;
         drawWrapper._recordedCount = subMesh.indexCount;
+        drawWrapper._recordedVerticesStart = subMesh.verticesStart;
+        drawWrapper._recordedVerticesCount = subMesh.verticesCount;
+        drawWrapper._recordedMaterialState = material._getPipelineStateKey();
+        drawWrapper._recordedZOffset = material.zOffset;
+        drawWrapper._recordedZOffsetUnits = material.zOffsetUnits;
         drawWrapper._recordedIndexBuffer = this._geometry?.getIndexBuffer() ?? null;
         const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
         recordedVertexBuffers.length = 0;
@@ -2910,10 +2935,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with
+        // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with,
+        // between the scene's steps before and after rendering a mesh, as a full draw is (the prepass renderer binds the attachments of
+        // the effect there, and restores them)
         if (engine._recordsDraws) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh, batch, effectiveMeshReplacement);
-            if (recordedDrawWrapper && engine._replayRecordedDraw(recordedDrawWrapper)) {
+            if (recordedDrawWrapper && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
+                const recordedEffect = recordedDrawWrapper.effect;
+                for (const step of scene._beforeRenderingMeshStage) {
+                    step.action(this, subMesh, batch, recordedEffect);
+                }
+                engine._replayRecordedDraw(recordedDrawWrapper);
+                for (const step of scene._afterRenderingMeshStage) {
+                    step.action(this, subMesh, batch, recordedEffect);
+                }
                 return this;
             }
         }

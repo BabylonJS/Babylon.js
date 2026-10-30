@@ -5,6 +5,7 @@ import { FreeCamera } from "core/Cameras/freeCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
+import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import "core/Meshes/thinInstanceMesh";
@@ -15,8 +16,10 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { Constants } from "core/Engines/constants";
 import { type Effect } from "core/Materials/effect";
 import { type Mesh } from "core/Meshes/mesh";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { type SubMesh } from "core/Meshes/subMesh";
 import { type Light } from "core/Lights/light";
 
@@ -174,6 +177,32 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(false);
     });
 
+    it("sees a changed vertex range, which unindexed and point draws use", () => {
+        subMesh.verticesCount -= 1;
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        subMesh.verticesStart += 1;
+        expect(unchanged()).toBe(false);
+    });
+
+    it("sees the pipeline state its material sets from plain fields, which do not mark it dirty", () => {
+        const changes = [
+            () => (material.disableDepthWrite = true),
+            () => (material.disableColorWrite = true),
+            () => (material.forceDepthWrite = true),
+            () => (material.depthFunction = Constants.LEQUAL),
+            () => (material.zOffset = 1),
+            () => (material.zOffsetUnits = 1),
+        ];
+        for (const change of changes) {
+            change();
+            expect(unchanged()).toBe(false);
+            fullDraw();
+            expect(unchanged()).toBe(true);
+        }
+    });
+
     it("needs its lights bound in the frame", () => {
         scene.incrementRenderId();
         expect(unchanged()).toBe(false);
@@ -280,6 +309,85 @@ describe("Mesh recorded draws", () => {
             mesh.thinInstanceSetBuffer("previousMatrix", matrices(10), 16, false);
             expect(mesh._canRecordThinInstances()).toBe(true);
         });
+    });
+
+    describe("what a draw needs around it to be encoded again without rendering the mesh", () => {
+        function recorded() {
+            return (mesh as any)._getUnchangedRecordedDraw(subMesh, mesh._getInstancesRenderList(subMesh._id));
+        }
+
+        beforeEach(() => {
+            vi.spyOn(material, "_canReplayRecordedDraw").mockReturnValue(true);
+            vi.spyOn(mesh, "_isRecordedDrawUnchanged").mockReturnValue(true);
+        });
+
+        it("encodes again an unchanged draw nothing runs around", () => {
+            expect(recorded()).toBe(subMesh._drawWrapper);
+        });
+
+        it("renders a mesh with an outline or an overlay, which the outline renderer draws around its full draw", () => {
+            mesh.renderOutline = true;
+            expect(recorded()).toBeNull();
+            mesh.renderOutline = false;
+            mesh.renderOverlay = true;
+            expect(recorded()).toBeNull();
+        });
+
+        it("encodes the draw between the scene's steps before and after rendering a mesh, as a full draw", () => {
+            vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+            vi.spyOn(engine, "_canEncodeRecordedDraw").mockReturnValue(true);
+            const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+            const component = { name: "steps" } as any;
+            const before = vi.fn();
+            const after = vi.fn();
+            scene._beforeRenderingMeshStage.registerStep(0, component, before);
+            scene._afterRenderingMeshStage.registerStep(0, component, after);
+
+            mesh.render(subMesh, false);
+            expect(replay).toHaveBeenCalledTimes(1);
+            expect(before).toHaveBeenCalledTimes(1);
+            expect(after).toHaveBeenCalledTimes(1);
+            expect(before.mock.invocationCallOrder[0]).toBeLessThan(replay.mock.invocationCallOrder[0]);
+            expect(after.mock.invocationCallOrder[0]).toBeGreaterThan(replay.mock.invocationCallOrder[0]);
+        });
+
+        it("renders a mesh with draw observers", () => {
+            mesh.onBeforeDrawObservable.add(() => {});
+            expect(recorded()).toBeNull();
+        });
+
+        it("reads an undefined occlusionType (without the occlusion queries module) as no occlusion query", () => {
+            Object.defineProperty(mesh, "occlusionType", { value: undefined, configurable: true, writable: true });
+            expect(recorded()).toBe(subMesh._drawWrapper);
+            mesh.occlusionType = AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC;
+            expect(recorded()).toBeNull();
+        });
+    });
+
+    it("is not encoded again in a shadow map for a mesh with draw observers, which a full draw notifies there too", () => {
+        const generator = new ShadowGenerator(256, new DirectionalLight("sun", new Vector3(0, -1, 0), scene));
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        vi.spyOn(subMesh, "_getDrawWrapper").mockReturnValue(drawWrapper);
+        vi.spyOn(mesh, "_isRecordedDrawUnchanged").mockReturnValue(true);
+        const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+        // the full path stops at once: its depth effect is not built here
+        vi.spyOn(generator, "isReady").mockReturnValue(false);
+
+        // a new frame for each draw: a sub mesh is drawn once per frame in a shadow map
+        scene.incrementRenderId();
+        (generator as any)._renderSubMeshForShadowMap(subMesh, false);
+        expect(replay).toHaveBeenCalledTimes(1);
+        mesh.onBeforeDrawObservable.add(() => {});
+        scene.incrementRenderId();
+        (generator as any)._renderSubMeshForShadowMap(subMesh, false);
+        expect(replay).toHaveBeenCalledTimes(1);
+    });
+
+    it("never encodes again without binding a material with unbind observers", () => {
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        expect(material._canReplayRecordedDraw()).toBe(true);
+        material.onUnBindObservable.add(() => {});
+        expect(material._canReplayRecordedDraw()).toBe(false);
     });
 
     it("checks nothing in Mesh.render unless a snapshot records with the recorded draws switched on", () => {

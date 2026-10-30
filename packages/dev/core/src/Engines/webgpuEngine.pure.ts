@@ -4122,7 +4122,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /** @internal */
-    public override _replayRecordedDraw(drawWrapper: DrawWrapper): boolean {
+    public override _canEncodeRecordedDraw(drawWrapper: DrawWrapper): boolean {
         const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
         const materialContext = drawWrapper.materialContext as Nullable<WebGPUMaterialContext>;
         const draw = drawContext?._recordedDraw;
@@ -4138,6 +4138,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         ) {
             return false;
         }
+        return true;
+    }
+
+    /** @internal */
+    public override _replayRecordedDraw(drawWrapper: DrawWrapper): boolean {
+        if (!this._canEncodeRecordedDraw(drawWrapper)) {
+            return false;
+        }
+        const draw = (drawWrapper.drawContext as WebGPUDrawContext)._recordedDraw!;
 
         const bundleList = this._bundleList;
         this._getCurrentRenderPass();

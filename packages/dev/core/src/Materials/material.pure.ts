@@ -1047,18 +1047,28 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     /**
      * @internal Whether a draw a snapshot recorded with this material can be encoded again without binding it: only WGSL (its values
-     * are in the effect's leftover uniform buffer, which the engine checks), and not when binding it runs code that can change on each
-     * draw (bind observers, plugins binding on each draw) or sets states outside of the pipeline (stencil, two passes)
+     * are in the effect's leftover uniform buffer, which the engine checks), and not when binding or unbinding it runs code that can
+     * change on each draw (bind and unbind observers, plugins binding on each draw) or sets states outside of the pipeline (stencil,
+     * two passes)
      */
     public _canReplayRecordedDraw(): boolean {
         return (
             this._shaderLanguage === ShaderLanguage.WGSL &&
             this._storeEffectOnSubMeshes &&
             !this._onBindObservable?.hasObservers() &&
+            !this._onUnBindObservable?.hasObservers() &&
             !this.pluginManager?._bindsOnEachDraw &&
             !this.stencil.enabled &&
             !(this.separateCullingPass && !this.backFaceCulling)
         );
+    }
+
+    /**
+     * @internal The plain fields the material applies to the pipeline state when it binds, packed in a number: changing them does not
+     * mark the material dirty, so a recorded draw compares them (with zOffset and zOffsetUnits) before it is encoded again
+     */
+    public _getPipelineStateKey(): number {
+        return (this.disableDepthWrite ? 1 : 0) | (this.disableColorWrite ? 2 : 0) | (this.forceDepthWrite ? 4 : 0) | (this.depthFunction << 3);
     }
 
     /**

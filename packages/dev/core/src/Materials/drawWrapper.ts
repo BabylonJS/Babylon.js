@@ -61,6 +61,16 @@ export class DrawWrapper {
     public _recordedStart = -1;
     /** @internal */
     public _recordedCount = -1;
+    /** @internal The vertex range, which unindexed and point draws use */
+    public _recordedVerticesStart = -1;
+    /** @internal */
+    public _recordedVerticesCount = -1;
+    /** @internal The plain fields its material applies to the pipeline state when it binds (Material._getPipelineStateKey) */
+    public _recordedMaterialState = -1;
+    /** @internal */
+    public _recordedZOffset = 0;
+    /** @internal */
+    public _recordedZOffsetUnits = 0;
     /** @internal */
     public _recordedIndexBuffer: Nullable<object> = null;
     /** @internal The vertex buffers of the geometry and of the thin instances */

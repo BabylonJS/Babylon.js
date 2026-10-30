@@ -1419,6 +1419,8 @@ export class ShadowGenerator implements IShadowGenerator {
             !renderingMesh.skeleton &&
             !renderingMesh.morphTargetManager &&
             !renderingMesh.bakedVertexAnimationManager &&
+            // a full draw of the mesh notifies its draw observers (Mesh._draw), in the shadow map too
+            !renderingMesh._hasDrawObservers() &&
             !(isTransparent && this.enableSoftTransparentShadow) &&
             !this.onBeforeShadowMapRenderMeshObservable.hasObservers() &&
             !this.onBeforeShadowMapRenderObservable.hasObservers() &&

@@ -2601,6 +2601,14 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * @internal Whether _replayRecordedDraw would encode again the draw last recorded for this draw wrapper now: a mesh runs the scene's
+     * steps around its draw only once it knows the draw will not be rendered normally instead
+     */
+    public _canEncodeRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+        return false;
+    }
+
+    /**
      * @internal Whether the draw just done for a draw wrapper wrote its per-draw values (what its effect sets when it binds) in a
      * slot of its own, which a draw recorded with it keeps referencing
      */
