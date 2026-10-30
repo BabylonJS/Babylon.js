@@ -1,5 +1,5 @@
-﻿uniform sampler2D textureSampler;
-uniform sampler2D lightScatteringSampler;
+﻿uniform highp sampler2D textureSampler;
+uniform highp sampler2D lightScatteringSampler;
 
 uniform float decay;
 uniform float exposure;

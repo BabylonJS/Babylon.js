@@ -1,8 +1,10 @@
+import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { PostProcess } from "core/PostProcesses/postProcess.pure";
 import { VolumetricLightScatteringPostProcess } from "core/PostProcesses/volumetricLightScatteringPostProcess.pure";
 import { Scene } from "core/scene";
+import { volumetricLightScatteringPixelShader } from "core/Shaders/volumetricLightScattering.fragment";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 function createReadyEffect(engine: NullEngine): any {
@@ -46,6 +48,27 @@ describe("VolumetricLightScatteringPostProcess", () => {
         vi.restoreAllMocks();
         scene.dispose();
         engine.dispose();
+    });
+
+    it("keeps unsigned-byte textures when no texture type is provided", () => {
+        postProcess = new VolumetricLightScatteringPostProcess("vls", 1, null, undefined, undefined, undefined, undefined, undefined, scene);
+        postProcess.resize(64, 64);
+
+        expect(postProcess.inputTexture.texture?.type).toBe(Constants.TEXTURETYPE_UNSIGNED_BYTE);
+        expect(postProcess.getPass().getInternalTexture()?.type).toBe(Constants.TEXTURETYPE_UNSIGNED_BYTE);
+    });
+
+    it.each([Constants.TEXTURETYPE_HALF_FLOAT, Constants.TEXTURETYPE_FLOAT])("uses texture type %i for both the scene input and scattering pass", (textureType) => {
+        postProcess = new VolumetricLightScatteringPostProcess("vls", 1, null, undefined, undefined, undefined, undefined, undefined, scene, textureType);
+        postProcess.resize(64, 64);
+
+        expect(postProcess.inputTexture.texture?.type).toBe(textureType);
+        expect(postProcess.getPass().getInternalTexture()?.type).toBe(textureType);
+    });
+
+    it("uses high precision samplers for HDR scene and scattering colors", () => {
+        expect(volumetricLightScatteringPixelShader.shader).toMatch(/uniform\s+highp\s+sampler2D\s+textureSampler\s*;/);
+        expect(volumetricLightScatteringPixelShader.shader).toMatch(/uniform\s+highp\s+sampler2D\s+lightScatteringSampler\s*;/);
     });
 
     for (const { name, isWebGPU, forceGLSL, expectedShaderLanguage, expectedUseWebGPU } of [
