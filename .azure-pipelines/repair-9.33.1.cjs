@@ -41,7 +41,7 @@ function publicPackages() {
 }
 
 async function registry(name, requestedVersion) {
-    const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}/${requestedVersion}`, {
+    const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}/${requestedVersion}?recovery=${crypto.randomUUID()}`, {
         signal: AbortSignal.timeout(30000),
         headers: { "Cache-Control": "no-cache" },
     });
@@ -140,7 +140,8 @@ async function main() {
                 assert(await registry(pkg.name, "9.33.0"), `Refusing to first-publish ${pkg.name}`);
                 // Directory publication preserves the original gitHead; verify its bytes against the retained pack.
                 execFileSync("npm", ["publish", "--workspace", pkg.name, "--access=public", "--loglevel=error"], { stdio: "inherit" });
-                for (let attempt = 0; attempt < 12; ++attempt) {
+                console.log(`Waiting up to 10 minutes for npm registry visibility of ${pkg.name}@${version}.`);
+                for (let attempt = 0; attempt < 120; ++attempt) {
                     published = await registry(pkg.name, version);
                     if (published) {
                         break;
