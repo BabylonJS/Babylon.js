@@ -1,215 +1,214 @@
-# =============================================================================
-# Publish Pipeline (Definition ID: 15)
-# Converted from Azure DevOps Classic Pipeline
-#
-# Triggered when .build/config.json is changed on master.
-# Handles versioning, building, publishing to npm, creating GitHub releases,
-# and pushing tags.
-#
-# Variable groups:
-#   - BabylonJS-CI-Infrastructure
-#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
-#   - NPM_Publish (NPM_TOKEN)
-#
-# Secret variables (configure in pipeline UI):
-#   - GitHubPAT
-# =============================================================================
-
-trigger:
-    batch: true
-    branches:
-        include:
-            - master
-    paths:
-        include:
-            - .build/config.json
-
+# Temporary 9.33.1 repair. Run definition 50 manually from this branch only.
+# Never merge this pipeline into master.
+trigger: none
 pr: none
 
 variables:
     - group: BabylonJS-CI-Infrastructure
     - group: BabylonJS-Deployment
     - group: NPM_Publish
+    - name: RECOVERY_SCRIPT
+      value: $(Agent.TempDirectory)/repair-9.33.1.cjs
+    - name: ARTIFACT_DIRECTORY
+      value: $(Build.ArtifactStagingDirectory)/release-9.33.1
 
 pool:
     vmImage: ubuntu-latest
 
 jobs:
-    - job: PublishToNpm
-      displayName: "Publish to npm"
-      timeoutInMinutes: 120
+    - job: RecoverRelease9331
+      displayName: "Resume the original 9.33.1 release"
+      timeoutInMinutes: 180
       steps:
           - checkout: self
             clean: true
             fetchDepth: 0
-            fetchTags: true
+            fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 24.x"
+            displayName: "Use the original Node 24.22.1 / npm 11.19.1"
             inputs:
-                version: "24.x"
+                version: "24.22.1"
+
+          - bash: |
+                set -euo pipefail
+                cp .azure-pipelines/repair-9.33.1.cjs "$RECOVERY_SCRIPT"
+                node "$RECOVERY_SCRIPT" checkout
+                node "$RECOVERY_SCRIPT" plan
+            displayName: "Pin the recovered source and check every existing npm version"
+
+          - bash: |
+                set -euo pipefail
+                npm ci
+                npm run format:fix
+                npm run build:umd
+                npm run build:es6
+                npm run build -w @tools/tests
+                npm run generate-file-size-report -w @tools/tests
+                npm run prepare-snapshot
+                node "$RECOVERY_SCRIPT" pack
+            displayName: "Rebuild the original release and retain the missing npm packages"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: |
+                set -euo pipefail
+                requiredFiles=(
+                    babylon.js
+                    babylon.max.js
+                    babylon.d.ts
+                    documentation.d.ts
+                    gui/babylon.gui.min.js
+                    loaders/babylonjs.loaders.min.js
+                    materialsLibrary/babylonjs.materials.min.js
+                    nodeEditor/babylon.nodeEditor.js
+                    nodeGeometryEditor/babylon.nodeGeometryEditor.js
+                    nodeParticleEditor/babylon.nodeParticleEditor.js
+                    nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js
+                    postProcessesLibrary/babylonjs.postProcess.min.js
+                    proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js
+                    serializers/babylonjs.serializers.min.js
+                    draco_wasm_wrapper_gltf.js
+                    draco_decoder_gltf.wasm
+                    timestamp.js
+                    fileSizes.json
+                )
+                for file in "${requiredFiles[@]}"; do
+                    if [[ ! -s ".snapshot/$file" ]]; then
+                        echo "##vso[task.logissue type=error]Snapshot is missing or has an empty $file."
+                        exit 1
+                    fi
+                done
+                printf '%s\n' "${requiredFiles[@]}" > "$ARTIFACT_DIRECTORY/required-files.txt"
+                (cd .snapshot && zip -qr "$ARTIFACT_DIRECTORY/snapshot.zip" .)
+                zip -qr "$ARTIFACT_DIRECTORY/cdnSnapshot.zip" .snapshot
+                unzip -tq "$ARTIFACT_DIRECTORY/snapshot.zip"
+                unzip -tq "$ARTIFACT_DIRECTORY/cdnSnapshot.zip"
+                (cd "$ARTIFACT_DIRECTORY" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
+            displayName: "Validate and archive CDN contents and recovery provenance"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Retain recovery inputs before any publication"
+            inputs:
+                targetPath: "$(ARTIFACT_DIRECTORY)"
+                artifact: "release-9.33.1-recovery-$(System.JobAttempt)"
 
           - bash: |
                 set -euo pipefail
                 set +x
-
-                git config --global user.email "$(BOT_EMAIL)"
-                git config --global user.name "Babylon.js Platform"
-
                 repoUrl="https://github.com/BabylonJS/Babylon.js.git"
+                git config --local user.email "$BOT_EMAIL"
+                git config --local user.name "Babylon.js Platform"
                 git remote set-url origin "$repoUrl"
-
                 auth=$(printf 'x-access-token:%s' "$GITHUB_PAT" | base64 | tr -d '\r\n')
                 echo "##vso[task.setsecret]${auth}"
-                git config --local --replace-all \
-                    "http.${repoUrl}.extraheader" \
-                    "Authorization: Basic ${auth}"
+                git config --local --replace-all "http.${repoUrl}.extraheader" "Authorization: Basic ${auth}"
 
-                git fetch origin
-                git checkout "$(Build.SourceBranchName)"
-            displayName: "prepare git"
+                releaseCommit=$(node -p "require(process.env.ARTIFACT_DIRECTORY + '/source.json').releaseCommit")
+                tag=$(git ls-remote --tags origin refs/tags/9.33.1)
+                if [[ -n "$tag" ]]; then
+                    git fetch --no-tags origin refs/tags/9.33.1
+                    [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$releaseCommit" ]]
+                else
+                    git tag -a 9.33.1 "$releaseCommit" -m "9.33.1"
+                    git push origin refs/tags/9.33.1
+                fi
+                git fetch --no-tags origin refs/tags/9.33.1
+                [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$releaseCommit" ]]
+            displayName: "Restore and verify the tag at the original npm gitHead"
             env:
                 GITHUB_PAT: $(GitHubPAT)
 
-          - bash: npm ci
-            displayName: "npm ci"
+          - bash: |
+                set -euo pipefail
+                set +x
+                printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" > ./.npmrc
+                node "$RECOVERY_SCRIPT" publish
+                node "$RECOVERY_SCRIPT" verify-npm
+            displayName: "Publish only missing established packages with existing npm authentication"
             env:
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-                PUPPETEER_SKIP_DOWNLOAD: "true"
-
-          - bash: node ./scripts/updateVersion.js $(Build.SourceBranchName)
-            displayName: "run updater"
-            env:
-                GITHUBPAT: $(GitHubPAT)
-
-          - bash: npm install
-            displayName: "Update package-lock.json"
-            env:
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-                PUPPETEER_SKIP_DOWNLOAD: "true"
-
-          - bash: node ./scripts/tagVersion.js $(Build.SourceBranchName)
-            displayName: "Tag the version"
-            env:
-                GITHUBPAT: $(GitHubPAT)
-
-          - bash: npm run format:fix
-            displayName: "fix formatting"
-            env:
-                GITHUBPAT: $(GitHubPAT)
-
-          - bash: npm run test:unit
-            displayName: "unit tests"
-            retryCountOnTaskFailure: 2
-
-          - bash: npm run build:umd
-            displayName: "npm build umd"
-
-          - bash: npm run build:es6
-            displayName: "npm build es6"
-
-          - bash: echo "//registry.npmjs.org/:_authToken=$(NPM_TOKEN)" > ./.npmrc
-            displayName: "write npmrc"
-
-          - bash: npm publish -ws --access=public
-            displayName: "publish latest stable (master branch)"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
-
-          - bash: npm publish -ws --tag preview
-            displayName: "publish preview (preview branch)"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'preview'))
-
-          - bash: git fetch origin
-            displayName: "fetch origin"
-
-          - bash: git merge origin/$(Build.SourceBranchName)
-            displayName: "pull master"
-
-          - bash: git push origin $(Build.SourceBranchName) --tags
-            displayName: "push to git"
+                NPM_TOKEN: $(NPM_TOKEN)
 
           - bash: |
                 set -euo pipefail
-                pv=$(jq -r '.version' ./packages/public/umd/babylonjs/package.json)
-                releaseCommit=$(git rev-parse "${pv}^{commit}")
-                echo "##vso[task.setvariable variable=PackageVersion]${pv}"
-                echo "##vso[task.setvariable variable=ReleaseCommit]${releaseCommit}"
-            displayName: "Get release version and commit"
+                curl --fail-with-body --silent --show-error --connect-timeout 30 --max-time 600 \
+                    "$DEPLOYMENT_SERVER/$DEPLOY_ENDPOINT_UPLOAD" \
+                    -H "Authorization: $DEPLOY_TOKEN" \
+                    -F "path=cdn/master/v9.33.1" \
+                    -F "storageAccount=$SNAPSHOTS_STORAGE_ACCOUNT" \
+                    -F "saveZip=true" \
+                    -F "zip=@$ARTIFACT_DIRECTORY/snapshot.zip" \
+                    --output "$RESPONSE_FILE"
+                node -e '
+                    const fs = require("node:fs");
+                    if (JSON.parse(fs.readFileSync(process.env.RESPONSE_FILE, "utf8")).success !== true) {
+                        throw new Error("The deployment server did not confirm a successful upload");
+                    }
+                '
+            displayName: "Upload only CDN v9.33.1"
+            env:
+                DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
+                DEPLOY_ENDPOINT_UPLOAD: $(DEPLOY_ENDPOINT_UPLOAD)
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                SNAPSHOTS_STORAGE_ACCOUNT: $(SNAPSHOTS_STORAGE_ACCOUNT)
+                RESPONSE_FILE: $(Agent.TempDirectory)/cdn-upload-response.json
 
           - bash: |
-                npm run prepare-snapshot
+                set -euo pipefail
+                curl --fail-with-body --silent --show-error --connect-timeout 30 --max-time 120 \
+                    "$DEPLOYMENT_SERVER/$DEPLOY_ENDPOINT_PURGE?endpoint=$CDN_ENDPOINT_CDN&profileName=$CDN_PROFILE_CDN" \
+                    -X POST -H "Authorization: $DEPLOY_TOKEN"
+            displayName: "Purge the existing main CDN endpoint"
+            env:
+                DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
+                DEPLOY_ENDPOINT_PURGE: $(DEPLOY_ENDPOINT_PURGE)
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                CDN_ENDPOINT_CDN: $(CDN_ENDPOINT_CDN)
+                CDN_PROFILE_CDN: $(CDN_PROFILE_CDN)
 
-                zip -r $(Build.ArtifactStagingDirectory)/cdnSnapshot.zip .snapshot
-            displayName: "prepare snapshot"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+          - bash: |
+                set -euo pipefail
+                deadline=$((SECONDS + 600))
+                while IFS= read -r file; do
+                    url="https://cdn.babylonjs.com/v9.33.1/$file"
+                    while true; do
+                        if curl --fail --silent --show-error --connect-timeout 10 --max-time 60 \
+                            "$url" --output "$VERIFY_FILE" && cmp -s ".snapshot/$file" "$VERIFY_FILE"; then
+                            echo "Verified $url"
+                            break
+                        fi
+                        if (( SECONDS >= deadline )); then
+                            echo "##vso[task.logissue type=error]CDN contents do not match the recovery snapshot: $url"
+                            exit 1
+                        fi
+                        sleep 10
+                    done
+                done < "$ARTIFACT_DIRECTORY/required-files.txt"
+            displayName: "Verify public CDN bytes match the retained snapshot"
+            env:
+                VERIFY_FILE: $(Agent.TempDirectory)/cdn-recovery-verification
 
-          - task: GitHubRelease@1
-            displayName: "GitHub release (create)"
-            continueOnError: true
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "BabylonJS/Babylon.js"
-                action: create
-                target: "$(ReleaseCommit)"
-                tagSource: userSpecifiedTag
-                tag: "$(PackageVersion)"
-                assets: "$(Build.ArtifactStagingDirectory)/cdnSnapshot.zip"
-                isDraft: false
-                isPreRelease: false
-                addChangeLog: false
-                releaseNotesFilePath: ".build/release-notes.md"
+          - bash: |
+                set -euo pipefail
+                node "$RECOVERY_SCRIPT" baseline
+            displayName: "Restore master version metadata without the temporary pipeline"
+            env:
+                BASELINE_DIRECTORY: $(Agent.TempDirectory)/release-9.33.1-master
 
-          - script: |
-                cd .snapshot
-                zip -r ../snapshot.zip *
-                cd ..
-
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-                  -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/master/v$(PackageVersion)" \
-                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "saveZip=true" \
-                  -F "zip=@snapshot.zip"
-            displayName: "Update snapshot"
-
-          - task: Npm@1
-            displayName: "run build -w @tools/tests"
-            inputs:
-                command: custom
-                customCommand: "run build -w @tools/tests"
-
-          - task: Npm@1
-            displayName: "npm generate modules size"
-            inputs:
-                command: custom
-                customCommand: "run generate-file-size-report -w @tools/tests"
-
-          - script: |
-                # filesize
-                cd packages/tools/tests/dist
-                zip ../../../../fileSize.zip fileSizes.json
-                cd ../../../..
-
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-                  -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/master/v$(PackageVersion)" \
-                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "zip=@fileSize.zip"
-            displayName: "Update snapshot modules size"
-
-          # DISABLED in classic pipeline:
-          # - script: |
-          #     node ./packages/public/@babylonjs/inspector-v2/prepublish.cjs
-          #     node ./packages/public/umd/babylonjs-inspector-v2/prepublish.cjs
-          #   displayName: 'Run inspector v2 preview script'
-
-          # - script: npm install
-          #   displayName: 'npm install (for @babylonjs/inspector-v2 -> @babylonjs/inspector)'
-
-          # - script: |
-          #     npm publish -w @babylonjs/inspector --tag preview
-          #     npm publish -w babylonjs-inspector --tag preview
-          #   displayName: 'publish inspector v2 preview'
+          - bash: |
+                set -euo pipefail
+                releaseCommit=$(node -p "require(process.env.ARTIFACT_DIRECTORY + '/source.json').releaseCommit")
+                if gh release view 9.33.1 --repo BabylonJS/Babylon.js --json isDraft,isPrerelease > "$RELEASE_STATE"; then
+                    jq -e '(.isDraft or .isPrerelease) | not' "$RELEASE_STATE"
+                else
+                    gh release create 9.33.1 --repo BabylonJS/Babylon.js --verify-tag \
+                        --target "$releaseCommit" --title "9.33.1" --notes-file "$ARTIFACT_DIRECTORY/release-notes.md"
+                fi
+                gh release upload 9.33.1 "$ARTIFACT_DIRECTORY/cdnSnapshot.zip" --repo BabylonJS/Babylon.js --clobber
+                gh release view 9.33.1 --repo BabylonJS/Babylon.js --json url,tagName,assets \
+                    --jq '{url,tagName,assets:[.assets[].name]}'
+            displayName: "Restore the GitHub release after npm and CDN verification"
+            env:
+                GH_TOKEN: $(GitHubPAT)
+                RELEASE_STATE: $(Agent.TempDirectory)/release-9.33.1-state.json
