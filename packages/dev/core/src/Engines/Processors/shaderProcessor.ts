@@ -118,7 +118,10 @@ function ExtractOperation(expression: string) {
     }
 
     if (indexOperator === -1) {
-        return new ShaderDefineIsDefinedOperator(expression);
+        // a define alone, negated or not: #if !X is #if !defined(X), as #if X is #if defined(X) (it used to test a define named "!X")
+        const define = expression.trim();
+        const not = define[0] === "!";
+        return new ShaderDefineIsDefinedOperator(not ? define.substring(1).trim() : define, not);
     }
 
     const define = expression.substring(0, indexOperator).trim();
