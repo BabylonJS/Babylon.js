@@ -115,6 +115,22 @@ deploy tools.
 
 Linked by: ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-publish, cd-tools.
 
+### Versioned CDN recovery
+
+Create a manual Azure DevOps pipeline from `.azure-pipelines/cd-recover-cdn.yml`
+and authorize it for `BabylonJS-CI-Infrastructure` and `BabylonJS-Deployment`.
+It does not need `NPM_Publish`, `GitHubPAT`, or a GitHub release service connection.
+
+Run it with `releaseVersion` set to the existing stable release tag (default
+`9.33.0`). It builds that exact tag, saves the validated snapshot as the
+`cdn-recovery` pipeline artifact, and overwrites only `cdn/master/v<releaseVersion>`.
+It then requests the existing endpoint-wide main CDN purge and waits up to ten
+minutes for the required public files to match the rebuilt snapshot.
+
+This does not publish npm packages, update versions, push commits or tags, change
+the unversioned CDN files, or replace GitHub release assets. Creating or running
+this pipeline requires an authorized maintainer; adding the YAML does not deploy.
+
 ## Variable Group: `NPM_Publish`
 
 npm registry credentials used to publish packages.

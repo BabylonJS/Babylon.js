@@ -1,0 +1,169 @@
+# Manually rebuild a published release's versioned CDN directory without publishing to npm.
+trigger: none
+pr: none
+
+parameters:
+    - name: releaseVersion
+      displayName: "Published release tag to recover"
+      type: string
+      default: "9.33.0"
+
+variables:
+    - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-Deployment
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    - job: RecoverVersionedCdn
+      displayName: "Recover versioned CDN"
+      timeoutInMinutes: 120
+      steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 1
+            fetchTags: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - bash: |
+                set -euo pipefail
+
+                if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "##vso[task.logissue type=error]Expected a stable release tag, such as 9.33.0."
+                    exit 1
+                fi
+
+                git fetch --no-tags https://github.com/BabylonJS/Babylon.js.git "refs/tags/${RELEASE_VERSION}"
+                git checkout --detach FETCH_HEAD
+                node -e '
+                    const version = require("./packages/public/umd/babylonjs/package.json").version;
+                    if (version !== process.env.RELEASE_VERSION) {
+                        throw new Error(`Tag package version ${version} does not match ${process.env.RELEASE_VERSION}`);
+                    }
+                '
+                git rev-parse HEAD | tee "$ARTIFACT_DIRECTORY/release-commit.txt"
+            displayName: "Check out the exact release tag"
+            env:
+                RELEASE_VERSION: ${{ parameters.releaseVersion }}
+                ARTIFACT_DIRECTORY: $(Build.ArtifactStagingDirectory)
+
+          - bash: npm ci
+            displayName: "Install release dependencies"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: |
+                set -euo pipefail
+                npm run build:umd
+                npm run build:es6
+                npm run prepare-snapshot
+            displayName: "Build the release snapshot"
+
+          - bash: |
+                set -euo pipefail
+
+                requiredFiles=(
+                    babylon.js
+                    babylon.max.js
+                    babylon.d.ts
+                    documentation.d.ts
+                    loaders/babylonjs.loaders.min.js
+                    gui/babylon.gui.min.js
+                    serializers/babylonjs.serializers.min.js
+                    draco_wasm_wrapper_gltf.js
+                    draco_decoder_gltf.wasm
+                    timestamp.js
+                )
+                for file in "${requiredFiles[@]}"; do
+                    if [[ ! -s ".snapshot/$file" ]]; then
+                        echo "##vso[task.logissue type=error]Snapshot is missing or has an empty $file."
+                        exit 1
+                    fi
+                done
+                printf '%s\n' "${requiredFiles[@]}" > "$ARTIFACT_DIRECTORY/required-files.txt"
+
+                cd .snapshot
+                zip -qr "$ARTIFACT_DIRECTORY/snapshot.zip" .
+                unzip -tq "$ARTIFACT_DIRECTORY/snapshot.zip"
+            displayName: "Validate and archive the snapshot"
+            env:
+                ARTIFACT_DIRECTORY: $(Build.ArtifactStagingDirectory)
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Save the recovery snapshot and release commit"
+            inputs:
+                targetPath: "$(Build.ArtifactStagingDirectory)"
+                artifact: "cdn-recovery"
+
+          - bash: |
+                set -euo pipefail
+
+                curl --fail-with-body --silent --show-error --connect-timeout 30 --max-time 600 \
+                    "$DEPLOYMENT_SERVER/$DEPLOY_ENDPOINT_UPLOAD" \
+                    -H "Authorization: Bearer $DEPLOY_TOKEN" \
+                    -F "path=cdn/master/v${RELEASE_VERSION}" \
+                    -F "storageAccount=$SNAPSHOTS_STORAGE_ACCOUNT" \
+                    -F "saveZip=true" \
+                    -F "zip=@$ARTIFACT_DIRECTORY/snapshot.zip" \
+                    --output "$RESPONSE_FILE"
+                node -e '
+                    const fs = require("node:fs");
+                    if (JSON.parse(fs.readFileSync(process.env.RESPONSE_FILE, "utf8")).success !== true) {
+                        throw new Error("The deployment server did not confirm a successful upload");
+                    }
+                '
+            displayName: "Upload only the versioned CDN directory"
+            env:
+                RELEASE_VERSION: ${{ parameters.releaseVersion }}
+                ARTIFACT_DIRECTORY: $(Build.ArtifactStagingDirectory)
+                DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
+                DEPLOY_ENDPOINT_UPLOAD: $(DEPLOY_ENDPOINT_UPLOAD)
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                SNAPSHOTS_STORAGE_ACCOUNT: $(SNAPSHOTS_STORAGE_ACCOUNT)
+                RESPONSE_FILE: $(Agent.TempDirectory)/cdn-upload-response.json
+
+          - bash: |
+                set -euo pipefail
+
+                # The existing purge API is endpoint-wide and returns before cache propagation completes.
+                curl --fail-with-body --silent --show-error --connect-timeout 30 --max-time 120 \
+                    "$DEPLOYMENT_SERVER/$DEPLOY_ENDPOINT_PURGE?endpoint=$CDN_ENDPOINT_CDN&profileName=$CDN_PROFILE_CDN" \
+                    -X POST -H "Authorization: Bearer $DEPLOY_TOKEN"
+            displayName: "Purge the main CDN endpoint"
+            env:
+                DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
+                DEPLOY_ENDPOINT_PURGE: $(DEPLOY_ENDPOINT_PURGE)
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                CDN_ENDPOINT_CDN: $(CDN_ENDPOINT_CDN)
+                CDN_PROFILE_CDN: $(CDN_PROFILE_CDN)
+
+          - bash: |
+                set -euo pipefail
+
+                deadline=$((SECONDS + 600))
+                while IFS= read -r file; do
+                    url="https://cdn.babylonjs.com/v${RELEASE_VERSION}/$file"
+                    while true; do
+                        if curl --fail --silent --show-error --connect-timeout 10 --max-time 60 \
+                            "$url" --output "$VERIFY_FILE" && cmp -s ".snapshot/$file" "$VERIFY_FILE"; then
+                            echo "Verified $url"
+                            break
+                        fi
+                        if (( SECONDS >= deadline )); then
+                            echo "##vso[task.logissue type=error]CDN contents do not match the recovery snapshot: $url"
+                            exit 1
+                        fi
+                        sleep 10
+                    done
+                done < "$ARTIFACT_DIRECTORY/required-files.txt"
+            displayName: "Verify public CDN files match the snapshot"
+            env:
+                RELEASE_VERSION: ${{ parameters.releaseVersion }}
+                ARTIFACT_DIRECTORY: $(Build.ArtifactStagingDirectory)
+                VERIFY_FILE: $(Agent.TempDirectory)/cdn-recovery-verification
