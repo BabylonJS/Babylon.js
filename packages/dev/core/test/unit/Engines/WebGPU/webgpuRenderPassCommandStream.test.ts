@@ -5,10 +5,12 @@ import { type Nullable } from "core/types";
 import {
     ApplyWebGPURenderPassDrawCommand,
     type IWebGPURenderPassCommandRecorderProvider,
+    type IWebGPURenderPassCommandStreamDisableInfo,
     type IWebGPURenderPassIndexedDrawCommand,
     type IWebGPURenderPassNonIndexedDrawCommand,
     WebGPURenderPassCommandOpcode,
     WebGPURenderPassCommandStream,
+    WebGPURenderPassCommandStreamMaxDrawsPerBatch,
     WebGPURenderPassCommandStreamProtocolVersion,
     WebGPURenderPassDrawKind,
 } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
@@ -176,6 +178,15 @@ function parseOpcodes(words: number[]): number[] {
         }
     }
     return opcodes;
+}
+
+function getRetainedResources(stream: WebGPURenderPassCommandStream): Nullable<object>[] {
+    const internals = stream as unknown as { _pendingResources: Nullable<object>[]; _pendingResourceCount: number };
+    return internals._pendingResources.slice(0, internals._pendingResourceCount);
+}
+
+function setRecorder(renderPass: GPURenderPassEncoder, recorder: () => boolean): void {
+    (renderPass as GPURenderPassEncoder & { _recordCommands: unknown })._recordCommands = vi.fn(recorder);
 }
 
 describe("WebGPURenderPassCommandStream", () => {
@@ -522,5 +533,225 @@ describe("WebGPURenderPassCommandStream", () => {
         } finally {
             errorSpy.mockRestore();
         }
+    });
+
+    it("retains every referenced backend object until the host has consumed the batch", () => {
+        const { renderPass } = createRecordingRenderPass();
+        const stream = createStream();
+        const pipeline = createResource<GPURenderPipeline>(100);
+        const bindGroups = [createResource<GPUBindGroup>(201), createResource<GPUBindGroup>(202)];
+        const vertexBuffers = [createVertexBuffer(301), createVertexBuffer(302, 8, false)];
+        const indexBuffer = createDataBuffer(401);
+        const indirectDrawBuffer = createResource<GPUBuffer>(501);
+        const command = createCommand({ renderPass, pipeline, bindGroups, vertexBuffers, indexBuffer, indirectDrawBuffer });
+
+        expect(stream.tryAppend(command)).toBe(true);
+        // A second draw with unchanged state only references the indirect buffer again.
+        expect(stream.tryAppend(command)).toBe(true);
+
+        expect(getRetainedResources(stream)).toEqual([
+            pipeline,
+            indexBuffer.underlyingResource,
+            vertexBuffers[0].effectiveBuffer!.underlyingResource,
+            vertexBuffers[1].effectiveBuffer!.underlyingResource,
+            bindGroups[0],
+            bindGroups[1],
+            indirectDrawBuffer,
+            indirectDrawBuffer,
+        ]);
+
+        expect(stream.flush()).toBe(true);
+
+        // Released, not shrunk: the slots are cleared so the objects can be collected.
+        const internals = stream as unknown as { _pendingResources: Nullable<object>[] };
+        expect(getRetainedResources(stream)).toEqual([]);
+        expect(internals._pendingResources.every((resource) => resource === null)).toBe(true);
+    });
+
+    it("replays a rejected batch through direct encoder calls in encoding order", () => {
+        const { renderPass, records, calls } = createRecordingRenderPass(false);
+        const onDisabled = vi.fn();
+        const provider = createProvider(true, "decoder rejected opcode");
+        provider.onDisabled = onDisabled;
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass, start: 0 }))).toBe(true);
+            expect(stream.tryAppend(createCommand({ renderPass, start: 36, bindGroups: [createResource<GPUBindGroup>(201), createResource<GPUBindGroup>(203)] }))).toBe(true);
+            expect(stream.flush()).toBe(false);
+
+            expect(records).toHaveLength(1);
+            expect(calls).toEqual([
+                ["setPipeline", 100],
+                ["setIndexBuffer", 401, 1, 0],
+                ["setVertexBuffer", 0, 301, 0],
+                ["setVertexBuffer", 1, 302, 8],
+                ["setBindGroup", 0, 201],
+                ["setBindGroup", 1, 202],
+                ["drawIndexed", 36, 2, 0, 0, 0],
+                ["setBindGroup", 1, 203],
+                ["drawIndexed", 36, 2, 36, 0, 0],
+            ]);
+            expect(errorSpy).toHaveBeenCalledTimes(1);
+            expect(onDisabled).toHaveBeenCalledTimes(1);
+            expect(onDisabled).toHaveBeenCalledWith({
+                reason: "recording-rejected",
+                message: expect.stringContaining("decoder rejected opcode"),
+                hostError: "decoder rejected opcode",
+                replayedDrawCount: 2,
+            });
+
+            // Disabled afterwards: nothing is retained and later draws go straight to the encoder.
+            expect(getRetainedResources(stream)).toEqual([]);
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(false);
+            expect(stream.flush()).toBe(false);
+            expect(records).toHaveLength(1);
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("replays non-indexed and indirect draws from the retained objects", () => {
+        const { renderPass, calls } = createRecordingRenderPass(false);
+        const stream = createStream();
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createNonIndexedCommand({ renderPass }))).toBe(true);
+            expect(stream.tryAppend(createNonIndexedCommand({ renderPass, indirectDrawBuffer: createResource<GPUBuffer>(502) }))).toBe(true);
+            expect(stream.tryAppend(createCommand({ renderPass, indirectDrawBuffer: createResource<GPUBuffer>(501) }))).toBe(true);
+            expect(stream.flush()).toBe(false);
+
+            expect(calls.filter((call) => call[0].startsWith("draw"))).toEqual([
+                ["draw", 12, 1, 4, 0],
+                ["drawIndirect", 502, 0],
+                ["drawIndexedIndirect", 501, 0],
+            ]);
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("treats a throwing host recorder as a rejected batch", () => {
+        const { renderPass, calls } = createRecordingRenderPass();
+        setRecorder(renderPass, () => {
+            throw new Error("native decoder panicked");
+        });
+        const onDisabled = vi.fn();
+        const provider = createProvider();
+        provider.onDisabled = onDisabled;
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(true);
+            expect(() => stream.flush()).not.toThrow();
+
+            expect(calls.map((call) => call[0])).toContain("drawIndexed");
+            expect(errorSpy).toHaveBeenCalledTimes(1);
+            expect(onDisabled).toHaveBeenCalledWith(
+                expect.objectContaining({ reason: "recording-threw", message: expect.stringContaining("native decoder panicked"), replayedDrawCount: 1 })
+            );
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("reports a protocol mismatch through the provider with nothing replayed", () => {
+        const { renderPass, calls } = createRecordingRenderPass();
+        const onDisabled = vi.fn();
+        const provider = createProvider();
+        provider.protocolVersion = WebGPURenderPassCommandStreamProtocolVersion + 1;
+        provider.onDisabled = onDisabled;
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(false);
+
+            expect(calls).toHaveLength(0);
+            expect(onDisabled).toHaveBeenCalledTimes(1);
+            expect(onDisabled).toHaveBeenCalledWith(expect.objectContaining({ reason: "protocol-mismatch", hostError: undefined, replayedDrawCount: 0 }));
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("invokes onDisabled on its provider so class-based handlers keep their state", () => {
+        class StatefulProvider implements IWebGPURenderPassCommandRecorderProvider {
+            public protocolVersion = WebGPURenderPassCommandStreamProtocolVersion;
+            public enabled = true;
+            public reports: IWebGPURenderPassCommandStreamDisableInfo[] = [];
+
+            public isEnabled(): boolean {
+                return this.enabled;
+            }
+
+            public getResourceId(resource: Nullable<object>): number {
+                return getBackendResourceId(resource);
+            }
+
+            public onDisabled(info: IWebGPURenderPassCommandStreamDisableInfo): void {
+                this.enabled = false;
+                this.reports.push(info);
+            }
+        }
+
+        const { renderPass, calls } = createRecordingRenderPass(false);
+        const provider = new StatefulProvider();
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(true);
+            expect(stream.flush()).toBe(false);
+
+            expect(provider.enabled).toBe(false);
+            expect(provider.reports).toHaveLength(1);
+            expect(provider.reports[0]).toMatchObject({ reason: "recording-rejected", replayedDrawCount: 1 });
+            expect(calls.map((call) => call[0])).toContain("drawIndexed");
+            expect(errorSpy).toHaveBeenCalledTimes(1);
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("keeps rendering when the onDisabled handler throws", () => {
+        const { renderPass, calls } = createRecordingRenderPass(false);
+        const provider = createProvider();
+        provider.onDisabled = () => {
+            throw new Error("telemetry offline");
+        };
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(true);
+            expect(() => stream.flush()).not.toThrow();
+
+            expect(calls.map((call) => call[0])).toContain("drawIndexed");
+            expect(errorSpy).toHaveBeenCalledTimes(2);
+            expect(errorSpy).toHaveBeenLastCalledWith(expect.stringContaining("telemetry offline"));
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("bounds a batch to the maximum draw count and re-emits state in the next batch", () => {
+        const { renderPass, records } = createRecordingRenderPass();
+        const stream = createStream();
+
+        for (let drawIndex = 0; drawIndex <= WebGPURenderPassCommandStreamMaxDrawsPerBatch; drawIndex++) {
+            expect(stream.tryAppend(createCommand({ renderPass, start: drawIndex }))).toBe(true);
+        }
+
+        expect(records).toHaveLength(1);
+        expect(records[0].drawCount).toBe(WebGPURenderPassCommandStreamMaxDrawsPerBatch);
+
+        expect(stream.flush()).toBe(true);
+        expect(records).toHaveLength(2);
+        expect(records[1].drawCount).toBe(1);
+        expect(parseOpcodes(records[1].words)).toContain(WebGPURenderPassCommandOpcode.setPipeline);
     });
 });

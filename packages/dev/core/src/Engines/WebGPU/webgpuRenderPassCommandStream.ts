@@ -8,6 +8,16 @@
  * (IWebGPURenderPassCommandRecorderProvider) rather than read from the _native global, command
  * tokens are protocol integers rather than native-provided handles, and commands carry WebGPU
  * render-pass semantics (pipelines, bind groups, draws) referencing host resource-handle ids.
+ *
+ * Ownership and recovery contract:
+ * - Every backend object referenced by a pending command word (pipeline, buffers, bind groups) is
+ *   retained by the stream until the host has consumed the batch, the same guarantee the
+ *   CommandBufferEncoder gives through its pending-argument list. Hosts whose wrappers release the
+ *   backend resource from a GC finalizer therefore never see a dangling id while words are pending.
+ * - Recording is all-or-nothing on the host side (see IWebGPUCommandRecordingRenderPass). When the
+ *   host rejects a batch, the stream replays that batch through direct encoder calls from the words
+ *   and the retained objects, so no draw of the frame is lost (render-once targets never keep an
+ *   incomplete result), then disables itself for the engine's lifetime and reports why.
  */
 import { type VertexBuffer } from "../../Buffers/buffer.pure";
 import { type DataBuffer } from "../../Buffers/dataBuffer";
@@ -24,6 +34,14 @@ import * as WebGPUConstants from "./webgpuConstants";
  * command layouts change.
  */
 export const WebGPURenderPassCommandStreamProtocolVersion = 1;
+
+/**
+ * Upper bound on the draws batched into one host recording call. Bounding the batch keeps the
+ * command words and the retained resource references at a fixed, reusable capacity over long
+ * sessions (no unbounded growth, no regrowth churn) while still amortizing the bridge crossing over
+ * up to this many draws.
+ */
+export const WebGPURenderPassCommandStreamMaxDrawsPerBatch = 1024;
 
 /** @internal */
 export const WebGPURenderPassCommandOpcode = {
@@ -50,15 +68,49 @@ const DefaultBufferOffset = 0;
 const DefaultBaseVertex = 0;
 const DefaultFirstInstance = 0;
 const NoDynamicOffsets = 0;
+const U64WordCount = 2;
 
 /**
  * Render pass encoder extended with an optional host recording hook.
- * The recorder must consume the command words synchronously: the buffer is owned by the stream and
- * is reused as soon as the call returns.
  * @internal
  */
 export interface IWebGPUCommandRecordingRenderPass extends GPURenderPassEncoder {
+    /**
+     * Records a batch of commands encoded by WebGPURenderPassCommandStream into this pass.
+     *
+     * The recorder must consume the command words synchronously: the buffer is owned by the stream
+     * and is reused as soon as the call returns. Recording is all-or-nothing: the host returns true
+     * once every command of the batch has been recorded, and returns false (or throws) without
+     * having recorded any of them when it rejects the batch, leaving the encoder usable. The stream
+     * relies on this to replay a rejected batch through direct encoder calls. The JS objects of
+     * every resource referenced by the batch are retained by the stream until this call returns;
+     * from then on the host owns their lifetime for the rest of the pass.
+     */
     _recordCommands?: (commands: Uint32Array, drawCount: number, multiDrawCallCount: number, multiDrawDrawCount: number, wordCount: number) => boolean;
+}
+
+/**
+ * Why a render-pass command stream disabled itself (see IWebGPURenderPassCommandStreamDisableInfo).
+ * - "protocol-mismatch": the host decoder was built against another WebGPURenderPassCommandStreamProtocolVersion.
+ * - "recorder-missing": the active render pass stopped exposing a recording hook while commands were pending.
+ * - "recording-rejected": the host returned false from _recordCommands.
+ * - "recording-threw": the host threw from _recordCommands.
+ */
+export type WebGPURenderPassCommandStreamDisableReason = "protocol-mismatch" | "recorder-missing" | "recording-rejected" | "recording-threw";
+
+/**
+ * Details reported once when a render-pass command stream disables itself, so integrating
+ * applications can surface the event (telemetry, diagnostics) alongside the Logger.Error entry.
+ */
+export interface IWebGPURenderPassCommandStreamDisableInfo {
+    /** Why the stream disabled itself. */
+    reason: WebGPURenderPassCommandStreamDisableReason;
+    /** The message that was logged. */
+    message: string;
+    /** The host's last backend error when the provider exposes one (see IWebGPURenderPassCommandRecorderProvider.getLastError). */
+    hostError?: string;
+    /** Number of draws from the rejected batch that were replayed through direct encoder calls (0 when nothing was pending). */
+    replayedDrawCount: number;
 }
 
 /**
@@ -83,7 +135,9 @@ export interface IWebGPURenderPassCommandRecorderProvider {
      * Returns the host handle id for a backend resource (pipeline, buffer or bind group), or 0 when
      * the resource has no host handle (which makes the draw fall back to direct encoder calls).
      * Ids must be positive safe integers (at most Number.MAX_SAFE_INTEGER) so they encode losslessly
-     * into 64-bit command words; out-of-range ids are treated as missing.
+     * into 64-bit command words; out-of-range ids are treated as missing. The stream retains the
+     * resource object itself until the words referencing its id have been consumed by the host, so
+     * an id never outlives its object while pending.
      * @param resource the backend resource to identify
      */
     getResourceId(resource: Nullable<object>): number;
@@ -91,6 +145,12 @@ export interface IWebGPURenderPassCommandRecorderProvider {
      * Optionally returns the host's last backend error, used to enrich diagnostics when recording fails.
      */
     getLastError?(): string | undefined;
+    /**
+     * Optionally invoked once, after the failure has been logged and the rejected batch replayed,
+     * when the stream disables itself for the rest of the engine's lifetime.
+     * @param info what happened and how much was replayed
+     */
+    onDisabled?(info: IWebGPURenderPassCommandStreamDisableInfo): void;
 }
 
 /** @internal */
@@ -208,6 +268,10 @@ export function ApplyWebGPURenderPassDrawCommand(command: IWebGPURenderPassDrawC
     }
 }
 
+function ReadU64(words: Uint32Array, index: number): number {
+    return words[index] + words[index + 1] * 0x100000000;
+}
+
 /** @internal */
 export class WebGPURenderPassCommandStream {
     private _commandWords = new Uint32Array(256);
@@ -223,6 +287,10 @@ export class WebGPURenderPassCommandStream {
     private _scratchVertexBufferIds: number[] = [];
     private _scratchVertexBufferOffsets: number[] = [];
     private _scratchBindGroupIds: number[] = [];
+    // One entry per pending command word that references a backend object, in encoding order. It
+    // pins those objects until the host has consumed the batch and lets a rejected batch be replayed.
+    private _pendingResources: Nullable<object>[] = [];
+    private _pendingResourceCount = 0;
     private _disabledAfterFailure = false;
 
     public constructor(private readonly _options: IWebGPURenderPassCommandStreamOptions) {}
@@ -237,26 +305,39 @@ export class WebGPURenderPassCommandStream {
 
         const recordCommands = (renderPass as IWebGPUCommandRecordingRenderPass)._recordCommands;
         if (typeof recordCommands !== "function") {
+            this._recoverFromRejectedBatch(
+                renderPass,
+                "recorder-missing",
+                "WebGPU render pass command stream cannot flush: the active render pass does not support command recording."
+            );
+            return false;
+        }
+
+        let recorded = false;
+        let thrown: unknown = null;
+        try {
+            recorded = recordCommands.call(renderPass, this._commandWords, this._drawCount, 0, 0, wordCount) === true;
+        } catch (error) {
+            thrown = error ?? new Error("unknown error");
+        }
+
+        if (recorded) {
             this.reset();
-            this._disable("WebGPU render pass command stream cannot flush: the active render pass does not support command recording.");
-            return false;
+            return true;
         }
 
-        const success = recordCommands.call(renderPass, this._commandWords, this._drawCount, 0, 0, wordCount) === true;
-        this.reset();
-
-        if (!success) {
-            // The encoded words cannot be replayed (commands are consumed as they are encoded, which is
-            // what keeps the draw path allocation-free), so the draws in this batch are dropped from the
-            // current frame. A recording failure past the protocol-version handshake indicates a broken
-            // host decoder, so log once and fall back permanently to direct encoder calls.
-            const lastError = this._options.getProvider()?.getLastError?.();
-            const detail = lastError && lastError.length > 0 ? `: ${lastError}` : "";
-            this._disable(`WebGPU render pass command stream recording failed${detail}. The draws batched for this flush were dropped.`);
-            return false;
+        // A recording failure past the protocol-version handshake indicates a broken host decoder, so the
+        // batch is replayed directly and the stream falls back permanently to direct encoder calls.
+        if (thrown) {
+            const detail = thrown instanceof Error ? thrown.message : String(thrown);
+            this._recoverFromRejectedBatch(renderPass, "recording-threw", `WebGPU render pass command stream recording threw: ${detail}.`);
+        } else {
+            // Read the host error before replaying: the direct calls may overwrite it.
+            const hostError = this._options.getProvider()?.getLastError?.();
+            const detail = hostError && hostError.length > 0 ? `: ${hostError}` : "";
+            this._recoverFromRejectedBatch(renderPass, "recording-rejected", `WebGPU render pass command stream recording failed${detail}.`, hostError);
         }
-
-        return true;
+        return false;
     }
 
     public reset(): void {
@@ -269,6 +350,12 @@ export class WebGPURenderPassCommandStream {
         this._vertexBufferIds.length = 0;
         this._vertexBufferOffsets.length = 0;
         this._bindGroupIds.length = 0;
+        // Release the retained objects without shrinking the array so long sessions reuse its capacity.
+        const pendingResources = this._pendingResources;
+        for (let index = 0; index < this._pendingResourceCount; index++) {
+            pendingResources[index] = null;
+        }
+        this._pendingResourceCount = 0;
     }
 
     public tryAppend(command: IWebGPURenderPassDrawCommand): boolean {
@@ -283,6 +370,7 @@ export class WebGPURenderPassCommandStream {
 
         if (provider.protocolVersion !== WebGPURenderPassCommandStreamProtocolVersion) {
             this._disable(
+                "protocol-mismatch",
                 `WebGPU render pass command stream protocol mismatch: the host decoder reports version ${provider.protocolVersion} but the engine encodes version ${WebGPURenderPassCommandStreamProtocolVersion}.`
             );
             return false;
@@ -337,7 +425,7 @@ export class WebGPURenderPassCommandStream {
             return false;
         }
 
-        if (this._renderPass && this._renderPass !== command.renderPass) {
+        if (this._renderPass && (this._renderPass !== command.renderPass || this._drawCount >= WebGPURenderPassCommandStreamMaxDrawsPerBatch)) {
             this.flush();
             if (this._disabledAfterFailure) {
                 return false;
@@ -348,6 +436,7 @@ export class WebGPURenderPassCommandStream {
         if (this._pipelineId !== pipelineId) {
             this._pushU32(WebGPURenderPassCommandOpcode.setPipeline);
             this._pushU64(pipelineId);
+            this._retain(command.pipeline);
             this._pipelineId = pipelineId;
         }
 
@@ -358,6 +447,7 @@ export class WebGPURenderPassCommandStream {
                 this._pushU32(command.indexFormat === WebGPUConstants.IndexFormat.Uint32 ? 1 : 0);
                 this._pushU64(DefaultBufferOffset);
                 this._pushU64Max();
+                this._retain(command.indexBuffer.underlyingResource);
                 this._indexBufferId = indexBufferId;
                 this._indexFormat = command.indexFormat;
             }
@@ -376,6 +466,7 @@ export class WebGPURenderPassCommandStream {
                 this._pushU64(bufferId);
                 this._pushU64(offset);
                 this._pushU64Max();
+                this._retain(command.vertexBuffers[index].effectiveBuffer!.underlyingResource);
                 this._vertexBufferIds[index] = bufferId;
                 this._vertexBufferOffsets[index] = offset;
             }
@@ -388,6 +479,7 @@ export class WebGPURenderPassCommandStream {
                 this._pushU32(i);
                 this._pushU64(bindGroupId);
                 this._pushU32(NoDynamicOffsets);
+                this._retain(command.bindGroups[i]);
                 this._bindGroupIds[i] = bindGroupId;
             }
         }
@@ -396,6 +488,7 @@ export class WebGPURenderPassCommandStream {
             this._pushU32(isIndexedDraw ? WebGPURenderPassCommandOpcode.drawIndexedIndirect : WebGPURenderPassCommandOpcode.drawIndirect);
             this._pushU64(indirectDrawBufferId);
             this._pushU64(DefaultBufferOffset);
+            this._retain(command.indirectDrawBuffer);
         } else if (isIndexedDraw) {
             this._pushU32(WebGPURenderPassCommandOpcode.drawIndexed);
             this._pushU32(command.count);
@@ -415,15 +508,123 @@ export class WebGPURenderPassCommandStream {
         return true;
     }
 
+    // Replays the pending batch through direct encoder calls, from the encoded words and the objects
+    // retained for them, then resets and disables the stream. Used when the host rejected the batch
+    // without recording it, so the frame keeps every draw.
+    private _recoverFromRejectedBatch(
+        renderPass: GPURenderPassEncoder | GPURenderBundleEncoder,
+        reason: WebGPURenderPassCommandStreamDisableReason,
+        message: string,
+        hostError?: string
+    ): void {
+        const replayedDrawCount = this._drawCount;
+        try {
+            this._replayPending(renderPass);
+        } finally {
+            this.reset();
+            this._disable(reason, `${message} The ${replayedDrawCount} draw(s) of this batch were replayed through direct encoder calls.`, hostError, replayedDrawCount);
+        }
+    }
+
+    private _replayPending(renderPass: GPURenderPassEncoder | GPURenderBundleEncoder): void {
+        const words = this._commandWords;
+        const wordCount = this._commandWordCount;
+        const resources = this._pendingResources;
+        let resourceIndex = 0;
+        let index = 0;
+        while (index < wordCount) {
+            const opcode = words[index++];
+            switch (opcode) {
+                case WebGPURenderPassCommandOpcode.setPipeline: {
+                    index += U64WordCount;
+                    renderPass.setPipeline(resources[resourceIndex++] as GPURenderPipeline);
+                    break;
+                }
+                case WebGPURenderPassCommandOpcode.setBindGroup: {
+                    const slot = words[index++];
+                    index += U64WordCount;
+                    const dynamicOffsetCount = words[index++];
+                    const bindGroup = resources[resourceIndex++] as GPUBindGroup;
+                    if (dynamicOffsetCount === 0) {
+                        renderPass.setBindGroup(slot, bindGroup);
+                    } else {
+                        renderPass.setBindGroup(slot, bindGroup, words, index, dynamicOffsetCount);
+                        index += dynamicOffsetCount;
+                    }
+                    break;
+                }
+                case WebGPURenderPassCommandOpcode.setVertexBuffer: {
+                    const slot = words[index++];
+                    index += U64WordCount;
+                    const offset = ReadU64(words, index);
+                    index += U64WordCount * 2; // offset and size (the size is always the whole buffer)
+                    renderPass.setVertexBuffer(slot, resources[resourceIndex++] as GPUBuffer, offset);
+                    break;
+                }
+                case WebGPURenderPassCommandOpcode.setIndexBuffer: {
+                    index += U64WordCount;
+                    const format = words[index++] === 1 ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
+                    const offset = ReadU64(words, index);
+                    index += U64WordCount * 2; // offset and size (the size is always the whole buffer)
+                    renderPass.setIndexBuffer(resources[resourceIndex++] as GPUBuffer, format, offset);
+                    break;
+                }
+                case WebGPURenderPassCommandOpcode.draw: {
+                    renderPass.draw(words[index], words[index + 1], words[index + 2], words[index + 3]);
+                    index += 4;
+                    break;
+                }
+                case WebGPURenderPassCommandOpcode.drawIndexed: {
+                    renderPass.drawIndexed(words[index], words[index + 1], words[index + 2], words[index + 3] | 0, words[index + 4]);
+                    index += 5;
+                    break;
+                }
+                case WebGPURenderPassCommandOpcode.drawIndirect:
+                case WebGPURenderPassCommandOpcode.drawIndexedIndirect: {
+                    index += U64WordCount;
+                    const offset = ReadU64(words, index);
+                    index += U64WordCount;
+                    const buffer = resources[resourceIndex++] as GPUBuffer;
+                    if (opcode === WebGPURenderPassCommandOpcode.drawIndexedIndirect) {
+                        renderPass.drawIndexedIndirect(buffer, offset);
+                    } else {
+                        renderPass.drawIndirect(buffer, offset);
+                    }
+                    break;
+                }
+                default: {
+                    // The words were encoded by this stream, so this cannot happen; stop rather than guess at a layout.
+                    Logger.Error(`WebGPU render pass command stream replay stopped at word ${index - 1}: unknown opcode ${opcode}.`);
+                    return;
+                }
+            }
+        }
+    }
+
+    private _retain(resource: object): void {
+        this._pendingResources[this._pendingResourceCount++] = resource;
+    }
+
     private _getValidResourceId(provider: IWebGPURenderPassCommandRecorderProvider, resource: Nullable<object>): number {
         const id = provider.getResourceId(resource);
         // Ids are encoded into u64 command words from a JS number: reject ids that cannot round-trip exactly.
         return id > 0 && Number.isSafeInteger(id) ? id : 0;
     }
 
-    private _disable(message: string): void {
+    private _disable(reason: WebGPURenderPassCommandStreamDisableReason, message: string, hostError?: string, replayedDrawCount = 0): void {
         this._disabledAfterFailure = true;
-        Logger.Error(`${message} Subsequent draws fall back to direct encoder calls.`);
+        const loggedMessage = `${message} Subsequent draws fall back to direct encoder calls.`;
+        Logger.Error(loggedMessage);
+
+        const provider = this._options.getProvider();
+        if (provider?.onDisabled) {
+            // A diagnostics hook must never take the frame down with it.
+            try {
+                provider.onDisabled({ reason, message: loggedMessage, hostError, replayedDrawCount });
+            } catch (error) {
+                Logger.Error(`WebGPU render pass command stream onDisabled handler threw: ${error instanceof Error ? error.message : String(error)}`);
+            }
+        }
     }
 
     private _ensureCapacity(additionalWords: number): void {
@@ -448,13 +649,13 @@ export class WebGPURenderPassCommandStream {
 
     private _pushU64(value: number): void {
         const normalized = Number.isFinite(value) && value > 0 ? value : 0;
-        this._ensureCapacity(2);
+        this._ensureCapacity(U64WordCount);
         this._commandWords[this._commandWordCount++] = normalized >>> 0;
         this._commandWords[this._commandWordCount++] = Math.floor(normalized / 0x100000000) >>> 0;
     }
 
     private _pushU64Max(): void {
-        this._ensureCapacity(2);
+        this._ensureCapacity(U64WordCount);
         this._commandWords[this._commandWordCount++] = 0xffffffff;
         this._commandWords[this._commandWordCount++] = 0xffffffff;
     }
