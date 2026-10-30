@@ -3980,7 +3980,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._applyRenderPassChanges(bundleList);
             if (!this._snapshotRendering.record) {
                 this._counters.numBundleReuseNonCompatMode++;
-                if (this._currentDrawContext.indirectDrawBuffer) {
+                // the arguments of a bound application buffer are written on the GPU: the CPU does not touch them
+                if (this._currentDrawContext.indirectDrawBuffer && !this._currentDrawContext._externalIndirectDrawBuffer) {
                     this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
                 }
                 bundleList.addBundle(this._currentDrawContext.fastBundle);
@@ -4026,12 +4027,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
-        const indirectDrawBuffer =
-            (nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer
-                ? this._currentDrawContext.indirectDrawBuffer
-                : null;
+        // the application's buffer of GPU-written arguments (SubMesh.setIndirectDrawBuffer) goes first, in every mode, at its offset, and
+        // the CPU never writes into it
+        const externalIndirectDrawBuffer = this._currentDrawContext._externalIndirectDrawBuffer;
+        const indirectDrawBuffer = externalIndirectDrawBuffer
+            ? (externalIndirectDrawBuffer.underlyingResource as GPUBuffer)
+            : (nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer
+              ? this._currentDrawContext.indirectDrawBuffer
+              : null;
 
-        if (indirectDrawBuffer) {
+        if (indirectDrawBuffer && !externalIndirectDrawBuffer) {
             this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
         }
 
@@ -4054,6 +4059,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         drawCommand.instancesCount = instancesCount;
         drawCommand.start = start;
         drawCommand.indirectDrawBuffer = indirectDrawBuffer;
+        drawCommand.indirectDrawByteOffset = externalIndirectDrawBuffer ? this._currentDrawContext._externalIndirectDrawByteOffset : 0;
 
         if (this.compatibilityMode && !this._snapshotRendering.record) {
             this._renderPassDrawBatcher.submit(drawCommand);

@@ -40,6 +40,14 @@ export class WebGPUDrawContext implements IDrawContext {
 
     public indirectDrawBuffer?: GPUBuffer;
 
+    /**
+     * @internal The application's buffer the draw reads its arguments from, filled on the GPU (SubMesh.setIndirectDrawBuffer): it goes
+     * before indirectDrawBuffer, in every mode, and the draw context never writes into it nor releases it
+     */
+    public _externalIndirectDrawBuffer: Nullable<DataBuffer> = null;
+    /** @internal The offset of the arguments in _externalIndirectDrawBuffer, in bytes */
+    public _externalIndirectDrawByteOffset = 0;
+
     private _materialContextUpdateId: number;
     private _bufferManager: WebGPUBufferManager;
     private _useInstancing: boolean;
@@ -139,6 +147,22 @@ export class WebGPUDrawContext implements IDrawContext {
         this._enableIndirectDraw = false;
         this._vertexPullingEnabled = false;
         this.reset();
+    }
+
+    /**
+     * @internal Binds the application's buffer of GPU-written arguments, or clears the binding with null. A new buffer or offset
+     * records the draw's bundle again; new contents written into the same buffer do not, the bundle reading them at each execution.
+     * A reset keeps the binding, which belongs to the sub mesh's pass and not to the effect.
+     */
+    public _setExternalIndirectDraw(buffer: Nullable<DataBuffer>, byteOffset: number): void {
+        const offset = buffer ? byteOffset : 0;
+        if (buffer === this._externalIndirectDrawBuffer && offset === this._externalIndirectDrawByteOffset) {
+            return;
+        }
+        this._externalIndirectDrawBuffer = buffer;
+        this._externalIndirectDrawByteOffset = offset;
+        this._isDirty = true;
+        this.fastBundle = undefined;
     }
 
     public reset(): void {
