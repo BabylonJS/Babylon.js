@@ -42,6 +42,33 @@ function SkipWhitespacesBackward(s: string, index: number): number {
 }
 
 /**
+ * Checks whether the identifier at the given position is a member or swizzle name (preceded by ".", possibly with whitespaces and comments in between)
+ * @param s code to parse (may contain comments)
+ * @param index start position of the identifier
+ * @returns true if the identifier follows a "."
+ */
+function IsMemberName(s: string, index: number): boolean {
+    let i = SkipWhitespacesBackward(s, index - 1);
+    while (i >= 0) {
+        if (s.charAt(i) === "/" && s.charAt(i - 1) === "*") {
+            const commentStart = s.lastIndexOf("/*", i - 2);
+            if (commentStart < 0) {
+                return false;
+            }
+            i = SkipWhitespacesBackward(s, commentStart - 1);
+            continue;
+        }
+        const lineComment = s.indexOf("//", s.lastIndexOf("\n", i) + 1);
+        if (lineComment >= 0 && lineComment < i) {
+            i = SkipWhitespacesBackward(s, lineComment - 1);
+            continue;
+        }
+        return s.charAt(i) === ".";
+    }
+    return false;
+}
+
+/**
  * Skips member accesses and (possibly nested) subscripts, e.g. ".xy" or "[indices[0]]"
  * @param s code to parse
  * @param index index just after a variable name
@@ -508,7 +535,7 @@ export class ShaderCodeInliner {
             code = code.replace(source, (match, ...args) => {
                 const offset: number = args[0];
                 // Make sure "source" is not part of a bigger identifier (for eg, if source=view and we matched it with viewDirection)
-                if (IsIdentifierChar(code.charAt(offset - 1)) || IsIdentifierChar(code.charAt(offset + sourceLen))) {
+                if (IsIdentifierChar(code.charAt(offset - 1)) || IsIdentifierChar(code.charAt(offset + sourceLen)) || IsMemberName(code, offset)) {
                     return sources[i];
                 }
                 return destination;

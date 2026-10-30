@@ -154,4 +154,31 @@ void main() {
         expect(code).toMatch(new RegExp(`${copy![1]} = 2\\.0;`));
         expect(code).toMatch(new RegExp(`f_\\d+ = ${inner![1]};`));
     });
+
+    it("does not substitute swizzles and struct fields named like copied parameters", () => {
+        const code = Inline(`
+struct S { float a; };
+#define inline
+float f(float x, vec2 v, float a, S s) {
+    x = 2.0;
+    a = 3.0;
+    return v.x + v . /* c */ x + v.
+        // c
+        x + s.a + s . a + x + a;
+}
+void main() {
+    float x = 0.0;
+    float a = 1.0;
+    vec2 v = vec2(1.0);
+    S s = S(1.0);
+    gl_FragColor = vec4(f(x, v, a, s));
+}
+`);
+        const copyX = /float (f_x_c\d+) = x;/.exec(code);
+        const copyA = /float (f_a_c\d+) = a;/.exec(code);
+        expect(copyX).not.toBeNull();
+        expect(copyA).not.toBeNull();
+        expect(code).not.toMatch(/\.\s*(?:\/\*[^]*?\*\/|\/\/[^\n]*\n|\s)*f_[xa]_c\d+/);
+        expect(code).toMatch(new RegExp(`v\\.x \\+ v \\. /\\* c \\*/ x \\+ v\\.\\s*// c\\s*x \\+ s\\.a \\+ s \\. a \\+ ${copyX![1]} \\+ ${copyA![1]};`));
+    });
 });
