@@ -134,7 +134,7 @@ jobs:
                 set -euo pipefail
                 curl --fail-with-body --silent --show-error --connect-timeout 30 --max-time 600 \
                     "$DEPLOYMENT_SERVER/$DEPLOY_ENDPOINT_UPLOAD" \
-                    -H "Authorization: $DEPLOY_TOKEN" \
+                    -H "Authorization: Bearer $DEPLOY_TOKEN" \
                     -F "path=cdn/master/v9.33.1" \
                     -F "storageAccount=$SNAPSHOTS_STORAGE_ACCOUNT" \
                     -F "saveZip=true" \
@@ -158,7 +158,7 @@ jobs:
                 set -euo pipefail
                 curl --fail-with-body --silent --show-error --connect-timeout 30 --max-time 120 \
                     "$DEPLOYMENT_SERVER/$DEPLOY_ENDPOINT_PURGE?endpoint=$CDN_ENDPOINT_CDN&profileName=$CDN_PROFILE_CDN" \
-                    -X POST -H "Authorization: $DEPLOY_TOKEN"
+                    -X POST -H "Authorization: Bearer $DEPLOY_TOKEN"
             displayName: "Purge the existing main CDN endpoint"
             env:
                 DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
