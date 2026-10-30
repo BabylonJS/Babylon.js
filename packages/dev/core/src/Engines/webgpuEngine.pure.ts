@@ -3251,6 +3251,26 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
+     * The most frames the GPU may have in flight when a frame starts, that frame included (0, the default: no limit).
+     * A frame over the limit is not started, and the render loop asks again at the next animation frame. With 2, a frame starts
+     * once the GPU has finished every frame but the previous one. Without a limit, a page whose GPU work takes longer than its
+     * frame can queue that work far ahead of the GPU, and the screen then shows frames that far behind
+     */
+    public maxFramesInFlight = 0;
+
+    private _framesInFlight = 0;
+    private _framesInFlightDevice: Nullable<GPUDevice> = null;
+
+    protected override _processFrame(timestamp?: number) {
+        if (this.maxFramesInFlight > 0 && this._framesInFlightDevice === this._device && this._framesInFlight >= this.maxFramesInFlight) {
+            // nothing of the frame has started and maxFPS has not counted it
+            this._frameHandler = 0;
+            return;
+        }
+        super._processFrame(timestamp);
+    }
+
+    /**
      * Begin a new frame
      */
     public override beginFrame(): void {
@@ -3272,6 +3292,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this.flushFramebuffer(true);
 
+        if (this.maxFramesInFlight > 0) {
+            this._countFrameInFlight();
+        }
+
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
 
@@ -3288,6 +3312,24 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._cacheBindGroups.endFrame();
 
         super.endFrame();
+    }
+
+    // The frame is on the GPU until the GPU has done all the work submitted so far: its intermediate flushes too
+    private _countFrameInFlight(): void {
+        const device = this._device;
+        if (this._framesInFlightDevice !== device) {
+            // a new device: the frames of the lost one are not on it
+            this._framesInFlightDevice = device;
+            this._framesInFlight = 0;
+        }
+        this._framesInFlight++;
+        const done = () => {
+            if (this._framesInFlightDevice === device) {
+                this._framesInFlight--;
+            }
+        };
+        // eslint-disable-next-line github/no-then
+        device.queue.onSubmittedWorkDone().then(done, done);
     }
 
     /**Gets driver info if available */
