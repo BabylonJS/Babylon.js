@@ -38,18 +38,24 @@ export class DirectionalLight extends ShadowLight {
 
     private _shadowOrthoScale = 0.1;
     /**
-     * Gets the shadow projection scale against the optimal computed one.
-     * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-     * This does not impact in fixed frustum size (shadowFrustumSize being set)
+     * Gets the margin added to each side of the shadow projection window, as a fraction of the window's width and height.
+     * 0.1 by default: the window is widened by 10% of its width on the left and on the right, and by 10% of its height at the top
+     * and at the bottom, so it covers 1.2 times the width and the height of the extents (20% more on each axis).
+     * It applies to the extents computed from the shadow casters (autoUpdateExtends) and to the extents set by hand (orthoLeft,
+     * orthoRight, orthoBottom and orthoTop), but not to a fixed frustum size (a positive shadowFrustumSize).
+     * Set it to 0 for the projection to match the extents exactly.
      */
     @serialize()
     public get shadowOrthoScale(): number {
         return this._shadowOrthoScale;
     }
     /**
-     * Sets the shadow projection scale against the optimal computed one.
-     * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-     * This does not impact in fixed frustum size (shadowFrustumSize being set)
+     * Sets the margin added to each side of the shadow projection window, as a fraction of the window's width and height.
+     * 0.1 by default: the window is widened by 10% of its width on the left and on the right, and by 10% of its height at the top
+     * and at the bottom, so it covers 1.2 times the width and the height of the extents (20% more on each axis).
+     * It applies to the extents computed from the shadow casters (autoUpdateExtends) and to the extents set by hand (orthoLeft,
+     * orthoRight, orthoBottom and orthoTop), but not to a fixed frustum size (a positive shadowFrustumSize).
+     * Set it to 0 for the projection to match the extents exactly.
      */
     public set shadowOrthoScale(value: number) {
         this._shadowOrthoScale = value;
@@ -81,7 +87,9 @@ export class DirectionalLight extends ShadowLight {
     private _orthoBottom = Number.MAX_VALUE;
 
     /**
-     * Gets or sets the orthoLeft property used to build the light frustum
+     * Gets or sets the orthoLeft property used to build the light frustum.
+     * The shadow projection widens the extents by shadowOrthoScale on each side (0.1 by default: 20% on each axis), also when they
+     * are set by hand; set shadowOrthoScale to 0 for the projection to match them exactly.
      */
     public get orthoLeft(): number {
         return this._orthoLeft;
@@ -92,7 +100,9 @@ export class DirectionalLight extends ShadowLight {
     }
 
     /**
-     * Gets or sets the orthoRight property used to build the light frustum
+     * Gets or sets the orthoRight property used to build the light frustum.
+     * The shadow projection widens the extents by shadowOrthoScale on each side (0.1 by default: 20% on each axis), also when they
+     * are set by hand; set shadowOrthoScale to 0 for the projection to match them exactly.
      */
     public get orthoRight(): number {
         return this._orthoRight;
@@ -103,7 +113,9 @@ export class DirectionalLight extends ShadowLight {
     }
 
     /**
-     * Gets or sets the orthoTop property used to build the light frustum
+     * Gets or sets the orthoTop property used to build the light frustum.
+     * The shadow projection widens the extents by shadowOrthoScale on each side (0.1 by default: 20% on each axis), also when they
+     * are set by hand; set shadowOrthoScale to 0 for the projection to match them exactly.
      */
     public get orthoTop(): number {
         return this._orthoTop;
@@ -114,7 +126,9 @@ export class DirectionalLight extends ShadowLight {
     }
 
     /**
-     * Gets or sets the orthoBottom property used to build the light frustum
+     * Gets or sets the orthoBottom property used to build the light frustum.
+     * The shadow projection widens the extents by shadowOrthoScale on each side (0.1 by default: 20% on each axis), also when they
+     * are set by hand; set shadowOrthoScale to 0 for the projection to match them exactly.
      */
     public get orthoBottom(): number {
         return this._orthoBottom;
