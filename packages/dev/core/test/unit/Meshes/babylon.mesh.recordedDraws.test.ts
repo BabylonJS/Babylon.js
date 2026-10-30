@@ -281,4 +281,16 @@ describe("Mesh recorded draws", () => {
             expect(mesh._canRecordThinInstances()).toBe(true);
         });
     });
+
+    it("checks nothing in Mesh.render unless a snapshot records with the recorded draws switched on", () => {
+        const check = vi.spyOn(mesh as any, "_getUnchangedRecordedDraw");
+        // snapshot rendering with the recorded draws off: a recording costs what it did before them
+        vi.spyOn(engine, "snapshotRendering", "get").mockReturnValue(true);
+        mesh.render(subMesh, false);
+        expect(check).not.toHaveBeenCalled();
+        // with them on, the draw is checked first
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        mesh.render(subMesh, false);
+        expect(check).toHaveBeenCalledTimes(1);
+    });
 });

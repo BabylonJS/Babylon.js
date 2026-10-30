@@ -2585,6 +2585,14 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * @internal Whether a snapshot is recording with the recorded draws switched on: only then do the meshes and the shadow maps
+     * check a draw against what it was recorded with, and keep what it is rendered with (nothing of it runs otherwise)
+     */
+    public get _recordsDraws(): boolean {
+        return false;
+    }
+
+    /**
      * @internal While a snapshot records, encodes again the draw last recorded for this draw wrapper, if it is still valid,
      * instead of binding its mesh and material. Returns false when the draw must be rendered normally.
      */

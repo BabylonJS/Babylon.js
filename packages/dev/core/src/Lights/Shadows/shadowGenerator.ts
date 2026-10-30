@@ -1412,7 +1412,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // While a snapshot records again, a draw whose mesh, material and per-draw values did not change is encoded from the commands
         // it was recorded with
         const replayable =
-            engine.snapshotRendering &&
+            engine._recordsDraws &&
             !material.shadowDepthWrapper &&
             (!hardwareInstancedRendering || (renderingMesh.hasThinInstances && !batch.visibleInstances[subMesh._id])) &&
             renderingMesh._canRecordThinInstances() &&

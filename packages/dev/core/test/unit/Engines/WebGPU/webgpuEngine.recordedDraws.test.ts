@@ -65,3 +65,19 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
         expect(encoder.drawIndexed).toHaveBeenCalledTimes(1);
     });
 });
+
+/**
+ * The meshes and the shadow maps check and keep their draws only while a snapshot records with the recorded draws switched on
+ * (engine._recordsDraws): with them off, a recording costs what it did before them.
+ */
+describe("WebGPUEngine._recordsDraws", () => {
+    const recordsDraws = (record: boolean, cachedDraws: boolean) =>
+        Object.getOwnPropertyDescriptor(WebGPUEngine.prototype, "_recordsDraws")!.get!.call({ _snapshotRendering: { record }, _snapshotCachedDraws: cachedDraws });
+
+    it("is true only while a snapshot records with the recorded draws switched on", () => {
+        expect(recordsDraws(true, true)).toBe(true);
+        expect(recordsDraws(true, false)).toBe(false);
+        expect(recordsDraws(false, true)).toBe(false);
+        expect(recordsDraws(false, false)).toBe(false);
+    });
+});

@@ -504,6 +504,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public _snapshotCachedDraws = false;
 
+    /** @internal */
+    public override get _recordsDraws(): boolean {
+        return this._snapshotRendering.record && this._snapshotCachedDraws;
+    }
+
     /**
      * Enables or disables the snapshot rendering mode
      * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
@@ -4019,7 +4024,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
 
-        if (this._snapshotRendering.record && this._snapshotCachedDraws) {
+        if (this._recordsDraws) {
             this._keepRecordedDraw(pipeline, bindGroups, drawKind, count, instancesCount, start);
         }
 

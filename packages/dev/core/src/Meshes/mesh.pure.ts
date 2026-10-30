@@ -2911,7 +2911,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with
-        if (engine.snapshotRendering) {
+        if (engine._recordsDraws) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh, batch, effectiveMeshReplacement);
             if (recordedDrawWrapper && engine._replayRecordedDraw(recordedDrawWrapper)) {
                 return this;
@@ -3079,7 +3079,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Unbind
         this._internalMeshDataInfo._effectiveMaterial.unbind();
 
-        if (engine.snapshotRendering && drawWrapper === subMesh._drawWrapper) {
+        if (engine._recordsDraws && drawWrapper === subMesh._drawWrapper) {
             this._keepRecordedDraw(drawWrapper, subMesh, effectiveMaterial, effectiveMesh, true);
         }
 
