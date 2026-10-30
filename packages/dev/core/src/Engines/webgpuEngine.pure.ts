@@ -499,26 +499,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
-     * Asynchronous pipeline creation (off by default). When enabled, a draw of a mesh whose render pipeline is not created yet is
-     * omitted while the pipeline is created asynchronously (one creation per pipeline configuration, shared with preWarmPipeline),
-     * instead of creating it synchronously in the frame. The mesh is omitted in all of its passes (shadow maps, depth, main pass...)
-     * from the frame one of its draws had to wait until a frame in which none did (in that first frame, the passes drawn before the
-     * wait show it). Other draws (post-processes, sprites, particles...) still create their pipelines synchronously. A snapshot
-     * recorded while draws were omitted is replayed until their pipelines are created, then recorded again.
-     */
-    public asynchronousPipelineCreation = false;
-
-    // pipelines a snapshot recording had to wait for: the snapshot is recorded again once they are all created
-    private _snapshotPendingPipelines = new Set<Promise<GPURenderPipeline>>();
-    private _snapshotRecordAgain = false;
-    // a recording held back draws whose pipelines are ready (for the other passes of their mesh)
-    private _snapshotHeldBack = false;
-    // bumped when the pending creations no longer apply (device lost, engine disposed)
-    private _pendingPipelinesGeneration = 0;
-    // the last frame in which a draw waited for its pipeline: before it, no mesh waits, and the per-mesh state is not read
-    private _lastPipelineWaitFrameId = -2;
-
-    /**
      * Enables or disables the snapshot rendering mode
      * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
      */
@@ -555,6 +535,26 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._cacheRenderPipeline.disabled = disable;
         }
     }
+
+    /**
+     * Asynchronous pipeline creation (off by default). When enabled, a draw of a mesh whose render pipeline is not created yet is
+     * omitted while the pipeline is created asynchronously (one creation per pipeline configuration, shared with preWarmPipeline),
+     * instead of creating it synchronously in the frame. The mesh is omitted in all of its passes (shadow maps, depth, main pass...)
+     * from the frame one of its draws had to wait until a frame in which none did (in that first frame, the passes drawn before the
+     * wait show it). Other draws (post-processes, sprites, particles...) still create their pipelines synchronously. A snapshot
+     * recorded while draws were omitted is replayed until their pipelines are created, then recorded again.
+     */
+    public asynchronousPipelineCreation = false;
+
+    // pipelines a snapshot recording had to wait for: the snapshot is recorded again once they are all created
+    private _snapshotPendingPipelines = new Set<Promise<GPURenderPipeline>>();
+    private _snapshotRecordAgain = false;
+    // a recording held back draws whose pipelines are ready (for the other passes of their mesh)
+    private _snapshotHeldBack = false;
+    // bumped when the pending creations no longer apply (device lost, engine disposed)
+    private _pendingPipelinesGeneration = 0;
+    // the last frame in which a draw waited for its pipeline: before it, no mesh waits, and the per-mesh state is not read
+    private _lastPipelineWaitFrameId = -2;
 
     /**
      * When true (default), the "leftover" uniform buffer of an effect (the buffer that holds the uniforms not declared in a named
