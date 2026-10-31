@@ -23,6 +23,7 @@ import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetT
 import { type Scene } from "../../scene.pure";
 import { type VideoTexture, type VideoTextureSettings } from "./videoTexture.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { type WebGPUEngine } from "../../Engines/webgpuEngine.pure";
 
 /**
  * Defines the available options when creating a texture
@@ -601,6 +602,78 @@ export class Texture extends BaseTexture {
 
         this._delayedOnLoad = load;
         this.delayLoad();
+    }
+
+    /**
+     * Replaces the image of this texture with the image of another texture, already loaded, without loading it again. This texture shows
+     * the source's image from the next frame on and keeps its own settings for the materials (UV transform, coordinatesIndex, alpha and
+     * wrapping); it takes the source's loading description (url or buffer, mipmaps, format, sRGB buffer, loader options), so serializing
+     * it and loading it again gives the image it shows. Both textures then share the source's GPU texture, which stays alive until both
+     * are disposed.
+     * The materials that use this texture are marked as dirty only when the effective gamma space or the RGBD encoding changes; otherwise
+     * they bind the new image at their next draw. With snapshot rendering, the snapshot is recorded again.
+     * @param source the loaded texture whose image this texture takes
+     * @returns true when this texture shows the source's image (replacing a texture with itself included); false when the image cannot be
+     * taken, both textures then left unchanged: one of them is not an ordinary 2D image texture (render target, video, raw, dynamic, cube
+     * and environment textures are not), they belong to different engines, one of them is not loaded, the source has no loading
+     * description (neither url nor buffer), or their effective orientations differ (invertY, and whether loading inverted the V scale)
+     */
+    public replaceImage(source: Texture): boolean {
+        if (source === this) {
+            return true;
+        }
+        const scene = this.getScene();
+        const image = source._texture;
+        const own = this._texture;
+        if (
+            this.getClassName() !== "Texture" ||
+            source.getClassName() !== "Texture" ||
+            !scene ||
+            source.getScene()?.getEngine() !== scene.getEngine() ||
+            !image?.isReady ||
+            !own?.isReady ||
+            (!source.url && !source._buffer) ||
+            source._invertY !== this._invertY ||
+            !!image._invertVScale !== !!own._invertVScale
+        ) {
+            return false;
+        }
+
+        // the effective interpretations, read before the swap. The source's image keeps the source's: when its gamma state is not set yet,
+        // it comes from the source's wrapper, as the gammaSpace getter would set it, and not from this one's, as it would after the swap
+        const gammaSpace = this.gammaSpace;
+        const isRGBD = this.isRGBD;
+        if (image._gammaSpace === null) {
+            image._gammaSpace = source._gammaSpace;
+        }
+
+        if (image !== own) {
+            // taken before the own one is released: the two can be the same internal texture shared by several wrappers
+            image.incrementReferences();
+            this.releaseInternalTexture();
+            this._texture = image;
+        }
+        this.url = source.url;
+        this._buffer = source._buffer;
+        this._noMipmap = source._noMipmap;
+        this._format = source._format;
+        this._forcedExtension = source._forcedExtension;
+        this._mimeType = source._mimeType;
+        this._loaderOptions = source._loaderOptions;
+        this._creationFlags = source._creationFlags;
+        this._useSRGBBuffer = source._useSRGBBuffer;
+        this._gammaSpace = source._gammaSpace;
+        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+
+        if (this.gammaSpace !== gammaSpace || this.isRGBD !== isRGBD) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => mat.hasTexture(this));
+        }
+        // a FAST snapshot replays the bundles it recorded, with the bind groups of the previous image (as VideoTexture does)
+        const engine = scene.getEngine() as WebGPUEngine;
+        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            engine.snapshotRenderingReset();
+        }
+        return true;
     }
 
     /**
