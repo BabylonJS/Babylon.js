@@ -64,6 +64,33 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("anisotropic filtering", () => {
+        it("clamps the anisotropic level to caps.maxAnisotropy", () => {
+            const engine = Object.create(ThinNativeEngine.prototype) as {
+                _caps: { maxAnisotropy: number };
+                _commandBufferEncoder: object;
+                _updateAnisotropicLevel: (texture: object) => void;
+            };
+            const encoded: number[] = [];
+            vi.stubGlobal("_native", { Engine: {} });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._caps = { maxAnisotropy: 1 };
+            engine._commandBufferEncoder = {
+                startEncodingCommand: () => {},
+                encodeCommandArgAsNativeData: () => {},
+                encodeCommandArgAsUInt32: (value: number) => encoded.push(value),
+                finishEncodingCommand: () => {},
+            };
+            const internalTexture = { _hardwareTexture: { underlyingResource: {} } };
+
+            engine._updateAnisotropicLevel({ anisotropicFilteringLevel: 4, getInternalTexture: () => internalTexture });
+
+            expect(encoded).toEqual([1]);
+        });
+    });
+
     describe("render loop", () => {
         it("returns the custom animation frame request id", () => {
             const thinNativeEngine = Object.create(ThinNativeEngine.prototype) as TestThinNativeEngine;

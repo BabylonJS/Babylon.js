@@ -4701,11 +4701,12 @@ export class ThinNativeEngine extends ThinEngine {
     // TODO: Rename to match naming in base implementation once refactoring allows different parameters.
     private _updateAnisotropicLevel(texture: BaseTexture) {
         const internalTexture = texture.getInternalTexture();
-        const value = texture.anisotropicFilteringLevel;
 
         if (!internalTexture || !internalTexture._hardwareTexture) {
             return;
         }
+
+        const value = Math.min(texture.anisotropicFilteringLevel, this._caps.maxAnisotropy);
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTUREANISOTROPICLEVEL);
