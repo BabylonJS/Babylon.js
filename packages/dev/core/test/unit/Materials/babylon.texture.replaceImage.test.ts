@@ -18,13 +18,25 @@ describe("Texture.replaceImage", () => {
     // a texture loaded from a url (a NullEngine loads nothing: its image is an internal texture marked ready)
     function loaded(
         url: string,
-        options: { invertY?: boolean; noMipmap?: boolean; gammaSpace?: boolean; imageGamma?: boolean | null; invertVScale?: boolean } = {},
+        options: {
+            invertY?: boolean;
+            noMipmap?: boolean;
+            samplingMode?: number;
+            gammaSpace?: boolean;
+            imageGamma?: boolean | null;
+            invertVScale?: boolean;
+            source?: InternalTextureSource;
+            cube?: boolean;
+        } = {},
         inScene = scene
     ): Texture {
-        const texture = new Texture(null, inScene, options.noMipmap ?? false, options.invertY ?? true);
+        const samplingMode = options.samplingMode ?? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        const texture = new Texture(null, inScene, options.noMipmap ?? false, options.invertY ?? true, samplingMode);
         texture.url = url;
-        const image = new InternalTexture(inScene.getEngine(), InternalTextureSource.Url);
+        const image = new InternalTexture(inScene.getEngine(), options.source ?? InternalTextureSource.Url);
         image.isReady = true;
+        image.samplingMode = samplingMode;
+        image.isCube = !!options.cube;
         image._invertVScale = !!options.invertVScale;
         image._gammaSpace = options.imageGamma === undefined ? null : options.imageGamma;
         texture._texture = image;
@@ -52,7 +64,7 @@ describe("Texture.replaceImage", () => {
         texture.uScale = 2;
         texture.coordinatesIndex = 1;
         const previous = texture.getInternalTexture()!;
-        const source = loaded("source.png", { noMipmap: true });
+        const source = loaded("source.png", { noMipmap: true, samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE });
         const image = source.getInternalTexture()!;
 
         expect(texture.replaceImage(source)).toBe(true);
@@ -63,20 +75,23 @@ describe("Texture.replaceImage", () => {
         expect(texture.noMipmap).toBe(true);
         expect(texture.uScale).toBe(2);
         expect(texture.coordinatesIndex).toBe(1);
+        expect(texture.samplingMode).toBe(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+
+        // a later load uses the sampling mode it showed
+        texture.releaseInternalTexture();
+        expect(texture.samplingMode).toBe(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
     });
 
-    it("refuses what it cannot take, leaving both textures unchanged", () => {
-        const texture = loaded("texture.png");
-        const own = texture.getInternalTexture()!;
-        const refused: Array<[string, () => Texture]> = [
-            ["another orientation", () => loaded("flipped.png", { invertY: false })],
-            ["a V scale inverted by its loading", () => loaded("vscale.png", { invertVScale: true })],
+    it("refuses what it cannot take or replace, leaving both textures unchanged", () => {
+        const refused: Array<[string, () => [Texture, Texture]]> = [
+            ["another orientation", () => [loaded("texture.png"), loaded("flipped.png", { invertY: false })]],
+            ["a V scale inverted by its loading", () => [loaded("texture.png"), loaded("vscale.png", { invertVScale: true })]],
             [
                 "an image still loading",
                 () => {
                     const source = loaded("loading.png");
                     source.getInternalTexture()!.isReady = false;
-                    return source;
+                    return [loaded("texture.png"), source];
                 },
             ],
             [
@@ -84,27 +99,34 @@ describe("Texture.replaceImage", () => {
                 () => {
                     const source = loaded("nourl.png");
                     source.url = null;
-                    return source;
+                    return [loaded("texture.png"), source];
                 },
             ],
-            ["a render target", () => new RenderTargetTexture("target", 4, scene)],
+            ["a cube image", () => [loaded("texture.png"), loaded("cube.dds", { cube: true })]],
+            ["a raw image", () => [loaded("texture.png"), loaded("raw.png", { source: InternalTextureSource.Raw })]],
+            ["a render target", () => [loaded("texture.png"), new RenderTargetTexture("target", 4, scene)]],
+            ["a render target taking an image", () => [new RenderTargetTexture("target", 4, scene), loaded("source.png")]],
+            ["a dynamic image replaced", () => [loaded("dynamic.png", { source: InternalTextureSource.Dynamic }), loaded("source.png")]],
             [
                 "another engine",
                 () => {
                     const other = new NullEngine();
                     others.push(other);
-                    return loaded("other.png", {}, new Scene(other));
+                    return [loaded("texture.png"), loaded("other.png", {}, new Scene(other))];
                 },
             ],
         ];
         for (const [why, make] of refused) {
-            const source = make();
+            const [texture, source] = make();
+            const own = texture.getInternalTexture();
+            const ownReferences = own?._references;
+            const url = texture.url;
             const image = source.getInternalTexture();
             const references = image?._references;
             expect(texture.replaceImage(source), why).toBe(false);
             expect(texture.getInternalTexture(), why).toBe(own);
-            expect(own._references, why).toBe(1);
-            expect(texture.url, why).toBe("texture.png");
+            expect(own?._references, why).toBe(ownReferences);
+            expect(texture.url, why).toBe(url);
             expect(source.getInternalTexture(), why).toBe(image);
             expect(image?._references, why).toBe(references);
         }
@@ -154,11 +176,15 @@ describe("Texture.replaceImage", () => {
         expect(markDirty).toHaveBeenCalledTimes(1);
     });
 
-    it("records a FAST snapshot again", () => {
+    it("records a snapshot again, in the STANDARD mode as in the FAST one", () => {
         vi.spyOn(engine, "snapshotRendering", "get").mockReturnValue(true);
-        vi.spyOn(engine, "snapshotRenderingMode", "get").mockReturnValue(Constants.SNAPSHOTRENDERING_FAST);
+        const mode = vi.spyOn(engine, "snapshotRenderingMode", "get");
         const reset = vi.spyOn(engine, "snapshotRenderingReset").mockImplementation(() => {});
-        loaded("texture.png").replaceImage(loaded("source.png"));
-        expect(reset).toHaveBeenCalledTimes(1);
+        for (const snapshotMode of [Constants.SNAPSHOTRENDERING_STANDARD, Constants.SNAPSHOTRENDERING_FAST]) {
+            mode.mockReturnValue(snapshotMode);
+            reset.mockClear();
+            loaded("texture.png").replaceImage(loaded("source.png"));
+            expect(reset, `mode ${snapshotMode}`).toHaveBeenCalledTimes(1);
+        }
     });
 });
