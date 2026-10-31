@@ -126,6 +126,7 @@ function createCommand(overrides: Partial<IWebGPURenderPassIndexedDrawCommand> =
         instancesCount: 2,
         start: 5,
         indirectDrawBuffer: null,
+        indirectDrawByteOffset: 0,
         ...overrides,
     };
 }
@@ -144,15 +145,21 @@ function createNonIndexedCommand(overrides: Partial<IWebGPURenderPassNonIndexedD
         instancesCount: 1,
         start: 4,
         indirectDrawBuffer: null,
+        indirectDrawByteOffset: 0,
         ...overrides,
     };
 }
 
 function parseOpcodes(words: number[]): number[] {
-    const opcodes: number[] = [];
+    return parseOpcodePositions(words).map((position) => position.opcode);
+}
+
+// each opcode with the index of its word, to read its operands
+function parseOpcodePositions(words: number[]): Array<{ opcode: number; index: number }> {
+    const opcodes: Array<{ opcode: number; index: number }> = [];
     for (let index = 0; index < words.length;) {
         const opcode = words[index];
-        opcodes.push(opcode);
+        opcodes.push({ opcode, index });
 
         switch (opcode) {
             case WebGPURenderPassCommandOpcode.setPipeline:
@@ -455,6 +462,33 @@ describe("WebGPURenderPassCommandStream", () => {
         expect(records[0].multiDrawDrawCount).toBe(0);
         expect(opcodes).toContain(WebGPURenderPassCommandOpcode.drawIndexedIndirect);
         expect(opcodes).toContain(WebGPURenderPassCommandOpcode.drawIndirect);
+    });
+
+    it("records the offset of the arguments in an indirect draw buffer", () => {
+        const { renderPass, records } = createRecordingRenderPass();
+        const stream = createStream();
+
+        expect(stream.tryAppend(createCommand({ renderPass, indirectDrawBuffer: createResource<GPUBuffer>(501), indirectDrawByteOffset: 40 }))).toBe(true);
+        expect(stream.tryAppend(createNonIndexedCommand({ renderPass, indirectDrawBuffer: createResource<GPUBuffer>(502), indirectDrawByteOffset: 16 }))).toBe(true);
+        stream.flush();
+
+        // an indirect draw is its opcode, the buffer's id (u64) and the offset (u64, its low word first)
+        const words = records[0].words;
+        const offsets = parseOpcodePositions(words)
+            .filter((p) => p.opcode === WebGPURenderPassCommandOpcode.drawIndexedIndirect || p.opcode === WebGPURenderPassCommandOpcode.drawIndirect)
+            .map((p) => words[p.index + 3] + words[p.index + 4] * 0x100000000);
+        expect(offsets).toEqual([40, 16]);
+    });
+
+    it("applies an indirect draw at the offset of its arguments", () => {
+        const { renderPass, calls } = createReplayRenderPass();
+        ApplyWebGPURenderPassDrawCommand(createCommand({ renderPass, indirectDrawBuffer: createResource<GPUBuffer>(501), indirectDrawByteOffset: 40 }));
+        ApplyWebGPURenderPassDrawCommand(createNonIndexedCommand({ renderPass, indirectDrawBuffer: createResource<GPUBuffer>(502), indirectDrawByteOffset: 16 }));
+
+        expect(calls.filter((call) => call[0] === "drawIndexedIndirect" || call[0] === "drawIndirect")).toEqual([
+            ["drawIndexedIndirect", 501, 40],
+            ["drawIndirect", 502, 16],
+        ]);
     });
 
     it("grows command storage for long compatible runs without corrupting opcodes", () => {

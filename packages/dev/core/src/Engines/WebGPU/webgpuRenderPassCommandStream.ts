@@ -104,6 +104,8 @@ interface IWebGPURenderPassDrawCommandBase {
     instancesCount: number;
     start: number;
     indirectDrawBuffer: Nullable<GPUBuffer>;
+    /** The offset of the arguments in indirectDrawBuffer, in bytes (0 but for the application's buffers of GPU-written arguments) */
+    indirectDrawByteOffset: number;
 }
 
 /** @internal */
@@ -144,6 +146,7 @@ export function CreateWebGPURenderPassIndexedDrawCommand(): IWebGPURenderPassInd
         instancesCount: 0,
         start: 0,
         indirectDrawBuffer: null,
+        indirectDrawByteOffset: 0,
     };
 }
 
@@ -164,6 +167,7 @@ export function CreateWebGPURenderPassNonIndexedDrawCommand(): IWebGPURenderPass
         instancesCount: 0,
         start: 0,
         indirectDrawBuffer: null,
+        indirectDrawByteOffset: 0,
     };
 }
 
@@ -197,9 +201,9 @@ export function ApplyWebGPURenderPassDrawCommand(command: IWebGPURenderPassDrawC
 
     if (command.indirectDrawBuffer) {
         if (isIndexedDraw) {
-            renderPass.drawIndexedIndirect(command.indirectDrawBuffer, DefaultBufferOffset);
+            renderPass.drawIndexedIndirect(command.indirectDrawBuffer, command.indirectDrawByteOffset);
         } else {
-            renderPass.drawIndirect(command.indirectDrawBuffer, DefaultBufferOffset);
+            renderPass.drawIndirect(command.indirectDrawBuffer, command.indirectDrawByteOffset);
         }
     } else if (isIndexedDraw) {
         renderPass.drawIndexed(command.count, command.instancesCount || 1, command.start, DefaultBaseVertex, DefaultFirstInstance);
@@ -395,7 +399,7 @@ export class WebGPURenderPassCommandStream {
         if (command.indirectDrawBuffer) {
             this._pushU32(isIndexedDraw ? WebGPURenderPassCommandOpcode.drawIndexedIndirect : WebGPURenderPassCommandOpcode.drawIndirect);
             this._pushU64(indirectDrawBufferId);
-            this._pushU64(DefaultBufferOffset);
+            this._pushU64(command.indirectDrawByteOffset);
         } else if (isIndexedDraw) {
             this._pushU32(WebGPURenderPassCommandOpcode.drawIndexed);
             this._pushU32(command.count);
