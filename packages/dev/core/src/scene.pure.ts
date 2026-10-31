@@ -5321,7 +5321,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
         const fastSnapshotMode = engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
-        if (fastSnapshotMode) {
+        // also while a snapshot records: draws encoded again from their recorded commands do not bind the materials that finalize it
+        if (engine.snapshotRendering) {
             this.finalizeSceneUbo();
         }
         this._renderingManager.render(null, null, true, !fastSnapshotMode);

@@ -499,6 +499,17 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
+     * @internal (prototype) While a snapshot records again, a draw whose mesh and material did not change is encoded from the
+     * commands it was recorded with, without binding its mesh and material
+     */
+    public _snapshotCachedDraws = false;
+
+    /** @internal */
+    public override get _recordsDraws(): boolean {
+        return this._snapshotRendering.record && this._snapshotCachedDraws;
+    }
+
+    /**
      * Enables or disables the snapshot rendering mode
      * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
      */
@@ -4013,6 +4024,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
 
+        if (this._recordsDraws) {
+            this._keepRecordedDraw(pipeline, bindGroups, drawKind, count, instancesCount, start);
+        }
+
         if (!this._snapshotRendering.record) {
             this._applyRenderPassChanges(!this.compatibilityMode ? bundleList : null);
             if (!this.compatibilityMode) {
@@ -4070,6 +4085,122 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         this._reportDrawCall();
+    }
+
+    private _keepRecordedDraw(
+        pipeline: GPURenderPipeline,
+        bindGroups: GPUBindGroup[],
+        drawKind: WebGPURenderPassDrawKind,
+        count: number,
+        instancesCount: number,
+        start: number
+    ): void {
+        const drawContext = this._currentDrawContext;
+        // the per-draw values of the effect are checked through the slot the draw context owns in the leftover uniform buffer
+        const leftOver = (this._currentEffect!._pipelineContext as WebGPUPipelineContext).uniformBuffer;
+        if (leftOver && (!this._useOwnerKeyedUniformBufferSlots || !leftOver._isOwnerSlotBound(drawContext))) {
+            drawContext._recordedDraw = undefined;
+            return;
+        }
+        const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
+        const indexBuffer = this._currentIndexBuffer;
+        drawContext._recordedDraw = {
+            renderTarget: this._currentRenderTarget,
+            sampleCount: this.currentSampleCount,
+            pipeline,
+            bindGroups: bindGroups.slice(),
+            indexBuffer: indexBuffer ? indexBuffer.underlyingResource : null,
+            indexFormat: indexBuffer?.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16,
+            vertexBuffers: vertexBuffers.map((vertexBuffer) => vertexBuffer.effectiveBuffer?.underlyingResource ?? null),
+            vertexOffsets: vertexBuffers.map((vertexBuffer) => (vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset)),
+            indirectBuffer: drawContext._enableIndirectDrawInCompatMode ? (drawContext.indirectDrawBuffer ?? null) : null,
+            indexed: drawKind === WebGPURenderPassDrawKind.INDEXED,
+            count,
+            instances: instancesCount || 1,
+            start,
+        };
+    }
+
+    /** @internal */
+    public override _canEncodeRecordedDraw(drawWrapper: DrawWrapper): boolean {
+        const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
+        const materialContext = drawWrapper.materialContext as Nullable<WebGPUMaterialContext>;
+        const draw = drawContext?._recordedDraw;
+        if (
+            !this._snapshotRendering.record ||
+            !draw ||
+            !materialContext ||
+            draw.renderTarget !== this._currentRenderTarget ||
+            draw.sampleCount !== this.currentSampleCount ||
+            drawContext.isDirty(materialContext.updateId) ||
+            materialContext.isDirty ||
+            materialContext.forceBindGroupCreation
+        ) {
+            return false;
+        }
+        return true;
+    }
+
+    /** @internal */
+    public override _replayRecordedDraw(drawWrapper: DrawWrapper): boolean {
+        if (!this._canEncodeRecordedDraw(drawWrapper)) {
+            return false;
+        }
+        const draw = (drawWrapper.drawContext as WebGPUDrawContext)._recordedDraw!;
+
+        const bundleList = this._bundleList;
+        this._getCurrentRenderPass();
+        this._applyRenderPassChanges(bundleList);
+        // as before a full draw: the draws the batcher holds go first
+        this._flushRenderPassCommands();
+        const encoder = bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount);
+        bundleList.numDrawCalls++;
+
+        encoder.setPipeline(draw.pipeline);
+        if (draw.indexBuffer) {
+            encoder.setIndexBuffer(draw.indexBuffer, draw.indexFormat, 0);
+        }
+        for (let i = 0; i < draw.vertexBuffers.length; i++) {
+            const buffer = draw.vertexBuffers[i];
+            if (buffer) {
+                encoder.setVertexBuffer(i, buffer, draw.vertexOffsets[i]);
+            }
+        }
+        for (let i = 0; i < draw.bindGroups.length; i++) {
+            encoder.setBindGroup(i, draw.bindGroups[i]);
+        }
+        if (draw.indirectBuffer) {
+            if (draw.indexed) {
+                encoder.drawIndexedIndirect(draw.indirectBuffer, 0);
+            } else {
+                encoder.drawIndirect(draw.indirectBuffer, 0);
+            }
+        } else if (draw.indexed) {
+            encoder.drawIndexed(draw.count, draw.instances, draw.start, 0, 0);
+        } else {
+            encoder.draw(draw.count, draw.instances, draw.start, 0);
+        }
+
+        this._reportDrawCall();
+        return true;
+    }
+
+    /** @internal */
+    public override _canKeepRecordedDraw(drawWrapper: DrawWrapper): boolean {
+        const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
+        const leftOver = (drawWrapper.effect?._pipelineContext as Nullable<WebGPUPipelineContext>)?.uniformBuffer;
+        return !!drawContext && (!leftOver || (this._useOwnerKeyedUniformBufferSlots && leftOver._isOwnerSlotBound(drawContext)));
+    }
+
+    /** @internal */
+    public override _hasSameDrawValues(drawWrapper: DrawWrapper, reference: DrawWrapper): boolean {
+        const leftOver = (drawWrapper.effect?._pipelineContext as Nullable<WebGPUPipelineContext>)?.uniformBuffer;
+        if (!leftOver) {
+            return true;
+        }
+        const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
+        const referenceContext = reference.drawContext as Nullable<WebGPUDrawContext>;
+        return !!drawContext && !!referenceContext && leftOver._isOwnerSlotEqual(drawContext, referenceContext);
     }
 
     /**

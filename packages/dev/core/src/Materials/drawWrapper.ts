@@ -47,6 +47,39 @@ export class DrawWrapper {
      */
     public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
 
+    /** @internal What the draw last recorded by a snapshot was rendered with: the draw is encoded again while they did not change */
+    public _recordedMaterial: Nullable<object> = null;
+    /** @internal */
+    public _recordedMaterialVersion = -1;
+    /** @internal */
+    public _recordedTexturesVersion = -1;
+    /** @internal */
+    public _recordedWorldFlag = -1;
+    /** @internal */
+    public _recordedVisibility = -1;
+    /** @internal */
+    public _recordedStart = -1;
+    /** @internal */
+    public _recordedCount = -1;
+    /** @internal The vertex range, which unindexed and point draws use */
+    public _recordedVerticesStart = -1;
+    /** @internal */
+    public _recordedVerticesCount = -1;
+    /** @internal The plain fields its material applies to the pipeline state when it binds (Material._getPipelineStateKey) */
+    public _recordedMaterialState = -1;
+    /** @internal */
+    public _recordedZOffset = 0;
+    /** @internal */
+    public _recordedZOffsetUnits = 0;
+    /** @internal */
+    public _recordedIndexBuffer: Nullable<object> = null;
+    /** @internal The vertex buffers of the geometry and of the thin instances */
+    public _recordedVertexBuffers: Nullable<Array<Nullable<object>>> = null;
+    /** @internal */
+    public _recordedInstances = -1;
+    /** @internal The shadow map and the buffer the generator binds to receivers, for each light the draw was recorded with: they are in its bind groups */
+    public _recordedLights: Nullable<Array<Nullable<object>>> = null;
+
     /**
      * Retrieves the effect from a DrawWrapper or Effect instance.
      * @param effect The effect or DrawWrapper instance to retrieve the effect from.

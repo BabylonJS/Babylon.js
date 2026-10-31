@@ -46,6 +46,11 @@ export class MaterialPluginManager {
     /** @internal */
     public _plugins: MaterialPluginBase[] = [];
     protected _activePlugins: MaterialPluginBase[] = [];
+
+    /** @internal Whether an active plugin binds on each draw (hard bind and other extra events) */
+    public get _bindsOnEachDraw(): boolean {
+        return this._activePluginsForExtraEvents.length > 0;
+    }
     protected _activePluginsForExtraEvents: MaterialPluginBase[] = [];
     protected _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
     protected _defineNamesFromPlugins?: { [name: string]: { type: string; default: any } };

@@ -982,6 +982,95 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     private _scene: Scene;
     protected _needToBindSceneUbo: boolean;
 
+    /** @internal Changes when what the material binds may have changed (see DrawWrapper._recordedMaterialVersion) */
+    public _drawCacheVersion = 0;
+
+    private _texturesVersion = 0;
+    private _recordedDrawReferences: Nullable<Map<object, { frameId: number; drawWrapper: Nullable<DrawWrapper> }>> = null;
+
+    /**
+     * @internal Keeps the draw a full bind of this material did with an effect in this frame: the draws of this material recorded
+     * with the same per-draw values as that draw can be encoded again without binding
+     * @param effect the effect of the draw
+     * @param drawWrapper the draw wrapper of the draw, or null if its per-draw values cannot be compared
+     */
+    public _keepRecordedDrawReference(effect: object, drawWrapper: Nullable<DrawWrapper>): void {
+        const references = (this._recordedDrawReferences ??= new Map());
+        const frameId = this._scene.getEngine().frameId;
+        const entry = references.get(effect);
+        if (entry) {
+            entry.frameId = frameId;
+            entry.drawWrapper = drawWrapper;
+        } else {
+            references.set(effect, { frameId, drawWrapper });
+        }
+    }
+
+    /**
+     * @internal Gets the draw kept by _keepRecordedDrawReference for an effect in this frame
+     * @param effect the effect of the draw
+     * @returns the draw wrapper, or null if no full bind of this material with this effect was kept in this frame
+     */
+    public _getRecordedDrawReference(effect: object): Nullable<DrawWrapper> {
+        const entry = this._recordedDrawReferences?.get(effect);
+        return entry && entry.frameId === this._scene.getEngine().frameId ? entry.drawWrapper : null;
+    }
+    private _texturesVersionFrameId = -1;
+    private _texturesVersionInternals: Nullable<object>[] = [];
+
+    /**
+     * @internal Changes when a texture of the material uses another GPU texture without dirtying the material (a streamed texture
+     * swapping its internal texture): checked once per frame (see DrawWrapper._recordedTexturesVersion)
+     * @returns the version
+     */
+    public _getTexturesVersion(): number {
+        const frameId = this._scene.getEngine().frameId;
+        if (this._texturesVersionFrameId !== frameId) {
+            this._texturesVersionFrameId = frameId;
+            const textures = this.getActiveTextures();
+            const internals = this._texturesVersionInternals;
+            let changed = textures.length !== internals.length;
+            for (let i = 0; i < textures.length; i++) {
+                const internal = textures[i].getInternalTexture();
+                if (internals[i] !== internal) {
+                    internals[i] = internal;
+                    changed = true;
+                }
+            }
+            internals.length = textures.length;
+            if (changed) {
+                this._texturesVersion++;
+            }
+        }
+        return this._texturesVersion;
+    }
+
+    /**
+     * @internal Whether a draw a snapshot recorded with this material can be encoded again without binding it: only WGSL (its values
+     * are in the effect's leftover uniform buffer, which the engine checks), and not when binding or unbinding it runs code that can
+     * change on each draw (bind and unbind observers, plugins binding on each draw) or sets states outside of the pipeline (stencil,
+     * two passes)
+     */
+    public _canReplayRecordedDraw(): boolean {
+        return (
+            this._shaderLanguage === ShaderLanguage.WGSL &&
+            this._storeEffectOnSubMeshes &&
+            !this._onBindObservable?.hasObservers() &&
+            !this._onUnBindObservable?.hasObservers() &&
+            !this.pluginManager?._bindsOnEachDraw &&
+            !this.stencil.enabled &&
+            !(this.separateCullingPass && !this.backFaceCulling)
+        );
+    }
+
+    /**
+     * @internal The plain fields the material applies to the pipeline state when it binds, packed in a number: changing them does not
+     * mark the material dirty, so a recorded draw compares them (with zOffset and zOffsetUnits) before it is encoded again
+     */
+    public _getPipelineStateKey(): number {
+        return (this.disableDepthWrite ? 1 : 0) | (this.disableColorWrite ? 2 : 0) | (this.forceDepthWrite ? 4 : 0) | (this.depthFunction << 3);
+    }
+
     /**
      * Stores the fill mode state
      */
@@ -1871,6 +1960,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param func defines a function which checks material defines against the submeshes
      */
     protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
+        // what the material binds may have changed: the draws a snapshot recorded with it are bound again
+        this._drawCacheVersion++;
         const scene = this.getScene();
         if (scene.blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
