@@ -58,6 +58,7 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
 
     public static ResetCache() {
         WebGPUCacheRenderPipelineTree._Cache = new NodeState();
+        WebGPUCacheRenderPipeline._ResetAsyncCreations();
     }
 
     public override reset(): void {

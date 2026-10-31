@@ -348,6 +348,12 @@ class _InternalAbstractMeshDataInfo {
      * Used in frame graph mode only, to know which meshes to update when in frozen mode
      */
     public _wasActiveLastFrame = false;
+    /**
+     * Asynchronous pipeline creation: the last frame in which a draw of the mesh waited for its render pipeline, and the last frame in
+     * which one was done (shared by the draw contexts of all the passes of the mesh)
+     */
+    public _pipelinePendingFrameId = -2;
+    public _pipelineDrawnFrameId = -1;
 }
 
 /**

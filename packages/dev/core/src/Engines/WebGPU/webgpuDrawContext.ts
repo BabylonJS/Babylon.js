@@ -40,6 +40,12 @@ export class WebGPUDrawContext implements IDrawContext {
 
     public indirectDrawBuffer?: GPUBuffer;
 
+    /**
+     * The state the draws of a mesh share, in all its passes, to wait together for their render pipelines (asynchronous pipeline creation)
+     * @internal
+     */
+    public _pipelineWait: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null;
+
     private _materialContextUpdateId: number;
     private _bufferManager: WebGPUBufferManager;
     private _useInstancing: boolean;

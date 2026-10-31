@@ -158,6 +158,10 @@ export class ShadowDepthWrapper {
         if (!drawWrapper) {
             drawWrapper = entry.drawWrapper[passIdForDrawWrapper] = new DrawWrapper(this._scene.getEngine());
             drawWrapper.setEffect(entry.mainDrawWrapper.effect, entry.mainDrawWrapper.defines);
+            if (drawWrapper.drawContext && subMesh) {
+                // the shadow map draws of the mesh wait with its other passes (asynchronous pipeline creation)
+                drawWrapper.drawContext._pipelineWait = subMesh.getMesh()._internalAbstractMeshDataInfo;
+            }
         }
 
         return drawWrapper;
@@ -215,6 +219,11 @@ export class ShadowDepthWrapper {
         let params = this._subMeshToDepthWrapper.get(subMesh, shadowGenerator);
         if (!params) {
             const mainDrawWrapper = new DrawWrapper(engine);
+            if (mainDrawWrapper.drawContext) {
+                // the shadow map draws of the mesh wait with its other passes (asynchronous pipeline creation): the first pass's too,
+                // whose draw wrapper is this one (getEffect links the wrappers of the other passes)
+                mainDrawWrapper.drawContext._pipelineWait = subMesh.getMesh()._internalAbstractMeshDataInfo;
+            }
             const originalDefines = subMesh._getDrawWrapper(origRenderPassId)?.defines;
             mainDrawWrapper.defines = typeof originalDefines === "string" ? null : (originalDefines ?? null);
 

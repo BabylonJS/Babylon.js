@@ -55,6 +55,10 @@ export class SubMesh implements ICullable {
         let drawWrapper = this._drawWrappers[passId];
         if (!drawWrapper && createIfNotExisting) {
             this._drawWrappers[passId] = drawWrapper = new DrawWrapper(this._mesh.getScene().getEngine());
+            if (drawWrapper.drawContext) {
+                // the draws of a mesh, in all its passes, wait together for their render pipelines (asynchronous pipeline creation)
+                drawWrapper.drawContext._pipelineWait = this._mesh._internalAbstractMeshDataInfo;
+            }
         }
         return drawWrapper;
     }

@@ -1,3 +1,5 @@
+import { type Nullable } from "../types";
+
 /**
  * Interface representing a draw context at the GPU level (draw call)
  */
@@ -33,6 +35,11 @@ export interface IDrawContext {
     reset(): void;
     /** Releases effect-specific uniform-buffer reservations. @internal */
     _releaseUniformBufferSlots?(): void;
+    /**
+     * The state the draws of a mesh share, in all its passes, to wait together for their render pipelines (asynchronous pipeline creation)
+     * @internal
+     */
+    _pipelineWait?: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }>;
     /**
      * Disposes the draw context and its resources.
      */

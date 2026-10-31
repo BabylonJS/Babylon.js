@@ -1059,7 +1059,18 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param dumpForDebug Define if the rendering result should be dumped (copied) for debugging purpose
      */
     public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
+        const engine = this.getScene()?.getEngine();
+        if (!engine || this.refreshRate !== RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
+            this._render(useCameraPostProcess, dumpForDebug);
+            return;
+        }
+        // rendered once: every mesh is drawn in this rendering, none waits for its pipeline (asynchronous pipeline creation)
+        const drawsMayWait = engine._drawsMayWait;
+        engine._drawsMayWait = false;
+        engine._renderingOnce++;
         this._render(useCameraPostProcess, dumpForDebug);
+        engine._renderingOnce--;
+        engine._drawsMayWait = drawsMayWait;
     }
 
     private _dumpToolsLoading = false;
