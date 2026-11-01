@@ -82,6 +82,20 @@ describe("Texture.replaceImage", () => {
         expect(texture.samplingMode).toBe(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
     });
 
+    it("round-trips through serialize and parse to the image it shows, its name following the url only when it did", () => {
+        const texture = loaded("old.png");
+        texture.name = "old.png";
+        expect(texture.replaceImage(loaded("new.png"))).toBe(true);
+        expect(texture.name).toBe("new.png");
+        const parsed = Texture.Parse(texture.serialize(), scene, "") as Texture;
+        expect(parsed.url).toBe("new.png");
+
+        const named = loaded("old.png");
+        named.name = "ground";
+        expect(named.replaceImage(loaded("new.png"))).toBe(true);
+        expect(named.name).toBe("ground");
+    });
+
     it("refuses what it cannot take or replace, leaving both textures unchanged", () => {
         const refused: Array<[string, () => [Texture, Texture]]> = [
             ["another orientation", () => [loaded("texture.png"), loaded("flipped.png", { invertY: false })]],

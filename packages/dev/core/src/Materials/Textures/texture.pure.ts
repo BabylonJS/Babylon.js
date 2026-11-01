@@ -617,7 +617,9 @@ export class Texture extends BaseTexture {
      * so serializing it and loading it again gives the image it shows. Both textures then share the source's GPU texture, which stays alive
      * until both are disposed.
      * The materials that use this texture are marked as dirty only when the effective gamma space or the RGBD encoding changes; otherwise
-     * they bind the new image at their next draw. With snapshot rendering, the snapshot is recorded again.
+     * they bind the new image at their next draw. A frozen material keeps the values it computed from the old image's size (for example
+     * a PBR 2D reflection texture's width in its uniform buffer) until it is unfrozen or marked as dirty. With snapshot rendering, the
+     * snapshot is recorded again.
      * @param source the loaded texture whose image this texture takes
      * @returns true when this texture shows the source's image (replacing a texture with itself included); false when the image cannot be
      * taken, both textures then left unchanged: the image of one of them is not a 2D image loaded from a url or a buffer and ready (the
@@ -657,6 +659,10 @@ export class Texture extends BaseTexture {
             image.incrementReferences();
             this.releaseInternalTexture();
             this._texture = image;
+        }
+        // Texture.Parse loads from the name: a name that followed the old url follows the new one, so the round-trip loads the image shown
+        if (this.name === this.url) {
+            this.name = source.url ?? this.name;
         }
         this.url = source.url;
         this._buffer = source._buffer;
