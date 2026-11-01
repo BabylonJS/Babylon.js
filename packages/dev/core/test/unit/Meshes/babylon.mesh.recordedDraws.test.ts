@@ -203,6 +203,31 @@ describe("Mesh recorded draws", () => {
         }
     });
 
+    it("sees the engine's color writes, which the depth prepass turns off for the same draw wrapper", () => {
+        engine.setColorWrite(false);
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        engine.setColorWrite(true);
+        expect(unchanged()).toBe(false);
+    });
+
+    it("sees the effective side orientation, from the material or from the mesh, which do not mark the material dirty", () => {
+        const opposite = (orientation: number) =>
+            orientation === Constants.MATERIAL_CounterClockWiseSideOrientation
+                ? Constants.MATERIAL_ClockWiseSideOrientation
+                : Constants.MATERIAL_CounterClockWiseSideOrientation;
+        material.sideOrientation = opposite(material._getEffectiveOrientation(mesh));
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        material.sideOrientation = null;
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        mesh.sideOrientation = opposite(mesh.sideOrientation);
+        expect(unchanged()).toBe(false);
+    });
+
     it("needs its lights bound in the frame", () => {
         scene.incrementRenderId();
         expect(unchanged()).toBe(false);

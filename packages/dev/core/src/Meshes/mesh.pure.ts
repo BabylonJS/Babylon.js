@@ -2781,6 +2781,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedMaterialState !== material._getPipelineStateKey() ||
             drawWrapper._recordedZOffset !== material.zOffset ||
             drawWrapper._recordedZOffsetUnits !== material.zOffsetUnits ||
+            drawWrapper._recordedColorWrite !== this.getScene().getEngine().getColorWrite() ||
+            drawWrapper._recordedOrientation !== material._getEffectiveOrientation(this) ||
             drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
             drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0)
         ) {
@@ -2869,6 +2871,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         drawWrapper._recordedMaterialState = material._getPipelineStateKey();
         drawWrapper._recordedZOffset = material.zOffset;
         drawWrapper._recordedZOffsetUnits = material.zOffsetUnits;
+        drawWrapper._recordedColorWrite = scene.getEngine().getColorWrite();
+        drawWrapper._recordedOrientation = material._getEffectiveOrientation(this);
         drawWrapper._recordedIndexBuffer = this._geometry?.getIndexBuffer() ?? null;
         const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
         recordedVertexBuffers.length = 0;
