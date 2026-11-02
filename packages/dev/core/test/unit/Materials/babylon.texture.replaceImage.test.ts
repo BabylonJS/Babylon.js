@@ -241,11 +241,13 @@ describe("Texture.replaceImage", () => {
         expect(image._references).toBe(1);
     });
 
-    // a frozen material drawn once with the texture
-    function drawnWith(texture: Texture) {
+    // a material drawn once with the texture
+    function drawnWith(texture: Texture, frozen = true) {
         const material = new Material("material", scene);
         material.hasTexture = (t) => t === texture;
-        material.freeze();
+        if (frozen) {
+            material.freeze();
+        }
         const plane = CreatePlane("plane", {}, scene);
         plane.material = material;
         const drawWrapper = plane.subMeshes[0]._getDrawWrapper(undefined, true)!;
@@ -253,7 +255,21 @@ describe("Texture.replaceImage", () => {
         return { material, drawWrapper };
     }
 
-    it("makes the materials that use it, frozen ones included, compute again what they read from the image, only when it changes", () => {
+    it("marks no material that is not frozen when only the size changes, as streaming does, and marks it when its defines change", () => {
+        const texture = loaded("texture.png", { size: 256, gammaSpace: false, imageGamma: false });
+        const { material, drawWrapper } = drawnWith(texture, false);
+        const markAsDirty = vi.spyOn(material, "markAsDirty");
+
+        // the material writes the size into its uniforms at each bind
+        expect(texture.replaceImage(loaded("larger.png", { size: 1024, gammaSpace: false, imageGamma: false }))).toBe(true);
+        expect(markAsDirty).not.toHaveBeenCalled();
+        expect(drawWrapper._wasPreviouslyReady).toBe(true);
+
+        expect(texture.replaceImage(loaded("gamma.png", { size: 1024, gammaSpace: true, imageGamma: true }))).toBe(true);
+        expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag);
+    });
+
+    it("makes a frozen material that uses it compute again what it reads from the image, only when it changes", () => {
         const texture = loaded("texture.png", { size: 256 });
         const { drawWrapper } = drawnWith(texture);
 

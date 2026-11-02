@@ -81,24 +81,19 @@ function IsLoadedImage(texture: Nullable<InternalTexture>): texture is InternalT
     return !!texture && texture.isReady && texture.source === InternalTextureSource.Url && !texture.isCube && !texture.is3D && !texture.is2DArray;
 }
 
-// what the materials read from the image of a texture besides its texels: their defines and uniforms are computed from it
-function ImageState(texture: Texture): unknown[] {
+// what the materials turn into defines from the image of a texture
+function DefinesState(texture: Texture): unknown[] {
+    return [texture.gammaSpace, texture.isRGBD, texture.linearSpecularLOD, texture.irradianceTexture];
+}
+
+// what the materials only write into uniforms or bind from the image of a texture: a material that is not frozen does it at each bind
+function UniformsState(texture: Texture): unknown[] {
     const size = texture.getSize();
-    return [
-        texture.gammaSpace,
-        texture.isRGBD,
-        size.width,
-        size.height,
-        texture.lodGenerationOffset,
-        texture.lodGenerationScale,
-        texture.linearSpecularLOD,
-        texture.irradianceTexture,
-        texture.textureType,
-        texture.textureFormat,
-        texture._lodTextureHigh,
-        texture._lodTextureMid,
-        texture._lodTextureLow,
-    ];
+    return [size.width, size.height, texture.lodGenerationOffset, texture.lodGenerationScale, texture._lodTextureHigh, texture._lodTextureMid, texture._lodTextureLow];
+}
+
+function Differs(state: unknown[], previous: unknown[]): boolean {
+    return state.some((value, i) => value !== previous[i]);
 }
 
 /**
@@ -639,10 +634,11 @@ export class Texture extends BaseTexture {
      * Texture.Parse loads from rootUrl + name: a name that followed the url the image was loaded from follows the source's url, relative to
      * the same root (going up from it for a source outside it, when both urls are relative to the page), or the source's full url for an
      * absolute or data url. A name of its own is kept: as for any texture, Texture.Parse then loads from that name.
-     * The materials that use this texture, frozen ones included, compute their defines and uniforms again when something they read from
-     * the image besides its texels changes (gamma space, RGBD encoding, size, LOD generation, irradiance texture, type or format);
-     * otherwise they bind the new image at their next draw. With snapshot rendering, the snapshot is recorded again when the image or
-     * what the materials read from it changes.
+     * The materials that use this texture, frozen ones included, compute their defines again when something they turn into defines
+     * changes (gamma space, RGBD encoding, linear specular LOD, irradiance texture). What they only write into uniforms or bind (size, LOD
+     * generation, LOD textures) reaches the frozen ones only: the others write it at their next bind, so replacing an image with the
+     * same image at another size, as streaming does, marks no material that is not frozen. With snapshot rendering, the snapshot is
+     * recorded again when the image or the defines change.
      * @param source the loaded texture whose image this texture takes
      * @returns true when this texture shows the source's image (replacing a texture with itself included); false when the image cannot be
      * taken, both textures then left unchanged: the image of one of them is not a 2D image loaded from a url or a buffer and ready (the
@@ -677,7 +673,8 @@ export class Texture extends BaseTexture {
 
         // what the materials read from the image, before the swap. The source's image keeps the source's gamma: when it is not set yet, it
         // comes from the source's wrapper, as the gammaSpace getter would set it, and not from this one's, as it would after the swap
-        const state = ImageState(this);
+        const defines = DefinesState(this);
+        const uniforms = UniformsState(this);
         if (image._gammaSpace === null) {
             image._gammaSpace = source._gammaSpace;
         }
@@ -714,20 +711,24 @@ export class Texture extends BaseTexture {
         this._gammaSpace = source._gammaSpace;
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
 
-        const newState = ImageState(this);
-        const stateChanged = newState.some((value, i) => value !== state[i]);
-        if (stateChanged) {
-            // markDirty(true) also reaches the frozen materials, which skip the dirty flags alone
+        const definesChanged = Differs(DefinesState(this), defines);
+        if (definesChanged || Differs(UniformsState(this), uniforms)) {
             for (const material of scene.materials) {
-                if (material.hasTexture(this)) {
+                if (!material.hasTexture(this)) {
+                    continue;
+                }
+                if (material.isFrozen) {
+                    // a frozen material skips the dirty flags and its uniform writes: markDirty(true) makes it do both again
                     material.markDirty(true);
+                } else if (definesChanged) {
+                    material.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                 }
             }
         }
         // a snapshot replays the bundles it recorded, whose bind groups hold the previous image, in both modes: a STANDARD one binds the
         // new image to the materials but draws nothing new
         const engine = scene.getEngine() as WebGPUEngine;
-        if ((image !== own || stateChanged) && engine.snapshotRendering) {
+        if ((image !== own || definesChanged) && engine.snapshotRendering) {
             engine.snapshotRenderingReset();
         }
         return true;
