@@ -510,6 +510,13 @@ export abstract class AbstractEngine {
     public _renderingOnce = 0;
 
     /**
+     * @internal The mesh whose draws are being submitted (Mesh._processRendering, in any of its passes and whatever draw context its
+     * material gives them): its draws wait together for their render pipelines (WebGPU asynchronous pipeline creation). Null for every
+     * other draw (the bounding box of an occlusion query, a post-process, sprites, particles...), which never waits.
+     */
+    public _pipelineWaitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null;
+
+    /**
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;

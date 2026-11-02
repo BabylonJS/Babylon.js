@@ -5670,8 +5670,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Render the graph: its passes are rendered again in the next frames, so their mesh draws may wait for their pipelines
         const drawsMayWait = this._engine._drawsMayWait;
         this._engine._drawsMayWait = this._engine._renderingOnce === 0;
-        this.frameGraph?.execute();
-        this._engine._drawsMayWait = drawsMayWait;
+        try {
+            this.frameGraph?.execute();
+        } finally {
+            this._engine._drawsMayWait = drawsMayWait;
+        }
     }
 
     /**
@@ -5697,8 +5700,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // rendered by the scene's frame: its mesh draws may wait for their pipelines, unless it renders once (RenderTargetTexture.render)
             const drawsMayWait = this._engine._drawsMayWait;
             this._engine._drawsMayWait = this._engine._renderingOnce === 0;
-            renderTarget.render(useCameraPostProcess, dumpForDebug);
-            this._engine._drawsMayWait = drawsMayWait;
+            try {
+                renderTarget.render(useCameraPostProcess, dumpForDebug);
+            } finally {
+                this._engine._drawsMayWait = drawsMayWait;
+            }
         }
         this._intermediateRendering = false;
     }
@@ -5845,19 +5851,21 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // frame is rendered once (a screenshot)
             const drawsMayWait = this._engine._drawsMayWait;
             this._engine._drawsMayWait = this._engine._renderingOnce === 0;
-            if (this.activeCameras && this.activeCameras.length > 0) {
-                for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                    this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
-                }
-            } else {
-                if (!this.activeCamera) {
-                    this._engine._drawsMayWait = drawsMayWait;
-                    throw new Error("No camera defined");
-                }
+            try {
+                if (this.activeCameras && this.activeCameras.length > 0) {
+                    for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                        this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
+                    }
+                } else {
+                    if (!this.activeCamera) {
+                        throw new Error("No camera defined");
+                    }
 
-                this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+                    this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+                }
+            } finally {
+                this._engine._drawsMayWait = drawsMayWait;
             }
-            this._engine._drawsMayWait = drawsMayWait;
         }
 
         this._inputManager._updateMeshUnderPointer();

@@ -2497,51 +2497,60 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const engine = scene.getEngine();
         fillMode = this._getRenderingFillMode(fillMode);
 
-        if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
-            this._renderWithThinInstances(subMesh, fillMode, effect, engine);
-            return this;
-        }
-
-        if (hardwareInstancedRendering) {
-            this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
-        } else {
-            if (engine._currentDrawContext) {
-                engine._currentDrawContext.useInstancing = false;
+        // the draws below are the mesh's, in whatever draw context its material gives them (its own, or one shared by the meshes of the
+        // material): in all its passes they wait together for their render pipelines (WebGPU asynchronous pipeline creation). A draw done
+        // anywhere else never waits
+        const pipelineWaitOwner = engine._pipelineWaitOwner;
+        engine._pipelineWaitOwner = subMesh.getMesh()._internalAbstractMeshDataInfo;
+        try {
+            if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
+                this._renderWithThinInstances(subMesh, fillMode, effect, engine);
+                return this;
             }
 
-            let instanceCount = 0;
-            if (batch.renderSelf[subMesh._id]) {
-                // Draw
-                if (onBeforeDraw) {
-                    onBeforeDraw(false, renderingMesh.getWorldMatrix(), effectiveMaterial);
+            if (hardwareInstancedRendering) {
+                this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
+            } else {
+                if (engine._currentDrawContext) {
+                    engine._currentDrawContext.useInstancing = false;
                 }
-                instanceCount++;
 
-                this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
-            }
+                let instanceCount = 0;
+                if (batch.renderSelf[subMesh._id]) {
+                    // Draw
+                    if (onBeforeDraw) {
+                        onBeforeDraw(false, renderingMesh.getWorldMatrix(), effectiveMaterial);
+                    }
+                    instanceCount++;
 
-            const visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
+                    this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
+                }
 
-            if (visibleInstancesForSubMesh) {
-                const visibleInstanceCount = visibleInstancesForSubMesh.length;
-                instanceCount += visibleInstanceCount;
+                const visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
+
+                if (visibleInstancesForSubMesh) {
+                    const visibleInstanceCount = visibleInstancesForSubMesh.length;
+                    instanceCount += visibleInstanceCount;
+
+                    // Stats
+                    for (let instanceIndex = 0; instanceIndex < visibleInstanceCount; instanceIndex++) {
+                        const instance = visibleInstancesForSubMesh[instanceIndex];
+
+                        // World
+                        const world = instance.getWorldMatrix();
+                        if (onBeforeDraw) {
+                            onBeforeDraw(true, world, effectiveMaterial);
+                        }
+                        // Draw
+                        this._draw(subMesh, fillMode);
+                    }
+                }
 
                 // Stats
-                for (let instanceIndex = 0; instanceIndex < visibleInstanceCount; instanceIndex++) {
-                    const instance = visibleInstancesForSubMesh[instanceIndex];
-
-                    // World
-                    const world = instance.getWorldMatrix();
-                    if (onBeforeDraw) {
-                        onBeforeDraw(true, world, effectiveMaterial);
-                    }
-                    // Draw
-                    this._draw(subMesh, fillMode);
-                }
+                scene._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
             }
-
-            // Stats
-            scene._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
+        } finally {
+            engine._pipelineWaitOwner = pipelineWaitOwner;
         }
         return this;
     }

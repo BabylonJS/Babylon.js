@@ -1,78 +1,439 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
+import { Constants } from "core/Engines/constants";
+import { NullEngine } from "core/Engines/nullEngine";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
+import { WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList";
+import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
+import {
+    ApplyWebGPURenderPassDrawCommand,
+    CreateWebGPURenderPassIndexedDrawCommand,
+    CreateWebGPURenderPassNonIndexedDrawCommand,
+    type IWebGPURenderPassDrawCommand,
+} from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
+import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
+import { DrawWrapper } from "core/Materials/drawWrapper";
+import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { Observable } from "core/Misc/observable";
+import { Scene } from "core/scene";
+import { type Nullable } from "core/types";
+import "core/Rendering/boundingBoxRenderer";
 
 /**
- * Asynchronous pipeline creation: what the engine does with a mesh draw that waits for its render pipeline (WebGPUEngine._omitDraw),
- * run on the few members it uses. Outside of a snapshot recording the mesh is marked; in a recording, the snapshot must never replay
- * a frame that shows a mesh in some passes only, and must be recorded again once the pipelines it misses are created.
+ * Asynchronous pipeline creation, through the engine's own draw path: WebGPUEngine.drawElementsType (_draw, _omitDraw), beginFrame,
+ * endFrame and the end of each render pass, with the engine's snapshot rendering and bundle list. Only the GPU is replaced: the passes
+ * and bundle encoders record the pipelines they draw with, and the pipeline cache creates a pipeline asynchronously as the real one
+ * does (one creation per configuration, cached once it completes), but completes it when the test says so.
  */
-describe("WebGPUEngine asynchronous pipeline creation", () => {
-    let engine: any;
-    let owner: { _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number };
-    let bundleList: { numDrawCalls: number };
-    let resolvePipeline: (pipeline: GPURenderPipeline) => void;
 
-    const omit = (pipeline: GPURenderPipeline | null) => (WebGPUEngine.prototype as any)._omitDraw.call(engine, owner, pipeline, bundleList);
+type WaitOwner = { _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number };
+
+// a render pass or a render bundle encoder: the labels of the pipelines it draws with, in order
+class GpuRecorder {
+    public draws: string[] = [];
+    private _pipeline: { label: string } = { label: "" };
+
+    public constructor(private _onEnd?: (draws: string[]) => void) {}
+
+    public setPipeline(pipeline: { label: string }) {
+        this._pipeline = pipeline;
+    }
+    public setIndexBuffer() {}
+    public setVertexBuffer() {}
+    public setBindGroup() {}
+    public drawIndexed() {
+        this.draws.push(this._pipeline.label);
+    }
+    public draw() {
+        this.draws.push(this._pipeline.label);
+    }
+    public executeBundles(bundles: Array<{ draws: string[] }>) {
+        for (const bundle of bundles) {
+            this.draws.push(...bundle.draws);
+        }
+    }
+    public finish() {
+        return { draws: this.draws.slice() };
+    }
+    public end() {
+        this._onEnd?.(this.draws);
+    }
+}
+
+// the render pipeline cache, by pipeline configuration (here the effect): tryGetRenderPipeline starts one asynchronous creation per
+// configuration and returns null until it completes, getRenderPipeline creates the pipeline synchronously
+class PipelineCache {
+    public lastPendingPipeline: Nullable<Promise<GPURenderPipeline>> = null;
+    public vertexBuffers = [];
+    public indexBuffer = null;
+    public colorFormats = ["bgra8unorm"];
+    // the configurations created synchronously, in a frame
+    public synchronous: string[] = [];
+    private _created = new Map<string, GPURenderPipeline>();
+    private _pending = new Map<string, { promise: Promise<GPURenderPipeline>; resolve: (pipeline: GPURenderPipeline) => void }>();
+
+    public tryGetRenderPipeline(_fillMode: number, effect: { key: string }): Nullable<GPURenderPipeline> {
+        const created = this._created.get(effect.key);
+        if (created) {
+            return created;
+        }
+        let pending = this._pending.get(effect.key);
+        if (!pending) {
+            let resolve!: (pipeline: GPURenderPipeline) => void;
+            const promise = new Promise<GPURenderPipeline>((ok) => (resolve = ok));
+            pending = { promise, resolve };
+            this._pending.set(effect.key, pending);
+        }
+        this.lastPendingPipeline = pending.promise;
+        return null;
+    }
+
+    public getRenderPipeline(_fillMode: number, effect: { key: string }): GPURenderPipeline {
+        let pipeline = this._created.get(effect.key);
+        if (!pipeline) {
+            pipeline = this._pipeline(effect.key);
+            this.synchronous.push(effect.key);
+        }
+        return pipeline;
+    }
+
+    // pipelines created before the frames of the test (by preWarmPipeline, say)
+    public prepare(...keys: string[]): void {
+        for (const key of keys) {
+            this._pipeline(key);
+        }
+    }
+
+    // the asynchronous creation of a configuration completes: the pipeline is cached, then the creation's promise resolves
+    public async completeAsync(key: string): Promise<void> {
+        const pending = this._pending.get(key)!;
+        this._pending.delete(key);
+        pending.resolve(this._pipeline(key));
+        await pending.promise;
+    }
+
+    public endFrame(): void {}
+
+    private _pipeline(key: string): GPURenderPipeline {
+        const pipeline = { label: key } as unknown as GPURenderPipeline;
+        this._created.set(key, pipeline);
+        return pipeline;
+    }
+}
+
+function CreateEngine(compatibilityMode: boolean) {
+    // the passes the GPU ran, each with the pipelines of its draws
+    const passes: string[][] = [];
+    const device = { createRenderBundleEncoder: () => new GpuRecorder() } as unknown as GPUDevice;
+    const engine = Object.create(WebGPUEngine.prototype);
+    const bundleList = new WebGPUBundleList(device);
+    const counters = () => ({ numEnableEffects: 0, numEnableDrawWrapper: 0, numBundleCreationNonCompatMode: 0, numBundleReuseNonCompatMode: 0 });
+    Object.assign(engine, {
+        // what the engine's constructor and field initializers set up (Object.create runs neither)
+        compatibilityMode,
+        asynchronousPipelineCreation: true,
+        _drawsMayWait: true,
+        _renderingOnce: 0,
+        _pipelineWaitOwner: null,
+        _frameId: 0,
+        _device: device,
+        _bundleList: bundleList,
+        _snapshotRendering: new WebGPUSnapshotRendering(engine, Constants.SNAPSHOTRENDERING_STANDARD, bundleList),
+        _snapshotPendingPipelines: new Set(),
+        _snapshotRecordAgain: false,
+        _snapshotHeldBack: false,
+        _pendingPipelinesGeneration: 0,
+        _lastPipelineWaitFrameId: -2,
+        _cacheRenderPipeline: new PipelineCache(),
+        _cacheBindGroups: {
+            getBindGroups: (_context: unknown, drawContext: WebGPUDrawContext, materialContext: { updateId: number }) => {
+                drawContext.resetIsDirty(materialContext.updateId);
+                return [];
+            },
+            endFrame: () => {},
+        },
+        _currentMaterialContext: { useVertexPulling: false, updateId: 1, isDirty: false, forceBindGroupCreation: false, hasFloatOrDepthTextures: false, textureState: 0 },
+        _currentRenderTarget: null,
+        _currentRenderPass: null,
+        _currentIndexBuffer: { is32Bits: false, underlyingResource: {} },
+        _currentVertexBuffers: {},
+        _currentOverrideVertexBuffers: null,
+        _counters: counters(),
+        countersLastFrame: counters(),
+        _scratchIndexedDrawCommand: CreateWebGPURenderPassIndexedDrawCommand(),
+        _scratchNonIndexedDrawCommand: CreateWebGPURenderPassNonIndexedDrawCommand(),
+        // the draws of the compatibility mode reach their pass in order
+        _renderPassDrawBatcher: { submit: (command: IWebGPURenderPassDrawCommand) => ApplyWebGPURenderPassDrawCommand(command) },
+        _timestampQuery: { endPass: () => {}, endFrame: () => {} },
+        _timestampIndex: 0,
+        _internalFrameCounter: 0,
+        _textureHelper: { destroyDeferredTextures: () => {} },
+        _bufferManager: { destroyDeferredBuffers: () => {} },
+        onBeginFrameObservable: new Observable(),
+        onEndFrameObservable: new Observable(),
+        // the steps that only talk to the GPU: states, uniform bindings, viewports, debug markers, the submission
+        _measureFps: () => {},
+        applyStates: () => {},
+        bindUniformBufferBase: () => {},
+        _applyRenderPassChanges: () => {},
+        _flushRenderPassCommands: () => {},
+        _debugPopBeforeEndOfEncoder: () => {},
+        _debugPendingPop: () => {},
+        _currentPassIsMainPass: () => true,
+        flushFramebuffer: () => {},
+        // a render pass begins at its clear (or its first draw) and gives the GPU its draws when it ends
+        _getCurrentRenderPass: () => (engine._currentRenderPass ??= new GpuRecorder((draws) => passes.push(draws))),
+    });
+
+    const effects = new Map<string, unknown>();
+    const effect = (key: string) => {
+        if (!effects.has(key)) {
+            effects.set(key, { key, _pipelineContext: { uniformBuffer: null, shaderProcessingContext: { textureNames: [], bufferNames: [] } } });
+        }
+        return effects.get(key);
+    };
+
+    return {
+        engine,
+        cache: engine._cacheRenderPipeline as PipelineCache,
+        // a draw as Mesh._processRendering submits it (the mesh's owner, and the draw context its material gives it), or any other draw
+        draw: (owner: Nullable<WaitOwner>, drawContext: WebGPUDrawContext, key: string) => {
+            engine._pipelineWaitOwner = owner;
+            engine._currentDrawContext = drawContext;
+            engine._currentEffect = effect(key);
+            engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 36);
+            engine._pipelineWaitOwner = null;
+        },
+        // a frame: each function draws one render pass; returns what each pass drew on the GPU
+        frame: (...renderPasses: Array<() => void>): string[][] => {
+            const first = passes.length;
+            engine.beginFrame();
+            for (const renderPass of renderPasses) {
+                engine._getCurrentRenderPass();
+                renderPass();
+                engine._endCurrentRenderPass();
+            }
+            engine.endFrame();
+            return passes.slice(first);
+        },
+    };
+}
+
+// a draw context as the engine creates them
+const NewDrawContext = () => new WebGPUDrawContext({} as any, {} as any);
+
+describe("WebGPUEngine asynchronous pipeline creation, through the draw path", () => {
+    // the draw contexts come from the scene's objects (the sub mesh of a mesh, a material, the draw wrapper of a post-process), which
+    // create them as the engine creates them
+    let nullEngine: NullEngine;
+    let scene: Scene;
 
     beforeEach(() => {
-        const pending = new Promise<GPURenderPipeline>((resolve) => (resolvePipeline = resolve));
-        engine = {
-            frameId: 10,
-            _snapshotRendering: { record: true, invalidateRecording: vi.fn() },
-            _cacheRenderPipeline: { lastPendingPipeline: pending },
-            _snapshotPendingPipelines: new Set(),
-            _pendingPipelinesGeneration: 0,
-            _snapshotRecordAgain: false,
-            _snapshotHeldBack: false,
+        nullEngine = new NullEngine();
+        vi.spyOn(nullEngine, "createDrawContext").mockImplementation(() => NewDrawContext());
+        scene = new Scene(nullEngine);
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        nullEngine.dispose();
+    });
+
+    // a mesh: the owner Mesh._processRendering gives its draws, and the draw context of its sub mesh in a pass
+    const newMesh = (name: string) => {
+        const mesh = MeshBuilder.CreateBox(name, {}, scene);
+        return {
+            mesh,
+            owner: mesh._internalAbstractMeshDataInfo,
+            context: (pass: number) => mesh.subMeshes[0]._getDrawWrapper(pass, true)!.drawContext as WebGPUDrawContext,
         };
-        owner = { _pipelinePendingFrameId: -2, _pipelineDrawnFrameId: -1 };
-        bundleList = { numDrawCalls: 1 };
+    };
+    // the draw context of a draw that is no mesh's: a post-process, say
+    const otherContext = () => new DrawWrapper(nullEngine).drawContext as WebGPUDrawContext;
+
+    it("omits a mesh in all its passes until its pipelines are created, then draws it in all of them in the same frame", async () => {
+        const { cache, draw, frame } = CreateEngine(true);
+        const box = newMesh("box");
+        const shadowPass = nullEngine.createRenderPassId("shadow map");
+        const post = otherContext();
+        const passes = [
+            () => draw(box.owner, box.context(shadowPass), "box/shadow"),
+            () => {
+                draw(box.owner, box.context(Constants.RENDERPASS_MAIN), "box/main");
+                draw(null, post, "post");
+            },
+        ];
+
+        expect(frame(...passes)).toEqual([[], ["post"]]);
+        await cache.completeAsync("box/shadow");
+        // the main pass still waits, and the shadow pass waits with it
+        expect(frame(...passes)).toEqual([[], ["post"]]);
+        await cache.completeAsync("box/main");
+        // the frame after the last wait holds the mesh back too: a pass drawn before the wait would have shown it alone
+        expect(frame(...passes)).toEqual([[], ["post"]]);
+        expect(frame(...passes)).toEqual([["box/shadow"], ["box/main", "post"]]);
+        // no pipeline of the mesh was created in a frame; the post-process's was
+        expect(cache.synchronous).toEqual(["post"]);
     });
 
-    it("marks the mesh, and leaves the snapshot alone outside of a recording", () => {
-        engine._snapshotRendering.record = false;
-        omit(null);
-        expect(owner._pipelinePendingFrameId).toBe(10);
-        // the engine knows a draw waited in this frame: the per-mesh state is read until a frame without waits
-        expect(engine._lastPipelineWaitFrameId).toBe(10);
-        expect(bundleList.numDrawCalls).toBe(1);
-        expect(engine._snapshotPendingPipelines.size).toBe(0);
+    it("holds back the cached bundle of a pass while another pass of its mesh waits (non-compatibility mode)", async () => {
+        const { engine, cache, draw, frame } = CreateEngine(false);
+        const box = newMesh("box");
+        const shadow = box.context(nullEngine.createRenderPassId("shadow map"));
+        const main = box.context(Constants.RENDERPASS_MAIN);
+        let shadowEffect = "box/shadow";
+        const passes = [() => draw(box.owner, shadow, shadowEffect), () => draw(box.owner, main, "box/main")];
+        cache.prepare("box/shadow", "box/main");
+        expect(frame(...passes)).toEqual([["box/shadow"], ["box/main"]]);
+        expect(frame(...passes)).toEqual([["box/shadow"], ["box/main"]]);
+        expect(engine.countersLastFrame.numBundleReuseNonCompatMode).toBe(2);
+
+        // the shadow pass needs a new pipeline: a new effect resets its draw context, as enableEffect does
+        shadowEffect = "box/shadow2";
+        shadow.reset();
+        // the main pass has its bundle, but does not draw it without the shadow pass
+        expect(frame(...passes)).toEqual([[], []]);
+        expect(engine.countersLastFrame.numBundleReuseNonCompatMode).toBe(0);
+        await cache.completeAsync("box/shadow2");
+        expect(frame(...passes)).toEqual([[], []]);
+        expect(frame(...passes)).toEqual([["box/shadow2"], ["box/main"]]);
+        // the main pass drew its cached bundle
+        expect(engine.countersLastFrame.numBundleReuseNonCompatMode).toBe(1);
     });
 
-    it("records the snapshot again once the pipelines a coherent recording misses are created", async () => {
-        omit(null);
-        expect(bundleList.numDrawCalls).toBe(0);
-        expect(engine._snapshotPendingPipelines.size).toBe(1);
-        expect(engine._snapshotRendering.invalidateRecording).not.toHaveBeenCalled();
+    it("holds back the draw of each mesh that draws with its material's draw context, by its own owner", async () => {
+        const { cache, draw, frame } = CreateEngine(true);
+        // ShaderMaterial(..., false): its two meshes draw with its draw context; their shadow passes with their sub meshes'
+        const material = new ShaderMaterial("shader", scene, { vertexSource: "", fragmentSource: "" }, {}, false)._getDrawWrapper().drawContext as WebGPUDrawContext;
+        const first = newMesh("first");
+        const second = newMesh("second");
+        const shadowPass = nullEngine.createRenderPassId("shadow map");
+        const passes = [
+            () => {
+                draw(first.owner, first.context(shadowPass), "first/shadow");
+                draw(second.owner, second.context(shadowPass), "second/shadow");
+            },
+            () => {
+                draw(first.owner, material, "material/main");
+                draw(second.owner, material, "material/main");
+            },
+        ];
+        cache.prepare("second/shadow", "material/main");
 
-        resolvePipeline({} as GPURenderPipeline);
-        await engine._cacheRenderPipeline.lastPendingPipeline;
-        await Promise.resolve();
-        expect(engine._snapshotRecordAgain).toBe(true);
-        expect(engine._snapshotPendingPipelines.size).toBe(0);
+        // the first mesh waits in its shadow pass, so its main draw waits with it; the second mesh is drawn
+        expect(frame(...passes)).toEqual([["second/shadow"], ["material/main"]]);
+        await cache.completeAsync("first/shadow");
+        expect(frame(...passes)).toEqual([["second/shadow"], ["material/main"]]);
+        expect(frame(...passes)).toEqual([
+            ["first/shadow", "second/shadow"],
+            ["material/main", "material/main"],
+        ]);
     });
 
-    it("records the next frame when an earlier pass of the frame drew the mesh", () => {
-        owner._pipelineDrawnFrameId = 10;
-        omit(null);
-        expect(engine._snapshotRendering.invalidateRecording).toHaveBeenCalledTimes(1);
-        expect(engine._snapshotPendingPipelines.size).toBe(0);
+    it("creates in the frame the pipelines of the draws that never wait: without an owner, or in a pass rendered once", () => {
+        const { engine, cache, draw, frame } = CreateEngine(true);
+        const box = newMesh("box");
+        const post = otherContext();
+        const oncePass = nullEngine.createRenderPassId("render target rendered once");
+
+        // the mesh waits in a pass of the frame; a post-process draws; a render target rendered once draws the mesh
+        const passes = [
+            () => {
+                draw(box.owner, box.context(Constants.RENDERPASS_MAIN), "box/main");
+                draw(null, post, "post");
+            },
+            () => {
+                engine._drawsMayWait = false;
+                draw(box.owner, box.context(oncePass), "box/once");
+                engine._drawsMayWait = true;
+            },
+        ];
+        expect(frame(...passes)).toEqual([["post"], ["box/once"]]);
+        expect(cache.synchronous).toEqual(["post", "box/once"]);
     });
 
-    it("holds back a draw whose pipeline is ready, for the other passes of its mesh", () => {
-        owner._pipelinePendingFrameId = 9;
-        omit({} as GPURenderPipeline);
-        expect(engine._snapshotHeldBack).toBe(true);
-        expect(owner._pipelinePendingFrameId).toBe(9);
-        expect(engine._snapshotRendering.invalidateRecording).not.toHaveBeenCalled();
+    it("draws the bounding box of an occlusion query while its mesh waits, in a FAST snapshot's recording and in its replays", async () => {
+        // the bounding box of an occlusion query draws with a draw wrapper of its mesh's sub mesh, for the query's own pass
+        // (BoundingBoxRenderer.renderOcclusionBoundingBox): the renderer creates it, and then draws once its shader is ready
+        const box = newMesh("box");
+        const renderer = scene.getBoundingBoxRenderer();
+        const drawn = vi.spyOn(nullEngine, "drawElementsType");
+        for (let i = 0; i < 20 && drawn.mock.calls.length === 0; i++) {
+            renderer.renderOcclusionBoundingBox(box.mesh);
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        expect(drawn).toHaveBeenCalled();
+        const queryContext = box.context((renderer as any)._renderPassIdForOcclusionQuery);
+
+        const { engine, cache, draw, frame } = CreateEngine(true);
+        engine._snapshotRendering.mode = Constants.SNAPSHOTRENDERING_FAST;
+        engine._snapshotRendering.enabled = true;
+        // the frame the snapshot records: the query's bounding box, then its mesh, whose pipeline is created asynchronously
+        const recorded = () => {
+            draw(null, queryContext, "query/box");
+            draw(box.owner, box.context(Constants.RENDERPASS_MAIN), "box/main");
+        };
+
+        // the query sees its bounding box though the mesh is omitted, in the recording and in the FAST replays (the scene draws nothing)
+        expect(frame(recorded)).toEqual([["query/box"]]);
+        expect(frame(() => {})).toEqual([["query/box"]]);
+        await cache.completeAsync("box/main");
+        // the mesh's pipeline is created: the snapshot is recorded again, with the mesh
+        expect(frame(recorded)).toEqual([["query/box", "box/main"]]);
+        expect(frame(() => {})).toEqual([["query/box", "box/main"]]);
+        expect(cache.synchronous).toEqual(["query/box"]);
     });
 
-    it("ignores a creation that completes after the device was replaced", async () => {
-        omit(null);
-        engine._pendingPipelinesGeneration++;
-        resolvePipeline({} as GPURenderPipeline);
-        await engine._cacheRenderPipeline.lastPendingPipeline;
-        await Promise.resolve();
-        expect(engine._snapshotRecordAgain).toBe(false);
+    it("never keeps a recording that shows a mesh in some passes only, and records again once the pipelines it missed are created", async () => {
+        const { engine, cache, draw, frame } = CreateEngine(true);
+        engine._snapshotRendering.enabled = true;
+        const box = newMesh("box");
+        const depth = box.context(nullEngine.createRenderPassId("depth"));
+        const main = box.context(Constants.RENDERPASS_MAIN);
+        const passes = [() => draw(box.owner, depth, "box/depth"), () => draw(box.owner, main, "box/main")];
+        cache.prepare("box/depth");
+
+        // the depth pass draws the mesh before the main pass waits for its pipeline: that recording is not kept
+        expect(frame(...passes)).toEqual([["box/depth"], []]);
+        expect(engine._snapshotRendering.record).toBe(true);
+        // recorded again, without the mesh in any pass: replayed while the pipeline is created
+        expect(frame(...passes)).toEqual([[], []]);
+        expect(engine._snapshotRendering.play).toBe(true);
+        expect(frame(...passes)).toEqual([[], []]);
+        await cache.completeAsync("box/main");
+        expect(frame(...passes)).toEqual([["box/depth"], ["box/main"]]);
+        expect(engine._snapshotRendering.play).toBe(true);
+        expect(frame(...passes)).toEqual([["box/depth"], ["box/main"]]);
+    });
+
+    it("records again a recording that held back a mesh whose pipelines were all created", async () => {
+        const { engine, cache, draw, frame } = CreateEngine(true);
+        const box = newMesh("box");
+        const passes = [() => draw(box.owner, box.context(Constants.RENDERPASS_MAIN), "box/main")];
+
+        expect(frame(...passes)).toEqual([[]]);
+        await cache.completeAsync("box/main");
+        // the snapshot starts recording while the mesh is held back: no creation is left to ask for another recording
+        engine._snapshotRendering.enabled = true;
+        expect(frame(...passes)).toEqual([[]]);
+        expect(engine._snapshotRendering.record).toBe(true);
+        expect(frame(...passes)).toEqual([["box/main"]]);
+        expect(engine._snapshotRendering.play).toBe(true);
+        expect(frame(...passes)).toEqual([["box/main"]]);
+    });
+
+    it("ignores a creation that completes after the pending creations were forgotten (a lost device)", async () => {
+        const { engine, cache, draw, frame } = CreateEngine(true);
+        engine._snapshotRendering.enabled = true;
+        const box = newMesh("box");
+        const passes = [() => draw(box.owner, box.context(Constants.RENDERPASS_MAIN), "box/main")];
+
+        expect(frame(...passes)).toEqual([[]]);
+        expect(engine._snapshotRendering.play).toBe(true);
+        engine._forgetPendingPipelines();
+        await cache.completeAsync("box/main");
+        // no new recording is asked for: the snapshot is replayed as recorded
+        expect(frame(...passes)).toEqual([[]]);
+        expect(engine._snapshotRendering.play).toBe(true);
     });
 });

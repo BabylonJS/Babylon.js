@@ -1068,9 +1068,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         const drawsMayWait = engine._drawsMayWait;
         engine._drawsMayWait = false;
         engine._renderingOnce++;
-        this._render(useCameraPostProcess, dumpForDebug);
-        engine._renderingOnce--;
-        engine._drawsMayWait = drawsMayWait;
+        try {
+            this._render(useCameraPostProcess, dumpForDebug);
+        } finally {
+            engine._renderingOnce--;
+            engine._drawsMayWait = drawsMayWait;
+        }
     }
 
     private _dumpToolsLoading = false;

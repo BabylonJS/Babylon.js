@@ -1,5 +1,6 @@
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { NullEngine } from "core/Engines/nullEngine";
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Vector3 } from "core/Maths/math.vector";
 import { CreateScreenshotUsingRenderTarget } from "core/Misc/screenshotTools";
@@ -95,5 +96,68 @@ describe("Passes whose mesh draws may wait for their pipelines", () => {
         // the next frame of the scene lets them wait again
         scene.render();
         expect(everyFrame.seen).toEqual([false, true]);
+    });
+
+    it("restores every scope when a rendering throws, and the next frame lets its draws wait again", () => {
+        const cameraSeen: boolean[] = [];
+        scene.onBeforeCameraRenderObservable.add(() => cameraSeen.push(engine._drawsMayWait));
+
+        // a render target rendered once
+        const once = target(RenderTargetTexture.REFRESHRATE_RENDER_ONCE);
+        once.rtt.onBeforeRenderObservable.add(() => {
+            throw new Error("render once");
+        });
+        expect(() => once.rtt.render()).toThrow("render once");
+        expect(engine._renderingOnce).toBe(0);
+        expect(engine._drawsMayWait).toBe(false);
+
+        // a render target of the frame
+        const everyFrame = target(1);
+        let failTarget = true;
+        everyFrame.rtt.onBeforeRenderObservable.add(() => {
+            if (failTarget) {
+                throw new Error("render target");
+            }
+        });
+        scene.customRenderTargets.push(everyFrame.rtt);
+        expect(() => scene.render()).toThrow("render target");
+        expect(engine._drawsMayWait).toBe(false);
+        failTarget = false;
+
+        // a camera's pass
+        scene.onBeforeCameraRenderObservable.addOnce(() => {
+            throw new Error("camera");
+        });
+        expect(() => scene.render()).toThrow("camera");
+        expect(engine._drawsMayWait).toBe(false);
+
+        cameraSeen.length = 0;
+        everyFrame.seen.length = 0;
+        scene.render();
+        expect(everyFrame.seen).toEqual([true]);
+        expect(cameraSeen).toEqual([true]);
+        expect(engine._drawsMayWait).toBe(false);
+    });
+
+    it("restores the frame graph's scope when it throws", () => {
+        const seen: boolean[] = [];
+        let fail = true;
+        // only what the scene asks of its frame graph
+        scene.frameGraph = {
+            execute: () => {
+                seen.push(engine._drawsMayWait);
+                if (fail) {
+                    throw new Error("frame graph");
+                }
+            },
+            getTasksByClassName: () => [],
+            findMainCamera: () => null,
+        } as unknown as FrameGraph;
+        expect(() => scene.render()).toThrow("frame graph");
+        expect(engine._drawsMayWait).toBe(false);
+        fail = false;
+        scene.render();
+        expect(seen).toEqual([true, true]);
+        expect(engine._drawsMayWait).toBe(false);
     });
 });

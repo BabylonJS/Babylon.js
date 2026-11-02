@@ -541,8 +541,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * omitted while the pipeline is created asynchronously (one creation per pipeline configuration, shared with preWarmPipeline),
      * instead of creating it synchronously in the frame. The mesh is omitted in all of its passes (shadow maps, depth, main pass...)
      * from the frame one of its draws had to wait until a frame in which none did (in that first frame, the passes drawn before the
-     * wait show it). Other draws (post-processes, sprites, particles...) still create their pipelines synchronously. A snapshot
-     * recorded while draws were omitted is replayed until their pipelines are created, then recorded again.
+     * wait show it). Other draws (the bounding boxes of occlusion queries, post-processes, sprites, particles...) still create their
+     * pipelines synchronously. A snapshot recorded while draws were omitted is replayed until their pipelines are created, then
+     * recorded again.
      */
     public asynchronousPipelineCreation = false;
 
@@ -4057,7 +4058,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._applyRenderPassChanges(bundleList);
             if (!this._snapshotRendering.record) {
                 if (this.asynchronousPipelineCreation && this._drawsMayWait && this._lastPipelineWaitFrameId >= this.frameId - 1) {
-                    const waitOwner = this._currentDrawContext._pipelineWait;
+                    const waitOwner = this._pipelineWaitOwner;
                     if (waitOwner && waitOwner._pipelinePendingFrameId >= this.frameId - 1) {
                         // the bundle of this draw exists, but its mesh waits for the pipeline of another pass
                         return;
@@ -4093,8 +4094,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._currentMaterialContext.textureState = textureState;
 
         let pipeline: Nullable<GPURenderPipeline>;
-        // a draw waits only in a pass rendered again in the next frames: a pass rendered once draws every mesh
-        const waitOwner = this.asynchronousPipelineCreation && this._drawsMayWait ? this._currentDrawContext._pipelineWait : null;
+        // only the draw of a mesh waits (Mesh._processRendering gives it its owner), and only in a pass rendered again in the next frames:
+        // a pass rendered once draws every mesh, and no other draw (the bounding box of an occlusion query, a post-process...) ever waits
+        const waitOwner = this.asynchronousPipelineCreation && this._drawsMayWait ? this._pipelineWaitOwner : null;
         if (waitOwner) {
             pipeline = this._cacheRenderPipeline.tryGetRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
             // the state of the mesh is only read while draws waited (in this frame or the previous one)
