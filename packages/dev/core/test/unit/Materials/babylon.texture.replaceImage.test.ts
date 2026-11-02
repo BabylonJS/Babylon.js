@@ -5,6 +5,8 @@ import { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
+import { Material } from "core/Materials/material";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
 /**
  * Texture.replaceImage: a texture takes the image of another one, already loaded, with its loading description, and keeps its own
@@ -27,15 +29,17 @@ describe("Texture.replaceImage", () => {
             invertVScale?: boolean;
             source?: InternalTextureSource;
             cube?: boolean;
+            size?: number;
         } = {},
-        inScene = scene
+        inScene: Scene | NullEngine = scene
     ): Texture {
         const samplingMode = options.samplingMode ?? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         const texture = new Texture(null, inScene, options.noMipmap ?? false, options.invertY ?? true, samplingMode);
         texture.url = url;
-        const image = new InternalTexture(inScene.getEngine(), options.source ?? InternalTextureSource.Url);
+        const image = new InternalTexture(inScene instanceof Scene ? inScene.getEngine() : inScene, options.source ?? InternalTextureSource.Url);
         image.url = url;
         image.isReady = true;
+        image.width = image.height = image.baseWidth = image.baseHeight = options.size ?? 256;
         image.samplingMode = samplingMode;
         image.isCube = !!options.cube;
         image._invertVScale = !!options.invertVScale;
@@ -112,24 +116,31 @@ describe("Texture.replaceImage", () => {
             expect(reloaded(fromScene, "scenes/")).toBe("scenes/new.png");
         });
 
-        it("keeps a name of its own, the serialized url then giving the image with Texture.UseSerializedUrlIfAny", () => {
+        it("keeps a name of its own, which Texture.Parse loads from as for a texture never replaced", () => {
+            const plain = loaded("old.png");
+            plain.name = "ground";
+            expect(reloaded(plain, "")).toBe("ground");
+
             const named = loaded("old.png");
             named.name = "ground";
             expect(named.replaceImage(loaded("new.png"))).toBe(true);
             expect(named.name).toBe("ground");
-            Texture.UseSerializedUrlIfAny = true;
-            try {
-                expect(reloaded(named, "")).toBe("new.png");
-            } finally {
-                Texture.UseSerializedUrlIfAny = false;
-            }
+            expect(reloaded(named, "")).toBe("ground");
         });
 
-        it("keeps the name for a source outside the root, and takes a source's absolute url", () => {
+        it("goes up from the root for a source outside it, and takes a source's absolute url", () => {
+            // what the browser fetches for a url relative to the page
+            const fetched = (url?: string) => new URL(url!, "https://example.com/app/").href;
             const texture = loaded("scenes/old.png");
             texture.name = "old.png";
             expect(texture.replaceImage(loaded("other/new.png"))).toBe(true);
-            expect(texture.name).toBe("old.png");
+            expect(texture.name).toBe("../other/new.png");
+            expect(fetched(reloaded(texture, "scenes/"))).toBe(fetched("other/new.png"));
+
+            const deep = loaded("a/b/old.png");
+            deep.name = "old.png";
+            expect(deep.replaceImage(loaded("../shared/new.png"))).toBe(true);
+            expect(fetched(reloaded(deep, "a/b/"))).toBe(fetched("../shared/new.png"));
 
             const absolute = loaded("scenes/old.png");
             absolute.name = "old.png";
@@ -205,9 +216,19 @@ describe("Texture.replaceImage", () => {
         image.incrementReferences();
         texture._texture = image;
 
+        vi.spyOn(engine, "snapshotRendering", "get").mockReturnValue(true);
+        const reset = vi.spyOn(engine, "snapshotRenderingReset").mockImplementation(() => {});
         expect(texture.replaceImage(source)).toBe(true);
         expect(texture.getInternalTexture()).toBe(image);
         expect(image._references).toBe(2);
+        // the same image, read the same way: the recorded snapshot still draws it
+        expect(reset).not.toHaveBeenCalled();
+    });
+
+    it("takes a source of the same engine that has no scene", () => {
+        const source = loaded("preloaded.png", {}, engine);
+        expect(source.getScene()).toBeNull();
+        expect(loaded("texture.png").replaceImage(source)).toBe(true);
     });
 
     it("keeps the image when the source is disposed afterwards", () => {
@@ -220,9 +241,34 @@ describe("Texture.replaceImage", () => {
         expect(image._references).toBe(1);
     });
 
+    // a frozen material drawn once with the texture
+    function drawnWith(texture: Texture) {
+        const material = new Material("material", scene);
+        material.hasTexture = (t) => t === texture;
+        material.freeze();
+        const plane = CreatePlane("plane", {}, scene);
+        plane.material = material;
+        const drawWrapper = plane.subMeshes[0]._getDrawWrapper(undefined, true)!;
+        drawWrapper._wasPreviouslyReady = true;
+        return { material, drawWrapper };
+    }
+
+    it("makes the materials that use it, frozen ones included, compute again what they read from the image, only when it changes", () => {
+        const texture = loaded("texture.png", { size: 256 });
+        const { drawWrapper } = drawnWith(texture);
+
+        expect(texture.replaceImage(loaded("same.png", { size: 256 }))).toBe(true);
+        expect(drawWrapper._wasPreviouslyReady).toBe(true);
+
+        // a PBR 2D reflection texture's width and LOD go to the uniform buffer, which a frozen material only writes when forced
+        expect(texture.replaceImage(loaded("larger.png", { size: 1024 }))).toBe(true);
+        expect(drawWrapper._wasPreviouslyReady).toBe(false);
+        expect(drawWrapper._forceRebindOnNextCall).toBe(true);
+    });
+
     it("keeps the source's gamma when its image has none set yet, and marks the materials dirty only when the effective gamma changes", () => {
-        const markDirty = vi.spyOn(scene, "markAllMaterialsAsDirty");
         const texture = loaded("texture.png", { gammaSpace: true, imageGamma: true });
+        const markDirty = vi.spyOn(drawnWith(texture).material, "markDirty");
 
         // the source's wrapper is linear, and its image has no gamma state: the image must stay linear, not take this texture's gamma
         expect(texture.replaceImage(loaded("linear.png", { gammaSpace: false, imageGamma: null }))).toBe(true);
