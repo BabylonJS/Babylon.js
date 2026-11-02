@@ -14,6 +14,8 @@ import * as WebGPUConstants from "./webgpuConstants";
  */
 /** @internal The commands of a draw encoded while a snapshot recorded, to encode it again in a later recording without binding its mesh */
 export interface IWebGPURecordedDraw {
+    /** whether these are the commands of the last full draw */
+    kept: boolean;
     renderTarget: Nullable<object>;
     sampleCount: number;
     pipeline: GPURenderPipeline;

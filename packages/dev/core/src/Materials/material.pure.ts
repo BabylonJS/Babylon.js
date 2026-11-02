@@ -1064,6 +1064,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
             !this.stencil.enabled &&
             // a full draw leaves the depth writes on for the draws after it
             !this.forceDepthWrite &&
+            // the depth prepass draws it through the same draw wrapper with another effect (DEPTHPREPASS), which resets its draw context
+            !this.needDepthPrePass &&
             !(this.separateCullingPass && !this.backFaceCulling)
         );
     }

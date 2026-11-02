@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
 import { WebGPUMaterialContext } from "core/Engines/WebGPU/webgpuMaterialContext";
 import { DrawWrapper } from "core/Materials/drawWrapper";
@@ -42,6 +43,7 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
         materialContext.isDirty = false;
         drawContext.resetIsDirty(materialContext.updateId);
         drawContext._recordedDraw = {
+            kept: true,
             renderTarget: null,
             sampleCount: 1,
             pipeline: {} as GPURenderPipeline,
@@ -95,12 +97,14 @@ describe("WebGPUEngine recorded draws", () => {
             _applyRenderPassChanges: () => {},
             _flushRenderPassCommands: () => {},
             _reportDrawCall: () => {},
+            _recordedDrawContext: null,
         };
         engine._canEncodeRecordedDraw = (wrapper: DrawWrapper) => WebGPUEngine.prototype._canEncodeRecordedDraw.call(engine, wrapper);
+        engine._keepInheritedState = (wrapper: DrawWrapper, withAlpha: boolean) => WebGPUEngine.prototype._keepInheritedState.call(engine, wrapper, withAlpha);
         const keep = () => (WebGPUEngine.prototype as any)._keepRecordedDraw.call(engine, {}, [{}, {}], 0, 36, 1, 0);
         const replay = () => WebGPUEngine.prototype._replayRecordedDraw.call(engine, drawWrapper);
         keep();
-        return { effect, drawContext, keep, replay, markOwnerSlotUsed };
+        return { engine, effect, drawWrapper, drawContext, keep, replay, markOwnerSlotUsed };
     }
 
     it("marks the slot of its draw context as used in the frame when it encodes a draw again", () => {
@@ -130,6 +134,18 @@ describe("WebGPUEngine recorded draws", () => {
         expect(draw.bindGroups[0]).toBe(arrays[0][0]);
         expect(draw.bindGroups.length).toBe(2);
         expect(draw.vertexBuffers.length).toBe(1);
+    });
+
+    it("does not encode again a draw announced before its bind until the draw records its commands", () => {
+        const { engine, drawWrapper, drawContext, keep, replay } = setup();
+        // the states the draw inherits are kept by the engine, which is not what this checks
+        const keepState = vi.spyOn(AbstractEngine.prototype, "_keepInheritedState").mockImplementation(() => {});
+        engine._keepInheritedState(drawWrapper, true);
+        expect(engine._recordedDrawContext).toBe(drawContext);
+        expect(replay()).toBe(false);
+        keep();
+        expect(replay()).toBe(true);
+        keepState.mockRestore();
     });
 });
 

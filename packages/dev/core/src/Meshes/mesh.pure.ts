@@ -2690,6 +2690,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * @internal Whether a full draw of the mesh notifies draw observers (onBeforeDrawObservable, in _draw), without creating the
+     * observable: a draw recorded by a snapshot is not encoded again for such a mesh, in its passes nor in the shadow maps
+     */
+    public _hasDrawObservers(): boolean {
+        return !!this._internalMeshDataInfo._onBeforeDrawObservable?.hasObservers();
+    }
+
+    /**
      * Gets the draw wrapper of a draw recorded by a snapshot that can be encoded again without rendering the mesh: nothing runs
      * per draw outside of the engine (instances, bones, morph targets, baked animations, occlusion queries, render and draw observers,
      * an outline or an overlay) and the draw did not change since it was recorded (see _isRecordedDrawUnchanged)
@@ -2698,19 +2706,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param effectiveMeshReplacement the mesh used in place of this one, if any
      * @returns the draw wrapper, or null when the mesh must be rendered
      */
-    /**
-     * @internal Whether a full draw of the mesh notifies draw observers (onBeforeDrawObservable, in _draw), without creating the
-     * observable: a draw recorded by a snapshot is not encoded again for such a mesh, in its passes nor in the shadow maps
-     */
-    public _hasDrawObservers(): boolean {
-        return !!this._internalMeshDataInfo._onBeforeDrawObservable?.hasObservers();
-    }
-
     private _getUnchangedRecordedDraw(subMesh: SubMesh, batch: _InstancesBatch, effectiveMeshReplacement?: AbstractMesh): Nullable<DrawWrapper> {
-        const material = subMesh.getMaterial();
+        const material = subMesh.getMaterial()!;
         const info = this._internalMeshDataInfo;
         if (
-            !material?._canReplayRecordedDraw() ||
             effectiveMeshReplacement ||
             batch.hardwareInstancedRendering[subMesh._id] ||
             !this._canRecordThinInstances() ||
@@ -2956,8 +2955,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with,
         // between the scene's steps before and after rendering a mesh, as a full draw is (the prepass renderer binds the attachments of
-        // the effect there, and restores them)
-        if (engine._recordsDraws) {
+        // the effect there, and restores them). A draw of a material that cannot be is neither checked nor kept, and what was recorded
+        // for it is dropped
+        const recordsDraw = engine._recordsDraws && !!subMesh.getMaterial()?._canReplayRecordedDraw();
+        if (engine._recordsDraws && !recordsDraw) {
+            subMesh._drawWrapper._recordedMaterial = null;
+        }
+        if (recordsDraw) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh, batch, effectiveMeshReplacement);
             if (recordedDrawWrapper && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
                 const recordedEffect = recordedDrawWrapper.effect;
@@ -3085,7 +3089,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
         }
 
-        if (engine._recordsDraws) {
+        if (recordsDraw && drawWrapper === subMesh._drawWrapper) {
             engine._keepInheritedState(drawWrapper, !enableAlphaMode);
         }
         const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, this._internalMeshDataInfo._effectiveSideOrientation);
@@ -3136,7 +3140,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Unbind
         this._internalMeshDataInfo._effectiveMaterial.unbind();
 
-        if (engine._recordsDraws && drawWrapper === subMesh._drawWrapper) {
+        if (recordsDraw && drawWrapper === subMesh._drawWrapper) {
             this._keepRecordedDraw(drawWrapper, subMesh, effectiveMaterial, effectiveMesh, true);
         }
 

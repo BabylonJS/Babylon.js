@@ -479,6 +479,7 @@ describe("Mesh recorded draws", () => {
     });
 
     it("checks nothing in Mesh.render unless a snapshot records with the recorded draws switched on", () => {
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
         const check = vi.spyOn(mesh as any, "_getUnchangedRecordedDraw");
         // snapshot rendering with the recorded draws off: a recording costs what it did before them
         vi.spyOn(engine, "snapshotRendering", "get").mockReturnValue(true);
@@ -488,5 +489,25 @@ describe("Mesh recorded draws", () => {
         vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
         mesh.render(subMesh, false);
         expect(check).toHaveBeenCalledTimes(1);
+    });
+
+    it("never encodes again without binding a material the depth prepass draws with another effect through the same draw wrapper", () => {
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        material.needDepthPrePass = true;
+        expect(material._canReplayRecordedDraw()).toBe(false);
+    });
+
+    it("neither checks nor keeps in Mesh.render a draw whose material cannot be encoded again, and drops what was recorded for it", () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        const check = vi.spyOn(mesh as any, "_getUnchangedRecordedDraw");
+        const keep = vi.spyOn(mesh, "_keepRecordedDraw");
+        const keepState = vi.spyOn(engine, "_keepInheritedState");
+        subMesh._drawWrapper._recordedMaterial = material;
+        // a GLSL material is never encoded again
+        mesh.render(subMesh, false);
+        expect(check).not.toHaveBeenCalled();
+        expect(keep).not.toHaveBeenCalled();
+        expect(keepState).not.toHaveBeenCalled();
+        expect(subMesh._drawWrapper._recordedMaterial).toBeNull();
     });
 });

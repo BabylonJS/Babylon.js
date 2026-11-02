@@ -516,6 +516,20 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return this._snapshotRendering.record && this._snapshotCachedDraws;
     }
 
+    // the draw context whose commands the next draw records (see _keepInheritedState)
+    private _recordedDrawContext: Nullable<WebGPUDrawContext> = null;
+
+    /** @internal */
+    public override _keepInheritedState(drawWrapper: DrawWrapper, withAlpha: boolean): void {
+        super._keepInheritedState(drawWrapper, withAlpha);
+        // the next draw records its commands: until it does, they are not encoded again
+        const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
+        if (drawContext?._recordedDraw) {
+            drawContext._recordedDraw.kept = false;
+        }
+        this._recordedDrawContext = drawContext;
+    }
+
     /**
      * Enables or disables the snapshot rendering mode
      * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
@@ -4031,8 +4045,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
 
-        if (this._recordsDraws) {
-            this._keepRecordedDraw(pipeline, bindGroups, drawKind, count, instancesCount, start);
+        // only a draw announced by _keepInheritedState is recorded
+        if (this._recordedDrawContext) {
+            if (this._recordedDrawContext === this._currentDrawContext) {
+                this._keepRecordedDraw(pipeline, bindGroups, drawKind, count, instancesCount, start);
+            }
+            this._recordedDrawContext = null;
         }
 
         if (!this._snapshotRendering.record) {
@@ -4106,7 +4124,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         // the per-draw values of the effect are checked through the slot the draw context owns in the leftover uniform buffer
         const leftOver = (this._currentEffect!._pipelineContext as WebGPUPipelineContext).uniformBuffer;
         if (leftOver && (!this._useOwnerKeyedUniformBufferSlots || !leftOver._isOwnerSlotBound(drawContext))) {
-            drawContext._recordedDraw = undefined;
             return;
         }
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
@@ -4131,6 +4148,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         draw.count = count;
         draw.instances = instancesCount || 1;
         draw.start = start;
+        draw.kept = true;
     }
 
     /** @internal */
@@ -4141,14 +4159,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const effect = drawWrapper.effect;
         if (
             !this._snapshotRendering.record ||
-            !draw ||
+            !draw?.kept ||
             !materialContext ||
             // a full draw enables the effect, which calls them
             effect?.onBind ||
             effect?._onBindObservable?.hasObservers() ||
             draw.renderTarget !== this._currentRenderTarget ||
             draw.sampleCount !== this.currentSampleCount ||
-            drawContext.isDirty(materialContext.updateId) ||
+            drawContext!.isDirty(materialContext.updateId) ||
             materialContext.isDirty ||
             materialContext.forceBindGroupCreation
         ) {
