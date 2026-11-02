@@ -1428,7 +1428,7 @@ export class ShadowGenerator implements IShadowGenerator {
             !this.onAfterShadowMapRenderMeshObservable.hasObservers();
         if (replayable) {
             const recorded = subMesh._getDrawWrapper();
-            if (recorded && renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false) && engine._replayRecordedDraw(recorded)) {
+            if (recorded && renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this) && engine._replayRecordedDraw(recorded)) {
                 subMesh._renderId = scene.getRenderId();
                 return;
             }
@@ -1442,6 +1442,9 @@ export class ShadowGenerator implements IShadowGenerator {
             const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this, engine.currentRenderPassId) ?? subMesh._getDrawWrapper()!;
             const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
+            if (replayable) {
+                engine._keepInheritedState(drawWrapper, true);
+            }
             engine.enableEffect(drawWrapper);
 
             if (!hardwareInstancedRendering) {
@@ -1542,7 +1545,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
 
             if (replayable) {
-                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false);
+                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this);
             }
         } else {
             // Need to reset refresh rate of the shadowMap

@@ -15,6 +15,8 @@ import { MaterialDefines } from "core/Materials/materialDefines";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { DrawWrapper } from "core/Materials/drawWrapper";
+import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
 import { type Effect } from "core/Materials/effect";
@@ -44,8 +46,9 @@ describe("Mesh recorded draws", () => {
     let drawWrapper: DrawWrapper;
     let sameValues: boolean;
 
-    // a full draw of the frame: the lights are bound and the draw is kept as recorded
+    // a full draw of the frame: the engine's states kept before the bind, the lights bound and the draw kept as recorded
     function fullDraw(): void {
+        engine._keepInheritedState(drawWrapper, true);
         light._renderId = scene.getRenderId();
         mesh._keepRecordedDraw(drawWrapper, subMesh, material, mesh, true);
     }
@@ -212,11 +215,36 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(false);
     });
 
+    it("sees the states it inherits from the engine without setting them: depth, stencil and alpha", () => {
+        const changes: Array<[() => void, () => void]> = [
+            [() => engine.setDepthWrite(false), () => engine.setDepthWrite(true)],
+            [() => engine.setDepthBuffer(false), () => engine.setDepthBuffer(true)],
+            [() => engine.setDepthFunction(Constants.ALWAYS), () => engine.setDepthFunction(Constants.LEQUAL)],
+            [() => engine.setStencilBuffer(true), () => engine.setStencilBuffer(false)],
+            [() => engine.setStencilFunction(Constants.EQUAL), () => engine.setStencilFunction(Constants.ALWAYS)],
+            [() => engine.setStencilFunctionReference(2), () => engine.setStencilFunctionReference(1)],
+            [() => engine.setStencilMask(0x0f), () => engine.setStencilMask(0xff)],
+            [() => engine.setAlphaMode(Constants.ALPHA_ADD, true), () => engine.setAlphaMode(Constants.ALPHA_DISABLE, true)],
+        ];
+        for (const [change, restore] of changes) {
+            restore();
+            fullDraw();
+            expect(unchanged()).toBe(true);
+            change();
+            expect(unchanged()).toBe(false);
+            restore();
+        }
+    });
+
+    it("does not compare the alpha mode a mesh sets itself (enableAlphaMode)", () => {
+        engine._keepInheritedState(drawWrapper, false);
+        engine.setAlphaMode(Constants.ALPHA_ADD, true);
+        expect(unchanged()).toBe(true);
+    });
+
     it("sees the effective side orientation, from the material or from the mesh, which do not mark the material dirty", () => {
         const opposite = (orientation: number) =>
-            orientation === Constants.MATERIAL_CounterClockWiseSideOrientation
-                ? Constants.MATERIAL_ClockWiseSideOrientation
-                : Constants.MATERIAL_CounterClockWiseSideOrientation;
+            orientation === Constants.MATERIAL_CounterClockWiseSideOrientation ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation;
         material.sideOrientation = opposite(material._getEffectiveOrientation(mesh));
         expect(unchanged()).toBe(false);
         fullDraw();
@@ -406,6 +434,41 @@ describe("Mesh recorded draws", () => {
         scene.incrementRenderId();
         (generator as any)._renderSubMeshForShadowMap(subMesh, false);
         expect(replay).toHaveBeenCalledTimes(1);
+    });
+
+    it("never encodes again without binding a material that forces the depth writes, which a full draw leaves on", () => {
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        material.forceDepthWrite = true;
+        expect(material._canReplayRecordedDraw()).toBe(false);
+    });
+
+    it("never encodes again without binding a WGSL shader material with custom buffers or textures, whose setters only change dictionaries", () => {
+        const shaderMaterial = new ShaderMaterial("shader", scene, "default", { shaderLanguage: ShaderLanguage.WGSL });
+        // what a WebGPU engine sets when it creates the material's uniform buffer
+        (shaderMaterial as any)._shaderLanguage = ShaderLanguage.WGSL;
+        expect(shaderMaterial._canReplayRecordedDraw()).toBe(true);
+        shaderMaterial.setUniformBuffer("custom", new UniformBuffer(engine));
+        expect(shaderMaterial._canReplayRecordedDraw()).toBe(false);
+        const withStorage = new ShaderMaterial("storage", scene, "default", { shaderLanguage: ShaderLanguage.WGSL });
+        (withStorage as any)._shaderLanguage = ShaderLanguage.WGSL;
+        withStorage.setStorageBuffer("custom", {} as any);
+        expect(withStorage._canReplayRecordedDraw()).toBe(false);
+    });
+
+    it("compares a shadow map draw only to the frame's reference of its own shadow generator", () => {
+        // two generators with the same caster material and effect: only the second one's bias changed
+        const first = {};
+        const second = {};
+        const other = new DrawWrapper(engine);
+        other.effect = drawWrapper.effect;
+        engine._keepInheritedState(other, true);
+        mesh._keepRecordedDraw(other, subMesh, material, mesh, false, second);
+        nextFrame();
+        engine._keepInheritedState(drawWrapper, true);
+        mesh._keepRecordedDraw(drawWrapper, subMesh, material, mesh, false, first);
+        // the first generator's full draw is the frame's reference: the second one's draw is bound again
+        expect(mesh._isRecordedDrawUnchanged(other, subMesh, material, mesh, false, second)).toBe(false);
+        expect(mesh._isRecordedDrawUnchanged(drawWrapper, subMesh, material, mesh, false, first)).toBe(true);
     });
 
     it("never encodes again without binding a material with unbind observers", () => {

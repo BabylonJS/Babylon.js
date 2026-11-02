@@ -2759,10 +2759,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param material the material of the draw
      * @param effectiveMesh the mesh providing the world matrix and the lights
      * @param withLights whether the draw binds the lights (not in the shadow maps)
+     * @param domain what else writes its per-draw values (the shadow generator), or null
      * @returns true if the draw can be encoded again
      * @internal
      */
-    public _isRecordedDrawUnchanged(drawWrapper: DrawWrapper, subMesh: SubMesh, material: Material, effectiveMesh: AbstractMesh, withLights: boolean): boolean {
+    public _isRecordedDrawUnchanged(
+        drawWrapper: DrawWrapper,
+        subMesh: SubMesh,
+        material: Material,
+        effectiveMesh: AbstractMesh,
+        withLights: boolean,
+        domain: Nullable<object> = null
+    ): boolean {
         const recordedVertexBuffers = drawWrapper._recordedVertexBuffers;
         const recordedLights = drawWrapper._recordedLights;
         if (
@@ -2781,15 +2789,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedMaterialState !== material._getPipelineStateKey() ||
             drawWrapper._recordedZOffset !== material.zOffset ||
             drawWrapper._recordedZOffsetUnits !== material.zOffsetUnits ||
-            drawWrapper._recordedColorWrite !== this.getScene().getEngine().getColorWrite() ||
             drawWrapper._recordedOrientation !== material._getEffectiveOrientation(this) ||
             drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
             drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0)
         ) {
             return false;
         }
-        const reference = material._getRecordedDrawReference(drawWrapper.effect!);
-        if (!reference || !this.getScene().getEngine()._hasSameDrawValues(drawWrapper, reference)) {
+        const engine = this.getScene().getEngine();
+        const reference = material._getRecordedDrawReference(drawWrapper.effect!, domain);
+        if (!reference || !engine._hasInheritedState(drawWrapper) || !engine._hasSameDrawValues(drawWrapper, reference)) {
             return false;
         }
         const vertexBuffers = this._geometry?.getVertexBuffers();
@@ -2842,13 +2850,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param material the material of the draw
      * @param effectiveMesh the mesh providing the world matrix and the lights
      * @param withLights whether the draw binds the lights (not in the shadow maps)
+     * @param domain what else writes its per-draw values (the shadow generator), or null
      * @internal
      */
-    public _keepRecordedDraw(drawWrapper: DrawWrapper, subMesh: SubMesh, material: Material, effectiveMesh: AbstractMesh, withLights: boolean): void {
+    public _keepRecordedDraw(
+        drawWrapper: DrawWrapper,
+        subMesh: SubMesh,
+        material: Material,
+        effectiveMesh: AbstractMesh,
+        withLights: boolean,
+        domain: Nullable<object> = null
+    ): void {
         const scene = this.getScene();
         // the per-draw values this full bind wrote: the reference of this frame for the draws of this material with this effect
         const canKeep = scene.getEngine()._canKeepRecordedDraw(drawWrapper);
-        material._keepRecordedDrawReference(drawWrapper.effect!, canKeep ? drawWrapper : null);
+        material._keepRecordedDrawReference(drawWrapper.effect!, canKeep ? drawWrapper : null, domain);
         let kept = canKeep && !scene.floatingOriginMode && scene.getSceneUniformBuffer()._isFirstBufferBound() && effectiveMesh.getMeshUniformBuffer()._isFirstBufferBound();
         if (withLights) {
             for (const light of effectiveMesh.lightSources) {
@@ -2871,7 +2887,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         drawWrapper._recordedMaterialState = material._getPipelineStateKey();
         drawWrapper._recordedZOffset = material.zOffset;
         drawWrapper._recordedZOffsetUnits = material.zOffsetUnits;
-        drawWrapper._recordedColorWrite = scene.getEngine().getColorWrite();
         drawWrapper._recordedOrientation = material._getEffectiveOrientation(this);
         drawWrapper._recordedIndexBuffer = this._geometry?.getIndexBuffer() ?? null;
         const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
@@ -3070,6 +3085,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
         }
 
+        if (engine._recordsDraws) {
+            engine._keepInheritedState(drawWrapper, !enableAlphaMode);
+        }
         const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, this._internalMeshDataInfo._effectiveSideOrientation);
 
         if (this._internalMeshDataInfo._effectiveMaterial.forceDepthWrite) {

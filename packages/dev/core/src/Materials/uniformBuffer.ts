@@ -878,6 +878,20 @@ export class UniformBuffer {
     }
 
     /**
+     * Marks the slot owned by a draw context as used in the current frame, as a flush does: a draw encoded again from its recorded
+     * commands references it
+     * @param owner the draw context
+     * @internal
+     */
+    public _markOwnerSlotUsed(owner: WebGPUDrawContext): void {
+        const idx = this._slotByOwner?.get(owner);
+        if (idx !== undefined) {
+            this._checkNewFrame();
+            this._slotFrameId[idx] = this._currentFrameId;
+        }
+    }
+
+    /**
      * Whether the last flush on behalf of a draw context used the slot it owns (and not a slot taken for a second flush in the frame)
      * @param owner the draw context
      * @returns true if the owned slot is bound

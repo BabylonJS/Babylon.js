@@ -37,7 +37,7 @@ import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer"
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 import { type DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
-import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
+import { type IWebGPURecordedDraw, WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUCacheTextureView } from "./WebGPU/webgpuCacheTextureView";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad.pure";
@@ -296,6 +296,13 @@ export interface IWebGPURenderPipelineAsyncCreationOptions {
      * Whether stencil testing is enabled. Defaults to false.
      */
     stencilEnabled?: boolean;
+}
+
+function CopyInto<T>(source: T[], target: T[]): void {
+    target.length = source.length;
+    for (let i = 0; i < source.length; i++) {
+        target[i] = source[i];
+    }
 }
 
 /**
@@ -4104,21 +4111,26 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
         const indexBuffer = this._currentIndexBuffer;
-        drawContext._recordedDraw = {
-            renderTarget: this._currentRenderTarget,
-            sampleCount: this.currentSampleCount,
-            pipeline,
-            bindGroups: bindGroups.slice(),
-            indexBuffer: indexBuffer ? indexBuffer.underlyingResource : null,
-            indexFormat: indexBuffer?.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16,
-            vertexBuffers: vertexBuffers.map((vertexBuffer) => vertexBuffer.effectiveBuffer?.underlyingResource ?? null),
-            vertexOffsets: vertexBuffers.map((vertexBuffer) => (vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset)),
-            indirectBuffer: drawContext._enableIndirectDrawInCompatMode ? (drawContext.indirectDrawBuffer ?? null) : null,
-            indexed: drawKind === WebGPURenderPassDrawKind.INDEXED,
-            count,
-            instances: instancesCount || 1,
-            start,
-        };
+        // the record of the context and its arrays are filled again
+        const draw = (drawContext._recordedDraw ??= { bindGroups: [], vertexBuffers: [], vertexOffsets: [] } as unknown as IWebGPURecordedDraw);
+        draw.renderTarget = this._currentRenderTarget;
+        draw.sampleCount = this.currentSampleCount;
+        draw.pipeline = pipeline;
+        CopyInto(bindGroups, draw.bindGroups);
+        draw.indexBuffer = indexBuffer ? indexBuffer.underlyingResource : null;
+        draw.indexFormat = indexBuffer?.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
+        const length = vertexBuffers.length;
+        draw.vertexBuffers.length = draw.vertexOffsets.length = length;
+        for (let i = 0; i < length; i++) {
+            const vertexBuffer = vertexBuffers[i];
+            draw.vertexBuffers[i] = vertexBuffer.effectiveBuffer?.underlyingResource ?? null;
+            draw.vertexOffsets[i] = vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset;
+        }
+        draw.indirectBuffer = drawContext._enableIndirectDrawInCompatMode ? (drawContext.indirectDrawBuffer ?? null) : null;
+        draw.indexed = drawKind === WebGPURenderPassDrawKind.INDEXED;
+        draw.count = count;
+        draw.instances = instancesCount || 1;
+        draw.start = start;
     }
 
     /** @internal */
@@ -4126,10 +4138,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
         const materialContext = drawWrapper.materialContext as Nullable<WebGPUMaterialContext>;
         const draw = drawContext?._recordedDraw;
+        const effect = drawWrapper.effect;
         if (
             !this._snapshotRendering.record ||
             !draw ||
             !materialContext ||
+            // a full draw enables the effect, which calls them
+            effect?.onBind ||
+            effect?._onBindObservable?.hasObservers() ||
             draw.renderTarget !== this._currentRenderTarget ||
             draw.sampleCount !== this.currentSampleCount ||
             drawContext.isDirty(materialContext.updateId) ||
@@ -4146,7 +4162,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (!this._canEncodeRecordedDraw(drawWrapper)) {
             return false;
         }
-        const draw = (drawWrapper.drawContext as WebGPUDrawContext)._recordedDraw!;
+        const drawContext = drawWrapper.drawContext as WebGPUDrawContext;
+        const draw = drawContext._recordedDraw!;
+        // the bind groups reference the slot of the draw context: used this frame, it is neither overwritten nor taken by another one
+        (drawWrapper.effect?._pipelineContext as Nullable<WebGPUPipelineContext>)?.uniformBuffer?._markOwnerSlotUsed(drawContext);
 
         const bundleList = this._bundleList;
         this._getCurrentRenderPass();

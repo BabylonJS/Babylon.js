@@ -71,8 +71,8 @@ export class DrawWrapper {
     public _recordedZOffset = 0;
     /** @internal */
     public _recordedZOffsetUnits = 0;
-    /** @internal The engine's color writes: the depth prepass draws the same sub mesh with them off, through the same draw wrapper */
-    public _recordedColorWrite = true;
+    /** @internal The states the draw inherited from the engine (see AbstractEngine._keepInheritedState) */
+    public _recordedEngineState: Nullable<number[]> = null;
     /** @internal The effective side orientation, which _preBind turns into the culling and front face state */
     public _recordedOrientation = -1;
     /** @internal */

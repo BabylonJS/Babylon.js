@@ -67,6 +67,72 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
     });
 });
 
+describe("WebGPUEngine recorded draws", () => {
+    function setup() {
+        const materialContext = new WebGPUMaterialContext();
+        const drawWrapper = new DrawWrapper({
+            createDrawContext: () => new WebGPUDrawContext({ createRawBuffer: () => ({}), setRawData: () => {}, releaseBuffer: () => true } as any, {} as any),
+            createMaterialContext: () => materialContext,
+        } as any);
+        const markOwnerSlotUsed = vi.fn();
+        const effect = { onBind: null, _onBindObservable: null, _pipelineContext: { uniformBuffer: { _markOwnerSlotUsed: markOwnerSlotUsed } } } as any;
+        drawWrapper.setEffect(effect);
+        const drawContext = drawWrapper.drawContext as WebGPUDrawContext;
+        materialContext.isDirty = false;
+        drawContext.resetIsDirty(materialContext.updateId);
+        const encoder = { setPipeline: vi.fn(), setIndexBuffer: vi.fn(), setVertexBuffer: vi.fn(), setBindGroup: vi.fn(), drawIndexed: vi.fn(), draw: vi.fn() };
+        const engine: any = {
+            _snapshotRendering: { record: true },
+            _snapshotCachedDraws: true,
+            _currentRenderTarget: null,
+            currentSampleCount: 1,
+            _currentDrawContext: drawContext,
+            _currentEffect: { _pipelineContext: {} },
+            _currentIndexBuffer: null,
+            _bundleList: { numDrawCalls: 0, getBundleEncoder: () => encoder },
+            _cacheRenderPipeline: { colorFormats: [], vertexBuffers: [{ effectiveBuffer: { underlyingResource: {} }, _validOffsetRange: true, byteOffset: 0 }] },
+            _getCurrentRenderPass: () => {},
+            _applyRenderPassChanges: () => {},
+            _flushRenderPassCommands: () => {},
+            _reportDrawCall: () => {},
+        };
+        engine._canEncodeRecordedDraw = (wrapper: DrawWrapper) => WebGPUEngine.prototype._canEncodeRecordedDraw.call(engine, wrapper);
+        const keep = () => (WebGPUEngine.prototype as any)._keepRecordedDraw.call(engine, {}, [{}, {}], 0, 36, 1, 0);
+        const replay = () => WebGPUEngine.prototype._replayRecordedDraw.call(engine, drawWrapper);
+        keep();
+        return { effect, drawContext, keep, replay, markOwnerSlotUsed };
+    }
+
+    it("marks the slot of its draw context as used in the frame when it encodes a draw again", () => {
+        const { replay, markOwnerSlotUsed, drawContext } = setup();
+        expect(replay()).toBe(true);
+        expect(markOwnerSlotUsed).toHaveBeenCalledWith(drawContext);
+    });
+
+    it("does not encode again a draw whose effect has a bind callback, which a full draw calls", () => {
+        const { effect, replay } = setup();
+        effect.onBind = () => {};
+        expect(replay()).toBe(false);
+        effect.onBind = null;
+        effect._onBindObservable = { hasObservers: () => true };
+        expect(replay()).toBe(false);
+        effect._onBindObservable = { hasObservers: () => false };
+        expect(replay()).toBe(true);
+    });
+
+    it("fills the same record and arrays on each capture", () => {
+        const { drawContext, keep } = setup();
+        const draw = drawContext._recordedDraw!;
+        const arrays = [draw.bindGroups, draw.vertexBuffers, draw.vertexOffsets];
+        keep();
+        expect(drawContext._recordedDraw).toBe(draw);
+        expect([draw.bindGroups, draw.vertexBuffers, draw.vertexOffsets]).toEqual(arrays);
+        expect(draw.bindGroups[0]).toBe(arrays[0][0]);
+        expect(draw.bindGroups.length).toBe(2);
+        expect(draw.vertexBuffers.length).toBe(1);
+    });
+});
+
 /**
  * The meshes and the shadow maps check and keep their draws only while a snapshot records with the recorded draws switched on
  * (engine._recordsDraws): with them off, a recording costs what it did before them.

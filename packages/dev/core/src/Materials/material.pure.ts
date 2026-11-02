@@ -986,34 +986,37 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public _drawCacheVersion = 0;
 
     private _texturesVersion = 0;
-    private _recordedDrawReferences: Nullable<Map<object, { frameId: number; drawWrapper: Nullable<DrawWrapper> }>> = null;
+    private _recordedDrawReferences: Nullable<Map<object, { frameId: number; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>> = null;
 
     /**
      * @internal Keeps the draw a full bind of this material did with an effect in this frame: the draws of this material recorded
      * with the same per-draw values as that draw can be encoded again without binding
      * @param effect the effect of the draw
      * @param drawWrapper the draw wrapper of the draw, or null if its per-draw values cannot be compared
+     * @param domain what else wrote its per-draw values (a shadow generator its bias), or null
      */
-    public _keepRecordedDrawReference(effect: object, drawWrapper: Nullable<DrawWrapper>): void {
+    public _keepRecordedDrawReference(effect: object, drawWrapper: Nullable<DrawWrapper>, domain: Nullable<object> = null): void {
         const references = (this._recordedDrawReferences ??= new Map());
         const frameId = this._scene.getEngine().frameId;
         const entry = references.get(effect);
         if (entry) {
             entry.frameId = frameId;
+            entry.domain = domain;
             entry.drawWrapper = drawWrapper;
         } else {
-            references.set(effect, { frameId, drawWrapper });
+            references.set(effect, { frameId, domain, drawWrapper });
         }
     }
 
     /**
      * @internal Gets the draw kept by _keepRecordedDrawReference for an effect in this frame
      * @param effect the effect of the draw
-     * @returns the draw wrapper, or null if no full bind of this material with this effect was kept in this frame
+     * @param domain what else wrote its per-draw values, or null
+     * @returns the draw wrapper, or null if no full bind of this material with this effect and domain was kept in this frame
      */
-    public _getRecordedDrawReference(effect: object): Nullable<DrawWrapper> {
+    public _getRecordedDrawReference(effect: object, domain: Nullable<object> = null): Nullable<DrawWrapper> {
         const entry = this._recordedDrawReferences?.get(effect);
-        return entry && entry.frameId === this._scene.getEngine().frameId ? entry.drawWrapper : null;
+        return entry && entry.frameId === this._scene.getEngine().frameId && entry.domain === domain ? entry.drawWrapper : null;
     }
     private _texturesVersionFrameId = -1;
     private _texturesVersionInternals: Nullable<object>[] = [];
@@ -1059,6 +1062,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
             !this._onUnBindObservable?.hasObservers() &&
             !this.pluginManager?._bindsOnEachDraw &&
             !this.stencil.enabled &&
+            // a full draw leaves the depth writes on for the draws after it
+            !this.forceDepthWrite &&
             !(this.separateCullingPass && !this.backFaceCulling)
         );
     }

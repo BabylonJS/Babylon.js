@@ -2622,6 +2622,55 @@ export abstract class AbstractEngine {
     public _hasSameDrawValues(_drawWrapper: DrawWrapper, _reference: DrawWrapper): boolean {
         return false;
     }
+
+    private _inheritedState: number[] = [];
+
+    /**
+     * @internal Keeps, before a draw binds, the states it inherits from the engine without setting them (the depth prepass turns the
+     * color writes off, the rendering groups set the stencil): a draw recorded with others is bound again
+     * @param drawWrapper the draw wrapper of the draw
+     * @param withAlpha whether the draw inherits the alpha mode too (when its mesh does not set it)
+     */
+    public _keepInheritedState(drawWrapper: DrawWrapper, withAlpha: boolean): void {
+        this._getInheritedState((drawWrapper._recordedEngineState ??= []), withAlpha);
+    }
+
+    /**
+     * @internal Whether the engine has the states kept by _keepInheritedState for a draw wrapper
+     * @param drawWrapper the draw wrapper of the draw
+     * @returns true if they did not change
+     */
+    public _hasInheritedState(drawWrapper: DrawWrapper): boolean {
+        const recorded = drawWrapper._recordedEngineState;
+        if (!recorded) {
+            return false;
+        }
+        const current = this._getInheritedState(this._inheritedState, recorded[0] === 1);
+        for (let i = 0; i < current.length; i++) {
+            if (current[i] !== recorded[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private _getInheritedState(target: number[], withAlpha: boolean): number[] {
+        target[0] = withAlpha ? 1 : 0;
+        target[1] = withAlpha ? this.getAlphaMode() : 0;
+        target[2] = this.getColorWrite() ? 1 : 0;
+        target[3] = this.getDepthBuffer() ? 1 : 0;
+        target[4] = this.getDepthWrite() ? 1 : 0;
+        target[5] = this.getDepthFunction() ?? 0;
+        target[6] = this.getStencilBuffer() ? 1 : 0;
+        target[7] = this.getStencilFunction();
+        target[8] = this.getStencilFunctionReference();
+        target[9] = this.getStencilFunctionMask();
+        target[10] = this.getStencilMask();
+        target[11] = this.getStencilOperationPass();
+        target[12] = this.getStencilOperationFail();
+        target[13] = this.getStencilOperationDepthFail();
+        return target;
+    }
     /**
      * Gets the current framerate
      * @returns a number representing the framerate

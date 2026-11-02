@@ -115,6 +115,13 @@ export interface IShaderMaterialOptions {
     extraInitializationsAsync?: () => Promise<void>;
 }
 
+function IsEmpty(dictionary: object): boolean {
+    for (const _ in dictionary) {
+        return false;
+    }
+    return true;
+}
+
 /**
  * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
  *
@@ -235,6 +242,23 @@ export class ShaderMaterial extends PushMaterial {
      * Mainly use in serialization.
      * @returns the class name
      */
+    /**
+     * @internal Its setters only change dictionaries: a draw binding custom buffers or textures that the engine does not check
+     * (getActiveTextures) is not encoded again from its recorded commands
+     * @returns true if the recorded draws can be encoded again
+     */
+    public override _canReplayRecordedDraw(): boolean {
+        return (
+            super._canReplayRecordedDraw() &&
+            IsEmpty(this._uniformBuffers) &&
+            IsEmpty(this._storageBuffers) &&
+            IsEmpty(this._externalTextures) &&
+            IsEmpty(this._internalTextures) &&
+            IsEmpty(this._textureArrays) &&
+            IsEmpty(this._textureSamplers)
+        );
+    }
+
     public override getClassName(): string {
         return "ShaderMaterial";
     }

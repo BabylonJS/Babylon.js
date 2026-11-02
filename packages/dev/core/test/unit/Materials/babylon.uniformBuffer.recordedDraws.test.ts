@@ -125,4 +125,26 @@ describe("UniformBuffer checks for recorded draws", () => {
         shared.update();
         expect(shared._isFirstBufferBound()).toBe(true);
     });
+
+    describe("a draw encoded again from its recorded commands, which references the slot of its draw context", () => {
+        const slotOf = (owner: WebGPUDrawContext) => (ubo as any)._buffers[(ubo as any)._slotByOwner.get(owner)][0] as MockGpuBuffer;
+
+        it("keeps its slot from being overwritten by a later flush of the same draw context with other values", () => {
+            draw(owners[0], 1);
+            engine.frameId = 2;
+            ubo._markOwnerSlotUsed(owners[0]);
+            draw(owners[0], 2);
+            expect(slotOf(owners[0]).gpu[0]).toBe(1);
+        });
+
+        it("keeps its slot from being taken by another draw context once its own is released", () => {
+            draw(owners[0], 1);
+            const slot = slotOf(owners[0]);
+            engine.frameId = 2;
+            ubo._markOwnerSlotUsed(owners[0]);
+            ubo._releaseOwnerSlot(owners[0]);
+            draw(owners[1], 3);
+            expect(slot.gpu[0]).toBe(1);
+        });
+    });
 });
