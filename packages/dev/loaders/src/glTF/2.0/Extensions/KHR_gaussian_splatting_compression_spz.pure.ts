@@ -1,6 +1,7 @@
 import { type Nullable } from "core/types";
 import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { RegisterThinInstanceMesh } from "core/Meshes/thinInstanceMesh.pure";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 
 import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
@@ -147,11 +148,20 @@ export class KHR_gaussian_splatting_compression_spz implements IGLTFLoaderExtens
 
         // The mesh must be assigned synchronously, before the first await (see KHR_gaussian_splatting).
         const scene = loader.babylonScene;
+        // The mesh relies on thin instances for its splat index buffer, which pure imports don't register.
+        RegisterThinInstanceMesh();
         const gaussianSplattingMesh = scene._executeWithBlockedEntityCollection(!!loader._assetContainer, () => new GaussianSplattingMesh(name, null, scene));
         gaussianSplattingMesh._parentContainer = loader._assetContainer;
 
         GLTFLoader.AddPointerMetadata(gaussianSplattingMesh, context);
         loader.parent.onMeshLoadedObservable.notifyObservers(gaussianSplattingMesh);
+
+        // Report the generated material so it ends up in the asset container alongside the mesh.
+        const material = gaussianSplattingMesh.material;
+        if (material) {
+            material._parentContainer = loader._assetContainer;
+            loader.parent.onMaterialLoadedObservable.notifyObservers(material);
+        }
         assign(gaussianSplattingMesh);
 
         const bytes = await loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView);
@@ -178,9 +188,9 @@ export class KHR_gaussian_splatting_compression_spz implements IGLTFLoaderExtens
         }
 
         if (parsed.trainedWithAntialiasing) {
-            const material = gaussianSplattingMesh.material as GaussianSplattingMaterial;
-            material.kernelSize = 0.1;
-            material.compensation = true;
+            const gaussianSplattingMaterial = material as GaussianSplattingMaterial;
+            gaussianSplattingMaterial.kernelSize = 0.1;
+            gaussianSplattingMaterial.compensation = true;
         }
 
         if (parsed.safeOrbitCameraRadiusMin !== undefined || parsed.safeOrbitCameraElevationMinMax !== undefined) {
