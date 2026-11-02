@@ -104,6 +104,53 @@ describe("SerializationTools coordinator ownership", () => {
         engine.dispose();
     });
 
+    it("reports sound asset load failures without rejecting graph deserialization", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const loadError = new Error("Unsupported audio format");
+        const addSoundAsset = vi.spyOn(FlowGraphCoordinator.prototype, "addSoundAssetAsync").mockRejectedValue(loadError);
+        const serialized = {
+            soundAssets: [{ name: "click", url: "data:audio/invalid;base64,AA==" }],
+            _flowGraphs: [{ rightHanded: true, allBlocks: [], executionContexts: [] }],
+        };
+        const globalState = new GlobalState(scene);
+        const showError = vi.fn();
+        globalState.stateManager.onErrorMessageDialogRequiredObservable.add(showError);
+
+        const state = await SerializationTools.DeserializeToStateAsync(serialized, scene);
+        SerializationTools.ApplyDeserializedState(state, globalState);
+
+        expect(showError).toHaveBeenCalledWith('Could not load sound asset "click": Unsupported audio format', expect.anything());
+        addSoundAsset.mockRestore();
+        state.coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("includes sound asset declarations in BABYLON_flow_graph GLB exports", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+        vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+        const download = vi.spyOn(SerializationTools as any, "_DownloadBlob").mockImplementation(() => {});
+
+        await SerializationTools.ExportBabylonFlowGraphGlbAsync(graph, globalState, null);
+
+        const blob = download.mock.calls[0][0] as Blob;
+        const file = new File([blob], "flowGraph.glb");
+        const serialized = await SerializationTools.ReadFlowGraphFromGlbAsync(file);
+        expect(serialized.soundAssets).toEqual([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+
+        download.mockRestore();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("detaches a borrowed host coordinator without disposing its graphs", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

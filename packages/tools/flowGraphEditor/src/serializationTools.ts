@@ -97,6 +97,8 @@ export interface IFlowGraphEditorDeserializedState {
     sceneSnippetId?: string;
     /** Optional Flow Graph snippet identifier stored in the source. */
     flowGraphSnippetId?: string;
+    /** Sound declarations that could not be loaded. */
+    soundAssetLoadErrors: string[];
 }
 
 /**
@@ -313,9 +315,17 @@ export class SerializationTools {
         coordinator.dispatchEventsSynchronously =
             options?.dispatchEventsSynchronously ?? serializationObject.dispatchEventsSynchronously ?? coordinator.dispatchEventsSynchronously;
         const parsedGraphs: FlowGraph[] = [];
+        const soundAssetLoadErrors: string[] = [];
         try {
             if (Array.isArray(serializationObject.soundAssets)) {
-                await Promise.allSettled(serializationObject.soundAssets.map(async (asset: IFlowGraphSoundAsset) => await coordinator.addSoundAssetAsync(asset)));
+                const results = await Promise.allSettled(serializationObject.soundAssets.map(async (asset: IFlowGraphSoundAsset) => await coordinator.addSoundAssetAsync(asset)));
+                results.forEach((result, index) => {
+                    if (result.status === "rejected") {
+                        const asset = serializationObject.soundAssets[index] as IFlowGraphSoundAsset;
+                        const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
+                        soundAssetLoadErrors.push(`Could not load sound asset "${asset.name}": ${reason}`);
+                    }
+                });
             }
             for (const graphData of graphDataList) {
                 // eslint-disable-next-line no-await-in-loop -- sequential order is intentional
@@ -346,6 +356,7 @@ export class SerializationTools {
             hasImportScopedRuntime: options?.sourceFormat === "KHR_interactivity",
             sceneSnippetId,
             flowGraphSnippetId,
+            soundAssetLoadErrors,
         };
     }
 
@@ -373,6 +384,9 @@ export class SerializationTools {
         }
         if (state.flowGraphSnippetId) {
             globalState.flowGraphSnippetId = state.flowGraphSnippetId;
+        }
+        if (state.soundAssetLoadErrors.length > 0) {
+            globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(state.soundAssetLoadErrors.join("\n"));
         }
     }
 
@@ -564,6 +578,9 @@ export class SerializationTools {
         }
         if (globalState.flowGraphSnippetId) {
             fgSerialized.flowGraphSnippetId = globalState.flowGraphSnippetId;
+        }
+        if (globalState.coordinator?.soundAssets.length) {
+            fgSerialized.soundAssets = globalState.coordinator.soundAssets;
         }
 
         // Build the glTF JSON with the flow graph embedded as an extension

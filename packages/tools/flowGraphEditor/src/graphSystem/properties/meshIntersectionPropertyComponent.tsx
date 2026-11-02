@@ -90,7 +90,21 @@ export function ResolveIntersectionMeshDefaults(
     const sourceIsCurrent = !!sourceValue && meshes.some((mesh) => mesh.uniqueId === sourceValue.uniqueId);
     const resolvedSourceMesh = sourceIsCurrent ? sourceValue : meshes.find((mesh) => mesh.name === sourceName);
     const targetsAreCurrent = targetValues.every((target) => meshes.some((mesh) => mesh.uniqueId === target.uniqueId));
-    const resolvedTargets = targetsAreCurrent ? targetValues : targetNames.map((name) => meshes.find((mesh) => mesh.name === name));
+    const availableMeshesByName = new Map<string, AbstractMesh[]>();
+    for (const mesh of meshes) {
+        const matches = availableMeshesByName.get(mesh.name);
+        if (matches) {
+            matches.push(mesh);
+        } else {
+            availableMeshesByName.set(mesh.name, [mesh]);
+        }
+    }
+    const resolvedTargets = targetsAreCurrent
+        ? targetValues
+        : targetNames.map((name) => {
+              const matches = availableMeshesByName.get(name);
+              return matches?.shift();
+          });
     const allTargetsResolved = targetsAreCurrent || (resolvedTargets.length === targetNames.length && resolvedTargets.every((mesh) => !!mesh));
     const resolvedTargetMeshes = allTargetsResolved ? (resolvedTargets as AbstractMesh[]) : undefined;
 

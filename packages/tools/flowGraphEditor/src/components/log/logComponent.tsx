@@ -13,7 +13,9 @@ interface ILogComponentProps {
 const MaxLogEntries = 1000;
 
 export class LogEntryBuffer {
-    private _pending: LogEntry[] = [];
+    private readonly _pending = new Array<LogEntry>(MaxLogEntries);
+    private _pendingStart = 0;
+    private _pendingCount = 0;
     private _frameId = 0;
 
     public constructor(
@@ -23,9 +25,12 @@ export class LogEntryBuffer {
     ) {}
 
     public enqueue(entry: LogEntry): void {
-        this._pending.push(entry);
-        if (this._pending.length > MaxLogEntries) {
-            this._pending.splice(0, this._pending.length - MaxLogEntries);
+        const index = (this._pendingStart + this._pendingCount) % MaxLogEntries;
+        this._pending[index] = entry;
+        if (this._pendingCount < MaxLogEntries) {
+            this._pendingCount++;
+        } else {
+            this._pendingStart = (this._pendingStart + 1) % MaxLogEntries;
         }
         if (!this._frameId) {
             this._frameId = this._requestFrame(() => this._flush());
@@ -37,13 +42,15 @@ export class LogEntryBuffer {
             this._cancelFrame(this._frameId);
             this._frameId = 0;
         }
-        this._pending.length = 0;
+        this._pendingStart = 0;
+        this._pendingCount = 0;
     }
 
     private _flush(): void {
         this._frameId = 0;
-        const entries = this._pending;
-        this._pending = [];
+        const entries = Array.from({ length: this._pendingCount }, (_, index) => this._pending[(this._pendingStart + index) % MaxLogEntries]);
+        this._pendingStart = 0;
+        this._pendingCount = 0;
         this._publish(entries);
     }
 }

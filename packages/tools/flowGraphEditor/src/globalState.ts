@@ -236,6 +236,13 @@ export class GlobalState {
         }
     }
 
+    /** Releases editor-owned subscriptions and restores patched host graph signals. */
+    public dispose(): void {
+        this._unsubscribeDebugObservers();
+        this._soundAssetChangedObserver?.remove();
+        this._soundAssetChangedObserver = null;
+    }
+
     /**
      * Adds or replaces a named sound asset on the active coordinator.
      * @param asset sound asset declaration
@@ -730,11 +737,13 @@ export class GlobalState {
             for (const signal of eventOutputs) {
                 const originalActivateSignal = signal._activateSignal;
                 const patchedActivateSignal = (context: FlowGraphContext) => {
-                    const suffix = specializedOutputs.length > 1 ? ` (${signal.name})` : "";
-                    this.onDebugLogRequiredObservable.notifyObservers({
-                        message: `Event fired: ${block.name ?? block.getClassName()}${suffix}`,
-                        block,
-                    });
+                    if (context === this._flowGraph?.getContext(this.selectedContextIndex)) {
+                        const suffix = specializedOutputs.length > 1 ? ` (${signal.name})` : "";
+                        this.onDebugLogRequiredObservable.notifyObservers({
+                            message: `Event fired: ${block.name ?? block.getClassName()}${suffix}`,
+                            block,
+                        });
+                    }
                     originalActivateSignal.call(signal, context);
                 };
                 signal._activateSignal = patchedActivateSignal;
