@@ -353,7 +353,7 @@ describe("staged lint execution", () => {
 });
 
 describe("full lint wrapper", () => {
-    it("finds lint files in source order while skipping dependencies and build output", () => {
+    it("finds lint files in source order while skipping dependencies, build output, and ignored public packages", () => {
         fixtureRoot = mkdtempSync(path.join(import.meta.dirname, ".lint-changed-test-repo-"));
         const files = ["packages/a/src/index.ts", "packages/a/test/unit/check.test.ts", "packages/b/c/src/view.tsx"];
         for (const file of [
@@ -362,6 +362,7 @@ describe("full lint wrapper", () => {
             "packages/a/src/data.json",
             "packages/a/node_modules/dep/src/index.ts",
             "packages/a/dist/src/index.js",
+            "packages/public/umd/lib/src/index.ts",
             "scripts/src/tool.ts",
         ]) {
             writeFixture(file, "");

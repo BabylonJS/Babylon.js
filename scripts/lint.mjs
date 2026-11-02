@@ -13,6 +13,8 @@ const MaxCommandLength = 24_000;
 const MaxFilesPerShard = 400;
 const MaxPackagesPerShard = 8;
 const SkippedDirectories = new Set([".git", "dist", "node_modules"]);
+// Mirrors the global `packages/public/**` ignore in eslint.config.mjs so ignored packages do not produce empty shards.
+const SkippedPaths = new Set(["packages/public"]);
 const GlobSyntaxPattern = /[*?[\]{}()\\]/;
 
 export function resolveLocalBin(packageName, relativeBinPath) {
@@ -73,7 +75,7 @@ export function completeChildProcess(result, processObject = process) {
 
 /**
  * Finds every file in the shared lint scopes. ESLint still applies its own ignores to the shard patterns;
- * skipping directories that ESLint always ignores only avoids walking build outputs and dependencies.
+ * skipping directories that ESLint always ignores only avoids walking them and launching empty shards.
  * @param {string} cwd Repository root.
  * @returns {string[]} Sorted repository-relative file paths.
  */
@@ -94,7 +96,7 @@ export function findLintFiles(cwd = process.cwd()) {
         for (const entry of entries) {
             const file = `${directory}/${entry.name}`;
             if (entry.isDirectory()) {
-                if (!SkippedDirectories.has(entry.name)) {
+                if (!SkippedDirectories.has(entry.name) && !SkippedPaths.has(file)) {
                     pending.push(file);
                 }
             } else if (entry.isFile() && isLintFile(file)) {
