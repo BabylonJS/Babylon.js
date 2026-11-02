@@ -314,13 +314,13 @@ describe("review feedback regressions", () => {
         const block = new FlowGraphMeshIntersectionEventBlock();
         graph.addEventBlock(block);
         (block.sourceMesh as any)._defaultValue = oldSource;
-        (block.targetMeshes as any)._defaultValue = [oldTarget];
+        (block.targetMeshes as any)._defaultValue = [oldOverride];
         const firstContext = graph.createContext();
         const secondContext = graph.createContext();
         block.sourceMesh.setValue(oldSource, firstContext);
-        block.targetMeshes.setValue([oldTarget], firstContext);
+        block.targetMeshes.setValue([oldOverride], firstContext);
         block.sourceMesh.setValue(oldSource, secondContext);
-        block.targetMeshes.setValue([oldOverride], secondContext);
+        block.targetMeshes.setValue([oldTarget], secondContext);
         const globalState = new GlobalState(oldScene);
         globalState.sceneContext = new SceneContext(oldScene, false);
         globalState.coordinator = coordinator;
@@ -338,18 +338,19 @@ describe("review feedback regressions", () => {
         const restoredFirstContext = graph.getContext(0)!;
         const restoredSecondContext = graph.getContext(1)!;
         expect(block.sourceMesh.getValue(restoredFirstContext)).toBe(newSource);
-        expect(block.targetMeshes.getValue(restoredFirstContext)).toEqual([newTarget]);
-        expect(block.targetMeshes.getValue(restoredSecondContext)).toEqual([newOverride]);
+        expect((block.targetMeshes as any)._defaultValue).toEqual([newOverride]);
+        expect(block.targetMeshes.getValue(restoredFirstContext)).toEqual([newOverride]);
+        expect(block.targetMeshes.getValue(restoredSecondContext)).toEqual([newTarget]);
 
         const onEnter = vi.spyOn(block.onEnter, "_activateSignal");
         block._executeEvent(restoredFirstContext, null);
         expect(onEnter).toHaveBeenCalledWith(restoredFirstContext);
-        expect(block.otherMesh.getValue(restoredFirstContext)).toBe(newTarget);
+        expect(block.otherMesh.getValue(restoredFirstContext)).toBe(newOverride);
 
         const editedTarget = new Mesh("edited", newScene);
         globalState.setUnconnectedInputValue(block.targetMeshes, [editedTarget]);
         expect(block.targetMeshes.getValue(restoredFirstContext)).toEqual([editedTarget]);
-        expect(block.targetMeshes.getValue(restoredSecondContext)).toEqual([newOverride]);
+        expect(block.targetMeshes.getValue(restoredSecondContext)).toEqual([newTarget]);
 
         const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
         const restored = await SerializationTools.DeserializeToStateAsync(serialized, newScene);
@@ -357,9 +358,55 @@ describe("review feedback regressions", () => {
             .getAllBlocks()
             .find((candidate) => candidate.getClassName() === block.getClassName()) as FlowGraphMeshIntersectionEventBlock;
         expect(restoredBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(0)!)).toEqual([editedTarget]);
-        expect(restoredBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(1)!)).toEqual([newOverride]);
+        expect(restoredBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(1)!)).toEqual([newTarget]);
 
         restored.coordinator.dispose();
+        globalState.dispose();
+        replacementContext.dispose();
+        coordinator.dispose();
+        newScene.dispose();
+        oldScene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps a missing duplicate mesh override unresolved during scene replacement and serialization", () => {
+        const engine = new NullEngine();
+        const oldScene = new Scene(engine);
+        const oldTarget = new Mesh("part", oldScene);
+        const missingOverride = new Mesh("part", oldScene);
+        missingOverride.id = oldTarget.id;
+        const coordinator = new FlowGraphCoordinator({ scene: oldScene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(block);
+        (block.targetMeshes as any)._defaultValue = [oldTarget];
+        const defaultContext = graph.createContext();
+        const overrideContext = graph.createContext();
+        block.targetMeshes.setValue([oldTarget], defaultContext);
+        block.targetMeshes.setValue([missingOverride], overrideContext);
+        const globalState = new GlobalState(oldScene);
+        globalState.sceneContext = new SceneContext(oldScene, false);
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+
+        const newScene = new Scene(engine);
+        const newTarget = new Mesh("part", newScene);
+        newTarget.id = oldTarget.id;
+        const replacementContext = new SceneContext(newScene, false);
+        globalState.sceneContext = replacementContext;
+        globalState.onSceneContextChanged.notifyObservers(replacementContext);
+
+        expect(block.targetMeshes.getValue(graph.getContext(0)!)).toEqual([newTarget]);
+        expect(block.targetMeshes.getValue(graph.getContext(1)!)).toEqual([missingOverride]);
+
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+        const contexts = serialized._flowGraphs[0].executionContexts;
+        expect(contexts[1]._connectionValues[block.targetMeshes.uniqueId][0]).toMatchObject({
+            id: missingOverride.id,
+            name: missingOverride.name,
+            uniqueId: missingOverride.uniqueId,
+        });
+
         globalState.dispose();
         replacementContext.dispose();
         coordinator.dispose();

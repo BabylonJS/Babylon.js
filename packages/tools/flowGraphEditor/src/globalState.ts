@@ -1287,11 +1287,11 @@ export class GlobalState {
                 // they contain mesh references (pickedMesh_0 etc.) from
                 // KHR_interactivity that must survive scene switches.
                 this._snapshotUserVariables();
+                this._rebindSavedConnectionReferences(ctx.scene);
 
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(ctx.scene);
                 }
-                this._rebindSavedConnectionReferences(ctx.scene);
                 // Re-create contexts from snapshots so the editor UI has
                 // live contexts after setScene() clears them.
                 this._restoreContextsFromSnapshots(flowGraph);
@@ -1385,10 +1385,10 @@ export class GlobalState {
                 // couldn't be resolved during parsing because the graph was parsed
                 // against the editor's host scene, not the preview scene.
                 this._remapAssetReferences(this.sceneContext.scene);
+                this._rebindSavedConnectionReferences(this.sceneContext.scene);
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(this.sceneContext.scene);
                 }
-                this._rebindSavedConnectionReferences(this.sceneContext.scene);
                 // Re-create contexts from snapshots so the editor UI has live
                 // contexts to display (variables panel, context selector, etc.)
                 this._restoreContextsFromSnapshots(flowGraph);
@@ -1762,11 +1762,11 @@ export class GlobalState {
             return value;
         }
 
-        return (
-            (reference.uniqueId === undefined ? undefined : candidates.find((node) => node.uniqueId === reference.uniqueId)) ??
-            (locationIndex === undefined ? undefined : candidates[locationIndex]) ??
-            candidates[0]
-        );
+        if (locationIndex !== undefined) {
+            return candidates[locationIndex] ?? value;
+        }
+
+        return (reference.uniqueId === undefined ? undefined : candidates.find((node) => node.uniqueId === reference.uniqueId)) ?? candidates[0];
     }
 
     /**
