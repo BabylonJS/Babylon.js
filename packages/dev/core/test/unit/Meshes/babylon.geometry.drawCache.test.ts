@@ -10,8 +10,10 @@ import { Matrix } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { type Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
+import { type DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { MultiMaterial } from "core/Materials/multiMaterial";
 import "core/Buffers/buffer.align";
 import "core/Meshes/thinInstanceMesh";
 
@@ -20,24 +22,24 @@ describe("Geometry WebGPU draw cache invalidation", () => {
     let scene: Scene;
     let mesh: Mesh;
 
+    function cacheDraw(wrapper: DrawWrapper) {
+        const context = wrapper.drawContext;
+        if (!(context instanceof WebGPUDrawContext)) {
+            throw new Error("Expected a WebGPU draw context");
+        }
+        wrapper.defines = "#define INSTANCES\n#define THIN_INSTANCES";
+        wrapper._wasPreviouslyReady = true;
+        context.fastBundle = {} as GPURenderBundle;
+        context.setBuffer("Scene", new WebGPUDataBuffer());
+        context.useInstancing = true;
+        vi.spyOn(wrapper, "dispose");
+        vi.spyOn(context, "reset");
+        vi.spyOn(context, "dispose");
+        return { wrapper, context, bundle: context.fastBundle, buffers: context.buffers, indirectBuffer: context.indirectDrawBuffer };
+    }
+
     function cacheDraws(target: Mesh) {
-        const subMesh = target.subMeshes[0];
-        return [0, 7].map((passId) => {
-            const wrapper = subMesh._getDrawWrapper(passId, true)!;
-            const context = wrapper.drawContext;
-            if (!(context instanceof WebGPUDrawContext)) {
-                throw new Error("Expected a WebGPU draw context");
-            }
-            wrapper.defines = "#define INSTANCES\n#define THIN_INSTANCES";
-            wrapper._wasPreviouslyReady = true;
-            context.fastBundle = {} as GPURenderBundle;
-            context.setBuffer("Scene", new WebGPUDataBuffer());
-            context.useInstancing = true;
-            vi.spyOn(wrapper, "dispose");
-            vi.spyOn(context, "reset");
-            vi.spyOn(context, "dispose");
-            return { wrapper, context, bundle: context.fastBundle, buffers: context.buffers, indirectBuffer: context.indirectDrawBuffer };
-        });
+        return [0, 7].map((passId) => cacheDraw(target.subMeshes[0]._getDrawWrapper(passId, true)!));
     }
 
     function expectInvalidated(draws: ReturnType<typeof cacheDraws>) {
@@ -138,6 +140,93 @@ describe("Geometry WebGPU draw cache invalidation", () => {
 
         expectInvalidated(draws);
         expect(mesh.isVerticesDataPresent("tint")).toBe(false);
+    });
+
+    it.each(["replace", "remove"])("invalidates a material-owned wrapper on buffer %s without creating submesh wrappers", (operation) => {
+        const material = new ShaderMaterial("material-owned", scene, "shader", {}, false);
+        mesh.material = material;
+        mesh.subMeshes[0].resetDrawCache();
+        const draw = cacheDraw(material._getDrawWrapper());
+        expect(mesh.subMeshes[0]._drawWrappers).toHaveLength(0);
+
+        mesh.thinInstanceSetBuffer("tint", operation === "remove" ? null : new Float32Array([0, 1, 0, 1]), 4);
+
+        expectInvalidated([draw]);
+        expect(mesh.subMeshes[0]._drawWrappers).toHaveLength(0);
+    });
+
+    it.each([0, 7])("invalidates default and overridden material-owned wrappers regardless of the current render pass (%s)", (passId) => {
+        const defaultMaterial = new ShaderMaterial("default", scene, "shader", {}, false);
+        const passMaterial = new ShaderMaterial("pass", scene, "shader", {}, false);
+        const multiMaterial = new MultiMaterial("multi", scene);
+        multiMaterial.subMaterials.push(passMaterial);
+        mesh.material = defaultMaterial;
+        mesh.setMaterialForRenderPass(7, multiMaterial);
+        mesh.subMeshes[0].resetDrawCache();
+        engine.currentRenderPassId = passId;
+        const draws = [cacheDraw(defaultMaterial._getDrawWrapper()), cacheDraw(passMaterial._getDrawWrapper())];
+
+        mesh.thinInstanceSetBuffer("tint", new Float32Array([0, 1, 0, 1]), 4);
+
+        expectInvalidated(draws);
+        expect(mesh.subMeshes[0]._drawWrappers).toHaveLength(0);
+    });
+
+    it("invalidates a material-owned scene default without requiring an explicit mesh material", () => {
+        const material = new ShaderMaterial("scene-default", scene, "shader", {}, false);
+        scene.defaultMaterial = material;
+        vi.spyOn(scene, "_hasDefaultMaterial", "get").mockReturnValue(true);
+        mesh.material = null;
+        const draw = cacheDraw(material._getDrawWrapper());
+
+        mesh.thinInstanceSetBuffer("tint", new Float32Array([0, 1, 0, 1]), 4);
+
+        expectInvalidated([draw]);
+    });
+
+    it.each(["updateVerticesData", "updateVerticesDataDirectly"] as const)("invalidates draws when %s recreates an aligned buffer", (method) => {
+        engine._features.forceVertexBufferStrideAndOffsetMultiple4Bytes = true;
+        const vertexBuffer = new VertexBuffer(engine, new Float32Array(7), "unaligned", {
+            size: 2,
+            stride: 9,
+            offset: 1,
+            useBytes: true,
+            updatable: true,
+        });
+        mesh.setVerticesBuffer(vertexBuffer);
+        const originalBuffer = vertexBuffer.effectiveBuffer;
+        expect(vertexBuffer._alignedBuffer).toBeDefined();
+        const material = new ShaderMaterial("material-owned", scene, "shader", {}, false);
+        mesh.material = material;
+        const draws = [...cacheDraws(mesh), cacheDraw(material._getDrawWrapper())];
+        const geometry = mesh.geometry!;
+        const data = new Float32Array([0, 1, 0, 0, 1, 0, 0]);
+
+        if (method === "updateVerticesData") {
+            geometry.updateVerticesData("unaligned", data);
+        } else {
+            geometry.updateVerticesDataDirectly("unaligned", data, 0);
+        }
+
+        expect(vertexBuffer.effectiveBuffer).not.toBe(originalBuffer);
+        expectInvalidated(draws);
+    });
+
+    it("preserves submesh- and material-owned bundles when alignment leaves the GPU binding unchanged", () => {
+        engine._features.forceVertexBufferStrideAndOffsetMultiple4Bytes = true;
+        const material = new ShaderMaterial("material-owned", scene, "shader", {}, false);
+        mesh.material = material;
+        mesh.setVerticesData("aligned", new Float32Array([1, 2, 3, 4]), true, 4);
+        const vertexBuffer = mesh.getVertexBuffer("aligned")!;
+        expect(vertexBuffer._alignedBuffer).toBeUndefined();
+        const buffer = vertexBuffer.effectiveBuffer;
+        const draws = [...cacheDraws(mesh), cacheDraw(material._getDrawWrapper())];
+
+        mesh.updateVerticesData("aligned", new Float32Array([4, 3, 2, 1]));
+        mesh.geometry!.updateVerticesDataDirectly("aligned", new Float32Array([1, 2, 3, 4]), 0);
+
+        expect(vertexBuffer.effectiveBuffer).toBe(buffer);
+        expectPreserved(draws);
     });
 
     it("preserves cached draws when removing an absent attribute", () => {

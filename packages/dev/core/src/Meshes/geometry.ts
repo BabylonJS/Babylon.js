@@ -340,6 +340,7 @@ export class Geometry implements IGetSetVerticesData {
      * Update a specific vertex buffer
      * This function will directly update the underlying DataBuffer according to the passed numeric array or Float32Array
      * It will do nothing if the buffer is not updatable
+     * Invalidates cached WebGPU draws if buffer alignment recreates the GPU buffer.
      * @param kind defines the data kind (Position, normal, etc...)
      * @param data defines the data to use
      * @param offset defines the offset in the target buffer where to store the data
@@ -352,13 +353,18 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
+        const alignedBuffer = vertexBuffer._alignedBuffer;
         vertexBuffer.updateDirectly(data, offset, useBytes);
+        if (vertexBuffer._alignedBuffer !== alignedBuffer) {
+            this._invalidateVertexBuffers();
+        }
         this._notifyUpdate(kind);
     }
 
     /**
      * Update a specific vertex buffer
      * This function will create a new buffer if the current one is not updatable
+     * Invalidates cached WebGPU draws if buffer alignment recreates the GPU buffer.
      * @param kind defines the data kind (Position, normal, etc...)
      * @param data defines the data to use
      * @param updateExtends defines if the geometry extends must be recomputed (false by default)
@@ -370,7 +376,11 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
+        const alignedBuffer = vertexBuffer._alignedBuffer;
         vertexBuffer.update(data);
+        if (vertexBuffer._alignedBuffer !== alignedBuffer) {
+            this._invalidateVertexBuffers();
+        }
 
         if (kind === VertexBuffer.PositionKind) {
             this._updateBoundingInfo(updateExtends, data);
@@ -831,10 +841,7 @@ export class Geometry implements IGetSetVerticesData {
         // Render bundles retain buffer bindings even when the vertex layout does not change.
         for (const mesh of this._meshes) {
             for (const subMesh of mesh.subMeshes) {
-                for (const drawWrapper of subMesh._drawWrappers) {
-                    drawWrapper?.drawContext?._invalidateVertexBuffers?.();
-                }
-                subMesh._drawWrapperOverride?.drawContext?._invalidateVertexBuffers?.();
+                subMesh._invalidateVertexBuffers();
             }
         }
     }
