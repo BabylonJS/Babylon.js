@@ -21,6 +21,7 @@ import { type AbstractEngine } from "../abstractEngine";
 
 const RegexSe = /defined\s*?\((.+?)\)/g;
 const RegexSeRevert = /defined\s*?\[(.+?)\]/g;
+const RegexMacroName = /^[A-Za-z_]\w*$/;
 const RegexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 const RegexShaderDecl = /__decl__/;
 const RegexLightX = /light\{X\}.(\w*)/g;
@@ -118,10 +119,11 @@ function ExtractOperation(expression: string) {
     }
 
     if (indexOperator === -1) {
-        // a define alone, negated or not: #if !X is #if !defined(X), as #if X is #if defined(X) (it used to test a define named "!X")
+        // a define alone: #if !X is #if !defined(X), as #if X is #if defined(X) (it used to test a define named "!X"). Only a macro name
+        // is negated so: anything else after the "!" keeps its reading (#if !1 tests a define named "!1", which never exists)
         const define = expression.trim();
-        const not = define[0] === "!";
-        return new ShaderDefineIsDefinedOperator(not ? define.substring(1).trim() : define, not);
+        const name = define.substring(1).trim();
+        return define[0] === "!" && RegexMacroName.test(name) ? new ShaderDefineIsDefinedOperator(name, true) : new ShaderDefineIsDefinedOperator(expression);
     }
 
     const define = expression.substring(0, indexOperator).trim();

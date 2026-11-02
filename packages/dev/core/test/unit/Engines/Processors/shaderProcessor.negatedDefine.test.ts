@@ -4,7 +4,7 @@ import { PreProcess } from "core/Engines/Processors/shaderProcessor";
 
 /**
  * The shader preprocessor reads `#if X` as `#if defined(X)`, so `#if !X` is `#if !defined(X)`: it used to test a define named "!X",
- * which never exists, and the branch was always dropped.
+ * which never exists, and the branch was always dropped. Only a macro name is negated so: anything else after the `!` keeps its reading.
  */
 describe("ShaderProcessor: #if !X", () => {
     let engine: NullEngine;
@@ -48,6 +48,12 @@ describe("ShaderProcessor: #if !X", () => {
         const code = "#if !X\nkeep_notX\n#else\nkeep_X\n#endif\n";
         expect(kept(code, [])).toEqual(["keep_notX"]);
         expect(kept(code, ["X"])).toEqual(["keep_X"]);
+        expect(kept(code.replace("!X", "! X"), ["X"])).toEqual(["keep_X"]);
+    });
+
+    it("keeps the reading of a ! before anything but a macro name: #if !1 drops its branch, as it did, also in && and ||", () => {
+        expect(kept("#if !1\nkeep_notOne\n#else\nkeep_else\n#endif\n", [])).toEqual(["keep_else"]);
+        expect(kept("#if !1 || X\nkeep_or\n#endif\n#if !1 && Y\nkeep_and\n#endif\n", ["Y"])).toEqual([]);
     });
 
     it("reads #if !X as #if !defined(X) in && and || too", () => {
