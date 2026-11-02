@@ -91,6 +91,26 @@ export class DrawWrapper {
     }
 
     /**
+     * @internal
+     * Replaces the draw context with a new one created by the engine, keeping its instancing setting.
+     * After a context restoration, the old draw context can still hold resources of the lost device (in WebGPU,
+     * the indirect draw buffer used for instanced draws, and the buffer manager that created it).
+     * @param engine The engine to create the new draw context with.
+     */
+    public _recreateDrawContext(engine: AbstractEngine): void {
+        const oldContext = this.drawContext;
+        if (!oldContext) {
+            return;
+        }
+        const useInstancing = oldContext.useInstancing;
+        oldContext.dispose();
+        this.drawContext = engine.createDrawContext();
+        if (this.drawContext && useInstancing) {
+            this.drawContext.useInstancing = true;
+        }
+    }
+
+    /**
      * Disposes the effect wrapper and its resources
      * @param immediate if the effect should be disposed immediately or on the next frame.
      * If dispose() is not called during a scene or engine dispose, we want to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.

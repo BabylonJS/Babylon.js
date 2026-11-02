@@ -12,6 +12,7 @@ export * from "./typeDefinitions";
 export * from "./flowGraphConnection";
 export * from "./flowGraphDataConnection.pure";
 export * from "./flowGraphAssetsContext";
+export * from "./flowGraphSoundAssets";
 export * from "./flowGraphParser";
 export * from "./flowGraphPathConverter";
 export * from "./flowGraphPathConverterComponent";

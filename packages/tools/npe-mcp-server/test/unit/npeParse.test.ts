@@ -10,6 +10,8 @@
  * producing structurally valid JSON — not runtime evaluation.
  */
 import { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { type SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
+import { ParticleGraphManager } from "../../src/particleGraph";
 
 // Side-effect imports: register ALL NPE block types via RegisterClass
 import "core/Particles/Node/index";
@@ -52,4 +54,20 @@ describe("Node Particle MCP Server – Babylon.js Parse", () => {
             nodeParticleSet.dispose();
         });
     }
+
+    it("loads an MCP-created SystemBlock with the default pre-warm step multiplier", () => {
+        const mgr = new ParticleGraphManager();
+        mgr.createParticleSet("prewarm");
+        const system = mgr.addBlock("prewarm", "SystemBlock", "system");
+        expect(typeof system).not.toBe("string");
+
+        const source = JSON.parse(mgr.exportJSON("prewarm")!);
+        const nodeParticleSet = new NodeParticleSystemSet("prewarm");
+        nodeParticleSet.parseSerializedObject(source);
+
+        const systemBlock = nodeParticleSet.attachedBlocks.find((block) => block.getClassName() === "SystemBlock") as SystemBlock;
+        expect(systemBlock.preWarmStepOffset).toBe(1);
+
+        nodeParticleSet.dispose();
+    });
 });

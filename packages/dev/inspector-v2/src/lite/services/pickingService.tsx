@@ -1,4 +1,4 @@
-import { createGpuPicker, disposePicker, pickAsync, type GpuPicker, type PickingInfo, type SceneContext } from "@babylonjs/lite";
+import { createGpuPicker, disposePicker, isGizmoInteracting, isGizmoPickPending, pickAsync, type GpuPicker, type PickingInfo, type SceneContext } from "@babylonjs/lite";
 import { TargetRegular } from "@fluentui/react-icons";
 import { type FunctionComponent } from "react";
 
@@ -101,7 +101,11 @@ export const PickingServiceDefinition: ServiceDefinition<[], [IEngineContext, IS
             let pointer: { id: number; x: number; y: number; dragged: boolean } | undefined;
             const isDragged = (event: PointerEvent) => !!pointer && Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) > 5;
             const onPointerDown = (event: PointerEvent) => {
-                pointer = event.isPrimary && event.button === 0 ? { id: event.pointerId, x: event.clientX, y: event.clientY, dragged: false } : undefined;
+                if (event.isPrimary && event.button === 0) {
+                    generation++;
+                }
+                pointer =
+                    event.isPrimary && event.button === 0 && !isGizmoInteracting(canvas) ? { id: event.pointerId, x: event.clientX, y: event.clientY, dragged: false } : undefined;
             };
             const onPointerMove = (event: PointerEvent) => {
                 if (pointer?.id === event.pointerId && isDragged(event)) {
@@ -111,10 +115,17 @@ export const PickingServiceDefinition: ServiceDefinition<[], [IEngineContext, IS
             const onPointerCancel = () => {
                 pointer = undefined;
             };
+            const onPointerUpCapture = (event: PointerEvent) => {
+                // The native dispatcher ends its drag on the canvas's capture phase.
+                // Remember it first so a stationary gizmo click cannot select the mesh behind it.
+                if (pointer?.id === event.pointerId && isGizmoInteracting(canvas)) {
+                    pointer.dragged = true;
+                }
+            };
             const onPointerUp = (event: PointerEvent) => {
                 const tap = pointer?.id === event.pointerId && event.button === 0 && !pointer.dragged && !isDragged(event);
                 pointer = undefined;
-                if (!tap) {
+                if (!tap || isGizmoInteracting(canvas) || isGizmoPickPending(canvas)) {
                     return;
                 }
                 const rect = canvas.getBoundingClientRect();
@@ -134,12 +145,14 @@ export const PickingServiceDefinition: ServiceDefinition<[], [IEngineContext, IS
             canvas.addEventListener("pointerup", onPointerUp);
             canvas.addEventListener("pointercancel", onPointerCancel);
             canvas.addEventListener("pointerleave", onPointerCancel);
+            canvas.ownerDocument.addEventListener("pointerup", onPointerUpCapture, true);
             return () => {
                 canvas.removeEventListener("pointerdown", onPointerDown);
                 canvas.removeEventListener("pointermove", onPointerMove);
                 canvas.removeEventListener("pointerup", onPointerUp);
                 canvas.removeEventListener("pointercancel", onPointerCancel);
                 canvas.removeEventListener("pointerleave", onPointerCancel);
+                canvas.ownerDocument.removeEventListener("pointerup", onPointerUpCapture, true);
                 canvas.style.cursor = originalCursor;
             };
         };

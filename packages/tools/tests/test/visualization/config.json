@@ -2,6 +2,13 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Solid Particle System Mixed Model Winding",
+            "playgroundId": "#B1NNWI#2",
+            "referenceImage": "sps-mixed-model-winding.png",
+            "renderCount": 1,
+            "dependsOn": ["Particles", "Meshes", "Materials", "Cameras"]
+        },
+        {
             "title": "Raw Texture 2D Array Mipmaps",
             "playgroundId": "#I5RZPG#1",
             "referenceImage": "raw-texture-2d-array-mipmaps.png",
@@ -1344,7 +1351,7 @@
         },
         {
             "title": "Displacement map",
-            "playgroundId": "#WZ8JL4#0",
+            "playgroundId": "#WZ8JL4#1",
             "referenceImage": "displacementMap.png",
             "dependsOn": ["Materials", "Textures"]
         },
@@ -1770,29 +1777,25 @@
         },
         {
             "title": "GLTF Serializer camera rotation animation, RH -> LH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = false;",
+            "playgroundId": "#DM9YI8#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, RH -> RH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = true;",
+            "playgroundId": "#9Y82AK#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, LH -> RH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = true;",
+            "playgroundId": "#ZZQCYZ#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, LH -> LH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = false;",
+            "playgroundId": "#UUOR2W#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
@@ -2714,7 +2717,7 @@
         {
             "title": "Instances + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#547",
+            "playgroundId": "#YB006J#800",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-mb.png",
             "dependsOn": ["Collisions", "Lights", "Loaders", "Materials", "Meshes", "PostProcesses", "Shadows", "Textures"]
@@ -2722,7 +2725,7 @@
         {
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#549",
+            "playgroundId": "#YB006J#801",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-gbr-mb.png",
             "dependsOn": ["Collisions", "Lights", "Loaders", "Materials", "Meshes", "PostProcesses", "Shadows", "Textures"]
@@ -4172,6 +4175,13 @@
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {
+            "title": "Clustered Lighting (pbr sheen)",
+            "playgroundId": "#40VFIF#0",
+            "referenceImage": "clustered-lighting-pbr-sheen.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Materials", "Meshes", "PBR"]
+        },
+        {
             "title": "StandardMaterial skips out-of-range lighting",
             "playgroundId": "#5LPD6E#1",
             "dependsOn": ["Lights", "Materials", "Meshes"]
@@ -4788,6 +4798,30 @@
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
+            "title": "OpenPBR Subsurface Scatter Anisotropy - glTF",
+            "playgroundId": "#GRQHVV#333",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Color Density - glTF",
+            "playgroundId": "#GRQHVV#332",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Strength Thin-Walled - glTF",
+            "playgroundId": "#GRQHVV#343",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Scatter Strength - glTF",
+            "playgroundId": "#GRQHVV#344",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
             "playgroundId": "#BY1IOY#0",
             "excludedEngines": ["webgl1"],
@@ -4835,6 +4869,18 @@
             "playgroundId": "#URIA5X#0",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Volume Blending with Textures",
+            "playgroundId": "#SXXR4T#3",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Thin-walled Blending with Textures",
+            "playgroundId": "#SXXR4T#4",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface SSS Frame Graph - Shadows - IBL",
@@ -5939,6 +5985,18 @@
             "referenceImage": "flycamera-framerate-independent-movement.png",
             "renderCount": 1,
             "dependsOn": ["Cameras", "Materials", "Meshes"]
+        },
+        {
+            "title": "glTF Loader - PBRMaterial Scatter Color Density",
+            "playgroundId": "#GRQHVV#338",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "glTF Loader - PBRMaterial Scatter Strength Thin-Walled",
+            "playgroundId": "#GRQHVV#341",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         }
     ]
 }

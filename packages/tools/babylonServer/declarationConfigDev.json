@@ -84,6 +84,12 @@
         "outputDirectory": "./declarations"
     },
     {
+        "declarationLibs": ["@tools/ktx2encoder"],
+        "devPackageName": "ktx2encoder",
+        "filename": "ktx2encoder.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
         "declarationLibs": ["@dev/serializers"],
         "devPackageName": "serializers",
         "filename": "serializers.d.ts",

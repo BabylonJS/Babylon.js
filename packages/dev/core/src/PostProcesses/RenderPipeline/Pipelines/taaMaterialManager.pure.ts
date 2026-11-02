@@ -1,5 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
+import { type Camera } from "core/Cameras/camera.pure";
 import { type Material } from "core/Materials/material.pure";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase.pure";
@@ -8,7 +9,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector2 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene.pure";
-import { type Nullable } from "core/types";
+import { type DeepImmutable, type Nullable } from "core/types";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 class TAAJitterMaterialDefines extends MaterialDefines {
@@ -62,10 +63,9 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
     }
 
     public override getUniforms(shaderLanguage = ShaderLanguage.GLSL) {
-        const ubo = [{ name: "taa_jitter", size: 2, type: "vec2" }];
         if (shaderLanguage === ShaderLanguage.GLSL) {
             return {
-                ubo,
+                ubo: [{ name: "taa_jitter", size: 2, type: "vec2" }],
                 vertex: `
                     #ifdef TAA_JITTER
                     uniform vec2 taa_jitter;
@@ -73,12 +73,13 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
                 `,
             };
         } else {
-            return { ubo };
+            // WGSL reads the jitter from the scene uniform buffer of the pass (Scene.finalizeSceneUbo)
+            return {};
         }
     }
 
     public override hardBindForSubMesh(uniformBuffer: UniformBuffer): void {
-        if (this.isEnabled) {
+        if (this.isEnabled && this._material.shaderLanguage !== ShaderLanguage.WGSL) {
             const jitter = this._manager!.jitter;
             uniformBuffer.updateFloat2("taa_jitter", jitter.x, jitter.y);
         }
@@ -93,7 +94,7 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
             return {
                 CUSTOM_VERTEX_MAIN_END: `
                     #ifdef TAA_JITTER
-                    vertexOutputs.position += vec4f(uniforms.taa_jitter * vertexOutputs.position.w, 0.0, 0.0);
+                    vertexOutputs.position += vec4f(scene.taaJitter * vertexOutputs.position.w, 0.0, 0.0);
                     #endif
                 `,
             };
@@ -145,13 +146,69 @@ export class TAAMaterialManager {
      */
     public readonly jitter = new Vector2();
 
+    /**
+     * @internal The jitter a TAA post-process computed for each of its cameras, and the frame it computed it in. In WGSL, the views of a camera
+     * (each eye of its rig) get that camera's jitter, until the end of the next frame. With none, every camera's view gets the manager's jitter.
+     */
+    public readonly _cameraJitters = new Map<Camera, { jitter: Vector2; frameId: number }>();
+
+    /**
+     * @internal Keeps the manager's jitter as the one a TAA post-process computed for its camera in this frame. The records of cameras that
+     * stopped rendering are dropped: they would give no jitter anymore.
+     * @param camera the camera the jitter was computed for (the parent of a rig)
+     * @param frameId the engine's frame id
+     */
+    public _setCameraJitter(camera: Camera, frameId: number): void {
+        for (const [other, record] of this._cameraJitters) {
+            if (record.frameId < frameId - 1) {
+                this._cameraJitters.delete(other);
+            }
+        }
+        let record = this._cameraJitters.get(camera);
+        if (!record) {
+            record = { jitter: new Vector2(), frameId };
+            this._cameraJitters.set(camera, record);
+        }
+        record.jitter.copyFrom(this.jitter);
+        record.frameId = frameId;
+    }
+
+    /**
+     * @internal Gets the jitter of a camera's view (WGSL): the jitter computed for that camera, or for the rig it is an eye of, in this frame or
+     * the previous one. A manager used on its own, with no TAA post-process, gives its jitter to every camera's view.
+     * @param camera the camera whose view is being rendered
+     * @param frameId the engine's frame id
+     * @returns the jitter, in clip space
+     */
+    public _getCameraJitter(camera: Camera, frameId: number): DeepImmutable<Vector2> {
+        if (this._cameraJitters.size === 0) {
+            return this.jitter;
+        }
+        let record = this._cameraJitters.get(camera);
+        if (!record) {
+            // the eyes are found in the rig of the TAA's camera: the frame graph unsets their rigParent while they render
+            for (const [taaCamera, taaRecord] of this._cameraJitters) {
+                if (taaCamera._rigCameras.includes(camera)) {
+                    record = taaRecord;
+                    break;
+                }
+            }
+        }
+        return record && record.frameId >= frameId - 1 ? record.jitter : Vector2.ZeroReadOnly;
+    }
+
     /** @internal */
     public readonly _materialPlugins: TAAJitterMaterialPlugin[] = [];
+
+    private readonly _scene: Scene;
 
     /**
      * @param scene All materials in this scene will have a jitter offset applied to them.
      */
     constructor(scene: Scene) {
+        this._scene = scene;
+        // WGSL materials read the jitter of the scene's manager from its uniform buffer (Scene.finalizeSceneUbo)
+        scene._taaMaterialManager = this;
         for (const material of scene.materials) {
             this._getPlugin(material);
         }
@@ -162,7 +219,11 @@ export class TAAMaterialManager {
      * Disposes of the material manager.
      */
     public dispose(): void {
+        if (this._scene._taaMaterialManager === this) {
+            this._scene._taaMaterialManager = null;
+        }
         UnregisterMaterialPlugin(TAAJitterMaterialPlugin.Name);
+        this._cameraJitters.clear();
         const plugins = this._materialPlugins.splice(0, this._materialPlugins.length);
         for (const plugin of plugins) {
             plugin.manager = null;

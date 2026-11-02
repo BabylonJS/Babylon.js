@@ -1,18 +1,13 @@
 
-### Addons
-
-- MSDF Text: guard fwidth() denominators in the fragment shaders - [_Bug Fix_] by [marns](https://github.com/marns) ([#18970](https://github.com/BabylonJS/Babylon.js/pull/18970))
-
 ### Core
 
-- Fix AndOrNotEvaluator returning false for "a || b && c" when only a is true - by [Arthur031221](https://github.com/Arthur031221) ([#18968](https://github.com/BabylonJS/Babylon.js/pull/18968))
-- Remove unused blockMap in flow graph data cycle detection - by [irontaek](https://github.com/irontaek) ([#18980](https://github.com/BabylonJS/Babylon.js/pull/18980))
-- Fix GPUParticleSystem leaving instance attribute divisors bound - by [redstair](https://github.com/redstair) ([#18975](https://github.com/BabylonJS/Babylon.js/pull/18975))
-- SubMesh Draw Wrapper Caching Per Pass - by [tholub99](https://github.com/tholub99) ([#18972](https://github.com/BabylonJS/Babylon.js/pull/18972))
-- fix: support image source dimensions on WebGL1 - [_Bug Fix_] by [alexchuber](https://github.com/alexchuber) ([#18971](https://github.com/BabylonJS/Babylon.js/pull/18971))
-- Fix WebGPU render target sRGB option forwarding - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18966](https://github.com/BabylonJS/Babylon.js/pull/18966))
-- Expose WebGPU canvas tone mapping and color space options - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18967](https://github.com/BabylonJS/Babylon.js/pull/18967))
+- WebGPU: convert half-float readbacks with Float16Array where it exists - by [enriqxxx](https://github.com/enriqxxx) ([#19072](https://github.com/BabylonJS/Babylon.js/pull/19072))
+- Flow Graph: graph-declared sound assets and mesh intersection event - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#19101](https://github.com/BabylonJS/Babylon.js/pull/19101))
+- DirectionalLight: document that shadowOrthoScale widens extents set by hand too - by [enriqxxx](https://github.com/enriqxxx) ([#19092](https://github.com/BabylonJS/Babylon.js/pull/19092))
+- Stop Gaussian splatting and vertex-pulling materials from growing shared attribute and uniform lists - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#19080](https://github.com/BabylonJS/Babylon.js/pull/19080))
+- Clamp native anisotropic filtering level to caps.maxAnisotropy - by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#19078](https://github.com/BabylonJS/Babylon.js/pull/19078))
+- Fix instanced bounding boxes with high precision matrices - by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#19081](https://github.com/BabylonJS/Babylon.js/pull/19081))
 
-### Loaders
+### Sandbox
 
-- Fix source-backed interactivity export in Flow Graph Editor - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18976](https://github.com/BabylonJS/Babylon.js/pull/18976))
+- Show USD support in the Sandbox drag-and-drop prompt - by [Jeggery](https://github.com/Jeggery) ([#19088](https://github.com/BabylonJS/Babylon.js/pull/19088))

@@ -21,6 +21,23 @@ export type NativeFrameStats = {
 
 /** @internal */
 export interface INativeEngine {
+    /**
+     * True when the runtime expands line-loop and triangle-fan draws, which modern rendering APIs lack.
+     */
+    readonly supportsPrimitiveModeExpansion?: boolean;
+
+    /**
+     * True when the runtime can create multisampled render targets that also request a mip chain
+     * (BabylonNative#1714).
+     */
+    readonly supportsMultisampledMipmaps?: boolean;
+
+    /**
+     * True when the runtime can copy a canvas into a dynamic texture with a mip chain and
+     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps)`).
+     */
+    readonly supportsDynamicTextureMipMaps?: boolean;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -54,9 +71,10 @@ export interface INativeEngine {
         instanceDivisor: number
     ): void;
     updateDynamicVertexBuffer(vertexBuffer: NativeData, dataBuffer: ArrayBufferLike, dataByteOffset: number, dataByteLength: number, vertexByteOffset?: number): void;
+    readTransformFeedbackBuffer?(vertexBuffer: NativeData, dataBuffer: ArrayBufferLike, dataByteOffset: number, dataByteLength: number): void;
 
-    createProgram(vertexShader: string, fragmentShader: string): NativeProgram;
-    createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: (error: Error) => void): NativeProgram;
+    createProgram(vertexShader: string, fragmentShader: string, transformFeedbackVaryings?: string[]): NativeProgram;
+    createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: (error: Error) => void, transformFeedbackVaryings?: string[]): NativeProgram;
     getUniforms(shaderProgram: NativeProgram, uniformsNames: string[]): WebGLUniformLocation[];
     getAttributes(shaderProgram: NativeProgram, attributeNames: string[]): number[];
 
@@ -71,10 +89,11 @@ export interface INativeEngine {
         srgb: boolean,
         samples: number,
         isCube?: boolean,
-        numLayers?: number
+        numLayers?: number,
+        is3D?: boolean
     ): void;
     loadTexture(texture: NativeTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
-    loadRawTexture(texture: NativeTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
+    loadRawTexture(texture: NativeTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean, srgb: boolean): void;
     updateTextureData?(
         texture: NativeTexture,
         data: ArrayBufferView,
@@ -84,9 +103,20 @@ export interface INativeEngine {
         height: number,
         faceIndex: number,
         lod: number,
-        invertY: boolean
+        invertY: boolean,
+        generateMipMaps?: boolean
     ): void;
     loadRawTexture2DArray(
+        texture: NativeTexture,
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean
+    ): void;
+    loadRawTexture3D(
         texture: NativeTexture,
         data: Nullable<ArrayBufferView>,
         width: number,
@@ -109,6 +139,11 @@ export interface INativeEngine {
     getTextureWidth(texture: NativeTexture): number;
     getTextureHeight(texture: NativeTexture): number;
     getTextureLayerCount?(texture: NativeTexture): number;
+    /**
+     * Sets hardware depth-compare sampling on a depth texture (PCF/PCSS shadow maps).
+     * comparisonFunction is a Babylon/GL compare enum (Constants.LESS etc.); 0 disables compare mode.
+     */
+    setTextureComparisonFunction?(texture: NativeTexture, comparisonFunction: number): void;
     deleteTexture(texture: NativeTexture): void;
     readTexture(
         texture: NativeTexture,
@@ -119,8 +154,12 @@ export interface INativeEngine {
         height: number,
         buffer: Nullable<ArrayBuffer>,
         bufferOffset: number,
-        bufferLength: number
+        bufferLength: number,
+        faceIndex: number
     ): Promise<ArrayBuffer>;
+
+    /** Optional float-preserving readback; readTexture retains its RGBA8 contract. */
+    readTexture2?: INativeEngine["readTexture"];
 
     createImageBitmap(data: ArrayBuffer | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
@@ -132,15 +171,21 @@ export interface INativeEngine {
         generateStencilBuffer: boolean,
         generateDepthBuffer: boolean,
         samples: number,
-        layer?: number
+        layer?: number,
+        mip?: number,
+        autoGenerateMips?: boolean
     ): NativeFramebuffer;
+
+    /** Optional: older runtimes only support single-attachment framebuffers. */
     createMultiFrameBuffer?(
-        textures: NativeTexture[],
+        colorTextures: NativeTexture[],
         width: number,
         height: number,
         generateStencilBuffer: boolean,
         generateDepthBuffer: boolean,
-        samples: number
+        samples: number,
+        layers?: number[],
+        explicitDepthTexture?: NativeTexture
     ): NativeFramebuffer;
 
     getRenderWidth(): number;
@@ -318,6 +363,13 @@ interface INativeEngineConstructor {
     readonly ALPHA_SCREENMODE: number;
     readonly ALPHA_REPLACE_COLOR?: number;
 
+    readonly ALPHA_EQUATION_ADD?: number;
+    readonly ALPHA_EQUATION_SUBTRACT?: number;
+    readonly ALPHA_EQUATION_REVERSE_SUBTRACT?: number;
+    readonly ALPHA_EQUATION_MAX?: number;
+    readonly ALPHA_EQUATION_MIN?: number;
+    readonly ALPHA_EQUATION_DARKEN?: number;
+
     readonly STENCIL_TEST_LESS: number;
     readonly STENCIL_TEST_LEQUAL: number;
     readonly STENCIL_TEST_EQUAL: number;
@@ -386,6 +438,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETDEPTHWRITE: NativeData;
     readonly COMMAND_SETCOLORWRITE: NativeData;
     readonly COMMAND_SETBLENDMODE: NativeData;
+    readonly COMMAND_SETBLENDEQUATION?: NativeData;
     readonly COMMAND_SETFLOAT: NativeData;
     readonly COMMAND_SETFLOAT2: NativeData;
     readonly COMMAND_SETFLOAT3: NativeData;
@@ -398,10 +451,13 @@ interface INativeEngineConstructor {
     readonly COMMAND_DRAW: NativeData;
     readonly COMMAND_DRAWINSTANCED: NativeData;
     readonly COMMAND_CLEAR: NativeData;
+    readonly COMMAND_CLEAR2?: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
+    readonly COMMAND_SETSTENCIL2?: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;
     readonly COMMAND_SETSCISSOR: NativeData;
     readonly COMMAND_COPYTEXTURE: NativeData;
+    readonly COMMAND_DRAWTRANSFORMFEEDBACK?: NativeData;
 }
 
 /** @internal */
@@ -417,9 +473,17 @@ interface INativeCameraConstructor {
 }
 
 /** @internal */
+export interface INativeCanvas extends ICanvas {
+    /**
+     * Releases the native resources held by the canvas.
+     */
+    dispose(): void;
+}
+
+/** @internal */
 interface INativeCanvasConstructor {
-    prototype: ICanvas;
-    new (): ICanvas;
+    prototype: INativeCanvas;
+    new (): INativeCanvas;
 
     loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
 }
@@ -501,4 +565,27 @@ export interface INative {
 
     // GaussianSplatting
     sortSplats?(modelViewMatrix: Matrix, splatPositions: Float32Array, splatIndex: Float32Array, useRightHandedSystem: boolean): void;
+
+    // NativeDraco plugin — synchronous native replacement for the WASM Draco decoder.
+    decodeDracoMesh?(
+        data: Int8Array,
+        attributes?: { [kind: string]: number }
+    ): {
+        indices: Uint16Array | Uint32Array | null;
+        attributes: Array<{ kind: string; data: ArrayBufferView; size: number; byteOffset: number; byteStride: number; normalized: boolean }>;
+        totalVertices: number;
+    };
+
+    // NativeDraco plugin — synchronous native replacement for the WASM Draco encoder.
+    encodeDracoMesh?(
+        attributes: Array<{ kind: string; dracoName: string; size: number; data: ArrayBufferView }>,
+        indices: Uint16Array | Uint32Array | null,
+        options: { method?: string; encodeSpeed?: number; decodeSpeed?: number; quantizationBits?: { [name: string]: number } }
+    ): {
+        data: Int8Array;
+        attributeIds: { [kind: string]: number };
+    };
+
+    // NativeMeshopt plugin — synchronous native replacement for the WASM meshopt decoder.
+    decodeMeshopt?(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Uint8Array;
 }

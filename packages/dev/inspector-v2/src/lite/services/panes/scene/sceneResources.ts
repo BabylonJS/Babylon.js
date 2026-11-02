@@ -9,7 +9,6 @@ import {
     getPbrSubsurface,
     getPbrTransmission,
     getRenderingContextKind,
-    getRenderingContexts,
     getTextureCoordinateIndex,
     getTextureMetadata,
     getTextureTransform,
@@ -25,6 +24,7 @@ import {
 } from "@babylonjs/lite";
 
 import { GetMaterialTopologyBindings, type IMaterialTopologyBinding } from "./materialTopologyBindings";
+import { GetInspectableRenderingContexts } from "../../../sceneEntityUtils";
 
 /** A source material reachable from one or more scenes in an inspected Lite engine. @internal */
 export interface IMaterialResourceRecord {
@@ -349,7 +349,7 @@ export class SceneResourceIndex {
         };
         for (const surface of this._engine.surfaces) {
             snapshot.push(surface);
-            for (const context of getRenderingContexts(surface)) {
+            for (const context of GetInspectableRenderingContexts(surface)) {
                 snapshot.push(context);
                 if (getRenderingContextKind(context) !== "scene") {
                     continue;
@@ -418,7 +418,7 @@ export class SceneResourceIndex {
         const scenes: SceneContext[] = [];
         const seen = new Set<SceneContext>();
         for (const surface of this._engine.surfaces) {
-            for (const context of getRenderingContexts(surface)) {
+            for (const context of GetInspectableRenderingContexts(surface)) {
                 if (getRenderingContextKind(context) === "scene" && !seen.has(context as SceneContext)) {
                     const scene = context as SceneContext;
                     seen.add(scene);

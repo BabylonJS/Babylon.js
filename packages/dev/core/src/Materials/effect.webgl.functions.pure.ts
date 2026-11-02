@@ -51,7 +51,7 @@ export async function generatePipelineContext(
     const fragment = shaderDef.fragment || shaderDef.fragmentSource || shaderDef;
     const globalDefines = _GetGlobalDefines()?.split("\n") || [];
     const defines = [...(options.defines || []), ...(options.addGlobalDefines ? globalDefines : [])];
-    const key = options.key?.replace(/\r/g, "").replace(/\n/g, "|") || vertex + "+" + fragment + "@" + defines.join("|");
+    const key = options.key?.replace(/\r/g, "").split("\n").join("|") || vertex + "+" + fragment + "@" + defines.join("|");
     // defaults, extended with optionally provided options
     const processorOptions: _IProcessingOptions = {
         defines,
