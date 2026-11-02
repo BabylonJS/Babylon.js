@@ -1,5 +1,11 @@
 # Changelog
 
+## 9.33.1
+
+### Core
+
+- Add KTX2 encoder (Basis Universal) - by [alexchuber](https://github.com/alexchuber) ([#19011](https://github.com/BabylonJS/Babylon.js/pull/19011))
+
 ## 9.33.0
 
 ### Core
