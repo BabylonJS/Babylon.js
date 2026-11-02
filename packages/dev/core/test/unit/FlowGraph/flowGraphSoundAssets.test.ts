@@ -3,7 +3,7 @@ import { FlowGraphCoordinator, FlowGraphSceneReadyEventBlock, ParseCoordinatorAs
 import { FlowGraphPlaySoundBlock } from "core/FlowGraph/Blocks/Execution/Audio/flowGraphPlaySoundBlock";
 import { FlowGraphIsSoundPlayingBlock } from "core/FlowGraph/Blocks/Data/Audio/flowGraphIsSoundPlayingBlock";
 import { ResolveFlowGraphSound } from "core/FlowGraph/flowGraphSoundAssets";
-import { CreateSoundAsync, LastCreatedAudioEngine } from "core/AudioV2/abstractAudio/audioEngineV2";
+import { AudioEngineV2, CreateSoundAsync, LastCreatedAudioEngine } from "core/AudioV2/abstractAudio/audioEngineV2";
 import { CreateAudioEngineAsync } from "core/AudioV2/webAudio/webAudioEngine";
 import { FlowGraphSoundEndedEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSoundEndedEventBlock";
 import { SoundState } from "core/AudioV2/soundState";
@@ -277,5 +277,59 @@ describe("Flow Graph sound assets", () => {
         coordinator.dispose();
         expect(createEngineMock).not.toHaveBeenCalled();
         expect(existingEngine.dispose).not.toHaveBeenCalled();
+    });
+    it("counts a coordinator that joins while the fallback audio engine is initializing", async () => {
+        lastEngineMock.mockReturnValue(null);
+        const fallbackEngine = { dispose: vi.fn(), createSoundAsync: vi.fn(async (name: string, url: string) => CreateMockSound(name, url)) } as any;
+        let finishInit!: () => void;
+        createEngineMock.mockImplementation(async () => {
+            // Like AudioEngineV2, the engine is listed by LastCreatedAudioEngine before its initialization completes.
+            // Concurrent dynamic imports may bypass the module mock in Vitest, so also list it in the real instances.
+            lastEngineMock.mockReturnValue(fallbackEngine);
+            (AudioEngineV2.Instances as unknown[]).push(fallbackEngine);
+            await new Promise<void>((resolve) => (finishInit = resolve));
+            return fallbackEngine;
+        });
+        const coordinatorA = new FlowGraphCoordinator({ scene });
+        const coordinatorB = new FlowGraphCoordinator({ scene });
+
+        const loadA = coordinatorA.addSoundAssetAsync({ name: "a", url: "a.mp3" });
+        await vi.waitFor(() => expect(createEngineMock).toHaveBeenCalled());
+        const loadB = coordinatorB.addSoundAssetAsync({ name: "b", url: "b.mp3" });
+        // Let B pick its engine while A's fallback engine is still initializing.
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        finishInit();
+        await Promise.all([loadA, loadB]);
+        expect(createEngineMock).toHaveBeenCalledTimes(1);
+
+        coordinatorA.dispose();
+        expect(fallbackEngine.dispose).not.toHaveBeenCalled();
+        expect(coordinatorB.getSoundAsset("b")!.dispose).not.toHaveBeenCalled();
+        coordinatorB.dispose();
+        expect(fallbackEngine.dispose).toHaveBeenCalledTimes(1);
+        (AudioEngineV2.Instances as unknown[]).splice(AudioEngineV2.Instances.indexOf(fallbackEngine), 1);
+    });
+
+    it("loads the descriptor as it was when the load started", async () => {
+        let resolveLoad!: (sound: any) => void;
+        createSoundMock.mockImplementationOnce((() => new Promise((resolve) => (resolveLoad = resolve))) as any);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const notified: string[] = [];
+        coordinator.onSoundAssetChangedObservable.add((name) => notified.push(name));
+        const descriptor = { name: "a", url: "a.mp3" };
+        const pending = coordinator.addSoundAssetAsync(descriptor);
+        await vi.waitFor(() => expect(createSoundMock).toHaveBeenCalled());
+
+        descriptor.name = "b";
+        descriptor.url = "b.mp3";
+        const sound = CreateMockSound("a", "a.mp3");
+        resolveLoad(sound);
+
+        await expect(pending).resolves.toBe(sound);
+        expect(createSoundMock).toHaveBeenCalledWith("a", "a.mp3", {}, expect.anything());
+        expect(sound.dispose).not.toHaveBeenCalled();
+        expect(coordinator.getSoundAsset("a")).toBe(sound);
+        expect(coordinator.soundAssets).toEqual([{ name: "a", url: "a.mp3" }]);
+        expect(notified).toEqual(["a"]);
     });
 });
