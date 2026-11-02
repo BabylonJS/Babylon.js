@@ -14,6 +14,7 @@ function CreateWebGPULikeEngine() {
         maxFramesInFlight: 0,
         _framesInFlight: 0,
         _framesInFlightDevice: null,
+        _framesInFlightDone: null,
         _device: device,
         _endCurrentRenderPass: vi.fn(),
         _snapshotRendering: { endFrame: vi.fn() },
@@ -147,6 +148,27 @@ describe("WebGPUEngine.maxFramesInFlight", () => {
         await finishOldest();
         await finishOldest();
         expect(engine["_framesInFlight"]).toBe(1);
+    });
+
+    it("settles the frames of a device with one handler, and makes another for a new device", () => {
+        const { engine, device, createDevice } = CreateWebGPULikeEngine();
+        engine.maxFramesInFlight = 3;
+        const handlers: unknown[] = [];
+        const capture = (gpu: ReturnType<typeof createDevice>) =>
+            gpu.queue.onSubmittedWorkDone.mockImplementation(() => ({ then: (done: unknown, fail: unknown) => handlers.push(done, fail) }) as any);
+        capture(device);
+        engine["_processFrame"]();
+        engine["_processFrame"]();
+        expect(handlers).toHaveLength(4);
+        expect(new Set(handlers).size).toBe(1);
+
+        const newDevice = createDevice();
+        capture(newDevice);
+        engine["_device"] = newDevice as unknown as GPUDevice;
+        engine["_processFrame"]();
+        expect(handlers).toHaveLength(6);
+        expect(handlers[4]).toBe(handlers[5]);
+        expect(handlers[4]).not.toBe(handlers[0]);
     });
 
     it("neither starts nor counts a frame the page skips in the background, and counts one it renders there", async () => {

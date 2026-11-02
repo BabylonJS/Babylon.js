@@ -3260,6 +3260,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     private _framesInFlight = 0;
     private _framesInFlightDevice: Nullable<GPUDevice> = null;
+    private _framesInFlightDone: Nullable<() => void> = null;
 
     protected override _processFrame(timestamp?: number) {
         if (this.maxFramesInFlight > 0 && this._framesInFlightDevice === this._device && this._framesInFlight >= this.maxFramesInFlight) {
@@ -3321,13 +3322,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             // a new device: the frames of the lost one are not on it
             this._framesInFlightDevice = device;
             this._framesInFlight = 0;
+            // one handler for all the frames of the device
+            this._framesInFlightDone = () => {
+                if (this._framesInFlightDevice === device) {
+                    this._framesInFlight--;
+                }
+            };
         }
         this._framesInFlight++;
-        const done = () => {
-            if (this._framesInFlightDevice === device) {
-                this._framesInFlight--;
-            }
-        };
+        const done = this._framesInFlightDone!;
         // eslint-disable-next-line github/no-then
         device.queue.onSubmittedWorkDone().then(done, done);
     }
