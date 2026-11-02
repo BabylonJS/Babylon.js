@@ -1611,6 +1611,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         }
 
+        for (const node of createdNodes) {
+            this.props.globalState.stateManager.onNewNodeCreatedObservable.notifyObservers(node);
+        }
+
         // Force a refresh
         this.setState({});
 

@@ -1151,6 +1151,9 @@ export class GlobalState {
      */
     private _cachedOldIdToName: Map<string, Map<number, string>> | null = null;
 
+    /** Cached position of each previous-scene node among nodes with the same identity. */
+    private _cachedOldNodeLocations: Map<number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }> | null = null;
+
     /**
      * Saved user variables from the last execution context before setScene cleared it.
      * These are restored into the newly created context to preserve mesh references.
@@ -1280,9 +1283,6 @@ export class GlobalState {
                 // (the old scene is already disposed by the time this fires).
                 this._remapAssetReferences(ctx.scene);
 
-                // Cache the NEW scene's id→name map for the next reload
-                this._cacheSceneIdToNameMap(ctx.scene);
-
                 // Snapshot user variables before setScene clears contexts —
                 // they contain mesh references (pickedMesh_0 etc.) from
                 // KHR_interactivity that must survive scene switches.
@@ -1291,9 +1291,14 @@ export class GlobalState {
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(ctx.scene);
                 }
+                this._rebindSavedConnectionReferences(ctx.scene);
                 // Re-create contexts from snapshots so the editor UI has
                 // live contexts after setScene() clears them.
                 this._restoreContextsFromSnapshots(flowGraph);
+                this._snapshotUserVariables();
+
+                // Cache the NEW scene's node mappings for the next reload.
+                this._cacheSceneIdToNameMap(ctx.scene);
             }
         });
 
@@ -1380,13 +1385,15 @@ export class GlobalState {
                 // couldn't be resolved during parsing because the graph was parsed
                 // against the editor's host scene, not the preview scene.
                 this._remapAssetReferences(this.sceneContext.scene);
-                this._cacheSceneIdToNameMap(this.sceneContext.scene);
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(this.sceneContext.scene);
                 }
+                this._rebindSavedConnectionReferences(this.sceneContext.scene);
                 // Re-create contexts from snapshots so the editor UI has live
                 // contexts to display (variables panel, context selector, etc.)
                 this._restoreContextsFromSnapshots(flowGraph);
+                this._snapshotUserVariables();
+                this._cacheSceneIdToNameMap(this.sceneContext.scene);
             }
         }
 
@@ -1684,6 +1691,85 @@ export class GlobalState {
     }
 
     /**
+     * Rebinds scene-node references retained in input defaults and saved execution-context values.
+     * @param newScene - replacement scene that should own the restored references
+     */
+    private _rebindSavedConnectionReferences(newScene: Scene): void {
+        this._flowGraph.visitAllBlocks((block) => {
+            for (const input of block.dataInputs) {
+                const currentValue = (input as any)._defaultValue;
+                (input as any)._defaultValue = this._rebindSceneValue(currentValue, newScene);
+            }
+        });
+
+        if (this._savedConnectionValues) {
+            for (const key in this._savedConnectionValues) {
+                this._savedConnectionValues[key] = this._rebindSceneValue(this._savedConnectionValues[key], newScene);
+            }
+        }
+
+        if (this._savedContextRuntimeData) {
+            for (const contextData of this._savedContextRuntimeData) {
+                for (const key in contextData.connectionValues) {
+                    contextData.connectionValues[key] = this._rebindSceneValue(contextData.connectionValues[key], newScene);
+                }
+            }
+        }
+    }
+
+    private _rebindSceneValue(value: any, newScene: Scene): any {
+        if (Array.isArray(value)) {
+            return value.map((entry) => this._rebindSceneValue(entry, newScene));
+        }
+        if (!value || typeof value !== "object") {
+            return value;
+        }
+
+        const isSceneNode = typeof value.getClassName === "function" && typeof value.getScene === "function";
+        const isSerializedNode = typeof value.className === "string" && !!(value.id || value.name) && value.value === undefined;
+        if (!isSceneNode && !isSerializedNode) {
+            return value;
+        }
+        if (isSceneNode && value.getScene() === newScene) {
+            return value;
+        }
+
+        const reference = {
+            id: value.id as string | undefined,
+            name: value.name as string | undefined,
+            className: (isSceneNode ? value.getClassName() : value.className) as string | undefined,
+            uniqueId: value.uniqueId as number | undefined,
+        };
+        const allNodes = newScene.getNodes();
+        const filterByClass = (nodes: typeof allNodes) => {
+            if (!reference.className) {
+                return nodes;
+            }
+            const classMatches = nodes.filter((node) => node.getClassName() === reference.className);
+            return classMatches.length > 0 ? classMatches : nodes;
+        };
+
+        let candidates = reference.id ? filterByClass(allNodes.filter((node) => node.id === reference.id)) : [];
+        let locationIndex: number | undefined;
+        const oldLocation = reference.uniqueId === undefined ? undefined : this._cachedOldNodeLocations?.get(reference.uniqueId);
+        if (candidates.length > 0) {
+            locationIndex = oldLocation && oldLocation.id === reference.id && oldLocation.className === reference.className ? oldLocation.idIndex : undefined;
+        } else if (reference.name) {
+            candidates = filterByClass(allNodes.filter((node) => node.name === reference.name));
+            locationIndex = oldLocation && oldLocation.name === reference.name && oldLocation.className === reference.className ? oldLocation.nameIndex : undefined;
+        }
+        if (candidates.length === 0) {
+            return value;
+        }
+
+        return (
+            (reference.uniqueId === undefined ? undefined : candidates.find((node) => node.uniqueId === reference.uniqueId)) ??
+            (locationIndex === undefined ? undefined : candidates[locationIndex]) ??
+            candidates[0]
+        );
+    }
+
+    /**
      * Snapshot user variables and connection values from the selected execution context of a flow graph,
      * falling back to the first execution context when the selected one is unavailable.
      * Also serializes ALL execution contexts so they survive stop()/setScene().
@@ -1830,6 +1916,20 @@ export class GlobalState {
             ["AnimationGroup", new Map(scene.animationGroups.map((ag) => [ag.uniqueId, ag.name]))],
             ["Animation", new Map(scene.animations.map((a) => [a.uniqueId, a.name]))],
         ]);
+
+        this._cachedOldNodeLocations = new Map();
+        const idCounts = new Map<string, number>();
+        const nameCounts = new Map<string, number>();
+        for (const node of scene.getNodes()) {
+            const className = node.getClassName();
+            const idKey = `${className}\0${node.id}`;
+            const nameKey = `${className}\0${node.name}`;
+            const idIndex = idCounts.get(idKey) ?? 0;
+            const nameIndex = nameCounts.get(nameKey) ?? 0;
+            this._cachedOldNodeLocations.set(node.uniqueId, { id: node.id, name: node.name, className, idIndex, nameIndex });
+            idCounts.set(idKey, idIndex + 1);
+            nameCounts.set(nameKey, nameIndex + 1);
+        }
     }
 
     /**
