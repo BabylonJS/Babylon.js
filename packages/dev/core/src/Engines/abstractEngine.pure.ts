@@ -2626,13 +2626,16 @@ export abstract class AbstractEngine {
     private _inheritedState: number[] = [];
 
     /**
-     * @internal Keeps, before a draw binds, the states it inherits from the engine without setting them (the depth prepass turns the
-     * color writes off, the rendering groups set the stencil): a draw recorded with others is bound again
+     * @internal Keeps the states a draw inherits from the engine (see _getInheritedState) where it starts, before it sets any: where a
+     * recorded draw is checked before it is encoded again. A draw recorded with others is bound again
      * @param drawWrapper the draw wrapper of the draw
-     * @param withAlpha whether the draw inherits the alpha mode too (when its mesh does not set it)
      */
-    public _keepInheritedState(drawWrapper: DrawWrapper, withAlpha: boolean): void {
-        this._getInheritedState((drawWrapper._recordedEngineState ??= []), withAlpha);
+    public _keepInheritedState(drawWrapper: DrawWrapper): void {
+        const state = (drawWrapper._recordedEngineState ??= []);
+        const length = this._getInheritedState(state);
+        if (state.length !== length) {
+            state.length = length;
+        }
     }
 
     /**
@@ -2645,8 +2648,12 @@ export abstract class AbstractEngine {
         if (!recorded) {
             return false;
         }
-        const current = this._getInheritedState(this._inheritedState, recorded[0] === 1);
-        for (let i = 0; i < current.length; i++) {
+        const current = this._inheritedState;
+        const length = this._getInheritedState(current);
+        if (length !== recorded.length) {
+            return false;
+        }
+        for (let i = 0; i < length; i++) {
             if (current[i] !== recorded[i]) {
                 return false;
             }
@@ -2654,22 +2661,50 @@ export abstract class AbstractEngine {
         return true;
     }
 
-    private _getInheritedState(target: number[], withAlpha: boolean): number[] {
-        target[0] = withAlpha ? 1 : 0;
-        target[1] = withAlpha ? this.getAlphaMode() : 0;
-        target[2] = this.getColorWrite() ? 1 : 0;
-        target[3] = this.getDepthBuffer() ? 1 : 0;
-        target[4] = this.getDepthWrite() ? 1 : 0;
-        target[5] = this.getDepthFunction() ?? 0;
-        target[6] = this.getStencilBuffer() ? 1 : 0;
-        target[7] = this.getStencilFunction();
-        target[8] = this.getStencilFunctionReference();
-        target[9] = this.getStencilFunctionMask();
-        target[10] = this.getStencilMask();
-        target[11] = this.getStencilOperationPass();
-        target[12] = this.getStencilOperationFail();
-        target[13] = this.getStencilOperationDepthFail();
-        return target;
+    /**
+     * @internal Writes the states the pipeline of a draw reads from the engine, which the draw inherits unless it sets them (the depth
+     * prepass turns the color writes off, the rendering groups set the stencil, ThinDepthPeelingRenderer the blend equation): the color
+     * writes, the depth test, writes and function, the stencil of both faces and the blend of each target
+     * @param target the array to write them in, from its start
+     * @returns how many were written
+     */
+    protected _getInheritedState(target: number[]): number {
+        target[0] = this.getColorWrite() ? 1 : 0;
+        target[1] = this.getDepthBuffer() ? 1 : 0;
+        target[2] = this.getDepthWrite() ? 1 : 0;
+        target[3] = this.getDepthFunction() ?? 0;
+        target[4] = this.getStencilBuffer() ? 1 : 0;
+        target[5] = this.getStencilFunction();
+        target[6] = this.getStencilFunctionReference();
+        target[7] = this.getStencilFunctionMask();
+        target[8] = this.getStencilMask();
+        target[9] = this.getStencilOperationPass();
+        target[10] = this.getStencilOperationFail();
+        target[11] = this.getStencilOperationDepthFail();
+        target[12] = this.getStencilBackFunction();
+        target[13] = this.getStencilBackOperationPass();
+        target[14] = this.getStencilBackOperationFail();
+        target[15] = this.getStencilBackOperationDepthFail();
+        // the blend as the pipeline reads it from the alpha state: the targets that blend, then the factors and equations of each one
+        // (an alpha mode does not tell the equations: setAlphaMode resets them only when the mode changes)
+        const alphaState = this._alphaState;
+        let blending = 0;
+        let length = 17;
+        if (alphaState._numTargetEnabled > 0) {
+            for (let i = 0; i < 8; i++) {
+                if (!alphaState._alphaBlend[i]) {
+                    continue;
+                }
+                blending |= 1 << i;
+                for (let j = i * 4; j < i * 4 + 4; j++) {
+                    target[length++] = alphaState._blendFunctionParameters[j] ?? -1;
+                }
+                target[length++] = alphaState._blendEquationParameters[i * 2] ?? -1;
+                target[length++] = alphaState._blendEquationParameters[i * 2 + 1] ?? -1;
+            }
+        }
+        target[16] = blending;
+        return length;
     }
     /**
      * Gets the current framerate

@@ -100,7 +100,7 @@ describe("WebGPUEngine recorded draws", () => {
             _recordedDrawContext: null,
         };
         engine._canEncodeRecordedDraw = (wrapper: DrawWrapper) => WebGPUEngine.prototype._canEncodeRecordedDraw.call(engine, wrapper);
-        engine._keepInheritedState = (wrapper: DrawWrapper, withAlpha: boolean) => WebGPUEngine.prototype._keepInheritedState.call(engine, wrapper, withAlpha);
+        engine._keepInheritedState = (wrapper: DrawWrapper) => WebGPUEngine.prototype._keepInheritedState.call(engine, wrapper);
         const keep = () => (WebGPUEngine.prototype as any)._keepRecordedDraw.call(engine, {}, [{}, {}], 0, 36, 1, 0);
         const replay = () => WebGPUEngine.prototype._replayRecordedDraw.call(engine, drawWrapper);
         keep();
@@ -140,12 +140,32 @@ describe("WebGPUEngine recorded draws", () => {
         const { engine, drawWrapper, drawContext, keep, replay } = setup();
         // the states the draw inherits are kept by the engine, which is not what this checks
         const keepState = vi.spyOn(AbstractEngine.prototype, "_keepInheritedState").mockImplementation(() => {});
-        engine._keepInheritedState(drawWrapper, true);
+        engine._keepInheritedState(drawWrapper);
         expect(engine._recordedDrawContext).toBe(drawContext);
         expect(replay()).toBe(false);
         keep();
         expect(replay()).toBe(true);
         keepState.mockRestore();
+    });
+
+    it("keeps the states the pipeline reads outside of the engine's state objects: alpha to coverage and the attachments written", () => {
+        // what the engine's state objects hold is written by the base class, which is not what this checks
+        const base = vi.spyOn(AbstractEngine.prototype as any, "_getInheritedState").mockReturnValue(0);
+        // alpha to coverage as the pipeline cache holds it (setAlphaToCoverage of the alphaToCoverage extension)
+        const engine: any = { _cacheRenderPipeline: { _alphaToCoverageEnabled: false }, _mrtAttachments: [1, 2, 3] };
+        const state = () => {
+            const target: number[] = [];
+            return target.slice(0, (WebGPUEngine.prototype as any)._getInheritedState.call(engine, target));
+        };
+        const kept = state();
+        expect(kept.length).toBe(2);
+        engine._cacheRenderPipeline._alphaToCoverageEnabled = true;
+        expect(state()).not.toEqual(kept);
+        engine._cacheRenderPipeline._alphaToCoverageEnabled = false;
+        expect(state()).toEqual(kept);
+        engine._mrtAttachments = [1, 0, 3];
+        expect(state()).not.toEqual(kept);
+        base.mockRestore();
     });
 });
 

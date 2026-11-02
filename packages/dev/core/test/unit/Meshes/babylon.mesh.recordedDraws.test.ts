@@ -25,6 +25,7 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { type SubMesh } from "core/Meshes/subMesh";
 import { type Light } from "core/Lights/light";
 
+import "core/Engines/AbstractEngine/abstractEngine.alpha";
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 // the shaders a shadow generator imports when it is created: an import still pending at teardown fails the run
 import "core/Shaders/shadowMap.fragment";
@@ -48,7 +49,7 @@ describe("Mesh recorded draws", () => {
 
     // a full draw of the frame: the engine's states kept before the bind, the lights bound and the draw kept as recorded
     function fullDraw(): void {
-        engine._keepInheritedState(drawWrapper, true);
+        engine._keepInheritedState(drawWrapper);
         light._renderId = scene.getRenderId();
         mesh._keepRecordedDraw(drawWrapper, subMesh, material, mesh, true);
     }
@@ -220,7 +221,7 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(false);
     });
 
-    it("sees the states it inherits from the engine without setting them: depth, stencil and alpha", () => {
+    it("sees the states it inherits from the engine without setting them: depth, the stencil of both faces and the blend", () => {
         const changes: Array<[() => void, () => void]> = [
             [() => engine.setDepthWrite(false), () => engine.setDepthWrite(true)],
             [() => engine.setDepthBuffer(false), () => engine.setDepthBuffer(true)],
@@ -229,6 +230,8 @@ describe("Mesh recorded draws", () => {
             [() => engine.setStencilFunction(Constants.EQUAL), () => engine.setStencilFunction(Constants.ALWAYS)],
             [() => engine.setStencilFunctionReference(2), () => engine.setStencilFunctionReference(1)],
             [() => engine.setStencilMask(0x0f), () => engine.setStencilMask(0xff)],
+            [() => engine.setStencilBackFunction(Constants.EQUAL), () => engine.setStencilBackFunction(Constants.ALWAYS)],
+            [() => engine.setStencilBackOperationPass(Constants.REPLACE), () => engine.setStencilBackOperationPass(Constants.KEEP)],
             [() => engine.setAlphaMode(Constants.ALPHA_ADD, true), () => engine.setAlphaMode(Constants.ALPHA_DISABLE, true)],
         ];
         for (const [change, restore] of changes) {
@@ -241,10 +244,31 @@ describe("Mesh recorded draws", () => {
         }
     });
 
-    it("does not compare the alpha mode a mesh sets itself (enableAlphaMode)", () => {
-        engine._keepInheritedState(drawWrapper, false);
-        engine.setAlphaMode(Constants.ALPHA_ADD, true);
+    it("sees the blend equations it inherits, which the alpha mode does not tell (ALPHA_ONEONE_ONEONE under MAX and ADD)", () => {
+        engine.setAlphaMode(Constants.ALPHA_ONEONE_ONEONE, true);
+        engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
+        fullDraw();
         expect(unchanged()).toBe(true);
+        engine.setAlphaEquation(Constants.ALPHA_EQUATION_ADD);
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        // an alpha mode that changes resets the equations of the alpha state (AlphaState.setAlphaMode) without the engine's last
+        // setAlphaEquation: the pipeline reads the alpha state
+        engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
+        fullDraw();
+        engine._alphaState.setAlphaMode(Constants.ALPHA_ONEONE_ONEONE, 0);
+        expect(engine.getAlphaEquation()).toBe(Constants.ALPHA_EQUATION_MAX);
+        expect(unchanged()).toBe(false);
+    });
+
+    it("sees the blend it inherits for each target, not only the first one (multiple render targets)", () => {
+        engine._alphaState.setAlphaBlend(true, 1);
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        engine._alphaState.setAlphaMode(Constants.ALPHA_ADD, 1);
+        expect(unchanged()).toBe(false);
     });
 
     it("sees the effective side orientation, from the material or from the mesh, which do not mark the material dirty", () => {
@@ -466,10 +490,10 @@ describe("Mesh recorded draws", () => {
         const second = {};
         const other = new DrawWrapper(engine);
         other.effect = drawWrapper.effect;
-        engine._keepInheritedState(other, true);
+        engine._keepInheritedState(other);
         mesh._keepRecordedDraw(other, subMesh, material, mesh, false, second);
         nextFrame();
-        engine._keepInheritedState(drawWrapper, true);
+        engine._keepInheritedState(drawWrapper);
         mesh._keepRecordedDraw(drawWrapper, subMesh, material, mesh, false, first);
         // the first generator's full draw is the frame's reference: the second one's draw is bound again
         expect(mesh._isRecordedDrawUnchanged(other, subMesh, material, mesh, false, second)).toBe(false);
@@ -514,5 +538,70 @@ describe("Mesh recorded draws", () => {
         expect(keep).not.toHaveBeenCalled();
         expect(keepState).not.toHaveBeenCalled();
         expect(subMesh._drawWrapper._recordedMaterial).toBeNull();
+    });
+
+    it("keeps the states a draw inherits where its recorded draw is checked, before its mesh sets its alpha mode", () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        // the full draw goes as far as the alpha mode: its effect is not built here
+        vi.spyOn(material, "isReadyForSubMesh").mockReturnValue(true);
+        const keepState = vi.spyOn(engine, "_keepInheritedState");
+        const setAlphaMode = vi.spyOn(engine, "setAlphaMode");
+        mesh.render(subMesh, true);
+        expect(keepState).toHaveBeenCalledTimes(1);
+        expect(setAlphaMode).toHaveBeenCalledTimes(1);
+        expect(keepState.mock.invocationCallOrder[0]).toBeLessThan(setAlphaMode.mock.invocationCallOrder[0]);
+    });
+
+    it("sets the alpha mode of its material when it encodes a draw again, as a full draw does for the draws after it", () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        vi.spyOn(mesh as any, "_getUnchangedRecordedDraw").mockReturnValue(subMesh._drawWrapper);
+        vi.spyOn(engine, "_canEncodeRecordedDraw").mockReturnValue(true);
+        const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+        material.alphaMode = Constants.ALPHA_ADD;
+        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        mesh.render(subMesh, true);
+        expect(replay).toHaveBeenCalledTimes(1);
+        expect(engine.getAlphaMode()).toBe(Constants.ALPHA_ADD);
+        // a mesh that does not set its alpha mode leaves the engine's
+        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        mesh.render(subMesh, false);
+        expect(replay).toHaveBeenCalledTimes(2);
+        expect(engine.getAlphaMode()).toBe(Constants.ALPHA_DISABLE);
+    });
+
+    it("draws in full the shadow map casters recorded before forceBackFacesOnly changed, which sets the culling inside the full draw", () => {
+        const generator = new ShadowGenerator(256, new DirectionalLight("sun", new Vector3(0, -1, 0), scene));
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+        // the full draws go through with an effect that takes any value (without uniform buffers, the mesh's values are set on the
+        // effect too): the depth effect is not built here
+        vi.spyOn(generator, "isReady").mockReturnValue(true);
+        const setters: Record<string, unknown> = {};
+        const effect = new Proxy(setters, {
+            get: (target, key) => (typeof key === "string" && key.startsWith("set") ? (target[key] ??= vi.fn()) : target[key as string]),
+        }) as unknown as Effect;
+        // two casters of the same material and effect: the first one's full draw is the frame's reference for the second one
+        const casters = [subMesh, mesh.clone("second")!.subMeshes[0]];
+        for (const caster of casters) {
+            const wrapper = new DrawWrapper(engine);
+            wrapper.effect = effect;
+            vi.spyOn(caster, "_getDrawWrapper").mockReturnValue(wrapper);
+        }
+        const frame = () => {
+            nextFrame();
+            for (const caster of casters) {
+                (generator as any)._renderSubMeshForShadowMap(caster, false);
+            }
+        };
+        frame();
+        frame();
+        expect(replay).toHaveBeenCalledTimes(1);
+        generator.forceBackFacesOnly = true;
+        frame();
+        expect(replay).toHaveBeenCalledTimes(1);
+        frame();
+        expect(replay).toHaveBeenCalledTimes(2);
     });
 });

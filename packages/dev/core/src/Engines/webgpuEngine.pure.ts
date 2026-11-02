@@ -520,14 +520,33 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _recordedDrawContext: Nullable<WebGPUDrawContext> = null;
 
     /** @internal */
-    public override _keepInheritedState(drawWrapper: DrawWrapper, withAlpha: boolean): void {
-        super._keepInheritedState(drawWrapper, withAlpha);
+    public override _keepInheritedState(drawWrapper: DrawWrapper): void {
+        super._keepInheritedState(drawWrapper);
         // the next draw records its commands: until it does, they are not encoded again
         const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
         if (drawContext?._recordedDraw) {
             drawContext._recordedDraw.kept = false;
         }
         this._recordedDrawContext = drawContext;
+    }
+
+    /** @internal */
+    protected override _getInheritedState(target: number[]): number {
+        let length = super._getInheritedState(target);
+        // the pipeline reads two more outside of the engine's state objects: alpha to coverage (from the pipeline cache, as the
+        // alphaToCoverage extension sets it there) and the attachments the draw writes
+        let attachments = 0;
+        const mrtAttachments = this._mrtAttachments;
+        if (mrtAttachments) {
+            for (let i = 0; i < mrtAttachments.length; i++) {
+                if (mrtAttachments[i] !== 0) {
+                    attachments += 1 << i;
+                }
+            }
+        }
+        target[length++] = (this._cacheRenderPipeline as unknown as { _alphaToCoverageEnabled?: boolean })._alphaToCoverageEnabled ? 1 : 0;
+        target[length++] = attachments;
+        return length;
     }
 
     /**

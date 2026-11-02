@@ -2759,6 +2759,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param effectiveMesh the mesh providing the world matrix and the lights
      * @param withLights whether the draw binds the lights (not in the shadow maps)
      * @param domain what else writes its per-draw values (the shadow generator), or null
+     * @param domainState the pipeline state the domain sets in its full draws (the culling of forceBackFacesOnly), compared too
      * @returns true if the draw can be encoded again
      * @internal
      */
@@ -2768,7 +2769,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         material: Material,
         effectiveMesh: AbstractMesh,
         withLights: boolean,
-        domain: Nullable<object> = null
+        domain: Nullable<object> = null,
+        domainState = 0
     ): boolean {
         const recordedVertexBuffers = drawWrapper._recordedVertexBuffers;
         const recordedLights = drawWrapper._recordedLights;
@@ -2789,6 +2791,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedZOffset !== material.zOffset ||
             drawWrapper._recordedZOffsetUnits !== material.zOffsetUnits ||
             drawWrapper._recordedOrientation !== material._getEffectiveOrientation(this) ||
+            drawWrapper._recordedDomainState !== domainState ||
             drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
             drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0)
         ) {
@@ -2850,6 +2853,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param effectiveMesh the mesh providing the world matrix and the lights
      * @param withLights whether the draw binds the lights (not in the shadow maps)
      * @param domain what else writes its per-draw values (the shadow generator), or null
+     * @param domainState the pipeline state the domain sets in its full draws (the culling of forceBackFacesOnly)
      * @internal
      */
     public _keepRecordedDraw(
@@ -2858,7 +2862,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         material: Material,
         effectiveMesh: AbstractMesh,
         withLights: boolean,
-        domain: Nullable<object> = null
+        domain: Nullable<object> = null,
+        domainState = 0
     ): void {
         const scene = this.getScene();
         // the per-draw values this full bind wrote: the reference of this frame for the draws of this material with this effect
@@ -2887,6 +2892,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         drawWrapper._recordedZOffset = material.zOffset;
         drawWrapper._recordedZOffsetUnits = material.zOffsetUnits;
         drawWrapper._recordedOrientation = material._getEffectiveOrientation(this);
+        drawWrapper._recordedDomainState = domainState;
         drawWrapper._recordedIndexBuffer = this._geometry?.getIndexBuffer() ?? null;
         const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
         recordedVertexBuffers.length = 0;
@@ -2909,6 +2915,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             for (const light of effectiveMesh.lightSources) {
                 const generator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
                 recordedLights.push(generator?.getShadowMap()?.getInternalTexture() ?? null, generator?._getReceiversUniformBuffer?.() ?? null);
+            }
+        }
+    }
+
+    /**
+     * Sets the alpha modes of a material, as a draw of the mesh with the alpha mode enabled does before it binds
+     * @param engine the engine
+     * @param material the material
+     */
+    private _setAlphaModes(engine: AbstractEngine, material: Material): void {
+        if (material.alphaModes.length === 1) {
+            engine.setAlphaMode(material.alphaMode);
+        } else {
+            for (let i = 0; i < material.alphaModes.length; i++) {
+                const alphaMode = material.alphaModes[i];
+                engine.setAlphaMode(alphaMode !== undefined ? alphaMode : Constants.ALPHA_COMBINE, false, i);
             }
         }
     }
@@ -2956,7 +2978,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with,
         // between the scene's steps before and after rendering a mesh, as a full draw is (the prepass renderer binds the attachments of
         // the effect there, and restores them). A draw of a material that cannot be is neither checked nor kept, and what was recorded
-        // for it is dropped
+        // for it is dropped. The states a draw inherits are checked and kept here, before it sets any (its alpha mode resets the blend
+        // equations only when the mode changes), and a draw encoded again sets its alpha mode as a full draw does, for the draws after it
         const recordsDraw = engine._recordsDraws && !!subMesh.getMaterial()?._canReplayRecordedDraw();
         if (engine._recordsDraws && !recordsDraw) {
             subMesh._drawWrapper._recordedMaterial = null;
@@ -2964,6 +2987,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (recordsDraw) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh, batch, effectiveMeshReplacement);
             if (recordedDrawWrapper && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
+                if (enableAlphaMode) {
+                    this._setAlphaModes(engine, subMesh.getMaterial()!);
+                }
                 const recordedEffect = recordedDrawWrapper.effect;
                 for (const step of scene._beforeRenderingMeshStage) {
                     step.action(this, subMesh, batch, recordedEffect);
@@ -2974,6 +3000,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 return this;
             }
+            engine._keepInheritedState(subMesh._drawWrapper);
         }
 
         let oldCameraMaxZ = 0;
@@ -3037,15 +3064,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Alpha mode
         if (enableAlphaMode) {
-            const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
-            if (effectiveMaterial.alphaModes.length === 1) {
-                engine.setAlphaMode(effectiveMaterial.alphaMode);
-            } else {
-                for (let i = 0; i < effectiveMaterial.alphaModes.length; i++) {
-                    const alphaMode = effectiveMaterial.alphaModes[i];
-                    engine.setAlphaMode(alphaMode !== undefined ? alphaMode : Constants.ALPHA_COMBINE, false, i);
-                }
-            }
+            this._setAlphaModes(engine, this._internalMeshDataInfo._effectiveMaterial);
         }
 
         let drawWrapper: Nullable<DrawWrapper>;
@@ -3089,9 +3108,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
         }
 
-        if (recordsDraw && drawWrapper === subMesh._drawWrapper) {
-            engine._keepInheritedState(drawWrapper, !enableAlphaMode);
-        }
         const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, this._internalMeshDataInfo._effectiveSideOrientation);
 
         if (this._internalMeshDataInfo._effectiveMaterial.forceDepthWrite) {

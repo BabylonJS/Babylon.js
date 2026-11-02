@@ -1410,7 +1410,9 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // While a snapshot records again, a draw whose mesh, material and per-draw values did not change is encoded from the commands
-        // it was recorded with
+        // it was recorded with. forceBackFacesOnly changes the culling inside the full draw: it is compared with the value the draw was
+        // recorded with
+        const backFacesOnly = this.forceBackFacesOnly ? 1 : 0;
         const replayable =
             engine._recordsDraws &&
             !material.shadowDepthWrapper &&
@@ -1428,7 +1430,11 @@ export class ShadowGenerator implements IShadowGenerator {
             !this.onAfterShadowMapRenderMeshObservable.hasObservers();
         if (replayable) {
             const recorded = subMesh._getDrawWrapper();
-            if (recorded && renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this) && engine._replayRecordedDraw(recorded)) {
+            if (
+                recorded &&
+                renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this, backFacesOnly) &&
+                engine._replayRecordedDraw(recorded)
+            ) {
                 subMesh._renderId = scene.getRenderId();
                 return;
             }
@@ -1443,7 +1449,7 @@ export class ShadowGenerator implements IShadowGenerator {
             const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
             if (replayable) {
-                engine._keepInheritedState(drawWrapper, true);
+                engine._keepInheritedState(drawWrapper);
             }
             engine.enableEffect(drawWrapper);
 
@@ -1545,7 +1551,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
 
             if (replayable) {
-                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this);
+                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this, backFacesOnly);
             }
         } else {
             // Need to reset refresh rate of the shadowMap

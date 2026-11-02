@@ -73,6 +73,8 @@ export class DrawWrapper {
     public _recordedZOffsetUnits = 0;
     /** @internal The states the draw inherited from the engine (see AbstractEngine._keepInheritedState) */
     public _recordedEngineState: Nullable<number[]> = null;
+    /** @internal The pipeline state the domain of the draw sets in its full draws (the culling a shadow generator forces) */
+    public _recordedDomainState = 0;
     /** @internal The effective side orientation, which _preBind turns into the culling and front face state */
     public _recordedOrientation = -1;
     /** @internal */
