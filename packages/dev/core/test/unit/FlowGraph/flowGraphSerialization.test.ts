@@ -651,6 +651,31 @@ describe("Flow Graph Serialization", () => {
         previewScene.dispose();
     });
 
+    it("setScene re-resolves arrays of node references against the new scene", () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphSetPropertyBlock<Vector3, FlowGraphAssetType.Mesh>({ propertyName: "position" });
+        graph.addBlock(block);
+
+        const oldScene = new Scene(engine);
+        const oldGoomba = new Mesh("goomba", oldScene);
+        (block.object as any)._defaultValue = [{ id: "hero", name: "hero", className: "Mesh", uniqueId: 20 }, oldGoomba, { id: "missing", className: "Mesh" }];
+
+        const previewScene = new Scene(engine);
+        const liveHero = new Mesh("hero", previewScene);
+        const liveGoomba = new Mesh("goomba", previewScene);
+
+        graph.setScene(previewScene);
+
+        const value = block.object.getValue(graph.createContext()) as unknown as any[];
+        expect(value[0]).toBe(liveHero);
+        expect(value[1]).toBe(liveGoomba);
+        expect(value[2]).toEqual({ id: "missing", className: "Mesh" });
+
+        oldScene.dispose();
+        previewScene.dispose();
+    });
+
     it("Event block fires both out and done signals after round-trip", async () => {
         const mockContext: any = {};
         const pathConverter = new FlowGraphPathConverter(mockContext);

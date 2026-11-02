@@ -5,7 +5,16 @@ import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterface
 import { type IObjectAccessor } from "./typeDefinitions";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
+import { type Nullable } from "core/types";
+import { type AudioEngineV2 } from "../AudioV2/abstractAudio/audioEngineV2";
+import { type StaticSound } from "../AudioV2/abstractAudio/staticSound";
 import { type IFlowGraphHostResolver, GetDefaultEventReferenceKey, GetDefaultEventReference } from "./flowGraphHostResolver";
+import { type IFlowGraphSoundAsset } from "./flowGraphSoundAssets";
+
+interface ISoundAssetEntry {
+    asset: IFlowGraphSoundAsset;
+    sound: Nullable<StaticSound>;
+}
 
 /**
  * Parameters used to create a flow graph engine.
@@ -42,6 +51,11 @@ export interface IFlowGraphCoordinatorParseOptions {
      * The scene that the flow graph coordinator belongs to.
      */
     scene: Scene;
+    /**
+     * The audio engine used to load the serialized sound assets.
+     * When omitted, the most recently created audio engine is used, and a new one is created if none exists.
+     */
+    audioEngine?: AudioEngineV2;
 }
 /**
  * This class holds all of the existing flow graphs and is responsible for creating new ones.
@@ -94,6 +108,8 @@ export class FlowGraphCoordinator {
     private readonly _flowGraphs: FlowGraph[] = [];
 
     private _customEventsMap: Map<string, Observable<any>> = new Map();
+
+    private readonly _soundAssets = new Map<string, ISoundAssetEntry>();
 
     private _eventExecutionCounter: Map<string, number> = new Map();
 
@@ -232,7 +248,71 @@ export class FlowGraphCoordinator {
             FlowGraphCoordinator._OnFlowGraphRemovedObservable.notifyObservers(graph);
         }
         this._flowGraphs.length = 0;
+        for (const entry of this._soundAssets.values()) {
+            entry.sound?.dispose();
+        }
+        this._soundAssets.clear();
         this._detachFromScene(this.config.scene);
+    }
+
+    /**
+     * Gets the sound assets declared on this coordinator.
+     * Declared sound assets are serialized with the coordinator.
+     */
+    public get soundAssets(): IFlowGraphSoundAsset[] {
+        return Array.from(this._soundAssets.values(), (entry) => ({ ...entry.asset }));
+    }
+
+    /**
+     * Gets the loaded sound of a declared sound asset.
+     * @param name the name of the sound asset
+     * @returns the loaded sound, or null if the asset is not declared or not loaded yet
+     */
+    public getSoundAsset(name: string): Nullable<StaticSound> {
+        return this._soundAssets.get(name)?.sound ?? null;
+    }
+
+    /**
+     * Declares a sound asset on this coordinator and loads its sound.
+     * An existing asset with the same name is replaced and its sound is disposed, so audio blocks that
+     * reference the asset by name will play the new sound.
+     * If loading fails, the asset stays declared (and serialized) without a sound, and the error is rethrown.
+     * @param asset the sound asset to declare
+     * @param audioEngine the audio engine used to load the sound. When omitted, the most recently created audio engine is used, and a new one is created if none exists.
+     * @returns a promise that resolves with the loaded sound
+     */
+    public async addSoundAssetAsync(asset: IFlowGraphSoundAsset, audioEngine?: AudioEngineV2): Promise<StaticSound> {
+        const entry: ISoundAssetEntry = { asset: { name: asset.name, url: asset.url }, sound: null };
+        this.removeSoundAsset(asset.name);
+        this._soundAssets.set(asset.name, entry);
+
+        const { CreateSoundAsync, LastCreatedAudioEngine } = await import("../AudioV2/abstractAudio/audioEngineV2");
+        let engine = audioEngine ?? LastCreatedAudioEngine();
+        if (!engine) {
+            const { CreateAudioEngineAsync } = await import("../AudioV2/webAudio/webAudioEngine");
+            engine = await CreateAudioEngineAsync();
+        }
+
+        const sound = await CreateSoundAsync(asset.name, asset.url, {}, engine);
+        if (this._soundAssets.get(asset.name) !== entry) {
+            sound.dispose();
+            throw new Error(`Sound asset "${asset.name}" was removed or replaced before it finished loading.`);
+        }
+        entry.sound = sound;
+        return sound;
+    }
+
+    /**
+     * Removes a declared sound asset and disposes its sound.
+     * @param name the name of the sound asset to remove
+     */
+    public removeSoundAsset(name: string): void {
+        const entry = this._soundAssets.get(name);
+        if (!entry) {
+            return;
+        }
+        entry.sound?.dispose();
+        this._soundAssets.delete(name);
     }
 
     /**
@@ -248,6 +328,9 @@ export class FlowGraphCoordinator {
             serializationObject._flowGraphs.push(serializedGraph);
         }
         serializationObject.dispatchEventsSynchronously = this.dispatchEventsSynchronously;
+        if (this._soundAssets.size > 0) {
+            serializationObject.soundAssets = this.soundAssets;
+        }
     }
 
     /**

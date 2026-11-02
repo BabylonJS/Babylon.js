@@ -7,6 +7,7 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
 import { RichTypeAny } from "../../flowGraphRichTypes.pure";
 import { type AbstractSound } from "../../../AudioV2/abstractAudio/abstractSound";
+import { type FlowGraphSoundReference, ResolveFlowGraphSound } from "../../flowGraphSoundAssets";
 import { type Observer } from "../../../Misc/observable.pure";
 import { type Nullable } from "../../../types";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -21,9 +22,9 @@ import { RegisterClass } from "../../../Misc/typeStore";
  */
 export class FlowGraphSoundEndedEventBlock extends FlowGraphEventBlock {
     /**
-     * Input connection: The sound to monitor for when playback stops or ends.
+     * Input connection: The sound to monitor for when playback stops or ends. Accepts an Audio V2 sound or the name of a sound asset declared on the coordinator.
      */
-    public readonly sound: FlowGraphDataConnection<AbstractSound>;
+    public readonly sound: FlowGraphDataConnection<FlowGraphSoundReference>;
 
     /**
      * Constructs a new FlowGraphSoundEndedEventBlock.
@@ -38,7 +39,7 @@ export class FlowGraphSoundEndedEventBlock extends FlowGraphEventBlock {
      * @internal
      */
     public override _preparePendingTasks(context: FlowGraphContext): void {
-        const soundValue = this.sound.getValue(context);
+        const soundValue = ResolveFlowGraphSound(context, this.sound.getValue(context));
         if (!soundValue) {
             this._reportError(context, "No sound provided for sound-ended event");
             return;
