@@ -138,6 +138,27 @@ describe("Babylon Lite debug helpers", () => {
         expect(h.scene.meshes).toEqual([mesh]);
     });
 
+    it("uses the supported visibility setter without assigning a readonly helper property", () => {
+        const h = Harness();
+        h.controller.setBounds(true);
+        const source = h.scene.meshes[0];
+        const helper = h.scene.meshes[1];
+        Object.defineProperty(helper, "visible", {
+            get: () => true,
+            set: () => {
+                throw new Error("Direct helper visibility assignment");
+            },
+        });
+        Visibility.mockImplementation(() => undefined);
+        Object.assign(source, { visible: false });
+        expect(() => h.controller.refresh()).not.toThrow();
+        expect(Visibility).toHaveBeenLastCalledWith(helper, false);
+        Object.assign(source, { visible: undefined });
+        h.controller.refresh();
+        expect(Visibility).toHaveBeenLastCalledWith(helper, true);
+        h.controller.dispose();
+    });
+
     it("adds and removes bounds as mesh topology changes and releases helpers when their scene is unregistered", () => {
         const h = Harness();
         h.controller.setBounds(true);

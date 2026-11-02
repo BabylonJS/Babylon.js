@@ -8,6 +8,8 @@ import {
     addFlowGraph,
     addSprite2DIndex,
     addToScene,
+    buildNodeParticleSet,
+    cloneTransformNode,
     attachControl,
     buildFgGraph,
     createBox,
@@ -46,6 +48,14 @@ import {
     disposeSurface,
     disposeTextRenderer,
     flowGraphRuntimes,
+    enableBoneControl,
+    getMeshSkeleton,
+    getParticleSystems,
+    isParticleSystemStarted,
+    loadGltf,
+    parseNodeParticleSource,
+    registerNodeParticleSet,
+    removeFromScene,
     loadFont,
     getRenderingContexts,
     getFrameGraph,
@@ -72,6 +82,98 @@ import {
 } from "@babylonjs/lite";
 
 import { ShowInspector } from "../../src/lite/inspector";
+import { GetSceneNodes, IsMesh } from "../../src/lite/sceneEntityUtils";
+
+// Self-contained GLB: one triangle, two joints and two named morphs. No external buffers, textures or assets.
+function CreateSkeletonMorphGlb(): ArrayBuffer {
+    const arrays = [
+        new Float32Array([-0.5, 0, 0, 0.5, 0, 0, 0, 1, 0]),
+        new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        new Uint16Array([0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]),
+        new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]),
+        new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1, 0, 1]),
+        new Float32Array([-0.5, 0, 0, 0.5, 0, 0, 0, 0, 0]),
+        new Float32Array([0, 0, 0, 0, 0, 0, 0, 0.5, 0]),
+    ];
+    let byteLength = 0;
+    const bufferViews = arrays.map((array) => {
+        const view = { buffer: 0, byteOffset: byteLength, byteLength: array.byteLength };
+        byteLength += array.byteLength;
+        return view;
+    });
+    const json = {
+        asset: { version: "2.0" },
+        scene: 0,
+        scenes: [{ nodes: [0, 1] }],
+        nodes: [
+            { name: "P9 Skinned Morph Mesh", mesh: 0, skin: 0 },
+            { name: "P9 Root Bone", children: [2] },
+            { name: "P9 Child Bone", translation: [0, 1, 0] },
+        ],
+        skins: [{ joints: [1, 2], inverseBindMatrices: 4, skeleton: 1 }],
+        meshes: [
+            {
+                weights: [0, 0],
+                extras: { targetNames: ["Widen", "Lift"] },
+                primitives: [{ attributes: { POSITION: 0, NORMAL: 1, JOINTS_0: 2, WEIGHTS_0: 3 }, targets: [{ POSITION: 5 }, { POSITION: 6 }], material: 0 }],
+            },
+        ],
+        materials: [{ name: "P9 Morph Material", doubleSided: true, pbrMetallicRoughness: { baseColorFactor: [0.2, 0.8, 0.3, 1], metallicFactor: 0, roughnessFactor: 1 } }],
+        buffers: [{ byteLength }],
+        bufferViews,
+        accessors: [
+            { bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [-0.5, 0, 0], max: [0.5, 1, 0] },
+            { bufferView: 1, componentType: 5126, count: 3, type: "VEC3" },
+            { bufferView: 2, componentType: 5123, count: 3, type: "VEC4" },
+            { bufferView: 3, componentType: 5126, count: 3, type: "VEC4" },
+            { bufferView: 4, componentType: 5126, count: 2, type: "MAT4" },
+            { bufferView: 5, componentType: 5126, count: 3, type: "VEC3" },
+            { bufferView: 6, componentType: 5126, count: 3, type: "VEC3" },
+        ],
+    };
+    const jsonBytes = new TextEncoder().encode(JSON.stringify(json));
+    const jsonLength = (jsonBytes.length + 3) & ~3;
+    const glb = new ArrayBuffer(12 + 8 + jsonLength + 8 + byteLength);
+    const header = new DataView(glb);
+    header.setUint32(0, 0x46546c67, true);
+    header.setUint32(4, 2, true);
+    header.setUint32(8, glb.byteLength, true);
+    header.setUint32(12, jsonLength, true);
+    header.setUint32(16, 0x4e4f534a, true);
+    new Uint8Array(glb, 20, jsonLength).fill(32);
+    new Uint8Array(glb, 20, jsonBytes.length).set(jsonBytes);
+    header.setUint32(20 + jsonLength, byteLength, true);
+    header.setUint32(24 + jsonLength, 0x004e4942, true);
+    arrays.forEach((array, index) => new Uint8Array(glb, 28 + jsonLength + bufferViews[index].byteOffset, array.byteLength).set(new Uint8Array(array.buffer)));
+    return glb;
+}
+
+function CreateParticleGraph(name: string) {
+    return parseNodeParticleSource({
+        blocks: [
+            {
+                id: 1,
+                customType: "BABYLON.CreateParticleBlock",
+                name: "Create",
+                inputs: [
+                    { name: "lifeTime", value: 2, valueType: "number" },
+                    { name: "size", value: 0.05, valueType: "number" },
+                ],
+            },
+            {
+                id: 2,
+                customType: "BABYLON.SystemBlock",
+                name,
+                capacity: 100,
+                updateSpeed: 0.01,
+                inputs: [
+                    { name: "particle", targetBlockId: 1, targetConnectionName: "particle" },
+                    { name: "emitRate", value: 10, valueType: "number" },
+                ],
+            },
+        ],
+    });
+}
 
 const inertFlowGraphSpecs: readonly FgNodeSpec[] = [
     {
@@ -169,6 +271,29 @@ const boxGroup = createTransformNode("Box Group", -0.75);
 boxGroup.children.push(smallBox);
 smallBox.parent = boxGroup;
 addToScene(primaryScene, boxGroup);
+
+enableBoneControl();
+const skeletonAsset = await loadGltf(engine, CreateSkeletonMorphGlb());
+addToScene(primaryScene, skeletonAsset);
+const skinnedMesh = GetSceneNodes(primaryScene)
+    .filter(IsMesh)
+    .find((mesh) => getMeshSkeleton(mesh) && mesh.morphTargets);
+if (!skinnedMesh) {
+    throw new Error("P9 fixture did not load a skinned morph mesh.");
+}
+skinnedMesh.name = "P9 Skinned Morph Mesh";
+skinnedMesh.position.set(-2, -1, 0);
+const morphClone = cloneTransformNode(skinnedMesh);
+if (!IsMesh(morphClone)) {
+    throw new Error("P9 fixture clone is not a mesh.");
+}
+morphClone.name = "P9 Shared Morph Clone";
+morphClone.position.set(2, -1, 0);
+addToScene(primaryScene, morphClone);
+
+const particleSet = await buildNodeParticleSet(engine, primaryScene, CreateParticleGraph("P9 Sparks"));
+particleSet.systems.forEach((system) => (system.texture = blueTexture));
+registerNodeParticleSet(primaryScene, particleSet);
 
 const animationManager = createAnimationManager({ engine });
 const boxAnimation = createPropertyAnimationGroup(
@@ -362,6 +487,20 @@ await startEngine(engine);
 const inspectorToken = ShowInspector(engine);
 
 Object.assign(globalThis, {
+    liteSkinnedMesh: skinnedMesh,
+    liteMorphClone: morphClone,
+    liteSkeleton: getMeshSkeleton(skinnedMesh),
+    liteGetParticleSystems: getParticleSystems,
+    liteIsParticleSystemStarted: isParticleSystemStarted,
+    liteRegisterSecondParticleSet: async () => {
+        const set = await buildNodeParticleSet(engine, primaryScene, CreateParticleGraph("P9 Second Sparks"));
+        set.systems.forEach((system) => (system.texture = blueTexture));
+        registerNodeParticleSet(primaryScene, set);
+    },
+    liteRemoveSkinnedMeshes: () => {
+        removeFromScene(primaryScene, skinnedMesh);
+        removeFromScene(primaryScene, morphClone);
+    },
     liteDefaultFlowGraph: defaultFlowGraph,
     liteAttachFlowGraph: async () => addFlowGraph(primaryScene, await buildFgGraph(inertFlowGraphSpecs)),
     liteDetachFlowGraph: (runtime: FgRuntime) => {

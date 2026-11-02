@@ -17,6 +17,9 @@ import { getRichTypeByFlowGraphType, RichType } from "./flowGraphRichTypes.pure"
 import { type FlowGraphConnection } from "./flowGraphConnection";
 import { Constants } from "core/Engines/constants";
 import { WebRequest } from "core/Misc/webRequest";
+import { Logger } from "core/Misc/logger";
+import { type AudioEngineV2 } from "core/AudioV2/abstractAudio/audioEngineV2";
+import { type IFlowGraphSoundAsset } from "./flowGraphSoundAssets";
 
 function ParseCustomEventData(
     serializedEventData: unknown,
@@ -94,6 +97,22 @@ function ApplyCoordinatorSerializationSettings(serializedObject: any, coordinato
     }
 }
 
+async function LoadSerializedSoundAssetsAsync(serializedObject: any, coordinator: FlowGraphCoordinator, audioEngine?: AudioEngineV2): Promise<void> {
+    const soundAssets: IFlowGraphSoundAsset[] | undefined = serializedObject.soundAssets;
+    if (!Array.isArray(soundAssets) || soundAssets.length === 0) {
+        return;
+    }
+    await Promise.all(
+        soundAssets.map(async (asset) => {
+            try {
+                await coordinator.addSoundAssetAsync(asset, audioEngine);
+            } catch (e) {
+                Logger.Warn(`FlowGraph: unable to load sound asset "${asset.name}": ${e}`);
+            }
+        })
+    );
+}
+
 /**
  * Given a list of blocks, find an output data connection that has a specific unique id
  * @param blocks a list of flow graph blocks
@@ -142,7 +161,7 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: IFlo
 
     ApplyCoordinatorSerializationSettings(serializedObject, coordinator);
 
-    await options.scene.whenReadyAsync();
+    await Promise.all([options.scene.whenReadyAsync(), LoadSerializedSoundAssetsAsync(serializedObject, coordinator, options.audioEngine)]);
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
         serializedObject._flowGraphs?.map(
@@ -187,6 +206,7 @@ export async function ParseFlowGraphFromSnippetAsync(snippetId: string, options:
     }
 
     ApplyCoordinatorSerializationSettings(serializedObject, options.coordinator);
+    await LoadSerializedSoundAssetsAsync(serializedObject, options.coordinator);
     const parsedGraphs: FlowGraph[] = [];
     for (const serializedGraph of serializedObject._flowGraphs) {
         // eslint-disable-next-line no-await-in-loop -- graph order matters for the active graph index.

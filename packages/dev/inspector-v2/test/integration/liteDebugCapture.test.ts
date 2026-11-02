@@ -217,6 +217,7 @@ test("Lite Inspector debug helpers create non-pickable scene meshes, survive tab
             group.isPlaying = false;
         }
     });
+    const sourceMeshCount = await page.evaluate(() => (window as LiteTestWindow).litePrimaryScene.meshes.length);
     const count = () => page.evaluate(() => (window as LiteTestWindow).litePrimaryScene.meshes.filter((mesh) => mesh.name.startsWith("Inspector ")).length);
     const grid = page.getByRole("switch", { name: "Ground Grid" });
     const bounds = page.getByRole("switch", { name: "Bounding Boxes" });
@@ -233,7 +234,7 @@ test("Lite Inspector debug helpers create non-pickable scene meshes, survive tab
     }
     expect(changedPixels).toBeGreaterThan(1000);
     await bounds.click();
-    await expect.poll(count).toBe(4);
+    await expect.poll(count).toBe(sourceMeshCount + 1);
     await expect.poll(async () => CountYellowPixels(await GetCanvasPixelsAsync(page))).toBeGreaterThan(CountYellowPixels(withGrid) + 20);
     expect(
         await page.evaluate(() => (window as LiteTestWindow).litePrimaryScene.meshes.filter((mesh) => mesh.name.startsWith("Inspector ")).every((mesh) => mesh.pickable === false))
@@ -259,8 +260,11 @@ test("Lite Inspector bounding boxes stay synchronized with animated and parented
     await watchMode.getByRole("combobox").click();
     await page.getByRole("option", { name: "Manual", exact: true }).click();
     await page.locator('[role="radio"][value="Debug"]').click();
+    const sourceMeshCount = await page.evaluate(() => (window as LiteTestWindow).litePrimaryScene.meshes.length);
     await page.getByRole("switch", { name: "Bounding Boxes" }).check();
-    await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).litePrimaryScene.meshes.filter((mesh) => mesh.name.startsWith("Inspector Bounds: ")).length)).toBe(3);
+    await expect
+        .poll(() => page.evaluate(() => (window as LiteTestWindow).litePrimaryScene.meshes.filter((mesh) => mesh.name.startsWith("Inspector Bounds: ")).length))
+        .toBe(sourceMeshCount);
     const result = await page.evaluate(async () => {
         const scene = (window as LiteTestWindow).litePrimaryScene;
         const pairs = scene.meshes

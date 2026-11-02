@@ -539,7 +539,7 @@ jobs:
                   NodeVersion: "22.22.2"
               WindowsNode24:
                   vmImage: "windows-latest"
-                  NodeVersion: "24.15.0"
+                  NodeVersion: "24.16.0"
               LinuxNode22:
                   vmImage: "ubuntu-latest"
                   NodeVersion: "22.22.2"

@@ -338,6 +338,21 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
+     * Checks whether a texture is still referenced by any material created by this loader.
+     * @param texture The texture to check
+     * @returns True if at least one loaded material still references the texture
+     * @internal
+     */
+    public _isTextureUsedByMaterials(texture: BaseTexture): boolean {
+        for (const adapter of this._materialAdapters) {
+            if (adapter.material.hasTexture(texture)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Creates or gets a cached material loading adapter with dynamic imports
      * @param material The material to adapt
      * @returns Promise that resolves to the appropriate adapter

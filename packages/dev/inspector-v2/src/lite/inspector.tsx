@@ -19,6 +19,8 @@ import { CaptureServiceDefinition } from "./services/panes/captureService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
 import { EnginePropertiesServiceDefinition } from "./services/panes/properties/enginePropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
+import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
 import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesService";
@@ -32,6 +34,8 @@ import { TextLayerPropertiesServiceDefinition } from "./services/panes/propertie
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { CameraExplorerServiceDefinition } from "./services/panes/scene/cameraExplorerService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
 import { FlowGraphExplorerServiceDefinition } from "./services/panes/scene/flowGraphExplorerService";
 import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
 import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExplorerService";
@@ -92,6 +96,8 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TextLayerExplorerServiceDefinition,
                 SpriteLayerExplorerServiceDefinition,
                 AnimationGroupExplorerServiceDefinition,
+                SkeletonExplorerServiceDefinition,
+                ParticleSystemExplorerServiceDefinition,
                 FrameGraphExplorerServiceDefinition,
                 FlowGraphExplorerServiceDefinition,
                 PropertiesServiceDefinition,
@@ -107,6 +113,8 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TextLayerPropertiesServiceDefinition,
                 SpriteLayerPropertiesServiceDefinition,
                 AnimationPropertiesServiceDefinition,
+                SkeletonPropertiesServiceDefinition,
+                ParticleSystemPropertiesServiceDefinition,
                 FrameGraphPropertiesServiceDefinition,
                 SettingsServiceDefinition,
                 watcherSettingsServiceDefinition,
