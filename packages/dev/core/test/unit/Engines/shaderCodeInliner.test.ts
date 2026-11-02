@@ -181,4 +181,25 @@ void main() {
         expect(code).not.toMatch(/\.\s*(?:\/\*[^]*?\*\/|\/\/[^\n]*\n|\s)*f_[xa]_c\d+/);
         expect(code).toMatch(new RegExp(`v\\.x \\+ v \\. /\\* c \\*/ x \\+ v\\.\\s*// c\\s*x \\+ s\\.a \\+ s \\. a \\+ ${copyX![1]} \\+ ${copyA![1]};`));
     });
+
+    it("does not substitute the fields of function-local structs named like parameters", () => {
+        const code = Inline(`
+#define inline
+float g(float a, float b) {
+    struct S { float a; float b; };
+    b = 2.0;
+    S s = S(1.0, 2.0);
+    return s.a + s.b + a + b;
+}
+void main() {
+    float x = 0.0;
+    float y = 1.0;
+    gl_FragColor = vec4(g(x, y));
+}
+`);
+        const copyB = /float (g_b_c\d+) = y;/.exec(code);
+        expect(copyB).not.toBeNull();
+        expect(code).toMatch(/struct S \{ float a; float b; \};/);
+        expect(code).toMatch(new RegExp(`s\\.a \\+ s\\.b \\+ x \\+ ${copyB![1]};`));
+    });
 });

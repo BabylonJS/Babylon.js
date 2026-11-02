@@ -69,6 +69,27 @@ function IsMemberName(s: string, index: number): boolean {
 }
 
 /**
+ * Finds the bodies of the struct declarations, which only contain type and field names
+ * @param s code to parse (may contain comments)
+ * @returns the [start, end] index ranges of the struct bodies, braces included
+ */
+function FindStructBodies(s: string): [number, number][] {
+    const ranges: [number, number][] = [];
+    const regexp = /(?<!\w)struct\s+(?:\w+\s*)?\{/g;
+    let match;
+    while ((match = regexp.exec(s)) !== null) {
+        const openIndex = match.index + match[0].length - 1;
+        const closeIndex = ExtractBetweenMarkers("{", "}", s, openIndex);
+        if (closeIndex < 0) {
+            break;
+        }
+        ranges.push([openIndex, closeIndex]);
+        regexp.lastIndex = closeIndex + 1;
+    }
+    return ranges;
+}
+
+/**
  * Skips member accesses and (possibly nested) subscripts, e.g. ".xy" or "[indices[0]]"
  * @param s code to parse
  * @param index index just after a variable name
@@ -530,12 +551,18 @@ export class ShaderCodeInliner {
         for (let i = 0; i < sources.length; ++i) {
             const source = new RegExp(EscapeRegExp(sources[i]), "g"),
                 sourceLen = sources[i].length,
-                destination = destinations[i];
+                destination = destinations[i],
+                structBodies = FindStructBodies(code);
 
             code = code.replace(source, (match, ...args) => {
                 const offset: number = args[0];
                 // Make sure "source" is not part of a bigger identifier (for eg, if source=view and we matched it with viewDirection)
-                if (IsIdentifierChar(code.charAt(offset - 1)) || IsIdentifierChar(code.charAt(offset + sourceLen)) || IsMemberName(code, offset)) {
+                if (
+                    IsIdentifierChar(code.charAt(offset - 1)) ||
+                    IsIdentifierChar(code.charAt(offset + sourceLen)) ||
+                    IsMemberName(code, offset) ||
+                    structBodies.some(([start, end]) => offset > start && offset < end)
+                ) {
                     return sources[i];
                 }
                 return destination;
