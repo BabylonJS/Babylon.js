@@ -616,6 +616,9 @@ export class Texture extends BaseTexture {
      * wrapping); it takes the source's loading description (url or buffer, mipmaps, sampling mode, format, sRGB buffer, loader options),
      * so serializing it and loading it again gives the image it shows. Both textures then share the source's GPU texture, which stays alive
      * until both are disposed.
+     * Texture.Parse loads from rootUrl + name: a name that followed the url the image was loaded from becomes the source's url relative to
+     * the same root (or the source's full url, for an absolute or data url). A name of its own, or a source outside that root, keeps the
+     * name, and loading the serialized texture again then gives the image it shows only with Texture.UseSerializedUrlIfAny.
      * The materials that use this texture are marked as dirty only when the effective gamma space or the RGBD encoding changes; otherwise
      * they bind the new image at their next draw. A frozen material keeps the values it computed from the old image's size (for example
      * a PBR 2D reflection texture's width in its uniform buffer) until it is unfrozen or marked as dirty. With snapshot rendering, the
@@ -646,6 +649,12 @@ export class Texture extends BaseTexture {
             return false;
         }
 
+        // the root the name is relative to, from the url the own image was loaded from (after a parse, url and name hold the serialized
+        // values, not rootUrl + name)
+        const loadedUrl = own.url || this.url;
+        const nameRoot = loadedUrl && this.name && loadedUrl.endsWith(this.name) ? loadedUrl.slice(0, loadedUrl.length - this.name.length) : null;
+        const sourceUrl = image.url || source.url;
+
         // the effective interpretations, read before the swap. The source's image keeps the source's: when its gamma state is not set yet,
         // it comes from the source's wrapper, as the gammaSpace getter would set it, and not from this one's, as it would after the swap
         const gammaSpace = this.gammaSpace;
@@ -660,9 +669,14 @@ export class Texture extends BaseTexture {
             this.releaseInternalTexture();
             this._texture = image;
         }
-        // Texture.Parse loads from the name: a name that followed the old url follows the new one, so the round-trip loads the image shown
-        if (this.name === this.url) {
-            this.name = source.url ?? this.name;
+        // Texture.Parse loads from rootUrl + name, or from the name alone when it is an absolute or data url: a name that followed the old
+        // url follows the new one, so the round-trip loads the image shown
+        if (nameRoot !== null && sourceUrl && (nameRoot === "" || nameRoot.endsWith("/"))) {
+            if (sourceUrl.startsWith(nameRoot)) {
+                this.name = sourceUrl.slice(nameRoot.length);
+            } else if (sourceUrl.indexOf("://") > 0 || sourceUrl.startsWith("data:")) {
+                this.name = sourceUrl;
+            }
         }
         this.url = source.url;
         this._buffer = source._buffer;

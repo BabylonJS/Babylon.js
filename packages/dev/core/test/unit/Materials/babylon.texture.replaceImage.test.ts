@@ -34,6 +34,7 @@ describe("Texture.replaceImage", () => {
         const texture = new Texture(null, inScene, options.noMipmap ?? false, options.invertY ?? true, samplingMode);
         texture.url = url;
         const image = new InternalTexture(inScene.getEngine(), options.source ?? InternalTextureSource.Url);
+        image.url = url;
         image.isReady = true;
         image.samplingMode = samplingMode;
         image.isCube = !!options.cube;
@@ -82,18 +83,60 @@ describe("Texture.replaceImage", () => {
         expect(texture.samplingMode).toBe(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
     });
 
-    it("round-trips through serialize and parse to the image it shows, its name following the url only when it did", () => {
-        const texture = loaded("old.png");
-        texture.name = "old.png";
-        expect(texture.replaceImage(loaded("new.png"))).toBe(true);
-        expect(texture.name).toBe("new.png");
-        const parsed = Texture.Parse(texture.serialize(), scene, "") as Texture;
-        expect(parsed.url).toBe("new.png");
+    describe("serialize and parse", () => {
+        // a texture saved and loaded in another session: without the internal texture's id, Texture.Parse loads from rootUrl + name
+        // (the url it leaves on the texture is the serialized one, so what was loaded is read from the internal texture)
+        function reloaded(texture: Texture, rootUrl: string): string | undefined {
+            const serialized = texture.serialize();
+            delete serialized.internalTextureUniqueId;
+            return (Texture.Parse(serialized, scene, rootUrl) as Texture).getInternalTexture()?.url;
+        }
 
-        const named = loaded("old.png");
-        named.name = "ground";
-        expect(named.replaceImage(loaded("new.png"))).toBe(true);
-        expect(named.name).toBe("ground");
+        it("loads the image it shows when the name was the url (an empty root url)", () => {
+            const texture = loaded("old.png");
+            texture.name = "old.png";
+            expect(texture.replaceImage(loaded("images/new.png"))).toBe(true);
+            expect(texture.name).toBe("images/new.png");
+            expect(reloaded(texture, "")).toBe("images/new.png");
+        });
+
+        it("loads the image it shows when the name is relative to a root url (a parsed scene)", () => {
+            const original = loaded("old.png");
+            original.name = "old.png";
+            const serialized = original.serialize();
+            delete serialized.internalTextureUniqueId;
+            const fromScene = Texture.Parse(serialized, scene, "scenes/") as Texture;
+            expect(fromScene.getInternalTexture()?.url).toBe("scenes/old.png");
+            expect(fromScene.replaceImage(loaded("scenes/new.png"))).toBe(true);
+            expect(fromScene.name).toBe("new.png");
+            expect(reloaded(fromScene, "scenes/")).toBe("scenes/new.png");
+        });
+
+        it("keeps a name of its own, the serialized url then giving the image with Texture.UseSerializedUrlIfAny", () => {
+            const named = loaded("old.png");
+            named.name = "ground";
+            expect(named.replaceImage(loaded("new.png"))).toBe(true);
+            expect(named.name).toBe("ground");
+            Texture.UseSerializedUrlIfAny = true;
+            try {
+                expect(reloaded(named, "")).toBe("new.png");
+            } finally {
+                Texture.UseSerializedUrlIfAny = false;
+            }
+        });
+
+        it("keeps the name for a source outside the root, and takes a source's absolute url", () => {
+            const texture = loaded("scenes/old.png");
+            texture.name = "old.png";
+            expect(texture.replaceImage(loaded("other/new.png"))).toBe(true);
+            expect(texture.name).toBe("old.png");
+
+            const absolute = loaded("scenes/old.png");
+            absolute.name = "old.png";
+            expect(absolute.replaceImage(loaded("https://cdn.example.com/new.png"))).toBe(true);
+            expect(absolute.name).toBe("https://cdn.example.com/new.png");
+            expect(reloaded(absolute, "scenes/")).toBe("https://cdn.example.com/new.png");
+        });
     });
 
     it("refuses what it cannot take or replace, leaving both textures unchanged", () => {
