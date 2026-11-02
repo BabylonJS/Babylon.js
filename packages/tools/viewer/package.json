@@ -29,19 +29,19 @@
         "lit": "^3.3.3"
     },
     "devDependencies": {
-        "@rollup/plugin-alias": "^6.0.0",
+        "@rollup/plugin-alias": "^6.0.1",
         "@rollup/plugin-commonjs": "^29.0.3",
         "@rollup/plugin-node-resolve": "^16.0.3",
-        "@rollup/plugin-terser": "^1.0.0",
-        "@rollup/plugin-typescript": "^12.3.0",
+        "@rollup/plugin-terser": "^1.0.2",
+        "@rollup/plugin-typescript": "^12.3.1",
         "@webgpu/types": "^0.1.74",
         "chalk": "^6.0.1",
         "cross-env": "^10.1.0",
         "nyc": "^18.0.0",
         "open": "^11.0.4",
-        "rollup": "^4.63.4",
-        "rollup-plugin-minify-template-literals": "^1.1.7",
+        "rollup": "^4.65.1",
+        "rollup-plugin-minify-template-literals": "^2.2.0",
         "rollup-plugin-visualizer": "^7.1.1",
-        "vite": "8.3.0"
+        "vite": "8.3.5"
     }
 }
