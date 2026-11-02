@@ -2496,6 +2496,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const scene = this.getScene();
         const engine = scene.getEngine();
         fillMode = this._getRenderingFillMode(fillMode);
+        // the GPU-written arguments of the pass (SubMesh.setIndirectDrawBuffer), or none, on the draw context the draw goes through
+        const indirect = subMesh._indirectDrawBuffers?.get(engine.currentRenderPassId);
+        engine._currentDrawContext?._setExternalIndirectDraw?.(indirect?.buffer ?? null, indirect?.byteOffset ?? 0);
 
         if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
             this._renderWithThinInstances(subMesh, fillMode, effect, engine);

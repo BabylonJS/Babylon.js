@@ -183,6 +183,7 @@ function submitDraw(batcher: RenderCommandBatcher<IWebGPURenderPassDrawCommand>,
         instancesCount: 1,
         start,
         indirectDrawBuffer: null,
+        indirectDrawByteOffset: 0,
     });
 
     // The scenarios below are only meaningful if the draw actually takes the batched path.
