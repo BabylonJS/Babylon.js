@@ -334,29 +334,40 @@ export class FlowGraphCoordinator {
      * @returns a promise that resolves with the loaded sound
      */
     public async addSoundAssetAsync(asset: IFlowGraphSoundAsset, audioEngine?: AudioEngineV2): Promise<StaticSound> {
+        // Copy the descriptor so that changes made by the caller while the sound loads do not affect this load.
         const entry: ISoundAssetEntry = { asset: { name: asset.name, url: asset.url }, sound: null };
-        this.removeSoundAsset(asset.name);
-        this._soundAssets.set(asset.name, entry);
+        const { name, url } = entry.asset;
+        this.removeSoundAsset(name);
+        this._soundAssets.set(name, entry);
 
         const { CreateSoundAsync, LastCreatedAudioEngine } = await import("../AudioV2/abstractAudio/audioEngineV2");
         this._throwIfSoundAssetChanged(entry);
-        let engine = audioEngine ?? LastCreatedAudioEngine();
-        if (!engine || engine === FallbackAudioEngine) {
-            if (!this._usesFallbackAudioEngine) {
-                this._usesFallbackAudioEngine = true;
-                FallbackAudioEngineUsers++;
+        let engine: AudioEngineV2;
+        if (audioEngine && audioEngine !== FallbackAudioEngine) {
+            engine = audioEngine;
+        } else {
+            // A fallback engine is already listed by LastCreatedAudioEngine while it initializes, so join a pending
+            // or existing fallback before treating the last created engine as owned by someone else.
+            const lastEngine = audioEngine ?? (FallbackAudioEnginePromise ? null : LastCreatedAudioEngine());
+            if (lastEngine && lastEngine !== FallbackAudioEngine) {
+                engine = lastEngine;
+            } else {
+                if (!this._usesFallbackAudioEngine) {
+                    this._usesFallbackAudioEngine = true;
+                    FallbackAudioEngineUsers++;
+                }
+                engine = await GetFallbackAudioEngineAsync();
+                this._throwIfSoundAssetChanged(entry);
             }
-            engine = await GetFallbackAudioEngineAsync();
-            this._throwIfSoundAssetChanged(entry);
         }
 
-        const sound = await CreateSoundAsync(asset.name, asset.url, {}, engine);
-        if (this._soundAssets.get(asset.name) !== entry) {
+        const sound = await CreateSoundAsync(name, url, {}, engine);
+        if (this._soundAssets.get(name) !== entry) {
             sound.dispose();
             this._throwIfSoundAssetChanged(entry);
         }
         entry.sound = sound;
-        this.onSoundAssetChangedObservable.notifyObservers(asset.name);
+        this.onSoundAssetChangedObservable.notifyObservers(name);
         return sound;
     }
 

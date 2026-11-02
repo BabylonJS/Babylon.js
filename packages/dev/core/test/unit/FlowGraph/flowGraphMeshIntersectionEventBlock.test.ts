@@ -205,6 +205,31 @@ describe("FlowGraphMeshIntersectionEventBlock", () => {
         expect(context.executionId).toBeGreaterThanOrEqual(before + 2);
     });
 
+    it("handles large overlapping target lists with duplicates without repeated transitions", () => {
+        const targets: Mesh[] = [];
+        for (let i = 0; i < 500; i++) {
+            targets.push(createUnitBox(`overlap${i}`));
+        }
+        // Every target appears twice.
+        createBlock([...targets, ...targets]);
+        const intersectsSpy = vi.spyOn(source, "intersectsMesh");
+        graph.start();
+
+        tick();
+        expect(transitions.filter((t) => t.startsWith("enter"))).toHaveLength(500);
+        expect(intersectsSpy).toHaveBeenCalledTimes(500);
+
+        transitions.length = 0;
+        intersectsSpy.mockClear();
+        tick();
+        expect(transitions).toEqual([]);
+        expect(intersectsSpy).toHaveBeenCalledTimes(500);
+
+        targets[10].position.x = 5;
+        tick();
+        expect(transitions).toEqual(["exit overlap10", "out false"]);
+    });
+
     it("serializes and parses the target mesh list", async () => {
         const block = new FlowGraphMeshIntersectionEventBlock();
         graph.addEventBlock(block);

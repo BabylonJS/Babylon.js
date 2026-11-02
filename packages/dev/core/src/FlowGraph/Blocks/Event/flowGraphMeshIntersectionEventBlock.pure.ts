@@ -16,10 +16,16 @@ import { RegisterClass } from "../../../Misc/typeStore";
 const EventKey = "meshIntersection";
 
 interface IIntersectionState {
-    /** The target meshes intersecting the source mesh after the last check. */
+    /** The target meshes intersecting the source mesh after the last check, in target order. */
     intersecting: AbstractMesh[];
+    /** Membership set of `intersecting`. */
+    intersectingSet: Set<AbstractMesh>;
     /** Reused list that collects the intersecting meshes during a check. */
     scratch: AbstractMesh[];
+    /** Membership set of `scratch`. */
+    scratchSet: Set<AbstractMesh>;
+    /** Reused set of the targets already checked during a check, used to skip duplicate targets. */
+    visited: Set<unknown>;
 }
 
 function IsCheckableMesh(value: any): value is AbstractMesh {
@@ -105,13 +111,17 @@ export class FlowGraphMeshIntersectionEventBlock extends FlowGraphEventBlock {
     public override _executeEvent(context: FlowGraphContext, _payload: any): boolean {
         let state = context._getExecutionVariable<Nullable<IIntersectionState>>(this, "_intersectionState", null);
         if (!state) {
-            state = { intersecting: [], scratch: [] };
+            state = { intersecting: [], intersectingSet: new Set(), scratch: [], scratchSet: new Set(), visited: new Set() };
             context._setExecutionVariable(this, "_intersectionState", state);
         }
 
         const previous = state.intersecting;
+        const previousSet = state.intersectingSet;
         const current = state.scratch;
+        const currentSet = state.scratchSet;
         current.length = 0;
+        currentSet.clear();
+        state.visited.clear();
 
         // The check is not triggered by a signal, so start a new execution frame to refresh cached data blocks feeding the inputs.
         context._increaseExecutionId();
@@ -123,37 +133,44 @@ export class FlowGraphMeshIntersectionEventBlock extends FlowGraphEventBlock {
             source.computeWorldMatrix(true);
             if (Array.isArray(targets)) {
                 for (let i = 0; i < targets.length; i++) {
-                    this._checkTarget(source, targets[i], precise, current);
+                    this._checkTarget(source, targets[i], precise, state);
                 }
             } else {
-                this._checkTarget(source, targets, precise, current);
+                this._checkTarget(source, targets, precise, state);
             }
         }
 
         // Swap the lists before firing signals so re-entrant checks see a consistent state.
         state.intersecting = current;
+        state.intersectingSet = currentSet;
         state.scratch = previous;
+        state.scratchSet = previousSet;
 
         for (let i = 0; i < previous.length; i++) {
-            if (current.indexOf(previous[i]) === -1) {
+            if (!currentSet.has(previous[i])) {
                 this._fireTransition(context, previous[i], false);
             }
         }
         for (let i = 0; i < current.length; i++) {
-            if (previous.indexOf(current[i]) === -1) {
+            if (!previousSet.has(current[i])) {
                 this._fireTransition(context, current[i], true);
             }
         }
         return true;
     }
 
-    private _checkTarget(source: AbstractMesh, target: unknown, precise: boolean, intersecting: AbstractMesh[]): void {
-        if (target === source || !IsCheckableMesh(target) || intersecting.indexOf(target) !== -1) {
+    private _checkTarget(source: AbstractMesh, target: unknown, precise: boolean, state: IIntersectionState): void {
+        if (target === source || state.visited.has(target)) {
+            return;
+        }
+        state.visited.add(target);
+        if (!IsCheckableMesh(target)) {
             return;
         }
         target.computeWorldMatrix(true);
         if (source.intersectsMesh(target, precise)) {
-            intersecting.push(target);
+            state.scratch.push(target);
+            state.scratchSet.add(target);
         }
     }
 
