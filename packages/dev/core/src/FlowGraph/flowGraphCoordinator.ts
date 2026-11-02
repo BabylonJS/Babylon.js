@@ -347,8 +347,10 @@ export class FlowGraphCoordinator {
             engine = audioEngine;
         } else {
             // A fallback engine is already listed by LastCreatedAudioEngine while it initializes, so join a pending
-            // or existing fallback before treating the last created engine as owned by someone else.
-            const lastEngine = audioEngine ?? (FallbackAudioEnginePromise ? null : LastCreatedAudioEngine());
+            // fallback before treating the last created engine as owned by someone else. Once the fallback is ready,
+            // an engine created later by the application takes precedence.
+            const isFallbackPending = !!FallbackAudioEnginePromise && !FallbackAudioEngine;
+            const lastEngine = audioEngine ?? (isFallbackPending ? null : LastCreatedAudioEngine());
             if (lastEngine && lastEngine !== FallbackAudioEngine) {
                 engine = lastEngine;
             } else {

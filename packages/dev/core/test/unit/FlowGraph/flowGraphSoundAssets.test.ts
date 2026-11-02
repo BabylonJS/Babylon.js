@@ -332,4 +332,33 @@ describe("Flow Graph sound assets", () => {
         expect(coordinator.soundAssets).toEqual([{ name: "a", url: "a.mp3" }]);
         expect(notified).toEqual(["a"]);
     });
+    it("uses an audio engine created by the application after the fallback engine is ready", async () => {
+        lastEngineMock.mockReturnValue(null);
+        const instances = AudioEngineV2.Instances as unknown[];
+        const fallbackEngine = { dispose: vi.fn(), createSoundAsync: vi.fn(async (name: string, url: string) => CreateMockSound(name, url)) } as any;
+        createEngineMock.mockImplementation(async () => {
+            lastEngineMock.mockReturnValue(fallbackEngine);
+            instances.push(fallbackEngine);
+            return fallbackEngine;
+        });
+        const coordinator = new FlowGraphCoordinator({ scene });
+        await coordinator.addSoundAssetAsync({ name: "a", url: "a.mp3" });
+
+        // The application creates its own engine afterwards.
+        const appEngine = { dispose: vi.fn(), createSoundAsync: vi.fn(async (name: string, url: string) => CreateMockSound(name, url)) } as any;
+        lastEngineMock.mockReturnValue(appEngine);
+        instances.push(appEngine);
+        createSoundMock.mockClear();
+        await coordinator.addSoundAssetAsync({ name: "b", url: "b.mp3" });
+
+        const enginesUsed = [...createSoundMock.mock.calls.map((call) => call[3]), ...appEngine.createSoundAsync.mock.calls.map(() => appEngine)];
+        expect(enginesUsed).toEqual([appEngine]);
+        expect(createEngineMock).toHaveBeenCalledTimes(1);
+
+        coordinator.dispose();
+        expect(fallbackEngine.dispose).toHaveBeenCalledTimes(1);
+        expect(appEngine.dispose).not.toHaveBeenCalled();
+        instances.splice(instances.indexOf(fallbackEngine), 1);
+        instances.splice(instances.indexOf(appEngine), 1);
+    });
 });
