@@ -15,6 +15,7 @@ import { DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Observable } from "core/Misc/observable";
+import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import "core/Rendering/boundingBoxRenderer";
@@ -143,7 +144,7 @@ function CreateEngine(compatibilityMode: boolean) {
         _snapshotRecordAgain: false,
         _snapshotHeldBack: false,
         _pendingPipelinesGeneration: 0,
-        _lastPipelineWaitFrameId: -2,
+        _lastPipelineWaitFrameId: -Infinity,
         _cacheRenderPipeline: new PipelineCache(),
         _cacheBindGroups: {
             getBindGroups: (_context: unknown, drawContext: WebGPUDrawContext, materialContext: { updateId: number }) => {
@@ -350,6 +351,72 @@ describe("WebGPUEngine asynchronous pipeline creation, through the draw path", (
         ];
         expect(frame(...passes)).toEqual([["post"], ["box/once"]]);
         expect(cache.synchronous).toEqual(["post", "box/once"]);
+    });
+
+    // a shadow map refreshed every 4 frames, drawn before the main pass: its object renderer decides whether it renders in a frame
+    // (ObjectRenderer.shouldRender, on the engine of the test), and between two renders it keeps what it drew last. A frame returns what
+    // the shadow map holds, what the main pass drew, and whether the shadow map rendered
+    const shadowMapEveryFourFrames = ({ engine, draw, frame }: ReturnType<typeof CreateEngine>, box: ReturnType<typeof newMesh>) => {
+        const renderer = new ObjectRenderer("shadow map", scene);
+        renderer.refreshRate = 4;
+        const internals = renderer as unknown as { _engine: unknown };
+        const shouldRender = () => {
+            const sceneEngine = internals._engine;
+            internals._engine = engine;
+            try {
+                return renderer.shouldRender();
+            } finally {
+                internals._engine = sceneEngine;
+            }
+        };
+        const shadow = box.context(renderer.renderPassId);
+        const main = box.context(Constants.RENDERPASS_MAIN);
+        let held: string[] = [];
+        return () => {
+            const renders = shouldRender();
+            const passes = frame(...(renders ? [() => draw(box.owner, shadow, "box/shadow")] : []), () => draw(box.owner, main, "box/main"));
+            if (renders) {
+                held = passes[0];
+            }
+            return [held, passes[passes.length - 1], renders];
+        };
+    };
+
+    it("renders a shadow map refreshed every 4 frames in every frame while its mesh waits there, so the main pass never shows the mesh without it", async () => {
+        const harness = CreateEngine(true);
+        const render = shadowMapEveryFourFrames(harness, newMesh("box"));
+        harness.cache.prepare("box/main");
+
+        expect(render()).toEqual([[], [], true]);
+        expect(render()).toEqual([[], [], true]);
+        await harness.cache.completeAsync("box/shadow");
+        expect(render()).toEqual([[], [], true]);
+        // the mesh is drawn in both passes in the same frame, then the shadow map goes back to its rate
+        expect(render()).toEqual([["box/shadow"], ["box/main"], true]);
+        expect(render()).toEqual([["box/shadow"], ["box/main"], true]);
+        for (let i = 0; i < 3; i++) {
+            expect(render()).toEqual([["box/shadow"], ["box/main"], false]);
+        }
+        expect(render()).toEqual([["box/shadow"], ["box/main"], true]);
+    });
+
+    it("renders a shadow map refreshed every 4 frames in every frame while its mesh waits in the main pass, so it does not keep the shadow of a held back mesh", async () => {
+        const harness = CreateEngine(true);
+        const render = shadowMapEveryFourFrames(harness, newMesh("box"));
+        harness.cache.prepare("box/shadow");
+
+        // the frame of the first wait: the shadow map rendered before it, so it shows the mesh alone (the documented limitation)
+        expect(render()).toEqual([["box/shadow"], [], true]);
+        // from the next frame on, the shadow map renders in every frame and holds the mesh back with the main pass
+        expect(render()).toEqual([[], [], true]);
+        await harness.cache.completeAsync("box/main");
+        expect(render()).toEqual([[], [], true]);
+        expect(render()).toEqual([["box/shadow"], ["box/main"], true]);
+        expect(render()).toEqual([["box/shadow"], ["box/main"], true]);
+        for (let i = 0; i < 3; i++) {
+            expect(render()).toEqual([["box/shadow"], ["box/main"], false]);
+        }
+        expect(render()).toEqual([["box/shadow"], ["box/main"], true]);
     });
 
     it("draws the bounding box of an occlusion query while its mesh waits, in a FAST snapshot's recording and in its replays", async () => {

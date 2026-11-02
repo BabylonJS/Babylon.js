@@ -540,11 +540,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Asynchronous pipeline creation (off by default). When enabled, a draw of a mesh whose render pipeline is not created yet is
      * omitted while the pipeline is created asynchronously (one creation per pipeline configuration, shared with preWarmPipeline),
      * instead of creating it synchronously in the frame. The mesh is omitted in all of its passes (shadow maps, depth, main pass...)
-     * from the frame one of its draws had to wait until a frame in which none did. Limitation: in the frame of that first wait, the
-     * passes rendered before it have already drawn the mesh, so that frame can show the mesh in some of its passes only (the shadow
-     * of a mesh whose main pass draw waits, for instance). Other draws (the bounding boxes of occlusion queries, post-processes,
-     * sprites, particles...) still create their pipelines synchronously. A snapshot recorded while draws were omitted is replayed
-     * until their pipelines are created, then recorded again.
+     * from the frame one of its draws had to wait until a frame in which none did, and until it is drawn again, a render target
+     * refreshed every N frames renders in every frame, so that it shows the mesh in the same frames as the other passes. Limitation:
+     * in the frame of that first wait, the passes rendered before it have already drawn the mesh, so that frame can show the mesh in
+     * some of its passes only (the shadow of a mesh whose main pass draw waits, for instance). Other draws (the bounding boxes of
+     * occlusion queries, post-processes, sprites, particles...) still create their pipelines synchronously. A snapshot recorded while
+     * draws were omitted is replayed until their pipelines are created, then recorded again.
      */
     public asynchronousPipelineCreation = false;
 
@@ -555,8 +556,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _snapshotHeldBack = false;
     // bumped when the pending creations no longer apply (device lost, engine disposed)
     private _pendingPipelinesGeneration = 0;
-    // the last frame in which a draw waited for its pipeline: before it, no mesh waits, and the per-mesh state is not read
-    private _lastPipelineWaitFrameId = -2;
 
     /**
      * When true (default), the "leftover" uniform buffer of an effect (the buffer that holds the uniforms not declared in a named

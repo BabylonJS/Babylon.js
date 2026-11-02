@@ -517,6 +517,13 @@ export abstract class AbstractEngine {
     public _pipelineWaitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null;
 
     /**
+     * @internal The last frame in which a mesh draw waited for its render pipeline (WebGPU asynchronous pipeline creation). A mesh is held
+     * back in its passes in the frame of its last wait and the next one; until the frame after those, a render target refreshed every N
+     * frames renders in every frame (ObjectRenderer.shouldRender), so that it shows a mesh in the same frames as the other passes.
+     */
+    public _lastPipelineWaitFrameId = -Infinity;
+
+    /**
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;
