@@ -1,5 +1,6 @@
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
@@ -43,7 +44,8 @@ describe("SerializationTools coordinator ownership", () => {
         globalState.runValidation();
         expect(globalState.validationResult?.issues).toContainEqual(
             expect.objectContaining({
-                message: 'Unsupported KHR_interactivity operation "EXT_example/event" cannot be exported until its extension is supported.',
+                severity: FlowGraphValidationSeverity.Warning,
+                message: 'KHR_interactivity operation "EXT_example/event" has no runtime implementation and is preserved as an unsupported block.',
                 block: unsupported,
             })
         );

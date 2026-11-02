@@ -44,6 +44,7 @@ const TargetMeshesPicker: React.FunctionComponent<{
     return (
         <PropertyLine label="Target meshes">
             <Dropdown
+                aria-label="Target meshes"
                 className={classes.dropdown}
                 size="small"
                 multiselect
@@ -64,6 +65,42 @@ const TargetMeshesPicker: React.FunctionComponent<{
         </PropertyLine>
     );
 };
+
+/**
+ * Resolves saved mesh defaults against the current preview scene without discarding unresolved references.
+ * @param meshes meshes currently available in the preview scene
+ * @param sourceValue saved source mesh default
+ * @param targetValues saved target mesh defaults
+ * @param sourceName saved source mesh name
+ * @param targetNames saved target mesh names
+ * @returns display values and fully resolved replacements, when available
+ */
+export function ResolveIntersectionMeshDefaults(
+    meshes: AbstractMesh[],
+    sourceValue: AbstractMesh | undefined,
+    targetValues: AbstractMesh[],
+    sourceName: string | undefined,
+    targetNames: string[]
+): {
+    sourceMesh: AbstractMesh | undefined;
+    targetMeshes: AbstractMesh[];
+    resolvedSourceMesh?: AbstractMesh;
+    resolvedTargetMeshes?: AbstractMesh[];
+} {
+    const sourceIsCurrent = !!sourceValue && meshes.some((mesh) => mesh.uniqueId === sourceValue.uniqueId);
+    const resolvedSourceMesh = sourceIsCurrent ? sourceValue : meshes.find((mesh) => mesh.name === sourceName);
+    const targetsAreCurrent = targetValues.every((target) => meshes.some((mesh) => mesh.uniqueId === target.uniqueId));
+    const resolvedTargets = targetsAreCurrent ? targetValues : targetNames.map((name) => meshes.find((mesh) => mesh.name === name));
+    const allTargetsResolved = targetsAreCurrent || (resolvedTargets.length === targetNames.length && resolvedTargets.every((mesh) => !!mesh));
+    const resolvedTargetMeshes = allTargetsResolved ? (resolvedTargets as AbstractMesh[]) : undefined;
+
+    return {
+        sourceMesh: resolvedSourceMesh ?? sourceValue,
+        targetMeshes: resolvedTargetMeshes ?? targetValues,
+        resolvedSourceMesh: sourceIsCurrent ? undefined : resolvedSourceMesh,
+        resolvedTargetMeshes: targetsAreCurrent ? undefined : resolvedTargetMeshes,
+    };
+}
 
 const NoSceneMessage: React.FunctionComponent = () => {
     const classes = useStyles();
@@ -126,17 +163,15 @@ export class MeshIntersectionPropertyComponent extends React.Component<IProperty
         const targetValues = (Array.isArray(targetValue) ? targetValue : targetValue ? [targetValue] : []) as AbstractMesh[];
         const sourceName = (block.config as any)?._sourceMeshName ?? sourceValue?.name;
         const targetNames: string[] = (block.config as any)?._targetMeshNames ?? targetValues.map((mesh) => mesh.name);
-        const sourceMesh = sourceValue && meshes.some((mesh) => mesh.uniqueId === sourceValue.uniqueId) ? sourceValue : meshes.find((mesh) => mesh.name === sourceName);
-        const targetsAreCurrent = targetValues.every((target) => meshes.some((mesh) => mesh.uniqueId === target.uniqueId));
-        const targetMeshes = targetsAreCurrent ? targetValues : targetNames.map((name) => meshes.find((mesh) => mesh.name === name)).filter((mesh): mesh is AbstractMesh => !!mesh);
+        const { sourceMesh, targetMeshes, resolvedSourceMesh, resolvedTargetMeshes } = ResolveIntersectionMeshDefaults(meshes, sourceValue, targetValues, sourceName, targetNames);
 
         const sourceInput = block.getDataInput("sourceMesh");
         const targetInput = block.getDataInput("targetMeshes");
-        if (sourceInput && sourceMesh !== sourceValue) {
-            (sourceInput as any)._defaultValue = sourceMesh;
+        if (sourceInput && resolvedSourceMesh) {
+            (sourceInput as any)._defaultValue = resolvedSourceMesh;
         }
-        if (targetInput && !targetsAreCurrent) {
-            (targetInput as any)._defaultValue = targetMeshes;
+        if (targetInput && resolvedTargetMeshes) {
+            (targetInput as any)._defaultValue = resolvedTargetMeshes;
         }
         return { sourceMesh, targetMeshes };
     }

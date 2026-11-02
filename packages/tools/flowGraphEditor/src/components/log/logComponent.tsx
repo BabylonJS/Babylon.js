@@ -12,6 +12,42 @@ interface ILogComponentProps {
 
 const MaxLogEntries = 1000;
 
+export class LogEntryBuffer {
+    private _pending: LogEntry[] = [];
+    private _frameId = 0;
+
+    public constructor(
+        private readonly _publish: (entries: LogEntry[]) => void,
+        private readonly _requestFrame: (callback: FrameRequestCallback) => number = requestAnimationFrame,
+        private readonly _cancelFrame: (handle: number) => void = cancelAnimationFrame
+    ) {}
+
+    public enqueue(entry: LogEntry): void {
+        this._pending.push(entry);
+        if (this._pending.length > MaxLogEntries) {
+            this._pending.splice(0, this._pending.length - MaxLogEntries);
+        }
+        if (!this._frameId) {
+            this._frameId = this._requestFrame(() => this._flush());
+        }
+    }
+
+    public dispose(): void {
+        if (this._frameId) {
+            this._cancelFrame(this._frameId);
+            this._frameId = 0;
+        }
+        this._pending.length = 0;
+    }
+
+    private _flush(): void {
+        this._frameId = 0;
+        const entries = this._pending;
+        this._pending = [];
+        this._publish(entries);
+    }
+}
+
 export class LogEntry {
     public time = new Date();
 
@@ -66,15 +102,19 @@ export const LogComponent: FunctionComponent<ILogComponentProps> = (props) => {
     const [logs, setLogs] = useState<LogEntry[]>([]);
 
     useEffect(() => {
+        const buffer = new LogEntryBuffer((entries) => {
+            setLogs((previous) => [...previous, ...entries].slice(-MaxLogEntries));
+        });
         const observer = globalState.onLogRequiredObservable.add((entry) => {
-            setLogs((prev) => [...prev.slice(-(MaxLogEntries - 1)), entry]);
+            buffer.enqueue(entry);
         });
         const debugObserver = globalState.onDebugLogRequiredObservable.add(({ message, block }) => {
-            setLogs((prev) => [...prev.slice(-(MaxLogEntries - 1)), new LogEntry(message, false, block)]);
+            buffer.enqueue(new LogEntry(message, false, block));
         });
         return () => {
             observer?.remove();
             debugObserver?.remove();
+            buffer.dispose();
         };
     }, [globalState]);
 

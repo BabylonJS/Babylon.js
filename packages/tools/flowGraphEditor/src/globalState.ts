@@ -14,6 +14,7 @@ import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
+import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { type Scene } from "core/scene";
@@ -445,8 +446,8 @@ export class GlobalState {
             if (block.getClassName() === "FlowGraphUnsupportedInteractivityBlock") {
                 const operation = String((block.config as any)?.operation ?? "unknown operation");
                 additionalIssues.push({
-                    severity: FlowGraphValidationSeverity.Error,
-                    message: `Unsupported KHR_interactivity operation "${operation}" cannot be exported until its extension is supported.`,
+                    severity: FlowGraphValidationSeverity.Warning,
+                    message: `KHR_interactivity operation "${operation}" has no runtime implementation and is preserved as an unsupported block.`,
                     block,
                 });
             }
@@ -568,6 +569,8 @@ export class GlobalState {
     private _highlightThrottleMap = new Map<string, number>();
     /** Blocks that executed since the last debug frame — batched to avoid per-call DOM work */
     private _debugPendingBlocks = new Set<FlowGraphBlock>();
+    /** Restores event signal methods patched for accurate debug event logging. */
+    private _debugEventSignalRestorers: Array<() => void> = [];
     /** rAF handle for batched debug updates */
     private _debugRafId: number = 0;
     /** Port elements currently glowing — tracked so we can clear them on stop */
@@ -672,6 +675,7 @@ export class GlobalState {
                 // Detach the per-context observer but keep the state observer alive
                 this._debugExecutionObserver?.remove();
                 this._debugExecutionObserver = null;
+                this._restoreDebugEventSignals();
                 this._highlightThrottleMap.clear();
                 this._clearAllPortHighlights();
             }
@@ -697,20 +701,57 @@ export class GlobalState {
 
         // Install breakpoint predicate when attaching to a context
         this._installBreakpointPredicate(context);
+        this._patchDebugEventSignals();
 
-        // Execution entries are published immediately for an exact debug trace.
-        // DOM highlighting remains deferred to one requestAnimationFrame pass.
+        // Event entries are emitted by patched event output signals so data-output reads
+        // cannot be mistaken for another event dispatch. Other blocks are logged here.
         this._debugExecutionObserver = context.onNodeExecutedObservable.add((block) => {
             this._debugPendingBlocks.add(block);
-            const kind = block.getClassName().endsWith("EventBlock") ? "Event fired" : "Block ran";
-            this.onDebugLogRequiredObservable.notifyObservers({
-                message: `${kind}: ${block.name ?? block.getClassName()}`,
-                block,
-            });
+            if (!(block instanceof FlowGraphEventBlock)) {
+                this.onDebugLogRequiredObservable.notifyObservers({
+                    message: `Block ran: ${block.name ?? block.getClassName()}`,
+                    block,
+                });
+            }
             if (!this._debugRafId) {
                 this._debugRafId = requestAnimationFrame(() => this._flushDebugHighlights());
             }
         });
+    }
+
+    private _patchDebugEventSignals(): void {
+        this._restoreDebugEventSignals();
+        this._flowGraph?.visitAllBlocks((block) => {
+            if (!(block instanceof FlowGraphEventBlock)) {
+                return;
+            }
+            const specializedOutputs = block.signalOutputs.filter((signal) => signal.name !== "out" && signal.name !== "done");
+            const eventOutputs = specializedOutputs.length > 0 ? specializedOutputs : block.signalOutputs.filter((signal) => signal.name === "out");
+            for (const signal of eventOutputs) {
+                const originalActivateSignal = signal._activateSignal;
+                const patchedActivateSignal = (context: FlowGraphContext) => {
+                    const suffix = specializedOutputs.length > 1 ? ` (${signal.name})` : "";
+                    this.onDebugLogRequiredObservable.notifyObservers({
+                        message: `Event fired: ${block.name ?? block.getClassName()}${suffix}`,
+                        block,
+                    });
+                    originalActivateSignal.call(signal, context);
+                };
+                signal._activateSignal = patchedActivateSignal;
+                this._debugEventSignalRestorers.push(() => {
+                    if (signal._activateSignal === patchedActivateSignal) {
+                        signal._activateSignal = originalActivateSignal;
+                    }
+                });
+            }
+        });
+    }
+
+    private _restoreDebugEventSignals(): void {
+        for (const restore of this._debugEventSignalRestorers) {
+            restore();
+        }
+        this._debugEventSignalRestorers.length = 0;
     }
 
     /**
@@ -832,6 +873,7 @@ export class GlobalState {
     private _unsubscribeDebugObservers(): void {
         this._debugExecutionObserver?.remove();
         this._debugExecutionObserver = null;
+        this._restoreDebugEventSignals();
         this._debugStateObserver?.remove();
         this._debugStateObserver = null;
         this._highlightThrottleMap.clear();
