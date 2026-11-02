@@ -651,6 +651,44 @@ describe("Flow Graph Serialization", () => {
         previewScene.dispose();
     });
 
+    it("setScene re-resolves arrays of node references against the new scene", () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphSetPropertyBlock<Vector3, FlowGraphAssetType.Mesh>({ propertyName: "position" });
+        graph.addBlock(block);
+
+        const oldScene = new Scene(engine);
+        const oldGoomba = new Mesh("goomba", oldScene);
+        (block.object as any)._defaultValue = [{ id: "hero", name: "hero", className: "Mesh", uniqueId: 20 }, oldGoomba, { id: "missing", className: "Mesh" }];
+
+        const previewScene = new Scene(engine);
+        const liveHero = new Mesh("hero", previewScene);
+        const liveGoomba = new Mesh("goomba", previewScene);
+
+        graph.setScene(previewScene);
+
+        const value = block.object.getValue(graph.createContext()) as unknown as any[];
+        expect(value[0]).toBe(liveHero);
+        expect(value[1]).toBe(liveGoomba);
+        expect(value[2]).toEqual({ id: "missing", className: "Mesh" });
+
+        oldScene.dispose();
+        previewScene.dispose();
+    });
+
+    it("serializes arrays mixing live nodes and unresolved node references", () => {
+        const mesh = new Mesh("live", scene);
+        const unresolved = { id: "later", name: "later", className: "Mesh", uniqueId: 7 };
+        const serialized: any = {};
+        defaultValueSerializationFunction("targets", [mesh, unresolved], serialized);
+        expect(serialized.targets).toEqual([{ id: mesh.id, name: "live", className: "Mesh", uniqueId: mesh.uniqueId }, unresolved]);
+        expect(serialized.targets[1]).not.toBe(unresolved);
+
+        const parsed = defaultValueParseFunction("targets", serialized, scene, scene);
+        expect(parsed[0]).toBe(mesh);
+        expect(parsed[1]).toEqual(unresolved);
+    });
+
     it("Event block fires both out and done signals after round-trip", async () => {
         const mockContext: any = {};
         const pathConverter = new FlowGraphPathConverter(mockContext);
