@@ -202,4 +202,38 @@ void main() {
         expect(code).toMatch(/struct S \{ float a; float b; \};/);
         expect(code).toMatch(new RegExp(`s\\.a \\+ s\\.b \\+ x \\+ ${copyB![1]};`));
     });
+
+    it("recognizes struct headers containing comments", () => {
+        const code = Inline(`
+#define inline
+float g(float a) {
+    struct S /* c */ { float a; };
+    S s = S(1.0);
+    return s.a + a;
+}
+void main() {
+    float x = 0.0;
+    gl_FragColor = vec4(g(x));
+}
+`);
+        expect(code).toMatch(/struct S \/\* c \*\/ \{ float a; \};/);
+        expect(code).toMatch(/s\.a \+ x;/);
+    });
+
+    it("ignores struct declarations inside comments", () => {
+        const code = Inline(`
+#define inline
+float g(float a) {
+    // struct S {
+    /* struct T { */
+    return a * 2.0;
+}
+void main() {
+    float x = 0.0;
+    gl_FragColor = vec4(g(x));
+}
+`);
+        expect(code).toMatch(/x \* 2\.0;/);
+        expect(code).not.toMatch(/\ba \* 2\.0/);
+    });
 });

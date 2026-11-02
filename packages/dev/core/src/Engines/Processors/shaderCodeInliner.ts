@@ -69,11 +69,39 @@ function IsMemberName(s: string, index: number): boolean {
 }
 
 /**
+ * Replaces the comments with spaces, keeping the line breaks so that all offsets stay valid
+ * @param s code to process
+ * @returns the code with its comments masked
+ */
+function MaskComments(s: string): string {
+    let result = "";
+    let i = 0;
+    while (i < s.length) {
+        let end = i;
+        if (s.startsWith("/*", i)) {
+            end = s.indexOf("*/", i + 2);
+            end = end < 0 ? s.length : end + 2;
+        } else if (s.startsWith("//", i)) {
+            end = s.indexOf("\n", i + 2);
+            end = end < 0 ? s.length : end;
+        }
+        if (end === i) {
+            result += s.charAt(i++);
+            continue;
+        }
+        result += s.substring(i, end).replace(/[^\r\n]/g, " ");
+        i = end;
+    }
+    return result;
+}
+
+/**
  * Finds the bodies of the struct declarations, which only contain type and field names
- * @param s code to parse (may contain comments)
+ * @param code code to parse (may contain comments)
  * @returns the [start, end] index ranges of the struct bodies, braces included
  */
-function FindStructBodies(s: string): [number, number][] {
+function FindStructBodies(code: string): [number, number][] {
+    const s = MaskComments(code);
     const ranges: [number, number][] = [];
     const regexp = /(?<!\w)struct\s+(?:\w+\s*)?\{/g;
     let match;
