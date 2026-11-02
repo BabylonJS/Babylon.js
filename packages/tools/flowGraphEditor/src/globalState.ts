@@ -19,9 +19,10 @@ import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { type Scene } from "core/scene";
 import { type SceneContext } from "./sceneContext";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
+import { FlowGraphValidationSeverity, type IFlowGraphValidationIssue, type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
 import { type HelpTopicId } from "./components/help/helpContent";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { type IFlowGraphSoundAsset } from "core/FlowGraph/flowGraphSoundAssets";
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
 /**
@@ -52,6 +53,10 @@ export class GlobalState {
     onSortGraphRequiredObservable = new Observable<void>();
     /** Observable triggered when log entry is required */
     onLogRequiredObservable = new Observable<LogEntry>();
+    /** Observable triggered when a debug execution entry should be added to the log. */
+    onDebugLogRequiredObservable = new Observable<{ message: string; block: FlowGraphBlock }>();
+    /** Observable triggered when coordinator sound assets change. */
+    onSoundAssetsChanged = new Observable<void>();
     /** Observable triggered when loading state changes */
     onIsLoadingChanged = new Observable<boolean>();
     /** Observable triggered on frame  */
@@ -175,6 +180,7 @@ export class GlobalState {
     // ── Multi-Graph / Coordinator ──────────────────────────────────────
     /** The coordinator that owns all graphs in this editor session. */
     private _coordinator: Nullable<FlowGraphCoordinator> = null;
+    private _soundAssetChangedObserver: Nullable<Observer<string>> = null;
 
     /** Coordinators created by editor parsing or graph creation and therefore safe for the editor to dispose. */
     private readonly _editorOwnedCoordinators = new WeakSet<FlowGraphCoordinator>();
@@ -212,14 +218,47 @@ export class GlobalState {
      * @param editorOwned whether the editor may dispose the coordinator when replacing it
      */
     public setCoordinator(coordinator: Nullable<FlowGraphCoordinator>, editorOwned = false): void {
+        this._soundAssetChangedObserver?.remove();
+        this._soundAssetChangedObserver = null;
         if (coordinator && editorOwned) {
             this._editorOwnedCoordinators.add(coordinator);
         }
         this._coordinator = coordinator;
+        this._soundAssetChangedObserver = coordinator?.onSoundAssetChangedObservable.add(() => this.onSoundAssetsChanged.notifyObservers()) ?? null;
+        this._exportValidationIssues = [];
+        this._validationResult = null;
+        this.onValidationResultChanged.notifyObservers(null);
+        this.onSoundAssetsChanged.notifyObservers();
         if (coordinator && coordinator.flowGraphs.length > 0) {
             this._activeGraphIndex = 0;
             this._activateGraph(coordinator.flowGraphs[0]);
         }
+    }
+
+    /**
+     * Adds or replaces a named sound asset on the active coordinator.
+     * @param asset sound asset declaration
+     */
+    public async addSoundAssetAsync(asset: IFlowGraphSoundAsset): Promise<void> {
+        if (!this._coordinator) {
+            throw new Error("No flow graph coordinator is available.");
+        }
+        try {
+            await this._coordinator.addSoundAssetAsync(asset);
+        } catch (error) {
+            // Failed loads remain declared by the coordinator and must still be manageable in the panel.
+            this.onSoundAssetsChanged.notifyObservers();
+            throw error;
+        }
+    }
+
+    /**
+     * Removes a named sound asset from the active coordinator.
+     * Name-based block references are intentionally left unchanged.
+     * @param name sound asset name
+     */
+    public removeSoundAsset(name: string): void {
+        this._coordinator?.removeSoundAsset(name);
     }
 
     /**
@@ -348,6 +387,8 @@ export class GlobalState {
     onLiveValidationChanged = new Observable<boolean>();
     /** The latest validation result. Null if validation has not run yet. */
     private _validationResult: Nullable<IFlowGraphValidationResult> = null;
+    /** Export diagnostics collected by the latest KHR_interactivity export attempt. */
+    private _exportValidationIssues: IFlowGraphValidationIssue[] = [];
     /** Observable triggered when validation results change. */
     onValidationResultChanged = new Observable<Nullable<IFlowGraphValidationResult>>();
     /** Debounce timer for live validation */
@@ -399,7 +440,42 @@ export class GlobalState {
             }
         }
         this._validationResult = ValidateFlowGraphWithBlockList(this._flowGraph, allBlocks);
+        const additionalIssues: IFlowGraphValidationIssue[] = [...this._exportValidationIssues];
+        for (const block of allBlocks) {
+            if (block.getClassName() === "FlowGraphUnsupportedInteractivityBlock") {
+                const operation = String((block.config as any)?.operation ?? "unknown operation");
+                additionalIssues.push({
+                    severity: FlowGraphValidationSeverity.Error,
+                    message: `Unsupported KHR_interactivity operation "${operation}" cannot be exported until its extension is supported.`,
+                    block,
+                });
+            }
+        }
+        for (const issue of additionalIssues) {
+            this._validationResult.issues.push(issue);
+            if (issue.block) {
+                const blockIssues = this._validationResult.issuesByBlock.get(issue.block.uniqueId) ?? [];
+                blockIssues.push(issue);
+                this._validationResult.issuesByBlock.set(issue.block.uniqueId, blockIssues);
+            }
+        }
+        this._validationResult.issues.sort((a, b) => a.severity - b.severity);
+        this._validationResult.errorCount = this._validationResult.issues.filter((issue) => issue.severity === FlowGraphValidationSeverity.Error).length;
+        this._validationResult.warningCount = this._validationResult.issues.filter((issue) => issue.severity === FlowGraphValidationSeverity.Warning).length;
+        this._validationResult.isValid = this._validationResult.errorCount === 0;
         this.onValidationResultChanged.notifyObservers(this._validationResult);
+    }
+
+    /**
+     * Replaces the KHR export diagnostics surfaced by graph validation.
+     * @param diagnostics export diagnostics, or an empty array after a successful export
+     */
+    public setExportValidationDiagnostics(diagnostics: { path: string; message: string }[]): void {
+        this._exportValidationIssues = diagnostics.map((diagnostic) => ({
+            severity: FlowGraphValidationSeverity.Error,
+            message: `KHR_interactivity export error at ${diagnostic.path}: ${diagnostic.message}`,
+        }));
+        this.runValidation();
     }
 
     /**
@@ -622,12 +698,15 @@ export class GlobalState {
         // Install breakpoint predicate when attaching to a context
         this._installBreakpointPredicate(context);
 
-        // The observer callback is kept as cheap as possible — it only adds
-        // the block to a pending set.  All DOM work is deferred to a single
-        // requestAnimationFrame pass per frame to avoid freezing on graphs
-        // with many blocks executing every frame.
+        // Execution entries are published immediately for an exact debug trace.
+        // DOM highlighting remains deferred to one requestAnimationFrame pass.
         this._debugExecutionObserver = context.onNodeExecutedObservable.add((block) => {
             this._debugPendingBlocks.add(block);
+            const kind = block.getClassName().endsWith("EventBlock") ? "Event fired" : "Block ran";
+            this.onDebugLogRequiredObservable.notifyObservers({
+                message: `${kind}: ${block.name ?? block.getClassName()}`,
+                block,
+            });
             if (!this._debugRafId) {
                 this._debugRafId = requestAnimationFrame(() => this._flushDebugHighlights());
             }

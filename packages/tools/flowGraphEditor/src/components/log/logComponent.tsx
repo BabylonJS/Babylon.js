@@ -10,6 +10,8 @@ interface ILogComponentProps {
     globalState: GlobalState;
 }
 
+const MaxLogEntries = 1000;
+
 export class LogEntry {
     public time = new Date();
 
@@ -65,9 +67,15 @@ export const LogComponent: FunctionComponent<ILogComponentProps> = (props) => {
 
     useEffect(() => {
         const observer = globalState.onLogRequiredObservable.add((entry) => {
-            setLogs((prev) => [...prev, entry]);
+            setLogs((prev) => [...prev.slice(-(MaxLogEntries - 1)), entry]);
         });
-        return () => observer?.remove();
+        const debugObserver = globalState.onDebugLogRequiredObservable.add(({ message, block }) => {
+            setLogs((prev) => [...prev.slice(-(MaxLogEntries - 1)), new LogEntry(message, false, block)]);
+        });
+        return () => {
+            observer?.remove();
+            debugObserver?.remove();
+        };
     }, [globalState]);
 
     // Auto-scroll to the latest entry whenever logs change.

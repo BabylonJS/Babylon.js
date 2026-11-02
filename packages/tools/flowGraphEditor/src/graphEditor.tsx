@@ -1561,6 +1561,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 const blockClass = blockClasses[i];
                 const config: any = { name: blockDef.className, ...blockDef.config };
                 const block = new (blockClass as any)(config) as FlowGraphBlock;
+                for (const [inputName, value] of Object.entries(blockDef.inputValues ?? {})) {
+                    const input = block.getDataInput(inputName);
+                    if (input && value !== undefined) {
+                        (input as any)._defaultValue = value;
+                    }
+                }
 
                 if (block instanceof FlowGraphEventBlock) {
                     this.props.globalState.flowGraph.addEventBlock(block);
@@ -1601,7 +1607,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const toPort = toNode.inputPorts.find((p) => p.portData.name === conn.toPort);
 
             if (fromPort && toPort) {
-                this._graphCanvas.connectPorts(fromPort.portData, toPort.portData);
+                this._graphCanvas.connectNodes(fromNode, fromPort.portData, toNode, toPort.portData);
             }
         }
 

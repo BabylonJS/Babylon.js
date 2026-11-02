@@ -9,6 +9,7 @@ import { SceneContext } from "flow-graph-editor/sceneContext";
 import { _RegisterKHRInteractivityRuntime } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 import { CompositePathToObjectConverter } from "loaders/glTF/2.0/Extensions/compositePathToObjectConverter";
 import { InteractivityHostResolver } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityHostResolver";
+import { FlowGraphUnsupportedInteractivityBlock } from "loaders/glTF/2.0/Extensions/KHR_interactivity/flowGraphUnsupportedInteractivityBlock";
 import {
     _CaptureKHRInteractivityRuntimeInputDefaults,
     CreateKHRInteractivityDocument,
@@ -22,6 +23,85 @@ afterEach(() => {
 });
 
 describe("SerializationTools coordinator ownership", () => {
+    it("surfaces unsupported KHR blocks and export diagnostics through validation", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        globalState.coordinator = coordinator;
+        const unsupported = new FlowGraphUnsupportedInteractivityBlock({
+            operation: "EXT_example/event",
+            inputValueSockets: [],
+            outputValueSockets: [],
+            inputFlowSockets: [],
+            outputFlowSockets: [],
+        });
+        graph.addBlock(unsupported);
+        globalState.registerEditorBlocksProvider(() => [unsupported]);
+
+        globalState.runValidation();
+        expect(globalState.validationResult?.issues).toContainEqual(
+            expect.objectContaining({
+                message: 'Unsupported KHR_interactivity operation "EXT_example/event" cannot be exported until its extension is supported.',
+                block: unsupported,
+            })
+        );
+
+        globalState.setExportValidationDiagnostics([{ path: "/graphs/0/nodes/1", message: "Unsupported edit" }]);
+        expect(globalState.validationResult?.issues).toContainEqual(
+            expect.objectContaining({
+                message: "KHR_interactivity export error at /graphs/0/nodes/1: Unsupported edit",
+            })
+        );
+
+        const replacementCoordinator = new FlowGraphCoordinator({ scene });
+        replacementCoordinator.createGraph();
+        globalState.coordinator = replacementCoordinator;
+        expect(globalState.validationResult).toBeNull();
+
+        coordinator.dispose();
+        replacementCoordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("persists coordinator sound asset declarations in editor JSON", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+        vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+
+        expect(serialized.soundAssets).toEqual([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("restores sound assets before parsing editor graphs", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const addSoundAsset = vi.spyOn(FlowGraphCoordinator.prototype, "addSoundAssetAsync").mockResolvedValue({} as any);
+        const serialized = {
+            soundAssets: [{ name: "click", url: "data:audio/wav;base64,UklGRg==" }],
+            _flowGraphs: [{ rightHanded: true, allBlocks: [], executionContexts: [] }],
+        };
+
+        const state = await SerializationTools.DeserializeToStateAsync(serialized, scene);
+
+        expect(addSoundAsset).toHaveBeenCalledWith(serialized.soundAssets[0]);
+        addSoundAsset.mockRestore();
+        state.coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("detaches a borrowed host coordinator without disposing its graphs", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

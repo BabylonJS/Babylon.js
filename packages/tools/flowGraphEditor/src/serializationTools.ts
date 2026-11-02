@@ -6,6 +6,7 @@ import { GetFlowGraphBlockNodeId } from "./graphSystem/blockNodeData";
 import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphCoordinator, type IFlowGraphCoordinatorConfiguration } from "core/FlowGraph/flowGraphCoordinator";
+import { type IFlowGraphSoundAsset } from "core/FlowGraph/flowGraphSoundAssets";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { type Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
@@ -203,7 +204,11 @@ export class SerializationTools {
         const coordinatorObject: any = {
             _flowGraphs: [] as any[],
             activeGraphIndex: globalState.activeGraphIndex,
+            dispatchEventsSynchronously: coordinator?.dispatchEventsSynchronously,
         };
+        if (coordinator?.soundAssets.length) {
+            coordinatorObject.soundAssets = coordinator.soundAssets;
+        }
 
         for (const graph of graphs) {
             const serializationObject: any = {};
@@ -305,9 +310,13 @@ export class SerializationTools {
         }
 
         const coordinator = new FlowGraphCoordinator({ scene, ...options?.coordinatorConfig });
-        coordinator.dispatchEventsSynchronously = options?.dispatchEventsSynchronously ?? coordinator.dispatchEventsSynchronously;
+        coordinator.dispatchEventsSynchronously =
+            options?.dispatchEventsSynchronously ?? serializationObject.dispatchEventsSynchronously ?? coordinator.dispatchEventsSynchronously;
         const parsedGraphs: FlowGraph[] = [];
         try {
+            if (Array.isArray(serializationObject.soundAssets)) {
+                await Promise.allSettled(serializationObject.soundAssets.map(async (asset: IFlowGraphSoundAsset) => await coordinator.addSoundAssetAsync(asset)));
+            }
             for (const graphData of graphDataList) {
                 // eslint-disable-next-line no-await-in-loop -- sequential order is intentional
                 const parsedGraph = await ParseFlowGraphAsync(graphData, { coordinator, pathConverter });
