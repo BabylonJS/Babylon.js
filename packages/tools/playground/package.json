@@ -22,7 +22,7 @@
         "@types/react": "^18.3.31",
         "@types/react-dom": "^18.3.7",
         "@typescript/ata": "^0.9.8",
-        "es-module-lexer": "^3.0.4",
+        "es-module-lexer": "^1.7.0",
         "monaco-editor": "^0.57.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",

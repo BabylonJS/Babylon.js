@@ -68,7 +68,7 @@
         "chalk": "^6.0.1",
         "rollup": "^4.65.1",
         "rollup-plugin-dts": "^6.5.1",
-        "rollup-plugin-minify-template-literals": "^2.2.0",
+        "rollup-plugin-minify-template-literals": "^1.1.7",
         "serve": "^14.2.6",
         "sonda": "^0.14.0",
         "vite": "8.3.5"
