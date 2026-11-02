@@ -63,6 +63,9 @@
         },
         {
             "path": "packages/tools/ktx2Decoder/tsconfig.build.json"
+        },
+        {
+            "path": "packages/tools/ktx2Encoder/tsconfig.build.json"
         }
     ],
     "include": []

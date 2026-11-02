@@ -869,7 +869,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 defines["IESLIGHTTEXTURE" + lightIndex],
                 defines["CLUSTLIGHT" + lightIndex],
                 defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
-                state.shaderLanguage === ShaderLanguage.WGSL
+                state.shaderLanguage === ShaderLanguage.WGSL,
+                !!defines["SHADOWCSMUBO" + lightIndex]
             );
         }
     }

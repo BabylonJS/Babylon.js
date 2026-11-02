@@ -345,9 +345,19 @@ export class KhronosTextureContainer2 {
     /**
      * @internal
      */
-    public async _uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: IKTX2DecoderOptions & IDecodedData): Promise<void> {
-        const decodedData = await this._decodeAsync(data, options);
+    public async _uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: IKTX2DecoderOptions & IDecodedData, ownsData = false): Promise<void> {
+        const fromWorker = !!KhronosTextureContainer2._WorkerPoolPromise;
+        const decodedData = await this._decodeAsync(data, options, ownsData);
         this._createTexture(decodedData, internalTexture, options);
+        if (fromWorker) {
+            // nothing else holds the levels a worker sent, and they are uploaded now: their memory is freed at once, not by a later GC
+            for (const mipmap of decodedData.mipmaps) {
+                const buffer = mipmap.data?.buffer as { detached?: boolean; transfer?: (newLength: number) => ArrayBuffer } | undefined;
+                if (buffer?.transfer && !buffer.detached) {
+                    buffer.transfer(0);
+                }
+            }
+        }
     }
 
     /**
@@ -356,10 +366,11 @@ export class KhronosTextureContainer2 {
      * can reuse the worker pool, decoder module and url configuration handled here.
      * @param data defines the KTX2 file content
      * @param options defines the options to use when decoding
+     * @param transferData defines whether nothing else holds data, so a worker can get its buffer instead of a copy
      * @returns a promise resolved with the decoded data
      * @internal
      */
-    public async _decodeAsync(data: ArrayBufferView, options?: IKTX2DecoderOptions): Promise<IDecodedData> {
+    public async _decodeAsync(data: ArrayBufferView, options?: IKTX2DecoderOptions, transferData = false): Promise<IDecodedData> {
         const caps = this._engine.getCaps();
 
         const compressedTexturesCaps: ICompressedFormatCapabilities = {
@@ -401,10 +412,16 @@ export class KhronosTextureContainer2 {
                     worker.addEventListener("message", onMessage);
                     worker.postMessage({ action: "setDefaultDecoderOptions", options: KhronosTextureContainer2.DefaultDecoderOptions._getKTX2DecoderOptions() });
 
-                    const dataCopy = new Uint8Array(data.byteLength);
-                    dataCopy.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+                    // a buffer that holds only data is transferred; otherwise the worker gets a copy
+                    let workerData: Uint8Array;
+                    if (transferData && data.buffer instanceof ArrayBuffer && data.byteOffset === 0 && data.byteLength === data.buffer.byteLength) {
+                        workerData = new Uint8Array(data.buffer);
+                    } else {
+                        workerData = new Uint8Array(data.byteLength);
+                        workerData.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+                    }
 
-                    worker.postMessage({ action: "decode", data: dataCopy, caps: compressedTexturesCaps, options }, [dataCopy.buffer]);
+                    worker.postMessage({ action: "decode", data: workerData, caps: compressedTexturesCaps, options }, [workerData.buffer]);
                 });
             });
         } else if (KhronosTextureContainer2._DecoderModulePromise) {

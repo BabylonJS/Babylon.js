@@ -14,6 +14,7 @@ import { UpdateNoiseBlock } from "core/Particles/Node/Blocks/Update/updateNoiseB
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type INodeParticleTextureData, ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 import { Observable } from "core/Misc/observable";
+import { FreeCamera } from "core/Cameras/freeCamera";
 
 import "core/Shaders/particles.vertex";
 import "core/Shaders/particles.fragment";
@@ -36,6 +37,81 @@ describe("NodeParticleSystemSet", () => {
     afterEach(() => {
         scene.dispose();
         engine.dispose();
+    });
+
+    async function buildSystem(systemBlock: SystemBlock): Promise<ParticleSystem> {
+        new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        const nodeParticleSet = new NodeParticleSystemSet("timing");
+        const createParticleBlock = new CreateParticleBlock("Create");
+        const particleTextureBlock = new ParticleTextureSourceBlock("Texture");
+        createParticleBlock.particle.connectTo(systemBlock.particle);
+        particleTextureBlock.textureOutput.connectTo(systemBlock.texture);
+        nodeParticleSet.systemBlocks.push(systemBlock);
+        const set = await nodeParticleSet.buildAsync(scene);
+        const system = set.systems[0];
+        if (!(system instanceof ParticleSystem)) {
+            throw new Error("Expected a CPU particle system");
+        }
+        return system;
+    }
+
+    it("advances prewarm time for a newly created system block", async () => {
+        const block = new SystemBlock("System");
+        expect(block.updateSpeed).toBe(0.0167);
+        expect(block.preWarmStepOffset).toBe(1);
+        const system = await buildSystem(block);
+        system.preWarmCycles = 50;
+        system.start();
+        expect(system.getActiveCount()).toBeGreaterThan(0);
+        expect(system.particles.some((particle) => particle.age > 0)).toBe(true);
+    });
+
+    it("loads system blocks serialized before update timing fields existed", async () => {
+        const current = new SystemBlock("System").serialize();
+        // SystemBlock.serialize() before ed4c7ca18c (Nov 5, 2025) only wrote these fields.
+        const legacy = {
+            customType: current.customType,
+            id: current.id,
+            name: current.name,
+            inputs: current.inputs,
+            outputs: current.outputs,
+            capacity: current.capacity,
+            emitRate: current.emitRate,
+            blendMode: current.blendMode,
+            doNoStart: current.doNoStart,
+            targetStopDuration: current.targetStopDuration,
+            startDelay: current.startDelay,
+        };
+        const block = new SystemBlock("Legacy");
+        block._deserialize(legacy);
+
+        expect(block.updateSpeed).toBe(0.0167);
+        expect(block.preWarmStepOffset).toBe(1);
+        const system = await buildSystem(block);
+        system.preWarmCycles = 500;
+        system.start();
+        expect(system.updateSpeed).toBe(0.0167);
+        expect(system.preWarmStepOffset).toBe(1);
+        expect(system.getActiveCount()).toBeGreaterThan(0);
+        expect(system.particles.some((particle) => particle.age > 0)).toBe(true);
+    });
+
+    it.each([
+        [0, 0],
+        [0.025, 2],
+        [0.0167, 1],
+    ])("round-trips explicit update speed %s and prewarm multiplier %s", async (updateSpeed, preWarmStepOffset) => {
+        const source = new SystemBlock("Source");
+        source.updateSpeed = updateSpeed;
+        source.preWarmStepOffset = preWarmStepOffset;
+        const block = new SystemBlock("Restored");
+        block._deserialize(source.serialize());
+        const system = await buildSystem(block);
+        expect(system.updateSpeed).toBe(updateSpeed);
+        expect(system.preWarmStepOffset).toBe(preWarmStepOffset);
+        system.preWarmCycles = 50;
+        system.start();
+        expect(system.getActiveCount() > 0).toBe(updateSpeed * preWarmStepOffset > 0);
     });
 
     it("waits for flow-map texture extraction before resolving buildAsync", async () => {

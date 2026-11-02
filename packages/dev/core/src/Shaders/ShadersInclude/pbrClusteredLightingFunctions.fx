@@ -121,7 +121,7 @@
                     #else
                         preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, light.vLightSpecular.a, preInfo.lightDistance);
                     #endif
-                    info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, light.vLightDiffuse.rgb);
+                    info.sheen = computeSheenLighting(preInfo, N, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, light.vLightDiffuse.rgb);
                 #endif
 
                 // Clear Coat contribution

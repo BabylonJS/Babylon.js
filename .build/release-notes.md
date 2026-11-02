@@ -1,4 +1,4 @@
 
-### Inspector
+### Core
 
-- Inspector Lite: add debug helpers and capture tools (P7b) - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#19016](https://github.com/BabylonJS/Babylon.js/pull/19016))
+- Add KTX2 encoder (Basis Universal) - by [alexchuber](https://github.com/alexchuber) ([#19011](https://github.com/BabylonJS/Babylon.js/pull/19011))

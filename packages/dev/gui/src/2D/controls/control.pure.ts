@@ -2584,20 +2584,24 @@ export class Control implements IAnimatable, IFocusableControl {
         }
     }
 
-    private _prepareFont() {
-        if (!this._font && !this._fontSet) {
-            return;
-        }
-
-        this._font =
+    private _getFont(): string {
+        return (
             this._getStyleProperty("fontStyle", "") +
             " " +
             this._getStyleProperty("fontWeight", "") +
             " " +
             this.fontSizeInPixels +
             "px " +
-            this._getStyleProperty("fontFamily", "Arial");
+            this._getStyleProperty("fontFamily", "Arial")
+        );
+    }
 
+    private _prepareFont() {
+        if (!this._font && !this._fontSet) {
+            return;
+        }
+
+        this._font = this._getFont();
         this._fontOffset = Control._GetFontOffset(this._font, this._host?.getScene()?.getEngine());
 
         //children need to be refreshed
@@ -2665,6 +2669,7 @@ export class Control implements IAnimatable, IFocusableControl {
 
     /**
      * Serializes the current control
+     * Preserves the live layout and cached font metrics when adaptive scaling is enabled.
      * @param serializationObject defined the JSON serialized object
      * @param force if the control should be serialized even if the isSerializable flag is set to false (default false)
      * @param allowCanvas defines if the control is allowed to use a Canvas2D object to serialize (true by default)
@@ -2673,48 +2678,48 @@ export class Control implements IAnimatable, IFocusableControl {
         if (!this.isSerializable && !force) {
             return;
         }
-        let idealWidth = 0;
-        let idealHeight = 0;
-        // the host's ideal width and height are influencing the serialization, as they are used in getValue() of ValueAndUnit.
-        // for a proper serialization, we need to temporarily set them to 0 and re-set them back afterwards.
-        if (this.host) {
-            idealHeight = this.host.idealHeight;
-            idealWidth = this.host.idealWidth;
-            this.host.idealWidth = 0;
-            this.host.idealHeight = 0;
+        const host = this._host;
+        const idealWidth = host?.idealWidth ?? 0;
+        const idealHeight = host?.idealHeight ?? 0;
+        // Serialize declared values without the setters invalidating the entire GUI for each control.
+        if (host) {
+            host._idealWidth = 0;
+            host._idealHeight = 0;
         }
-        SerializationHelper.Serialize(this, serializationObject);
-        serializationObject.name = this.name;
-        serializationObject.className = this.getClassName();
+        try {
+            SerializationHelper.Serialize(this, serializationObject);
+            serializationObject.name = this.name;
+            serializationObject.className = this.getClassName();
 
-        // Call prepareFont to guarantee the font is properly set before serializing
-        if (allowCanvas) {
-            this._prepareFont();
-        }
-        if (this._fontFamily) {
-            serializationObject.fontFamily = this._fontFamily;
-        }
-        if (this.fontSize) {
-            serializationObject.fontSize = this.fontSize;
-        }
-        if (this.fontWeight) {
-            serializationObject.fontWeight = this.fontWeight;
-        }
-        if (this.fontStyle) {
-            serializationObject.fontStyle = this.fontStyle;
-        }
+            if (allowCanvas && (this._font || this._fontSet)) {
+                // Compute unscaled metrics without changing the live font cache or dirtying descendants.
+                serializationObject.fontOffset = Control._GetFontOffset(this._getFont(), host?.getScene()?.getEngine());
+            }
+            if (this._fontFamily) {
+                serializationObject.fontFamily = this._fontFamily;
+            }
+            if (this.fontSize) {
+                serializationObject.fontSize = this.fontSize;
+            }
+            if (this.fontWeight) {
+                serializationObject.fontWeight = this.fontWeight;
+            }
+            if (this.fontStyle) {
+                serializationObject.fontStyle = this.fontStyle;
+            }
 
-        if (this._gradient) {
-            serializationObject.gradient = {};
-            this._gradient.serialize(serializationObject.gradient);
-        }
+            if (this._gradient) {
+                serializationObject.gradient = {};
+                this._gradient.serialize(serializationObject.gradient);
+            }
 
-        // Animations
-        SerializationHelper.AppendSerializedAnimations(this, serializationObject);
-        // re-set the ideal width and height
-        if (this.host) {
-            this.host.idealWidth = idealWidth;
-            this.host.idealHeight = idealHeight;
+            // Animations
+            SerializationHelper.AppendSerializedAnimations(this, serializationObject);
+        } finally {
+            if (host) {
+                host._idealWidth = idealWidth;
+                host._idealHeight = idealHeight;
+            }
         }
     }
 
