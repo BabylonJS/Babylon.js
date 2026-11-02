@@ -16,6 +16,8 @@ import * as WebGPUConstants from "./webgpuConstants";
 export interface IWebGPURecordedDraw {
     /** whether these are the commands of the last full draw */
     kept: boolean;
+    /** the engine's generation of recorded commands they belong to (see WebGPUEngine.snapshotRenderingReset) */
+    generation: number;
     renderTarget: Nullable<object>;
     sampleCount: number;
     pipeline: GPURenderPipeline;

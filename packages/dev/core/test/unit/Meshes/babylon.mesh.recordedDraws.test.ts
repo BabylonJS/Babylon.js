@@ -24,8 +24,12 @@ import { type Mesh } from "core/Meshes/mesh";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { type SubMesh } from "core/Meshes/subMesh";
 import { type Light } from "core/Lights/light";
+import { FrameGraph } from "core/FrameGraph/frameGraph";
+import { FrameGraphGeometryRendererTask } from "core/FrameGraph/Tasks/Rendering/geometryRendererTask";
+import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
 
 import "core/Engines/AbstractEngine/abstractEngine.alpha";
+import "core/Engines/Extensions/engine.multiRender";
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 // the shaders a shadow generator imports when it is created: an import still pending at teardown fails the run
 import "core/Shaders/shadowMap.fragment";
@@ -285,6 +289,39 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(false);
     });
 
+    it("sees the culling the geometry rendering of its pass reverses, which the task's setter only changes in the pass's configuration", () => {
+        // the task's depth peeling renderer builds texture layouts, which a NullEngine does not
+        vi.spyOn(engine, "buildTextureLayout").mockImplementation((textureStatus) => textureStatus.map((enabled, index) => (enabled ? index + 1 : 0)));
+        const task = new FrameGraphGeometryRendererTask("geometry", new FrameGraph(scene), scene);
+        const renderPassId = task.objectRenderer.renderPassId;
+        // the configuration of the pass, as the task records it (FrameGraphGeometryRendererTask.record)
+        MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
+        const mainPassId = engine.currentRenderPassId;
+        engine.currentRenderPassId = renderPassId;
+        try {
+            fullDraw();
+            expect(unchanged()).toBe(true);
+            task.reverseCulling = true;
+            expect(unchanged()).toBe(false);
+            fullDraw();
+            expect(unchanged()).toBe(true);
+            task.reverseCulling = false;
+            expect(unchanged()).toBe(false);
+        } finally {
+            engine.currentRenderPassId = mainPassId;
+            MaterialHelperGeometryRendering.DeleteConfiguration(renderPassId);
+        }
+    });
+
+    it("sees the culled faces the engine forces over the material's (cullBackFaces), which the culling of a full draw follows", () => {
+        engine.cullBackFaces = false;
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        engine.cullBackFaces = null;
+        expect(unchanged()).toBe(false);
+    });
+
     it("needs its lights bound in the frame", () => {
         scene.incrementRenderId();
         expect(unchanged()).toBe(false);
@@ -303,6 +340,67 @@ describe("Mesh recorded draws", () => {
         fullDraw();
         expect(unchanged()).toBe(false);
         scene.dispose();
+    });
+
+    describe("with the shared uniform buffers tracked in the frame, as in WebGPU", () => {
+        // another draw of the material, the frame's reference when it is kept
+        let other: DrawWrapper;
+        const effect = { bindUniformBuffer: vi.fn() } as unknown as Effect;
+
+        // a pass of the frame: its first full draw binds the light (written again for each pass, in a new buffer if its values changed
+        // since a draw bound it in the frame)
+        const pass = () => {
+            scene.incrementRenderId();
+            light._bindLight(0, scene, effect, false);
+        };
+        const keep = (wrapper: DrawWrapper) => {
+            engine._keepInheritedState(wrapper);
+            mesh._keepRecordedDraw(wrapper, subMesh, material, mesh, true);
+        };
+
+        beforeEach(() => {
+            vi.spyOn(engine, "supportsUniformBuffers", "get").mockReturnValue(true);
+            engine._features.trackUbosInFrame = true;
+            createScene();
+            other = new DrawWrapper(engine);
+            other.effect = drawWrapper.effect;
+            // a frame of two passes with the same light: the draw of the second one is kept with the light's first buffer
+            engine.endFrame();
+            pass();
+            keep(other);
+            pass();
+            keep(drawWrapper);
+            // the next frame: the first pass keeps the frame's reference, and the draw is checked in the second pass
+            engine.endFrame();
+            pass();
+            keep(other);
+        });
+
+        it("is encoded again in a later pass of the frame while its light stays on its first buffer", () => {
+            pass();
+            expect(light._uniformBuffer._isFirstBufferBound()).toBe(true);
+            expect(unchanged()).toBe(true);
+        });
+
+        it("is not encoded again in a later pass of the frame that wrote its light again, whose full draws bind the new buffer", () => {
+            light.intensity = 0.5;
+            pass();
+            expect(light._uniformBuffer._isFirstBufferBound()).toBe(false);
+            expect(unchanged()).toBe(false);
+            // a full draw there is not kept, and is not the frame's reference for the draws after it
+            keep(other);
+            expect(other._recordedMaterial).toBeNull();
+            expect(material._getRecordedDrawReference(drawWrapper.effect!)).toBeNull();
+        });
+
+        it("is not encoded again in a later pass of the frame that wrote the scene's uniform buffer again", () => {
+            pass();
+            // the scene's uniform buffer, used in the frame, gets another view
+            scene.finalizeSceneUbo();
+            scene.setTransformMatrix(Matrix.Translation(1, 0, 0), Matrix.Identity());
+            expect(scene.getSceneUniformBuffer()._isFirstBufferBound()).toBe(false);
+            expect(unchanged()).toBe(false);
+        });
     });
 
     describe("with a cascaded shadow generator", () => {
@@ -433,6 +531,17 @@ describe("Mesh recorded draws", () => {
             expect(after.mock.invocationCallOrder[0]).toBeGreaterThan(replay.mock.invocationCallOrder[0]);
         });
 
+        it("marks the buffer of the mesh's uniform buffer as used in the frame when it encodes the draw, as a full draw's update does", () => {
+            vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+            vi.spyOn(engine, "_canEncodeRecordedDraw").mockReturnValue(true);
+            const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+            const mark = vi.spyOn(mesh._uniformBuffer, "_markBufferUsed");
+            mesh.render(subMesh, false);
+            expect(replay).toHaveBeenCalledTimes(1);
+            expect(mark).toHaveBeenCalledTimes(1);
+            expect(mark.mock.invocationCallOrder[0]).toBeGreaterThan(replay.mock.invocationCallOrder[0]);
+        });
+
         it("renders a mesh with draw observers", () => {
             mesh.onBeforeDrawObservable.add(() => {});
             expect(recorded()).toBeNull();
@@ -455,10 +564,14 @@ describe("Mesh recorded draws", () => {
         // the full path stops at once: its depth effect is not built here
         vi.spyOn(generator, "isReady").mockReturnValue(false);
 
+        const mark = vi.spyOn(mesh._uniformBuffer, "_markBufferUsed");
+
         // a new frame for each draw: a sub mesh is drawn once per frame in a shadow map
         scene.incrementRenderId();
         (generator as any)._renderSubMeshForShadowMap(subMesh, false);
         expect(replay).toHaveBeenCalledTimes(1);
+        // the draw encoded again marks the buffer of the mesh's uniform buffer as used in the frame, as a full draw's update does
+        expect(mark).toHaveBeenCalledTimes(1);
         mesh.onBeforeDrawObservable.add(() => {});
         scene.incrementRenderId();
         (generator as any)._renderSubMeshForShadowMap(subMesh, false);

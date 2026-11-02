@@ -2664,7 +2664,8 @@ export abstract class AbstractEngine {
     /**
      * @internal Writes the states the pipeline of a draw reads from the engine, which the draw inherits unless it sets them (the depth
      * prepass turns the color writes off, the rendering groups set the stencil, ThinDepthPeelingRenderer the blend equation): the color
-     * writes, the depth test, writes and function, the stencil of both faces and the blend of each target
+     * writes, the depth test, writes and function, the stencil of both faces, the culled faces the engine forces over the material's
+     * (cullBackFaces) and the blend of each target
      * @param target the array to write them in, from its start
      * @returns how many were written
      */
@@ -2685,11 +2686,12 @@ export abstract class AbstractEngine {
         target[13] = this.getStencilBackOperationPass();
         target[14] = this.getStencilBackOperationFail();
         target[15] = this.getStencilBackOperationDepthFail();
+        target[16] = this.cullBackFaces === true ? 1 : this.cullBackFaces === false ? 0 : -1;
         // the blend as the pipeline reads it from the alpha state: the targets that blend, then the factors and equations of each one
         // (an alpha mode does not tell the equations: setAlphaMode resets them only when the mode changes)
         const alphaState = this._alphaState;
         let blending = 0;
-        let length = 17;
+        let length = 18;
         if (alphaState._numTargetEnabled > 0) {
             for (let i = 0; i < 8; i++) {
                 if (!alphaState._alphaBlend[i]) {
@@ -2703,7 +2705,7 @@ export abstract class AbstractEngine {
                 target[length++] = alphaState._blendEquationParameters[i * 2 + 1] ?? -1;
             }
         }
-        target[16] = blending;
+        target[17] = blending;
         return length;
     }
     /**

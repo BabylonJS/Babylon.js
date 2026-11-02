@@ -911,6 +911,18 @@ export class UniformBuffer {
         return this._noUBO || !this._trackUBOsInFrame || this._bufferIndex <= 0;
     }
 
+    /**
+     * Marks the buffer bound now as used in the current frame, as an update does: a draw encoded again from its recorded commands binds
+     * it without updating it, and the first write of a frame would otherwise go to that buffer, under the draw, instead of a new one
+     * @internal
+     */
+    public _markBufferUsed(): void {
+        if (this._trackUBOsInFrame) {
+            this._checkNewFrame();
+            this._createBufferOnWrite = true;
+        }
+    }
+
     private _removeOwnerBacklink(list: UniformBuffer[]): void {
         const index = list.indexOf(this);
         if (index !== -1) {

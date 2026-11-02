@@ -2752,14 +2752,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * and it has the same material (version, GPU textures, the pipeline state it sets from plain fields), world matrix, visibility,
      * sub mesh ranges (indices and vertices), geometry and thin instance
      * buffers and instance count; with lights, the lights were bound in this frame (their uniform buffers are shared: the first bind of the
-     * frame writes them), and their shadow maps and the buffers their generators bind to receivers (the cascades of a camera) are the same
+     * frame writes them), and their shadow maps and the buffers their generators bind to receivers (the cascades of a camera) are the same.
+     * The shared uniform buffers it binds are still on the first buffer of their frame (see _areSharedBuffersFirst)
      * @param drawWrapper the draw wrapper of the recorded draw
      * @param subMesh the sub mesh
      * @param material the material of the draw
      * @param effectiveMesh the mesh providing the world matrix and the lights
      * @param withLights whether the draw binds the lights (not in the shadow maps)
      * @param domain what else writes its per-draw values (the shadow generator), or null
-     * @param domainState the pipeline state the domain sets in its full draws (the culling of forceBackFacesOnly), compared too
+     * @param domainState the pipeline state the domain sets in its full draws, 0 or 1 (the culling of forceBackFacesOnly), compared too
      * @returns true if the draw can be encoded again
      * @internal
      */
@@ -2791,9 +2792,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedZOffset !== material.zOffset ||
             drawWrapper._recordedZOffsetUnits !== material.zOffsetUnits ||
             drawWrapper._recordedOrientation !== material._getEffectiveOrientation(this) ||
-            drawWrapper._recordedDomainState !== domainState ||
+            drawWrapper._recordedDomainState !== this._getConfiguredState(domainState) ||
             drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
-            drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0)
+            drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0) ||
+            !this._areSharedBuffersFirst(effectiveMesh, withLights)
         ) {
             return false;
         }
@@ -2844,16 +2846,51 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Keeps what a draw recorded by a snapshot was rendered with (see _isRecordedDrawUnchanged). A draw that used a later buffer of
-     * a shared uniform buffer in its frame (scene, mesh, lights) depends on the order of the frame's writes: it is not kept. Nor in
-     * floating origin mode, where a bind writes the world matrix minus the eye in the mesh's uniform buffer
+     * Whether the shared uniform buffers a draw binds (the scene's, the mesh's and the lights') are on the first buffer of their frame.
+     * A draw recorded with a later one depends on the order of the frame's writes, and one encoded again while a buffer moved on (written
+     * again by an earlier pass of the frame) would bind the first buffer, with the earlier values, where a full draw binds the new one.
+     * Never in floating origin mode, where a bind writes the world matrix minus the eye in the mesh's uniform buffer
+     * @param effectiveMesh the mesh providing the world matrix and the lights
+     * @param withLights whether the draw binds the lights
+     * @returns true if they all are
+     */
+    private _areSharedBuffersFirst(effectiveMesh: AbstractMesh, withLights: boolean): boolean {
+        const scene = this.getScene();
+        if (scene.floatingOriginMode || !scene.getSceneUniformBuffer()._isFirstBufferBound() || !effectiveMesh.getMeshUniformBuffer()._isFirstBufferBound()) {
+            return false;
+        }
+        if (withLights) {
+            for (const light of effectiveMesh.lightSources) {
+                if (!light._uniformBuffer._isFirstBufferBound()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The pipeline state a full draw sets in its bind from what is configured outside of its mesh and material: by its domain (domainState),
+     * and by the geometry rendering of its render pass, which reverses the culling (GeometryRendererTask.reverseCulling only updates the
+     * configuration a full bind reads)
+     * @param domainState the pipeline state the domain sets, 0 or 1
+     * @returns the state, packed in a number
+     */
+    private _getConfiguredState(domainState: number): number {
+        return domainState | (MaterialHelperGeometryRendering.GetConfiguration(this.getScene().getEngine().currentRenderPassId)?.reverseCulling ? 2 : 0);
+    }
+
+    /**
+     * Keeps what a draw recorded by a snapshot was rendered with (see _isRecordedDrawUnchanged), when the shared uniform buffers it
+     * bound were on the first buffer of their frame (see _areSharedBuffersFirst). Only a kept draw is the frame's reference for the
+     * per-draw values of its material and effect
      * @param drawWrapper the draw wrapper of the recorded draw
      * @param subMesh the sub mesh
      * @param material the material of the draw
      * @param effectiveMesh the mesh providing the world matrix and the lights
      * @param withLights whether the draw binds the lights (not in the shadow maps)
      * @param domain what else writes its per-draw values (the shadow generator), or null
-     * @param domainState the pipeline state the domain sets in its full draws (the culling of forceBackFacesOnly)
+     * @param domainState the pipeline state the domain sets in its full draws, 0 or 1 (the culling of forceBackFacesOnly)
      * @internal
      */
     public _keepRecordedDraw(
@@ -2866,15 +2903,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         domainState = 0
     ): void {
         const scene = this.getScene();
+        const kept = scene.getEngine()._canKeepRecordedDraw(drawWrapper) && this._areSharedBuffersFirst(effectiveMesh, withLights);
         // the per-draw values this full bind wrote: the reference of this frame for the draws of this material with this effect
-        const canKeep = scene.getEngine()._canKeepRecordedDraw(drawWrapper);
-        material._keepRecordedDrawReference(drawWrapper.effect!, canKeep ? drawWrapper : null, domain);
-        let kept = canKeep && !scene.floatingOriginMode && scene.getSceneUniformBuffer()._isFirstBufferBound() && effectiveMesh.getMeshUniformBuffer()._isFirstBufferBound();
-        if (withLights) {
-            for (const light of effectiveMesh.lightSources) {
-                kept &&= light._uniformBuffer._isFirstBufferBound();
-            }
-        }
+        material._keepRecordedDrawReference(drawWrapper.effect!, kept ? drawWrapper : null, domain);
         if (!kept) {
             drawWrapper._recordedMaterial = null;
             return;
@@ -2892,7 +2923,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         drawWrapper._recordedZOffset = material.zOffset;
         drawWrapper._recordedZOffsetUnits = material.zOffsetUnits;
         drawWrapper._recordedOrientation = material._getEffectiveOrientation(this);
-        drawWrapper._recordedDomainState = domainState;
+        drawWrapper._recordedDomainState = this._getConfiguredState(domainState);
         drawWrapper._recordedIndexBuffer = this._geometry?.getIndexBuffer() ?? null;
         const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
         recordedVertexBuffers.length = 0;
@@ -2979,7 +3010,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // between the scene's steps before and after rendering a mesh, as a full draw is (the prepass renderer binds the attachments of
         // the effect there, and restores them). A draw of a material that cannot be is neither checked nor kept, and what was recorded
         // for it is dropped. The states a draw inherits are checked and kept here, before it sets any (its alpha mode resets the blend
-        // equations only when the mode changes), and a draw encoded again sets its alpha mode as a full draw does, for the draws after it
+        // equations only when the mode changes), and a draw encoded again sets its alpha mode as a full draw does, for the draws after it.
+        // It also marks the mesh's uniform buffer as used in the frame, as a full draw's update does: a later write of the frame (another
+        // pass) then goes to a new buffer instead of the one the encoded draw binds (the scene's and the lights' were updated before it)
         const recordsDraw = engine._recordsDraws && !!subMesh.getMaterial()?._canReplayRecordedDraw();
         if (engine._recordsDraws && !recordsDraw) {
             subMesh._drawWrapper._recordedMaterial = null;
@@ -2995,6 +3028,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     step.action(this, subMesh, batch, recordedEffect);
                 }
                 engine._replayRecordedDraw(recordedDrawWrapper);
+                this._uniformBuffer._markBufferUsed();
                 for (const step of scene._afterRenderingMeshStage) {
                     step.action(this, subMesh, batch, recordedEffect);
                 }

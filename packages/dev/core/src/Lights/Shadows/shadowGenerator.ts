@@ -1435,6 +1435,8 @@ export class ShadowGenerator implements IShadowGenerator {
                 renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this, backFacesOnly) &&
                 engine._replayRecordedDraw(recorded)
             ) {
+                // as the update of a full draw: a later write of the frame goes to a new buffer, not to the one this draw binds
+                effectiveMesh._uniformBuffer._markBufferUsed();
                 subMesh._renderId = scene.getRenderId();
                 return;
             }

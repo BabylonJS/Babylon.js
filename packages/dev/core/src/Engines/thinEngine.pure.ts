@@ -250,8 +250,9 @@ export class ThinEngine extends AbstractEngine {
 
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     * @param _forceFullRecording reuses none of the recorded commands (WebGPU only, see WebGPUEngine.snapshotRenderingReuseDraws)
      */
-    public snapshotRenderingReset(): void {
+    public snapshotRenderingReset(_forceFullRecording = false): void {
         this.snapshotRendering = false;
     }
 

@@ -126,6 +126,22 @@ describe("UniformBuffer checks for recorded draws", () => {
         expect(shared._isFirstBufferBound()).toBe(true);
     });
 
+    it("keeps the buffer a draw encoded again binds from being written by the first write of the frame, which goes to a new buffer", () => {
+        const shared = new UniformBuffer(engine as any, undefined, false, "shared-test");
+        shared.addUniform("value", 4);
+        shared.create();
+        shared.updateFloat4("value", 1, 1, 1, 1);
+        shared.update();
+        const first = (shared as any)._buffers[0][0] as MockGpuBuffer;
+        // the next frame: a draw encoded again binds the first buffer without updating it, then a full draw writes other values
+        engine.frameId = 2;
+        shared._markBufferUsed();
+        shared.updateFloat4("value", 2, 2, 2, 2);
+        shared.update();
+        expect(first.gpu[0]).toBe(1);
+        expect(shared._isFirstBufferBound()).toBe(false);
+    });
+
     describe("a draw encoded again from its recorded commands, which references the slot of its draw context", () => {
         const slotOf = (owner: WebGPUDrawContext) => (ubo as any)._buffers[(ubo as any)._slotByOwner.get(owner)][0] as MockGpuBuffer;
 

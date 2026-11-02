@@ -27,6 +27,7 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
         const encoder = { setPipeline: vi.fn(), setIndexBuffer: vi.fn(), setVertexBuffer: vi.fn(), setBindGroup: vi.fn(), drawIndexed: vi.fn(), draw: vi.fn() };
         const engine = {
             _snapshotRendering: { record: true },
+            _recordedDrawsGeneration: 0,
             _currentRenderTarget: null,
             currentSampleCount: 1,
             _bundleList: { numDrawCalls: 0, getBundleEncoder: () => encoder },
@@ -44,6 +45,7 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
         drawContext.resetIsDirty(materialContext.updateId);
         drawContext._recordedDraw = {
             kept: true,
+            generation: 0,
             renderTarget: null,
             sampleCount: 1,
             pipeline: {} as GPURenderPipeline,
@@ -84,8 +86,9 @@ describe("WebGPUEngine recorded draws", () => {
         drawContext.resetIsDirty(materialContext.updateId);
         const encoder = { setPipeline: vi.fn(), setIndexBuffer: vi.fn(), setVertexBuffer: vi.fn(), setBindGroup: vi.fn(), drawIndexed: vi.fn(), draw: vi.fn() };
         const engine: any = {
-            _snapshotRendering: { record: true },
-            _snapshotCachedDraws: true,
+            _snapshotRendering: { record: true, reset: vi.fn() },
+            snapshotRenderingReuseDraws: true,
+            _recordedDrawsGeneration: 0,
             _currentRenderTarget: null,
             currentSampleCount: 1,
             _currentDrawContext: drawContext,
@@ -103,8 +106,9 @@ describe("WebGPUEngine recorded draws", () => {
         engine._keepInheritedState = (wrapper: DrawWrapper) => WebGPUEngine.prototype._keepInheritedState.call(engine, wrapper);
         const keep = () => (WebGPUEngine.prototype as any)._keepRecordedDraw.call(engine, {}, [{}, {}], 0, 36, 1, 0);
         const replay = () => WebGPUEngine.prototype._replayRecordedDraw.call(engine, drawWrapper);
+        const reset = (forceFullRecording?: boolean) => WebGPUEngine.prototype.snapshotRenderingReset.call(engine, forceFullRecording);
         keep();
-        return { engine, effect, drawWrapper, drawContext, keep, replay, markOwnerSlotUsed };
+        return { engine, effect, drawWrapper, drawContext, keep, replay, reset, markOwnerSlotUsed };
     }
 
     it("marks the slot of its draw context as used in the frame when it encodes a draw again", () => {
@@ -148,6 +152,22 @@ describe("WebGPUEngine recorded draws", () => {
         keepState.mockRestore();
     });
 
+    it("reuses none of the commands recorded before snapshotRenderingReset(true), and the recording after it reuses the new ones", () => {
+        const { engine, reset, keep, replay } = setup();
+        // a new snapshot reuses the recorded commands by default
+        reset();
+        expect(engine._snapshotRendering.reset).toHaveBeenCalledTimes(1);
+        expect(replay()).toBe(true);
+        // a full recording: no draw is encoded again, and each full draw keeps new commands
+        reset(true);
+        expect(engine._snapshotRendering.reset).toHaveBeenCalledTimes(2);
+        expect(replay()).toBe(false);
+        keep();
+        // the next recording reuses them
+        reset();
+        expect(replay()).toBe(true);
+    });
+
     it("keeps the states the pipeline reads outside of the engine's state objects: alpha to coverage and the attachments written", () => {
         // what the engine's state objects hold is written by the base class, which is not what this checks
         const base = vi.spyOn(AbstractEngine.prototype as any, "_getInheritedState").mockReturnValue(0);
@@ -170,14 +190,14 @@ describe("WebGPUEngine recorded draws", () => {
 });
 
 /**
- * The meshes and the shadow maps check and keep their draws only while a snapshot records with the recorded draws switched on
- * (engine._recordsDraws): with them off, a recording costs what it did before them.
+ * The meshes and the shadow maps check and keep their draws only while a snapshot records with snapshotRenderingReuseDraws on
+ * (engine._recordsDraws): with it off (the default), a recording costs what it did before it.
  */
 describe("WebGPUEngine._recordsDraws", () => {
-    const recordsDraws = (record: boolean, cachedDraws: boolean) =>
-        Object.getOwnPropertyDescriptor(WebGPUEngine.prototype, "_recordsDraws")!.get!.call({ _snapshotRendering: { record }, _snapshotCachedDraws: cachedDraws });
+    const recordsDraws = (record: boolean, reuseDraws: boolean) =>
+        Object.getOwnPropertyDescriptor(WebGPUEngine.prototype, "_recordsDraws")!.get!.call({ _snapshotRendering: { record }, snapshotRenderingReuseDraws: reuseDraws });
 
-    it("is true only while a snapshot records with the recorded draws switched on", () => {
+    it("is true only while a snapshot records with snapshotRenderingReuseDraws on", () => {
         expect(recordsDraws(true, true)).toBe(true);
         expect(recordsDraws(true, false)).toBe(false);
         expect(recordsDraws(false, true)).toBe(false);

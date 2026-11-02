@@ -500,20 +500,30 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     * @param forceFullRecording with snapshotRenderingReuseDraws on, reuses none of the commands recorded so far: every draw of the new
+     * snapshot is recorded in full, and keeps new commands that the snapshots after it reuse (default: false)
      */
-    public snapshotRenderingReset(): void {
+    public snapshotRenderingReset(forceFullRecording = false): void {
+        if (forceFullRecording) {
+            this._recordedDrawsGeneration++;
+        }
         this._snapshotRendering.reset();
     }
 
     /**
-     * @internal (prototype) While a snapshot records again, a draw whose mesh and material did not change is encoded from the
-     * commands it was recorded with, without binding its mesh and material
+     * Gets or sets whether a new snapshot (see snapshotRenderingReset) reuses, for a draw whose mesh and material did not change since
+     * it was last recorded, the commands it was recorded with, instead of binding its mesh and material again (default: false, every
+     * new snapshot records every draw in full). The scene is walked again at each recording, as without it: culling, LOD, the order
+     * and the set of draws
      */
-    public _snapshotCachedDraws = false;
+    public snapshotRenderingReuseDraws = false;
+
+    // the recorded commands of an older generation are not reused (snapshotRenderingReset(true))
+    private _recordedDrawsGeneration = 0;
 
     /** @internal */
     public override get _recordsDraws(): boolean {
-        return this._snapshotRendering.record && this._snapshotCachedDraws;
+        return this._snapshotRendering.record && this.snapshotRenderingReuseDraws;
     }
 
     // the draw context whose commands the next draw records (see _keepInheritedState)
@@ -4167,6 +4177,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         draw.count = count;
         draw.instances = instancesCount || 1;
         draw.start = start;
+        draw.generation = this._recordedDrawsGeneration;
         draw.kept = true;
     }
 
@@ -4179,6 +4190,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (
             !this._snapshotRendering.record ||
             !draw?.kept ||
+            draw.generation !== this._recordedDrawsGeneration ||
             !materialContext ||
             // a full draw enables the effect, which calls them
             effect?.onBind ||
