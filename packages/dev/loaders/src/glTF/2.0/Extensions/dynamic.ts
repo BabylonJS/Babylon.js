@@ -68,6 +68,18 @@ export function registerBuiltInGLTFExtensions() {
         return new KHR_gaussian_splatting(loader);
     });
 
+    unregisterGLTFExtension("KHR_gaussian_splatting_compression_spz_2");
+    registerGLTFExtension("KHR_gaussian_splatting_compression_spz_2", true, async (loader) => {
+        const { KHR_gaussian_splatting_compression_spz } = await import("./KHR_gaussian_splatting_compression_spz.pure");
+        return new KHR_gaussian_splatting_compression_spz(loader, "KHR_gaussian_splatting_compression_spz_2");
+    });
+
+    unregisterGLTFExtension("KHR_gaussian_splatting_compression_spz");
+    registerGLTFExtension("KHR_gaussian_splatting_compression_spz", true, async (loader) => {
+        const { KHR_gaussian_splatting_compression_spz } = await import("./KHR_gaussian_splatting_compression_spz.pure");
+        return new KHR_gaussian_splatting_compression_spz(loader, "KHR_gaussian_splatting_compression_spz");
+    });
+
     unregisterGLTFExtension("KHR_interactivity");
     registerGLTFExtension("KHR_interactivity", true, async (loader) => {
         const { KHR_interactivity, _RegisterKHRInteractivityRuntime } = await import("./KHR_interactivity.pure");
