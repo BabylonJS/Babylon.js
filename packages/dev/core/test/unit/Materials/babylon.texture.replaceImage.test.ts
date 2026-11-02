@@ -96,6 +96,9 @@ describe("Texture.replaceImage", () => {
             return (Texture.Parse(serialized, scene, rootUrl) as Texture).getInternalTexture()?.url;
         }
 
+        // what the browser fetches for a url relative to the page
+        const fetched = (url?: string) => new URL(url!, "https://example.com/app/").href;
+
         it("loads the image it shows when the name was the url (an empty root url)", () => {
             const texture = loaded("old.png");
             texture.name = "old.png";
@@ -126,11 +129,17 @@ describe("Texture.replaceImage", () => {
             expect(named.replaceImage(loaded("new.png"))).toBe(true);
             expect(named.name).toBe("ground");
             expect(reloaded(named, "")).toBe("ground");
+
+            // also when it is given after a replacement that went up from the root
+            const renamed = loaded("scenes/old.png");
+            renamed.name = "old.png";
+            expect(renamed.replaceImage(loaded("other/a.png"))).toBe(true);
+            renamed.name = "ground";
+            expect(renamed.replaceImage(loaded("other/b.png"))).toBe(true);
+            expect(renamed.name).toBe("ground");
         });
 
         it("goes up from the root for a source outside it, and takes a source's absolute url", () => {
-            // what the browser fetches for a url relative to the page
-            const fetched = (url?: string) => new URL(url!, "https://example.com/app/").href;
             const texture = loaded("scenes/old.png");
             texture.name = "old.png";
             expect(texture.replaceImage(loaded("other/new.png"))).toBe(true);
@@ -147,6 +156,29 @@ describe("Texture.replaceImage", () => {
             expect(absolute.replaceImage(loaded("https://cdn.example.com/new.png"))).toBe(true);
             expect(absolute.name).toBe("https://cdn.example.com/new.png");
             expect(reloaded(absolute, "scenes/")).toBe("https://cdn.example.com/new.png");
+        });
+
+        it("keeps the root across replacements: a name that went up from it follows the next source, back into the root too", () => {
+            const texture = loaded("scenes/x.png");
+            texture.name = "x.png";
+            expect(texture.replaceImage(loaded("other/a.png"))).toBe(true);
+            expect(texture.replaceImage(loaded("other/b.png"))).toBe(true);
+            expect(texture.name).toBe("../other/b.png");
+            expect(fetched(reloaded(texture, "scenes/"))).toBe(fetched("other/b.png"));
+
+            expect(texture.replaceImage(loaded("scenes/c.png"))).toBe(true);
+            expect(texture.name).toBe("c.png");
+            expect(reloaded(texture, "scenes/")).toBe("scenes/c.png");
+        });
+
+        it("gives a clone the root its name is relative to", () => {
+            const texture = loaded("scenes/x.png");
+            texture.name = "x.png";
+            expect(texture.replaceImage(loaded("other/a.png"))).toBe(true);
+            const clone = texture.clone();
+            expect(clone.name).toBe("../other/a.png");
+            expect(clone.replaceImage(loaded("other/b.png"))).toBe(true);
+            expect(fetched(reloaded(clone, "scenes/"))).toBe(fetched("other/b.png"));
         });
     });
 

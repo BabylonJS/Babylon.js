@@ -96,6 +96,24 @@ function Differs(state: unknown[], previous: unknown[]): boolean {
     return state.some((value, i) => value !== previous[i]);
 }
 
+// the name Texture.Parse loads url from, relative to root: null when they cannot be related without the page url
+function NameFrom(root: string, url: string): Nullable<string> {
+    if (root && !root.endsWith("/")) {
+        return null;
+    }
+    if (url.startsWith(root)) {
+        return url.slice(root.length);
+    }
+    if (url.indexOf("://") > 0 || url.startsWith("data:")) {
+        return url;
+    }
+    // both relative to the page: up from the root to the page
+    if (url[0] !== "/" && root[0] !== "/" && root.indexOf("://") < 0 && !/(^|\/)\.\.?\//.test(root)) {
+        return "../".repeat(root.split("/").length - 1) + url;
+    }
+    return null;
+}
+
 /**
  * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#texture
@@ -365,6 +383,8 @@ export class Texture extends BaseTexture {
     /** @internal */
     public _useSRGBBuffer?: boolean;
     private _forcedExtension?: string;
+    // the root the name is relative to, kept by replaceImage: a name that went up from it no longer tells it
+    private _nameRoot?: string;
 
     /** Returns the texture mime type if it was defined by a loader (undefined else) */
     public get mimeType() {
@@ -633,7 +653,8 @@ export class Texture extends BaseTexture {
      * until both are disposed.
      * Texture.Parse loads from rootUrl + name: a name that followed the url the image was loaded from follows the source's url, relative to
      * the same root (going up from it for a source outside it, when both urls are relative to the page), or the source's full url for an
-     * absolute or data url. A name of its own is kept: as for any texture, Texture.Parse then loads from that name.
+     * absolute or data url. The texture keeps that root for its next replacements, and gives it to its clones. A name of its own is kept: as
+     * for any texture, Texture.Parse then loads from that name.
      * The materials that use this texture, frozen ones included, compute their defines again when something they turn into defines
      * changes (gamma space, RGBD encoding, linear specular LOD, irradiance texture). What they only write into uniforms or bind (size, LOD
      * generation, LOD textures) reaches the frozen ones only: the others write it at their next bind, so replacing an image with the
@@ -665,10 +686,13 @@ export class Texture extends BaseTexture {
             return false;
         }
 
-        // the root the name is relative to, from the url the own image was loaded from (after a parse, url and name hold the serialized
-        // values, not rootUrl + name)
-        const loadedUrl = own.url || this.url;
-        const nameRoot = loadedUrl && this.name && loadedUrl.endsWith(this.name) ? loadedUrl.slice(0, loadedUrl.length - this.name.length) : null;
+        // the root the name is relative to: the one kept by the last replacement while the name is the one it gave, else from the url the
+        // own image was loaded from (after a parse, url and name hold the serialized values, not rootUrl + name)
+        const loadedUrl = own.url || this.url || "";
+        let root: Nullable<string> | undefined = this._nameRoot;
+        if (root === undefined || NameFrom(root, loadedUrl) !== this.name) {
+            root = this.name && loadedUrl.endsWith(this.name) ? loadedUrl.slice(0, loadedUrl.length - this.name.length) : null;
+        }
         const sourceUrl = image.url || source.url;
 
         // what the materials read from the image, before the swap. The source's image keeps the source's gamma: when it is not set yet, it
@@ -687,14 +711,11 @@ export class Texture extends BaseTexture {
         }
         // Texture.Parse loads from rootUrl + name, or from the name alone when it is an absolute or data url: a name that followed the old
         // url follows the new one, so the round-trip loads the image shown
-        if (nameRoot !== null && sourceUrl && (nameRoot === "" || nameRoot.endsWith("/"))) {
-            if (sourceUrl.startsWith(nameRoot)) {
-                this.name = sourceUrl.slice(nameRoot.length);
-            } else if (sourceUrl.indexOf("://") > 0 || sourceUrl.startsWith("data:")) {
-                this.name = sourceUrl;
-            } else if (sourceUrl[0] !== "/" && nameRoot[0] !== "/" && nameRoot.indexOf("://") < 0 && !/(^|\/)\.\.?\//.test(nameRoot)) {
-                // both relative to the page: up from the root to the page
-                this.name = "../".repeat(nameRoot.split("/").length - 1) + sourceUrl;
+        if (root !== null && sourceUrl) {
+            const name = NameFrom(root, sourceUrl);
+            if (name !== null) {
+                this.name = name;
+                this._nameRoot = root;
             }
         }
         this.url = source.url;
@@ -1015,7 +1036,10 @@ export class Texture extends BaseTexture {
         };
 
         return SerializationHelper.Clone(() => {
-            return new Texture(this._texture ? this._texture.url : null, this.getScene(), options);
+            const texture = new Texture(this._texture ? this._texture.url : null, this.getScene(), options);
+            // the name it copies stays relative to the same root
+            texture._nameRoot = this._nameRoot;
+            return texture;
         }, this);
     }
 
