@@ -20,6 +20,12 @@
             "dependsOn": ["PBR", "Textures", "Materials", "Meshes"]
         },
         {
+            "title": "PBR Bent Normal Mixed UV Frames",
+            "playgroundId": "#TWCK59#0",
+            "referenceImage": "pbr-bent-normal-mixed-uv-frames.png",
+            "dependsOn": ["PBR", "Textures", "Materials", "Meshes"]
+        },
+        {
             "title": "Solid Particle System Mixed Model Winding",
             "playgroundId": "#B1NNWI#2",
             "referenceImage": "sps-mixed-model-winding.png",

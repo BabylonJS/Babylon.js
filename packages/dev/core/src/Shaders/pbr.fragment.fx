@@ -93,7 +93,8 @@ void main(void) {
     #include<bumpFragment>
 
     #ifdef BENTNORMAL
-        #if defined(TANGENT) && defined(NORMAL)
+        // Only reuse an untransformed UV0 frame; other bent-map UV bases need their own derivatives.
+        #if defined(TANGENT) && defined(NORMAL) && BENTNORMALDIRECTUV == 1 && (!defined(BUMP) || BUMPDIRECTUV == 1)
             mat3 bentNormalTBN = vTBN;
         #else
             vec2 bentNormalUV = gl_FrontFacing ? vBentNormalUV : -vBentNormalUV;

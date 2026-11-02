@@ -13,6 +13,8 @@ import "core/Shaders/ShadersInclude/pbrBlockFinalLitComponents";
 import "core/ShadersWGSL/ShadersInclude/pbrIBLFunctions";
 import "core/ShadersWGSL/ShadersInclude/pbrBlockGeometryInfo";
 import "core/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents";
+import "core/Shaders/pbr.fragment";
+import "core/ShadersWGSL/pbr.fragment";
 
 type Overlap = (cosAxes: number, spread: number, reflectionSpread: number) => number;
 type Occlusion = (cosBentNormal: number, cosBentReflection: number, cosNormalReflection: number, NdotV: number, ambientOcclusion: number, alphaG: number) => number;
@@ -156,6 +158,36 @@ describe("PBR bent normal specular occlusion", () => {
         const ibl = () => preprocess("#include<pbrIBLFunctions>", ["#define BENTNORMAL", "#define REFLECTION"], getStore(), platformName);
         const finalLit = (defines: string[]) =>
             preprocess("#include<pbrBlockGeometryInfo>\n#include<pbrBlockFinalLitComponents>", ["#define BENTNORMAL", "#define REFLECTION", ...defines], getStore(), platformName);
+
+        it.each([
+            ["untransformed UV0", 1, undefined, true],
+            ["rotated UV1", 2, undefined, false],
+            ["transformed UV0", 0, undefined, false],
+            ["matching UV0 normal map", 1, 1, true],
+            ["different normal-map UV basis", 1, 2, false],
+            ["transformed normal-map UV basis", 1, 0, false],
+        ] as const)("selects the bent-map frame for %s", (_name, bentUV, bumpUV, usesTangents) => {
+            const store = _language === "GLSL" ? ShaderStore.ShadersStore : ShaderStore.ShadersStoreWGSL;
+            const shader = store.pbrPixelShader;
+            const start = shader.indexOf("#ifdef BENTNORMAL", shader.indexOf("#include<bumpFragment>"));
+            const end = shader.indexOf("#include<pbrBlockNormalFinal>", start);
+            expect(start).toBeGreaterThanOrEqual(0);
+            expect(end).toBeGreaterThan(start);
+            const code = preprocess(
+                shader.slice(start, end),
+                [
+                    "#define BENTNORMAL",
+                    "#define NORMAL",
+                    "#define TANGENT",
+                    `#define BENTNORMALDIRECTUV ${bentUV}`,
+                    ...(bumpUV === undefined ? [] : ["#define BUMP", `#define BUMPDIRECTUV ${bumpUV}`]),
+                ],
+                getStore(),
+                platformName
+            );
+            expect(code.includes("cotangent_frame(bentNormalBaseW")).toBe(!usesTangents);
+            expect((_language === "GLSL" ? /bentNormalTBN\s*=\s*vTBN/ : /mat3x3f\(input\.vTBN0/).test(code)).toBe(usesTangents);
+        });
 
         // Evaluates the shipped vector wrapper's scalar arguments for unit vectors.
         const occlusionFor = (occlusion: Occlusion, bent: Vec3, reflection: Vec3, NdotV: number, ambientOcclusion: number, alphaG: number) =>

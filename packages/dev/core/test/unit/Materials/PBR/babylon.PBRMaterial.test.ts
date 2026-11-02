@@ -6,6 +6,8 @@ import { PBRMetallicRoughnessMaterial } from "core/Materials/PBR/pbrMetallicRoug
 import { PBRSpecularGlossinessMaterial } from "core/Materials/PBR/pbrSpecularGlossinessMaterial";
 import { type PBRMaterialDefines } from "core/Materials/PBR/pbrBaseMaterial";
 import { MaterialFlags } from "core/Materials/materialFlags";
+import { Material } from "core/Materials/material";
+import { VertexBuffer } from "core/Buffers/buffer";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { PrePassRenderer } from "core/Rendering";
 import "core/Rendering/prePassRendererSceneComponent";
@@ -233,6 +235,68 @@ describe("PBRMaterial", () => {
             material.isReadyForSubMesh(mesh, subMesh);
             expect(defines().UNLIT).toBe(false);
             expect(defines().BENTNORMAL).toBe(false);
+        });
+
+        it.each([Material.WireFrameFillMode, Material.PointFillMode, Material.LineListDrawMode, Material.PointListDrawMode])(
+            "re-evaluates bent readiness when normal-less fill mode %s changes",
+            (fillMode) => {
+                subject.getCaps().standardDerivatives = true;
+                const material = new PBRMaterial("bent", scene);
+                material.fillMode = fillMode;
+                const mesh = CreatePlane("plane", {}, scene);
+                mesh.removeVerticesData(VertexBuffer.NormalKind);
+                mesh.material = material;
+                material.bentNormalTexture = new Texture(null, scene);
+                material.ambientTexture = new Texture(null, scene);
+                scene.environmentTexture = new RenderTargetTexture("environment", 16, scene);
+                vi.spyOn(material.ambientTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+                vi.spyOn(scene.environmentTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+                const bentReady = vi.spyOn(material.bentNormalTexture, "isReadyOrNotBlocking").mockReturnValue(false);
+                const subMesh = mesh.subMeshes[0];
+                const defines = () => subMesh.materialDefines as PBRMaterialDefines;
+                const isReady = () => {
+                    scene.incrementRenderId();
+                    return material.isReadyForSubMesh(mesh, subMesh);
+                };
+
+                isReady();
+                expect(material.unlit).toBe(false);
+                expect(defines().UNLIT).toBe(true);
+                expect(defines().BENTNORMAL).toBe(false);
+                expect(bentReady).not.toHaveBeenCalled();
+
+                material.fillMode = Material.TriangleFillMode;
+                expect(isReady()).toBe(false);
+                expect(bentReady).toHaveBeenCalled();
+                bentReady.mockReturnValue(true);
+                isReady();
+                expect(defines().UNLIT).toBe(false);
+                expect(defines().BENTNORMAL).toBe(true);
+
+                material.fillMode = fillMode;
+                bentReady.mockReturnValue(false).mockClear();
+                isReady();
+                expect(defines().UNLIT).toBe(true);
+                expect(defines().BENTNORMAL).toBe(false);
+                expect(bentReady).not.toHaveBeenCalled();
+            }
+        );
+
+        it.each([Material.WireFrameFillMode, Material.PointFillMode])("still waits for bent maps on lit fill mode %s with normals", (fillMode) => {
+            subject.getCaps().standardDerivatives = true;
+            const material = new PBRMaterial("bent", scene);
+            material.fillMode = fillMode;
+            const mesh = CreatePlane("plane", {}, scene);
+            mesh.material = material;
+            material.bentNormalTexture = new Texture(null, scene);
+            material.ambientTexture = new Texture(null, scene);
+            scene.environmentTexture = new RenderTargetTexture("environment", 16, scene);
+            vi.spyOn(material.ambientTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+            vi.spyOn(scene.environmentTexture, "isReadyOrNotBlocking").mockReturnValue(true);
+            const bentReady = vi.spyOn(material.bentNormalTexture, "isReadyOrNotBlocking").mockReturnValue(false);
+
+            expect(material.isReadyForSubMesh(mesh, mesh.subMeshes[0])).toBe(false);
+            expect(bentReady).toHaveBeenCalledOnce();
         });
     });
 

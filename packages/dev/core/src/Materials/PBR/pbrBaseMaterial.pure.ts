@@ -1032,11 +1032,15 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         return this._albedoTexture;
     }
 
-    private _isBentNormalTextureEnabled(): boolean {
+    private _isEffectivelyUnlit(mesh: AbstractMesh): boolean {
+        return this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+    }
+
+    private _isBentNormalTextureEnabled(mesh: AbstractMesh): boolean {
         const scene = this.getScene();
         return !!(
             this._bentNormalTexture &&
-            !this._unlit &&
+            !this._isEffectivelyUnlit(mesh) &&
             scene.texturesEnabled &&
             MaterialFlags.BentNormalTextureEnabled &&
             MaterialFlags.ReflectionTextureEnabled &&
@@ -1073,6 +1077,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         }
 
         const defines = <PBRMaterialDefines>subMesh.materialDefines;
+        if (this._bentNormalTexture && defines.UNLIT !== this._isEffectivelyUnlit(mesh)) {
+            defines.markAsTexturesDirty();
+            defines.markAsMiscDirty();
+        }
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1109,7 +1117,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                     }
                 }
 
-                if (this._bentNormalTexture && this._isBentNormalTextureEnabled() && !this._bentNormalTexture.isReadyOrNotBlocking()) {
+                if (this._bentNormalTexture && this._isBentNormalTextureEnabled(mesh) && !this._bentNormalTexture.isReadyOrNotBlocking()) {
                     return false;
                 }
 
@@ -1676,7 +1684,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                     this._baseDiffuseRoughnessTexture != null;
                 PrepareDefinesForIBL(scene, reflectionTexture, defines, this.realTimeFiltering, this.realTimeFilteringQuality, !useSHInFragment);
 
-                if (this._bentNormalTexture && this._isBentNormalTextureEnabled() && defines.REFLECTION) {
+                if (this._bentNormalTexture && this._isBentNormalTextureEnabled(mesh) && defines.REFLECTION) {
                     PrepareDefinesForMergedUV(this._bentNormalTexture, defines, "BENTNORMAL");
                 }
 
@@ -1844,7 +1852,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                 renderingMesh,
                 this._isVertexOutputInvariant
             );
-            defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+            defines.UNLIT = this._isEffectivelyUnlit(mesh);
             defines.DEBUGMODE = this._debugMode;
         }
 
