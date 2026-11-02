@@ -3,7 +3,9 @@ import { FlowGraphCoordinator, FlowGraphSceneReadyEventBlock, ParseCoordinatorAs
 import { FlowGraphPlaySoundBlock } from "core/FlowGraph/Blocks/Execution/Audio/flowGraphPlaySoundBlock";
 import { FlowGraphIsSoundPlayingBlock } from "core/FlowGraph/Blocks/Data/Audio/flowGraphIsSoundPlayingBlock";
 import { ResolveFlowGraphSound } from "core/FlowGraph/flowGraphSoundAssets";
-import { CreateSoundAsync } from "core/AudioV2/abstractAudio/audioEngineV2";
+import { CreateSoundAsync, LastCreatedAudioEngine } from "core/AudioV2/abstractAudio/audioEngineV2";
+import { CreateAudioEngineAsync } from "core/AudioV2/webAudio/webAudioEngine";
+import { FlowGraphSoundEndedEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSoundEndedEventBlock";
 import { SoundState } from "core/AudioV2/soundState";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
@@ -15,9 +17,13 @@ vi.mock("core/AudioV2/abstractAudio/audioEngineV2", async (importOriginal) => {
     return {
         ...original,
         CreateSoundAsync: vi.fn(),
-        LastCreatedAudioEngine: vi.fn(() => ({})),
+        LastCreatedAudioEngine: vi.fn(),
     };
 });
+
+vi.mock("core/AudioV2/webAudio/webAudioEngine", () => ({
+    CreateAudioEngineAsync: vi.fn(),
+}));
 
 function CreateMockSound(name: string, url: string) {
     return {
@@ -38,6 +44,9 @@ describe("Flow Graph sound assets", () => {
     let engine: Engine;
     let scene: Scene;
     const createSoundMock = vi.mocked(CreateSoundAsync);
+    const lastEngineMock = vi.mocked(LastCreatedAudioEngine);
+    const createEngineMock = vi.mocked(CreateAudioEngineAsync);
+    const existingEngine = { dispose: vi.fn() } as any;
 
     beforeEach(() => {
         engine = new NullEngine({
@@ -51,6 +60,9 @@ describe("Flow Graph sound assets", () => {
         scene = new Scene(engine);
         createSoundMock.mockReset();
         createSoundMock.mockImplementation((async (name: string, url: string) => CreateMockSound(name, url)) as any);
+        lastEngineMock.mockReset();
+        lastEngineMock.mockReturnValue(existingEngine);
+        createEngineMock.mockReset();
     });
 
     afterEach(() => {
@@ -183,5 +195,87 @@ describe("Flow Graph sound assets", () => {
         const serialized: any = {};
         coordinator.serialize(serialized);
         expect(serialized.soundAssets).toBeUndefined();
+    });
+    it("removes stale sound assets when serializing into a reused object", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        await coordinator.addSoundAssetAsync({ name: "boing", url: "boing.mp3" });
+        const serialized: any = {};
+        coordinator.serialize(serialized);
+        expect(serialized.soundAssets).toHaveLength(1);
+
+        coordinator.removeSoundAsset("boing");
+        coordinator.serialize(serialized);
+        expect(serialized.soundAssets).toBeUndefined();
+    });
+
+    it("rebinds the sound ended event when a named sound asset is replaced", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const first = await coordinator.addSoundAssetAsync({ name: "boing", url: "first.mp3" });
+        const graph = coordinator.createGraph();
+        const context = graph.createContext();
+        const ended = new FlowGraphSoundEndedEventBlock();
+        graph.addEventBlock(ended);
+        ended.sound.setValue("boing", context);
+        const executeSpy = vi.spyOn(ended, "_execute");
+        graph.start();
+
+        const second = await coordinator.addSoundAssetAsync({ name: "boing", url: "second.mp3" });
+        first.onEndedObservable.notifyObservers(first);
+        expect(executeSpy).not.toHaveBeenCalled();
+        second.onEndedObservable.notifyObservers(second);
+        expect(executeSpy).toHaveBeenCalledTimes(1);
+
+        graph.stop();
+        expect(coordinator.onSoundAssetChangedObservable.hasObservers()).toBe(false);
+        expect(second.onEndedObservable.hasObservers()).toBe(false);
+    });
+
+    it("binds the sound ended event when its named sound asset loads after the graph started", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const context = graph.createContext();
+        const ended = new FlowGraphSoundEndedEventBlock();
+        graph.addEventBlock(ended);
+        ended.sound.setValue("boing", context);
+        const executeSpy = vi.spyOn(ended, "_execute");
+        graph.start();
+
+        const sound = await coordinator.addSoundAssetAsync({ name: "boing", url: "boing.mp3" });
+        sound.onEndedObservable.notifyObservers(sound);
+        expect(executeSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("shares one fallback audio engine between parallel loads and disposes it with its last user", async () => {
+        lastEngineMock.mockReturnValue(null);
+        // Concurrent dynamic imports may bypass the module mock in Vitest, so the engine itself can also create sounds.
+        const fallbackEngine = { dispose: vi.fn(), createSoundAsync: vi.fn(async (name: string, url: string) => CreateMockSound(name, url)) } as any;
+        createEngineMock.mockImplementation(async () => {
+            lastEngineMock.mockReturnValue(fallbackEngine);
+            return fallbackEngine;
+        });
+        const coordinatorA = new FlowGraphCoordinator({ scene });
+        const coordinatorB = new FlowGraphCoordinator({ scene });
+
+        await Promise.all([
+            coordinatorA.addSoundAssetAsync({ name: "a", url: "a.mp3" }),
+            coordinatorA.addSoundAssetAsync({ name: "b", url: "b.mp3" }),
+            coordinatorB.addSoundAssetAsync({ name: "c", url: "c.mp3" }),
+        ]);
+        expect(createEngineMock).toHaveBeenCalledTimes(1);
+        const enginesUsed = [...createSoundMock.mock.calls.map((call) => call[3]), ...fallbackEngine.createSoundAsync.mock.calls.map(() => fallbackEngine)];
+        expect(enginesUsed).toEqual([fallbackEngine, fallbackEngine, fallbackEngine]);
+
+        coordinatorA.dispose();
+        expect(fallbackEngine.dispose).not.toHaveBeenCalled();
+        coordinatorB.dispose();
+        expect(fallbackEngine.dispose).toHaveBeenCalledTimes(1);
+    });
+
+    it("never disposes an audio engine it did not create", async () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        await coordinator.addSoundAssetAsync({ name: "boing", url: "boing.mp3" });
+        coordinator.dispose();
+        expect(createEngineMock).not.toHaveBeenCalled();
+        expect(existingEngine.dispose).not.toHaveBeenCalled();
     });
 });

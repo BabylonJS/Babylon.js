@@ -7,7 +7,8 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { type FlowGraphDataConnection } from "../../flowGraphDataConnection.pure";
 import { RichTypeAny } from "../../flowGraphRichTypes.pure";
 import { type AbstractSound } from "../../../AudioV2/abstractAudio/abstractSound";
-import { type FlowGraphSoundReference, ResolveFlowGraphSound } from "../../flowGraphSoundAssets";
+import { type FlowGraphSoundReference, GetFlowGraphSoundAssetName, ResolveFlowGraphSound } from "../../flowGraphSoundAssets";
+import { type FlowGraphCoordinator } from "../../flowGraphCoordinator";
 import { type Observer } from "../../../Misc/observable.pure";
 import { type Nullable } from "../../../types";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -39,9 +40,30 @@ export class FlowGraphSoundEndedEventBlock extends FlowGraphEventBlock {
      * @internal
      */
     public override _preparePendingTasks(context: FlowGraphContext): void {
-        const soundValue = ResolveFlowGraphSound(context, this.sound.getValue(context));
+        const reference = this.sound.getValue(context);
+        const assetName = GetFlowGraphSoundAssetName(reference);
+        if (assetName !== null) {
+            // Follow the named asset so that replacing or loading it rebinds the subscription.
+            const coordinator = context.configuration.coordinator;
+            const assetObserver = coordinator.onSoundAssetChangedObservable.add((name) => {
+                if (name === assetName) {
+                    this._subscribeToSound(context, coordinator.getSoundAsset(name));
+                }
+            });
+            context._setExecutionVariable(this, "_soundAssetObserver", assetObserver);
+            context._setExecutionVariable(this, "_soundAssetCoordinator", coordinator);
+        }
+        const soundValue = ResolveFlowGraphSound(context, reference);
         if (!soundValue) {
             this._reportError(context, "No sound provided for sound-ended event");
+            return;
+        }
+        this._subscribeToSound(context, soundValue);
+    }
+
+    private _subscribeToSound(context: FlowGraphContext, soundValue: Nullable<AbstractSound>): void {
+        this._unsubscribeFromSound(context);
+        if (!soundValue) {
             return;
         }
         const observer = soundValue.onEndedObservable.add(() => {
@@ -50,6 +72,16 @@ export class FlowGraphSoundEndedEventBlock extends FlowGraphEventBlock {
         // Store observer and subscribed sound per-context for safe multi-context usage
         context._setExecutionVariable(this, "_soundEndedObserver", observer);
         context._setExecutionVariable(this, "_subscribedSound", soundValue);
+    }
+
+    private _unsubscribeFromSound(context: FlowGraphContext): void {
+        const observer = context._getExecutionVariable<Nullable<Observer<AbstractSound>>>(this, "_soundEndedObserver", null);
+        const subscribedSound = context._getExecutionVariable<Nullable<AbstractSound>>(this, "_subscribedSound", null);
+        if (observer && subscribedSound) {
+            subscribedSound.onEndedObservable.remove(observer);
+        }
+        context._setExecutionVariable(this, "_soundEndedObserver", null);
+        context._setExecutionVariable(this, "_subscribedSound", null);
     }
 
     /**
@@ -65,13 +97,14 @@ export class FlowGraphSoundEndedEventBlock extends FlowGraphEventBlock {
      * @internal
      */
     public override _cancelPendingTasks(context: FlowGraphContext): void {
-        const observer = context._getExecutionVariable<Nullable<Observer<AbstractSound>>>(this, "_soundEndedObserver", null);
-        const subscribedSound = context._getExecutionVariable<Nullable<AbstractSound>>(this, "_subscribedSound", null);
-        if (observer && subscribedSound) {
-            subscribedSound.onEndedObservable.remove(observer);
+        this._unsubscribeFromSound(context);
+        const assetObserver = context._getExecutionVariable<Nullable<Observer<string>>>(this, "_soundAssetObserver", null);
+        const coordinator = context._getExecutionVariable<Nullable<FlowGraphCoordinator>>(this, "_soundAssetCoordinator", null);
+        if (assetObserver && coordinator) {
+            coordinator.onSoundAssetChangedObservable.remove(assetObserver);
         }
-        context._setExecutionVariable(this, "_soundEndedObserver", null);
-        context._setExecutionVariable(this, "_subscribedSound", null);
+        context._setExecutionVariable(this, "_soundAssetObserver", null);
+        context._setExecutionVariable(this, "_soundAssetCoordinator", null);
     }
 
     /**

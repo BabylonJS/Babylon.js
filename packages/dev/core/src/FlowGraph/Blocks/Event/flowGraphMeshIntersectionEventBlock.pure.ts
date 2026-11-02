@@ -113,11 +113,14 @@ export class FlowGraphMeshIntersectionEventBlock extends FlowGraphEventBlock {
         const current = state.scratch;
         current.length = 0;
 
+        // The check is not triggered by a signal, so start a new execution frame to refresh cached data blocks feeding the inputs.
+        context._increaseExecutionId();
         const source = this.sourceMesh.getValue(context);
         if (IsCheckableMesh(source)) {
             const targets = this.targetMeshes.getValue(context);
             const precise = !!this.usePreciseIntersection.getValue(context);
-            source.computeWorldMatrix();
+            // Before-render runs before the frame's render id advances, so a cached world matrix can miss in-place transform changes.
+            source.computeWorldMatrix(true);
             if (Array.isArray(targets)) {
                 for (let i = 0; i < targets.length; i++) {
                     this._checkTarget(source, targets[i], precise, current);
@@ -148,7 +151,7 @@ export class FlowGraphMeshIntersectionEventBlock extends FlowGraphEventBlock {
         if (target === source || !IsCheckableMesh(target) || intersecting.indexOf(target) !== -1) {
             return;
         }
-        target.computeWorldMatrix();
+        target.computeWorldMatrix(true);
         if (source.intersectsMesh(target, precise)) {
             intersecting.push(target);
         }

@@ -184,6 +184,27 @@ describe("FlowGraphMeshIntersectionEventBlock", () => {
         expect(getLogMessages().filter((m) => m.startsWith("enter"))).toEqual(["enter targetA", "enter targetA"]);
     });
 
+    it("detects in-place transform changes made before the frame's render id advances", () => {
+        createBlock(targetA);
+        graph.start();
+        // Mimic Scene.render: the matrices were computed during the previous frame with the current render id,
+        // and before-render observers run before the render id advances.
+        targetA.computeWorldMatrix(true);
+        source.computeWorldMatrix(true);
+        targetA.position.x = 0.5;
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(transitions).toEqual(["enter targetA", "out true"]);
+    });
+
+    it("starts a new execution frame for each check so cached input values are refreshed", () => {
+        createBlock();
+        graph.start();
+        const before = context.executionId;
+        tick();
+        tick();
+        expect(context.executionId).toBeGreaterThanOrEqual(before + 2);
+    });
+
     it("serializes and parses the target mesh list", async () => {
         const block = new FlowGraphMeshIntersectionEventBlock();
         graph.addEventBlock(block);

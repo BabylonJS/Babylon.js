@@ -26,6 +26,25 @@ export interface IFlowGraphSoundAsset {
 export type FlowGraphSoundReference = AbstractSound | string | { name: string };
 
 /**
+ * Gets the sound asset name referenced by a sound reference.
+ * @param reference the sound reference
+ * @returns the referenced sound asset name, or null if the reference is not a name or serialized name reference
+ */
+export function GetFlowGraphSoundAssetName(reference: Nullable<FlowGraphSoundReference> | undefined): Nullable<string> {
+    if (!reference) {
+        return null;
+    }
+    if (typeof reference === "string") {
+        return reference;
+    }
+    if (typeof (reference as AbstractSound).play === "function") {
+        return null;
+    }
+    const name = (reference as { name?: unknown }).name;
+    return typeof name === "string" ? name : null;
+}
+
+/**
  * Resolves a sound reference to an Audio V2 sound.
  * Strings and serialized references are resolved by name against the sound assets declared on the context's coordinator.
  * @param context the flow graph context used to reach the coordinator
@@ -33,15 +52,9 @@ export type FlowGraphSoundReference = AbstractSound | string | { name: string };
  * @returns the resolved sound, or null if it cannot be resolved
  */
 export function ResolveFlowGraphSound(context: FlowGraphContext, reference: Nullable<FlowGraphSoundReference> | undefined): Nullable<AbstractSound> {
-    if (!reference) {
-        return null;
-    }
-    if (typeof reference === "string") {
-        return context.configuration.coordinator.getSoundAsset(reference);
-    }
-    if (typeof (reference as AbstractSound).play === "function") {
+    if (reference && typeof (reference as AbstractSound).play === "function") {
         return reference as AbstractSound;
     }
-    const name = (reference as { name?: unknown }).name;
-    return typeof name === "string" ? context.configuration.coordinator.getSoundAsset(name) : null;
+    const name = GetFlowGraphSoundAssetName(reference);
+    return name !== null ? context.configuration.coordinator.getSoundAsset(name) : null;
 }

@@ -132,8 +132,9 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
     } else {
         if (className && (value.id || value.name)) {
             serializationObject[key] = SerializeObjectReference(value);
-        } else if (Array.isArray(value) && value.length > 0 && value.every(IsSerializableObjectReference)) {
-            serializationObject[key] = value.map(SerializeObjectReference);
+        } else if (Array.isArray(value) && value.length > 0 && value.every((entry) => IsSerializableObjectReference(entry) || _IsSerializedNodeReference(entry))) {
+            // Live nodes are converted to references; entries that are still unresolved references are kept as they are.
+            serializationObject[key] = value.map((entry) => (IsSerializableObjectReference(entry) ? SerializeObjectReference(entry) : { ...entry }));
         } else {
             if (typeof value !== "object" || value === null) {
                 serializationObject[key] = value;
