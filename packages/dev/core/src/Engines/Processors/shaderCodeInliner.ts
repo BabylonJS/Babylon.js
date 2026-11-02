@@ -103,7 +103,7 @@ function MaskComments(s: string): string {
 function FindStructBodies(code: string): [number, number][] {
     const s = MaskComments(code);
     const ranges: [number, number][] = [];
-    const regexp = /(?<!\w)struct\s+(?:\w+\s*)?\{/g;
+    const regexp = /\bstruct\s+(?:\w+\s*)?\{/g;
     let match;
     while ((match = regexp.exec(s)) !== null) {
         const openIndex = match.index + match[0].length - 1;
@@ -571,7 +571,7 @@ export class ShaderCodeInliner {
     }
 
     private _isIdentifierUsed(identifier: string): boolean {
-        const regexp = new RegExp(`(?<!\\w)${identifier}(?!\\w)`);
+        const regexp = new RegExp(`\\b${identifier}\\b`);
         return regexp.test(this._sourceCode) || this._functionDescr.some((func) => regexp.test(func.body));
     }
 
