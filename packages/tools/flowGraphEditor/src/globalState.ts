@@ -725,7 +725,7 @@ export class GlobalState {
             if (!(block instanceof FlowGraphEventBlock)) {
                 return;
             }
-            const specializedOutputs = block.signalOutputs.filter((signal) => signal.name !== "out" && signal.name !== "done");
+            const specializedOutputs = block.signalOutputs.filter((signal) => signal.name !== "out" && signal.name !== "done" && signal.name !== "error");
             const eventOutputs = specializedOutputs.length > 0 ? specializedOutputs : block.signalOutputs.filter((signal) => signal.name === "out");
             for (const signal of eventOutputs) {
                 const originalActivateSignal = signal._activateSignal;

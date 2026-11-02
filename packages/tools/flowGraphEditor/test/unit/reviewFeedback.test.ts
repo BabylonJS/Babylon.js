@@ -1,5 +1,6 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { FlowGraphMeshIntersectionEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.pure";
+import { FlowGraphSceneReadyEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.pure";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Scene } from "core/scene";
@@ -75,7 +76,9 @@ describe("review feedback regressions", () => {
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph();
         const eventBlock = new FlowGraphMeshIntersectionEventBlock();
+        const ordinaryEventBlock = new FlowGraphSceneReadyEventBlock();
         graph.addEventBlock(eventBlock);
+        graph.addEventBlock(ordinaryEventBlock);
         const context = graph.createContext();
         const globalState = new GlobalState(scene);
         globalState.coordinator = coordinator;
@@ -83,10 +86,11 @@ describe("review feedback regressions", () => {
         globalState.onDebugLogRequiredObservable.add(({ message }) => messages.push(message));
 
         (globalState as any)._attachContextExecutionObserver();
+        ordinaryEventBlock.out._activateSignal(context);
         eventBlock.onEnter._activateSignal(context);
         eventBlock.otherMesh.getValue(context);
 
-        expect(messages).toEqual([expect.stringContaining("Event fired:" + " " + eventBlock.name + " (onEnter)")]);
+        expect(messages).toEqual([`Event fired: ${ordinaryEventBlock.name}`, `Event fired: ${eventBlock.name} (onEnter)`]);
 
         (globalState as any)._unsubscribeDebugObservers();
         coordinator.dispose();
