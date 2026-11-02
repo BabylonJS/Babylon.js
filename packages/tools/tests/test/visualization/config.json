@@ -1351,7 +1351,7 @@
         },
         {
             "title": "Displacement map",
-            "playgroundId": "#WZ8JL4#0",
+            "playgroundId": "#WZ8JL4#1",
             "referenceImage": "displacementMap.png",
             "dependsOn": ["Materials", "Textures"]
         },
@@ -1777,29 +1777,25 @@
         },
         {
             "title": "GLTF Serializer camera rotation animation, RH -> LH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = false;",
+            "playgroundId": "#DM9YI8#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, RH -> RH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = true; destRH = true;",
+            "playgroundId": "#9Y82AK#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, LH -> RH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = true;",
+            "playgroundId": "#ZZQCYZ#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
         {
             "title": "GLTF Serializer camera rotation animation, LH -> LH",
-            "playgroundId": "#3A00GJ#42",
-            "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = false;",
+            "playgroundId": "#UUOR2W#0",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
@@ -2721,7 +2717,7 @@
         {
             "title": "Instances + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#547",
+            "playgroundId": "#YB006J#800",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-mb.png",
             "dependsOn": ["Collisions", "Lights", "Loaders", "Materials", "Meshes", "PostProcesses", "Shadows", "Textures"]
@@ -2729,7 +2725,7 @@
         {
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#549",
+            "playgroundId": "#YB006J#801",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-gbr-mb.png",
             "dependsOn": ["Collisions", "Lights", "Loaders", "Materials", "Meshes", "PostProcesses", "Shadows", "Textures"]
