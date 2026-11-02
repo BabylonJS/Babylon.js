@@ -146,7 +146,7 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
-    it("sees a texture that swaps its GPU texture without dirtying the material", () => {
+    it("sees a texture that swaps its GPU texture without dirtying the material, even between two passes of a frame", () => {
         // a later frame: another draw of the material binds (the reference of the frame) and the lights are bound
         const reference = new DrawWrapper(engine);
         reference.effect = drawWrapper.effect;
@@ -163,7 +163,12 @@ describe("Mesh recorded draws", () => {
         const internal = texture._texture;
         texture._texture = other._texture;
         other._texture = internal;
-        laterFrame();
+        expect(unchanged()).toBe(false);
+        // a texture set in the frame is listed at once
+        material.diffuseTexture = other;
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        other._texture = texture._texture;
         expect(unchanged()).toBe(false);
     });
 

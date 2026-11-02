@@ -1019,31 +1019,36 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return entry && entry.frameId === this._scene.getEngine().frameId && entry.domain === domain ? entry.drawWrapper : null;
     }
     private _texturesVersionFrameId = -1;
+    private _texturesVersionDrawCacheVersion = -1;
+    private _texturesVersionTextures: BaseTexture[] = [];
     private _texturesVersionInternals: Nullable<object>[] = [];
 
     /**
      * @internal Changes when a texture of the material uses another GPU texture without dirtying the material (a streamed texture
-     * swapping its internal texture): checked once per frame (see DrawWrapper._recordedTexturesVersion)
+     * swapping its internal texture). The textures are listed once per frame and when the material is dirtied (a texture set), their
+     * internal textures compared on each call: one can swap between two passes of a frame (see DrawWrapper._recordedTexturesVersion)
      * @returns the version
      */
     public _getTexturesVersion(): number {
         const frameId = this._scene.getEngine().frameId;
-        if (this._texturesVersionFrameId !== frameId) {
+        if (this._texturesVersionFrameId !== frameId || this._texturesVersionDrawCacheVersion !== this._drawCacheVersion) {
             this._texturesVersionFrameId = frameId;
-            const textures = this.getActiveTextures();
-            const internals = this._texturesVersionInternals;
-            let changed = textures.length !== internals.length;
-            for (let i = 0; i < textures.length; i++) {
-                const internal = textures[i].getInternalTexture();
-                if (internals[i] !== internal) {
-                    internals[i] = internal;
-                    changed = true;
-                }
+            this._texturesVersionDrawCacheVersion = this._drawCacheVersion;
+            this._texturesVersionTextures = this.getActiveTextures();
+        }
+        const textures = this._texturesVersionTextures;
+        const internals = this._texturesVersionInternals;
+        let changed = textures.length !== internals.length;
+        for (let i = 0; i < textures.length; i++) {
+            const internal = textures[i].getInternalTexture();
+            if (internals[i] !== internal) {
+                internals[i] = internal;
+                changed = true;
             }
-            internals.length = textures.length;
-            if (changed) {
-                this._texturesVersion++;
-            }
+        }
+        internals.length = textures.length;
+        if (changed) {
+            this._texturesVersion++;
         }
         return this._texturesVersion;
     }
