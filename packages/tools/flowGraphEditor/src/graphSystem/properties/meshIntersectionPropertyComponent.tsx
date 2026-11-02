@@ -157,7 +157,8 @@ export class MeshIntersectionPropertyComponent extends React.Component<IProperty
         if (!input) {
             return;
         }
-        (input as any)._defaultValue = value;
+        const globalState = this.props.stateManager.data as GlobalState;
+        globalState.setUnconnectedInputValue(input, value);
         if (!block.config) {
             (block as any).config = {};
         }

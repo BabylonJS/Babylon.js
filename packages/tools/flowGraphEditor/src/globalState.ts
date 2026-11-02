@@ -13,6 +13,7 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
@@ -239,8 +240,51 @@ export class GlobalState {
     /** Releases editor-owned subscriptions and restores patched host graph signals. */
     public dispose(): void {
         this._unsubscribeDebugObservers();
+        this._debugNewNodeObserver?.remove();
+        this._debugNewNodeObserver = null;
+        this._debugNodeRemovalObserver?.remove();
+        this._debugNodeRemovalObserver = null;
         this._soundAssetChangedObserver?.remove();
         this._soundAssetChangedObserver = null;
+    }
+
+    /**
+     * Updates an unconnected input default and any context values that still mirror the old default.
+     * Context-specific overrides remain unchanged.
+     * @param input input connection to update
+     * @param value new editor value
+     */
+    public setUnconnectedInputValue<T>(input: FlowGraphDataConnection<T>, value: T): void {
+        const previousValue = (input as any)._defaultValue as T;
+        (input as any)._defaultValue = value;
+
+        for (let index = 0; index < this._flowGraph.contextCount; index++) {
+            const context = this._flowGraph.getContext(index);
+            if (context?._hasConnectionValue(input) && GlobalState._EditableValuesMatch(context._getConnectionValue(input), previousValue)) {
+                input.setValue(value, context);
+            }
+        }
+        this._snapshotUserVariablesFrom();
+    }
+
+    private static _EditableValuesMatch(left: unknown, right: unknown): boolean {
+        if (Object.is(left, right)) {
+            return true;
+        }
+        if (Array.isArray(left) && Array.isArray(right)) {
+            return left.length === right.length && left.every((value, index) => GlobalState._EditableValuesMatch(value, right[index]));
+        }
+        if (left && right && typeof left === "object" && typeof right === "object") {
+            const leftReference = left as { uniqueId?: number; id?: string; name?: string };
+            const rightReference = right as { uniqueId?: number; id?: string; name?: string };
+            if (leftReference.uniqueId !== undefined || rightReference.uniqueId !== undefined) {
+                return leftReference.uniqueId === rightReference.uniqueId;
+            }
+            if (leftReference.id !== undefined || rightReference.id !== undefined || leftReference.name !== undefined || rightReference.name !== undefined) {
+                return leftReference.id === rightReference.id && leftReference.name === rightReference.name;
+            }
+        }
+        return false;
     }
 
     /**
@@ -572,12 +616,16 @@ export class GlobalState {
     private _debugExecutionObserver: Nullable<Observer<FlowGraphBlock>> = null;
     /** Observer tracking graph state changes for debug re-subscription */
     private _debugStateObserver: Nullable<Observer<FlowGraphState>> = null;
+    /** Observer tracking event blocks added while debug instrumentation is active. */
+    private _debugNewNodeObserver: Nullable<Observer<GraphNode>> = null;
+    /** Observer tracking event blocks removed while debug instrumentation is active. */
+    private _debugNodeRemovalObserver: Nullable<Observer<GraphNode>> = null;
     /** Per-node throttle timestamps to avoid excessive highlighting */
     private _highlightThrottleMap = new Map<string, number>();
     /** Blocks that executed since the last debug frame — batched to avoid per-call DOM work */
     private _debugPendingBlocks = new Set<FlowGraphBlock>();
     /** Restores event signal methods patched for accurate debug event logging. */
-    private _debugEventSignalRestorers: Array<() => void> = [];
+    private _debugEventSignalRestorers = new Map<string, Array<() => void>>();
     /** rAF handle for batched debug updates */
     private _debugRafId: number = 0;
     /** Port elements currently glowing — tracked so we can clear them on stop */
@@ -734,6 +782,7 @@ export class GlobalState {
             }
             const specializedOutputs = block.signalOutputs.filter((signal) => signal.name !== "out" && signal.name !== "done" && signal.name !== "error");
             const eventOutputs = specializedOutputs.length > 0 ? specializedOutputs : block.signalOutputs.filter((signal) => signal.name === "out");
+            const restorers: Array<() => void> = [];
             for (const signal of eventOutputs) {
                 const originalActivateSignal = signal._activateSignal;
                 const patchedActivateSignal = (context: FlowGraphContext) => {
@@ -747,20 +796,26 @@ export class GlobalState {
                     originalActivateSignal.call(signal, context);
                 };
                 signal._activateSignal = patchedActivateSignal;
-                this._debugEventSignalRestorers.push(() => {
+                restorers.push(() => {
                     if (signal._activateSignal === patchedActivateSignal) {
                         signal._activateSignal = originalActivateSignal;
                     }
                 });
             }
+            this._debugEventSignalRestorers.set(block.uniqueId, restorers);
         });
     }
 
-    private _restoreDebugEventSignals(): void {
-        for (const restore of this._debugEventSignalRestorers) {
+    private _restoreDebugEventSignals(block?: FlowGraphBlock): void {
+        const restorers = block ? (this._debugEventSignalRestorers.get(block.uniqueId) ?? []) : [...this._debugEventSignalRestorers.values()].flat();
+        for (const restore of restorers) {
             restore();
         }
-        this._debugEventSignalRestorers.length = 0;
+        if (block) {
+            this._debugEventSignalRestorers.delete(block.uniqueId);
+        } else {
+            this._debugEventSignalRestorers.clear();
+        }
     }
 
     /**
@@ -1792,6 +1847,18 @@ export class GlobalState {
         RegisterNodePortDesign(this.stateManager);
         RegisterDefaultInput(this.stateManager);
         RegisterExportData(this.stateManager);
+
+        this._debugNewNodeObserver = this.stateManager.onNewNodeCreatedObservable.add((node) => {
+            if (this._isDebugMode && this._flowGraph?.state === FlowGraphState.Started && node.content.data instanceof FlowGraphEventBlock) {
+                this._patchDebugEventSignals();
+            }
+        });
+        this._debugNodeRemovalObserver = this.stateManager.onGraphNodeRemovalObservable.add((node) => {
+            const block = node.content.data;
+            if (block instanceof FlowGraphEventBlock) {
+                this._restoreDebugEventSignals(block);
+            }
+        });
     }
 
     /**

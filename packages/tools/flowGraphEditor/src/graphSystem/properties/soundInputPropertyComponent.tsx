@@ -54,7 +54,8 @@ export class SoundInputPropertyComponent extends React.Component<IPropertyCompon
         if (!input) {
             return;
         }
-        (input as any)._defaultValue = value;
+        const globalState = this.props.stateManager.data as GlobalState;
+        globalState.setUnconnectedInputValue(input, value);
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.forceUpdate();
     }

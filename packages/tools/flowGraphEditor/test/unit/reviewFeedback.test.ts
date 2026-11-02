@@ -1,12 +1,15 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { FlowGraphMeshIntersectionEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.pure";
 import { FlowGraphSceneReadyEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.pure";
+import { FlowGraphPlaySoundBlock } from "core/FlowGraph/Blocks/Execution/Audio/flowGraphPlaySoundBlock.pure";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { LogEntry, LogEntryBuffer } from "flow-graph-editor/components/log/logComponent";
 import { ResolveIntersectionMeshDefaults } from "flow-graph-editor/graphSystem/properties/meshIntersectionPropertyComponent";
 import { GlobalState } from "flow-graph-editor/globalState";
+import { SerializationTools } from "flow-graph-editor/serializationTools";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
@@ -185,6 +188,112 @@ describe("review feedback regressions", () => {
         globalState.dispose();
         expect(eventBlock.out._activateSignal).toBe(originalActivateSignal);
 
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("updates context-backed sound input values without overwriting distinct context overrides", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphPlaySoundBlock();
+        graph.addBlock(block);
+        (block.sound as any)._defaultValue = "old";
+        const firstContext = graph.createContext();
+        const secondContext = graph.createContext();
+        block.sound.setValue("old", firstContext);
+        block.sound.setValue("custom", secondContext);
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+
+        globalState.setUnconnectedInputValue(block.sound, "new");
+
+        expect(block.sound.getValue(firstContext)).toBe("new");
+        expect(block.sound.getValue(secondContext)).toBe("custom");
+
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+        const restored = await SerializationTools.DeserializeToStateAsync(serialized, scene);
+        const restoredBlock = restored.coordinator.flowGraphs[0].getAllBlocks().find((candidate) => candidate.getClassName() === block.getClassName()) as FlowGraphPlaySoundBlock;
+        expect(restoredBlock.sound.getValue(restored.coordinator.flowGraphs[0].getContext(0)!)).toBe("new");
+        expect(restoredBlock.sound.getValue(restored.coordinator.flowGraphs[0].getContext(1)!)).toBe("custom");
+
+        restored.coordinator.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("updates context-backed mesh input values and round-trips the edited references", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const oldTarget = new Mesh("old", scene);
+        const newTarget = new Mesh("new", scene);
+        const customTarget = new Mesh("custom", scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(block);
+        (block.targetMeshes as any)._defaultValue = [oldTarget];
+        const firstContext = graph.createContext();
+        const secondContext = graph.createContext();
+        block.targetMeshes.setValue([oldTarget], firstContext);
+        block.targetMeshes.setValue([customTarget], secondContext);
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+
+        globalState.setUnconnectedInputValue(block.targetMeshes, [newTarget]);
+
+        expect(block.targetMeshes.getValue(firstContext)).toEqual([newTarget]);
+        expect(block.targetMeshes.getValue(secondContext)).toEqual([customTarget]);
+
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+        const restored = await SerializationTools.DeserializeToStateAsync(serialized, scene);
+        const restoredBlock = restored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.getClassName() === block.getClassName()) as FlowGraphMeshIntersectionEventBlock;
+        expect(restoredBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(0)!)).toEqual([newTarget]);
+        expect(restoredBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(1)!)).toEqual([customTarget]);
+
+        restored.coordinator.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("instruments event blocks added while debug mode is active and restores them on removal", () => {
+        vi.stubGlobal(
+            "requestAnimationFrame",
+            vi.fn(() => 1)
+        );
+        vi.stubGlobal("cancelAnimationFrame", vi.fn());
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const context = graph.createContext();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        coordinator.start();
+        globalState.isDebugMode = true;
+        const eventBlock = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(eventBlock);
+        const originalActivateSignal = eventBlock.onEnter._activateSignal;
+        const messages: string[] = [];
+        globalState.onDebugLogRequiredObservable.add(({ message }) => messages.push(message));
+
+        globalState.stateManager.onNewNodeCreatedObservable.notifyObservers({ content: { data: eventBlock } } as any);
+        expect(eventBlock.onEnter._activateSignal).not.toBe(originalActivateSignal);
+        eventBlock.onEnter._activateSignal(context);
+        expect(messages).toEqual([`Event fired: ${eventBlock.name} (onEnter)`]);
+
+        globalState.stateManager.onGraphNodeRemovalObservable.notifyObservers({ content: { data: eventBlock } } as any);
+        expect(eventBlock.onEnter._activateSignal).toBe(originalActivateSignal);
+
+        globalState.dispose();
         coordinator.dispose();
         scene.dispose();
         engine.dispose();
