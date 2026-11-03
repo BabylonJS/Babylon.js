@@ -13,6 +13,7 @@ import { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
 import { VertexOutputBlock } from "core/Materials/Node/Blocks/Vertex/vertexOutputBlock";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
 /**
@@ -331,6 +332,32 @@ describe("Texture.replaceImage", () => {
         expect(texture.replaceImage(loaded("gamma.png", { size: 1024, gammaSpace: true, imageGamma: true }))).toBe(true);
         expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag);
         expect(otherHasTexture).toHaveBeenCalledTimes(1);
+    });
+
+    it("reaches the materials that read it as the scene's environment texture, frozen ones included", () => {
+        const environment = loaded("environment.png", { gammaSpace: true, imageGamma: true, size: 256 });
+        environment.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
+        scene.environmentTexture = environment;
+        // PBR materials without a reflection texture of their own read the scene's environment texture, which hasTexture does not tell
+        const material = new PBRMaterial("pbr", scene);
+        const frozen = new PBRMaterial("frozen", scene);
+        frozen.freeze();
+        expect(material.hasTexture(environment)).toBe(false);
+        expect((material as any)._getReflectionTexture()).toBe(environment);
+        const markAsDirty = vi.spyOn(material, "markAsDirty");
+        const markDirty = vi.spyOn(frozen, "markDirty");
+
+        // another gamma: the defines of both are computed again
+        expect(environment.replaceImage(loaded("linear.png", { gammaSpace: false, imageGamma: false, size: 256 }))).toBe(true);
+        expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag);
+        expect(markDirty).toHaveBeenCalledWith(true);
+
+        // another size only: the frozen one writes its uniforms again, the other one at its next bind
+        markAsDirty.mockClear();
+        markDirty.mockClear();
+        expect(environment.replaceImage(loaded("larger.png", { gammaSpace: false, imageGamma: false, size: 1024 }))).toBe(true);
+        expect(markAsDirty).not.toHaveBeenCalled();
+        expect(markDirty).toHaveBeenCalledWith(true);
     });
 
     it("converts a node material's texture to gamma space once its gamma space image is replaced with a linear one", async () => {

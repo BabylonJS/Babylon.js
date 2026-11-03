@@ -641,14 +641,17 @@ export class Texture extends BaseTexture {
      * absolute or data url. The texture keeps that root for its next replacements, and gives it to its clones. A name of its own is kept: as
      * for any texture, Texture.Parse then loads from that name.
      * The materials that use this texture, frozen ones included, compute their defines again when something they turn into defines
-     * changes (gamma space, RGBD encoding, linear specular LOD, irradiance texture). What they only write into uniforms or bind (size, LOD
-     * generation, LOD textures) reaches the frozen ones only: the others write it at their next bind, so replacing an image with the
-     * same image at another size, as streaming does, marks no material that is not frozen. With snapshot rendering, the snapshot is
-     * recorded again when the image or the defines change.
+     * changes (gamma space, RGBD encoding, linear specular LOD, irradiance texture); for the scene's environment texture, every material
+     * of the scene, since materials read it without having it. What they only write into uniforms or bind (size, LOD generation, LOD
+     * textures) reaches the frozen ones only: the others write it at their next bind, so replacing an image with the same image at
+     * another size, as streaming does, marks no material that is not frozen. With snapshot rendering, the snapshot is recorded again
+     * when the image or the defines change. As with the gammaSpace setter, the node material post-processes and procedural textures,
+     * which keep their own defines, follow a change of gamma space once they are built again.
      * @param source the loaded texture whose image this texture takes
      * @returns true when this texture shows the source's image (replacing a texture with itself included); false when the image cannot be
-     * taken, both textures then left unchanged: the image of one of them is not a 2D image loaded from a url or a buffer and ready (the
-     * images of render target, procedural, raw, dynamic and video textures are not), they belong to different engines, the source
+     * taken, both textures then left unchanged: one of them is not a plain Texture (render target, procedural, raw, dynamic and video
+     * textures manage their image, also a video texture showing its poster or a procedural texture its fallback), the image of one of
+     * them is not a 2D image loaded from a url or a buffer and ready, they belong to different engines, the source
      * has no loading description (neither url nor buffer), or their effective orientations differ (invertY, and whether loading inverted
      * the V scale)
      */
@@ -661,6 +664,9 @@ export class Texture extends BaseTexture {
         const own = this._texture;
         if (
             !scene ||
+            // a subclass manages the image of its wrapper (a video texture showing its poster, a procedural texture its fallback)
+            Object.getPrototypeOf(this) !== Texture.prototype ||
+            Object.getPrototypeOf(source) !== Texture.prototype ||
             !IsLoadedImage(image) ||
             !IsLoadedImage(own) ||
             image.getEngine() !== own.getEngine() ||
@@ -741,9 +747,11 @@ export class Texture extends BaseTexture {
             this._lodTextureMid !== lodTextureMid ||
             this._lodTextureLow !== lodTextureLow;
         if (definesChanged || uniformsChanged) {
+            // the scene's environment texture is read by materials that do not have it (a PBR material without a reflection texture)
+            const environment = scene.environmentTexture === this;
             for (const material of scene.materials) {
                 // when only uniforms change, only the frozen materials need to know: the others are not asked whether they use the texture
-                if ((!definesChanged && !material.isFrozen) || !material.hasTexture(this)) {
+                if ((!definesChanged && !material.isFrozen) || (!environment && !material.hasTexture(this))) {
                     continue;
                 }
                 if (material.isFrozen) {
