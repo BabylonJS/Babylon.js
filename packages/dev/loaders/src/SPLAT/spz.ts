@@ -5,9 +5,13 @@ import { runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Mode, type IParsedSplat } from "./splatDefs";
-import { AllocateShBuffers } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
+import { AllocateShBuffers } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure";
 import { type GaussianCloud, type SpzModule, type SpzExtensionSafeOrbitCameraAdobe } from "@adobe/spz";
 
+/**
+ * Default URL of the Adobe spz WASM library, used when WebAssembly is available.
+ */
+export const DefaultSpzLibraryUrl = "https://unpkg.com/@adobe/spz@0.2.2/dist/spz.js";
 const _SpzConversionBatchSize = 32768;
 const _SH_C0 = 0.28209479177387814;
 
