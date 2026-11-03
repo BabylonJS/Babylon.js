@@ -29,8 +29,6 @@ const TempMatrix = /*#__PURE__*/ Matrix.Identity();
 const TempMatrix2 = /*#__PURE__*/ new Matrix();
 const TempVec1 = /*#__PURE__*/ new Vector3();
 const TempVec2 = /*#__PURE__*/ new Vector3();
-// `Matrix.asArray` returns its internal array, so it can be directly updated
-const TempMatrixArray = /*#__PURE__*/ TempMatrix.asArray();
 
 // BoundingBox copies from it, so it's safe to reuse vectors here
 const DummyBoundingBox = /*#__PURE__*/ new BoundingBox(TempVec1, TempVec1);
@@ -574,7 +572,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
             const diff = max.subtractToRef(min, TempVec2);
             const median = min.addToRef(diff.scaleToRef(0.5, TempVec1), TempVec1);
 
-            const m = TempMatrixArray;
+            // Not cached at module scope: enabling high precision matrices replaces the internal array.
+            const m = TempMatrix.asArray();
 
             // Directly update the matrix values in column-major order
             m[0] = diff._x; // Scale X

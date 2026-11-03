@@ -14,8 +14,8 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { isLintFile, LintFiles } from "./lint-globs.mjs";
-import { completeChildProcess, resolveLocalBin, runEslint } from "./lint.mjs";
+import { isLintFile } from "./lint-globs.mjs";
+import { completeChildProcess, resolveLocalBin, runEslint, runFullLint } from "./lint.mjs";
 
 const PluginBuildInputPattern = /^packages\/tools\/eslintBabylonPlugin\/(?:package\.json|tsconfig[^/]*\.json|src\/[\s\S]+\.(?:ts|tsx))$/;
 const SharedLintScriptPattern = /^scripts\/lint(?:-changed|-globs)?\.mjs$/;
@@ -125,19 +125,25 @@ function lintChanges(allChangedFiles, existingChangedFiles, fix, options) {
         }
     }
 
-    const files = fullLint ? LintFiles : existingChangedFiles.filter(isLintFile);
+    if (fullLint) {
+        log("Lint configuration changed; linting all source and test files without cache.");
+        return runFullLint(["--quiet", "--no-warn-ignored", "--no-cache", ...(fix ? ["--fix"] : [])], {
+            cwd,
+            eslintPath: options.eslintPath,
+            log,
+            shards: options.shards,
+            spawnSyncImpl: spawn,
+        });
+    }
+
+    const files = existingChangedFiles.filter(isLintFile);
     if (files.length === 0) {
         log("No lintable files changed.");
         return { status: 0, signal: null };
     }
 
-    const lintArguments = ["--quiet", "--no-warn-ignored", fullLint ? "--no-cache" : "--cache", ...(fix ? ["--fix"] : [])];
-    if (fullLint) {
-        log("Lint configuration changed; linting all source and test files without cache.");
-    } else {
-        log(`Linting ${files.length} changed file(s)…`);
-    }
-    return runEslint(files, lintArguments, {
+    log(`Linting ${files.length} changed file(s)…`);
+    return runEslint(files, ["--quiet", "--no-warn-ignored", "--cache", ...(fix ? ["--fix"] : [])], {
         cwd,
         eslintPath: options.eslintPath,
         maxCommandLength: options.maxCommandLength,

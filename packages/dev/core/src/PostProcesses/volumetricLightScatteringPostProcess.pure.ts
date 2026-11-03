@@ -126,6 +126,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * @param engine The babylon engine
      * @param reusable If the post-process is reusable
      * @param scene The constructor needs a scene reference to initialize internal components. If "camera" is null a "scene" must be provided
+     * @param textureType Texture type for the post-process input and internal scattering pass. Defaults to Constants.TEXTURETYPE_UNSIGNED_BYTE.
      */
     constructor(
         name: string,
@@ -136,7 +137,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        scene?: Scene
+        scene?: Scene,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
         const selectedEngine = engine ?? camera?.getScene().getEngine() ?? scene?.getEngine();
         const shaderLanguage = selectedEngine?.isWebGPU && !PostProcess.ForceGLSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
@@ -151,7 +153,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             selectedEngine,
             reusable,
             "#define NUM_SAMPLES " + samples,
-            undefined,
+            textureType,
             undefined,
             undefined,
             undefined,
@@ -166,7 +168,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         // Configure mesh
         this.mesh = mesh ?? VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
         // Configure
-        this._createPass(scene, ratio.passRatio || ratio);
+        this._createPass(scene, ratio.passRatio || ratio, textureType);
 
         this.onActivate = (camera: Camera) => {
             if (!this.isSupported) {
@@ -412,7 +414,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         return false;
     }
 
-    private _createPass(scene: Scene, ratio: number): void {
+    private _createPass(scene: Scene, ratio: number, textureType: number): void {
         const engine = scene.getEngine();
 
         this._volumetricLightScatteringRTT = new RenderTargetTexture(
@@ -421,7 +423,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             scene,
             false,
             true,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE
+            textureType
         );
         this._volumetricLightScatteringRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;

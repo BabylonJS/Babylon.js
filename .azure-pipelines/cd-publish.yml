@@ -49,7 +49,7 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - bash: |
+          - script: |
                 set -euo pipefail
                 set +x
 
@@ -71,81 +71,219 @@ jobs:
             env:
                 GITHUB_PAT: $(GitHubPAT)
 
-          - bash: npm ci
+          - script: npm ci
             displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - bash: node ./scripts/updateVersion.js $(Build.SourceBranchName)
+          - script: node ./scripts/updateVersion.js $(Build.SourceBranchName)
             displayName: "run updater"
             env:
                 GITHUBPAT: $(GitHubPAT)
 
-          - bash: npm install
+          - script: npm install
             displayName: "Update package-lock.json"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - bash: node ./scripts/tagVersion.js $(Build.SourceBranchName)
-            displayName: "Tag the version"
-            env:
-                GITHUBPAT: $(GitHubPAT)
-
-          - bash: npm run format:fix
+          - script: npm run format:fix
             displayName: "fix formatting"
             env:
                 GITHUBPAT: $(GitHubPAT)
 
-          - bash: npm run test:unit
-            displayName: "unit tests"
-            retryCountOnTaskFailure: 2
+          - script: node ./scripts/tagVersion.js $(Build.SourceBranchName)
+            displayName: "Tag the version"
+            env:
+                GITHUBPAT: $(GitHubPAT)
 
-          - bash: npm run build:umd
-            displayName: "npm build umd"
-
-          - bash: npm run build:es6
-            displayName: "npm build es6"
-
-          - bash: echo "//registry.npmjs.org/:_authToken=$(NPM_TOKEN)" > ./.npmrc
-            displayName: "write npmrc"
-
-          - bash: npm publish -ws --access=public
-            displayName: "publish latest stable (master branch)"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
-
-          - bash: npm publish -ws --tag preview
-            displayName: "publish preview (preview branch)"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'preview'))
-
-          - bash: git fetch origin
-            displayName: "fetch origin"
-
-          - bash: git merge origin/$(Build.SourceBranchName)
-            displayName: "pull master"
-
-          - bash: git push origin $(Build.SourceBranchName) --tags
-            displayName: "push to git"
-
-          - bash: |
+          - script: |
                 set -euo pipefail
                 pv=$(jq -r '.version' ./packages/public/umd/babylonjs/package.json)
                 releaseCommit=$(git rev-parse "${pv}^{commit}")
+                if [[ "$(git rev-parse HEAD)" != "$releaseCommit" ]]; then
+                    echo "Version tag does not point at the current release commit" >&2
+                    exit 1
+                fi
+                git checkout --detach "$releaseCommit"
+                if [[ "$(git rev-parse HEAD)" != "$releaseCommit" ]]; then
+                    echo "Checkout did not resolve to the tagged release commit" >&2
+                    exit 1
+                fi
                 echo "##vso[task.setvariable variable=PackageVersion]${pv}"
                 echo "##vso[task.setvariable variable=ReleaseCommit]${releaseCommit}"
-            displayName: "Get release version and commit"
+            displayName: "Checkout tagged release commit"
 
-          - bash: |
+          - script: npm run test:unit
+            displayName: "unit tests"
+            retryCountOnTaskFailure: 2
+
+          - script: npm run build:umd
+            displayName: "npm build umd"
+
+          - script: npm run build:es6
+            displayName: "npm build es6"
+
+          - task: Npm@1
+            displayName: "run build -w @tools/tests"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+            inputs:
+                command: custom
+                customCommand: "run build -w @tools/tests"
+
+          - script: npm run generate-file-size-report -w @tools/tests
+            displayName: "npm generate modules size"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - script: |
+                set -euo pipefail
                 npm run prepare-snapshot
 
-                zip -r $(Build.ArtifactStagingDirectory)/cdnSnapshot.zip .snapshot
+                requiredFiles=(
+                    ".snapshot/babylon.js"
+                    ".snapshot/babylon.max.js"
+                    ".snapshot/loaders/babylonjs.loaders.js"
+                    ".snapshot/babylon.ktx2Decoder.js"
+                    ".snapshot/ktx2Transcoders/1/msc_basis_transcoder.js"
+                    ".snapshot/ktx2Transcoders/1/msc_basis_transcoder.wasm"
+                    ".snapshot/ktx2Transcoders/1/uastc_rgba8_unorm_v2.wasm"
+                    ".snapshot/zstddec.wasm"
+                    ".snapshot/fileSizes.json"
+                )
+                for file in "${requiredFiles[@]}"; do
+                    if [[ ! -s "$file" ]]; then
+                        echo "Required CDN snapshot asset is missing or empty: $file" >&2
+                        exit 1
+                    fi
+                done
+
+                stagingDir="$(Build.ArtifactStagingDirectory)"
+                mkdir -p "$stagingDir"
+                snapshotZip="$stagingDir/snapshot.zip"
+                rm -f "$snapshotZip" "$stagingDir/cdnSnapshot.zip"
+                cd .snapshot
+                zip -r "$snapshotZip" *
+                cd ..
+
+                # Healthy releases are about 106 MB compressed. This 50 MB floor
+                # allows substantial size variation while rejecting truncated snapshots.
+                minimumArchiveSize=50000000
+                archiveSize=$(stat -c%s "$snapshotZip")
+                if (( archiveSize < minimumArchiveSize )); then
+                    echo "CDN snapshot archive is too small: ${archiveSize} bytes (minimum ${minimumArchiveSize})" >&2
+                    exit 1
+                fi
+                zip -r "$stagingDir/cdnSnapshot.zip" .snapshot
             displayName: "prepare snapshot"
             condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
 
+          - script: |
+                set -euo pipefail
+
+                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                  -H "Content-Type: multipart/form-data" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
+                  -F "path=cdn/master/v$(PackageVersion)" \
+                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+                  -F "saveZip=true" \
+                  -F "zip=@$(Build.ArtifactStagingDirectory)/snapshot.zip"
+            displayName: "Update snapshot"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - script: |
+                set -euo pipefail
+                cd packages/tools/tests/dist
+                zip "$(Build.ArtifactStagingDirectory)/fileSize.zip" fileSizes.json
+                cd ../../../..
+
+                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                  -H "Content-Type: multipart/form-data" \
+                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
+                  -F "path=cdn/master/v$(PackageVersion)" \
+                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+                  -F "zip=@$(Build.ArtifactStagingDirectory)/fileSize.zip"
+            displayName: "Update snapshot modules size"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - script: |
+                set -euo pipefail
+                releaseNotes="$(Build.ArtifactStagingDirectory)/release-notes.md"
+                cp .build/release-notes.md "$releaseNotes"
+                test -s "$releaseNotes"
+            displayName: "Preserve release notes"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - script: |
+                set -euo pipefail
+
+                baseUrl="https://cdn.babylonjs.com/v$(PackageVersion)"
+                assets=(
+                    "babylon.js"
+                    "babylon.max.js"
+                    "loaders/babylonjs.loaders.js"
+                    "babylon.ktx2Decoder.js"
+                    "ktx2Transcoders/1/msc_basis_transcoder.js"
+                    "ktx2Transcoders/1/msc_basis_transcoder.wasm"
+                    "zstddec.wasm"
+                    "fileSizes.json"
+                )
+                deadline=$((SECONDS + 600))
+                for asset in "${assets[@]}"; do
+                    url="${baseUrl}/${asset}"
+                    status="000"
+                    attempt=0
+                    while (( SECONDS < deadline )); do
+                        attempt=$((attempt + 1))
+                        # Unique query avoids reusing a cached 404 while the upload propagates.
+                        if status=$(curl --connect-timeout 10 --max-time 60 --silent --show-error \
+                            --output /dev/null --write-out "%{http_code}" "${url}?releaseCheck=$(Build.BuildId)-${attempt}"); then
+                            if [[ "$status" == "200" ]]; then
+                                echo "Verified ${url}"
+                                break
+                            fi
+                        else
+                            status="000"
+                        fi
+                        echo "Waiting for ${url} (HTTP ${status})"
+                        sleep 15
+                    done
+                    if [[ "$status" != "200" ]]; then
+                        echo "CDN asset did not become available: ${url} (last HTTP status ${status})" >&2
+                        exit 1
+                    fi
+                done
+            displayName: "Verify versioned CDN snapshot"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - script: echo "//registry.npmjs.org/:_authToken=$(NPM_TOKEN)" > ./.npmrc
+            displayName: "write npmrc"
+
+          - script: npm publish -ws --access=public
+            displayName: "publish latest stable (master branch)"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - script: npm publish -ws --tag preview
+            displayName: "publish preview (preview branch)"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'preview'))
+
+          - script: |
+                set -euo pipefail
+                git checkout "$(Build.SourceBranchName)"
+            displayName: "Return to release branch"
+
+          - script: git fetch origin
+            displayName: "fetch origin"
+
+          - script: git merge origin/$(Build.SourceBranchName)
+            displayName: "pull master"
+
+          - script: git push origin $(Build.SourceBranchName) --tags
+            displayName: "push to git"
+
+          # Runs after the push so GitHub can resolve the release commit and tag.
           - task: GitHubRelease@1
             displayName: "GitHub release (create)"
-            continueOnError: true
             condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
             inputs:
                 gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
@@ -158,47 +296,7 @@ jobs:
                 isDraft: false
                 isPreRelease: false
                 addChangeLog: false
-                releaseNotesFilePath: ".build/release-notes.md"
-
-          - script: |
-                cd .snapshot
-                zip -r ../snapshot.zip *
-                cd ..
-
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-                  -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/master/v$(PackageVersion)" \
-                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "saveZip=true" \
-                  -F "zip=@snapshot.zip"
-            displayName: "Update snapshot"
-
-          - task: Npm@1
-            displayName: "run build -w @tools/tests"
-            inputs:
-                command: custom
-                customCommand: "run build -w @tools/tests"
-
-          - task: Npm@1
-            displayName: "npm generate modules size"
-            inputs:
-                command: custom
-                customCommand: "run generate-file-size-report -w @tools/tests"
-
-          - script: |
-                # filesize
-                cd packages/tools/tests/dist
-                zip ../../../../fileSize.zip fileSizes.json
-                cd ../../../..
-
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-                  -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/master/v$(PackageVersion)" \
-                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "zip=@fileSize.zip"
-            displayName: "Update snapshot modules size"
+                releaseNotesFilePath: "$(Build.ArtifactStagingDirectory)/release-notes.md"
 
           # DISABLED in classic pipeline:
           # - script: |

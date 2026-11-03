@@ -6,7 +6,7 @@ import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.p
 import { RichTypeAny, RichTypeNumber } from "../../../flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
-import { type AbstractSound } from "../../../../AudioV2/abstractAudio/abstractSound";
+import { type FlowGraphSoundReference, ResolveFlowGraphSound } from "../../../flowGraphSoundAssets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -15,9 +15,9 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  */
 export class FlowGraphGetSoundVolumeBlock extends FlowGraphCachedOperationBlock<number> {
     /**
-     * Input connection: The sound to read the volume from.
+     * Input connection: The sound to read the volume from. Accepts an Audio V2 sound or the name of a sound asset declared on the coordinator.
      */
-    public readonly sound: FlowGraphDataConnection<AbstractSound>;
+    public readonly sound: FlowGraphDataConnection<FlowGraphSoundReference>;
 
     /**
      * Constructs a new FlowGraphGetSoundVolumeBlock.
@@ -32,7 +32,7 @@ export class FlowGraphGetSoundVolumeBlock extends FlowGraphCachedOperationBlock<
      * @internal
      */
     public override _doOperation(context: FlowGraphContext): number | undefined {
-        const soundValue = this.sound.getValue(context);
+        const soundValue = ResolveFlowGraphSound(context, this.sound.getValue(context));
         if (!soundValue) {
             return undefined;
         }

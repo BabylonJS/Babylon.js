@@ -35,7 +35,7 @@
         "@types/react": "^18.3.31",
         "@types/react-dom": "^18.3.7",
         "gif.js.optimized": "^1.0.1",
-        "sass": "^1.105.0",
+        "sass": "^1.106.1",
         "re-resizable": "^6.11.2",
         "react": "^18.3.1",
         "split.js": "^1.6.5",
