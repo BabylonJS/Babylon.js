@@ -63,6 +63,7 @@ import { type RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { type RenderTargetWrapper } from "./renderTargetWrapper";
 import { type Scene } from "../scene.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
+import { type Mesh } from "../Meshes/mesh.pure";
 
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial.pure";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
@@ -285,7 +286,9 @@ export interface IWebGPURenderPipelineAsyncCreationOptions {
      */
     cullFace?: number;
     /**
-     * Front face winding order (1 = CCW, 2 = CW). Defaults to 2 (CW).
+     * Front face winding order (1 = CCW, 2 = CW). Defaults to the one the draws of the mesh with its material use in the current pass (the canvas
+     * outside of a render pass): from the side orientation of the material, or else of the mesh, reversed when its world matrix mirrors, and in a
+     * render target, which is drawn Y-flipped, reversed again.
      */
     frontFace?: number;
     /**
@@ -3880,6 +3883,27 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
     }
 
+    // The front face of a draw in the current pass (1 = CCW, 2 = CW), for draws whose side is reversed or not (see setState).
+    // Render targets are drawn Y-flipped (see the InternalsUBO yFactor in _draw), so their triangle
+    // winding is reversed here to compensate and keep the same faces visible. XR projection-layer targets
+    // opt out of that flip (_disableEngineYFlip) because the compositor presents them directly, so they
+    // keep the main-framebuffer winding.
+    private _getFrontFace(reverseSide: boolean): number {
+        const invertYRenderTarget = !!this._currentRenderTarget && !(this._currentRenderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip;
+        return reverseSide ? (invertYRenderTarget ? 1 : 2) : invertYRenderTarget ? 2 : 1;
+    }
+
+    // The front face of the draws of a mesh with its material in the current pass: the side orientation Mesh.render gives Material._preBind,
+    // from the world matrix the next frame computes (the last one computed can predate a change of the mesh's transform), wound as setState does
+    private _getMeshFrontFace(mesh: AbstractMesh): number {
+        const material = mesh.material;
+        if (!material) {
+            return this._getFrontFace(false);
+        }
+        mesh.computeWorldMatrix(true);
+        return this._getFrontFace(material._isReverseSide((mesh as Mesh)._getDrawSideOrientation?.(material)));
+    }
+
     /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
@@ -3904,12 +3928,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this.setZOffsetUnits(zOffsetUnits);
 
         // Front face
-        // Render targets are drawn Y-flipped (see the InternalsUBO yFactor in _draw), so their triangle
-        // winding is reversed here to compensate and keep the same faces visible. XR projection-layer targets
-        // opt out of that flip (_disableEngineYFlip) because the compositor presents them directly, so they
-        // keep the main-framebuffer winding.
-        const invertYRenderTarget = !!this._currentRenderTarget && !(this._currentRenderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip;
-        const frontFace = reverseSide ? (invertYRenderTarget ? 1 : 2) : invertYRenderTarget ? 2 : 1;
+        const frontFace = this._getFrontFace(reverseSide);
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }
@@ -4205,7 +4224,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             // Rasterization state
             cache.setCullEnabled(entry.cullEnabled ?? true);
             cache.setCullFace(entry.cullFace ?? 1);
-            cache.setFrontFace(entry.frontFace ?? 2);
+            cache.setFrontFace(entry.frontFace ?? this._getMeshFrontFace(entry.mesh));
 
             // Write mask
             cache.setWriteMask(entry.writeMask ?? 0xf);

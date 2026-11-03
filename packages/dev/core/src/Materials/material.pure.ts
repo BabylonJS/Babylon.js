@@ -1406,12 +1406,20 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     /**
      * @internal
+     * Whether a draw with a side orientation (the material's when null) reverses its front faces, as _preBind sets it
+     */
+    public _isReverseSide(overrideOrientation: Nullable<number> = null): boolean {
+        const orientation = overrideOrientation == null ? this.sideOrientation : overrideOrientation;
+        return orientation === Material.ClockWiseSideOrientation;
+    }
+
+    /**
+     * @internal
      */
     public _preBind(effect?: Effect | DrawWrapper, overrideOrientation: Nullable<number> = null): boolean {
         const engine = this._scene.getEngine();
 
-        const orientation = overrideOrientation == null ? this.sideOrientation : overrideOrientation;
-        const reverse = orientation === Material.ClockWiseSideOrientation;
+        const reverse = this._isReverseSide(overrideOrientation);
 
         const effectiveDrawWrapper = effect ? effect : this._getDrawWrapper();
 
