@@ -5667,7 +5667,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        // Render the graph: its passes are rendered again in the next frames, so their mesh draws may wait for their pipelines
+        // Render the graph: its passes are rendered again in the next frames, so their mesh draws may wait for their pipelines (but for
+        // those rendered once: an object renderer with REFRESHRATE_RENDER_ONCE, the voxelization of IBL shadows)
         const drawsMayWait = this._engine._drawsMayWait;
         this._engine._drawsMayWait = this._engine._renderingOnce === 0;
         try {
@@ -5697,7 +5698,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // Camera
             this.updateTransformMatrix();
 
-            // rendered by the scene's frame: its mesh draws may wait for their pipelines, unless it renders once (RenderTargetTexture.render)
+            // rendered by the scene's frame: its mesh draws may wait for their pipelines, unless it renders once (ObjectRenderer.render)
             const drawsMayWait = this._engine._drawsMayWait;
             this._engine._drawsMayWait = this._engine._renderingOnce === 0;
             try {

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
@@ -11,14 +12,23 @@ import {
     type IWebGPURenderPassDrawCommand,
 } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
 import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
+import { type FrameGraph } from "core/FrameGraph/frameGraph";
+import { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
+import { FrameGraphTextureManager } from "core/FrameGraph/frameGraphTextureManager";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Observable } from "core/Misc/observable";
+import { _IblShadowsVoxelRenderer } from "core/Rendering/IBLShadows/iblShadowsVoxelRenderer";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { Scene } from "core/scene";
 import { type Nullable } from "core/types";
+import "core/Materials/standardMaterial";
 import "core/Rendering/boundingBoxRenderer";
+import "core/Shaders/default.fragment";
+import "core/Shaders/default.vertex";
 
 /**
  * Asynchronous pipeline creation, through the engine's own draw path: WebGPUEngine.drawElementsType (_draw, _omitDraw), beginFrame,
@@ -111,6 +121,13 @@ class PipelineCache {
         this._pending.delete(key);
         pending.resolve(this._pipeline(key));
         await pending.promise;
+    }
+
+    // every asynchronous creation in progress completes
+    public async completeAllAsync(): Promise<void> {
+        for (const key of Array.from(this._pending.keys())) {
+            await this.completeAsync(key);
+        }
     }
 
     public endFrame(): void {}
@@ -417,6 +434,152 @@ describe("WebGPUEngine asynchronous pipeline creation, through the draw path", (
             expect(render()).toEqual([["box/shadow"], ["box/main"], false]);
         }
         expect(render()).toEqual([["box/shadow"], ["box/main"], true]);
+    });
+
+    // the scene's frame graph runs the given passes (only what the scene asks of a graph: the scene's frame sets the graph's scope as for
+    // any graph), and the box's draws, from the scene's own code, reach the engine of the test with the owner Mesh._processRendering
+    // gives them and whether their pass lets them wait, one pipeline configuration per target ("box/<name>"). The two engines act as one:
+    // the scene reads the frame and the last wait of the test's engine. A frame returns what each target holds: what it drew the last
+    // time it rendered
+    const graphFrames = (
+        harness: ReturnType<typeof CreateEngine>,
+        box: ReturnType<typeof newMesh>,
+        targets: Array<[name: string, target: ObjectRenderer | RenderTargetTexture]>,
+        execute: (context: FrameGraphRenderContext) => void
+    ) => {
+        const engine = harness.engine;
+        const names = new Map(targets.map(([name, target]) => [target.renderPassId, name]));
+        vi.spyOn(nullEngine, "drawElementsType").mockImplementation(() => {
+            const pass = nullEngine.currentRenderPassId;
+            engine._drawsMayWait = nullEngine._drawsMayWait;
+            harness.draw(nullEngine._pipelineWaitOwner, box.context(pass), `box/${names.get(pass)}`);
+            nullEngine._lastPipelineWaitFrameId = engine._lastPipelineWaitFrameId;
+        });
+        const context = new FrameGraphRenderContext(nullEngine, new FrameGraphTextureManager(nullEngine, false, scene), scene);
+        scene.frameGraph = { execute: () => execute(context), getTasksByClassName: () => [], findMainCamera: () => null } as unknown as FrameGraph;
+        const held: string[][] = targets.map(() => []);
+        const rendered = new Set<number>();
+        for (let index = 0; index < targets.length; index++) {
+            targets[index][1].onBeforeRenderObservable.add(() => rendered.add(index));
+        }
+        return () => {
+            rendered.clear();
+            const [draws] = harness.frame(() => {
+                (nullEngine as unknown as { _frameId: number })._frameId = engine.frameId;
+                scene.render();
+            });
+            for (const index of rendered) {
+                held[index] = draws.filter((draw) => draw === `box/${targets[index][0]}`);
+            }
+            return held.slice();
+        };
+    };
+
+    // the passes are ready to draw (their effects are compiled), as a scene waits for its passes
+    const readyAsync = async (isReady: () => boolean) => {
+        for (let i = 0; i < 50 && !isReady(); i++) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        expect(isReady()).toBe(true);
+    };
+
+    it("draws every mesh in the only render of a frame graph object renderer rendered once, and keeps it once the creations complete", async () => {
+        const harness = CreateEngine(true);
+        const box = newMesh("box");
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+        const renderer = (name: string, refreshRate: number) => {
+            const objectRenderer = new ObjectRenderer(name, scene);
+            objectRenderer.refreshRate = refreshRate;
+            objectRenderer.renderList = [box.mesh];
+            objectRenderer.activeCamera = camera;
+            return objectRenderer;
+        };
+        // the graph renders an object renderer rendered once, one refreshed every 4 frames, then the main pass
+        const once = renderer("once", ObjectRenderer.REFRESHRATE_RENDER_ONCE);
+        const everyFour = renderer("every4", 4);
+        const main = renderer("main", ObjectRenderer.REFRESHRATE_RENDER_ONEVERYFRAME);
+        const frame = graphFrames(
+            harness,
+            box,
+            [
+                ["once", once],
+                ["every4", everyFour],
+                ["main", main],
+            ],
+            (context) => {
+                for (const objectRenderer of [once, everyFour, main]) {
+                    context.render(objectRenderer, 32, 32);
+                }
+            }
+        );
+        await readyAsync(() => once.isReadyForRendering(32, 32) && everyFour.isReadyForRendering(32, 32) && main.isReadyForRendering(32, 32));
+
+        // the renderer rendered once draws the box, creating its pipeline in the frame; the box waits in the other passes
+        expect(frame()).toEqual([["box/once"], [], []]);
+        await harness.cache.completeAllAsync();
+        // the renderer refreshed every 4 frames renders in every frame, and shows the box in the same frame as the main pass
+        expect(frame()).toEqual([["box/once"], [], []]);
+        expect(frame()).toEqual([["box/once"], ["box/every4"], ["box/main"]]);
+        for (let i = 0; i < 6; i++) {
+            expect(frame()).toEqual([["box/once"], ["box/every4"], ["box/main"]]);
+        }
+        expect(harness.cache.synchronous).toEqual(["box/once"]);
+    });
+
+    it("draws every mesh in a voxelization of IBL shadows advanced by the frame graph, which nothing renders again, and keeps the grid", async () => {
+        const harness = CreateEngine(true);
+        const box = newMesh("box");
+        const main = new ObjectRenderer("main", scene);
+        main.renderList = [box.mesh];
+        main.activeCamera = new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+        // the voxel renderer, with its GPU resources replaced: the render targets of one slab (one axis), a grid, no mips
+        const slab = new RenderTargetTexture("voxel slab", 8, scene);
+        const voxels = Object.create(_IblShadowsVoxelRenderer.prototype) as _IblShadowsVoxelRenderer;
+        Object.assign(voxels, {
+            _scene: scene,
+            _engine: nullEngine,
+            _maxDrawBuffers: 4,
+            _voxelResolution: 4,
+            _triPlanarVoxelization: false,
+            _voxelGridZaxis: new RenderTargetTexture("voxel grid", 8, scene),
+            _voxelMrtsXaxis: [],
+            _voxelMrtsYaxis: [],
+            _voxelMrtsZaxis: [slab],
+            _renderTargets: [],
+            _mipArray: [],
+            _gsVoxelMaterialCache: new Map(),
+            _invWorldScaleMatrix: Matrix.Identity(),
+            _voxelizationInProgress: false,
+            _sortSettleWaitFrames: 0,
+            _copyMipEffectWrapper: { effect: { isReady: () => true } },
+            onVoxelizationCompleteObservable: new Observable(),
+        });
+        (voxels as unknown as { _createVoxelMaterials: () => void })._createVoxelMaterials();
+        // the graph's voxelization task asks for one voxelization (its refresh is manual), then advances it in each frame
+        voxels.updateVoxelGrid([box.mesh], false);
+        const frame = graphFrames(
+            harness,
+            box,
+            [
+                ["voxel", slab],
+                ["main", main],
+            ],
+            (context) => {
+                if (voxels.isVoxelizationInProgress()) {
+                    voxels.processVoxelization();
+                }
+                context.render(main, 32, 32);
+            }
+        );
+        await readyAsync(() => slab.isReadyForRendering() && main.isReadyForRendering(32, 32));
+
+        // the grid is voxelized with the box, creating its pipeline in the frame, while the box waits in the main pass
+        expect(frame()).toEqual([["box/voxel"], []]);
+        expect(voxels.isVoxelizationInProgress()).toBe(false);
+        await harness.cache.completeAllAsync();
+        expect(frame()).toEqual([["box/voxel"], []]);
+        expect(frame()).toEqual([["box/voxel"], ["box/main"]]);
+        expect(harness.cache.synchronous).toEqual(["box/voxel"]);
     });
 
     it("draws the bounding box of an occlusion query while its mesh waits, in a FAST snapshot's recording and in its replays", async () => {

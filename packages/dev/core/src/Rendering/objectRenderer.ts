@@ -754,6 +754,25 @@ export class ObjectRenderer {
      * @param skipOnAfterRenderObservable defines a flag to skip raising the onAfterRenderObservable
      */
     public render(passIndex = 0, skipOnAfterRenderObservable = false): void {
+        if (this.refreshRate !== ObjectRenderer.REFRESHRATE_RENDER_ONCE) {
+            this._render(passIndex, skipOnAfterRenderObservable);
+            return;
+        }
+        // rendered once (by a render target or a frame graph task): every mesh is drawn in this rendering, none waits for its pipeline
+        // (asynchronous pipeline creation), since nothing renders it again
+        const engine = this._engine;
+        const drawsMayWait = engine._drawsMayWait;
+        engine._drawsMayWait = false;
+        engine._renderingOnce++;
+        try {
+            this._render(passIndex, skipOnAfterRenderObservable);
+        } finally {
+            engine._renderingOnce--;
+            engine._drawsMayWait = drawsMayWait;
+        }
+    }
+
+    private _render(passIndex: number, skipOnAfterRenderObservable: boolean): void {
         const currentRenderPassId = this._engine.currentRenderPassId;
 
         this._engine.currentRenderPassId = this._renderPassIds[passIndex];

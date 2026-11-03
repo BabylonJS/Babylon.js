@@ -541,7 +541,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * omitted while the pipeline is created asynchronously (one creation per pipeline configuration, shared with preWarmPipeline),
      * instead of creating it synchronously in the frame. The mesh is omitted in all of its passes (shadow maps, depth, main pass...)
      * from the frame one of its draws had to wait until a frame in which none did, and until it is drawn again, a render target
-     * refreshed every N frames renders in every frame, so that it shows the mesh in the same frames as the other passes. Limitation:
+     * refreshed every N frames renders in every frame, so that it shows the mesh in the same frames as the other passes. A pass that
+     * nothing renders again (a render target or a frame graph task with REFRESHRATE_RENDER_ONCE, the voxelization of IBL shadows, a
+     * screenshot through a render target) draws every mesh, creating the pipelines it lacks synchronously. Limitation:
      * in the frame of that first wait, the passes rendered before it have already drawn the mesh, so that frame can show the mesh in
      * some of its passes only (the shadow of a mesh whose main pass draw waits, for instance). Other draws (the bounding boxes of
      * occlusion queries, post-processes, sprites, particles...) still create their pipelines synchronously. A snapshot recorded while

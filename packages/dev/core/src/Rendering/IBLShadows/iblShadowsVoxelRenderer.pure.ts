@@ -802,8 +802,18 @@ export class _IblShadowsVoxelRenderer {
                 }
             }
 
-            for (const rt of this._renderTargets) {
-                rt.render();
+            // the grid is rendered once and kept until the next voxelization: every mesh is drawn in it, none waits for its pipeline
+            // (asynchronous pipeline creation), since nothing voxelizes again when a pipeline is created
+            const drawsMayWait = this._engine._drawsMayWait;
+            this._engine._drawsMayWait = false;
+            this._engine._renderingOnce++;
+            try {
+                for (const rt of this._renderTargets) {
+                    rt.render();
+                }
+            } finally {
+                this._engine._renderingOnce--;
+                this._engine._drawsMayWait = drawsMayWait;
             }
             this._stopVoxelization();
 
