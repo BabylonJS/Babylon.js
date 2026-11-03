@@ -177,6 +177,34 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(false);
     });
 
+    it("sees a texture a shader material sets or removes in the frame, which only changes its dictionary of textures", () => {
+        const shaderMaterial = new ShaderMaterial("shader", scene, "default", { shaderLanguage: ShaderLanguage.WGSL });
+        const texture = RawTexture.CreateRGBATexture(new Uint8Array(4), 1, 1, scene);
+        shaderMaterial.setTexture("diffuseSampler", texture);
+        mesh.material = shaderMaterial;
+        const shaderFullDraw = () => {
+            engine._keepInheritedState(drawWrapper);
+            light._renderId = scene.getRenderId();
+            mesh._keepRecordedDraw(drawWrapper, subMesh, shaderMaterial, mesh, true);
+        };
+        const shaderUnchanged = () => mesh._isRecordedDrawUnchanged(drawWrapper, subMesh, shaderMaterial, mesh, true);
+        // the full draw of the frame lists the material's textures
+        shaderFullDraw();
+        expect(shaderUnchanged()).toBe(true);
+
+        // replaced in the same frame: the draw binds the material again
+        const other = RawTexture.CreateRGBATexture(new Uint8Array(4), 1, 1, scene);
+        shaderMaterial.setTexture("diffuseSampler", other);
+        expect(shaderUnchanged()).toBe(false);
+        shaderFullDraw();
+        expect(shaderUnchanged()).toBe(true);
+        // set again with the texture it has: nothing changed
+        shaderMaterial.setTexture("diffuseSampler", other);
+        expect(shaderUnchanged()).toBe(true);
+        shaderMaterial.removeTexture("diffuseSampler");
+        expect(shaderUnchanged()).toBe(false);
+    });
+
     it("sees replaced geometry and a changed index range", () => {
         mesh.setVerticesData(
             VertexBuffer.PositionKind,

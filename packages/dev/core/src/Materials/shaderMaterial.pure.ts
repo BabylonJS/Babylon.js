@@ -295,7 +295,11 @@ export class ShaderMaterial extends PushMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
             this._options.samplers.push(name);
         }
-        this._textures[name] = texture;
+        if (this._textures[name] !== texture) {
+            this._textures[name] = texture;
+            // what the material binds changed: the draws a snapshot recorded with it are bound again
+            this._drawCacheVersion++;
+        }
 
         return this;
     }
@@ -320,7 +324,11 @@ export class ShaderMaterial extends PushMaterial {
      * @param name Define the name of the texture to remove
      */
     public removeTexture(name: string): void {
-        delete this._textures[name];
+        if (name in this._textures) {
+            delete this._textures[name];
+            // what the material binds changed: the draws a snapshot recorded with it are bound again
+            this._drawCacheVersion++;
+        }
     }
 
     /**
