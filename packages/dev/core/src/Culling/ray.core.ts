@@ -499,7 +499,8 @@ export class Ray {
         const dP = TmpVectors.Vector3[6];
         qsc.subtractToRef(qtc, dP); // = S1(sc) - S2(tc)
 
-        const isIntersected = tc > 0 && tc <= this.length && dP.lengthSquared() < threshold * threshold; // return intersection result
+        const maxRayParameter = this.length / Ray._Rayl;
+        const isIntersected = tc > 0 && tc <= maxRayParameter && dP.lengthSquared() < threshold * threshold; // return intersection result
 
         if (isIntersected) {
             return qsc.length();
