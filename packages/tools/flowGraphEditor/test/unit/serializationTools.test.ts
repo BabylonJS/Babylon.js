@@ -155,8 +155,10 @@ describe("SerializationTools coordinator ownership", () => {
         (globalState.stateManager as any).storeEditorData = vi.fn();
         vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
         const download = vi.spyOn(SerializationTools as any, "_DownloadBlob").mockImplementation(() => {});
+        graph.start();
         globalState.snapshotUserVariables();
         graph.stop();
+        expect(graph.contextCount).toBe(0);
 
         await SerializationTools.ExportBabylonFlowGraphGlbAsync(graph, globalState, null);
 

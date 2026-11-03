@@ -28,7 +28,7 @@ import { type IFlowGraphSoundAsset } from "core/FlowGraph/flowGraphSoundAssets";
 import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
-type SceneReferenceLocation = { id: string; name: string; className: string; idIndex: number; nameIndex: number };
+export type SceneReferenceLocation = { id: string; name: string; className: string; idIndex: number; nameIndex: number; sceneUid?: string };
 type SceneReferenceProvenance = Array<[number, SceneReferenceLocation]>;
 
 /**
@@ -335,7 +335,8 @@ export class GlobalState {
                 }
             });
         };
-        const updatedIndexes = updateRuntime(this._savedContextRuntimeData);
+        const runtimeSnapshots = this._perGraphContextRuntimeData.get(this._flowGraph.uniqueId) ?? null;
+        const updatedIndexes = updateRuntime(runtimeSnapshots);
         updateSerialized(this._savedContextSnapshots, updatedIndexes);
         updateSerialized(this._perGraphContextSnapshots.get(this._flowGraph.uniqueId) ?? null, updatedIndexes);
     }
@@ -1279,6 +1280,7 @@ export class GlobalState {
     /** Cached position of each previous-scene node among nodes with the same identity. */
     private _cachedOldNodeLocations: Map<number, SceneReferenceLocation> | null = null;
     private _restoredReferenceProvenance: Map<number, SceneReferenceLocation[]> | null = null;
+    private _referenceLocationsByOccurrence = new WeakMap<object, SceneReferenceLocation>();
     private readonly _soundAssetOperations = new Map<string, { token: number; removed: boolean }>();
 
     /**
@@ -1307,6 +1309,16 @@ export class GlobalState {
      * Used to preserve context data for inactive graphs during multi-graph serialization.
      */
     private _perGraphContextSnapshots = new Map<string, any[]>();
+    private _perGraphContextRuntimeData = new Map<
+        string,
+        Array<{
+            userVariables: { [key: string]: any };
+            connectionValues: { [key: string]: any };
+            variableTypes: { [key: string]: string };
+            name: string;
+            uniqueId: string;
+        }>
+    >();
 
     /**
      * Runtime (non-serialized) copies of each execution context's data.
@@ -1372,6 +1384,8 @@ export class GlobalState {
         if (!flowGraph) {
             return;
         }
+        this._savedContextSnapshots = this._perGraphContextSnapshots.get(flowGraph.uniqueId) ?? null;
+        this._savedContextRuntimeData = this._perGraphContextRuntimeData.get(flowGraph.uniqueId) ?? null;
 
         // Snapshot user variables so Start/Reset can restore them regardless of run state.
         // These variables (e.g. pickedMesh_0 from KHR_interactivity) are set during parsing and
@@ -1930,11 +1944,7 @@ export class GlobalState {
         let candidates = reference.id ? filterByClass(allNodes.filter((node) => node.id === reference.id)) : [];
         let locationIndex: number | undefined;
         const oldLocation =
-            reference.uniqueId === undefined
-                ? undefined
-                : isSerializedNode
-                  ? (this._getRestoredReferenceLocation(reference.uniqueId, reference) ?? this._cachedOldNodeLocations?.get(reference.uniqueId))
-                  : this._cachedOldNodeLocations?.get(reference.uniqueId);
+            reference.uniqueId === undefined ? undefined : isSerializedNode ? this._getReferenceLocation(value) : this._cachedOldNodeLocations?.get(reference.uniqueId);
         if (candidates.length > 0) {
             locationIndex = oldLocation && oldLocation.id === reference.id && oldLocation.className === reference.className ? oldLocation.idIndex : undefined;
         } else if (reference.name) {
@@ -2005,6 +2015,7 @@ export class GlobalState {
                 // Serialized snapshot for SerializationTools
                 const serialized: any = {};
                 context.serialize(serialized);
+                this._rememberSerializedReferenceLocations((context as any)._connectionValues, serialized._connectionValues);
                 this._savedContextSnapshots.push(serialized);
                 // Runtime snapshot for createContext wrapper
                 this._savedContextRuntimeData.push({
@@ -2017,6 +2028,7 @@ export class GlobalState {
             }
             // Store per-graph snapshots for multi-graph serialization
             this._perGraphContextSnapshots.set(fg.uniqueId, [...this._savedContextSnapshots!]);
+            this._perGraphContextRuntimeData.set(fg.uniqueId, [...this._savedContextRuntimeData!]);
         }
     }
 
@@ -2095,6 +2107,7 @@ export class GlobalState {
             className,
             idIndex: classNodes.filter((node) => node.id === value.id).indexOf(value),
             nameIndex: classNodes.filter((node) => node.name === value.name).indexOf(value),
+            sceneUid: scene.uid,
         };
     }
 
@@ -2110,7 +2123,7 @@ export class GlobalState {
         if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
             return undefined;
         }
-        return this._cachedOldNodeLocations?.get(value.uniqueId) ?? this._getRestoredReferenceLocation(value.uniqueId, value);
+        return this._referenceLocationsByOccurrence.get(value) ?? this._getRestoredReferenceLocation(value.uniqueId, value) ?? this._cachedOldNodeLocations?.get(value.uniqueId);
     }
 
     private _forEachReferenceValue(callback: (value: any) => void): void {
@@ -2139,8 +2152,8 @@ export class GlobalState {
         if (this._savedConnectionValues) {
             Object.values(this._savedConnectionValues).forEach(collect);
         }
-        if (this._savedContextRuntimeData) {
-            this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
+        for (const runtimeSnapshots of this._perGraphContextRuntimeData.values()) {
+            runtimeSnapshots.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
         }
     }
 
@@ -2158,6 +2171,29 @@ export class GlobalState {
             this._cachedOldNodeLocations.set(entry.uniqueId, location);
         };
         collect(value);
+    }
+
+    private _rememberSerializedReferenceLocations(runtimeValue: any, serializedValue: any): void {
+        if (Array.isArray(runtimeValue) && Array.isArray(serializedValue)) {
+            runtimeValue.forEach((entry, index) => this._rememberSerializedReferenceLocations(entry, serializedValue[index]));
+            return;
+        }
+        if (!runtimeValue || !serializedValue || typeof runtimeValue !== "object" || typeof serializedValue !== "object") {
+            return;
+        }
+        const location = this._getReferenceLocation(runtimeValue);
+        if (location && typeof serializedValue.uniqueId === "number") {
+            this._referenceLocationsByOccurrence.set(serializedValue, location);
+        }
+    }
+
+    /**
+     * Associates a parsed reference occurrence with the provenance entry that resolved it.
+     * @param value parsed live or unresolved reference value
+     * @param location durable reference location
+     */
+    public rememberReferenceOccurrence(value: object, location: SceneReferenceLocation): void {
+        this._referenceLocationsByOccurrence.set(value, location);
     }
 
     /** Gets durable scene-reference provenance for editor serialization. */
@@ -2249,13 +2285,18 @@ export class GlobalState {
     /**
      * Restores durable scene-reference provenance before a deserialized coordinator is activated.
      * @param entries serialized provenance entries
+     * @param occurrences provenance paired with exact parsed reference values
      */
-    public restoreReferenceProvenance(entries: SceneReferenceProvenance): void {
+    public restoreReferenceProvenance(entries: SceneReferenceProvenance, occurrences: Array<[object, SceneReferenceLocation]> = []): void {
         this._restoredReferenceProvenance = new Map();
+        this._referenceLocationsByOccurrence = new WeakMap();
         for (const [uniqueId, location] of entries) {
             const locations = this._restoredReferenceProvenance.get(uniqueId) ?? [];
             locations.push(location);
             this._restoredReferenceProvenance.set(uniqueId, locations);
+        }
+        for (const [value, location] of occurrences) {
+            this.rememberReferenceOccurrence(value, location);
         }
     }
 
@@ -2305,7 +2346,7 @@ export class GlobalState {
             const nameKey = `${className}\0${node.name}`;
             const idIndex = idCounts.get(idKey) ?? 0;
             const nameIndex = nameCounts.get(nameKey) ?? 0;
-            this._cachedOldNodeLocations.set(node.uniqueId, { id: node.id, name: node.name, className, idIndex, nameIndex });
+            this._cachedOldNodeLocations.set(node.uniqueId, { id: node.id, name: node.name, className, idIndex, nameIndex, sceneUid: scene.uid });
             idCounts.set(idKey, idIndex + 1);
             nameCounts.set(nameKey, nameIndex + 1);
         }
@@ -2339,8 +2380,8 @@ export class GlobalState {
         if (this._savedConnectionValues) {
             Object.values(this._savedConnectionValues).forEach(collect);
         }
-        if (this._savedContextRuntimeData) {
-            this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
+        for (const runtimeSnapshots of this._perGraphContextRuntimeData.values()) {
+            runtimeSnapshots.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
         }
         return uniqueIds;
     }

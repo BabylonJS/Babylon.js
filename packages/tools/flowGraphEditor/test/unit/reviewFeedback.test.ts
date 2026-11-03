@@ -11,12 +11,17 @@ import { Scene } from "core/scene";
 import { LogEntry, LogEntryBuffer } from "flow-graph-editor/components/log/logComponent";
 import { ImportSoundAssetFileAsync } from "flow-graph-editor/components/soundAssets/soundAssetsPanelComponent";
 import { CreateIntersectionPlaySoundTemplate } from "flow-graph-editor/compositeTemplates";
-import { GraphEditor } from "flow-graph-editor/graphEditor";
-import { GetTargetMeshPickerOptions, MeshIntersectionPropertyComponent } from "flow-graph-editor/graphSystem/properties/meshIntersectionPropertyComponent";
+import { ApplyFlowGraphHistorySnapshot, CreateFlowGraphHistorySnapshot, GraphEditor } from "flow-graph-editor/graphEditor";
+import {
+    GetSourceMeshPickerOptions,
+    GetTargetMeshPickerOptions,
+    MeshIntersectionPropertyComponent,
+} from "flow-graph-editor/graphSystem/properties/meshIntersectionPropertyComponent";
 import { PointerEventPropertyComponent } from "flow-graph-editor/graphSystem/properties/pointerEventPropertyComponent";
 import { GlobalState } from "flow-graph-editor/globalState";
 import { SceneContext } from "flow-graph-editor/sceneContext";
 import { SerializationTools } from "flow-graph-editor/serializationTools";
+import { HistoryStack } from "shared-ui-components/historyStack";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
@@ -65,6 +70,24 @@ describe("review feedback regressions", () => {
 
         globalState.dispose();
         coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps an unresolved source distinct from a colliding live mesh", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const live = new Mesh("part", scene);
+        const unresolved = { id: live.id, name: live.name, className: "Mesh", uniqueId: live.uniqueId } as AbstractMesh;
+
+        const options = GetSourceMeshPickerOptions([live], unresolved);
+
+        expect(options).toEqual([
+            { key: "none", label: "(none)" },
+            { key: `unresolved:${unresolved.uniqueId}`, mesh: unresolved, label: "part (unavailable)" },
+            { key: `live:${live.uniqueId}`, mesh: live, label: "part" },
+        ]);
+
         scene.dispose();
         engine.dispose();
     });
@@ -397,7 +420,7 @@ describe("review feedback regressions", () => {
         engine.dispose();
     });
 
-    it("uses runtime identity decisions when editing stopped context snapshots", () => {
+    it("uses occurrence identity when editing stopped context snapshots", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const liveDefault = new Mesh("part", scene);
@@ -414,10 +437,12 @@ describe("review feedback regressions", () => {
         block.targetMeshes.setValue([unresolvedOverride as any], overrideContext);
         const globalState = new GlobalState(scene);
         globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
         globalState.restoreReferenceProvenance([[liveDefault.uniqueId, { id: liveDefault.id, name: liveDefault.name, className: "Mesh", idIndex: 1, nameIndex: 1 }]]);
+        graph.start();
         globalState.snapshotUserVariables();
         graph.stop();
-        liveDefault.name = "renamed";
+        expect(graph.contextCount).toBe(0);
 
         globalState.setUnconnectedInputValue(block.targetMeshes, [replacement]);
 
@@ -425,9 +450,222 @@ describe("review feedback regressions", () => {
         expect(snapshots[0]._connectionValues[block.targetMeshes.uniqueId]).toEqual([expect.objectContaining({ uniqueId: replacement.uniqueId, name: replacement.name })]);
         expect(snapshots[1]._connectionValues[block.targetMeshes.uniqueId]).toEqual([unresolvedOverride]);
 
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+        const restoredScene = new Scene(engine);
+        const restoredFirst = new Mesh("part", restoredScene);
+        const restoredSecond = new Mesh("part", restoredScene);
+        restoredSecond.id = restoredFirst.id;
+        const restoredReplacement = new Mesh("replacement", restoredScene);
+        const restored = await SerializationTools.DeserializeToStateAsync(serialized, restoredScene);
+        const restoredBlock = restored.coordinator.flowGraphs[0].getAllBlocks().find((candidate) => candidate.uniqueId === block.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        expect(restoredBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(0)!)).toEqual([restoredReplacement]);
+        expect(restoredBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(1)!)).toEqual([restoredSecond]);
+
+        restored.coordinator.dispose();
+        restoredScene.dispose();
         globalState.dispose();
         coordinator.dispose();
         scene.dispose();
+        engine.dispose();
+    });
+
+    it("uses runtime snapshot decisions from the graph being edited", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const firstGraph = coordinator.createGraph();
+        const secondGraph = coordinator.createGraph();
+        const firstBlock = new FlowGraphPlaySoundBlock();
+        const secondBlock = new FlowGraphPlaySoundBlock();
+        firstGraph.addBlock(firstBlock);
+        secondGraph.addBlock(secondBlock);
+        (firstBlock.sound as any)._defaultValue = "first-old";
+        (secondBlock.sound as any)._defaultValue = "second-old";
+        const firstContext = firstGraph.createContext();
+        const secondContext = secondGraph.createContext();
+        firstBlock.sound.setValue("first-old", firstContext);
+        secondBlock.sound.setValue("second-old", secondContext);
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        firstGraph.start();
+        secondGraph.start();
+
+        globalState.activeGraphIndex = 1;
+        globalState.activeGraphIndex = 0;
+        expect(firstGraph.contextCount).toBe(0);
+
+        globalState.setUnconnectedInputValue(firstBlock.sound, "first-new");
+
+        const firstSnapshots = globalState.getContextSnapshotsForGraph(firstGraph.uniqueId)!;
+        const secondSnapshots = globalState.getContextSnapshotsForGraph(secondGraph.uniqueId)!;
+        expect(firstSnapshots[0]._connectionValues[firstBlock.sound.uniqueId]).toBe("first-new");
+        expect(secondSnapshots[0]._connectionValues[secondBlock.sound.uniqueId]).toBe("second-old");
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("round-trips unresolved and live occurrences that share a numeric id", async () => {
+        const engine = new NullEngine();
+        const sourceScene = new Scene(engine);
+        const sourceFirst = new Mesh("part", sourceScene);
+        const sourceSecond = new Mesh("part", sourceScene);
+        sourceSecond.id = sourceFirst.id;
+        const sourceCoordinator = new FlowGraphCoordinator({ scene: sourceScene });
+        const sourceGraph = sourceCoordinator.createGraph();
+        const missingBlock = new FlowGraphMeshIntersectionEventBlock();
+        sourceGraph.addEventBlock(missingBlock);
+        (missingBlock.targetMeshes as any)._defaultValue = [sourceSecond];
+        const sourceState = new GlobalState(sourceScene);
+        sourceState.coordinator = sourceCoordinator;
+        (sourceState.stateManager as any).storeEditorData = vi.fn();
+        const initial = JSON.parse(SerializationTools.Serialize(sourceGraph, sourceState));
+
+        const editScene = new Scene(engine);
+        const liveFirst = new Mesh("part", editScene);
+        (liveFirst as any).uniqueId = sourceSecond.uniqueId;
+        const editState = new GlobalState(editScene);
+        const loaded = await SerializationTools.DeserializeToStateAsync(initial, editScene);
+        SerializationTools.ApplyDeserializedState(loaded, editState);
+        (editState.stateManager as any).storeEditorData = vi.fn();
+        const loadedGraph = loaded.coordinator.flowGraphs[0];
+        const loadedMissingBlock = loadedGraph.getAllBlocks().find((candidate) => candidate.uniqueId === missingBlock.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        const unresolved = (loadedMissingBlock.targetMeshes as any)._defaultValue[0];
+        expect(unresolved).not.toBe(liveFirst);
+        const liveBlock = new FlowGraphMeshIntersectionEventBlock();
+        loadedGraph.addEventBlock(liveBlock);
+        (liveBlock.targetMeshes as any)._defaultValue = [liveFirst];
+
+        const saved = JSON.parse(SerializationTools.Serialize(loadedGraph, editState));
+        const savedMissingBlock = saved._flowGraphs[0].allBlocks.find((candidate: any) => candidate.uniqueId === missingBlock.uniqueId);
+        const savedLiveBlock = saved._flowGraphs[0].allBlocks.find((candidate: any) => candidate.uniqueId === liveBlock.uniqueId);
+        const savedMissingId = savedMissingBlock.dataInputs.find((input: any) => input.name === "targetMeshes").defaultValue[0].uniqueId;
+        const savedLiveId = savedLiveBlock.dataInputs.find((input: any) => input.name === "targetMeshes").defaultValue[0].uniqueId;
+        expect(savedMissingId).not.toBe(savedLiveId);
+
+        const restoredScene = new Scene(engine);
+        const restoredFirst = new Mesh("part", restoredScene);
+        const restoredSecond = new Mesh("part", restoredScene);
+        restoredSecond.id = restoredFirst.id;
+        const restored = await SerializationTools.DeserializeToStateAsync(saved, restoredScene);
+        const restoredMissingBlock = restored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.uniqueId === missingBlock.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        const restoredLiveBlock = restored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.uniqueId === liveBlock.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        expect((restoredMissingBlock.targetMeshes as any)._defaultValue).toEqual([restoredSecond]);
+        expect((restoredLiveBlock.targetMeshes as any)._defaultValue).toEqual([restoredFirst]);
+
+        restored.coordinator.dispose();
+        restoredScene.dispose();
+        editState.dispose();
+        loaded.coordinator.dispose();
+        editScene.dispose();
+        sourceState.dispose();
+        sourceCoordinator.dispose();
+        sourceScene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps a surviving same-scene duplicate when its ordinal changes", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const source = new Mesh("source", scene);
+        const firstTarget = new Mesh("part", scene);
+        const secondTarget = new Mesh("part", scene);
+        secondTarget.id = firstTarget.id;
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(block);
+        (block.sourceMesh as any)._defaultValue = source;
+        (block.targetMeshes as any)._defaultValue = [secondTarget];
+        graph.createContext();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+        firstTarget.dispose();
+
+        const restored = await SerializationTools.DeserializeToStateAsync(serialized, scene);
+        const restoredGraph = restored.coordinator.flowGraphs[0];
+        const restoredBlock = restoredGraph.getAllBlocks().find((candidate) => candidate.uniqueId === block.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        expect((restoredBlock.targetMeshes as any)._defaultValue).toEqual([secondTarget]);
+        const context = restoredGraph.getContext(0)!;
+        vi.spyOn(source, "intersectsMesh").mockReturnValue(true);
+        const activate = vi.spyOn(restoredBlock.onEnter as any, "_activateSignal");
+
+        restoredBlock._executeEvent(context, null);
+
+        expect(activate).toHaveBeenCalledWith(context);
+        expect(restoredBlock.otherMesh.getValue(context)).toBe(secondTarget);
+
+        restored.coordinator.dispose();
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("preserves an unavailable duplicate through undo and redo", async () => {
+        const engine = new NullEngine();
+        const sourceScene = new Scene(engine);
+        const sourceFirst = new Mesh("part", sourceScene);
+        const sourceSecond = new Mesh("part", sourceScene);
+        sourceSecond.id = sourceFirst.id;
+        const sourceCoordinator = new FlowGraphCoordinator({ scene: sourceScene });
+        const sourceGraph = sourceCoordinator.createGraph();
+        const intersectionBlock = new FlowGraphMeshIntersectionEventBlock();
+        const soundBlock = new FlowGraphPlaySoundBlock();
+        sourceGraph.addEventBlock(intersectionBlock);
+        sourceGraph.addBlock(soundBlock);
+        (intersectionBlock.targetMeshes as any)._defaultValue = [sourceSecond];
+        (soundBlock.sound as any)._defaultValue = "old";
+        const sourceState = new GlobalState(sourceScene);
+        sourceState.coordinator = sourceCoordinator;
+        (sourceState.stateManager as any).storeEditorData = vi.fn();
+        const serialized = JSON.parse(SerializationTools.Serialize(sourceGraph, sourceState));
+
+        const editScene = new Scene(engine);
+        const collidingLive = new Mesh("part", editScene);
+        (collidingLive as any).uniqueId = sourceSecond.uniqueId;
+        const editState = new GlobalState(editScene);
+        const loaded = await SerializationTools.DeserializeToStateAsync(serialized, editScene);
+        SerializationTools.ApplyDeserializedState(loaded, editState);
+        (editState.stateManager as any).storeEditorData = vi.fn();
+        const registry = new Map<string, typeof FlowGraphPlaySoundBlock>();
+        const history = new HistoryStack(
+            () => CreateFlowGraphHistorySnapshot(editState, registry as any),
+            (data) => ApplyFlowGraphHistorySnapshot(data, editState, registry as any)
+        );
+        await history.storeAsync();
+        const loadedSoundBlock = editState.flowGraph.getAllBlocks().find((candidate) => candidate.uniqueId === soundBlock.uniqueId) as FlowGraphPlaySoundBlock;
+        editState.setUnconnectedInputValue(loadedSoundBlock.sound, "new");
+        await history.storeAsync();
+
+        history.undo();
+
+        let restoredIntersection = editState.flowGraph.getAllBlocks().find((candidate) => candidate.uniqueId === intersectionBlock.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        let restoredTarget = (restoredIntersection.targetMeshes as any)._defaultValue[0];
+        expect(restoredTarget).not.toBe(collidingLive);
+        expect(restoredTarget).toEqual(expect.objectContaining({ id: sourceSecond.id, name: sourceSecond.name, uniqueId: sourceSecond.uniqueId }));
+
+        history.redo();
+
+        restoredIntersection = editState.flowGraph.getAllBlocks().find((candidate) => candidate.uniqueId === intersectionBlock.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        restoredTarget = (restoredIntersection.targetMeshes as any)._defaultValue[0];
+        expect(restoredTarget).not.toBe(collidingLive);
+        expect(restoredTarget).toEqual(expect.objectContaining({ id: sourceSecond.id, name: sourceSecond.name, uniqueId: sourceSecond.uniqueId }));
+
+        history.dispose();
+        editState.dispose();
+        sourceState.dispose();
+        sourceCoordinator.dispose();
+        sourceScene.dispose();
+        editScene.dispose();
         engine.dispose();
     });
 
@@ -1453,9 +1691,7 @@ describe("review feedback regressions", () => {
         const sameSceneBlock = sameSceneRestored.coordinator.flowGraphs[0]
             .getAllBlocks()
             .find((candidate) => candidate.getClassName() === block.getClassName()) as FlowGraphMeshIntersectionEventBlock;
-        expect((sameSceneBlock.targetMeshes as any)._defaultValue).toEqual([
-            expect.objectContaining({ uniqueId: oldSecond.uniqueId, id: oldSecond.id, name: oldSecond.name, className: oldSecond.getClassName() }),
-        ]);
+        expect((sameSceneBlock.targetMeshes as any)._defaultValue).toEqual([oldSecond]);
 
         sameSceneRestored.coordinator.dispose();
         const missingScene = new Scene(engine);

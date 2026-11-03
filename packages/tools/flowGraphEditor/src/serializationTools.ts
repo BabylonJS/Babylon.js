@@ -1,4 +1,4 @@
-import { type GlobalState } from "./globalState";
+import { type GlobalState, type SceneReferenceLocation } from "./globalState";
 import { ExportKhrInteractivityAsset } from "./khrGlbBehaviorAuthoring";
 import { type Nullable } from "core/types";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
@@ -100,7 +100,9 @@ export interface IFlowGraphEditorDeserializedState {
     /** Sound declarations that could not be loaded. */
     soundAssetLoadErrors: string[];
     /** Durable scene-reference provenance restored before graph activation. */
-    referenceProvenance: Array<[number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }]>;
+    referenceProvenance: Array<[number, SceneReferenceLocation]>;
+    /** Provenance paired with exact parsed reference occurrences. */
+    referenceOccurrences: Array<[object, SceneReferenceLocation]>;
 }
 
 /**
@@ -327,6 +329,7 @@ export class SerializationTools {
         coordinator.dispatchEventsSynchronously =
             options?.dispatchEventsSynchronously ?? serializationObject.dispatchEventsSynchronously ?? coordinator.dispatchEventsSynchronously;
         const parsedGraphs: FlowGraph[] = [];
+        const referenceOccurrences: Array<[object, SceneReferenceLocation]> = [];
         const soundAssetLoadErrors: string[] = [];
         try {
             if (Array.isArray(serializationObject.soundAssets)) {
@@ -342,7 +345,7 @@ export class SerializationTools {
             for (const graphData of graphDataList) {
                 // eslint-disable-next-line no-await-in-loop -- sequential order is intentional
                 const parsedGraph = await ParseFlowGraphAsync(graphData, { coordinator, pathConverter });
-                SerializationTools._RestoreReferenceProvenance(parsedGraph, graphData, scene, referenceProvenance);
+                referenceOccurrences.push(...SerializationTools.RestoreReferenceProvenance(parsedGraph, graphData, scene, referenceProvenance));
                 SerializationTools.PreserveUnresolvedNames(parsedGraph, graphData);
                 SerializationTools.PreserveUnresolvedVariables(parsedGraph, graphData);
                 SerializationTools.SyncConnectionValuesToDefaults(parsedGraph);
@@ -371,6 +374,7 @@ export class SerializationTools {
             flowGraphSnippetId,
             soundAssetLoadErrors,
             referenceProvenance,
+            referenceOccurrences,
         };
     }
 
@@ -385,7 +389,7 @@ export class SerializationTools {
         globalState.serializationDisabledReason = state.serializationDisabledReason;
         globalState.hasImportScopedRuntime = state.hasImportScopedRuntime;
         globalState.khrInteractivityImportResult = null;
-        globalState.restoreReferenceProvenance(state.referenceProvenance);
+        globalState.restoreReferenceProvenance(state.referenceProvenance, state.referenceOccurrences);
         globalState.setCoordinator(state.coordinator, true);
         globalState.activeGraphIndex = state.activeGraphIndex;
         if (previousCoordinator && previousCoordinator !== state.coordinator && disposePreviousCoordinator) {
@@ -412,12 +416,13 @@ export class SerializationTools {
         );
     }
 
-    private static _RestoreReferenceProvenance(
+    public static RestoreReferenceProvenance(
         graph: FlowGraph,
         graphData: ISerializedFlowGraph,
         scene: Scene,
         entries: IFlowGraphEditorDeserializedState["referenceProvenance"]
-    ): void {
+    ): Array<[object, SceneReferenceLocation]> {
+        const occurrences: Array<[object, SceneReferenceLocation]> = [];
         const locations = new Map<number, IFlowGraphEditorDeserializedState["referenceProvenance"][number][1][]>();
         for (const [uniqueId, location] of entries) {
             const matchingLocations = locations.get(uniqueId) ?? [];
@@ -447,7 +452,24 @@ export class SerializationTools {
                 candidates = nodes.filter((node) => node.name === location.name);
                 index = location.nameIndex;
             }
-            return candidates[index] ?? value;
+            let resolved = candidates[index];
+            if (
+                !resolved &&
+                location.sceneUid === scene.uid &&
+                currentValue &&
+                typeof currentValue.getScene === "function" &&
+                currentValue.getScene() === scene &&
+                currentValue.uniqueId === value.uniqueId &&
+                currentValue.getClassName() === location.className &&
+                currentValue.id === location.id &&
+                currentValue.name === location.name &&
+                candidates.includes(currentValue)
+            ) {
+                resolved = currentValue;
+            }
+            const result = resolved ?? value;
+            occurrences.push([result, location]);
+            return result;
         };
         for (const serializedBlock of graphData.allBlocks ?? []) {
             const block = graph.getAllBlocks().find((candidate) => candidate.uniqueId === serializedBlock.uniqueId);
@@ -468,6 +490,7 @@ export class SerializationTools {
                 context?._setConnectionValueByKey(key, resolve(serializedContext._connectionValues[key], (context as any)?._connectionValues?.[key]));
             }
         }
+        return occurrences;
     }
 
     /**

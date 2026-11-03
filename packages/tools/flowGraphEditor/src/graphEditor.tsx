@@ -13,6 +13,7 @@ import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import { type IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { ParseFlowGraph } from "core/FlowGraph/flowGraphParser";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
@@ -31,6 +32,56 @@ import { AllCompositeTemplates, type ICompositeTemplate } from "./compositeTempl
 import { Divider, makeStyles, Menu, MenuDivider, MenuItem, MenuList, MenuPopover, MenuTrigger, Title3, mergeClasses, tokens } from "@fluentui/react-components";
 import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
 import { createVirtualElementFromClick, type PositioningVirtualElement } from "@fluentui/react-positioning";
+
+export function CreateFlowGraphHistorySnapshot(globalState: GlobalState, blockClassRegistry: Map<string, typeof FlowGraphBlock>): any {
+    const flowGraph = globalState.flowGraph;
+    SerializationTools.UpdateLocations(flowGraph, globalState);
+    globalState.snapshotUserVariables();
+    const restoreReferenceIds = globalState.prepareReferenceProvenanceForSerialization();
+    try {
+        const serializationObject: any = {};
+        flowGraph.serialize(serializationObject);
+        SerializationTools.InjectSavedContexts(serializationObject, globalState);
+        serializationObject.referenceProvenance = globalState.referenceProvenance;
+        serializationObject.editorData = (flowGraph as any)._editorData;
+        for (const block of flowGraph.getAllBlocks()) {
+            blockClassRegistry.set(block.getClassName(), block.constructor as typeof FlowGraphBlock);
+        }
+        return JSON.parse(JSON.stringify(serializationObject));
+    } finally {
+        restoreReferenceIds();
+    }
+}
+
+export function ApplyFlowGraphHistorySnapshot(data: any, globalState: GlobalState, blockClassRegistry: Map<string, typeof FlowGraphBlock>): void {
+    const resolvedClasses = (data.allBlocks || []).map((block: any) => blockClassRegistry.get(block.className)!);
+    const existingCoordinator = globalState.coordinator;
+    let parsedGraph: FlowGraph;
+    if (existingCoordinator && existingCoordinator.flowGraphs.length > 0) {
+        const activeIndex = globalState.activeGraphIndex;
+        const oldGraph = existingCoordinator.flowGraphs[activeIndex];
+        if (oldGraph) {
+            existingCoordinator.removeGraph(oldGraph);
+        }
+        parsedGraph = ParseFlowGraph(data, { coordinator: existingCoordinator }, resolvedClasses);
+        const graphs = existingCoordinator.flowGraphs;
+        const currentIndex = graphs.indexOf(parsedGraph);
+        if (currentIndex !== activeIndex && currentIndex >= 0) {
+            graphs.splice(currentIndex, 1);
+            graphs.splice(activeIndex, 0, parsedGraph);
+        }
+    } else {
+        const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
+        parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
+    }
+    const referenceOccurrences = SerializationTools.RestoreReferenceProvenance(parsedGraph, data, globalState.scene, data.referenceProvenance ?? []);
+    globalState.restoreReferenceProvenance(data.referenceProvenance ?? [], referenceOccurrences);
+    SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
+    if (data.editorData) {
+        (parsedGraph as any)._editorData = data.editorData;
+    }
+    globalState.flowGraph = parsedGraph;
+}
 
 /**
  * Local context-menu item shape used by the right-click menu on the graph canvas.
@@ -419,28 +470,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         const dataProvider = () => {
             try {
-                const fg = globalState.flowGraph;
-                SerializationTools.UpdateLocations(fg, globalState);
-                // Snapshot live contexts so undo/redo preserves user variables,
-                // variable types, and connection values even when the graph is stopped.
-                globalState.snapshotUserVariables();
-                const serializationObject: any = {};
-                fg.serialize(serializationObject);
-                // Inject saved context snapshots when the graph has no live contexts
-                if (
-                    (!serializationObject.executionContexts || serializationObject.executionContexts.length === 0) &&
-                    globalState.savedContextSnapshots &&
-                    globalState.savedContextSnapshots.length > 0
-                ) {
-                    serializationObject.executionContexts = globalState.savedContextSnapshots;
-                }
-                // Include editor layout so positions are restored on undo/redo
-                serializationObject.editorData = (fg as any)._editorData;
-                // Cache block class constructors for synchronous parsing in applyUpdate
-                for (const block of fg.getAllBlocks()) {
-                    this._blockClassRegistry.set(block.getClassName(), block.constructor as typeof FlowGraphBlock);
-                }
-                return serializationObject;
+                return CreateFlowGraphHistorySnapshot(globalState, this._blockClassRegistry);
             } catch (e) {
                 // eslint-disable-next-line no-console
                 console.warn("Flow Graph Editor: failed to serialize graph for undo/redo snapshot", e);
@@ -450,43 +480,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         const applyUpdate = (data: any) => {
             globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            // Resolve block classes synchronously from the session-wide registry
-            const resolvedClasses = (data.allBlocks || []).map((b: any) => this._blockClassRegistry.get(b.className)!);
-
-            // When we have a coordinator with multiple graphs, replace only the
-            // active graph. Otherwise fall back to creating a throwaway coordinator
-            // (legacy path, also used for single-graph sessions).
-            const existingCoordinator = globalState.coordinator;
-            if (existingCoordinator && existingCoordinator.flowGraphs.length > 0) {
-                const activeIndex = globalState.activeGraphIndex;
-                const oldGraph = existingCoordinator.flowGraphs[activeIndex];
-                if (oldGraph) {
-                    existingCoordinator.removeGraph(oldGraph);
-                }
-                // Parse into the existing coordinator
-                const parsedGraph = ParseFlowGraph(data, { coordinator: existingCoordinator }, resolvedClasses);
-                // Move the parsed graph to the correct position in the coordinator
-                const graphs = existingCoordinator.flowGraphs;
-                const currentIndex = graphs.indexOf(parsedGraph);
-                if (currentIndex !== activeIndex && currentIndex >= 0) {
-                    graphs.splice(currentIndex, 1);
-                    graphs.splice(activeIndex, 0, parsedGraph);
-                }
-                SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
-                if (data.editorData) {
-                    (parsedGraph as any)._editorData = data.editorData;
-                }
-                globalState.flowGraph = parsedGraph;
-            } else {
-                // Fallback: create a throwaway coordinator
-                const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
-                const parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
-                SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
-                if (data.editorData) {
-                    (parsedGraph as any)._editorData = data.editorData;
-                }
-                globalState.flowGraph = parsedGraph;
-            }
+            ApplyFlowGraphHistorySnapshot(data, globalState, this._blockClassRegistry);
             globalState.onResetRequiredObservable.notifyObservers(false);
         };
 

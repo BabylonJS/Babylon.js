@@ -2,10 +2,8 @@ import * as React from "react";
 
 import { Body1, Dropdown, Option, makeStyles, tokens } from "@fluentui/react-components";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
@@ -47,6 +45,51 @@ export function GetTargetMeshPickerOptions(meshes: AbstractMesh[], selectedMeshe
     }
     return options;
 }
+
+export function GetSourceMeshPickerOptions(meshes: AbstractMesh[], selectedMesh: AbstractMesh | undefined) {
+    const options: Array<{ key: string; mesh?: AbstractMesh; label: string }> = [{ key: "none", label: "(none)" }];
+    const liveMesh = meshes.find((candidate) => candidate === selectedMesh);
+    if (selectedMesh && !liveMesh) {
+        options.push({
+            key: `unresolved:${selectedMesh.uniqueId}`,
+            mesh: selectedMesh,
+            label: `${selectedMesh.name || `(id ${selectedMesh.uniqueId})`} (unavailable)`,
+        });
+    }
+    for (const mesh of meshes) {
+        options.push({ key: `live:${mesh.uniqueId}`, mesh, label: mesh.name || `(id ${mesh.uniqueId})` });
+    }
+    return options;
+}
+
+const SourceMeshPicker: React.FunctionComponent<{
+    meshes: AbstractMesh[];
+    selectedMesh?: AbstractMesh;
+    onChange: (mesh: AbstractMesh | undefined) => void;
+}> = ({ meshes, selectedMesh, onChange }) => {
+    const classes = useStyles();
+    const options = GetSourceMeshPickerOptions(meshes, selectedMesh);
+    const selectedKey = selectedMesh ? (meshes.includes(selectedMesh) ? `live:${selectedMesh.uniqueId}` : `unresolved:${selectedMesh.uniqueId}`) : "none";
+    const selectedOption = options.find((option) => option.key === selectedKey);
+    return (
+        <PropertyLine label="Source mesh">
+            <Dropdown
+                aria-label="Source mesh"
+                className={classes.dropdown}
+                size="small"
+                value={selectedOption?.label ?? "(none)"}
+                selectedOptions={[selectedKey]}
+                onOptionSelect={(_, data) => onChange(options.find((option) => option.key === data.optionValue)?.mesh)}
+            >
+                {options.map((option) => (
+                    <Option key={option.key} value={option.key} text={option.label}>
+                        {option.label}
+                    </Option>
+                ))}
+            </Dropdown>
+        </PropertyLine>
+    );
+};
 
 const TargetMeshesPicker: React.FunctionComponent<{
     meshes: AbstractMesh[];
@@ -159,10 +202,6 @@ export class MeshIntersectionPropertyComponent extends React.Component<IProperty
         const { sceneContext } = this.state;
         const meshes = sceneContext?.meshes ?? [];
         const { sourceMesh, targetMeshes } = this._getSavedMeshes();
-        const sourceOptions: DropdownOption<number>[] = [
-            { label: "(none)", value: -1 },
-            ...meshes.map((mesh) => ({ label: mesh.name || `(id ${mesh.uniqueId})`, value: mesh.uniqueId })),
-        ];
 
         return (
             <Accordion uniqueId="FlowGraphMeshIntersectionProperties" enablePinnedItems enableSearchItems>
@@ -171,17 +210,7 @@ export class MeshIntersectionPropertyComponent extends React.Component<IProperty
                 <AccordionSection title="Intersection Meshes" collapseByDefault={false}>
                     {sceneContext ? (
                         <>
-                            <NumberDropdownPropertyLine
-                                label="Source mesh"
-                                options={sourceOptions}
-                                value={sourceMesh?.uniqueId ?? -1}
-                                onChange={(uniqueId: number) =>
-                                    this._setInputValue(
-                                        "sourceMesh",
-                                        meshes.find((mesh) => mesh.uniqueId === uniqueId)
-                                    )
-                                }
-                            />
+                            <SourceMeshPicker meshes={meshes} selectedMesh={sourceMesh} onChange={(value) => this._setInputValue("sourceMesh", value)} />
                             <TargetMeshesPicker meshes={meshes} selectedMeshes={targetMeshes} onChange={(value) => this._setInputValue("targetMeshes", value)} />
                             <SwitchPropertyLine
                                 label="Use precise intersection"
