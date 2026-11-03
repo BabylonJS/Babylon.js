@@ -14,6 +14,8 @@ import { type DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { MultiMaterial } from "core/Materials/multiMaterial";
+import { ShadowDepthWrapper } from "core/Materials/shadowDepthWrapper";
+import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import "core/Buffers/buffer.align";
 import "core/Meshes/thinInstanceMesh";
 
@@ -64,7 +66,7 @@ describe("Geometry WebGPU draw cache invalidation", () => {
         }
     }
 
-    async function prepareMaterial() {
+    async function prepareMaterial(storeEffectOnSubMeshes = true, withShadowDepthWrapper = false) {
         const material = new ShaderMaterial(
             "shader",
             scene,
@@ -72,11 +74,31 @@ describe("Geometry WebGPU draw cache invalidation", () => {
                 vertexSource: "attribute vec3 position; void main() { gl_Position = vec4(position, 1.0); }",
                 fragmentSource: "void main() { gl_FragColor = vec4(1.0); }",
             },
-            { attributes: ["position"], uniforms: [] }
+            { attributes: ["position"], uniforms: [] },
+            storeEffectOnSubMeshes
         );
+        if (withShadowDepthWrapper) {
+            material.shadowDepthWrapper = new ShadowDepthWrapper(material, scene, { doNotInjectCode: true });
+        }
         mesh.material = material;
         await vi.waitFor(() => expect(material.isReadyForSubMesh(mesh, mesh.subMeshes[0], true)).toBe(true));
         return material;
+    }
+
+    async function cacheShadowDraws(material: ShaderMaterial, target = mesh) {
+        const depthWrapper = material.shadowDepthWrapper!;
+        const subMesh = target.subMeshes[0];
+        const draws: ReturnType<typeof cacheDraws> = [];
+        for (let generatorIndex = 0; generatorIndex < 2; ++generatorIndex) {
+            const generator = vi.mockObject(ShadowGenerator.prototype);
+            await vi.waitFor(() => expect(depthWrapper.isReadyForSubMesh(subMesh, [], generator, true, 2)).toBe(true));
+            const main = depthWrapper.getEffect(subMesh, generator, 2)!;
+            const pass = depthWrapper.getEffect(subMesh, generator, 7)!;
+            expect(main).not.toBe(pass);
+            expect(main.effect).toBe(pass.effect);
+            draws.push(cacheDraw(main), cacheDraw(pass));
+        }
+        return draws;
     }
 
     beforeEach(() => {
@@ -182,6 +204,70 @@ describe("Geometry WebGPU draw cache invalidation", () => {
         mesh.thinInstanceSetBuffer("tint", new Float32Array([0, 1, 0, 1]), 4);
 
         expectInvalidated([draw]);
+    });
+
+    it.each([true, false])("invalidates all shadow-depth wrappers on matrix replacement (storeEffectOnSubMeshes=%s)", async (storeEffectOnSubMeshes) => {
+        const material = await prepareMaterial(storeEffectOnSubMeshes, true);
+        const depthWrapper = material.shadowDepthWrapper!;
+        const shadowDraws = await cacheShadowDraws(material);
+        const mainDraw = cacheDraw(storeEffectOnSubMeshes ? mesh.subMeshes[0]._drawWrapper : material._getDrawWrapper());
+        const effects = shadowDraws.map(({ wrapper }) => wrapper.effect);
+
+        mesh.thinInstanceSetBuffer("matrix", new Float32Array(Matrix.Translation(1, 0, 0).asArray()), 16);
+
+        expectInvalidated([...shadowDraws, mainDraw]);
+        expect(shadowDraws.map(({ wrapper }) => wrapper.effect)).toEqual(effects);
+        expect(material.shadowDepthWrapper).toBe(depthWrapper);
+    });
+
+    it("preserves shadow-depth bundles for in-place thin-instance updates", async () => {
+        const material = await prepareMaterial(true, true);
+        const shadowDraws = await cacheShadowDraws(material);
+
+        mesh.thinInstanceBufferUpdated("matrix");
+        mesh.thinInstanceBufferUpdated("tint");
+
+        expectPreserved(shadowDraws);
+    });
+
+    it("preserves other submeshes' shadow-depth bundles", async () => {
+        const material = await prepareMaterial(true, true);
+        const other = CreateBox("unrelated", {}, scene);
+        other.thinInstanceSetBuffer("matrix", new Float32Array(Matrix.Identity().asArray()), 16);
+        other.material = material;
+        await vi.waitFor(() => expect(material.isReadyForSubMesh(other, other.subMeshes[0], true)).toBe(true));
+        const changedDraws = await cacheShadowDraws(material);
+        const unrelatedDraws = await cacheShadowDraws(material, other);
+
+        mesh.thinInstanceSetBuffer("matrix", new Float32Array(Matrix.Identity().asArray()), 16);
+
+        expectInvalidated(changedDraws);
+        expectPreserved(unrelatedDraws);
+    });
+
+    it("does not create shadow-depth wrappers when none have been cached", () => {
+        const material = new ShaderMaterial("shadow", scene, "shader");
+        material.shadowDepthWrapper = new ShadowDepthWrapper(material, scene);
+        mesh.material = material;
+        const generator = vi.mockObject(ShadowGenerator.prototype);
+
+        mesh.thinInstanceSetBuffer("matrix", new Float32Array(Matrix.Identity().asArray()), 16);
+
+        expect(material.shadowDepthWrapper.getEffect(mesh.subMeshes[0], generator, 2)).toBeNull();
+    });
+
+    it("invalidates an inactive render-pass material's shadow-depth wrappers", async () => {
+        const material = await prepareMaterial(false, true);
+        const shadowDraws = await cacheShadowDraws(material);
+        mesh.material = new ShaderMaterial("main", scene, "shader");
+        const multiMaterial = new MultiMaterial("shadow-pass", scene);
+        multiMaterial.subMaterials.push(material);
+        mesh.setMaterialForRenderPass(7, multiMaterial);
+        engine.currentRenderPassId = 0;
+
+        mesh.thinInstanceSetBuffer("matrix", new Float32Array(Matrix.Identity().asArray()), 16);
+
+        expectInvalidated(shadowDraws);
     });
 
     it.each(["updateVerticesData", "updateVerticesDataDirectly"] as const)("invalidates draws when %s recreates an aligned buffer", (method) => {

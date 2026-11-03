@@ -115,8 +115,11 @@ export class SubMesh implements ICullable {
         if (material && this._isMultiMaterial(material)) {
             material = material.getSubMaterial(this.materialIndex);
         }
-        if (material && !material._storeEffectOnSubMeshes) {
-            material._getDrawWrapper().drawContext?._invalidateVertexBuffers?.();
+        if (material) {
+            if (!material._storeEffectOnSubMeshes) {
+                material._getDrawWrapper().drawContext?._invalidateVertexBuffers?.();
+            }
+            material.shadowDepthWrapper?._invalidateVertexBuffers(this);
         }
     }
 
