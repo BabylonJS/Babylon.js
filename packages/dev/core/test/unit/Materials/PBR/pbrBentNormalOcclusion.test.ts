@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { type Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
@@ -99,13 +99,13 @@ describe("PBR bent normal specular occlusion", () => {
             .map((parameter) =>
                 parameter
                     .trim()
-                    .replace(/^float\s+/, "")
+                    .replace(/^(?:highp\s+)?float\s+/, "")
                     .replace(/\s*:\s*f32$/, "")
             )
             .join(", ");
         const body = code
             .substring(start, index - 1)
-            .replace(/\bfloat\s+(\w+)\s*=/g, "let $1 =")
+            .replace(/\b(?:highp\s+)?float\s+(\w+)\s*=/g, "let $1 =")
             .replace(/\b(?:let|var)\s+(\w+)\s*:\s*f32\s*=/g, "let $1 =");
         return { parameters, body };
     }
@@ -150,6 +150,33 @@ describe("PBR bent normal specular occlusion", () => {
         };
         return { overlap, overlapFromDistance, occlusion };
     }
+
+    it("keeps all GLSL SG parameters, locals and results highp independently of the default precision", () => {
+        const code = preprocess("#include<pbrIBLFunctions>", ["#define BENTNORMAL", "#define REFLECTION"], ShaderStore.IncludesShadersStore, "WEBGL2");
+        const sgCode = code.slice(code.indexOf("highp float bentNormalSGOverlap"));
+        expect(sgCode).toContain("highp float environmentBentNormalOcclusion(highp vec3 bentNormal");
+        expect(sgCode).toContain("highp float reflectionSpread");
+        expect(sgCode).toContain("highp vec3 bentDelta");
+        expect(sgCode).not.toMatch(/(?<!highp )\b(?:float|vec3)\s+\w+/);
+    });
+
+    it("uses scalar AO without emitting highp GLSL when fragment highp is unsupported", () => {
+        const caps = vi.spyOn(engine, "getCaps").mockReturnValue({ ...engine.getCaps(), highPrecisionShaderSupported: false });
+        try {
+            const code = preprocess("#include<pbrIBLFunctions>", ["#define BENTNORMAL", "#define REFLECTION"], ShaderStore.IncludesShadersStore, "WEBGL1");
+            expect(code).not.toMatch(/\bhighp\s+(?:float|vec3)\b/);
+            expect(code).not.toContain("bentNormalSGOverlap");
+            const { body } = extractFunction(code, "environmentBentNormalOcclusion");
+            const fallback = new Function("ambientOcclusion", "saturate", body) as (ao: number, saturate: (value: number) => number) => number;
+            for (const ao of [0, 1 / 255, 0.5, 1]) {
+                expect(fallback(ao, (value) => Math.min(1, Math.max(0, value)))).toBe(ao);
+            }
+            const wgsl = preprocess("#include<pbrIBLFunctions>", ["#define BENTNORMAL", "#define REFLECTION"], ShaderStore.IncludesShadersStoreWGSL, "WEBGPU");
+            expect(wgsl).toContain("fn bentNormalSGOverlap");
+        } finally {
+            caps.mockRestore();
+        }
+    });
 
     describe.each([
         ["GLSL", () => ShaderStore.IncludesShadersStore, "WEBGL2"],
@@ -250,6 +277,20 @@ describe("PBR bent normal specular occlusion", () => {
                 for (const NdotV of [1, 0.2, 0, -1]) {
                     expect(occlusionFor(occlusion, Normal, Normal, NdotV, 0, alphaG)).toBe(0);
                     expect(occlusionFor(occlusion, FromAngle(20), FromAngle(20), NdotV, 0, alphaG)).toBe(0);
+                }
+            }
+        });
+
+        it.each([1 / 255, 2 / 255])("stays finite for dark 8-bit AO %s on glossy surfaces", (ambientOcclusion) => {
+            const { occlusion } = compile(ibl());
+            for (const roughness of [0, 0.01, 0.1]) {
+                for (const NdotV of [0, 0.01, 1]) {
+                    for (const bentAngle of [0, 20, 90]) {
+                        const value = occlusionFor(occlusion, FromAngle(bentAngle), Normal, NdotV, ambientOcclusion, AlphaG(roughness));
+                        expect(Number.isFinite(value)).toBe(true);
+                        expect(value).toBeGreaterThanOrEqual(0);
+                        expect(value).toBeLessThanOrEqual(1);
+                    }
                 }
             }
         });

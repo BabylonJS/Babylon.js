@@ -89,6 +89,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      * Bake the bent normal and cosine-weighted AO with matching occlusion distances.
      * Without occlusionTexture this map has no effect; load it with gammaSpace set to false.
      * The texture's level blends between unoccluded and fully bent-normal-occluded reflections (0..1).
+     * WebGL devices without high-precision fragment support use scalar AO instead.
      * @see https://playground.babylonjs.com/#8N2ROI#5
      */
     @serializeAsTexture()

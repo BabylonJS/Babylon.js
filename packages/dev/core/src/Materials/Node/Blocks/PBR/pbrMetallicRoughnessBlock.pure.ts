@@ -554,6 +554,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * forceNormalForward is applied to both the shading normal and the bent normal.
      * Uses a spherical-Gaussian approximation of visibility and the specular lobe
      * with cosine-weighted AO.
+     * WebGL devices without high-precision fragment support use scalar AO instead.
      */
     public get bentNormal(): NodeMaterialConnectionPoint {
         return this._inputs[18];

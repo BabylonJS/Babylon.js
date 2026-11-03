@@ -122,6 +122,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      * Without an AO texture the map has no effect; direct lighting and diffuse AO are unchanged.
      * Set gammaSpace to false when loading a bent normal texture.
      * The texture's level blends between unoccluded and fully bent-normal-occluded reflections (0..1).
+     * WebGL devices without high-precision fragment support use scalar AO instead.
      * @see https://playground.babylonjs.com/#8N2ROI#5
      */
     @serializeAsTexture()

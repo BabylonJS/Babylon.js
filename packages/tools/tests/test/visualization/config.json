@@ -32,6 +32,12 @@
             "dependsOn": ["PBR", "Textures", "Materials", "Meshes"]
         },
         {
+            "title": "PBR Bent Normal Mediump Precision",
+            "playgroundId": "#G3UAD8#0",
+            "referenceImage": "pbr-bent-normal-mediump-precision.png",
+            "dependsOn": ["PBR", "Textures", "Materials", "Meshes"]
+        },
+        {
             "title": "Solid Particle System Mixed Model Winding",
             "playgroundId": "#B1NNWI#2",
             "referenceImage": "sps-mixed-model-winding.png",
