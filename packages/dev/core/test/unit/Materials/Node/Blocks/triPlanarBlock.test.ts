@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { type NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { NodeMaterialBuildState } from "core/Materials/Node/nodeMaterialBuildState";
 import { NodeMaterialBuildStateSharedData } from "core/Materials/Node/nodeMaterialBuildStateSharedData";
@@ -31,6 +32,25 @@ function generateTextureLookup(shaderLanguage: ShaderLanguage): string {
 }
 
 describe("TriPlanarBlock", () => {
+    it.each([
+        ["GLSL", ShaderLanguage.GLSL, "toGammaSpace"],
+        ["WGSL", ShaderLanguage.WGSL, "toGammaSpaceVec3"],
+    ])("writes both conversions of a gamma space texture's color under their defines, which follow its image (%s)", (_, shaderLanguage, toGammaSpace) => {
+        const state = new NodeMaterialBuildState();
+        state.sharedData = new NodeMaterialBuildStateSharedData();
+        state.sharedData.nodeMaterial = { shaderLanguage } as NodeMaterial;
+        const block = new TriPlanarBlock("triPlanar");
+        block.texture = { gammaSpace: true, getScene: () => null } as unknown as Texture;
+        Object.assign(block, { _linearDefineName: "ISLINEAR", _gammaDefineName: "ISGAMMA" });
+        block.rgb.associatedVariableName = "rgb";
+
+        block["_generateConversionCode"](state, block.rgb, "rgb");
+
+        // the image can become linear (Texture.replaceImage) without building the graph again
+        expect(state.compilationString).toMatch(new RegExp(`#ifdef ISLINEAR\\s+rgb = ${toGammaSpace}\\(rgb\\);\\s+#endif`));
+        expect(state.compilationString).toMatch(/#ifdef ISGAMMA\s+rgb = toLinearSpace\w*\(rgb\);\s+#endif/);
+    });
+
     it("returns the texture connected to sourceZ instead of the sourceY texture", () => {
         const block = new TriPlanarBlock("triPlanar");
         const sourceY = new ImageSourceBlock("sourceY");

@@ -619,13 +619,20 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
         if (swizzle !== "a") {
-            // no conversion if the output is "a" (alpha)
-            if (!this.texture || !this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._linearDefineName}
-                    ${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});
-                    #endif
-                `;
+            // no conversion if the output is "a" (alpha). Both conversions are written whatever the texture's gamma space when the graph is
+            // built: their defines follow the texture's image, which can change (Texture.replaceImage) without building the graph again
+            let vecSpecifier = "";
+            if (
+                state.shaderLanguage === ShaderLanguage.WGSL &&
+                (output.type === NodeMaterialBlockConnectionPointTypes.Vector3 || output.type === NodeMaterialBlockConnectionPointTypes.Color3)
+            ) {
+                vecSpecifier = "Vec3";
             }
+
+            state.compilationString += `#ifdef ${this._linearDefineName}
+                ${output.associatedVariableName} = toGammaSpace${vecSpecifier}(${output.associatedVariableName});
+                #endif
+            `;
 
             state.compilationString += `#ifdef ${this._gammaDefineName}
                 ${output.associatedVariableName} = ${state._toLinearSpace(output)};

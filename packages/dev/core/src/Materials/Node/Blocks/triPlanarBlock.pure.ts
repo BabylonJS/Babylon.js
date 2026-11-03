@@ -502,13 +502,12 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         }
 
         if (swizzle !== "a") {
-            // no conversion if the output is "a" (alpha)
-            if (!this.texture || !this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._linearDefineName}
-                    ${output.associatedVariableName} = toGammaSpace${vecSpecifier}(${output.associatedVariableName});
-                    #endif
-                `;
-            }
+            // no conversion if the output is "a" (alpha). Both conversions are written whatever the texture's gamma space when the graph is
+            // built: their defines follow the texture's image, which can change (Texture.replaceImage) without building the graph again
+            state.compilationString += `#ifdef ${this._linearDefineName}
+                ${output.associatedVariableName} = toGammaSpace${vecSpecifier}(${output.associatedVariableName});
+                #endif
+            `;
 
             state.compilationString += `#ifdef ${this._gammaDefineName}
                 ${output.associatedVariableName} = toLinearSpace${vecSpecifier}(${output.associatedVariableName});

@@ -5,11 +5,34 @@ import { Effect } from "core/Materials/effect";
 import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { NodeMaterialBuildState } from "core/Materials/Node/nodeMaterialBuildState";
+import { NodeMaterialBuildStateSharedData } from "core/Materials/Node/nodeMaterialBuildStateSharedData";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { type Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Scene } from "core/scene";
 
 describe("TextureBlock", () => {
+    it.each([
+        ["GLSL", ShaderLanguage.GLSL, "toGammaSpace"],
+        ["WGSL", ShaderLanguage.WGSL, "toGammaSpaceVec3"],
+    ])("writes both conversions of a gamma space texture's color under their defines, which follow its image (%s)", (_, shaderLanguage, toGammaSpace) => {
+        const state = new NodeMaterialBuildState();
+        state.sharedData = new NodeMaterialBuildStateSharedData();
+        state.sharedData.nodeMaterial = { shaderLanguage } as NodeMaterial;
+        const block = new TextureBlock("texture");
+        block.texture = { gammaSpace: true, getScene: () => null } as unknown as Texture;
+        Object.assign(block, { _linearDefineName: "ISLINEAR", _gammaDefineName: "ISGAMMA" });
+        block.rgb.associatedVariableName = "rgb";
+
+        block["_generateConversionCode"](state, block.rgb, "rgb");
+
+        // the image can become linear (Texture.replaceImage) without building the graph again
+        expect(state.compilationString).toMatch(new RegExp(`#ifdef ISLINEAR\\s+rgb = ${toGammaSpace}\\(rgb\\);\\s+#endif`));
+        expect(state.compilationString).toMatch(/#ifdef ISGAMMA\s+rgb = toLinearSpace\w*\(rgb\);\s+#endif/);
+    });
+
     it("binds a default texture for missing texture resources on WebGPU", () => {
         let engine: AbstractEngine;
         const emptyTexture = { getEngine: () => engine };

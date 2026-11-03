@@ -6,6 +6,13 @@ import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
 import { Material } from "core/Materials/material";
+import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
+import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
+import { VertexOutputBlock } from "core/Materials/Node/Blocks/Vertex/vertexOutputBlock";
+import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
 /**
@@ -299,6 +306,67 @@ describe("Texture.replaceImage", () => {
 
         expect(texture.replaceImage(loaded("gamma.png", { size: 1024, gammaSpace: true, imageGamma: true }))).toBe(true);
         expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag);
+    });
+
+    it("converts a node material's texture to gamma space once its gamma space image is replaced with a linear one", async () => {
+        const texture = loaded("gamma.png", { gammaSpace: true, imageGamma: true });
+        // a node material that shows the texture in gamma space: its texture block converts the texture when the image is linear
+        const material = new NodeMaterial("node material", scene);
+        const position = new InputBlock("position");
+        position.setAsAttribute("position");
+        const world = new InputBlock("world");
+        world.setAsSystemValue(NodeMaterialSystemValues.World);
+        const viewProjection = new InputBlock("viewProjection");
+        viewProjection.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
+        const worldPosition = new TransformBlock("worldPosition");
+        position.output.connectTo(worldPosition.vector);
+        world.output.connectTo(worldPosition.transform);
+        const clipPosition = new TransformBlock("clipPosition");
+        worldPosition.output.connectTo(clipPosition.vector);
+        viewProjection.output.connectTo(clipPosition.transform);
+        const vertexOutput = new VertexOutputBlock("vertexOutput");
+        clipPosition.output.connectTo(vertexOutput.vector);
+        const uv = new InputBlock("uv");
+        uv.setAsAttribute("uv");
+        const textureBlock = new TextureBlock("texture");
+        textureBlock.texture = texture;
+        textureBlock.convertToGammaSpace = true;
+        uv.output.connectTo(textureBlock.uv);
+        const fragmentOutput = new FragmentOutputBlock("fragmentOutput");
+        textureBlock.rgb.connectTo(fragmentOutput.rgb);
+        material.addOutputNode(vertexOutput);
+        material.addOutputNode(fragmentOutput);
+        const built = new Promise<void>((resolve, reject) => {
+            material.onBuildObservable.addOnce(() => resolve());
+            material.onBuildErrorObservable.addOnce((error) => reject(new Error(error)));
+        });
+        material.build();
+        await built;
+
+        const plane = CreatePlane("plane", {}, scene);
+        plane.material = material;
+        // the texture block's conversion of its output to gamma space, written under a define
+        const output = textureBlock.rgb.associatedVariableName;
+        const conversion = new RegExp(`#ifdef (\\w+)\\s+${output} = toGammaSpace\\(${output}\\);`);
+        // whether the effect the material draws the plane with in a frame, once compiled, converts the texture: the conversion is in its
+        // fragment shader, and the effect sets its define
+        const convertsAsync = async () => {
+            const ready = () => {
+                scene.incrementRenderId();
+                return material.isReadyForSubMesh(plane, plane.subMeshes[0]);
+            };
+            for (let i = 0; i < 50 && !ready(); i++) {
+                await new Promise((resolve) => setTimeout(resolve, 0));
+            }
+            expect(ready()).toBe(true);
+            const effect = plane.subMeshes[0].effect!;
+            const match = conversion.exec(effect.fragmentSourceCode);
+            return !!match && effect.defines.split("\n").includes(`#define ${match[1]}`);
+        };
+
+        expect(await convertsAsync()).toBe(false);
+        expect(texture.replaceImage(loaded("linear.png", { gammaSpace: false, imageGamma: false }))).toBe(true);
+        expect(await convertsAsync()).toBe(true);
     });
 
     it("makes a frozen material that uses it compute again what it reads from the image, only when it changes", () => {
