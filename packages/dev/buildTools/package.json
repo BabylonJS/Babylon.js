@@ -17,6 +17,6 @@
         "build-tools": "./dist/index.js"
     },
     "dependencies": {
-        "dotenv": "^18.0.5"
+        "dotenv": "^18.0.9"
     }
 }

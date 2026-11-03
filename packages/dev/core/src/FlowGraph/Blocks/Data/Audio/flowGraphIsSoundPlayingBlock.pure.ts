@@ -6,7 +6,7 @@ import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.p
 import { RichTypeAny, RichTypeBoolean } from "../../../flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
-import { type AbstractSound } from "../../../../AudioV2/abstractAudio/abstractSound";
+import { type FlowGraphSoundReference, ResolveFlowGraphSound } from "../../../flowGraphSoundAssets";
 import { SoundState } from "../../../../AudioV2/soundState";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
@@ -16,9 +16,9 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  */
 export class FlowGraphIsSoundPlayingBlock extends FlowGraphCachedOperationBlock<boolean> {
     /**
-     * Input connection: The sound to check.
+     * Input connection: The sound to check. Accepts an Audio V2 sound or the name of a sound asset declared on the coordinator.
      */
-    public readonly sound: FlowGraphDataConnection<AbstractSound>;
+    public readonly sound: FlowGraphDataConnection<FlowGraphSoundReference>;
 
     /**
      * Constructs a new FlowGraphIsSoundPlayingBlock.
@@ -33,7 +33,7 @@ export class FlowGraphIsSoundPlayingBlock extends FlowGraphCachedOperationBlock<
      * @internal
      */
     public override _doOperation(context: FlowGraphContext): boolean | undefined {
-        const soundValue = this.sound.getValue(context);
+        const soundValue = ResolveFlowGraphSound(context, this.sound.getValue(context));
         if (!soundValue) {
             return undefined;
         }
