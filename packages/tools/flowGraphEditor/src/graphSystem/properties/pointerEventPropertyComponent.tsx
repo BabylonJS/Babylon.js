@@ -28,7 +28,8 @@ const TargetMeshContent: React.FunctionComponent<{
     currentUniqueId: number;
     onMeshChange: (uniqueId: number) => void;
     blockId: string;
-}> = ({ sceneContext, currentUniqueId, onMeshChange, blockId }) => {
+}> = (props) => {
+    const { sceneContext, currentUniqueId, onMeshChange, blockId } = props;
     const classes = useStyles();
     return (
         <>
@@ -118,16 +119,15 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
         }
         (block.config as any).targetMesh = mesh;
         (block.config as any)._meshName = mesh?.name;
-        (meshInput as any)._defaultValue = mesh;
+        const globalState = this.props.stateManager.data as GlobalState;
+        globalState.setUnconnectedInputValue(meshInput, mesh);
 
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.forceUpdate();
     }
 
     /**
-     * Resolve the current mesh uniqueId, rebinding by saved name when the
-     * stored reference is stale (e.g. after a scene reset that creates new
-     * objects with different uniqueIds).
+     * Resolve the current mesh uniqueId without changing an unresolved reference.
      * @param sceneContext - The current scene context, or null if unavailable.
      * @returns The uniqueId of the current mesh, or -1 if none.
      */
@@ -143,21 +143,6 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
             // If the stored uniqueId still matches a mesh in the scene, use it
             if (sceneContext.meshes.some((m) => m.uniqueId === uid)) {
                 return uid;
-            }
-        }
-
-        // Stale or missing reference — try to rebind by the saved name
-        const block = this._getBlock();
-        const savedName: string | undefined = (block.config as any)?._meshName ?? (currentMesh && typeof currentMesh === "object" ? currentMesh.name : undefined);
-        if (savedName) {
-            const match = sceneContext.meshes.find((m) => m.name === savedName);
-            if (match) {
-                if (!block.config) {
-                    (block as any).config = {};
-                }
-                (block.config as any).targetMesh = match;
-                (meshInput as any)._defaultValue = match;
-                return match.uniqueId;
             }
         }
 

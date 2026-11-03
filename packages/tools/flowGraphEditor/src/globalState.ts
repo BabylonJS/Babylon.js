@@ -291,7 +291,7 @@ export class GlobalState {
             }
             if (!context._hasConnectionValue(input)) {
                 updatedContexts.push(context);
-            } else if (GlobalState._EditableValuesMatch(context._getConnectionValue(input), previousValue)) {
+            } else if (this._editableValuesMatch(context._getConnectionValue(input), previousValue)) {
                 input.setValue(value, context);
                 updatedContexts.push(context);
             }
@@ -318,7 +318,7 @@ export class GlobalState {
         };
         const updateRuntime = (contexts: Array<{ connectionValues: { [key: string]: any } }> | null) => {
             contexts?.forEach((context) => {
-                if (connectionId in context.connectionValues && GlobalState._EditableValuesMatch(context.connectionValues[connectionId], previousValue)) {
+                if (connectionId in context.connectionValues && this._editableValuesMatch(context.connectionValues[connectionId], previousValue)) {
                     context.connectionValues[connectionId] = value;
                 }
             });
@@ -328,7 +328,7 @@ export class GlobalState {
             const serializedValue = serializeValue(value);
             contexts?.forEach((context) => {
                 const connectionValues = context._connectionValues;
-                if (connectionValues && connectionId in connectionValues && GlobalState._EditableValuesMatch(connectionValues[connectionId], serializedPrevious)) {
+                if (connectionValues && connectionId in connectionValues && this._editableValuesMatch(connectionValues[connectionId], serializedPrevious)) {
                     connectionValues[connectionId] = serializedValue;
                 }
             });
@@ -338,18 +338,36 @@ export class GlobalState {
         updateSerialized(this._perGraphContextSnapshots.get(this._flowGraph.uniqueId) ?? null);
     }
 
-    private static _EditableValuesMatch(left: unknown, right: unknown): boolean {
+    private _editableValuesMatch(left: unknown, right: unknown): boolean {
         if (Object.is(left, right)) {
             return true;
         }
         if (Array.isArray(left) && Array.isArray(right)) {
-            return left.length === right.length && left.every((value, index) => GlobalState._EditableValuesMatch(value, right[index]));
+            return left.length === right.length && left.every((value, index) => this._editableValuesMatch(value, right[index]));
         }
         if (left && right && typeof left === "object" && typeof right === "object") {
-            const leftReference = left as { uniqueId?: number; id?: string; name?: string };
-            const rightReference = right as { uniqueId?: number; id?: string; name?: string };
+            const leftReference = left as { uniqueId?: number; id?: string; name?: string; className?: string; getClassName?: () => string; getScene?: () => Scene };
+            const rightReference = right as { uniqueId?: number; id?: string; name?: string; className?: string; getClassName?: () => string; getScene?: () => Scene };
             if (leftReference.uniqueId !== undefined || rightReference.uniqueId !== undefined) {
-                return leftReference.uniqueId === rightReference.uniqueId;
+                if (
+                    leftReference.uniqueId !== rightReference.uniqueId ||
+                    leftReference.id !== rightReference.id ||
+                    leftReference.name !== rightReference.name ||
+                    (leftReference.getClassName?.() ?? leftReference.className) !== (rightReference.getClassName?.() ?? rightReference.className)
+                ) {
+                    return false;
+                }
+                const leftIsLive = typeof leftReference.getScene === "function";
+                const rightIsLive = typeof rightReference.getScene === "function";
+                if (leftIsLive && rightIsLive) {
+                    return false;
+                }
+                if (leftIsLive !== rightIsLive) {
+                    const leftLocation = this._getReferenceLocation(leftReference);
+                    const rightLocation = this._getReferenceLocation(rightReference);
+                    return !!leftLocation && !!rightLocation && this._referenceLocationsMatch(leftLocation, rightLocation);
+                }
+                return true;
             }
             if (leftReference.id !== undefined || rightReference.id !== undefined || leftReference.name !== undefined || rightReference.name !== undefined) {
                 return leftReference.id === rightReference.id && leftReference.name === rightReference.name;
@@ -1981,6 +1999,7 @@ export class GlobalState {
             this._savedContextRuntimeData = [];
             for (let i = 0; i < fg.contextCount; i++) {
                 const context = fg.getContext(i);
+                Object.values((context as any)._connectionValues ?? {}).forEach((value) => this._rememberReferenceLocations(value));
                 // Serialized snapshot for SerializationTools
                 const serialized: any = {};
                 context.serialize(serialized);
@@ -2058,16 +2077,41 @@ export class GlobalState {
         return this._perGraphContextSnapshots.get(graphUniqueId) ?? null;
     }
 
-    /** Gets durable scene-reference provenance for editor serialization. */
-    public get referenceProvenance(): SceneReferenceProvenance {
-        const provenance = new Map<string, [number, SceneReferenceLocation]>();
-        const getIdentityKey = (uniqueId: number, location: SceneReferenceLocation) =>
-            `${uniqueId}\0${location.className}\0${location.id}\0${location.name}\0${location.idIndex}\0${location.nameIndex}`;
-        for (const [uniqueId, locations] of this._restoredReferenceProvenance ?? []) {
-            for (const location of locations) {
-                provenance.set(getIdentityKey(uniqueId, location), [uniqueId, location]);
-            }
+    private _getLiveReferenceLocation(value: any): SceneReferenceLocation | undefined {
+        if (typeof value?.getScene !== "function" || typeof value?.getClassName !== "function") {
+            return undefined;
         }
+        const scene = value.getScene() as Scene;
+        const className = value.getClassName();
+        const classNodes = scene.getNodes().filter((node) => node.getClassName() === className);
+        if (!classNodes.includes(value)) {
+            return undefined;
+        }
+        return {
+            id: value.id,
+            name: value.name,
+            className,
+            idIndex: classNodes.filter((node) => node.id === value.id).indexOf(value),
+            nameIndex: classNodes.filter((node) => node.name === value.name).indexOf(value),
+        };
+    }
+
+    private _referenceLocationsMatch(left: SceneReferenceLocation, right: SceneReferenceLocation): boolean {
+        return left.className === right.className && left.id === right.id && left.name === right.name && left.idIndex === right.idIndex && left.nameIndex === right.nameIndex;
+    }
+
+    private _getReferenceLocation(value: any): SceneReferenceLocation | undefined {
+        const liveLocation = this._getLiveReferenceLocation(value);
+        if (liveLocation) {
+            return liveLocation;
+        }
+        if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
+            return undefined;
+        }
+        return this._getRestoredReferenceLocation(value.uniqueId, value) ?? this._cachedOldNodeLocations?.get(value.uniqueId);
+    }
+
+    private _forEachReferenceValue(callback: (value: any) => void): void {
         const collect = (value: any) => {
             if (Array.isArray(value)) {
                 value.forEach(collect);
@@ -2076,34 +2120,11 @@ export class GlobalState {
             if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
                 return;
             }
-            if (typeof value.className === "string" && typeof value.getScene !== "function") {
-                const location = this._getRestoredReferenceLocation(value.uniqueId, value) ?? this._cachedOldNodeLocations?.get(value.uniqueId);
-                if (location) {
-                    provenance.set(getIdentityKey(value.uniqueId, location), [value.uniqueId, location]);
-                }
-                return;
-            }
-            if (typeof value.getScene === "function" && typeof value.getClassName === "function") {
-                const scene = value.getScene() as Scene;
-                const className = value.getClassName();
-                const classNodes = scene.getNodes().filter((node) => node.getClassName() === className);
-                if (!classNodes.includes(value)) {
-                    const cachedLocation = this._cachedOldNodeLocations?.get(value.uniqueId) ?? this._getRestoredReferenceLocation(value.uniqueId, value);
-                    if (cachedLocation) {
-                        provenance.set(getIdentityKey(value.uniqueId, cachedLocation), [value.uniqueId, cachedLocation]);
-                    }
-                    return;
-                }
-                const idMatches = classNodes.filter((node) => node.id === value.id);
-                const nameMatches = classNodes.filter((node) => node.name === value.name);
-                const location = {
-                    id: value.id,
-                    name: value.name,
-                    className,
-                    idIndex: idMatches.indexOf(value),
-                    nameIndex: nameMatches.indexOf(value),
-                };
-                provenance.set(getIdentityKey(value.uniqueId, location), [value.uniqueId, location]);
+            if (
+                (typeof value.getScene === "function" && typeof value.getClassName === "function") ||
+                (typeof value.className === "string" && typeof value.getScene !== "function")
+            ) {
+                callback(value);
             }
         };
         for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
@@ -2119,96 +2140,108 @@ export class GlobalState {
         if (this._savedContextRuntimeData) {
             this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
         }
+    }
+
+    private _rememberReferenceLocations(value: any): void {
+        const collect = (entry: any) => {
+            if (Array.isArray(entry)) {
+                entry.forEach(collect);
+                return;
+            }
+            const location = this._getLiveReferenceLocation(entry);
+            if (!location) {
+                return;
+            }
+            this._cachedOldNodeLocations ??= new Map();
+            this._cachedOldNodeLocations.set(entry.uniqueId, location);
+        };
+        collect(value);
+    }
+
+    /** Gets durable scene-reference provenance for editor serialization. */
+    public get referenceProvenance(): SceneReferenceProvenance {
+        const provenance = new Map<number, [number, SceneReferenceLocation]>();
+        this._forEachReferenceValue((value) => {
+            const location = this._getReferenceLocation(value);
+            if (location) {
+                provenance.set(value.uniqueId, [value.uniqueId, location]);
+            }
+        });
         return Array.from(provenance.values());
     }
 
-    /** Remaps unresolved serialized references whose ids collide with current live scene ids. */
-    public prepareReferenceProvenanceForSerialization(): void {
-        const liveLocations = new Map<number, SceneReferenceLocation[]>();
-        const unresolvedValues: any[] = [];
-        const getLiveLocation = (value: any): SceneReferenceLocation => {
-            const scene = value.getScene() as Scene;
-            const className = value.getClassName();
-            const classNodes = scene.getNodes().filter((node) => node.getClassName() === className);
-            return {
-                id: value.id,
-                name: value.name,
-                className,
-                idIndex: classNodes.filter((node) => node.id === value.id).indexOf(value),
-                nameIndex: classNodes.filter((node) => node.name === value.name).indexOf(value),
-            };
-        };
-        const collect = (value: any) => {
-            if (Array.isArray(value)) {
-                value.forEach(collect);
-                return;
+    /**
+     * Temporarily remaps serialized reference descriptors so each serialized id names one identity.
+     * @returns cleanup callback that restores editor runtime state after serialization
+     */
+    public prepareReferenceProvenanceForSerialization(): () => void {
+        const occurrences: Array<{ value: any; location: SceneReferenceLocation; live: boolean }> = [];
+        const usedIds = new Set<number>();
+        this._forEachReferenceValue((value) => {
+            usedIds.add(value.uniqueId);
+            const location = this._getReferenceLocation(value);
+            if (location) {
+                occurrences.push({ value, location, live: typeof value.getScene === "function" });
             }
-            if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
-                return;
-            }
-            if (typeof value.getScene === "function" && typeof value.getClassName === "function") {
-                const locations = liveLocations.get(value.uniqueId) ?? [];
-                locations.push(getLiveLocation(value));
-                liveLocations.set(value.uniqueId, locations);
-            } else if (typeof value.className === "string") {
-                unresolvedValues.push(value);
-            }
-        };
-        for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
-            this._getAllGraphBlocks(graph).forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
-            for (let index = 0; index < graph.contextCount; index++) {
-                Object.values((graph.getContext(index) as any)?._connectionValues ?? {}).forEach(collect);
-            }
-            this._perGraphContextSnapshots.get(graph.uniqueId)?.forEach((context) => Object.values(context._connectionValues ?? {}).forEach(collect));
+        });
+        for (const uniqueId of this._restoredReferenceProvenance?.keys() ?? []) {
+            usedIds.add(uniqueId);
         }
-        if (this._savedConnectionValues) {
-            Object.values(this._savedConnectionValues).forEach(collect);
+
+        const identityKey = (uniqueId: number, location: SceneReferenceLocation) =>
+            `${uniqueId}\0${location.className}\0${location.id}\0${location.name}\0${location.idIndex}\0${location.nameIndex}`;
+        const identitiesById = new Map<number, Map<string, { location: SceneReferenceLocation; live: boolean }>>();
+        for (const occurrence of occurrences) {
+            const identities = identitiesById.get(occurrence.value.uniqueId) ?? new Map();
+            const key = identityKey(occurrence.value.uniqueId, occurrence.location);
+            const identity = identities.get(key);
+            identities.set(key, { location: occurrence.location, live: occurrence.live || identity?.live === true });
+            identitiesById.set(occurrence.value.uniqueId, identities);
         }
-        if (this._savedContextRuntimeData) {
-            this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
-        }
+
         const remappedIds = new Map<string, number>();
         let nextId = -1;
-        for (const value of unresolvedValues) {
-            const collidingLocations = liveLocations.get(value.uniqueId);
-            if (!collidingLocations) {
+        for (const identities of identitiesById.values()) {
+            if (identities.size < 2) {
                 continue;
             }
-            const location = this._getRestoredReferenceLocation(value.uniqueId, value) ?? this._cachedOldNodeLocations?.get(value.uniqueId);
-            if (
-                location &&
-                collidingLocations.some(
-                    (candidate) =>
-                        candidate.className === location.className &&
-                        candidate.id === location.id &&
-                        candidate.name === location.name &&
-                        candidate.idIndex === location.idIndex &&
-                        candidate.nameIndex === location.nameIndex
-                )
-            ) {
-                continue;
-            }
-            const key = `${value.uniqueId}\0${value.className}\0${value.id ?? ""}\0${value.name ?? ""}`;
-            let remappedId = remappedIds.get(key);
-            if (remappedId === undefined) {
-                while (liveLocations.has(nextId) || this._restoredReferenceProvenance?.has(nextId)) {
+            const keeper = Array.from(identities.entries()).find(([, identity]) => identity.live)?.[0] ?? identities.keys().next().value;
+            for (const [key] of identities) {
+                if (key === keeper) {
+                    continue;
+                }
+                while (usedIds.has(nextId)) {
                     nextId--;
                 }
-                remappedId = nextId--;
-                remappedIds.set(key, remappedId);
-                const locations = this._restoredReferenceProvenance?.get(value.uniqueId);
-                if (location && locations) {
-                    const remainingLocations = locations.filter((candidate) => candidate !== location);
-                    if (remainingLocations.length > 0) {
-                        this._restoredReferenceProvenance!.set(value.uniqueId, remainingLocations);
-                    } else {
-                        this._restoredReferenceProvenance!.delete(value.uniqueId);
-                    }
-                    this._restoredReferenceProvenance!.set(remappedId, [location]);
-                }
+                remappedIds.set(key, nextId);
+                usedIds.add(nextId);
+                nextId--;
             }
-            value.uniqueId = remappedId;
         }
+
+        const originalProvenance = this._restoredReferenceProvenance;
+        const preparedProvenance = new Map<number, SceneReferenceLocation[]>(originalProvenance ? Array.from(originalProvenance, ([id, locations]) => [id, [...locations]]) : []);
+        const changedValues: Array<{ value: any; uniqueId: number }> = [];
+        for (const occurrence of occurrences) {
+            if (occurrence.live) {
+                continue;
+            }
+            const key = identityKey(occurrence.value.uniqueId, occurrence.location);
+            const remappedId = remappedIds.get(key);
+            if (remappedId !== undefined) {
+                changedValues.push({ value: occurrence.value, uniqueId: occurrence.value.uniqueId });
+                occurrence.value.uniqueId = remappedId;
+                preparedProvenance.set(remappedId, [occurrence.location]);
+            }
+        }
+        this._restoredReferenceProvenance = preparedProvenance;
+
+        return () => {
+            for (const changed of changedValues) {
+                changed.value.uniqueId = changed.uniqueId;
+            }
+            this._restoredReferenceProvenance = originalProvenance;
+        };
     }
 
     /**

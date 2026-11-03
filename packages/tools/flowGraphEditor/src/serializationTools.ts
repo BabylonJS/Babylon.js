@@ -201,8 +201,15 @@ export class SerializationTools {
         // important because the graph may be stopped (contexts cleared) when
         // the user clicks Save.
         globalState.snapshotUserVariables();
-        globalState.prepareReferenceProvenanceForSerialization();
+        const restoreReferenceIds = globalState.prepareReferenceProvenanceForSerialization();
+        try {
+            return this._SerializePrepared(flowGraph, globalState);
+        } finally {
+            restoreReferenceIds();
+        }
+    }
 
+    private static _SerializePrepared(flowGraph: FlowGraph, globalState: GlobalState): string {
         const coordinator = globalState.coordinator;
         const graphs = coordinator ? coordinator.flowGraphs : [flowGraph];
 
@@ -440,7 +447,7 @@ export class SerializationTools {
                 candidates = nodes.filter((node) => node.name === location.name);
                 index = location.nameIndex;
             }
-            return candidates[index] ?? currentValue;
+            return candidates[index] ?? value;
         };
         for (const serializedBlock of graphData.allBlocks ?? []) {
             const block = graph.getAllBlocks().find((candidate) => candidate.uniqueId === serializedBlock.uniqueId);
@@ -632,23 +639,28 @@ export class SerializationTools {
         }
         this.UpdateLocations(flowGraph, globalState);
         globalState.snapshotUserVariables();
-
-        // Serialize the flow graph to JSON
-        const fgSerialized: any = {};
-        flowGraph.serialize(fgSerialized);
-        // Inject saved context snapshots when the graph has no live contexts
-        SerializationTools.InjectSavedContexts(fgSerialized, globalState);
-        fgSerialized.editorData = (flowGraph as any)._editorData;
-        if (globalState.snippetId) {
-            fgSerialized.sceneSnippetId = globalState.snippetId;
+        const restoreReferenceIds = globalState.prepareReferenceProvenanceForSerialization();
+        let fgSerialized: any;
+        try {
+            // Serialize the flow graph to JSON
+            fgSerialized = {};
+            flowGraph.serialize(fgSerialized);
+            // Inject saved context snapshots when the graph has no live contexts
+            SerializationTools.InjectSavedContexts(fgSerialized, globalState);
+            fgSerialized.editorData = (flowGraph as any)._editorData;
+            if (globalState.snippetId) {
+                fgSerialized.sceneSnippetId = globalState.snippetId;
+            }
+            if (globalState.flowGraphSnippetId) {
+                fgSerialized.flowGraphSnippetId = globalState.flowGraphSnippetId;
+            }
+            if (globalState.coordinator?.soundAssets.length) {
+                fgSerialized.soundAssets = globalState.coordinator.soundAssets;
+            }
+            fgSerialized.referenceProvenance = globalState.referenceProvenance;
+        } finally {
+            restoreReferenceIds();
         }
-        if (globalState.flowGraphSnippetId) {
-            fgSerialized.flowGraphSnippetId = globalState.flowGraphSnippetId;
-        }
-        if (globalState.coordinator?.soundAssets.length) {
-            fgSerialized.soundAssets = globalState.coordinator.soundAssets;
-        }
-        fgSerialized.referenceProvenance = globalState.referenceProvenance;
 
         // Build the glTF JSON with the flow graph embedded as an extension
         const gltfJson: any = {

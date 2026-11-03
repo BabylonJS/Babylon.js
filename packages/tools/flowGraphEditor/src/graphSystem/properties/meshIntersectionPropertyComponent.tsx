@@ -4,6 +4,7 @@ import { Body1, Dropdown, Option, makeStyles, tokens } from "@fluentui/react-com
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
@@ -13,7 +14,7 @@ import { type Observer } from "core/Misc/observable";
 
 import { type GlobalState } from "../../globalState";
 import { type SceneContext } from "../../sceneContext";
-import { RenderConstructorVariablesSection, RenderDataConnectionsSection, RenderGeneralSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
+import { RenderConstructorVariablesSection, RenderGeneralSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
 
 interface IMeshIntersectionPropertyState {
     sceneContext: SceneContext | null;
@@ -164,12 +165,16 @@ export class MeshIntersectionPropertyComponent extends React.Component<IProperty
                                 }
                             />
                             <TargetMeshesPicker meshes={meshes} selectedMeshes={targetMeshes} onChange={(value) => this._setInputValue("targetMeshes", value)} />
+                            <SwitchPropertyLine
+                                label="Use precise intersection"
+                                value={this._getInputValue("usePreciseIntersection") === true}
+                                onChange={(value) => this._setInputValue("usePreciseIntersection", value)}
+                            />
                         </>
                     ) : (
                         <NoSceneMessage />
                     )}
                 </AccordionSection>
-                {RenderDataConnectionsSection(this.props)}
                 {RenderGenericPropStoreSections(this.props)}
             </Accordion>
         );
