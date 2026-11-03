@@ -264,6 +264,25 @@ describe("Texture.replaceImage", () => {
         expect(reset).not.toHaveBeenCalled();
     });
 
+    it("keeps the source's gamma for an image two wrappers already share and that has none set yet", () => {
+        const source = loaded("shared.png", { gammaSpace: false, imageGamma: null });
+        const image = source.getInternalTexture()!;
+        const texture = new Texture(null, scene);
+        texture.url = "shared.png";
+        image.incrementReferences();
+        texture._texture = image;
+        const markDirty = vi.spyOn(drawnWith(texture).material, "markDirty");
+
+        // this texture is gamma space (the default), the source linear: the image takes the source's gamma, not this texture's
+        expect(image._gammaSpace).toBeNull();
+        expect(texture.replaceImage(source)).toBe(true);
+        expect(image._gammaSpace).toBe(false);
+        expect(texture.gammaSpace).toBe(false);
+        expect(source.gammaSpace).toBe(false);
+        // the materials of this texture read it as gamma space before
+        expect(markDirty).toHaveBeenCalledTimes(1);
+    });
+
     it("takes a source of the same engine that has no scene", () => {
         const source = loaded("preloaded.png", {}, engine);
         expect(source.getScene()).toBeNull();
@@ -298,14 +317,20 @@ describe("Texture.replaceImage", () => {
         const texture = loaded("texture.png", { size: 256, gammaSpace: false, imageGamma: false });
         const { material, drawWrapper } = drawnWith(texture, false);
         const markAsDirty = vi.spyOn(material, "markAsDirty");
+        // the material and another one that is not frozen are not even asked whether they use the texture
+        const hasTexture = vi.spyOn(material, "hasTexture");
+        const otherHasTexture = vi.spyOn(new Material("other", scene), "hasTexture");
 
         // the material writes the size into its uniforms at each bind
         expect(texture.replaceImage(loaded("larger.png", { size: 1024, gammaSpace: false, imageGamma: false }))).toBe(true);
         expect(markAsDirty).not.toHaveBeenCalled();
         expect(drawWrapper._wasPreviouslyReady).toBe(true);
+        expect(hasTexture).not.toHaveBeenCalled();
+        expect(otherHasTexture).not.toHaveBeenCalled();
 
         expect(texture.replaceImage(loaded("gamma.png", { size: 1024, gammaSpace: true, imageGamma: true }))).toBe(true);
         expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag);
+        expect(otherHasTexture).toHaveBeenCalledTimes(1);
     });
 
     it("converts a node material's texture to gamma space once its gamma space image is replaced with a linear one", async () => {

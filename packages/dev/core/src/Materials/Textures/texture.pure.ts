@@ -81,21 +81,6 @@ function IsLoadedImage(texture: Nullable<InternalTexture>): texture is InternalT
     return !!texture && texture.isReady && texture.source === InternalTextureSource.Url && !texture.isCube && !texture.is3D && !texture.is2DArray;
 }
 
-// what the materials turn into defines from the image of a texture
-function DefinesState(texture: Texture): unknown[] {
-    return [texture.gammaSpace, texture.isRGBD, texture.linearSpecularLOD, texture.irradianceTexture];
-}
-
-// what the materials only write into uniforms or bind from the image of a texture: a material that is not frozen does it at each bind
-function UniformsState(texture: Texture): unknown[] {
-    const size = texture.getSize();
-    return [size.width, size.height, texture.lodGenerationOffset, texture.lodGenerationScale, texture._lodTextureHigh, texture._lodTextureMid, texture._lodTextureLow];
-}
-
-function Differs(state: unknown[], previous: unknown[]): boolean {
-    return state.some((value, i) => value !== previous[i]);
-}
-
 // the name Texture.Parse loads url from, relative to root: null when they cannot be related without the page url
 function NameFrom(root: string, url: string): Nullable<string> {
     if (root && !root.endsWith("/")) {
@@ -695,10 +680,22 @@ export class Texture extends BaseTexture {
         }
         const sourceUrl = image.url || source.url;
 
-        // what the materials read from the image, before the swap. The source's image keeps the source's gamma: when it is not set yet, it
-        // comes from the source's wrapper, as the gammaSpace getter would set it, and not from this one's, as it would after the swap
-        const defines = DefinesState(this);
-        const uniforms = UniformsState(this);
+        // what the materials read from the image, before the swap: what they turn into defines, and what they only write into uniforms or
+        // bind (a material that is not frozen does it at each bind). The gamma space is read as the gammaSpace getter reads it, without
+        // setting it on an image that has none yet: the source's image keeps the source's gamma, which then comes from the source's wrapper,
+        // as the getter would set it, and not from this one's, also when both wrappers already share the image
+        const gammaSpace = (own._gammaSpace ?? this._gammaSpace) && !own._useSRGBBuffer;
+        const isRGBD = this.isRGBD;
+        const linearSpecularLOD = this.linearSpecularLOD;
+        const irradianceTexture = this.irradianceTexture;
+        const size = this.getSize();
+        const width = size.width;
+        const height = size.height;
+        const lodGenerationOffset = this.lodGenerationOffset;
+        const lodGenerationScale = this.lodGenerationScale;
+        const lodTextureHigh = this._lodTextureHigh;
+        const lodTextureMid = this._lodTextureMid;
+        const lodTextureLow = this._lodTextureLow;
         if (image._gammaSpace === null) {
             image._gammaSpace = source._gammaSpace;
         }
@@ -732,16 +729,27 @@ export class Texture extends BaseTexture {
         this._gammaSpace = source._gammaSpace;
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
 
-        const definesChanged = Differs(DefinesState(this), defines);
-        if (definesChanged || Differs(UniformsState(this), uniforms)) {
+        const definesChanged =
+            this.gammaSpace !== gammaSpace || this.isRGBD !== isRGBD || this.linearSpecularLOD !== linearSpecularLOD || this.irradianceTexture !== irradianceTexture;
+        const newSize = this.getSize();
+        const uniformsChanged =
+            newSize.width !== width ||
+            newSize.height !== height ||
+            this.lodGenerationOffset !== lodGenerationOffset ||
+            this.lodGenerationScale !== lodGenerationScale ||
+            this._lodTextureHigh !== lodTextureHigh ||
+            this._lodTextureMid !== lodTextureMid ||
+            this._lodTextureLow !== lodTextureLow;
+        if (definesChanged || uniformsChanged) {
             for (const material of scene.materials) {
-                if (!material.hasTexture(this)) {
+                // when only uniforms change, only the frozen materials need to know: the others are not asked whether they use the texture
+                if ((!definesChanged && !material.isFrozen) || !material.hasTexture(this)) {
                     continue;
                 }
                 if (material.isFrozen) {
                     // a frozen material skips the dirty flags and its uniform writes: markDirty(true) makes it do both again
                     material.markDirty(true);
-                } else if (definesChanged) {
+                } else {
                     material.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                 }
             }
