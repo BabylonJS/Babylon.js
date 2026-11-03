@@ -781,5 +781,11 @@ describe("Mesh recorded draws", () => {
         expect(replay).toHaveBeenCalledTimes(1);
         frame();
         expect(replay).toHaveBeenCalledTimes(2);
+        // and back: the casters recorded with back faces only are drawn in full again, then encoded again
+        generator.forceBackFacesOnly = false;
+        frame();
+        expect(replay).toHaveBeenCalledTimes(2);
+        frame();
+        expect(replay).toHaveBeenCalledTimes(3);
     });
 });
