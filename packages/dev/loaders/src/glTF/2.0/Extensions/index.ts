@@ -8,6 +8,7 @@ export * from "./EXT_texture_avif";
 export * from "./EXT_lights_ies";
 export * from "./KHR_draco_mesh_compression";
 export * from "./KHR_gaussian_splatting";
+export * from "./KHR_gaussian_splatting_compression_spz";
 export * from "./KHR_lights_punctual";
 export * from "./EXT_lights_area";
 export * from "./KHR_materials_pbrSpecularGlossiness";
