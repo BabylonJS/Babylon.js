@@ -25,6 +25,7 @@ import { FlowGraphValidationSeverity, type IFlowGraphValidationIssue, type IFlow
 import { type HelpTopicId } from "./components/help/helpContent";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { type IFlowGraphSoundAsset } from "core/FlowGraph/flowGraphSoundAssets";
+import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
 /**
@@ -282,11 +283,17 @@ export class GlobalState {
 
         for (let index = 0; index < this._flowGraph.contextCount; index++) {
             const context = this._flowGraph.getContext(index);
-            if (context?._hasConnectionValue(input) && GlobalState._EditableValuesMatch(context._getConnectionValue(input), previousValue)) {
+            if (!context) {
+                continue;
+            }
+            if (!context._hasConnectionValue(input)) {
+                updatedContexts.push(context);
+            } else if (GlobalState._EditableValuesMatch(context._getConnectionValue(input), previousValue)) {
                 input.setValue(value, context);
                 updatedContexts.push(context);
             }
         }
+        this._updateSavedInputValues(input.uniqueId, previousValue, value);
         const ownerBlock = input._ownerBlock;
         if (ownerBlock.getClassName() === "FlowGraphSoundEndedEventBlock" && this._flowGraph.state === FlowGraphState.Started) {
             const eventBlock = ownerBlock as FlowGraphEventBlock;
@@ -298,6 +305,34 @@ export class GlobalState {
             }
         }
         this._snapshotUserVariablesFrom();
+    }
+
+    private _updateSavedInputValues<T>(connectionId: string, previousValue: T, value: T): void {
+        const serializeValue = (nextValue: T) => {
+            const serialized: Record<string, unknown> = {};
+            defaultValueSerializationFunction("value", nextValue, serialized);
+            return serialized.value;
+        };
+        const updateRuntime = (contexts: Array<{ connectionValues: { [key: string]: any } }> | null) => {
+            contexts?.forEach((context) => {
+                if (connectionId in context.connectionValues && GlobalState._EditableValuesMatch(context.connectionValues[connectionId], previousValue)) {
+                    context.connectionValues[connectionId] = value;
+                }
+            });
+        };
+        const updateSerialized = (contexts: any[] | null) => {
+            const serializedPrevious = serializeValue(previousValue);
+            const serializedValue = serializeValue(value);
+            contexts?.forEach((context) => {
+                const connectionValues = context._connectionValues;
+                if (connectionValues && connectionId in connectionValues && GlobalState._EditableValuesMatch(connectionValues[connectionId], serializedPrevious)) {
+                    connectionValues[connectionId] = serializedValue;
+                }
+            });
+        };
+        updateRuntime(this._savedContextRuntimeData);
+        updateSerialized(this._savedContextSnapshots);
+        updateSerialized(this._perGraphContextSnapshots.get(this._flowGraph.uniqueId) ?? null);
     }
 
     private static _EditableValuesMatch(left: unknown, right: unknown): boolean {
@@ -1928,6 +1963,19 @@ export class GlobalState {
         return this._perGraphContextSnapshots.get(graphUniqueId) ?? null;
     }
 
+    /** Gets durable scene-reference provenance for editor serialization. */
+    public get referenceProvenance(): Array<[number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }]> {
+        return Array.from(this._cachedOldNodeLocations ?? []);
+    }
+
+    /**
+     * Restores durable scene-reference provenance before a deserialized coordinator is activated.
+     * @param entries serialized provenance entries
+     */
+    public restoreReferenceProvenance(entries: Array<[number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }]>): void {
+        this._cachedOldNodeLocations = new Map(entries);
+    }
+
     /**
      * Re-create execution contexts on the flow graph from `_savedContextSnapshots`.
      * Called after setScene() clears live contexts so the editor UI (variables panel,
@@ -1998,6 +2046,12 @@ export class GlobalState {
         const graphs = this._coordinator?.flowGraphs ?? [this._flowGraph];
         for (const graph of graphs) {
             graph.visitAllBlocks((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            for (let index = 0; index < graph.contextCount; index++) {
+                const context = graph.getContext(index);
+                Object.values((context as any)?._connectionValues ?? {}).forEach(collect);
+            }
+            const snapshots = this._perGraphContextSnapshots.get(graph.uniqueId);
+            snapshots?.forEach((context) => Object.values(context._connectionValues ?? {}).forEach(collect));
         }
         if (this._savedConnectionValues) {
             Object.values(this._savedConnectionValues).forEach(collect);
