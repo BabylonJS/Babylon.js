@@ -20,8 +20,18 @@ interface ISpzCompressionExtension {
     bufferView: number;
 }
 
-// Whether each spherical harmonics coefficient (degrees 1 to 3, in storage order) changes sign when x and z are negated.
-const ShCoefficientFlipsOnXZNegation = [false, true, true, true, true, false, false, false, false, false, false, true, true, true, true];
+/**
+ * Whether a spherical harmonics coefficient changes sign when x and z are negated (a 180 degree rotation around Y).
+ * Real SH of band l and order m are P_l^|m|(z) times cos(m phi) (m >= 0) or sin(|m| phi) (m < 0); negating x and z
+ * multiplies them by (-1)^l when m >= 0 and by (-1)^(l+1) when m < 0.
+ * @param coefficientIndex Index of the coefficient in storage order, excluding the DC term (0 is l=1, m=-1)
+ * @returns true if the coefficient must be negated
+ */
+function ShCoefficientFlipsOnXZNegation(coefficientIndex: number): boolean {
+    const l = Math.floor(Math.sqrt(coefficientIndex + 1));
+    const m = coefficientIndex + 1 - l * l - l;
+    return m < 0 ? l % 2 === 0 : l % 2 === 1;
+}
 
 /**
  * Converts packed splat data from the SPZ coordinate system (RUB) to the glTF one (LUF), in place.
@@ -52,7 +62,7 @@ export function _ConvertSpzRubToLuf(data: ArrayBuffer, sh: Nullable<Uint8Array[]
 
     const coefficientCount = (shDegree + 1) * (shDegree + 1) - 1;
     for (let coef = 0; coef < coefficientCount; coef++) {
-        if (!ShCoefficientFlipsOnXZNegation[coef]) {
+        if (!ShCoefficientFlipsOnXZNegation(coef)) {
             continue;
         }
         for (let channel = 0; channel < 3; channel++) {
@@ -201,8 +211,40 @@ export class KHR_gaussian_splatting_compression_spz implements IGLTFLoaderExtens
         }
 
         await gaussianSplattingMesh.updateDataAsync(parsed.data, parsed.sh, undefined, parsed.shDegree);
+        this._reportGeneratedTextures(gaussianSplattingMesh);
 
         return gaussianSplattingMesh;
+    }
+
+    /**
+     * The splat textures are created during the asynchronous upload, outside of any blocked entity collection scope,
+     * so they land in the scene. Move them into the asset container (if any) and report them to the loader.
+     * @param mesh The Gaussian splatting mesh whose data was just uploaded
+     */
+    private _reportGeneratedTextures(mesh: GaussianSplattingMesh): void {
+        const loader = this._loader;
+        const container = loader._assetContainer;
+        const scene = loader.babylonScene;
+        const textures = [
+            mesh.covariancesATexture,
+            mesh.covariancesBTexture,
+            mesh.centersTexture,
+            mesh.colorsTexture,
+            mesh.rotationsATexture,
+            mesh.rotationsBTexture,
+            mesh.rotationScaleTexture,
+            ...(mesh.shTextures ?? []),
+        ];
+        for (const texture of textures) {
+            if (!texture) {
+                continue;
+            }
+            if (container) {
+                scene.removeTexture(texture);
+                texture._parentContainer = container;
+            }
+            loader.parent.onTextureLoadedObservable.notifyObservers(texture);
+        }
     }
 }
 
