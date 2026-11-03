@@ -183,6 +183,7 @@ export class GlobalState {
     /** The coordinator that owns all graphs in this editor session. */
     private _coordinator: Nullable<FlowGraphCoordinator> = null;
     private _soundAssetChangedObserver: Nullable<Observer<string>> = null;
+    private _lifetimeGeneration = 0;
 
     /** Coordinators created by editor parsing or graph creation and therefore safe for the editor to dispose. */
     private readonly _editorOwnedCoordinators = new WeakSet<FlowGraphCoordinator>();
@@ -220,6 +221,7 @@ export class GlobalState {
      * @param editorOwned whether the editor may dispose the coordinator when replacing it
      */
     public setCoordinator(coordinator: Nullable<FlowGraphCoordinator>, editorOwned = false): void {
+        this._lifetimeGeneration++;
         this._soundAssetChangedObserver?.remove();
         this._soundAssetChangedObserver = null;
         if (coordinator && editorOwned) {
@@ -239,6 +241,7 @@ export class GlobalState {
 
     /** Releases editor-owned subscriptions and restores patched host graph signals. */
     public dispose(): void {
+        this._lifetimeGeneration++;
         this._unsubscribeDebugObservers();
         this._debugNewNodeObserver?.remove();
         this._debugNewNodeObserver = null;
@@ -246,6 +249,24 @@ export class GlobalState {
         this._debugNodeRemovalObserver = null;
         this._soundAssetChangedObserver?.remove();
         this._soundAssetChangedObserver = null;
+    }
+
+    /**
+     * Captures the current editor lifetime for deferred work.
+     * @returns current lifetime generation
+     */
+    public get lifetimeGeneration(): number {
+        return this._lifetimeGeneration;
+    }
+
+    /**
+     * Checks whether deferred work still belongs to the active editor coordinator.
+     * @param coordinator coordinator captured when the work started
+     * @param generation editor lifetime captured when the work started
+     * @returns true while the work may safely update the coordinator
+     */
+    public isLifetimeCurrent(coordinator: FlowGraphCoordinator, generation: number): boolean {
+        return this._coordinator === coordinator && this._lifetimeGeneration === generation;
     }
 
     /**
@@ -257,11 +278,23 @@ export class GlobalState {
     public setUnconnectedInputValue<T>(input: FlowGraphDataConnection<T>, value: T): void {
         const previousValue = (input as any)._defaultValue as T;
         (input as any)._defaultValue = value;
+        const updatedContexts: FlowGraphContext[] = [];
 
         for (let index = 0; index < this._flowGraph.contextCount; index++) {
             const context = this._flowGraph.getContext(index);
             if (context?._hasConnectionValue(input) && GlobalState._EditableValuesMatch(context._getConnectionValue(input), previousValue)) {
                 input.setValue(value, context);
+                updatedContexts.push(context);
+            }
+        }
+        const ownerBlock = input._ownerBlock;
+        if (ownerBlock.getClassName() === "FlowGraphSoundEndedEventBlock") {
+            const eventBlock = ownerBlock as FlowGraphEventBlock;
+            for (const context of updatedContexts) {
+                eventBlock._cancelPendingTasks(context);
+                if (value) {
+                    eventBlock._preparePendingTasks(context);
+                }
             }
         }
         this._snapshotUserVariablesFrom();
@@ -1930,7 +1963,9 @@ export class GlobalState {
             ["Animation", new Map(scene.animations.map((a) => [a.uniqueId, a.name]))],
         ]);
 
-        this._cachedOldNodeLocations ??= new Map();
+        const retainedLocationIds = this._getUnresolvedSceneNodeUniqueIds(scene);
+        const previousLocations = this._cachedOldNodeLocations;
+        this._cachedOldNodeLocations = new Map(previousLocations ? Array.from(previousLocations).filter(([uniqueId]) => retainedLocationIds.has(uniqueId)) : undefined);
         const idCounts = new Map<string, number>();
         const nameCounts = new Map<string, number>();
         for (const node of scene.getNodes()) {
@@ -1943,6 +1978,31 @@ export class GlobalState {
             idCounts.set(idKey, idIndex + 1);
             nameCounts.set(nameKey, nameIndex + 1);
         }
+    }
+
+    private _getUnresolvedSceneNodeUniqueIds(scene: Scene): Set<number> {
+        const uniqueIds = new Set<number>();
+        const collect = (value: any) => {
+            if (Array.isArray(value)) {
+                value.forEach(collect);
+                return;
+            }
+            if (!value || typeof value !== "object") {
+                return;
+            }
+            const isSceneReference = typeof value.getScene === "function" || typeof value.className === "string";
+            if (typeof value.uniqueId === "number" && isSceneReference && this._rebindSceneValue(value, scene) === value) {
+                uniqueIds.add(value.uniqueId);
+            }
+        };
+        this._flowGraph.visitAllBlocks((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+        if (this._savedConnectionValues) {
+            Object.values(this._savedConnectionValues).forEach(collect);
+        }
+        if (this._savedContextRuntimeData) {
+            this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
+        }
+        return uniqueIds;
     }
 
     /**

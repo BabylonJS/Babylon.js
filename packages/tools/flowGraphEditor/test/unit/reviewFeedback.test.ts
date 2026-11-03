@@ -1,16 +1,18 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { FlowGraphMeshIntersectionEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.pure";
 import { FlowGraphSceneReadyEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.pure";
+import { FlowGraphSoundEndedEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSoundEndedEventBlock.pure";
 import { FlowGraphPlaySoundBlock } from "core/FlowGraph/Blocks/Execution/Audio/flowGraphPlaySoundBlock.pure";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { Observable } from "core/Misc/observable";
 import { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { LogEntry, LogEntryBuffer } from "flow-graph-editor/components/log/logComponent";
 import { ImportSoundAssetFileAsync } from "flow-graph-editor/components/soundAssets/soundAssetsPanelComponent";
 import { CreateIntersectionPlaySoundTemplate } from "flow-graph-editor/compositeTemplates";
 import { GraphEditor } from "flow-graph-editor/graphEditor";
-import { ResolveIntersectionMeshDefaults } from "flow-graph-editor/graphSystem/properties/meshIntersectionPropertyComponent";
+import { MeshIntersectionPropertyComponent } from "flow-graph-editor/graphSystem/properties/meshIntersectionPropertyComponent";
 import { GlobalState } from "flow-graph-editor/globalState";
 import { SceneContext } from "flow-graph-editor/sceneContext";
 import { SerializationTools } from "flow-graph-editor/serializationTools";
@@ -21,43 +23,45 @@ afterEach(() => {
 });
 
 describe("review feedback regressions", () => {
-    it("preserves unresolved intersection mesh defaults until all replacements are available", () => {
-        const source = { name: "source", uniqueId: 1 } as AbstractMesh;
-        const targetA = { name: "target-a", uniqueId: 2 } as AbstractMesh;
-        const targetB = { name: "target-b", uniqueId: 3 } as AbstractMesh;
-        const partialTargetA = { name: "target-a", uniqueId: 20 } as AbstractMesh;
+    it("does not replace unresolved intersection defaults when the property panel renders", () => {
+        const source = { name: "part", uniqueId: 1 } as AbstractMesh;
+        const target = { name: "part", uniqueId: 2 } as AbstractMesh;
+        const sameNameMesh = { name: "part", uniqueId: 3 } as AbstractMesh;
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        (block.sourceMesh as any)._defaultValue = source;
+        (block.targetMeshes as any)._defaultValue = [target];
+        const component = new MeshIntersectionPropertyComponent({
+            nodeData: { data: block },
+            stateManager: { data: { sceneContext: { meshes: [sameNameMesh] } } },
+        } as any);
 
-        const partial = ResolveIntersectionMeshDefaults([partialTargetA], source, [targetA, targetB], source.name, [targetA.name, targetB.name]);
-        expect(partial).toMatchObject({
-            sourceMesh: source,
-            targetMeshes: [targetA, targetB],
-            resolvedSourceMesh: undefined,
-            resolvedTargetMeshes: undefined,
-        });
+        component.render();
 
-        const replacementSource = { name: "source", uniqueId: 10 } as AbstractMesh;
-        const replacementTargetB = { name: "target-b", uniqueId: 30 } as AbstractMesh;
-        const complete = ResolveIntersectionMeshDefaults([replacementSource, partialTargetA, replacementTargetB], source, [targetA, targetB], source.name, [
-            targetA.name,
-            targetB.name,
-        ]);
-        expect(complete).toMatchObject({
-            sourceMesh: replacementSource,
-            targetMeshes: [partialTargetA, replacementTargetB],
-            resolvedSourceMesh: replacementSource,
-            resolvedTargetMeshes: [partialTargetA, replacementTargetB],
-        });
+        expect((block.sourceMesh as any)._defaultValue).toBe(source);
+        expect((block.targetMeshes as any)._defaultValue).toEqual([target]);
     });
 
-    it("does not collapse duplicate target mesh names while one reference is unresolved", () => {
-        const firstTarget = { name: "part", uniqueId: 1 } as AbstractMesh;
-        const secondTarget = { name: "part", uniqueId: 2 } as AbstractMesh;
-        const replacement = { name: "part", uniqueId: 10 } as AbstractMesh;
+    it("refreshes the intersection property panel when the scene context changes in place", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const sceneContext = new SceneContext(scene, false);
+        const globalState = new GlobalState(scene);
+        globalState.sceneContext = sceneContext;
+        const component = new MeshIntersectionPropertyComponent({
+            nodeData: { data: new FlowGraphMeshIntersectionEventBlock() },
+            stateManager: { data: globalState },
+        } as any);
+        const forceUpdate = vi.spyOn(component, "forceUpdate").mockImplementation(() => {});
+        component.componentDidMount();
 
-        const result = ResolveIntersectionMeshDefaults([replacement], undefined, [firstTarget, secondTarget], undefined, ["part", "part"]);
+        sceneContext.refresh();
 
-        expect(result.targetMeshes).toEqual([firstTarget, secondTarget]);
-        expect(result.resolvedTargetMeshes).toBeUndefined();
+        expect(forceUpdate).toHaveBeenCalledOnce();
+        component.componentWillUnmount();
+        globalState.dispose();
+        sceneContext.dispose();
+        scene.dispose();
+        engine.dispose();
     });
 
     it("publishes buffered log entries once per frame in arrival order", () => {
@@ -399,6 +403,10 @@ describe("review feedback regressions", () => {
         expect((block.targetMeshes as any)._defaultValue).toEqual([missingOverride]);
         expect(block.targetMeshes.getValue(graph.getContext(0)!)).toEqual([missingOverride]);
         expect(block.targetMeshes.getValue(graph.getContext(1)!)).toEqual([missingOverride]);
+        const cachedLocations = (globalState as any)._cachedOldNodeLocations as Map<number, unknown>;
+        expect(cachedLocations.has(missingOverride.uniqueId)).toBe(true);
+        expect(cachedLocations.has(oldTarget.uniqueId)).toBe(false);
+        expect(cachedLocations.size).toBeLessThanOrEqual(3);
 
         const secondScene = new Scene(engine);
         const secondTarget = new Mesh("part", secondScene);
@@ -427,10 +435,26 @@ describe("review feedback regressions", () => {
             uniqueId: missingOverride.uniqueId,
         });
 
+        const laterScenes: Scene[] = [];
+        const laterContexts: SceneContext[] = [];
+        for (let index = 0; index < 3; index++) {
+            const laterScene = new Scene(engine);
+            const laterTarget = new Mesh("part", laterScene);
+            laterTarget.id = oldTarget.id;
+            const laterContext = new SceneContext(laterScene, false);
+            laterScenes.push(laterScene);
+            laterContexts.push(laterContext);
+            globalState.sceneContext = laterContext;
+            globalState.onSceneContextChanged.notifyObservers(laterContext);
+            expect(((globalState as any)._cachedOldNodeLocations as Map<number, unknown>).size).toBeLessThanOrEqual(3);
+        }
+
         globalState.dispose();
+        laterContexts.forEach((context) => context.dispose());
         secondReplacementContext.dispose();
         replacementContext.dispose();
         coordinator.dispose();
+        laterScenes.forEach((scene) => scene.dispose());
         secondScene.dispose();
         newScene.dispose();
         oldScene.dispose();
@@ -467,6 +491,65 @@ describe("review feedback regressions", () => {
         globalState.dispose();
         firstCoordinator.dispose();
         secondCoordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("cancels a deferred sound import when the editor is disposed", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        const addSoundAsset = vi.spyOn(coordinator, "addSoundAssetAsync");
+        let finishRead: (url: string) => void = () => {};
+        const read = vi.fn(
+            async () =>
+                await new Promise<string>((resolve) => {
+                    finishRead = resolve;
+                })
+        );
+
+        const importing = ImportSoundAssetFileAsync(globalState, coordinator, { name: "replacement.wav" } as File, "shared", read);
+        globalState.dispose();
+        finishRead("data:audio/wav;base64,UklGRg==");
+
+        await expect(importing).resolves.toBe(false);
+        expect(addSoundAsset).not.toHaveBeenCalled();
+
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("rebinds a running sound-ended event when its sound input changes", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphSoundEndedEventBlock();
+        graph.addEventBlock(block);
+        (block.sound as any)._defaultValue = "first";
+        const context = graph.createContext();
+        block.sound.setValue("first", context);
+        const firstSound = { onEndedObservable: new Observable<any>() };
+        const secondSound = { onEndedObservable: new Observable<any>() };
+        vi.spyOn(coordinator, "getSoundAsset").mockImplementation((name) => (name === "first" ? firstSound : secondSound) as any);
+        block._preparePendingTasks(context);
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+
+        globalState.setUnconnectedInputValue(block.sound, "second");
+
+        expect(firstSound.onEndedObservable.hasObservers()).toBe(false);
+        expect(secondSound.onEndedObservable.hasObservers()).toBe(true);
+
+        globalState.setUnconnectedInputValue(block.sound, "");
+        expect(secondSound.onEndedObservable.hasObservers()).toBe(false);
+
+        globalState.dispose();
+        coordinator.dispose();
         scene.dispose();
         engine.dispose();
     });

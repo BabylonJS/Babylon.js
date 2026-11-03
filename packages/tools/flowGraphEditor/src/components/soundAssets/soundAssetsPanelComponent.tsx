@@ -70,8 +70,9 @@ export async function ImportSoundAssetFileAsync(
     assetName: string,
     readAsDataUrlAsync: (file: File) => Promise<string> = ReadAsDataUrlAsync
 ): Promise<boolean> {
+    const lifetimeGeneration = globalState.lifetimeGeneration;
     const url = await readAsDataUrlAsync(file);
-    if (globalState.coordinator !== coordinator) {
+    if (!globalState.isLifetimeCurrent(coordinator, lifetimeGeneration)) {
         return false;
     }
     try {
@@ -80,7 +81,7 @@ export async function ImportSoundAssetFileAsync(
         globalState.onSoundAssetsChanged.notifyObservers();
         throw error;
     }
-    return globalState.coordinator === coordinator;
+    return globalState.isLifetimeCurrent(coordinator, lifetimeGeneration);
 }
 
 /**

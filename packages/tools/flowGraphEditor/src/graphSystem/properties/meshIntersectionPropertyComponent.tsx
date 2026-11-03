@@ -66,56 +66,6 @@ const TargetMeshesPicker: React.FunctionComponent<{
     );
 };
 
-/**
- * Resolves saved mesh defaults against the current preview scene without discarding unresolved references.
- * @param meshes meshes currently available in the preview scene
- * @param sourceValue saved source mesh default
- * @param targetValues saved target mesh defaults
- * @param sourceName saved source mesh name
- * @param targetNames saved target mesh names
- * @returns display values and fully resolved replacements, when available
- */
-export function ResolveIntersectionMeshDefaults(
-    meshes: AbstractMesh[],
-    sourceValue: AbstractMesh | undefined,
-    targetValues: AbstractMesh[],
-    sourceName: string | undefined,
-    targetNames: string[]
-): {
-    sourceMesh: AbstractMesh | undefined;
-    targetMeshes: AbstractMesh[];
-    resolvedSourceMesh?: AbstractMesh;
-    resolvedTargetMeshes?: AbstractMesh[];
-} {
-    const sourceIsCurrent = !!sourceValue && meshes.some((mesh) => mesh.uniqueId === sourceValue.uniqueId);
-    const resolvedSourceMesh = sourceIsCurrent ? sourceValue : meshes.find((mesh) => mesh.name === sourceName);
-    const targetsAreCurrent = targetValues.every((target) => meshes.some((mesh) => mesh.uniqueId === target.uniqueId));
-    const availableMeshesByName = new Map<string, AbstractMesh[]>();
-    for (const mesh of meshes) {
-        const matches = availableMeshesByName.get(mesh.name);
-        if (matches) {
-            matches.push(mesh);
-        } else {
-            availableMeshesByName.set(mesh.name, [mesh]);
-        }
-    }
-    const resolvedTargets = targetsAreCurrent
-        ? targetValues
-        : targetNames.map((name) => {
-              const matches = availableMeshesByName.get(name);
-              return matches?.shift();
-          });
-    const allTargetsResolved = targetsAreCurrent || (resolvedTargets.length === targetNames.length && resolvedTargets.every((mesh) => !!mesh));
-    const resolvedTargetMeshes = allTargetsResolved ? (resolvedTargets as AbstractMesh[]) : undefined;
-
-    return {
-        sourceMesh: resolvedSourceMesh ?? sourceValue,
-        targetMeshes: resolvedTargetMeshes ?? targetValues,
-        resolvedSourceMesh: sourceIsCurrent ? undefined : resolvedSourceMesh,
-        resolvedTargetMeshes: targetsAreCurrent ? undefined : resolvedTargetMeshes,
-    };
-}
-
 const NoSceneMessage: React.FunctionComponent = () => {
     const classes = useStyles();
     return <Body1 className={classes.help}>Load a scene in the Preview panel to select meshes.</Body1>;
@@ -126,6 +76,7 @@ const NoSceneMessage: React.FunctionComponent = () => {
  */
 export class MeshIntersectionPropertyComponent extends React.Component<IPropertyComponentProps, IMeshIntersectionPropertyState> {
     private _sceneContextObserver: Observer<SceneContext | null> | null = null;
+    private _contextRefreshObserver: Observer<SceneContext> | null = null;
 
     public constructor(props: IPropertyComponentProps) {
         super(props);
@@ -135,12 +86,19 @@ export class MeshIntersectionPropertyComponent extends React.Component<IProperty
 
     public override componentDidMount(): void {
         const globalState = this.props.stateManager.data as GlobalState;
-        this._sceneContextObserver = globalState.onSceneContextChanged.add((sceneContext) => this.setState({ sceneContext }));
+        this._sceneContextObserver = globalState.onSceneContextChanged.add((sceneContext) => {
+            this._contextRefreshObserver?.remove();
+            this._contextRefreshObserver = sceneContext?.onContextRefreshed.add(() => this.forceUpdate()) ?? null;
+            this.setState({ sceneContext });
+        });
+        this._contextRefreshObserver = globalState.sceneContext?.onContextRefreshed.add(() => this.forceUpdate()) ?? null;
     }
 
     public override componentWillUnmount(): void {
         this._sceneContextObserver?.remove();
         this._sceneContextObserver = null;
+        this._contextRefreshObserver?.remove();
+        this._contextRefreshObserver = null;
     }
 
     private _getBlock(): FlowGraphBlock {
@@ -171,30 +129,17 @@ export class MeshIntersectionPropertyComponent extends React.Component<IProperty
         this.forceUpdate();
     }
 
-    private _resolveMeshes(meshes: AbstractMesh[]): { sourceMesh?: AbstractMesh; targetMeshes: AbstractMesh[] } {
-        const block = this._getBlock();
+    private _getSavedMeshes(): { sourceMesh?: AbstractMesh; targetMeshes: AbstractMesh[] } {
         const sourceValue = this._getInputValue("sourceMesh") as AbstractMesh | undefined;
         const targetValue = this._getInputValue("targetMeshes");
         const targetValues = (Array.isArray(targetValue) ? targetValue : targetValue ? [targetValue] : []) as AbstractMesh[];
-        const sourceName = (block.config as any)?._sourceMeshName ?? sourceValue?.name;
-        const targetNames: string[] = (block.config as any)?._targetMeshNames ?? targetValues.map((mesh) => mesh.name);
-        const { sourceMesh, targetMeshes, resolvedSourceMesh, resolvedTargetMeshes } = ResolveIntersectionMeshDefaults(meshes, sourceValue, targetValues, sourceName, targetNames);
-
-        const sourceInput = block.getDataInput("sourceMesh");
-        const targetInput = block.getDataInput("targetMeshes");
-        if (sourceInput && resolvedSourceMesh) {
-            (sourceInput as any)._defaultValue = resolvedSourceMesh;
-        }
-        if (targetInput && resolvedTargetMeshes) {
-            (targetInput as any)._defaultValue = resolvedTargetMeshes;
-        }
-        return { sourceMesh, targetMeshes };
+        return { sourceMesh: sourceValue, targetMeshes: targetValues };
     }
 
     public override render(): React.ReactNode {
         const { sceneContext } = this.state;
         const meshes = sceneContext?.meshes ?? [];
-        const { sourceMesh, targetMeshes } = this._resolveMeshes(meshes);
+        const { sourceMesh, targetMeshes } = this._getSavedMeshes();
         const sourceOptions: DropdownOption<number>[] = [
             { label: "(none)", value: -1 },
             ...meshes.map((mesh) => ({ label: mesh.name || `(id ${mesh.uniqueId})`, value: mesh.uniqueId })),
