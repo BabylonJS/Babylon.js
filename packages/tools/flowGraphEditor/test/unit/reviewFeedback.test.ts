@@ -7,6 +7,7 @@ import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { LogEntry, LogEntryBuffer } from "flow-graph-editor/components/log/logComponent";
+import { ImportSoundAssetFileAsync } from "flow-graph-editor/components/soundAssets/soundAssetsPanelComponent";
 import { CreateIntersectionPlaySoundTemplate } from "flow-graph-editor/compositeTemplates";
 import { GraphEditor } from "flow-graph-editor/graphEditor";
 import { ResolveIntersectionMeshDefaults } from "flow-graph-editor/graphSystem/properties/meshIntersectionPropertyComponent";
@@ -369,7 +370,7 @@ describe("review feedback regressions", () => {
         engine.dispose();
     });
 
-    it("keeps a missing duplicate mesh override unresolved during scene replacement and serialization", () => {
+    it("keeps a missing duplicate mesh default unresolved across repeated scene replacements and serialization", () => {
         const engine = new NullEngine();
         const oldScene = new Scene(engine);
         const oldTarget = new Mesh("part", oldScene);
@@ -379,10 +380,9 @@ describe("review feedback regressions", () => {
         const graph = coordinator.createGraph();
         const block = new FlowGraphMeshIntersectionEventBlock();
         graph.addEventBlock(block);
-        (block.targetMeshes as any)._defaultValue = [oldTarget];
+        (block.targetMeshes as any)._defaultValue = [missingOverride];
         const defaultContext = graph.createContext();
         const overrideContext = graph.createContext();
-        block.targetMeshes.setValue([oldTarget], defaultContext);
         block.targetMeshes.setValue([missingOverride], overrideContext);
         const globalState = new GlobalState(oldScene);
         globalState.sceneContext = new SceneContext(oldScene, false);
@@ -396,11 +396,31 @@ describe("review feedback regressions", () => {
         globalState.sceneContext = replacementContext;
         globalState.onSceneContextChanged.notifyObservers(replacementContext);
 
-        expect(block.targetMeshes.getValue(graph.getContext(0)!)).toEqual([newTarget]);
+        expect((block.targetMeshes as any)._defaultValue).toEqual([missingOverride]);
+        expect(block.targetMeshes.getValue(graph.getContext(0)!)).toEqual([missingOverride]);
+        expect(block.targetMeshes.getValue(graph.getContext(1)!)).toEqual([missingOverride]);
+
+        const secondScene = new Scene(engine);
+        const secondTarget = new Mesh("part", secondScene);
+        secondTarget.id = oldTarget.id;
+        const secondReplacementContext = new SceneContext(secondScene, false);
+        globalState.sceneContext = secondReplacementContext;
+        globalState.onSceneContextChanged.notifyObservers(secondReplacementContext);
+
+        expect((block.targetMeshes as any)._defaultValue).toEqual([missingOverride]);
+        expect(block.targetMeshes.getValue(graph.getContext(0)!)).toEqual([missingOverride]);
         expect(block.targetMeshes.getValue(graph.getContext(1)!)).toEqual([missingOverride]);
 
         const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
         const contexts = serialized._flowGraphs[0].executionContexts;
+        expect(
+            serialized._flowGraphs[0].allBlocks.find((candidate: any) => candidate.uniqueId === block.uniqueId).dataInputs.find((input: any) => input.name === "targetMeshes")
+                .defaultValue[0]
+        ).toMatchObject({
+            id: missingOverride.id,
+            name: missingOverride.name,
+            uniqueId: missingOverride.uniqueId,
+        });
         expect(contexts[1]._connectionValues[block.targetMeshes.uniqueId][0]).toMatchObject({
             id: missingOverride.id,
             name: missingOverride.name,
@@ -408,10 +428,46 @@ describe("review feedback regressions", () => {
         });
 
         globalState.dispose();
+        secondReplacementContext.dispose();
         replacementContext.dispose();
         coordinator.dispose();
+        secondScene.dispose();
         newScene.dispose();
         oldScene.dispose();
+        engine.dispose();
+    });
+
+    it("cancels a deferred sound import when the active coordinator changes", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const firstCoordinator = new FlowGraphCoordinator({ scene });
+        firstCoordinator.createGraph();
+        const secondCoordinator = new FlowGraphCoordinator({ scene });
+        secondCoordinator.createGraph();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = firstCoordinator;
+        const addToFirst = vi.spyOn(firstCoordinator, "addSoundAssetAsync");
+        const addToSecond = vi.spyOn(secondCoordinator, "addSoundAssetAsync");
+        let finishRead: (url: string) => void = () => {};
+        const read = vi.fn(
+            async () =>
+                await new Promise<string>((resolve) => {
+                    finishRead = resolve;
+                })
+        );
+
+        const importing = ImportSoundAssetFileAsync(globalState, firstCoordinator, { name: "replacement.wav" } as File, "shared", read);
+        globalState.coordinator = secondCoordinator;
+        finishRead("data:audio/wav;base64,UklGRg==");
+
+        await expect(importing).resolves.toBe(false);
+        expect(addToFirst).not.toHaveBeenCalled();
+        expect(addToSecond).not.toHaveBeenCalled();
+
+        globalState.dispose();
+        firstCoordinator.dispose();
+        secondCoordinator.dispose();
+        scene.dispose();
         engine.dispose();
     });
 

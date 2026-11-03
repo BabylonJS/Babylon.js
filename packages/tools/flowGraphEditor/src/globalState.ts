@@ -1287,11 +1287,12 @@ export class GlobalState {
                 // they contain mesh references (pickedMesh_0 etc.) from
                 // KHR_interactivity that must survive scene switches.
                 this._snapshotUserVariables();
-                this._rebindSavedConnectionReferences(ctx.scene);
+                const reboundDefaults = this._rebindSavedConnectionReferences(ctx.scene);
 
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(ctx.scene);
                 }
+                this._restoreReboundDefaults(reboundDefaults);
                 // Re-create contexts from snapshots so the editor UI has
                 // live contexts after setScene() clears them.
                 this._restoreContextsFromSnapshots(flowGraph);
@@ -1385,10 +1386,11 @@ export class GlobalState {
                 // couldn't be resolved during parsing because the graph was parsed
                 // against the editor's host scene, not the preview scene.
                 this._remapAssetReferences(this.sceneContext.scene);
-                this._rebindSavedConnectionReferences(this.sceneContext.scene);
+                const reboundDefaults = this._rebindSavedConnectionReferences(this.sceneContext.scene);
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(this.sceneContext.scene);
                 }
+                this._restoreReboundDefaults(reboundDefaults);
                 // Re-create contexts from snapshots so the editor UI has live
                 // contexts to display (variables panel, context selector, etc.)
                 this._restoreContextsFromSnapshots(flowGraph);
@@ -1693,12 +1695,16 @@ export class GlobalState {
     /**
      * Rebinds scene-node references retained in input defaults and saved execution-context values.
      * @param newScene - replacement scene that should own the restored references
+     * @returns authoritative input defaults to restore after the core scene switch
      */
-    private _rebindSavedConnectionReferences(newScene: Scene): void {
+    private _rebindSavedConnectionReferences(newScene: Scene): Map<FlowGraphDataConnection<any>, any> {
+        const reboundDefaults = new Map<FlowGraphDataConnection<any>, any>();
         this._flowGraph.visitAllBlocks((block) => {
             for (const input of block.dataInputs) {
                 const currentValue = (input as any)._defaultValue;
-                (input as any)._defaultValue = this._rebindSceneValue(currentValue, newScene);
+                const reboundValue = this._rebindSceneValue(currentValue, newScene);
+                (input as any)._defaultValue = reboundValue;
+                reboundDefaults.set(input, reboundValue);
             }
         });
 
@@ -1714,6 +1720,13 @@ export class GlobalState {
                     contextData.connectionValues[key] = this._rebindSceneValue(contextData.connectionValues[key], newScene);
                 }
             }
+        }
+        return reboundDefaults;
+    }
+
+    private _restoreReboundDefaults(reboundDefaults: Map<FlowGraphDataConnection<any>, any>): void {
+        for (const [input, value] of reboundDefaults) {
+            (input as any)._defaultValue = value;
         }
     }
 
@@ -1917,7 +1930,7 @@ export class GlobalState {
             ["Animation", new Map(scene.animations.map((a) => [a.uniqueId, a.name]))],
         ]);
 
-        this._cachedOldNodeLocations = new Map();
+        this._cachedOldNodeLocations ??= new Map();
         const idCounts = new Map<string, number>();
         const nameCounts = new Map<string, number>();
         for (const node of scene.getNodes()) {

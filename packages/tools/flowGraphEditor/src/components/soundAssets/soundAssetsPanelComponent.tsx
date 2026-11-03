@@ -4,6 +4,7 @@ import { Body1, Caption1, makeStyles, tokens } from "@fluentui/react-components"
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { type FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 
 import { type GlobalState } from "../../globalState";
 import { LogEntry } from "../log/logComponent";
@@ -54,6 +55,35 @@ async function ReadAsDataUrlAsync(file: File): Promise<string> {
 }
 
 /**
+ * Reads and imports an audio file only if the initiating coordinator is still active.
+ * @param globalState editor state
+ * @param coordinator coordinator active when the import started
+ * @param file audio file to read
+ * @param assetName declaration name
+ * @param readAsDataUrlAsync file reader used by the import
+ * @returns true when imported, false when cancelled because the coordinator changed
+ */
+export async function ImportSoundAssetFileAsync(
+    globalState: GlobalState,
+    coordinator: FlowGraphCoordinator,
+    file: File,
+    assetName: string,
+    readAsDataUrlAsync: (file: File) => Promise<string> = ReadAsDataUrlAsync
+): Promise<boolean> {
+    const url = await readAsDataUrlAsync(file);
+    if (globalState.coordinator !== coordinator) {
+        return false;
+    }
+    try {
+        await coordinator.addSoundAssetAsync({ name: assetName, url });
+    } catch (error) {
+        globalState.onSoundAssetsChanged.notifyObservers();
+        throw error;
+    }
+    return globalState.coordinator === coordinator;
+}
+
+/**
  * Coordinator-level sound asset management panel.
  * @param props component props
  * @returns sound asset panel
@@ -75,9 +105,17 @@ export const SoundAssetsPanelComponent: FunctionComponent<ISoundAssetsPanelCompo
             globalState.onLogRequiredObservable.notifyObservers(new LogEntry("A sound asset name is required.", true));
             return;
         }
+        const coordinator = globalState.coordinator;
+        if (!coordinator) {
+            globalState.onLogRequiredObservable.notifyObservers(new LogEntry("No flow graph coordinator is available.", true));
+            return;
+        }
         try {
-            const url = await ReadAsDataUrlAsync(file);
-            await globalState.addSoundAssetAsync({ name: assetName, url });
+            const imported = await ImportSoundAssetFileAsync(globalState, coordinator, file, assetName);
+            if (!imported) {
+                globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Cancelled sound asset "${assetName}" because the active graph changed.`, true));
+                return;
+            }
             setName("");
             globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`${existingName ? "Replaced" : "Imported"} sound asset "${assetName}".`, false));
         } catch (error) {
