@@ -777,6 +777,14 @@ describe("review feedback regressions", () => {
         expect((restoredBlock.targetMeshes as any)._defaultValue).toEqual([newSecond]);
 
         restored.coordinator.dispose();
+        oldFirst.dispose();
+        const sameSceneRestored = await SerializationTools.DeserializeToStateAsync(serialized, oldScene);
+        const sameSceneBlock = sameSceneRestored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.getClassName() === block.getClassName()) as FlowGraphMeshIntersectionEventBlock;
+        expect((sameSceneBlock.targetMeshes as any)._defaultValue).toEqual([oldSecond]);
+
+        sameSceneRestored.coordinator.dispose();
         const missingScene = new Scene(engine);
         const survivingFirst = new Mesh("part", missingScene);
         survivingFirst.id = oldFirst.id;

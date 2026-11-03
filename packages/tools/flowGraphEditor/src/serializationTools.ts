@@ -422,6 +422,9 @@ export class SerializationTools {
             if (!location) {
                 return currentValue;
             }
+            if (currentValue?.uniqueId === value.uniqueId && currentValue?.getClassName?.() === location.className && currentValue.id === location.id) {
+                return currentValue;
+            }
             const nodes = scene.getNodes().filter((node) => node.getClassName() === location.className);
             let candidates = nodes.filter((node) => node.id === location.id);
             let index = location.idIndex;
@@ -429,7 +432,7 @@ export class SerializationTools {
                 candidates = nodes.filter((node) => node.name === location.name);
                 index = location.nameIndex;
             }
-            return candidates[index] ?? value;
+            return candidates[index] ?? (currentValue?.uniqueId === value.uniqueId ? currentValue : value);
         };
         for (const serializedBlock of graphData.allBlocks ?? []) {
             const block = graph.getAllBlocks().find((candidate) => candidate.uniqueId === serializedBlock.uniqueId);
