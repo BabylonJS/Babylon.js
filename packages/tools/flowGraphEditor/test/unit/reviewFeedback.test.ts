@@ -536,9 +536,9 @@ describe("review feedback regressions", () => {
         const firstSound = { onEndedObservable: new Observable<any>() };
         const secondSound = { onEndedObservable: new Observable<any>() };
         vi.spyOn(coordinator, "getSoundAsset").mockImplementation((name) => (name === "first" ? firstSound : secondSound) as any);
-        block._preparePendingTasks(context);
         const globalState = new GlobalState(scene);
         globalState.coordinator = coordinator;
+        graph.start();
 
         globalState.setUnconnectedInputValue(block.sound, "second");
 
@@ -551,6 +551,75 @@ describe("review feedback regressions", () => {
         globalState.dispose();
         coordinator.dispose();
         scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not rebind a sound-ended event while its graph is paused", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphSoundEndedEventBlock();
+        graph.addEventBlock(block);
+        (block.sound as any)._defaultValue = "first";
+        const context = graph.createContext();
+        block.sound.setValue("first", context);
+        const firstSound = { onEndedObservable: new Observable<any>() };
+        const secondSound = { onEndedObservable: new Observable<any>() };
+        vi.spyOn(coordinator, "getSoundAsset").mockImplementation((name) => (name === "first" ? firstSound : secondSound) as any);
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        graph.start();
+        expect(firstSound.onEndedObservable.hasObservers()).toBe(true);
+        graph.pause();
+        expect(firstSound.onEndedObservable.hasObservers()).toBe(false);
+
+        globalState.setUnconnectedInputValue(block.sound, "second");
+
+        expect(secondSound.onEndedObservable.hasObservers()).toBe(false);
+        graph.start();
+        expect(secondSound.onEndedObservable.hasObservers()).toBe(true);
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("retains duplicate mesh provenance referenced by an inactive graph", () => {
+        const engine = new NullEngine();
+        const oldScene = new Scene(engine);
+        const oldFirst = new Mesh("part", oldScene);
+        const oldSecond = new Mesh("part", oldScene);
+        oldSecond.id = oldFirst.id;
+        const coordinator = new FlowGraphCoordinator({ scene: oldScene });
+        coordinator.createGraph();
+        const inactiveGraph = coordinator.createGraph();
+        const inactiveBlock = new FlowGraphMeshIntersectionEventBlock();
+        inactiveGraph.addEventBlock(inactiveBlock);
+        (inactiveBlock.targetMeshes as any)._defaultValue = [oldSecond];
+        const globalState = new GlobalState(oldScene);
+        globalState.sceneContext = new SceneContext(oldScene, false);
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+
+        const newScene = new Scene(engine);
+        const newFirst = new Mesh("part", newScene);
+        newFirst.id = oldFirst.id;
+        const replacementContext = new SceneContext(newScene, false);
+        globalState.sceneContext = replacementContext;
+        globalState.onSceneContextChanged.notifyObservers(replacementContext);
+        expect(((globalState as any)._cachedOldNodeLocations as Map<number, unknown>).has(oldSecond.uniqueId)).toBe(true);
+
+        globalState.activeGraphIndex = 1;
+
+        expect((inactiveBlock.targetMeshes as any)._defaultValue).toEqual([oldSecond]);
+
+        globalState.dispose();
+        replacementContext.dispose();
+        coordinator.dispose();
+        newScene.dispose();
+        oldScene.dispose();
         engine.dispose();
     });
 

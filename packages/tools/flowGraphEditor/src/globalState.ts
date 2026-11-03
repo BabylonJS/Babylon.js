@@ -288,7 +288,7 @@ export class GlobalState {
             }
         }
         const ownerBlock = input._ownerBlock;
-        if (ownerBlock.getClassName() === "FlowGraphSoundEndedEventBlock") {
+        if (ownerBlock.getClassName() === "FlowGraphSoundEndedEventBlock" && this._flowGraph.state === FlowGraphState.Started) {
             const eventBlock = ownerBlock as FlowGraphEventBlock;
             for (const context of updatedContexts) {
                 eventBlock._cancelPendingTasks(context);
@@ -1995,7 +1995,10 @@ export class GlobalState {
                 uniqueIds.add(value.uniqueId);
             }
         };
-        this._flowGraph.visitAllBlocks((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+        const graphs = this._coordinator?.flowGraphs ?? [this._flowGraph];
+        for (const graph of graphs) {
+            graph.visitAllBlocks((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+        }
         if (this._savedConnectionValues) {
             Object.values(this._savedConnectionValues).forEach(collect);
         }
