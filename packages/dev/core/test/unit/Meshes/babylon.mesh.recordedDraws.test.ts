@@ -10,6 +10,8 @@ import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import "core/Meshes/thinInstanceMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
+// the alignment of vertex buffers to 4 bytes, which WebGPU uses (effectiveBuffer, effectiveByteOffset, effectiveByteStride)
+import "core/Buffers/buffer.align";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -203,6 +205,39 @@ describe("Mesh recorded draws", () => {
         expect(shaderUnchanged()).toBe(true);
         shaderMaterial.removeTexture("diffuseSampler");
         expect(shaderUnchanged()).toBe(false);
+    });
+
+    it("sees an update that creates again the GPU buffer of a vertex buffer aligned to 4 bytes, not a content update of a GPU buffer kept", () => {
+        // as WebGPU does: a vertex buffer whose stride or offset is not a multiple of 4 bytes binds an aligned copy of its data
+        engine._features.forceVertexBufferStrideAndOffsetMultiple4Bytes = true;
+        const vertices = mesh.getTotalVertices();
+        const colors = new VertexBuffer(engine, new Uint8Array(3 * vertices), "colors3", {
+            updatable: true,
+            stride: 3,
+            size: 3,
+            type: VertexBuffer.UNSIGNED_BYTE,
+            normalized: true,
+            useBytes: true,
+        });
+        const weights = new VertexBuffer(engine, new Float32Array(vertices), "weights", { updatable: true, size: 1 });
+        mesh.setVerticesBuffer(colors);
+        mesh.setVerticesBuffer(weights);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+
+        // a three-byte stride: the update creates the aligned copy again, a new GPU buffer the recorded commands do not bind
+        const aligned = colors.effectiveBuffer;
+        colors.update(new Uint8Array(3 * vertices));
+        expect(colors.effectiveBuffer).not.toBe(aligned);
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+
+        // a stride of 4 bytes: the update writes the same GPU buffer, which the recorded commands bind
+        const kept = weights.effectiveBuffer;
+        weights.update(new Float32Array(vertices));
+        expect(weights.effectiveBuffer).toBe(kept);
+        expect(unchanged()).toBe(true);
     });
 
     it("sees replaced geometry and a changed index range", () => {

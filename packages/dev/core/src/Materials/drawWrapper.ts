@@ -84,8 +84,8 @@ export class DrawWrapper {
     public _recordedOrientation = -1;
     /** @internal */
     public _recordedIndexBuffer: Nullable<object> = null;
-    /** @internal The vertex buffers of the geometry and of the thin instances */
-    public _recordedVertexBuffers: Nullable<Array<Nullable<object>>> = null;
+    /** @internal The vertex buffers of the geometry and of the thin instances, each with the GPU buffer it binds and where it is read */
+    public _recordedVertexBuffers: Nullable<Array<Nullable<object> | number>> = null;
     /** @internal */
     public _recordedInstances = -1;
     /** @internal The shadow map and the buffer the generator binds to receivers, for each light the draw was recorded with: they are in its bind groups */

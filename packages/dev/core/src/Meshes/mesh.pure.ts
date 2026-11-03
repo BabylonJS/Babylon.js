@@ -2808,9 +2808,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const vertexBuffers = this._geometry?.getVertexBuffers();
         let count = 0;
         for (const kind in vertexBuffers) {
-            if (recordedVertexBuffers[count++] !== vertexBuffers[kind]) {
+            if (!Mesh._IsRecordedVertexBuffer(recordedVertexBuffers, count, vertexBuffers[kind])) {
                 return false;
             }
+            count += 4;
         }
         if (this.hasThinInstances) {
             const thinInstances = this._thinInstanceDataStorage;
@@ -2819,9 +2820,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             const userVertexBuffers = this._userThinInstanceBuffersStorage?.vertexBuffers;
             for (const kind in userVertexBuffers) {
-                if (recordedVertexBuffers[count++] !== userVertexBuffers[kind]) {
+                if (!Mesh._IsRecordedVertexBuffer(recordedVertexBuffers, count, userVertexBuffers[kind])) {
                     return false;
                 }
+                count += 4;
             }
         }
         if (count !== recordedVertexBuffers.length) {
@@ -2882,6 +2884,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return domainState + 2 * MaterialHelperGeometryRendering._GetRecordedDrawState(this.getScene().getEngine().currentRenderPassId, this);
     }
 
+    // a vertex buffer as the commands of a recorded draw bind it: the wrapper, the GPU buffer it binds and where the draw reads in it.
+    // An update of a vertex buffer that WebGPU aligns to 4 bytes (a stride of 3 bytes, say) creates its aligned GPU buffer again
+    private static _RecordVertexBuffer(recordedVertexBuffers: Array<Nullable<object> | number>, vertexBuffer: Nullable<VertexBuffer>): void {
+        recordedVertexBuffers.push(vertexBuffer, vertexBuffer?.effectiveBuffer ?? null, vertexBuffer?.effectiveByteOffset ?? 0, vertexBuffer?.effectiveByteStride ?? 0);
+    }
+
+    private static _IsRecordedVertexBuffer(recordedVertexBuffers: Array<Nullable<object> | number>, index: number, vertexBuffer: Nullable<VertexBuffer>): boolean {
+        return (
+            recordedVertexBuffers[index] === vertexBuffer &&
+            recordedVertexBuffers[index + 1] === (vertexBuffer?.effectiveBuffer ?? null) &&
+            recordedVertexBuffers[index + 2] === (vertexBuffer?.effectiveByteOffset ?? 0) &&
+            recordedVertexBuffers[index + 3] === (vertexBuffer?.effectiveByteStride ?? 0)
+        );
+    }
+
     /**
      * Keeps what a draw recorded by a snapshot was rendered with (see _isRecordedDrawUnchanged), when the shared uniform buffers it
      * bound were on the first buffer of their frame (see _areSharedBuffersFirst). Only a kept draw is the frame's reference for the
@@ -2932,14 +2949,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         recordedVertexBuffers.length = 0;
         const vertexBuffers = this._geometry?.getVertexBuffers();
         for (const kind in vertexBuffers) {
-            recordedVertexBuffers.push(vertexBuffers[kind]);
+            Mesh._RecordVertexBuffer(recordedVertexBuffers, vertexBuffers[kind]);
         }
         if (this.hasThinInstances) {
             const thinInstances = this._thinInstanceDataStorage;
             recordedVertexBuffers.push(thinInstances.matrixBuffer, thinInstances.previousMatrixBuffer);
             const userVertexBuffers = this._userThinInstanceBuffersStorage?.vertexBuffers;
             for (const kind in userVertexBuffers) {
-                recordedVertexBuffers.push(userVertexBuffers[kind]);
+                Mesh._RecordVertexBuffer(recordedVertexBuffers, userVertexBuffers[kind]);
             }
         }
         drawWrapper._recordedInstances = this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0;
