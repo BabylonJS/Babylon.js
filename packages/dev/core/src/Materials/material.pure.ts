@@ -986,11 +986,13 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public _drawCacheVersion = 0;
 
     private _texturesVersion = 0;
-    private _recordedDrawReferences: Nullable<Map<object, { frameId: number; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>> = null;
+    private _recordedDrawReferences: Nullable<Map<object, { frameId: number; view: Nullable<object>; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>> = null;
 
     /**
-     * @internal Keeps the draw a full bind of this material did with an effect in this frame: the draws of this material recorded
-     * with the same per-draw values as that draw can be encoded again without binding
+     * @internal Keeps the draw a full bind of this material did with an effect in this frame, in the current pass and view: the draws
+     * of this material recorded with the same per-draw values as that draw can be encoded again without binding. The pass and view
+     * are those of the scene uniform buffer bound (an object renderer binds its own, for each of its passes): the per-draw values
+     * computed from them (from the camera's, say) are the same only for the draws that bind the same one
      * @param effect the effect of the draw
      * @param drawWrapper the draw wrapper of the draw, or null if its per-draw values cannot be compared
      * @param domain what else wrote its per-draw values (a shadow generator its bias), or null
@@ -998,25 +1000,30 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public _keepRecordedDrawReference(effect: object, drawWrapper: Nullable<DrawWrapper>, domain: Nullable<object> = null): void {
         const references = (this._recordedDrawReferences ??= new Map());
         const frameId = this._scene.getEngine().frameId;
+        const view = this._scene.getSceneUniformBuffer();
         const entry = references.get(effect);
         if (entry) {
             entry.frameId = frameId;
+            entry.view = view;
             entry.domain = domain;
             entry.drawWrapper = drawWrapper;
         } else {
-            references.set(effect, { frameId, domain, drawWrapper });
+            references.set(effect, { frameId, view, domain, drawWrapper });
         }
     }
 
     /**
-     * @internal Gets the draw kept by _keepRecordedDrawReference for an effect in this frame
+     * @internal Gets the draw kept by _keepRecordedDrawReference for an effect in this frame, in the current pass and view
      * @param effect the effect of the draw
      * @param domain what else wrote its per-draw values, or null
-     * @returns the draw wrapper, or null if no full bind of this material with this effect and domain was kept in this frame
+     * @returns the draw wrapper, or null if no full bind of this material with this effect and domain was kept in this frame, in the
+     * pass and view of the scene uniform buffer bound
      */
     public _getRecordedDrawReference(effect: object, domain: Nullable<object> = null): Nullable<DrawWrapper> {
         const entry = this._recordedDrawReferences?.get(effect);
-        return entry && entry.frameId === this._scene.getEngine().frameId && entry.domain === domain ? entry.drawWrapper : null;
+        return entry && entry.frameId === this._scene.getEngine().frameId && entry.view === this._scene.getSceneUniformBuffer() && entry.domain === domain
+            ? entry.drawWrapper
+            : null;
     }
     private _texturesVersionFrameId = -1;
     private _texturesVersionDrawCacheVersion = -1;

@@ -113,6 +113,22 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
+    it("needs that full draw in its own pass and view, whose scene uniform buffer it binds, without any domain", () => {
+        expect(unchanged()).toBe(true);
+        // another render target with the same material and effect: its object renderer binds its own scene uniform buffer, whose
+        // values (its camera's) the full draw of the first one did not bind. Its draw needs a full draw of its own in the frame
+        const firstView = scene.getSceneUniformBuffer();
+        scene.setSceneUniformBuffer(scene.createSceneUniformBuffer("second render target"));
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        // and the first render target, rendered again (another camera order, say), needs one again too
+        scene.setSceneUniformBuffer(firstView);
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+    });
+
     it("sees a moved mesh and a changed visibility", () => {
         mesh.position.x = 1;
         mesh.computeWorldMatrix(true);
