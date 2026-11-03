@@ -1,4 +1,4 @@
-import { getRenderingContextKind, getRenderingContexts, type EngineContext, type RenderingContext, type SceneContext, type SurfaceContext } from "@babylonjs/lite";
+import { getRenderingContextKind, type EngineContext, type RenderingContext, type SceneContext, type SurfaceContext } from "@babylonjs/lite";
 import { tokens } from "@fluentui/react-components";
 import { EngineRegular, GlobeRegular, PersonSquareRegular, TextFieldRegular, WindowRegular } from "@fluentui/react-icons";
 import { createElement, type ComponentType, type FunctionComponent } from "react";
@@ -17,6 +17,7 @@ import { type ISelectionService, SelectionServiceIdentity } from "../services/se
 import { type IWatcherService, WatcherServiceIdentity } from "../services/watcherService";
 import { type IEngineContext, EngineContextIdentity } from "./engineContext";
 import { CreateWatchedNameDisplayInfo } from "./explorerDisplayInfo";
+import { GetInspectableRenderingContexts } from "./sceneEntityUtils";
 
 /**
  * The unique identity symbol for the Babylon Lite engine explorer service.
@@ -286,7 +287,7 @@ function CreateSurfaceNode(
         entity: surface,
         icon: SurfaceIcon,
         getDisplayInfo: () => ({ name: `Surface ${engine.surfaces.indexOf(surface) + 1}` }),
-        getChildren: () => getRenderingContexts(surface).map((context) => CreateRenderingContextNode(context, watcherService, presentationProviders)),
+        getChildren: () => GetInspectableRenderingContexts(surface).map((context) => CreateRenderingContextNode(context, watcherService, presentationProviders)),
     };
 }
 
@@ -297,7 +298,7 @@ function CreateEngineNodes(
 ): readonly ExplorerNodeDescription[] {
     // The engine itself is the primary surface, and it is already represented by the Explorer root node,
     // so its rendering contexts are contributed as children of the root.
-    const nodes: ExplorerNodeDescription[] = getRenderingContexts(engine).map((context) => CreateRenderingContextNode(context, watcherService, presentationProviders));
+    const nodes: ExplorerNodeDescription[] = GetInspectableRenderingContexts(engine).map((context) => CreateRenderingContextNode(context, watcherService, presentationProviders));
 
     if (engine.surfaces.length > 1) {
         nodes.push({
@@ -325,11 +326,11 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
         const presentationProviders = new ObservableCollection<UntypedRenderingContextPresentationProvider>();
         const explorerService = CreateExplorerService();
         const isRenderingContext = (entity: object): entity is RenderingContext =>
-            engine.surfaces.some((surface) => getRenderingContexts(surface).includes(entity as RenderingContext));
+            engine.surfaces.some((surface) => GetInspectableRenderingContexts(surface).includes(entity as RenderingContext));
         const getTopologySnapshot = (): TopologySnapshot =>
             engine.surfaces.map((surface) => ({
                 surface,
-                renderingContexts: getRenderingContexts(surface).map((context) => ({
+                renderingContexts: GetInspectableRenderingContexts(surface).map((context) => ({
                     context,
                     providers: GetApplicableProviders(context, nodeProviders.items).map((provider) => ({
                         provider,

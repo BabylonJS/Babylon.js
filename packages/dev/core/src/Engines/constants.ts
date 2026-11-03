@@ -181,6 +181,12 @@ export class Constants {
 
     /** Flag to create a storage texture */
     public static readonly TEXTURE_CREATIONFLAG_STORAGE = 1;
+    /**
+     * Flag to create a non-mipmapped raw texture that is only filled from typed arrays (without invertY / premultiplyAlpha) and sampled.
+     * On WebGPU, the texture is created without the render attachment usage, which can make random texel fetches much faster on some GPUs.
+     * Such a texture can't be updated from images, rendered to, or updated with invertY / premultiplyAlpha. Ignored by other engines.
+     */
+    public static readonly TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY = 2;
 
     /** ALPHA */
     public static readonly TEXTUREFORMAT_ALPHA = 0;

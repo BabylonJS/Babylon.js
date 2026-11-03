@@ -343,12 +343,14 @@ export class MirrorTexture extends RenderTargetTexture {
      * Dispose the texture and release its associated resources.
      */
     public override dispose() {
-        super.dispose();
+        // Remove the observer before super.dispose() clears the scene reference.
         const scene = this.getScene();
-
         if (scene) {
             scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
         }
+        this._imageProcessingConfigChangeObserver = null;
+
+        super.dispose();
         this._sceneUBO?.dispose();
     }
 }

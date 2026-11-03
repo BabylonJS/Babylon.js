@@ -92,8 +92,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /** @internal */
     public _isFullscreen = false;
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
-    private _idealWidth = 0;
-    private _idealHeight = 0;
+    /** @internal */
+    public _idealWidth = 0;
+    /** @internal */
+    public _idealHeight = 0;
     private _useSmallestIdeal: boolean = false;
     private _renderAtIdealSize = false;
     private _focusedControl: Nullable<Control>;

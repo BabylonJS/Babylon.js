@@ -23,7 +23,7 @@ struct preLightingInfo
     surfaceAlbedo: vec3f,
 
     #ifdef IRIDESCENCE
-        iridescenceIntensity: f32
+        iridescenceIntensity: f32,
     #endif
 
     #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)

@@ -353,6 +353,11 @@ export class ModelShape {
      */
     public _indices: number[];
     /**
+     * The winding convention of the stored indices, independent of scene handedness.
+     * @internal
+     */
+    public _indicesSideOrientation: Nullable<number> = null;
+    /**
      * normals array of the model
      * @internal
      */

@@ -16,7 +16,7 @@ import { PickingServiceDefinition } from "../../src/lite/services/pickingService
 import { type ISelectionService } from "../../src/services/selectionService";
 import { type IWatcherService } from "../../src/services/watcherService";
 
-const { CreatePicker, DisposePicker, Pick } = vi.hoisted(() => {
+const { CreatePicker, DisposePicker, Pick, GizmoInteracting, GizmoPickPending } = vi.hoisted(() => {
     vi.stubGlobal(
         "matchMedia",
         vi.fn(() => ({ matches: false }))
@@ -25,6 +25,8 @@ const { CreatePicker, DisposePicker, Pick } = vi.hoisted(() => {
         CreatePicker: vi.fn<(scene: SceneContext) => GpuPicker>(),
         DisposePicker: vi.fn<(picker: GpuPicker) => void>(),
         Pick: vi.fn<(picker: GpuPicker, x: number, y: number, options?: PickOptions) => Promise<PickingInfo>>(),
+        GizmoInteracting: vi.fn<(canvas: HTMLCanvasElement) => boolean>(),
+        GizmoPickPending: vi.fn<(canvas: HTMLCanvasElement) => boolean>(),
     };
 });
 
@@ -33,6 +35,8 @@ vi.mock("@babylonjs/lite", async (importOriginal) => ({
     createGpuPicker: CreatePicker,
     disposePicker: DisposePicker,
     pickAsync: Pick,
+    isGizmoInteracting: GizmoInteracting,
+    isGizmoPickPending: GizmoPickPending,
 }));
 
 vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -82,6 +86,8 @@ describe("Babylon Lite picking service", () => {
         vi.clearAllMocks();
         CreatePicker.mockImplementation(() => ({}));
         Pick.mockResolvedValue(Result());
+        GizmoInteracting.mockReturnValue(false);
+        GizmoPickPending.mockReturnValue(false);
     });
 
     afterEach(() => {
@@ -284,6 +290,26 @@ describe("Babylon Lite picking service", () => {
         expect(consoleError).not.toHaveBeenCalled();
     });
 
+    it("ignores gizmo hover, pending gizmo picks, and stationary gizmo gestures before the native dispatcher ends them", () => {
+        const h = MakeHarness();
+        h.toggle();
+        GizmoInteracting.mockReturnValue(true);
+        Tap(h.canvas);
+        expect(Pick).not.toHaveBeenCalled();
+
+        GizmoInteracting.mockReturnValue(false);
+        GizmoPickPending.mockReturnValue(true);
+        Tap(h.canvas);
+        expect(Pick).not.toHaveBeenCalled();
+
+        GizmoPickPending.mockReturnValue(false);
+        Pointer(h.canvas, "pointerdown");
+        GizmoInteracting.mockReturnValue(true);
+        h.canvas.addEventListener("pointerup", () => GizmoInteracting.mockReturnValue(false), { capture: true, once: true });
+        Pointer(h.canvas, "pointerup");
+        expect(Pick).not.toHaveBeenCalled();
+    });
+
     it("accounts for canvas borders and ignores taps outside the canvas content", async () => {
         const h = MakeHarness();
         Object.defineProperties(h.canvas, {
@@ -302,6 +328,33 @@ describe("Babylon Lite picking service", () => {
         Pointer(h.canvas, "pointerdown", { clientX: 100.5, clientY: 51 });
         Pointer(h.canvas, "pointerup", { clientX: 100.5, clientY: 51 });
         expect(Pick).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+        ["gizmo press", true, false],
+        ["released gizmo gesture", true, true],
+        ["camera press", false, false],
+    ] as const)("discards an earlier mesh readback when a new %s starts", async (_gesture, gizmo, released) => {
+        const h = MakeHarness();
+        const otherMesh = { name: "Other Mesh" } as Mesh;
+        h.scene.meshes.push(otherMesh);
+        h.selection.selectedEntity = h.mesh;
+        const deferred = Deferred<PickingInfo>();
+        Pick.mockReturnValueOnce(deferred.promise);
+        h.toggle();
+        Tap(h.canvas);
+        expect(Pick).toHaveBeenCalledTimes(1);
+
+        GizmoInteracting.mockReturnValue(gizmo);
+        Pointer(h.canvas, "pointerdown");
+        if (released) {
+            Pointer(h.canvas, "pointerup");
+            GizmoInteracting.mockReturnValue(false);
+        }
+        await act(async () => deferred.resolve(Result(otherMesh)));
+        expect(h.selection.selectedEntity).toBe(h.mesh);
+        expect(Pick).toHaveBeenCalledTimes(1);
+        Pointer(h.canvas, "pointercancel");
     });
 
     it("does not pick camera drags, secondary pointers, non-left clicks, cancelled gestures, or unmatched pointerups", () => {

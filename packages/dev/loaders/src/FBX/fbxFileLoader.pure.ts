@@ -3056,18 +3056,22 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
         }
         const rigCurveNodes = rig.bones.filter((bone) => sampledModelIds.has(bone.modelId)).flatMap((bone) => boneCurves.get(bone.modelId) ?? []);
-        let times = collectAnimationSampleTimes(rigCurveNodes, fps, startTime, stopTime);
-        if (times.length === 0) {
+        const baseTimes = collectAnimationSampleTimes(rigCurveNodes, fps, startTime, stopTime);
+        if (baseTimes.length === 0) {
             return [];
         }
+        const refinedTimes = new Set(baseTimes);
         for (const boneData of rig.bones) {
             const md = modelIdToData.get(boneData.modelId);
             const cn = boneCurves.get(boneData.modelId) ?? [];
             if (!sampledModelIds.has(boneData.modelId) || !md || cn.length === 0) {
                 continue;
             }
-            times = FBXFileLoader._refineSampleTimes(times, (time) => this._sampleModelLocalMatrix(md, cn, time));
+            for (const time of FBXFileLoader._refineSampleTimes(baseTimes, (time) => this._sampleModelLocalMatrix(md, cn, time))) {
+                refinedTimes.add(time);
+            }
         }
+        const times = Array.from(refinedTimes).sort((a, b) => a - b);
 
         const keysByBone = rig.bones.map(() => ({
             posKeys: [] as { frame: number; value: Vector3 }[],

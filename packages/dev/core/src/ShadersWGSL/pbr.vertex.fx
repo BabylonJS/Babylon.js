@@ -177,7 +177,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #if defined(PREPASS) && ((defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
     vertexOutputs.vCurrentPosition = scene.viewProjection * finalWorld * vec4f(positionUpdated, 1.0);
-    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld * vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = scene.previousViewProjection * finalPreviousWorld * vec4f(positionUpdated, 1.0);
 #endif
 
 #ifdef USE_VERTEX_PULLING

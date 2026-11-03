@@ -9,7 +9,7 @@ import { type ExplorerNodeDescription, GetEntityId } from "../../../../component
 import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../../../engineExplorerService";
 import { EngineContextIdentity, type IEngineContext } from "../../../engineContext";
 import { CreateWatchedNameDisplayInfo } from "../../../explorerDisplayInfo";
-import { GetSceneContexts, GetSceneNodeRoots, IsMesh, IsSceneNode, IsSceneNodeDescendantOf } from "../../../sceneEntityUtils";
+import { GetSceneContexts, GetSceneNodeRoots, InspectorBoundsHelpers, IsMesh, IsSceneNode, IsSceneNodeDescendantOf } from "../../../sceneEntityUtils";
 import { ExplorerServiceIdentity, type IExplorerService } from "../../../../services/panes/explorer/explorerService";
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
 import { type IWatcherService, WatcherServiceIdentity } from "../../../../services/watcherService";
@@ -50,6 +50,21 @@ function IsNodeInScene(scene: SceneContext, node: SceneNode): boolean {
     return GetSceneNodeRoots(scene).some((root) => root === node || IsSceneNodeDescendantOf(node, root));
 }
 
+function CanReparentNode(scene: SceneContext, draggedEntity: object, targetEntity: object | null): boolean {
+    return (
+        IsSceneNode(draggedEntity) &&
+        !InspectorBoundsHelpers.has(draggedEntity) &&
+        IsNodeInScene(scene, draggedEntity) &&
+        (targetEntity === null ||
+            (IsSceneNode(targetEntity) &&
+                !InspectorBoundsHelpers.has(targetEntity) &&
+                IsNodeInScene(scene, targetEntity) &&
+                draggedEntity !== targetEntity &&
+                !IsSceneNodeDescendantOf(targetEntity, draggedEntity))) &&
+        draggedEntity.parent !== targetEntity
+    );
+}
+
 export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, IExplorerService, IWatcherService, ISelectionService, IEngineContext]> = {
     friendlyName: "Babylon Lite Scene Node Explorer",
     consumes: [EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, SelectionServiceIdentity, EngineContextIdentity],
@@ -65,18 +80,10 @@ export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplor
                         getDisplayInfo: () => ({ name: "Nodes" }),
                         getChildren: () => GetSceneNodeRoots(scene).map((node) => CreateNodeDescription(node, watcherService)),
                         dragDropConfig: {
-                            canDrag: (entity) => IsSceneNode(entity) && IsNodeInScene(scene, entity),
-                            canDrop: (draggedEntity, targetEntity) =>
-                                IsSceneNode(draggedEntity) &&
-                                IsNodeInScene(scene, draggedEntity) &&
-                                (targetEntity === null ||
-                                    (IsSceneNode(targetEntity) &&
-                                        IsNodeInScene(scene, targetEntity) &&
-                                        draggedEntity !== targetEntity &&
-                                        !IsSceneNodeDescendantOf(targetEntity, draggedEntity))) &&
-                                draggedEntity.parent !== targetEntity,
+                            canDrag: (entity) => IsSceneNode(entity) && !InspectorBoundsHelpers.has(entity) && IsNodeInScene(scene, entity),
+                            canDrop: (draggedEntity, targetEntity) => CanReparentNode(scene, draggedEntity, targetEntity),
                             onDrop: (draggedEntity, targetEntity) => {
-                                if (IsSceneNode(draggedEntity) && (targetEntity === null || IsSceneNode(targetEntity))) {
+                                if (CanReparentNode(scene, draggedEntity, targetEntity) && IsSceneNode(draggedEntity) && (targetEntity === null || IsSceneNode(targetEntity))) {
                                     setParent(draggedEntity, targetEntity);
                                 }
                             },

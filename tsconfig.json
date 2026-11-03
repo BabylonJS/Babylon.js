@@ -33,6 +33,7 @@
             "accessibility/*": ["./packages/tools/accessibility/src/*"],
             "viewer/*": ["./packages/tools/viewer/src/*"],
             "ktx2decoder/*": ["./packages/tools/ktx2Decoder/src/*"],
+            "ktx2encoder/*": ["./packages/tools/ktx2Encoder/src/*"],
             "shared-ui-components/*": ["./packages/dev/sharedUiComponents/src/*"],
             "@tools/gui-editor/*": ["./packages/tools/guiEditor/src/*"],
             "@tools/node-editor/*": ["./packages/tools/nodeEditor/src/*"],

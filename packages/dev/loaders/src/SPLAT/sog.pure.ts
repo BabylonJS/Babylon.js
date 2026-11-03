@@ -418,7 +418,18 @@ export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8A
 }
 
 function CreateSogTexture(scene: Scene, bits: Uint8Array, width: number, height: number): RawTexture {
-    const tex = new RawTexture(bits, width, height, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+    const tex = new RawTexture(
+        bits,
+        width,
+        height,
+        Constants.TEXTUREFORMAT_RGBA,
+        scene,
+        false,
+        false,
+        Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
+    );
     tex.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     tex.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     return tex;
@@ -642,7 +653,8 @@ export async function ParseSogMetaAsTextures(
             false,
             false,
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
+            Constants.TEXTURETYPE_FLOAT,
+            Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
         );
         codebookTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         codebookTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;

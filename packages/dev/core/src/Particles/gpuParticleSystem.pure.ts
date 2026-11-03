@@ -104,6 +104,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _platform: IGPUParticleSystemPlatform;
     private _rebuildingAfterContextLost = false;
+    private _rebuildRetryTimeout: Nullable<ReturnType<typeof setTimeout>> = null;
 
     /**
      * Whether the particle buffer needs to store the initial emission direction.
@@ -2575,13 +2576,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public rebuild(): void {
         const checkUpdateEffect = () => {
+            this._rebuildRetryTimeout = null;
             if (!this._recreateUpdateEffect() || !this._platform.isUpdateBufferReady()) {
-                setTimeout(checkUpdateEffect, 10);
+                this._rebuildRetryTimeout = setTimeout(checkUpdateEffect, 10);
             } else {
                 this._initialize(true);
                 this._rebuildingAfterContextLost = false;
             }
         };
+
+        // A previous rebuild still waiting for the update effect is superseded by this one
+        this._cancelRebuildRetry();
 
         this._createIndexBuffer();
 
@@ -2593,7 +2598,27 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._platform.contextLost();
         this._rebuildingAfterContextLost = true;
 
+        // The draw contexts can still hold resources of the lost device (in WebGPU, the indirect draw buffer used for the instanced draws)
+        for (const drawWrappers of this._drawWrappers) {
+            if (!drawWrappers) {
+                continue;
+            }
+            for (const drawWrapper of drawWrappers) {
+                drawWrapper?._recreateDrawContext(this._engine);
+            }
+        }
+        for (const blendMode in this._customWrappers) {
+            this._customWrappers[blendMode]?._recreateDrawContext(this._engine);
+        }
+
         checkUpdateEffect();
+    }
+
+    private _cancelRebuildRetry() {
+        if (this._rebuildRetryTimeout !== null) {
+            clearTimeout(this._rebuildRetryTimeout);
+            this._rebuildRetryTimeout = null;
+        }
     }
 
     private _releaseBuffers() {
@@ -2617,6 +2642,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
+        // A rebuild waiting for the update effect would recreate the particle buffers after the disposal
+        this._cancelRebuildRetry();
         this._engine._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
         this._renderPassObserver = null;
         for (const drawWrappers of this._drawWrappers) {

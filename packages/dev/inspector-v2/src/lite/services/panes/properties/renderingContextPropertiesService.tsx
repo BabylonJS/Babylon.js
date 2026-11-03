@@ -1,12 +1,4 @@
-import {
-    getRenderingContextKind,
-    getRenderingContexts,
-    type EngineContext,
-    type RenderingContext,
-    type SceneContext,
-    type SpriteRenderer,
-    type TextRenderer,
-} from "@babylonjs/lite";
+import { getRenderingContextKind, type EngineContext, type RenderingContext, type SceneContext, type SpriteRenderer, type TextRenderer } from "@babylonjs/lite";
 import { type FunctionComponent } from "react";
 
 import { NumberInputPropertyLine, TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -16,6 +8,7 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { BoundProperty, ComputedProperty } from "../../../../components/properties/boundProperty";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
+import { GetInspectableRenderingContexts } from "../../../sceneEntityUtils";
 
 const GetMeshCount = (scene: SceneContext) => scene.meshes.length;
 const GetLightCount = (scene: SceneContext) => scene.lights.length;
@@ -25,7 +18,7 @@ const GetTextLayerCount = (renderer: TextRenderer) => renderer.layers.length;
 const GetSpriteLayerCount = (renderer: SpriteRenderer) => renderer.layers.length;
 
 function IsRegisteredRenderingContext(engine: EngineContext, entity: unknown): entity is RenderingContext {
-    return typeof entity === "object" && entity !== null && engine.surfaces.some((surface) => getRenderingContexts(surface).includes(entity as RenderingContext));
+    return typeof entity === "object" && entity !== null && engine.surfaces.some((surface) => GetInspectableRenderingContexts(surface).includes(entity as RenderingContext));
 }
 
 const SceneProperties: FunctionComponent<{ scene: SceneContext }> = (props) => {

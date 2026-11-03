@@ -38,8 +38,8 @@
         previousInfluence += uniforms.mPreviousBones[ i32(vertexInputs.matricesIndicesExtra[3])] * vertexInputs.matricesWeightsExtra[3];
     #endif
 
-    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld * previousInfluence *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = scene.previousViewProjection * finalPreviousWorld * previousInfluence *  vec4f(positionUpdated, 1.0);
 #else
-    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = scene.previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
 #endif
 #endif

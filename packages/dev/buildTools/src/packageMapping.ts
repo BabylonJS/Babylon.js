@@ -37,6 +37,7 @@ export type DevPackageName =
     | "accessibility"
     | "viewer"
     | "ktx2decoder"
+    | "ktx2encoder"
     | "shared-ui-components"
     | "babylonjs-gltf2interface"
     | "addons"
@@ -59,6 +60,7 @@ export type UMDPackageName =
     | "babylonjs-viewer"
     | "babylonjs-post-process"
     | "babylonjs-ktx2decoder"
+    | "babylonjs-ktx2encoder"
     | "babylonjs-shared-ui-components"
     | "babylonjs-gltf2interface"
     | "babylonjs-addons"
@@ -81,6 +83,7 @@ export type NamespacePackageName =
     | "INSPECTOR"
     | "BabylonViewer"
     | "KTX2DECODER"
+    | "KTX2ENCODER"
     | "INSPECTOR.SharedUIComponents"
     | "BABYLON.SharedUIComponents"
     | "BABYLON.NodeEditor.SharedUIComponents"
@@ -107,12 +110,15 @@ export type ES6PackageName =
     | "@babylonjs/post-processes"
     | "@babylonjs/viewer"
     | "@babylonjs/ktx2decoder"
+    | "@babylonjs/ktx2encoder"
     | "@babylonjs/shared-ui-components"
     | "@babylonjs/addons"
     | "babylonjs-gltf2interface"
     | "@babylonjs/smart-filters";
 
-export const umdPackageMapping: { [key in UMDPackageName]: { sourceDir?: string; baseDir: string; baseFilename: string; isBundle?: boolean } } = {
+export const umdPackageMapping: {
+    [key in UMDPackageName]: { sourceDir?: string; baseDir: string; baseFilename: string; isBundle?: boolean };
+} = {
     babylonjs: {
         baseDir: "",
         baseFilename: "babylon",
@@ -182,6 +188,10 @@ export const umdPackageMapping: { [key in UMDPackageName]: { sourceDir?: string;
     "babylonjs-ktx2decoder": {
         baseDir: "", // keep in root of the cdn
         baseFilename: "babylon.ktx2Decoder",
+    },
+    "babylonjs-ktx2encoder": {
+        baseDir: "", // keep in root of the cdn
+        baseFilename: "babylon.ktx2Encoder",
     },
     "babylonjs-viewer": {
         baseDir: "viewer",
@@ -259,6 +269,7 @@ const packageMapping: {
         "post-processes": "babylonjs-post-process",
         "procedural-textures": "babylonjs-procedural-textures",
         ktx2decoder: "babylonjs-ktx2decoder",
+        ktx2encoder: "babylonjs-ktx2encoder",
         viewer: "babylonjs-viewer",
         "shared-ui-components": "babylonjs-shared-ui-components",
         "babylonjs-gltf2interface": "babylonjs-gltf2interface",
@@ -282,6 +293,7 @@ const packageMapping: {
         "post-processes": "@babylonjs/post-processes",
         "procedural-textures": "@babylonjs/procedural-textures",
         ktx2decoder: "@babylonjs/ktx2decoder",
+        ktx2encoder: "@babylonjs/ktx2encoder",
         viewer: "@babylonjs/viewer",
         "shared-ui-components": "@babylonjs/shared-ui-components",
         "babylonjs-gltf2interface": "babylonjs-gltf2interface",
@@ -305,6 +317,7 @@ const packageMapping: {
         "post-processes": "@babylonjs/esm",
         "procedural-textures": "@babylonjs/esm",
         ktx2decoder: "@babylonjs/esm",
+        ktx2encoder: "@babylonjs/esm",
         viewer: "@babylonjs/esm",
         addons: "@babylonjs/esm",
         "shared-ui-components": "@babylonjs/esm",
@@ -440,6 +453,7 @@ const packageMapping: {
         "procedural-textures": "BABYLON",
         addons: "ADDONS",
         ktx2decoder: "KTX2DECODER",
+        ktx2encoder: "KTX2ENCODER",
         viewer: "BabylonViewer",
         "shared-ui-components": "BABYLON.SharedUIComponents",
         "babylonjs-gltf2interface": "BABYLON.GLTF2",
