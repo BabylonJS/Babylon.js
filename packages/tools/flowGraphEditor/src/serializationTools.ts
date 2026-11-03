@@ -389,8 +389,8 @@ export class SerializationTools {
         globalState.serializationDisabledReason = state.serializationDisabledReason;
         globalState.hasImportScopedRuntime = state.hasImportScopedRuntime;
         globalState.khrInteractivityImportResult = null;
-        globalState.restoreReferenceProvenance(state.referenceProvenance, state.referenceOccurrences);
         globalState.setCoordinator(state.coordinator, true);
+        globalState.restoreReferenceProvenance(state.referenceProvenance, state.referenceOccurrences);
         globalState.activeGraphIndex = state.activeGraphIndex;
         if (previousCoordinator && previousCoordinator !== state.coordinator && disposePreviousCoordinator) {
             previousCoordinator.dispose();
@@ -452,9 +452,8 @@ export class SerializationTools {
                 candidates = nodes.filter((node) => node.name === location.name);
                 index = location.nameIndex;
             }
-            let resolved = candidates[index];
+            let resolved;
             if (
-                !resolved &&
                 location.sceneUid === scene.uid &&
                 currentValue &&
                 typeof currentValue.getScene === "function" &&
@@ -467,6 +466,7 @@ export class SerializationTools {
             ) {
                 resolved = currentValue;
             }
+            resolved ??= candidates[index];
             const result = resolved ?? value;
             occurrences.push([result, location]);
             return result;

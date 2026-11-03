@@ -132,6 +132,8 @@ The palette contains a **Templates** section with pre-built multi-block patterns
 - **glTF Interactivity** — Get → Set Property, Get → Set Variable
 - **Reactions** — Pick → Play Sound, Intersection → Play Sound, Add Reaction to Existing Event
 
+The intersection template reacts to bounding-volume overlap through `FlowGraphMeshIntersectionEventBlock`. It is not a physics-impact event: an overlap may exist on startup, fast crossings can be missed between frames, and adding the same pair in both directions creates two independent sensors. Contact-position audio remains a separate authoring task.
+
 Drag a template from the palette onto the canvas. All blocks are created and internally wired automatically. These templates emit ordinary blocks rather than editor-only behavior: select the pick/intersection meshes, sound asset name, or custom event id in the normal property panel and continue editing or rewiring the graph.
 
 ---

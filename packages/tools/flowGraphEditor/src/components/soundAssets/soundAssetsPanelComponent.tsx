@@ -13,6 +13,8 @@ interface ISoundAssetsPanelComponentProps {
     globalState: GlobalState;
 }
 
+const MaxEmbeddedAudioFileSize = 25 * 1024 * 1024;
+
 const useStyles = makeStyles({
     root: {
         display: "flex",
@@ -70,9 +72,13 @@ export async function ImportSoundAssetFileAsync(
     assetName: string,
     readAsDataUrlAsync: (file: File) => Promise<string> = ReadAsDataUrlAsync
 ): Promise<boolean> {
+    if (file.size > MaxEmbeddedAudioFileSize) {
+        throw new Error(`Audio files must be ${MaxEmbeddedAudioFileSize / (1024 * 1024)} MB or smaller.`);
+    }
     const lifetimeGeneration = globalState.lifetimeGeneration;
     const operationToken = globalState.beginSoundAssetOperation(assetName);
     const coordinatorGraphs = [...coordinator.flowGraphs];
+    const previousAsset = coordinator.soundAssets.find((asset) => asset.name === assetName);
     const url = await readAsDataUrlAsync(file);
     if (
         !globalState.isLifetimeCurrent(coordinator, lifetimeGeneration) ||
@@ -84,6 +90,18 @@ export async function ImportSoundAssetFileAsync(
     try {
         await coordinator.addSoundAssetAsync({ name: assetName, url });
     } catch (error) {
+        if (
+            previousAsset &&
+            globalState.isLifetimeCurrent(coordinator, lifetimeGeneration) &&
+            globalState.isSoundAssetOperationCurrent(assetName, operationToken) &&
+            coordinatorGraphs.every((graph) => coordinator.flowGraphs.includes(graph))
+        ) {
+            try {
+                await coordinator.addSoundAssetAsync(previousAsset);
+            } catch (restoreError) {
+                throw new Error(`Unable to replace sound asset "${assetName}" (${String(error)}) or restore its previous audio.`, { cause: restoreError });
+            }
+        }
         globalState.onSoundAssetsChanged.notifyObservers();
         throw error;
     }

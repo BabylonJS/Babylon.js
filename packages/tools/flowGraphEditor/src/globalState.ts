@@ -228,6 +228,14 @@ export class GlobalState {
         this._lifetimeGeneration++;
         this._soundAssetChangedObserver?.remove();
         this._soundAssetChangedObserver = null;
+        if (this._coordinator !== coordinator) {
+            this._savedContextSnapshots = null;
+            this._savedContextRuntimeData = null;
+            this._perGraphContextSnapshots.clear();
+            this._perGraphContextRuntimeData.clear();
+            this._referenceLocationsByOccurrence = new WeakMap();
+            this._restoredReferenceProvenance = null;
+        }
         if (coordinator && editorOwned) {
             this._editorOwnedCoordinators.add(coordinator);
         }
@@ -518,6 +526,7 @@ export class GlobalState {
             }
             this._activateGraph(graphs[this._activeGraphIndex]);
         }
+        this.forgetGraphSnapshots(graph.uniqueId);
         // If index > _activeGraphIndex, no adjustment needed (active graph unchanged)
         this.onGraphListChanged.notifyObservers();
         return true;
@@ -1880,14 +1889,27 @@ export class GlobalState {
             }
         }
 
-        if (this._savedContextRuntimeData) {
-            for (const contextData of this._savedContextRuntimeData) {
+        for (const runtimeSnapshots of this._perGraphContextRuntimeData.values()) {
+            for (const contextData of runtimeSnapshots) {
                 for (const key in contextData.connectionValues) {
                     contextData.connectionValues[key] = this._rebindSceneValue(contextData.connectionValues[key], newScene);
                 }
             }
         }
         return reboundDefaults;
+    }
+
+    /**
+     * Removes saved context data for a graph that no longer belongs to the coordinator.
+     * @param graphUniqueId graph identifier to forget
+     */
+    public forgetGraphSnapshots(graphUniqueId: string): void {
+        this._perGraphContextSnapshots.delete(graphUniqueId);
+        this._perGraphContextRuntimeData.delete(graphUniqueId);
+        if (this._flowGraph?.uniqueId === graphUniqueId) {
+            this._savedContextSnapshots = null;
+            this._savedContextRuntimeData = null;
+        }
     }
 
     private _getAllGraphBlocks(graph: FlowGraph): FlowGraphBlock[] {
@@ -2184,6 +2206,10 @@ export class GlobalState {
         const location = this._getReferenceLocation(runtimeValue);
         if (location && typeof serializedValue.uniqueId === "number") {
             this._referenceLocationsByOccurrence.set(serializedValue, location);
+            return;
+        }
+        for (const key of Object.keys(serializedValue)) {
+            this._rememberSerializedReferenceLocations(runtimeValue[key], serializedValue[key]);
         }
     }
 
@@ -2286,10 +2312,15 @@ export class GlobalState {
      * Restores durable scene-reference provenance before a deserialized coordinator is activated.
      * @param entries serialized provenance entries
      * @param occurrences provenance paired with exact parsed reference values
+     * @param replace whether to replace all coordinator provenance or merge these entries
      */
-    public restoreReferenceProvenance(entries: SceneReferenceProvenance, occurrences: Array<[object, SceneReferenceLocation]> = []): void {
-        this._restoredReferenceProvenance = new Map();
-        this._referenceLocationsByOccurrence = new WeakMap();
+    public restoreReferenceProvenance(entries: SceneReferenceProvenance, occurrences: Array<[object, SceneReferenceLocation]> = [], replace = true): void {
+        if (replace || !this._restoredReferenceProvenance) {
+            this._restoredReferenceProvenance = new Map();
+        }
+        if (replace) {
+            this._referenceLocationsByOccurrence = new WeakMap();
+        }
         for (const [uniqueId, location] of entries) {
             const locations = this._restoredReferenceProvenance.get(uniqueId) ?? [];
             locations.push(location);

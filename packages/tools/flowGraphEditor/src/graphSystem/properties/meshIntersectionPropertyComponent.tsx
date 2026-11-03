@@ -29,24 +29,37 @@ const useStyles = makeStyles({
     },
 });
 
+function GetMeshLabels(meshes: AbstractMesh[]): Map<AbstractMesh, string> {
+    const nameCounts = new Map<string, number>();
+    meshes.forEach((mesh) => nameCounts.set(mesh.name, (nameCounts.get(mesh.name) ?? 0) + 1));
+    return new Map(
+        meshes.map((mesh) => {
+            const name = mesh.name || `(id ${mesh.uniqueId})`;
+            return [mesh, mesh.name && (nameCounts.get(mesh.name) ?? 0) > 1 ? `${name} (id ${mesh.uniqueId})` : name];
+        })
+    );
+}
+
 export function GetTargetMeshPickerOptions(meshes: AbstractMesh[], selectedMeshes: AbstractMesh[]) {
+    const labels = GetMeshLabels(meshes);
     const options = selectedMeshes.map((mesh, index) => {
         const liveMesh = meshes.find((candidate) => candidate === mesh);
         return {
             key: liveMesh ? `live:${mesh.uniqueId}` : `unresolved:${index}:${mesh.uniqueId}`,
             mesh,
-            label: liveMesh ? mesh.name || `(id ${mesh.uniqueId})` : `${mesh.name || `(id ${mesh.uniqueId})`} (unavailable)`,
+            label: liveMesh ? labels.get(mesh)! : `${mesh.name || `(id ${mesh.uniqueId})`} (unavailable)`,
         };
     });
     for (const mesh of meshes) {
         if (!selectedMeshes.includes(mesh)) {
-            options.push({ key: `live:${mesh.uniqueId}`, mesh, label: mesh.name || `(id ${mesh.uniqueId})` });
+            options.push({ key: `live:${mesh.uniqueId}`, mesh, label: labels.get(mesh)! });
         }
     }
     return options;
 }
 
 export function GetSourceMeshPickerOptions(meshes: AbstractMesh[], selectedMesh: AbstractMesh | undefined) {
+    const labels = GetMeshLabels(meshes);
     const options: Array<{ key: string; mesh?: AbstractMesh; label: string }> = [{ key: "none", label: "(none)" }];
     const liveMesh = meshes.find((candidate) => candidate === selectedMesh);
     if (selectedMesh && !liveMesh) {
@@ -57,7 +70,7 @@ export function GetSourceMeshPickerOptions(meshes: AbstractMesh[], selectedMesh:
         });
     }
     for (const mesh of meshes) {
-        options.push({ key: `live:${mesh.uniqueId}`, mesh, label: mesh.name || `(id ${mesh.uniqueId})` });
+        options.push({ key: `live:${mesh.uniqueId}`, mesh, label: labels.get(mesh)! });
     }
     return options;
 }
