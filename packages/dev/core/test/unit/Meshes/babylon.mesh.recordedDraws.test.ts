@@ -520,6 +520,37 @@ describe("Mesh recorded draws", () => {
             expect(material._getRecordedDrawReference(drawWrapper.effect!)).toBeNull();
         });
 
+        it("is not encoded again for a camera whose view moved off the first buffer when the order of two cameras of a pass changes", () => {
+            // a camera of the pass: its view is written to the scene's uniform buffer, in a new buffer if another camera used it
+            const cameraA = Matrix.Translation(1, 0, 0);
+            const cameraB = Matrix.Translation(-1, 0, 0);
+            const view = (matrix: Matrix) => {
+                scene.setTransformMatrix(matrix, Matrix.Identity());
+                scene.finalizeSceneUbo();
+            };
+            const frame = (first: Matrix) => {
+                engine.endFrame();
+                pass();
+                view(first);
+            };
+            // cameras A then B: A's draw is recorded with A's view on the first buffer
+            frame(cameraA);
+            keep(drawWrapper);
+            expect(drawWrapper._recordedMaterial).toBe(material);
+            view(cameraB);
+            expect(scene.getSceneUniformBuffer()._isFirstBufferBound()).toBe(false);
+            // the same order again: A's view is on the first buffer, and its draw is encoded again
+            frame(cameraA);
+            keep(other);
+            expect(unchanged()).toBe(true);
+            // B then A: B's view takes the first buffer, which A's recorded commands bind, and A's draw is not encoded again
+            frame(cameraB);
+            keep(other);
+            view(cameraA);
+            expect(scene.getSceneUniformBuffer()._isFirstBufferBound()).toBe(false);
+            expect(unchanged()).toBe(false);
+        });
+
         it("is not encoded again in a later pass of the frame that wrote the scene's uniform buffer again", () => {
             pass();
             // the scene's uniform buffer, used in the frame, gets another view
