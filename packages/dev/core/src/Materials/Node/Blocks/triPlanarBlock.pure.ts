@@ -505,7 +505,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
             // no conversion if the output is "a" (alpha). Both conversions are written whatever the texture's gamma space when the graph is
             // built: their defines follow the texture's image, which can change (Texture.replaceImage) without building the graph again
             state.compilationString += `#ifdef ${this._linearDefineName}
-                ${output.associatedVariableName} = toGammaSpace${vecSpecifier}(${output.associatedVariableName});
+                ${output.associatedVariableName} = ${state._toGammaSpace(output)};
                 #endif
             `;
 

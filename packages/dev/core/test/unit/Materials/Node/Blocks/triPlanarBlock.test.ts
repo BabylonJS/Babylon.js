@@ -33,22 +33,27 @@ function generateTextureLookup(shaderLanguage: ShaderLanguage): string {
 
 describe("TriPlanarBlock", () => {
     it.each([
-        ["GLSL", ShaderLanguage.GLSL, "toGammaSpace"],
-        ["WGSL", ShaderLanguage.WGSL, "toGammaSpaceVec3"],
-    ])("writes both conversions of a gamma space texture's color under their defines, which follow its image (%s)", (_, shaderLanguage, toGammaSpace) => {
+        ["rgb, GLSL", ShaderLanguage.GLSL, "rgb", "toGammaSpace(rgb)"],
+        ["rgb, WGSL", ShaderLanguage.WGSL, "rgb", "toGammaSpaceVec3(rgb)"],
+        ["r, GLSL", ShaderLanguage.GLSL, "r", "toGammaSpace(r)"],
+        ["r, WGSL", ShaderLanguage.WGSL, "r", "toGammaSpaceVec3(vec3f(r)).x"],
+    ])("writes both conversions of a gamma space texture's color under their defines, which follow its image (%s)", (_, shaderLanguage, name, toGammaSpace) => {
         const state = new NodeMaterialBuildState();
         state.sharedData = new NodeMaterialBuildStateSharedData();
         state.sharedData.nodeMaterial = { shaderLanguage } as NodeMaterial;
         const block = new TriPlanarBlock("triPlanar");
         block.texture = { gammaSpace: true, getScene: () => null } as unknown as Texture;
         Object.assign(block, { _linearDefineName: "ISLINEAR", _gammaDefineName: "ISGAMMA" });
-        block.rgb.associatedVariableName = "rgb";
+        const output = name === "rgb" ? block.rgb : block.r;
+        output.associatedVariableName = name;
 
-        block["_generateConversionCode"](state, block.rgb, "rgb");
+        block["_generateConversionCode"](state, output, name);
 
-        // the image can become linear (Texture.replaceImage) without building the graph again
-        expect(state.compilationString).toMatch(new RegExp(`#ifdef ISLINEAR\\s+rgb = ${toGammaSpace}\\(rgb\\);\\s+#endif`));
-        expect(state.compilationString).toMatch(/#ifdef ISGAMMA\s+rgb = toLinearSpace\w*\(rgb\);\s+#endif/);
+        // the image can become linear (Texture.replaceImage) without building the graph again. WGSL has no overloads: a 3-component
+        // output and a float are converted with toGammaSpaceVec3
+        const conversion = toGammaSpace.replace(/[.()]/g, "\\$&");
+        expect(state.compilationString).toMatch(new RegExp(`#ifdef ISLINEAR\\s+${name} = ${conversion};\\s+#endif`));
+        expect(state.compilationString).toMatch(new RegExp(`#ifdef ISGAMMA\\s+${name} = toLinearSpace\\w*\\(${name}\\);\\s+#endif`));
     });
 
     it("returns the texture connected to sourceZ instead of the sourceY texture", () => {
