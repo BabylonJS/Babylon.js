@@ -63,7 +63,6 @@ import { type RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { type RenderTargetWrapper } from "./renderTargetWrapper";
 import { type Scene } from "../scene.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
-import { type Mesh } from "../Meshes/mesh.pure";
 
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial.pure";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
@@ -286,9 +285,10 @@ export interface IWebGPURenderPipelineAsyncCreationOptions {
      */
     cullFace?: number;
     /**
-     * Front face winding order (1 = CCW, 2 = CW). Defaults to the one the draws of the mesh with its material use in the current pass (the canvas
-     * outside of a render pass): from the side orientation of the material, or else of the mesh, reversed when its world matrix mirrors, and in a
-     * render target, which is drawn Y-flipped, reversed again.
+     * Front face winding order (1 = CCW, 2 = CW). Defaults to the one the draws of the mesh with the effect use in the current pass (the canvas
+     * outside of a render pass), with the material their sub mesh draws with (the scene's default one when the mesh has none, a render pass's,
+     * a multi-material's): from the side orientation of the material, or else of the mesh (of its source for an instance), reversed when the
+     * world matrix of the mesh mirrors, and in a render target, which is drawn Y-flipped, reversed again.
      */
     frontFace?: number;
     /**
@@ -3893,15 +3893,29 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return reverseSide ? (invertYRenderTarget ? 1 : 2) : invertYRenderTarget ? 2 : 1;
     }
 
-    // The front face of the draws of a mesh with its material in the current pass: the side orientation Mesh.render gives Material._preBind,
-    // from the world matrix the next frame computes (the last one computed can predate a change of the mesh's transform), wound as setState does
-    private _getMeshFrontFace(mesh: AbstractMesh): number {
-        const material = mesh.material;
-        if (!material) {
+    // The front face of the draws of a mesh with an effect in the current pass, wound as setState does. They go through its sub mesh drawn
+    // with that effect (else its first one), with the material the draw uses (SubMesh.getMaterial: the scene's default one, a render pass's,
+    // a multi-material's), and the side orientation Mesh.render gives Material._preBind: from the source mesh of an instance, and from the
+    // world matrix of the mesh itself, which the next frame computes (the last one computed can predate a change of its transform). An
+    // instance mirrored against its source is drawn on its own, the others in their source's draw: either way its own determinant's sign
+    // gives the winding
+    private _getMeshFrontFace(mesh: AbstractMesh, effect: Effect): number {
+        const subMeshes = mesh.subMeshes;
+        let subMesh = subMeshes?.[0];
+        if (subMeshes) {
+            for (const candidate of subMeshes) {
+                if (candidate.effect === effect) {
+                    subMesh = candidate;
+                    break;
+                }
+            }
+        }
+        const material = subMesh?.getMaterial();
+        if (!subMesh || !material) {
             return this._getFrontFace(false);
         }
         mesh.computeWorldMatrix(true);
-        return this._getFrontFace(material._isReverseSide((mesh as Mesh)._getDrawSideOrientation?.(material)));
+        return this._getFrontFace(material._isReverseSide(subMesh.getRenderingMesh()._getDrawSideOrientation(material, mesh)));
     }
 
     /**
@@ -4224,7 +4238,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             // Rasterization state
             cache.setCullEnabled(entry.cullEnabled ?? true);
             cache.setCullFace(entry.cullFace ?? 1);
-            cache.setFrontFace(entry.frontFace ?? this._getMeshFrontFace(entry.mesh));
+            cache.setFrontFace(entry.frontFace ?? this._getMeshFrontFace(entry.mesh, entry.effect));
 
             // Write mask
             cache.setWriteMask(entry.writeMask ?? 0xf);
