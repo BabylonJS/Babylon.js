@@ -103,10 +103,21 @@ function createRecordingRenderPass(recordResult = true): { renderPass: GPURender
 function createProvider(enabled = true, lastError?: string): IWebGPURenderPassCommandRecorderProvider {
     return {
         protocolVersion: WebGPURenderPassCommandStreamProtocolVersion,
+        recordsAtomically: true,
         isEnabled: () => enabled,
         getResourceId: getBackendResourceId,
         getLastError: () => lastError,
     };
+}
+
+/**
+ * A provider built against the version-1 contract alone: it passes the protocol handshake but never
+ * promised that a rejected batch leaves the pass untouched.
+ */
+function createLegacyProvider(): IWebGPURenderPassCommandRecorderProvider {
+    const provider = createProvider() as Partial<IWebGPURenderPassCommandRecorderProvider>;
+    delete provider.recordsAtomically;
+    return provider as IWebGPURenderPassCommandRecorderProvider;
 }
 
 function createStream(enabled = true, lastError?: string): WebGPURenderPassCommandStream {
@@ -658,6 +669,110 @@ describe("WebGPURenderPassCommandStream", () => {
         }
     });
 
+    it("never batches for a legacy provider whose recorder may record a prefix before rejecting", () => {
+        const { renderPass, calls } = createRecordingRenderPass();
+        // A non-atomic recorder: it records the first draw directly, then rejects the batch.
+        const recordCommands = vi.fn((_commands: Uint32Array, _drawCount: number) => {
+            renderPass.drawIndexed(3, 1, 0, 0, 0);
+            return false;
+        });
+        setRecorder(renderPass, recordCommands);
+        const onDisabled = vi.fn();
+        const provider = createLegacyProvider();
+        provider.onDisabled = onDisabled;
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(false);
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(false);
+            expect(stream.flush()).toBe(false);
+
+            // Direct submission: the recorder is never entered, so nothing can be recorded twice.
+            expect(recordCommands).not.toHaveBeenCalled();
+            expect(calls).toHaveLength(0);
+            expect(errorSpy).toHaveBeenCalledTimes(1);
+            expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("recordsAtomically"));
+            expect(onDisabled).toHaveBeenCalledTimes(1);
+            expect(onDisabled).toHaveBeenCalledWith(expect.objectContaining({ reason: "atomic-recording-unsupported", hostError: undefined, replayedDrawCount: 0 }));
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("treats an explicit recordsAtomically of false like a legacy provider", () => {
+        const { renderPass, records, calls } = createRecordingRenderPass();
+        const provider = createProvider();
+        provider.recordsAtomically = false;
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(false);
+            expect(records).toHaveLength(0);
+            expect(calls).toHaveLength(0);
+            expect(errorSpy).toHaveBeenCalledTimes(1);
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("preserves the host error when the recorder throws", () => {
+        const { renderPass, calls } = createRecordingRenderPass();
+        setRecorder(renderPass, () => {
+            throw new Error("native decoder panicked");
+        });
+        const onDisabled = vi.fn();
+        const provider = createProvider(true, "decoder rejected opcode");
+        provider.onDisabled = onDisabled;
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            expect(stream.tryAppend(createCommand({ renderPass }))).toBe(true);
+            expect(() => stream.flush()).not.toThrow();
+
+            expect(calls.map((call) => call[0])).toContain("drawIndexed");
+            expect(onDisabled).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    reason: "recording-threw",
+                    message: expect.stringContaining("native decoder panicked: decoder rejected opcode"),
+                    hostError: "decoder rejected opcode",
+                    replayedDrawCount: 1,
+                })
+            );
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("classifies a recorder that throws a falsy value as recording-threw", () => {
+        for (const thrownValue of [false, 0, ""] as const) {
+            const { renderPass, calls } = createRecordingRenderPass();
+            setRecorder(renderPass, () => {
+                throw thrownValue;
+            });
+            const onDisabled = vi.fn();
+            const provider = createProvider();
+            provider.onDisabled = onDisabled;
+            const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+            const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+            try {
+                expect(stream.tryAppend(createCommand({ renderPass }))).toBe(true);
+                expect(() => stream.flush()).not.toThrow();
+
+                expect(calls.map((call) => call[0])).toContain("drawIndexed");
+                const expectedDetail = thrownValue === "" ? "an empty value" : String(thrownValue);
+                expect(onDisabled).toHaveBeenCalledWith(
+                    expect.objectContaining({ reason: "recording-threw", message: expect.stringContaining(`threw: ${expectedDetail}`), replayedDrawCount: 1 })
+                );
+            } finally {
+                errorSpy.mockRestore();
+            }
+        }
+    });
+
     it("reports a protocol mismatch through the provider with nothing replayed", () => {
         const { renderPass, calls } = createRecordingRenderPass();
         const onDisabled = vi.fn();
@@ -681,6 +796,7 @@ describe("WebGPURenderPassCommandStream", () => {
     it("invokes onDisabled on its provider so class-based handlers keep their state", () => {
         class StatefulProvider implements IWebGPURenderPassCommandRecorderProvider {
             public protocolVersion = WebGPURenderPassCommandStreamProtocolVersion;
+            public recordsAtomically = true;
             public enabled = true;
             public reports: IWebGPURenderPassCommandStreamDisableInfo[] = [];
 

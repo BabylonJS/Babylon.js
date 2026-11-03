@@ -79,12 +79,14 @@ export interface IWebGPUCommandRecordingRenderPass extends GPURenderPassEncoder 
      * Records a batch of commands encoded by WebGPURenderPassCommandStream into this pass.
      *
      * The recorder must consume the command words synchronously: the buffer is owned by the stream
-     * and is reused as soon as the call returns. Recording is all-or-nothing: the host returns true
-     * once every command of the batch has been recorded, and returns false (or throws) without
-     * having recorded any of them when it rejects the batch, leaving the encoder usable. The stream
-     * relies on this to replay a rejected batch through direct encoder calls. The JS objects of
-     * every resource referenced by the batch are retained by the stream until this call returns;
-     * from then on the host owns their lifetime for the rest of the pass.
+     * and is reused as soon as the call returns. A provider that declares
+     * IWebGPURenderPassCommandRecorderProvider.recordsAtomically promises that recording is
+     * all-or-nothing: the host returns true once every command of the batch has been recorded, and
+     * returns false (or throws) without having recorded any of them when it rejects the batch,
+     * leaving the encoder usable. The stream relies on that promise to replay a rejected batch
+     * through direct encoder calls, and never batches for a provider that does not make it. The JS
+     * objects of every resource referenced by the batch are retained by the stream until this call
+     * returns; from then on the host owns their lifetime for the rest of the pass.
      */
     _recordCommands?: (commands: Uint32Array, drawCount: number, multiDrawCallCount: number, multiDrawDrawCount: number, wordCount: number) => boolean;
 }
@@ -92,11 +94,12 @@ export interface IWebGPUCommandRecordingRenderPass extends GPURenderPassEncoder 
 /**
  * Why a render-pass command stream disabled itself (see IWebGPURenderPassCommandStreamDisableInfo).
  * - "protocol-mismatch": the host decoder was built against another WebGPURenderPassCommandStreamProtocolVersion.
+ * - "atomic-recording-unsupported": the provider does not declare recordsAtomically, so a rejected batch could not be replayed safely.
  * - "recorder-missing": the active render pass stopped exposing a recording hook while commands were pending.
  * - "recording-rejected": the host returned false from _recordCommands.
  * - "recording-threw": the host threw from _recordCommands.
  */
-export type WebGPURenderPassCommandStreamDisableReason = "protocol-mismatch" | "recorder-missing" | "recording-rejected" | "recording-threw";
+export type WebGPURenderPassCommandStreamDisableReason = "protocol-mismatch" | "atomic-recording-unsupported" | "recorder-missing" | "recording-rejected" | "recording-threw";
 
 /**
  * Details reported once when a render-pass command stream disables itself, so integrating
@@ -127,6 +130,14 @@ export interface IWebGPURenderPassCommandRecorderProvider {
      * the engine and draws fall back to direct encoder calls.
      */
     protocolVersion: number;
+    /**
+     * True when the host decoder records every batch atomically: a rejected batch (false returned or
+     * an exception thrown from _recordCommands) has recorded none of its commands and leaves the
+     * encoder usable, so the stream can replay it through direct encoder calls. The stream never
+     * batches for a provider that does not declare this; such draws use direct encoder calls and the
+     * stream reports "atomic-recording-unsupported" once.
+     */
+    recordsAtomically: boolean;
     /**
      * Returns true while command-stream recording is enabled on the host.
      */
@@ -314,11 +325,14 @@ export class WebGPURenderPassCommandStream {
         }
 
         let recorded = false;
-        let thrown: unknown = null;
+        let didThrow = false;
+        let thrown: unknown;
         try {
             recorded = recordCommands.call(renderPass, this._commandWords, this._drawCount, 0, 0, wordCount) === true;
         } catch (error) {
-            thrown = error ?? new Error("unknown error");
+            // Classify by the fact that the recorder threw, not by the thrown value: false, 0 or "" are exceptions too.
+            didThrow = true;
+            thrown = error;
         }
 
         if (recorded) {
@@ -326,16 +340,17 @@ export class WebGPURenderPassCommandStream {
             return true;
         }
 
-        // A recording failure past the protocol-version handshake indicates a broken host decoder, so the
-        // batch is replayed directly and the stream falls back permanently to direct encoder calls.
-        if (thrown) {
-            const detail = thrown instanceof Error ? thrown.message : String(thrown);
-            this._recoverFromRejectedBatch(renderPass, "recording-threw", `WebGPU render pass command stream recording threw: ${detail}.`);
+        // A recording failure past the handshake indicates a broken host decoder. The provider declared
+        // atomic recording, so the batch is replayed directly and the stream falls back permanently to
+        // direct encoder calls. Read the host error first: the direct calls may overwrite it.
+        const hostError = this._options.getProvider()?.getLastError?.();
+        const hostDetail = hostError && hostError.length > 0 ? `: ${hostError}` : "";
+        if (didThrow) {
+            const thrownText = thrown instanceof Error ? thrown.message : String(thrown);
+            const thrownDetail = thrownText.length > 0 ? thrownText : "an empty value";
+            this._recoverFromRejectedBatch(renderPass, "recording-threw", `WebGPU render pass command stream recording threw: ${thrownDetail}${hostDetail}.`, hostError);
         } else {
-            // Read the host error before replaying: the direct calls may overwrite it.
-            const hostError = this._options.getProvider()?.getLastError?.();
-            const detail = hostError && hostError.length > 0 ? `: ${hostError}` : "";
-            this._recoverFromRejectedBatch(renderPass, "recording-rejected", `WebGPU render pass command stream recording failed${detail}.`, hostError);
+            this._recoverFromRejectedBatch(renderPass, "recording-rejected", `WebGPU render pass command stream recording failed${hostDetail}.`, hostError);
         }
         return false;
     }
@@ -372,6 +387,16 @@ export class WebGPURenderPassCommandStream {
             this._disable(
                 "protocol-mismatch",
                 `WebGPU render pass command stream protocol mismatch: the host decoder reports version ${provider.protocolVersion} but the engine encodes version ${WebGPURenderPassCommandStreamProtocolVersion}.`
+            );
+            return false;
+        }
+
+        // Replaying a rejected batch is only safe when the host promises that a rejected batch recorded
+        // nothing. A provider built against the version-1 contract alone never enters that recovery path.
+        if (provider.recordsAtomically !== true) {
+            this._disable(
+                "atomic-recording-unsupported",
+                "WebGPU render pass command stream requires a host decoder that records each batch atomically (IWebGPURenderPassCommandRecorderProvider.recordsAtomically); this provider does not declare it."
             );
             return false;
         }

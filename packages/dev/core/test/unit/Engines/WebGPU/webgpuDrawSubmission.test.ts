@@ -79,6 +79,7 @@ function createProvider(): IWebGPURenderPassCommandRecorderProvider {
     let nextId = 1;
     return {
         protocolVersion: WebGPURenderPassCommandStreamProtocolVersion,
+        recordsAtomically: true,
         isEnabled: () => true,
         getResourceId: (resource) => {
             if (!resource) {
