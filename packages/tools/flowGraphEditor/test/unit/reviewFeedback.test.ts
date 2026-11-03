@@ -100,6 +100,51 @@ describe("review feedback regressions", () => {
         engine.dispose();
     });
 
+    it("keeps inactive context snapshots serialized after scene replacement", () => {
+        const engine = new NullEngine();
+        const oldScene = new Scene(engine);
+        const oldFirst = new Mesh("part", oldScene);
+        const oldSecond = new Mesh("part", oldScene);
+        oldSecond.id = oldFirst.id;
+        const coordinator = new FlowGraphCoordinator({ scene: oldScene });
+        const activeGraph = coordinator.createGraph();
+        const inactiveGraph = coordinator.createGraph();
+        const inactiveBlock = new FlowGraphMeshIntersectionEventBlock();
+        inactiveGraph.addEventBlock(inactiveBlock);
+        const context = inactiveGraph.createContext();
+        inactiveBlock.targetMeshes.setValue([oldSecond], context);
+        const globalState = new GlobalState(oldScene);
+        globalState.sceneContext = new SceneContext(oldScene, false);
+        globalState.coordinator = coordinator;
+        globalState.activeGraphIndex = 1;
+        globalState.snapshotUserVariables();
+        globalState.activeGraphIndex = 0;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+
+        const newScene = new Scene(engine);
+        const newFirst = new Mesh("part", newScene);
+        const newSecond = new Mesh("part", newScene);
+        newSecond.id = newFirst.id;
+        const replacementContext = new SceneContext(newScene, false);
+        globalState.sceneContext = replacementContext;
+        globalState.onSceneContextChanged.notifyObservers(replacementContext);
+
+        expect(() => SerializationTools.Serialize(activeGraph, globalState)).not.toThrow();
+        const snapshots = globalState.getContextSnapshotsForGraph(inactiveGraph.uniqueId)!;
+        expect(snapshots[0]._connectionValues[inactiveBlock.targetMeshes.uniqueId][0]).toMatchObject({
+            uniqueId: newSecond.uniqueId,
+            className: newSecond.getClassName(),
+        });
+        expect(snapshots[0]._connectionValues[inactiveBlock.targetMeshes.uniqueId][0]).not.toBe(newSecond);
+
+        globalState.dispose();
+        replacementContext.dispose();
+        coordinator.dispose();
+        newScene.dispose();
+        oldScene.dispose();
+        engine.dispose();
+    });
+
     it("uses cached provenance after old referenced nodes are disposed", async () => {
         const engine = new NullEngine();
         const oldScene = new Scene(engine);
@@ -193,6 +238,45 @@ describe("review feedback regressions", () => {
         engine.dispose();
     });
 
+    it("rebinds connected blocks that were not explicitly registered", () => {
+        const engine = new NullEngine();
+        const oldScene = new Scene(engine);
+        const oldFirst = new Mesh("part", oldScene);
+        const oldSecond = new Mesh("part", oldScene);
+        oldSecond.id = oldFirst.id;
+        const coordinator = new FlowGraphCoordinator({ scene: oldScene });
+        const graph = coordinator.createGraph();
+        const eventBlock = new FlowGraphSceneReadyEventBlock();
+        const playBlock = new FlowGraphPlaySoundBlock();
+        const getBlock = new FlowGraphGetPropertyBlock<string, any>({ object: oldSecond, propertyName: "name" });
+        graph.addEventBlock(eventBlock);
+        eventBlock.out.connectTo(playBlock.in);
+        getBlock.value.connectTo(playBlock.sound);
+        const globalState = new GlobalState(oldScene);
+        globalState.sceneContext = new SceneContext(oldScene, false);
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+
+        const newScene = new Scene(engine);
+        const newFirst = new Mesh("part", newScene);
+        const newSecond = new Mesh("part", newScene);
+        newSecond.id = newFirst.id;
+        const replacementContext = new SceneContext(newScene, false);
+        globalState.sceneContext = replacementContext;
+        globalState.onSceneContextChanged.notifyObservers(replacementContext);
+
+        expect((getBlock.object as any)._defaultValue).toBe(newSecond);
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+        expect(serialized.referenceProvenance).toContainEqual([newSecond.uniqueId, expect.objectContaining({ idIndex: 1, nameIndex: 1 })]);
+
+        globalState.dispose();
+        replacementContext.dispose();
+        coordinator.dispose();
+        newScene.dispose();
+        oldScene.dispose();
+        engine.dispose();
+    });
+
     it("keeps distinct provenance entries when restored and live references share a unique id", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
@@ -212,7 +296,12 @@ describe("review feedback regressions", () => {
         (globalState.stateManager as any).storeEditorData = vi.fn();
 
         const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
-        expect(serialized.referenceProvenance.filter(([uniqueId]: [number]) => uniqueId === sharedUniqueId)).toHaveLength(2);
+        const missingSerializedValue = (missingBlock.targetMeshes as any)._defaultValue[0];
+        expect(missingSerializedValue.uniqueId).toBeLessThan(0);
+        expect(missingSerializedValue.uniqueId).not.toBe(sharedUniqueId);
+        expect(serialized.referenceProvenance).toContainEqual([missingSerializedValue.uniqueId, expect.objectContaining({ id: "missing", name: "missing" })]);
+        expect(serialized.referenceProvenance).toContainEqual([sharedUniqueId, expect.objectContaining({ id: "live", name: "live" })]);
+        expect(serialized.referenceProvenance.filter(([uniqueId]: [number]) => uniqueId === sharedUniqueId)).toHaveLength(1);
         const restoredScene = new Scene(engine);
         const restoredMissing = new Mesh("missing", restoredScene);
         restoredMissing.id = "missing";

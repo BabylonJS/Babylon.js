@@ -1818,7 +1818,7 @@ export class GlobalState {
     private _rebindSavedConnectionReferences(newScene: Scene): Map<FlowGraphDataConnection<any>, any> {
         const reboundDefaults = new Map<FlowGraphDataConnection<any>, any>();
         for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
-            for (const block of graph.getAllBlocks()) {
+            for (const block of this._getAllGraphBlocks(graph)) {
                 for (const input of block.dataInputs) {
                     const currentValue = (input as any)._defaultValue;
                     const reboundValue = this._rebindSceneValue(currentValue, newScene);
@@ -1835,7 +1835,7 @@ export class GlobalState {
             }
             this._perGraphContextSnapshots.get(graph.uniqueId)?.forEach((context) => {
                 for (const key in context._connectionValues) {
-                    context._connectionValues[key] = this._rebindSceneValue(context._connectionValues[key], newScene);
+                    context._connectionValues[key] = this._serializeValue(this._rebindSceneValue(context._connectionValues[key], newScene));
                 }
             });
         }
@@ -1854,6 +1854,19 @@ export class GlobalState {
             }
         }
         return reboundDefaults;
+    }
+
+    private _getAllGraphBlocks(graph: FlowGraph): FlowGraphBlock[] {
+        const blocks = new Map<string, FlowGraphBlock>();
+        graph.visitAllBlocks((block) => blocks.set(block.uniqueId, block));
+        graph.getAllBlocks().forEach((block) => blocks.set(block.uniqueId, block));
+        return Array.from(blocks.values());
+    }
+
+    private _serializeValue(value: any): any {
+        const serialized: Record<string, unknown> = {};
+        defaultValueSerializationFunction("value", value, serialized);
+        return serialized.value;
     }
 
     private _restoreReboundDefaults(reboundDefaults: Map<FlowGraphDataConnection<any>, any>): void {
@@ -1900,7 +1913,7 @@ export class GlobalState {
             reference.uniqueId === undefined
                 ? undefined
                 : isSerializedNode
-                  ? this._getRestoredReferenceLocation(reference.uniqueId, reference)
+                  ? (this._getRestoredReferenceLocation(reference.uniqueId, reference) ?? this._cachedOldNodeLocations?.get(reference.uniqueId))
                   : this._cachedOldNodeLocations?.get(reference.uniqueId);
         if (candidates.length > 0) {
             locationIndex = oldLocation && oldLocation.id === reference.id && oldLocation.className === reference.className ? oldLocation.idIndex : undefined;
@@ -2048,8 +2061,8 @@ export class GlobalState {
     /** Gets durable scene-reference provenance for editor serialization. */
     public get referenceProvenance(): SceneReferenceProvenance {
         const provenance = new Map<string, [number, SceneReferenceLocation]>();
-        const getIdentityKey = (uniqueId: number, location: Pick<SceneReferenceLocation, "id" | "name" | "className">) =>
-            `${uniqueId}\0${location.className}\0${location.id}\0${location.name}`;
+        const getIdentityKey = (uniqueId: number, location: SceneReferenceLocation) =>
+            `${uniqueId}\0${location.className}\0${location.id}\0${location.name}\0${location.idIndex}\0${location.nameIndex}`;
         for (const [uniqueId, locations] of this._restoredReferenceProvenance ?? []) {
             for (const location of locations) {
                 provenance.set(getIdentityKey(uniqueId, location), [uniqueId, location]);
@@ -2061,6 +2074,13 @@ export class GlobalState {
                 return;
             }
             if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
+                return;
+            }
+            if (typeof value.className === "string" && typeof value.getScene !== "function") {
+                const location = this._getRestoredReferenceLocation(value.uniqueId, value) ?? this._cachedOldNodeLocations?.get(value.uniqueId);
+                if (location) {
+                    provenance.set(getIdentityKey(value.uniqueId, location), [value.uniqueId, location]);
+                }
                 return;
             }
             if (typeof value.getScene === "function" && typeof value.getClassName === "function") {
@@ -2087,7 +2107,7 @@ export class GlobalState {
             }
         };
         for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
-            graph.getAllBlocks().forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            this._getAllGraphBlocks(graph).forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
             for (let index = 0; index < graph.contextCount; index++) {
                 Object.values((graph.getContext(index) as any)?._connectionValues ?? {}).forEach(collect);
             }
@@ -2100,6 +2120,95 @@ export class GlobalState {
             this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
         }
         return Array.from(provenance.values());
+    }
+
+    /** Remaps unresolved serialized references whose ids collide with current live scene ids. */
+    public prepareReferenceProvenanceForSerialization(): void {
+        const liveLocations = new Map<number, SceneReferenceLocation[]>();
+        const unresolvedValues: any[] = [];
+        const getLiveLocation = (value: any): SceneReferenceLocation => {
+            const scene = value.getScene() as Scene;
+            const className = value.getClassName();
+            const classNodes = scene.getNodes().filter((node) => node.getClassName() === className);
+            return {
+                id: value.id,
+                name: value.name,
+                className,
+                idIndex: classNodes.filter((node) => node.id === value.id).indexOf(value),
+                nameIndex: classNodes.filter((node) => node.name === value.name).indexOf(value),
+            };
+        };
+        const collect = (value: any) => {
+            if (Array.isArray(value)) {
+                value.forEach(collect);
+                return;
+            }
+            if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
+                return;
+            }
+            if (typeof value.getScene === "function" && typeof value.getClassName === "function") {
+                const locations = liveLocations.get(value.uniqueId) ?? [];
+                locations.push(getLiveLocation(value));
+                liveLocations.set(value.uniqueId, locations);
+            } else if (typeof value.className === "string") {
+                unresolvedValues.push(value);
+            }
+        };
+        for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
+            this._getAllGraphBlocks(graph).forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            for (let index = 0; index < graph.contextCount; index++) {
+                Object.values((graph.getContext(index) as any)?._connectionValues ?? {}).forEach(collect);
+            }
+            this._perGraphContextSnapshots.get(graph.uniqueId)?.forEach((context) => Object.values(context._connectionValues ?? {}).forEach(collect));
+        }
+        if (this._savedConnectionValues) {
+            Object.values(this._savedConnectionValues).forEach(collect);
+        }
+        if (this._savedContextRuntimeData) {
+            this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
+        }
+        const remappedIds = new Map<string, number>();
+        let nextId = -1;
+        for (const value of unresolvedValues) {
+            const collidingLocations = liveLocations.get(value.uniqueId);
+            if (!collidingLocations) {
+                continue;
+            }
+            const location = this._getRestoredReferenceLocation(value.uniqueId, value) ?? this._cachedOldNodeLocations?.get(value.uniqueId);
+            if (
+                location &&
+                collidingLocations.some(
+                    (candidate) =>
+                        candidate.className === location.className &&
+                        candidate.id === location.id &&
+                        candidate.name === location.name &&
+                        candidate.idIndex === location.idIndex &&
+                        candidate.nameIndex === location.nameIndex
+                )
+            ) {
+                continue;
+            }
+            const key = `${value.uniqueId}\0${value.className}\0${value.id ?? ""}\0${value.name ?? ""}`;
+            let remappedId = remappedIds.get(key);
+            if (remappedId === undefined) {
+                while (liveLocations.has(nextId) || this._restoredReferenceProvenance?.has(nextId)) {
+                    nextId--;
+                }
+                remappedId = nextId--;
+                remappedIds.set(key, remappedId);
+                const locations = this._restoredReferenceProvenance?.get(value.uniqueId);
+                if (location && locations) {
+                    const remainingLocations = locations.filter((candidate) => candidate !== location);
+                    if (remainingLocations.length > 0) {
+                        this._restoredReferenceProvenance!.set(value.uniqueId, remainingLocations);
+                    } else {
+                        this._restoredReferenceProvenance!.delete(value.uniqueId);
+                    }
+                    this._restoredReferenceProvenance!.set(remappedId, [location]);
+                }
+            }
+            value.uniqueId = remappedId;
+        }
     }
 
     /**
@@ -2184,7 +2293,7 @@ export class GlobalState {
         };
         const graphs = this._coordinator?.flowGraphs ?? [this._flowGraph];
         for (const graph of graphs) {
-            graph.getAllBlocks().forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            this._getAllGraphBlocks(graph).forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
             for (let index = 0; index < graph.contextCount; index++) {
                 const context = graph.getContext(index);
                 Object.values((context as any)?._connectionValues ?? {}).forEach(collect);

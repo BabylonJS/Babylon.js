@@ -201,6 +201,7 @@ export class SerializationTools {
         // important because the graph may be stopped (contexts cleared) when
         // the user clicks Save.
         globalState.snapshotUserVariables();
+        globalState.prepareReferenceProvenanceForSerialization();
 
         const coordinator = globalState.coordinator;
         const graphs = coordinator ? coordinator.flowGraphs : [flowGraph];
