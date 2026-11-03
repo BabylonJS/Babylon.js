@@ -387,6 +387,9 @@ export function _RegisterKHRAnimationPointerData(): void {
         iridescenceThicknessTextureInterpolation.rotation
     );
 
+    SetInterpolationForKey("/materials/{}/extensions/KHR_materials_retroreflection/retroreflectionFactor", [
+        new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "specularRetroreflectivity", getFloat, () => 1),
+    ]);
     SetInterpolationForKey("/materials/{}/extensions/KHR_materials_sheen/sheenColorFactor", [
         new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", getColor3, () => 3),
     ]);

@@ -236,6 +236,9 @@ export interface IGLTFObjectModelTreeMaterialsObject {
                     };
                 };
             };
+            KHR_materials_retroreflection: {
+                retroreflectionFactor: IObjectAccessor<IMaterial, Material, number>;
+            };
             KHR_materials_sheen: {
                 sheenColorFactor: IObjectAccessor<IMaterial, Material, Color3>;
                 sheenRoughnessFactor: IObjectAccessor<IMaterial, Material, number>;
@@ -1127,6 +1130,25 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     extensions: {
                         KHR_texture_transform: GenerateTextureMap("iridescence", "thicknessTexture"),
                     },
+                },
+            },
+            KHR_materials_retroreflection: {
+                retroreflectionFactor: {
+                    type: "number",
+                    get: _CreateMaterialGetter((mat) => {
+                        if (!_IsOpenPBRMaterial(mat)) {
+                            throw new Error("KHR_materials_retroreflection requires an OpenPBRMaterial");
+                        }
+                        return mat.specularRetroreflectivity;
+                    }),
+                    getTarget: GetMaterial,
+                    set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
+                        if (!_IsOpenPBRMaterial(mat)) {
+                            throw new Error("KHR_materials_retroreflection requires an OpenPBRMaterial");
+                        }
+                        mat.specularRetroreflectivity = value;
+                    }),
+                    getPropertyName: [() => "specularRetroreflectivity"],
                 },
             },
             KHR_materials_sheen: {

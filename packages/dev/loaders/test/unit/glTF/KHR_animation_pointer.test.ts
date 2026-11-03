@@ -151,6 +151,58 @@ describe("KHR_animation_pointer material implementations", () => {
         }
     });
 
+    it.each([false, true])("imports, plays and accesses retroreflectionFactor with cubic interpolation=%s", async (cubicSpline) => {
+        const pointer = "/materials/0/extensions/KHR_materials_retroreflection/retroreflectionFactor";
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf(
+                "extensions/KHR_materials_retroreflection/retroreflectionFactor",
+                cubicSpline ? [0, 0.2, 0, 0, 0.8, 0] : [0.2, 0.8],
+                "SCALAR",
+                {},
+                cubicSpline
+            )
+        ) as ILoadedGLTF;
+        gltf.animations![0].channels.splice(1);
+        let parsed: ILoadedGLTF | undefined;
+        const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as ILoadedGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(observer);
+        }
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        expect(material).toBeInstanceOf(OpenPBRMaterial);
+        expect(material.specularRetroreflectivity).toBe(0.75);
+        expect(result.animationGroups).toHaveLength(1);
+        const group = result.animationGroups[0].pause();
+        expect(group.targetedAnimations).toHaveLength(1);
+        expect(group.targetedAnimations[0].target).toBe(material);
+        expect(group.targetedAnimations[0].animation.targetProperty).toBe("specularRetroreflectivity");
+        const accessor = GetPathToObjectConverter(parsed!).convert(pointer);
+        for (const frame of [0, 15, 30, 60]) {
+            group.goToFrame(frame);
+            const t = frame / 60;
+            const expected = 0.2 + 0.6 * (cubicSpline ? t * t * (3 - 2 * t) : t);
+            expect(material.specularRetroreflectivity).toBeCloseTo(expected);
+            expect(accessor.info.get!(accessor.object)).toBeCloseTo(expected);
+        }
+        group.stop();
+        for (const value of [0, 0.35, 1]) {
+            accessor.info.set!(value, accessor.object);
+            expect(material.specularRetroreflectivity).toBe(value);
+            expect(accessor.info.get!(accessor.object)).toBe(value);
+        }
+        material.specularRetroreflectivity = 0.6;
+        expect(accessor.info.get!(accessor.object)).toBe(0.6);
+    });
+
     it("imports and plays a clearcoat texture transform after merging attenuating transmission", async () => {
         // NullEngine cannot render the texture-processing passes; keep their real output textures and conversion flow.
         vi.spyOn(ProceduralTexture.prototype, "executeWhenReady").mockImplementation(function (this: ProceduralTexture, callback) {
