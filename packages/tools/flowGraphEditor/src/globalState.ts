@@ -29,6 +29,7 @@ import { defaultValueSerializationFunction } from "core/FlowGraph/serialization"
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
 type SceneReferenceLocation = { id: string; name: string; className: string; idIndex: number; nameIndex: number };
+type SceneReferenceProvenance = Array<[number, SceneReferenceLocation]>;
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -1257,7 +1258,7 @@ export class GlobalState {
 
     /** Cached position of each previous-scene node among nodes with the same identity. */
     private _cachedOldNodeLocations: Map<number, SceneReferenceLocation> | null = null;
-    private _restoredReferenceProvenance: Map<number, SceneReferenceLocation> | null = null;
+    private _restoredReferenceProvenance: Map<number, SceneReferenceLocation[]> | null = null;
     private readonly _soundAssetOperations = new Map<string, { token: number; removed: boolean }>();
 
     /**
@@ -1816,14 +1817,28 @@ export class GlobalState {
      */
     private _rebindSavedConnectionReferences(newScene: Scene): Map<FlowGraphDataConnection<any>, any> {
         const reboundDefaults = new Map<FlowGraphDataConnection<any>, any>();
-        this._flowGraph.visitAllBlocks((block) => {
-            for (const input of block.dataInputs) {
-                const currentValue = (input as any)._defaultValue;
-                const reboundValue = this._rebindSceneValue(currentValue, newScene);
-                (input as any)._defaultValue = reboundValue;
-                reboundDefaults.set(input, reboundValue);
+        for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
+            for (const block of graph.getAllBlocks()) {
+                for (const input of block.dataInputs) {
+                    const currentValue = (input as any)._defaultValue;
+                    const reboundValue = this._rebindSceneValue(currentValue, newScene);
+                    (input as any)._defaultValue = reboundValue;
+                    reboundDefaults.set(input, reboundValue);
+                }
             }
-        });
+            for (let index = 0; index < graph.contextCount; index++) {
+                const context = graph.getContext(index);
+                const connectionValues = (context as any)?._connectionValues;
+                for (const key in connectionValues) {
+                    connectionValues[key] = this._rebindSceneValue(connectionValues[key], newScene);
+                }
+            }
+            this._perGraphContextSnapshots.get(graph.uniqueId)?.forEach((context) => {
+                for (const key in context._connectionValues) {
+                    context._connectionValues[key] = this._rebindSceneValue(context._connectionValues[key], newScene);
+                }
+            });
+        }
 
         if (this._savedConnectionValues) {
             for (const key in this._savedConnectionValues) {
@@ -1885,7 +1900,7 @@ export class GlobalState {
             reference.uniqueId === undefined
                 ? undefined
                 : isSerializedNode
-                  ? this._restoredReferenceProvenance?.get(reference.uniqueId)
+                  ? this._getRestoredReferenceLocation(reference.uniqueId, reference)
                   : this._cachedOldNodeLocations?.get(reference.uniqueId);
         if (candidates.length > 0) {
             locationIndex = oldLocation && oldLocation.id === reference.id && oldLocation.className === reference.className ? oldLocation.idIndex : undefined;
@@ -1902,6 +1917,19 @@ export class GlobalState {
         }
 
         return (reference.uniqueId === undefined ? undefined : candidates.find((node) => node.uniqueId === reference.uniqueId)) ?? candidates[0];
+    }
+
+    private _getRestoredReferenceLocation(uniqueId: number, reference: { id?: string; name?: string; className?: string }): SceneReferenceLocation | undefined {
+        const locations = this._restoredReferenceProvenance?.get(uniqueId);
+        if (!locations) {
+            return undefined;
+        }
+        return (
+            locations.find((location) => location.className === reference.className && location.id === reference.id && location.name === reference.name) ??
+            locations.find((location) => location.className === reference.className && location.id === reference.id) ??
+            locations.find((location) => location.className === reference.className && location.name === reference.name) ??
+            (locations.length === 1 ? locations[0] : undefined)
+        );
     }
 
     /**
@@ -2018,10 +2046,15 @@ export class GlobalState {
     }
 
     /** Gets durable scene-reference provenance for editor serialization. */
-    public get referenceProvenance(): Array<[number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }]> {
-        const provenance = new Map(this._restoredReferenceProvenance ?? []);
-        const liveLocations = new Map<number, SceneReferenceLocation>();
-        const unresolvedUniqueIds = new Set<number>();
+    public get referenceProvenance(): SceneReferenceProvenance {
+        const provenance = new Map<string, [number, SceneReferenceLocation]>();
+        const getIdentityKey = (uniqueId: number, location: Pick<SceneReferenceLocation, "id" | "name" | "className">) =>
+            `${uniqueId}\0${location.className}\0${location.id}\0${location.name}`;
+        for (const [uniqueId, locations] of this._restoredReferenceProvenance ?? []) {
+            for (const location of locations) {
+                provenance.set(getIdentityKey(uniqueId, location), [uniqueId, location]);
+            }
+        }
         const collect = (value: any) => {
             if (Array.isArray(value)) {
                 value.forEach(collect);
@@ -2030,27 +2063,31 @@ export class GlobalState {
             if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
                 return;
             }
-            if (typeof value.className === "string" && typeof value.getScene !== "function") {
-                unresolvedUniqueIds.add(value.uniqueId);
-                return;
-            }
             if (typeof value.getScene === "function" && typeof value.getClassName === "function") {
                 const scene = value.getScene() as Scene;
                 const className = value.getClassName();
                 const classNodes = scene.getNodes().filter((node) => node.getClassName() === className);
+                if (!classNodes.includes(value)) {
+                    const cachedLocation = this._cachedOldNodeLocations?.get(value.uniqueId) ?? this._getRestoredReferenceLocation(value.uniqueId, value);
+                    if (cachedLocation) {
+                        provenance.set(getIdentityKey(value.uniqueId, cachedLocation), [value.uniqueId, cachedLocation]);
+                    }
+                    return;
+                }
                 const idMatches = classNodes.filter((node) => node.id === value.id);
                 const nameMatches = classNodes.filter((node) => node.name === value.name);
-                liveLocations.set(value.uniqueId, {
+                const location = {
                     id: value.id,
                     name: value.name,
                     className,
-                    idIndex: Math.max(0, idMatches.indexOf(value)),
-                    nameIndex: Math.max(0, nameMatches.indexOf(value)),
-                });
+                    idIndex: idMatches.indexOf(value),
+                    nameIndex: nameMatches.indexOf(value),
+                };
+                provenance.set(getIdentityKey(value.uniqueId, location), [value.uniqueId, location]);
             }
         };
         for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
-            graph.visitAllBlocks((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            graph.getAllBlocks().forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
             for (let index = 0; index < graph.contextCount; index++) {
                 Object.values((graph.getContext(index) as any)?._connectionValues ?? {}).forEach(collect);
             }
@@ -2062,20 +2099,20 @@ export class GlobalState {
         if (this._savedContextRuntimeData) {
             this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
         }
-        for (const [uniqueId, location] of liveLocations) {
-            if (!unresolvedUniqueIds.has(uniqueId)) {
-                provenance.set(uniqueId, location);
-            }
-        }
-        return Array.from(provenance);
+        return Array.from(provenance.values());
     }
 
     /**
      * Restores durable scene-reference provenance before a deserialized coordinator is activated.
      * @param entries serialized provenance entries
      */
-    public restoreReferenceProvenance(entries: Array<[number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }]>): void {
-        this._restoredReferenceProvenance = new Map(entries);
+    public restoreReferenceProvenance(entries: SceneReferenceProvenance): void {
+        this._restoredReferenceProvenance = new Map();
+        for (const [uniqueId, location] of entries) {
+            const locations = this._restoredReferenceProvenance.get(uniqueId) ?? [];
+            locations.push(location);
+            this._restoredReferenceProvenance.set(uniqueId, locations);
+        }
     }
 
     /**
@@ -2147,7 +2184,7 @@ export class GlobalState {
         };
         const graphs = this._coordinator?.flowGraphs ?? [this._flowGraph];
         for (const graph of graphs) {
-            graph.visitAllBlocks((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            graph.getAllBlocks().forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
             for (let index = 0; index < graph.contextCount; index++) {
                 const context = graph.getContext(index);
                 Object.values((context as any)?._connectionValues ?? {}).forEach(collect);

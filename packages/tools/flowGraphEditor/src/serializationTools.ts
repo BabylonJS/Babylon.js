@@ -410,7 +410,12 @@ export class SerializationTools {
         scene: Scene,
         entries: IFlowGraphEditorDeserializedState["referenceProvenance"]
     ): void {
-        const locations = new Map(entries);
+        const locations = new Map<number, IFlowGraphEditorDeserializedState["referenceProvenance"][number][1][]>();
+        for (const [uniqueId, location] of entries) {
+            const matchingLocations = locations.get(uniqueId) ?? [];
+            matchingLocations.push(location);
+            locations.set(uniqueId, matchingLocations);
+        }
         const resolve = (value: any, currentValue: any): any => {
             if (Array.isArray(value)) {
                 return value.map((entry, index) => resolve(entry, Array.isArray(currentValue) ? currentValue[index] : undefined));
@@ -418,7 +423,12 @@ export class SerializationTools {
             if (!value || typeof value !== "object" || typeof value.uniqueId !== "number" || typeof value.className !== "string") {
                 return currentValue;
             }
-            const location = locations.get(value.uniqueId);
+            const matchingLocations = locations.get(value.uniqueId);
+            const location =
+                matchingLocations?.find((candidate) => candidate.className === value.className && candidate.id === value.id && candidate.name === value.name) ??
+                matchingLocations?.find((candidate) => candidate.className === value.className && candidate.id === value.id) ??
+                matchingLocations?.find((candidate) => candidate.className === value.className && candidate.name === value.name) ??
+                (matchingLocations?.length === 1 ? matchingLocations[0] : undefined);
             if (!location) {
                 return currentValue;
             }
