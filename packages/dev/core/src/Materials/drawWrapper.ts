@@ -74,10 +74,12 @@ export class DrawWrapper {
     /** @internal The states the draw inherited from the engine (see AbstractEngine._keepInheritedState) */
     public _recordedEngineState: Nullable<number[]> = null;
     /**
-     * @internal The pipeline state its domain and its render pass set in its full draws (the culling a shadow generator forces, and the
-     * culling the geometry rendering of the pass reverses)
+     * @internal What its domain and its render pass set in its full draws: the culling a shadow generator forces, and the culling, object ID
+     * and mesh-blending tag the geometry rendering of the pass writes
      */
     public _recordedDomainState = 0;
+    /** @internal The effective fill mode (Mesh._getRenderingFillMode), which sets the topology and the index buffer of a wireframe */
+    public _recordedFillMode = -1;
     /** @internal The effective side orientation, which _preBind turns into the culling and front face state */
     public _recordedOrientation = -1;
     /** @internal */

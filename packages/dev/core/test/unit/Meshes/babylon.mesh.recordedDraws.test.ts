@@ -313,6 +313,54 @@ describe("Mesh recorded draws", () => {
         }
     });
 
+    it("sees the per-mesh values the geometry rendering of its pass writes, which their setters and providers do not invalidate", () => {
+        // a pass with object ID and mesh-blending tag textures, as the task records them (FrameGraphGeometryRendererTask.record)
+        const renderPassId = engine.createRenderPassId("geometry");
+        const configuration = MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
+        configuration.defines["PREPASS_MESH_BLEND_TAG_INDEX"] = 0;
+        configuration.defines["PREPASS_OBJECT_ID_INDEX"] = 1;
+        let objectId = 1;
+        configuration.objectIdProvider = () => objectId;
+        const mainPassId = engine.currentRenderPassId;
+        engine.currentRenderPassId = renderPassId;
+        // two meshes of one material with the same values: the first one's full draw is the frame's reference for the other one
+        const other = mesh.clone("other")!;
+        const otherSubMesh = other.subMeshes[0];
+        const otherDrawWrapper = new DrawWrapper(engine);
+        otherDrawWrapper.effect = drawWrapper.effect;
+        const draw = (target: Mesh, targetSubMesh: SubMesh, wrapper: DrawWrapper) => {
+            engine._keepInheritedState(wrapper);
+            light._renderId = scene.getRenderId();
+            target._keepRecordedDraw(wrapper, targetSubMesh, material, target, true);
+        };
+        const otherUnchanged = () => other._isRecordedDrawUnchanged(otherDrawWrapper, otherSubMesh, material, other, true);
+        try {
+            draw(mesh, subMesh, drawWrapper);
+            draw(other, otherSubMesh, otherDrawWrapper);
+            nextFrame();
+            draw(mesh, subMesh, drawWrapper);
+            expect(otherUnchanged()).toBe(true);
+            other.meshBlendingTag = 1;
+            expect(otherUnchanged()).toBe(false);
+            draw(other, otherSubMesh, otherDrawWrapper);
+            expect(otherUnchanged()).toBe(true);
+            objectId = 2;
+            expect(otherUnchanged()).toBe(false);
+        } finally {
+            engine.currentRenderPassId = mainPassId;
+            MaterialHelperGeometryRendering.DeleteConfiguration(renderPassId);
+        }
+    });
+
+    it("sees the effective fill mode, which a mesh's overrideRenderingFillMode sets without invalidating anything (a wireframe draws lines)", () => {
+        mesh.overrideRenderingFillMode = Constants.MATERIAL_WireFrameFillMode;
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        mesh.overrideRenderingFillMode = null;
+        expect(unchanged()).toBe(false);
+    });
+
     it("sees the culled faces the engine forces over the material's (cullBackFaces), which the culling of a full draw follows", () => {
         engine.cullBackFaces = false;
         expect(unchanged()).toBe(false);
@@ -651,6 +699,23 @@ describe("Mesh recorded draws", () => {
         expect(keep).not.toHaveBeenCalled();
         expect(keepState).not.toHaveBeenCalled();
         expect(subMesh._drawWrapper._recordedMaterial).toBeNull();
+    });
+
+    it("neither checks nor keeps in Mesh.render a draw that writes velocity, whose bind keeps the previous world matrix of its mesh", () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        const check = vi.spyOn(mesh as any, "_getUnchangedRecordedDraw");
+        const keep = vi.spyOn(mesh, "_keepRecordedDraw");
+        for (const velocity of ["PREPASS_VELOCITY", "PREPASS_VELOCITY_LINEAR"]) {
+            const defines = new MaterialDefines();
+            defines[velocity] = true;
+            subMesh.materialDefines = defines;
+            subMesh._drawWrapper._recordedMaterial = material;
+            mesh.render(subMesh, false);
+            expect(check).not.toHaveBeenCalled();
+            expect(keep).not.toHaveBeenCalled();
+            expect(subMesh._drawWrapper._recordedMaterial).toBeNull();
+        }
     });
 
     it("keeps the states a draw inherits where its recorded draw is checked, before its mesh sets its alpha mode", () => {

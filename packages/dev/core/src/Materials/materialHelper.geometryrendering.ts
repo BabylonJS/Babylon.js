@@ -466,6 +466,29 @@ export class MaterialHelperGeometryRendering {
     }
 
     /**
+     * @internal What a full bind of a mesh writes from the geometry rendering of a render pass besides its matrices, packed in a number:
+     * the culling it reverses, the object ID and the mesh-blending tag (see Bind). Their setters and providers invalidate nothing, so a
+     * draw recorded by a snapshot is compared to them
+     * @param renderPassId the render pass of the draw
+     * @param mesh the mesh of the draw
+     * @returns the state, 0 without geometry rendering in the pass
+     */
+    public static _GetRecordedDrawState(renderPassId: number, mesh: AbstractMesh): number {
+        const configuration = MaterialHelperGeometryRendering._Configurations[renderPassId];
+        if (!configuration) {
+            return 0;
+        }
+        let state = configuration.reverseCulling ? 1 : 0;
+        if (configuration.defines["PREPASS_OBJECT_ID_INDEX"] !== undefined) {
+            state += 512 * (configuration.objectIdProvider ? configuration.objectIdProvider(mesh) : mesh.uniqueId);
+        }
+        if (configuration.defines["PREPASS_MESH_BLEND_TAG_INDEX"] !== undefined) {
+            state += 2 * (configuration.meshBlendTagProvider ? configuration.meshBlendTagProvider(mesh) : mesh.meshBlendingTag);
+        }
+        return state;
+    }
+
+    /**
      * Binds geometry rendering data for a mesh.
      * @param renderPassId The render pass id the geometry rendering data is bound for.
      * @param effect The effect to bind the geometry rendering data to.

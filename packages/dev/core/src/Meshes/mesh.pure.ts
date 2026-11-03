@@ -2792,6 +2792,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedZOffset !== material.zOffset ||
             drawWrapper._recordedZOffsetUnits !== material.zOffsetUnits ||
             drawWrapper._recordedOrientation !== material._getEffectiveOrientation(this) ||
+            drawWrapper._recordedFillMode !== this._getRenderingFillMode(material.fillMode) ||
             drawWrapper._recordedDomainState !== this._getConfiguredState(domainState) ||
             drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
             drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0) ||
@@ -2870,14 +2871,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * The pipeline state a full draw sets in its bind from what is configured outside of its mesh and material: by its domain (domainState),
-     * and by the geometry rendering of its render pass, which reverses the culling (GeometryRendererTask.reverseCulling only updates the
-     * configuration a full bind reads)
+     * What a full draw sets in its bind from what is configured outside of its material: by its domain (domainState), and by the geometry
+     * rendering of its render pass, the culling it reverses and the per-mesh values it writes, the object ID and the mesh-blending tag
+     * (GeometryRendererTask.reverseCulling only updates the configuration a full bind reads, and mesh.meshBlendingTag or a provider
+     * invalidates nothing)
      * @param domainState the pipeline state the domain sets, 0 or 1
      * @returns the state, packed in a number
      */
     private _getConfiguredState(domainState: number): number {
-        return domainState | (MaterialHelperGeometryRendering.GetConfiguration(this.getScene().getEngine().currentRenderPassId)?.reverseCulling ? 2 : 0);
+        return domainState + 2 * MaterialHelperGeometryRendering._GetRecordedDrawState(this.getScene().getEngine().currentRenderPassId, this);
     }
 
     /**
@@ -2923,6 +2925,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         drawWrapper._recordedZOffset = material.zOffset;
         drawWrapper._recordedZOffsetUnits = material.zOffsetUnits;
         drawWrapper._recordedOrientation = material._getEffectiveOrientation(this);
+        drawWrapper._recordedFillMode = this._getRenderingFillMode(material.fillMode);
         drawWrapper._recordedDomainState = this._getConfiguredState(domainState);
         drawWrapper._recordedIndexBuffer = this._geometry?.getIndexBuffer() ?? null;
         const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
@@ -3012,8 +3015,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // for it is dropped. The states a draw inherits are checked and kept here, before it sets any (its alpha mode resets the blend
         // equations only when the mode changes), and a draw encoded again sets its alpha mode as a full draw does, for the draws after it.
         // It also marks the mesh's uniform buffer as used in the frame, as a full draw's update does: a later write of the frame (another
-        // pass) then goes to a new buffer instead of the one the encoded draw binds (the scene's and the lights' were updated before it)
-        const recordsDraw = engine._recordsDraws && !!subMesh.getMaterial()?._canReplayRecordedDraw();
+        // pass) then goes to a new buffer instead of the one the encoded draw binds (the scene's and the lights' were updated before it).
+        // A draw that writes velocity cannot be encoded again: its bind keeps the previous world matrix of its mesh, once per frame
+        const defines = subMesh.materialDefines;
+        const recordsDraw = engine._recordsDraws && !!subMesh.getMaterial()?._canReplayRecordedDraw() && !defines?.["PREPASS_VELOCITY"] && !defines?.["PREPASS_VELOCITY_LINEAR"];
         if (engine._recordsDraws && !recordsDraw) {
             subMesh._drawWrapper._recordedMaterial = null;
         }
