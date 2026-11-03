@@ -317,25 +317,27 @@ export class GlobalState {
             return serialized.value;
         };
         const updateRuntime = (contexts: Array<{ connectionValues: { [key: string]: any } }> | null) => {
-            contexts?.forEach((context) => {
+            const updatedIndexes = new Set<number>();
+            contexts?.forEach((context, index) => {
                 if (connectionId in context.connectionValues && this._editableValuesMatch(context.connectionValues[connectionId], previousValue)) {
                     context.connectionValues[connectionId] = value;
+                    updatedIndexes.add(index);
                 }
             });
+            return updatedIndexes;
         };
-        const updateSerialized = (contexts: any[] | null) => {
-            const serializedPrevious = serializeValue(previousValue);
+        const updateSerialized = (contexts: any[] | null, updatedIndexes: Set<number>) => {
             const serializedValue = serializeValue(value);
-            contexts?.forEach((context) => {
+            contexts?.forEach((context, index) => {
                 const connectionValues = context._connectionValues;
-                if (connectionValues && connectionId in connectionValues && this._editableValuesMatch(connectionValues[connectionId], serializedPrevious)) {
+                if (updatedIndexes.has(index) && connectionValues && connectionId in connectionValues) {
                     connectionValues[connectionId] = serializedValue;
                 }
             });
         };
-        updateRuntime(this._savedContextRuntimeData);
-        updateSerialized(this._savedContextSnapshots);
-        updateSerialized(this._perGraphContextSnapshots.get(this._flowGraph.uniqueId) ?? null);
+        const updatedIndexes = updateRuntime(this._savedContextRuntimeData);
+        updateSerialized(this._savedContextSnapshots, updatedIndexes);
+        updateSerialized(this._perGraphContextSnapshots.get(this._flowGraph.uniqueId) ?? null, updatedIndexes);
     }
 
     private _editableValuesMatch(left: unknown, right: unknown): boolean {
@@ -2108,7 +2110,7 @@ export class GlobalState {
         if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
             return undefined;
         }
-        return this._getRestoredReferenceLocation(value.uniqueId, value) ?? this._cachedOldNodeLocations?.get(value.uniqueId);
+        return this._cachedOldNodeLocations?.get(value.uniqueId) ?? this._getRestoredReferenceLocation(value.uniqueId, value);
     }
 
     private _forEachReferenceValue(callback: (value: any) => void): void {

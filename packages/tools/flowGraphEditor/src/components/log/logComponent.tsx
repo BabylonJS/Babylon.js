@@ -13,7 +13,7 @@ interface ILogComponentProps {
 const MaxLogEntries = 1000;
 
 export class LogEntryBuffer {
-    private readonly _pending = new Array<LogEntry>(MaxLogEntries);
+    private readonly _pending = new Array<LogEntry | undefined>(MaxLogEntries);
     private _pendingStart = 0;
     private _pendingCount = 0;
     private _frameId = 0;
@@ -42,13 +42,19 @@ export class LogEntryBuffer {
             this._cancelFrame(this._frameId);
             this._frameId = 0;
         }
+        this._pending.fill(undefined);
         this._pendingStart = 0;
         this._pendingCount = 0;
     }
 
     private _flush(): void {
         this._frameId = 0;
-        const entries = Array.from({ length: this._pendingCount }, (_, index) => this._pending[(this._pendingStart + index) % MaxLogEntries]);
+        const entries = Array.from({ length: this._pendingCount }, (_, index) => {
+            const pendingIndex = (this._pendingStart + index) % MaxLogEntries;
+            const entry = this._pending[pendingIndex]!;
+            this._pending[pendingIndex] = undefined;
+            return entry;
+        });
         this._pendingStart = 0;
         this._pendingCount = 0;
         this._publish(entries);

@@ -658,6 +658,7 @@ export class SerializationTools {
                 fgSerialized.soundAssets = globalState.coordinator.soundAssets;
             }
             fgSerialized.referenceProvenance = globalState.referenceProvenance;
+            fgSerialized = JSON.parse(JSON.stringify(fgSerialized));
         } finally {
             restoreReferenceIds();
         }

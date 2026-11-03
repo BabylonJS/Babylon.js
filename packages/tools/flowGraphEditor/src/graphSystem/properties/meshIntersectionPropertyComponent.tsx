@@ -31,6 +31,23 @@ const useStyles = makeStyles({
     },
 });
 
+export function GetTargetMeshPickerOptions(meshes: AbstractMesh[], selectedMeshes: AbstractMesh[]) {
+    const options = selectedMeshes.map((mesh, index) => {
+        const liveMesh = meshes.find((candidate) => candidate === mesh);
+        return {
+            key: liveMesh ? `live:${mesh.uniqueId}` : `unresolved:${index}:${mesh.uniqueId}`,
+            mesh,
+            label: liveMesh ? mesh.name || `(id ${mesh.uniqueId})` : `${mesh.name || `(id ${mesh.uniqueId})`} (unavailable)`,
+        };
+    });
+    for (const mesh of meshes) {
+        if (!selectedMeshes.includes(mesh)) {
+            options.push({ key: `live:${mesh.uniqueId}`, mesh, label: mesh.name || `(id ${mesh.uniqueId})` });
+        }
+    }
+    return options;
+}
+
 const TargetMeshesPicker: React.FunctionComponent<{
     meshes: AbstractMesh[];
     selectedMeshes: AbstractMesh[];
@@ -38,7 +55,8 @@ const TargetMeshesPicker: React.FunctionComponent<{
 }> = (props) => {
     const { meshes, selectedMeshes, onChange } = props;
     const classes = useStyles();
-    const selectedOptions = selectedMeshes.map((mesh) => String(mesh.uniqueId));
+    const options = GetTargetMeshPickerOptions(meshes, selectedMeshes);
+    const selectedOptions = options.slice(0, selectedMeshes.length).map((option) => option.key);
     const value = selectedMeshes.map((mesh) => mesh.name || `(id ${mesh.uniqueId})`).join(", ");
 
     // The shared dropdown wrapper does not expose Fluent's multiselect behavior.
@@ -54,12 +72,12 @@ const TargetMeshesPicker: React.FunctionComponent<{
                 selectedOptions={selectedOptions}
                 onOptionSelect={(_, data) => {
                     const selected = new Set(data.selectedOptions);
-                    onChange(meshes.filter((mesh) => selected.has(String(mesh.uniqueId))));
+                    onChange(options.filter((option) => selected.has(option.key)).map((option) => option.mesh));
                 }}
             >
-                {meshes.map((mesh) => (
-                    <Option key={mesh.uniqueId} value={String(mesh.uniqueId)} text={mesh.name || `(id ${mesh.uniqueId})`}>
-                        {mesh.name || `(id ${mesh.uniqueId})`}
+                {options.map((option) => (
+                    <Option key={option.key} value={option.key} text={option.label}>
+                        {option.label}
                     </Option>
                 ))}
             </Dropdown>

@@ -145,13 +145,18 @@ describe("SerializationTools coordinator ownership", () => {
         graph.addEventBlock(missingBlock);
         graph.addEventBlock(liveBlock);
         (block.targetMeshes as any)._defaultValue = [secondMesh];
-        (missingBlock.targetMeshes as any)._defaultValue = [{ id: "missing", name: "missing", className: "Mesh", uniqueId: firstMesh.uniqueId }];
+        const missingReference = { id: "missing", name: "missing", className: "Mesh", uniqueId: firstMesh.uniqueId };
+        (missingBlock.targetMeshes as any)._defaultValue = [missingReference];
         (liveBlock.targetMeshes as any)._defaultValue = [firstMesh];
+        const context = graph.createContext();
+        missingBlock.targetMeshes.setValue([missingReference as any], context);
         globalState.coordinator = coordinator;
         globalState.restoreReferenceProvenance([[firstMesh.uniqueId, { id: "missing", name: "missing", className: "Mesh", idIndex: 0, nameIndex: 0 }]]);
         (globalState.stateManager as any).storeEditorData = vi.fn();
         vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
         const download = vi.spyOn(SerializationTools as any, "_DownloadBlob").mockImplementation(() => {});
+        globalState.snapshotUserVariables();
+        graph.stop();
 
         await SerializationTools.ExportBabylonFlowGraphGlbAsync(graph, globalState, null);
 
@@ -162,6 +167,7 @@ describe("SerializationTools coordinator ownership", () => {
         const serializedMissingBlock = serialized.allBlocks.find((candidate: any) => candidate.uniqueId === missingBlock.uniqueId);
         const serializedMissing = serializedMissingBlock.dataInputs.find((input: any) => input.name === "targetMeshes").defaultValue[0];
         expect(serializedMissing.uniqueId).toBeLessThan(0);
+        expect(serialized.executionContexts[0]._connectionValues[missingBlock.targetMeshes.uniqueId][0].uniqueId).toBe(serializedMissing.uniqueId);
         expect(serialized.referenceProvenance).toContainEqual([serializedMissing.uniqueId, expect.objectContaining({ id: "missing", name: "missing" })]);
         expect(serialized.referenceProvenance).toContainEqual([firstMesh.uniqueId, expect.objectContaining({ id: "part", name: "part" })]);
         expect((missingBlock.targetMeshes as any)._defaultValue[0].uniqueId).toBe(firstMesh.uniqueId);
@@ -181,6 +187,7 @@ describe("SerializationTools coordinator ownership", () => {
             .find((candidate) => candidate.uniqueId === liveBlock.uniqueId) as FlowGraphMeshIntersectionEventBlock;
         expect((restoredBlock.targetMeshes as any)._defaultValue).toEqual([restoredSecond]);
         expect((restoredMissingBlock.targetMeshes as any)._defaultValue).toEqual([restoredMissing]);
+        expect(restoredMissingBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(0)!)).toEqual([restoredMissing]);
         expect((restoredLiveBlock.targetMeshes as any)._defaultValue).toEqual([restoredFirst]);
 
         download.mockRestore();

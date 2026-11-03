@@ -12,7 +12,7 @@ import { LogEntry, LogEntryBuffer } from "flow-graph-editor/components/log/logCo
 import { ImportSoundAssetFileAsync } from "flow-graph-editor/components/soundAssets/soundAssetsPanelComponent";
 import { CreateIntersectionPlaySoundTemplate } from "flow-graph-editor/compositeTemplates";
 import { GraphEditor } from "flow-graph-editor/graphEditor";
-import { MeshIntersectionPropertyComponent } from "flow-graph-editor/graphSystem/properties/meshIntersectionPropertyComponent";
+import { GetTargetMeshPickerOptions, MeshIntersectionPropertyComponent } from "flow-graph-editor/graphSystem/properties/meshIntersectionPropertyComponent";
 import { PointerEventPropertyComponent } from "flow-graph-editor/graphSystem/properties/pointerEventPropertyComponent";
 import { GlobalState } from "flow-graph-editor/globalState";
 import { SceneContext } from "flow-graph-editor/sceneContext";
@@ -40,6 +40,33 @@ describe("review feedback regressions", () => {
 
         expect((block.sourceMesh as any)._defaultValue).toBe(source);
         expect((block.targetMeshes as any)._defaultValue).toEqual([target]);
+    });
+
+    it("keeps unresolved intersection targets when adding a live target", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const collidingLive = new Mesh("part", scene);
+        const addedLive = new Mesh("added", scene);
+        const unresolved = { id: collidingLive.id, name: collidingLive.name, className: "Mesh", uniqueId: collidingLive.uniqueId } as AbstractMesh;
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(block);
+        (block.targetMeshes as any)._defaultValue = [unresolved];
+        const globalState = new GlobalState(scene);
+        globalState.sceneContext = new SceneContext(scene, false);
+        globalState.coordinator = coordinator;
+        const options = GetTargetMeshPickerOptions([collidingLive, addedLive], [unresolved]);
+        const selected = new Set([`unresolved:0:${unresolved.uniqueId}`, `live:${addedLive.uniqueId}`]);
+        const nextValue = options.filter((option) => selected.has(option.key)).map((option) => option.mesh);
+        globalState.setUnconnectedInputValue(block.targetMeshes, nextValue);
+
+        expect((block.targetMeshes as any)._defaultValue).toEqual([unresolved, addedLive]);
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
     });
 
     it("refreshes the intersection property panel when the scene context changes in place", () => {
@@ -370,6 +397,40 @@ describe("review feedback regressions", () => {
         engine.dispose();
     });
 
+    it("uses runtime identity decisions when editing stopped context snapshots", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const liveDefault = new Mesh("part", scene);
+        const replacement = new Mesh("replacement", scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(block);
+        (block.targetMeshes as any)._defaultValue = [liveDefault];
+        const inheritedContext = graph.createContext();
+        const overrideContext = graph.createContext();
+        block.targetMeshes.setValue([liveDefault], inheritedContext);
+        const unresolvedOverride = { id: liveDefault.id, name: liveDefault.name, className: "Mesh", uniqueId: liveDefault.uniqueId };
+        block.targetMeshes.setValue([unresolvedOverride as any], overrideContext);
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        globalState.restoreReferenceProvenance([[liveDefault.uniqueId, { id: liveDefault.id, name: liveDefault.name, className: "Mesh", idIndex: 1, nameIndex: 1 }]]);
+        globalState.snapshotUserVariables();
+        graph.stop();
+        liveDefault.name = "renamed";
+
+        globalState.setUnconnectedInputValue(block.targetMeshes, [replacement]);
+
+        const snapshots = globalState.getContextSnapshotsForGraph(graph.uniqueId)!;
+        expect(snapshots[0]._connectionValues[block.targetMeshes.uniqueId]).toEqual([expect.objectContaining({ uniqueId: replacement.uniqueId, name: replacement.name })]);
+        expect(snapshots[1]._connectionValues[block.targetMeshes.uniqueId]).toEqual([unresolvedOverride]);
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("drops obsolete restored provenance after an explicit reference edit", async () => {
         const engine = new NullEngine();
         const sourceScene = new Scene(engine);
@@ -412,6 +473,62 @@ describe("review feedback regressions", () => {
             .getAllBlocks()
             .find((candidate) => candidate.getClassName() === sourceBlock.getClassName()) as FlowGraphMeshIntersectionEventBlock;
         expect((restoredBlock.targetMeshes as any)._defaultValue).toEqual([restoredFirst]);
+
+        restored.coordinator.dispose();
+        editorState.dispose();
+        sourceState.dispose();
+        sourceCoordinator.dispose();
+        restoredScene.dispose();
+        editScene.dispose();
+        sourceScene.dispose();
+        engine.dispose();
+    });
+
+    it("prefers a captured live location over stale restored provenance", async () => {
+        const engine = new NullEngine();
+        const sourceScene = new Scene(engine);
+        const sourceFirst = new Mesh("part", sourceScene);
+        const sourceSecond = new Mesh("part", sourceScene);
+        sourceSecond.id = sourceFirst.id;
+        const sourceCoordinator = new FlowGraphCoordinator({ scene: sourceScene });
+        const sourceGraph = sourceCoordinator.createGraph();
+        const sourceBlock = new FlowGraphMeshIntersectionEventBlock();
+        sourceGraph.addEventBlock(sourceBlock);
+        (sourceBlock.targetMeshes as any)._defaultValue = [sourceSecond];
+        const sourceState = new GlobalState(sourceScene);
+        sourceState.coordinator = sourceCoordinator;
+        (sourceState.stateManager as any).storeEditorData = vi.fn();
+        const initialSerialization = JSON.parse(SerializationTools.Serialize(sourceGraph, sourceState));
+
+        const editScene = new Scene(engine);
+        const editFirst = new Mesh("part", editScene);
+        const editSecond = new Mesh("part", editScene);
+        editSecond.id = editFirst.id;
+        const loaded = await SerializationTools.DeserializeToStateAsync(initialSerialization, editScene);
+        const editorState = new GlobalState(editScene);
+        SerializationTools.ApplyDeserializedState(loaded, editorState);
+        (editorState.stateManager as any).storeEditorData = vi.fn();
+        const loadedGraph = loaded.coordinator.flowGraphs[0];
+        const loadedBlock = loadedGraph.getAllBlocks().find((candidate) => candidate.getClassName() === sourceBlock.getClassName()) as FlowGraphMeshIntersectionEventBlock;
+        const context = loadedGraph.createContext();
+        loadedBlock.targetMeshes.setValue([editSecond], context);
+        editFirst.dispose();
+        const appended = new Mesh("part", editScene);
+        appended.id = editSecond.id;
+        editorState.snapshotUserVariables();
+        loadedGraph.stop();
+        const serialized = JSON.parse(SerializationTools.Serialize(loadedGraph, editorState));
+        expect(serialized.referenceProvenance).toContainEqual([editSecond.uniqueId, expect.objectContaining({ idIndex: 0, nameIndex: 0 })]);
+
+        const restoredScene = new Scene(engine);
+        const restoredFirst = new Mesh("part", restoredScene);
+        const restoredSecond = new Mesh("part", restoredScene);
+        restoredSecond.id = restoredFirst.id;
+        const restored = await SerializationTools.DeserializeToStateAsync(serialized, restoredScene);
+        const restoredBlock = restored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.getClassName() === sourceBlock.getClassName()) as FlowGraphMeshIntersectionEventBlock;
+        expect(restoredBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(0)!)).toEqual([restoredFirst]);
 
         restored.coordinator.dispose();
         editorState.dispose();
@@ -521,6 +638,24 @@ describe("review feedback regressions", () => {
         expect(published[0]).toHaveLength(1000);
         expect(published[0][0].message).toBe("5");
         expect(published[0][999].message).toBe("1004");
+    });
+
+    it("releases buffered block references after publishing", () => {
+        const callbacks: FrameRequestCallback[] = [];
+        const block = new FlowGraphSceneReadyEventBlock();
+        const buffer = new LogEntryBuffer(
+            vi.fn(),
+            (callback) => {
+                callbacks.push(callback);
+                return callbacks.length;
+            },
+            vi.fn()
+        );
+
+        buffer.enqueue(new LogEntry("event", false, block));
+        callbacks[0](0);
+
+        expect((buffer as any)._pending.every((entry: LogEntry | undefined) => entry === undefined)).toBe(true);
     });
 
     it("logs event signal activation but not subsequent event data-output reads", () => {
