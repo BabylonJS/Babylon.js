@@ -135,10 +135,12 @@ describe("SerializationTools coordinator ownership", () => {
         const globalState = new GlobalState(scene);
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph();
-        const mesh = new Mesh("part", scene);
+        const firstMesh = new Mesh("part", scene);
+        const secondMesh = new Mesh("part", scene);
+        secondMesh.id = firstMesh.id;
         const block = new FlowGraphMeshIntersectionEventBlock();
         graph.addEventBlock(block);
-        (block.targetMeshes as any)._defaultValue = [mesh];
+        (block.targetMeshes as any)._defaultValue = [secondMesh];
         globalState.coordinator = coordinator;
         (globalState.stateManager as any).storeEditorData = vi.fn();
         vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
@@ -151,8 +153,19 @@ describe("SerializationTools coordinator ownership", () => {
         const serialized = await SerializationTools.ReadFlowGraphFromGlbAsync(file);
         expect(serialized.soundAssets).toEqual([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
         expect(serialized.referenceProvenance).toEqual(globalState.referenceProvenance);
+        const restoredScene = new Scene(engine);
+        const restoredFirst = new Mesh("part", restoredScene);
+        const restoredSecond = new Mesh("part", restoredScene);
+        restoredSecond.id = restoredFirst.id;
+        const restored = await SerializationTools.DeserializeToStateAsync(serialized, restoredScene);
+        const restoredBlock = restored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.getClassName() === block.getClassName()) as FlowGraphMeshIntersectionEventBlock;
+        expect((restoredBlock.targetMeshes as any)._defaultValue).toEqual([restoredSecond]);
 
         download.mockRestore();
+        restored.coordinator.dispose();
+        restoredScene.dispose();
         coordinator.dispose();
         scene.dispose();
         engine.dispose();
