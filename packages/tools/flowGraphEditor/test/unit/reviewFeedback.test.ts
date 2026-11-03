@@ -581,6 +581,96 @@ describe("review feedback regressions", () => {
         engine.dispose();
     });
 
+    it("keeps a removed sound asset removed when an older replacement read finishes", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        const addSoundAsset = vi.spyOn(coordinator, "addSoundAssetAsync");
+        let finishRead: (url: string) => void = () => {};
+        const read = vi.fn(
+            async () =>
+                await new Promise<string>((resolve) => {
+                    finishRead = resolve;
+                })
+        );
+
+        const replacing = ImportSoundAssetFileAsync(globalState, coordinator, { name: "replacement.wav" } as File, "shared", read);
+        globalState.removeSoundAsset("shared");
+        finishRead("data:audio/wav;base64,UklGRg==");
+
+        await expect(replacing).resolves.toBe(false);
+        expect(addSoundAsset).not.toHaveBeenCalled();
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("cleans up an older replacement that finishes after the asset is removed", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        let finishAdd: () => void = () => {};
+        vi.spyOn(coordinator, "addSoundAssetAsync").mockImplementation(
+            async () =>
+                await new Promise<any>((resolve) => {
+                    finishAdd = () => resolve({});
+                })
+        );
+        const removeSoundAsset = vi.spyOn(coordinator, "removeSoundAsset");
+
+        const replacing = ImportSoundAssetFileAsync(globalState, coordinator, { name: "replacement.wav" } as File, "shared", async () => "data:audio/wav;base64,UklGRg==");
+        await vi.waitFor(() => expect(coordinator.addSoundAssetAsync).toHaveBeenCalledOnce());
+        globalState.removeSoundAsset("shared");
+        finishAdd();
+
+        await expect(replacing).resolves.toBe(false);
+        expect(removeSoundAsset).toHaveBeenCalledTimes(2);
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("lets the newest sound replacement supersede an older pending read", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        const addSoundAsset = vi.spyOn(coordinator, "addSoundAssetAsync").mockResolvedValue({} as any);
+        const finishes: Array<(url: string) => void> = [];
+        const read = vi.fn(
+            async () =>
+                await new Promise<string>((resolve) => {
+                    finishes.push(resolve);
+                })
+        );
+
+        const first = ImportSoundAssetFileAsync(globalState, coordinator, { name: "first.wav" } as File, "shared", read);
+        const second = ImportSoundAssetFileAsync(globalState, coordinator, { name: "second.wav" } as File, "shared", read);
+        finishes[1]("data:audio/wav;base64,UklGRg==");
+        finishes[0]("data:audio/wav;base64,AAAA");
+
+        await expect(second).resolves.toBe(true);
+        await expect(first).resolves.toBe(false);
+        expect(addSoundAsset).toHaveBeenCalledExactlyOnceWith({ name: "shared", url: "data:audio/wav;base64,UklGRg==" });
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("rebinds a running sound-ended event when its sound input changes", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
@@ -605,6 +695,34 @@ describe("review feedback regressions", () => {
 
         globalState.setUnconnectedInputValue(block.sound, "");
         expect(secondSound.onEndedObservable.hasObservers()).toBe(false);
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not rebind a running sound-ended event when only its connected default changes", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphSoundEndedEventBlock();
+        const constant = new FlowGraphConstantBlock<string>({ value: "first" });
+        graph.addEventBlock(block);
+        graph.addBlock(constant);
+        constant.output.connectTo(block.sound);
+        graph.createContext();
+        const firstSound = { onEndedObservable: new Observable<any>() };
+        vi.spyOn(coordinator, "getSoundAsset").mockReturnValue(firstSound as any);
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        graph.start();
+        expect(firstSound.onEndedObservable.hasObservers()).toBe(true);
+
+        globalState.setUnconnectedInputValue(block.sound, "");
+
+        expect(firstSound.onEndedObservable.hasObservers()).toBe(true);
 
         globalState.dispose();
         coordinator.dispose();
@@ -769,6 +887,7 @@ describe("review feedback regressions", () => {
         const newFirst = new Mesh("part", newScene);
         const newSecond = new Mesh("part", newScene);
         newSecond.id = newFirst.id;
+        (newFirst as any).uniqueId = oldSecond.uniqueId;
         const restored = await SerializationTools.DeserializeToStateAsync(serialized, newScene);
         const restoredBlock = restored.coordinator.flowGraphs[0]
             .getAllBlocks()
@@ -792,17 +911,83 @@ describe("review feedback regressions", () => {
         const missingBlock = missingRestored.coordinator.flowGraphs[0]
             .getAllBlocks()
             .find((candidate) => candidate.getClassName() === block.getClassName()) as FlowGraphMeshIntersectionEventBlock;
-        expect((missingBlock.targetMeshes as any)._defaultValue[0]).toMatchObject({
-            id: oldSecond.id,
-            name: oldSecond.name,
-            uniqueId: oldSecond.uniqueId,
-        });
-        expect((missingBlock.targetMeshes as any)._defaultValue[0]).not.toBe(survivingFirst);
+        expect((missingBlock.targetMeshes as any)._defaultValue[0]).toBe(survivingFirst);
 
         missingRestored.coordinator.dispose();
         globalState.dispose();
         coordinator.dispose();
         missingScene.dispose();
+        newScene.dispose();
+        oldScene.dispose();
+        engine.dispose();
+    });
+
+    it("captures duplicate mesh provenance added after editor initialization", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(block);
+        const globalState = new GlobalState(scene);
+        globalState.hostScene = scene;
+        globalState.sceneSource = "host";
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+        const first = new Mesh("part", scene);
+        const second = new Mesh("part", scene);
+        second.id = first.id;
+        (block.targetMeshes as any)._defaultValue = [second];
+
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+        const newScene = new Scene(engine);
+        const newFirst = new Mesh("part", newScene);
+        const newSecond = new Mesh("part", newScene);
+        newSecond.id = newFirst.id;
+        const restored = await SerializationTools.DeserializeToStateAsync(serialized, newScene);
+        const restoredBlock = restored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.getClassName() === block.getClassName()) as FlowGraphMeshIntersectionEventBlock;
+
+        expect((restoredBlock.targetMeshes as any)._defaultValue).toEqual([newSecond]);
+
+        restored.coordinator.dispose();
+        globalState.dispose();
+        coordinator.dispose();
+        newScene.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps a duplicate pick target across scene replacement", () => {
+        const engine = new NullEngine();
+        const oldScene = new Scene(engine);
+        const oldFirst = new Mesh("part", oldScene);
+        const oldSecond = new Mesh("part", oldScene);
+        oldSecond.id = oldFirst.id;
+        const coordinator = new FlowGraphCoordinator({ scene: oldScene });
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphMeshPickEventBlock({ targetMesh: oldSecond });
+        graph.addEventBlock(block);
+        const globalState = new GlobalState(oldScene);
+        globalState.sceneContext = new SceneContext(oldScene, false);
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+
+        const newScene = new Scene(engine);
+        const newFirst = new Mesh("part", newScene);
+        const newSecond = new Mesh("part", newScene);
+        newSecond.id = newFirst.id;
+        const replacementContext = new SceneContext(newScene, false);
+        globalState.sceneContext = replacementContext;
+        globalState.onSceneContextChanged.notifyObservers(replacementContext);
+
+        expect((block.asset as any)._defaultValue).toBe(newSecond);
+        expect((block.config as any).targetMesh).toBe(newSecond);
+
+        globalState.dispose();
+        replacementContext.dispose();
+        coordinator.dispose();
         newScene.dispose();
         oldScene.dispose();
         engine.dispose();
@@ -863,3 +1048,5 @@ describe("review feedback regressions", () => {
         engine.dispose();
     });
 });
+import { FlowGraphConstantBlock } from "core/FlowGraph/Blocks/Data/flowGraphConstantBlock";
+import { FlowGraphMeshPickEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.pure";

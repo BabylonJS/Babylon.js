@@ -422,9 +422,6 @@ export class SerializationTools {
             if (!location) {
                 return currentValue;
             }
-            if (currentValue?.uniqueId === value.uniqueId && currentValue?.getClassName?.() === location.className && currentValue.id === location.id) {
-                return currentValue;
-            }
             const nodes = scene.getNodes().filter((node) => node.getClassName() === location.className);
             let candidates = nodes.filter((node) => node.id === location.id);
             let index = location.idIndex;
@@ -432,7 +429,7 @@ export class SerializationTools {
                 candidates = nodes.filter((node) => node.name === location.name);
                 index = location.nameIndex;
             }
-            return candidates[index] ?? (currentValue?.uniqueId === value.uniqueId ? currentValue : value);
+            return candidates[index] ?? currentValue;
         };
         for (const serializedBlock of graphData.allBlocks ?? []) {
             const block = graph.getAllBlocks().find((candidate) => candidate.uniqueId === serializedBlock.uniqueId);
@@ -640,6 +637,7 @@ export class SerializationTools {
         if (globalState.coordinator?.soundAssets.length) {
             fgSerialized.soundAssets = globalState.coordinator.soundAssets;
         }
+        fgSerialized.referenceProvenance = globalState.referenceProvenance;
 
         // Build the glTF JSON with the flow graph embedded as an extension
         const gltfJson: any = {

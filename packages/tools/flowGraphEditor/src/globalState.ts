@@ -28,6 +28,8 @@ import { type IFlowGraphSoundAsset } from "core/FlowGraph/flowGraphSoundAssets";
 import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
+type SceneReferenceLocation = { id: string; name: string; className: string; idIndex: number; nameIndex: number };
+
 /**
  * Class used to hold the global state of the flow graph editor
  */
@@ -295,7 +297,7 @@ export class GlobalState {
         }
         this._updateSavedInputValues(input.uniqueId, previousValue, value);
         const ownerBlock = input._ownerBlock;
-        if (ownerBlock.getClassName() === "FlowGraphSoundEndedEventBlock" && this._flowGraph.state === FlowGraphState.Started) {
+        if (!input.isConnected() && ownerBlock.getClassName() === "FlowGraphSoundEndedEventBlock" && this._flowGraph.state === FlowGraphState.Started) {
             const eventBlock = ownerBlock as FlowGraphEventBlock;
             for (const context of updatedContexts) {
                 eventBlock._cancelPendingTasks(context);
@@ -378,7 +380,41 @@ export class GlobalState {
      * @param name sound asset name
      */
     public removeSoundAsset(name: string): void {
+        this.beginSoundAssetOperation(name, true);
         this._coordinator?.removeSoundAsset(name);
+    }
+
+    /**
+     * Starts a sound-asset operation and invalidates earlier work for the same name.
+     * @param name sound asset name
+     * @param removed whether this operation removes the asset
+     * @returns operation token
+     */
+    public beginSoundAssetOperation(name: string, removed = false): number {
+        const token = (this._soundAssetOperations.get(name)?.token ?? 0) + 1;
+        this._soundAssetOperations.set(name, { token, removed });
+        return token;
+    }
+
+    /**
+     * Checks whether a sound-asset operation is still the newest operation for its name.
+     * @param name sound asset name
+     * @param token operation token
+     * @returns whether this is the current operation
+     */
+    public isSoundAssetOperationCurrent(name: string, token: number): boolean {
+        return this._soundAssetOperations.get(name)?.token === token;
+    }
+
+    /**
+     * Checks whether a newer remove operation superseded a sound import.
+     * @param name sound asset name
+     * @param token import operation token
+     * @returns whether a later operation removed the asset
+     */
+    public wasSoundAssetRemovedAfter(name: string, token: number): boolean {
+        const operation = this._soundAssetOperations.get(name);
+        return !!operation && operation.token !== token && operation.removed;
     }
 
     /**
@@ -1220,7 +1256,9 @@ export class GlobalState {
     private _cachedOldIdToName: Map<string, Map<number, string>> | null = null;
 
     /** Cached position of each previous-scene node among nodes with the same identity. */
-    private _cachedOldNodeLocations: Map<number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }> | null = null;
+    private _cachedOldNodeLocations: Map<number, SceneReferenceLocation> | null = null;
+    private _restoredReferenceProvenance: Map<number, SceneReferenceLocation> | null = null;
+    private readonly _soundAssetOperations = new Map<string, { token: number; removed: boolean }>();
 
     /**
      * Saved user variables from the last execution context before setScene cleared it.
@@ -1633,7 +1671,18 @@ export class GlobalState {
         if (isObjectRef && newScene.meshes.some((m) => m === currentMesh)) {
             return;
         }
-        const savedName: string | undefined = (block.config as any)?._meshName ?? (isObjectRef ? currentMesh.name : undefined);
+        if (isObjectRef) {
+            const reboundMesh = this._rebindSceneValue(currentMesh, newScene);
+            if (reboundMesh !== currentMesh) {
+                if (!block.config) {
+                    (block as any).config = {};
+                }
+                (block.config as any).targetMesh = reboundMesh;
+                (meshInput as any)._defaultValue = reboundMesh;
+            }
+            return;
+        }
+        const savedName: string | undefined = (block.config as any)?._meshName;
         const savedUniqueId: number | undefined = isObjectRef ? currentMesh.uniqueId : undefined;
         if (!savedName && savedUniqueId === undefined) {
             return;
@@ -1832,7 +1881,12 @@ export class GlobalState {
 
         let candidates = reference.id ? filterByClass(allNodes.filter((node) => node.id === reference.id)) : [];
         let locationIndex: number | undefined;
-        const oldLocation = reference.uniqueId === undefined ? undefined : this._cachedOldNodeLocations?.get(reference.uniqueId);
+        const oldLocation =
+            reference.uniqueId === undefined
+                ? undefined
+                : isSerializedNode
+                  ? this._restoredReferenceProvenance?.get(reference.uniqueId)
+                  : this._cachedOldNodeLocations?.get(reference.uniqueId);
         if (candidates.length > 0) {
             locationIndex = oldLocation && oldLocation.id === reference.id && oldLocation.className === reference.className ? oldLocation.idIndex : undefined;
         } else if (reference.name) {
@@ -1965,7 +2019,55 @@ export class GlobalState {
 
     /** Gets durable scene-reference provenance for editor serialization. */
     public get referenceProvenance(): Array<[number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }]> {
-        return Array.from(this._cachedOldNodeLocations ?? []);
+        const provenance = new Map(this._restoredReferenceProvenance ?? []);
+        const liveLocations = new Map<number, SceneReferenceLocation>();
+        const unresolvedUniqueIds = new Set<number>();
+        const collect = (value: any) => {
+            if (Array.isArray(value)) {
+                value.forEach(collect);
+                return;
+            }
+            if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
+                return;
+            }
+            if (typeof value.className === "string" && typeof value.getScene !== "function") {
+                unresolvedUniqueIds.add(value.uniqueId);
+                return;
+            }
+            if (typeof value.getScene === "function" && typeof value.getClassName === "function") {
+                const scene = value.getScene() as Scene;
+                const className = value.getClassName();
+                const classNodes = scene.getNodes().filter((node) => node.getClassName() === className);
+                const idMatches = classNodes.filter((node) => node.id === value.id);
+                const nameMatches = classNodes.filter((node) => node.name === value.name);
+                liveLocations.set(value.uniqueId, {
+                    id: value.id,
+                    name: value.name,
+                    className,
+                    idIndex: Math.max(0, idMatches.indexOf(value)),
+                    nameIndex: Math.max(0, nameMatches.indexOf(value)),
+                });
+            }
+        };
+        for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
+            graph.visitAllBlocks((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            for (let index = 0; index < graph.contextCount; index++) {
+                Object.values((graph.getContext(index) as any)?._connectionValues ?? {}).forEach(collect);
+            }
+            this._perGraphContextSnapshots.get(graph.uniqueId)?.forEach((context) => Object.values(context._connectionValues ?? {}).forEach(collect));
+        }
+        if (this._savedConnectionValues) {
+            Object.values(this._savedConnectionValues).forEach(collect);
+        }
+        if (this._savedContextRuntimeData) {
+            this._savedContextRuntimeData.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
+        }
+        for (const [uniqueId, location] of liveLocations) {
+            if (!unresolvedUniqueIds.has(uniqueId)) {
+                provenance.set(uniqueId, location);
+            }
+        }
+        return Array.from(provenance);
     }
 
     /**
@@ -1973,7 +2075,7 @@ export class GlobalState {
      * @param entries serialized provenance entries
      */
     public restoreReferenceProvenance(entries: Array<[number, { id: string; name: string; className: string; idIndex: number; nameIndex: number }]>): void {
-        this._cachedOldNodeLocations = new Map(entries);
+        this._restoredReferenceProvenance = new Map(entries);
     }
 
     /**

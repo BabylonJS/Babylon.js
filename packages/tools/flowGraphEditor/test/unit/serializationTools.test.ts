@@ -1,7 +1,9 @@
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
+import { FlowGraphMeshIntersectionEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.pure";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 import { NullEngine } from "core/Engines/nullEngine";
+import { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
 import { GlobalState } from "flow-graph-editor/globalState";
@@ -133,6 +135,10 @@ describe("SerializationTools coordinator ownership", () => {
         const globalState = new GlobalState(scene);
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph();
+        const mesh = new Mesh("part", scene);
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(block);
+        (block.targetMeshes as any)._defaultValue = [mesh];
         globalState.coordinator = coordinator;
         (globalState.stateManager as any).storeEditorData = vi.fn();
         vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
@@ -144,6 +150,7 @@ describe("SerializationTools coordinator ownership", () => {
         const file = new File([blob], "flowGraph.glb");
         const serialized = await SerializationTools.ReadFlowGraphFromGlbAsync(file);
         expect(serialized.soundAssets).toEqual([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+        expect(serialized.referenceProvenance).toEqual(globalState.referenceProvenance);
 
         download.mockRestore();
         coordinator.dispose();

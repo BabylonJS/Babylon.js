@@ -71,9 +71,14 @@ export async function ImportSoundAssetFileAsync(
     readAsDataUrlAsync: (file: File) => Promise<string> = ReadAsDataUrlAsync
 ): Promise<boolean> {
     const lifetimeGeneration = globalState.lifetimeGeneration;
+    const operationToken = globalState.beginSoundAssetOperation(assetName);
     const coordinatorGraphs = [...coordinator.flowGraphs];
     const url = await readAsDataUrlAsync(file);
-    if (!globalState.isLifetimeCurrent(coordinator, lifetimeGeneration) || coordinatorGraphs.some((graph) => !coordinator.flowGraphs.includes(graph))) {
+    if (
+        !globalState.isLifetimeCurrent(coordinator, lifetimeGeneration) ||
+        !globalState.isSoundAssetOperationCurrent(assetName, operationToken) ||
+        coordinatorGraphs.some((graph) => !coordinator.flowGraphs.includes(graph))
+    ) {
         return false;
     }
     try {
@@ -82,7 +87,14 @@ export async function ImportSoundAssetFileAsync(
         globalState.onSoundAssetsChanged.notifyObservers();
         throw error;
     }
-    return globalState.isLifetimeCurrent(coordinator, lifetimeGeneration) && coordinatorGraphs.every((graph) => coordinator.flowGraphs.includes(graph));
+    const isCurrent =
+        globalState.isLifetimeCurrent(coordinator, lifetimeGeneration) &&
+        globalState.isSoundAssetOperationCurrent(assetName, operationToken) &&
+        coordinatorGraphs.every((graph) => coordinator.flowGraphs.includes(graph));
+    if (!isCurrent && globalState.wasSoundAssetRemovedAfter(assetName, operationToken)) {
+        coordinator.removeSoundAsset(assetName);
+    }
+    return isCurrent;
 }
 
 /**
