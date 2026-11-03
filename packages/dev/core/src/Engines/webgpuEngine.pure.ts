@@ -296,6 +296,13 @@ export interface IWebGPURenderPipelineAsyncCreationOptions {
      * Whether stencil testing is enabled. Defaults to false.
      */
     stencilEnabled?: boolean;
+    /**
+     * The textures the draws bind, by the name the effect binds them with, e.g. `{ shadowTexture0: shadowGenerator.getShadowMap()!.depthStencilTexture }`
+     * for the shadows of the first light with PCF or PCSS filtering. A draw that binds a depth texture, or a float texture the device can't filter
+     * linearly, uses a pipeline of its own: the pipeline created is the one of a draw that binds these textures, and other textures can be left out.
+     * Defaults to none: the pipeline of a draw that binds no such texture.
+     */
+    textures?: { [name: string]: Nullable<InternalTexture> };
 }
 
 /**
@@ -3941,6 +3948,25 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
     }
 
+    // A bit for each texture of the shader that is a depth texture, or a float texture the device can't filter linearly: a draw that binds
+    // one uses a pipeline of its own (see WebGPUMaterialContext.textureState). The draws and createRenderPipelineAsync both derive it here.
+    private _getTextureState(webgpuPipelineContext: WebGPUPipelineContext, materialContext: WebGPUMaterialContext): number {
+        let textureState = 0;
+        if (materialContext.hasFloatOrDepthTextures) {
+            let bitVal = 1;
+            for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.textureNames.length; ++i) {
+                const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
+                const texture = materialContext.textures[textureName]?.texture;
+                const textureIsDepth = texture && texture.format >= Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+                if ((texture?.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) || textureIsDepth) {
+                    textureState |= bitVal;
+                }
+                bitVal = bitVal << 1;
+            }
+        }
+        return textureState;
+    }
+
     private _draw(drawKind: WebGPURenderPassDrawKind, fillMode: number, start: number, count: number, instancesCount: number): void {
         const renderPass = this._getCurrentRenderPass();
         const bundleList = this._bundleList;
@@ -4003,19 +4029,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             bundleList.numDrawCalls++;
         }
 
-        let textureState = 0;
-        if (this._currentMaterialContext.hasFloatOrDepthTextures) {
-            let bitVal = 1;
-            for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.textureNames.length; ++i) {
-                const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
-                const texture = this._currentMaterialContext.textures[textureName]?.texture;
-                const textureIsDepth = texture && texture.format >= Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
-                if ((texture?.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) || textureIsDepth) {
-                    textureState |= bitVal;
-                }
-                bitVal = bitVal << 1;
-            }
-        }
+        const textureState = this._getTextureState(webgpuPipelineContext, this._currentMaterialContext);
 
         this._currentMaterialContext.textureState = textureState;
 
@@ -4216,7 +4230,17 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             const fillMode = entry.fillMode ?? Constants.MATERIAL_TriangleFillMode;
             const sampleCount = entry.sampleCount ?? this.currentSampleCount;
 
-            const promise = cache.preWarmPipeline(fillMode, entry.effect, sampleCount, 0);
+            // the texture state a draw gets from the same textures
+            let textureState = 0;
+            if (entry.textures) {
+                const materialContext = new WebGPUMaterialContext();
+                for (const name in entry.textures) {
+                    materialContext.setTexture(name, entry.textures[name]);
+                }
+                textureState = this._getTextureState(entry.effect._pipelineContext as WebGPUPipelineContext, materialContext);
+            }
+
+            const promise = cache.preWarmPipeline(fillMode, entry.effect, sampleCount, textureState);
             if (promise) {
                 promises.push(promise);
             }
