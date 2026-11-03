@@ -93,8 +93,9 @@ void main(void) {
     #include<bumpFragment>
 
     #ifdef BENTNORMAL
-        // Only reuse an untransformed UV0 frame; other bent-map UV bases need their own derivatives.
-        #if defined(TANGENT) && defined(NORMAL) && BENTNORMALDIRECTUV == 1 && (!defined(BUMP) || BUMPDIRECTUV == 1)
+        // Reuse a compatible UV0 frame only when its normal needs no scale correction.
+        // Thin-instance matrices can contain nonuniform scaling independently of the mesh.
+        #if defined(TANGENT) && defined(NORMAL) && BENTNORMALDIRECTUV == 1 && (!defined(BUMP) || BUMPDIRECTUV == 1) && !defined(NONUNIFORMSCALING) && !defined(THIN_INSTANCES)
             mat3 bentNormalTBN = vTBN;
         #else
             vec2 bentNormalUV = gl_FrontFacing ? vBentNormalUV : -vBentNormalUV;

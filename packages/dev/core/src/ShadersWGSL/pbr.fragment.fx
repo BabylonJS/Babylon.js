@@ -74,8 +74,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #include<bumpFragment>
 
     #ifdef BENTNORMAL
-        // Only reuse an untransformed UV0 frame; other bent-map UV bases need their own derivatives.
-        #if defined(TANGENT) && defined(NORMAL) && BENTNORMALDIRECTUV == 1 && (!defined(BUMP) || BUMPDIRECTUV == 1)
+        // Reuse a compatible UV0 frame only when its normal needs no scale correction.
+        // Thin-instance matrices can contain nonuniform scaling independently of the mesh.
+        #if defined(TANGENT) && defined(NORMAL) && BENTNORMALDIRECTUV == 1 && (!defined(BUMP) || BUMPDIRECTUV == 1) && !defined(NONUNIFORMSCALING) && !defined(THIN_INSTANCES)
             let bentNormalTBN: mat3x3f = mat3x3f(input.vTBN0, input.vTBN1, input.vTBN2);
         #else
             let bentNormalUV: vec2f = select(-fragmentInputs.vBentNormalUV, fragmentInputs.vBentNormalUV, fragmentInputs.frontFacing);

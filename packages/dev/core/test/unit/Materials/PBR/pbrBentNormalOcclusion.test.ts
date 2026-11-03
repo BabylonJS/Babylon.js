@@ -160,13 +160,19 @@ describe("PBR bent normal specular occlusion", () => {
             preprocess("#include<pbrBlockGeometryInfo>\n#include<pbrBlockFinalLitComponents>", ["#define BENTNORMAL", "#define REFLECTION", ...defines], getStore(), platformName);
 
         it.each([
-            ["untransformed UV0", 1, undefined, true],
-            ["rotated UV1", 2, undefined, false],
-            ["transformed UV0", 0, undefined, false],
-            ["matching UV0 normal map", 1, 1, true],
-            ["different normal-map UV basis", 1, 2, false],
-            ["transformed normal-map UV basis", 1, 0, false],
-        ] as const)("selects the bent-map frame for %s", (_name, bentUV, bumpUV, usesTangents) => {
+            ["untransformed UV0", 1, undefined, [], true],
+            ["rotated UV1", 2, undefined, [], false],
+            ["transformed UV0", 0, undefined, [], false],
+            ["matching UV0 normal map", 1, 1, [], true],
+            ["different normal-map UV basis", 1, 2, [], false],
+            ["transformed normal-map UV basis", 1, 0, [], false],
+            ["nonuniform mesh scaling", 1, undefined, ["#define NONUNIFORMSCALING"], false],
+            ["nonuniform mesh scaling with a normal map", 1, 1, ["#define NONUNIFORMSCALING"], false],
+            ["uniform instance scaling", 1, undefined, ["#define INSTANCES"], true],
+            ["nonuniform instance scaling", 1, undefined, ["#define INSTANCES", "#define NONUNIFORMSCALING"], false],
+            ["thin-instance scaling", 1, undefined, ["#define INSTANCES", "#define THIN_INSTANCES"], false],
+            ["thin-instance and mesh scaling", 1, undefined, ["#define INSTANCES", "#define THIN_INSTANCES", "#define NONUNIFORMSCALING"], false],
+        ] as const)("selects the bent-map frame for %s", (_name, bentUV, bumpUV, scaleDefines, usesTangents) => {
             const store = _language === "GLSL" ? ShaderStore.ShadersStore : ShaderStore.ShadersStoreWGSL;
             const shader = store.pbrPixelShader;
             const start = shader.indexOf("#ifdef BENTNORMAL", shader.indexOf("#include<bumpFragment>"));
@@ -181,6 +187,7 @@ describe("PBR bent normal specular occlusion", () => {
                     "#define TANGENT",
                     `#define BENTNORMALDIRECTUV ${bentUV}`,
                     ...(bumpUV === undefined ? [] : ["#define BUMP", `#define BUMPDIRECTUV ${bumpUV}`]),
+                    ...scaleDefines,
                 ],
                 getStore(),
                 platformName

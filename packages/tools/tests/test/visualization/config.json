@@ -26,6 +26,12 @@
             "dependsOn": ["PBR", "Textures", "Materials", "Meshes"]
         },
         {
+            "title": "PBR Bent Normal Nonuniform Scaling",
+            "playgroundId": "#HFS4KH#0",
+            "referenceImage": "pbr-bent-normal-nonuniform-scaling.png",
+            "dependsOn": ["PBR", "Textures", "Materials", "Meshes"]
+        },
+        {
             "title": "Solid Particle System Mixed Model Winding",
             "playgroundId": "#B1NNWI#2",
             "referenceImage": "sps-mixed-model-winding.png",
