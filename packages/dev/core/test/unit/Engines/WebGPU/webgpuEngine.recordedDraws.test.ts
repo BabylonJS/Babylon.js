@@ -152,6 +152,36 @@ describe("WebGPUEngine recorded draws", () => {
         keepState.mockRestore();
     });
 
+    it("does not encode again a draw with the indirect buffer indirect drawing released, nor without the one it creates again", () => {
+        const { engine, drawContext, keep, replay, reset } = setup();
+        const encoder = engine._bundleList.getBundleEncoder();
+        encoder.drawIndexedIndirect = vi.fn();
+        // in compatibility mode, the end user enables indirect draws: a full draw records them with the buffer
+        drawContext.enableIndirectDraw = true;
+        const indirectBuffer = drawContext.indirectDrawBuffer;
+        keep();
+        reset();
+        expect(replay()).toBe(true);
+        expect(encoder.drawIndexedIndirect).toHaveBeenLastCalledWith(indirectBuffer, 0);
+
+        // disabled: the buffer is released, and the next recording does not encode the draw with it
+        drawContext.enableIndirectDraw = false;
+        reset();
+        expect(replay()).toBe(false);
+        keep();
+        expect(replay()).toBe(true);
+        expect(encoder.drawIndexed).toHaveBeenCalledTimes(1);
+
+        // enabled again: a new buffer, which the draw recorded without indirect drawing does not use
+        drawContext.enableIndirectDraw = true;
+        reset();
+        expect(replay()).toBe(false);
+        keep();
+        expect(replay()).toBe(true);
+        expect(drawContext.indirectDrawBuffer).not.toBe(indirectBuffer);
+        expect(encoder.drawIndexedIndirect).toHaveBeenLastCalledWith(drawContext.indirectDrawBuffer, 0);
+    });
+
     it("reuses none of the commands recorded before snapshotRenderingReset(true), and the recording after it reuses the new ones", () => {
         const { engine, reset, keep, replay } = setup();
         // a new snapshot reuses the recorded commands by default

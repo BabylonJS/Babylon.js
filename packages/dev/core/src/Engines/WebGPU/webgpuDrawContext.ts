@@ -109,6 +109,8 @@ export class WebGPUDrawContext implements IDrawContext {
         }
 
         this._enableIndirectDraw = enable;
+        // a recorded draw references the indirect buffer it drew with, or none: the buffer is released or created below
+        this._recordedDraw = undefined;
 
         if (!enable && !this._useInstancing && this.indirectDrawBuffer) {
             this._bufferManager.releaseBuffer(this.indirectDrawBuffer);
