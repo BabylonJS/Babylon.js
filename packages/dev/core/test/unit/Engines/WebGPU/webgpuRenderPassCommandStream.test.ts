@@ -672,7 +672,7 @@ describe("WebGPURenderPassCommandStream", () => {
     it("never batches for a legacy provider whose recorder may record a prefix before rejecting", () => {
         const { renderPass, calls } = createRecordingRenderPass();
         // A non-atomic recorder: it records the first draw directly, then rejects the batch.
-        const recordCommands = vi.fn((_commands: Uint32Array, _drawCount: number) => {
+        const recordCommands = vi.fn(() => {
             renderPass.drawIndexed(3, 1, 0, 0, 0);
             return false;
         });
