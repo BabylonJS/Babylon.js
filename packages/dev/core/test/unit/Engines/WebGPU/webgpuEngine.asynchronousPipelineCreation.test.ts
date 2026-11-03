@@ -132,6 +132,9 @@ class PipelineCache {
 
     public endFrame(): void {}
 
+    // the creations its engine waits for are not counted here (see the real cache's tests)
+    public _forgetAwaitedPipelines(): void {}
+
     private _pipeline(key: string): GPURenderPipeline {
         const pipeline = { label: key } as unknown as GPURenderPipeline;
         this._created.set(key, pipeline);

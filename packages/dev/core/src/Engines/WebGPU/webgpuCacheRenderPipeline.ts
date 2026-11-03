@@ -106,7 +106,8 @@ export abstract class WebGPUCacheRenderPipeline {
     private static _AsyncGeneration = 0;
 
     /**
-     * The number of pipelines being created asynchronously
+     * The number of pipelines being created asynchronously, for all the engines (they share the pipeline cache). The readiness of an
+     * engine counts only the creations it waits for (numAwaitedPipelines of its cache)
      */
     public static get NumPendingPipelines(): number {
         return WebGPUCacheRenderPipeline._PendingPipelines.size;
@@ -121,6 +122,27 @@ export abstract class WebGPUCacheRenderPipeline {
         WebGPUCacheRenderPipeline._AsyncGeneration++;
         WebGPUCacheRenderPipeline._PendingPipelines.clear();
         WebGPUCacheRenderPipeline._FailedPipelines.clear();
+    }
+
+    // the asynchronous creations this cache (its engine) waits for: started by it, or by another engine and drawn by this one too. A
+    // creation removes itself from the set it was added to, so one that completes after the set was forgotten does not count
+    private _awaitedPipelines = new Set<Promise<GPURenderPipeline>>();
+
+    /**
+     * The number of pipelines this cache waits for while they are created asynchronously: the readiness of its engine. A creation
+     * for another engine counts once this one draws the same pipeline
+     */
+    public get numAwaitedPipelines(): number {
+        return this._awaitedPipelines.size;
+    }
+
+    /**
+     * Forgets the creations this cache waits for (its device was lost, its engine disposed): they no longer count, even when they
+     * complete later.
+     * @internal
+     */
+    public _forgetAwaitedPipelines(): void {
+        this._awaitedPipelines = new Set();
     }
 
     protected _states: number[];
@@ -1300,6 +1322,7 @@ export abstract class WebGPUCacheRenderPipeline {
         // the same pipeline configuration is created once
         const pending = WebGPUCacheRenderPipeline._PendingPipelines.get(token);
         if (pending) {
+            this._awaitPipeline(pending);
             return pending;
         }
 
@@ -1331,10 +1354,23 @@ export abstract class WebGPUCacheRenderPipeline {
             }
         );
         WebGPUCacheRenderPipeline._PendingPipelines.set(token, promise);
+        this._awaitPipeline(promise);
         // the error is reported above; callers still get the rejection
         // eslint-disable-next-line github/no-then
         promise.catch(() => {});
 
         return promise;
+    }
+
+    // this cache waits for the creation until it completes or fails
+    private _awaitPipeline(promise: Promise<GPURenderPipeline>): void {
+        const awaitedPipelines = this._awaitedPipelines;
+        if (awaitedPipelines.has(promise)) {
+            return;
+        }
+        awaitedPipelines.add(promise);
+        const done = () => awaitedPipelines.delete(promise);
+        // eslint-disable-next-line github/no-then
+        promise.then(done, done);
     }
 }

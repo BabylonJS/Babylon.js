@@ -587,8 +587,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns true if all effects are ready
      */
     public areAllEffectsReady(): boolean {
-        // with asynchronous pipeline creation, a pipeline being created is a draw not done yet
-        return !this.asynchronousPipelineCreation || WebGPUCacheRenderPipelineTree.NumPendingPipelines === 0;
+        // with asynchronous pipeline creation, a pipeline this engine waits for is a draw not done yet (the creations of another engine
+        // are not this engine's)
+        return !this.asynchronousPipelineCreation || !this._cacheRenderPipeline || this._cacheRenderPipeline.numAwaitedPipelines === 0;
     }
 
     /**
@@ -4005,6 +4006,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     private _forgetPendingPipelines(): void {
         this._pendingPipelinesGeneration++;
+        this._cacheRenderPipeline?._forgetAwaitedPipelines();
         this._snapshotPendingPipelines.clear();
         this._snapshotRecordAgain = false;
         this._snapshotHeldBack = false;
@@ -4315,6 +4317,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._resolveSubmitted?.();
         // pipelines still being created complete into nothing
         this._pendingPipelinesGeneration++;
+        this._cacheRenderPipeline?._forgetAwaitedPipelines();
         this.hideLoadingUI?.();
         this._timestampQuery?.dispose();
         this._mainTexture?.destroy();
