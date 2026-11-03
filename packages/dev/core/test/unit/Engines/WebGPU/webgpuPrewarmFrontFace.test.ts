@@ -118,11 +118,24 @@ function createEngine(mesh: Mesh) {
         _currentDrawContext: { setVertexPulling: vi.fn(), indirectDrawBuffer: null, _enableIndirectDrawInCompatMode: false },
         _counters: { numBundleCreationNonCompatMode: 0, numBundleReuseNonCompatMode: 0 },
         _reportDrawCall: vi.fn(),
+        enableEffect: vi.fn(),
     });
 
-    // a draw of the mesh: the material it draws with sets the states as Material._preBind does, with the front faces reversed or not
-    const draw = (reverseSide: boolean, material: Material = mesh.material!) => {
-        engine.setState(material.backFaceCulling, 0, false, reverseSide, material.cullBackFaces);
+    // a draw of a sub mesh through the code Mesh.render runs for it: the material SubMesh.getMaterial gives it, the effective mesh
+    // SubMesh.render gives it (an instance that acts as a regular mesh draws with its own world matrix, the others with their source's),
+    // and the side orientation _getDrawSideOrientation gives Material._preBind, which sets the states on this engine (setState); then the
+    // draw looks its pipeline up. The world matrix is computed as the frame computes it
+    const draw = (subMesh: SubMesh = mesh.subMeshes[0]) => {
+        const material = subMesh.getMaterial()!;
+        const renderingMesh = subMesh.getRenderingMesh();
+        const effectiveMesh = subMesh.getReplacementMesh() ?? renderingMesh;
+        effectiveMesh.computeWorldMatrix(true);
+        const getEngine = vi.spyOn(material.getScene(), "getEngine").mockReturnValue(engine);
+        try {
+            material._preBind(undefined, renderingMesh._getDrawSideOrientation(material, effectiveMesh));
+        } finally {
+            getEngine.mockRestore();
+        }
         engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 3);
     };
 
@@ -135,7 +148,7 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         const { engine, device, draw } = createEngine(mesh);
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh }));
-        draw(false);
+        draw();
 
         expect(device.createRenderPipelineAsync).toHaveBeenCalledTimes(1);
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("ccw");
@@ -148,7 +161,7 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         const { engine, device, draw } = createEngine(mesh);
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh }));
-        draw(true);
+        draw();
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("cw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
@@ -159,7 +172,7 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         const { engine, device, draw } = createEngine(mesh);
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh }));
-        draw(true);
+        draw();
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("cw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
@@ -171,7 +184,7 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         const { engine, device, draw } = createEngine(mesh);
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh }));
-        draw(true);
+        draw();
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("cw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
@@ -183,7 +196,7 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         const { engine, device, draw } = createEngine(mesh);
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh, cullEnabled: false }));
-        draw(false);
+        draw();
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("ccw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
@@ -195,7 +208,7 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         Object.assign(engine, { _currentRenderTarget: { samples: 1, _disableEngineYFlip: false } });
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh }));
-        draw(false);
+        draw();
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("cw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
@@ -207,7 +220,7 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         const { engine, device, draw } = createEngine(mesh);
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh }));
-        draw(true, scene.defaultMaterial);
+        draw();
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("cw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
@@ -229,7 +242,7 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         const { engine, device, draw } = createEngine(mesh);
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh }));
-        draw(true, clockWise);
+        draw(second);
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("cw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
@@ -245,32 +258,65 @@ describe("WebGPUEngine.createRenderPipelineAsync front face", () => {
         const { engine, device, draw } = createEngine(mesh);
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh }));
-        draw(true, passMaterial);
+        draw();
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("cw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
     });
 
-    it("prewarms the front face of an instance from its source mesh and its own world matrix, also when it mirrors and is drawn on its own", async () => {
-        // in a right handed scene the source is drawn clockwise, and so is an instance that does not mirror
-        const source = createMesh(true);
+    it("prewarms the front face of an instance from its source mesh and its own world matrix: a mirrored instance of a left handed source is drawn clockwise, on its own", async () => {
+        const source = createMesh();
         const instance = source.createInstance("instance");
+        const mirrored = source.createInstance("mirrored");
+        mirrored.scaling.x = -1;
         const { engine, device, draw } = createEngine(source);
+        // as the frame activates them: an instance whose determinant's sign differs from its source's acts as a regular mesh, drawn on
+        // its own; the others are drawn in their source's draw
+        source.computeWorldMatrix(true);
+        for (const each of [instance, mirrored]) {
+            each.computeWorldMatrix(true);
+            each._currentLOD = source;
+            each._activate(scene.getRenderId(), false);
+        }
 
         await Promise.all(engine.createRenderPipelineAsync({ effect, mesh: instance }));
-        draw(true);
+        draw(instance.subMeshes[0]);
+
+        expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("ccw");
+        expect(device.createRenderPipeline).not.toHaveBeenCalled();
+
+        await Promise.all(engine.createRenderPipelineAsync({ effect, mesh: mirrored }));
+        draw(mirrored.subMeshes[0]);
+
+        expect(device.createRenderPipelineAsync.mock.calls[1][0].primitive!.frontFace).toBe("cw");
+        expect(device.createRenderPipeline).not.toHaveBeenCalled();
+    });
+
+    it("prewarms the front face of the sub mesh it is given, among sub meshes drawn with the same effect", async () => {
+        const mesh = createMesh();
+        const counterClockWise = new StandardMaterial("counterClockWise", scene);
+        const clockWise = new StandardMaterial("clockWise", scene);
+        clockWise.sideOrientation = Material.ClockWiseSideOrientation;
+        const multiMaterial = new MultiMaterial("multi", scene);
+        multiMaterial.subMaterials.push(counterClockWise, clockWise);
+        mesh.material = multiMaterial;
+        const second = new SubMesh(1, 0, mesh.getTotalVertices(), 0, mesh.getTotalIndices(), mesh);
+        // both sub meshes drawn with the effect, created for each once its material is resolved
+        for (const subMesh of mesh.subMeshes) {
+            subMesh.getMaterial();
+            subMesh.setEffect(effect);
+        }
+        const { engine, device, draw } = createEngine(mesh);
+
+        await Promise.all(engine.createRenderPipelineAsync({ effect, mesh, subMesh: second }));
+        draw(second);
 
         expect(device.createRenderPipelineAsync.mock.calls[0][0].primitive!.frontFace).toBe("cw");
         expect(device.createRenderPipeline).not.toHaveBeenCalled();
-
-        // a mirrored instance is drawn on its own, with its world matrix: counter clockwise
-        const mirrored = source.createInstance("mirrored");
-        mirrored.scaling.x = -1;
-        await Promise.all(engine.createRenderPipelineAsync({ effect, mesh: mirrored }));
-        draw(false);
-
-        expect(device.createRenderPipelineAsync.mock.calls[1][0].primitive!.frontFace).toBe("ccw");
-        expect(device.createRenderPipeline).not.toHaveBeenCalled();
+        // the effect here has no engine to dispose it on when the scene is
+        for (const subMesh of mesh.subMeshes) {
+            subMesh.setEffect(null);
+        }
     });
 
     it("uses the front face it is given", async () => {
