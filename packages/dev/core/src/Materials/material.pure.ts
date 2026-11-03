@@ -989,10 +989,12 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     private _recordedDrawReferences: Nullable<Map<object, { frameId: number; view: Nullable<object>; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>> = null;
 
     /**
-     * @internal Keeps the draw a full bind of this material did with an effect in this frame, in the current pass and view: the draws
-     * of this material recorded with the same per-draw values as that draw can be encoded again without binding. The pass and view
-     * are those of the scene uniform buffer bound (an object renderer binds its own, for each of its passes): the per-draw values
-     * computed from them (from the camera's, say) are the same only for the draws that bind the same one
+     * @internal Keeps the draw a full bind of this material did with an effect in this frame: the draws of this material recorded with
+     * the same per-draw values as that draw can be encoded again without binding. Without a domain (the main passes), it is kept for
+     * the current pass and view, those of the scene uniform buffer bound (an object renderer binds its own, for each of its passes):
+     * the per-draw values a material computes from them (from the camera's, say) are the same only for the draws that bind the same
+     * one. A domain's draws share it between its passes and views: the cascades of a shadow map only differ by the scene uniform
+     * buffer each one binds, and the per-draw values are the generator's
      * @param effect the effect of the draw
      * @param drawWrapper the draw wrapper of the draw, or null if its per-draw values cannot be compared
      * @param domain what else wrote its per-draw values (a shadow generator its bias), or null
@@ -1000,7 +1002,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public _keepRecordedDrawReference(effect: object, drawWrapper: Nullable<DrawWrapper>, domain: Nullable<object> = null): void {
         const references = (this._recordedDrawReferences ??= new Map());
         const frameId = this._scene.getEngine().frameId;
-        const view = this._scene.getSceneUniformBuffer();
+        const view = domain ? null : this._scene.getSceneUniformBuffer();
         const entry = references.get(effect);
         if (entry) {
             entry.frameId = frameId;
@@ -1013,15 +1015,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
-     * @internal Gets the draw kept by _keepRecordedDrawReference for an effect in this frame, in the current pass and view
+     * @internal Gets the draw kept by _keepRecordedDrawReference for an effect in this frame, in the current pass and view when it has
+     * no domain
      * @param effect the effect of the draw
      * @param domain what else wrote its per-draw values, or null
-     * @returns the draw wrapper, or null if no full bind of this material with this effect and domain was kept in this frame, in the
-     * pass and view of the scene uniform buffer bound
+     * @returns the draw wrapper, or null if no full bind of this material with this effect and domain was kept in this frame (without
+     * a domain, in the pass and view of the scene uniform buffer bound)
      */
     public _getRecordedDrawReference(effect: object, domain: Nullable<object> = null): Nullable<DrawWrapper> {
         const entry = this._recordedDrawReferences?.get(effect);
-        return entry && entry.frameId === this._scene.getEngine().frameId && entry.view === this._scene.getSceneUniformBuffer() && entry.domain === domain
+        return entry && entry.frameId === this._scene.getEngine().frameId && entry.view === (domain ? null : this._scene.getSceneUniformBuffer()) && entry.domain === domain
             ? entry.drawWrapper
             : null;
     }

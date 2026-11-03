@@ -606,6 +606,66 @@ describe("Mesh recorded draws", () => {
             receiverDraw();
             expect(unchanged()).toBe(true);
         });
+
+        it("shares the frame's reference between the cascades of its shadow map, each cascade drawing with its own matrix", () => {
+            vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+            // two cascades with different matrices (their frustum split is not what this checks): the generator writes each one in the
+            // scene uniform buffer of its cascade when the cascade renders
+            vi.spyOn(generator, "getCascadeViewMatrix").mockImplementation((layer) => Matrix.Translation(layer + 1, 2 * layer, 0));
+            vi.spyOn(generator, "getCascadeProjectionMatrix").mockImplementation(() => Matrix.Identity());
+            vi.spyOn(generator, "getCascadeTransformMatrix").mockImplementation((layer) => Matrix.Translation(layer + 1, 2 * layer, 0));
+            // the full draws go through with an effect that takes any value and buffer: the depth effect is not built here
+            vi.spyOn(generator, "isReady").mockReturnValue(true);
+            const members: Record<string, unknown> = { getEngine: () => engine };
+            const effect = new Proxy(members, {
+                get: (target, key) => (typeof key === "string" && /^(set|bind)/.test(key) ? (target[key] ??= vi.fn()) : target[key as string]),
+            }) as unknown as Effect;
+            // two casters of the same material and effect, with a draw wrapper for each cascade: each cascade has its own pass
+            const shadowMap = generator.getShadowMap()!;
+            const passes = shadowMap.renderPassIds;
+            const casters = [subMesh, mesh.clone("second")!.subMeshes[0]];
+            for (const caster of casters) {
+                for (const pass of passes) {
+                    caster._getDrawWrapper(pass, true)!.effect = effect;
+                }
+            }
+            // a draw encoded again binds the scene uniform buffer its cascade bound when it was recorded: the view of the cascade, whose
+            // matrix the generator wrote there
+            const replays: string[] = [];
+            vi.spyOn(engine, "_replayRecordedDraw").mockImplementation((wrapper) => {
+                const layer = passes.indexOf(engine.currentRenderPassId);
+                const caster = casters.findIndex((candidate) => candidate._getDrawWrapper(passes[layer]) === wrapper);
+                const view = scene.getSceneUniformBuffer() as any;
+                const ownView = view === (generator as any)._sceneUBOs[layer];
+                const offset = view._uniformLocations["viewProjection"];
+                const written = Matrix.FromArray(Array.from(view._bufferData.subarray(offset, offset + 16)));
+                const ownMatrix = written.equals(generator.getCascadeTransformMatrix(layer)!);
+                replays.push(`caster ${caster} in cascade ${layer}${ownView && ownMatrix ? "" : " with another view"}`);
+                return true;
+            });
+            // a cascade as the shadow map renders it: its pass, the generator's setup of the cascade (its scene uniform buffer, written
+            // with its matrices), then the casters
+            const frame = () => {
+                nextFrame();
+                computeCascades();
+                for (const layer of [0, 1]) {
+                    // as the render target renders each layer: a fresh render id, so that the pass draws each sub mesh once
+                    scene.incrementRenderId();
+                    engine.currentRenderPassId = passes[layer];
+                    shadowMap.onBeforeRenderObservable.notifyObservers(layer);
+                    for (const caster of casters) {
+                        (generator as any)._renderSubMeshForShadowMap(caster, false);
+                    }
+                }
+            };
+            frame();
+            expect(replays).toEqual([]);
+            expect(generator.getCascadeTransformMatrix(0)!.equalsWithEpsilon(generator.getCascadeTransformMatrix(1)!)).toBe(false);
+
+            // the first caster's draw in the first cascade is the frame's reference of the generator, for both cascades
+            frame();
+            expect(replays).toEqual(["caster 1 in cascade 0", "caster 0 in cascade 1", "caster 1 in cascade 1"]);
+        });
     });
 
     describe("with thin instances", () => {
