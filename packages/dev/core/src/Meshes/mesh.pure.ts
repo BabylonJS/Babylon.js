@@ -2698,18 +2698,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Gets the draw wrapper of a draw recorded by a snapshot that can be encoded again without rendering the mesh: nothing runs
-     * per draw outside of the engine (instances, bones, morph targets, baked animations, occlusion queries, render and draw observers,
-     * an outline or an overlay) and the draw did not change since it was recorded (see _isRecordedDrawUnchanged)
+     * Whether a snapshot records a draw of the mesh to encode it again from its commands: its material can be (see
+     * Material._canReplayRecordedDraw), it writes no velocity (its bind keeps the previous world matrix of its mesh, once per frame), and
+     * nothing runs per draw outside of the engine (instances, bones, morph targets, baked animations, occlusion queries, render and draw
+     * observers, an outline or an overlay), which could set around the full draw states its commands would keep. The same predicate
+     * decides what is kept and what is encoded again: a draw that cannot be is neither checked nor kept, and what was recorded for it
+     * is dropped, so that it is recorded again once it can be
      * @param subMesh the sub mesh to render
      * @param batch the instances batch of the sub mesh
      * @param effectiveMeshReplacement the mesh used in place of this one, if any
-     * @returns the draw wrapper, or null when the mesh must be rendered
+     * @returns true if the draw is recorded
      */
-    private _getUnchangedRecordedDraw(subMesh: SubMesh, batch: _InstancesBatch, effectiveMeshReplacement?: AbstractMesh): Nullable<DrawWrapper> {
-        const material = subMesh.getMaterial()!;
+    private _canRecordDraw(subMesh: SubMesh, batch: _InstancesBatch, effectiveMeshReplacement?: AbstractMesh): boolean {
+        const defines = subMesh.materialDefines;
         const info = this._internalMeshDataInfo;
         if (
+            !subMesh.getMaterial()?._canReplayRecordedDraw() ||
+            defines?.["PREPASS_VELOCITY"] ||
+            defines?.["PREPASS_VELOCITY_LINEAR"] ||
             effectiveMeshReplacement ||
             batch.hardwareInstancedRendering[subMesh._id] ||
             !this._canRecordThinInstances() ||
@@ -2730,10 +2736,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.renderOutline ||
             this.renderOverlay
         ) {
-            return null;
+            return false;
         }
+        return true;
+    }
+
+    /**
+     * Gets the draw wrapper of a draw the mesh records (see _canRecordDraw) that can be encoded again without rendering the mesh: it
+     * did not change since it was recorded (see _isRecordedDrawUnchanged)
+     * @param subMesh the sub mesh to render
+     * @returns the draw wrapper, or null when the mesh must be rendered
+     */
+    private _getUnchangedRecordedDraw(subMesh: SubMesh): Nullable<DrawWrapper> {
         const drawWrapper = subMesh._drawWrapper;
-        return this._isRecordedDrawUnchanged(drawWrapper, subMesh, material, this, true) ? drawWrapper : null;
+        return this._isRecordedDrawUnchanged(drawWrapper, subMesh, subMesh.getMaterial()!, this, true) ? drawWrapper : null;
     }
 
     /**
@@ -3028,19 +3044,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with,
         // between the scene's steps before and after rendering a mesh, as a full draw is (the prepass renderer binds the attachments of
-        // the effect there, and restores them). A draw of a material that cannot be is neither checked nor kept, and what was recorded
-        // for it is dropped. The states a draw inherits are checked and kept here, before it sets any (its alpha mode resets the blend
-        // equations only when the mode changes), and a draw encoded again sets its alpha mode as a full draw does, for the draws after it.
-        // It also marks the mesh's uniform buffer as used in the frame, as a full draw's update does: a later write of the frame (another
-        // pass) then goes to a new buffer instead of the one the encoded draw binds (the scene's and the lights' were updated before it).
-        // A draw that writes velocity cannot be encoded again: its bind keeps the previous world matrix of its mesh, once per frame
-        const defines = subMesh.materialDefines;
-        const recordsDraw = engine._recordsDraws && !!subMesh.getMaterial()?._canReplayRecordedDraw() && !defines?.["PREPASS_VELOCITY"] && !defines?.["PREPASS_VELOCITY_LINEAR"];
+        // the effect there, and restores them). A draw the mesh cannot record (see _canRecordDraw) is neither checked nor kept, and what
+        // was recorded for it is dropped. The states a draw inherits are checked and kept here, before it sets any (its alpha mode resets
+        // the blend equations only when the mode changes), and a draw encoded again sets its alpha mode as a full draw does, for the draws
+        // after it. It also marks the mesh's uniform buffer as used in the frame, as a full draw's update does: a later write of the frame
+        // (another pass) then goes to a new buffer instead of the one the encoded draw binds (the scene's and the lights' were updated
+        // before it)
+        const recordsDraw = engine._recordsDraws && this._canRecordDraw(subMesh, batch, effectiveMeshReplacement);
         if (engine._recordsDraws && !recordsDraw) {
             subMesh._drawWrapper._recordedMaterial = null;
         }
         if (recordsDraw) {
-            const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh, batch, effectiveMeshReplacement);
+            const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh);
             if (recordedDrawWrapper && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
                 if (enableAlphaMode) {
                     this._setAlphaModes(engine, subMesh.getMaterial()!);

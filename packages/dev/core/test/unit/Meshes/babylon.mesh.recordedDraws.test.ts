@@ -604,7 +604,7 @@ describe("Mesh recorded draws", () => {
 
     describe("what a draw needs around it to be encoded again without rendering the mesh", () => {
         function recorded() {
-            return (mesh as any)._getUnchangedRecordedDraw(subMesh, mesh._getInstancesRenderList(subMesh._id));
+            return (mesh as any)._canRecordDraw(subMesh, mesh._getInstancesRenderList(subMesh._id)) ? (mesh as any)._getUnchangedRecordedDraw(subMesh) : null;
         }
 
         beforeEach(() => {
@@ -779,6 +779,28 @@ describe("Mesh recorded draws", () => {
             expect(keep).not.toHaveBeenCalled();
             expect(subMesh._drawWrapper._recordedMaterial).toBeNull();
         }
+    });
+
+    it("neither checks nor keeps in Mesh.render a draw of a mesh with render observers, and records it again once they are removed", () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        const keepState = vi.spyOn(engine, "_keepInheritedState");
+        const replay = vi.spyOn(engine, "_replayRecordedDraw");
+        // a draw recorded before
+        subMesh._drawWrapper._recordedMaterial = material;
+
+        // an observer can set states around the full draw, which its commands would keep: the draw is neither checked nor kept (the
+        // states it inherits are kept first), and what was recorded for it is dropped
+        const observer = mesh.onBeforeRenderObservable.add(() => {});
+        mesh.render(subMesh, false);
+        expect(keepState).not.toHaveBeenCalled();
+        expect(subMesh._drawWrapper._recordedMaterial).toBeNull();
+
+        // removed: the draw is recorded again before it can be encoded again
+        mesh.onBeforeRenderObservable.remove(observer);
+        mesh.render(subMesh, false);
+        expect(keepState).toHaveBeenCalledTimes(1);
+        expect(replay).not.toHaveBeenCalled();
     });
 
     it("keeps the states a draw inherits where its recorded draw is checked, before its mesh sets its alpha mode", () => {
