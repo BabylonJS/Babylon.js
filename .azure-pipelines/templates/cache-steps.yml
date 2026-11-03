@@ -11,7 +11,10 @@
 #
 # Cache keys:
 #   - npm:        keyed on package-lock.json (hits until dependencies change).
-#   - playwright: keyed on package-lock.json (browser version is pinned there).
+#   - playwright: keyed on OS, distro/version, architecture, and package-lock.json.
+#     Browser revisions share directory names across Linux distros despite
+#     requiring different system libraries, so restore prefixes must also be
+#     platform-specific. The v2 namespace excludes old cross-distro caches.
 #
 # Nx's database cache is intentionally not persisted with Cache@2. Its metadata
 # is machine-specific and stored outside NX_CACHE_DIRECTORY, so restoring only
@@ -41,12 +44,18 @@ steps:
           path: $(npm_config_cache)
 
     - ${{ if eq(parameters.playwright, true) }}:
+          - bash: |
+                set -euo pipefail
+                . /etc/os-release
+                echo "##vso[task.setvariable variable=PLAYWRIGHT_CACHE_PLATFORM]${ID:?}-${VERSION_ID:?}-$(uname -m)"
+            displayName: "Identify Playwright cache platform"
+
           - task: Cache@2
             displayName: "Cache Playwright browsers"
             inputs:
-                key: 'playwright | "$(Agent.OS)" | package-lock.json'
+                key: 'playwright-v2 | "$(Agent.OS)" | "$(PLAYWRIGHT_CACHE_PLATFORM)" | package-lock.json'
                 restoreKeys: |
-                    playwright | "$(Agent.OS)"
+                    playwright-v2 | "$(Agent.OS)" | "$(PLAYWRIGHT_CACHE_PLATFORM)"
                 path: $(PLAYWRIGHT_BROWSERS_PATH)
 
     # Guarantee the cache paths exist so the automatic post-job save never
