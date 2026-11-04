@@ -646,6 +646,7 @@ describe("review feedback regressions", () => {
         (globalState.stateManager as any).storeEditorData = vi.fn();
         const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
         firstTarget.dispose();
+        secondTarget.name = "renamed";
         const appendedTarget = new Mesh("part", scene);
         appendedTarget.id = secondTarget.id;
 
@@ -803,6 +804,22 @@ describe("review feedback regressions", () => {
         globalState.dispose();
         coordinator.dispose();
         replacement.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps restored reference provenance idempotent across history merges", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const location = { id: "part", name: "part", className: "Mesh", idIndex: 1, nameIndex: 1, sceneUid: scene.uid };
+
+        globalState.restoreReferenceProvenance([[42, location]], [], false);
+        globalState.restoreReferenceProvenance([[42, location]], [], false);
+
+        expect((globalState as any)._restoredReferenceProvenance.get(42)).toEqual([location]);
+
+        globalState.dispose();
         scene.dispose();
         engine.dispose();
     });
@@ -1460,6 +1477,44 @@ describe("review feedback regressions", () => {
 
         expect(addSoundAsset).toHaveBeenNthCalledWith(1, { name: "shared", url: "data:audio/wav;base64,NEW" });
         expect(addSoundAsset).toHaveBeenNthCalledWith(2, previousAsset);
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("rolls concurrent failed replacements back to the last successfully loaded sound", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        const previousAsset = { name: "shared", url: "data:audio/wav;base64,OLD" };
+        vi.spyOn(coordinator, "soundAssets", "get")
+            .mockReturnValueOnce([previousAsset])
+            .mockReturnValue([{ name: "shared", url: "data:audio/wav;base64,PENDING" }]);
+        let failFirst: (error: Error) => void = () => {};
+        const addSoundAsset = vi
+            .spyOn(coordinator, "addSoundAssetAsync")
+            .mockImplementationOnce(
+                async () =>
+                    await new Promise<any>((_, reject) => {
+                        failFirst = reject;
+                    })
+            )
+            .mockRejectedValueOnce(new Error("Second replacement failed"))
+            .mockResolvedValueOnce({} as any);
+
+        const first = ImportSoundAssetFileAsync(globalState, coordinator, { name: "first.wav" } as File, "shared", async () => "data:audio/wav;base64,FIRST");
+        await vi.waitFor(() => expect(addSoundAsset).toHaveBeenCalledOnce());
+        const second = ImportSoundAssetFileAsync(globalState, coordinator, { name: "second.wav" } as File, "shared", async () => "data:audio/wav;base64,SECOND");
+        await expect(second).rejects.toThrow("Second replacement failed");
+        failFirst(new Error("First replacement failed"));
+        await expect(first).rejects.toThrow("First replacement failed");
+
+        expect(addSoundAsset).toHaveBeenNthCalledWith(3, previousAsset);
 
         globalState.dispose();
         coordinator.dispose();

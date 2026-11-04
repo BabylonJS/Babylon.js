@@ -194,6 +194,7 @@ export class GlobalState {
 
     /** Index of the currently active (displayed) graph within the coordinator. */
     private _activeGraphIndex: number = 0;
+    private _skipNextOutgoingGraphSnapshot = false;
 
     /** Observable triggered when the active graph changes (graph switch, add, remove). */
     onActiveGraphChanged = new Observable<FlowGraph>();
@@ -223,18 +224,22 @@ export class GlobalState {
      * Sets the active coordinator and records whether its lifecycle belongs to the editor.
      * @param coordinator coordinator to activate
      * @param editorOwned whether the editor may dispose the coordinator when replacing it
+     * @param activate whether to activate the coordinator's first graph immediately
      */
-    public setCoordinator(coordinator: Nullable<FlowGraphCoordinator>, editorOwned = false): void {
+    public setCoordinator(coordinator: Nullable<FlowGraphCoordinator>, editorOwned = false, activate = true): void {
+        const coordinatorChanged = this._coordinator !== coordinator;
         this._lifetimeGeneration++;
         this._soundAssetChangedObserver?.remove();
         this._soundAssetChangedObserver = null;
-        if (this._coordinator !== coordinator) {
+        if (coordinatorChanged) {
             this._savedContextSnapshots = null;
             this._savedContextRuntimeData = null;
             this._perGraphContextSnapshots.clear();
             this._perGraphContextRuntimeData.clear();
             this._referenceLocationsByOccurrence = new WeakMap();
             this._restoredReferenceProvenance = null;
+            this._skipNextOutgoingGraphSnapshot = true;
+            this._lastSuccessfulSoundAssets.clear();
         }
         if (coordinator && editorOwned) {
             this._editorOwnedCoordinators.add(coordinator);
@@ -245,7 +250,7 @@ export class GlobalState {
         this._validationResult = null;
         this.onValidationResultChanged.notifyObservers(null);
         this.onSoundAssetsChanged.notifyObservers();
-        if (coordinator && coordinator.flowGraphs.length > 0) {
+        if (activate && coordinator && coordinator.flowGraphs.length > 0) {
             this._activeGraphIndex = 0;
             this._activateGraph(coordinator.flowGraphs[0]);
         }
@@ -340,6 +345,7 @@ export class GlobalState {
                 const connectionValues = context._connectionValues;
                 if (updatedIndexes.has(index) && connectionValues && connectionId in connectionValues) {
                     connectionValues[connectionId] = serializedValue;
+                    this._rememberSerializedReferenceLocations(value, serializedValue);
                 }
             });
         };
@@ -411,7 +417,34 @@ export class GlobalState {
      */
     public removeSoundAsset(name: string): void {
         this.beginSoundAssetOperation(name, true);
+        this._lastSuccessfulSoundAssets.delete(name);
         this._coordinator?.removeSoundAsset(name);
+    }
+
+    /**
+     * Gets the last sound declaration known to have loaded successfully.
+     * @param coordinator coordinator that owns the declaration
+     * @param name sound asset name
+     * @returns stable rollback declaration, if one exists
+     */
+    public getSoundAssetRollback(coordinator: FlowGraphCoordinator, name: string): IFlowGraphSoundAsset | undefined {
+        const cached = this._lastSuccessfulSoundAssets.get(name);
+        if (cached) {
+            return cached;
+        }
+        const current = coordinator.soundAssets.find((asset) => asset.name === name);
+        if (current) {
+            this._lastSuccessfulSoundAssets.set(name, current);
+        }
+        return current;
+    }
+
+    /**
+     * Records a sound declaration after its audio loaded successfully.
+     * @param asset loaded sound declaration
+     */
+    public markSoundAssetLoaded(asset: IFlowGraphSoundAsset): void {
+        this._lastSuccessfulSoundAssets.set(asset.name, { ...asset });
     }
 
     /**
@@ -556,12 +589,13 @@ export class GlobalState {
      */
     private _activateGraph(graph: FlowGraph): void {
         // Let observers (e.g. graphEditor) persist canvas state before the switch
-        if (this._flowGraph) {
+        if (this._flowGraph && !this._skipNextOutgoingGraphSnapshot) {
             // Snapshot user variables/contexts for the outgoing graph so they
             // survive the stop() that the flowGraph setter triggers.
             this._snapshotUserVariablesFrom(this._flowGraph);
             this.onBeforeActiveGraphChanged.notifyObservers(this._flowGraph);
         }
+        this._skipNextOutgoingGraphSnapshot = false;
         // Use the existing setter which does all the wiring
         this.flowGraph = graph;
         this.onActiveGraphChanged.notifyObservers(graph);
@@ -1291,6 +1325,7 @@ export class GlobalState {
     private _restoredReferenceProvenance: Map<number, SceneReferenceLocation[]> | null = null;
     private _referenceLocationsByOccurrence = new WeakMap<object, SceneReferenceLocation>();
     private readonly _soundAssetOperations = new Map<string, { token: number; removed: boolean }>();
+    private readonly _lastSuccessfulSoundAssets = new Map<string, IFlowGraphSoundAsset>();
 
     /**
      * Saved user variables from the last execution context before setScene cleared it.
@@ -1878,7 +1913,10 @@ export class GlobalState {
             }
             this._perGraphContextSnapshots.get(graph.uniqueId)?.forEach((context) => {
                 for (const key in context._connectionValues) {
-                    context._connectionValues[key] = this._serializeValue(this._rebindSceneValue(context._connectionValues[key], newScene));
+                    const reboundValue = this._rebindSceneValue(context._connectionValues[key], newScene);
+                    const serializedValue = this._serializeValue(reboundValue);
+                    context._connectionValues[key] = serializedValue;
+                    this._rememberSerializedReferenceLocations(reboundValue, serializedValue);
                 }
             });
         }
@@ -2323,7 +2361,9 @@ export class GlobalState {
         }
         for (const [uniqueId, location] of entries) {
             const locations = this._restoredReferenceProvenance.get(uniqueId) ?? [];
-            locations.push(location);
+            if (!locations.some((candidate) => this._referenceLocationsMatch(candidate, location) && candidate.sceneUid === location.sceneUid)) {
+                locations.push(location);
+            }
             this._restoredReferenceProvenance.set(uniqueId, locations);
         }
         for (const [value, location] of occurrences) {

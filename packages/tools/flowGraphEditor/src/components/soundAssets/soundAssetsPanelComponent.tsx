@@ -78,7 +78,7 @@ export async function ImportSoundAssetFileAsync(
     const lifetimeGeneration = globalState.lifetimeGeneration;
     const operationToken = globalState.beginSoundAssetOperation(assetName);
     const coordinatorGraphs = [...coordinator.flowGraphs];
-    const previousAsset = coordinator.soundAssets.find((asset) => asset.name === assetName);
+    const previousAsset = globalState.getSoundAssetRollback(coordinator, assetName);
     const url = await readAsDataUrlAsync(file);
     if (
         !globalState.isLifetimeCurrent(coordinator, lifetimeGeneration) ||
@@ -89,6 +89,9 @@ export async function ImportSoundAssetFileAsync(
     }
     try {
         await coordinator.addSoundAssetAsync({ name: assetName, url });
+        if (globalState.isSoundAssetOperationCurrent(assetName, operationToken)) {
+            globalState.markSoundAssetLoaded({ name: assetName, url });
+        }
     } catch (error) {
         if (
             previousAsset &&

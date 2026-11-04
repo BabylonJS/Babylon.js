@@ -83,7 +83,7 @@ export function ApplyFlowGraphHistorySnapshot(data: any, globalState: GlobalStat
         (parsedGraph as any)._editorData = data.editorData;
     }
     globalState.flowGraph = parsedGraph;
-    if (replacedGraphUniqueId) {
+    if (replacedGraphUniqueId && replacedGraphUniqueId !== parsedGraph.uniqueId) {
         globalState.forgetGraphSnapshots(replacedGraphUniqueId);
     }
 }

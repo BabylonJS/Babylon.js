@@ -389,7 +389,7 @@ export class SerializationTools {
         globalState.serializationDisabledReason = state.serializationDisabledReason;
         globalState.hasImportScopedRuntime = state.hasImportScopedRuntime;
         globalState.khrInteractivityImportResult = null;
-        globalState.setCoordinator(state.coordinator, true);
+        globalState.setCoordinator(state.coordinator, true, false);
         globalState.restoreReferenceProvenance(state.referenceProvenance, state.referenceOccurrences);
         globalState.activeGraphIndex = state.activeGraphIndex;
         if (previousCoordinator && previousCoordinator !== state.coordinator && disposePreviousCoordinator) {
@@ -461,7 +461,6 @@ export class SerializationTools {
                 currentValue.uniqueId === value.uniqueId &&
                 currentValue.getClassName() === location.className &&
                 currentValue.id === location.id &&
-                currentValue.name === location.name &&
                 candidates.includes(currentValue)
             ) {
                 resolved = currentValue;
