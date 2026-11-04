@@ -307,6 +307,19 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
+    it("sees the step mode of a vertex buffer, which instanceDivisor changes in its hash code and the pipeline's vertex layout only", () => {
+        const vertexBuffer = mesh.getVertexBuffer(VertexBuffer.NormalKind)!;
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        // the same wrapper, buffer, offset and stride
+        vertexBuffer.instanceDivisor = 1;
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        vertexBuffer.instanceDivisor = 0;
+        expect(unchanged()).toBe(false);
+    });
+
     it("sees an update that creates again the GPU buffer of a vertex buffer aligned to 4 bytes, not a content update of a GPU buffer kept", () => {
         // as WebGPU does: a vertex buffer whose stride or offset is not a multiple of 4 bytes binds an aligned copy of its data
         engine._features.forceVertexBufferStrideAndOffsetMultiple4Bytes = true;

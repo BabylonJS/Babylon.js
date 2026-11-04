@@ -2828,7 +2828,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (!Mesh._IsRecordedVertexBuffer(recordedVertexBuffers, count, vertexBuffers[kind])) {
                 return false;
             }
-            count += 4;
+            count += 5;
         }
         if (this.hasThinInstances) {
             const thinInstances = this._thinInstanceDataStorage;
@@ -2840,7 +2840,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (!Mesh._IsRecordedVertexBuffer(recordedVertexBuffers, count, userVertexBuffers[kind])) {
                     return false;
                 }
-                count += 4;
+                count += 5;
             }
         }
         if (count !== recordedVertexBuffers.length) {
@@ -2907,10 +2907,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this.forcedInstanceCount || (this.hasThinInstances ? this._thinInstanceDataStorage.instancesCount : this._instanceDataStorage.overridenInstanceCount) || 0;
     }
 
-    // a vertex buffer as the commands of a recorded draw bind it: the wrapper, the GPU buffer it binds and where the draw reads in it.
-    // An update of a vertex buffer that WebGPU aligns to 4 bytes (a stride of 3 bytes, say) creates its aligned GPU buffer again
+    // a vertex buffer as the commands of a recorded draw bind it: the wrapper, the GPU buffer it binds and where the draw reads in it,
+    // and its hash code, from which the pipeline takes its vertex layout (its step mode follows instanceDivisor, say). An update of a
+    // vertex buffer that WebGPU aligns to 4 bytes (a stride of 3 bytes, say) creates its aligned GPU buffer again
     private static _RecordVertexBuffer(recordedVertexBuffers: Array<Nullable<object> | number>, vertexBuffer: Nullable<VertexBuffer>): void {
-        recordedVertexBuffers.push(vertexBuffer, vertexBuffer?.effectiveBuffer ?? null, vertexBuffer?.effectiveByteOffset ?? 0, vertexBuffer?.effectiveByteStride ?? 0);
+        recordedVertexBuffers.push(
+            vertexBuffer,
+            vertexBuffer?.effectiveBuffer ?? null,
+            vertexBuffer?.effectiveByteOffset ?? 0,
+            vertexBuffer?.effectiveByteStride ?? 0,
+            vertexBuffer?.hashCode ?? 0
+        );
     }
 
     private static _IsRecordedVertexBuffer(recordedVertexBuffers: Array<Nullable<object> | number>, index: number, vertexBuffer: Nullable<VertexBuffer>): boolean {
@@ -2918,7 +2925,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             recordedVertexBuffers[index] === vertexBuffer &&
             recordedVertexBuffers[index + 1] === (vertexBuffer?.effectiveBuffer ?? null) &&
             recordedVertexBuffers[index + 2] === (vertexBuffer?.effectiveByteOffset ?? 0) &&
-            recordedVertexBuffers[index + 3] === (vertexBuffer?.effectiveByteStride ?? 0)
+            recordedVertexBuffers[index + 3] === (vertexBuffer?.effectiveByteStride ?? 0) &&
+            recordedVertexBuffers[index + 4] === (vertexBuffer?.hashCode ?? 0)
         );
     }
 

@@ -86,7 +86,10 @@ export class DrawWrapper {
     public _recordedReverse = false;
     /** @internal */
     public _recordedIndexBuffer: Nullable<object> = null;
-    /** @internal The vertex buffers of the geometry and of the thin instances, each with the GPU buffer it binds and where it is read */
+    /**
+     * @internal The vertex buffers of the geometry and of the thin instances, each with the GPU buffer it binds, where it is read and
+     * its hash code (the vertex layout of the pipeline)
+     */
     public _recordedVertexBuffers: Nullable<Array<Nullable<object> | number>> = null;
     /** @internal */
     public _recordedInstances = -1;
