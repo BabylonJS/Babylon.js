@@ -11,7 +11,7 @@
         "build:dev": "rollup -c rollup.config.umd.mjs",
         "build:dev:fast": "rollup -c rollup.config.umd.mjs --environment ROLLUP_DEVMODE:true",
         "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
-        "build:declaration": "build-tools -c pud --config ./config.json",
+        "build:declaration": "build-tools -c pud --config ./config.json --skipDocumentation",
         "clean": "rimraf dist && rimraf babylon*.* -g",
         "test:escheck": "node ../../../../scripts/checkEcmaVersion.mjs es6 ./babylonjs.materials.js"
     },

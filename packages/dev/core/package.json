@@ -12,6 +12,8 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
+        "build:source": "npm run clean && npm run compile:assets && npm run compile:source",
+        "generate": "npm run precompile",
         "test": "vitest run",
         "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
         "lint": "npm run lint:check",
@@ -24,6 +26,26 @@
         "watch:assets": "build-tools -c process-assets --isCore --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
         "watch": "build-tools -c dev-watch --packages \"core\" -wa"
+    },
+    "nx": {
+        "targets": {
+            "build": {
+                "executor": "nx:run-script",
+                "options": {
+                    "script": "build:source"
+                },
+                "dependsOn": [
+                    "^build",
+                    "generate"
+                ]
+            },
+            "generate": {
+                "dependsOn": [
+                    "^build"
+                ],
+                "cache": false
+            }
+        }
     },
     "sideEffects": [
         "**/*",
