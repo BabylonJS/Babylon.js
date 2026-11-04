@@ -986,7 +986,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public _drawCacheVersion = 0;
 
     private _texturesVersion = 0;
-    private _recordedDrawReferences: Nullable<Map<object, { frameId: number; view: Nullable<object>; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>> = null;
+    // by effect, weakly: a material that goes through shader variants does not keep the effects it no longer uses, nor their draws
+    private _recordedDrawReferences: Nullable<WeakMap<object, { frameId: number; view: Nullable<object>; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>> = null;
 
     /**
      * @internal Keeps the draw a full bind of this material did with an effect in this frame: the draws of this material recorded with
@@ -1000,7 +1001,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param domain what else wrote its per-draw values (a shadow generator its bias), or null
      */
     public _keepRecordedDrawReference(effect: object, drawWrapper: Nullable<DrawWrapper>, domain: Nullable<object> = null): void {
-        const references = (this._recordedDrawReferences ??= new Map());
+        const references = (this._recordedDrawReferences ??= new WeakMap());
         const frameId = this._scene.getEngine().frameId;
         const view = domain ? null : this._scene.getSceneUniformBuffer();
         const entry = references.get(effect);
