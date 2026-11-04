@@ -1423,9 +1423,9 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // While a snapshot records again, a draw whose mesh, material and per-draw values did not change is encoded from the commands
-        // it was recorded with. forceBackFacesOnly changes the culling inside the full draw: it is compared with the value the draw was
-        // recorded with
-        const backFacesOnly = this.forceBackFacesOnly ? 1 : 0;
+        // it was recorded with. forceBackFacesOnly changes the culling inside the full draw, and useOpacityTextureForTransparentShadow the
+        // texture of its alpha test (diffuseSampler): they are compared with the values the draw was recorded with
+        const domainState = (this.forceBackFacesOnly ? 1 : 0) + (this.useOpacityTextureForTransparentShadow ? 2 : 0);
         const replayable =
             engine._recordsDraws &&
             !material.shadowDepthWrapper &&
@@ -1445,7 +1445,7 @@ export class ShadowGenerator implements IShadowGenerator {
             const recorded = subMesh._getDrawWrapper();
             if (
                 recorded &&
-                renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), backFacesOnly) &&
+                renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), domainState) &&
                 engine._replayRecordedDraw(recorded)
             ) {
                 // as the update of a full draw: a later write of the frame goes to a new buffer, not to the one this draw binds
@@ -1566,7 +1566,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
 
             if (replayable) {
-                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), backFacesOnly);
+                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), domainState);
             }
         } else {
             // Need to reset refresh rate of the shadowMap

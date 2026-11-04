@@ -199,6 +199,46 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(false);
     });
 
+    it("sees the sampler of a texture of the material, which a bind sets and whose changes do not dirty the material", () => {
+        const texture = material.diffuseTexture!;
+        const internal = texture.getInternalTexture()!;
+        const changes: Array<() => () => void> = [
+            () => {
+                const wrapU = texture.wrapU;
+                texture.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+                return () => (texture.wrapU = wrapU);
+            },
+            () => {
+                const wrapV = texture.wrapV;
+                texture.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+                return () => (texture.wrapV = wrapV);
+            },
+            () => {
+                const wrapR = texture.wrapR;
+                texture.wrapR = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+                return () => (texture.wrapR = wrapR);
+            },
+            () => {
+                const level = texture.anisotropicFilteringLevel;
+                texture.anisotropicFilteringLevel = level + 4;
+                return () => (texture.anisotropicFilteringLevel = level);
+            },
+            // the filtering of its GPU texture, as updateSamplingMode sets it
+            () => {
+                const samplingMode = internal.samplingMode;
+                internal.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+                return () => (internal.samplingMode = samplingMode);
+            },
+        ];
+        for (const change of changes) {
+            fullDraw();
+            expect(unchanged()).toBe(true);
+            const restore = change();
+            expect(unchanged()).toBe(false);
+            restore();
+        }
+    });
+
     it("sees a texture a shader material sets or removes in the frame, which only changes its dictionary of textures", () => {
         const shaderMaterial = new ShaderMaterial("shader", scene, "default", { shaderLanguage: ShaderLanguage.WGSL });
         const texture = RawTexture.CreateRGBATexture(new Uint8Array(4), 1, 1, scene);
@@ -1075,7 +1115,7 @@ describe("Mesh recorded draws", () => {
         expect(stencils[1]).not.toBe(b.stencil);
     });
 
-    it("draws in full the shadow map casters recorded before forceBackFacesOnly changed, which sets the culling inside the full draw", () => {
+    it("draws in full the shadow map casters recorded before forceBackFacesOnly or useOpacityTextureForTransparentShadow changed, which the full draw sets", () => {
         const generator = new ShadowGenerator(256, new DirectionalLight("sun", new Vector3(0, -1, 0), scene));
         vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
         const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
@@ -1113,5 +1153,12 @@ describe("Mesh recorded draws", () => {
         expect(replay).toHaveBeenCalledTimes(2);
         frame();
         expect(replay).toHaveBeenCalledTimes(3);
+        // useOpacityTextureForTransparentShadow chooses the texture the full draw binds for the alpha test: the second caster, whose
+        // values equal the first one's, is not encoded again with the texture of the other choice
+        generator.useOpacityTextureForTransparentShadow = true;
+        frame();
+        expect(replay).toHaveBeenCalledTimes(3);
+        frame();
+        expect(replay).toHaveBeenCalledTimes(4);
     });
 });

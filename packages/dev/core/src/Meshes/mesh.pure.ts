@@ -2776,7 +2776,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param effectiveMesh the mesh providing the world matrix and the lights
      * @param withLights whether the draw binds the lights (not in the shadow maps)
      * @param domain what else writes its per-draw values (the shadow generator), or null
-     * @param domainState the pipeline state the domain sets in its full draws, 0 or 1 (the culling of forceBackFacesOnly), compared too
+     * @param domainState what the domain sets in its full draws outside of the per-draw values, from 0 to 3 (the culling of
+     * forceBackFacesOnly, the texture of the alpha test of useOpacityTextureForTransparentShadow), compared too
      * @returns true if the draw can be encoded again
      * @internal
      */
@@ -2893,11 +2894,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * rendering of its render pass, the culling it reverses and the per-mesh values it writes, the object ID and the mesh-blending tag
      * (GeometryRendererTask.reverseCulling only updates the configuration a full bind reads, and mesh.meshBlendingTag or a provider
      * invalidates nothing)
-     * @param domainState the pipeline state the domain sets, 0 or 1
+     * @param domainState what the domain sets, from 0 to 3
      * @returns the state, packed in a number
      */
     private _getConfiguredState(domainState: number): number {
-        return domainState + 2 * MaterialHelperGeometryRendering._GetRecordedDrawState(this.getScene().getEngine().currentRenderPassId, this);
+        return domainState + 4 * MaterialHelperGeometryRendering._GetRecordedDrawState(this.getScene().getEngine().currentRenderPassId, this);
     }
 
     // a vertex buffer as the commands of a recorded draw bind it: the wrapper, the GPU buffer it binds and where the draw reads in it.
@@ -2925,7 +2926,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param effectiveMesh the mesh providing the world matrix and the lights
      * @param withLights whether the draw binds the lights (not in the shadow maps)
      * @param domain what else writes its per-draw values (the shadow generator), or null
-     * @param domainState the pipeline state the domain sets in its full draws, 0 or 1 (the culling of forceBackFacesOnly)
+     * @param domainState what the domain sets in its full draws outside of the per-draw values, from 0 to 3 (the culling of
+     * forceBackFacesOnly, the texture of the alpha test of useOpacityTextureForTransparentShadow)
      * @internal
      */
     public _keepRecordedDraw(

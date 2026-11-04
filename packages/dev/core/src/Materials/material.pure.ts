@@ -1040,11 +1040,21 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     private _texturesVersionDrawCacheVersion = -1;
     private _texturesVersionTextures: BaseTexture[] = [];
     private _texturesVersionInternals: Nullable<object>[] = [];
+    private _texturesVersionSamplers: number[] = [];
+
+    // the sampler a bind of the texture sets (see WebGPUCacheSampler.GetSamplerHashCode): the wrap modes and the anisotropy it reads from
+    // the texture, and the filtering and comparison of its GPU texture. Changing them does not dirty the material
+    private static _GetSamplerKey(texture: BaseTexture): number {
+        const internal = texture.getInternalTexture();
+        const filtering = (internal?.samplingMode ?? 0) + 16 * (internal?._comparisonFunction ?? 0);
+        return texture.wrapU + 4 * (texture.wrapV + 4 * (texture.wrapR + 4 * (texture.anisotropicFilteringLevel + 64 * filtering)));
+    }
 
     /**
-     * @internal Changes when a texture of the material uses another GPU texture without dirtying the material (a streamed texture
-     * swapping its internal texture). The textures are listed once per frame and when the material is dirtied (a texture set), their
-     * internal textures compared on each call: one can swap between two passes of a frame (see DrawWrapper._recordedTexturesVersion)
+     * @internal Changes when a texture of the material uses another GPU texture or sampler without dirtying the material (a streamed
+     * texture swapping its internal texture, a wrap mode set). The textures are listed once per frame and when the material is dirtied (a
+     * texture set), their internal textures and samplers compared on each call: one can change between two passes of a frame (see
+     * DrawWrapper._recordedTexturesVersion)
      * @returns the version
      */
     public _getTexturesVersion(): number {
@@ -1056,15 +1066,18 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
         const textures = this._texturesVersionTextures;
         const internals = this._texturesVersionInternals;
+        const samplers = this._texturesVersionSamplers;
         let changed = textures.length !== internals.length;
         for (let i = 0; i < textures.length; i++) {
             const internal = textures[i].getInternalTexture();
-            if (internals[i] !== internal) {
+            const sampler = Material._GetSamplerKey(textures[i]);
+            if (internals[i] !== internal || samplers[i] !== sampler) {
                 internals[i] = internal;
+                samplers[i] = sampler;
                 changed = true;
             }
         }
-        internals.length = textures.length;
+        internals.length = samplers.length = textures.length;
         if (changed) {
             this._texturesVersion++;
         }
