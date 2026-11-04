@@ -135,9 +135,10 @@ export interface IWebGPURenderPassCommandRecorderProvider {
      * an exception thrown from _recordCommands) has recorded none of its commands and leaves the
      * encoder usable, so the stream can replay it through direct encoder calls. The stream never
      * batches for a provider that does not declare this; such draws use direct encoder calls and the
-     * stream reports "atomic-recording-unsupported" once.
+     * stream reports "atomic-recording-unsupported" once. Omit this for legacy providers that cannot
+     * guarantee atomic recording.
      */
-    recordsAtomically: boolean;
+    recordsAtomically?: boolean;
     /**
      * Returns true while command-stream recording is enabled on the host.
      */

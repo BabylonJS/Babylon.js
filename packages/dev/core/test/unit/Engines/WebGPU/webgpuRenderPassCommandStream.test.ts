@@ -115,9 +115,11 @@ function createProvider(enabled = true, lastError?: string): IWebGPURenderPassCo
  * promised that a rejected batch leaves the pass untouched.
  */
 function createLegacyProvider(): IWebGPURenderPassCommandRecorderProvider {
-    const provider = createProvider() as Partial<IWebGPURenderPassCommandRecorderProvider>;
-    delete provider.recordsAtomically;
-    return provider as IWebGPURenderPassCommandRecorderProvider;
+    return {
+        protocolVersion: WebGPURenderPassCommandStreamProtocolVersion,
+        isEnabled: () => true,
+        getResourceId: getBackendResourceId,
+    };
 }
 
 function createStream(enabled = true, lastError?: string): WebGPURenderPassCommandStream {
