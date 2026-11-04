@@ -29,6 +29,35 @@ describe("Ray.intersectionSegment", () => {
         expect(longDirectionRay.intersectionSegment(...segmentAt(21), 0.1)).toBe(-1);
     });
 
+    it("accepts collinear and near-parallel segments in either endpoint order", () => {
+        const ray = new Ray(Vector3.Zero(), Vector3.Right(), 10);
+
+        // collinear segment that overlaps the ray
+        for (const [a, b] of [
+            [new Vector3(20, 0, 0), new Vector3(5, 0, 0)],
+            [new Vector3(5, 0, 0), new Vector3(20, 0, 0)],
+        ]) {
+            const distance = ray.intersectionSegment(a, b, 0.1);
+            expect(distance).toBeGreaterThanOrEqual(5);
+            expect(distance).toBeLessThanOrEqual(10);
+        }
+
+        // near-parallel segment whose infinite line crosses the ray line past the ray end (x = 15)
+        for (const [a, b] of [
+            [new Vector3(5, 0.05, 0), new Vector3(25, -0.05, 0)],
+            [new Vector3(25, -0.05, 0), new Vector3(5, 0.05, 0)],
+        ]) {
+            expect(ray.intersectionSegment(a, b, 0.1)).toBeCloseTo(10, 3);
+        }
+    });
+
+    it("handles short rays", () => {
+        const ray = new Ray(Vector3.Zero(), Vector3.Right(), 0.01);
+
+        expect(ray.intersectionSegment(new Vector3(0.005, -0.001, 0), new Vector3(0.005, 0.001, 0), 0.0001)).toBeCloseTo(0.005, 8);
+        expect(ray.intersectionSegment(new Vector3(0.02, -0.001, 0), new Vector3(0.02, 0.001, 0), 0.0001)).toBe(-1);
+    });
+
     it("rejects segments behind the ray and applies the threshold", () => {
         const ray = new Ray(Vector3.Zero(), Vector3.Right(), 10);
 
