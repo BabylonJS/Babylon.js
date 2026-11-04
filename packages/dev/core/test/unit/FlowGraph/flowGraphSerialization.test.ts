@@ -644,7 +644,7 @@ describe("Flow Graph Serialization", () => {
         targetSecond.name = "renamed";
         const resolvedSerialization: any = {};
         parsedCoordinator.serialize(resolvedSerialization);
-        expect(resolvedSerialization.referenceProvenance).toContainEqual([
+        expect(resolvedSerialization._flowGraphs[0].referenceProvenance).toContainEqual([
             targetSecond.uniqueId,
             expect.objectContaining({ name: "renamed", idIndex: 1, nameIndex: 0, sceneUid: scene.uid }),
         ]);
@@ -668,7 +668,7 @@ describe("Flow Graph Serialization", () => {
 
         const reserialized: any = {};
         missingTargetCoordinator.serialize(reserialized);
-        expect(reserialized.referenceProvenance).toEqual(serialized.referenceProvenance);
+        expect(reserialized._flowGraphs[0].referenceProvenance).toEqual(serialized.referenceProvenance);
         const reparsedCoordinator = await ParseCoordinatorAsync(reserialized, { scene });
         const reparsedBlock = reparsedCoordinator.flowGraphs[0].getAllBlocks()[0] as FlowGraphMeshIntersectionEventBlock;
         expect((reparsedBlock.targetMeshes as any)._defaultValue).not.toEqual([targetFirst]);
@@ -680,9 +680,63 @@ describe("Flow Graph Serialization", () => {
         sourceScene.dispose();
     });
 
-    it("merges provenance retained by separately parsed graphs", async () => {
+    it("refreshes overlapping resolved provenance identities before reserialization", async () => {
+        const sourceScene = new Scene(engine);
+        const sourceB = new Mesh("B", sourceScene);
+        const sourceC = new Mesh("C", sourceScene);
+        (sourceB as any).uniqueId = 10;
+        (sourceC as any).uniqueId = 11;
+        const sourceCoordinator = new FlowGraphCoordinator({ scene: sourceScene });
+        const sourceGraph = sourceCoordinator.createGraph();
+        const blockB = new FlowGraphMeshIntersectionEventBlock();
+        const blockC = new FlowGraphMeshIntersectionEventBlock();
+        sourceGraph.addEventBlock(blockB);
+        sourceGraph.addEventBlock(blockC);
+        (blockB.targetMeshes as any)._defaultValue = [sourceB];
+        (blockC.targetMeshes as any)._defaultValue = [sourceC];
+        const serialized: any = {};
+        sourceCoordinator.serialize(serialized);
+        serialized.referenceProvenance = [
+            [10, { id: sourceB.id, name: sourceB.name, className: sourceB.getClassName(), idIndex: 0, nameIndex: 0, sceneUid: sourceScene.uid }],
+            [11, { id: sourceC.id, name: sourceC.name, className: sourceC.getClassName(), idIndex: 0, nameIndex: 0, sceneUid: sourceScene.uid }],
+        ];
+
+        const destinationScene = new Scene(engine);
+        const destinationB = new Mesh("B", destinationScene);
+        const destinationC = new Mesh("C", destinationScene);
+        (destinationB as any).uniqueId = 11;
+        (destinationC as any).uniqueId = 12;
+        const parsed = await ParseCoordinatorAsync(serialized, { scene: destinationScene });
+        const reserialized: any = {};
+        parsed.serialize(reserialized);
+        expect(reserialized._flowGraphs[0].referenceProvenance).toEqual(
+            expect.arrayContaining([
+                [11, expect.objectContaining({ name: "B" })],
+                [12, expect.objectContaining({ name: "C" })],
+            ])
+        );
+
+        const finalScene = new Scene(engine);
+        const finalB = new Mesh("B", finalScene);
+        const finalC = new Mesh("C", finalScene);
+        const reparsed = await ParseCoordinatorAsync(reserialized, { scene: finalScene });
+        const reparsedBlocks = reparsed.flowGraphs[0].getAllBlocks() as FlowGraphMeshIntersectionEventBlock[];
+        expect((reparsedBlocks[0].targetMeshes as any)._defaultValue).toEqual([finalB]);
+        expect((reparsedBlocks[1].targetMeshes as any)._defaultValue).toEqual([finalC]);
+
+        reparsed.dispose();
+        finalScene.dispose();
+        parsed.dispose();
+        destinationScene.dispose();
+        sourceCoordinator.dispose();
+        sourceScene.dispose();
+    });
+
+    it("keeps provenance local to separately parsed graphs", async () => {
         const firstNode = new Mesh("first", scene);
         const secondNode = new Mesh("second", scene);
+        (firstNode as any).uniqueId = 10;
+        (secondNode as any).uniqueId = 10;
         const firstCoordinator = new FlowGraphCoordinator({ scene });
         const firstGraph = firstCoordinator.createGraph();
         const firstBlock = new FlowGraphMeshIntersectionEventBlock();
@@ -711,9 +765,21 @@ describe("Flow Graph Serialization", () => {
         const merged: any = {};
         targetCoordinator.serialize(merged);
 
-        expect(merged.referenceProvenance).toHaveLength(2);
-        expect(merged.referenceProvenance.map(([uniqueId]: [number]) => uniqueId)).toEqual(expect.arrayContaining([firstNode.uniqueId, secondNode.uniqueId]));
+        expect(merged.referenceProvenance).toBeUndefined();
+        expect(merged._flowGraphs[0].referenceProvenance).toContainEqual([firstNode.uniqueId, expect.objectContaining({ name: firstNode.name })]);
+        expect(merged._flowGraphs[1].referenceProvenance).toContainEqual([secondNode.uniqueId, expect.objectContaining({ name: secondNode.name })]);
 
+        const reloadScene = new Scene(engine);
+        const reloadedFirst = new Mesh("first", reloadScene);
+        const reloadedSecond = new Mesh("second", reloadScene);
+        const reloaded = await ParseCoordinatorAsync(merged, { scene: reloadScene });
+        const reloadedFirstBlock = reloaded.flowGraphs[0].getAllBlocks()[0] as FlowGraphMeshIntersectionEventBlock;
+        const reloadedSecondBlock = reloaded.flowGraphs[1].getAllBlocks()[0] as FlowGraphMeshIntersectionEventBlock;
+        expect((reloadedFirstBlock.targetMeshes as any)._defaultValue).toEqual([reloadedFirst]);
+        expect((reloadedSecondBlock.targetMeshes as any)._defaultValue).toEqual([reloadedSecond]);
+
+        reloaded.dispose();
+        reloadScene.dispose();
         targetCoordinator.dispose();
         firstCoordinator.dispose();
         secondCoordinator.dispose();

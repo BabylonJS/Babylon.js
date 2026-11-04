@@ -732,7 +732,12 @@ export class FlowGraph {
             const nodes = this._scene.getNodes();
             for (let index = 0; index < this._referenceProvenance.length; index++) {
                 const [uniqueId, location] = this._referenceProvenance[index];
-                const node = nodes.find((candidate) => candidate.uniqueId === uniqueId && candidate.getClassName() === location.className);
+                const candidates = nodes.filter((candidate) => candidate.uniqueId === uniqueId && candidate.getClassName() === location.className);
+                const node =
+                    candidates.find((candidate) => candidate.id === location.id && candidate.name === location.name) ??
+                    candidates.find((candidate) => candidate.id === location.id) ??
+                    candidates.find((candidate) => candidate.name === location.name) ??
+                    (candidates.length === 1 ? candidates[0] : undefined);
                 if (!node) {
                     continue;
                 }
