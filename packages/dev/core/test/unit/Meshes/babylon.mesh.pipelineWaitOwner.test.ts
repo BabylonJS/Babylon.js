@@ -10,6 +10,8 @@ import { ShadowDepthWrapper } from "core/Materials/shadowDepthWrapper";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Vector3 } from "core/Maths/math.vector";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { GaussianPointSplattingController } from "core/Meshes/GaussianSplatting/gaussianPointSplattingController";
+import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import "core/Rendering/boundingBoxRenderer";
 import { Scene } from "core/scene";
@@ -125,6 +127,38 @@ describe("The owner of the draws of a mesh", () => {
         expect(engine._pipelineWaitOwner).toBeNull();
         pass.dispose();
         effectRenderer.dispose();
+    });
+
+    it("gives the compositors of a point-splatting mesh, its color and its depth, the owner of the mesh", async () => {
+        const splat = new GaussianSplattingMesh("splat", null, scene);
+        const controller = new GaussianPointSplattingController(splat);
+        controller["_enableColorBlit"]();
+        controller["_enableDepthBlit"]();
+        // the compositors are drawn as the controller draws them (Mesh.render, in replacement mode), with a material this engine compiles
+        const compositors = [controller["_blitMesh"]!, controller["_depthBlitMesh"]!];
+        const shader = new ShaderMaterial(
+            "compositor",
+            scene,
+            {
+                vertexSource: "precision highp float; attribute vec3 position; void main(void) { gl_Position = vec4(position, 1.0); }",
+                fragmentSource: "precision highp float; void main(void) { gl_FragColor = vec4(1.0); }",
+            },
+            { attributes: ["position"], uniforms: [] }
+        );
+        for (const compositor of compositors) {
+            compositor.material = shader;
+        }
+        for (let i = 0; i < 20 && !compositors.every((compositor) => shader.isReady(compositor)); i++) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        const draws = watchDraws();
+
+        for (const compositor of compositors) {
+            compositor.render(compositor.subMeshes[0], false, compositor);
+        }
+
+        expect(draws.map((draw) => draw.owner)).toEqual([splat._internalAbstractMeshDataInfo, splat._internalAbstractMeshDataInfo]);
+        controller.dispose();
     });
 
     it("gives the owner back after the draws of a mesh, also when one of them throws", async () => {

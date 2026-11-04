@@ -354,6 +354,11 @@ class _InternalAbstractMeshDataInfo {
      */
     public _pipelinePendingFrameId = -2;
     public _pipelineDrawnFrameId = -1;
+    /**
+     * Asynchronous pipeline creation: the mesh whose draws the draws of this mesh wait with (a compositor drawn for another mesh), or
+     * null for its own
+     */
+    public _pipelineWaitOwner: Nullable<_InternalAbstractMeshDataInfo> = null;
 }
 
 /**

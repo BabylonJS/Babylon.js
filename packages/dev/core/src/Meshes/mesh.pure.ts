@@ -2509,7 +2509,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // material): in all its passes they wait together for their render pipelines (WebGPU asynchronous pipeline creation). A draw done
         // anywhere else never waits
         const pipelineWaitOwner = engine._pipelineWaitOwner;
-        engine._pipelineWaitOwner = subMesh.getMesh()._internalAbstractMeshDataInfo;
+        const meshDataInfo = subMesh.getMesh()._internalAbstractMeshDataInfo;
+        engine._pipelineWaitOwner = meshDataInfo._pipelineWaitOwner ?? meshDataInfo;
         try {
             if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
                 this._renderWithThinInstances(subMesh, fillMode, effect, engine);
