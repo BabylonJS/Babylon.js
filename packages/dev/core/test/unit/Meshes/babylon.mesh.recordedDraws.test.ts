@@ -340,6 +340,16 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
+    it("sees the instance count the draw uses, which overridenInstanceCount sets for a mesh with instanced buffers on its geometry", () => {
+        mesh.overridenInstanceCount = 8;
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        mesh.overridenInstanceCount = 3;
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+    });
+
     it("sees replaced geometry and a changed index range", () => {
         mesh.setVerticesData(
             VertexBuffer.PositionKind,

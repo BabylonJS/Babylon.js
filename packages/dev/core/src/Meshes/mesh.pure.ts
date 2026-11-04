@@ -2812,7 +2812,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedFillMode !== this._getRenderingFillMode(material.fillMode) ||
             drawWrapper._recordedDomainState !== this._getConfiguredState(domainState) ||
             drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
-            drawWrapper._recordedInstances !== (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0) ||
+            drawWrapper._recordedInstances !== this._getDrawnInstanceCount() ||
             !this._areSharedBuffersFirst(effectiveMesh, withLights)
         ) {
             return false;
@@ -2901,6 +2901,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return domainState + 4 * MaterialHelperGeometryRendering._GetRecordedDrawState(this.getScene().getEngine().currentRenderPassId, this);
     }
 
+    // the instance count a draw of the mesh uses (see _draw): the forced one, else the thin instances', else the override that
+    // _processRendering gives a mesh drawn alone (with instanced buffers set on its geometry)
+    private _getDrawnInstanceCount(): number {
+        return this.forcedInstanceCount || (this.hasThinInstances ? this._thinInstanceDataStorage.instancesCount : this._instanceDataStorage.overridenInstanceCount) || 0;
+    }
+
     // a vertex buffer as the commands of a recorded draw bind it: the wrapper, the GPU buffer it binds and where the draw reads in it.
     // An update of a vertex buffer that WebGPU aligns to 4 bytes (a stride of 3 bytes, say) creates its aligned GPU buffer again
     private static _RecordVertexBuffer(recordedVertexBuffers: Array<Nullable<object> | number>, vertexBuffer: Nullable<VertexBuffer>): void {
@@ -2977,7 +2983,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 Mesh._RecordVertexBuffer(recordedVertexBuffers, userVertexBuffers[kind]);
             }
         }
-        drawWrapper._recordedInstances = this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0;
+        drawWrapper._recordedInstances = this._getDrawnInstanceCount();
         const recordedLights = (drawWrapper._recordedLights ??= []);
         recordedLights.length = 0;
         if (withLights) {
