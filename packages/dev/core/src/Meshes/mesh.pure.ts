@@ -3045,7 +3045,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with,
         // between the scene's steps before and after rendering a mesh, as a full draw is (the prepass renderer binds the attachments of
         // the effect there, and restores them). A draw the mesh cannot record (see _canRecordDraw) is neither checked nor kept, and what
-        // was recorded for it is dropped. The states a draw inherits are checked and kept here, before it sets any (its alpha mode resets
+        // was recorded for it is dropped, with the frame's references of its material (the code that runs around it can change the
+        // material). The states a draw inherits are checked and kept here, before it sets any (its alpha mode resets
         // the blend equations only when the mode changes), and a draw encoded again sets its alpha mode as a full draw does, for the draws
         // after it. It also marks the mesh's uniform buffer as used in the frame, as a full draw's update does: a later write of the frame
         // (another pass) then goes to a new buffer instead of the one the encoded draw binds (the scene's and the lights' were updated
@@ -3053,6 +3054,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const recordsDraw = engine._recordsDraws && this._canRecordDraw(subMesh, batch, effectiveMeshReplacement);
         if (engine._recordsDraws && !recordsDraw) {
             subMesh._drawWrapper._recordedMaterial = null;
+            subMesh.getMaterial()?._dropRecordedDrawReferences();
         }
         if (recordsDraw) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh);

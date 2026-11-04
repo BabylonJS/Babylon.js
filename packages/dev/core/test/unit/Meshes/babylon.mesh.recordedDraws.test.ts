@@ -227,6 +227,45 @@ describe("Mesh recorded draws", () => {
         expect(shaderUnchanged()).toBe(false);
     });
 
+    it("sees a value or a define a shader material sets in the frame, after the full draw it is compared with", () => {
+        const shaderMaterial = new ShaderMaterial("shader", scene, "default", { shaderLanguage: ShaderLanguage.WGSL });
+        shaderMaterial.setFloat("value", 1);
+        mesh.material = shaderMaterial;
+        const shaderFullDraw = () => {
+            engine._keepInheritedState(drawWrapper);
+            light._renderId = scene.getRenderId();
+            mesh._keepRecordedDraw(drawWrapper, subMesh, shaderMaterial, mesh, true);
+        };
+        const shaderUnchanged = () => mesh._isRecordedDrawUnchanged(drawWrapper, subMesh, shaderMaterial, mesh, true);
+        // the frame's full draw of the material, whose values the draw's equal
+        shaderFullDraw();
+        expect(shaderUnchanged()).toBe(true);
+
+        // a callback of another draw of the frame sets the value again: the draw's values are compared with a full draw that bound the
+        // old one, so it binds the material again
+        shaderMaterial.setFloat("value", 2);
+        expect(shaderUnchanged()).toBe(false);
+        shaderFullDraw();
+        expect(shaderUnchanged()).toBe(true);
+        shaderMaterial.setDefine("VALUE", true);
+        expect(shaderUnchanged()).toBe(false);
+    });
+
+    it("needs a full draw after a draw of its material that is not recorded, whose observer can change the material", () => {
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        // the full draws stop at once: their effects are not built here
+        vi.spyOn(material, "isReadyForSubMesh").mockReturnValue(false);
+        expect(unchanged()).toBe(true);
+        // another mesh of the material, whose render observer changes a value of the material without dirtying it: it is not recorded
+        const observed = mesh.clone("observed")!;
+        observed.onBeforeRenderObservable.add(() => material.diffuseColor.set(1, 0, 0));
+        observed.render(observed.subMeshes[0], false);
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+    });
+
     it("sees an update that creates again the GPU buffer of a vertex buffer aligned to 4 bytes, not a content update of a GPU buffer kept", () => {
         // as WebGPU does: a vertex buffer whose stride or offset is not a multiple of 4 bytes binds an aligned copy of its data
         engine._features.forceVertexBufferStrideAndOffsetMultiple4Bytes = true;
@@ -611,7 +650,7 @@ describe("Mesh recorded draws", () => {
             expect(unchanged()).toBe(true);
         });
 
-        it("shares the frame's reference between the cascades of its shadow map, each cascade drawing with its own matrix", () => {
+        it("shares the frame's reference between the cascades of its shadow map, each cascade drawing with its own matrix, while its bias stays", () => {
             vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
             // two cascades with different matrices (their frustum split is not what this checks): the generator writes each one in the
             // scene uniform buffer of its cascade when the cascade renders
@@ -669,6 +708,13 @@ describe("Mesh recorded draws", () => {
             // the first caster's draw in the first cascade is the frame's reference of the generator, for both cascades
             frame();
             expect(replays).toEqual(["caster 1 in cascade 0", "caster 0 in cascade 1", "caster 1 in cascade 1"]);
+
+            // the bias changed for the second cascade only (by an observer of the shadow map), which the generator writes in each draw:
+            // that cascade needs a full draw of its own
+            shadowMap.onBeforeRenderObservable.add((layer) => (generator.bias = layer === 1 ? 0.001 : 0.00005));
+            replays.length = 0;
+            frame();
+            expect(replays).toEqual(["caster 1 in cascade 0", "caster 1 in cascade 1"]);
         });
     });
 

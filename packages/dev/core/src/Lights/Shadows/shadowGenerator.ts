@@ -415,6 +415,19 @@ export class ShadowGenerator implements IShadowGenerator {
         this._depthScale = value;
     }
 
+    // the domain of the frame's references of its casters (see Material._keepRecordedDrawReference): they are shared between its cascades
+    // while the values it writes in each draw stay the same, and a new one is used once they change (the bias for a later cascade only)
+    private _recordedDrawsDomain = { bias: NaN, normalBias: NaN, depthScale: NaN };
+
+    private _getRecordedDrawsDomain(): object {
+        const domain = this._recordedDrawsDomain;
+        const depthScale = this.depthScale;
+        if (domain.bias !== this.bias || domain.normalBias !== this.normalBias || domain.depthScale !== depthScale) {
+            this._recordedDrawsDomain = { bias: this.bias, normalBias: this.normalBias, depthScale };
+        }
+        return this._recordedDrawsDomain;
+    }
+
     protected _validateFilter(filter: number): number {
         return filter;
     }
@@ -1432,7 +1445,7 @@ export class ShadowGenerator implements IShadowGenerator {
             const recorded = subMesh._getDrawWrapper();
             if (
                 recorded &&
-                renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this, backFacesOnly) &&
+                renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), backFacesOnly) &&
                 engine._replayRecordedDraw(recorded)
             ) {
                 // as the update of a full draw: a later write of the frame goes to a new buffer, not to the one this draw binds
@@ -1553,7 +1566,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
 
             if (replayable) {
-                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this, backFacesOnly);
+                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), backFacesOnly);
             }
         } else {
             // Need to reset refresh rate of the shadowMap

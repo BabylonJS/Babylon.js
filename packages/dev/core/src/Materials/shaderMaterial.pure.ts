@@ -283,6 +283,9 @@ export class ShaderMaterial extends PushMaterial {
         if (this._options.uniforms.indexOf(uniformName) === -1) {
             this._options.uniforms.push(uniformName);
         }
+        // a value is set: the draws a snapshot recorded with the material are bound again (set after the frame's reference draw, it is
+        // not in the values they are compared with). Many values are kept by reference, so a value set again is not told from a new one
+        this._drawCacheVersion++;
     }
 
     /**
@@ -706,6 +709,8 @@ export class ShaderMaterial extends PushMaterial {
         if (typeof value !== "boolean" || value) {
             this.options.defines.push(defineName + value);
         }
+        // the effect may change: the draws a snapshot recorded with the material are bound again
+        this._drawCacheVersion++;
 
         return this;
     }

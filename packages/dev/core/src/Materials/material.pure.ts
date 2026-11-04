@@ -1015,6 +1015,14 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
+     * @internal Drops the draws kept by _keepRecordedDrawReference: a draw of the material that is not recorded runs code around it (the
+     * observers of its mesh, say), which can change the material after them, so the draws after it need a full draw to compare with
+     */
+    public _dropRecordedDrawReferences(): void {
+        this._recordedDrawReferences = null;
+    }
+
+    /**
      * @internal Gets the draw kept by _keepRecordedDrawReference for an effect in this frame, in the current pass and view when it has
      * no domain
      * @param effect the effect of the draw
