@@ -18,6 +18,10 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { type Material } from "core/Materials/material";
+import { MaterialPluginBase } from "core/Materials/materialPluginBase";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
@@ -836,6 +840,54 @@ describe("Mesh recorded draws", () => {
         expect(material._canReplayRecordedDraw()).toBe(true);
         material.onUnBindObservable.add(() => {});
         expect(material._canReplayRecordedDraw()).toBe(false);
+    });
+
+    it("never encodes again without binding a material with an active plugin that binds values of the mesh, as a user plugin may, but does with the built-in PBR plugins", () => {
+        // a user plugin that binds a value of the mesh of the sub mesh (its metadata)
+        class MetadataPlugin extends MaterialPluginBase {
+            public constructor(material: Material) {
+                super(material, "Metadata", 200, {}, true, true);
+            }
+            public override bindForSubMesh(uniformBuffer: UniformBuffer, _scene: Scene, _engine: AbstractEngine, sub: SubMesh): void {
+                uniformBuffer.updateFloat("metadataValue", sub.getMesh().metadata?.value ?? 0);
+            }
+            public override getClassName(): string {
+                return "MetadataPlugin";
+            }
+            public override isCompatible(): boolean {
+                return true;
+            }
+        }
+        const pbr = new PBRMaterial("pbr", scene);
+        (pbr as any)._shaderLanguage = ShaderLanguage.WGSL;
+        pbr.clearCoat.isEnabled = true;
+        pbr.sheen.isEnabled = true;
+        pbr.iridescence.isEnabled = true;
+        pbr.anisotropy.isEnabled = true;
+        pbr.detailMap.isEnabled = true;
+        expect(pbr._canReplayRecordedDraw()).toBe(true);
+        new MetadataPlugin(pbr);
+        expect(pbr._canReplayRecordedDraw()).toBe(false);
+
+        // A and B share the material, with the same values until only B's metadata changes: B's draw, whose recorded values still
+        // equal those of A's full draw (the plugin does not run when a draw is encoded again), is bound
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        vi.spyOn(engine, "_canEncodeRecordedDraw").mockReturnValue(true);
+        const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+        // the full draws stop at once: their effects are not built here
+        vi.spyOn(pbr, "isReadyForSubMesh").mockReturnValue(false);
+        const a = mesh;
+        const b = mesh.clone("B")!;
+        a.metadata = { value: 1 };
+        b.metadata = { value: 1 };
+        for (const drawn of [a, b]) {
+            drawn.material = pbr;
+            vi.spyOn(drawn, "_isRecordedDrawUnchanged").mockReturnValue(true);
+        }
+        b.metadata.value = 2;
+        a.render(a.subMeshes[0], false);
+        b.render(b.subMeshes[0], false);
+        expect(replay).not.toHaveBeenCalled();
     });
 
     it("checks nothing in Mesh.render unless a snapshot records with the recorded draws switched on", () => {

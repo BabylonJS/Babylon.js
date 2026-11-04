@@ -115,6 +115,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
 
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
         super(material, "PBRAnisotropic", 110, new MaterialAnisotropicDefines(), addToPluginList);
+        this._bindsMaterialValuesOnly = true;
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
         this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag];
