@@ -1281,4 +1281,24 @@ describe("Mesh recorded draws", () => {
         expect(replay).toHaveBeenCalledTimes(1);
     });
 
+    it("does not encode again a draw recorded with another scene uniform buffer than the one bound, which a scene rendered twice in a frame takes (an RTT of two active cameras)", () => {
+        // C's draw was recorded in the first render, with the first scene uniform buffer
+        const first = scene.getSceneUniformBuffer();
+        expect(unchanged()).toBe(true);
+        // the second render takes another scene uniform buffer, and a full draw of the material with the same effect is its reference
+        const second = scene.createSceneUniformBuffer();
+        scene.setSceneUniformBuffer(second);
+        const other = MeshBuilder.CreateBox("other", {}, scene);
+        other.material = material;
+        const otherWrapper = new DrawWrapper(engine);
+        otherWrapper.effect = drawWrapper.effect;
+        other._keepRecordedDraw(otherWrapper, other.subMeshes[0], material, other, true);
+        expect(material._getRecordedDrawReference(drawWrapper.effect!)).toBe(otherWrapper);
+        // C's bind groups hold the first scene uniform buffer: it is drawn in full
+        expect(unchanged()).toBe(false);
+        scene.setSceneUniformBuffer(first);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+    });
+
 });

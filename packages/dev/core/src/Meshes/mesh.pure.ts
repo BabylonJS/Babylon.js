@@ -2820,6 +2820,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedDomainState !== this._getConfiguredState(domainState) ||
             drawWrapper._recordedIndexBuffer !== this._getDrawnIndexBuffer() ||
             drawWrapper._recordedInstances !== this._getDrawnInstanceCount() ||
+            drawWrapper._recordedSceneUbo !== this.getScene().getSceneUniformBuffer() ||
             !this._areSharedBuffersFirst(effectiveMesh, withLights)
         ) {
             return false;
@@ -2990,6 +2991,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         drawWrapper._recordedFillMode = this._getRenderingFillMode(material.fillMode);
         drawWrapper._recordedDomainState = this._getConfiguredState(domainState);
         drawWrapper._recordedIndexBuffer = this._getDrawnIndexBuffer();
+        drawWrapper._recordedSceneUbo = scene.getSceneUniformBuffer();
         const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
         recordedVertexBuffers.length = 0;
         const vertexBuffers = this._geometry?.getVertexBuffers();

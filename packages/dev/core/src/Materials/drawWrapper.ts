@@ -87,6 +87,11 @@ export class DrawWrapper {
     /** @internal The index buffer the draw uses, null for an unindexed mesh */
     public _recordedIndexBuffer: Nullable<object> = null;
     /**
+     * @internal The scene uniform buffer bound by the recorded bind groups: a scene rendered more than once in a frame (a render target
+     * of two active cameras) takes another one for each render, on the same draw contexts
+     */
+    public _recordedSceneUbo: Nullable<object> = null;
+    /**
      * @internal The vertex buffers of the geometry and of the thin instances, each with the GPU buffer it binds, where it is read and
      * its hash code (the vertex layout of the pipeline)
      */
