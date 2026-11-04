@@ -941,6 +941,42 @@ describe("Mesh recorded draws", () => {
         expect(engine.getAlphaMode()).toBe(Constants.ALPHA_DISABLE);
     });
 
+    it("sets the stencil of its material when it encodes a draw again, as its full draw does, not the one a draw in between left (A, B, C)", () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        vi.spyOn(engine, "_canEncodeRecordedDraw").mockReturnValue(true);
+        // A and C draw with the material, which has no stencil, and are encoded again
+        const a = mesh;
+        const c = mesh.clone("C")!;
+        for (const drawn of [a, c]) {
+            vi.spyOn(drawn as any, "_getUnchangedRecordedDraw").mockImplementation((sub: any) => sub._drawWrapper);
+        }
+        // the stencil the engine gives the render pass at a draw: the material's set by the last setState while it is enabled, else
+        // the global one (a NullEngine keeps no state: here it keeps the material's stencil, as the other engines do)
+        const composer = engine.stencilStateComposer;
+        vi.spyOn(engine, "setState").mockImplementation((_culling, _zOffset, _force, _reverse, _cullBackFaces, stencil) => {
+            composer.stencilMaterial = stencil;
+        });
+        const stencils: unknown[] = [];
+        vi.spyOn(engine, "_replayRecordedDraw").mockImplementation(() => {
+            stencils.push(composer.stencilMaterial);
+            return true;
+        });
+        // the global stencil test with reference 1, and B drawn in full between A and C with a stencil of reference 2
+        engine.setStencilBuffer(true);
+        engine.setStencilFunctionReference(1);
+        const b = new StandardMaterial("B", scene);
+        b.stencil.enabled = true;
+        b.stencil.funcRef = 2;
+
+        a.render(a.subMeshes[0], false);
+        // what the full draw of B sets before it binds (Material._preBind)
+        engine.setState(b.backFaceCulling, b.zOffset, false, false, b.cullBackFaces, b.stencil, b.zOffsetUnits);
+        c.render(c.subMeshes[0], false);
+        expect(stencils).toEqual([material.stencil, material.stencil]);
+        expect(stencils[1]).not.toBe(b.stencil);
+    });
+
     it("draws in full the shadow map casters recorded before forceBackFacesOnly changed, which sets the culling inside the full draw", () => {
         const generator = new ShadowGenerator(256, new DirectionalLight("sun", new Vector3(0, -1, 0), scene));
         vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);

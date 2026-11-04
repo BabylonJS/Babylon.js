@@ -1531,17 +1531,29 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
 
         engine.enableEffect(effectiveDrawWrapper);
-        engine.setState(
-            this.backFaceCulling,
-            this.zOffset,
-            false,
-            reverse,
-            this._scene._mirroredCameraPosition ? !this.cullBackFaces : this.cullBackFaces,
-            this.stencil,
-            this.zOffsetUnits
-        );
+        this._setStates(reverse);
 
         return reverse;
+    }
+
+    /**
+     * @internal Sets the states a draw of the material sets in the engine before it binds (see _preBind): the culling, the depth offset
+     * and the stencil. A draw a snapshot encodes again without binding sets them too, as its full draw did: its render pass reads the
+     * stencil reference at the draw, and the draws after it inherit them
+     * @param reverse whether the culling is reversed
+     */
+    public _setStates(reverse: boolean): void {
+        this._scene
+            .getEngine()
+            .setState(
+                this.backFaceCulling,
+                this.zOffset,
+                false,
+                reverse,
+                this._scene._mirroredCameraPosition ? !this.cullBackFaces : this.cullBackFaces,
+                this.stencil,
+                this.zOffsetUnits
+            );
     }
 
     /**

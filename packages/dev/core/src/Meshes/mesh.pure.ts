@@ -3064,6 +3064,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 for (const step of scene._beforeRenderingMeshStage) {
                     step.action(this, subMesh, batch, recordedEffect);
                 }
+                // the states its material sets before it binds, as in its full draw: the stencil an earlier draw set would stay in the
+                // engine, whose reference the render pass reads at the draw
+                subMesh.getMaterial()!._setStates(recordedDrawWrapper._recordedReverse);
                 engine._replayRecordedDraw(recordedDrawWrapper);
                 this._uniformBuffer._markBufferUsed();
                 for (const step of scene._afterRenderingMeshStage) {
@@ -3228,6 +3231,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._internalMeshDataInfo._effectiveMaterial.unbind();
 
         if (recordsDraw && drawWrapper === subMesh._drawWrapper) {
+            drawWrapper._recordedReverse = reverse;
             this._keepRecordedDraw(drawWrapper, subMesh, effectiveMaterial, effectiveMesh, true);
         }
 

@@ -82,6 +82,8 @@ export class DrawWrapper {
     public _recordedFillMode = -1;
     /** @internal The effective side orientation, which _preBind turns into the culling and front face state */
     public _recordedOrientation = -1;
+    /** @internal Whether its full draw reversed the culling (Material._preBind): a draw encoded again sets the same states */
+    public _recordedReverse = false;
     /** @internal */
     public _recordedIndexBuffer: Nullable<object> = null;
     /** @internal The vertex buffers of the geometry and of the thin instances, each with the GPU buffer it binds and where it is read */
