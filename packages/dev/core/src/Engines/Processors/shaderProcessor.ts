@@ -307,6 +307,10 @@ function PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEng
     if (options.processor?.shaderLanguage === ShaderLanguage.GLSL) {
         preprocessors["GL_ES"] = "true";
     }
+    if (engine?.getCaps().highPrecisionShaderSupported) {
+        // Resolve the GLSL capability macro before the driver's own preprocessor runs.
+        preprocessors["GL_FRAGMENT_PRECISION_HIGH"] = "true";
+    }
     preprocessors["__VERSION__"] = options.version;
     preprocessors[options.platformName] = "true";
 

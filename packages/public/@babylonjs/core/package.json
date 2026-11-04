@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.33.1",
+    "version": "9.33.2",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -163,6 +163,7 @@
         "FlowGraph/Blocks/Data/flowGraphTransformCoordinatesSystemBlock.js",
         "FlowGraph/Blocks/Event/flowGraphKeyDownEventBlock.js",
         "FlowGraph/Blocks/Event/flowGraphKeyUpEventBlock.js",
+        "FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.js",
         "FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.js",
         "FlowGraph/Blocks/Event/flowGraphPhysicsCollisionEventBlock.js",
         "FlowGraph/Blocks/Event/flowGraphPointerDownEventBlock.js",

@@ -23,8 +23,8 @@
         "@dev/procedural-textures": "1.0.0",
         "@dev/serializers": "1.0.0",
         "@tools/accessibility": "1.0.0",
-        "@vitejs/plugin-react": "^6.1.1",
-        "vite": "^8.3.0"
+        "@vitejs/plugin-react": "^6.1.2",
+        "vite": "^8.3.5"
     },
     "sideEffects": true
 }

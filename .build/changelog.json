@@ -1,6 +1,166 @@
 {
-    "fromTag": "9.33.0",
+    "fromTag": "9.33.1",
     "changelog": {
+        "9.33.2": [
+            {
+                "pr": "19072",
+                "title": "WebGPU: convert half-float readbacks with Float16Array where it exists",
+                "description": "Forum: [64426](https://forum.babylonjs.com/t/64426) #1 and #2.\n\nWhen a half-float texture is read back on WebGPU, `WebGPUBufferManager._getHalfFloatAsFloatRGBAArrayBuffer` converted every value with `FromHalfFloat`, in a loop. Where `Float16Array` exists, it now converts with `destArray.set(new Float16Array(arrayBuffer, 0, dataLength))`, which the browser does. The readback still returns a `Float32Array`, and the loop stays as the fallback where `Float16Array` is missing.\n\n**What stays the same.**\n- The destination: a new `Float32Array`, or the given buffer, filled with the same length clamp (`Math.min(dataLength, destArray.length)`).\n- Padded rows: they are dropped after the conversion, as before.\n- The values: every half-float bit pattern converts to the value `FromHalfFloat` gives. Only NaNs can differ in their bits: `Float16Array` may keep a NaN's sign and payload, where the loop always returns the same NaN.\n\n`Float16Array` is not in the TypeScript libraries the engine builds with, so it is looked up on `globalThis` when converting.\n\n**Measured.** The Playground of the forum post (https://playground.babylonjs.com/?webgpu#OU10I4#0): a 712 × 448 RGBA half-float render target, 1,275,904 values, read 10 times with each conversion, alternating. Chromium 147, RTX 3080 Laptop GPU, Windows 11, medians of two runs: the conversion takes 17.3 and 26.1 ms with the loop, and 3.3 and 4.7 ms with `Float16Array`; the whole `readPixels`, 29.4 and 44.1 ms against 15.4 and 22.1 ms.\n\n**Unit tests.** `webgpuBufferManager.halfFloat.test.ts`, 9 tests. `Float16Array` is used where it exists, once per readback. And, with it and without it (the loop): every half-float bit pattern gives the value of `FromHalfFloat` (compared with `Object.is`); zeros, infinities, NaN, subnormals and the largest values; a given destination receives as many values as it holds; and the padding of rows aligned to 256 bytes is dropped. On master, only the first one fails, since the values are the same. The Engines unit suite: 278 passed, 1 expected fail (already marked on master).\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuBufferManager.halfFloat.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19088",
+                "title": "Show USD support in the Sandbox drag-and-drop prompt",
+                "description": "Include USD formats in the Sandbox drag-and-drop prompt, grouped under `usd` to keep the text concise. Update the fallback text accordingly.",
+                "author": {
+                    "name": "Jeggery",
+                    "url": "https://github.com/Jeggery"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/sandbox.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19101",
+                "title": "Flow Graph: graph-declared sound assets and mesh intersection event",
+                "description": "Core layer for no-code reactions and sound in the Flow Graph, following the forum discussion: https://forum.babylonjs.com/t/improving-no-code-gltf-authoring-adding-reactions-and-sound-to-existing-assets/64196\n\nThe Flow Graph Editor changes (sound asset panel, parameterized templates, debug event log) will follow in a separate PR stacked on this one.\n\n## Changes\n\n### Graph-declared sound assets\n- `FlowGraphCoordinator` can now declare named sound assets (`{ name, url }`); the `url` may be a `data:` URL so the audio is embedded in the serialized graph.\n  - `addSoundAssetAsync(asset, audioEngine?)` loads the sound with `CreateSoundAsync`. It uses the given engine, falls back to the last created engine, and creates one if none exists. Audio modules are imported dynamically, so graphs without sounds don't load them.\n  - `getSoundAsset(name)`, `removeSoundAsset(name)` and `soundAssets` are also added.\n  - Replacing an asset with the same name disposes the old sound. A load that finishes after its asset was removed or replaced is disposed.\n  - If a sound fails to load, its asset stays declared (and serialized) without a sound.\n- The coordinator serializes its sound assets under `soundAssets`. `ParseCoordinatorAsync` (and `ParseFlowGraphFromSnippetAsync`) load them before parsing the graphs. A failed sound load is logged as a warning and does not stop parsing.\n- Audio blocks (Play/Stop/Pause/SetVolume/GetVolume/IsPlaying/SoundEnded) resolve their `sound` input through `ResolveFlowGraphSound`. It accepts an Audio V2 sound, the name of a declared sound asset, or a serialized `{ name }` reference. These `@experimental` blocks widen the input type to `FlowGraphSoundReference`.\n\n### `FlowGraphMeshIntersectionEventBlock`\n- An event block that checks a source mesh against a mesh, or an array of meshes, before each frame using bounding volumes (axis-aligned by default; oriented with `usePreciseIntersection`). No physics engine is required.\n- `onEnter` and `onExit` fire per target transition. `out` and `done` fire on both transitions. The `otherMesh` and `isIntersecting` outputs describe the transition.\n- The check doesn't allocate per frame. Disabled or disposed meshes count as not intersecting, the source mesh is ignored in the target list, and the state resets when the graph restarts.\n\n### Serialization\n- Flow graph value serialization supports arrays of scene node references, including re-resolution on `setScene`. This allows target lists to round-trip.\n\n### Plumbing\n- Block name, factory, and barrels.\n- MCP `blockRegistry` entry, plus updated sound input descriptions.\n- Tree-shaking manifest and `sideEffects`.\n\n## Validation\n- New unit tests: `flowGraphSoundAssets.test.ts` (10) and `flowGraphMeshIntersectionEventBlock.test.ts` (9), plus an array re-resolution case in `flowGraphSerialization.test.ts`.\n- FlowGraph, KHR interactivity and MCP server unit tests: 997 passed, including the MCP registry drift guard and the example generator.\n- Prettier, ESLint, core typecheck, `check:treeshaking`, `check:side-effects-sync` and `check:pure-barrels` all pass.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Audio/flowGraphGetSoundVolumeBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Audio/flowGraphIsSoundPlayingBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSoundEndedEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPauseSoundBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPlaySoundBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphSetSoundVolumeBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphStopSoundBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/allBlocks.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/flowGraphBlockFactory.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/flowGraphBlockNames.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.pure.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphParser.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSoundAssets.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts",
+                    "packages/dev/core/src/FlowGraph/pure.ts",
+                    "packages/dev/core/src/FlowGraph/serialization.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphBlockRegistration.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphMeshIntersectionEventBlock.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSoundAssets.test.ts",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/tools/flow-graph-mcp-server/src/blockRegistry.ts",
+                    "scripts/treeshaking/side-effects-manifest/core/FlowGraph.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "19092",
+                "title": "DirectionalLight: document that shadowOrthoScale widens extents set by hand too",
+                "description": "Forum: [64422](https://forum.babylonjs.com/t/64422) #4 and #5.\n\nThe doc of `shadowOrthoScale` describes a margin \"against the optimal computed one\" that increases the window \"by 10%\". The projection adds `shadowOrthoScale` times the width and the height to each side, of the computed extents and of the extents set by hand alike (with `autoUpdateExtends = false`), so 0.1 covers 1.2 times the width and the height. As agreed in the forum, this PR only documents it, so that no scene's shadows change:\n\n- `shadowOrthoScale`: the margin is per side, and 0.1 means 20% more on each axis; it applies to computed extents and to extents set by hand, but not to a fixed frustum size (`shadowFrustumSize > 0`); 0 makes the projection match the extents exactly.\n- `orthoLeft`, `orthoRight`, `orthoBottom` and `orthoTop`: the same note where the extents are set.\n\nFound by Mema2, one of our studio's AIs, in our shadow maps: a sky occlusion map set to 192 m covered 230.4 m, and our far sun shadow covered 1,980.55 m for 1,650.46 m. Playground (9.33.0), the window read back from the light's matrix with the default scale and with 0: https://playground.babylonjs.com/#1LAI3Q#0\n\nDocs only: no code changes.\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/directionalLight.pure.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19080",
+                "title": "Stop Gaussian splatting and vertex-pulling materials from growing shared attribute and uniform lists",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n`GaussianSplattingMaterial.isReadyForSubMesh` appended the instance attributes (`world0`–`world3`, plus `previousWorld0`–`previousWorld3` with velocity prepass) to the static, shared `GaussianSplattingMaterial._Attribs` array every time the material's defines were dirty, then sliced it. The array never shrank, so it grew by four or eight entries per rebuild for the lifetime of the page. The depth, shadow-depth and voxel `ShaderMaterial`s also received that same array as their `attributes`, and `ShaderMaterial.isReady` copies it on every call, so their readiness checks got slower over time. Anything that dirties the splat material's defines repeatedly triggers it; a common case is a `RenderTargetTexture` with a `renderListPredicate`, which refills its render list each frame and marks every mesh in the scene light-dirty. A user reported more than 100,000 entries after a few minutes.\n\nThe instance attributes are now prepared on the per-rebuild copy, and the three auxiliary `ShaderMaterial`s get their own copy of `_Attribs`. The main splat effect still receives the same attributes as before for a single rebuild. The auxiliary shaders read `world` from the mesh uniform buffer rather than the instance attributes, and `ShaderMaterial.isReady` already adds instance attributes itself when the mesh uses instances, so dropping the previously leaked names from their lists does not change rendering.\n\nWhile reviewing this, a related leak showed up in `ShaderMaterial.isReady`: with `useVertexPulling` enabled, it appended `vp_<attribute>_info` to `_options.uniforms` on every call, even when nothing changed. Because the splat auxiliary materials pass static uniform arrays, those shared arrays grew too. WebGPU IBL shadows enable vertex pulling automatically on their voxel material. These uniforms are bound from the vertex-pulling metadata rather than looked up in `_options.uniforms`, so they are now added to a copy made only when a new effect is created (or to the copy already passed to `customShaderNameResolve`). As a side effect, serialized `ShaderMaterial`s no longer accumulate these entries. Other uniforms that `isReady` adds (for example `view` for fog) are still persisted, because `bind()` checks for them in `_options.uniforms`; those pushes were already guarded against duplicates.\n\n## Worth a look\n\n- `ShaderMaterial.isReady` allocates the augmented uniform list only when it creates an effect, so calls that reuse the existing effect do not allocate.\n- `ObjectRenderer` marking every mesh light-dirty when a predicate refills an unchanged render list is a separate CPU cost and is not addressed here.\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.pure.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.pure.ts",
+                    "packages/dev/core/test/unit/Materials/gaussianSplattingMaterial.test.ts",
+                    "packages/dev/core/test/unit/Materials/shaderMaterial.vertexPulling.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "19078",
+                "title": "Clamp native anisotropic filtering level to caps.maxAnisotropy",
+                "description": "`ThinNativeEngine._updateAnisotropicLevel` sends `texture.anisotropicFilteringLevel` to the native engine unchanged. The WebGL engine (`ThinEngine._setAnisotropicLevel`) clamps it to `caps.maxAnisotropy`. So a scene that lowers `caps.maxAnisotropy` to turn off anisotropic filtering still renders with it on Babylon Native.\n\nThe \"Node material PBR 1\" validation test (`#D8AK3Z#121`) does exactly this (`getCaps().maxAnisotropy = 1`). On Babylon Native D3D11 its textures came out visibly sharper than WebGL, giving a 7.4% diff against the reference.\n\nThis PR applies the same clamp in `ThinNativeEngine`.\n\nResults:\n- **Node material PBR 1** on Babylon Native D3D11: 7.40% → 1.94% (passes the 2.5% threshold).\n- No regressions across the rest of the Babylon Native validation suite (698/698).\n- Added a unit test.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19081",
+                "title": "Fix instanced bounding boxes with high precision matrices",
+                "description": "`BoundingBoxRenderer._renderInstanced` (used when `useInstances = true`) wrote each box's scale/translation into `TempMatrixArray`, an alias of `TempMatrix.asArray()` captured at module load.\n\nWhen high precision matrices are enabled (`useHighPrecisionMatrix` or `useLargeWorldRendering`), `PerformanceConfigurator.SetMatrixPrecision` replaces the internal `_m` array of every tracked matrix, including `TempMatrix`. The cached alias then pointed at the stale array, `TempMatrix` stayed identity, and every bounding box rendered as a unit cube transformed by the world matrix.\n\nFix: fetch `TempMatrix.asArray()` at use time.\n\nRepro: the `FrameGraph nrge frozen meshes` playground (`#9SDNZF#34`) with an engine created with `useHighPrecisionMatrix: true`. The bounding boxes are much too large (WebGL and Native). With the fix, the Native validation run under high precision matches the reference image (0.029% vs 11.2% before).",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/boundingBoxRenderer.pure.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19082",
+                "title": "Update visualization snippets to match Babylon Native",
+                "description": "Keeps these visualization snippets at the same versions as the Babylon Native validation config, where they were fixed for nondeterminism:\n\n| Test | Old | New | Change |\n|---|---|---|---|\n| Displacement map | `#WZ8JL4#0` | `#WZ8JL4#1` | Adds scene pending data until `applyDisplacementMap` has loaded and applied its image, so the frame can't be captured before the sphere is displaced. |\n| Instances + motion blur | `#YB006J#547` | `#YB006J#800` | Places trees with a local seeded generator instead of the global `Math.random` sequence, so placement doesn't depend on how many random values the engine consumed before. |\n| Instances + GBR + motion blur | `#YB006J#549` | `#YB006J#801` | Same as above. |\n\nBabylon Native PRs: BabylonJS/BabylonNative#2003, BabylonJS/BabylonNative#1999.\n\nValidation (Chrome, Babylon.js 9.33.0): old and new snippets render pixel-identical on WebGL2 and WebGPU, and match the existing reference images (0.000%, 0.014%, 0.032%). No reference image changes.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19095",
+                "title": "Keep the UMD KTX2 encoder package private",
+                "description": "## Why\n\nThe encoder PR added a new unscoped npm package, `babylonjs-ktx2encoder`, to the workspace publish batch. Its first publication was rejected with 403, leaving 9.33.1 partially published and preventing the CDN deployment.\n\n## Change\n\nMark only that UMD package private for now. npm workspace publishing will skip it; its build scripts and the already-published scoped `@babylonjs/ktx2encoder` package remain unchanged. No npm credentials or registry configuration change.\n\nThis prevents another attempt to create the unscoped package. It does not repair the incomplete 9.33.1 release or change version selection.\n\n## Verification\n\nFocused package-metadata checks, approved for this one-line change: Prettier and whitespace checks pass. An offline npm workspace publish dry-run using both actual encoder manifests skips the private UMD package and retains the scoped package. No packages were published by that check; full engine suites were not run.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/public/umd/babylonjs-ktx2encoder/package.json"
+                ],
+                "tags": [
+                    "bug",
+                    "build",
+                    "skip changelog"
+                ]
+            }
+        ],
         "9.33.1": [
             {
                 "pr": "19011",
