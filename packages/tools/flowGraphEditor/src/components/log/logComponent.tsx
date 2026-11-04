@@ -20,8 +20,8 @@ export class LogEntryBuffer {
 
     public constructor(
         private readonly _publish: (entries: LogEntry[]) => void,
-        private readonly _requestFrame: (callback: FrameRequestCallback) => number = requestAnimationFrame,
-        private readonly _cancelFrame: (handle: number) => void = cancelAnimationFrame
+        private readonly _requestFrame: (callback: FrameRequestCallback) => number = (callback) => globalThis.requestAnimationFrame(callback),
+        private readonly _cancelFrame: (handle: number) => void = (handle) => globalThis.cancelAnimationFrame(handle)
     ) {}
 
     public enqueue(entry: LogEntry): void {

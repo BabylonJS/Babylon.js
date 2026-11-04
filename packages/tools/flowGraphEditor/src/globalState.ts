@@ -25,11 +25,42 @@ import { FlowGraphValidationSeverity, type IFlowGraphValidationIssue, type IFlow
 import { type HelpTopicId } from "./components/help/helpContent";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { type IFlowGraphSoundAsset } from "core/FlowGraph/flowGraphSoundAssets";
-import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
+import { Logger } from "core/Misc/logger";
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
 export type SceneReferenceLocation = { id: string; name: string; className: string; idIndex: number; nameIndex: number; sceneUid?: string };
 type SceneReferenceProvenance = Array<[number, SceneReferenceLocation]>;
+
+function SerializeEditorValue(value: any): any {
+    const className = value?.getClassName?.() ?? "";
+    if (className && typeof value.asArray === "function") {
+        return { value: value.asArray(), className };
+    }
+    if (className === "FlowGraphInteger") {
+        return { value: value.value, className };
+    }
+    if (className && (value.id || value.name)) {
+        return { id: value.id, name: value.name, className, uniqueId: value.uniqueId };
+    }
+    const isSceneReference = (entry: any) => entry && typeof entry.getClassName === "function" && !!(entry.id || entry.name);
+    const isSerializedReference = (entry: any) =>
+        entry && typeof entry === "object" && typeof entry.className === "string" && !!(entry.id || entry.name) && entry.value === undefined;
+    if (Array.isArray(value) && value.length > 0 && value.every((entry) => isSceneReference(entry) || isSerializedReference(entry))) {
+        return value.map((entry) => (isSceneReference(entry) ? { id: entry.id, name: entry.name, className: entry.getClassName(), uniqueId: entry.uniqueId } : { ...entry }));
+    }
+    if (typeof value !== "object" || value === null) {
+        return value;
+    }
+    if (Object.values(value).some((entry) => typeof entry === "function")) {
+        return undefined;
+    }
+    try {
+        return JSON.parse(JSON.stringify(value));
+    } catch {
+        Logger.Warn("Flow Graph editor serialization skipped a value that is not JSON-serializable.");
+        return undefined;
+    }
+}
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -326,11 +357,6 @@ export class GlobalState {
     }
 
     private _updateSavedInputValues<T>(connectionId: string, previousValue: T, value: T): void {
-        const serializeValue = (nextValue: T) => {
-            const serialized: Record<string, unknown> = {};
-            defaultValueSerializationFunction("value", nextValue, serialized);
-            return serialized.value;
-        };
         const updateRuntime = (contexts: Array<{ connectionValues: { [key: string]: any } }> | null) => {
             const updatedIndexes = new Set<number>();
             contexts?.forEach((context, index) => {
@@ -342,7 +368,7 @@ export class GlobalState {
             return updatedIndexes;
         };
         const updateSerialized = (contexts: any[] | null, updatedIndexes: Set<number>) => {
-            const serializedValue = serializeValue(value);
+            const serializedValue = SerializeEditorValue(value);
             contexts?.forEach((context, index) => {
                 const connectionValues = context._connectionValues;
                 if (updatedIndexes.has(index) && connectionValues && connectionId in connectionValues) {
@@ -1966,9 +1992,7 @@ export class GlobalState {
     }
 
     private _serializeValue(value: any): any {
-        const serialized: Record<string, unknown> = {};
-        defaultValueSerializationFunction("value", value, serialized);
-        return serialized.value;
+        return SerializeEditorValue(value);
     }
 
     private _restoreReboundDefaults(reboundDefaults: Map<FlowGraphDataConnection<any>, any>): void {

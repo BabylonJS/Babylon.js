@@ -1144,6 +1144,26 @@ describe("review feedback regressions", () => {
         expect(published).toEqual([[first, second]]);
     });
 
+    it("invokes the browser frame methods with the global receiver", () => {
+        const requestFrame = vi.fn(function (this: typeof globalThis, _callback: FrameRequestCallback) {
+            expect(this).toBe(globalThis);
+            return 1;
+        });
+        const cancelFrame = vi.fn(function (this: typeof globalThis, handle: number) {
+            expect(this).toBe(globalThis);
+            expect(handle).toBe(1);
+        });
+        vi.stubGlobal("requestAnimationFrame", requestFrame);
+        vi.stubGlobal("cancelAnimationFrame", cancelFrame);
+        const buffer = new LogEntryBuffer(vi.fn());
+
+        buffer.enqueue(new LogEntry("event", false));
+        buffer.dispose();
+
+        expect(requestFrame).toHaveBeenCalledOnce();
+        expect(cancelFrame).toHaveBeenCalledOnce();
+    });
+
     it("keeps only the newest buffered entries in arrival order", () => {
         const callbacks: FrameRequestCallback[] = [];
         const published: LogEntry[][] = [];
