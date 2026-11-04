@@ -26,15 +26,21 @@ function _CreateReferenceProvenanceParseFunction(
     provenance: SerializedFlowGraphReferenceProvenance
 ): NonNullable<IFlowGraphParseOptions["valueParseFunction"]> {
     const locations = new Map<number, SerializedFlowGraphReferenceProvenance[number][1][]>();
-    for (const [uniqueId, location] of provenance) {
+    const provenanceIndexes = new Map<SerializedFlowGraphReferenceProvenance[number][1], number>();
+    for (let provenanceIndex = 0; provenanceIndex < provenance.length; provenanceIndex++) {
+        const [uniqueId, location] = provenance[provenanceIndex];
         const matchingLocations = locations.get(uniqueId) ?? [];
         matchingLocations.push(location);
         locations.set(uniqueId, matchingLocations);
+        provenanceIndexes.set(location, provenanceIndex);
     }
 
     const resolve = (serializedValue: any, parsedValue: any, scene: Scene): any => {
         if (Array.isArray(serializedValue)) {
-            if (!Array.isArray(parsedValue)) {
+            if (
+                !Array.isArray(parsedValue) ||
+                !serializedValue.every((entry) => entry && typeof entry === "object" && typeof entry.uniqueId === "number" && typeof entry.className === "string")
+            ) {
                 return parsedValue;
             }
             let changed = false;
@@ -66,7 +72,23 @@ function _CreateReferenceProvenanceParseFunction(
             candidates = nodes.filter((node) => node.name === location.name);
             index = location.nameIndex;
         }
-        return (location.sceneUid === scene.uid ? candidates.find((node) => node.uniqueId === serializedValue.uniqueId) : undefined) ?? candidates[index] ?? serializedValue;
+        const resolved = (location.sceneUid === scene.uid ? candidates.find((node) => node.uniqueId === serializedValue.uniqueId) : undefined) ?? candidates[index];
+        if (!resolved) {
+            return serializedValue;
+        }
+        const resolvedNodes = scene.getNodes().filter((node) => node.getClassName() === resolved.getClassName());
+        provenance[provenanceIndexes.get(location)!] = [
+            resolved.uniqueId,
+            {
+                id: resolved.id,
+                name: resolved.name,
+                className: resolved.getClassName(),
+                idIndex: resolvedNodes.filter((node) => node.id === resolved.id).indexOf(resolved),
+                nameIndex: resolvedNodes.filter((node) => node.name === resolved.name).indexOf(resolved),
+                sceneUid: scene.uid,
+            },
+        ];
+        return resolved;
     };
 
     return (key, serializationObject, assetsContainer, scene) => resolve(serializationObject[key], baseValueParseFunction(key, serializationObject, assetsContainer, scene), scene);
@@ -323,7 +345,8 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
     graph.metadata = serializationObject.metadata;
     const blocks: FlowGraphBlock[] = [];
     const baseValueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
-    const referenceProvenance = options.referenceProvenance ?? serializationObject.referenceProvenance;
+    const serializedReferenceProvenance = options.referenceProvenance ?? serializationObject.referenceProvenance;
+    const referenceProvenance = serializedReferenceProvenance?.map(([uniqueId, location]) => [uniqueId, { ...location }] as SerializedFlowGraphReferenceProvenance[number]);
     const valueParseFunction = referenceProvenance ? _CreateReferenceProvenanceParseFunction(baseValueParseFunction, referenceProvenance) : baseValueParseFunction;
     if (referenceProvenance) {
         graph._setReferenceProvenance(referenceProvenance);

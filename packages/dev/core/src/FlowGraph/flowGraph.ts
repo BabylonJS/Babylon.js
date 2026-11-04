@@ -729,6 +729,26 @@ export class FlowGraph {
             serializationObject.executionContexts.push(serializedContext);
         }
         if (this._referenceProvenance) {
+            const nodes = this._scene.getNodes();
+            for (let index = 0; index < this._referenceProvenance.length; index++) {
+                const [uniqueId, location] = this._referenceProvenance[index];
+                const node = nodes.find((candidate) => candidate.uniqueId === uniqueId && candidate.getClassName() === location.className);
+                if (!node) {
+                    continue;
+                }
+                const sameClassNodes = nodes.filter((candidate) => candidate.getClassName() === node.getClassName());
+                this._referenceProvenance[index] = [
+                    node.uniqueId,
+                    {
+                        id: node.id,
+                        name: node.name,
+                        className: node.getClassName(),
+                        idIndex: sameClassNodes.filter((candidate) => candidate.id === node.id).indexOf(node),
+                        nameIndex: sameClassNodes.filter((candidate) => candidate.name === node.name).indexOf(node),
+                        sceneUid: this._scene.uid,
+                    },
+                ];
+            }
             serializationObject.referenceProvenance = this._referenceProvenance;
         } else {
             delete serializationObject.referenceProvenance;

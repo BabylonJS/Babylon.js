@@ -400,11 +400,18 @@ export class FlowGraphCoordinator {
      */
     public serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject._flowGraphs = [];
-        let referenceProvenance: SerializedFlowGraphReferenceProvenance | undefined;
+        const referenceProvenance: SerializedFlowGraphReferenceProvenance = [];
+        const provenanceKeys = new Set<string>();
         for (const graph of this._flowGraphs) {
             const serializedGraph: any = {};
             graph.serialize(serializedGraph, valueSerializeFunction);
-            referenceProvenance ??= serializedGraph.referenceProvenance;
+            for (const entry of serializedGraph.referenceProvenance ?? []) {
+                const key = JSON.stringify(entry);
+                if (!provenanceKeys.has(key)) {
+                    provenanceKeys.add(key);
+                    referenceProvenance.push(entry);
+                }
+            }
             delete serializedGraph.referenceProvenance;
             serializationObject._flowGraphs.push(serializedGraph);
         }
@@ -414,7 +421,7 @@ export class FlowGraphCoordinator {
         } else {
             delete serializationObject.soundAssets;
         }
-        if (referenceProvenance) {
+        if (referenceProvenance.length > 0) {
             serializationObject.referenceProvenance = referenceProvenance;
         } else {
             delete serializationObject.referenceProvenance;

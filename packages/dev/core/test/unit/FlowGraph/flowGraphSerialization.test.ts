@@ -356,6 +356,39 @@ describe("Flow Graph Serialization", () => {
         expect((parsedBlock.targetMeshes as any)._defaultValue).toBe(parsedTargets);
     });
 
+    it("keeps mixed nested arrays serialized instead of resolving nested references", () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const node = new Mesh("part", scene);
+        const serializedReference = { uniqueId: node.uniqueId, id: node.id, name: node.name, className: node.getClassName() };
+        const block = new FlowGraphConstantBlock({ value: [[serializedReference], "label"] });
+        graph.addBlock(block);
+        const serialized: any = {};
+        graph.serialize(serialized);
+        serialized.referenceProvenance = [
+            [
+                node.uniqueId,
+                {
+                    id: node.id,
+                    name: node.name,
+                    className: node.getClassName(),
+                    idIndex: 0,
+                    nameIndex: 0,
+                    sceneUid: scene.uid,
+                },
+            ],
+        ];
+
+        const parsed = ParseFlowGraph(serialized, { coordinator }, [FlowGraphConstantBlock]);
+        const parsedBlock = parsed.getAllBlocks()[0] as FlowGraphConstantBlock<any>;
+        const roundTripped: any = {};
+        parsed.serialize(roundTripped);
+
+        expect(parsedBlock.config.value).toEqual([[serializedReference], "label"]);
+        expect(parsedBlock.config.value[0][0]).not.toBe(node);
+        expect(roundTripped.allBlocks[0].config.value).toEqual([[serializedReference], "label"]);
+    });
+
     it("Serializes and parses a block", () => {
         // Serialize a block with path
         // const mockContext: any = vi.mock("core/FlowGraph/flowGraphContext") as any;
@@ -608,6 +641,24 @@ describe("Flow Graph Serialization", () => {
         expect(intersects).toHaveBeenCalledWith(targetSecond, false);
         expect(activate).toHaveBeenCalledWith(context);
 
+        targetSecond.name = "renamed";
+        const resolvedSerialization: any = {};
+        parsedCoordinator.serialize(resolvedSerialization);
+        expect(resolvedSerialization.referenceProvenance).toContainEqual([
+            targetSecond.uniqueId,
+            expect.objectContaining({ name: "renamed", idIndex: 1, nameIndex: 0, sceneUid: scene.uid }),
+        ]);
+        const nextScene = new Scene(engine);
+        const nextFirst = new Mesh("part", nextScene);
+        const nextSecond = new Mesh("renamed", nextScene);
+        nextSecond.id = nextFirst.id;
+        new Mesh("source", nextScene);
+        const reparsedResolvedCoordinator = await ParseCoordinatorAsync(resolvedSerialization, { scene: nextScene });
+        const reparsedResolvedBlock = reparsedResolvedCoordinator.flowGraphs[0].getAllBlocks()[0] as FlowGraphMeshIntersectionEventBlock;
+        expect((reparsedResolvedBlock.targetMeshes as any)._defaultValue).toEqual([nextSecond]);
+
+        reparsedResolvedCoordinator.dispose();
+        nextScene.dispose();
         parsedCoordinator.dispose();
         targetSecond.dispose();
         const missingTargetCoordinator = await ParseCoordinatorAsync(serialized, { scene });
@@ -627,6 +678,45 @@ describe("Flow Graph Serialization", () => {
         missingTargetCoordinator.dispose();
         sourceCoordinator.dispose();
         sourceScene.dispose();
+    });
+
+    it("merges provenance retained by separately parsed graphs", async () => {
+        const firstNode = new Mesh("first", scene);
+        const secondNode = new Mesh("second", scene);
+        const firstCoordinator = new FlowGraphCoordinator({ scene });
+        const firstGraph = firstCoordinator.createGraph();
+        const firstBlock = new FlowGraphMeshIntersectionEventBlock();
+        firstGraph.addEventBlock(firstBlock);
+        (firstBlock.targetMeshes as any)._defaultValue = [firstNode];
+        const firstSerialized: any = {};
+        firstGraph.serialize(firstSerialized);
+        firstSerialized.referenceProvenance = [
+            [firstNode.uniqueId, { id: firstNode.id, name: firstNode.name, className: firstNode.getClassName(), idIndex: 0, nameIndex: 0, sceneUid: scene.uid }],
+        ];
+
+        const secondCoordinator = new FlowGraphCoordinator({ scene });
+        const secondGraph = secondCoordinator.createGraph();
+        const secondBlock = new FlowGraphMeshIntersectionEventBlock();
+        secondGraph.addEventBlock(secondBlock);
+        (secondBlock.targetMeshes as any)._defaultValue = [secondNode];
+        const secondSerialized: any = {};
+        secondGraph.serialize(secondSerialized);
+        secondSerialized.referenceProvenance = [
+            [secondNode.uniqueId, { id: secondNode.id, name: secondNode.name, className: secondNode.getClassName(), idIndex: 0, nameIndex: 0, sceneUid: scene.uid }],
+        ];
+
+        const targetCoordinator = new FlowGraphCoordinator({ scene });
+        await ParseFlowGraphAsync(firstSerialized, { coordinator: targetCoordinator });
+        await ParseFlowGraphAsync(secondSerialized, { coordinator: targetCoordinator });
+        const merged: any = {};
+        targetCoordinator.serialize(merged);
+
+        expect(merged.referenceProvenance).toHaveLength(2);
+        expect(merged.referenceProvenance.map(([uniqueId]: [number]) => uniqueId)).toEqual(expect.arrayContaining([firstNode.uniqueId, secondNode.uniqueId]));
+
+        targetCoordinator.dispose();
+        firstCoordinator.dispose();
+        secondCoordinator.dispose();
     });
 
     it("returns the active flow graph from a snippet", async () => {
