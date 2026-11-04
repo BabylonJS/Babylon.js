@@ -35,6 +35,11 @@
     "nx": {
         "targets": {
             "build": {
+                "inputs": [
+                    "default",
+                    "^default",
+                    "{workspaceRoot}/packages/dev/smartFilterBlocks/**/*"
+                ],
                 "outputs": [
                     "{projectRoot}/dist",
                     "{projectRoot}/src",

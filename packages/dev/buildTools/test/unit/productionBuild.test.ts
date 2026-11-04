@@ -141,12 +141,14 @@ describe("production build helpers", () => {
         expect(readFileSync(file, "utf8")).toBe("gltf\nbabylonjs\nbabylonjs-gui");
     });
 
-    it.each(["default", "shared-ui-components", "smart-filters"])(
+    it.each(["default", "shared-ui-components", "smart-filters", "smart-filters-blocks", "viewer", "mcp-servers"] as const)(
         "restores %s artifacts and invalidates shared configuration, dependencies, and build modes",
         (outputKind) => {
             write("nx.json", readFileSync(resolve("nx.json"), "utf8"));
+            write("scripts/nxCleanCache.mjs", readFileSync(resolve("scripts/nxCleanCache.mjs"), "utf8"));
             const nxPackage = JSON.parse(readFileSync(resolve("node_modules/nx/package.json"), "utf8"));
-            write("package.json", JSON.stringify({ private: true, workspaces: ["packages/*"], devDependencies: { nx: nxPackage.version } }));
+            write("package.json", JSON.stringify({ private: true, workspaces: ["packages/*", "packages/public/@babylonjs/*"], devDependencies: { nx: nxPackage.version } }));
+            const projectRoot = "packages/public/@babylonjs/fixture";
             const defaultArtifacts = [
                 "bundle.js",
                 "bundle.js.map",
@@ -155,44 +157,80 @@ describe("production build helpers", () => {
                 "lib/index.js",
                 "bin/cli.js",
                 "assets/decoder.wasm",
+                "wasm/decoder.wasm",
+                "wasm/LICENSE",
+                "wasm/NOTICE",
+                "wasm/LICENSES/codec.txt",
                 "src/Shaders/upper.ts",
                 "src/effect/shaders/lower.ts",
                 "src/material.fragment.ts",
             ];
-            const artifacts =
-                outputKind === "shared-ui-components"
-                    ? ["index.js", "index.js.map", "index.d.ts", "fluent/icons/icon.svg", "fluent/theme.module.scss"]
-                    : outputKind === "smart-filters"
-                      ? ["dist/index.js", "src/index.ts", "tsconfig.build.tsbuildinfo"]
-                      : defaultArtifacts;
-            const outputs =
-                outputKind === "default" ? undefined : JSON.parse(readFileSync(resolve(`packages/public/@babylonjs/${outputKind}/package.json`), "utf8")).nx.targets.build.outputs;
-            write(".gitignore", [".nx", "node_modules", ...artifacts.map((name) => `packages/fixture/${name}`)].join("\n"));
+            const artifacts = {
+                default: defaultArtifacts,
+                "shared-ui-components": ["index.js", "index.js.map", "index.d.ts", "fluent/icons/icon.svg", "fluent/theme.module.scss"],
+                "smart-filters": ["dist/index.js", "src/index.ts", "tsconfig.build.tsbuildinfo"],
+                "smart-filters-blocks": ["dist/index.js", "src/index.ts", "tsconfig.build.tsbuildinfo"],
+                viewer: ["lib/full/index.js", "lib/lite/index.d.ts", "dist/viewer.js"],
+                "mcp-servers": ["dist/babylonjs-mcp-servers.js", "dist/nme-mcp-server.js"],
+            }[outputKind];
+            const { inputs, outputs } =
+                outputKind === "default" ? {} : (JSON.parse(readFileSync(resolve(`packages/public/@babylonjs/${outputKind}/package.json`), "utf8")).nx?.targets?.build ?? {});
+            const sourceFiles = {
+                default: [],
+                "shared-ui-components": [],
+                "smart-filters": [],
+                "smart-filters-blocks": ["packages/dev/smartFilterBlocks/src/block.ts", "packages/dev/smartFilterBlocks/src/shader.glsl"],
+                viewer: ["packages/tools/viewer/src/viewer.ts"],
+                "mcp-servers": [
+                    ...["flow-graph", "gui", "nge", "nme", "npe", "nrge", "smart-filters"].map((name) => `packages/tools/${name}-mcp-server/src/server.ts`),
+                    "packages/tools/mcp-server-core/src/core.ts",
+                    "packages/tools/ngeMcpCommon/src/geometry.ts",
+                    "packages/tools/snippetLoader/src/snippet.ts",
+                ],
+            }[outputKind];
+            const obsoleteArtifacts =
+                outputKind === "default" || outputKind === "shared-ui-components"
+                    ? ["obsolete.js", "obsolete.d.ts", "obsolete.js.map", ...(outputKind === "shared-ui-components" ? ["fluent/obsolete.svg", "fluent/obsolete.scss"] : [])]
+                    : [];
+            write(".gitignore", [".nx", "node_modules", ...[...artifacts, ...obsoleteArtifacts].map((name) => `${projectRoot}/${name}`)].join("\n"));
             write("tsconfig.build.json", "{}");
             write("packages/public/helper.mjs", "export const version = 1;");
+            write("packages/tools/rollup.config.mcp.mjs", "export const version = 1;");
+            for (const file of sourceFiles) {
+                write(file, "export const version = 1;");
+            }
             write("packages/dependency/project.json", JSON.stringify({ name: "dependency" }));
             write("packages/dependency/source.ts", "export const value = 1;");
-            write("packages/fixture/source.ts", "export const value = 1;");
+            write(`${projectRoot}/source.ts`, "export const value = 1;");
+            write(`${projectRoot}/revision.txt`, "A");
+            write(`${projectRoot}/package.json`, JSON.stringify({ name: "fixture", scripts: { build: "node build.cjs", clean: "node clean.cjs" } }));
             write(
-                "packages/fixture/project.json",
+                `${projectRoot}/project.json`,
                 JSON.stringify({
                     name: "fixture",
                     implicitDependencies: ["dependency"],
-                    targets: { build: { executor: "nx:run-commands", outputs, options: { command: "node build.cjs", cwd: "packages/fixture" } } },
+                    targets: { build: { executor: "nx:run-commands", inputs, outputs, options: { command: "node build.cjs", cwd: projectRoot } } },
                 })
             );
             write(
-                "packages/fixture/build.cjs",
+                `${projectRoot}/build.cjs`,
                 `
             const fs = require("node:fs");
-            const counter = "../../.runs";
+            const counter = ${JSON.stringify(join(directory, ".runs"))};
             fs.writeFileSync(counter, String(fs.existsSync(counter) ? Number(fs.readFileSync(counter)) + 1 : 1));
             for (const name of ${JSON.stringify(artifacts)}) {
                 fs.mkdirSync(require("node:path").dirname(name), { recursive: true });
-                fs.writeFileSync(name, "expected artifact");
+                fs.writeFileSync(name, name.endsWith(".wasm") ? Buffer.from([0, 97, 115, 109, 1, 0, 0, 0]) : "expected artifact");
+            }
+            if (fs.readFileSync("revision.txt", "utf8") === "B") {
+                for (const name of ${JSON.stringify(obsoleteArtifacts)}) {
+                    fs.mkdirSync(require("node:path").dirname(name), { recursive: true });
+                    fs.writeFileSync(name, "obsolete artifact");
+                }
             }
         `
             );
+            write(`${projectRoot}/clean.cjs`, `for (const name of ${JSON.stringify([...artifacts, ...obsoleteArtifacts])}) require("node:fs").rmSync(name, { force: true });`);
             symlinkSync(resolve("node_modules"), join(directory, "node_modules"), process.platform === "win32" ? "junction" : "dir");
             const run = (mode = "") =>
                 execFileSync(process.execPath, [resolve("node_modules/nx", nxPackage.bin.nx), "run", "fixture:build"], {
@@ -213,12 +251,14 @@ describe("production build helpers", () => {
             run();
             expect(count()).toBe(1);
             for (const name of artifacts) {
-                rmSync(join(directory, "packages/fixture", name));
+                rmSync(join(directory, projectRoot, name));
             }
             run();
             expect(count()).toBe(1);
             for (const name of artifacts) {
-                expect(readFileSync(join(directory, "packages/fixture", name), "utf8")).toBe("expected artifact");
+                expect(readFileSync(join(directory, projectRoot, name))).toEqual(
+                    name.endsWith(".wasm") ? Buffer.from([0, 97, 115, 109, 1, 0, 0, 0]) : Buffer.from("expected artifact")
+                );
             }
             write("packages/public/helper.mjs", "export const version = 2;");
             run();
@@ -229,11 +269,34 @@ describe("production build helpers", () => {
             write("packages/dependency/source.ts", "export const value = 2;");
             run();
             expect(count()).toBe(4);
-            write("packages/fixture/source.ts", "export const value = 2;");
+            write(`${projectRoot}/source.ts`, "export const value = 2;");
             run();
             expect(count()).toBe(5);
             run("production");
             expect(count()).toBe(6);
+            let expectedRuns = 6;
+            for (const file of sourceFiles) {
+                write(file, "export const version = 2;");
+                run("production");
+                expect(count(), file).toBe(++expectedRuns);
+                run("production");
+                expect(count(), file).toBe(expectedRuns);
+            }
+            write(`${projectRoot}/revision.txt`, "B");
+            run("production");
+            expect(count()).toBe(++expectedRuns);
+            for (const name of obsoleteArtifacts) {
+                expect(readFileSync(join(directory, projectRoot, name), "utf8")).toBe("obsolete artifact");
+            }
+            write(`${projectRoot}/revision.txt`, "A");
+            run("production");
+            expect(count()).toBe(expectedRuns);
+            for (const name of obsoleteArtifacts) {
+                expect(() => readFileSync(join(directory, projectRoot, name)), name).toThrow();
+            }
+            write("packages/tools/rollup.config.mcp.mjs", "export const version = 2;");
+            run("production");
+            expect(count()).toBe(expectedRuns + 1);
         },
         60_000
     );

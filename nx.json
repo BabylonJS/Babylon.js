@@ -1,5 +1,6 @@
 {
     "defaultBase": "master",
+    "plugins": ["./scripts/nxCleanCache.mjs"],
     "namedInputs": {
         "default": ["{projectRoot}/**/*", "buildTools"],
         "buildTools": [
@@ -7,6 +8,7 @@
             "{workspaceRoot}/package-lock.json",
             "{workspaceRoot}/tsconfig*.json",
             "{workspaceRoot}/packages/public/*.mjs",
+            "{workspaceRoot}/packages/tools/rollup.config.mcp.mjs",
             "{workspaceRoot}/scripts/**/*",
             "{workspaceRoot}/packages/tools/babylonServer/public/**/*",
             { "env": "NODE_ENV" },
@@ -17,7 +19,7 @@
     },
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"],
+            "dependsOn": ["^build", "clean-for-cache"],
             "cache": true,
             "inputs": ["default", "^default"],
             "outputs": [
@@ -25,6 +27,7 @@
                 "{projectRoot}/lib",
                 "{projectRoot}/bin",
                 "{projectRoot}/assets",
+                "{projectRoot}/wasm",
                 "{projectRoot}/**/*.js",
                 "{projectRoot}/**/*.map",
                 "{projectRoot}/**/*.d.ts",

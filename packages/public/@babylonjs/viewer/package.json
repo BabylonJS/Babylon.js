@@ -28,6 +28,17 @@
         "docs/**",
         "license.md"
     ],
+    "nx": {
+        "targets": {
+            "build": {
+                "inputs": [
+                    "default",
+                    "^default",
+                    "{workspaceRoot}/packages/tools/viewer/**/*"
+                ]
+            }
+        }
+    },
     "scripts": {
         "start": "npm run serve -- --open test/apps/web/index.html",
         "start:prod": "serve . --listen 1343",
