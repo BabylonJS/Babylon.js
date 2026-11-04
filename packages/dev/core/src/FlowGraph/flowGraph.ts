@@ -111,6 +111,8 @@ export interface IFlowGraphParseOptions {
  * @experimental FlowGraph is still in development and is subject to change.
  */
 export class FlowGraph {
+    private _referenceProvenance: SerializedFlowGraphReferenceProvenance | undefined;
+
     /**
      * A human-readable name for this graph.
      */
@@ -726,6 +728,20 @@ export class FlowGraph {
             context.serialize(serializedContext, valueSerializeFunction);
             serializationObject.executionContexts.push(serializedContext);
         }
+        if (this._referenceProvenance) {
+            serializationObject.referenceProvenance = this._referenceProvenance;
+        } else {
+            delete serializationObject.referenceProvenance;
+        }
+    }
+
+    /**
+     * Retains serialized scene-reference provenance for subsequent graph serialization.
+     * @internal
+     * @param provenance serialized scene-reference provenance
+     */
+    public _setReferenceProvenance(provenance: SerializedFlowGraphReferenceProvenance): void {
+        this._referenceProvenance = provenance;
     }
 
     /**

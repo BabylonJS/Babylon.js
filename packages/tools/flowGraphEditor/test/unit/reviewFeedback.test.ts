@@ -1617,6 +1617,35 @@ describe("review feedback regressions", () => {
         engine.dispose();
     });
 
+    it("rolls a failed panel replacement back to a successful host replacement", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = coordinator;
+        globalState.markSoundAssetLoaded({ name: "shared", url: "data:audio/wav;base64,OLD" });
+        const hostAsset = { name: "shared", url: "data:audio/wav;base64,HOST" };
+        vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([hostAsset]);
+        vi.spyOn(coordinator, "getSoundAsset").mockReturnValue({} as any);
+        const addSoundAsset = vi
+            .spyOn(coordinator, "addSoundAssetAsync")
+            .mockRejectedValueOnce(new Error("Unsupported audio format"))
+            .mockResolvedValueOnce({} as any);
+
+        await expect(
+            ImportSoundAssetFileAsync(globalState, coordinator, { name: "replacement.wav", size: 100 } as File, "shared", async () => "data:audio/wav;base64,NEW")
+        ).rejects.toThrow("Unsupported audio format");
+
+        expect(addSoundAsset).toHaveBeenNthCalledWith(1, { name: "shared", url: "data:audio/wav;base64,NEW" });
+        expect(addSoundAsset).toHaveBeenNthCalledWith(2, hostAsset);
+
+        globalState.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("rolls concurrent failed replacements back to the last successfully loaded sound", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
@@ -2126,6 +2155,47 @@ describe("review feedback regressions", () => {
         missingScene.dispose();
         newScene.dispose();
         oldScene.dispose();
+        engine.dispose();
+    });
+
+    it("prefers same-scene identity when reopening through a host-scene coordinator", async () => {
+        const engine = new NullEngine();
+        const previewScene = new Scene(engine);
+        const first = new Mesh("part", previewScene);
+        const target = new Mesh("part", previewScene);
+        target.id = first.id;
+        const sourceCoordinator = new FlowGraphCoordinator({ scene: previewScene });
+        const sourceGraph = sourceCoordinator.createGraph();
+        const sourceBlock = new FlowGraphMeshIntersectionEventBlock();
+        sourceGraph.addEventBlock(sourceBlock);
+        (sourceBlock.targetMeshes as any)._defaultValue = [target];
+        const sourceState = new GlobalState(previewScene);
+        sourceState.sceneContext = new SceneContext(previewScene, false);
+        sourceState.coordinator = sourceCoordinator;
+        (sourceState.stateManager as any).storeEditorData = vi.fn();
+        const serialized = JSON.parse(SerializationTools.Serialize(sourceGraph, sourceState));
+
+        first.dispose();
+        const appended = new Mesh("part", previewScene);
+        appended.id = target.id;
+        const hostScene = new Scene(engine);
+        const loaded = await SerializationTools.DeserializeToStateAsync(serialized, hostScene);
+        const restoredState = new GlobalState(hostScene);
+        restoredState.sceneContext = new SceneContext(previewScene, false);
+        SerializationTools.ApplyDeserializedState(loaded, restoredState);
+        const restoredBlock = loaded.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.getClassName() === sourceBlock.getClassName()) as FlowGraphMeshIntersectionEventBlock;
+
+        expect((restoredBlock.targetMeshes as any)._defaultValue).toEqual([target]);
+        expect((restoredBlock.targetMeshes as any)._defaultValue).not.toEqual([appended]);
+
+        restoredState.dispose();
+        loaded.coordinator.dispose();
+        sourceState.dispose();
+        sourceCoordinator.dispose();
+        hostScene.dispose();
+        previewScene.dispose();
         engine.dispose();
     });
 

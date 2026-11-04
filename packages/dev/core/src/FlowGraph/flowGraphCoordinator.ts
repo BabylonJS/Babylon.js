@@ -2,7 +2,7 @@ import { type EventState, type IReadonlyObservable, type Observer, Observable } 
 import { type Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
 import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import { type IObjectAccessor } from "./typeDefinitions";
+import { type IObjectAccessor, type SerializedFlowGraphReferenceProvenance } from "./typeDefinitions";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
 import { type Nullable } from "core/types";
@@ -400,9 +400,12 @@ export class FlowGraphCoordinator {
      */
     public serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject._flowGraphs = [];
+        let referenceProvenance: SerializedFlowGraphReferenceProvenance | undefined;
         for (const graph of this._flowGraphs) {
-            const serializedGraph = {};
+            const serializedGraph: any = {};
             graph.serialize(serializedGraph, valueSerializeFunction);
+            referenceProvenance ??= serializedGraph.referenceProvenance;
+            delete serializedGraph.referenceProvenance;
             serializationObject._flowGraphs.push(serializedGraph);
         }
         serializationObject.dispatchEventsSynchronously = this.dispatchEventsSynchronously;
@@ -410,6 +413,11 @@ export class FlowGraphCoordinator {
             serializationObject.soundAssets = this.soundAssets;
         } else {
             delete serializationObject.soundAssets;
+        }
+        if (referenceProvenance) {
+            serializationObject.referenceProvenance = referenceProvenance;
+        } else {
+            delete serializationObject.referenceProvenance;
         }
     }
 

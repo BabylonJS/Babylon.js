@@ -430,11 +430,15 @@ export class GlobalState {
      * @returns stable rollback declaration, if one exists
      */
     public getSoundAssetRollback(coordinator: FlowGraphCoordinator, name: string): IFlowGraphSoundAsset | undefined {
+        const current = coordinator.soundAssets.find((asset) => asset.name === name);
+        if (current && coordinator.getSoundAsset(name)) {
+            this._lastSuccessfulSoundAssets.set(name, current);
+            return current;
+        }
         const cached = this._lastSuccessfulSoundAssets.get(name);
         if (cached) {
             return cached;
         }
-        const current = coordinator.soundAssets.find((asset) => asset.name === name);
         if (current) {
             this._lastSuccessfulSoundAssets.set(name, current);
         }
@@ -2017,6 +2021,13 @@ export class GlobalState {
         }
         if (candidates.length === 0) {
             return value;
+        }
+
+        if (oldLocation?.sceneUid === newScene.uid && reference.uniqueId !== undefined) {
+            const sameSceneNode = candidates.find((node) => node.uniqueId === reference.uniqueId);
+            if (sameSceneNode) {
+                return sameSceneNode;
+            }
         }
 
         if (locationIndex !== undefined) {

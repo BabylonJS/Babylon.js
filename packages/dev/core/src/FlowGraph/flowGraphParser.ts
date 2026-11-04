@@ -34,7 +34,16 @@ function _CreateReferenceProvenanceParseFunction(
 
     const resolve = (serializedValue: any, parsedValue: any, scene: Scene): any => {
         if (Array.isArray(serializedValue)) {
-            return serializedValue.map((entry, index) => resolve(entry, Array.isArray(parsedValue) ? parsedValue[index] : undefined, scene));
+            if (!Array.isArray(parsedValue)) {
+                return parsedValue;
+            }
+            let changed = false;
+            const resolved = serializedValue.map((entry, index) => {
+                const resolvedEntry = resolve(entry, parsedValue[index], scene);
+                changed ||= resolvedEntry !== parsedValue[index];
+                return resolvedEntry;
+            });
+            return changed ? resolved : parsedValue;
         }
         if (!serializedValue || typeof serializedValue !== "object" || typeof serializedValue.uniqueId !== "number" || typeof serializedValue.className !== "string") {
             return parsedValue;
@@ -316,6 +325,9 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
     const baseValueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     const referenceProvenance = options.referenceProvenance ?? serializationObject.referenceProvenance;
     const valueParseFunction = referenceProvenance ? _CreateReferenceProvenanceParseFunction(baseValueParseFunction, referenceProvenance) : baseValueParseFunction;
+    if (referenceProvenance) {
+        graph._setReferenceProvenance(referenceProvenance);
+    }
     // Parse all blocks
     // for (const serializedBlock of serializationObject.allBlocks) {
     for (let i = 0; i < serializationObject.allBlocks.length; i++) {
