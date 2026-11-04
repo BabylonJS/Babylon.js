@@ -1,5 +1,6 @@
-import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, onTestFinished, vi } from "vitest";
 import { FreeCamera } from "core/Cameras/freeCamera";
+import { GPUPicker } from "core/Collisions/gpuPicker";
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
@@ -16,6 +17,7 @@ import { type FrameGraph } from "core/FrameGraph/frameGraph";
 import { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 import { FrameGraphTextureManager } from "core/FrameGraph/frameGraphTextureManager";
 import { DrawWrapper } from "core/Materials/drawWrapper";
+import { Effect } from "core/Materials/effect";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
@@ -583,6 +585,113 @@ describe("WebGPUEngine asynchronous pipeline creation, through the draw path", (
         expect(frame()).toEqual([["box/voxel"], []]);
         expect(frame()).toEqual([["box/voxel"], ["box/main"]]);
         expect(harness.cache.synchronous).toEqual(["box/voxel"]);
+    });
+
+    // the scene's frame, without a frame graph: the box's draws reach the engine of the test as in graphFrames, one pipeline
+    // configuration per pass ("box/main" in the camera's pass, "box/<other>" in any other). onDraw learns whether each draw reached the
+    // GPU. A frame returns the draws the GPU ran, in order
+    const sceneFrames = (harness: ReturnType<typeof CreateEngine>, box: ReturnType<typeof newMesh>, other: string, onDraw?: (key: string, drawn: boolean) => void) => {
+        const engine = harness.engine;
+        const camera = scene.activeCamera!;
+        vi.spyOn(nullEngine, "drawElementsType").mockImplementation(() => {
+            const pass = nullEngine.currentRenderPassId;
+            const key = `box/${pass === camera.renderPassId ? "main" : other}`;
+            engine._drawsMayWait = nullEngine._drawsMayWait;
+            const gpuDraws = engine._getCurrentRenderPass().draws.length;
+            harness.draw(nullEngine._pipelineWaitOwner, box.context(pass), key);
+            nullEngine._lastPipelineWaitFrameId = engine._lastPipelineWaitFrameId;
+            onDraw?.(key, engine._getCurrentRenderPass().draws.length > gpuDraws);
+        });
+        return () => {
+            const [draws] = harness.frame(() => {
+                (nullEngine as unknown as { _frameId: number })._frameId = engine.frameId;
+                scene.render();
+            });
+            return draws;
+        };
+    };
+
+    // a GPU picker of the box, seen through the camera, which the box fills. The picking target is the GPU's: it is cleared when it renders
+    // (at most once in a frame), and the draws of its pass that reach the GPU write the mesh id the picker gives them (the meshID uniform)
+    // in every pixel. The frames run until the request completes
+    const pickBox = (harness: ReturnType<typeof CreateEngine>, box: ReturnType<typeof newMesh>) => {
+        const picker = new GPUPicker();
+        picker.setPickingList([box.mesh]);
+        let meshId = 0;
+        let pixel = 0;
+        const effectSetFloat = Effect.prototype.setFloat;
+        const setFloat = vi.spyOn(Effect.prototype, "setFloat").mockImplementation(function (this: Effect, name: string, value: number) {
+            if (name === "meshID") {
+                meshId = value;
+            }
+            return effectSetFloat.call(this, name, value);
+        });
+        onTestFinished(() => setFloat.mockRestore());
+        const frame = sceneFrames(harness, box, "picking", (key, drawn) => {
+            if (key === "box/picking" && drawn) {
+                pixel = meshId;
+            }
+        });
+        // the scissor of a pick is GPU state
+        vi.spyOn(nullEngine, "enableScissor").mockImplementation(() => {});
+        vi.spyOn(nullEngine, "disableScissor").mockImplementation(() => {});
+        vi.spyOn(nullEngine, "_readTexturePixels").mockImplementation(async (_texture, width, height, _face, _level, buffer) => {
+            const pixels = buffer as Uint8Array;
+            for (let i = 0; i < width * height; i++) {
+                pixels.set([(pixel >> 16) & 255, (pixel >> 8) & 255, pixel & 255, 255], 4 * i);
+            }
+            return pixels;
+        });
+        return {
+            frame: () => {
+                pixel = 0;
+                return frame();
+            },
+            requestAsync: async <T>(request: (picker: GPUPicker) => Promise<T>): Promise<T> => {
+                let result: { value: T } | undefined;
+                void request(picker).then((value) => (result = { value }));
+                for (let i = 0; i < 50 && !result; i++) {
+                    pixel = 0;
+                    frame();
+                    await new Promise((resolve) => setTimeout(resolve, 0));
+                }
+                expect(result).toBeDefined();
+                return result!.value;
+            },
+        };
+    };
+
+    it("draws the mesh of a GPU picking in the render of the first pick, with its picking pipeline new, through the scene's render targets", async () => {
+        const harness = CreateEngine(true);
+        const box = newMesh("box");
+        new FreeCamera("camera", new Vector3(0, 0, -0.8), scene);
+        const picking = pickBox(harness, box);
+
+        // the picking pipeline and the main one are new: the picker reads a render with the box, whose pipeline it created in the frame
+        const picked = await picking.requestAsync(async (picker) => await picker.pickAsync(256, 128));
+        expect(picked?.mesh).toBe(box.mesh);
+        expect(harness.cache.synchronous).toEqual(["box/picking"]);
+    });
+
+    it("draws the meshes of a GPU multi-picking while they wait in the camera's pass, with their picking pipeline new, then created", async () => {
+        const harness = CreateEngine(true);
+        const box = newMesh("box");
+        new FreeCamera("camera", new Vector3(0, 0, -0.8), scene);
+        const picking = pickBox(harness, box);
+        const points = [
+            { x: 200, y: 100 },
+            { x: 300, y: 150 },
+        ];
+
+        // the box already waits in the camera's pass, from the frames before the first request
+        await readyAsync(() => scene.isReady());
+        expect(picking.frame()).toEqual([]);
+        const first = await picking.requestAsync(async (picker) => await picker.multiPickAsync(points));
+        expect(first?.meshes).toEqual([box.mesh, box.mesh]);
+        // the next request finds the picking pipeline created and the box still waiting in the camera's pass: it is not held back
+        const second = await picking.requestAsync(async (picker) => await picker.multiPickAsync(points));
+        expect(second?.meshes).toEqual([box.mesh, box.mesh]);
+        expect(harness.cache.synchronous).toEqual(["box/picking"]);
     });
 
     it("draws the bounding box of an occlusion query while its mesh waits, in a FAST snapshot's recording and in its replays", async () => {
