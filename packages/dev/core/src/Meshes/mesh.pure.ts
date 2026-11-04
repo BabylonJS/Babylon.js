@@ -2711,7 +2711,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     private _canRecordDraw(subMesh: SubMesh, batch: _InstancesBatch, effectiveMeshReplacement?: AbstractMesh): boolean {
         const defines = subMesh.materialDefines;
-        const info = this._internalMeshDataInfo;
         if (
             !subMesh.getMaterial()?._canReplayRecordedDraw() ||
             defines?.["PREPASS_VELOCITY"] ||
@@ -2726,11 +2725,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.ignoreCameraMaxZ ||
             // without the occlusion queries module, occlusionType is undefined: no occlusion query
             (this.occlusionType ?? AbstractMesh.OCCLUSION_TYPE_NONE) !== AbstractMesh.OCCLUSION_TYPE_NONE ||
-            info._onBeforeRenderObservable?.hasObservers() ||
-            info._onBeforeBindObservable?.hasObservers() ||
-            info._onBetweenPassObservable?.hasObservers() ||
-            info._onAfterRenderObservable?.hasObservers() ||
-            this._hasDrawObservers() ||
+            this._runsCodeOnDraw() ||
             // the outline renderer draws the outline and the overlay of the mesh around its full draw, changing the depth, color and
             // stencil states around it (its steps do nothing for the other meshes)
             this.renderOutline ||
@@ -2739,6 +2734,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return false;
         }
         return true;
+    }
+
+    // whether code of the user runs around a draw of the mesh: its render and bind observers, and the draw observers
+    private _runsCodeOnDraw(): boolean {
+        const info = this._internalMeshDataInfo;
+        return (
+            !!info._onBeforeRenderObservable?.hasObservers() ||
+            !!info._onBeforeBindObservable?.hasObservers() ||
+            !!info._onBetweenPassObservable?.hasObservers() ||
+            !!info._onAfterRenderObservable?.hasObservers() ||
+            this._hasDrawObservers()
+        );
     }
 
     /**
@@ -3076,7 +3083,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const recordsDraw = engine._recordsDraws && this._canRecordDraw(subMesh, batch, effectiveMeshReplacement);
         if (engine._recordsDraws && !recordsDraw) {
             subMesh._drawWrapper._recordedMaterial = null;
-            subMesh.getMaterial()?._dropRecordedDrawReferences();
+            const material = subMesh.getMaterial();
+            material?._dropRecordedDrawReferences();
+            // code of the user runs around this draw (the observers of the mesh, the bind callbacks of its material): it can change any
+            // material in place, a shared one included, so no reference kept before it in the frame stands for the draws after it
+            if (this._runsCodeOnDraw() || material?._runsCodeOnBind()) {
+                engine._recordedDrawReferencesEpoch++;
+            }
         }
         if (recordsDraw) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh);

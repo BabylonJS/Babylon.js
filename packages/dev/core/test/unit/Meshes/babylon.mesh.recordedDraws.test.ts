@@ -1232,4 +1232,21 @@ describe("Mesh recorded draws", () => {
         frame();
         expect(replay).toHaveBeenCalledTimes(4);
     });
+    it("needs a full draw after code of the user ran around a draw of another mesh in the frame, which can change a shared material in place (A, B, C)", () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        // A's full draw (beforeEach) is the frame's reference of the material; C, recorded before, compares with it
+        expect(unchanged()).toBe(true);
+        // B draws another material and changes A's material in place from its observer
+        const b = MeshBuilder.CreateBox("B", {}, scene);
+        const other = new StandardMaterial("other", scene);
+        (other as any)._shaderLanguage = ShaderLanguage.WGSL;
+        b.material = other;
+        b.onBeforeRenderObservable.add(() => material.diffuseColor.set(1, 0, 0));
+        b.render(b.subMeshes[0], false);
+        expect(unchanged()).toBe(false);
+        // a full draw after it is the reference again
+        fullDraw();
+        expect(unchanged()).toBe(true);
+    });
+
 });

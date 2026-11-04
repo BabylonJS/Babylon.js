@@ -2601,6 +2601,13 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * @internal Changes when code of the user runs around a draw of the frame (the observers of its mesh, the bind callbacks of its
+     * material, see Mesh.render): it can change any material in place, so the references the materials kept before it no longer
+     * stand for the draws after it (see Material._getRecordedDrawReference)
+     */
+    public _recordedDrawReferencesEpoch = 0;
+
+    /**
      * @internal Whether _replayRecordedDraw would encode again the draw last recorded for this draw wrapper now: a mesh runs the scene's
      * steps around its draw only once it knows the draw will not be rendered normally instead
      */

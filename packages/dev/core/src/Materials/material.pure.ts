@@ -987,7 +987,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     private _texturesVersion = 0;
     // by effect, weakly: a material that goes through shader variants does not keep the effects it no longer uses, nor their draws
-    private _recordedDrawReferences: Nullable<WeakMap<object, { frameId: number; view: Nullable<object>; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>> = null;
+    private _recordedDrawReferences: Nullable<
+        WeakMap<object, { frameId: number; epoch: number; view: Nullable<object>; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>
+    > = null;
 
     /**
      * @internal Keeps the draw a full bind of this material did with an effect in this frame: the draws of this material recorded with
@@ -1002,16 +1004,19 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public _keepRecordedDrawReference(effect: object, drawWrapper: Nullable<DrawWrapper>, domain: Nullable<object> = null): void {
         const references = (this._recordedDrawReferences ??= new WeakMap());
-        const frameId = this._scene.getEngine().frameId;
+        const engine = this._scene.getEngine();
+        const frameId = engine.frameId;
+        const epoch = engine._recordedDrawReferencesEpoch;
         const view = domain ? null : this._scene.getSceneUniformBuffer();
         const entry = references.get(effect);
         if (entry) {
             entry.frameId = frameId;
+            entry.epoch = epoch;
             entry.view = view;
             entry.domain = domain;
             entry.drawWrapper = drawWrapper;
         } else {
-            references.set(effect, { frameId, view, domain, drawWrapper });
+            references.set(effect, { frameId, epoch, view, domain, drawWrapper });
         }
     }
 
@@ -1033,7 +1038,12 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public _getRecordedDrawReference(effect: object, domain: Nullable<object> = null): Nullable<DrawWrapper> {
         const entry = this._recordedDrawReferences?.get(effect);
-        return entry && entry.frameId === this._scene.getEngine().frameId && entry.view === (domain ? null : this._scene.getSceneUniformBuffer()) && entry.domain === domain
+        const engine = this._scene.getEngine();
+        return entry &&
+            entry.frameId === engine.frameId &&
+            entry.epoch === engine._recordedDrawReferencesEpoch &&
+            entry.view === (domain ? null : this._scene.getSceneUniformBuffer()) &&
+            entry.domain === domain
             ? entry.drawWrapper
             : null;
     }
@@ -1086,6 +1096,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
+     * @internal Whether a full bind of the material runs code that is not the material's own: its bind observers, an active plugin
+     * that does not declare it binds only the values of its material (see MaterialPluginManager._bindsOnEachDraw), and for a node
+     * material a block or a value callback of the user. Such a draw is not encoded again, and the code can change any material
+     * @returns true if a full bind runs such code
+     */
+    public _runsCodeOnBind(): boolean {
+        return !!this._onBindObservable?.hasObservers() || !!this._onUnBindObservable?.hasObservers() || !!this.pluginManager?._bindsOnEachDraw;
+    }
+
+    /**
      * @internal Whether a draw a snapshot recorded with this material can be encoded again without binding it: only WGSL (its values
      * are in the effect's leftover uniform buffer, which the engine checks), and not when binding or unbinding it runs code that can
      * change on each draw (bind and unbind observers, plugins binding on each draw) or sets states outside of the pipeline (stencil,
@@ -1095,9 +1115,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return (
             this._shaderLanguage === ShaderLanguage.WGSL &&
             this._storeEffectOnSubMeshes &&
-            !this._onBindObservable?.hasObservers() &&
-            !this._onUnBindObservable?.hasObservers() &&
-            !this.pluginManager?._bindsOnEachDraw &&
+            !this._runsCodeOnBind() &&
             !this.stencil.enabled &&
             // a full draw leaves the depth writes on for the draws after it
             !this.forceDepthWrite &&
