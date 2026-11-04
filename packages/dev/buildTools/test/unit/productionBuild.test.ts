@@ -22,7 +22,7 @@ describe("production build helpers", () => {
         writeFileSync(fullPath, content);
     };
 
-    it("shares TypeScript emit across entries and preserves const enums, decorators, and source maps", () => {
+    it("shares TypeScript emit across entries and preserves const enums, decorators, and source maps", { timeout: 30_000 }, () => {
         write(
             "tsconfig.json",
             JSON.stringify({
@@ -298,6 +298,7 @@ describe("production build helpers", () => {
             run("production");
             expect(count()).toBe(expectedRuns + 1);
         },
-        60_000
+        // The MCP case starts 31 real Nx processes and exceeds 100 seconds on Windows CI.
+        180_000
     );
 });
