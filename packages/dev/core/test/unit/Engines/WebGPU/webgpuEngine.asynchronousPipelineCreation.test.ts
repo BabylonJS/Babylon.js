@@ -22,6 +22,7 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { MeshUVSpaceRenderer } from "core/Meshes/meshUVSpaceRenderer";
 import { Observable } from "core/Misc/observable";
 import { _IblShadowsVoxelRenderer } from "core/Rendering/IBLShadows/iblShadowsVoxelRenderer";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
@@ -692,6 +693,24 @@ describe("WebGPUEngine asynchronous pipeline creation, through the draw path", (
         const second = await picking.requestAsync(async (picker) => await picker.multiPickAsync(points));
         expect(second?.meshes).toEqual([box.mesh, box.mesh]);
         expect(harness.cache.synchronous).toEqual(["box/picking"]);
+    });
+
+    it("draws every mesh in a render target rendered by a direct call from the camera's pass (a decal of MeshUVSpaceRenderer), which nothing renders again", async () => {
+        const harness = CreateEngine(true);
+        const box = newMesh("box");
+        new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+        const decals = new MeshUVSpaceRenderer(box.mesh, scene, { width: 32, height: 32 });
+        const decal = new RenderTargetTexture("decal", 8, scene);
+        await readyAsync(() => decals.isReady() && scene.isReady());
+        const frame = sceneFrames(harness, box, "decal");
+
+        // the decal is stamped from an observer of the camera's pass (the target's refresh rate is 1, but only this call renders it)
+        scene.onBeforeCameraRenderObservable.addOnce(() => decals.renderTexture(decal, Vector3.Zero(), new Vector3(0, 0, 1), new Vector3(1, 1, 1)));
+        expect(frame()).toEqual(["box/decal"]);
+        await harness.cache.completeAllAsync();
+        expect(frame()).toEqual([]);
+        expect(frame()).toEqual(["box/main"]);
+        expect(harness.cache.synchronous).toEqual(["box/decal"]);
     });
 
     it("draws the bounding box of an occlusion query while its mesh waits, in a FAST snapshot's recording and in its replays", async () => {

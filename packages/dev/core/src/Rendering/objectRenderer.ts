@@ -294,6 +294,9 @@ export class ObjectRenderer {
     public _waitingRenderList?: string[];
     protected _currentRefreshId = -1;
     protected _refreshRate = 1;
+    // from a shouldRender() that returned true to the end of that rendering (finishRender): a rendering its scheduler asked for (the
+    // scene's frame, the frame graph), which asks again in the next frames
+    private _renderScheduled = false;
     protected _currentApplyByPostProcessSetting = false;
     protected _activeMeshes = new SmartArray<AbstractMesh>(256);
     protected _activeBoundingBoxes = new SmartArray<BoundingBox>(32);
@@ -577,10 +580,15 @@ export class ObjectRenderer {
      * topology stays consistent between the recording frame and playback frames.
      * While mesh draws wait for their pipelines (WebGPU asynchronous pipeline creation), a renderer
      * refreshed every N frames renders in every frame until those meshes are drawn again, so that it
-     * shows them in the same frames as the other passes.
+     * shows them in the same frames as the other passes. Only a rendering it asks for lets them wait (see render).
      * @returns true if the renderer should render the current frame
      */
     public shouldRender(): boolean {
+        this._renderScheduled = this._isRenderDue();
+        return this._renderScheduled;
+    }
+
+    private _isRenderDue(): boolean {
         if (this._engine.snapshotRendering) {
             // When snapshot rendering is active (recording or playing), we must always render
             // to ensure the number of render passes stays consistent between the recording frame
@@ -722,6 +730,7 @@ export class ObjectRenderer {
      * This method must be called after the "render" call(s), to complete the rendering process.
      */
     public finishRender() {
+        this._renderScheduled = false;
         const scene = this._scene;
 
         if (this._useUBO) {
@@ -750,16 +759,19 @@ export class ObjectRenderer {
 
     /**
      * Renders all the objects (meshes, particles systems, sprites) to the currently bound render target texture.
+     * Its mesh draws may wait for their pipelines (WebGPU asynchronous pipeline creation) only in a rendering that shouldRender() asked
+     * for: any other rendering, as one with REFRESHRATE_RENDER_ONCE, draws every mesh.
      * @param passIndex defines the pass index to use (default: 0)
      * @param skipOnAfterRenderObservable defines a flag to skip raising the onAfterRenderObservable
      */
     public render(passIndex = 0, skipOnAfterRenderObservable = false): void {
-        if (this.refreshRate !== ObjectRenderer.REFRESHRATE_RENDER_ONCE) {
+        if (this._renderScheduled && this.refreshRate !== ObjectRenderer.REFRESHRATE_RENDER_ONCE) {
             this._render(passIndex, skipOnAfterRenderObservable);
             return;
         }
-        // rendered once (by a render target or a frame graph task): every mesh is drawn in this rendering, none waits for its pipeline
-        // (asynchronous pipeline creation), since nothing renders it again
+        // rendered once (REFRESHRATE_RENDER_ONCE, or a direct call that no shouldRender() asked for, from an observer of the scene's
+        // frame say): every mesh is drawn in this rendering, none waits for its pipeline (asynchronous pipeline creation), since nothing
+        // renders it again
         const engine = this._engine;
         const drawsMayWait = engine._drawsMayWait;
         engine._drawsMayWait = false;
