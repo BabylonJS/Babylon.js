@@ -56,6 +56,7 @@ function createEngine(textureFloatLinearFiltering: boolean) {
     const depthCullingState = new DepthCullingState();
     depthCullingState.cull = true;
     depthCullingState.depthFunc = Constants.LEQUAL;
+    depthCullingState.frontFace = 1; // the canvas winding of a draw whose side isn't reversed, which setState sets and a prewarm defaults to
 
     const engine = Object.create(WebGPUEngine.prototype) as WebGPUEngine;
     Object.assign(engine, {
