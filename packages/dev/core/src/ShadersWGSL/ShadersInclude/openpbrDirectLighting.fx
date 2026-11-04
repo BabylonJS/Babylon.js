@@ -371,7 +371,7 @@
             #endif
 
             #ifdef ANISOTROPIC_BASE
-                slab_metal = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 0.0, lightColor{X}.rgb);
+                slab_metal = coloredFresnel * computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 0.0, lightColor{X}.rgb);
             #else
                 slab_metal = computeSpecularLighting(preInfo{X}, normalW, vec3f(1.0f), coloredFresnel, specular_roughness, lightColor{X}.rgb);
             #endif

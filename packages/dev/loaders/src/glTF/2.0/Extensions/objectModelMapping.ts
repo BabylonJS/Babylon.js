@@ -238,6 +238,11 @@ export interface IGLTFObjectModelTreeMaterialsObject {
             };
             KHR_materials_retroreflection: {
                 retroreflectionFactor: IObjectAccessor<IMaterial, Material, number>;
+                retroreflectionTexture: {
+                    extensions: {
+                        KHR_texture_transform: ITextureDefinition;
+                    };
+                };
             };
             KHR_materials_sheen: {
                 sheenColorFactor: IObjectAccessor<IMaterial, Material, Color3>;
@@ -918,8 +923,14 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 ),
                 set: /*#__PURE__*/ _CreateMaterialSetter((value: Color4, mat, source) => {
                     if (_IsOpenPBRMaterial(mat)) {
-                        // Loading can share baseColor with transmissionColor; preserve independent attenuation.
-                        mat.baseColor = new Color3(value.r, value.g, value.b);
+                        if (!mat.baseColor.equalsFloats(value.r, value.g, value.b)) {
+                            if (mat.baseColor === mat.transmissionColor && !mat.geometryThinWalled && mat.transmissionDepth !== 0) {
+                                mat.baseColor = new Color3(value.r, value.g, value.b);
+                            } else {
+                                mat.baseColor.set(value.r, value.g, value.b);
+                                mat.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                            }
+                        }
                         mat.geometryOpacity = !source.alphaMode || source.alphaMode === "OPAQUE" ? 1 : value.a;
                         _UpdateTransmissionTint(mat);
                     } else {
@@ -1150,6 +1161,14 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     }),
                     getPropertyName: [() => "specularRetroreflectivity"],
                 },
+                retroreflectionTexture: {
+                    extensions: {
+                        KHR_texture_transform: GenerateTextureMap("specularRetroreflectivityTexture", undefined, {
+                            extensionKey: "KHR_materials_retroreflection",
+                            texturePath: ["retroreflectionTexture"],
+                        }),
+                    },
+                },
             },
             KHR_materials_sheen: {
                 sheenColorFactor: {
@@ -1264,12 +1283,11 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             KHR_materials_volume: {
                 attenuationColor: {
                     type: "Color3",
-                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? mat.transmissionColor : mat.subSurface.tintColor)),
+                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? _GetGLTFMaterialCoatState(mat).transmissionColor : mat.subSurface.tintColor)),
                     getTarget: GetMaterial,
                     set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                         if (_IsOpenPBRMaterial(mat)) {
-                            // Loading can share this Color3 with baseColor when transmission uses surface tint.
-                            mat.transmissionColor = value.clone();
+                            _GetGLTFMaterialCoatState(mat).transmissionColor = value;
                         } else {
                             mat.subSurface.tintColor.copyFrom(value);
                         }
@@ -1277,12 +1295,11 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 },
                 attenuationDistance: {
                     type: "number",
-                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? mat.transmissionDepth : mat.subSurface.tintColorAtDistance)),
+                    get: _CreateMaterialGetter((mat) => (_IsOpenPBRMaterial(mat) ? _GetGLTFMaterialCoatState(mat).transmissionDepth : mat.subSurface.tintColorAtDistance)),
                     getTarget: GetMaterial,
                     set: /*#__PURE__*/ _CreateMaterialSetter((value, mat) => {
                         if (_IsOpenPBRMaterial(mat)) {
-                            mat.transmissionDepth = value;
-                            _UpdateTransmissionTint(mat);
+                            _GetGLTFMaterialCoatState(mat).transmissionDepth = value;
                         } else {
                             mat.subSurface.tintColorAtDistance = value;
                         }
@@ -1454,7 +1471,9 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
     },
 };
 
-function GetTexture(material: IMaterial, payload: any, textureType: keyof PBRMaterial, textureInObject?: string) {
+type MaterialTextureType = keyof PBRMaterial | "specularRetroreflectivityTexture";
+
+function GetTexture(material: IMaterial, payload: any, textureType: MaterialTextureType, textureInObject?: string) {
     return _GetTextureTransform(_GetMaterialTexture(GetMaterial(material, undefined, payload), textureType, textureInObject));
 }
 function _GetTextureTransform(texture: Nullable<BaseTexture> | undefined): Texture | undefined {
@@ -1527,7 +1546,7 @@ export function _RetainGLTFMaterialTextureSources(material: Material, diffuseTra
     if (retained) {
         return _GetUniqueMaterialTextureSources(retained);
     }
-    const bindings: [keyof PBRMaterial, string?][] = [
+    const bindings: [MaterialTextureType, string?][] = [
         ["albedoTexture"],
         ["metallicTexture"],
         ["emissiveTexture"],
@@ -1535,6 +1554,7 @@ export function _RetainGLTFMaterialTextureSources(material: Material, diffuseTra
         ["ambientTexture"],
         ["metallicReflectanceTexture"],
         ["reflectanceTexture"],
+        ["specularRetroreflectivityTexture"],
         ["anisotropy", "texture"],
         ["clearCoat", "texture"],
         ["clearCoat", "textureRoughness"],
@@ -1570,13 +1590,13 @@ function _GetUniqueMaterialTextureSources(sources: ReadonlyMap<string, Nullable<
     }
     return Array.from(textures);
 }
-function _MaterialTextureKey(textureType: keyof PBRMaterial, textureInObject?: string): string {
+function _MaterialTextureKey(textureType: MaterialTextureType, textureInObject?: string): string {
     return textureInObject ? `${textureType}.${textureInObject}` : textureType;
 }
 /** @internal */
 export function _GetMaterialTexture(
     material: PBRMaterial | OpenPBRMaterial | undefined,
-    textureType: keyof PBRMaterial,
+    textureType: MaterialTextureType,
     textureInObject?: string
 ): Nullable<BaseTexture> | undefined {
     if (!material) {
@@ -1586,7 +1606,7 @@ export function _GetMaterialTexture(
     const key = _MaterialTextureKey(textureType, textureInObject);
     return sources?.has(key) ? sources.get(key) : _GetMaterialTextureSlot(material, textureType, textureInObject);
 }
-function _GetMaterialTextureSlot(material: PBRMaterial | OpenPBRMaterial, textureType: keyof PBRMaterial, textureInObject?: string): Nullable<BaseTexture> {
+function _GetMaterialTextureSlot(material: PBRMaterial | OpenPBRMaterial, textureType: MaterialTextureType, textureInObject?: string): Nullable<BaseTexture> {
     const openpbr = _IsOpenPBRMaterial(material);
     switch (textureType) {
         case "albedoTexture":
@@ -1607,6 +1627,8 @@ function _GetMaterialTextureSlot(material: PBRMaterial | OpenPBRMaterial, textur
                 : material.metallicReflectanceTexture;
         case "reflectanceTexture":
             return openpbr ? material.specularColorTexture : material.reflectanceTexture;
+        case "specularRetroreflectivityTexture":
+            return openpbr ? material.specularRetroreflectivityTexture : null;
         case "anisotropy":
             return openpbr ? material.geometryTangentTexture : material.anisotropy.texture;
         case "clearCoat":
@@ -1657,11 +1679,7 @@ function _IsPBRMaterial(material: Material): material is PBRMaterial {
     return "albedoColor" in material && "clearCoat" in material && "subSurface" in material;
 }
 function _UpdateTransmissionTint(material: OpenPBRMaterial): void {
-    if (material.geometryThinWalled || material.transmissionDepth === 0) {
-        // Loading derives this tint from base color rather than glTF volume attenuation.
-        material.transmissionColor = material.baseColor;
-        material.transmissionColorTexture = material.baseColorTexture;
-    }
+    _GetGLTFMaterialCoatState(material).updateTransmissionTint();
 }
 function GetMaterial(material: IMaterial, _index?: number, payload?: any): PBRMaterial | OpenPBRMaterial | undefined {
     let target = material._data?.[payload?.fillMode ?? Constants.MATERIAL_TriangleFillMode]?.babylonMaterial;
@@ -1671,6 +1689,9 @@ function GetMaterial(material: IMaterial, _index?: number, payload?: any): PBRMa
             break;
         }
     }
+    return _ValidateMaterial(target);
+}
+function _ValidateMaterial(target: Material | undefined): PBRMaterial | OpenPBRMaterial | undefined {
     if (!target || _IsOpenPBRMaterial(target) || _IsPBRMaterial(target)) {
         return target;
     }
@@ -1694,7 +1715,7 @@ function _CreateMaterialSetter<T>(
             return;
         }
         for (const fillMode in material._data) {
-            const target = GetMaterial(material, index, { fillMode: Number(fillMode) });
+            const target = _ValidateMaterial(material._data[Number(fillMode)].babylonMaterial);
             if (target) {
                 setValue(value, target, material);
             }
@@ -1890,7 +1911,7 @@ function _gltfTextureTransform(material: IMaterial, gltfPath: IGltfTextureTransf
     return xform;
 }
 
-function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: string, gltfPath?: IGltfTextureTransformPath): ITextureDefinition {
+function GenerateTextureMap(textureType: MaterialTextureType, textureInObject?: string, gltfPath?: IGltfTextureTransformPath): ITextureDefinition {
     return {
         offset: {
             componentsCount: 2,

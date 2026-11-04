@@ -18,12 +18,13 @@ import { type IGLTF, MaterialAlphaMode, AccessorType, AnimationSamplerInterpolat
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { type ITransmissionHelperHolder } from "loaders/glTF/2.0/Extensions/transmissionHelper";
-import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 import { Vector2 } from "core/Maths/math.vector";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import { _AddInteractivityObjectModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity";
+import { Logger } from "core/Misc/logger";
 
 registerBuiltInLoaders();
 
@@ -201,6 +202,74 @@ describe("KHR_animation_pointer material implementations", () => {
         }
         material.specularRetroreflectivity = 0.6;
         expect(accessor.info.get!(accessor.object)).toBe(0.6);
+    });
+
+    it.each([false, true])("skips disabled retroreflection animation without losing roughness playback, useOpenPBR=%s", async (useOpenPBR) => {
+        const gltf = JSON.parse(buildAnimatedMaterialsGltf("extensions/KHR_materials_retroreflection/retroreflectionFactor", [0.2, 0.8], "SCALAR")) as IGLTF;
+        gltf.animations![0].channels[1].target.extensions!.KHR_animation_pointer.pointer = "/materials/0/pbrMetallicRoughness/roughnessFactor";
+        const warn = vi.spyOn(Logger, "Warn");
+        const result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, {
+            pluginOptions: { gltf: { useOpenPBR, targetFps: 60, extensionOptions: { KHR_materials_retroreflection: { enabled: false } } } },
+        });
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial | PBRMaterial;
+        const group = result.animationGroups[0];
+        expect(group.isStarted).toBe(true);
+        expect(group.targetedAnimations).toHaveLength(1);
+        group.pause().goToFrame(30);
+        expect(material instanceof OpenPBRMaterial ? material.specularRoughness : material.roughness).toBeCloseTo(0.5);
+        expect("specularRetroreflectivity" in material ? material.specularRetroreflectivity : undefined).toBe(useOpenPBR ? 0 : undefined);
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining("Invalid pointer (/materials/0/extensions/KHR_materials_retroreflection/retroreflectionFactor) skipped"));
+    });
+
+    it.each(["offset", "scale", "rotation"] as const)("imports, plays and accesses retroreflection texture %s", async (transform) => {
+        const scalar = transform === "rotation";
+        const pointer = `extensions/KHR_materials_retroreflection/retroreflectionTexture/extensions/KHR_texture_transform/${transform}`;
+        const values = scalar ? [0, 1.2] : transform === "scale" ? [1, 1, 0.5, 0.75] : [0, 0, 0.8, 0.6];
+        const gltf = JSON.parse(buildAnimatedMaterialsGltf(pointer, values, scalar ? "SCALAR" : "VEC2")) as IGLTF;
+        gltf.animations![0].channels.splice(1);
+        gltf.materials![0].extensions!.KHR_materials_retroreflection.retroreflectionTexture = {
+            index: 0,
+            extensions: { KHR_texture_transform: {} },
+        };
+        let parsed: ILoadedGLTF | undefined;
+        const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as ILoadedGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(observer);
+        }
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        const texture = material.specularRetroreflectivityTexture!;
+        if (!(texture instanceof Texture)) {
+            throw new Error("Expected an imported retroreflection texture");
+        }
+        const group = result.animationGroups[0].pause();
+        expect(group.targetedAnimations).toHaveLength(scalar ? 1 : 2);
+        expect(group.targetedAnimations.every(({ target }) => target === texture)).toBe(true);
+        const accessor = GetPathToObjectConverter(parsed!).convert(`/materials/0/${pointer}`);
+        group.goToFrame(30);
+        const actual = accessor.info.get!(accessor.object);
+        if (scalar) {
+            expect(actual).toBeCloseTo(0.6);
+        } else {
+            if (!(actual instanceof Vector2)) {
+                throw new Error("Expected a texture transform vector");
+            }
+            expect(actual.asArray()).toEqual(transform === "scale" ? [0.75, 0.875] : [expect.closeTo(0.4), expect.closeTo(0.3)]);
+        }
+        group.stop();
+        const value = scalar ? 0.7 : new Vector2(0.25, 0.5);
+        accessor.info.set!(value, accessor.object);
+        expect(accessor.info.get!(accessor.object)).toEqual(value);
+        expect(scalar ? texture.wAng : transform === "scale" ? texture.uScale : texture.uOffset).toBe(scalar ? -0.7 : 0.25);
+        expect(texture.gammaSpace).toBe(false);
     });
 
     it("imports and plays a clearcoat texture transform after merging attenuating transmission", async () => {
@@ -1014,6 +1083,127 @@ describe("KHR_animation_pointer material implementations", () => {
             check(new Color3(0.3, 0.2, 0.7));
         }
     );
+
+    it("keeps the final folded coat color when upstream animation and pointer changes leave it unchanged", async () => {
+        const pointer = "extensions/KHR_materials_diffuse_transmission/diffuseTransmissionColorFactor";
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf(pointer, [0.8, 0.6, 0.4, 0.2, 0.4, 0.6], "VEC3", {
+                KHR_materials_diffuse_transmission: { diffuseTransmissionFactor: 0.5, diffuseTransmissionColorFactor: [0.8, 0.6, 0.4] },
+                KHR_materials_transmission: { transmissionFactor: 1 },
+                KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1, attenuationColor: [0.2, 0.4, 0.6] },
+            })
+        ) as IGLTF;
+        gltf.animations![0].channels.splice(1);
+        for (const material of gltf.materials!) {
+            material.pbrMetallicRoughness!.baseColorFactor = [0, 0, 0, 1];
+            delete material.pbrMetallicRoughness!.baseColorTexture;
+            delete material.pbrMetallicRoughness!.metallicRoughnessTexture;
+        }
+        let parsed: ILoadedGLTF | undefined;
+        let completion: Promise<void> | undefined;
+        const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                completion = plugin.whenCompleteAsync();
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as ILoadedGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, { pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60 } } });
+            await completion;
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(observer);
+        }
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        expect(material.coatColor.asArray()).toEqual([0, 0, 0]);
+        const group = result.animationGroups[0].pause();
+        group.goToFrame(30);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(material.coatColor.asArray()).toEqual([0, 0, 0]);
+        group.stop();
+        const accessor = GetPathToObjectConverter(parsed!).convert(`/materials/0/${pointer}`);
+        accessor.info.set!(new Color3(0.3, 0.2, 0.7), accessor.object);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(material.coatColor.asArray()).toEqual([0, 0, 0]);
+        expect((accessor.info.get!(accessor.object) as Color3).asArray()).toEqual([0.3, 0.2, 0.7]);
+    });
+
+    it.each(["baseColor", "distance", "color"] as const)("retains authored volume attenuation across default-to-finite transitions with %s animation", async (animatedProperty) => {
+        const animateBaseColor = animatedProperty === "baseColor";
+        const animateColor = animatedProperty === "color";
+        const gltf = JSON.parse(
+            buildAnimatedMaterialsGltf(
+                animateBaseColor ? "pbrMetallicRoughness/baseColorFactor" : `extensions/KHR_materials_volume/${animateColor ? "attenuationColor" : "attenuationDistance"}`,
+                animateBaseColor ? [0.8, 0.6, 0.4, 1, 0.2, 0.4, 0.6, 1] : animateColor ? [0.1, 0.2, 0.3, 0.3, 0.2, 0.1] : [1, 3],
+                animateBaseColor ? "VEC4" : animateColor ? "VEC3" : "SCALAR",
+                {
+                    KHR_materials_transmission: { transmissionFactor: 1 },
+                    KHR_materials_volume: { thicknessFactor: 1, attenuationColor: [0.1, 0.2, 0.3] },
+                }
+            )
+        ) as IGLTF;
+        gltf.animations![0].channels.splice(1);
+        for (const material of gltf.materials!) {
+            material.pbrMetallicRoughness!.baseColorFactor = [0.8, 0.6, 0.4, 1];
+            delete material.pbrMetallicRoughness!.baseColorTexture;
+            delete material.pbrMetallicRoughness!.metallicRoughnessTexture;
+        }
+        let parsed: ILoadedGLTF | undefined;
+        let completion: Promise<void> | undefined;
+        const observer = SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+            if (plugin instanceof GLTFFileLoader) {
+                completion = plugin.whenCompleteAsync();
+                plugin.onParsedObservable.addOnce((data) => {
+                    parsed = data.json as ILoadedGLTF;
+                });
+            }
+        });
+        let result;
+        try {
+            result = await ImportMeshAsync(`data:${JSON.stringify(gltf)}`, scene, {
+                pluginOptions: { gltf: { useOpenPBR: false, targetFps: 60, animationStartMode: GLTFLoaderAnimationStartMode.NONE } },
+            });
+            await completion;
+        } finally {
+            SceneLoader.OnPluginActivatedObservable.remove(observer);
+        }
+        const material = result.meshes.find((mesh) => mesh.material?.name === "retro")!.material as OpenPBRMaterial;
+        const converter = GetPathToObjectConverter(parsed!);
+        const distance = converter.convert("/materials/0/extensions/KHR_materials_volume/attenuationDistance");
+        const color = converter.convert("/materials/0/extensions/KHR_materials_volume/attenuationColor");
+        expect(distance.info.get!(distance.object)).toBe(Number.MAX_VALUE);
+        expect((color.info.get!(color.object) as Color3).asArray()).toEqual([0.1, 0.2, 0.3]);
+        expect(material.transmissionDepth).toBe(0);
+        expect(material.transmissionColor.asArray()).toEqual(material.baseColor.asArray());
+        expect(material.coatWeight).toBe(0);
+        color.info.set!(new Color3(0.3, 0.2, 0.1), color.object);
+        expect(material.transmissionColor.asArray()).toEqual(material.baseColor.asArray());
+        distance.info.set!(2, distance.object);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(material.transmissionDepth).toBe(2);
+        expect(material.transmissionColor.asArray()).toEqual([0.3, 0.2, 0.1]);
+        expect(material.coatColor.asArray()).toEqual(material.baseColor.asArray());
+        expect(material.coatWeight).toBe(1);
+        const group = result.animationGroups[0].start().pause().goToFrame(30);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        const animatedAttenuation = animateColor ? [0.2, 0.2, 0.2] : [0.3, 0.2, 0.1];
+        expect(material.transmissionColor.asArray()).toEqual(animatedAttenuation.map((value) => expect.closeTo(value)));
+        expect(material.coatColor.asArray()).toEqual(material.baseColor.asArray());
+        expect(distance.info.get!(distance.object)).toBe(2);
+        expect((color.info.get!(color.object) as Color3).asArray()).toEqual(animatedAttenuation.map((value) => expect.closeTo(value)));
+        distance.info.set!(Number.MAX_VALUE, distance.object);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(distance.info.get!(distance.object)).toBe(Number.MAX_VALUE);
+        expect(material.transmissionDepth).toBe(0);
+        expect(material.transmissionColor.asArray()).toEqual(material.baseColor.asArray());
+        expect(material.coatWeight).toBe(0);
+        group.goToFrame(60);
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(material.transmissionColor.asArray()).toEqual(animatedProperty === "distance" ? [0.3, 0.2, 0.1] : material.baseColor.asArray());
+        expect(material.coatWeight).toBe(animatedProperty === "distance" ? 1 : 0);
+    });
 
     it.each(["clearcoatFactor", "clearcoatRoughnessFactor"].flatMap((property) => ["LINEAR", "STEP", "constant"].map((interpolation) => ({ property, interpolation }))))(
         "does not redraw converted textures for repeated $property $interpolation samples",

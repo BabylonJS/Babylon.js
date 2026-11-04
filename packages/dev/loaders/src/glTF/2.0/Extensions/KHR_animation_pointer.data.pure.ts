@@ -127,6 +127,9 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                     this.name === "clearCoat.intensity" ||
                     this.name === "clearCoat.roughness" ||
                     this.name === "subSurface.translucencyColor" ||
+                    this.name === "subSurface.tintColorAtDistance" ||
+                    this.name === "subSurface.tintColor" ||
+                    this.name === "albedoColor" ||
                     this.name === "roughness" ||
                     this.name === "indexOfRefraction"
                 ) {
@@ -149,17 +152,6 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                 if (parentName === "metallicReflectanceTexture" && openPbrMaterial._useSpecularWeightFromSpecularColorTexture) {
                     propertyName = "specularColorTexture" + this.name.substring(separator);
                 }
-                if (
-                    this.name === "albedoColor" &&
-                    (target.extensions?.KHR_materials_transmission || openPbrMaterial.transmissionWeight > 0) &&
-                    (openPbrMaterial.geometryThinWalled || openPbrMaterial.transmissionDepth === 0)
-                ) {
-                    // The loading adapter derives transmission tint from base color for these materials.
-                    babylonAnimations.push({
-                        babylonAnimatable: material,
-                        babylonAnimation: this._buildAnimation(name, fps, materialKeys, "transmissionColor"),
-                    });
-                }
                 if (this.name === "iridescence.minimumThickness" || this.name === "iridescence.maximumThickness") {
                     // glTF stores nanometers; OpenPBR stores micrometers, including spline tangents.
                     materialKeys = keys.map((key) => ({
@@ -172,7 +164,7 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
                 const texturePath = (this.name === "ambientTextureStrength" ? "ambientTexture" : parentName).split(".");
                 const component = propertyName.substring(propertyName.lastIndexOf(".") + 1);
                 const texture = ["uScale", "vScale", "uOffset", "vOffset", "wAng", "level"].includes(component)
-                    ? _GetMaterialTexture(openPbrMaterial, texturePath[0] as keyof PBRMaterial, texturePath[1])
+                    ? _GetMaterialTexture(openPbrMaterial, texturePath[0] as keyof PBRMaterial | "specularRetroreflectivityTexture", texturePath[1])
                     : null;
                 if (texture && typeof texture === "object" && "getTextureMatrix" in texture && "animations" in texture) {
                     // Finalization can replace this slot with baked textures; retain the animated source.
@@ -390,6 +382,19 @@ export function _RegisterKHRAnimationPointerData(): void {
     SetInterpolationForKey("/materials/{}/extensions/KHR_materials_retroreflection/retroreflectionFactor", [
         new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "specularRetroreflectivity", getFloat, () => 1),
     ]);
+    const retroreflectionTextureInterpolation = getTextureTransformTree("specularRetroreflectivityTexture");
+    SetInterpolationForKey(
+        "/materials/{}/extensions/KHR_materials_retroreflection/retroreflectionTexture/extensions/KHR_texture_transform/scale",
+        retroreflectionTextureInterpolation.scale
+    );
+    SetInterpolationForKey(
+        "/materials/{}/extensions/KHR_materials_retroreflection/retroreflectionTexture/extensions/KHR_texture_transform/offset",
+        retroreflectionTextureInterpolation.offset
+    );
+    SetInterpolationForKey(
+        "/materials/{}/extensions/KHR_materials_retroreflection/retroreflectionTexture/extensions/KHR_texture_transform/rotation",
+        retroreflectionTextureInterpolation.rotation
+    );
     SetInterpolationForKey("/materials/{}/extensions/KHR_materials_sheen/sheenColorFactor", [
         new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", getColor3, () => 3),
     ]);

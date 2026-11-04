@@ -345,6 +345,39 @@ describe("glTF interactivity Object Model", () => {
             expect(openpbr.transmissionColor.asArray()).toEqual([0.3, 0.5, 0.7]);
         });
 
+        it("reuses unshared base-color storage and leaves unchanged writes clean", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            const accessor = pointer("pbrMetallicRoughness/baseColorFactor");
+            const original = openpbr.baseColor;
+            const dirty = vi.spyOn(openpbr, "markAsDirty");
+            const value = new Color4(0.2, 0.4, 0.6, 1);
+            accessor.info.set!(value, accessor.object, undefined, payload);
+            expect(openpbr.baseColor).toBe(original);
+            expect(openpbr.baseColor.asArray()).toEqual([0.2, 0.4, 0.6]);
+            expect(dirty).toHaveBeenCalled();
+            dirty.mockClear();
+            accessor.info.set!(value, accessor.object, undefined, payload);
+            expect(openpbr.baseColor).toBe(original);
+            expect(dirty).not.toHaveBeenCalled();
+            dirty.mockRestore();
+        });
+
+        it("detaches a shared attenuation color only once before reusing base-color storage", () => {
+            const { openpbr, pointer, payload } = createMaterialPointers();
+            openpbr.geometryThinWalled = 0;
+            openpbr.transmissionDepth = 2;
+            const attenuation = new Color3(0.7, 0.8, 0.9);
+            openpbr.baseColor = attenuation;
+            openpbr.transmissionColor = attenuation;
+            const accessor = pointer("pbrMetallicRoughness/baseColorFactor");
+            accessor.info.set!(new Color4(0.2, 0.4, 0.6, 1), accessor.object, undefined, payload);
+            const detached = openpbr.baseColor;
+            expect(detached).not.toBe(attenuation);
+            accessor.info.set!(new Color4(0.3, 0.5, 0.7, 1), accessor.object, undefined, payload);
+            expect(openpbr.baseColor).toBe(detached);
+            expect(attenuation.asArray()).toEqual([0.7, 0.8, 0.9]);
+        });
+
         it("preserves volumetric attenuation tint when base color changes", () => {
             const { openpbr, pointer, payload } = createMaterialPointers();
             openpbr.geometryThinWalled = 0;

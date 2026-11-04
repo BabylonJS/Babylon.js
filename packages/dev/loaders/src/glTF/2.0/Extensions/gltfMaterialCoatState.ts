@@ -3,6 +3,7 @@ import { type IAnimatable } from "core/Animations/animatable.interface";
 import { type Animation } from "core/Animations/animation";
 import { Observable } from "core/Misc/observable.pure";
 import { type Color3 } from "core/Maths/math.color.pure";
+import { Constants } from "core/Engines/constants";
 
 const CoatStates = new WeakMap<OpenPBRMaterial, GLTFMaterialCoatState>();
 
@@ -21,6 +22,8 @@ export class GLTFMaterialCoatState implements IAnimatable {
     private _surfaceRoughness: number;
     private _surfaceIor: number;
     private _diffuseTransmissionTint?: Color3;
+    private _attenuationDistance?: number;
+    private _attenuationColor?: Color3;
 
     /**
      * Creates a source binding for one material.
@@ -94,6 +97,64 @@ export class GLTFMaterialCoatState implements IAnimatable {
         this._surfaceIor = value;
         this._material.specularIor = value;
         this.onChangedObservable.notifyObservers();
+    }
+
+    /** Authored base color, including transmission tint derived from it. */
+    public get baseColor(): Color3 {
+        return this._material.baseColor;
+    }
+
+    public set baseColor(value: Color3) {
+        this._material.baseColor = value;
+        this.updateTransmissionTint();
+    }
+
+    /** Authored attenuation distance, before the nonattenuating sentinel is translated. */
+    public get transmissionDepth(): number {
+        return this._attenuationDistance ?? this._material.transmissionDepth;
+    }
+
+    public set transmissionDepth(value: number) {
+        if (value === this._attenuationDistance) {
+            return;
+        }
+        this._attenuationColor ??= this._material.transmissionColor.clone();
+        this._attenuationDistance = value;
+        this._material.transmissionDepth = value === Number.MAX_VALUE ? 0 : value;
+        this.updateTransmissionTint();
+        this.onChangedObservable.notifyObservers();
+    }
+
+    /** Authored volume attenuation color, independent of surface tint. */
+    public get transmissionColor(): Color3 {
+        return this._attenuationColor ?? this._material.transmissionColor;
+    }
+
+    public set transmissionColor(value: Color3) {
+        if (this._attenuationColor) {
+            if (!this._attenuationColor.equals(value)) {
+                this._attenuationColor.copyFrom(value);
+                this._material.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            }
+        } else {
+            this._attenuationColor = value.clone();
+        }
+        this._material.transmissionColor = this._attenuationColor;
+        if (this._attenuationDistance !== undefined) {
+            this.updateTransmissionTint();
+        }
+    }
+
+    /** Selects surface tint or retained attenuation after an authored property changes. */
+    public updateTransmissionTint(): void {
+        const material = this._material;
+        if (material.geometryThinWalled || material.transmissionDepth === 0) {
+            material.transmissionColor = material.baseColor;
+            material.transmissionColorTexture = material.baseColorTexture;
+        } else if (this._attenuationColor) {
+            material.transmissionColor = this._attenuationColor;
+            material.transmissionColorTexture = null;
+        }
     }
 
     /** Authored diffuse-transmission surface tint, separate from volumetric scattering color. */

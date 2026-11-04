@@ -857,14 +857,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The attenuation distance value
      */
     public set transmissionDepth(value: number) {
-        // If the value is being set to the default max value, and the current transmission depth is 0,
-        // we assume that attenuation color isn't used and keep it at 0 to allow
-        // us to use constant transmission color to handle glTF's surface tint from base color.
-        if (value !== Number.MAX_VALUE || this._material.transmissionDepth !== 0) {
-            this._material.transmissionDepth = value;
-        } else {
-            this._material.transmissionDepth = 0;
-        }
+        _GetGLTFMaterialCoatState(this._material).transmissionDepth = value;
     }
 
     /**
@@ -879,12 +872,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The attenuation color as a Color3
      */
     public set transmissionColor(value: Color3) {
-        // Only set the transmission color if it's not white (default)
-        // This allows us to retain the base color as the transmission color,
-        // if that was previously set.
-        if (!value.equals(Color3.White())) {
-            this._material.transmissionColor = value;
-        }
+        _GetGLTFMaterialCoatState(this._material).transmissionColor = value;
     }
 
     /**
@@ -1470,15 +1458,15 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         }
         // If the material has transmission, we need to use the base color to tint the transmission.
         if (this._hasTransmission || this.transmissionWeight > 0) {
-            if (this._material.geometryThinWalled || this._material.transmissionDepth === 0) {
-                // If the material is thin-walled or has no attenuation depth, we can use the base color as the transmission color directly.
+            if (this._material.geometryThinWalled) {
+                // Thin-walled transmission uses the base surface tint directly.
                 this._material.transmissionColor = this._material.baseColor;
                 this._material.transmissionColorTexture = this._material.baseColorTexture;
             } else {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
                 await this.copySurfaceToCoatAsync(
                     loader,
-                    () => this.transmissionWeight,
+                    () => (this._material.transmissionDepth === 0 ? 0 : this.transmissionWeight),
                     this.transmissionWeightTexture,
                     TextureChannel.R,
                     () => this.baseColor,
@@ -1779,6 +1767,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             });
         }
         bindResult(newCoatColor, () => {
+            if (this._convertedCoatColor !== newCoatColor) {
+                return;
+            }
             this.coatColorTexture = newCoatColor.texture;
             const factor = newCoatColor.factor;
             const r = factor?.r ?? 1;
