@@ -1,30 +1,13 @@
 
 ### Core
 
-- Add render-pass command stream batching for native hosts - by [matthargett](https://github.com/matthargett) ([#19075](https://github.com/BabylonJS/Babylon.js/pull/19075))
-- Clustered lighting: sheen uses the out-of-scope normalW (WGSL/GLSL compile error) - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#19049](https://github.com/BabylonJS/Babylon.js/pull/19049))
-- WebGPU: GPU frame time with timestamp writes, read after the frame's submit - by [enriqxxx](https://github.com/enriqxxx) ([#19066](https://github.com/BabylonJS/Babylon.js/pull/19066))
-- Fix WGSL StandardMaterial fresnel blend and area light check - by [RizgarOzan](https://github.com/RizgarOzan) ([#19074](https://github.com/BabylonJS/Babylon.js/pull/19074))
-- RenderTargetTexture: a fresh render id before each pass - by [enriqxxx](https://github.com/enriqxxx) ([#19073](https://github.com/BabylonJS/Babylon.js/pull/19073))
-- Temporal view data in the scene uniform buffer for WGSL: camera history and TAA jitter - by [enriqxxx](https://github.com/enriqxxx) ([#19038](https://github.com/BabylonJS/Babylon.js/pull/19038))
-- Meshes: keep no Vector3 per vertex when a mesh's positions are its geometry's - by [enriqxxx](https://github.com/enriqxxx) ([#19065](https://github.com/BabylonJS/Babylon.js/pull/19065))
-- KHR_materials_scatter import/export - [_New Feature_] by [MiiBond](https://github.com/MiiBond) ([#18810](https://github.com/BabylonJS/Babylon.js/pull/18810))
-- Materials: keep pipeline names and plugin declarations as flat strings - by [enriqxxx](https://github.com/enriqxxx) ([#19060](https://github.com/BabylonJS/Babylon.js/pull/19060))
-- Fix solid particle winding for glTF model meshes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#19058](https://github.com/BabylonJS/Babylon.js/pull/19058))
-- Gaussian Splatting: fix WebGPU texture fetch performance and add opt-in GPU depth sort - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#19013](https://github.com/BabylonJS/Babylon.js/pull/19013))
-- Fix HtmlTexture rendering with current HTML-in-Canvas APIs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#19052](https://github.com/BabylonJS/Babylon.js/pull/19052))
+- WebGPU: convert half-float readbacks with Float16Array where it exists - by [enriqxxx](https://github.com/enriqxxx) ([#19072](https://github.com/BabylonJS/Babylon.js/pull/19072))
+- Flow Graph: graph-declared sound assets and mesh intersection event - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#19101](https://github.com/BabylonJS/Babylon.js/pull/19101))
+- DirectionalLight: document that shadowOrthoScale widens extents set by hand too - by [enriqxxx](https://github.com/enriqxxx) ([#19092](https://github.com/BabylonJS/Babylon.js/pull/19092))
+- Stop Gaussian splatting and vertex-pulling materials from growing shared attribute and uniform lists - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#19080](https://github.com/BabylonJS/Babylon.js/pull/19080))
+- Clamp native anisotropic filtering level to caps.maxAnisotropy - by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#19078](https://github.com/BabylonJS/Babylon.js/pull/19078))
+- Fix instanced bounding boxes with high precision matrices - by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#19081](https://github.com/BabylonJS/Babylon.js/pull/19081))
 
-### Inspector
+### Sandbox
 
-- Add Inspector Lite skeleton, morph, and particle inspection - by [ryantrem](https://github.com/ryantrem) ([#19071](https://github.com/BabylonJS/Babylon.js/pull/19071))
-- fix(inspector-v2): fall back to Unknown class name when getClassName is absent - by [peda-cos](https://github.com/peda-cos) ([#18998](https://github.com/BabylonJS/Babylon.js/pull/18998))
-
-### Loaders
-
-- KHR_materials_scatter import/export - [_New Feature_] by [MiiBond](https://github.com/MiiBond) ([#18810](https://github.com/BabylonJS/Babylon.js/pull/18810))
-- Handle omitted glTF morph target attributes - by [bghgary](https://github.com/bghgary) ([#19064](https://github.com/BabylonJS/Babylon.js/pull/19064))
-- Gaussian Splatting: fix WebGPU texture fetch performance and add opt-in GPU depth sort - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#19013](https://github.com/BabylonJS/Babylon.js/pull/19013))
-
-### Serializers
-
-- KHR_materials_scatter import/export - [_New Feature_] by [MiiBond](https://github.com/MiiBond) ([#18810](https://github.com/BabylonJS/Babylon.js/pull/18810))
+- Show USD support in the Sandbox drag-and-drop prompt - by [Jeggery](https://github.com/Jeggery) ([#19088](https://github.com/BabylonJS/Babylon.js/pull/19088))

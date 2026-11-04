@@ -24,7 +24,7 @@ import { VertexData } from "core/Meshes/mesh.vertexData";
 import { StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { type SPLATLoadingOptions } from "./splatLoadingOptions";
 import { type GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { ConvertSpzToSplatAsync, GetSpzModule, ParseSpz } from "./spz";
+import { ConvertSpzToSplatAsync, DefaultSpzLibraryUrl, GetSpzModule, ParseSpz } from "./spz";
 import { Mode, type IParsedSplat } from "./splatDefs";
 import { ParseSogMeta, ParseSogMetaAsTextures, type SOGRootData } from "./sog.pure";
 import { Tools } from "core/Misc/tools.pure";
@@ -65,7 +65,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         keepInRam: false,
         flipY: false,
         needsRotationScaleTextures: false,
-        spzLibraryUrl: typeof WebAssembly === "object" ? "https://unpkg.com/@adobe/spz@0.2.2/dist/spz.js" : undefined,
+        spzLibraryUrl: typeof WebAssembly === "object" ? DefaultSpzLibraryUrl : undefined,
     } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
