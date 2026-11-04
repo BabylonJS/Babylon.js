@@ -630,6 +630,17 @@ export class Texture extends BaseTexture {
         this.delayLoad();
     }
 
+    private _onImageReplacedObservable: Nullable<Observable<Texture>> = null;
+
+    /**
+     * Notified when replaceImage gives this texture another image. What was generated from the previous image (the IBL CDF maps)
+     * listens to it, since a replacement does not load anything and so does not notify onLoadObservable
+     * @internal
+     */
+    public get _onImageReplaced(): Observable<Texture> {
+        return (this._onImageReplacedObservable ??= new Observable<Texture>());
+    }
+
     /**
      * Replaces the image of this texture with the image of another texture, already loaded, without loading it again. This texture shows
      * the source's image from the next frame on and keeps its own settings for the materials (UV transform, coordinatesIndex, alpha and
@@ -646,7 +657,8 @@ export class Texture extends BaseTexture {
      * textures) reaches the frozen ones only: the others write it at their next bind, so replacing an image with the same image at
      * another size, as streaming does, marks no material that is not frozen. With snapshot rendering, the snapshot is recorded again
      * when the image or the defines change. As with the gammaSpace setter, the node material post-processes and procedural textures,
-     * which keep their own defines, follow a change of gamma space once they are built again.
+     * which keep their own defines, follow a change of gamma space once they are built again. The IBL CDF maps generated from this texture
+     * (IBL shadows) are generated again from the new image.
      * @param source the loaded texture whose image this texture takes
      * @returns true when this texture shows the source's image (replacing a texture with itself included); false when the image cannot be
      * taken, both textures then left unchanged: one of them is not a plain Texture (render target, procedural, raw, dynamic and video
@@ -735,8 +747,8 @@ export class Texture extends BaseTexture {
         this._gammaSpace = source._gammaSpace;
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
 
-        const definesChanged =
-            this.gammaSpace !== gammaSpace || this.isRGBD !== isRGBD || this.linearSpecularLOD !== linearSpecularLOD || this.irradianceTexture !== irradianceTexture;
+        const gammaChanged = this.gammaSpace !== gammaSpace;
+        const definesChanged = gammaChanged || this.isRGBD !== isRGBD || this.linearSpecularLOD !== linearSpecularLOD || this.irradianceTexture !== irradianceTexture;
         const newSize = this.getSize();
         const uniformsChanged =
             newSize.width !== width ||
@@ -758,7 +770,8 @@ export class Texture extends BaseTexture {
                     // a frozen material skips the dirty flags and its uniform writes: markDirty(true) makes it do both again
                     material.markDirty(true);
                 } else {
-                    material.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                    // a StandardMaterial computes whether its reflection and refraction are linear with its image processing defines
+                    material.markAsDirty(gammaChanged ? Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_ImageProcessingDirtyFlag : Constants.MATERIAL_TextureDirtyFlag);
                 }
             }
         }
@@ -767,6 +780,9 @@ export class Texture extends BaseTexture {
         const engine = scene.getEngine() as WebGPUEngine;
         if ((image !== own || definesChanged) && engine.snapshotRendering) {
             engine.snapshotRenderingReset();
+        }
+        if (image !== own) {
+            this._onImageReplacedObservable?.notifyObservers(this);
         }
         return true;
     }
@@ -1125,6 +1141,7 @@ export class Texture extends BaseTexture {
         super.dispose();
 
         this.onLoadObservable.clear();
+        this._onImageReplacedObservable?.clear();
 
         this._delayedOnLoad = null;
         this._delayedOnError = null;

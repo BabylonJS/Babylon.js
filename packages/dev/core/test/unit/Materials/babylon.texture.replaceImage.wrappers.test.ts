@@ -69,11 +69,11 @@ describe("Texture.replaceImage, the wrappers it takes and replaces", () => {
     it("refuses a procedural texture showing its fallback texture, as the source and as the texture", () => {
         const fallback = loaded("fallback.png", true);
         // the procedural texture's effect fails to compile: it shows its fallback texture's image
-        const createEffect = engine.createEffect.bind(engine);
+        const createEffect = engine.createEffect;
         vi.spyOn(engine, "createEffect").mockImplementation((...args: any[]) => {
             const onError = args[7] as () => void;
             onError();
-            return createEffect(...(args as Parameters<typeof engine.createEffect>));
+            return createEffect.call(engine, ...(args as Parameters<typeof engine.createEffect>));
         });
         const procedural = new ProceduralTexture("procedural", 64, "procedural-test", scene, fallback);
         procedural.isReady();

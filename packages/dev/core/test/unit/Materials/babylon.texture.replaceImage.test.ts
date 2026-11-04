@@ -15,6 +15,12 @@ import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterial
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
+import { AddBlock } from "core/Materials/Node/Blocks/addBlock";
+import { ColorSplitterBlock } from "core/Materials/Node/Blocks/colorSplitterBlock";
+import { VectorMergerBlock } from "core/Materials/Node/Blocks/vectorMergerBlock";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { IblCdfGenerator } from "core/Rendering/iblCdfGenerator";
+import { Color3 } from "core/Maths/math.color";
 
 /**
  * Texture.replaceImage: a texture takes the image of another one, already loaded, with its loading description, and keeps its own
@@ -330,7 +336,8 @@ describe("Texture.replaceImage", () => {
         expect(otherHasTexture).not.toHaveBeenCalled();
 
         expect(texture.replaceImage(loaded("gamma.png", { size: 1024, gammaSpace: true, imageGamma: true }))).toBe(true);
-        expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag);
+        // another gamma: also the image processing defines, where a standard material computes the space of its reflection and refraction
+        expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_ImageProcessingDirtyFlag);
         expect(otherHasTexture).toHaveBeenCalledTimes(1);
     });
 
@@ -349,7 +356,8 @@ describe("Texture.replaceImage", () => {
 
         // another gamma: the defines of both are computed again
         expect(environment.replaceImage(loaded("linear.png", { gammaSpace: false, imageGamma: false, size: 256 }))).toBe(true);
-        expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag);
+        // another gamma: also the image processing defines, where a standard material computes the space of its reflection and refraction
+        expect(markAsDirty).toHaveBeenCalledWith(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_ImageProcessingDirtyFlag);
         expect(markDirty).toHaveBeenCalledWith(true);
 
         // another size only: the frozen one writes its uniforms again, the other one at its next bind
@@ -419,6 +427,134 @@ describe("Texture.replaceImage", () => {
         expect(await convertsAsync()).toBe(false);
         expect(texture.replaceImage(loaded("linear.png", { gammaSpace: false, imageGamma: false }))).toBe(true);
         expect(await convertsAsync()).toBe(true);
+    });
+
+    for (const [space, gamma] of [
+        ["gamma", true],
+        ["linear", false],
+    ] as const) {
+        it(`converts a texture the vertex shader reads to ${space} space once its image is replaced, with the helpers in the vertex shader`, async () => {
+            const texture = loaded("image.png", { gammaSpace: gamma, imageGamma: gamma });
+            // the texture moves the vertices, so the vertex shader reads it; no other block brings the helpers
+            const material = new NodeMaterial("vertex read", scene);
+            const position = new InputBlock("position");
+            position.setAsAttribute("position");
+            const uv = new InputBlock("uv");
+            uv.setAsAttribute("uv");
+            const textureBlock = new TextureBlock("texture");
+            textureBlock.texture = texture;
+            textureBlock.convertToGammaSpace = space === "gamma";
+            textureBlock.convertToLinearSpace = space === "linear";
+            uv.output.connectTo(textureBlock.uv);
+            const splitter = new ColorSplitterBlock("splitter");
+            textureBlock.rgb.connectTo(splitter.rgbIn);
+            const offset = new VectorMergerBlock("offset");
+            splitter.r.connectTo(offset.x);
+            splitter.g.connectTo(offset.y);
+            splitter.b.connectTo(offset.z);
+            const moved = new AddBlock("moved");
+            position.output.connectTo(moved.left);
+            offset.xyzOut.connectTo(moved.right);
+            const world = new InputBlock("world");
+            world.setAsSystemValue(NodeMaterialSystemValues.World);
+            const viewProjection = new InputBlock("viewProjection");
+            viewProjection.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
+            const worldPosition = new TransformBlock("worldPosition");
+            moved.output.connectTo(worldPosition.vector);
+            world.output.connectTo(worldPosition.transform);
+            const clipPosition = new TransformBlock("clipPosition");
+            worldPosition.output.connectTo(clipPosition.vector);
+            viewProjection.output.connectTo(clipPosition.transform);
+            const vertexOutput = new VertexOutputBlock("vertexOutput");
+            clipPosition.output.connectTo(vertexOutput.vector);
+            const color = new InputBlock("color");
+            color.value = new Color3(1, 1, 1);
+            const fragmentOutput = new FragmentOutputBlock("fragmentOutput");
+            color.output.connectTo(fragmentOutput.rgb);
+            material.addOutputNode(vertexOutput);
+            material.addOutputNode(fragmentOutput);
+            const built = new Promise<void>((resolve, reject) => {
+                material.onBuildObservable.addOnce(() => resolve());
+                material.onBuildErrorObservable.addOnce((error) => reject(new Error(error)));
+            });
+            material.build();
+            await built;
+
+            const plane = CreatePlane("plane", {}, scene);
+            plane.material = material;
+            const output = textureBlock.rgb.associatedVariableName;
+            const call = space === "gamma" ? "toGammaSpace" : "toLinearSpace";
+            const conversion = new RegExp(`#ifdef (\\w+)\\s+${output} = ${call}\\(${output}\\);`);
+            const helper = new RegExp(`\\bvec3\\s+${call}\\s*\\(\\s*vec3`);
+            // whether the vertex shader the plane is drawn with converts the texture, and defines the function it calls
+            const vertexAsync = async () => {
+                const ready = () => {
+                    scene.incrementRenderId();
+                    return material.isReadyForSubMesh(plane, plane.subMeshes[0]);
+                };
+                for (let i = 0; i < 50 && !ready(); i++) {
+                    await new Promise((resolve) => setTimeout(resolve, 0));
+                }
+                expect(ready()).toBe(true);
+                const effect = plane.subMeshes[0].effect!;
+                const match = conversion.exec(effect.vertexSourceCode);
+                return { converts: !!match && effect.defines.split("\n").includes(`#define ${match[1]}`), helper: helper.test(effect.vertexSourceCode) };
+            };
+
+            expect((await vertexAsync()).converts).toBe(false);
+            expect(texture.replaceImage(loaded("other.png", { gammaSpace: !gamma, imageGamma: !gamma }))).toBe(true);
+            expect(await vertexAsync()).toEqual({ converts: true, helper: true });
+        });
+    }
+
+    it("gives a standard material the space of its reflection and refraction once their gamma space images are replaced with linear ones", async () => {
+        const reflection = loaded("reflection.png", { gammaSpace: true, imageGamma: true });
+        const refraction = loaded("refraction.png", { gammaSpace: true, imageGamma: true });
+        const material = new StandardMaterial("standard", scene);
+        material.reflectionTexture = reflection;
+        material.refractionTexture = refraction;
+        const plane = CreatePlane("plane", {}, scene);
+        plane.material = material;
+        // the defines the material draws the plane with, once its effect is compiled (its first effect imports its shaders)
+        const definesAsync = async () => {
+            const ready = () => {
+                scene.incrementRenderId();
+                return material.isReadyForSubMesh(plane, plane.subMeshes[0]);
+            };
+            for (let i = 0; i < 1000 && !ready(); i++) {
+                await new Promise((resolve) => setTimeout(resolve, 0));
+            }
+            expect(ready()).toBe(true);
+            const d = plane.subMeshes[0].materialDefines as any;
+            return { reflection: d.IS_REFLECTION_LINEAR, refraction: d.IS_REFRACTION_LINEAR };
+        };
+
+        expect(await definesAsync()).toEqual({ reflection: false, refraction: false });
+        expect(reflection.replaceImage(loaded("linear-reflection.png", { gammaSpace: false, imageGamma: false }))).toBe(true);
+        expect(await definesAsync()).toEqual({ reflection: true, refraction: false });
+        expect(refraction.replaceImage(loaded("linear-refraction.png", { gammaSpace: false, imageGamma: false }))).toBe(true);
+        expect(await definesAsync()).toEqual({ reflection: true, refraction: true });
+    });
+
+    it("makes the IBL CDF maps of an environment generate again from its new image, at its new size", () => {
+        engine.getCaps().texelFetch = true;
+        const environment = loaded("environment.png", { size: 256 });
+        const generator = new IblCdfGenerator(scene);
+        generator.iblSource = environment;
+        const before = generator.getIcdfTexture();
+        expect(before.getSize().width).toBe(256);
+        const changed = vi.fn();
+        generator.onTextureChangedObservable.add(changed);
+
+        expect(environment.replaceImage(loaded("larger-environment.png", { size: 512 }))).toBe(true);
+        const after = generator.getIcdfTexture();
+        expect(after).not.toBe(before);
+        expect(after.getSize().width).toBe(512);
+        expect(changed).toHaveBeenCalled();
+        // the source is the same texture: setting it again keeps the maps
+        generator.iblSource = environment;
+        expect(generator.getIcdfTexture()).toBe(after);
+        generator.dispose();
     });
 
     it("makes a frozen material that uses it compute again what it reads from the image, only when it changes", () => {

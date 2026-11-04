@@ -3,6 +3,7 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildStateSharedData } from "../../nodeMaterialBuildStateSharedData";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 
@@ -33,6 +34,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
     private _linearDefineName: string;
     private _gammaDefineName: string;
+    private _conversionDefinesData: Nullable<NodeMaterialBuildStateSharedData> = null;
     private _tempTextureRead: string;
     private _samplerName: string;
     private _transformedUVName: string;
@@ -544,6 +546,9 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
+        // the conversions of the outputs are written whatever the gamma space, as in the fragment shader: they need the helpers here too
+        state._emitFunctionFromInclude("helperFunctions", `//${this.name}`);
+
         this._writeTextureRead(state, true);
 
         for (const output of this._outputs) {
@@ -670,8 +675,13 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || state.target === NodeMaterialBlockTargets.Fragment) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
-            this._linearDefineName = state._getFreeDefineName("ISLINEAR");
-            this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
+            // one pair of defines per build, for both shaders: prepareDefines sets the last names given, so new names in the fragment
+            // shader would leave the conversions of a texture the vertex shader reads under defines nothing sets
+            if (this._conversionDefinesData !== state.sharedData) {
+                this._conversionDefinesData = state.sharedData;
+                this._linearDefineName = state._getFreeDefineName("ISLINEAR");
+                this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
+            }
         }
 
         if ((!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment) || (this._isMixed && state.target === NodeMaterialBlockTargets.Vertex)) {
