@@ -89,7 +89,11 @@ export async function ImportSoundAssetFileAsync(
     }
     try {
         await coordinator.addSoundAssetAsync({ name: assetName, url });
-        if (globalState.isSoundAssetOperationCurrent(assetName, operationToken)) {
+        if (
+            globalState.isLifetimeCurrent(coordinator, lifetimeGeneration) &&
+            globalState.isSoundAssetOperationCurrent(assetName, operationToken) &&
+            coordinatorGraphs.every((graph) => coordinator.flowGraphs.includes(graph))
+        ) {
             globalState.markSoundAssetLoaded({ name: assetName, url });
         }
     } catch (error) {

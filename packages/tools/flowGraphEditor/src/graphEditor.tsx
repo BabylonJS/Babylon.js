@@ -64,6 +64,7 @@ export function ApplyFlowGraphHistorySnapshot(data: any, globalState: GlobalStat
         if (oldGraph) {
             replacedGraphUniqueId = oldGraph.uniqueId;
             existingCoordinator.removeGraph(oldGraph);
+            globalState.forgetGraphSnapshots(replacedGraphUniqueId);
         }
         parsedGraph = ParseFlowGraph(data, { coordinator: existingCoordinator }, resolvedClasses);
         const graphs = existingCoordinator.flowGraphs;
@@ -76,16 +77,18 @@ export function ApplyFlowGraphHistorySnapshot(data: any, globalState: GlobalStat
         const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
         parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
     }
-    const referenceOccurrences = SerializationTools.RestoreReferenceProvenance(parsedGraph, data, globalState.scene, data.referenceProvenance ?? []);
+    const referenceOccurrences = SerializationTools.RestoreReferenceProvenance(
+        parsedGraph,
+        data,
+        globalState.sceneContext?.scene ?? globalState.scene,
+        data.referenceProvenance ?? []
+    );
     globalState.restoreReferenceProvenance(data.referenceProvenance ?? [], referenceOccurrences, false);
     SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
     if (data.editorData) {
         (parsedGraph as any)._editorData = data.editorData;
     }
     globalState.flowGraph = parsedGraph;
-    if (replacedGraphUniqueId && replacedGraphUniqueId !== parsedGraph.uniqueId) {
-        globalState.forgetGraphSnapshots(replacedGraphUniqueId);
-    }
 }
 
 /**

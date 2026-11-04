@@ -232,6 +232,8 @@ export class GlobalState {
         this._soundAssetChangedObserver?.remove();
         this._soundAssetChangedObserver = null;
         if (coordinatorChanged) {
+            this._savedUserVariables = null;
+            this._savedConnectionValues = null;
             this._savedContextSnapshots = null;
             this._savedContextRuntimeData = null;
             this._perGraphContextSnapshots.clear();
@@ -1945,6 +1947,8 @@ export class GlobalState {
         this._perGraphContextSnapshots.delete(graphUniqueId);
         this._perGraphContextRuntimeData.delete(graphUniqueId);
         if (this._flowGraph?.uniqueId === graphUniqueId) {
+            this._savedUserVariables = null;
+            this._savedConnectionValues = null;
             this._savedContextSnapshots = null;
             this._savedContextRuntimeData = null;
         }
@@ -2277,6 +2281,15 @@ export class GlobalState {
      * @returns cleanup callback that restores editor runtime state after serialization
      */
     public prepareReferenceProvenanceForSerialization(): () => void {
+        for (const [graphUniqueId, runtimeSnapshots] of this._perGraphContextRuntimeData) {
+            const serializedSnapshots = this._perGraphContextSnapshots.get(graphUniqueId);
+            runtimeSnapshots.forEach((runtimeData, index) => {
+                const serialized = serializedSnapshots?.[index];
+                if (serialized) {
+                    this._rememberSerializedReferenceLocations(runtimeData.connectionValues, serialized._connectionValues);
+                }
+            });
+        }
         const occurrences: Array<{ value: any; location: SceneReferenceLocation; live: boolean }> = [];
         const usedIds = new Set<number>();
         this._forEachReferenceValue((value) => {
