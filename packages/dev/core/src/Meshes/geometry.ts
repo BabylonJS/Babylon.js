@@ -277,12 +277,14 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Removes a specific vertex data
+     * Invalidates cached WebGPU draws that may reference the removed buffer.
      * @param kind defines the data kind (Position, normal, etc...)
      */
     public removeVerticesData(kind: string) {
         if (this._vertexBuffers[kind]) {
             this._vertexBuffers[kind].dispose();
             delete this._vertexBuffers[kind];
+            this._invalidateVertexBuffers();
         }
 
         if (this._vertexArrayObjects) {
@@ -292,6 +294,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Affect a vertex buffer to the geometry. the vertexBuffer.getKind() function is used to determine where to store the data
+     * Invalidates cached WebGPU draws so they use the new vertex buffer.
      * @param buffer defines the vertex buffer to use
      * @param totalVertices defines the total number of vertices for position kind (could be null)
      * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
@@ -329,6 +332,7 @@ export class Geometry implements IGetSetVerticesData {
             }
         }
 
+        this._invalidateVertexBuffers();
         this._notifyUpdate(kind);
     }
 
@@ -336,6 +340,7 @@ export class Geometry implements IGetSetVerticesData {
      * Update a specific vertex buffer
      * This function will directly update the underlying DataBuffer according to the passed numeric array or Float32Array
      * It will do nothing if the buffer is not updatable
+     * Invalidates cached WebGPU draws if buffer alignment recreates the GPU buffer.
      * @param kind defines the data kind (Position, normal, etc...)
      * @param data defines the data to use
      * @param offset defines the offset in the target buffer where to store the data
@@ -348,13 +353,18 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
+        const alignedBuffer = vertexBuffer._alignedBuffer;
         vertexBuffer.updateDirectly(data, offset, useBytes);
+        if (vertexBuffer._alignedBuffer !== alignedBuffer) {
+            this._invalidateVertexBuffers();
+        }
         this._notifyUpdate(kind);
     }
 
     /**
      * Update a specific vertex buffer
      * This function will create a new buffer if the current one is not updatable
+     * Invalidates cached WebGPU draws if buffer alignment recreates the GPU buffer.
      * @param kind defines the data kind (Position, normal, etc...)
      * @param data defines the data to use
      * @param updateExtends defines if the geometry extends must be recomputed (false by default)
@@ -366,7 +376,11 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
+        const alignedBuffer = vertexBuffer._alignedBuffer;
         vertexBuffer.update(data);
+        if (vertexBuffer._alignedBuffer !== alignedBuffer) {
+            this._invalidateVertexBuffers();
+        }
 
         if (kind === VertexBuffer.PositionKind) {
             this._updateBoundingInfo(updateExtends, data);
@@ -817,6 +831,19 @@ export class Geometry implements IGetSetVerticesData {
 
         // instances
         mesh.synchronizeInstances();
+    }
+
+    private _invalidateVertexBuffers(): void {
+        if (!this._engine.isWebGPU) {
+            return;
+        }
+
+        // Render bundles retain buffer bindings even when the vertex layout does not change.
+        for (const mesh of this._meshes) {
+            for (const subMesh of mesh.subMeshes) {
+                subMesh._invalidateVertexBuffers();
+            }
+        }
     }
 
     private _notifyUpdate(kind?: string) {

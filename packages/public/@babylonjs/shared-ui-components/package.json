@@ -33,6 +33,20 @@
         "readme.md",
         "license.md"
     ],
+    "nx": {
+        "targets": {
+            "build": {
+                "outputs": [
+                    "{projectRoot}/**/*.js",
+                    "{projectRoot}/**/*.d.ts",
+                    "{projectRoot}/**/*.map",
+                    "{projectRoot}/**/*.svg",
+                    "{projectRoot}/**/*.scss",
+                    "{projectRoot}/*.tsbuildinfo"
+                ]
+            }
+        }
+    },
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json)\" -g",
