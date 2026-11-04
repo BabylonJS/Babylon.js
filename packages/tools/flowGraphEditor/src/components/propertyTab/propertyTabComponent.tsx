@@ -29,6 +29,7 @@ import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { SoundAssetsPanelComponent } from "../soundAssets/soundAssetsPanelComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -205,6 +206,7 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
             const fileName = sourceFile ? sourceFile.name.replace(/\.(glb|gltf)$/i, `-edited.${format}`) : `flowGraphKHRInteractivity.${format}`;
             const externalResourceUris = retainedSource?.externalResourceUris.slice() ?? [];
             const analysis = await SerializationTools.ExportKhrInteractivityAsync(this.props.globalState, format);
+            this.props.globalState.setExportValidationDiagnostics([]);
             const message = `Exported ${analysis.nodes.length} KHR_interactivity node(s) as ${fileName}.`;
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, false));
             if (externalResourceUris.length) {
@@ -216,11 +218,15 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
         } catch (err) {
             const diagnostics = (err as { diagnostics?: { path: string; message: string }[] }).diagnostics;
             if (diagnostics?.length) {
+                this.props.globalState.setExportValidationDiagnostics(diagnostics);
                 for (const diagnostic of diagnostics) {
                     this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`KHR_interactivity export error: ${diagnostic.path}: ${diagnostic.message}`, true));
                 }
             } else {
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error exporting KHR_interactivity: " + err, true));
+                const errorMessage = String(err);
+                const message = `Error exporting KHR_interactivity: ${errorMessage}`;
+                this.props.globalState.setExportValidationDiagnostics([{ path: "export", message: errorMessage }]);
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, true));
             }
             ShowToast(this.props.globalState, diagnostics?.[0]?.message ?? `Error exporting KHR_interactivity: ${String(err)}`, "error");
         }
@@ -466,6 +472,10 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                                 />
                             )}
                         </div>
+                    </AccordionSection>
+
+                    <AccordionSection title="Sound Assets" collapseByDefault={false}>
+                        <SoundAssetsPanelComponent globalState={this.props.globalState} />
                     </AccordionSection>
 
                     <AccordionSection title="Snippet" collapseByDefault={false}>
