@@ -34,6 +34,17 @@ import { type Light } from "core/Lights/light";
 import { FrameGraph } from "core/FrameGraph/frameGraph";
 import { FrameGraphGeometryRendererTask } from "core/FrameGraph/Tasks/Rendering/geometryRendererTask";
 import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { type NodeMaterialBuildState } from "core/Materials/Node/nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
+import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
+import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
+import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
+import { VertexOutputBlock } from "core/Materials/Node/Blocks/Vertex/vertexOutputBlock";
+import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
 
 import "core/Engines/AbstractEngine/abstractEngine.alpha";
 import "core/Engines/Extensions/engine.multiRender";
@@ -1301,4 +1312,97 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
+    describe("node materials", () => {
+        // a mesh-id block of the user: its bind writes a value of the mesh that no recorded draw checks
+        class MeshIdBlock extends NodeMaterialBlock {
+            constructor(name: string) {
+                super(name, NodeMaterialBlockTargets.Fragment);
+                this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+            }
+            public get output() {
+                return this._outputs[0];
+            }
+            protected override _buildBlock(state: NodeMaterialBuildState) {
+                super._buildBlock(state);
+                state.sharedData.bindableBlocks.push(this);
+                state._emitUniformFromString("meshId", NodeMaterialBlockConnectionPointTypes.Float);
+                state.compilationString += `${state._declareOutput(this.output)} = meshId;\n`;
+                return this;
+            }
+            public override bind(effect: Effect, _nodeMaterial: NodeMaterial, bound?: Mesh) {
+                effect.setFloat("meshId", bound?.metadata?.id ?? 0);
+            }
+        }
+        // a texture block whose bind the user overrides
+        class TintedTextureBlock extends TextureBlock {
+            public override bind(effect: Effect) {
+                super.bind(effect);
+            }
+        }
+
+        // a node material that shows a texture, with what a case adds to its alpha
+        async function nodeMaterialAsync(textureBlockClass: typeof TextureBlock, alpha?: (output: FragmentOutputBlock) => void) {
+            const node = new NodeMaterial("node", scene);
+            const position = new InputBlock("position");
+            position.setAsAttribute("position");
+            const world = new InputBlock("world");
+            world.setAsSystemValue(NodeMaterialSystemValues.World);
+            const viewProjection = new InputBlock("viewProjection");
+            viewProjection.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
+            const worldPosition = new TransformBlock("worldPosition");
+            position.output.connectTo(worldPosition.vector);
+            world.output.connectTo(worldPosition.transform);
+            const clipPosition = new TransformBlock("clipPosition");
+            worldPosition.output.connectTo(clipPosition.vector);
+            viewProjection.output.connectTo(clipPosition.transform);
+            const vertexOutput = new VertexOutputBlock("vertexOutput");
+            clipPosition.output.connectTo(vertexOutput.vector);
+            const uv = new InputBlock("uv");
+            uv.setAsAttribute("uv");
+            const textureBlock = new textureBlockClass("texture");
+            // a texture of its own: the block's setter dirties every material that has the texture it takes, A's too
+            textureBlock.texture = RawTexture.CreateRGBATexture(new Uint8Array(4), 1, 1, scene) as any;
+            uv.output.connectTo(textureBlock.uv);
+            const fragmentOutput = new FragmentOutputBlock("fragmentOutput");
+            textureBlock.rgb.connectTo(fragmentOutput.rgb);
+            alpha?.(fragmentOutput);
+            node.addOutputNode(vertexOutput);
+            node.addOutputNode(fragmentOutput);
+            const built = new Promise<void>((resolve, reject) => {
+                node.onBuildObservable.addOnce(() => resolve());
+                node.onBuildErrorObservable.addOnce((error) => reject(new Error(error)));
+            });
+            node.build();
+            await built;
+            return node;
+        }
+
+        it("runs code of the user on a bind only with a block or a bind of the user, or a value callback, not with the blocks of the engine", async () => {
+            expect((await nodeMaterialAsync(TextureBlock))._runsCodeOnBind()).toBe(false);
+            const withBlock = await nodeMaterialAsync(TextureBlock, (output) => new MeshIdBlock("meshId").output.connectTo(output.a));
+            expect(withBlock._runsCodeOnBind()).toBe(true);
+            expect(withBlock._canReplayRecordedDraw()).toBe(false);
+            expect((await nodeMaterialAsync(TintedTextureBlock))._runsCodeOnBind()).toBe(true);
+            const withCallback = await nodeMaterialAsync(TextureBlock, (output) => {
+                const value = new InputBlock("value", undefined, NodeMaterialBlockConnectionPointTypes.Float);
+                value.valueCallback = () => 1;
+                value.output.connectTo(output.a);
+            });
+            expect(withCallback._runsCodeOnBind()).toBe(true);
+        });
+
+        it("needs a full draw after a draw of a node material whose block of the user writes a value of the mesh (A and B share it, only B's id changes)", async () => {
+            vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+            const node = await nodeMaterialAsync(TextureBlock, (output) => new MeshIdBlock("meshId").output.connectTo(output.a));
+            (node as any)._shaderLanguage = ShaderLanguage.WGSL;
+            const b = MeshBuilder.CreateBox("B", {}, scene);
+            b.metadata = { id: 2 };
+            b.material = node;
+            // B's draw is not encoded again, and the frame's references kept before it no longer stand
+            expect(unchanged()).toBe(true);
+            b.render(b.subMeshes[0], false);
+            expect(b.subMeshes[0]._drawWrapper._recordedMaterial).toBeNull();
+            expect(unchanged()).toBe(false);
+        });
+    });
 });

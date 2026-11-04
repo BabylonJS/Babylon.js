@@ -1904,6 +1904,44 @@ export class NodeMaterial extends NodeMaterialBase {
     }
 
     /**
+     * @internal A full bind of a node material also runs code that is not the material's own when the class that defines the bind of
+     * one of its bindable blocks does not declare that it writes only values a recorded draw checks (see
+     * NodeMaterialBlock._bindsMaterialValuesOnly: a block of the user, or a bind it overrides), or when an input block has a value callback
+     * @returns true if a full bind runs such code
+     */
+    public override _runsCodeOnBind(): boolean {
+        if (super._runsCodeOnBind()) {
+            return true;
+        }
+        const sharedData = this._sharedData;
+        if (!sharedData) {
+            return true;
+        }
+        for (const blocks of [sharedData.bindableBlocks, sharedData.forcedBindableBlocks]) {
+            for (const block of blocks) {
+                if (!NodeMaterial._BindsMaterialValuesOnly(block)) {
+                    return true;
+                }
+            }
+        }
+        for (const inputBlock of sharedData.inputBlocks) {
+            if (typeof inputBlock.valueCallback === "function") {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // whether the class that defines the bind of the block declares that it writes only values a recorded draw checks
+    private static _BindsMaterialValuesOnly(block: NodeMaterialBlock): boolean {
+        let prototype = Object.getPrototypeOf(block);
+        while (prototype && !Object.prototype.hasOwnProperty.call(prototype, "bind")) {
+            prototype = Object.getPrototypeOf(prototype);
+        }
+        return !!prototype && Object.prototype.hasOwnProperty.call(prototype, "_bindsMaterialValuesOnly") && block._bindsMaterialValuesOnly;
+    }
+
+    /**
      * Binds the submesh to this material by preparing the effect and shader to draw
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
