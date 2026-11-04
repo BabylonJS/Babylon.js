@@ -48,6 +48,8 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
             generation: 0,
             renderTarget: null,
             sampleCount: 1,
+            colorFormats: [],
+            depthFormat: undefined,
             pipeline: {} as GPURenderPipeline,
             bindGroups: [],
             indexBuffer: null,
@@ -125,6 +127,21 @@ describe("WebGPUEngine recorded draws", () => {
         effect._onBindObservable = { hasObservers: () => true };
         expect(replay()).toBe(false);
         effect._onBindObservable = { hasObservers: () => false };
+        expect(replay()).toBe(true);
+    });
+
+    it("does not encode again a draw recorded with other attachment formats, which a render target can change under the same wrapper", () => {
+        const { engine, keep, replay } = setup();
+        expect(replay()).toBe(true);
+        // setInternalTexture of a multi render target swaps an attachment for one of another format: the bundle encoder is created with
+        // the current formats, which the recorded pipeline does not match
+        engine._cacheRenderPipeline.colorFormats = ["rgba16float"];
+        expect(replay()).toBe(false);
+        keep();
+        expect(replay()).toBe(true);
+        engine._depthTextureFormat = "depth32float";
+        expect(replay()).toBe(false);
+        keep();
         expect(replay()).toBe(true);
     });
 

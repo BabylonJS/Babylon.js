@@ -4158,9 +4158,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
         const indexBuffer = this._currentIndexBuffer;
         // the record of the context and its arrays are filled again
-        const draw = (drawContext._recordedDraw ??= { bindGroups: [], vertexBuffers: [], vertexOffsets: [] } as unknown as IWebGPURecordedDraw);
+        const draw = (drawContext._recordedDraw ??= { bindGroups: [], vertexBuffers: [], vertexOffsets: [], colorFormats: [] } as unknown as IWebGPURecordedDraw);
         draw.renderTarget = this._currentRenderTarget;
         draw.sampleCount = this.currentSampleCount;
+        CopyInto(this._cacheRenderPipeline.colorFormats, draw.colorFormats);
+        draw.depthFormat = this._depthTextureFormat;
         draw.pipeline = pipeline;
         CopyInto(bindGroups, draw.bindGroups);
         draw.indexBuffer = indexBuffer ? indexBuffer.underlyingResource : null;
@@ -4181,6 +4183,18 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         draw.kept = true;
     }
 
+    private static _HasSameFormats(recorded: (GPUTextureFormat | null)[], current: (GPUTextureFormat | null)[]): boolean {
+        if (recorded.length !== current.length) {
+            return false;
+        }
+        for (let i = 0; i < recorded.length; i++) {
+            if (recorded[i] !== current[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** @internal */
     public override _canEncodeRecordedDraw(drawWrapper: DrawWrapper): boolean {
         const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
@@ -4197,6 +4211,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             effect?._onBindObservable?.hasObservers() ||
             draw.renderTarget !== this._currentRenderTarget ||
             draw.sampleCount !== this.currentSampleCount ||
+            // the bundle encoder takes the current formats, which its pipeline must match
+            draw.depthFormat !== this._depthTextureFormat ||
+            !WebGPUEngine._HasSameFormats(draw.colorFormats, this._cacheRenderPipeline.colorFormats) ||
             drawContext!.isDirty(materialContext.updateId) ||
             materialContext.isDirty ||
             materialContext.forceBindGroupCreation

@@ -20,6 +20,10 @@ export interface IWebGPURecordedDraw {
     generation: number;
     renderTarget: Nullable<object>;
     sampleCount: number;
+    /** the formats of the color attachments, which a render target can change under the same wrapper (setInternalTexture of a multi render target) */
+    colorFormats: (GPUTextureFormat | null)[];
+    /** the format of the depth attachment */
+    depthFormat: GPUTextureFormat | undefined;
     pipeline: GPURenderPipeline;
     bindGroups: GPUBindGroup[];
     indexBuffer: Nullable<GPUBuffer>;
