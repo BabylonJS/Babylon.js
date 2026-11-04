@@ -376,6 +376,27 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(false);
     });
 
+    it("sees a mesh switched to unindexed, which only dirties the defines of its sub meshes, which a shader material does not have", () => {
+        const shaderMaterial = new ShaderMaterial("shader", scene, "default", { shaderLanguage: ShaderLanguage.WGSL });
+        mesh.material = shaderMaterial;
+        const shaderFullDraw = () => {
+            engine._keepInheritedState(drawWrapper);
+            light._renderId = scene.getRenderId();
+            mesh._keepRecordedDraw(drawWrapper, subMesh, shaderMaterial, mesh, true);
+        };
+        const shaderUnchanged = () => mesh._isRecordedDrawUnchanged(drawWrapper, subMesh, shaderMaterial, mesh, true);
+        shaderFullDraw();
+        expect(shaderUnchanged()).toBe(true);
+        // the same index buffer stays on the geometry: the draw it records is not indexed
+        mesh.isUnIndexed = true;
+        expect(subMesh.materialDefines).toBeFalsy();
+        expect(shaderUnchanged()).toBe(false);
+        shaderFullDraw();
+        expect(shaderUnchanged()).toBe(true);
+        mesh.isUnIndexed = false;
+        expect(shaderUnchanged()).toBe(false);
+    });
+
     it("sees a changed vertex range, which unindexed and point draws use", () => {
         subMesh.verticesCount -= 1;
         expect(unchanged()).toBe(false);

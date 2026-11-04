@@ -84,7 +84,7 @@ export class DrawWrapper {
     public _recordedOrientation = -1;
     /** @internal Whether its full draw reversed the culling (Material._preBind): a draw encoded again sets the same states */
     public _recordedReverse = false;
-    /** @internal */
+    /** @internal The index buffer the draw uses, null for an unindexed mesh */
     public _recordedIndexBuffer: Nullable<object> = null;
     /**
      * @internal The vertex buffers of the geometry and of the thin instances, each with the GPU buffer it binds, where it is read and

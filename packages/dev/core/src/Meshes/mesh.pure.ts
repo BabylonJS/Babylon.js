@@ -2811,7 +2811,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             drawWrapper._recordedOrientation !== material._getEffectiveOrientation(this) ||
             drawWrapper._recordedFillMode !== this._getRenderingFillMode(material.fillMode) ||
             drawWrapper._recordedDomainState !== this._getConfiguredState(domainState) ||
-            drawWrapper._recordedIndexBuffer !== (this._geometry?.getIndexBuffer() ?? null) ||
+            drawWrapper._recordedIndexBuffer !== this._getDrawnIndexBuffer() ||
             drawWrapper._recordedInstances !== this._getDrawnInstanceCount() ||
             !this._areSharedBuffersFirst(effectiveMesh, withLights)
         ) {
@@ -2901,6 +2901,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return domainState + 4 * MaterialHelperGeometryRendering._GetRecordedDrawState(this.getScene().getEngine().currentRenderPassId, this);
     }
 
+    // the index buffer a draw of the mesh uses (see _draw): none for an unindexed mesh (isUnIndexed only dirties the defines of its sub
+    // meshes, which a shader material does not have)
+    private _getDrawnIndexBuffer(): Nullable<object> {
+        return this._unIndexed ? null : (this._geometry?.getIndexBuffer() ?? null);
+    }
+
     // the instance count a draw of the mesh uses (see _draw): the forced one, else the thin instances', else the override that
     // _processRendering gives a mesh drawn alone (with instanced buffers set on its geometry)
     private _getDrawnInstanceCount(): number {
@@ -2976,7 +2982,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         drawWrapper._recordedOrientation = material._getEffectiveOrientation(this);
         drawWrapper._recordedFillMode = this._getRenderingFillMode(material.fillMode);
         drawWrapper._recordedDomainState = this._getConfiguredState(domainState);
-        drawWrapper._recordedIndexBuffer = this._geometry?.getIndexBuffer() ?? null;
+        drawWrapper._recordedIndexBuffer = this._getDrawnIndexBuffer();
         const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
         recordedVertexBuffers.length = 0;
         const vertexBuffers = this._geometry?.getVertexBuffers();
