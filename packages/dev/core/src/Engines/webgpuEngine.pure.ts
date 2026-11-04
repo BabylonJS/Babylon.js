@@ -4235,6 +4235,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const bundleList = this._bundleList;
         this._getCurrentRenderPass();
+        // as _draw: the stencil composer computes the effective state (enabled, reference) from the material's stencil the mesh set
+        this.applyStates();
         this._applyRenderPassChanges(bundleList);
         // as before a full draw: the draws the batcher holds go first
         this._flushRenderPassCommands();

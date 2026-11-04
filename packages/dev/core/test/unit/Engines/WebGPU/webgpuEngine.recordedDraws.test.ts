@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
+import { WebGPUStencilStateComposer } from "core/Engines/WebGPU/webgpuStencilStateComposer";
+import { StencilState } from "core/States/stencilState";
+import { MaterialStencilState } from "core/Materials/materialStencilState";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
 import { WebGPUMaterialContext } from "core/Engines/WebGPU/webgpuMaterialContext";
@@ -33,6 +36,7 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
             _bundleList: { numDrawCalls: 0, getBundleEncoder: () => encoder },
             _cacheRenderPipeline: { colorFormats: [] },
             _getCurrentRenderPass: () => {},
+            applyStates: () => {},
             _applyRenderPassChanges: () => {},
             _flushRenderPassCommands: () => {},
             _reportDrawCall: () => {},
@@ -99,12 +103,16 @@ describe("WebGPUEngine recorded draws", () => {
             _bundleList: { numDrawCalls: 0, getBundleEncoder: () => encoder },
             _cacheRenderPipeline: { colorFormats: [], vertexBuffers: [{ effectiveBuffer: { underlyingResource: {} }, _validOffsetRange: true, byteOffset: 0 }] },
             _getCurrentRenderPass: () => {},
+            _stencilStateComposer: { apply: vi.fn() },
+            _alphaState: { _alphaBlend: false, _numTargetEnabled: 1 },
             _applyRenderPassChanges: () => {},
             _flushRenderPassCommands: () => {},
             _reportDrawCall: () => {},
             _recordedDrawContext: null,
         };
         engine._canEncodeRecordedDraw = (wrapper: DrawWrapper) => WebGPUEngine.prototype._canEncodeRecordedDraw.call(engine, wrapper);
+        engine._cacheRenderPipeline.setAlphaBlendEnabled = vi.fn();
+        engine.applyStates = () => WebGPUEngine.prototype.applyStates.call(engine);
         engine._keepInheritedState = (wrapper: DrawWrapper) => WebGPUEngine.prototype._keepInheritedState.call(engine, wrapper);
         const keep = () => (WebGPUEngine.prototype as any)._keepRecordedDraw.call(engine, {}, [{}, {}], 0, 36, 1, 0);
         const replay = () => WebGPUEngine.prototype._replayRecordedDraw.call(engine, drawWrapper);
@@ -117,6 +125,29 @@ describe("WebGPUEngine recorded draws", () => {
         const { replay, markOwnerSlotUsed, drawContext } = setup();
         expect(replay()).toBe(true);
         expect(markOwnerSlotUsed).toHaveBeenCalledWith(drawContext);
+    });
+
+    it("composes the stencil before it encodes a draw again, as a full draw does: the render pass reads the reference of the material's stencil, else the global one", () => {
+        const { engine, replay } = setup();
+        // the composer's effective state is what the render pass reads (_applyRenderPassChanges sets the stencil reference from it)
+        const cache = new Proxy({}, { get: () => () => {} }) as any;
+        const composer = new WebGPUStencilStateComposer(cache);
+        composer.stencilGlobal = new StencilState();
+        composer.stencilGlobal.enabled = true;
+        composer.stencilGlobal.funcRef = 1;
+        engine._stencilStateComposer = composer;
+        const read: Array<{ enabled: boolean; funcRef: number }> = [];
+        engine._applyRenderPassChanges = () => read.push({ enabled: composer.enabled, funcRef: composer.funcRef });
+        // B's full draw composed its stencil, of reference 2
+        const b = new MaterialStencilState();
+        b.enabled = true;
+        b.funcRef = 2;
+        composer.stencilMaterial = b;
+        composer.apply();
+        // the replayed draw's material has no stencil (Mesh.render sets it through Material._setStates): the global one applies
+        composer.stencilMaterial = new MaterialStencilState();
+        expect(replay()).toBe(true);
+        expect(read).toEqual([{ enabled: true, funcRef: 1 }]);
     });
 
     it("does not encode again a draw whose effect has a bind callback, which a full draw calls", () => {
