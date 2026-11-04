@@ -1249,4 +1249,21 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
+    it("sees whether the GPU texture of a texture of the material uses its mipmaps, set in the frame after the reference draw", () => {
+        const internal = material.diffuseTexture!.getInternalTexture()!;
+        // a mipmapped, trilinear texture: the sampler of a full bind reads its mips
+        internal.useMipMaps = true;
+        internal.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        // turned off in the same frame without dirtying the material: a full bind clamps the sampler to the first mip
+        internal.useMipMaps = false;
+        expect(unchanged()).toBe(false);
+        // the textures version only grows: turned on again, the draw still needs a full one, which is the reference again
+        internal.useMipMaps = true;
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+    });
+
 });

@@ -1054,10 +1054,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     private _texturesVersionSamplers: number[] = [];
 
     // the sampler a bind of the texture sets (see WebGPUCacheSampler.GetSamplerHashCode): the wrap modes and the anisotropy it reads from
-    // the texture, and the filtering and comparison of its GPU texture. Changing them does not dirty the material
+    // the texture, and the filtering, mipmapping and comparison of its GPU texture. Changing them does not dirty the material
     private static _GetSamplerKey(texture: BaseTexture): number {
         const internal = texture.getInternalTexture();
-        const filtering = (internal?.samplingMode ?? 0) + 16 * (internal?._comparisonFunction ?? 0);
+        const filtering = (internal?.samplingMode ?? 0) + 16 * (internal?.useMipMaps ? 1 : 0) + 32 * (internal?._comparisonFunction ?? 0);
         return texture.wrapU + 4 * (texture.wrapV + 4 * (texture.wrapR + 4 * (texture.anisotropicFilteringLevel + 64 * filtering)));
     }
 
