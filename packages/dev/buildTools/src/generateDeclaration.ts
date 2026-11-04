@@ -720,7 +720,7 @@ ${looseDeclarationsString || ""}
                 `
                 );
                 // check documentation flags
-                if (config.addToDocumentation) {
+                if (config.addToDocumentation && !checkArgs("--skipDocumentation", true)) {
                     // make sure snapshot directory exists
                     checkDirectorySync(path.join(rootDir, ".snapshot"));
                     const documentationFile = path.join(rootDir, ".snapshot", "documentation.d.ts");

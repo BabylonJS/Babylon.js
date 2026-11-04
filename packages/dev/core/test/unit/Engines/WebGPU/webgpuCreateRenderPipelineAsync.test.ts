@@ -54,7 +54,6 @@ function createEngine(textureFloatLinearFiltering: boolean) {
     const indexBuffer = { underlyingResource: {}, is32Bits: true };
     const renderPass = { setPipeline: vi.fn(), setIndexBuffer: vi.fn(), setVertexBuffer: vi.fn(), setBindGroup: vi.fn(), drawIndexed: vi.fn() };
     const depthCullingState = new DepthCullingState();
-    depthCullingState.cull = true;
     depthCullingState.depthFunc = Constants.LEQUAL;
 
     const engine = Object.create(WebGPUEngine.prototype) as WebGPUEngine;
@@ -88,6 +87,7 @@ function createEngine(textureFloatLinearFiltering: boolean) {
         _counters: { numBundleCreationNonCompatMode: 0, numBundleReuseNonCompatMode: 0 },
         _reportDrawCall: vi.fn(),
     });
+    engine.setState(true);
 
     const mesh = { geometry: { getVertexBuffers: () => ({}), getIndexBuffer: () => indexBuffer } } as unknown as AbstractMesh;
 
