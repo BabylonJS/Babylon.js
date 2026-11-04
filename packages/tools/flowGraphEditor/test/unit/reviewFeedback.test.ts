@@ -685,6 +685,7 @@ describe("review feedback regressions", () => {
         sourceGraph.addBlock(soundBlock);
         (intersectionBlock.targetMeshes as any)._defaultValue = [sourceSecond];
         (soundBlock.sound as any)._defaultValue = "old";
+        sourceGraph.createContext().setVariable("savedValue", 42);
         const sourceState = new GlobalState(sourceScene);
         sourceState.coordinator = sourceCoordinator;
         (sourceState.stateManager as any).storeEditorData = vi.fn();
@@ -713,6 +714,7 @@ describe("review feedback regressions", () => {
         let restoredTarget = (restoredIntersection.targetMeshes as any)._defaultValue[0];
         expect(restoredTarget).not.toBe(collidingLive);
         expect(restoredTarget).toEqual(expect.objectContaining({ id: sourceSecond.id, name: sourceSecond.name, uniqueId: sourceSecond.uniqueId }));
+        expect(editState.getContextSnapshotsForGraph(editState.flowGraph.uniqueId)?.[0]._userVariables.savedValue).toBe(42);
 
         history.redo();
 
