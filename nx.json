@@ -1,16 +1,39 @@
 {
-    "npmScope": "babylonjs",
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "nx/tasks-runners/default",
-            "options": {
-                "cacheableOperations": ["build", "test", "lint", "package", "prepare"]
-            }
-        }
+    "defaultBase": "master",
+    "namedInputs": {
+        "default": ["{projectRoot}/**/*", "buildTools"],
+        "buildTools": [
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/package-lock.json",
+            "{workspaceRoot}/tsconfig*.json",
+            "{workspaceRoot}/packages/public/*.mjs",
+            "{workspaceRoot}/scripts/**/*",
+            "{workspaceRoot}/packages/tools/babylonServer/public/**/*",
+            { "env": "NODE_ENV" },
+            { "env": "ROLLUP_MODE" },
+            { "env": "ROLLUP_DEVMODE" },
+            { "runtime": "node --version" }
+        ]
     },
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "cache": true,
+            "inputs": ["default", "^default"],
+            "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/lib",
+                "{projectRoot}/bin",
+                "{projectRoot}/assets",
+                "{projectRoot}/**/*.js",
+                "{projectRoot}/**/*.map",
+                "{projectRoot}/**/*.d.ts",
+                "{projectRoot}/*.tsbuildinfo",
+                "{projectRoot}/src/**/[Ss]haders*/**/*.ts",
+                "{projectRoot}/src/**/*.fragment.ts",
+                "{projectRoot}/src/**/*.vertex.ts",
+                "{projectRoot}/src/**/*.compute.ts"
+            ]
         },
         "prepare": {
             "dependsOn": ["^prepare"]
@@ -18,9 +41,6 @@
         "package": {
             "dependsOn": ["^package"]
         }
-    },
-    "affected": {
-        "defaultBase": "master"
     },
     "analytics": false
 }
