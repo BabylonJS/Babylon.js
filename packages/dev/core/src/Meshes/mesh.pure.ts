@@ -2125,12 +2125,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        if (this._internalMeshDataInfo._onBeforeDrawObservable) {
-            this._internalMeshDataInfo._onBeforeDrawObservable.notifyObservers(this);
-        }
-
         const scene = this.getScene();
         const engine = scene.getEngine();
+
+        if (this._internalMeshDataInfo._onBeforeDrawObservable) {
+            // what the observers draw is not the mesh's: it never waits for its pipeline (see _processRendering)
+            const pipelineWaitOwner = engine._pipelineWaitOwner;
+            engine._pipelineWaitOwner = null;
+            try {
+                this._internalMeshDataInfo._onBeforeDrawObservable.notifyObservers(this);
+            } finally {
+                engine._pipelineWaitOwner = pipelineWaitOwner;
+            }
+        }
+
         const currentMaterialContext = engine._currentMaterialContext;
         const useVertexPulling = currentMaterialContext && currentMaterialContext.useVertexPulling;
 

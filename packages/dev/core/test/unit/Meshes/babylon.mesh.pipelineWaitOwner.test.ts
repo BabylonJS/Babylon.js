@@ -4,6 +4,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
+import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { ShadowDepthWrapper } from "core/Materials/shadowDepthWrapper";
 import { StandardMaterial } from "core/Materials/standardMaterial";
@@ -12,6 +13,8 @@ import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import "core/Rendering/boundingBoxRenderer";
 import { Scene } from "core/scene";
+import "core/Shaders/pass.fragment";
+import "core/Shaders/postprocess.vertex";
 
 /**
  * Asynchronous pipeline creation (WebGPU): Mesh._processRendering gives the draws it submits their owner (AbstractEngine._pipelineWaitOwner):
@@ -101,6 +104,27 @@ describe("The owner of the draws of a mesh", () => {
         }
         expect(draws.length).toBeGreaterThan(0);
         expect(draws.map((draw) => draw.owner)).toEqual(draws.map(() => null));
+    });
+
+    it("gives no owner to what an observer of a mesh's draw draws (an EffectRenderer pass), and gives it back to the mesh's draw", async () => {
+        const box = MeshBuilder.CreateBox("box", {}, scene);
+        const effectRenderer = new EffectRenderer(engine);
+        const pass = new EffectWrapper({ engine, name: "pass", fragmentShader: "pass", useShaderStore: true });
+        await scene.whenReadyAsync();
+        for (let i = 0; i < 20 && !pass.isReady(); i++) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        expect(pass.isReady()).toBe(true);
+        box.onBeforeDrawObservable.add(() => effectRenderer.render(pass));
+        const draws = watchDraws();
+
+        scene.render();
+
+        // the observer's pass, then the box
+        expect(draws.map((draw) => draw.owner)).toEqual([null, box._internalAbstractMeshDataInfo]);
+        expect(engine._pipelineWaitOwner).toBeNull();
+        pass.dispose();
+        effectRenderer.dispose();
     });
 
     it("gives the owner back after the draws of a mesh, also when one of them throws", async () => {
