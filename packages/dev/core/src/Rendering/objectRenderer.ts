@@ -579,8 +579,10 @@ export class ObjectRenderer {
      * When snapshot rendering is active, this always returns true to ensure render pass
      * topology stays consistent between the recording frame and playback frames.
      * While mesh draws wait for their pipelines (WebGPU asynchronous pipeline creation), a renderer
-     * refreshed every N frames renders in every frame until those meshes are drawn again, so that it
-     * shows them in the same frames as the other passes. Only a rendering it asks for lets them wait (see render).
+     * refreshed every N frames renders in every frame, up to the frame in which those meshes are drawn
+     * again (two frames after the last wait: that recovery frame included), so that it shows them in the
+     * same frames as the other passes. Every such renderer of the engine does, including one that does not
+     * draw the meshes that wait. Only a rendering it asks for lets them wait (see render).
      * @returns true if the renderer should render the current frame
      */
     public shouldRender(): boolean {
