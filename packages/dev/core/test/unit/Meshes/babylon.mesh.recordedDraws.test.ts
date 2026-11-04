@@ -1266,4 +1266,19 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
+    it("does not encode again a draw of a mesh the batch does not render itself, which a full draw skips", () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        (material as any)._shaderLanguage = ShaderLanguage.WGSL;
+        vi.spyOn(mesh as any, "_getUnchangedRecordedDraw").mockReturnValue(subMesh._drawWrapper);
+        vi.spyOn(engine, "_canEncodeRecordedDraw").mockReturnValue(true);
+        const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+        // still rendered while not visible (an active mesh kept by freezeActiveMeshes): the batch does not render it itself
+        mesh.isVisible = false;
+        mesh.render(subMesh, false);
+        expect(replay).not.toHaveBeenCalled();
+        mesh.isVisible = true;
+        mesh.render(subMesh, false);
+        expect(replay).toHaveBeenCalledTimes(1);
+    });
+
 });

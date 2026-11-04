@@ -3093,7 +3093,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
         if (recordsDraw) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh);
-            if (recordedDrawWrapper && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
+            // as _processRendering: a mesh still rendered for its instances or its batch but not drawn itself draws nothing
+            if (recordedDrawWrapper && batch.renderSelf[subMesh._id] && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
                 if (enableAlphaMode) {
                     this._setAlphaModes(engine, subMesh.getMaterial()!);
                 }
