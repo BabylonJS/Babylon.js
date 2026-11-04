@@ -58,6 +58,52 @@ describe("Ray.intersectionSegment", () => {
         expect(ray.intersectionSegment(new Vector3(0.02, -0.001, 0), new Vector3(0.02, 0.001, 0), 0.0001)).toBe(-1);
     });
 
+    it("keeps the projection of the ray end on short collinear segments in either endpoint order", () => {
+        const ray = new Ray(Vector3.Zero(), Vector3.Right(), 10);
+        const delta = 2 ** -15;
+
+        for (const [a, b] of [
+            [new Vector3(10 + delta, 0, 0), new Vector3(10 - delta, 0, 0)],
+            [new Vector3(10 - delta, 0, 0), new Vector3(10 + delta, 0, 0)],
+        ]) {
+            const distance = ray.intersectionSegment(a, b, 1e-6);
+            expect(distance).toBeGreaterThanOrEqual(10 - delta);
+            expect(distance).toBeLessThanOrEqual(10);
+        }
+    });
+
+    it("accepts near-parallel short segments that straddle the ray end in either endpoint order", () => {
+        // the infinite lines cross past the ray end, at 10 + delta / 2
+        const ray = new Ray(Vector3.Zero(), Vector3.Right(), 10);
+        const delta = 2 ** -15;
+        for (const [a, b] of [
+            [new Vector3(10 - delta, -1.5e-4 * delta, 0), new Vector3(10 + delta, 0.5e-4 * delta, 0)],
+            [new Vector3(10 + delta, 0.5e-4 * delta, 0), new Vector3(10 - delta, -1.5e-4 * delta, 0)],
+        ]) {
+            expect(ray.intersectionSegment(a, b, 1e-6)).toBeCloseTo(10, 6);
+        }
+
+        // on a short ray the clamped tc numerator (tMax * discriminant) is also below 1e-8
+        const shortRay = new Ray(Vector3.Zero(), Vector3.Right(), 0.01);
+        for (const [a, b] of [
+            [new Vector3(0.0099, -1.5e-8, 0), new Vector3(0.0101, 0.5e-8, 0)],
+            [new Vector3(0.0101, 0.5e-8, 0), new Vector3(0.0099, -1.5e-8, 0)],
+        ]) {
+            expect(shortRay.intersectionSegment(a, b, 1e-6)).toBeCloseTo(0.01, 8);
+        }
+    });
+
+    it("handles zero-length segments at the ray end", () => {
+        const ray = new Ray(Vector3.Zero(), Vector3.Right(), 10);
+        const pointAt = (x: number, y = 0): [Vector3, Vector3] => [new Vector3(x, y, 0), new Vector3(x, y, 0)];
+
+        expect(ray.intersectionSegment(...pointAt(10), 1e-6)).toBe(10);
+        // past the ray end but within the threshold
+        expect(ray.intersectionSegment(...pointAt(10 + 1e-7), 1e-6)).toBeCloseTo(10, 6);
+        expect(ray.intersectionSegment(...pointAt(10.001), 1e-6)).toBe(-1);
+        expect(ray.intersectionSegment(...pointAt(10, 0.001), 1e-6)).toBe(-1);
+    });
+
     it("rejects segments behind the ray and applies the threshold", () => {
         const ray = new Ray(Vector3.Zero(), Vector3.Right(), 10);
 

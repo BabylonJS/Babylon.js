@@ -438,6 +438,7 @@ export class Ray {
             sD = discriminant; // sc = sN / sD, default sD = D >= 0
         let tN: number,
             tD = discriminant; // tc = tN / tD, default tD = D >= 0
+        let isClampedAtRayEnd = false;
 
         // compute the line parameters of the two closest points
         if (discriminant < Ray._Smallnum) {
@@ -477,6 +478,7 @@ export class Ray {
             }
         } else if (tN > tMax * tD) {
             // tc > tMax => the ray end is visible
+            isClampedAtRayEnd = true;
             tN = tMax * tD;
             // recompute sc for this edge
             if (-d + b * tMax < 0.0) {
@@ -489,8 +491,16 @@ export class Ray {
             }
         }
         // finally do the division to get sc and tc
-        const sc = Math.abs(sN) < Ray._Smallnum ? 0.0 : sN / sD;
-        const tc = Math.abs(tN) < Ray._Smallnum ? 0.0 : tN / tD;
+        let sc: number, tc: number;
+        if (isClampedAtRayEnd) {
+            // tc is tMax and 0 <= sN <= sD, but for a short ray or segment both numerators can be below _Smallnum:
+            // keep the normalized values and only guard the division for a zero-length segment (sD = a = 0)
+            sc = sD > 0.0 ? sN / sD : 0.0;
+            tc = tMax;
+        } else {
+            sc = Math.abs(sN) < Ray._Smallnum ? 0.0 : sN / sD;
+            tc = Math.abs(tN) < Ray._Smallnum ? 0.0 : tN / tD;
+        }
 
         // get the difference of the two closest points
         const qtc = TmpVectors.Vector3[4];
