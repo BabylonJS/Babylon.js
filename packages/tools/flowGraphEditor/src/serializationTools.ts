@@ -453,7 +453,11 @@ export class SerializationTools {
                 index = location.nameIndex;
             }
             let resolved;
+            if (location.sceneUid === scene.uid) {
+                resolved = candidates.find((node) => node.uniqueId === value.uniqueId);
+            }
             if (
+                !resolved &&
                 location.sceneUid === scene.uid &&
                 currentValue &&
                 typeof currentValue.getScene === "function" &&

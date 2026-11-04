@@ -10,7 +10,7 @@ import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import { _GetDefaultEventDataParseCount, defaultValueParseFunction, needsPathConverter } from "./serialization";
-import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext } from "./typeDefinitions";
+import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext, type SerializedFlowGraphReferenceProvenance } from "./typeDefinitions";
 import { type Node } from "core/node";
 import { type Scene } from "core/scene";
 import { getRichTypeByFlowGraphType, RichType } from "./flowGraphRichTypes.pure";
@@ -20,6 +20,48 @@ import { WebRequest } from "core/Misc/webRequest";
 import { Logger } from "core/Misc/logger";
 import { type AudioEngineV2 } from "core/AudioV2/abstractAudio/audioEngineV2";
 import { type IFlowGraphSoundAsset } from "./flowGraphSoundAssets";
+
+function _CreateReferenceProvenanceParseFunction(
+    baseValueParseFunction: NonNullable<IFlowGraphParseOptions["valueParseFunction"]>,
+    provenance: SerializedFlowGraphReferenceProvenance
+): NonNullable<IFlowGraphParseOptions["valueParseFunction"]> {
+    const locations = new Map<number, SerializedFlowGraphReferenceProvenance[number][1][]>();
+    for (const [uniqueId, location] of provenance) {
+        const matchingLocations = locations.get(uniqueId) ?? [];
+        matchingLocations.push(location);
+        locations.set(uniqueId, matchingLocations);
+    }
+
+    const resolve = (serializedValue: any, parsedValue: any, scene: Scene): any => {
+        if (Array.isArray(serializedValue)) {
+            return serializedValue.map((entry, index) => resolve(entry, Array.isArray(parsedValue) ? parsedValue[index] : undefined, scene));
+        }
+        if (!serializedValue || typeof serializedValue !== "object" || typeof serializedValue.uniqueId !== "number" || typeof serializedValue.className !== "string") {
+            return parsedValue;
+        }
+        const matchingLocations = locations.get(serializedValue.uniqueId);
+        const location =
+            matchingLocations?.find(
+                (candidate) => candidate.className === serializedValue.className && candidate.id === serializedValue.id && candidate.name === serializedValue.name
+            ) ??
+            matchingLocations?.find((candidate) => candidate.className === serializedValue.className && candidate.id === serializedValue.id) ??
+            matchingLocations?.find((candidate) => candidate.className === serializedValue.className && candidate.name === serializedValue.name) ??
+            (matchingLocations?.length === 1 ? matchingLocations[0] : undefined);
+        if (!location) {
+            return parsedValue;
+        }
+        const nodes = scene.getNodes().filter((node) => node.getClassName() === location.className);
+        let candidates = nodes.filter((node) => node.id === location.id);
+        let index = location.idIndex;
+        if (candidates.length === 0) {
+            candidates = nodes.filter((node) => node.name === location.name);
+            index = location.nameIndex;
+        }
+        return (location.sceneUid === scene.uid ? candidates.find((node) => node.uniqueId === serializedValue.uniqueId) : undefined) ?? candidates[index] ?? serializedValue;
+    };
+
+    return (key, serializationObject, assetsContainer, scene) => resolve(serializationObject[key], baseValueParseFunction(key, serializationObject, assetsContainer, scene), scene);
+}
 
 function ParseCustomEventData(
     serializedEventData: unknown,
@@ -165,7 +207,13 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: IFlo
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
         serializedObject._flowGraphs?.map(
-            async (serializedGraph: any) => await ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter })
+            async (serializedGraph: any) =>
+                await ParseFlowGraphAsync(serializedGraph, {
+                    coordinator,
+                    valueParseFunction,
+                    pathConverter: options.pathConverter,
+                    referenceProvenance: serializedObject.referenceProvenance,
+                })
         )
     );
     return coordinator;
@@ -186,7 +234,12 @@ export async function ParseFlowGraphCoordinatorFromSnippetAsync(snippetId: strin
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     const coordinator = new FlowGraphCoordinator({ scene: options.scene });
     await options.scene.whenReadyAsync();
-    await ParseFlowGraphAsync(serializedObject, { coordinator, valueParseFunction, pathConverter: options.pathConverter });
+    await ParseFlowGraphAsync(serializedObject, {
+        coordinator,
+        valueParseFunction,
+        pathConverter: options.pathConverter,
+        referenceProvenance: serializedObject.referenceProvenance,
+    });
     return coordinator;
 }
 
@@ -209,8 +262,15 @@ export async function ParseFlowGraphFromSnippetAsync(snippetId: string, options:
     await LoadSerializedSoundAssetsAsync(serializedObject, options.coordinator);
     const parsedGraphs: FlowGraph[] = [];
     for (const serializedGraph of serializedObject._flowGraphs) {
-        // eslint-disable-next-line no-await-in-loop -- graph order matters for the active graph index.
-        parsedGraphs.push(await ParseFlowGraphAsync(serializedGraph, { coordinator: options.coordinator, valueParseFunction, pathConverter: options.pathConverter }));
+        parsedGraphs.push(
+            // eslint-disable-next-line no-await-in-loop -- graph order matters for the active graph index.
+            await ParseFlowGraphAsync(serializedGraph, {
+                coordinator: options.coordinator,
+                valueParseFunction,
+                pathConverter: options.pathConverter,
+                referenceProvenance: serializedObject.referenceProvenance,
+            })
+        );
     }
 
     const activeGraphIndex = serializedObject.activeGraphIndex ?? 0;
@@ -253,7 +313,9 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
     }
     graph.metadata = serializationObject.metadata;
     const blocks: FlowGraphBlock[] = [];
-    const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+    const baseValueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+    const referenceProvenance = options.referenceProvenance ?? serializationObject.referenceProvenance;
+    const valueParseFunction = referenceProvenance ? _CreateReferenceProvenanceParseFunction(baseValueParseFunction, referenceProvenance) : baseValueParseFunction;
     // Parse all blocks
     // for (const serializedBlock of serializationObject.allBlocks) {
     for (let i = 0; i < serializationObject.allBlocks.length; i++) {

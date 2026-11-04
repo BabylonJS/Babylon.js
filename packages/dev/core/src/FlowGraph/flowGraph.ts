@@ -7,7 +7,7 @@ import { type FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import { type FlowGraphCoordinator } from "./flowGraphCoordinator";
-import { type IObjectAccessor } from "./typeDefinitions";
+import { type IObjectAccessor, type SerializedFlowGraphReferenceProvenance } from "./typeDefinitions";
 import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { FlowGraphEventType } from "./flowGraphEventType";
@@ -97,6 +97,10 @@ export interface IFlowGraphParseOptions {
      * A function that converts a path to an object accessor.
      */
     pathConverter?: IPathToObjectConverter<IObjectAccessor>;
+    /**
+     * Optional scene-reference provenance used to disambiguate duplicate nodes.
+     */
+    referenceProvenance?: SerializedFlowGraphReferenceProvenance;
 }
 /**
  * Class used to represent a flow graph.

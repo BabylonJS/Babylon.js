@@ -14,6 +14,7 @@ import {
     FlowGraphMultiplyBlock,
     FlowGraphPlayAnimationBlock,
     FlowGraphSceneReadyEventBlock,
+    FlowGraphMeshIntersectionEventBlock,
     FlowGraphSendCustomEventBlock,
     FlowGraphReceiveCustomEventBlock,
     FlowGraphSetPropertyBlock,
@@ -502,6 +503,62 @@ describe("Flow Graph Serialization", () => {
         const parsedCoordinator = await ParseCoordinatorAsync(serializedCoordinator, { scene });
 
         expect(parsedCoordinator.dispatchEventsSynchronously).toBe(false);
+    });
+
+    it("uses reference provenance when parsing duplicate scene nodes", async () => {
+        const sourceScene = new Scene(engine);
+        const sourceFirst = new Mesh("part", sourceScene);
+        const sourceSecond = new Mesh("part", sourceScene);
+        sourceSecond.id = sourceFirst.id;
+        const source = new Mesh("source", sourceScene);
+        const sourceCoordinator = new FlowGraphCoordinator({ scene: sourceScene });
+        const sourceGraph = sourceCoordinator.createGraph();
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        sourceGraph.addEventBlock(block);
+        (block.sourceMesh as any)._defaultValue = source;
+        (block.targetMeshes as any)._defaultValue = [sourceSecond];
+        const serialized: any = {};
+        sourceCoordinator.serialize(serialized);
+        serialized.referenceProvenance = [
+            [
+                sourceSecond.uniqueId,
+                {
+                    id: sourceSecond.id,
+                    name: sourceSecond.name,
+                    className: sourceSecond.getClassName(),
+                    idIndex: 1,
+                    nameIndex: 1,
+                    sceneUid: sourceScene.uid,
+                },
+            ],
+        ];
+        const targetFirst = new Mesh("part", scene);
+        const targetSecond = new Mesh("part", scene);
+        targetSecond.id = targetFirst.id;
+        const targetSource = new Mesh("source", scene);
+
+        const parsedCoordinator = await ParseCoordinatorAsync(serialized, { scene });
+        const parsedBlock = parsedCoordinator.flowGraphs[0].getAllBlocks()[0] as FlowGraphMeshIntersectionEventBlock;
+        const context = parsedCoordinator.flowGraphs[0].createContext();
+        const intersects = vi.spyOn(targetSource, "intersectsMesh").mockReturnValue(true);
+        const activate = vi.spyOn(parsedBlock.onEnter as any, "_activateSignal");
+
+        expect((parsedBlock.targetMeshes as any)._defaultValue).toEqual([targetSecond]);
+        expect((parsedBlock.targetMeshes as any)._defaultValue).not.toEqual([targetFirst]);
+        parsedBlock._executeEvent(context, null);
+        expect(intersects).toHaveBeenCalledWith(targetSecond, false);
+        expect(activate).toHaveBeenCalledWith(context);
+
+        parsedCoordinator.dispose();
+        targetSecond.dispose();
+        const missingTargetCoordinator = await ParseCoordinatorAsync(serialized, { scene });
+        const missingTargetBlock = missingTargetCoordinator.flowGraphs[0].getAllBlocks()[0] as FlowGraphMeshIntersectionEventBlock;
+        expect((missingTargetBlock.targetMeshes as any)._defaultValue).not.toEqual([targetFirst]);
+        expect((missingTargetBlock.targetMeshes as any)._defaultValue).toEqual([expect.objectContaining({ uniqueId: sourceSecond.uniqueId })]);
+
+        missingTargetCoordinator.dispose();
+        sourceCoordinator.dispose();
+        sourceScene.dispose();
     });
 
     it("returns the active flow graph from a snippet", async () => {
