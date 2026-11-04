@@ -9,11 +9,13 @@ import {
     type PhysicsViewer,
     type PhysicsConstraintDebug,
     type PhysicsShape,
+    type UtilityLayer,
 } from "@babylonjs/lite";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DebugController } from "../../src/lite/services/panes/debugController";
 import { GetSceneNodes, InspectorBoundsHelpers, InspectorUtilityScenes, InspectorPhysicsHelpers } from "../../src/lite/sceneEntityUtils";
+import { SceneResourceIndex } from "../../src/lite/services/panes/scene/sceneResources";
 
 vi.hoisted(() => {
     vi.stubGlobal("GPUBufferUsage", { VERTEX: 32, INDEX: 16, COPY_DST: 8 });
@@ -34,6 +36,8 @@ const Physics = vi.hoisted(() => ({
     childCount: vi.fn(),
     meshes: new Map<PhysicsViewer, Map<PhysicsBody | PhysicsConstraintDebug, Mesh[]>>(),
 }));
+
+const Layers = vi.hoisted(() => ({ create: vi.fn(), register: vi.fn(), dispose: vi.fn(), initialMeshCounts: [] as number[] }));
 
 const { Ground, GridMaterial, Lines, UpdateLines, Add, Remove, Dispose, Parent, Visibility } = vi.hoisted(() => ({
     Ground: vi.fn(),
@@ -72,6 +76,9 @@ vi.mock("@babylonjs/lite", async (importOriginal) => ({
     hidePhysicsBody: Physics.hideBody,
     showPhysicsConstraint: Physics.showConstraint,
     hidePhysicsConstraint: Physics.hideConstraint,
+    createUtilityLayer: Layers.create,
+    registerUtilityLayer: Layers.register,
+    disposeUtilityLayer: Layers.dispose,
 }));
 
 const Identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
@@ -89,9 +96,36 @@ function Harness() {
     return { scene, contexts, engine, controller: new DebugController(engine) };
 }
 
+function DeferredRegistration() {
+    let resolve!: () => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<void>((done, fail) => {
+        resolve = done;
+        reject = fail;
+    });
+    return { promise, resolve, reject };
+}
+
 describe("Babylon Lite debug helpers", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        Layers.initialMeshCounts.length = 0;
+        Layers.create.mockImplementation((mainScene: SceneContext) => ({
+            mainScene,
+            scene: { meshes: [], name: "UtilityLayer", surface: mainScene.surface, camera: mainScene.camera } as unknown as SceneContext,
+        }));
+        Layers.register.mockImplementation(async (layer: UtilityLayer) => {
+            Layers.initialMeshCounts.push(layer.scene.meshes.length);
+            (layer.scene.surface as unknown as { contexts: SceneContext[] }).contexts.push(layer.scene);
+        });
+        Layers.dispose.mockImplementation((layer: UtilityLayer) => {
+            const contexts = (layer.scene.surface as unknown as { contexts: SceneContext[] }).contexts;
+            const index = contexts.indexOf(layer.scene);
+            if (index >= 0) {
+                contexts.splice(index, 1);
+            }
+            layer.scene.meshes.length = 0;
+        });
         Ground.mockImplementation(() => SourceMesh("Grid"));
         GridMaterial.mockImplementation(() => ({}));
         Lines.mockImplementation(() => SourceMesh("Bounds"));
@@ -168,8 +202,152 @@ describe("Babylon Lite debug helpers", () => {
         Physics.worlds.set(h.scene, [world]);
         Physics.bodies.set(world, [body, other]);
         Physics.constraints.set(world, [constraint]);
-        return { ...h, world, body, other, constraint };
+        return {
+            ...h,
+            world,
+            body,
+            other,
+            constraint,
+            get physicsScene(): SceneContext {
+                return Layers.create.mock.results.filter((result) => result.value.mainScene === h.scene).at(-1)!.value.scene;
+            },
+        };
     }
+
+    it("shares one isolated physics layer across worlds and viewer kinds, recreates it after both switches turn off, and leaves gizmos alone", async () => {
+        const h = PhysicsFixture();
+        const gizmoScene = { meshes: [], surface: h.engine } as unknown as SceneContext;
+        InspectorUtilityScenes.add(gizmoScene);
+        h.contexts.push(gizmoScene);
+        const world2 = {} as PhysicsWorld;
+        Physics.worlds.get(h.scene)!.push(world2);
+        Physics.bodies.set(world2, []);
+        Physics.constraints.set(world2, []);
+        h.controller.setPhysicsBodies(true);
+        h.controller.setPhysicsConstraints(true);
+        const layer = Layers.create.mock.results[0].value as UtilityLayer;
+        expect(Layers.create).toHaveBeenCalledExactlyOnceWith(h.scene, { addDefaultLight: false });
+        expect(Physics.create.mock.calls.every(([scene]) => scene === layer.scene)).toBe(true);
+        expect(InspectorUtilityScenes.has(layer.scene)).toBe(true);
+        expect(h.controller.scenes).toEqual([h.scene]);
+        expect(h.scene.meshes).toHaveLength(1);
+        await vi.waitFor(() => expect(Layers.initialMeshCounts).toEqual([3]));
+        expect(Layers.register).toHaveBeenCalledExactlyOnceWith(layer);
+        h.controller.setPhysicsBodies(false);
+        expect(Layers.dispose).not.toHaveBeenCalled();
+        expect(h.physicsScene.meshes).toHaveLength(1);
+        h.controller.setPhysicsConstraints(false);
+        expect(Layers.dispose).toHaveBeenCalledExactlyOnceWith(layer);
+        expect(Physics.dispose).toHaveBeenCalledTimes(4);
+        expect(Math.max(...Physics.dispose.mock.invocationCallOrder)).toBeLessThan(Layers.dispose.mock.invocationCallOrder[0]);
+        expect(h.contexts).toEqual([h.scene, gizmoScene]);
+        h.controller.setPhysicsConstraints(true);
+        expect(Layers.create.mock.results[1].value).not.toBe(layer);
+        h.controller.setPhysicsConstraints(false);
+        await vi.waitFor(() => expect(Layers.dispose).toHaveBeenCalledTimes(2));
+        expect(h.contexts).toEqual([h.scene, gizmoScene]);
+        h.controller.dispose();
+    });
+
+    it("keeps physics layers and settings independent between application scenes", async () => {
+        const h = PhysicsFixture();
+        const other = { name: "Other", meshes: [], surface: h.engine } as unknown as SceneContext;
+        h.contexts.push(other);
+        Physics.worlds.set(other, [{} as PhysicsWorld]);
+        h.controller.setPhysicsBodies(true);
+        const first = Layers.create.mock.results[0].value as UtilityLayer;
+        h.controller.selectScene(other);
+        h.controller.setPhysicsConstraints(true);
+        const second = Layers.create.mock.results[1].value as UtilityLayer;
+        expect(first.scene).not.toBe(second.scene);
+        expect(second.mainScene).toBe(other);
+        expect(h.controller.scenes).toEqual([h.scene, other]);
+        h.controller.selectScene(h.scene);
+        h.controller.setPhysicsBodies(false);
+        await vi.waitFor(() => expect(Layers.dispose).toHaveBeenCalledExactlyOnceWith(first));
+        h.controller.selectScene(other);
+        expect(h.controller.physicsConstraintsEnabled).toBe(true);
+        h.controller.dispose();
+        await vi.waitFor(() => expect(Layers.dispose).toHaveBeenCalledTimes(2));
+    });
+
+    it.each(["resolve", "reject"] as const)("does not revive a cancelled registration or disturb a newer layer when the old registration later %ss", async (outcome) => {
+        const h = PhysicsFixture();
+        const pending = DeferredRegistration();
+        Layers.register.mockImplementationOnce(async (layer: UtilityLayer) => {
+            await pending.promise;
+            h.contexts.push(layer.scene);
+        });
+        h.controller.setPhysicsBodies(true);
+        const old = Layers.create.mock.results[0].value as UtilityLayer;
+        h.controller.setPhysicsBodies(false);
+        expect(Physics.dispose).toHaveBeenCalledOnce();
+        expect(Layers.dispose).not.toHaveBeenCalled();
+        h.controller.setPhysicsBodies(true);
+        const current = Layers.create.mock.results[1].value as UtilityLayer;
+        if (outcome === "resolve") {
+            pending.resolve();
+        } else {
+            pending.reject(new Error("Cancelled registration failed"));
+        }
+        await vi.waitFor(() => expect(Layers.dispose).toHaveBeenCalledExactlyOnceWith(old));
+        expect(h.controller.physicsBodiesEnabled).toBe(true);
+        expect(h.controller.error).toBeUndefined();
+        expect(h.contexts).not.toContain(old.scene);
+        expect(h.contexts).toContain(current.scene);
+        h.controller.setPhysicsBodies(false);
+        await vi.waitFor(() => expect(Layers.dispose).toHaveBeenCalledTimes(2));
+        expect(h.contexts).toEqual([h.scene]);
+        h.controller.dispose();
+    });
+
+    it.each(["unregister", "dispose"])("releases viewers before the pending utility layer on scene/controller %s", async (action) => {
+        const h = PhysicsFixture();
+        const pending = DeferredRegistration();
+        Layers.register.mockImplementationOnce(async (layer: UtilityLayer) => {
+            await pending.promise;
+            h.contexts.push(layer.scene);
+        });
+        h.controller.setPhysicsBodies(true);
+        h.controller.setPhysicsConstraints(true);
+        const layer = Layers.create.mock.results[0].value as UtilityLayer;
+        if (action === "unregister") {
+            h.contexts.splice(h.contexts.indexOf(h.scene), 1);
+            h.controller.refresh();
+        } else {
+            h.controller.dispose();
+        }
+        expect(Physics.dispose).toHaveBeenCalledTimes(2);
+        expect(Layers.dispose).not.toHaveBeenCalled();
+        pending.resolve();
+        await vi.waitFor(() => expect(Layers.dispose).toHaveBeenCalledExactlyOnceWith(layer));
+        expect(h.contexts).not.toContain(layer.scene);
+        h.controller.dispose();
+    });
+
+    it("surfaces registration failure, disables both physics kinds, releases their viewers and layer, and permits retry", async () => {
+        const h = PhysicsFixture();
+        const pending = DeferredRegistration();
+        Layers.register.mockReturnValueOnce(pending.promise);
+        h.controller.setPhysicsBodies(true);
+        h.controller.setPhysicsConstraints(true);
+        const layer = Layers.create.mock.results[0].value as UtilityLayer;
+        const changed = vi.fn();
+        h.controller.onChanged.add(changed);
+        pending.reject(new Error("Overlay pipeline failed"));
+        await vi.waitFor(() => expect(h.controller.error).toBe("Physics overlay failed: Overlay pipeline failed"));
+        expect(changed).toHaveBeenCalledOnce();
+        expect(h.controller.physicsBodiesEnabled).toBe(false);
+        expect(h.controller.physicsConstraintsEnabled).toBe(false);
+        expect(Physics.dispose).toHaveBeenCalledTimes(2);
+        expect(Layers.dispose).toHaveBeenCalledExactlyOnceWith(layer);
+        expect(h.scene.meshes).toHaveLength(1);
+        h.controller.setPhysicsBodies(true);
+        expect(h.controller.error).toBeUndefined();
+        expect(h.controller.physicsBodiesEnabled).toBe(true);
+        h.controller.dispose();
+        await vi.waitFor(() => expect(Layers.dispose).toHaveBeenCalledTimes(2));
+    });
 
     it("uses independent body/constraint viewers per world, makes helpers non-pickable, and leaves steady state unchanged", () => {
         const h = PhysicsFixture();
@@ -183,7 +361,8 @@ describe("Babylon Lite debug helpers", () => {
         expect(Physics.showBody).toHaveBeenCalledTimes(2);
         expect(Physics.showConstraint).toHaveBeenCalledOnce();
         expect(Physics.showBody.mock.calls[0][0]).not.toBe(Physics.showConstraint.mock.calls[0][0]);
-        for (const mesh of h.scene.meshes.slice(1)) {
+        expect(h.scene.meshes).toHaveLength(1);
+        for (const mesh of h.physicsScene.meshes) {
             expect(mesh.pickable).toBe(false);
             expect(InspectorPhysicsHelpers.has(mesh)).toBe(true);
             expect(GetSceneNodes(h.scene)).not.toContain(mesh);
@@ -219,8 +398,8 @@ describe("Babylon Lite debug helpers", () => {
         h.controller.refresh();
         expect(Physics.showBody).toHaveBeenCalledTimes(2);
         expect(Physics.hideBody).not.toHaveBeenCalled();
-        expect(h.scene.meshes).toHaveLength(2);
-        const originalWireframe = h.scene.meshes[1];
+        expect(h.physicsScene.meshes).toHaveLength(1);
+        const originalWireframe = h.physicsScene.meshes[0];
         h.controller.refresh();
         expect(Physics.showBody).toHaveBeenCalledTimes(2);
 
@@ -232,8 +411,8 @@ describe("Babylon Lite debug helpers", () => {
         h.controller.refresh();
         expect(Physics.hideBody).toHaveBeenCalledExactlyOnceWith(Physics.showBody.mock.calls[0][0], h.body);
         expect(Physics.showBody).toHaveBeenCalledTimes(3);
-        expect(h.scene.meshes).toHaveLength(2);
-        expect(h.scene.meshes).not.toContain(originalWireframe);
+        expect(h.physicsScene.meshes).toHaveLength(1);
+        expect(h.physicsScene.meshes).not.toContain(originalWireframe);
         expect(InspectorPhysicsHelpers.has(originalWireframe)).toBe(false);
         expect(Physics.dispose).not.toHaveBeenCalled();
         h.controller.dispose();
@@ -245,12 +424,12 @@ describe("Babylon Lite debug helpers", () => {
         Physics.worlds.get(h.scene)!.push(world2);
         h.controller.setPhysicsBodies(true);
         h.controller.setPhysicsConstraints(true);
-        const includes = vi.spyOn(h.scene.meshes, "includes");
-        const iterator = vi.spyOn(h.scene.meshes, Symbol.iterator);
+        const includes = vi.spyOn(h.physicsScene.meshes, "includes");
+        const iterator = vi.spyOn(h.physicsScene.meshes, Symbol.iterator);
         h.controller.refresh();
         expect(includes).not.toHaveBeenCalled();
-        // One set for the existing bounds refresh, one shared by all physics pruning.
-        expect(iterator).toHaveBeenCalledTimes(2);
+        // One utility-scene membership set shared by all physics pruning.
+        expect(iterator).toHaveBeenCalledOnce();
         iterator.mockRestore();
         includes.mockRestore();
         h.controller.dispose();
@@ -337,10 +516,12 @@ describe("Babylon Lite debug helpers", () => {
 
     it.each([8, 64])("captures one complete mesh delta per world batch for %i constraints without registration rescans", (count) => {
         const h = PhysicsFixture();
+        Physics.constraints.set(h.world, []);
+        h.controller.setPhysicsConstraints(true);
         const constraints = Array.from({ length: count }, () => ({ ...h.constraint }));
         Physics.constraints.set(h.world, constraints);
         // Make the scene size independent of the constraint count.
-        const meshes = h.scene.meshes;
+        const meshes = h.physicsScene.meshes;
         meshes.push(...Array.from({ length: 100 }, () => SourceMesh()));
         const sourceCount = meshes.length;
         Physics.showConstraint.mockImplementation((viewer: PhysicsViewer, constraint: PhysicsConstraintDebug) => {
@@ -377,7 +558,7 @@ describe("Babylon Lite debug helpers", () => {
         constraintIterator.mockClear();
         h.controller.refresh();
         expect(Physics.showConstraint).toHaveBeenCalledTimes(count * 2);
-        expect(meshIterator).toHaveBeenCalledTimes(3); // Bounds refresh, one batch capture, final pruning.
+        expect(meshIterator).toHaveBeenCalledTimes(2); // One utility batch capture, final pruning.
         expect(meshFilter).toHaveBeenCalledOnce();
         expect(bodyIterator).toHaveBeenCalledOnce();
         expect(constraintIterator).toHaveBeenCalledOnce();
@@ -422,7 +603,8 @@ describe("Babylon Lite debug helpers", () => {
         expect(h.controller.physicsConstraintsEnabled).toBe(false);
         expect(h.controller.physicsBodiesEnabled).toBe(true);
         expect(trackedAtDisposal).toEqual([[true, true]]);
-        expect(h.scene.meshes).toHaveLength(3); // Original source plus two body helpers.
+        expect(h.scene.meshes).toHaveLength(1);
+        expect(h.physicsScene.meshes).toHaveLength(2);
         const created = Physics.showConstraint.mock.results[0].value as Mesh[];
         expect(InspectorPhysicsHelpers.has(created[0])).toBe(false);
         h.controller.dispose();
@@ -440,14 +622,14 @@ describe("Babylon Lite debug helpers", () => {
         expect(h.controller.getSnapshot()).not.toEqual(empty);
         h.controller.refresh();
         expect(Physics.showBody).toHaveBeenCalledTimes(2);
-        const wireframe = h.scene.meshes[1];
+        const wireframe = h.physicsScene.meshes[0];
         const populated = h.controller.getSnapshot();
         Physics.childCounts.set(shape, 2);
         expect(h.controller.getSnapshot()).not.toEqual(populated);
         h.controller.refresh();
         expect(Physics.hideBody).toHaveBeenCalledOnce();
         expect(Physics.showBody).toHaveBeenCalledTimes(3);
-        expect(h.scene.meshes).not.toContain(wireframe);
+        expect(h.physicsScene.meshes).not.toContain(wireframe);
         expect(InspectorPhysicsHelpers.has(wireframe)).toBe(false);
         h.controller.refresh();
         expect(Physics.showBody).toHaveBeenCalledTimes(3);
@@ -476,9 +658,10 @@ describe("Babylon Lite debug helpers", () => {
     it("tracks the real Lite constraint viewer's six unreturned arrowheads and excludes the complete group from discovery and bounds", async () => {
         const lite = await vi.importActual<typeof import("@babylonjs/lite")>("@babylonjs/lite");
         const h = PhysicsFixture();
-        // Only GPU storage is faked; the viewer, mesh factories, scene insertion,
-        // and viewer cleanup below are the real Lite implementations.
+        // GPU storage and overlay registration/render targets are faked; the viewer,
+        // mesh factories, scene insertion and cleanup are the real Lite implementations.
         Object.assign(h.engine, {
+            engine: h.engine,
             _device: {
                 createBuffer: ({ size }: { size: number }) => ({
                     size,
@@ -489,8 +672,10 @@ describe("Babylon Lite debug helpers", () => {
                 queue: { writeBuffer: vi.fn() },
             },
         });
-        Object.assign(h.scene, lite.createSceneContext({ engine: h.engine } as SceneContext["surface"], { defaultRenderTask: false }));
+        Object.assign(h.scene, lite.createSceneContext(h.engine, { defaultRenderTask: false }));
         const source = lite.createBox(h.engine);
+        source.material = lite.createStandardMaterial();
+        source.material.name = "Application Material";
         lite.addToScene(h.scene, source);
         Object.assign(h.body, { node: source, _world: h.world });
         Object.assign(h.other, { node: source, _world: h.world });
@@ -498,9 +683,22 @@ describe("Babylon Lite debug helpers", () => {
         Physics.showConstraint.mockImplementation(lite.showPhysicsConstraint);
         Physics.hideConstraint.mockImplementation(lite.hidePhysicsConstraint);
         Physics.dispose.mockImplementation(lite.disposePhysicsViewer);
+        Layers.create.mockImplementation((mainScene: SceneContext) => ({
+            mainScene,
+            scene: lite.createSceneContext(mainScene.surface, { defaultRenderTask: false }),
+        }));
+        const resources = new SceneResourceIndex(h.engine);
+        const topology = resources.getTopologySnapshot();
         h.controller.setPhysicsConstraints(true);
         expect(h.controller.error).toBeUndefined();
-        const meshes = h.scene.meshes.slice(1);
+        expect(Layers.create).toHaveBeenCalledExactlyOnceWith(h.scene, { addDefaultLight: false });
+        expect(InspectorUtilityScenes.has(h.physicsScene)).toBe(true);
+        expect(h.controller.scenes).toEqual([h.scene]);
+        expect(h.scene.meshes).toEqual([source]);
+        resources.refresh();
+        expect(resources.getSceneSnapshot(h.scene).materials.map((record) => record.source)).toEqual([source.material]);
+        expect(resources.getTopologySnapshot()).toEqual(topology);
+        const meshes = h.physicsScene.meshes.slice();
         expect(meshes).toHaveLength(13); // Six axes, six heads, one hinge disk.
         expect(meshes.filter((mesh) => mesh.name.endsWith("Head"))).toHaveLength(6);
         for (const mesh of meshes) {
@@ -513,7 +711,7 @@ describe("Babylon Lite debug helpers", () => {
         Physics.constraints.set(h.world, []);
         h.controller.refresh();
         for (const mesh of meshes) {
-            expect(h.scene.meshes).not.toContain(mesh);
+            expect(h.physicsScene.meshes).not.toContain(mesh);
             expect(InspectorPhysicsHelpers.has(mesh)).toBe(false);
         }
         expect(GetSceneNodes(h.scene)).toContain(source);

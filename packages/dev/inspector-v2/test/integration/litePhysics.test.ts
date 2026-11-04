@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { type EngineContext, type SceneContext, type getViewProjectionMatrix } from "@babylonjs/lite";
 
 import { type CreateLitePhysicsFixture } from "../app/litePhysics";
+import { type InspectorToken } from "../../src/inspector.common";
 
 type LitePhysicsWindow = Window &
     typeof globalThis & {
@@ -10,6 +11,7 @@ type LitePhysicsWindow = Window &
         liteEngine: EngineContext;
         litePrimaryScene: SceneContext;
         liteGetViewProjectionMatrix: typeof getViewProjectionMatrix;
+        liteInspectorToken: InspectorToken;
         debugNode: object | null;
     };
 const TestUrl = `http://localhost:${process.env.INSPECTOR_TEST_PORT ?? "9001"}/?experience=lite&physics=off`;
@@ -85,21 +87,84 @@ test("Lite physics test fixture loads by default and is created only once", asyn
     expect(errors).toEqual([]);
 });
 
+test("Lite physics utility overlay preserves application background and text with MSAA", async ({ page }) => {
+    const errors = WatchPhysicsErrors(page);
+    await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204 }));
+    await page.goto(TestUrl.replace("&physics=off", ""));
+    await page.waitForFunction(() => "litePhysics" in window);
+    expect(await page.evaluate(() => (window as LitePhysicsWindow).liteEngine.msaaSamples)).toBe(4);
+    await page.locator('[role="radio"][value="Debug"]').click();
+    // This static region contains scene background and text, but no moving objects or physics helpers.
+    const captureRegion = async () => {
+        const canvas = await page.locator("#canvas").boundingBox();
+        if (!canvas) {
+            throw new Error("No visible scene canvas.");
+        }
+        // Expanding helper hints can scroll Inspector's container. Compare the
+        // same canvas-local pixels rather than a fixed viewport rectangle.
+        return await page.screenshot({ clip: { x: canvas.x + 365, y: canvas.y + 20, width: 400, height: 45 } });
+    };
+    const before = await captureRegion();
+    await page.getByRole("switch", { name: "Physics Bodies", exact: true }).check();
+    await page.getByRole("switch", { name: "Physics Constraints", exact: true }).check();
+    await expect.poll(() => page.evaluate(() => (window as LitePhysicsWindow).litePhysics.helperCount())).toBe(31);
+    await expect.poll(async () => (await captureRegion()).equals(before), { message: "Physics helpers must preserve application background and text pixels." }).toBe(true);
+    expect(errors).toEqual([]);
+});
+
+test("Lite physics and gizmo overlays stay independent and are released on Inspector detach", async ({ page }) => {
+    const errors = WatchPhysicsErrors(page);
+    await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204 }));
+    await page.goto(TestUrl.replace("&physics=off", ""));
+    await page.waitForFunction(() => "litePhysics" in window);
+    await Expand(page, "Scene");
+    await Expand(page, "Nodes");
+    await page.getByRole("treeitem", { name: "Red Box", exact: true }).click();
+    await page.getByRole("button", { name: "Translate", exact: true }).click();
+    const overlayCount = () => page.evaluate(() => (window as LitePhysicsWindow).litePhysics.overlayCount());
+    await expect.poll(overlayCount).toBe(1);
+    await page.locator('[role="radio"][value="Debug"]').click();
+    await page.getByRole("switch", { name: "Physics Bodies", exact: true }).check();
+    await page.getByRole("switch", { name: "Physics Constraints", exact: true }).check();
+    await expect.poll(overlayCount).toBe(2);
+    await expect.poll(() => page.evaluate(() => (window as LitePhysicsWindow).litePhysics.helperCount())).toBe(31);
+    await page.getByRole("button", { name: "Translate", exact: true }).click();
+    await expect.poll(overlayCount).toBe(1);
+    expect(await page.evaluate(() => (window as LitePhysicsWindow).litePhysics.helperCount())).toBe(31);
+    await page.getByRole("button", { name: "Translate", exact: true }).click();
+    await expect.poll(overlayCount).toBe(2);
+    await page.evaluate(() => (window as LitePhysicsWindow).liteInspectorToken.dispose());
+    await expect.poll(overlayCount).toBe(0);
+    expect(await page.evaluate(() => (window as LitePhysicsWindow).litePhysics.helperCount())).toBe(0);
+    // Fluent/Tabster can emit this existing teardown warning when the whole
+    // Inspector unmounts. Physics/WebGPU and all other console errors still fail.
+    expect(errors.filter((error) => error !== "Keyborg instance k1 is being disposed incorrectly.")).toEqual([]);
+});
+
 test("Lite physics debug helpers stay finite and in view during manual inspection", async ({ page }) => {
     const errors = WatchPhysicsErrors(page);
     await page.route("**/favicon.ico", (route) => route.fulfill({ status: 204 }));
     await page.goto(TestUrl.replace("&physics=off", ""));
     await page.waitForFunction(() => "litePhysics" in window);
+    const applicationState = () =>
+        page.evaluate(() => {
+            const scene = (window as LitePhysicsWindow).litePrimaryScene;
+            return { meshes: scene.meshes.map((mesh) => mesh.name), materialCount: new Set(scene.meshes.map((mesh) => mesh.material)).size };
+        });
+    const original = await applicationState();
     await page.locator('[role="radio"][value="Debug"]').click();
     await page.getByRole("switch", { name: "Physics Bodies", exact: true }).check();
     await page.getByRole("switch", { name: "Physics Constraints", exact: true }).check();
+    await expect.poll(() => page.evaluate(() => (window as LitePhysicsWindow).litePhysics.helperCount())).toBe(31);
+    expect(await page.evaluate(() => (window as LitePhysicsWindow).litePhysics.overlayCount())).toBe(1);
+    expect(await applicationState()).toEqual(original);
     const readView = () =>
         page.evaluate(() => {
             const state = window as LitePhysicsWindow;
             const scene = state.litePrimaryScene;
             const canvas = state.liteEngine.canvas;
             const viewProjection = state.liteGetViewProjectionMatrix(scene.camera!, canvas.width / canvas.height);
-            const helpers = scene.meshes.filter((mesh) => mesh.name === "physicsBodyDebug" || mesh.name.startsWith("constraint"));
+            const helpers = state.litePhysics.helperMeshes();
             const outsideView = helpers.filter((mesh) => {
                 if (!mesh.boundMin || !mesh.boundMax || mesh.visible === false) {
                     return true;
@@ -142,6 +207,20 @@ test("Lite physics debug helpers stay finite and in view during manual inspectio
     expect(later.constraintHelpers).toBe(initial.constraintHelpers);
     expect(later.outsideView).toEqual([]);
     later.positions.forEach((position, body) => position.forEach((value, axis) => expect(value).toBeCloseTo(initial.positions[body][axis], 2)));
+    await page.getByRole("switch", { name: "Physics Bodies", exact: true }).uncheck();
+    expect(await page.evaluate(() => (window as LitePhysicsWindow).litePhysics.helperCount())).toBe(28);
+    expect(await page.evaluate(() => (window as LitePhysicsWindow).litePhysics.overlayCount())).toBe(1);
+    await page.getByRole("switch", { name: "Physics Constraints", exact: true }).uncheck();
+    await expect.poll(() => page.evaluate(() => (window as LitePhysicsWindow).litePhysics.overlayCount())).toBe(0);
+    await page.getByRole("switch", { name: "Physics Bodies", exact: true }).check();
+    await page.getByRole("switch", { name: "Physics Constraints", exact: true }).check();
+    await expect.poll(() => page.evaluate(() => (window as LitePhysicsWindow).litePhysics.helperCount())).toBe(31);
+    expect(await page.evaluate(() => (window as LitePhysicsWindow).litePhysics.overlayCount())).toBe(1);
+    expect(await applicationState()).toEqual(original);
+    await page.getByRole("switch", { name: "Physics Bodies", exact: true }).uncheck();
+    await page.getByRole("switch", { name: "Physics Constraints", exact: true }).uncheck();
+    await expect.poll(() => page.evaluate(() => (window as LitePhysicsWindow).litePhysics.overlayCount())).toBe(0);
+    expect(await page.evaluate(() => (window as LitePhysicsWindow).litePhysics.helperCount())).toBe(0);
     expect(errors).toEqual([]);
 });
 

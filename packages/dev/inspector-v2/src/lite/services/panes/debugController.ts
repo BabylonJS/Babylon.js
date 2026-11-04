@@ -21,6 +21,9 @@ import {
     getPhysicsWorlds,
     getPhysicsBodies,
     getPhysicsConstraints,
+    createUtilityLayer,
+    registerUtilityLayer,
+    disposeUtilityLayer,
     PhysicsShapeType,
     type EngineContext,
     type Mesh,
@@ -31,11 +34,12 @@ import {
     type PhysicsConstraint,
     type PhysicsViewer,
     type PhysicsShape,
+    type UtilityLayer,
 } from "@babylonjs/lite";
 
 import { Observable } from "core/Misc/observable";
 
-import { GetSceneContexts, InspectorBoundsHelpers, InspectorPhysicsHelpers } from "../../sceneEntityUtils";
+import { GetSceneContexts, InspectorBoundsHelpers, InspectorPhysicsHelpers, InspectorUtilityScenes } from "../../sceneEntityUtils";
 import { GetScenePhysicsWorlds } from "../../physicsUtils";
 
 const BoxEdges = [
@@ -57,6 +61,7 @@ const BoxEdges = [
 type BodyGeometry = { shape: PhysicsShape | null; children: number };
 type BodyViewer = { viewer: PhysicsViewer; entities: Map<PhysicsBody, BodyGeometry>; meshes: Set<Mesh> };
 type ConstraintViewer = { viewer: PhysicsViewer; entities: Set<PhysicsConstraint>; meshes: Set<Mesh> };
+type PhysicsLayer = { layer: UtilityLayer; pending: boolean };
 type Helpers = {
     grid?: Mesh;
     bounds: Map<Mesh, Mesh>;
@@ -65,6 +70,7 @@ type Helpers = {
     physicsConstraints: boolean;
     bodyViewers: Map<PhysicsWorld, BodyViewer>;
     constraintViewers: Map<PhysicsWorld, ConstraintViewer>;
+    physicsLayer?: PhysicsLayer;
 };
 
 function IsThinBody(body: PhysicsBody): boolean {
@@ -176,7 +182,7 @@ export class DebugController {
         helpers[kind] = enabled;
         this.error = undefined;
         this._refreshPhysics(scene, helpers, kind);
-        this._pruneScenePhysicsMeshes(scene, helpers);
+        this._pruneScenePhysicsMeshes(helpers);
         this.onChanged.notifyObservers();
     }
 
@@ -309,7 +315,7 @@ export class DebugController {
                 this._refreshHelpers(scene, helpers);
                 this._refreshPhysics(scene, helpers, "physicsBodies");
                 this._refreshPhysics(scene, helpers, "physicsConstraints");
-                this._pruneScenePhysicsMeshes(scene, helpers);
+                this._pruneScenePhysicsMeshes(helpers);
             }
         }
         if (!this.scene || !scenes.includes(this.scene)) {
@@ -413,6 +419,7 @@ export class DebugController {
     private _clear(scene: SceneContext, helpers: Helpers): void {
         this._clearViewers(helpers.bodyViewers);
         this._clearViewers(helpers.constraintViewers);
+        this._releasePhysicsLayer(helpers);
         const meshes = new Set(scene.meshes);
         if (helpers.grid) {
             this._remove(scene, helpers.grid, meshes);
@@ -421,6 +428,55 @@ export class DebugController {
             this._remove(scene, box, meshes);
         }
         helpers.bounds.clear();
+    }
+
+    private _getPhysicsScene(scene: SceneContext, helpers: Helpers): SceneContext {
+        if (!helpers.physicsLayer) {
+            const layer = createUtilityLayer(scene, { addDefaultLight: false });
+            InspectorUtilityScenes.add(layer.scene);
+            const entry: PhysicsLayer = { layer, pending: true };
+            helpers.physicsLayer = entry;
+            // Entry identity is the generation token. Keep a retired layer alive until
+            // registration settles, then dispose it without touching a newer layer.
+            void (async () => {
+                // Populate the initial helpers before Lite drains deferred builders.
+                await Promise.resolve();
+                try {
+                    await registerUtilityLayer(layer);
+                } catch (error) {
+                    entry.pending = false;
+                    if (helpers.physicsLayer !== entry) {
+                        disposeUtilityLayer(layer);
+                        return;
+                    }
+                    helpers.physicsBodies = false;
+                    helpers.physicsConstraints = false;
+                    this._clearViewers(helpers.bodyViewers);
+                    this._clearViewers(helpers.constraintViewers);
+                    this._releasePhysicsLayer(helpers);
+                    this.error = `Physics overlay failed: ${error instanceof Error ? error.message : String(error)}`;
+                    this.onChanged.notifyObservers();
+                    return;
+                }
+                entry.pending = false;
+                if (helpers.physicsLayer !== entry) {
+                    disposeUtilityLayer(layer);
+                } else if (this._disposed || !this.scenes.includes(scene)) {
+                    this._clearViewers(helpers.bodyViewers);
+                    this._clearViewers(helpers.constraintViewers);
+                    this._releasePhysicsLayer(helpers);
+                }
+            })();
+        }
+        return helpers.physicsLayer.layer.scene;
+    }
+
+    private _releasePhysicsLayer(helpers: Helpers): void {
+        const entry = helpers.physicsLayer;
+        helpers.physicsLayer = undefined;
+        if (entry && !entry.pending) {
+            disposeUtilityLayer(entry.layer);
+        }
     }
 
     private _releaseViewer(entry: BodyViewer | ConstraintViewer): void {
@@ -447,12 +503,15 @@ export class DebugController {
         }
     }
 
-    private _pruneScenePhysicsMeshes(scene: SceneContext, helpers: Helpers): void {
-        if (!helpers.bodyViewers.size && !helpers.constraintViewers.size) {
+    private _pruneScenePhysicsMeshes(helpers: Helpers): void {
+        if (!helpers.physicsBodies && !helpers.physicsConstraints) {
+            this._releasePhysicsLayer(helpers);
+        }
+        if (!helpers.physicsLayer || (!helpers.bodyViewers.size && !helpers.constraintViewers.size)) {
             return;
         }
         // Share one membership lookup across both viewer kinds and every world, after reconciliation.
-        const meshes = new Set(scene.meshes);
+        const meshes = new Set(helpers.physicsLayer.layer.scene.meshes);
         for (const entry of helpers.bodyViewers.values()) {
             this._prunePhysicsMeshes(meshes, entry);
         }
@@ -494,7 +553,7 @@ export class DebugController {
                 if (kind === "physicsBodies") {
                     let entry = helpers.bodyViewers.get(world);
                     if (!entry) {
-                        entry = { viewer: createPhysicsViewer(scene, world), entities: new Map(), meshes: new Set() };
+                        entry = { viewer: createPhysicsViewer(this._getPhysicsScene(scene, helpers), world), entities: new Map(), meshes: new Set() };
                         helpers.bodyViewers.set(world, entry);
                     }
                     if (!entry) {
@@ -523,7 +582,7 @@ export class DebugController {
                     const isConstraintLive = (constraint: PhysicsConstraint) => constraints.has(constraint) && isBodyLive(constraint.bodyA) && isBodyLive(constraint.bodyB);
                     let entry = helpers.constraintViewers.get(world);
                     if (!entry) {
-                        entry = { viewer: createPhysicsViewer(scene, world), entities: new Set(), meshes: new Set() };
+                        entry = { viewer: createPhysicsViewer(this._getPhysicsScene(scene, helpers), world), entities: new Set(), meshes: new Set() };
                         helpers.constraintViewers.set(world, entry);
                     }
                     if (!entry) {
@@ -540,7 +599,8 @@ export class DebugController {
                         // Lite omits six arrowheads from each returned mesh group.
                         // Capture one combined synchronous delta per world batch, including
                         // partial creation on failure, without private fields or mesh names.
-                        const before = new Set(scene.meshes);
+                        const helperScene = entry.viewer.scene;
+                        const before = new Set(helperScene.meshes);
                         try {
                             for (const constraint of pending) {
                                 if (isConstraintLive(constraint)) {
@@ -551,7 +611,7 @@ export class DebugController {
                         } finally {
                             this._trackPhysicsMeshes(
                                 entry,
-                                scene.meshes.filter((mesh) => !before.has(mesh))
+                                helperScene.meshes.filter((mesh) => !before.has(mesh))
                             );
                         }
                     }

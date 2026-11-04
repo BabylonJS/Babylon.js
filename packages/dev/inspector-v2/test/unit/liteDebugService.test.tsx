@@ -53,6 +53,12 @@ vi.mock("@babylonjs/lite", async (importOriginal) => ({
     getPhysicsWorlds: () => Worlds,
     getPhysicsBodies: () => [],
     getPhysicsConstraints: () => [],
+    createUtilityLayer: (mainScene: SceneContext) => ({
+        mainScene,
+        scene: { surface: mainScene.surface, meshes: [], _beforeRender: [] },
+    }),
+    registerUtilityLayer: async () => undefined,
+    disposeUtilityLayer: vi.fn(),
 }));
 
 function CreateMesh(): Mesh {

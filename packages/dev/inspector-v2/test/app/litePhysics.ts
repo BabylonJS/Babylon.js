@@ -12,6 +12,8 @@ import {
     getPhysicsShapeMaterialToRef,
     getPhysicsBodies,
     getPhysicsWorlds,
+    getRenderingContexts,
+    getRenderingContextKind,
     PhysicsShapeType,
     PhysicsConstraintType,
     PhysicsConstraintAxis,
@@ -28,7 +30,7 @@ import {
     type Material,
 } from "@babylonjs/lite";
 
-import { InspectorPhysicsHelpers } from "../../src/lite/sceneEntityUtils";
+import { InspectorPhysicsHelpers, InspectorUtilityScenes } from "../../src/lite/sceneEntityUtils";
 
 /**
  * Loads real Havok after Inspector opens, by default or on demand with physics=off.
@@ -94,6 +96,10 @@ export async function CreateLitePhysicsFixture(scene: SceneContext, boxMaterial:
     };
     const materialScratch = { friction: 0, staticFriction: 0, restitution: 0 };
     const readMass = (body: PhysicsBody, index = 0) => getPhysicsBodyMassPropertiesToRef(world, body, massScratch, index).mass;
+    const helperMeshes = () =>
+        getRenderingContexts(scene.surface).flatMap((context) =>
+            getRenderingContextKind(context) === "scene" ? (context as SceneContext).meshes.filter((mesh) => InspectorPhysicsHelpers.has(mesh)) : []
+        );
     return {
         world,
         bodies: [boxAggregate.body, sphereAggregate.body, sharedAggregate.body, thinAggregate.body],
@@ -119,7 +125,9 @@ export async function CreateLitePhysicsFixture(scene: SceneContext, boxMaterial:
             Array.from({ length: thinBody ? 3 : 1 }, (_, index) =>
                 structuredClone(getPhysicsBodyMassPropertiesToRef(world, thinBody ? thinAggregate.body : boxAggregate.body, massScratch, index))
             ),
-        helperCount: () => scene.meshes.filter((mesh) => InspectorPhysicsHelpers.has(mesh)).length,
+        helperMeshes,
+        helperCount: () => helperMeshes().length,
+        overlayCount: () => getRenderingContexts(scene.surface).filter((context) => InspectorUtilityScenes.has(context)).length,
         bodyCount: () => getPhysicsBodies(world).length,
         worldCount: () => getPhysicsWorlds(scene).length,
         removeEndpoint: () => removePhysicsBody(world, sphereAggregate.body),
