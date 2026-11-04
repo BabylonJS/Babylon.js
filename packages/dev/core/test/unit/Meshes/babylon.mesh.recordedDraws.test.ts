@@ -9,6 +9,7 @@ import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import "core/Meshes/thinInstanceMesh";
+import "core/Meshes/instancedMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 // the alignment of vertex buffers to 4 bytes, which WebGPU uses (effectiveBuffer, effectiveByteOffset, effectiveByteStride)
 import "core/Buffers/buffer.align";
@@ -883,6 +884,32 @@ describe("Mesh recorded draws", () => {
         mesh.onBeforeDrawObservable.add(() => {});
         scene.incrementRenderId();
         (generator as any)._renderSubMeshForShadowMap(subMesh, false);
+        expect(replay).toHaveBeenCalledTimes(1);
+    });
+
+    it("is not encoded again in a shadow map for an instance drawn as a regular mesh (mirrored), whose full draw binds its source's buffer", () => {
+        const generator = new ShadowGenerator(256, new DirectionalLight("sun", new Vector3(0, -1, 0), scene));
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        const instance = mesh.createInstance("mirrored");
+        instance.scaling.x = -1;
+        // as InstancedMesh._activate sets it for an instance whose determinant has another sign than its source's
+        instance._internalAbstractMeshDataInfo._actAsRegularMesh = true;
+        const instanceSubMesh = instance.subMeshes[0];
+        expect(instanceSubMesh.getEffectiveMesh()).toBe(instance);
+        expect(instanceSubMesh.getRenderingMesh()).toBe(mesh);
+        for (const caster of [subMesh, instanceSubMesh]) {
+            vi.spyOn(caster, "_getDrawWrapper").mockReturnValue(drawWrapper);
+        }
+        vi.spyOn(mesh, "_isRecordedDrawUnchanged").mockReturnValue(true);
+        const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+        // the full path stops at once: its depth effect is not built here
+        vi.spyOn(generator, "isReady").mockReturnValue(false);
+
+        scene.incrementRenderId();
+        (generator as any)._renderSubMeshForShadowMap(subMesh, false);
+        expect(replay).toHaveBeenCalledTimes(1);
+        scene.incrementRenderId();
+        (generator as any)._renderSubMeshForShadowMap(instanceSubMesh, false);
         expect(replay).toHaveBeenCalledTimes(1);
     });
 

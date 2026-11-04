@@ -1428,6 +1428,9 @@ export class ShadowGenerator implements IShadowGenerator {
         const domainState = (this.forceBackFacesOnly ? 1 : 0) + (this.useOpacityTextureForTransparentShadow ? 2 : 0);
         const replayable =
             engine._recordsDraws &&
+            // an instance drawn as a regular mesh (mirrored from its source): its full draw binds the uniform buffer of its source mesh,
+            // as the main pass, which does not encode it again either
+            effectiveMesh === renderingMesh &&
             !material.shadowDepthWrapper &&
             (!hardwareInstancedRendering || (renderingMesh.hasThinInstances && !batch.visibleInstances[subMesh._id])) &&
             renderingMesh._canRecordThinInstances() &&
