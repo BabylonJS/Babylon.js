@@ -3,9 +3,11 @@ import { type IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { type Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Logger } from "core/Misc/logger";
 import { type Nullable } from "core/types";
+import { ShouldExportOpenPBRDiffuseTransmission } from "../glTFUtilities";
 
 const NAME = "KHR_materials_diffuse_transmission";
 
@@ -81,15 +83,25 @@ export class KHR_materials_diffuse_transmission implements IGLTFExporterExtensio
                 additionalTextures.push(babylonMaterial.subSurface.translucencyColorTexture);
             }
             return additionalTextures;
+        } else if (babylonMaterial instanceof OpenPBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
+            if (babylonMaterial.subsurfaceWeightTexture) {
+                additionalTextures.push(babylonMaterial.subsurfaceWeightTexture);
+            }
+            if (babylonMaterial._gltfDiffuseTransmissionColorTexture) {
+                additionalTextures.push(babylonMaterial._gltfDiffuseTransmissionColorTexture);
+            }
         }
 
         return additionalTextures;
     }
 
-    private _isExtensionEnabled(mat: PBRMaterial): boolean {
+    private _isExtensionEnabled(mat: PBRMaterial | OpenPBRMaterial): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
         if (mat.unlit) {
             return false;
+        }
+        if (mat instanceof OpenPBRMaterial) {
+            return ShouldExportOpenPBRDiffuseTransmission(mat, this.enabled) && mat.subsurfaceWeight > 0;
         }
         const subs = mat.subSurface;
         if (!subs.isTranslucencyEnabled) {
@@ -139,6 +151,21 @@ export class KHR_materials_diffuse_transmission implements IGLTFExporterExtensio
                 }
 
                 node.extensions = node.extensions || {};
+                node.extensions[NAME] = diffuseTransmissionInfo;
+            } else if (babylonMaterial instanceof OpenPBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
+                this._wasUsed = true;
+                const diffuseTransmissionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.subsurfaceWeightTexture) ?? undefined;
+                const diffuseTransmissionColorTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial._gltfDiffuseTransmissionColorTexture) ?? undefined;
+                const diffuseTransmissionInfo: IKHRMaterialsDiffuseTransmission = {
+                    diffuseTransmissionFactor: babylonMaterial.subsurfaceWeight,
+                    diffuseTransmissionTexture,
+                    diffuseTransmissionColorFactor: babylonMaterial._gltfDiffuseTransmissionColor.asArray(),
+                    diffuseTransmissionColorTexture,
+                };
+                if (diffuseTransmissionTexture || diffuseTransmissionColorTexture) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
+                node.extensions ||= {};
                 node.extensions[NAME] = diffuseTransmissionInfo;
             }
             resolve(node);

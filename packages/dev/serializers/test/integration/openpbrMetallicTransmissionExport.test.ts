@@ -170,6 +170,182 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
         }
     }
 
+    for (const withColorTexture of [false, true]) {
+        for (const transmissionWeight of [0, 0.35]) {
+            for (const withWeightTextures of [false, true]) {
+                test(`imported volumetric diffuse tint round-trips (color texture: ${withColorTexture}, transmission: ${transmissionWeight}, weight textures: ${withWeightTextures})`, async () => {
+                    const result = await page.evaluate(
+                        async ({ withColorTexture, transmissionWeight, withWeightTextures }) => {
+                            const scene = window.scene!;
+                            const withScatter = withColorTexture && transmissionWeight > 0;
+                            const image = (colors: string[]) => {
+                                const canvas = document.createElement("canvas");
+                                canvas.width = canvas.height = 2;
+                                const context = canvas.getContext("2d")!;
+                                for (let x = 0; x < 2; x++) {
+                                    context.fillStyle = colors[x];
+                                    context.fillRect(x, 0, 1, 2);
+                                }
+                                return { uri: canvas.toDataURL() };
+                            };
+                            const data = new Float32Array([
+                                -1, -1, 0, -1, 1, 0, 1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1,
+                            ]);
+                            const source = {
+                                asset: { version: "2.0" },
+                                extensionsUsed: [
+                                    "KHR_materials_diffuse_transmission",
+                                    "KHR_materials_transmission",
+                                    "KHR_materials_volume",
+                                    "KHR_materials_scatter",
+                                    "KHR_texture_transform",
+                                ],
+                                scene: 0,
+                                scenes: [{ nodes: [0] }],
+                                nodes: [{ mesh: 0 }],
+                                meshes: [{ primitives: [{ attributes: { POSITION: 0, TEXCOORD_0: 1, TEXCOORD_1: 2 }, material: 0 }] }],
+                                materials: [
+                                    {
+                                        name: "diffuseTint",
+                                        pbrMetallicRoughness: { metallicFactor: 0, baseColorFactor: [0.8, 0.4, 0.2, 1], baseColorTexture: { index: 0 } },
+                                        extensions: {
+                                            KHR_materials_diffuse_transmission: {
+                                                diffuseTransmissionFactor: 0.6,
+                                                diffuseTransmissionColorFactor: [0.2, 0.7, 0.4],
+                                                ...(withColorTexture
+                                                    ? {
+                                                          diffuseTransmissionColorTexture: {
+                                                              index: 1,
+                                                              texCoord: 1,
+                                                              extensions: { KHR_texture_transform: { offset: [0.1, 0.2], scale: [2, 1], rotation: 0.4 } },
+                                                          },
+                                                      }
+                                                    : {}),
+                                                ...(withWeightTextures ? { diffuseTransmissionTexture: { index: 2, texCoord: 1 } } : {}),
+                                            },
+                                            KHR_materials_transmission: {
+                                                transmissionFactor: transmissionWeight,
+                                                ...(withWeightTextures ? { transmissionTexture: { index: 2 } } : {}),
+                                            },
+                                            KHR_materials_volume: { thicknessFactor: 1, attenuationColor: [0.6, 0.8, 0.9], attenuationDistance: 2 },
+                                            ...(withScatter
+                                                ? { KHR_materials_scatter: { scatterStrengthFactor: 0.5, multiscatterColorFactor: [0.3, 0.4, 0.5], scatterAnisotropy: 0.2 } }
+                                                : {}),
+                                        },
+                                    },
+                                ],
+                                textures: [{ source: 0 }, { source: 1 }, { source: 2 }],
+                                images: [image(["#336699", "#996633"]), image(["#ff0000", "#00ff00"]), image(["rgba(64, 64, 64, 0.5)", "rgba(192, 192, 192, 0.75)"])],
+                                accessors: [
+                                    { bufferView: 0, componentType: 5126, count: 6, type: "VEC3", min: [-1, -1, 0], max: [1, 1, 0] },
+                                    { bufferView: 1, componentType: 5126, count: 6, type: "VEC2" },
+                                    { bufferView: 2, componentType: 5126, count: 6, type: "VEC2" },
+                                ],
+                                bufferViews: [
+                                    { buffer: 0, byteLength: 72 },
+                                    { buffer: 0, byteOffset: 72, byteLength: 48 },
+                                    { buffer: 0, byteOffset: 120, byteLength: 48 },
+                                ],
+                                buffers: [
+                                    { byteLength: data.byteLength, uri: "data:application/octet-stream;base64," + btoa(String.fromCharCode(...new Uint8Array(data.buffer))) },
+                                ],
+                            };
+                            const loaded = await BABYLON.ImportMeshAsync("data:" + JSON.stringify(source), scene, {
+                                pluginExtension: ".gltf",
+                                pluginOptions: { gltf: { useOpenPBR: true } },
+                            });
+                            await scene.whenReadyAsync();
+                            const material = loaded.meshes.find((mesh) => mesh.material)!.material as InstanceType<typeof BABYLON.OpenPBRMaterial>;
+                            const snapshot = async (mat: InstanceType<typeof BABYLON.OpenPBRMaterial>) => {
+                                const textureState = async (texture: InstanceType<typeof BABYLON.BaseTexture> | null, factor: number, channel: number) => {
+                                    const pixels = texture ? await texture.readPixels() : null;
+                                    if (texture && !(pixels instanceof Uint8Array)) {
+                                        throw new Error("Expected readable unsigned-byte glTF texture pixels");
+                                    }
+                                    return {
+                                        coordinatesIndex: texture?.coordinatesIndex ?? null,
+                                        matrix: texture ? Array.from(texture.getTextureMatrix().asArray()) : null,
+                                        values:
+                                            pixels instanceof Uint8Array
+                                                ? Array.from(pixels)
+                                                      .filter((_v, i) => i % 4 === channel)
+                                                      .map((v) => (v * factor) / 255)
+                                                : [factor],
+                                    };
+                                };
+                                return {
+                                    baseColor: mat.baseColor.asArray(),
+                                    baseTexture: await textureState(mat.baseColorTexture, 1, 0),
+                                    tint: mat._gltfDiffuseTransmissionColor.asArray(),
+                                    tintTexture: await textureState(mat._gltfDiffuseTransmissionColorTexture, 1, 0),
+                                    diffuse: await textureState(mat.subsurfaceWeightTexture, mat.subsurfaceWeight, mat._useSubsurfaceWeightFromTextureAlpha ? 3 : 0),
+                                    transmission: await textureState(mat.transmissionWeightTexture, mat.transmissionWeight, 0),
+                                    extinction: mat.transmissionColor.asArray().map((value) => (mat.transmissionDepth > 0 ? -Math.log(value) / mat.transmissionDepth : 0)),
+                                    scattering: mat.transmissionScatter.asArray().map((value) => (mat.transmissionDepth > 0 ? value / mat.transmissionDepth : 0)),
+                                    anisotropy: mat.transmissionScatterAnisotropy,
+                                    thinWalled: mat.geometryThinWalled,
+                                };
+                            };
+                            const before = await snapshot(material);
+                            const exported = await BABYLON.GLTF2Export.GLTFAsync(scene, "diffuse");
+                            const json = JSON.parse(exported.files["diffuse.gltf"] as string);
+                            const exportedMaterial = json.materials.find((entry: { name: string }) => entry.name === "diffuseTint");
+                            const glb = await BABYLON.GLTF2Export.GLBAsync(scene, "diffuse");
+                            const url = URL.createObjectURL(glb.files["diffuse.glb"] as Blob);
+                            const reimportedScene = new BABYLON.Scene(scene.getEngine());
+                            try {
+                                const reimported = await BABYLON.ImportMeshAsync(url, reimportedScene, {
+                                    pluginExtension: ".glb",
+                                    pluginOptions: { gltf: { useOpenPBR: true } },
+                                });
+                                await reimportedScene.whenReadyAsync();
+                                const after = await snapshot(reimported.meshes.find((mesh) => mesh.material)!.material as InstanceType<typeof BABYLON.OpenPBRMaterial>);
+                                return {
+                                    before,
+                                    after,
+                                    diffuse: exportedMaterial.extensions?.KHR_materials_diffuse_transmission,
+                                    scatter: exportedMaterial.extensions?.KHR_materials_scatter,
+                                };
+                            } finally {
+                                URL.revokeObjectURL(url);
+                                reimportedScene.dispose();
+                            }
+                        },
+                        { withColorTexture, transmissionWeight, withWeightTextures }
+                    );
+                    expect(result.diffuse).toBeDefined();
+                    expect(result.diffuse.diffuseTransmissionFactor).toBe(0.6);
+                    expect(result.diffuse.diffuseTransmissionColorFactor).toEqual([0.2, 0.7, 0.4]);
+                    if (withColorTexture && transmissionWeight > 0) {
+                        expect(result.scatter).toBeDefined();
+                        result.after.scattering.forEach((value, i) => expect(value).toBeCloseTo(result.before.scattering[i], 4));
+                        expect(result.after.anisotropy).toBeCloseTo(result.before.anisotropy, 5);
+                    } else {
+                        expect(result.scatter).toBeUndefined();
+                    }
+                    expect(result.after.thinWalled).toBe(0);
+                    expect(result.after.tint).toEqual(result.before.tint);
+                    result.after.extinction.forEach((value, i) => expect(value).toBeCloseTo(result.before.extinction[i], 5));
+                    result.after.baseColor.forEach((value, i) => expect(value).toBeCloseTo(result.before.baseColor[i], 5));
+                    for (const key of ["baseTexture", "tintTexture", "diffuse", "transmission"] as const) {
+                        const before = result.before[key];
+                        const after = result.after[key];
+                        // A zero-weight transmission texture need not be exported.
+                        if (key === "transmission" && transmissionWeight === 0) {
+                            expect(after.values.every((value) => value === 0)).toBe(true);
+                            continue;
+                        }
+                        expect(after.coordinatesIndex).toBe(before.coordinatesIndex);
+                        expect(after.matrix === null).toBe(before.matrix === null);
+                        after.matrix?.forEach((value, i) => expect(value).toBeCloseTo(before.matrix![i], 5));
+                        expect(after.values.length).toBe(before.values.length);
+                        after.values.forEach((value, i) => expect(value).toBeCloseTo(before.values[i], 2));
+                    }
+                });
+            }
+        }
+    }
+
     // Rebaking the base color combines it with the transmission weight texture. When the two use different
     // UV sets, the exporter leaves the base color exported by the material exporter untouched instead.
     const exportWithTexturesAsync = async (transmissionUVSet: number) =>

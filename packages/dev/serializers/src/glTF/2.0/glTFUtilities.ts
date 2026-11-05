@@ -442,6 +442,16 @@ export function GetSampledTextureKey(texture: Nullable<BaseTexture>, missing: st
 export const MinTransmissionColor = 1e-7;
 
 /**
+ * Whether an imported volumetric diffuse-transmission slab can retain its separate glTF representation.
+ * @param material The OpenPBR material
+ * @param extensionEnabled Whether KHR_materials_diffuse_transmission is enabled for export
+ * @returns Whether to export diffuse transmission separately from transmission and scattering
+ */
+export function ShouldExportOpenPBRDiffuseTransmission(material: OpenPBRMaterial, extensionEnabled: boolean): boolean {
+    return extensionEnabled && !material.unlit && !material.geometryThinWalled && material._gltfDiffuseTransmissionSurfaceToCoat;
+}
+
+/**
  * Computes the KHR_materials_volume attenuation exported for a volumetric OpenPBR material, blending the
  * transmission and subsurface slabs. The transmission extinction is the renderer's: absorption is shifted to be
  * non-negative using the (untextured) transmission scatter factor, since glTF attenuation can't be textured.
@@ -486,6 +496,10 @@ export function GetOpenPBRVolumeAttenuation(
         // transmissionDepth == 0
         transmissionAttenuationDistance = Number.MAX_VALUE;
     }
+    if (!subsurfaceVolume) {
+        return { attenuationColor: transmissionAttenuationColor, attenuationDistance: transmissionAttenuationDistance };
+    }
+
     let subsurfaceAttenuationDistance = 1;
     const subsurfaceAttenuationColor = [1, 1, 1];
     if (subsurfaceVolume) {

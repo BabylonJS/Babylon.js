@@ -38,7 +38,7 @@ import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper"
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 import { GetCachedImageAsync, GetFileExtensionFromMimeType } from "../../exportImageUtils";
-import { CopyTextureSampling, GetSampledTextureKey } from "./glTFUtilities";
+import { CopyTextureSampling, GetSampledTextureKey, ShouldExportOpenPBRDiffuseTransmission } from "./glTFUtilities";
 import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 
 const Epsilon = 1e-6;
@@ -1022,10 +1022,11 @@ export class GLTFMaterialExporter {
         // KHR_materials_transmission overwrites the base color for OpenPBR materials with surface
         // transmission/subsurface (glTF tints transmission by base color, OpenPBR does not). When that
         // extension is active, let it own the base color texture so we don't bake an orphaned one here.
+        const separateDiffuseTransmission = ShouldExportOpenPBRDiffuseTransmission(babylonOpenPBRMaterial, this._exporter.isExtensionEnabled("KHR_materials_diffuse_transmission"));
         const skipBaseColorTexture =
             this._exporter.isExtensionEnabled("KHR_materials_transmission") &&
             !babylonOpenPBRMaterial.unlit &&
-            (babylonOpenPBRMaterial.transmissionWeight > 0 || babylonOpenPBRMaterial.subsurfaceWeight > 0);
+            (babylonOpenPBRMaterial.transmissionWeight > 0 || (babylonOpenPBRMaterial.subsurfaceWeight > 0 && !separateDiffuseTransmission));
 
         const metallicRoughness = await this._convertMetalRoughFactorsToMetallicRoughnessAsync(
             babylonOpenPBRMaterial.baseColor,
