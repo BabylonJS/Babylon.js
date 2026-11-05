@@ -1627,7 +1627,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serializeAsColor3()
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "_gltfDiffuseTransmissionColorProperty")
     accessor _gltfDiffuseTransmissionColor: Color3;
-    private _gltfDiffuseTransmissionColorProperty = new Property<Color3>("gltf_diffuse_transmission_color", Color3.White(), "vGltfDiffuseTransmissionColor", 3);
+    private _gltfDiffuseTransmissionColorProperty = new Property<Color3>(
+        "gltf_diffuse_transmission_color",
+        Color3.White(),
+        "vGltfDiffuseTransmissionColor",
+        3,
+        0,
+        "GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT"
+    );
 
     /** @internal */
     @serializeAsTexture()

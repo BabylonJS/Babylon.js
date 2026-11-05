@@ -204,6 +204,14 @@ describe("OpenPBRMaterial", () => {
     });
 
     describe("Per-frame uniform gating", () => {
+        it("keeps the glTF diffuse tint in the layout but gates updates on its conversion define", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const uniforms: { name: string; requiredDefine?: string }[] = Reflect.get(material, "_uniformsArray");
+            const tint = uniforms.find((uniform) => uniform.name === "vGltfDiffuseTransmissionColor");
+            expect(tint).toBeDefined();
+            expect(tint!.requiredDefine).toBe("GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT");
+        });
+
         // The 5 subsurface-scattering uniforms are only read by the shader inside
         // `#ifdef SUBSURFACE_SLAB`, so the per-frame UBO update loop in
         // `bindForSubMesh` skips them when SSS is inactive. The skip is wired by
