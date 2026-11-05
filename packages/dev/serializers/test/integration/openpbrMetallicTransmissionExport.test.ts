@@ -170,12 +170,13 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
         }
     }
 
-    for (const withColorTexture of [false, true]) {
+    for (const tintVariant of ["factor", "texture", "white volume", "default volume"] as const) {
+        const withColorTexture = tintVariant === "texture";
         for (const transmissionWeight of [0, 0.35]) {
             for (const withWeightTextures of [false, true]) {
-                test(`imported volumetric diffuse tint round-trips (color texture: ${withColorTexture}, transmission: ${transmissionWeight}, weight textures: ${withWeightTextures})`, async () => {
+                test(`imported volumetric diffuse tint round-trips (${tintVariant}, transmission: ${transmissionWeight}, weight textures: ${withWeightTextures})`, async () => {
                     const result = await page.evaluate(
-                        async ({ withColorTexture, transmissionWeight, withWeightTextures }) => {
+                        async ({ withColorTexture, transmissionWeight, withWeightTextures, tintVariant }) => {
                             const scene = window.scene!;
                             const withScatter = withColorTexture && transmissionWeight > 0;
                             const image = (colors: string[]) => {
@@ -227,7 +228,11 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                                 transmissionFactor: transmissionWeight,
                                                 ...(withWeightTextures ? { transmissionTexture: { index: 2 } } : {}),
                                             },
-                                            KHR_materials_volume: { thicknessFactor: 1, attenuationColor: [0.6, 0.8, 0.9], attenuationDistance: 2 },
+                                            KHR_materials_volume: {
+                                                thicknessFactor: 1,
+                                                attenuationDistance: 2,
+                                                ...(tintVariant === "default volume" ? {} : { attenuationColor: tintVariant === "white volume" ? [1, 1, 1] : [0.6, 0.8, 0.9] }),
+                                            },
                                             ...(withScatter
                                                 ? { KHR_materials_scatter: { scatterStrengthFactor: 0.5, multiscatterColorFactor: [0.3, 0.4, 0.5], scatterAnisotropy: 0.2 } }
                                                 : {}),
@@ -305,14 +310,18 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                     after,
                                     diffuse: exportedMaterial.extensions?.KHR_materials_diffuse_transmission,
                                     scatter: exportedMaterial.extensions?.KHR_materials_scatter,
+                                    volume: exportedMaterial.extensions?.KHR_materials_volume,
                                 };
                             } finally {
                                 URL.revokeObjectURL(url);
                                 reimportedScene.dispose();
                             }
                         },
-                        { withColorTexture, transmissionWeight, withWeightTextures }
+                        { withColorTexture, transmissionWeight, withWeightTextures, tintVariant }
                     );
+                    expect(result.volume.attenuationColor.every((value: number) => value !== null && Number.isFinite(value))).toBe(true);
+                    expect(Number.isFinite(result.volume.attenuationDistance)).toBe(true);
+                    expect(result.volume.attenuationDistance).toBeGreaterThan(0);
                     expect(result.diffuse).toBeDefined();
                     expect(result.diffuse.diffuseTransmissionFactor).toBe(0.6);
                     expect(result.diffuse.diffuseTransmissionColorFactor).toEqual([0.2, 0.7, 0.4]);
