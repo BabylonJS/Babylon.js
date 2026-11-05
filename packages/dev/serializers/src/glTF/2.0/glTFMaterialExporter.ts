@@ -17,7 +17,7 @@ import {
 } from "babylonjs-gltf2interface";
 
 import { type DeepImmutable, type Nullable } from "core/types";
-import { Color3 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
 import { GetTextureDataAsync, TextureTools } from "core/Misc/textureTools";
@@ -37,6 +37,7 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
+import { MultiplyTexturesAsync, CreateFactorOperand, TextureColorSpace } from "core/Materials/Textures/textureProcessor";
 import { GetCachedImageAsync, GetFileExtensionFromMimeType } from "../../exportImageUtils";
 import { CopyTextureSampling, GetSampledTextureKey, ShouldExportOpenPBRDiffuseTransmission } from "./glTFUtilities";
 import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
@@ -635,9 +636,28 @@ export class GLTFMaterialExporter {
                                     },
                                     babylonPBRMaterial.getScene()
                                 ).then(async (mergedTexture) => {
-                                    const glTFTexture = await this.exportTextureAsync(mergedTexture, mergedId);
-                                    if (glTFTexture) {
-                                        glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                                    let baseColorOpacityTexture: BaseTexture = mergedTexture;
+                                    try {
+                                        if (albedoTexture && !albedoTexture.gammaSpace) {
+                                            // Packing samples hardware-decoded RGB; glTF base color images require sRGB texels.
+                                            const encoded = await MultiplyTexturesAsync(
+                                                "baseColorOpacityEncoding",
+                                                { texture: mergedTexture },
+                                                CreateFactorOperand(new Color4(1, 1, 1, 1)),
+                                                babylonPBRMaterial.getScene(),
+                                                TextureColorSpace.SRGB
+                                            );
+                                            baseColorOpacityTexture = encoded.texture!;
+                                        }
+                                        const glTFTexture = await this.exportTextureAsync(baseColorOpacityTexture, mergedId);
+                                        if (glTFTexture) {
+                                            glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                                        }
+                                    } finally {
+                                        if (baseColorOpacityTexture !== mergedTexture) {
+                                            baseColorOpacityTexture.dispose();
+                                        }
+                                        mergedTexture.dispose();
                                     }
                                 })
                             );
@@ -911,8 +931,9 @@ export class GLTFMaterialExporter {
     ): Promise<void> {
         SetAlphaMode(glTFMaterial, babylonPBRMaterial);
 
-        if (!metallicRoughness.baseColor.equalsWithEpsilon(White, Epsilon) || !Scalar.WithinEpsilon(babylonPBRMaterial.alpha, 1, Epsilon)) {
-            glTFPbrMetallicRoughness.baseColorFactor = [metallicRoughness.baseColor.r, metallicRoughness.baseColor.g, metallicRoughness.baseColor.b, babylonPBRMaterial.alpha];
+        const alpha = babylonPBRMaterial instanceof OpenPBRMaterial ? babylonPBRMaterial.geometryOpacity : babylonPBRMaterial.alpha;
+        if (!metallicRoughness.baseColor.equalsWithEpsilon(White, Epsilon) || !Scalar.WithinEpsilon(alpha, 1, Epsilon)) {
+            glTFPbrMetallicRoughness.baseColorFactor = [metallicRoughness.baseColor.r, metallicRoughness.baseColor.g, metallicRoughness.baseColor.b, alpha];
         }
 
         if (metallicRoughness.metallic != null && metallicRoughness.metallic !== 1) {

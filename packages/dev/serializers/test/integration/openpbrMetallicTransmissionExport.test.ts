@@ -208,7 +208,8 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                 materials: [
                                     {
                                         name: "diffuseTint",
-                                        pbrMetallicRoughness: { metallicFactor: 0, baseColorFactor: [0.8, 0.4, 0.2, 1], baseColorTexture: { index: 0 } },
+                                        alphaMode: "BLEND",
+                                        pbrMetallicRoughness: { metallicFactor: 0, baseColorFactor: [0.8, 0.4, 0.2, 0.4], baseColorTexture: { index: 0 } },
                                         extensions: {
                                             KHR_materials_diffuse_transmission: {
                                                 diffuseTransmissionFactor: 0.6,
@@ -280,6 +281,8 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                 };
                                 return {
                                     baseColor: mat.baseColor.asArray(),
+                                    opacity: mat.geometryOpacity,
+                                    transparencyMode: mat.transparencyMode,
                                     baseTexture: await textureState(mat.baseColorTexture, 1, 0),
                                     tint: mat._gltfDiffuseTransmissionColor.asArray(),
                                     tintTexture: await textureState(mat._gltfDiffuseTransmissionColorTexture, 1, 0),
@@ -333,6 +336,9 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                         expect(result.scatter).toBeUndefined();
                     }
                     expect(result.after.thinWalled).toBe(0);
+                    expect(result.before.opacity).toBe(0.4);
+                    expect(result.after.opacity).toBe(result.before.opacity);
+                    expect(result.after.transparencyMode).toBe(result.before.transparencyMode);
                     expect(result.after.tint).toEqual(result.before.tint);
                     result.after.extinction.forEach((value, i) => expect(value).toBeCloseTo(result.before.extinction[i], 5));
                     result.after.baseColor.forEach((value, i) => expect(value).toBeCloseTo(result.before.baseColor[i], 5));
@@ -464,16 +470,18 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
 
     // Hardware-sRGB sources sample as linear RGB, but exported base color images must contain sRGB texels,
     // including after opacity packing and when imported glTF inputs bypass native OpenPBR tint rebaking.
-    for (const { useSRGBBuffer, imported } of [
+    for (const { useSRGBBuffer, imported, diffuseOnly = false } of [
         { useSRGBBuffer: false, imported: false },
         { useSRGBBuffer: true, imported: false },
         { useSRGBBuffer: false, imported: true },
         { useSRGBBuffer: true, imported: true },
+        { useSRGBBuffer: false, imported: true, diffuseOnly: true },
+        { useSRGBBuffer: true, imported: true, diffuseOnly: true },
     ]) {
         for (const withOpacityTexture of [false, true]) {
-            test(`exported base color texels are correct (imported: ${imported}, sRGB buffer: ${useSRGBBuffer}, opacity texture: ${withOpacityTexture})`, async () => {
+            test(`exported base color texels are correct (imported: ${imported}, diffuse only: ${diffuseOnly}, sRGB buffer: ${useSRGBBuffer}, opacity texture: ${withOpacityTexture})`, async () => {
                 const result = await page.evaluate(
-                    async ({ useSRGBBuffer, withOpacityTexture, imported }) => {
+                    async ({ useSRGBBuffer, withOpacityTexture, imported, diffuseOnly }) => {
                         const scene = window.scene!;
                         const RGBA = BABYLON.Constants.TEXTUREFORMAT_RGBA;
                         const NEAREST = BABYLON.Texture.NEAREST_SAMPLINGMODE;
@@ -482,19 +490,29 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                             new BABYLON.RawTexture(new Uint8Array(16).fill(value), 2, 2, RGBA, scene, false, false, NEAREST, UNSIGNED_BYTE, undefined, srgb);
 
                         const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                        box.setVerticesData(BABYLON.VertexBuffer.UV2Kind, box.getVerticesData(BABYLON.VertexBuffer.UVKind)!);
                         const mat = new BABYLON.OpenPBRMaterial("srgbBaseColor", scene);
                         mat._gltfTransmissionSurfaceToCoat = imported;
-                        mat.geometryThinWalled = 1;
+                        mat._gltfDiffuseTransmissionSurfaceToCoat = diffuseOnly;
+                        mat.geometryThinWalled = diffuseOnly ? 0 : 1;
+                        mat.subsurfaceWeight = diffuseOnly ? 0.6 : 0;
+                        mat.subsurfaceScatterAnisotropy = 1;
                         mat.baseColor = BABYLON.Color3.White();
                         const baseColorTexture = solid(128, useSRGBBuffer);
                         baseColorTexture.name = "baseColor";
+                        baseColorTexture.coordinatesIndex = 1;
+                        baseColorTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                        baseColorTexture.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
                         mat.baseColorTexture = baseColorTexture;
                         if (withOpacityTexture) {
                             const opacityTexture = solid(128, false);
                             opacityTexture.name = "opacity";
+                            opacityTexture.coordinatesIndex = 1;
+                            opacityTexture.wrapU = baseColorTexture.wrapU;
+                            opacityTexture.wrapV = baseColorTexture.wrapV;
                             mat.geometryOpacityTexture = opacityTexture;
                         }
-                        mat.transmissionWeight = 0.5;
+                        mat.transmissionWeight = diffuseOnly ? 0 : 0.5;
                         mat.transmissionColor = BABYLON.Color3.White();
                         if (imported) {
                             mat.transmissionColorTexture = baseColorTexture;
@@ -513,16 +531,21 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                         return {
                             supportsSRGBBuffers: !!scene.getEngine().getCaps().supportSRGBBuffers,
                             gammaSpace: baseColorTexture.gammaSpace,
+                            texCoord: baseColorInfo.texCoord,
+                            sampler: json.samplers[json.textures[baseColorInfo.index].sampler],
                             texel,
                         };
                     },
-                    { useSRGBBuffer, withOpacityTexture, imported }
+                    { useSRGBBuffer, withOpacityTexture, imported, diffuseOnly }
                 );
 
                 if (useSRGBBuffer) {
                     expect(result.supportsSRGBBuffers).toBe(true);
                 }
                 expect(result.gammaSpace).toBe(!useSRGBBuffer);
+                expect(result.texCoord).toBe(1);
+                expect(result.sampler.wrapS).toBe(33071);
+                expect(result.sampler.wrapT).toBe(33648);
                 // Native inputs neutralize transmission tint; imported glTF inputs keep their authored RGB.
                 const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
                 const toSRGB = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
