@@ -46,6 +46,8 @@ import { ShadowGeneratorExplorerServiceDefinition } from "./services/panes/scene
 import { SpriteLayerExplorerServiceDefinition } from "./services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/textureExplorerService";
+import { PhysicsExplorerServiceDefinition } from "./services/panes/scene/physicsExplorerService";
+import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
 
 /**
  * Shows Inspector for a Babylon Lite engine.
@@ -98,6 +100,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 AnimationGroupExplorerServiceDefinition,
                 SkeletonExplorerServiceDefinition,
                 ParticleSystemExplorerServiceDefinition,
+                PhysicsExplorerServiceDefinition,
                 FrameGraphExplorerServiceDefinition,
                 FlowGraphExplorerServiceDefinition,
                 PropertiesServiceDefinition,
@@ -115,6 +118,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 AnimationPropertiesServiceDefinition,
                 SkeletonPropertiesServiceDefinition,
                 ParticleSystemPropertiesServiceDefinition,
+                PhysicsPropertiesServiceDefinition,
                 FrameGraphPropertiesServiceDefinition,
                 SettingsServiceDefinition,
                 watcherSettingsServiceDefinition,
