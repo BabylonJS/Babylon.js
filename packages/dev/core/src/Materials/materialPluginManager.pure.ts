@@ -99,12 +99,13 @@ export class MaterialPluginManager {
         this._codeInjectionPoints = {};
 
         const defineNamesFromPlugins: { [name: string]: { type: string; default: any } } = {};
-        defineNamesFromPlugins[MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName]] = {
-            type: "boolean",
-            default: true,
-        };
 
         for (const plugin of this._plugins) {
+            // Every registered plugin (enabled or not) needs its marker: disabled plugins still add their uniforms to the UBO layout
+            defineNamesFromPlugins[MaterialPluginManager._MaterialPluginClassToMainDefine[plugin.getClassName()]] = {
+                type: "boolean",
+                default: true,
+            };
             plugin.collectDefines(defineNamesFromPlugins);
             this._collectPointNames("vertex", plugin.getCustomCode("vertex", this._material.shaderLanguage));
             this._collectPointNames("fragment", plugin.getCustomCode("fragment", this._material.shaderLanguage));
