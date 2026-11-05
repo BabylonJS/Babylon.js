@@ -8,6 +8,21 @@ import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
 import { WebGPUMaterialContext } from "core/Engines/WebGPU/webgpuMaterialContext";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import { type Effect } from "core/Materials/effect";
+import { type VertexBuffer } from "core/Buffers/buffer";
+import { type DataBuffer } from "core/Buffers/dataBuffer";
+import { type Nullable } from "core/types";
+import { RenderCommandBatcher } from "core/Engines/renderCommandBatcher.pure";
+import { WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList";
+import {
+    ApplyWebGPURenderPassDrawCommand,
+    type IWebGPURenderPassCommandRecorderProvider,
+    type IWebGPURenderPassDrawCommand,
+    WebGPURenderPassCommandOpcode,
+    WebGPURenderPassCommandStream,
+    WebGPURenderPassCommandStreamProtocolVersion,
+    WebGPURenderPassDrawKind,
+} from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
+import * as WebGPUConstants from "core/Engines/WebGPU/webgpuConstants";
 
 /**
  * A draw recorded by a snapshot is encoded again from its commands (WebGPUEngine._replayRecordedDraw) only while its draw context
@@ -280,5 +295,167 @@ describe("WebGPUEngine._recordsDraws", () => {
         expect(recordsDraws(true, false)).toBe(false);
         expect(recordsDraws(false, true)).toBe(false);
         expect(recordsDraws(false, false)).toBe(false);
+    });
+});
+
+/**
+ * A draw the render pass batcher holds (lowered into the command stream of a native host) reaches its encoder only when the batcher
+ * flushes, while a recorded draw encoded again goes straight into the bundle encoder. With no dynamic state changed (viewport,
+ * scissor, stencil reference, blend constant), _applyRenderPassChanges flushes nothing, so the flush of _replayRecordedDraw is the
+ * one that keeps the held draw before the replayed one. These use the batcher, the command stream and the bundle list of the engine.
+ */
+describe("WebGPUEngine recorded draws and the render pass command batcher", () => {
+    const ids = new WeakMap<object, number>();
+    let nextId = 1;
+    const resource = <T extends object>(): T => {
+        const r = {} as T;
+        ids.set(r, nextId++);
+        return r;
+    };
+    const provider: IWebGPURenderPassCommandRecorderProvider = {
+        protocolVersion: WebGPURenderPassCommandStreamProtocolVersion,
+        isEnabled: () => true,
+        getResourceId: (r: Nullable<object>) => (r ? (ids.get(r) ?? 0) : 0),
+    };
+
+    /** A bundle encoder of a native host: it takes direct calls and decoded batches, and lists its draws in the order they reach it. */
+    class RecordingEncoder {
+        public readonly draws: string[] = [];
+        public setPipeline(): void {}
+        public setIndexBuffer(): void {}
+        public setVertexBuffer(): void {}
+        public setBindGroup(): void {}
+        public drawIndexed(_count: number, _instances?: number, firstIndex?: number): void {
+            this.draws.push(`direct ${firstIndex}`);
+        }
+        public draw(_count: number, _instances?: number, firstVertex?: number): void {
+            this.draws.push(`direct ${firstVertex}`);
+        }
+        public finish(): GPURenderBundle {
+            return {} as GPURenderBundle;
+        }
+        public _recordCommands = (words: Uint32Array, _drawCount: number, _multiDrawCallCount: number, _multiDrawDrawCount: number, wordCount: number): boolean => {
+            for (let i = 0; i < wordCount;) {
+                switch (words[i]) {
+                    case WebGPURenderPassCommandOpcode.setPipeline:
+                        i += 3;
+                        break;
+                    case WebGPURenderPassCommandOpcode.setBindGroup:
+                        i += 5;
+                        break;
+                    case WebGPURenderPassCommandOpcode.setVertexBuffer:
+                    case WebGPURenderPassCommandOpcode.setIndexBuffer:
+                        i += 8;
+                        break;
+                    case WebGPURenderPassCommandOpcode.draw:
+                        this.draws.push(`batched ${words[i + 3]}`);
+                        i += 5;
+                        break;
+                    case WebGPURenderPassCommandOpcode.drawIndexed:
+                        this.draws.push(`batched ${words[i + 3]}`);
+                        i += 6;
+                        break;
+                    default:
+                        throw new Error(`Unexpected opcode ${words[i]} at word ${i}`);
+                }
+            }
+            return true;
+        };
+    }
+
+    function setup(drawKind: WebGPURenderPassDrawKind) {
+        const encoder = new RecordingEncoder();
+        const bundleList = new WebGPUBundleList({ createRenderBundleEncoder: () => encoder } as unknown as GPUDevice);
+        const stream = new WebGPURenderPassCommandStream({ getProvider: () => provider });
+        const batcher = new RenderCommandBatcher<IWebGPURenderPassDrawCommand>(stream, ApplyWebGPURenderPassDrawCommand);
+        const materialContext = new WebGPUMaterialContext();
+        const drawWrapper = new DrawWrapper({
+            createDrawContext: () => new WebGPUDrawContext({ createRawBuffer: () => ({}), setRawData: () => {}, releaseBuffer: () => true } as any, {} as any),
+            createMaterialContext: () => materialContext,
+        } as any);
+        drawWrapper.setEffect({ onBind: null, _onBindObservable: null, _pipelineContext: {} } as any);
+        const drawContext = drawWrapper.drawContext as WebGPUDrawContext;
+        materialContext.isDirty = false;
+        drawContext.resetIsDirty(materialContext.updateId);
+        const vertexBuffer = { effectiveBuffer: { underlyingResource: resource<GPUBuffer>() }, _validOffsetRange: true, byteOffset: 0 };
+        const engine: any = {
+            _snapshotRendering: { record: true },
+            _recordedDrawsGeneration: 0,
+            _currentRenderTarget: null,
+            currentSampleCount: 1,
+            _currentDrawContext: drawContext,
+            _currentEffect: { _pipelineContext: {} },
+            _currentIndexBuffer: drawKind === WebGPURenderPassDrawKind.INDEXED ? { underlyingResource: resource<GPUBuffer>(), is32Bits: true } : null,
+            _cacheRenderPipeline: { colorFormats: [], vertexBuffers: [vertexBuffer], setAlphaBlendEnabled: () => {} },
+            _bundleList: bundleList,
+            _renderPassDrawBatcher: batcher,
+            _getCurrentRenderPass: () => {},
+            _reportDrawCall: () => {},
+            // the dynamic states the render pass already has are the ones the engine holds: none to update
+            _viewportCached: { x: 0, y: 0, z: 1280, w: 720 },
+            _viewportsCurrent: { x: 0, y: 0, w: 1280, h: 720 },
+            _scissorCached: { x: 8, y: 8, z: 64, w: 64 },
+            _scissorsCurrent: { x: 8, y: 8, w: 64, h: 64 },
+            _stencilStateComposer: { enabled: true, funcRef: 1, apply: () => {} },
+            _stencilRefsCurrent: 1,
+            _alphaState: { alphaBlend: true, _alphaBlend: true, _numTargetEnabled: 1, _blendConstants: [0.25, 0.5, 0.75, 1] },
+            _blendColorsCurrent: [0.25, 0.5, 0.75, 1],
+        };
+        const proto = WebGPUEngine.prototype as any;
+        for (const name of [
+            "_canEncodeRecordedDraw",
+            "applyStates",
+            "_applyRenderPassChanges",
+            "_mustUpdateViewport",
+            "_mustUpdateScissor",
+            "_mustUpdateStencilRef",
+            "_mustUpdateBlendColor",
+            "_flushRenderPassCommands",
+        ]) {
+            engine[name] = (...args: unknown[]) => proto[name].apply(engine, args);
+        }
+        // the full draw that recorded it, at start 100
+        proto._keepRecordedDraw.call(engine, resource<GPURenderPipeline>(), [resource<GPUBindGroup>()], drawKind, 36, 1, 100);
+        // a draw the batcher holds, in the bundle encoder the recording writes into
+        const hold = (start: number) =>
+            batcher.submit({
+                renderPass: bundleList.getBundleEncoder([], undefined, 1),
+                drawKind: WebGPURenderPassDrawKind.INDEXED,
+                pipeline: resource<GPURenderPipeline>(),
+                bindGroups: [resource<GPUBindGroup>()],
+                vertexBuffers: [{ effectiveBuffer: { underlyingResource: resource<GPUBuffer>() }, byteOffset: 0, _validOffsetRange: true } as unknown as VertexBuffer],
+                indexBuffer: { underlyingResource: resource<GPUBuffer>(), is32Bits: true } as unknown as DataBuffer,
+                indexFormat: WebGPUConstants.IndexFormat.Uint32,
+                count: 36,
+                instancesCount: 1,
+                start,
+                indirectDrawBuffer: null,
+            });
+        const replay = () => proto._replayRecordedDraw.call(engine, drawWrapper);
+        return { encoder, bundleList, batcher, hold, replay };
+    }
+
+    it("encodes a draw the batcher holds before an indexed recorded draw it encodes again, with no dynamic state changed", () => {
+        const { encoder, bundleList, batcher, hold, replay } = setup(WebGPURenderPassDrawKind.INDEXED);
+        expect(hold(0)).toBe(true);
+        expect(replay()).toBe(true);
+        // the end of the pass flushes what is left
+        batcher.flush();
+        expect(encoder.draws).toEqual(["batched 0", "direct 100"]);
+        // nothing changed: the bundle list holds the bundle alone, no viewport, scissor, stencil reference or blend constant
+        const pass = { executeBundles: vi.fn(), setViewport: vi.fn(), setScissorRect: vi.fn(), setStencilReference: vi.fn(), setBlendConstant: vi.fn() };
+        bundleList.run(pass as unknown as GPURenderPassEncoder);
+        expect(pass.executeBundles).toHaveBeenCalledTimes(1);
+        expect([pass.setViewport, pass.setScissorRect, pass.setStencilReference, pass.setBlendConstant].map((f) => f.mock.calls.length)).toEqual([0, 0, 0, 0]);
+    });
+
+    it("keeps the order of the draws the batcher holds before and after a non-indexed recorded draw it encodes again, and keeps batching", () => {
+        const { encoder, batcher, hold, replay } = setup(WebGPURenderPassDrawKind.NON_INDEXED);
+        expect(hold(0)).toBe(true);
+        expect(hold(36)).toBe(true);
+        expect(replay()).toBe(true);
+        expect(hold(200)).toBe(true);
+        batcher.flush();
+        expect(encoder.draws).toEqual(["batched 0", "batched 36", "direct 100", "batched 200"]);
     });
 });
