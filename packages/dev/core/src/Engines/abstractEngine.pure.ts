@@ -690,6 +690,11 @@ export abstract class AbstractEngine {
         for (const key in this._compiledEffects) {
             const effect = this._compiledEffects[key];
 
+            if (effect._isShaderCodeProcessingPending) {
+                // Nothing to rebuild yet: the effect prepares itself on the restored context once its shader code is processed
+                continue;
+            }
+
             effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
             effect._prepareEffect();
         }
