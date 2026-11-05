@@ -44,7 +44,7 @@ for (const backend of ["webgl2", "webgpu"]) {
                             ...Array.from({ length: 6 }, () => [0, 0, -1]).flat(),
                             ...Array.from({ length: 6 }, () => [0, 1, 0, 1]).flat(),
                         ]);
-                        const source = (uv: number, pattern: "white" | "columns" | "rows", transform = false, withDiffuse = diffuse, withTangents = false) => ({
+                        const source = (uv: number, pattern: "white" | "columns" | "rows", transform = false, withDiffuse = diffuse, withTangents = false, coatWeight = 1) => ({
                             asset: { version: "2.0" },
                             extensionsUsed: [
                                 "KHR_materials_transmission",
@@ -85,7 +85,7 @@ for (const backend of ["webgl2", "webgpu"]) {
                                         },
                                         KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1 },
                                         KHR_materials_clearcoat: {
-                                            clearcoatFactor: 1,
+                                            clearcoatFactor: coatWeight,
                                             clearcoatRoughnessFactor: 0,
                                             clearcoatRoughnessTexture: { index: 1, texCoord: uv },
                                             clearcoatNormalTexture: { index: 3, texCoord: 1 },
@@ -124,7 +124,11 @@ for (const backend of ["webgl2", "webgpu"]) {
                                 scene.render();
                                 engine.endFrame();
                             }
-                            return Array.from(await engine.readPixels(0, 0, 64, 64));
+                            const pixels = await engine.readPixels(0, 0, 64, 64);
+                            if (!(pixels instanceof Uint8Array) || pixels.length !== 64 * 64 * 4) {
+                                throw new Error("Expected a complete RGBA byte readback");
+                            }
+                            return Array.from(pixels);
                         };
                         const scenes: InstanceType<typeof BABYLON.Scene>[] = [];
                         const load = async (gltf: ReturnType<typeof source>) => {
@@ -230,7 +234,76 @@ for (const backend of ["webgl2", "webgpu"]) {
                             new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0.3, 0.4, 1), tangentReference.scene).intensity = 5;
                             const referenceTangents = await capture(tangentReference.scene);
                             tangentReference.scene.dispose();
+                            const nativeControl = await load(source(0, "white"));
+                            const nativeMaterial = new BABYLON.OpenPBRMaterial("native", nativeControl.scene);
+                            nativeMaterial.allowShaderHotSwapping = false;
+                            nativeMaterial.geometryThinWalled = 0;
+                            nativeMaterial.geometryThickness = 1;
+                            nativeMaterial.transmissionWeight = 1;
+                            nativeMaterial.transmissionDepth = 1;
+                            nativeMaterial.transmissionColor.set(0.8, 0.9, 0.95);
+                            nativeMaterial.specularRoughness = 0;
+                            nativeMaterial.baseColor.set(1, 1, 1);
+                            nativeControl.scene.meshes.find((mesh) => mesh.material === nativeControl.material)!.material = nativeMaterial;
+                            const nativeWhite = await capture(nativeControl.scene);
+                            nativeMaterial.baseColor.set(0.8, 0, 0);
+                            const nativeRed = await capture(nativeControl.scene);
+                            nativeMaterial.transmissionColor.set(0.1, 0.1, 0.1);
+                            const nativeDark = await capture(nativeControl.scene);
+                            const noCoatCases = [];
+                            for (const mode of ["volume", "thin", "zeroDepth"]) {
+                                const fixture = source(0, "white", false, false, false, 0);
+                                fixture.images[0].uri = texture("white");
+                                fixture.materials[0].pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1];
+                                fixture.materials[0].extensions.KHR_materials_volume.thicknessFactor = mode === "thin" ? 0 : 1;
+                                fixture.materials[0].extensions.KHR_materials_volume.attenuationDistance = mode === "zeroDepth" ? Number.MAX_VALUE : 1;
+                                const imported = await load(fixture);
+                                imported.material.geometryNormalTexture = null;
+                                imported.material.baseColorTexture = null;
+                                if (mode === "volume") {
+                                    imported.material.transmissionColor.set(0.8, 0.9, 0.95);
+                                }
+                                nativeMaterial.geometryThinWalled = mode === "thin" ? 1 : 0;
+                                nativeMaterial.transmissionDepth = mode === "volume" ? 1 : 0;
+                                nativeMaterial.transmissionColor.set(mode === "volume" ? 0.8 : 1, mode === "volume" ? 0.9 : 1, mode === "volume" ? 0.95 : 1);
+                                nativeMaterial.baseColor.set(1, 1, 1);
+                                nativeMaterial.coatWeight = 0;
+                                const expectedWhite = await capture(nativeControl.scene);
+                                const importedWhite = await capture(imported.scene);
+                                fixture.materials[0].pbrMetallicRoughness.baseColorFactor = [0.2, 0.6, 0.8, 1];
+                                const tinted = await load(fixture);
+                                tinted.material.geometryNormalTexture = null;
+                                tinted.material.baseColorTexture = null;
+                                if (mode === "volume") {
+                                    tinted.material.transmissionColor.set(0.8, 0.9, 0.95);
+                                }
+                                const importedTinted = await capture(tinted.scene);
+                                nativeMaterial.baseColor.set(0.2, 0.6, 0.8);
+                                if (mode === "volume") {
+                                    // glTF needs a separate surface tint even when there is no authored clearcoat.
+                                    nativeMaterial.coatWeight = 1;
+                                    nativeMaterial.coatColor.set(0.2, 0.6, 0.8);
+                                    nativeMaterial.coatIor = nativeMaterial.specularIor;
+                                    nativeMaterial.coatDarkening = 0;
+                                } else {
+                                    nativeMaterial.transmissionColor.set(0.2, 0.6, 0.8);
+                                }
+                                const expectedTinted = await capture(nativeControl.scene);
+                                noCoatCases.push({
+                                    mode,
+                                    coatWeight: imported.material.coatWeight,
+                                    whiteDifference: different(importedWhite, expectedWhite),
+                                    tintDifference: different(importedWhite, importedTinted),
+                                    referenceDifference: different(importedTinted, expectedTinted),
+                                });
+                                imported.scene.dispose();
+                                tinted.scene.dispose();
+                            }
+                            nativeControl.scene.dispose();
                             return {
+                                noCoatCases,
+                                nativeBaseColorDifference: different(nativeWhite, nativeRed),
+                                nativeTransmissionColorDifference: different(nativeRed, nativeDark),
                                 liveColorDifference: different(whiteColor, tintedColor),
                                 liveColorReferenceDifference: different(tintedColor, referenceColor),
                                 restoredColorDifference: different(whiteColor, restoredColor),
@@ -264,6 +337,14 @@ for (const backend of ["webgl2", "webgpu"]) {
                 { backend, diffuse }
             );
             expect(result.distinctColors, JSON.stringify(result)).toBeGreaterThan(2);
+            expect(result.nativeTransmissionColorDifference).toBeGreaterThan(100);
+            expect(result.nativeBaseColorDifference).toBe(0);
+            for (const noCoat of result.noCoatCases) {
+                expect(noCoat.coatWeight, noCoat.mode).toBe(0);
+                expect(noCoat.whiteDifference, JSON.stringify(noCoat)).toBe(0);
+                expect(noCoat.tintDifference, noCoat.mode).toBeGreaterThan(100);
+                expect(noCoat.referenceDifference, JSON.stringify(noCoat)).toBe(0);
+            }
             expect(result.whiteDifference, JSON.stringify(result)).toBe(0);
             expect(result.liveColorDifference, JSON.stringify(result)).toBeGreaterThan(100);
             expect(result.liveColorReferenceDifference, JSON.stringify(result)).toBe(0);
