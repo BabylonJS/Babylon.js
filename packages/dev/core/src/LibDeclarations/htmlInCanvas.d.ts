@@ -95,7 +95,7 @@ declare var ElementGeometryUpdateEvent: {
     new (type: string, eventInitDict?: ElementGeometryUpdateEventInit): ElementGeometryUpdateEvent;
 };
 
-interface HTMLCanvasElementEventMap {
+interface HTMLCanvasElementEventMap extends HTMLElementEventMap {
     paint: CanvasPaintEvent;
     elementgeometryupdate: ElementGeometryUpdateEvent;
 }
@@ -140,13 +140,25 @@ interface HTMLCanvasElement {
     updateElementGeometry(element: Element | ElementImage, options?: UpdateElementGeometryOptions): void;
     /** Clears the registered hit-testing and accessibility geometry of a drawable descendant. */
     clearElementGeometry(element: Element | ElementImage): void;
+    /** Returns the transform currently mapping the element's border box to the canvas, or identity when none is set. */
+    getElementTransform(element: Element): DOMMatrix;
     /**
-     * Returns the transform currently mapping the element's border box to the canvas, or identity when none is set.
-     * The `drawTransform` argument is only used by older implementations.
+     * Older signature returning the CSS transform that keeps the element's DOM location in sync with its drawn location.
+     * @deprecated Use `getElementTransform(element)` instead.
      */
-    getElementTransform(element: Element | ElementImage, drawTransform?: DOMMatrix): DOMMatrix;
+    getElementTransform(element: Element | ElementImage, drawTransform: DOMMatrix): DOMMatrix;
     /** Returns the default size of the element (or snapshot) in canvas grid coordinates. */
     getElementImageDefaultSize(element: Element | ElementImage): ElementImageDefaultSize;
+    addEventListener<K extends keyof HTMLCanvasElementEventMap>(
+        type: K,
+        listener: (this: HTMLCanvasElement, ev: HTMLCanvasElementEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
+    removeEventListener<K extends keyof HTMLCanvasElementEventMap>(
+        type: K,
+        listener: (this: HTMLCanvasElement, ev: HTMLCanvasElementEventMap[K]) => any,
+        options?: boolean | EventListenerOptions
+    ): void;
 }
 
 interface OffscreenCanvas {
@@ -177,6 +189,11 @@ interface CanvasDrawElementImage {
         dheight: number,
         options?: DrawElementImageOptions
     ): void;
+    /**
+     * Older overload accepting a destination width without a destination height.
+     * @deprecated Pass both `dwidth` and `dheight`, or neither.
+     */
+    drawElementImage(element: Element | ElementImage, sx: number, sy: number, swidth: number, sheight: number, dx: number, dy: number, dwidth: number): void;
 }
 
 interface CanvasRenderingContext2D extends CanvasDrawElementImage {}
