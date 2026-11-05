@@ -91,9 +91,7 @@ describe("Explorer pane selection reconciliation", () => {
         const paneRegistration = CreateExplorerPaneRegistration(shellService, selectionService, {
             key: "Explorer",
             title: "Explorer",
-            getRoot: () => rootEntity,
-            rootLabel: "Root",
-            getNodes: () => [],
+            getRoots: () => [{ id: "root", entity: rootEntity, label: "Root", getNodes: () => [] }],
             nodeProviders: explorerService.nodeProviders,
         });
         if (!PaneContent) {

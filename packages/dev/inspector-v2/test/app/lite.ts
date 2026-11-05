@@ -11,6 +11,7 @@ import {
     buildNodeParticleSet,
     cloneTransformNode,
     attachControl,
+    attachSpatialTarget,
     buildFgGraph,
     createBox,
     createAnimationManager,
@@ -39,11 +40,14 @@ import {
     createTextRenderer,
     createTransformNode,
     detachFlowGraph,
+    detachSpatialTarget,
     dispatchFlowGraphEvent,
     disposeDefaultTextData,
     disposeEngine,
+    disposeAudioBus,
     disposePicker,
     disposeScene,
+    disposeSound,
     disposeSpriteRenderer,
     disposeSurface,
     disposeTextRenderer,
@@ -83,6 +87,7 @@ import {
 
 import { ShowInspector } from "../../src/lite/inspector";
 import { GetSceneNodes, IsMesh } from "../../src/lite/sceneEntityUtils";
+import { CreateLiteAudioFixture, type LiteAudioFixture } from "./liteAudio";
 
 // Self-contained GLB: one triangle, two joints and two named morphs. No external buffers, textures or assets.
 function CreateSkeletonMorphGlb(): ArrayBuffer {
@@ -485,6 +490,21 @@ registerSpriteRenderer(spriteRenderer);
 await startEngine(engine);
 
 const inspectorToken = ShowInspector(engine);
+let testAudioFixture: LiteAudioFixture | null = null;
+const liteCreateAudioEngine = async () => {
+    testAudioFixture ??= await CreateLiteAudioFixture(camera, box, sphere, smallBox);
+    inspectorToken.setAudioEngine(testAudioFixture.engine);
+    return testAudioFixture.engine;
+};
+const liteDisposeAudioEngine = () => {
+    if (testAudioFixture) {
+        inspectorToken.setAudioEngine(null);
+        testAudioFixture.dispose();
+        testAudioFixture = null;
+    }
+};
+
+await liteCreateAudioEngine();
 
 let physicsFixture: Promise<void> | undefined;
 const createPhysicsFixture = () =>
@@ -522,6 +542,13 @@ Object.assign(globalThis, {
     liteBlueSphereGlowing: () => sphereGlowAccessor.get() === true,
     liteBlueSpherePickCount: () => spherePickCount,
     liteInspectorToken: inspectorToken,
+    liteCreateAudioEngine,
+    liteDisposeAudioEngine,
+    liteGetAudioFixture: () => testAudioFixture,
+    liteAttachSpatialTarget: attachSpatialTarget,
+    liteDetachSpatialTarget: detachSpatialTarget,
+    liteDisposeAudioBus: disposeAudioBus,
+    liteDisposeSound: disposeSound,
     liteShowInspector: ShowInspector,
     liteGetRenderTaskGpuTimings: getRenderTaskGpuTimings,
     liteSetRenderTaskGpuTimingEnabled: setRenderTaskGpuTimingEnabled,
@@ -566,6 +593,7 @@ window.addEventListener(
         canvas.removeEventListener("pointermove", onSpherePointerMove);
         canvas.removeEventListener("pointerup", onSpherePointerUp);
         canvas.removeEventListener("pointercancel", onSpherePointerCancel);
+        liteDisposeAudioEngine();
         void inspectorToken.dispose();
         detachCameraControl();
         stopEngine(engine);
