@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Effect } from "core/Materials/effect";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "core/scene";
 
@@ -169,5 +170,16 @@ describe("ProceduralTexture resize", () => {
         const content = await texture.getContent();
         expect(content!.byteLength).toBe(4 * 4 * 4);
         expect(readPixelsSpy).toHaveBeenLastCalledWith(0, 0);
+    });
+
+    it("releases its render target wrapper on dispose", () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        const rtWrapper = (texture as unknown as { _rtWrapper: RenderTargetWrapper })._rtWrapper;
+        const disposeSpy = vi.spyOn(rtWrapper, "dispose");
+
+        texture.dispose();
+
+        expect(disposeSpy).toHaveBeenCalledTimes(1);
+        expect(texture.getInternalTexture()).toBeNull();
     });
 });

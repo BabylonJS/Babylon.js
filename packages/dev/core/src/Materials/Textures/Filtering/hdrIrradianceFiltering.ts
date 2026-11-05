@@ -140,6 +140,8 @@ export class HDRIrradianceFiltering {
         effect.setTexture("inputTexture", null);
         effect.setTexture("icdfTexture", null);
         const irradianceTexture = new BaseTexture(texture.getScene(), outputTexture.texture);
+        // The returned texture now owns the internal texture; only the framebuffers need releasing.
+        outputTexture.dispose(true);
         irradianceTexture.name = texture.name + "_irradiance";
         irradianceTexture.displayName = texture.name + "_irradiance";
         irradianceTexture.gammaSpace = false;

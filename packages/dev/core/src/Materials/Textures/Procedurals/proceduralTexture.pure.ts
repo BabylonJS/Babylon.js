@@ -889,6 +889,13 @@ export class ProceduralTexture extends Texture {
         this.onGeneratedObservable.clear();
         this.onBeforeGenerationObservable.clear();
 
+        // The render target wrapper owns both the framebuffers and the texture, so release it here.
+        if (this._rtWrapper) {
+            this._rtWrapper.dispose();
+            this._rtWrapper = null;
+            this._texture = null;
+        }
+
         super.dispose();
     }
 }
