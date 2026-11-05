@@ -3195,14 +3195,22 @@ export class ThinNativeEngine extends ThinEngine {
 
     /**
      * Generates mipmaps for the given texture.
-     * @param _texture The texture to generate the mipmaps for.
+     * @param texture The texture to generate the mipmaps for.
      */
-    public override generateMipmaps(_texture: InternalTexture): void {
-        // The WebGL implementation binds the texture and calls gl.generateMipmap; there is no equivalent
-        // standalone command on Babylon Native, and none is needed: a render target whose mip chain must be
-        // rebuilt is attached to its framebuffer with BGFX_RESOLVE_AUTO_GEN_MIPS (see CreateFrameBufferImpl),
-        // so bgfx regenerates the chain when the view resolves. Without this override the inherited WebGL path
-        // dereferenced a non-existent GL context (frame graph tasks call generateMipMaps explicitly).
+    public override generateMipmaps(texture: InternalTexture): void {
+        const command = _native.Engine.COMMAND_GENERATEMIPMAPS;
+        if (!command) {
+            // Older runtimes always regenerate MRT mips at resolve and lack an explicit generation command.
+            Logger.Warn("NativeEngine: explicit mip generation is not supported by this runtime; relying on legacy framebuffer resolve.", 1);
+            return;
+        }
+        const nativeTexture = texture._hardwareTexture?.underlyingResource;
+        if (!nativeTexture || !this._hasMipStorage(texture)) {
+            throw new Error("NativeEngine: explicit mip generation requires a hardware texture with mip storage.");
+        }
+        this._commandBufferEncoder.startEncodingCommand(command);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(nativeTexture);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -3331,7 +3339,7 @@ export class ThinNativeEngine extends ThinEngine {
         // Like a GL framebuffer, an explicit depth-stencil texture is always attached as-is, so every pass that
         // references it (clears, geometry, overlays, later samplers) sees the same real depth buffer.
         const sharedDepthResource = depthStencilTexture?._hardwareTexture?.underlyingResource as NativeTexture | undefined;
-        const cached = hardwareTexture._frameGraphFramebuffer;
+        const cached = nativeRTWrapper._framebuffer ?? hardwareTexture._frameGraphFramebuffer;
         const cachedMeta = cached ? this._frameGraphFramebufferRefCount.get(cached) : undefined;
 
         // Reuse the cached framebuffer when it is compatible: the same ordered color attachments (a swap of any
@@ -3353,8 +3361,10 @@ export class ThinNativeEngine extends ThinEngine {
             (cachedMeta.hasStencil || !generateStencilBuffer) &&
             cachedMeta.sharedDepthResource === sharedDepthResource
         ) {
-            cachedMeta.count++;
-            nativeRTWrapper._framebuffer = cached;
+            if (nativeRTWrapper._framebuffer !== cached) {
+                cachedMeta.count++;
+                nativeRTWrapper._framebuffer = cached;
+            }
             return;
         }
 
@@ -4409,7 +4419,11 @@ export class ThinNativeEngine extends ThinEngine {
         // first time the wrapper is bound. Several wrappers can reference the same underlying texture(s), so the
         // framebuffer is cached on (and shared through) the first color texture's hardware wrapper to avoid each
         // fresh framebuffer/view clearing the texture and clobbering earlier passes.
-        if (!nativeRTWrapper._framebuffers && !nativeRTWrapper._framebufferDepthStencil && !nativeRTWrapper._framebuffer) {
+        if (
+            !nativeRTWrapper._framebuffers &&
+            !nativeRTWrapper._framebufferDepthStencil &&
+            (!nativeRTWrapper._framebuffer || this._frameGraphFramebufferRefCount.has(nativeRTWrapper._framebuffer))
+        ) {
             this._buildFrameGraphFramebuffer(nativeRTWrapper);
         }
 
@@ -4480,7 +4494,7 @@ export class ThinNativeEngine extends ThinEngine {
                 }
                 // generateDepth must be set so a depth texture without a native handle yet (created directly on this
                 // volume) is allocated and aliased by the first slice; later slices borrow the existing handle.
-                framebuffer = this._engine.createMultiFrameBuffer!(
+                framebuffer = this._createNativeMultiFrameBuffer(
                     [nativeTexture],
                     width,
                     height,
@@ -4488,7 +4502,8 @@ export class ThinNativeEngine extends ThinEngine {
                     true,
                     nativeRTWrapper.samples,
                     [layer],
-                    nativeDepth
+                    nativeDepth,
+                    [nativeRTWrapper.texture!.generateMipMaps]
                 );
                 this._setTextureSampling(nativeDepth, getNativeSamplingMode(depthTexture.samplingMode));
                 this.updateTextureComparisonFunction(depthTexture, depthTexture._comparisonFunction);
@@ -4501,7 +4516,8 @@ export class ThinNativeEngine extends ThinEngine {
                     nativeRTWrapper._generateDepthBuffer,
                     nativeRTWrapper.samples,
                     layer,
-                    mip
+                    mip,
+                    nativeRTWrapper.texture!.generateMipMaps
                 );
             }
             nativeRTWrapper._layerFramebuffers.set(key, framebuffer);

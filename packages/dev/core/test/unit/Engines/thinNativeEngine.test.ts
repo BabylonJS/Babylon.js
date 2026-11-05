@@ -839,6 +839,66 @@ describe("ThinNativeEngine", () => {
             expect(bound()).toBe(updated);
         });
 
+        it.each([1, 2])("revalidates retained frame graph mip policies without reacquiring unchanged framebuffers (%s colors)", (textureCount) => {
+            const { engine, nativeEngine, bound } = createEngine();
+            const target = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                { textureCount, dontCreateTextures: true, generateDepthBuffer: false }
+            ) as NativeRenderTargetWrapper;
+            for (let i = 0; i < textureCount; i++) {
+                target.setTexture(engine._createInternalTexture({ width: 64, height: 64 }, { createMipMaps: true, generateMipMaps: true }), i, false);
+            }
+            const references = () => (engine as any)._frameGraphFramebufferRefCount.get(bound()).count;
+
+            engine.bindFramebuffer(target);
+            const first = bound();
+            engine.bindFramebuffer(target);
+            expect(bound()).toBe(first);
+            expect(references()).toBe(1);
+
+            target.textures![textureCount - 1].generateMipMaps = false;
+            engine.bindFramebuffer(target);
+            const updated = bound();
+            expect(updated).not.toBe(first);
+            expect(textureCount === 1 ? [nativeEngine.createFrameBuffer.mock.lastCall![8]] : nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual(
+                target.textures!.map((texture) => texture.generateMipMaps)
+            );
+            engine.bindFramebuffer(target);
+            expect(bound()).toBe(updated);
+            expect(references()).toBe(1);
+        });
+
+        it("encodes explicit mip generation for allocation-only textures without enabling automatic generation", () => {
+            const { engine, commands } = createEngine();
+            const texture = engine._createInternalTexture({ width: 64, height: 64 }, { createMipMaps: true, generateMipMaps: false });
+            const context = Object.assign(Object.create(FrameGraphRenderContext.prototype), {
+                _engine: engine,
+                _currentRenderTarget: { renderTargetWrapper: { textures: [texture] } },
+            }) as FrameGraphRenderContext;
+
+            context.generateMipMaps();
+
+            expect(commands).toContainEqual(["COMMAND_GENERATEMIPMAPS", resourceOf(texture)]);
+            expect(texture.generateMipMaps).toBe(false);
+        });
+
+        it("reports the legacy resolve fallback when explicit generation is unavailable", () => {
+            vi.stubGlobal("_native", { Engine: {} });
+            const { engine } = createEngine();
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const texture = engine._createInternalTexture({ width: 64, height: 64 }, { createMipMaps: true, generateMipMaps: false });
+
+            engine.generateMipmaps(texture);
+
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining("relying on legacy framebuffer resolve"), 1);
+        });
+
+        it("rejects explicit generation without allocated mip storage", () => {
+            const { engine } = createEngine();
+            const texture = engine._createInternalTexture({ width: 64, height: 64 }, {});
+            expect(() => engine.generateMipmaps(texture)).toThrow("with mip storage");
+        });
+
         it.each([Constants.TEXTURE_2D, Constants.TEXTURE_2D_ARRAY, Constants.TEXTURE_CUBE_MAP])(
             "preserves authored color mips when adding sampleable depth to target type %s",
             (targetType) => {
@@ -1031,6 +1091,24 @@ describe("ThinNativeEngine", () => {
             unsupportedDepth.samples = 1;
             expect(() => legacyVolume.setDepthStencilTexture(unsupportedDepth, false)).toThrow("require createMultiFrameBuffer support");
             expect(legacyVolume._depthStencilTexture).toBeNull();
+        });
+
+        it.each([false, true])("preserves volume mip generation policy (%s) with and without explicit depth after sample changes", (generateMipMaps) => {
+            const { engine, nativeEngine } = createEngine({ multisampledMipmaps: true });
+            const target = engine.createRenderTargetTexture(
+                { width: 64, height: 64, depth: 4 },
+                { createMipMaps: true, generateMipMaps, generateDepthBuffer: false }
+            ) as NativeRenderTargetWrapper;
+            engine.bindFramebuffer(target, undefined, undefined, undefined, true, 0, 2);
+            expect(nativeEngine.createFrameBuffer.mock.lastCall![8]).toBe(generateMipMaps);
+
+            target.createDepthStencilTexture();
+            engine.bindFramebuffer(target, undefined, undefined, undefined, true, 0, 2);
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([generateMipMaps]);
+
+            engine.updateRenderTargetTextureSampleCount(target, 4);
+            engine.bindFramebuffer(target, undefined, undefined, undefined, true, 0, 2);
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([generateMipMaps]);
         });
 
         it("invalidates cached volume slices when depth is created or recreated on the volume", () => {
@@ -1404,6 +1482,30 @@ describe("ThinNativeEngine", () => {
             expect(engine._hasMipStorage(texture)).toBe(true);
             expect(nativeEngine.initializeTexture.mock.lastCall![3]).toBe(true);
             expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([false]);
+        });
+
+        it.each([
+            [false, true],
+            [true, false],
+        ])("preserves mixed MRT generation policies [%s, %s] during context rebuilding", (first, second) => {
+            const { engine, nativeEngine } = createEngine();
+            const target = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                { textureCount: 2, createMipMaps: true, generateMipMaps: first }
+            ) as NativeRenderTargetWrapper;
+            const textures = target.textures!.slice();
+            textures[1].generateMipMaps = second;
+
+            (target as any)._rebuild();
+
+            expect(target.textures).toEqual(textures);
+            expect(target.textures!.map((texture) => texture.generateMipMaps)).toEqual([first, second]);
+            expect(target.textures!.every((texture) => engine._hasMipStorage(texture))).toBe(true);
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([first, second]);
+            for (const texture of target.textures!) {
+                const allocations = nativeEngine.initializeTexture.mock.calls.filter((call: unknown[]) => call[0] === resourceOf(texture));
+                expect(allocations.at(-1)![3]).toBe(true);
+            }
         });
 
         it("rebuilds a multisampled render target with matching color and explicit depth samples", () => {

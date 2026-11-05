@@ -284,6 +284,10 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
                 if (this._engine._hasMipStorage(source)) {
                     framebufferNeedsRebuild = this._engine._ensureRenderTargetMipStorage(replacement) || framebufferNeedsRebuild;
                 }
+                if (replacement.generateMipMaps !== source.generateMipMaps) {
+                    replacement.generateMipMaps = source.generateMipMaps;
+                    framebufferNeedsRebuild = true;
+                }
             }
 
             if (framebufferNeedsRebuild) {

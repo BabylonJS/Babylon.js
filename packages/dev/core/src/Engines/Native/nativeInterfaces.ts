@@ -446,6 +446,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETFLOAT4: NativeData;
     readonly COMMAND_BINDFRAMEBUFFER: NativeData;
     readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
+    readonly COMMAND_GENERATEMIPMAPS?: NativeData;
     readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
     readonly COMMAND_DRAWINDEXED: NativeData;
     readonly COMMAND_DRAWINDEXEDINSTANCED: NativeData;
