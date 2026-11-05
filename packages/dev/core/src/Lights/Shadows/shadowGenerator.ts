@@ -1448,6 +1448,8 @@ export class ShadowGenerator implements IShadowGenerator {
             const recorded = subMesh._getDrawWrapper();
             if (
                 recorded &&
+                // as _processRendering: a mesh still rendered for its instances or its batch but not drawn itself draws nothing
+                batch.renderSelf[subMesh._id] &&
                 renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), domainState) &&
                 engine._replayRecordedDraw(recorded)
             ) {

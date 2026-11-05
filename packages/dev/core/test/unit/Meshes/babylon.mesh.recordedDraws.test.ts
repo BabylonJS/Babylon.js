@@ -973,6 +973,26 @@ describe("Mesh recorded draws", () => {
         expect(replay).toHaveBeenCalledTimes(1);
     });
 
+    it("is not encoded again in a shadow map for a caster the batch does not render itself, which a full draw skips", () => {
+        const generator = new ShadowGenerator(256, new DirectionalLight("sun", new Vector3(0, -1, 0), scene));
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        vi.spyOn(subMesh, "_getDrawWrapper").mockReturnValue(drawWrapper);
+        vi.spyOn(mesh, "_isRecordedDrawUnchanged").mockReturnValue(true);
+        const replay = vi.spyOn(engine, "_replayRecordedDraw").mockReturnValue(true);
+        // the full path stops at once: its depth effect is not built here
+        vi.spyOn(generator, "isReady").mockReturnValue(false);
+
+        // a caster that is not visible: the batch does not render it itself, and its full draw in the shadow map draws nothing
+        mesh.isVisible = false;
+        scene.incrementRenderId();
+        (generator as any)._renderSubMeshForShadowMap(subMesh, false);
+        expect(replay).not.toHaveBeenCalled();
+        mesh.isVisible = true;
+        scene.incrementRenderId();
+        (generator as any)._renderSubMeshForShadowMap(subMesh, false);
+        expect(replay).toHaveBeenCalledTimes(1);
+    });
+
     it("never encodes again without binding a material that forces the depth writes, which a full draw leaves on", () => {
         (material as any)._shaderLanguage = ShaderLanguage.WGSL;
         material.forceDepthWrite = true;
