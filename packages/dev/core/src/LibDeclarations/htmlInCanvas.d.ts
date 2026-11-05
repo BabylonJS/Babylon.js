@@ -190,10 +190,10 @@ interface CanvasDrawElementImage {
         options?: DrawElementImageOptions
     ): void;
     /**
-     * Older overload accepting a destination width without a destination height.
+     * Older overload with optional destination dimensions, kept so existing calls passing `undefined` or optional values still compile.
      * @deprecated Pass both `dwidth` and `dheight`, or neither.
      */
-    drawElementImage(element: Element | ElementImage, sx: number, sy: number, swidth: number, sheight: number, dx: number, dy: number, dwidth: number): void;
+    drawElementImage(element: Element | ElementImage, sx: number, sy: number, swidth: number, sheight: number, dx: number, dy: number, dwidth?: number, dheight?: number): void;
 }
 
 interface CanvasRenderingContext2D extends CanvasDrawElementImage {}
