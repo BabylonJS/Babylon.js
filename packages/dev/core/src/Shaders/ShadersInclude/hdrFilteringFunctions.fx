@@ -235,7 +235,7 @@
                     T.y = texture2D(icdfSampler, vec2(T.x, Xi.y)).y;
                     // Evaluate radiance at the icdf bin center, where the luminance and pdf were computed.
                     vec2 icdfSize = vec2(textureSize(icdfSampler, 0));
-                    T = (floor(T * icdfSize) + 0.5) / icdfSize;
+                    T = (min(floor(T * icdfSize), icdfSize - 1.0) + 0.5) / icdfSize;
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
                     float NoV = dot(n, inputV);
