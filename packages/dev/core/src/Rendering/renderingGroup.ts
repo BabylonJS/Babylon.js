@@ -4,6 +4,7 @@ import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Nullable, type DeepImmutable } from "../types";
 import { Vector3 } from "../Maths/math.vector.pure";
 import { type IParticleSystem } from "../Particles/IParticleSystem";
+import { type Observable } from "../Misc/observable";
 import { type IEdgesRenderer } from "./edgesRenderer";
 import { type ISpriteManager } from "../Sprites/spriteManager";
 import { Constants } from "../Engines/constants";
@@ -177,6 +178,8 @@ export class RenderingGroup {
 
         if (this.onBeforeTransparentRendering) {
             this.onBeforeTransparentRendering();
+            // code of the user, as the observers of the sprites and the particles (see _notifySceneObservers)
+            engine._recordedDrawReferencesEpoch++;
         }
 
         // Transparent
@@ -472,7 +475,7 @@ export class RenderingGroup {
 
         // Particles
         const activeCamera = this._scene.activeCamera;
-        this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
+        this._notifySceneObservers(this._scene.onBeforeParticlesRenderingObservable);
         for (let particleIndex = 0; particleIndex < this._particleSystems.length; particleIndex++) {
             const particleSystem = this._particleSystems.data[particleIndex];
 
@@ -485,7 +488,7 @@ export class RenderingGroup {
                 this._scene._activeParticles.addCount(particleSystem.render(), false);
             }
         }
-        this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
+        this._notifySceneObservers(this._scene.onAfterParticlesRenderingObservable);
     }
 
     private _renderSprites(): void {
@@ -495,7 +498,7 @@ export class RenderingGroup {
 
         // Sprites
         const activeCamera = this._scene.activeCamera;
-        this._scene.onBeforeSpritesRenderingObservable.notifyObservers(this._scene);
+        this._notifySceneObservers(this._scene.onBeforeSpritesRenderingObservable);
         for (let id = 0; id < this._spriteManagers.length; id++) {
             const spriteManager = this._spriteManagers.data[id];
 
@@ -503,6 +506,16 @@ export class RenderingGroup {
                 spriteManager.render();
             }
         }
-        this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
+        this._notifySceneObservers(this._scene.onAfterSpritesRenderingObservable);
+    }
+
+    // the observers of the scene around the sprites and the particles of a group are code of the user between the draws of the frame:
+    // they can change any material in place, so no reference kept before them stands for the draws after them (see
+    // Material._getRecordedDrawReference)
+    private _notifySceneObservers(observable: Observable<Scene>): void {
+        if (observable.hasObservers()) {
+            observable.notifyObservers(this._scene);
+            this._scene.getEngine()._recordedDrawReferencesEpoch++;
+        }
     }
 }

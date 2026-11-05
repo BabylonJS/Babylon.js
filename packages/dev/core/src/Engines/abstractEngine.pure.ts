@@ -2602,8 +2602,9 @@ export abstract class AbstractEngine {
 
     /**
      * @internal Changes when code of the user runs between the draws of the frame (the observers of a mesh and the bind callbacks of its
-     * material, see Mesh.render, the bind callbacks of an effect and the observers of a rendering group): it can change any material in
-     * place, so the references the materials kept before it no longer stand for the draws after it (see Material._getRecordedDrawReference)
+     * material, see Mesh.render, the bind callbacks of an effect, the observers of a rendering group and of its sprites and particles,
+     * and its callback before the transparent meshes): it can change any material in place, so the references the materials kept before
+     * it no longer stand for the draws after it (see Material._getRecordedDrawReference)
      */
     public _recordedDrawReferencesEpoch = 0;
 

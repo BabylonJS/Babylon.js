@@ -26,6 +26,7 @@ import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
 import { Observable } from "core/Misc/observable";
 import { RenderingGroup } from "core/Rendering/renderingGroup";
+import { SpriteSceneComponent } from "core/Sprites/spriteSceneComponent";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
@@ -1345,6 +1346,36 @@ describe("Mesh recorded draws", () => {
         scene.onAfterRenderingGroupObservable.add((info) => info.renderingGroupId === 0 && material.diffuseColor.set(0, 1, 0));
         frame();
         expect(seen).toEqual([true, false, false]);
+    });
+
+    it("needs a full draw after the observers of the sprites or the particles of a rendering group, or its callback before the transparent meshes, ran, which can change a shared material in place within the group", () => {
+        // A's full draw before the transparent meshes of the group is the frame's reference of the material; C, transparent and recorded
+        // before, compares with it
+        // the component of the sprites adds their observers to the scene, as a sprite manager does
+        scene._addComponent(new SpriteSceneComponent(scene));
+        const group = new RenderingGroup(0, scene);
+        group.dispatchSprites({ layerMask: 0x0fffffff, render: () => {} } as any);
+        group.dispatchParticles({ layerMask: 0x0fffffff, emitter: {}, render: () => 0 } as any);
+        const seen: boolean[] = [];
+        const frame = () => {
+            fullDraw();
+            group.render(null, true, true, null, false, false, false, true, () => void seen.push(unchanged()));
+        };
+        frame();
+        const change = () => material.diffuseColor.set(1, 0, 0);
+        for (const observable of [
+            scene.onBeforeSpritesRenderingObservable,
+            scene.onAfterSpritesRenderingObservable,
+            scene.onBeforeParticlesRenderingObservable,
+            scene.onAfterParticlesRenderingObservable,
+        ]) {
+            const observer = observable.add(change);
+            frame();
+            observable.remove(observer);
+        }
+        group.onBeforeTransparentRendering = change;
+        frame();
+        expect(seen).toEqual([true, false, false, false, false, false]);
     });
 
     it("sees whether the GPU texture of a texture of the material uses its mipmaps, set in the frame after the reference draw", () => {
