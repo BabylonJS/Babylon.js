@@ -1,11 +1,17 @@
 import { EngineFunctionContext } from "core/Engines/abstractEngine.functions";
 import { NullEngine } from "core/Engines/nullEngine";
+import { type IEffectCreationOptions } from "core/Materials/effect";
 import { type IFileRequest } from "core/Misc/fileRequest";
 import { Logger } from "core/Misc/logger";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 
 const VertexSource = "void main() { gl_Position = vec4(0.0); }";
 const FragmentSource = "void main() { gl_FragColor = vec4(1.0); }";
+
+// The creation options of an effect without uniforms, samplers, fallbacks or callbacks
+function EffectOptions(options: Partial<IEffectCreationOptions> = {}): IEffectCreationOptions {
+    return { attributes: [], uniformsNames: [], samplers: [], defines: "", fallbacks: null, onCompiled: null, onError: null, ...options };
+}
 
 // Restores the engine as after a context loss (the real _rebuildGraphicsResources included) and waits until the restoration is declared
 async function RestoreAfterContextLostAsync(engine: NullEngine): Promise<void> {
@@ -67,7 +73,7 @@ describe("Engine context restoration", () => {
         const prepare = vi.spyOn(engine, "_preparePipelineContextAsync");
         const effect = engine.createEffect(
             { vertexSource: VertexSource, fragmentSource: FragmentSource },
-            { attributes: [], uniformsNames: [], samplers: [], defines: "", extraInitializationsAsync: async () => await initializations },
+            EffectOptions({ extraInitializationsAsync: async () => await initializations }),
             engine
         );
 
@@ -98,7 +104,7 @@ describe("Engine context restoration", () => {
             return {} as IFileRequest;
         };
         const prepare = vi.spyOn(engine, "_preparePipelineContextAsync");
-        const effect = engine.createEffect("pendingShaderFiles", { attributes: [], uniformsNames: [], samplers: [], defines: "" }, engine);
+        const effect = engine.createEffect("pendingShaderFiles", EffectOptions(), engine);
         expect(loads.map((load) => load.url)).toEqual([expect.stringMatching(/pendingShaderFiles\.vertex\.fx$/), expect.stringMatching(/pendingShaderFiles\.fragment\.fx$/)]);
 
         await RestoreAfterContextLostAsync(engine);
@@ -118,11 +124,7 @@ describe("Engine context restoration", () => {
     it("still rebuilds effects whose shader code was processed", async () => {
         const engine = new NullEngine();
         onTestFinished(() => engine.dispose());
-        const effect = engine.createEffect(
-            { vertexSource: VertexSource, fragmentSource: FragmentSource },
-            { attributes: [], uniformsNames: [], samplers: [], defines: "" },
-            engine
-        );
+        const effect = engine.createEffect({ vertexSource: VertexSource, fragmentSource: FragmentSource }, EffectOptions(), engine);
         await vi.waitFor(() => expect(effect.isReady()).toBe(true));
         const previousPipelineContext = effect.getPipelineContext();
         const prepare = vi.spyOn(engine, "_preparePipelineContextAsync");
