@@ -1418,6 +1418,26 @@ describe("Mesh recorded draws", () => {
                 effect.setFloat("meshId", bound?.metadata?.id ?? 0);
             }
         }
+        // the same block with its bind as a class field (`bind = (...) => {...}`): a property of each block, not of its class, whose
+        // prototype chain has only the bind of NodeMaterialBlock
+        class MeshIdFieldBlock extends NodeMaterialBlock {
+            constructor(name: string) {
+                super(name, NodeMaterialBlockTargets.Fragment);
+                this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+                // what the class field compiles to
+                this.bind = (effect: Effect, _nodeMaterial: NodeMaterial, bound?: Mesh) => effect.setFloat("meshId", bound?.metadata?.id ?? 0);
+            }
+            public get output() {
+                return this._outputs[0];
+            }
+            protected override _buildBlock(state: NodeMaterialBuildState) {
+                super._buildBlock(state);
+                state.sharedData.bindableBlocks.push(this);
+                state._emitUniformFromString("meshId", NodeMaterialBlockConnectionPointTypes.Float);
+                state.compilationString += `${state._declareOutput(this.output)} = meshId;\n`;
+                return this;
+            }
+        }
         // a texture block whose bind the user overrides
         class TintedTextureBlock extends TextureBlock {
             public override bind(effect: Effect) {
@@ -1474,6 +1494,13 @@ describe("Mesh recorded draws", () => {
                 value.output.connectTo(output.a);
             });
             expect(withCallback._runsCodeOnBind()).toBe(true);
+        });
+
+        it("runs code of the user on a bind of the block's own, which a class field of the user declares, not its class", async () => {
+            const withField = await nodeMaterialAsync(TextureBlock, (output) => new MeshIdFieldBlock("meshId").output.connectTo(output.a));
+            expect(withField._runsCodeOnBind()).toBe(true);
+            (withField as any)._shaderLanguage = ShaderLanguage.WGSL;
+            expect(withField._canReplayRecordedDraw()).toBe(false);
         });
 
         it("needs a full draw after a draw of a node material whose block of the user writes a value of the mesh (A and B share it, only B's id changes)", async () => {

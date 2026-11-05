@@ -1904,9 +1904,9 @@ export class NodeMaterial extends NodeMaterialBase {
     }
 
     /**
-     * @internal A full bind of a node material also runs code that is not the material's own when the class that defines the bind of
-     * one of its bindable blocks does not declare that it writes only values a recorded draw checks (see
-     * NodeMaterialBlock._bindsMaterialValuesOnly: a block of the user, or a bind it overrides), or when an input block has a value callback
+     * @internal A full bind of a node material also runs code that is not the material's own when what defines the bind of one of its
+     * bindable blocks does not declare that it writes only values a recorded draw checks (see NodeMaterialBlock._bindsMaterialValuesOnly:
+     * a block of the user, a bind it overrides, or a bind of the block's own), or when an input block has a value callback
      * @returns true if a full bind runs such code
      */
     public override _runsCodeOnBind(): boolean {
@@ -1932,13 +1932,14 @@ export class NodeMaterial extends NodeMaterialBase {
         return false;
     }
 
-    // whether the class that defines the bind of the block declares that it writes only values a recorded draw checks
+    // whether what defines the bind of the block declares that it writes only values a recorded draw checks: its class, or the block
+    // itself for a bind of its own (a class field of the user, say), which declares nothing
     private static _BindsMaterialValuesOnly(block: NodeMaterialBlock): boolean {
-        let prototype = Object.getPrototypeOf(block);
-        while (prototype && !Object.prototype.hasOwnProperty.call(prototype, "bind")) {
-            prototype = Object.getPrototypeOf(prototype);
+        let owner = block;
+        while (owner && !Object.prototype.hasOwnProperty.call(owner, "bind")) {
+            owner = Object.getPrototypeOf(owner);
         }
-        return !!prototype && Object.prototype.hasOwnProperty.call(prototype, "_bindsMaterialValuesOnly") && block._bindsMaterialValuesOnly;
+        return !!owner && Object.prototype.hasOwnProperty.call(owner, "_bindsMaterialValuesOnly") && block._bindsMaterialValuesOnly;
     }
 
     /**
