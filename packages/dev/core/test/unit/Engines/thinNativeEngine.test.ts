@@ -773,6 +773,120 @@ describe("ThinNativeEngine", () => {
             expect(warn).toHaveBeenCalledWith(expect.stringContaining("createMultiFrameBuffer is not supported"), 1);
         });
 
+        it.each([false, true])("forwards MRT mip generation policy (%s) when creating and changing samples", (generateMipMaps) => {
+            const { engine, nativeEngine } = createEngine({ multisampledMipmaps: true });
+            const rtWrapper = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                { textureCount: 2, createMipMaps: true, generateMipMaps, generateDepthBuffer: false }
+            ) as NativeRenderTargetWrapper;
+
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([generateMipMaps, generateMipMaps]);
+            expect(nativeEngine.initializeTexture.mock.calls.every((call: unknown[]) => call[3] === true)).toBe(true);
+
+            engine.updateMultipleRenderTargetTextureSampleCount(rtWrapper, 4);
+
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([generateMipMaps, generateMipMaps]);
+            expect(nativeEngine.initializeTexture.mock.calls.every((call: unknown[]) => call[3] === true)).toBe(true);
+        });
+
+        it.each([false, true])("forwards the first attachment's mip policy (%s) in the legacy fallback", (generateMipMaps) => {
+            const { engine, nativeEngine } = createEngine({ multiFrameBuffer: false });
+            vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const rtWrapper = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2, createMipMaps: true, generateMipMaps, generateDepthBuffer: false });
+
+            expect(nativeEngine.createFrameBuffer.mock.lastCall).toEqual([resourceOf(rtWrapper.textures![0]), 64, 64, false, false, 1, undefined, undefined, generateMipMaps]);
+        });
+
+        it("preserves each replacement attachment's mip policy in a regular MRT", () => {
+            const { engine, nativeEngine } = createEngine();
+            const rtWrapper = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                { textureCount: 2, createMipMaps: true, generateMipMaps: false }
+            ) as NativeRenderTargetWrapper;
+            const replacement = engine._createInternalTexture({ width: 64, height: 64 }, { generateMipMaps: true });
+
+            rtWrapper.setTexture(replacement, 1, false);
+
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([false, true]);
+            rtWrapper.createDepthStencilTexture();
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([false, true]);
+        });
+
+        it.each([1, 2])("includes mip policy in the shared frame graph cache for %s color attachments", (textureCount) => {
+            const { engine, nativeEngine, bound } = createEngine();
+            const textures = Array.from({ length: textureCount }, () => engine._createInternalTexture({ width: 64, height: 64 }, { createMipMaps: true, generateMipMaps: false }));
+            const createTarget = () => {
+                const target = engine.createMultipleRenderTarget(
+                    { width: 64, height: 64 },
+                    { textureCount, dontCreateTextures: true, generateDepthBuffer: false }
+                ) as NativeRenderTargetWrapper;
+                textures.forEach((texture, index) => target.setTexture(texture, index, false));
+                return target;
+            };
+            const mipFlags = () => (textureCount === 1 ? [nativeEngine.createFrameBuffer.mock.lastCall![8]] : nativeEngine.createMultiFrameBuffer.mock.lastCall![8]);
+
+            engine.bindFramebuffer(createTarget());
+            const first = bound();
+            expect(mipFlags()).toEqual(new Array(textureCount).fill(false));
+            textures[textureCount - 1].generateMipMaps = true;
+
+            engine.bindFramebuffer(createTarget());
+
+            const updated = bound();
+            expect(updated).not.toBe(first);
+            expect(mipFlags()).toEqual(textures.map((texture) => texture.generateMipMaps));
+            engine.bindFramebuffer(createTarget());
+            expect(bound()).toBe(updated);
+        });
+
+        it.each([Constants.TEXTURE_2D, Constants.TEXTURE_2D_ARRAY, Constants.TEXTURE_CUBE_MAP])(
+            "preserves authored color mips when adding sampleable depth to target type %s",
+            (targetType) => {
+                const { engine, nativeEngine } = createEngine();
+                const options = { createMipMaps: true, generateMipMaps: false, generateDepthBuffer: false };
+                const target =
+                    targetType === Constants.TEXTURE_CUBE_MAP
+                        ? engine.createRenderTargetCubeTexture(64, options)
+                        : engine.createRenderTargetTexture({ width: 64, height: 64, layers: targetType === Constants.TEXTURE_2D_ARRAY ? 3 : 0 }, options);
+
+                target.createDepthStencilTexture();
+
+                expect(nativeEngine.createMultiFrameBuffer).toHaveBeenCalled();
+                for (const call of nativeEngine.createMultiFrameBuffer.mock.calls) {
+                    expect(call[8]).toEqual([false]);
+                }
+            }
+        );
+
+        it("recreates a layered MRT when an attachment's mip generation policy changes", () => {
+            const { engine, nativeEngine, bound } = createEngine();
+            const rtWrapper = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                {
+                    textureCount: 2,
+                    createMipMaps: true,
+                    generateMipMaps: false,
+                    targetTypes: [Constants.TEXTURE_CUBE_MAP, Constants.TEXTURE_2D_ARRAY],
+                    layerCounts: [0, 3],
+                    faceIndex: [2, 0],
+                    layerIndex: [0, 1],
+                }
+            ) as NativeRenderTargetWrapper;
+
+            engine.bindFramebuffer(rtWrapper);
+            const first = bound();
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([false, false]);
+            rtWrapper.textures![1].generateMipMaps = true;
+
+            engine.bindFramebuffer(rtWrapper);
+
+            expect(bound()).not.toBe(first);
+            expect(bound().layers).toEqual([2, 1]);
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([false, true]);
+            engine.bindFramebuffer(rtWrapper);
+            expect(nativeEngine.createMultiFrameBuffer).toHaveBeenCalledTimes(2);
+        });
+
         it("keeps a depth buffer for an MRT that requests a depth texture", () => {
             const { engine } = createEngine();
             vi.spyOn(Logger, "Warn").mockImplementation(() => {});
@@ -1280,6 +1394,7 @@ describe("ThinNativeEngine", () => {
                 { textureCount: 1, createMipMaps: true, generateMipMaps: false }
             ) as NativeRenderTargetWrapper;
             const texture = rtWrapper.textures![0];
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([false]);
             nativeEngine.initializeTexture.mockClear();
 
             (rtWrapper as any)._rebuild();
@@ -1288,6 +1403,7 @@ describe("ThinNativeEngine", () => {
             expect(texture.generateMipMaps).toBe(false);
             expect(engine._hasMipStorage(texture)).toBe(true);
             expect(nativeEngine.initializeTexture.mock.lastCall![3]).toBe(true);
+            expect(nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual([false]);
         });
 
         it("rebuilds a multisampled render target with matching color and explicit depth samples", () => {

@@ -286,6 +286,7 @@ export class ThinNativeEngine extends ThinEngine {
             count: number;
             hardwareTexture: NativeHardwareTexture;
             colorResources: NativeTexture[];
+            autoGenerateMips: boolean[];
             hasDepth: boolean;
             hasStencil: boolean;
             samples: number;
@@ -2971,7 +2972,9 @@ export class ThinNativeEngine extends ThinEngine {
                 for (let layer = 0; layer < layerCount; layer++) {
                     // First call creates the multi-layer sampleable depth and aliases it into nativeDepth;
                     // subsequent calls borrow the same depth array and attach the matching layer.
-                    framebuffers.push(this._createNativeMultiFrameBuffer([nativeColor], width, height, generateStencil, true, samples, [layer], nativeDepth));
+                    framebuffers.push(
+                        this._createNativeMultiFrameBuffer([nativeColor], width, height, generateStencil, true, samples, [layer], nativeDepth, [colorTexture.generateMipMaps])
+                    );
                 }
                 // The _framebuffers setter releases the previous handles.
                 nativeRTWrapper._framebuffers = framebuffers;
@@ -2988,14 +2991,16 @@ export class ThinNativeEngine extends ThinEngine {
         // point, which is how CreateFrameBufferImpl recognizes a request for a readable depth attachment that
         // it aliases back into the supplied texture so it can be sampled afterwards.
         const colorResources: NativeTexture[] = [];
+        const autoGenerateMips: boolean[] = [];
         for (const colorTexture of nativeRTWrapper.textures ?? []) {
             const colorResource = colorTexture?._hardwareTexture?.underlyingResource;
             if (colorResource) {
                 colorResources.push(colorResource);
+                autoGenerateMips.push(colorTexture.generateMipMaps);
             }
         }
         const nativeDepth = texture._hardwareTexture!.underlyingResource;
-        const framebuffer = this._createNativeMultiFrameBuffer(colorResources, width, height, generateStencil, true, samples, undefined, nativeDepth);
+        const framebuffer = this._createNativeMultiFrameBuffer(colorResources, width, height, generateStencil, true, samples, undefined, nativeDepth, autoGenerateMips);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         this._setTextureSampling(nativeDepth, getNativeSamplingMode(texture.samplingMode));
         this.updateTextureComparisonFunction(texture, texture._comparisonFunction);
@@ -3330,14 +3335,14 @@ export class ThinNativeEngine extends ThinEngine {
         const cachedMeta = cached ? this._frameGraphFramebufferRefCount.get(cached) : undefined;
 
         // Reuse the cached framebuffer when it is compatible: the same ordered color attachments (a swap of any
-        // attachment, not only the primary one, needs a new framebuffer), the same sample count, depth/stencil
+        // attachment, not only the primary one, needs a new framebuffer), mip policies, sample count, depth/stencil
         // buffers when this pass needs them (a pass that does not need them can safely reuse a framebuffer that
         // has them), and the same shared depth texture (so a shared-depth pass never reuses an auto-depth
         // framebuffer, and vice versa). History-texture swaps invalidate these wrappers every frame, so this check
         // runs in the render loop: compare in place and only allocate the color list for a new framebuffer.
         let sameColors = !!cachedMeta && cachedMeta.colorResources.length === textureCount;
         for (let i = 0; sameColors && i < textureCount; i++) {
-            sameColors = cachedMeta!.colorResources[i] === textures[i]._hardwareTexture!.underlyingResource;
+            sameColors = cachedMeta!.colorResources[i] === textures[i]._hardwareTexture!.underlyingResource && cachedMeta!.autoGenerateMips[i] === textures[i].generateMipMaps;
         }
         if (
             cached &&
@@ -3354,20 +3359,53 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         const colorTextures: NativeTexture[] = new Array(textureCount);
+        const autoGenerateMips: boolean[] = new Array(textureCount);
         for (let i = 0; i < textureCount; i++) {
             colorTextures[i] = textures[i]._hardwareTexture!.underlyingResource;
+            autoGenerateMips[i] = textures[i].generateMipMaps;
         }
 
         const framebuffer = sharedDepthResource
-            ? this._createNativeMultiFrameBuffer(colorTextures, nativeRTWrapper.width, nativeRTWrapper.height, generateStencilBuffer, true, samples, undefined, sharedDepthResource)
+            ? this._createNativeMultiFrameBuffer(
+                  colorTextures,
+                  nativeRTWrapper.width,
+                  nativeRTWrapper.height,
+                  generateStencilBuffer,
+                  true,
+                  samples,
+                  undefined,
+                  sharedDepthResource,
+                  autoGenerateMips
+              )
             : colorTextures.length === 1
-              ? this._engine.createFrameBuffer(colorTextures[0], nativeRTWrapper.width, nativeRTWrapper.height, generateStencilBuffer, generateDepthBuffer, samples)
-              : this._createNativeMultiFrameBuffer(colorTextures, nativeRTWrapper.width, nativeRTWrapper.height, generateStencilBuffer, generateDepthBuffer, samples);
+              ? this._engine.createFrameBuffer(
+                    colorTextures[0],
+                    nativeRTWrapper.width,
+                    nativeRTWrapper.height,
+                    generateStencilBuffer,
+                    generateDepthBuffer,
+                    samples,
+                    undefined,
+                    undefined,
+                    autoGenerateMips[0]
+                )
+              : this._createNativeMultiFrameBuffer(
+                    colorTextures,
+                    nativeRTWrapper.width,
+                    nativeRTWrapper.height,
+                    generateStencilBuffer,
+                    generateDepthBuffer,
+                    samples,
+                    undefined,
+                    undefined,
+                    autoGenerateMips
+                );
 
         this._frameGraphFramebufferRefCount.set(framebuffer, {
             count: 1,
             hardwareTexture,
             colorResources: colorTextures,
+            autoGenerateMips,
             hasDepth: generateDepthBuffer,
             hasStencil: generateStencilBuffer,
             samples,
@@ -3949,10 +3987,12 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         const colorHandles: NativeTexture[] = [];
+        const autoGenerateMips: boolean[] = [];
         for (const texture of textures) {
             const handle = texture?._hardwareTexture?.underlyingResource;
             if (handle) {
                 colorHandles.push(handle);
+                autoGenerateMips.push(texture.generateMipMaps);
             }
         }
 
@@ -3982,7 +4022,8 @@ export class ThinNativeEngine extends ThinEngine {
             generateDepthBuffer,
             rtWrapper._samples,
             undefined,
-            explicitDepth
+            explicitDepth,
+            autoGenerateMips
         );
         this._applyDepthTextureSampling(rtWrapper);
     }
@@ -4011,10 +4052,21 @@ export class ThinNativeEngine extends ThinEngine {
         generateDepthBuffer: boolean,
         samples: number,
         layers?: number[],
-        explicitDepthTexture?: NativeTexture
+        explicitDepthTexture?: NativeTexture,
+        autoGenerateMips?: boolean[]
     ): NativeFramebuffer {
         if (this._engine.createMultiFrameBuffer) {
-            return this._engine.createMultiFrameBuffer(colorTextures, width, height, generateStencilBuffer, generateDepthBuffer, samples, layers, explicitDepthTexture);
+            return this._engine.createMultiFrameBuffer(
+                colorTextures,
+                width,
+                height,
+                generateStencilBuffer,
+                generateDepthBuffer,
+                samples,
+                layers,
+                explicitDepthTexture,
+                autoGenerateMips
+            );
         }
 
         // Warn once (limit 1): the framebuffer can be rebuilt many times during attachment setup/swaps.
@@ -4022,7 +4074,17 @@ export class ThinNativeEngine extends ThinEngine {
             "createMultiFrameBuffer is not supported by this version of Babylon Native; multi render targets are unavailable. Falling back to a single-attachment framebuffer bound to the first color target.",
             1
         );
-        return this._engine.createFrameBuffer(colorTextures[0] ?? null, width, height, generateStencilBuffer, generateDepthBuffer, samples, layers?.[0]);
+        return this._engine.createFrameBuffer(
+            colorTextures[0] ?? null,
+            width,
+            height,
+            generateStencilBuffer,
+            generateDepthBuffer,
+            samples,
+            layers?.[0],
+            undefined,
+            autoGenerateMips?.[0]
+        );
     }
 
     public override generateMipMapsForCubemap(_texture: InternalTexture, _unbind = true): void {
@@ -4543,7 +4605,7 @@ export class ThinNativeEngine extends ThinEngine {
                 throw new Error("NativeEngine: cannot bind a layered MRT until every color attachment is assigned.");
             }
             const attachmentLayer = tex.is3D ? (layerIndices?.[i] ?? i) : nativeRTWrapper.getBaseArrayLayer(i);
-            if (upToDate && (key!.colors[i] !== nativeTexture || key!.layers[i] !== attachmentLayer)) {
+            if (upToDate && (key!.colors[i] !== nativeTexture || key!.layers[i] !== attachmentLayer || key!.autoGenerateMips[i] !== tex.generateMipMaps)) {
                 upToDate = false;
             }
         }
@@ -4551,10 +4613,12 @@ export class ThinNativeEngine extends ThinEngine {
         if (!upToDate) {
             const colorTextures: NativeTexture[] = new Array(expectedCount);
             const layers: number[] = new Array(expectedCount);
+            const autoGenerateMips: boolean[] = new Array(expectedCount);
             for (let i = 0; i < expectedCount; i++) {
                 const tex = textures[i]!;
                 colorTextures[i] = tex._hardwareTexture!.underlyingResource;
                 layers[i] = tex.is3D ? (layerIndices?.[i] ?? i) : nativeRTWrapper.getBaseArrayLayer(i);
+                autoGenerateMips[i] = tex.generateMipMaps;
             }
             nativeRTWrapper._framebuffer = this._createNativeMultiFrameBuffer(
                 colorTextures,
@@ -4564,9 +4628,10 @@ export class ThinNativeEngine extends ThinEngine {
                 !!depth || nativeRTWrapper._generateDepthBuffer,
                 samples,
                 layers,
-                depth
+                depth,
+                autoGenerateMips
             );
-            nativeRTWrapper._layeredFramebufferKey = { colors: colorTextures, layers, depth, samples };
+            nativeRTWrapper._layeredFramebufferKey = { colors: colorTextures, layers, depth, samples, autoGenerateMips };
             this._applyDepthTextureSampling(nativeRTWrapper);
         }
         this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
