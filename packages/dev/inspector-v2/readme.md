@@ -2,6 +2,16 @@
 
 This document covers the high level aspects of the Inspector V2 architecture. Note that much of this may move to a shared tooling package as it is intended to be usable by other tools (Sandbox, Playground, NME, etc.) in the future if we find enough value in integrating the framework into those tools.
 
+## Babylon Lite Audio
+
+The Lite Inspector can inspect an independently created audio engine alongside its graphics engine. After calling `ShowInspector(engine)`, use `inspector.setAudioEngine(audioEngine)` to attach or replace the audio engine, or `inspector.setAudioEngine(null)` to detach it. The Inspector does not create, own, or dispose the audio engine. Extensions can observe changes through `IAudioEngineContext`; Explorer root providers can contribute additional independent roots through `IEngineExplorerService`.
+
+The **Audio Engine** root displays buses, buffered and streaming sounds, and input sources according to their output routing. Engine and node properties include volume, sound playback controls, and links to output buses and spatially attached scene nodes. Scene entities and cameras expose an **Audio** section with links back to their directly attached sounds, buses, sources, and listener. These links follow attachment, graph, and inspected audio engine changes. Listener and spatial positions and graph changes follow the Inspector's polling or manual watch mode. Unnamed sounds receive numbered Explorer labels.
+
+Lite 1.38.1 does not expose public graph-discovery, node-volume readback, or spatial-attachment APIs. Inspection currently uses an isolated, read-only adapter for that internal layout; edits use public Lite functions. If the layout is unsupported, the root reports that graph inspection is unavailable rather than showing an incomplete hierarchy.
+
+The `?experience=lite` test app attaches an audio fixture by default: **Music**, **Effects**, and **Sphere Effects** buses, three buffered sounds, a streaming sound, and an oscillator input source. Spatial audio follows the red box, blue sphere, and small red box, while the listener follows the camera. Sounds do not autoplay; select a sound in Explorer to use its **Play**, **Pause**, and **Stop** controls. The oscillator starts silently; raise its volume in Inspector to hear it. The browser may require a user gesture before audio can play.
+
 ## Babylon Lite Skeletons and Morph Targets
 
 The Lite Explorer lists skeletons and their bone hierarchy. Skeleton properties show the bone count and links to meshes; bone properties show read-only Name, derived Index, Skeleton and Parent links. Mesh **Skinning** links back to the skeleton. Bone editing, reset, debug rendering and gizmos are not supported.
