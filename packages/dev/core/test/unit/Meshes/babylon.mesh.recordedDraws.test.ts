@@ -44,6 +44,8 @@ import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterial
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
+import { LightBlock } from "core/Materials/Node/Blocks/Dual/lightBlock";
+import { PBRMetallicRoughnessBlock } from "core/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
 import { VertexOutputBlock } from "core/Materials/Node/Blocks/Vertex/vertexOutputBlock";
@@ -1501,6 +1503,28 @@ describe("Mesh recorded draws", () => {
             expect(withField._runsCodeOnBind()).toBe(true);
             (withField as any)._shaderLanguage = ShaderLanguage.WGSL;
             expect(withField._canReplayRecordedDraw()).toBe(false);
+        });
+
+        it("never encodes again without binding a node material whose light block or PBR block has an explicit light, whose buffers no recorded draw checks", async () => {
+            const node = await nodeMaterialAsync(TextureBlock);
+            (node as any)._shaderLanguage = ShaderLanguage.WGSL;
+            const first = new DirectionalLight("first", new Vector3(0, -1, 0), scene);
+            const second = new DirectionalLight("second", new Vector3(1, -1, 0), scene);
+            const forcedBindableBlocks: NodeMaterialBlock[] = (node as any)._sharedData.forcedBindableBlocks;
+            for (const block of [new LightBlock("light"), new PBRMetallicRoughnessBlock("pbr")]) {
+                // as the build of a material with the block registers it
+                forcedBindableBlocks.push(block);
+                // the lights of the mesh, which a recorded draw checks
+                expect(node._canReplayRecordedDraw()).toBe(true);
+                // an explicit light, then another one of the same type, set without dirtying the material: a full bind binds its buffers
+                block.light = first;
+                expect(node._canReplayRecordedDraw()).toBe(false);
+                block.light = second;
+                expect(node._canReplayRecordedDraw()).toBe(false);
+                block.light = null;
+                expect(node._canReplayRecordedDraw()).toBe(true);
+                forcedBindableBlocks.pop();
+            }
         });
 
         it("needs a full draw after a draw of a node material whose block of the user writes a value of the mesh (A and B share it, only B's id changes)", async () => {
