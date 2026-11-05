@@ -182,4 +182,15 @@ describe("ProceduralTexture resize", () => {
         expect(disposeSpy).toHaveBeenCalledTimes(1);
         expect(texture.getInternalTexture()).toBeNull();
     });
+
+    it("only releases the framebuffers on dispose when the texture was already released", () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        const rtWrapper = (texture as unknown as { _rtWrapper: RenderTargetWrapper })._rtWrapper;
+        const disposeSpy = vi.spyOn(rtWrapper, "dispose");
+
+        texture.releaseInternalTexture();
+        texture.dispose();
+
+        expect(disposeSpy).toHaveBeenCalledWith(true);
+    });
 });
