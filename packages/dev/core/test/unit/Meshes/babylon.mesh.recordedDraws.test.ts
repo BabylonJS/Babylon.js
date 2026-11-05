@@ -23,6 +23,9 @@ import { type Material } from "core/Materials/material";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
+import { Observable } from "core/Misc/observable";
+import { RenderingGroup } from "core/Rendering/renderingGroup";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
@@ -110,6 +113,8 @@ describe("Mesh recorded draws", () => {
 
     afterEach(() => {
         engine.dispose();
+        // a spy on a prototype (RenderingGroup.render) would stay for the tests after it
+        vi.restoreAllMocks();
     });
 
     it("is unchanged when nothing changed", () => {
@@ -1258,6 +1263,66 @@ describe("Mesh recorded draws", () => {
         // a full draw after it is the reference again
         fullDraw();
         expect(unchanged()).toBe(true);
+    });
+
+    it("needs a full draw after the bind callbacks of the effect of another draw ran in the frame, which can change a shared material in place (A, B, C)", () => {
+        // a WebGPU engine calls them when it enables B's draw wrapper, in B's full draw (B is not encoded again, see _canEncodeRecordedDraw)
+        Object.assign(engine, { _counters: { numEnableDrawWrapper: 0 } });
+        const enableEffect = (effect: object) => {
+            const b = new DrawWrapper(engine);
+            b.effect = effect as Effect;
+            b.materialContext = {} as any;
+            WebGPUEngine.prototype.enableEffect.call(engine, b);
+        };
+        // A's full draw (beforeEach) is the frame's reference of the material; C, recorded before, compares with it
+        expect(unchanged()).toBe(true);
+        // B's effect changes A's material in place from its bind callback
+        enableEffect({ onBind: () => material.diffuseColor.set(1, 0, 0) });
+        expect(material.diffuseColor.r).toBe(1);
+        expect(unchanged()).toBe(false);
+        // a full draw after it is the reference again
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        // the same from an observer of the effect's bind
+        const onBindObservable = new Observable<Effect>();
+        onBindObservable.add(() => material.diffuseColor.set(0, 1, 0));
+        enableEffect({ onBind: null, _onBindObservable: onBindObservable });
+        expect(unchanged()).toBe(false);
+        fullDraw();
+        expect(unchanged()).toBe(true);
+        // an effect without them runs no code of the user
+        enableEffect({ onBind: null, _onBindObservable: new Observable<Effect>() });
+        expect(unchanged()).toBe(true);
+    });
+
+    it("needs a full draw after an observer of a rendering group ran, which can change a shared material in place between two groups", () => {
+        // A draws in group 0, in full: the frame's reference of the material. C, recorded before, compares with it in group 1
+        const seen: boolean[] = [];
+        vi.spyOn(RenderingGroup.prototype, "render").mockImplementation(function (this: RenderingGroup) {
+            if (this.index === 0) {
+                fullDraw();
+            } else {
+                seen.push(unchanged());
+            }
+        });
+        const c = MeshBuilder.CreateBox("C", {}, scene);
+        c.renderingGroupId = 1;
+        const renderingManager = scene.renderingManager;
+        const frame = () => {
+            renderingManager.reset();
+            renderingManager.dispatch(subMesh);
+            renderingManager.dispatch(c.subMeshes[0]);
+            renderingManager.render(null, null, false, false);
+        };
+        frame();
+        // an observer before group 1 changes the material in place
+        const before = scene.onBeforeRenderingGroupObservable.add((info) => info.renderingGroupId === 1 && material.diffuseColor.set(1, 0, 0));
+        frame();
+        scene.onBeforeRenderingGroupObservable.remove(before);
+        // an observer after group 0 does too
+        scene.onAfterRenderingGroupObservable.add((info) => info.renderingGroupId === 0 && material.diffuseColor.set(0, 1, 0));
+        frame();
+        expect(seen).toEqual([true, false, false]);
     });
 
     it("sees whether the GPU texture of a texture of the material uses its mipmaps, set in the frame after the reference draw", () => {

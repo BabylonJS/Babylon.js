@@ -2466,6 +2466,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._forceEnableEffect = false;
 
+        // the bind callbacks of the effect are code of the user, which a recorded draw does not run (see _canEncodeRecordedDraw): they
+        // can change any material in place, so no reference kept before them in the frame stands for the draws after them
+        if (this._currentEffect.onBind || this._currentEffect._onBindObservable?.hasObservers()) {
+            this._recordedDrawReferencesEpoch++;
+        }
         if (this._currentEffect.onBind) {
             this._currentEffect.onBind(this._currentEffect);
         }
