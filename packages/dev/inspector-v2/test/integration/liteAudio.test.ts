@@ -1,4 +1,14 @@
-import { type AudioEngine, type AudioGraphHost, type Mesh, type SceneContext, type SoundState, type SpatialTarget, type StaticSound } from "@babylonjs/lite";
+import {
+    type AudioBus,
+    type AudioEngine,
+    type AudioGraphHost,
+    type LightBase,
+    type Mesh,
+    type SceneContext,
+    type SoundState,
+    type SpatialTarget,
+    type StaticSound,
+} from "@babylonjs/lite";
 import { expect, test, type Page } from "@playwright/test";
 
 import { type LiteAudioFixture } from "../app/liteAudio";
@@ -10,7 +20,9 @@ type LiteTestWindow = Window &
         liteGetAudioFixture: () => LiteAudioFixture | null;
         liteAttachSpatialTarget: (target: AudioGraphHost | AudioEngine, worldTarget: SpatialTarget) => void;
         liteDetachSpatialTarget: (target: AudioGraphHost | AudioEngine) => void;
+        liteDisposeAudioBus: (bus: AudioBus) => void;
         liteDisposeSound: (sound: StaticSound) => void;
+        liteLights: LightBase[];
         liteMeshes: Mesh[];
         litePrimaryScene: SceneContext;
         liteInspectorToken: { dispose: () => Promise<void>; readonly isDisposed: boolean; setAudioEngine: (engine: AudioEngine | null) => void };
@@ -28,6 +40,25 @@ async function SetVolume(page: Page, value: string): Promise<void> {
     const input = page.getByText("Volume", { exact: true }).locator("xpath=ancestor::div[.//input][1]").getByRole("textbox");
     await input.fill(value);
     await input.press("Enter");
+}
+
+async function SetWatchMode(page: Page, mode: "polling" | "manual"): Promise<void> {
+    if (mode === "manual") {
+        await page.addLocatorHandler(page.getByRole("dialog").filter({ hasText: "Refresh Properties" }), async (dialog) => {
+            await dialog.getByRole("button", { name: "dismiss" }).click();
+        });
+        await page.locator('[role="radio"][value="Tools"]').click();
+        await page.locator('[role="radio"][value="Settings"]').click();
+        const watchMode = page.getByText("Preferred Watch Mode", { exact: true }).locator("xpath=ancestor::div[.//*[@role='combobox']][1]");
+        await watchMode.getByRole("combobox").click();
+        await page.getByRole("option", { name: "Manual", exact: true }).click();
+    }
+}
+
+async function RefreshIfManual(page: Page, mode: "polling" | "manual"): Promise<void> {
+    if (mode === "manual") {
+        await page.getByRole("button", { name: /^Update all UI/ }).click();
+    }
 }
 
 test.skip(!process.env.INSPECTOR_TEST_PORT, "Set INSPECTOR_TEST_PORT to a running Inspector test app to run the Lite WebGPU UI tests.");
@@ -303,18 +334,8 @@ for (const mode of ["polling", "manual"] as const) {
         page.on("pageerror", (error) => errors.push(error.message));
         await page.goto(TestUrl);
         await page.waitForFunction(() => "liteGetAudioFixture" in window);
-        if (mode === "manual") {
-            await page.locator('[role="radio"][value="Tools"]').click();
-            await page.locator('[role="radio"][value="Settings"]').click();
-            const watchMode = page.getByText("Preferred Watch Mode", { exact: true }).locator("xpath=ancestor::div[.//*[@role='combobox']][1]");
-            await watchMode.getByRole("combobox").click();
-            await page.getByRole("option", { name: "Manual", exact: true }).click();
-        }
-        const refresh = async () => {
-            if (mode === "manual") {
-                await page.getByRole("button", { name: /^Update all UI/ }).click();
-            }
-        };
+        await SetWatchMode(page, mode);
+        const refresh = () => RefreshIfManual(page, mode);
         const mainBus = page.getByRole("treeitem", { name: "Main Bus (default)", exact: true });
         await mainBus.click();
         await mainBus.press("ArrowRight");
@@ -380,6 +401,75 @@ for (const mode of ["polling", "manual"] as const) {
         await expect(soundLink).toBeVisible();
         await expect(sourceLink).toHaveCount(0);
         await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).debugNode === (window as LiteTestWindow).liteMeshes[0])).toBe(true);
+        expect(errors).toEqual([]);
+    });
+
+    test(`Lite Inspector follows output bus names and disposal in ${mode} mode`, async ({ page }) => {
+        const errors: string[] = [];
+        page.on("pageerror", (error) => errors.push(error.message));
+        await page.goto(TestUrl);
+        await page.waitForFunction(() => "liteGetAudioFixture" in window);
+        await SetWatchMode(page, mode);
+
+        const mainBus = page.getByRole("treeitem", { name: "Main Bus (default)", exact: true });
+        await mainBus.click();
+        await mainBus.press("ArrowRight");
+        const effects = page.getByRole("treeitem", { name: "Effects", exact: true });
+        await effects.click();
+        await effects.press("ArrowRight");
+        await page.getByRole("treeitem", { name: "Static Sound 1", exact: true }).click();
+        await expect(page.getByRole("button", { name: "Effects", exact: true })).toBeVisible();
+
+        await page.evaluate(() => {
+            Object.assign((window as LiteTestWindow).liteGetAudioFixture()!.effectsBus, { name: "Renamed Effects" });
+        });
+        if (mode === "manual") {
+            await expect(page.getByRole("button", { name: "Effects", exact: true })).toBeVisible();
+        }
+        await RefreshIfManual(page, mode);
+        await expect(page.getByRole("button", { name: "Renamed Effects", exact: true })).toBeVisible();
+
+        await page.evaluate(() => {
+            const state = window as LiteTestWindow;
+            state.liteDisposeAudioBus(state.liteGetAudioFixture()!.effectsBus);
+        });
+        if (mode === "manual") {
+            await page.getByRole("button", { name: "Renamed Effects", exact: true }).click();
+            await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).debugNode === (window as LiteTestWindow).liteGetAudioFixture()!.boxSound)).toBe(true);
+        }
+        await RefreshIfManual(page, mode);
+        await expect(page.getByRole("button", { name: "Renamed Effects", exact: true })).toHaveCount(0);
+        await expect(page.getByText("Renamed Effects", { exact: true })).toBeVisible();
+        await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).debugNode === (window as LiteTestWindow).liteGetAudioFixture()!.boxSound)).toBe(true);
+        expect(errors).toEqual([]);
+    });
+
+    test(`Lite Inspector links a light and its attached sound in ${mode} mode`, async ({ page }) => {
+        const errors: string[] = [];
+        page.on("pageerror", (error) => errors.push(error.message));
+        await page.goto(TestUrl);
+        await page.waitForFunction(() => "liteGetAudioFixture" in window);
+        await SetWatchMode(page, mode);
+
+        const mainBus = page.getByRole("treeitem", { name: "Main Bus (default)", exact: true });
+        await mainBus.click();
+        await mainBus.press("ArrowRight");
+        const effects = page.getByRole("treeitem", { name: "Effects", exact: true });
+        await effects.click();
+        await effects.press("ArrowRight");
+        await page.getByRole("treeitem", { name: "Static Sound 1", exact: true }).click();
+
+        await page.evaluate(() => {
+            const state = window as LiteTestWindow;
+            const light = state.liteLights[2];
+            light.name = "Audio Test Light";
+            state.liteAttachSpatialTarget(state.liteGetAudioFixture()!.boxSound, light);
+        });
+        await RefreshIfManual(page, mode);
+        await page.getByRole("button", { name: "Audio Test Light", exact: true }).click();
+        await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).debugNode === (window as LiteTestWindow).liteLights[2])).toBe(true);
+        await page.getByRole("button", { name: "Static Sound 1", exact: true }).click();
+        await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).debugNode === (window as LiteTestWindow).liteGetAudioFixture()!.boxSound)).toBe(true);
         expect(errors).toEqual([]);
     });
 }

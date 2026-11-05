@@ -79,7 +79,7 @@ export const LiteAudioPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
                         section: "Commands",
                         component: ({ context }) => {
                             const engine = audioEngineContext.audioEngine;
-                            return engine ? <LiteAudioSoundCommands engine={engine} sound={context} /> : null;
+                            return engine ? <LiteAudioSoundCommands engine={engine} sound={context} audioEngineContext={audioEngineContext} /> : null;
                         },
                     },
                 ],

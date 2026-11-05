@@ -26,6 +26,7 @@ import {
 import { PauseRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
 import { type FunctionComponent, useCallback } from "react";
 
+import { Logger } from "core/Misc/logger";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
@@ -47,6 +48,7 @@ type AudioNode = AudioGraphHost | MainBus;
 
 const GetEngineState = (engine: AudioEngine) => engine.state;
 const GetNodeName = (node: AudioNode) => node.name || "Unnamed";
+const GetOutputName = (bus: PrimaryAudioBus) => bus.name || "Unnamed Bus";
 const GetInstanceCount = (sound: AudioSound) => sound.instanceCount;
 const GetBufferDuration = (sound: StaticSound) => sound.buffer.duration;
 const GetPreloadedCount = (sound: StreamingSound) => sound.preloadCompletedCount;
@@ -182,6 +184,37 @@ export const LiteAudioEngineProperties: FunctionComponent<{ engine: AudioEngine 
     );
 };
 
+const AudioOutputValue: FunctionComponent<{ engine: AudioEngine; output: PrimaryAudioBus; selectionService: ISelectionService }> = (props) => {
+    const { engine, output, selectionService } = props;
+    const watcher = useWatcher();
+    const name = useWatchedValue(output, GetOutputName);
+    const getIsInspectable = useCallback(
+        (target: PrimaryAudioBus) => {
+            const graph = GetLiteAudioGraph(engine);
+            const entry = graph && GetLiteAudioEntry(graph, target);
+            return entry?.kind === "main-bus" || entry?.kind === "bus";
+        },
+        [engine]
+    );
+    const isInspectable = useWatchedValue(output, getIsInspectable);
+    return isInspectable ? (
+        <PropertyLine label="Output Bus">
+            <Link
+                value={name}
+                onLink={() => {
+                    if (getIsInspectable(output)) {
+                        selectionService.selectedEntity = output;
+                    } else {
+                        watcher.refresh();
+                    }
+                }}
+            />
+        </PropertyLine>
+    ) : (
+        <TextPropertyLine label="Output Bus" value={name} />
+    );
+};
+
 const AudioOutputProperty: FunctionComponent<{ engine: AudioEngine; node: AudioNode; selectionService: ISelectionService }> = (props) => {
     const { engine, node, selectionService } = props;
     const getOutput = useCallback(
@@ -193,9 +226,7 @@ const AudioOutputProperty: FunctionComponent<{ engine: AudioEngine; node: AudioN
     );
     const output = useWatchedValue(node, getOutput);
     return output ? (
-        <PropertyLine label="Output Bus">
-            <Link value={output.name || "Unnamed Bus"} onLink={() => (selectionService.selectedEntity = output)} />
-        </PropertyLine>
+        <AudioOutputValue engine={engine} output={output} selectionService={selectionService} />
     ) : (
         <TextPropertyLine label="Output Bus" value={output === null ? "None" : "Unavailable"} />
     );
@@ -253,11 +284,19 @@ export const LiteAudioSoundProperties: FunctionComponent<{ engine: AudioEngine; 
 };
 
 /** @internal */
-export const LiteAudioSoundCommands: FunctionComponent<{ engine: AudioEngine; sound: AudioSound }> = (props) => {
-    const { engine, sound } = props;
+export const LiteAudioSoundCommands: FunctionComponent<{ engine: AudioEngine; sound: AudioSound; audioEngineContext: IAudioEngineContext }> = (props) => {
+    const { engine, sound, audioEngineContext } = props;
     const watcher = useWatcher();
     const state = useWatchedValue(sound, GetSoundState);
     const playing = state === SoundState.Starting || state === SoundState.Started;
+    const isSoundInGraph = () => {
+        const graph = GetLiteAudioGraph(engine);
+        if (!graph) {
+            Logger.Warn("Babylon Lite sound playback is unavailable: the audio engine layout is unsupported.");
+            return false;
+        }
+        return !!GetLiteAudioEntry(graph, sound);
+    };
     return (
         <>
             <ButtonLine
@@ -266,7 +305,24 @@ export const LiteAudioSoundCommands: FunctionComponent<{ engine: AudioEngine; so
                 icon={PlayRegular}
                 disabled={playing}
                 onClick={async () => {
-                    await unlockAudioEngineAsync(engine);
+                    if (audioEngineContext.audioEngine !== engine || !isSoundInGraph()) {
+                        return;
+                    }
+                    let engineChanged = false;
+                    const observer = audioEngineContext.onAudioEngineChanged.addOnce(() => {
+                        engineChanged = true;
+                    });
+                    try {
+                        await unlockAudioEngineAsync(engine);
+                    } catch (error) {
+                        Logger.Error(`Babylon Lite audio unlock failed: ${error}`);
+                        return;
+                    } finally {
+                        observer.remove(true);
+                    }
+                    if (engineChanged || audioEngineContext.audioEngine !== engine || !isSoundInGraph()) {
+                        return;
+                    }
                     if ("buffer" in sound) {
                         playSound(sound);
                     } else {
