@@ -869,7 +869,18 @@ export class Effect implements IDisposable {
                     },
                 },
                 this._engine.createPipelineContext.bind(this._engine),
-                this._engine._preparePipelineContextAsync.bind(this._engine),
+                (pipelineContext, ...args) => {
+                    // Some engines (WebGPU) prepare the pipeline context asynchronously: a rejection must be handled like a synchronous failure
+                    const preparation: unknown = engine._preparePipelineContextAsync(pipelineContext, ...args);
+                    if (preparation instanceof Promise) {
+                        // eslint-disable-next-line github/no-then
+                        preparation.catch((e) => {
+                            if (this._pipelineContext === pipelineContext && !this._isDisposed) {
+                                this._processCompilationErrors(e, previousPipelineContext);
+                            }
+                        });
+                    }
+                },
                 this._engine._executeWhenRenderingStateIsCompiled.bind(this._engine)
             );
 
