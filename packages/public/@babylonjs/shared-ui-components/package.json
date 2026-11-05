@@ -1,14 +1,7 @@
 {
     "name": "@babylonjs/shared-ui-components",
     "version": "9.34.0",
-    "main": "index.js",
-    "module": "index.js",
-    "types": "index.d.ts",
     "exports": {
-        ".": {
-            "types": "./index.d.ts",
-            "default": "./index.js"
-        },
         "./lite": {
             "types": "./lite/index.d.ts",
             "default": "./lite/index.js"
@@ -81,7 +74,6 @@
         "babylon.js"
     ],
     "license": "Apache-2.0",
-    "esnext": "index.js",
     "type": "module",
     "sideEffects": true,
     "homepage": "https://www.babylonjs.com",
