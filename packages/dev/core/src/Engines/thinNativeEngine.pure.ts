@@ -3286,6 +3286,11 @@ export class ThinNativeEngine extends ThinEngine {
     // Reference counts + metadata for framebuffers shared across frame graph render-target wrappers
     // are stored in _frameGraphFramebufferRefCount (declared with the other engine fields).
 
+    private _getFrameGraphAutoGenerateMips(texture: InternalTexture): boolean {
+        // Runtimes without explicit generation need legacy automatic resolves for allocated mips.
+        return texture.generateMipMaps || (!_native.Engine.COMMAND_GENERATEMIPMAPS && this._hasMipStorage(texture));
+    }
+
     /**
      * Lazily builds (or reuses a shared) bgfx framebuffer for a frame graph render-target wrapper whose
      * textures were attached after creation (dontCreateTextures). All wrappers that reference the same
@@ -3350,7 +3355,9 @@ export class ThinNativeEngine extends ThinEngine {
         // runs in the render loop: compare in place and only allocate the color list for a new framebuffer.
         let sameColors = !!cachedMeta && cachedMeta.colorResources.length === textureCount;
         for (let i = 0; sameColors && i < textureCount; i++) {
-            sameColors = cachedMeta!.colorResources[i] === textures[i]._hardwareTexture!.underlyingResource && cachedMeta!.autoGenerateMips[i] === textures[i].generateMipMaps;
+            sameColors =
+                cachedMeta!.colorResources[i] === textures[i]._hardwareTexture!.underlyingResource &&
+                cachedMeta!.autoGenerateMips[i] === this._getFrameGraphAutoGenerateMips(textures[i]);
         }
         if (
             cached &&
@@ -3372,7 +3379,7 @@ export class ThinNativeEngine extends ThinEngine {
         const autoGenerateMips: boolean[] = new Array(textureCount);
         for (let i = 0; i < textureCount; i++) {
             colorTextures[i] = textures[i]._hardwareTexture!.underlyingResource;
-            autoGenerateMips[i] = textures[i].generateMipMaps;
+            autoGenerateMips[i] = this._getFrameGraphAutoGenerateMips(textures[i]);
         }
 
         const framebuffer = sharedDepthResource

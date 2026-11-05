@@ -893,6 +893,28 @@ describe("ThinNativeEngine", () => {
             expect(warn).toHaveBeenCalledWith(expect.stringContaining("relying on legacy framebuffer resolve"), 1);
         });
 
+        it.each([1, 2])("keeps legacy frame graph mip resolves when explicit generation is unavailable (%s colors)", (textureCount) => {
+            vi.stubGlobal("_native", { Engine: new Proxy({}, { get: (_target, name) => (name === "COMMAND_GENERATEMIPMAPS" ? undefined : String(name)) }) });
+            const { engine, nativeEngine, bound } = createEngine();
+            const target = engine.createMultipleRenderTarget(
+                { width: 64, height: 64 },
+                { textureCount, dontCreateTextures: true, generateDepthBuffer: false }
+            ) as NativeRenderTargetWrapper;
+            for (let i = 0; i < textureCount; i++) {
+                target.setTexture(engine._createInternalTexture({ width: 64, height: 64 }, { createMipMaps: i === 0, generateMipMaps: false }), i, false);
+            }
+
+            engine.bindFramebuffer(target);
+
+            expect(textureCount === 1 ? [nativeEngine.createFrameBuffer.mock.lastCall![8]] : nativeEngine.createMultiFrameBuffer.mock.lastCall![8]).toEqual(
+                Array.from({ length: textureCount }, (_value, index) => index === 0)
+            );
+            expect(target.textures!.every((texture) => !texture.generateMipMaps)).toBe(true);
+            const first = bound();
+            engine.bindFramebuffer(target);
+            expect(bound()).toBe(first);
+        });
+
         it("rejects explicit generation without allocated mip storage", () => {
             const { engine } = createEngine();
             const texture = engine._createInternalTexture({ width: 64, height: 64 }, {});
