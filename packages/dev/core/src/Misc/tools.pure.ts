@@ -505,7 +505,7 @@ export class Tools {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static _CdnVersion = "9.33.3";
+    public static _CdnVersion = "9.34.0";
 
     /**
      * @internal

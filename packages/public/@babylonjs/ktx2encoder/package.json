@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/ktx2encoder",
-    "version": "9.33.3",
+    "version": "9.34.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",

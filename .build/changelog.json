@@ -1,6 +1,64 @@
 {
-    "fromTag": "9.33.2",
+    "fromTag": "9.33.3",
     "changelog": {
+        "9.34.0": [
+            {
+                "pr": "19091",
+                "title": "WebGPU: find cached texture views without building a key string",
+                "description": "Forum: [64298](https://forum.babylonjs.com/t/64298) #2 and #11: isolated PRs with measured gains, each benefit measured separately.\n\n`WebGPUCacheTextureView.getView` builds a string key from the nine fields of the view descriptor on every call, even when the view is already cached. Render target passes call it once or twice per pass (the color view, the MSAA view, the depth/stencil view), so every pass leaves strings for the GC.\n\n**What it does.** A texture has few views, so they are now found by comparing the descriptor's fields with the cached ones: a lookup allocates nothing. The cache keeps its own copy of each descriptor, made when the view is created, since the callers reuse their descriptors for other views. Which views are cached, and when they are created, does not change.\n\n**Measured.** In our app, an allocation profile put `getView` and `_startRenderTargetRenderPass` at about 800 KB/s of short-lived garbage. The numbers below come from a test page made for this PR, which we can share.\n\nChromium 147, RTX 3080 Laptop GPU, Windows 11, WebGPU with vsync on a 240 Hz screen. The page renders 24 render target textures every frame (256×256 with depth, 3 meshes each), then the main view. Over 8 s, V8's sampling heap profiler (one sample per KB) gives the bytes allocated, and a Chrome trace counts the main thread's GCs. Each arm ran 4 times, the arms alternating, with a new browser for each run, on master as of 26-oct (dbd14a5; the branch is now on 8958948, and nothing since changed `webgpuCacheTextureView.ts`). The figures are per frame, since the frame rate varied between runs (202 to 239 frames per second).\n\n|  | allocated per frame | scavenges per 1,000 frames |\n|---|---|---|\n| master | 78.6-79.7 KB | 11.4-11.8 |\n| this PR | 60.2-61.6 KB | 9.2-9.4 |\n\nWhat the numbers say:\n- 18 KB less per frame (-23% on that master), about 720 bytes for each of the 25 render passes: the key strings of their views.\n- 20% fewer scavenges.\n- With this PR, the profile shows no allocation under `getView`. On master, `getView` is inlined into its callers, so its allocations show there.\n- The images are the same: this PR's last frame is identical to master's, byte for byte.\n\n**Unit tests.** `webgpuCacheTextureView.test.ts`: the 6 tests it had pass unchanged, and one more checks that the cache keeps its own copy of a descriptor, which the caller can change and reuse for another view. All the core unit tests on 8958948 (293 files): 4,841 passed, 1 expected fail (already marked on master).\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheTextureView.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuCacheTextureView.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19079",
+                "title": "Add Inspector Lite physics inspection",
+                "description": "Adds the P10b Inspector UI for physics, allowing Lite applications to inspect and edit Havok physics worlds, bodies, shapes and constraints through the new public discovery APIs from BabylonJS/Babylon-Lite#869. This completes the Inspector-side work for P10 in BabylonJS/Babylon-Lite#55.\n\n## Changes\n\n- Add a **Physics** explorer section listing each physics world with its bodies (including thin-instance counts) and constraints. Lists are live, and removed bodies or released constraints disappear; constraints are hidden unless both endpoints are still live.\n- Add body properties: node and world links, motion and prestep type, shape (type, parameters, friction, restitution, filter masks, density), damping, gravity factor, velocity, mass, center of mass, inertia, and linked constraints. Native reads are gated on world/body list membership, edits to shared shapes show a warning, and non-finite mass inputs are rejected.\n- Add constraint properties: type, body links, enabled toggle, collision, pivots/axes and limits.\n- Add physics debug views (body wireframes, mass properties and constraints) using the Lite physics viewer, updated incrementally with `hidePhysicsConstraint` instead of rebuilding. The helpers render in an Inspector-owned utility layer, separate from the gizmo layer, so they never add meshes to the inspected scene.\n- Add unit and Chrome integration coverage plus a lazily loaded Havok test fixture, and update the readme.\n- Update development dependencies to `@babylonjs/lite@1.38.1` and raise Inspector's optional Lite peer minimum to `^1.38.1`. The gizmo service now uses the `createUtilityLayer(mainScene)` signature.\n\n## Limitations\n\nInspector v2's \"Physics enabled\" switch has no Lite equivalent. Mesh, convex hull, heightfield and container shapes don't report parameters, constraint pivots and axes come from the creation options, material combine modes aren't exposed, and thin-instance edits apply to all instances.\n\n## Validation\n\nAgainst the published Lite 1.38.1 package:\n\n- Format check, ESLint on changed files, and `build:source` passed.\n- Focused Inspector Lite unit tests and import-boundary tests passed.\n- The 8 physics Chrome integration tests passed, including MSAA overlay preservation and independent gizmo/physics layers.\n\n## Screenshots\n\n![Inspector Lite showing the Physics explorer and a selected body's physics properties](https://github.com/user-attachments/assets/2e8c0304-f691-49fc-9989-3042da947b51)\n\n![Inspector Lite showing a selected hinge constraint's properties](https://github.com/user-attachments/assets/47c57e82-dc89-44c3-86b4-af3ea40ee68c)\n\n![Inspector Lite with Physics Bodies enabled, showing body wireframes](https://github.com/user-attachments/assets/d3a76a93-c8c4-4d56-8904-0ac4f9c04c8a)\n\n![Inspector Lite with Physics Constraints enabled, showing constraint helpers](https://github.com/user-attachments/assets/364c7b14-d4bb-4cc3-b216-f1658991bb06)\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/lite/components/properties/physicsProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/physicsUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/sceneEntityUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/gizmoService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/debugController.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/debugService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/physicsPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/physicsExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/app/litePhysics.ts",
+                    "packages/dev/inspector-v2/test/integration/liteDebugCapture.test.ts",
+                    "packages/dev/inspector-v2/test/integration/liteFlowGraph.test.ts",
+                    "packages/dev/inspector-v2/test/integration/liteGizmos.test.ts",
+                    "packages/dev/inspector-v2/test/integration/litePhysics.test.ts",
+                    "packages/dev/inspector-v2/test/integration/liteSkeletonMorph.test.ts",
+                    "packages/dev/inspector-v2/test/integration/liteStatistics.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteDebugController.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteDebugService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteGizmoService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/litePhysics.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/litePhysicsControls.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/p4ImportBoundaries.test.ts",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/public/@babylonjs/inspector-v2/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": []
+            }
+        ],
         "9.33.3": [
             {
                 "pr": "19098",
