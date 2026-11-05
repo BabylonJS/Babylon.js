@@ -1054,7 +1054,7 @@ jobs:
                 set destDir=..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets
                 for /f %%i in ('dir /b %destDir%\babylon*') do (
                   set sourceName=%%i
-                  if /i "!sourceName:~-3!"==".js" (
+                  if /i "!sourceName:~-3!"==".js" if /i not "!sourceName:~-7!"==".es5.js" (
                     set sourceName=!sourceName:.max.js=.es5.js!
                     if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
                     if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
@@ -1066,7 +1066,7 @@ jobs:
                 set destDir=..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
                 for /f %%i in ('dir /b %destDir%\babylon*') do (
                   set sourceName=%%i
-                  if /i "!sourceName:~-3!"==".js" (
+                  if /i "!sourceName:~-3!"==".js" if /i not "!sourceName:~-7!"==".es5.js" (
                     set sourceName=!sourceName:.max.js=.es5.js!
                     if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
                     if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
