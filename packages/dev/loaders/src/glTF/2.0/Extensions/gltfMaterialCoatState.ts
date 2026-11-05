@@ -24,6 +24,7 @@ export class GLTFMaterialCoatState implements IAnimatable {
     private _diffuseTransmissionTint?: Color3;
     private _attenuationDistance?: number;
     private _attenuationColor?: Color3;
+    private _singleScatterAlbedo?: Color3;
 
     /**
      * Creates a source binding for one material.
@@ -34,7 +35,10 @@ export class GLTFMaterialCoatState implements IAnimatable {
         this._roughness = _material.coatRoughness;
         this._surfaceRoughness = _material.specularRoughness;
         this._surfaceIor = _material.specularIor;
-        _material.onDisposeObservable.addOnce(() => this.onChangedObservable.clear());
+        _material.onDisposeObservable.addOnce(() => {
+            _material.getScene().stopAnimation(this);
+            this.onChangedObservable.clear();
+        });
     }
 
     /** Authored clearcoat factor. */
@@ -142,6 +146,8 @@ export class GLTFMaterialCoatState implements IAnimatable {
         this._material.transmissionColor = this._attenuationColor;
         if (this._attenuationDistance !== undefined) {
             this.updateTransmissionTint();
+        } else {
+            this._updateTransmissionScatter();
         }
     }
 
@@ -154,6 +160,31 @@ export class GLTFMaterialCoatState implements IAnimatable {
         } else if (this._attenuationColor) {
             material.transmissionColor = this._attenuationColor;
             material.transmissionColorTexture = null;
+        }
+        this._updateTransmissionScatter();
+    }
+
+    /**
+     * Retains the single-scatter factor separately from attenuation-derived extinction.
+     * @param albedo The constant albedo, or white when the albedo is stored in a texture.
+     */
+    public retainSingleScatterAlbedo(albedo: Color3): void {
+        this._singleScatterAlbedo = albedo.clone();
+        this._updateTransmissionScatter();
+    }
+
+    private _updateTransmissionScatter(): void {
+        const albedo = this._singleScatterAlbedo;
+        if (!albedo) {
+            return;
+        }
+        const color = this._material.transmissionColor;
+        const r = -Math.log(Math.max(color.r, 1e-7)) * albedo.r;
+        const g = -Math.log(Math.max(color.g, 1e-7)) * albedo.g;
+        const b = -Math.log(Math.max(color.b, 1e-7)) * albedo.b;
+        if (!this._material.transmissionScatter.equalsFloats(r, g, b)) {
+            this._material.transmissionScatter.set(r, g, b);
+            this._material.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
     }
 

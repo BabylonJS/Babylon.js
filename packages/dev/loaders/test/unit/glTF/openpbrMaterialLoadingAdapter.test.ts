@@ -8,6 +8,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader";
 import { OpenPBRMaterialLoadingAdapter } from "loaders/glTF/2.0/openpbrMaterialLoadingAdapter";
+import { _GetGLTFMaterialCoatState } from "loaders/glTF/2.0/Extensions/gltfMaterialCoatState";
 
 // The texture processor renders on the GPU, which NullEngine can't do. Replace the async passes
 // with stubs that return a fresh output texture, matching the real (non-pass-through) contract.
@@ -325,6 +326,21 @@ describe("OpenPBRMaterialLoadingAdapter.finalizeAsync texture disposal", () => {
             // The single-scatter albedo is baked into the texture, leaving extinction * depth in the factor.
             expect(material.transmissionScatterTexture).not.toBeNull();
             expectCoefficients(material.transmissionScatter, expectedExtinction);
+            const texture = material.transmissionScatterTexture;
+            const coefficients = material.transmissionScatter;
+            const state = _GetGLTFMaterialCoatState(material);
+            const dirty = vi.spyOn(material, "markAsDirty");
+            state.transmissionColor = new Color3(0.25, 0.125, 0);
+            expect(material.transmissionScatterTexture).toBe(texture);
+            expect(material.transmissionScatter).toBe(coefficients);
+            expect(dirty).toHaveBeenCalled();
+            expectCoefficients(
+                material.transmissionScatter,
+                [0.25, 0.125, 0].map((c) => -Math.log(Math.max(c, 1e-7)))
+            );
+            dirty.mockClear();
+            state.transmissionColor = new Color3(0.25, 0.125, 0);
+            expect(dirty).not.toHaveBeenCalled();
         });
     });
 

@@ -1414,22 +1414,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this._volumetricScatterStrengthFactor = null;
             this._volumetricScatterStrengthTexture = null;
 
-            // OpenPBR transmission_scatter is scatterCoefficient * depth which is equivalent to extinctionCoefficient * ssAlbedo * depth.
-            const extinctionTimesDepth = new Color3(
-                -Math.log(Math.max(this.transmissionColor.r, 1e-7)),
-                -Math.log(Math.max(this.transmissionColor.g, 1e-7)),
-                -Math.log(Math.max(this.transmissionColor.b, 1e-7))
-            );
             if (singleScatter.texture) {
-                this.transmissionScatter = extinctionTimesDepth;
                 this.transmissionScatterTexture = singleScatter.texture;
-            } else if (singleScatter.factor) {
-                this.transmissionScatter.set(
-                    extinctionTimesDepth.r * singleScatter.factor.r,
-                    extinctionTimesDepth.g * singleScatter.factor.g,
-                    extinctionTimesDepth.b * singleScatter.factor.b
-                );
             }
+            // OpenPBR stores extinction * single-scatter albedo * depth; keep the albedo for attenuation animation.
+            _GetGLTFMaterialCoatState(this._material).retainSingleScatterAlbedo(
+                singleScatter.texture ? Color3.White() : new Color3(singleScatter.factor!.r, singleScatter.factor!.g, singleScatter.factor!.b)
+            );
             this._disposeTextureIfUnused(loader, colorTex);
             this._disposeTextureIfUnused(loader, strengthTex);
         }
