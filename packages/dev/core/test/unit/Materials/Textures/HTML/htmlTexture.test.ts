@@ -347,7 +347,7 @@ describe("HtmlTexture", () => {
         expect(canvas.requestPaint).toHaveBeenCalledTimes(1);
         expect(update).not.toHaveBeenCalled();
 
-        const paint = new Event("paint") as PaintEvent;
+        const paint = new Event("paint") as CanvasPaintEvent;
         Object.defineProperty(paint, "changedElements", { value: [] });
         canvas.dispatchEvent(paint);
         expect(update).toHaveBeenCalledTimes(1);

@@ -332,7 +332,7 @@ export class HtmlTexture extends BaseTexture {
     private readonly _samplingMode: number;
     private readonly _useSvgFallback: boolean;
     private readonly _textureMatrix: Matrix;
-    private _paintHandler: Nullable<(event: PaintEvent) => void> = null;
+    private _paintHandler: Nullable<(event: CanvasPaintEvent) => void> = null;
     private _ownsHost: boolean = false;
     private _originalParent: Nullable<Node & ParentNode> = null;
     private _originalNextSibling: Nullable<ChildNode> = null;
@@ -385,7 +385,7 @@ export class HtmlTexture extends BaseTexture {
         // auto-update is disabled; helper div hosts never emit paint.
         if (this.host) {
             let hasPainted = false;
-            this._paintHandler = (event: PaintEvent) => {
+            this._paintHandler = (event: CanvasPaintEvent) => {
                 // A single `paint` event covers every changed child of the shared rendering canvas. When the
                 // browser reports which elements changed, skip the upload unless ours is among them, so that
                 // multiple HTML textures hosted on the same canvas don't all re-upload on every unrelated change.

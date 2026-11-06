@@ -233,6 +233,11 @@
                     vec2 T;
                     T.x = texture2D(icdfSampler, vec2(Xi.x, 0.)).x;
                     T.y = texture2D(icdfSampler, vec2(T.x, Xi.y)).y;
+                    #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+                    // Evaluate radiance at the icdf bin center, where the luminance and pdf were computed.
+                    vec2 icdfSize = vec2(textureSize(icdfSampler, 0));
+                    T = (min(floor(T * icdfSize), icdfSize - 1.0) + 0.5) / icdfSize;
+                    #endif
                     vec3 Ls = uv_to_normal(vec2(1.0 - fract(T.x + 0.25), T.y));
                     float NoL = dot(n, Ls);
                     float NoV = dot(n, inputV);

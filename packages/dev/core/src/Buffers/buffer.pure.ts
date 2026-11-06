@@ -235,6 +235,11 @@ export class Buffer {
         }
 
         if (this._updatable) {
+            if (vertexCount === 0) {
+                // Nothing to upload. Passing 0 on to the engine would upload the whole data instead
+                return;
+            }
+
             // update buffer
             this._engine.updateDynamicVertexBuffer(
                 this._buffer,
