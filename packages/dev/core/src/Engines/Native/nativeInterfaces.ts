@@ -176,7 +176,7 @@ export interface INativeEngine {
         autoGenerateMips?: boolean
     ): NativeFramebuffer;
 
-    /** Optional: older runtimes only support single-attachment framebuffers. */
+    /** Optional: older runtimes only support single-attachment framebuffers. Omitted mip flags retain automatic generation for all color attachments. */
     createMultiFrameBuffer?(
         colorTextures: NativeTexture[],
         width: number,
@@ -185,7 +185,8 @@ export interface INativeEngine {
         generateDepthBuffer: boolean,
         samples: number,
         layers?: number[],
-        explicitDepthTexture?: NativeTexture
+        explicitDepthTexture?: NativeTexture,
+        autoGenerateMips?: boolean[]
     ): NativeFramebuffer;
 
     getRenderWidth(): number;
@@ -445,6 +446,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETFLOAT4: NativeData;
     readonly COMMAND_BINDFRAMEBUFFER: NativeData;
     readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
+    readonly COMMAND_GENERATEMIPMAPS?: NativeData;
     readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
     readonly COMMAND_DRAWINDEXED: NativeData;
     readonly COMMAND_DRAWINDEXEDINSTANCED: NativeData;
