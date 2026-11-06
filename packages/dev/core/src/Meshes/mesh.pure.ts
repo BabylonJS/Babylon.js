@@ -576,6 +576,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * @internal
+     * The side orientation the next draw of the mesh with a material passes to Material._preBind (see render): the material's, or else the mesh's,
+     * reversed when the world matrix of the effective mesh mirrors. It is the last one while the instance data is frozen, or while the material
+     * neither culls back faces, nor has a side orientation, nor lights both sides.
+     */
+    public _getDrawSideOrientation(material: Material, effectiveMesh: AbstractMesh = this): number {
+        if (this._instanceDataStorage.isFrozen || (!material.backFaceCulling && material.sideOrientation === null && !(material as any)._twoSidedLighting)) {
+            return this._internalMeshDataInfo._effectiveSideOrientation;
+        }
+        // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
+        const sideOrientation = material._getEffectiveOrientation(this);
+        if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+            return sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+        }
+        return sideOrientation;
+    }
+
+    /**
      * @deprecated Please use sideOrientation instead.
      * @see https://doc.babylonjs.com/breaking-changes#7110
      */
@@ -2824,23 +2842,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const effectiveMesh = effectiveMeshReplacement || this;
 
-        let sideOrientation: Nullable<number>;
-
-        if (
-            !instanceDataStorage.isFrozen &&
-            (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling ||
-                this._internalMeshDataInfo._effectiveMaterial.sideOrientation !== null ||
-                (this._internalMeshDataInfo._effectiveMaterial as any)._twoSidedLighting)
-        ) {
-            // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
-            const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-            sideOrientation = this._internalMeshDataInfo._effectiveMaterial._getEffectiveOrientation(this);
-
-            if (mainDeterminant < 0) {
-                sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
-            }
-            this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
-        }
+        this._internalMeshDataInfo._effectiveSideOrientation = this._getDrawSideOrientation(this._internalMeshDataInfo._effectiveMaterial, effectiveMesh);
 
         const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, this._internalMeshDataInfo._effectiveSideOrientation);
 

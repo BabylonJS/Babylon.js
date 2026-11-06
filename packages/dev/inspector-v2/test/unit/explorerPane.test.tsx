@@ -18,13 +18,14 @@ vi.hoisted(() => {
 
 vi.mock("../../src/components/explorer/explorer", () => ({
     Explorer: ({ getNodes }: { getNodes: () => readonly ExplorerNodeDescription[] }) => {
-        const children = getNodes()[0]?.getChildren?.() ?? [];
+        const roots = getNodes();
+        const children = roots.flatMap((node) => node.getChildren?.() ?? []);
         return (
-            <>
+            <div data-root-names={roots.map((node) => node.getDisplayInfo().name).join(",")}>
                 {children.map((node) => (
                     <span key={node.id}>{node.getDisplayInfo().name}</span>
                 ))}
-            </>
+            </div>
         );
     },
 }));
@@ -63,9 +64,7 @@ describe("Explorer pane", () => {
         CreateExplorerPaneRegistration(shellService, selectionService, {
             key: "Explorer",
             title: "Explorer",
-            getRoot: () => parent,
-            rootLabel: "Root",
-            getNodes: () => [],
+            getRoots: () => [{ id: "root", entity: parent, label: "Root", getNodes: () => [] }],
             nodeProviders: explorerService.nodeProviders,
         });
         if (!PaneContent) {
@@ -91,5 +90,55 @@ describe("Explorer pane", () => {
 
         await act(async () => root.unmount());
         explorerService.dispose();
+    });
+
+    it("renders and removes additional roots when the root set changes", async () => {
+        const rootsChanged = new Observable<void>();
+        const firstRoot = {};
+        const secondRoot = {};
+        let roots = [{ id: "engine", entity: firstRoot, label: "Engine", getNodes: () => [{ id: "engine-child", getDisplayInfo: () => ({ name: "Engine Child" }) }] }];
+        let PaneContent: ComponentType | undefined;
+        const shellService = {
+            addSidePane: (pane: SidePaneDefinition) => {
+                PaneContent = pane.content;
+                return { dispose: vi.fn() };
+            },
+        } as unknown as IShellService;
+        const selectionService = {
+            selectedEntity: null,
+            onSelectedEntityChanged: new Observable<void>(),
+        } as unknown as ISelectionService;
+
+        CreateExplorerPaneRegistration(shellService, selectionService, {
+            key: "Explorer",
+            title: "Explorer",
+            getRoots: () => roots,
+            onRootsChanged: rootsChanged,
+        });
+        if (!PaneContent) {
+            throw new Error("Expected the Explorer pane to be registered.");
+        }
+
+        const container = document.createElement("div");
+        containers.push(container);
+        const root = createRoot(container);
+        await act(async () => root.render(<PaneContent />));
+        expect(container.textContent).toBe("Engine Child");
+        expect(container.firstElementChild?.getAttribute("data-root-names")).toBe("Engine");
+
+        roots = [
+            ...roots,
+            { id: "audio-engine", entity: secondRoot, label: "Audio Engine", getNodes: () => [{ id: "audio-child", getDisplayInfo: () => ({ name: "Audio Child" }) }] },
+        ];
+        await act(async () => rootsChanged.notifyObservers());
+        expect(container.textContent).toBe("Engine ChildAudio Child");
+        expect(container.firstElementChild?.getAttribute("data-root-names")).toBe("Engine,Audio Engine");
+
+        roots = roots.slice(0, 1);
+        await act(async () => rootsChanged.notifyObservers());
+        expect(container.textContent).toBe("Engine Child");
+        expect(container.firstElementChild?.getAttribute("data-root-names")).toBe("Engine");
+
+        await act(async () => root.unmount());
     });
 });

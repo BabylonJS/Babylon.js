@@ -164,6 +164,25 @@ export class ShadowDepthWrapper {
     }
 
     /**
+     * Invalidates cached vertex bindings for this submesh without releasing shadow draw resources.
+     * @param subMesh defines the submesh whose shadow draws must be invalidated
+     * @internal
+     */
+    public _invalidateVertexBuffers(subMesh: SubMesh): void {
+        const entries = this._subMeshToDepthWrapper.mm.get(subMesh);
+        if (!entries) {
+            return;
+        }
+
+        for (const entry of entries.values()) {
+            entry.mainDrawWrapper.drawContext?._invalidateVertexBuffers?.();
+            for (const drawWrapper of entry.drawWrapper) {
+                drawWrapper?.drawContext?._invalidateVertexBuffers?.();
+            }
+        }
+    }
+
+    /**
      * Specifies that the submesh is ready to be used for depth rendering
      * @param subMesh submesh to check
      * @param defines the list of defines to take into account when checking the effect

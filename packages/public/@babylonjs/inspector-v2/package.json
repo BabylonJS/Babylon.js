@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "9.33.0",
+    "version": "9.34.0",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -40,7 +40,7 @@
         "@babylonjs/core": "^9.0.0",
         "@babylonjs/gui": "^9.0.0",
         "@babylonjs/gui-editor": "^9.0.0",
-        "@babylonjs/lite": "^1.37.1",
+        "@babylonjs/lite": "^1.38.1",
         "@babylonjs/loaders": "^9.0.0",
         "@babylonjs/materials": "^9.0.0",
         "@babylonjs/node-editor": "^9.0.0",
@@ -65,18 +65,18 @@
         }
     },
     "devDependencies": {
-        "@babylonjs/lite": "1.37.1",
+        "@babylonjs/lite": "1.38.1",
         "@dev/build-tools": "^1.0.0",
         "@dev/inspector": "1.0.0",
-        "@rollup/plugin-alias": "^6.0.0",
+        "@rollup/plugin-alias": "^6.0.1",
         "@rollup/plugin-commonjs": "^29.0.3",
         "@rollup/plugin-node-resolve": "^16.0.3",
-        "@rollup/plugin-typescript": "^12.3.0",
-        "@types/ws": "^8.18.1",
+        "@rollup/plugin-typescript": "^12.3.1",
+        "@types/ws": "^8.18.2",
         "chalk": "^6.0.1",
-        "rollup": "^4.63.4",
+        "rollup": "^4.65.1",
         "rollup-plugin-dts": "^6.5.1",
-        "ws": "^8.21.3"
+        "ws": "^8.22.0"
     },
     "keywords": [
         "3D",

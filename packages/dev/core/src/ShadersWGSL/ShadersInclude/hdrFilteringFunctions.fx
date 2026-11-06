@@ -196,6 +196,9 @@
                     var T: vec2f;
                     T.x = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(Xi.x, 0.0), 0.0).x;
                     T.y = textureSampleLevel(icdfSampler, icdfSamplerSampler, vec2(T.x, Xi.y), 0.0).y;
+                    // Evaluate radiance at the icdf bin center, where the luminance and pdf were computed.
+                    let icdfSize: vec2f = vec2f(textureDimensions(icdfSampler, 0));
+                    T = (min(floor(T * icdfSize), icdfSize - vec2f(1.0)) + vec2f(0.5)) / icdfSize;
                     var Ls: vec3f = uv_to_normal(vec2f(1.0 - fract(T.x + 0.25), T.y));
                     var NoL: f32 = dot(n, Ls);
                     var NoV: f32 = dot(n, inputV);

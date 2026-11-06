@@ -39,11 +39,12 @@ describe("@babylonjs/shared-ui-components/lite", () => {
     it("preserves existing package subpaths while exporting the Lite entry", async () => {
         const packageJson = JSON.parse(await readFile(PublicPackagePath, "utf8"));
 
+        // The package has no root barrel, so it must not declare root runtime or type entrypoints.
+        expect(packageJson.exports).not.toHaveProperty(["."]);
+        for (const field of ["main", "module", "types", "typings", "esnext"]) {
+            expect(packageJson).not.toHaveProperty(field);
+        }
         expect(packageJson.exports).toMatchObject({
-            ".": {
-                types: "./index.d.ts",
-                default: "./index.js",
-            },
             "./lite": {
                 types: "./lite/index.d.ts",
                 default: "./lite/index.js",

@@ -225,13 +225,73 @@ describe("Babylon Lite engine explorer service", () => {
         scenes.push(mainScene, utilityScene, userUtilityScene);
         const watcher = CreateTopologyWatcherService();
         const service = EngineExplorerServiceDefinition.factory({ engine }, {} as IShellService, {} as ISelectionService, watcher.watcherService)!;
-        const nodes = PaneRegistrations.at(-1)!.options.getNodes();
+        const nodes = PaneRegistrations.at(-1)!.options.getRoots()[0].getNodes();
         expect(nodes.map((node) => node.entity)).toEqual([mainScene, userUtilityScene]);
         const index = new SceneResourceIndex(engine);
         expect(index.getMaterialRecord(mainMaterial)?.scenes).toEqual([mainScene]);
         expect(index.getMaterialRecord(gizmoMaterial)).toBeUndefined();
         expect(index.getTopologySnapshot()).not.toContain(utilityScene);
         index.dispose();
+        service.dispose?.();
+    });
+
+    it("supports dynamically contributed Explorer roots", () => {
+        PaneRegistrations.length = 0;
+        const engine = CreateResourceEngine([]);
+        const watcher = CreateTopologyWatcherService();
+        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcher.watcherService)!;
+        const pane = PaneRegistrations.at(-1)!.options;
+        const onNodesChanged = vi.fn();
+        const rootChanged = new Observable<void>();
+        const audioEngine = {};
+        pane.onNodesChanged?.add(onNodesChanged);
+        const rootRegistration = service.addRootProvider({
+            getRoots: () => [{ id: "audio-engine", entity: audioEngine, label: "Audio Engine", getNodes: () => [] }],
+            onChanged: rootChanged,
+        });
+
+        expect(pane.getRoots().map((root) => root.label)).toEqual(["Engine", "Audio Engine"]);
+        expect(onNodesChanged).toHaveBeenCalledOnce();
+
+        rootChanged.notifyObservers();
+        expect(onNodesChanged).toHaveBeenCalledTimes(2);
+
+        rootRegistration.dispose();
+        expect(pane.getRoots().map((root) => root.label)).toEqual(["Engine"]);
+        expect(onNodesChanged).toHaveBeenCalledTimes(3);
+        expect(rootChanged.hasObservers()).toBe(false);
+        rootChanged.notifyObservers();
+        expect(onNodesChanged).toHaveBeenCalledTimes(3);
+
+        const remainingRegistration = service.addRootProvider({
+            getRoots: () => [{ id: "audio-engine", entity: audioEngine, label: "Audio Engine", getNodes: () => [] }],
+            onChanged: rootChanged,
+        });
+        expect(rootChanged.hasObservers()).toBe(true);
+        service.dispose?.();
+        expect(rootChanged.hasObservers()).toBe(false);
+        remainingRegistration.dispose();
+    });
+
+    it("does not skip other observers when a root is removed during notification", () => {
+        PaneRegistrations.length = 0;
+        const engine = CreateResourceEngine([]);
+        const watcher = CreateTopologyWatcherService();
+        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcher.watcherService)!;
+        const pane = PaneRegistrations.at(-1)!.options;
+        const rootChanged = new Observable<void>();
+        const rootRegistration = service.addRootProvider({
+            getRoots: () => [{ id: "audio-engine", entity: {}, label: "Audio Engine", getNodes: () => [] }],
+            onChanged: rootChanged,
+        });
+        const otherObserver = vi.fn();
+        rootChanged.add(otherObserver);
+        pane.onNodesChanged?.add(() => rootRegistration.dispose());
+
+        rootChanged.notifyObservers();
+
+        expect(otherObserver).toHaveBeenCalledOnce();
+        expect(pane.getRoots().map((root) => root.label)).toEqual(["Engine"]);
         service.dispose?.();
     });
 
@@ -263,7 +323,7 @@ describe("Babylon Lite engine explorer service", () => {
 
         const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcherService)!;
         const registration = PaneRegistrations.at(-1)!;
-        const nodes = registration.options.getNodes();
+        const nodes = registration.options.getRoots()[0].getNodes();
         const unnamedDisplayInfo = nodes[0].getDisplayInfo();
         const utilityDisplayInfo = nodes[1].getDisplayInfo();
         const effectDisplayInfo = nodes[2].getDisplayInfo();
@@ -603,7 +663,7 @@ describe("Babylon Lite engine explorer service", () => {
         paneOptions.onNodesChanged?.add(onNodesChanged);
         const CustomIcon = ({ entity }: { entity: CustomRenderingContext }) => createElement("span", null, entity.iconLabel);
 
-        const getContextNode = () => paneOptions.getNodes()[0];
+        const getContextNode = () => paneOptions.getRoots()[0].getNodes()[0];
         expect(getContextNode().getDisplayInfo().name).toBe("custom-rendering-context");
         expect(getContextNode().icon).toBeUndefined();
 
