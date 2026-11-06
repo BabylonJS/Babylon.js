@@ -480,6 +480,12 @@ export interface INativeCanvas extends ICanvas {
      * Releases the native resources held by the canvas.
      */
     dispose(): void;
+
+    /**
+     * True when dispose() keeps the GPU resources alive until already-queued commands that reference them are submitted,
+     * so it is safe to call while a frame is being recorded. Older runtimes release them immediately and leave this undefined.
+     */
+    readonly supportsDeferredDispose?: boolean;
 }
 
 /** @internal */

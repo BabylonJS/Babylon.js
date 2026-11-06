@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Effect } from "core/Materials/effect";
+import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "core/scene";
 
@@ -169,5 +171,36 @@ describe("ProceduralTexture resize", () => {
         const content = await texture.getContent();
         expect(content!.byteLength).toBe(4 * 4 * 4);
         expect(readPixelsSpy).toHaveBeenLastCalledWith(0, 0);
+    });
+
+    it("releases its render target wrapper on dispose", () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene);
+        const rtWrapper = (texture as unknown as { _rtWrapper: RenderTargetWrapper })._rtWrapper;
+        const disposeSpy = vi.spyOn(rtWrapper, "dispose");
+
+        texture.dispose();
+
+        expect(disposeSpy).toHaveBeenCalledTimes(1);
+        expect(texture.getInternalTexture()).toBeNull();
+    });
+
+    it("releases owned depth storage but not the already-released texture on dispose", () => {
+        const texture = new ProceduralTexture("noise", 2, null, scene, { generateDepthBuffer: true });
+        const rtWrapper = (texture as unknown as { _rtWrapper: RenderTargetWrapper })._rtWrapper;
+        const colorTexture = rtWrapper.texture!;
+        // WebGPU backs the depth buffer with a texture owned by the wrapper.
+        const depthTexture = new InternalTexture(engine, InternalTextureSource.DepthStencil);
+        (rtWrapper as unknown as { _depthStencilTexture: InternalTexture })._depthStencilTexture = depthTexture;
+        const colorDisposeSpy = vi.spyOn(colorTexture, "dispose");
+        const depthDisposeSpy = vi.spyOn(depthTexture, "dispose");
+
+        texture.releaseInternalTexture();
+        expect(colorDisposeSpy).toHaveBeenCalledTimes(1);
+
+        texture.dispose();
+
+        expect(colorDisposeSpy).toHaveBeenCalledTimes(1);
+        expect(depthDisposeSpy).toHaveBeenCalledTimes(1);
+        expect(rtWrapper.depthStencilTexture).toBeNull();
     });
 });
