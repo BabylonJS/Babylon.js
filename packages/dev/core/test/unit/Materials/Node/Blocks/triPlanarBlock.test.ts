@@ -51,7 +51,7 @@ describe("TriPlanarBlock", () => {
 
         // the image can become linear (Texture.replaceImage) without building the graph again. WGSL has no overloads: a 3-component
         // output and a float are converted with toGammaSpaceVec3
-        const conversion = toGammaSpace.replace(/[.()]/g, "\\$&");
+        const conversion = toGammaSpace.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         expect(state.compilationString).toMatch(new RegExp(`#ifdef ISLINEAR\\s+${name} = ${conversion};\\s+#endif`));
         expect(state.compilationString).toMatch(new RegExp(`#ifdef ISGAMMA\\s+${name} = toLinearSpace\\w*\\(${name}\\);\\s+#endif`));
     });
