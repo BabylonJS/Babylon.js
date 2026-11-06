@@ -44,12 +44,19 @@ for (const backend of ["webgl2", "webgpu"]) {
                             ...Array.from({ length: 6 }, () => [0, 0, -1]).flat(),
                             ...Array.from({ length: 6 }, () => [0, 1, 0, 1]).flat(),
                         ]);
-                        const source = (uv: number, pattern: "white" | "columns" | "rows", transform = false, withDiffuse = diffuse, withTangents = false, coatWeight = 1) => ({
+                        const source = (
+                            uv: number,
+                            pattern: "white" | "columns" | "rows",
+                            transform = false,
+                            withDiffuse = diffuse,
+                            withTangents = false,
+                            coatWeight: number | null = 1
+                        ) => ({
                             asset: { version: "2.0" },
                             extensionsUsed: [
                                 "KHR_materials_transmission",
                                 "KHR_materials_volume",
-                                "KHR_materials_clearcoat",
+                                ...(coatWeight === null ? [] : ["KHR_materials_clearcoat"]),
                                 "KHR_texture_transform",
                                 ...(withDiffuse ? ["KHR_materials_diffuse_transmission"] : []),
                             ],
@@ -84,17 +91,22 @@ for (const backend of ["webgl2", "webgpu"]) {
                                             },
                                         },
                                         KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1 },
-                                        KHR_materials_clearcoat: {
-                                            clearcoatFactor: coatWeight,
-                                            clearcoatRoughnessFactor: 0,
-                                            clearcoatRoughnessTexture: { index: 1, texCoord: uv },
-                                            clearcoatNormalTexture: { index: 3, texCoord: 1 },
-                                            clearcoatTexture: {
-                                                index: 1,
-                                                texCoord: uv,
-                                                ...(transform ? { extensions: { KHR_texture_transform: { offset: [0.125, 0.25], scale: [0.5, 0.75], rotation: 0.25 } } } : {}),
-                                            },
-                                        },
+                                        KHR_materials_clearcoat:
+                                            coatWeight === null
+                                                ? undefined
+                                                : {
+                                                      clearcoatFactor: coatWeight,
+                                                      clearcoatRoughnessFactor: 0,
+                                                      clearcoatRoughnessTexture: { index: 1, texCoord: uv },
+                                                      clearcoatNormalTexture: { index: 3, texCoord: 1 },
+                                                      clearcoatTexture: {
+                                                          index: 1,
+                                                          texCoord: uv,
+                                                          ...(transform
+                                                              ? { extensions: { KHR_texture_transform: { offset: [0.125, 0.25], scale: [0.5, 0.75], rotation: 0.25 } } }
+                                                              : {}),
+                                                      },
+                                                  },
                                     },
                                 },
                             ],
@@ -173,8 +185,8 @@ for (const backend of ["webgl2", "webgpu"]) {
                             const editedSource = source(1, "columns");
                             editedSource.materials[0].pbrMetallicRoughness.baseColorFactor = [0.2, 0.8, 0.4, 1];
                             editedSource.materials[0].extensions.KHR_materials_transmission.transmissionFactor = 0.4;
-                            editedSource.materials[0].extensions.KHR_materials_clearcoat.clearcoatFactor = 0.25;
-                            editedSource.materials[0].extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor = 0.25;
+                            editedSource.materials[0].extensions.KHR_materials_clearcoat!.clearcoatFactor = 0.25;
+                            editedSource.materials[0].extensions.KHR_materials_clearcoat!.clearcoatRoughnessFactor = 0.25;
                             editedSource.materials[0].pbrMetallicRoughness.roughnessFactor = 0.4;
                             const f = await load(editedSource);
                             const reimported = await capture(f.scene);
@@ -222,8 +234,8 @@ for (const backend of ["webgl2", "webgpu"]) {
                             const tangentSource = source(0, "white", false, false, true);
                             tangentSource.images[0].uri = texture("white");
                             tangentSource.materials[0].pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1];
-                            tangentSource.materials[0].extensions.KHR_materials_clearcoat.clearcoatNormalTexture.texCoord = 0;
-                            tangentSource.materials[0].extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor = 0.3;
+                            tangentSource.materials[0].extensions.KHR_materials_clearcoat!.clearcoatNormalTexture.texCoord = 0;
+                            tangentSource.materials[0].extensions.KHR_materials_clearcoat!.clearcoatRoughnessFactor = 0.3;
                             tangentSource.materials[0].extensions.KHR_materials_transmission.transmissionFactor = 0.5;
                             const tangentMaterial = await load(tangentSource);
                             new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0.3, 0.4, 1), tangentMaterial.scene).intensity = 5;
@@ -234,6 +246,27 @@ for (const backend of ["webgl2", "webgpu"]) {
                             new BABYLON.DirectionalLight("light", new BABYLON.Vector3(0.3, 0.4, 1), tangentReference.scene).intensity = 5;
                             const referenceTangents = await capture(tangentReference.scene);
                             tangentReference.scene.dispose();
+                            const noCoatCoordinateCases = [];
+                            for (const coatWeight of [null, 0]) {
+                                const captureWithoutCoat = async (uv: number, pattern: "columns" | "rows") => {
+                                    const fixture = source(uv, pattern, false, false, false, coatWeight);
+                                    const imported = await load(fixture);
+                                    const pixels = await capture(imported.scene);
+                                    const authoredCoatWeight = imported.material.coatWeight;
+                                    imported.scene.dispose();
+                                    return { pixels, authoredCoatWeight };
+                                };
+                                const aligned = await captureWithoutCoat(0, "rows");
+                                // UV1 swaps the axes, so columns on UV1 match rows on UV0.
+                                const independent = await captureWithoutCoat(1, "columns");
+                                const differentPattern = await captureWithoutCoat(0, "columns");
+                                noCoatCoordinateCases.push({
+                                    coat: coatWeight === null ? "absent" : "disabled",
+                                    authoredCoatWeight: independent.authoredCoatWeight,
+                                    equivalentDifference: different(aligned.pixels, independent.pixels),
+                                    differentPatternDifference: different(aligned.pixels, differentPattern.pixels),
+                                });
+                            }
                             const nativeControl = await load(source(0, "white"));
                             const nativeMaterial = new BABYLON.OpenPBRMaterial("native", nativeControl.scene);
                             nativeMaterial.allowShaderHotSwapping = false;
@@ -301,6 +334,7 @@ for (const backend of ["webgl2", "webgpu"]) {
                             }
                             nativeControl.scene.dispose();
                             return {
+                                noCoatCoordinateCases,
                                 noCoatCases,
                                 nativeBaseColorDifference: different(nativeWhite, nativeRed),
                                 nativeTransmissionColorDifference: different(nativeRed, nativeDark),
@@ -339,6 +373,11 @@ for (const backend of ["webgl2", "webgpu"]) {
             expect(result.distinctColors, JSON.stringify(result)).toBeGreaterThan(2);
             expect(result.nativeTransmissionColorDifference).toBeGreaterThan(100);
             expect(result.nativeBaseColorDifference).toBe(0);
+            for (const noCoat of result.noCoatCoordinateCases) {
+                expect(noCoat.authoredCoatWeight, noCoat.coat).toBe(0);
+                expect(noCoat.equivalentDifference, JSON.stringify(noCoat)).toBe(0);
+                expect(noCoat.differentPatternDifference, JSON.stringify(noCoat)).toBeGreaterThan(100);
+            }
             for (const noCoat of result.noCoatCases) {
                 expect(noCoat.coatWeight, noCoat.mode).toBe(0);
                 expect(noCoat.whiteDifference, JSON.stringify(noCoat)).toBe(0);
