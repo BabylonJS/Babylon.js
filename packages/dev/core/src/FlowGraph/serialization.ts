@@ -35,6 +35,30 @@ function IsAnimationGroupClassName(className: string) {
     return className === "AnimationGroup";
 }
 
+function IsSerializableObjectReference(value: any): boolean {
+    return !!value && typeof value.getClassName === "function" && !!(value.id || value.name);
+}
+
+function SerializeObjectReference(value: any) {
+    return {
+        id: value.id,
+        name: value.name,
+        className: value.getClassName(),
+        uniqueId: value.uniqueId,
+    };
+}
+
+/**
+ * Checks whether a value is a serialized scene node reference (`{ id, name, className, uniqueId }`)
+ * that was not resolved yet.
+ * @param value the value to check
+ * @returns true if the value is a serialized node reference
+ * @internal
+ */
+export function _IsSerializedNodeReference(value: any): boolean {
+    return !!value && typeof value === "object" && typeof value.className === "string" && !!(value.id || value.name) && value.value === undefined;
+}
+
 /**
  * Resolves a serialized node reference (`{ id, name, className, uniqueId }`) to an actual scene node.
  * Matching prefers `id` (falling back to `name`), then narrows by class name, then by `uniqueId`.
@@ -107,12 +131,10 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
         };
     } else {
         if (className && (value.id || value.name)) {
-            serializationObject[key] = {
-                id: value.id,
-                name: value.name,
-                className,
-                uniqueId: value.uniqueId,
-            };
+            serializationObject[key] = SerializeObjectReference(value);
+        } else if (Array.isArray(value) && value.length > 0 && value.every((entry) => IsSerializableObjectReference(entry) || _IsSerializedNodeReference(entry))) {
+            // Live nodes are converted to references; entries that are still unresolved references are kept as they are.
+            serializationObject[key] = value.map((entry) => (IsSerializableObjectReference(entry) ? SerializeObjectReference(entry) : { ...entry }));
         } else {
             if (typeof value !== "object" || value === null) {
                 serializationObject[key] = value;
@@ -178,12 +200,11 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = intermediateValue;
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
+    } else if (Array.isArray(intermediateValue) && intermediateValue.length > 0 && intermediateValue.every(_IsSerializedNodeReference)) {
+        // An array of node references. Unresolved entries are kept so they can be re-resolved when the scene changes.
+        finalValue = intermediateValue.map((reference) => GetSceneNodeFromSerializedReference(reference, scene) ?? reference);
     } else {
-        if (Array.isArray(intermediateValue)) {
-            finalValue = intermediateValue;
-        } else {
-            finalValue = intermediateValue;
-        }
+        finalValue = intermediateValue;
     }
     return finalValue;
 }

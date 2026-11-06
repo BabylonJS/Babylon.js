@@ -1,4 +1,4 @@
-import { type IScenario } from "@memlab/core";
+import { type IHeapNode, type IScenario } from "@memlab/core";
 
 /**
  * Tuning options for the Babylon-specific memlab leak filter.
@@ -21,6 +21,32 @@ const DefaultIgnoredNameFragments = ["system "];
 const DefaultIgnoredTypes = ["hidden"];
 const DefaultIgnoredEdgeTypes = ["internal", "hidden", "weak"];
 
+const IsChromiumNetworkInspectorArtifact = (node: IHeapNode): boolean => {
+    if (node.type !== "native" || !node.name.startsWith("blink::HeapHashTableBacking<")) {
+        return false;
+    }
+
+    let retainer = node.pathEdge?.fromNode;
+    for (const name of ["blink::NetworkResourcesData", "blink::InspectorNetworkAgent"]) {
+        if (retainer?.type !== "native" || retainer.name !== name) {
+            return false;
+        }
+        retainer = retainer.pathEdge?.fromNode;
+    }
+
+    // Chromium can store the network agent in the DevTools session's native agent vector.
+    if (retainer?.type === "native" && retainer.name.startsWith("blink::HeapVectorBacking<cppgc::internal::BasicMember<blink::InspectorAgent,")) {
+        retainer = retainer.pathEdge?.fromNode;
+    }
+
+    if (retainer?.type !== "native" || retainer.name !== "blink::DevToolsSession") {
+        return false;
+    }
+
+    const root = retainer.pathEdge?.fromNode;
+    return root?.type === "synthetic" && root.name === "C++ Persistent roots";
+};
+
 /**
  * Creates the default Babylon-specific memlab leak filter.
  * @param options Optional filter overrides.
@@ -35,6 +61,10 @@ export function CreateBabylonLeakFilter(options: ILeakFilterOptions = {}): NonNu
 
     return (node) => {
         if (node.retainedSize < minRetainedSize) {
+            return false;
+        }
+
+        if (IsChromiumNetworkInspectorArtifact(node)) {
             return false;
         }
 

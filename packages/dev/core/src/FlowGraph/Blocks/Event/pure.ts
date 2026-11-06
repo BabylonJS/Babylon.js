@@ -7,6 +7,7 @@ export * from "./flowGraphSendCustomEventBlock.pure";
 export * from "./flowGraphSceneTickEventBlock.pure";
 export * from "./flowGraphPointerOutEventBlock.pure";
 export * from "./flowGraphPointerOverEventBlock.pure";
+export * from "./flowGraphMeshIntersectionEventBlock.pure";
 export * from "./flowGraphPhysicsCollisionEventBlock.pure";
 export * from "./flowGraphSoundEndedEventBlock.pure";
 export * from "./flowGraphKeyboardEventBlock";
