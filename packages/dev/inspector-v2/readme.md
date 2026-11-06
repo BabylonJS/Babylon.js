@@ -2,6 +2,16 @@
 
 This document covers the high level aspects of the Inspector V2 architecture. Note that much of this may move to a shared tooling package as it is intended to be usable by other tools (Sandbox, Playground, NME, etc.) in the future if we find enough value in integrating the framework into those tools.
 
+## Babylon Lite Audio
+
+The Lite Inspector can inspect an independently created audio engine alongside its graphics engine. After calling `ShowInspector(engine)`, use `inspector.setAudioEngine(audioEngine)` to attach or replace the audio engine, or `inspector.setAudioEngine(null)` to detach it. The Inspector does not create, own, or dispose the audio engine. Extensions can observe changes through `IAudioEngineContext`; Explorer root providers can contribute additional independent roots through `IEngineExplorerService`.
+
+The **Audio Engine** root displays buses, buffered and streaming sounds, and input sources according to their output routing. Engine and node properties include volume, sound playback controls, and links to output buses and spatially attached scene nodes. Scene entities and cameras expose an **Audio** section with links back to their directly attached sounds, buses, sources, and listener. These links follow attachment, graph, and inspected audio engine changes. Listener and spatial positions and graph changes follow the Inspector's polling or manual watch mode. Unnamed sounds receive numbered Explorer labels.
+
+Lite 1.38.1 does not expose public graph-discovery, node-volume readback, or spatial-attachment APIs. Inspection currently uses an isolated, read-only adapter for that internal layout; edits use public Lite functions. If the layout is unsupported, the root reports that graph inspection is unavailable rather than showing an incomplete hierarchy.
+
+The `?experience=lite` test app attaches an audio fixture by default: **Music**, **Effects**, and **Sphere Effects** buses, three buffered sounds, a streaming sound, and an oscillator input source. Spatial audio follows the red box, blue sphere, and small red box, while the listener follows the camera. Sounds do not autoplay; select a sound in Explorer to use its **Play**, **Pause**, and **Stop** controls. The oscillator starts silently; raise its volume in Inspector to hear it. The browser may require a user gesture before audio can play.
+
 ## Babylon Lite Skeletons and Morph Targets
 
 The Lite Explorer lists skeletons and their bone hierarchy. Skeleton properties show the bone count and links to meshes; bone properties show read-only Name, derived Index, Skeleton and Parent links. Mesh **Skinning** links back to the skeleton. Bone editing, reset, debug rendering and gizmos are not supported.
@@ -16,7 +26,27 @@ The Lite Explorer lists CPU systems registered through `registerNodeParticleSet`
 
 Discovery is add-only until scene disposal. There is no particle removal, reset, lifetime/size/color editing, GPU particle support or particle editor.
 
-These features require `@babylonjs/lite` 1.37.1 or later, which matches the Inspector's optional `@babylonjs/lite` peer dependency (`^1.37.1`).
+These features require `@babylonjs/lite` 1.37.1 or later.
+
+## Babylon Lite Physics
+
+The Lite Explorer discovers worlds created after Inspector opens under **Physics › Physics World [N] › Bodies / Constraints**. Worlds expose body and live-constraint counts, a Scene link, editable Gravity, Timestep (seconds; 0 uses the frame delta), and Max Linear / Angular Velocity. A node's **Physics** section links every body on the node, including bodies in different worlds, or shows **No Physics Body**.
+
+Body sections follow Inspector v2's order: **General** (Node, World, Motion Type, Prestep Type, Instances), **Shape** (Type, primitive parameters, Dynamic Friction, Static Friction, Restitution, Membership / Collide masks, Density, and container Child Count), **Damping** (Linear, Angular, Gravity Factor), **Velocity** (Linear and Angular), **Mass** (Mass, Center of Mass, Inertia, read-only Inertia Orientation), and live **Constraints** links. Quaternion displays use Euler degrees. Mass edits read current properties before writing to preserve unedited fields. Locked inertia axes read 0. Mass edits are rejected with an explanation if any instance has zero inertia: Lite's public readback does not expose the original pre-lock tensor, so writing the locked tensor back would corrupt later rotation unlocking. Unlock rotation in the application before editing mass properties.
+
+Thin bodies show **Instance 0 of K**. Every editable control stays editable, with **Applies to all K instances**: reads use instance 0 and edits fan out to all instances. Mass edits are rejected with an explanation if instances have different unedited mass properties: Lite has no public per-instance mass setter, so those values cannot safely be preserved in a fan-out write. Only the base shape is inspected. Shared shapes remain editable with a **Shape shared by N bodies** warning; material and filter edits affect every user of that shape. The warning counts bodies in the current world only, not other worlds.
+
+Constraints are labelled `Hinge (A ↔ B)` and expose Type, Body A / B links, editable Enabled, and read-only Collision, pivots, axes, perpendicular axes, Max Distance and Limits. Omitted pivots display zero. Constraints on thin bodies bind instance 0 only. Removing either endpoint hides the constraint from Explorer, properties and visualization, even if Lite still lists the constraint.
+
+The Debug pane's independent **Physics Bodies** and **Physics Constraints** switches maintain separate viewers per world, sharing one Inspector-owned physics utility overlay per target scene (separate from gizmos). Helpers draw on top of scene geometry without adding meshes or materials to the application scene. Helpers, including constraint arrowheads, are non-pickable and excluded from Explorer, resource discovery and bounding boxes. The overlay is released when both switches are off or Inspector/the target scene closes. Thin-instance body wireframes are omitted because Lite's viewer follows only the carrier node, not individual instance transforms. Container wireframes rebuild when children are added. Both switches are disabled when no worlds exist. Viewer reconciliation and property reads follow Inspector's watch mode; native errors are surfaced and failed helper switches roll back without disabling the other viewer. Overlay registration failures disable both physics switches and show an error.
+
+For manual physics inspection, run `npm run serve -w @dev/inspector` and open `http://localhost:9001/?experience=lite`. The test app loads the Havok fixture by default (four bodies, including shared shapes and three thin instances, plus hinge and distance constraints). Open **Physics** in Explorer or enable the Debug pane's physics switches. Use `?experience=lite&physics=off` to start without physics; `await window.liteCreatePhysics()` then creates the fixture once, allowing late-discovery testing without reloading. `INSPECTOR_TEST_PORT` selects a different server port when needed.
+
+The three ordinary fixture bodies form a stationary, zero-gravity row above the original scene objects at `y=1.8` (Box `x=-0.25`, Sphere `x=1`, Shared `x=1.75`). They reuse the scene's red/blue materials and start separated with satisfied constraints, so their white body wireframes and colored constraint helpers stay in the default camera view. Enable both **Physics Bodies** and **Physics Constraints** in **Debug** to inspect them; ordinary **Bounding Boxes** are not required. Thin instances remain at `(-2,4,0)`, `(0,4,0)` and `(2,4,0)`, outside this row, with their misleading carrier wireframe intentionally omitted.
+
+Limitations: Lite has no physics-engine enable flag. Mesh, convex-hull, heightfield and container shape parameters are unavailable. Material combine modes, motors, sleep state, per-instance editing, pivot editing, creating/releasing physics objects, character controllers, raycasts and impulses are not exposed. Releasing a shape still attached to a live body violates Lite's lifetime contract and cannot be made safe by Inspector.
+
+Inspector's Lite entry point requires `@babylonjs/lite` 1.38.1 or later, matching its optional peer dependency (`^1.38.1`). Physics inspection uses the discovery/readback APIs (including constraint enable, density, child count, stable constraint debug data and constraint hide) and the opt-in utility overlay API shared with gizmos.
 
 ## Babylon Lite Picking
 

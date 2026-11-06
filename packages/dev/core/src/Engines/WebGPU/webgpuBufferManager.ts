@@ -9,6 +9,9 @@ import { type WebGPUEngine } from "../webgpuEngine";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
 
+// Float16Array (ES2025) where the browser has it: it is not in the TypeScript libraries the engine builds with
+type Float16ArrayConstructor = new (buffer: ArrayBufferLike, byteOffset?: number, length?: number) => ArrayLike<number>;
+
 /** @internal */
 export class WebGPUBufferManager {
     private _engine: WebGPUEngine;
@@ -116,6 +119,13 @@ export class WebGPUBufferManager {
             destArray = new Float32Array(dataLength);
         } else {
             dataLength = Math.min(dataLength, destArray.length);
+        }
+        // eslint-disable-next-line @typescript-eslint/naming-convention -- the name of the global
+        const float16Array = (globalThis as { Float16Array?: Float16ArrayConstructor }).Float16Array;
+        if (float16Array) {
+            // the browser converts the values: the same as FromHalfFloat, except that a NaN may keep its sign and payload
+            destArray.set(new float16Array(arrayBuffer, 0, dataLength));
+            return destArray;
         }
         const srcData = new Uint16Array(arrayBuffer);
         while (dataLength--) {

@@ -84,4 +84,37 @@ describe("Effect shader preparation failures", () => {
         expect(effect.getCompilationError()).toBe("");
         expect(onError).not.toHaveBeenCalled();
     });
+
+    it("handles an asynchronous pipeline preparation failure (as WebGPU reports them) like a synchronous one", async () => {
+        const prepare = vi.spyOn(engine, "_preparePipelineContextAsync").mockImplementationOnce(async () => {
+            throw new Error("Optional shader feature is unsupported");
+        });
+        const reduce = vi.spyOn(fallbacks, "reduce");
+        const onError = vi.fn();
+        engine.onEffectErrorObservable.add(onError);
+
+        const effect = createEffect();
+        await vi.waitFor(() => expect(effect.isReady()).toBe(true));
+
+        expect(prepare).toHaveBeenCalledTimes(2);
+        expect(reduce).toHaveBeenCalledOnce();
+        expect(effect.getCompilationError()).toBe("");
+        expect(onError).not.toHaveBeenCalled();
+    });
+
+    it("reports an asynchronous pipeline preparation failure when no fallback is left", async () => {
+        vi.spyOn(engine, "_preparePipelineContextAsync").mockImplementation(async () => {
+            throw new Error("Shader stage creation failed");
+        });
+        const onError = vi.fn();
+        engine.onEffectErrorObservable.add(onError);
+
+        const effect = createEffect({ fallbacks: null });
+        await vi.waitFor(() => expect(onError).toHaveBeenCalledOnce());
+
+        expect(onError.mock.calls[0][0].effect).toBe(effect);
+        expect(effect.getCompilationError()).toContain("Shader stage creation failed");
+        expect(effect.isReady()).toBe(false);
+        expect(effect.allFallbacksProcessed()).toBe(true);
+    });
 });

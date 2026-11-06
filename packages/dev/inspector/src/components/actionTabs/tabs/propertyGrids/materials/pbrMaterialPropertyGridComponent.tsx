@@ -144,6 +144,14 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
                 <TextureLinkLineComponent
+                    label="Bent Normal"
+                    texture={material.bentNormalTexture}
+                    propertyName="bentNormalTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
                     label="Lightmap"
                     texture={material.lightmapTexture}
                     propertyName="lightmapTexture"

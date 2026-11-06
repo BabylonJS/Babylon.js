@@ -62,7 +62,7 @@ function CreateTestSceneExplorerService() {
         get nodeProviders() {
             return [...(registration.options.nodeProviders?.items ?? [])];
         },
-        getNodes: () => GetExplorerNodeChildren(scene, registration.options.getNodes(), registration.options.nodeProviders?.items ?? []),
+        getNodes: () => GetExplorerNodeChildren(scene, registration.options.getRoots()[0].getNodes(), registration.options.nodeProviders?.items ?? []),
     };
 }
 
@@ -123,12 +123,13 @@ describe("SceneExplorerService", () => {
         expect(service.groupCommands).toEqual([]);
     });
 
-    it("supplies the current scene and the Scene label as the explorer root", () => {
+    it("supplies the current scene and the Scene label as an Explorer root", () => {
         const service = CreateTestSceneExplorerService();
+        const [root] = service.registration.options.getRoots();
 
-        expect(service.registration.options.getRoot()).toBe(service.scene);
-        expect(service.registration.options.rootLabel).toBe("Scene");
-        expect(service.registration.options.onRootChanged).toBe(service.sceneContext.currentSceneObservable);
+        expect(root.entity).toBe(service.scene);
+        expect(root.label).toBe("Scene");
+        expect(service.registration.options.onRootsChanged).toBe(service.sceneContext.currentSceneObservable);
     });
 
     it("consumes the scene context (and not a generic target context)", () => {

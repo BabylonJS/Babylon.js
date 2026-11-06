@@ -21,6 +21,7 @@ import { resolve, join, dirname, relative as pathRelative } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { transform as esbuildTransform } from "esbuild";
 import { downlevelJavaScriptToEs5 } from "../../scripts/downlevelJavaScriptToEs5.mjs";
+import { createTypeScriptEmitPlugins } from "./rollupTypeScript.mjs";
 
 // Repo root — used as the filterRoot for @rollup/plugin-typescript so that
 // `**/*.ts` patterns are matched against repo-relative paths (which never start
@@ -796,27 +797,29 @@ export function commonUMDRollupConfiguration(options) {
     const useEsbuild = devMode && !production;
     const transpilePlugins = useEsbuild
         ? [esbuildTranspilePlugin({ sourceMap: true })]
-        : [
-              typescript({
-                  tsconfig: "tsconfig.build.json",
-                  // Rollup owns the bundle output; do not inherit the standalone tsc emit directory.
-                  outDir: undefined,
-                  declaration: false,
-                  declarationMap: false,
-                  sourceMap: true,
-                  // Embed source contents in the generated sourcemap so DevTools/playground
-                  // can display the original .ts files even when the relative source paths
-                  // (which start with `../../../../../../../`) cannot be fetched over HTTP.
-                  inlineSources: true,
-                  // filterRoot set to the repo root so **/*.ts patterns match files from
-                  // any package (including aliased cross-package tool sources).
-                  filterRoot: REPO_ROOT,
-                  include: ["**/*.ts", "**/*.tsx"],
-              }),
-              // Fallback: transpile .ts files that are outside the tsconfig rootDir
-              // (e.g. aliased tool sources) which @rollup/plugin-typescript skips.
-              transpileExternalTsPlugin(),
-          ];
+        : entryPoints && production
+          ? []
+          : [
+                typescript({
+                    tsconfig: "tsconfig.build.json",
+                    // Rollup owns the bundle output; do not inherit the standalone tsc emit directory.
+                    outDir: undefined,
+                    declaration: false,
+                    declarationMap: false,
+                    sourceMap: true,
+                    // Embed source contents in the generated sourcemap so DevTools/playground
+                    // can display the original .ts files even when the relative source paths
+                    // (which start with `../../../../../../../`) cannot be fetched over HTTP.
+                    inlineSources: true,
+                    // filterRoot set to the repo root so **/*.ts patterns match files from
+                    // any package (including aliased cross-package tool sources).
+                    filterRoot: REPO_ROOT,
+                    include: ["**/*.ts", "**/*.tsx"],
+                }),
+                // Fallback: transpile .ts files that are outside the tsconfig rootDir
+                // (e.g. aliased tool sources) which @rollup/plugin-typescript skips.
+                transpileExternalTsPlugin(),
+            ];
 
     const plugins = [
         stubOptionalPeerDepsPlugin(),
@@ -920,27 +923,29 @@ export function commonUMDRollupConfiguration(options) {
     });
 
     if (entryPoints) {
+        const sharedTypeScript = production && process.env.ROLLUP_WATCH !== "true" ? createTypeScriptEmitPlugins("tsconfig.build.json") : undefined;
         // Return an array of single-input configs (one per entry).
         // The copyMinToMaxPlugin is only attached to the first config to avoid
         // copying the same files multiple times.
         return Object.entries(entryPoints).map(([chunkName, inputFile], i) => {
             const perEntryExternals = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip], { bundleGltf2Interface, externalPackageType });
             const perEntryResolveGlobal = (id) => perEntryExternals.globals[id] ?? umdGlobals[id] ?? es6Globals[id] ?? id;
-            // In devMode, esbuild is stateless so the shared transpilePlugins can be reused.
-            // In non-devMode, each entry needs its own tsc plugin instance.
+            // Production entries share emit, while watch builds need independent compiler lifecycles.
             const perEntryTranspilePlugins = useEsbuild
                 ? transpilePlugins
                 : [
-                      typescript({
-                          tsconfig: "tsconfig.build.json",
-                          outDir: undefined,
-                          declaration: false,
-                          declarationMap: false,
-                          sourceMap: true,
-                          inlineSources: true,
-                          filterRoot: REPO_ROOT,
-                          include: ["**/*.ts", "**/*.tsx"],
-                      }),
+                      sharedTypeScript
+                          ? sharedTypeScript()
+                          : typescript({
+                                tsconfig: "tsconfig.build.json",
+                                outDir: undefined,
+                                declaration: false,
+                                declarationMap: false,
+                                sourceMap: true,
+                                inlineSources: true,
+                                filterRoot: REPO_ROOT,
+                                include: ["**/*.ts", "**/*.tsx"],
+                            }),
                       transpileExternalTsPlugin(),
                   ];
             const perEntryPlugins = [

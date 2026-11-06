@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-serializers",
-    "version": "9.33.0",
+    "version": "9.34.0",
     "main": "babylonjs.serializers.min.js",
     "types": "babylonjs.serializers.module.d.ts",
     "files": [
@@ -11,13 +11,13 @@
         "build:dev": "rollup -c rollup.config.umd.mjs",
         "build:dev:fast": "rollup -c rollup.config.umd.mjs --environment ROLLUP_DEVMODE:true",
         "build:prod": "rollup -c rollup.config.umd.mjs --environment ROLLUP_MODE:production",
-        "build:declaration": "build-tools -c pud --config ./config.json",
+        "build:declaration": "build-tools -c pud --config ./config.json --skipDocumentation",
         "clean": "rimraf dist && rimraf babylon*.* -g",
         "test:escheck": "node ../../../../scripts/checkEcmaVersion.mjs es6 ./babylonjs.serializers.js"
     },
     "dependencies": {
-        "babylonjs": "9.33.0",
-        "babylonjs-gltf2interface": "9.33.0"
+        "babylonjs": "9.34.0",
+        "babylonjs-gltf2interface": "9.34.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

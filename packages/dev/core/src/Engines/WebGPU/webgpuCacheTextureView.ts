@@ -9,26 +9,41 @@
  * @internal
  */
 export class WebGPUCacheTextureView {
-    private _cache = new WeakMap<GPUTexture, Map<string, GPUTextureView>>();
+    // a texture has few views, so they are found by comparing the descriptors' fields: a lookup allocates nothing
+    private _cache = new WeakMap<GPUTexture, Array<{ descriptor: GPUTextureViewDescriptor; view: GPUTextureView }>>();
 
     public getView(texture: GPUTexture, descriptor: GPUTextureViewDescriptor): GPUTextureView {
         let viewsForTexture = this._cache.get(texture);
         if (!viewsForTexture) {
-            viewsForTexture = new Map();
+            viewsForTexture = [];
             this._cache.set(texture, viewsForTexture);
         }
 
-        const key = WebGPUCacheTextureView._GetKey(descriptor);
-        let view = viewsForTexture.get(key);
-        if (!view) {
-            view = texture.createView(descriptor);
-            viewsForTexture.set(key, view);
+        for (let i = 0; i < viewsForTexture.length; i++) {
+            const entry = viewsForTexture[i];
+            if (WebGPUCacheTextureView._SameView(entry.descriptor, descriptor)) {
+                return entry.view;
+            }
         }
+
+        const view = texture.createView(descriptor);
+        // a copy: the callers reuse their descriptors for other views
+        viewsForTexture.push({ descriptor: { ...descriptor }, view });
 
         return view;
     }
 
-    private static _GetKey(descriptor: GPUTextureViewDescriptor): string {
-        return `${descriptor.format}_${descriptor.dimension}_${descriptor.baseMipLevel}_${descriptor.mipLevelCount}_${descriptor.baseArrayLayer}_${descriptor.arrayLayerCount}_${descriptor.aspect}_${descriptor.usage}_${descriptor.swizzle}`;
+    private static _SameView(a: GPUTextureViewDescriptor, b: GPUTextureViewDescriptor): boolean {
+        return (
+            a.format === b.format &&
+            a.dimension === b.dimension &&
+            a.baseMipLevel === b.baseMipLevel &&
+            a.mipLevelCount === b.mipLevelCount &&
+            a.baseArrayLayer === b.baseArrayLayer &&
+            a.arrayLayerCount === b.arrayLayerCount &&
+            a.aspect === b.aspect &&
+            a.usage === b.usage &&
+            a.swizzle === b.swizzle
+        );
     }
 }

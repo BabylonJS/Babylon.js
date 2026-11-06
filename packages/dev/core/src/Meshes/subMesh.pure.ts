@@ -94,6 +94,35 @@ export class SubMesh implements ICullable {
         this._mainDrawWrapperOverride = wrapper;
     }
 
+    /** Invalidates vertex bindings for submesh- and material-owned draws without releasing their resources. @internal */
+    public _invalidateVertexBuffers(): void {
+        for (const drawWrapper of this._drawWrappers) {
+            drawWrapper?.drawContext?._invalidateVertexBuffers?.();
+        }
+        this._mainDrawWrapperOverride?.drawContext?._invalidateVertexBuffers?.();
+
+        const scene = this._mesh.getScene();
+        this._invalidateMaterialVertexBuffers(this._renderingMesh.material ?? (scene._hasDefaultMaterial ? scene.defaultMaterial : null));
+        const passMaterials = this._renderingMesh._internalAbstractMeshDataInfo._materialForRenderPass;
+        if (passMaterials) {
+            for (const material of passMaterials) {
+                this._invalidateMaterialVertexBuffers(material);
+            }
+        }
+    }
+
+    private _invalidateMaterialVertexBuffers(material: Nullable<Material> | undefined): void {
+        if (material && this._isMultiMaterial(material)) {
+            material = material.getSubMaterial(this.materialIndex);
+        }
+        if (material) {
+            if (!material._storeEffectOnSubMeshes) {
+                material._getDrawWrapper().drawContext?._invalidateVertexBuffers?.();
+            }
+            material.shadowDepthWrapper?._invalidateVertexBuffers(this);
+        }
+    }
+
     /**
      * Sets associated effect (effect used to render this submesh)
      * @param effect defines the effect to associate with
