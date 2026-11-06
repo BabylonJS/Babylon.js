@@ -496,6 +496,35 @@ export abstract class AbstractEngine {
     public currentRenderPassId = Constants.RENDERPASS_MAIN;
 
     /**
+     * @internal True while the scene renders a pass it renders again in the next frames (its cameras, the render targets of its frame,
+     * the frame graph): only there can a mesh draw wait for its pipeline (WebGPU asynchronous pipeline creation). A pass rendered once
+     * (an object renderer, of a render target or a frame graph task, with REFRESHRATE_RENDER_ONCE or rendered by a call that its
+     * shouldRender() did not ask for: a GPU picking, the voxelization of IBL shadows, a decal of MeshUVSpaceRenderer; a screenshot through
+     * a render target, a render outside the scene's frame) draws every mesh in that rendering.
+     */
+    public _drawsMayWait = false;
+
+    /**
+     * @internal The depth of the renderings done once that are in progress (an object renderer rendered once, a screenshot through a
+     * render target): while it is not zero, the passes of the scene's frame they render do not let their draws wait either.
+     */
+    public _renderingOnce = 0;
+
+    /**
+     * @internal The mesh whose draws are being submitted (Mesh._processRendering, in any of its passes and whatever draw context its
+     * material gives them): its draws wait together for their render pipelines (WebGPU asynchronous pipeline creation). Null for every
+     * other draw (the bounding box of an occlusion query, a post-process, sprites, particles...), which never waits.
+     */
+    public _pipelineWaitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null;
+
+    /**
+     * @internal The last frame in which a mesh draw waited for its render pipeline (WebGPU asynchronous pipeline creation). A mesh is held
+     * back in its passes in the frame of its last wait and the next one; until the frame after those, a render target refreshed every N
+     * frames renders in every frame (ObjectRenderer.shouldRender), so that it shows a mesh in the same frames as the other passes.
+     */
+    public _lastPipelineWaitFrameId = -Infinity;
+
+    /**
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;

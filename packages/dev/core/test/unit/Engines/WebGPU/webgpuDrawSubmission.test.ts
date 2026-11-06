@@ -150,6 +150,33 @@ describe("WebGPU draw submission", () => {
         expect(engine).toHaveProperty("_renderPassCommandBatching", null);
     });
 
+    it("never puts a draw that waits for its pipeline in a native batch, and submits it once when its pipeline is ready", () => {
+        const { engine, state, renderPass, pipeline } = createEngine();
+        const tryGetRenderPipeline = vi.fn((): object | null => null);
+        Object.assign(state._cacheRenderPipeline, { tryGetRenderPipeline });
+        const owner = { _pipelinePendingFrameId: -1, _pipelineDrawnFrameId: -1 };
+        Object.assign(engine, { asynchronousPipelineCreation: true, _drawsMayWait: true, _pipelineWaitOwner: owner, _lastPipelineWaitFrameId: -1, _frameId: 10 });
+        engine.renderPassCommandRecorderProvider = createProvider();
+        const frame = (frameId: number) => {
+            Object.assign(engine, { _frameId: frameId });
+            engine.drawElementsType(0, 0, 3);
+            engine._flushRenderPassCommands();
+        };
+
+        frame(10); // the pipeline is being created: nothing is batched or drawn
+        expect(state._reportDrawCall).not.toHaveBeenCalled();
+        expect(renderPass._recordCommands).not.toHaveBeenCalled();
+
+        tryGetRenderPipeline.mockReturnValue(pipeline);
+        frame(11); // ready, and held back one frame so that all the passes of the mesh show it together
+        expect(renderPass._recordCommands).not.toHaveBeenCalled();
+
+        frame(12);
+        expect(renderPass._recordCommands).toHaveBeenCalledExactlyOnceWith(expect.any(Uint32Array), 1, 0, 0, expect.any(Number));
+        expect(state._reportDrawCall).toHaveBeenCalledOnce();
+        expect(renderPass.drawIndexed).not.toHaveBeenCalled();
+    });
+
     it("constructs and reuses render bundles without initializing command batching", () => {
         const { engine, state, renderPass, bundleEncoder, bundle } = createEngine();
         engine.compatibilityMode = false;

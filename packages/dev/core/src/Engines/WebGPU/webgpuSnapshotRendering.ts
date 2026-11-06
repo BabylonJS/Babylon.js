@@ -87,6 +87,18 @@ export class WebGPUSnapshotRendering {
         }
     }
 
+    /**
+     * The frame being recorded misses draws: it is recorded again at the next frame
+     */
+    public invalidateRecording(): void {
+        if (!this._record) {
+            return;
+        }
+
+        this._allBundleLists.length = 0;
+        this._recordingInvalidated = true;
+    }
+
     public endRenderPass(currentRenderPass: GPURenderPassEncoder): boolean {
         if (!this._record && !this._play) {
             // Snapshot rendering mode is not enabled

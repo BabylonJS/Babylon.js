@@ -1051,6 +1051,9 @@ export class GPUPicker {
 
     private _addPickingTextureToRenderTargets(): void {
         this._removePickingTextureFromRenderTargets();
+        // a request reads the one rendering it asks for, which draws every mesh, none waiting for its pipeline (WebGPU asynchronous
+        // pipeline creation); it asks for another only while the picking shaders are not ready (see _checkRenderStatus)
+        this._pickingTexture!.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
         this._cachedScene!.customRenderTargets.push(this._pickingTexture!);
         this._renderPickingTexture = true;
     }
@@ -1412,6 +1415,7 @@ export class GPUPicker {
         }
 
         this._meshRenderingCount = 0;
+        this._pickingTexture!.resetRefreshCounter(); // rendered again in the next frame
         return false; // Wait for shaders to be ready
     }
 

@@ -91,7 +91,59 @@ export abstract class WebGPUCacheRenderPipeline {
 
     public disabled: boolean;
 
+    /**
+     * The pipeline being created for the last tryGetRenderPipeline call that returned null
+     */
+    public lastPendingPipeline: Nullable<Promise<GPURenderPipeline>> = null;
+
     private static _NumPipelineCreationCurrentFrame = 0;
+
+    // pipelines being created asynchronously, by cache token (the cache is shared): one creation per pipeline configuration
+    private static _PendingPipelines = new Map<any, Promise<GPURenderPipeline>>();
+    // cache tokens whose asynchronous creation failed: created synchronously at their next miss, which reports the error as usual
+    private static _FailedPipelines = new Set<any>();
+    // bumped when the cache is reset (a device change, the last engine disposed): a creation that completes after it is ignored
+    private static _AsyncGeneration = 0;
+
+    /**
+     * The number of pipelines being created asynchronously, for all the engines (they share the pipeline cache). The readiness of an
+     * engine counts only the creations it waits for (numAwaitedPipelines of its cache)
+     */
+    public static get NumPendingPipelines(): number {
+        return WebGPUCacheRenderPipeline._PendingPipelines.size;
+    }
+
+    /**
+     * Forgets the asynchronous creations, pending and failed (the cache was reset): one that completes later, on the device it was
+     * started on, is ignored, neither kept nor reported.
+     * @internal
+     */
+    public static _ResetAsyncCreations(): void {
+        WebGPUCacheRenderPipeline._AsyncGeneration++;
+        WebGPUCacheRenderPipeline._PendingPipelines.clear();
+        WebGPUCacheRenderPipeline._FailedPipelines.clear();
+    }
+
+    // the asynchronous creations this cache (its engine) waits for: started by it, or by another engine and drawn by this one too. A
+    // creation removes itself from the set it was added to, so one that completes after the set was forgotten does not count
+    private _awaitedPipelines = new Set<Promise<GPURenderPipeline>>();
+
+    /**
+     * The number of pipelines this cache waits for while they are created asynchronously: the readiness of its engine. A creation
+     * for another engine counts once this one draws the same pipeline
+     */
+    public get numAwaitedPipelines(): number {
+        return this._awaitedPipelines.size;
+    }
+
+    /**
+     * Forgets the creations this cache waits for (its device was lost, its engine disposed): they no longer count, even when they
+     * complete later.
+     * @internal
+     */
+    public _forgetAwaitedPipelines(): void {
+        this._awaitedPipelines = new Set();
+    }
 
     protected _states: number[];
     protected _statesLength: number;
@@ -265,6 +317,35 @@ export abstract class WebGPUCacheRenderPipeline {
         WebGPUCacheRenderPipeline._NumPipelineCreationCurrentFrame++;
 
         return this._parameter.pipeline;
+    }
+
+    /**
+     * Like getRenderPipeline, but a pipeline missing from the cache is created asynchronously (preWarmPipeline) and null is returned
+     * until it is cached; the pending creation is then in lastPendingPipeline. A pipeline whose asynchronous creation failed is
+     * created synchronously at its next miss, so that its error is reported as with getRenderPipeline.
+     * @param fillMode defines the fill mode used to configure the rasterization state
+     * @param effect defines the effect containing the shader and vertex input layout
+     * @param sampleCount defines the number of samples to use for MSAA
+     * @param textureState defines the encoded texture state used for the pipeline cache key
+     * @returns the pipeline, or null while it is being created
+     */
+    public tryGetRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): Nullable<GPURenderPipeline> {
+        if (this.disabled) {
+            return this.getRenderPipeline(fillMode, effect, sampleCount, textureState);
+        }
+
+        const cached = this._lookupRenderPipeline(fillMode, effect, WebGPUTextureHelper.GetSample(sampleCount), textureState);
+        if (cached) {
+            return cached;
+        }
+
+        if (WebGPUCacheRenderPipeline._FailedPipelines.delete(this._parameter.token)) {
+            return this.getRenderPipeline(fillMode, effect, sampleCount, textureState);
+        }
+
+        this.lastPendingPipeline = this.preWarmPipeline(fillMode, effect, sampleCount, textureState);
+
+        return null;
     }
 
     public endFrame(): void {
@@ -1235,21 +1316,61 @@ export abstract class WebGPUCacheRenderPipeline {
             return null;
         }
 
-        const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
-
         // Capture the cache token before any subsequent cache operations overwrite it
-        const capturedParam = { token: this._parameter.token, pipeline: null as Nullable<GPURenderPipeline> };
+        const token = this._parameter.token;
 
-        const promise = this._device.createRenderPipelineAsync(this._buildRenderPipelineDescriptor(effect, topology, sampleCount));
+        // the same pipeline configuration is created once
+        const pending = WebGPUCacheRenderPipeline._PendingPipelines.get(token);
+        if (pending) {
+            this._awaitPipeline(pending);
+            return pending;
+        }
+
+        const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
+        const descriptor = this._buildRenderPipelineDescriptor(effect, topology, sampleCount);
+        const generation = WebGPUCacheRenderPipeline._AsyncGeneration;
 
         // eslint-disable-next-line github/no-then
-        return promise.then((pipeline) => {
-            capturedParam.pipeline = pipeline;
-            this._setRenderPipeline(capturedParam);
+        const promise = this._device.createRenderPipelineAsync(descriptor).then(
+            (pipeline) => {
+                if (generation !== WebGPUCacheRenderPipeline._AsyncGeneration) {
+                    return pipeline;
+                }
+                WebGPUCacheRenderPipeline._PendingPipelines.delete(token);
+                this._setRenderPipeline({ token, pipeline });
 
-            WebGPUCacheRenderPipeline.NumCacheMiss++;
+                WebGPUCacheRenderPipeline.NumCacheMiss++;
 
-            return pipeline;
-        });
+                return pipeline;
+            },
+            (error) => {
+                if (generation !== WebGPUCacheRenderPipeline._AsyncGeneration) {
+                    throw error;
+                }
+                WebGPUCacheRenderPipeline._PendingPipelines.delete(token);
+                WebGPUCacheRenderPipeline._FailedPipelines.add(token);
+                Logger.Error(`WebGPU: the asynchronous creation of the render pipeline "${descriptor.label}" failed: ${error?.message ?? error}`);
+                throw error;
+            }
+        );
+        WebGPUCacheRenderPipeline._PendingPipelines.set(token, promise);
+        this._awaitPipeline(promise);
+        // the error is reported above; callers still get the rejection
+        // eslint-disable-next-line github/no-then
+        promise.catch(() => {});
+
+        return promise;
+    }
+
+    // this cache waits for the creation until it completes or fails
+    private _awaitPipeline(promise: Promise<GPURenderPipeline>): void {
+        const awaitedPipelines = this._awaitedPipelines;
+        if (awaitedPipelines.has(promise)) {
+            return;
+        }
+        awaitedPipelines.add(promise);
+        const done = () => awaitedPipelines.delete(promise);
+        // eslint-disable-next-line github/no-then
+        promise.then(done, done);
     }
 }
