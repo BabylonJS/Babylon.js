@@ -889,10 +889,13 @@ export class ProceduralTexture extends Texture {
         this.onGeneratedObservable.clear();
         this.onBeforeGenerationObservable.clear();
 
-        // The render target wrapper owns both the framebuffers and the texture, so release it here.
-        // If the texture was already released (releaseInternalTexture), only release the framebuffers.
+        // The render target wrapper owns the framebuffers, the color texture and any depth/stencil texture, so release it here.
+        // If the color texture was already released (releaseInternalTexture), detach it first so it isn't released twice.
         if (this._rtWrapper) {
-            this._rtWrapper.dispose(this._texture !== this._rtWrapper.texture);
+            if (this._texture !== this._rtWrapper.texture) {
+                this._rtWrapper.setTextures(null);
+            }
+            this._rtWrapper.dispose();
             this._rtWrapper = null;
             this._texture = null;
         }

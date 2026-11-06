@@ -275,7 +275,11 @@ export class DynamicTexture extends Texture {
         if (this._ownCanvas) {
             this._canvas?.remove?.();
             // Native canvases keep GPU resources alive until garbage collection unless disposed explicitly.
-            (this._canvas as Partial<INativeCanvas> | null)?.dispose?.();
+            // Only dispose when the runtime defers the release past commands already queued this frame (e.g. by update()).
+            const nativeCanvas = this._canvas as Partial<INativeCanvas> | null;
+            if (nativeCanvas?.supportsDeferredDispose) {
+                nativeCanvas.dispose?.();
+            }
         }
         (this._canvas as any) = null;
         (this._context as any) = null;
