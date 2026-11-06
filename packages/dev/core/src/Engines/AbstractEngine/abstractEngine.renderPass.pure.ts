@@ -39,6 +39,7 @@ export function RegisterAbstractEngineRenderPass(): void {
                     for (let b = 0; b < mesh.subMeshes.length; ++b) {
                         const subMesh = mesh.subMeshes[b];
                         subMesh._removeDrawWrapper(id);
+                        subMesh._indirectDrawBuffers?.delete(id);
                     }
                 }
             }
