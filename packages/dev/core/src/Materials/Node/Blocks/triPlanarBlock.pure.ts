@@ -376,6 +376,11 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind the block
      * @param effect - the effect to bind

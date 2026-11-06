@@ -1028,8 +1028,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 this._cascadesUbos = this._cascadesUbos || new Map();
                 this._updateCascadesUbo();
             }
-            const cascades = this._cascadesBuffers!;
-            const cascadesUbo = (scene.floatingOriginMode ? this._getCascadesBufferForEye(cascades, scene.floatingOriginOffset) : cascades.buffers[0]).ubo;
+            const cascadesUbo = this._getReceiversUniformBuffer()!;
             cascadesUbo.bindToEffect(effect, "cascades" + lightIndex);
             cascadesUbo.bindUniformBuffer();
         } else {
@@ -1071,6 +1070,16 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera),
             lightIndex
         );
+    }
+
+    /** @internal */
+    public _getReceiversUniformBuffer(): Nullable<UniformBuffer> {
+        const cascades = this._cascadesBuffers;
+        if (!cascades) {
+            return null;
+        }
+        const scene = this._scene;
+        return (scene.floatingOriginMode ? this._getCascadesBufferForEye(cascades, scene.floatingOriginOffset) : cascades.buffers[0]).ubo;
     }
 
     private _computePCSSCorrections(): void {

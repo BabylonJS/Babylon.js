@@ -119,6 +119,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
 
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
         super(material, "PBRIridescence", 110, new MaterialIridescenceDefines(), addToPluginList);
+        this._bindsMaterialValuesOnly = true;
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }

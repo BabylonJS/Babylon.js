@@ -2708,6 +2708,350 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * @internal Whether a full draw of the mesh notifies draw observers (onBeforeDrawObservable, in _draw), without creating the
+     * observable: a draw recorded by a snapshot is not encoded again for such a mesh, in its passes nor in the shadow maps
+     */
+    public _hasDrawObservers(): boolean {
+        return !!this._internalMeshDataInfo._onBeforeDrawObservable?.hasObservers();
+    }
+
+    /**
+     * Whether a snapshot records a draw of the mesh to encode it again from its commands: its material can be (see
+     * Material._canReplayRecordedDraw), it writes no velocity (its bind keeps the previous world matrix of its mesh, once per frame), and
+     * nothing runs per draw outside of the engine (instances, bones, morph targets, baked animations, occlusion queries, render and draw
+     * observers, an outline or an overlay), which could set around the full draw states its commands would keep. The same predicate
+     * decides what is kept and what is encoded again: a draw that cannot be is neither checked nor kept, and what was recorded for it
+     * is dropped, so that it is recorded again once it can be
+     * @param subMesh the sub mesh to render
+     * @param batch the instances batch of the sub mesh
+     * @param effectiveMeshReplacement the mesh used in place of this one, if any
+     * @returns true if the draw is recorded
+     */
+    private _canRecordDraw(subMesh: SubMesh, batch: _InstancesBatch, effectiveMeshReplacement?: AbstractMesh): boolean {
+        const defines = subMesh.materialDefines;
+        if (
+            !subMesh.getMaterial()?._canReplayRecordedDraw() ||
+            defines?.["PREPASS_VELOCITY"] ||
+            defines?.["PREPASS_VELOCITY_LINEAR"] ||
+            effectiveMeshReplacement ||
+            batch.hardwareInstancedRendering[subMesh._id] ||
+            !this._canRecordThinInstances() ||
+            this._userInstancedBuffersStorage ||
+            this.skeleton ||
+            this.morphTargetManager ||
+            this.bakedVertexAnimationManager ||
+            this.ignoreCameraMaxZ ||
+            // without the occlusion queries module, occlusionType is undefined: no occlusion query
+            (this.occlusionType ?? AbstractMesh.OCCLUSION_TYPE_NONE) !== AbstractMesh.OCCLUSION_TYPE_NONE ||
+            this._runsCodeOnDraw() ||
+            // the outline renderer draws the outline and the overlay of the mesh around its full draw, changing the depth, color and
+            // stencil states around it (its steps do nothing for the other meshes)
+            this.renderOutline ||
+            this.renderOverlay
+        ) {
+            return false;
+        }
+        return true;
+    }
+
+    // whether code of the user runs around a draw of the mesh: its render and bind observers, and the draw observers
+    private _runsCodeOnDraw(): boolean {
+        const info = this._internalMeshDataInfo;
+        return (
+            !!info._onBeforeRenderObservable?.hasObservers() ||
+            !!info._onBeforeBindObservable?.hasObservers() ||
+            !!info._onBetweenPassObservable?.hasObservers() ||
+            !!info._onAfterRenderObservable?.hasObservers() ||
+            this._hasDrawObservers()
+        );
+    }
+
+    /**
+     * Gets the draw wrapper of a draw the mesh records (see _canRecordDraw) that can be encoded again without rendering the mesh: it
+     * did not change since it was recorded (see _isRecordedDrawUnchanged)
+     * @param subMesh the sub mesh to render
+     * @returns the draw wrapper, or null when the mesh must be rendered
+     */
+    private _getUnchangedRecordedDraw(subMesh: SubMesh): Nullable<DrawWrapper> {
+        const drawWrapper = subMesh._drawWrapper;
+        return this._isRecordedDrawUnchanged(drawWrapper, subMesh, subMesh.getMaterial()!, this, true) ? drawWrapper : null;
+    }
+
+    /**
+     * Whether the thin instances of the mesh, if any, can be drawn from recorded commands: their buffers are bound as they are
+     * (their content can change), but not when their previous matrices are written from the current ones after each draw
+     * @returns true if they can
+     * @internal
+     */
+    public _canRecordThinInstances(): boolean {
+        return !this.hasThinInstances || !this._scene.needsPreviousWorldMatrices || !!this._thinInstanceDataStorage.previousMatrixData;
+    }
+
+    /**
+     * Whether a draw a snapshot recorded did not change since then: its per-draw values (what its effect sets when it binds: the
+     * material's values, fog, shadow matrices...) are the same bytes a full bind of a draw of the same material wrote in this frame,
+     * and it has the same material (version, GPU textures, the pipeline state it sets from plain fields), world matrix, visibility,
+     * sub mesh ranges (indices and vertices), geometry and thin instance
+     * buffers and instance count; with lights, the lights were bound in this frame (their uniform buffers are shared: the first bind of the
+     * frame writes them), and their shadow maps and the buffers their generators bind to receivers (the cascades of a camera) are the same.
+     * The shared uniform buffers it binds are still on the first buffer of their frame (see _areSharedBuffersFirst)
+     * @param drawWrapper the draw wrapper of the recorded draw
+     * @param subMesh the sub mesh
+     * @param material the material of the draw
+     * @param effectiveMesh the mesh providing the world matrix and the lights
+     * @param withLights whether the draw binds the lights (not in the shadow maps)
+     * @param domain what else writes its per-draw values (the shadow generator), or null
+     * @param domainState what the domain sets in its full draws outside of the per-draw values, from 0 to 3 (the culling of
+     * forceBackFacesOnly, the texture of the alpha test of useOpacityTextureForTransparentShadow), compared too
+     * @returns true if the draw can be encoded again
+     * @internal
+     */
+    public _isRecordedDrawUnchanged(
+        drawWrapper: DrawWrapper,
+        subMesh: SubMesh,
+        material: Material,
+        effectiveMesh: AbstractMesh,
+        withLights: boolean,
+        domain: Nullable<object> = null,
+        domainState = 0
+    ): boolean {
+        const recordedVertexBuffers = drawWrapper._recordedVertexBuffers;
+        const recordedLights = drawWrapper._recordedLights;
+        if (
+            !recordedVertexBuffers ||
+            !recordedLights ||
+            subMesh.materialDefines?.isDirty ||
+            drawWrapper._recordedMaterial !== material ||
+            drawWrapper._recordedMaterialVersion !== material._drawCacheVersion ||
+            drawWrapper._recordedTexturesVersion !== material._getTexturesVersion() ||
+            drawWrapper._recordedWorldFlag !== effectiveMesh.getWorldMatrix().updateFlag ||
+            drawWrapper._recordedVisibility !== effectiveMesh.visibility ||
+            drawWrapper._recordedStart !== subMesh.indexStart ||
+            drawWrapper._recordedCount !== subMesh.indexCount ||
+            drawWrapper._recordedVerticesStart !== subMesh.verticesStart ||
+            drawWrapper._recordedVerticesCount !== subMesh.verticesCount ||
+            drawWrapper._recordedMaterialState !== material._getPipelineStateKey() ||
+            drawWrapper._recordedZOffset !== material.zOffset ||
+            drawWrapper._recordedZOffsetUnits !== material.zOffsetUnits ||
+            drawWrapper._recordedOrientation !== material._getEffectiveOrientation(this) ||
+            drawWrapper._recordedFillMode !== this._getRenderingFillMode(material.fillMode) ||
+            drawWrapper._recordedDomainState !== this._getConfiguredState(domainState) ||
+            drawWrapper._recordedIndexBuffer !== this._getDrawnIndexBuffer() ||
+            drawWrapper._recordedInstances !== this._getDrawnInstanceCount() ||
+            drawWrapper._recordedSceneUbo !== this.getScene().getSceneUniformBuffer() ||
+            !this._areSharedBuffersFirst(effectiveMesh, withLights)
+        ) {
+            return false;
+        }
+        const engine = this.getScene().getEngine();
+        const reference = material._getRecordedDrawReference(drawWrapper.effect!, domain);
+        if (!reference || !engine._hasInheritedState(drawWrapper) || !engine._hasSameDrawValues(drawWrapper, reference)) {
+            return false;
+        }
+        const vertexBuffers = this._geometry?.getVertexBuffers();
+        let count = 0;
+        for (const kind in vertexBuffers) {
+            if (!Mesh._IsRecordedVertexBuffer(recordedVertexBuffers, count, vertexBuffers[kind])) {
+                return false;
+            }
+            count += 5;
+        }
+        if (this.hasThinInstances) {
+            const thinInstances = this._thinInstanceDataStorage;
+            if (recordedVertexBuffers[count++] !== thinInstances.matrixBuffer || recordedVertexBuffers[count++] !== thinInstances.previousMatrixBuffer) {
+                return false;
+            }
+            const userVertexBuffers = this._userThinInstanceBuffersStorage?.vertexBuffers;
+            for (const kind in userVertexBuffers) {
+                if (!Mesh._IsRecordedVertexBuffer(recordedVertexBuffers, count, userVertexBuffers[kind])) {
+                    return false;
+                }
+                count += 5;
+            }
+        }
+        if (count !== recordedVertexBuffers.length) {
+            return false;
+        }
+        if (withLights) {
+            const scene = this.getScene();
+            const renderId = scene.getRenderId();
+            count = 0;
+            for (const light of effectiveMesh.lightSources) {
+                const generator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
+                if (
+                    light._renderId !== renderId ||
+                    recordedLights[count++] !== (generator?.getShadowMap()?.getInternalTexture() ?? null) ||
+                    recordedLights[count++] !== (generator?._getReceiversUniformBuffer?.() ?? null)
+                ) {
+                    return false;
+                }
+            }
+            return count === recordedLights.length;
+        }
+        return true;
+    }
+
+    /**
+     * Whether the shared uniform buffers a draw binds (the scene's, the mesh's and the lights') are on the first buffer of their frame.
+     * A draw recorded with a later one depends on the order of the frame's writes, and one encoded again while a buffer moved on (written
+     * again by an earlier pass of the frame) would bind the first buffer, with the earlier values, where a full draw binds the new one.
+     * Never in floating origin mode, where a bind writes the world matrix minus the eye in the mesh's uniform buffer
+     * @param effectiveMesh the mesh providing the world matrix and the lights
+     * @param withLights whether the draw binds the lights
+     * @returns true if they all are
+     */
+    private _areSharedBuffersFirst(effectiveMesh: AbstractMesh, withLights: boolean): boolean {
+        const scene = this.getScene();
+        if (scene.floatingOriginMode || !scene.getSceneUniformBuffer()._isFirstBufferBound() || !effectiveMesh.getMeshUniformBuffer()._isFirstBufferBound()) {
+            return false;
+        }
+        if (withLights) {
+            for (const light of effectiveMesh.lightSources) {
+                if (!light._uniformBuffer._isFirstBufferBound()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * What a full draw sets in its bind from what is configured outside of its material: by its domain (domainState), and by the geometry
+     * rendering of its render pass, the culling it reverses and the per-mesh values it writes, the object ID and the mesh-blending tag
+     * (GeometryRendererTask.reverseCulling only updates the configuration a full bind reads, and mesh.meshBlendingTag or a provider
+     * invalidates nothing)
+     * @param domainState what the domain sets, from 0 to 3
+     * @returns the state, packed in a number
+     */
+    private _getConfiguredState(domainState: number): number {
+        return domainState + 4 * MaterialHelperGeometryRendering._GetRecordedDrawState(this.getScene().getEngine().currentRenderPassId, this);
+    }
+
+    // the index buffer a draw of the mesh uses (see _draw): none for an unindexed mesh (isUnIndexed only dirties the defines of its sub
+    // meshes, which a shader material does not have)
+    private _getDrawnIndexBuffer(): Nullable<object> {
+        return this._unIndexed ? null : (this._geometry?.getIndexBuffer() ?? null);
+    }
+
+    // the instance count a draw of the mesh uses (see _draw): the forced one, else the thin instances', else the override that
+    // _processRendering gives a mesh drawn alone (with instanced buffers set on its geometry)
+    private _getDrawnInstanceCount(): number {
+        return this.forcedInstanceCount || (this.hasThinInstances ? this._thinInstanceDataStorage.instancesCount : this._instanceDataStorage.overridenInstanceCount) || 0;
+    }
+
+    // a vertex buffer as the commands of a recorded draw bind it: the wrapper, the GPU buffer it binds and where the draw reads in it,
+    // and its hash code, from which the pipeline takes its vertex layout (its step mode follows instanceDivisor, say). An update of a
+    // vertex buffer that WebGPU aligns to 4 bytes (a stride of 3 bytes, say) creates its aligned GPU buffer again
+    private static _RecordVertexBuffer(recordedVertexBuffers: Array<Nullable<object> | number>, vertexBuffer: Nullable<VertexBuffer>): void {
+        recordedVertexBuffers.push(
+            vertexBuffer,
+            vertexBuffer?.effectiveBuffer ?? null,
+            vertexBuffer?.effectiveByteOffset ?? 0,
+            vertexBuffer?.effectiveByteStride ?? 0,
+            vertexBuffer?.hashCode ?? 0
+        );
+    }
+
+    private static _IsRecordedVertexBuffer(recordedVertexBuffers: Array<Nullable<object> | number>, index: number, vertexBuffer: Nullable<VertexBuffer>): boolean {
+        return (
+            recordedVertexBuffers[index] === vertexBuffer &&
+            recordedVertexBuffers[index + 1] === (vertexBuffer?.effectiveBuffer ?? null) &&
+            recordedVertexBuffers[index + 2] === (vertexBuffer?.effectiveByteOffset ?? 0) &&
+            recordedVertexBuffers[index + 3] === (vertexBuffer?.effectiveByteStride ?? 0) &&
+            recordedVertexBuffers[index + 4] === (vertexBuffer?.hashCode ?? 0)
+        );
+    }
+
+    /**
+     * Keeps what a draw recorded by a snapshot was rendered with (see _isRecordedDrawUnchanged), when the shared uniform buffers it
+     * bound were on the first buffer of their frame (see _areSharedBuffersFirst). Only a kept draw is the frame's reference for the
+     * per-draw values of its material and effect
+     * @param drawWrapper the draw wrapper of the recorded draw
+     * @param subMesh the sub mesh
+     * @param material the material of the draw
+     * @param effectiveMesh the mesh providing the world matrix and the lights
+     * @param withLights whether the draw binds the lights (not in the shadow maps)
+     * @param domain what else writes its per-draw values (the shadow generator), or null
+     * @param domainState what the domain sets in its full draws outside of the per-draw values, from 0 to 3 (the culling of
+     * forceBackFacesOnly, the texture of the alpha test of useOpacityTextureForTransparentShadow)
+     * @internal
+     */
+    public _keepRecordedDraw(
+        drawWrapper: DrawWrapper,
+        subMesh: SubMesh,
+        material: Material,
+        effectiveMesh: AbstractMesh,
+        withLights: boolean,
+        domain: Nullable<object> = null,
+        domainState = 0
+    ): void {
+        const scene = this.getScene();
+        const kept = scene.getEngine()._canKeepRecordedDraw(drawWrapper) && this._areSharedBuffersFirst(effectiveMesh, withLights);
+        // the per-draw values this full bind wrote: the reference of this frame for the draws of this material with this effect
+        material._keepRecordedDrawReference(drawWrapper.effect!, kept ? drawWrapper : null, domain);
+        if (!kept) {
+            drawWrapper._recordedMaterial = null;
+            return;
+        }
+        drawWrapper._recordedMaterial = material;
+        drawWrapper._recordedMaterialVersion = material._drawCacheVersion;
+        drawWrapper._recordedTexturesVersion = material._getTexturesVersion();
+        drawWrapper._recordedWorldFlag = effectiveMesh.getWorldMatrix().updateFlag;
+        drawWrapper._recordedVisibility = effectiveMesh.visibility;
+        drawWrapper._recordedStart = subMesh.indexStart;
+        drawWrapper._recordedCount = subMesh.indexCount;
+        drawWrapper._recordedVerticesStart = subMesh.verticesStart;
+        drawWrapper._recordedVerticesCount = subMesh.verticesCount;
+        drawWrapper._recordedMaterialState = material._getPipelineStateKey();
+        drawWrapper._recordedZOffset = material.zOffset;
+        drawWrapper._recordedZOffsetUnits = material.zOffsetUnits;
+        drawWrapper._recordedOrientation = material._getEffectiveOrientation(this);
+        drawWrapper._recordedFillMode = this._getRenderingFillMode(material.fillMode);
+        drawWrapper._recordedDomainState = this._getConfiguredState(domainState);
+        drawWrapper._recordedIndexBuffer = this._getDrawnIndexBuffer();
+        drawWrapper._recordedSceneUbo = scene.getSceneUniformBuffer();
+        const recordedVertexBuffers = (drawWrapper._recordedVertexBuffers ??= []);
+        recordedVertexBuffers.length = 0;
+        const vertexBuffers = this._geometry?.getVertexBuffers();
+        for (const kind in vertexBuffers) {
+            Mesh._RecordVertexBuffer(recordedVertexBuffers, vertexBuffers[kind]);
+        }
+        if (this.hasThinInstances) {
+            const thinInstances = this._thinInstanceDataStorage;
+            recordedVertexBuffers.push(thinInstances.matrixBuffer, thinInstances.previousMatrixBuffer);
+            const userVertexBuffers = this._userThinInstanceBuffersStorage?.vertexBuffers;
+            for (const kind in userVertexBuffers) {
+                Mesh._RecordVertexBuffer(recordedVertexBuffers, userVertexBuffers[kind]);
+            }
+        }
+        drawWrapper._recordedInstances = this._getDrawnInstanceCount();
+        const recordedLights = (drawWrapper._recordedLights ??= []);
+        recordedLights.length = 0;
+        if (withLights) {
+            for (const light of effectiveMesh.lightSources) {
+                const generator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
+                recordedLights.push(generator?.getShadowMap()?.getInternalTexture() ?? null, generator?._getReceiversUniformBuffer?.() ?? null);
+            }
+        }
+    }
+
+    /**
+     * Sets the alpha modes of a material, as a draw of the mesh with the alpha mode enabled does before it binds
+     * @param engine the engine
+     * @param material the material
+     */
+    private _setAlphaModes(engine: AbstractEngine, material: Material): void {
+        if (material.alphaModes.length === 1) {
+            engine.setAlphaMode(material.alphaMode);
+        } else {
+            for (let i = 0; i < material.alphaModes.length; i++) {
+                const alphaMode = material.alphaModes[i];
+                engine.setAlphaMode(alphaMode !== undefined ? alphaMode : Constants.ALPHA_COMBINE, false, i);
+            }
+        }
+    }
+
+    /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
@@ -2745,6 +3089,50 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Checking geometry state
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
+        }
+
+        // While a snapshot records again, a draw whose mesh and material did not change is encoded from the commands it was recorded with,
+        // between the scene's steps before and after rendering a mesh, as a full draw is (the prepass renderer binds the attachments of
+        // the effect there, and restores them). A draw the mesh cannot record (see _canRecordDraw) is neither checked nor kept, and what
+        // was recorded for it is dropped, with the frame's references of its material (the code that runs around it can change the
+        // material). The states a draw inherits are checked and kept here, before it sets any (its alpha mode resets
+        // the blend equations only when the mode changes), and a draw encoded again sets its alpha mode as a full draw does, for the draws
+        // after it. It also marks the mesh's uniform buffer as used in the frame, as a full draw's update does: a later write of the frame
+        // (another pass) then goes to a new buffer instead of the one the encoded draw binds (the scene's and the lights' were updated
+        // before it)
+        const recordsDraw = engine._recordsDraws && this._canRecordDraw(subMesh, batch, effectiveMeshReplacement);
+        if (engine._recordsDraws && !recordsDraw) {
+            subMesh._drawWrapper._recordedMaterial = null;
+            const material = subMesh.getMaterial();
+            material?._dropRecordedDrawReferences();
+            // code of the user runs around this draw (the observers of the mesh, the bind callbacks of its material): it can change any
+            // material in place, a shared one included, so no reference kept before it in the frame stands for the draws after it
+            if (this._runsCodeOnDraw() || material?._runsCodeOnBind()) {
+                engine._recordedDrawReferencesEpoch++;
+            }
+        }
+        if (recordsDraw) {
+            const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh);
+            // as _processRendering: a mesh still rendered for its instances or its batch but not drawn itself draws nothing
+            if (recordedDrawWrapper && batch.renderSelf[subMesh._id] && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
+                if (enableAlphaMode) {
+                    this._setAlphaModes(engine, subMesh.getMaterial()!);
+                }
+                const recordedEffect = recordedDrawWrapper.effect;
+                for (const step of scene._beforeRenderingMeshStage) {
+                    step.action(this, subMesh, batch, recordedEffect);
+                }
+                // the states its material sets before it binds, as in its full draw: the stencil an earlier draw set would stay in the
+                // engine, whose reference the render pass reads at the draw
+                subMesh.getMaterial()!._setStates(recordedDrawWrapper._recordedReverse);
+                engine._replayRecordedDraw(recordedDrawWrapper);
+                this._uniformBuffer._markBufferUsed();
+                for (const step of scene._afterRenderingMeshStage) {
+                    step.action(this, subMesh, batch, recordedEffect);
+                }
+                return this;
+            }
+            engine._keepInheritedState(subMesh._drawWrapper);
         }
 
         let oldCameraMaxZ = 0;
@@ -2808,15 +3196,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Alpha mode
         if (enableAlphaMode) {
-            const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
-            if (effectiveMaterial.alphaModes.length === 1) {
-                engine.setAlphaMode(effectiveMaterial.alphaMode);
-            } else {
-                for (let i = 0; i < effectiveMaterial.alphaModes.length; i++) {
-                    const alphaMode = effectiveMaterial.alphaModes[i];
-                    engine.setAlphaMode(alphaMode !== undefined ? alphaMode : Constants.ALPHA_COMBINE, false, i);
-                }
-            }
+            this._setAlphaModes(engine, this._internalMeshDataInfo._effectiveMaterial);
         }
 
         let drawWrapper: Nullable<DrawWrapper>;
@@ -2891,6 +3271,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Unbind
         this._internalMeshDataInfo._effectiveMaterial.unbind();
+
+        if (recordsDraw && drawWrapper === subMesh._drawWrapper) {
+            drawWrapper._recordedReverse = reverse;
+            this._keepRecordedDraw(drawWrapper, subMesh, effectiveMaterial, effectiveMesh, true);
+        }
 
         for (const step of scene._afterRenderingMeshStage) {
             step.action(this, subMesh, batch, effect);

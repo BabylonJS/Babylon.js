@@ -122,6 +122,13 @@ export interface IShaderMaterialOptions {
     extraInitializationsAsync?: () => Promise<void>;
 }
 
+function IsEmpty(dictionary: object): boolean {
+    for (const _ in dictionary) {
+        return false;
+    }
+    return true;
+}
+
 /**
  * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
  *
@@ -242,6 +249,23 @@ export class ShaderMaterial extends PushMaterial {
      * Mainly use in serialization.
      * @returns the class name
      */
+    /**
+     * @internal Its setters only change dictionaries: a draw binding custom buffers or textures that the engine does not check
+     * (getActiveTextures) is not encoded again from its recorded commands
+     * @returns true if the recorded draws can be encoded again
+     */
+    public override _canReplayRecordedDraw(): boolean {
+        return (
+            super._canReplayRecordedDraw() &&
+            IsEmpty(this._uniformBuffers) &&
+            IsEmpty(this._storageBuffers) &&
+            IsEmpty(this._externalTextures) &&
+            IsEmpty(this._internalTextures) &&
+            IsEmpty(this._textureArrays) &&
+            IsEmpty(this._textureSamplers)
+        );
+    }
+
     public override getClassName(): string {
         return "ShaderMaterial";
     }
@@ -266,6 +290,9 @@ export class ShaderMaterial extends PushMaterial {
         if (this._options.uniforms.indexOf(uniformName) === -1) {
             this._options.uniforms.push(uniformName);
         }
+        // a value is set: the draws a snapshot recorded with the material are bound again (set after the frame's reference draw, it is
+        // not in the values they are compared with). Many values are kept by reference, so a value set again is not told from a new one
+        this._drawCacheVersion++;
     }
 
     /**
@@ -278,7 +305,11 @@ export class ShaderMaterial extends PushMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
             this._options.samplers.push(name);
         }
-        this._textures[name] = texture;
+        if (this._textures[name] !== texture) {
+            this._textures[name] = texture;
+            // what the material binds changed: the draws a snapshot recorded with it are bound again
+            this._drawCacheVersion++;
+        }
 
         return this;
     }
@@ -303,7 +334,11 @@ export class ShaderMaterial extends PushMaterial {
      * @param name Define the name of the texture to remove
      */
     public removeTexture(name: string): void {
-        delete this._textures[name];
+        if (name in this._textures) {
+            delete this._textures[name];
+            // what the material binds changed: the draws a snapshot recorded with it are bound again
+            this._drawCacheVersion++;
+        }
     }
 
     /**
@@ -681,6 +716,8 @@ export class ShaderMaterial extends PushMaterial {
         if (typeof value !== "boolean" || value) {
             this.options.defines.push(defineName + value);
         }
+        // the effect may change: the draws a snapshot recorded with the material are bound again
+        this._drawCacheVersion++;
 
         return this;
     }

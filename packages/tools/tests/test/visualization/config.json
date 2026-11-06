@@ -6045,6 +6045,29 @@
             "playgroundId": "#GRQHVV#341",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "WebGPU snapshot rendering reusing recorded draws - orientation, depth prepass and a light written between passes",
+            "playgroundId": "#5GCWBX#0",
+            "referenceImage": "webgpu-snapshot-reused-draws.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Textures"]
+        },
+        {
+            "title": "WebGPU snapshot rendering reusing recorded draws - orientation, depth prepass and a light written between passes - every draw recorded in full",
+            "playgroundId": "#5GCWBX#0",
+            "referenceImage": "webgpu-snapshot-reused-draws.png",
+            "replace": "const reuseDraws = true;, const reuseDraws = false;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Textures"]
+        },
+        {
+            "title": "WebGPU snapshot rendering reusing recorded draws - orientation, depth prepass and a light written between passes - without snapshot rendering",
+            "playgroundId": "#5GCWBX#0",
+            "referenceImage": "webgpu-snapshot-reused-draws.png",
+            "replace": "const snapshotRendering = true;, const snapshotRendering = false;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Textures"]
         }
     ]
 }

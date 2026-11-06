@@ -1904,6 +1904,45 @@ export class NodeMaterial extends NodeMaterialBase {
     }
 
     /**
+     * @internal A full bind of a node material also runs code that is not the material's own when what defines the bind of one of its
+     * bindable blocks does not declare that it writes only values a recorded draw checks (see NodeMaterialBlock._bindsMaterialValuesOnly:
+     * a block of the user, a bind it overrides, or a bind of the block's own), or when an input block has a value callback
+     * @returns true if a full bind runs such code
+     */
+    public override _runsCodeOnBind(): boolean {
+        if (super._runsCodeOnBind()) {
+            return true;
+        }
+        const sharedData = this._sharedData;
+        if (!sharedData) {
+            return true;
+        }
+        for (const blocks of [sharedData.bindableBlocks, sharedData.forcedBindableBlocks]) {
+            for (const block of blocks) {
+                if (!NodeMaterial._BindsMaterialValuesOnly(block)) {
+                    return true;
+                }
+            }
+        }
+        for (const inputBlock of sharedData.inputBlocks) {
+            if (typeof inputBlock.valueCallback === "function") {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // whether what defines the bind of the block declares that it writes only values a recorded draw checks: its class, or the block
+    // itself for a bind of its own (a class field of the user, say), which declares nothing
+    private static _BindsMaterialValuesOnly(block: NodeMaterialBlock): boolean {
+        let owner = block;
+        while (owner && !Object.prototype.hasOwnProperty.call(owner, "bind")) {
+            owner = Object.getPrototypeOf(owner);
+        }
+        return !!owner && Object.prototype.hasOwnProperty.call(owner, "_bindsMaterialValuesOnly") && block._bindsMaterialValuesOnly;
+    }
+
+    /**
      * Binds the submesh to this material by preparing the effect and shader to draw
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh

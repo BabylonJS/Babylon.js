@@ -266,6 +266,15 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * @internal Whether bind writes only values a recorded draw checks: those of the material and of the scene, and of the mesh its
+     * world matrix and its lights. A node material encodes again a draw only when the class that defines the bind of each of its
+     * bindable blocks declares it (see NodeMaterial._runsCodeOnBind): a bind of the user does not. This bind writes nothing
+     */
+    public get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
+    /**
      * Bind data to effect. Will only be called for blocks with isBindable === true
      * @param effect defines the effect to bind data to
      * @param nodeMaterial defines the hosting NodeMaterial

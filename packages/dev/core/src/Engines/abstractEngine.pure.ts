@@ -2588,6 +2588,139 @@ export abstract class AbstractEngine {
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls?.addCount(numDrawCalls, false);
     }
+
+    /**
+     * @internal Whether a snapshot is recording with the recorded draws switched on: only then do the meshes and the shadow maps
+     * check a draw against what it was recorded with, and keep what it is rendered with (nothing of it runs otherwise)
+     */
+    public get _recordsDraws(): boolean {
+        return false;
+    }
+
+    /**
+     * @internal While a snapshot records, encodes again the draw last recorded for this draw wrapper, if it is still valid,
+     * instead of binding its mesh and material. Returns false when the draw must be rendered normally.
+     */
+    public _replayRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+        return false;
+    }
+
+    /**
+     * @internal Changes when code of the user runs between the draws of the frame (the observers of a mesh and the bind callbacks of its
+     * material, see Mesh.render, the bind callbacks of an effect, the observers of a rendering group and of its sprites and particles,
+     * and its callback before the transparent meshes): it can change any material in place, so the references the materials kept before
+     * it no longer stand for the draws after it (see Material._getRecordedDrawReference)
+     */
+    public _recordedDrawReferencesEpoch = 0;
+
+    /**
+     * @internal Whether _replayRecordedDraw would encode again the draw last recorded for this draw wrapper now: a mesh runs the scene's
+     * steps around its draw only once it knows the draw will not be rendered normally instead
+     */
+    public _canEncodeRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+        return false;
+    }
+
+    /**
+     * @internal Whether the draw just done for a draw wrapper wrote its per-draw values (what its effect sets when it binds) in a
+     * slot of its own, which a draw recorded with it keeps referencing
+     */
+    public _canKeepRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+        return false;
+    }
+
+    /**
+     * @internal Whether the per-draw values of a draw wrapper are the same bytes as the ones of another draw wrapper of the same effect
+     */
+    public _hasSameDrawValues(_drawWrapper: DrawWrapper, _reference: DrawWrapper): boolean {
+        return false;
+    }
+
+    private _inheritedState: number[] = [];
+
+    /**
+     * @internal Keeps the states a draw inherits from the engine (see _getInheritedState) where it starts, before it sets any: where a
+     * recorded draw is checked before it is encoded again. A draw recorded with others is bound again
+     * @param drawWrapper the draw wrapper of the draw
+     */
+    public _keepInheritedState(drawWrapper: DrawWrapper): void {
+        const state = (drawWrapper._recordedEngineState ??= []);
+        const length = this._getInheritedState(state);
+        if (state.length !== length) {
+            state.length = length;
+        }
+    }
+
+    /**
+     * @internal Whether the engine has the states kept by _keepInheritedState for a draw wrapper
+     * @param drawWrapper the draw wrapper of the draw
+     * @returns true if they did not change
+     */
+    public _hasInheritedState(drawWrapper: DrawWrapper): boolean {
+        const recorded = drawWrapper._recordedEngineState;
+        if (!recorded) {
+            return false;
+        }
+        const current = this._inheritedState;
+        const length = this._getInheritedState(current);
+        if (length !== recorded.length) {
+            return false;
+        }
+        for (let i = 0; i < length; i++) {
+            if (current[i] !== recorded[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @internal Writes the states the pipeline of a draw reads from the engine, which the draw inherits unless it sets them (the depth
+     * prepass turns the color writes off, the rendering groups set the stencil, ThinDepthPeelingRenderer the blend equation): the color
+     * writes, the depth test, writes and function, the stencil of both faces, the culled faces the engine forces over the material's
+     * (cullBackFaces) and the blend of each target
+     * @param target the array to write them in, from its start
+     * @returns how many were written
+     */
+    protected _getInheritedState(target: number[]): number {
+        target[0] = this.getColorWrite() ? 1 : 0;
+        target[1] = this.getDepthBuffer() ? 1 : 0;
+        target[2] = this.getDepthWrite() ? 1 : 0;
+        target[3] = this.getDepthFunction() ?? 0;
+        target[4] = this.getStencilBuffer() ? 1 : 0;
+        target[5] = this.getStencilFunction();
+        target[6] = this.getStencilFunctionReference();
+        target[7] = this.getStencilFunctionMask();
+        target[8] = this.getStencilMask();
+        target[9] = this.getStencilOperationPass();
+        target[10] = this.getStencilOperationFail();
+        target[11] = this.getStencilOperationDepthFail();
+        target[12] = this.getStencilBackFunction();
+        target[13] = this.getStencilBackOperationPass();
+        target[14] = this.getStencilBackOperationFail();
+        target[15] = this.getStencilBackOperationDepthFail();
+        target[16] = this.cullBackFaces === true ? 1 : this.cullBackFaces === false ? 0 : -1;
+        // the blend as the pipeline reads it from the alpha state: the targets that blend, then the factors and equations of each one
+        // (an alpha mode does not tell the equations: setAlphaMode resets them only when the mode changes)
+        const alphaState = this._alphaState;
+        let blending = 0;
+        let length = 18;
+        if (alphaState._numTargetEnabled > 0) {
+            for (let i = 0; i < 8; i++) {
+                if (!alphaState._alphaBlend[i]) {
+                    continue;
+                }
+                blending |= 1 << i;
+                for (let j = i * 4; j < i * 4 + 4; j++) {
+                    target[length++] = alphaState._blendFunctionParameters[j] ?? -1;
+                }
+                target[length++] = alphaState._blendEquationParameters[i * 2] ?? -1;
+                target[length++] = alphaState._blendEquationParameters[i * 2 + 1] ?? -1;
+            }
+        }
+        target[17] = blending;
+        return length;
+    }
     /**
      * Gets the current framerate
      * @returns a number representing the framerate
