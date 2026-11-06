@@ -23,6 +23,7 @@ import {
     WebGPURenderPassDrawKind,
 } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
 import * as WebGPUConstants from "core/Engines/WebGPU/webgpuConstants";
+import { Logger } from "core/Misc/logger";
 
 /**
  * A draw recorded by a snapshot is encoded again from its commands (WebGPUEngine._replayRecordedDraw) only while its draw context
@@ -388,7 +389,7 @@ describe("WebGPUEngine recorded draws and the render pass command batcher", () =
             _currentIndexBuffer: drawKind === WebGPURenderPassDrawKind.INDEXED ? { underlyingResource: resource<GPUBuffer>(), is32Bits: true } : null,
             _cacheRenderPipeline: { colorFormats: [], vertexBuffers: [vertexBuffer], setAlphaBlendEnabled: () => {} },
             _bundleList: bundleList,
-            _renderPassDrawBatcher: batcher,
+            _renderPassCommandBatching: { batcher },
             _getCurrentRenderPass: () => {},
             _reportDrawCall: () => {},
             // the dynamic states the render pass already has are the ones the engine holds: none to update
@@ -457,5 +458,32 @@ describe("WebGPUEngine recorded draws and the render pass command batcher", () =
         expect(hold(200)).toBe(true);
         batcher.flush();
         expect(encoder.draws).toEqual(["batched 0", "batched 36", "direct 100", "batched 200"]);
+    });
+
+    it("flushes before it encodes when the host rejects the batch: the recorded draw comes first of what is left, and the next draws go direct", () => {
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        try {
+            const { encoder, hold, replay } = setup(WebGPURenderPassDrawKind.INDEXED);
+            (encoder as unknown as { _recordCommands: () => boolean })._recordCommands = () => false;
+            expect(hold(0)).toBe(true);
+            expect(replay()).toBe(true);
+            // the rejected batch is dropped, as the stream documents; the stream is off, so the next draw is direct, after the recorded one
+            expect(hold(200)).toBe(false);
+            expect(encoder.draws).toEqual(["direct 100", "direct 200"]);
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
+    it("encodes nothing when the batch it flushes throws: no recorded draw goes ahead of the draws the batcher held", () => {
+        const { encoder, bundleList, hold, replay } = setup(WebGPURenderPassDrawKind.INDEXED);
+        (encoder as unknown as { _recordCommands: () => boolean })._recordCommands = () => {
+            throw new Error("host decoder");
+        };
+        expect(hold(0)).toBe(true);
+        const drawCalls = bundleList.numDrawCalls;
+        expect(replay).toThrow("host decoder");
+        expect(encoder.draws).toEqual([]);
+        expect(bundleList.numDrawCalls).toBe(drawCalls);
     });
 });
