@@ -209,7 +209,6 @@ export function RegisterEnginesWebGPUExtensionsEngineMultiRender(): void {
         if (depthStencilTexture) {
             depthStencilTexture.incrementReferences();
             textures[textureCount] = depthStencilTexture;
-            this._internalTexturesCache.push(depthStencilTexture);
         }
 
         rtWrapper.setTextures(textures);

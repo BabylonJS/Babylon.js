@@ -900,6 +900,40 @@ test.describe("Flow Graph Editor — Palette Smoke", () => {
     }
 });
 
+test.describe("Flow Graph Editor — Reaction Templates", () => {
+    const templates = [
+        {
+            name: "Pick → Play Sound",
+            classes: ["FlowGraphMeshPickEventBlock", "FlowGraphPlaySoundBlock"],
+        },
+        {
+            name: "Intersection → Play Sound",
+            classes: ["FlowGraphMeshIntersectionEventBlock", "FlowGraphPlaySoundBlock"],
+        },
+        {
+            name: "Add Reaction to Existing Event",
+            classes: ["FlowGraphReceiveCustomEventBlock", "FlowGraphPlaySoundBlock"],
+        },
+    ];
+
+    for (const template of templates) {
+        test(`${template.name} emits plain editable blocks`, async ({ page }) => {
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto();
+            await fge.assertEditorReady();
+
+            await fge.addBlockFromPalette(template.name);
+
+            for (const className of template.classes) {
+                await expect(fge.nodeOnCanvas(className)).toBeVisible();
+            }
+            const serialized = JSON.parse(await fge.serializeGraph());
+            expect((serialized.allBlocks ?? []).map((block: any) => block.className)).toEqual(expect.arrayContaining(template.classes));
+            expect(CountSerializedConnections(serialized)).toBe(1);
+        });
+    }
+});
+
 test.describe("Flow Graph Editor — Node List Filter", () => {
     test("filtering the node list shows matching blocks", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
