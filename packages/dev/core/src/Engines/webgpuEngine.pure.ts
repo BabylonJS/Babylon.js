@@ -2891,6 +2891,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const previousHardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
         const additionalUsages = previousHardwareTexture.textureAdditionalUsages;
+        // Non-resource metadata that the replacement wrapper can't recompute from the internal texture (see createRawCubeTexture / updateRawCubeTexture)
+        const originalFormatIsRGB = previousHardwareTexture._originalFormatIsRGB;
 
         // The previous gpu texture may still be used by commands recorded in the current frame, so its release is deferred to the end of the frame.
         // The internal texture gets a new wrapper for the replacement gpu texture, so that releasing the previous one doesn't release the new one.
@@ -2898,6 +2900,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._textureHelper.releaseHardwareTexture(previousHardwareTexture);
 
         this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
+        (texture._hardwareTexture as WebGPUHardwareTexture)._originalFormatIsRGB = originalFormatIsRGB;
 
         // The texture is now backed by a different gpu resource: refresh the unique id so that the caches keyed by it (like the bind group cache) don't return bind groups referencing the previous one.
         texture._setUniqueId(InternalTexture._Counter++);
