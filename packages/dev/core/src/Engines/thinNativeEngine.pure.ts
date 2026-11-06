@@ -3344,8 +3344,7 @@ export class ThinNativeEngine extends ThinEngine {
         // Like a GL framebuffer, an explicit depth-stencil texture is always attached as-is, so every pass that
         // references it (clears, geometry, overlays, later samplers) sees the same real depth buffer.
         const sharedDepthResource = depthStencilTexture?._hardwareTexture?.underlyingResource as NativeTexture | undefined;
-        const cached = nativeRTWrapper._framebuffer ?? hardwareTexture._frameGraphFramebuffer;
-        const cachedMeta = cached ? this._frameGraphFramebufferRefCount.get(cached) : undefined;
+        let cached = nativeRTWrapper._framebuffer ?? hardwareTexture._frameGraphFramebuffer;
 
         // Reuse the cached framebuffer when it is compatible: the same ordered color attachments (a swap of any
         // attachment, not only the primary one, needs a new framebuffer), mip policies, sample count, depth/stencil
@@ -3353,26 +3352,34 @@ export class ThinNativeEngine extends ThinEngine {
         // has them), and the same shared depth texture (so a shared-depth pass never reuses an auto-depth
         // framebuffer, and vice versa). History-texture swaps invalidate these wrappers every frame, so this check
         // runs in the render loop: compare in place and only allocate the color list for a new framebuffer.
-        let sameColors = !!cachedMeta && cachedMeta.colorResources.length === textureCount;
-        for (let i = 0; sameColors && i < textureCount; i++) {
-            sameColors =
-                cachedMeta!.colorResources[i] === textures[i]._hardwareTexture!.underlyingResource &&
-                cachedMeta!.autoGenerateMips[i] === this._getFrameGraphAutoGenerateMips(textures[i]);
-        }
-        if (
-            cached &&
-            cachedMeta &&
-            sameColors &&
-            cachedMeta.samples === samples &&
-            (cachedMeta.hasDepth || !generateDepthBuffer) &&
-            (cachedMeta.hasStencil || !generateStencilBuffer) &&
-            cachedMeta.sharedDepthResource === sharedDepthResource
-        ) {
-            if (nativeRTWrapper._framebuffer !== cached) {
-                cachedMeta.count++;
-                nativeRTWrapper._framebuffer = cached;
+        // Rejecting a stale retained framebuffer must not hide a compatible shared replacement.
+        for (let cacheAttempt = 0; cacheAttempt < 2; cacheAttempt++) {
+            const cachedMeta = cached ? this._frameGraphFramebufferRefCount.get(cached) : undefined;
+            let sameColors = !!cachedMeta && cachedMeta.colorResources.length === textureCount;
+            for (let i = 0; sameColors && i < textureCount; i++) {
+                sameColors =
+                    cachedMeta!.colorResources[i] === textures[i]._hardwareTexture!.underlyingResource &&
+                    cachedMeta!.autoGenerateMips[i] === this._getFrameGraphAutoGenerateMips(textures[i]);
             }
-            return;
+            if (
+                cached &&
+                cachedMeta &&
+                sameColors &&
+                cachedMeta.samples === samples &&
+                (cachedMeta.hasDepth || !generateDepthBuffer) &&
+                (cachedMeta.hasStencil || !generateStencilBuffer) &&
+                cachedMeta.sharedDepthResource === sharedDepthResource
+            ) {
+                if (nativeRTWrapper._framebuffer !== cached) {
+                    cachedMeta.count++;
+                    nativeRTWrapper._framebuffer = cached;
+                }
+                return;
+            }
+            if (cached === hardwareTexture._frameGraphFramebuffer) {
+                break;
+            }
+            cached = hardwareTexture._frameGraphFramebuffer;
         }
 
         const colorTextures: NativeTexture[] = new Array(textureCount);

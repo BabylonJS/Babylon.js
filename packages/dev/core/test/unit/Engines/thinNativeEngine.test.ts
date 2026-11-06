@@ -868,6 +868,61 @@ describe("ThinNativeEngine", () => {
             expect(references()).toBe(1);
         });
 
+        it.each([1, 2])("keeps retained frame graph wrappers sharing after mip policy changes (%s colors)", (textureCount) => {
+            const { engine, created, commands, bound } = createEngine();
+            const references = Reflect.get(engine, "_frameGraphFramebufferRefCount") as Map<FakeFramebuffer, { count: number }>;
+            const textures = Array.from({ length: textureCount }, () => engine._createInternalTexture({ width: 64, height: 64 }, { createMipMaps: true, generateMipMaps: false }));
+            const hardwareTexture = textures[0]._hardwareTexture!;
+            const createTarget = () => {
+                const target = engine.createMultipleRenderTarget(
+                    { width: 64, height: 64 },
+                    { textureCount, dontCreateTextures: true, generateDepthBuffer: false }
+                ) as NativeRenderTargetWrapper;
+                textures.forEach((texture, index) => {
+                    texture.incrementReferences();
+                    target.setTexture(texture, index, false);
+                });
+                return target;
+            };
+            const firstTarget = createTarget();
+            const secondTarget = createTarget();
+
+            engine.bindFramebuffer(firstTarget);
+            const previous = bound();
+            engine.bindFramebuffer(secondTarget);
+            expect(bound()).toBe(previous);
+            expect(references.get(previous)?.count).toBe(2);
+
+            textures[textureCount - 1].generateMipMaps = true;
+            engine.bindFramebuffer(firstTarget);
+            const replacement = bound();
+            expect(replacement).not.toBe(previous);
+            expect(references.get(previous)?.count).toBe(1);
+            expect(references.get(replacement)?.count).toBe(1);
+
+            engine.bindFramebuffer(secondTarget);
+
+            expect(bound()).toBe(replacement);
+            expect(created).toHaveLength(2);
+            expect(references.get(replacement)?.count).toBe(2);
+            expect(references.has(previous)).toBe(false);
+            const deletes = (framebuffer: FakeFramebuffer) => commands.filter((command) => command[0] === "COMMAND_DELETEFRAMEBUFFER" && command[1] === framebuffer);
+            expect(deletes(previous)).toHaveLength(1);
+
+            firstTarget.dispose();
+            expect(references.get(replacement)?.count).toBe(1);
+            expect(deletes(replacement)).toHaveLength(0);
+            engine.bindFramebuffer(secondTarget);
+            expect(bound()).toBe(replacement);
+            expect(references.get(replacement)?.count).toBe(1);
+
+            secondTarget.dispose();
+            expect(references.has(replacement)).toBe(false);
+            expect(deletes(replacement)).toHaveLength(1);
+            expect(Reflect.get(hardwareTexture, "_frameGraphFramebuffer")).toBeNull();
+            textures.forEach((texture) => texture.dispose());
+        });
+
         it("encodes explicit mip generation for allocation-only textures without enabling automatic generation", () => {
             const { engine, commands } = createEngine();
             const texture = engine._createInternalTexture({ width: 64, height: 64 }, { createMipMaps: true, generateMipMaps: false });
