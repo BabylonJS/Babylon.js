@@ -200,13 +200,3 @@ specular_roughness_anisotropy *= geometryTangentFromTexture.b;
     float hiLerp = mix(specular_roughness, 1., (detailRoughness - 0.5) * 2.);
     specular_roughness = mix(loLerp, hiLerp, step(detailRoughness, 0.5));
 #endif
-
-#ifdef USE_GLTF_STYLE_ANISOTROPY
-    float baseAlpha = specular_roughness * specular_roughness;
-
-    // From glTF to OpenPBR
-    float roughnessT = mix(baseAlpha, 1.0, specular_roughness_anisotropy * specular_roughness_anisotropy);
-    float roughnessB = baseAlpha;
-    specular_roughness_anisotropy = 1.0 - roughnessB / max(roughnessT, 0.00001);
-    specular_roughness = sqrt(roughnessT / sqrt(2.0 / (1.0 + (1.0 - specular_roughness_anisotropy) * (1.0 - specular_roughness_anisotropy))));
-#endif

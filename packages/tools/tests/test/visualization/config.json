@@ -4793,13 +4793,13 @@
         },
         {
             "title": "OpenPBR Subsurface Transmission Blending - IBL",
-            "playgroundId": "#SXXR4T#0",
+            "playgroundId": "#EWIAHT#0",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
             "title": "OpenPBR Subsurface Transmission Blending - Analytic Lights",
-            "playgroundId": "#T69TFO#0",
+            "playgroundId": "#RVEIY4#0",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
@@ -4920,7 +4920,7 @@
         },
         {
             "title": "OpenPBR Subsurface Transmission Volume Blending with Textures",
-            "playgroundId": "#SXXR4T#3",
+            "playgroundId": "#ROJ801#0",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
         },

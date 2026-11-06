@@ -442,6 +442,29 @@ export function GetSampledTextureKey(texture: Nullable<BaseTexture>, missing: st
 export const MinTransmissionColor = 1e-7;
 
 /**
+ * Whether an imported volumetric diffuse-transmission slab can retain its separate glTF representation.
+ * Edited subsurface scattering inputs require the merged transmission/scatter representation instead.
+ * @param material The OpenPBR material
+ * @param extensionEnabled Whether KHR_materials_diffuse_transmission is enabled for export
+ * @returns Whether to export diffuse transmission separately from transmission and scattering
+ */
+export function ShouldExportOpenPBRDiffuseTransmission(material: OpenPBRMaterial, extensionEnabled: boolean): boolean {
+    return (
+        extensionEnabled &&
+        !material.unlit &&
+        !material.geometryThinWalled &&
+        material._gltfDiffuseTransmissionSurfaceToCoat &&
+        material.subsurfaceColor.equalsFloats(0.8, 0.8, 0.8) &&
+        !material.subsurfaceColorTexture &&
+        material.subsurfaceRadius === 0.1 &&
+        material.subsurfaceRadiusScale.equalsFloats(1, 0.5, 0.25) &&
+        !material.subsurfaceRadiusScaleTexture &&
+        material.subsurfaceScatterAnisotropy === 1 &&
+        (!material.subsurfaceWeightTexture || material._useSubsurfaceWeightFromTextureAlpha)
+    );
+}
+
+/**
  * Computes the KHR_materials_volume attenuation exported for a volumetric OpenPBR material, blending the
  * transmission and subsurface slabs. The transmission extinction is the renderer's: absorption is shifted to be
  * non-negative using the (untextured) transmission scatter factor, since glTF attenuation can't be textured.
@@ -478,7 +501,7 @@ export function GetOpenPBRVolumeAttenuation(
         }
         transmissionExtinctionCoefficient = transmissionAbsorptionCoefficient.add(transmissionScatteringCoefficient);
         const maxCoeff = Math.max(transmissionExtinctionCoefficient.x, transmissionExtinctionCoefficient.y, transmissionExtinctionCoefficient.z);
-        transmissionAttenuationDistance = 1.0 / maxCoeff;
+        transmissionAttenuationDistance = maxCoeff > 0 ? 1.0 / maxCoeff : Number.MAX_VALUE;
         transmissionAttenuationColor[0] = Math.exp(-transmissionExtinctionCoefficient.x * transmissionAttenuationDistance);
         transmissionAttenuationColor[1] = Math.exp(-transmissionExtinctionCoefficient.y * transmissionAttenuationDistance);
         transmissionAttenuationColor[2] = Math.exp(-transmissionExtinctionCoefficient.z * transmissionAttenuationDistance);
@@ -486,6 +509,10 @@ export function GetOpenPBRVolumeAttenuation(
         // transmissionDepth == 0
         transmissionAttenuationDistance = Number.MAX_VALUE;
     }
+    if (!subsurfaceVolume) {
+        return { attenuationColor: transmissionAttenuationColor, attenuationDistance: transmissionAttenuationDistance };
+    }
+
     let subsurfaceAttenuationDistance = 1;
     const subsurfaceAttenuationColor = [1, 1, 1];
     if (subsurfaceVolume) {
