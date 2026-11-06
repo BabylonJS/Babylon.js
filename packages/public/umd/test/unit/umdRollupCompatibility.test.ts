@@ -96,6 +96,24 @@ describe("UMD Rollup compatibility", () => {
         }
     });
 
+    it("does not mangle identifiers to `_`, which TypeScript's ES5 downlevel can collide with its temporaries", async () => {
+        const { commonUMDRollupConfiguration } = await import("../../../rollupUMDHelper.mjs");
+        const config = commonUMDRollupConfiguration({ devPackageName: "loaders", mode: "production" });
+        const terserPlugin = config.plugins.find((candidate: { name?: string }) => candidate?.name === "terser");
+        expect(terserPlugin).toBeDefined();
+
+        // Enough locals that terser's mangler would otherwise reach `_`.
+        const count = 80;
+        const declarations = Array.from({ length: count }, (_, i) => `var local${i} = make(${i});`).join("");
+        const uses = Array.from({ length: count }, (_, i) => `use(local${i});`).join("");
+        const source = `(function(){${declarations}${uses}})();`;
+
+        const result = await terserPlugin.renderChunk.call({}, source, { fileName: "test.js" }, { format: "umd" });
+        const code = typeof result === "string" ? result : result.code;
+        expect(code).toContain("use(");
+        expect(code).not.toMatch(/(^|[^\w$.])_(?![\w$])/);
+    });
+
     it("keeps the glTF2 legacy export compatible with nested UMD namespaces", async () => {
         const { GLTF2: glTF2EntryNamespace } = await import("../../../../dev/loaders/src/legacy/legacy-glTF2");
         const { GLTF2: fullLoadersNamespace } = await import("../../../../dev/loaders/src/legacy/legacy");
