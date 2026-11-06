@@ -41,10 +41,10 @@ describe("The owner of the draws of a mesh", () => {
     // each draw of the engine: the owner it was submitted with, and its render pass
     const watchDraws = () => {
         const draws: Array<{ owner: unknown; pass: number }> = [];
-        const drawElementsType = engine.drawElementsType.bind(engine);
+        const drawElementsType = engine.drawElementsType;
         vi.spyOn(engine, "drawElementsType").mockImplementation((...args) => {
             draws.push({ owner: engine._pipelineWaitOwner, pass: engine.currentRenderPassId });
-            drawElementsType(...args);
+            drawElementsType.call(engine, ...args);
         });
         return draws;
     };
