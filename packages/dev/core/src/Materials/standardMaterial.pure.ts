@@ -1844,7 +1844,7 @@ export class StandardMaterial extends StandardMaterialBase {
     /**
      * Makes a duplicate of the material, and gives it a new name
      * @param name defines the new name for the duplicated material
-     * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g diffuse and opacity), only clone it once and reuse it on the other channels. Default false.
+     * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g diffuse and opacity), only clone it once and reuse it on the other channels. Default true.
      * @param rootUrl defines the root URL to use to load textures
      * @returns the cloned material
      */
