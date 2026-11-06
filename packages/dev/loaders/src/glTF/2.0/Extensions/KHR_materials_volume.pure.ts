@@ -72,9 +72,12 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     private _loadVolumePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsVolume): Promise<void> {
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
 
-        // If transparency isn't enabled already, this extension shouldn't do anything.
-        // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
-        if ((adapter.transmissionWeight === 0 && adapter.subsurfaceWeight === 0) || !extension.thicknessFactor) {
+        // OpenPBR transmission can be enabled later by material animation or runtime writes.
+        const hasTransmission =
+            adapter.transmissionWeight > 0 ||
+            adapter.subsurfaceWeight > 0 ||
+            (babylonMaterial.getClassName() === "OpenPBRMaterial" && (material.extensions?.KHR_materials_transmission || material.extensions?.KHR_materials_diffuse_transmission));
+        if (!hasTransmission || !extension.thicknessFactor) {
             return Promise.resolve();
         }
 

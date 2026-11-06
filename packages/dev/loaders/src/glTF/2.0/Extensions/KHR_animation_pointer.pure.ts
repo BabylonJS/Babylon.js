@@ -85,6 +85,9 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         }
 
         try {
+            if (/^\/materials\/\d+\/extensions\/KHR_materials_retroreflection\//.test(pointer) && !this._loader._isExtensionEnabled("KHR_materials_retroreflection")) {
+                throw new Error("KHR_materials_retroreflection is disabled");
+            }
             const obj = this._pathToObjectConverter.convert(pointer);
             if (!obj.info.interpolation) {
                 throw new Error(`${extensionContext}/pointer: Interpolation is missing`);

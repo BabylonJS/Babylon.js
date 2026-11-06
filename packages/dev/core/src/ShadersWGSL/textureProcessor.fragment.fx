@@ -1,6 +1,6 @@
 // Texture processing fragment shader (WGSL)
-// Supports multiply, max, lerp, and invert operations with texture/constant/combined operands.
-// See GLSL counterpart for define documentation (OPERAND_A/B_SRGB, OPERAND_A/B_CHANNEL_R/G/B/A, LERP_T_SRGB, LERP_T_CHANNEL_R/G/B/A, OUTPUT_SRGB, OP_INVERT, INVERT_R/G/B/A, OP_TRANSMISSION_FRACTION, OP_THIN_WALLED_TRANSMISSION_WEIGHT, OP_THIN_WALLED_SUBSURFACE_WEIGHT, and OP_TRANSMISSION_SCATTER_ALBEDO also apply).
+// Supports arithmetic, normal scaling, and scatter conversion with texture/constant/combined operands.
+// See GLSL counterpart for define documentation.
 
 #ifdef OPERAND_A_TEXTURE
 var textureASampler: sampler;
@@ -97,7 +97,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     // Apply operation
-    #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
+    #ifdef OP_NORMAL_SCALE
+    let normal: vec3f = (a.rgb * 2.0 - vec3f(1.0)) * vec3f(b.r, b.r, 1.0);
+    var result: vec4f = vec4f(normal / max(length(normal), 1e-8) * 0.5 + vec3f(0.5), a.a);
+    #elif defined(OP_MULTI_SCATTER_TO_SINGLE_SCATTER)
     #ifdef MULTI_SCATTER_SCALE_B
     let multiScatter: vec4f = a * b;
     #else
