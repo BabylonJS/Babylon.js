@@ -789,6 +789,26 @@ export class NodeMaterialBuildState {
     }
 
     /**
+     * @internal The conversion of an output to gamma space. WGSL has no overloads: its helper functions convert a vec4 (toGammaSpace)
+     * and a vec3 (toGammaSpaceVec3), and a float is converted as a vec3, with the same exact or approximate conversion
+     * @param output the output to convert
+     * @returns the expression of the converted output
+     */
+    public _toGammaSpace(output: NodeMaterialConnectionPoint) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            if (output.type === NodeMaterialBlockConnectionPointTypes.Color3 || output.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+                return `toGammaSpaceVec3(${output.associatedVariableName})`;
+            }
+            if (output.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                return `toGammaSpaceVec3(vec3f(${output.associatedVariableName})).x`;
+            }
+
+            return `toGammaSpace(${output.associatedVariableName})`;
+        }
+        return `toGammaSpace(${output.associatedVariableName})`;
+    }
+
+    /**
      * @internal
      */
     public _generateTextureSample(uv: string, samplerName: string) {
