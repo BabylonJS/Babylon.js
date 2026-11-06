@@ -52,9 +52,9 @@ describe("SubMesh.setIndirectDrawBuffer", () => {
         engine = new NullEngine();
         // the draw contexts the WebGPU engine creates, and made current by enableEffect as it does (a NullEngine has none)
         vi.spyOn(engine, "createDrawContext").mockImplementation(() => new WebGPUDrawContext({} as any, {} as any));
-        const enableEffect = engine.enableEffect.bind(engine);
+        const enableEffect = engine.enableEffect;
         vi.spyOn(engine, "enableEffect").mockImplementation((effect) => {
-            enableEffect(effect);
+            enableEffect.call(engine, effect);
             if (effect && IsWrapper(effect)) {
                 engine._currentDrawContext = effect.drawContext!;
             }
