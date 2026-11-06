@@ -22,11 +22,11 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     // its own bgfx framebuffer selected by bindFramebuffer(lodLevel, layer).
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _layerFramebuffers: Nullable<Map<number, NativeFramebuffer>> = null;
-    // The attachment layout (ordered color handles, per-attachment layers, explicit depth, samples) the layered
+    // The attachment layout (ordered color handles, per-attachment layers, explicit depth, samples, mip policies) the layered
     // MRT framebuffer was last built from. It is rebuilt on bind when any of them change, e.g. when
     // setInternalTexture swaps a texture in or setLayerAndFaceIndex retargets an attachment.
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public _layeredFramebufferKey: Nullable<{ colors: unknown[]; layers: number[]; depth: unknown; samples: number }> = null;
+    public _layeredFramebufferKey: Nullable<{ colors: unknown[]; layers: number[]; depth: unknown; samples: number; autoGenerateMips: boolean[] }> = null;
 
     // True for a mixed-type MRT whose color attachments target specific layers of 2D-array textures and/or
     // faces of cube textures (plus plain 2D). Its multi-attachment framebuffer is built lazily on first bind
@@ -283,6 +283,10 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
                 processed.add(replacement);
                 if (this._engine._hasMipStorage(source)) {
                     framebufferNeedsRebuild = this._engine._ensureRenderTargetMipStorage(replacement) || framebufferNeedsRebuild;
+                }
+                if (replacement.generateMipMaps !== source.generateMipMaps) {
+                    replacement.generateMipMaps = source.generateMipMaps;
+                    framebufferNeedsRebuild = true;
                 }
             }
 

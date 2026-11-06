@@ -7,6 +7,7 @@ import { Constants } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer.pure";
 import { type Nullable } from "../../../types";
 import { type RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
+import { type InternalTexture } from "../internalTexture";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { IblCdfGenerator } from "../../../Rendering/iblCdfGenerator";
@@ -93,6 +94,13 @@ export class HDRIrradianceFiltering {
         return rtWrapper;
     }
 
+    private _rebuildRenderTargetStorage(size: number): { proxy: InternalTexture; isReady: boolean; isAsync: boolean } {
+        const rtWrapper = this._createRenderTarget(size);
+        const proxy = rtWrapper.texture!;
+        rtWrapper.dispose(true);
+        return { proxy, isReady: true, isAsync: false };
+    }
+
     private _prefilterInternal(texture: BaseTexture): BaseTexture {
         const width = texture.getSize().width;
         const mipmapsCount = ILog2(width);
@@ -140,6 +148,10 @@ export class HDRIrradianceFiltering {
         effect.setTexture("inputTexture", null);
         effect.setTexture("icdfTexture", null);
         const irradianceTexture = new BaseTexture(texture.getScene(), outputTexture.texture);
+        // The returned texture now owns the internal texture; only the framebuffers need releasing.
+        // That also drops the wrapper from the engine's restore cache, so recreate the storage on context restore.
+        outputTexture.texture!.onRebuildCallback = () => this._rebuildRenderTargetStorage(irradianceSize);
+        outputTexture.dispose(true);
         irradianceTexture.name = texture.name + "_irradiance";
         irradianceTexture.displayName = texture.name + "_irradiance";
         irradianceTexture.gammaSpace = false;

@@ -1,14 +1,7 @@
 {
     "name": "@babylonjs/shared-ui-components",
-    "version": "9.33.2",
-    "main": "index.js",
-    "module": "index.js",
-    "types": "index.d.ts",
+    "version": "9.34.0",
     "exports": {
-        ".": {
-            "types": "./index.d.ts",
-            "default": "./index.js"
-        },
         "./lite": {
             "types": "./lite/index.d.ts",
             "default": "./lite/index.js"
@@ -33,6 +26,20 @@
         "readme.md",
         "license.md"
     ],
+    "nx": {
+        "targets": {
+            "build": {
+                "outputs": [
+                    "{projectRoot}/**/*.js",
+                    "{projectRoot}/**/*.d.ts",
+                    "{projectRoot}/**/*.map",
+                    "{projectRoot}/**/*.svg",
+                    "{projectRoot}/**/*.scss",
+                    "{projectRoot}/*.tsbuildinfo"
+                ]
+            }
+        }
+    },
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json)\" -g",
@@ -41,7 +48,7 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/lite": "1.37.1",
+        "@babylonjs/lite": "1.38.1",
         "@dev/build-tools": "^1.0.0",
         "@dev/shared-ui-components": "^1.0.0"
     },
@@ -67,7 +74,6 @@
         "babylon.js"
     ],
     "license": "Apache-2.0",
-    "esnext": "index.js",
     "type": "module",
     "sideEffects": true,
     "homepage": "https://www.babylonjs.com",

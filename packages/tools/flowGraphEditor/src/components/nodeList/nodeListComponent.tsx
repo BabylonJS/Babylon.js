@@ -27,6 +27,7 @@ const Tooltips: Record<string, string> = {
     FlowGraphSceneReadyEventBlock: "Triggered when the scene is ready",
     FlowGraphSceneTickEventBlock: "Triggered every frame",
     FlowGraphMeshPickEventBlock: "Triggered when a mesh is picked",
+    FlowGraphMeshIntersectionEventBlock: "Triggered when a source mesh enters or exits intersection with one or more target meshes",
     FlowGraphPointerEventBlock: "Triggered on pointer events",
     FlowGraphPointerDownEventBlock: "Triggered on pointer down",
     FlowGraphPointerUpEventBlock: "Triggered on pointer up",

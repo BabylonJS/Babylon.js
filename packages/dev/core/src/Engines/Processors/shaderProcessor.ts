@@ -21,6 +21,7 @@ import { type AbstractEngine } from "../abstractEngine";
 
 const RegexSe = /defined\s*?\((.+?)\)/g;
 const RegexSeRevert = /defined\s*?\[(.+?)\]/g;
+const RegexMacroName = /^[A-Za-z_]\w*$/;
 const RegexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 const RegexShaderDecl = /__decl__/;
 const RegexLightX = /light\{X\}.(\w*)/g;
@@ -118,7 +119,11 @@ function ExtractOperation(expression: string) {
     }
 
     if (indexOperator === -1) {
-        return new ShaderDefineIsDefinedOperator(expression);
+        // a define alone: #if !X is #if !defined(X), as #if X is #if defined(X) (it used to test a define named "!X"). Only a macro name
+        // is negated so: anything else after the "!" keeps its reading (#if !1 tests a define named "!1", which never exists)
+        const define = expression.trim();
+        const name = define.substring(1).trim();
+        return define[0] === "!" && RegexMacroName.test(name) ? new ShaderDefineIsDefinedOperator(name, true) : new ShaderDefineIsDefinedOperator(expression);
     }
 
     const define = expression.substring(0, indexOperator).trim();
@@ -306,6 +311,10 @@ function PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEng
 
     if (options.processor?.shaderLanguage === ShaderLanguage.GLSL) {
         preprocessors["GL_ES"] = "true";
+    }
+    if (engine?.getCaps().highPrecisionShaderSupported) {
+        // Resolve the GLSL capability macro before the driver's own preprocessor runs.
+        preprocessors["GL_FRAGMENT_PRECISION_HIGH"] = "true";
     }
     preprocessors["__VERSION__"] = options.version;
     preprocessors[options.platformName] = "true";

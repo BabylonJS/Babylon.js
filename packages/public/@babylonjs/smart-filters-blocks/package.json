@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/smart-filters-blocks",
-    "version": "9.33.2",
+    "version": "9.34.0",
     "description": "Babylon.js Smart Filter Block Library",
     "keywords": [
         "video",
@@ -32,6 +32,22 @@
         "license.md",
         "readme.md"
     ],
+    "nx": {
+        "targets": {
+            "build": {
+                "inputs": [
+                    "default",
+                    "^default",
+                    "{workspaceRoot}/packages/dev/smartFilterBlocks/**/*"
+                ],
+                "outputs": [
+                    "{projectRoot}/dist",
+                    "{projectRoot}/src",
+                    "{projectRoot}/*.tsbuildinfo"
+                ]
+            }
+        }
+    },
     "scripts": {
         "build": "npm run clean && npm run copySrc && npm run compile",
         "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|tasks.json|cjs)\" -g",
@@ -48,6 +64,6 @@
         "@babylonjs/core": "^7.47.3 || ^8.0.1 || ^9.0.0"
     },
     "dependencies": {
-        "@babylonjs/smart-filters": "9.33.2"
+        "@babylonjs/smart-filters": "9.34.0"
     }
 }

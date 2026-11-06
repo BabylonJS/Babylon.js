@@ -287,6 +287,13 @@ export class Effect implements IDisposable {
     /** @internal */
     public _rawFragmentSourceCode: string = "";
 
+    /**
+     * True until the initial loading and processing of the shader code (including extraInitializationsAsync) has completed.
+     * Until then, the effect has no shader sources and no pipeline context to rebuild after a context loss: it prepares itself once the processing completes.
+     * @internal
+     */
+    public _isShaderCodeProcessingPending = false;
+
     private static _BaseCache: { [key: number]: DataBuffer } = {};
     private _processingContext: Nullable<_IShaderProcessingContext>;
 
@@ -394,6 +401,7 @@ export class Effect implements IDisposable {
 
         this.uniqueId = Effect._UniqueIdSeed++;
         if (!cachedPipeline) {
+            this._isShaderCodeProcessingPending = true;
             // eslint-disable-next-line github/no-then
             void this._processShaderCodeAsync(null, false, null, extraInitializationsAsync).catch((error) => {
                 const message = error?.message ?? String(error);
@@ -461,6 +469,7 @@ export class Effect implements IDisposable {
             (migratedVertexCode, migratedFragmentCode) => {
                 this._vertexSourceCode = migratedVertexCode;
                 this._fragmentSourceCode = migratedFragmentCode;
+                this._isShaderCodeProcessingPending = false;
                 this._prepareEffect(keepExistingPipelineContext);
             },
             this._shaderLanguage,
@@ -860,7 +869,18 @@ export class Effect implements IDisposable {
                     },
                 },
                 this._engine.createPipelineContext.bind(this._engine),
-                this._engine._preparePipelineContextAsync.bind(this._engine),
+                (pipelineContext, ...args) => {
+                    // Some engines (WebGPU) prepare the pipeline context asynchronously: a rejection must be handled like a synchronous failure
+                    const preparation: unknown = engine._preparePipelineContextAsync(pipelineContext, ...args);
+                    if (preparation instanceof Promise) {
+                        // eslint-disable-next-line github/no-then
+                        preparation.catch((e) => {
+                            if (this._pipelineContext === pipelineContext && !this._isDisposed) {
+                                this._processCompilationErrors(e, previousPipelineContext);
+                            }
+                        });
+                    }
+                },
                 this._engine._executeWhenRenderingStateIsCompiled.bind(this._engine)
             );
 

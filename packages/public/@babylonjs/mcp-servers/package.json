@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/mcp-servers",
-    "version": "9.33.2",
+    "version": "9.34.0",
     "description": "Bundled Model Context Protocol servers for Babylon.js authoring workflows",
     "type": "module",
     "bin": {
@@ -18,6 +18,20 @@
         "dist/**/*.*",
         "readme.md"
     ],
+    "nx": {
+        "targets": {
+            "build": {
+                "inputs": [
+                    "default",
+                    "^default",
+                    "{workspaceRoot}/packages/tools/*-mcp-server/**/*",
+                    "{workspaceRoot}/packages/tools/mcp-server-core/**/*",
+                    "{workspaceRoot}/packages/tools/ngeMcpCommon/**/*",
+                    "{workspaceRoot}/packages/tools/snippetLoader/**/*"
+                ]
+            }
+        }
+    },
     "scripts": {
         "build": "npm run clean && npm run build:servers && npm run copy:servers",
         "build:servers": "npm run build -w @tools/mcp-server-core && npm run build -w @tools/nme-mcp-server && npm run build -w @tools/npe-mcp-server && npm run build -w @tools/nge-mcp-server && npm run build -w @tools/nrge-mcp-server && npm run build -w @tools/gui-mcp-server && npm run build -w @tools/flow-graph-mcp-server && npm run build -w @tools/smart-filters-mcp-server",

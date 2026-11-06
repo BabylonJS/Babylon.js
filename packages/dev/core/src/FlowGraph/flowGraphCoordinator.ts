@@ -401,7 +401,7 @@ export class FlowGraphCoordinator {
     public serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject._flowGraphs = [];
         for (const graph of this._flowGraphs) {
-            const serializedGraph = {};
+            const serializedGraph: any = {};
             graph.serialize(serializedGraph, valueSerializeFunction);
             serializationObject._flowGraphs.push(serializedGraph);
         }
@@ -411,6 +411,7 @@ export class FlowGraphCoordinator {
         } else {
             delete serializationObject.soundAssets;
         }
+        delete serializationObject.referenceProvenance;
     }
 
     /**

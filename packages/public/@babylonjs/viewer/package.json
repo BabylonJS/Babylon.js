@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "9.33.2",
+    "version": "9.34.0",
     "type": "module",
     "main": "lib/full/index.js",
     "module": "lib/full/index.js",
@@ -28,6 +28,17 @@
         "docs/**",
         "license.md"
     ],
+    "nx": {
+        "targets": {
+            "build": {
+                "inputs": [
+                    "default",
+                    "^default",
+                    "{workspaceRoot}/packages/tools/viewer/**/*"
+                ]
+            }
+        }
+    },
     "scripts": {
         "start": "npm run serve -- --open test/apps/web/index.html",
         "start:prod": "serve . --listen 1343",
@@ -55,9 +66,9 @@
         }
     },
     "devDependencies": {
-        "@babylonjs/core": "9.33.2",
+        "@babylonjs/core": "9.34.0",
         "@babylonjs/lite": "^1.23.0",
-        "@babylonjs/loaders": "9.33.2",
+        "@babylonjs/loaders": "9.34.0",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^6.0.1",
         "@rollup/plugin-commonjs": "^29.0.3",

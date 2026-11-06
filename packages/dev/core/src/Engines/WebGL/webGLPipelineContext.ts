@@ -79,7 +79,9 @@ export class WebGLPipelineContext implements IPipelineContext {
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
             const sampler = effect.getUniform(samplerList[index]);
-            if (sampler == null) {
+            if (sampler == null && !engine._gl?.isContextLost()) {
+                // Names kept during context loss may already be in the (shared) dictionary: drop the pruned one too.
+                delete samplers[samplerList[index]];
                 samplerList.splice(index, 1);
                 index--;
             }
