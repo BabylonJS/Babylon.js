@@ -1443,6 +1443,52 @@ describe("Mesh recorded draws", () => {
         expect(material._getRecordedDrawReference(subMesh._drawWrapper.effect!)).toBe(subMesh._drawWrapper);
     });
 
+    it("needs a full draw after the code of the user ran around the draw of a shadow map caster, which can change a shared material in place", async () => {
+        const sun = new DirectionalLight("sun", new Vector3(0, -1, 0), scene);
+        const generator = new ShadowGenerator(256, sun);
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        // a NullEngine never marks a raw texture ready, which the readiness check of the material waits for
+        material.diffuseTexture!.getInternalTexture()!.isReady = true;
+        scene.updateTransformMatrix(true);
+        generator.addShadowCaster(mesh);
+        // the depth effect of the caster is built once the shaders the generator imports are loaded, which is asynchronous
+        while (!generator.isReady(subMesh, false, false)) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        // a new frame, where A's full draw is the reference of the material with both lights bound, and C, recorded before, compares
+        // with it (a sub mesh is drawn once per frame in a shadow map)
+        const frame = () => {
+            scene.incrementRenderId();
+            sun._renderId = scene.getRenderId();
+            fullDraw();
+            expect(unchanged()).toBe(true);
+        };
+        // the caster draws in the shadow map and changes the material in place, which does not dirty it: only the epoch of the
+        // references sees it, and a full draw after it is the reference again
+        const draw = () => {
+            (generator as any)._renderSubMeshForShadowMap(subMesh, false);
+            expect(material.diffuseColor.g).toBe(0);
+            expect(unchanged()).toBe(false);
+            fullDraw();
+            expect(unchanged()).toBe(true);
+        };
+
+        // a caster with a draw observer is not encoded again, and its full draw notifies the observer in the shadow map too
+        frame();
+        mesh.onBeforeDrawObservable.add(() => material.diffuseColor.set(1, 0, 0));
+        draw();
+
+        // customAllowRendering is the same kind of boundary, and it runs for every caster, before its draw is checked
+        frame();
+        mesh.onBeforeDrawObservable.clear();
+        material.diffuseColor.set(1, 1, 1);
+        generator.customAllowRendering = () => {
+            material.diffuseColor.set(1, 0, 0);
+            return true;
+        };
+        draw();
+    });
+
     it("does not encode again a draw recorded with another scene uniform buffer than the one bound, which a scene rendered twice in a frame takes (an RTT of two active cameras)", () => {
         // C's draw was recorded in the first render, with the first scene uniform buffer
         const first = scene.getSceneUniformBuffer();

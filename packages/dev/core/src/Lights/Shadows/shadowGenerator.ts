@@ -1378,6 +1378,17 @@ export class ShadowGenerator implements IShadowGenerator {
         effect.setMatrix("viewProjection", this.getTransformMatrix());
     }
 
+    // whether code of the user runs around the draw of a caster in the shadow map: the observables of the generator, notified by a
+    // full draw before and after it (the draw observers of the mesh are its own, see AbstractMesh._hasDrawObservers)
+    private _runsCodeOnShadowMapRender(): boolean {
+        return (
+            this.onBeforeShadowMapRenderMeshObservable.hasObservers() ||
+            this.onBeforeShadowMapRenderObservable.hasObservers() ||
+            this.onAfterShadowMapRenderObservable.hasObservers() ||
+            this.onAfterShadowMapRenderMeshObservable.hasObservers()
+        );
+    }
+
     protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent: boolean = false): void {
         const renderingMesh = subMesh.getRenderingMesh();
         const effectiveMesh = subMesh.getEffectiveMesh();
@@ -1418,8 +1429,14 @@ export class ShadowGenerator implements IShadowGenerator {
             engine.getCaps().instancedArrays &&
             ((batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined) || renderingMesh.hasThinInstances);
 
-        if (this.customAllowRendering && !this.customAllowRendering(subMesh)) {
-            return;
+        if (this.customAllowRendering) {
+            const allowRendering = this.customAllowRendering(subMesh);
+            // code of the user, as the observers of a caster (see _runsCodeOnShadowMapRender): it runs before the draw is checked, and
+            // can change any material in place, so no reference kept before it in the frame stands for the draws after it
+            engine._recordedDrawReferencesEpoch++;
+            if (!allowRendering) {
+                return;
+            }
         }
 
         // While a snapshot records again, a draw whose mesh, material and per-draw values did not change is encoded from the commands
@@ -1458,6 +1475,13 @@ export class ShadowGenerator implements IShadowGenerator {
                 subMesh._renderId = scene.getRenderId();
                 return;
             }
+        }
+
+        // code of the user runs around the full draw of a caster (its draw observers, which a full draw notifies in the shadow map too,
+        // and the observables of the generator), and no such draw is encoded again: as Mesh.render, it can change any material in
+        // place, so no reference kept before it in the frame stands for the draws after it
+        if (renderingMesh._hasDrawObservers() || this._runsCodeOnShadowMapRender()) {
+            engine._recordedDrawReferencesEpoch++;
         }
 
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
