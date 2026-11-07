@@ -60,6 +60,9 @@ import "core/Shaders/shadowMap.fragment";
 import "core/Shaders/shadowMap.vertex";
 import "core/Shaders/depthBoxBlur.fragment";
 import "core/Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
+// the shaders a full draw of the mesh's material compiles, which its readiness check waits for
+import "core/Shaders/default.vertex";
+import "core/Shaders/default.fragment";
 
 /**
  * What a draw recorded by a snapshot is checked against before it is encoded again without binding (Mesh._isRecordedDrawUnchanged):
@@ -1408,6 +1411,36 @@ describe("Mesh recorded draws", () => {
         mesh.isVisible = true;
         mesh.render(subMesh, false);
         expect(replay).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not keep a draw of a mesh the batch does not render itself, whose full bind leaves the values of the last frame in its slot", async () => {
+        vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+        // a material whose draws are encoded again: only that predicate matters here, and the effect of the sub mesh is the one its
+        // real readiness check builds (a NullEngine never marks a raw texture ready, which that check waits for)
+        material.diffuseTexture!.getInternalTexture()!.isReady = true;
+        vi.spyOn(material, "_canReplayRecordedDraw").mockReturnValue(true);
+        const keep = vi.spyOn(mesh, "_keepRecordedDraw");
+        // a full bind reads the matrices a camera computes, and the effect of the sub mesh is built once the shaders the material
+        // imports are loaded, which is asynchronous
+        scene.updateTransformMatrix(true);
+        while (!material.isReadyForSubMesh(mesh, subMesh, false)) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        expect(subMesh._drawWrapper.effect!.isReady()).toBe(true);
+
+        // still rendered while not visible (an active mesh kept by freezeActiveMeshes): the batch does not render it itself, so its
+        // full draw binds but submits nothing, and the slot it would publish as the frame's reference keeps the bytes of the last
+        // frame, which a draw of another mesh with the same material would then be encoded again with
+        mesh.isVisible = false;
+        mesh.render(subMesh, false);
+        expect(keep).not.toHaveBeenCalled();
+        expect(material._getRecordedDrawReference(subMesh._drawWrapper.effect!)).toBeNull();
+
+        // visible: the batch renders it itself, and its full draw submits the values it publishes
+        mesh.isVisible = true;
+        mesh.render(subMesh, false);
+        expect(keep).toHaveBeenCalledTimes(1);
+        expect(material._getRecordedDrawReference(subMesh._drawWrapper.effect!)).toBe(subMesh._drawWrapper);
     });
 
     it("does not encode again a draw recorded with another scene uniform buffer than the one bound, which a scene rendered twice in a frame takes (an RTT of two active cameras)", () => {

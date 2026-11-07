@@ -1570,7 +1570,9 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onAfterShadowMapRenderObservable.notifyObservers(effect);
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
 
-            if (replayable) {
+            // as Mesh.render and the replay path: a caster still rendered for its instances or its batch but not drawn itself
+            // submits nothing, so its slot keeps last frame's bytes and must not become this frame's reference
+            if (replayable && batch.renderSelf[subMesh._id]) {
                 renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), domainState);
             }
         } else {

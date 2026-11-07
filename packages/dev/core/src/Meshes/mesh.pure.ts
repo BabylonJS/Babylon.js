@@ -3272,7 +3272,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Unbind
         this._internalMeshDataInfo._effectiveMaterial.unbind();
 
-        if (recordsDraw && drawWrapper === subMesh._drawWrapper) {
+        // as the replay path already does: a mesh still rendered for its instances or its batch but not drawn itself submits
+        // nothing, so its slot keeps last frame's bytes and must not become this frame's reference for the material
+        if (recordsDraw && drawWrapper === subMesh._drawWrapper && batch.renderSelf[subMesh._id]) {
             drawWrapper._recordedReverse = reverse;
             this._keepRecordedDraw(drawWrapper, subMesh, effectiveMaterial, effectiveMesh, true);
         }
