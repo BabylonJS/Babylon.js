@@ -476,6 +476,7 @@ export class RenderingGroup {
         // Particles
         const activeCamera = this._scene.activeCamera;
         this._notifySceneObservers(this._scene.onBeforeParticlesRenderingObservable);
+        let rendered = false;
         for (let particleIndex = 0; particleIndex < this._particleSystems.length; particleIndex++) {
             const particleSystem = this._particleSystems.data[particleIndex];
 
@@ -486,7 +487,14 @@ export class RenderingGroup {
             const emitter: any = particleSystem.emitter;
             if (!emitter.position || !activeMeshes || activeMeshes.indexOf(emitter) !== -1) {
                 this._scene._activeParticles.addCount(particleSystem.render(), false);
+                rendered = true;
             }
+        }
+        // a system that renders runs code of the user the group does not see (its observers before and after drawing its particles,
+        // as the observers of the scene around them): it can change any material in place, so no reference kept before it stands for
+        // the draws after it
+        if (rendered) {
+            this._scene.getEngine()._recordedDrawReferencesEpoch++;
         }
         this._notifySceneObservers(this._scene.onAfterParticlesRenderingObservable);
     }
@@ -499,12 +507,19 @@ export class RenderingGroup {
         // Sprites
         const activeCamera = this._scene.activeCamera;
         this._notifySceneObservers(this._scene.onBeforeSpritesRenderingObservable);
+        let rendered = false;
         for (let id = 0; id < this._spriteManagers.length; id++) {
             const spriteManager = this._spriteManagers.data[id];
 
             if ((activeCamera && activeCamera.layerMask & spriteManager.layerMask) !== 0) {
                 spriteManager.render();
+                rendered = true;
             }
+        }
+        // a manager that renders runs code of the user the group does not see (a sprite's animation-end callback, as the observers of
+        // the scene around them): it can change any material in place, so no reference kept before it stands for the draws after it
+        if (rendered) {
+            this._scene.getEngine()._recordedDrawReferencesEpoch++;
         }
         this._notifySceneObservers(this._scene.onAfterSpritesRenderingObservable);
     }

@@ -1357,8 +1357,10 @@ describe("Mesh recorded draws", () => {
         // the component of the sprites adds their observers to the scene, as a sprite manager does
         scene._addComponent(new SpriteSceneComponent(scene));
         const group = new RenderingGroup(0, scene);
-        group.dispatchSprites({ layerMask: 0x0fffffff, render: () => {} } as any);
-        group.dispatchParticles({ layerMask: 0x0fffffff, emitter: {}, render: () => 0 } as any);
+        // a layer mask the camera excludes: the group notifies the observers of the scene around its sprites and its particles
+        // without rendering any of them, which ends the epoch of the references by itself (see the next test)
+        group.dispatchSprites({ layerMask: 0, render: () => {} } as any);
+        group.dispatchParticles({ layerMask: 0, emitter: {}, render: () => 0 } as any);
         const seen: boolean[] = [];
         const frame = () => {
             fullDraw();
@@ -1379,6 +1381,41 @@ describe("Mesh recorded draws", () => {
         group.onBeforeTransparentRendering = change;
         frame();
         expect(seen).toEqual([true, false, false, false, false, false]);
+    });
+
+    it("needs a full draw after the particles or the sprites of a rendering group rendered, which run code of the user the group does not see", () => {
+        // A's full draw before the transparent meshes of the group is the frame's reference of the material; C, transparent and
+        // recorded before, compares with it
+        // the component of the sprites adds their observers to the scene, as a sprite manager does
+        scene._addComponent(new SpriteSceneComponent(scene));
+        const group = new RenderingGroup(0, scene);
+        const sprites = new RenderingGroup(0, scene);
+        // a system runs its own observers around its draws, and a manager a sprite's animation-end callback: code of the user the
+        // group does not see, which changes the material in place and does not dirty it
+        const change = () => material.diffuseColor.set(1, 0, 0);
+        group.dispatchParticles({ layerMask: 0, emitter: {}, render: () => (change(), 0) } as any);
+        group.dispatchParticles({ layerMask: 0x0fffffff, emitter: {}, render: () => (change(), 0) } as any);
+        sprites.dispatchSprites({ layerMask: 0x0fffffff, render: () => change() } as any);
+        const seen: boolean[] = [];
+        const frame = (rendered: RenderingGroup) => {
+            material.diffuseColor.set(1, 1, 1);
+            fullDraw();
+            rendered.render(null, true, true, null, false, false, false, true, () => void seen.push(unchanged()));
+        };
+        // a group whose systems another layer mask excludes renders none of them, and a group with no particles and no sprites
+        // renders none: nothing of the user runs between their draws
+        const excluded = new RenderingGroup(0, scene);
+        excluded.dispatchParticles({ layerMask: 0, emitter: {}, render: () => (change(), 0) } as any);
+        frame(excluded);
+        expect(material.diffuseColor.g).toBe(1);
+        frame(new RenderingGroup(0, scene));
+        expect(material.diffuseColor.g).toBe(1);
+        // a system that renders, and a manager that renders
+        frame(group);
+        expect(material.diffuseColor.g).toBe(0);
+        frame(sprites);
+        expect(material.diffuseColor.g).toBe(0);
+        expect(seen).toEqual([true, true, false, false]);
     });
 
     it("sees whether the GPU texture of a texture of the material uses its mipmaps, set in the frame after the reference draw", () => {
