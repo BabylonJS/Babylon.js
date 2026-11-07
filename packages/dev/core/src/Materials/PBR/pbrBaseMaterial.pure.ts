@@ -1242,11 +1242,9 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         let forceWasNotReadyPreviously = false;
 
         if (effect) {
-            if (this._onEffectCreatedObservable) {
-                onCreatedEffectParameters.effect = effect;
-                onCreatedEffectParameters.subMesh = subMesh;
-                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
-            }
+            onCreatedEffectParameters.effect = effect;
+            onCreatedEffectParameters.subMesh = subMesh;
+            this._notifyEffectCreated(onCreatedEffectParameters);
 
             // Use previous effect while new one is compiling
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
@@ -1895,11 +1893,9 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             }
             const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
             const effect = this._prepareEffect(mesh, mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
-            if (this._onEffectCreatedObservable) {
-                onCreatedEffectParameters.effect = effect;
-                onCreatedEffectParameters.subMesh = null;
-                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
-            }
+            onCreatedEffectParameters.effect = effect;
+            onCreatedEffectParameters.subMesh = null;
+            this._notifyEffectCreated(onCreatedEffectParameters);
             if (effect.isReady()) {
                 if (onCompiled) {
                     onCompiled(this);

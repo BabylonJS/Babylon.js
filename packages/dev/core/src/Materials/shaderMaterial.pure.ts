@@ -1019,11 +1019,9 @@ export class ShaderMaterial extends PushMaterial {
                 drawWrapper.setEffect(effect, join);
             }
 
-            if (this._onEffectCreatedObservable) {
-                OnCreatedEffectParameters.effect = effect;
-                OnCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
-                this._onEffectCreatedObservable.notifyObservers(OnCreatedEffectParameters);
-            }
+            OnCreatedEffectParameters.effect = effect;
+            OnCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
+            this._notifyEffectCreated(OnCreatedEffectParameters);
         }
 
         drawWrapper!._wasPreviouslyUsingInstances = !!useInstances;

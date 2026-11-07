@@ -1291,11 +1291,9 @@ export class StandardMaterial extends StandardMaterialBase {
             this._eventInfo.customCode = undefined;
 
             if (effect) {
-                if (this._onEffectCreatedObservable) {
-                    onCreatedEffectParameters.effect = effect;
-                    onCreatedEffectParameters.subMesh = subMesh;
-                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
-                }
+                onCreatedEffectParameters.effect = effect;
+                onCreatedEffectParameters.subMesh = subMesh;
+                this._notifyEffectCreated(onCreatedEffectParameters);
 
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {

@@ -1106,6 +1106,20 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
+     * @internal Notifies the observers that an effect was created for a sub mesh, and ends the epoch of the references of the frame:
+     * an observer runs code of the user in the middle of a frame, where the defines of a material are dirty (another material's,
+     * say), and it can change any material in place, so no reference kept before it stands for the draws after it (see
+     * _getRecordedDrawReference)
+     * @param onCreatedEffectParameters the effect created and the sub mesh it was created for
+     */
+    public _notifyEffectCreated(onCreatedEffectParameters: { effect: Effect; subMesh: Nullable<SubMesh> }): void {
+        if (this._onEffectCreatedObservable) {
+            this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+            this.getScene().getEngine()._recordedDrawReferencesEpoch++;
+        }
+    }
+
+    /**
      * @internal Whether a draw a snapshot recorded with this material can be encoded again without binding it: only WGSL (its values
      * are in the effect's leftover uniform buffer, which the engine checks), and not when binding or unbinding it runs code that can
      * change on each draw (bind and unbind observers, plugins binding on each draw) or sets states outside of the pipeline (stencil,

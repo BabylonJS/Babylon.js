@@ -1321,6 +1321,26 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
+    it("needs a full draw after the observer of a material an effect was created for ran, which can change a shared material in place", async () => {
+        // A's full draw (beforeEach) is the frame's reference of the material; C, recorded before, compares with it
+        expect(unchanged()).toBe(true);
+        // B is another mesh with another material, whose defines are dirty in the frame: it creates its effect in the middle of the
+        // frame and notifies its observer, which changes A's material in place and does not dirty it
+        const b = MeshBuilder.CreateBox("B", {}, scene);
+        const other = new StandardMaterial("other", scene);
+        other.onEffectCreatedObservable.add(() => material.diffuseColor.set(1, 0, 0));
+        b.material = other;
+        // the effect of B is built once the shaders its material imports are loaded, which is asynchronous
+        while (!other.isReadyForSubMesh(b, b.subMeshes[0], false)) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        expect(material.diffuseColor.g).toBe(0);
+        expect(unchanged()).toBe(false);
+        // a full draw after it is the reference again
+        fullDraw();
+        expect(unchanged()).toBe(true);
+    });
+
     it("needs a full draw after an observer of a rendering group ran, which can change a shared material in place between two groups", () => {
         // A draws in group 0, in full: the frame's reference of the material. C, recorded before, compares with it in group 1
         const seen: boolean[] = [];
