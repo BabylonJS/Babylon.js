@@ -1776,6 +1776,14 @@ export class WebGPUTextureManager {
         }
     }
 
+    /**
+     * Releases a hardware texture wrapper at the end of the frame, because the objects it holds could still be used by commands recorded in the current frame.
+     * @param hardwareTexture the wrapper to release
+     */
+    public releaseHardwareTexture(hardwareTexture: IHardwareTextureWrapper): void {
+        this._deferredReleaseTextures.push([hardwareTexture, null]);
+    }
+
     public destroyDeferredTextures(): void {
         for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
             const [hardwareTexture, irradianceTexture] = this._deferredReleaseTextures[i];
