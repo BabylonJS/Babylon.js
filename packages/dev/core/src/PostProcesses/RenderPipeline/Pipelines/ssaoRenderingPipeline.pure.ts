@@ -57,7 +57,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
     public totalStrength: number = 1.0;
 
     /**
-     * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0006
+     * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0001
      */
     @serialize()
     public radius: number = 0.0001;
