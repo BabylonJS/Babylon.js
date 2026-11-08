@@ -2899,8 +2899,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         texture._hardwareTexture = null;
         this._textureHelper.releaseHardwareTexture(previousHardwareTexture);
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
-        (texture._hardwareTexture as WebGPUHardwareTexture)._originalFormatIsRGB = originalFormatIsRGB;
+        const hardwareTexture = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
+        hardwareTexture._originalFormatIsRGB = originalFormatIsRGB;
 
         // The texture is now backed by a different gpu resource: refresh the unique id so that the caches keyed by it (like the bind group cache) don't return bind groups referencing the previous one.
         texture._setUniqueId(InternalTexture._Counter++);

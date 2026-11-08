@@ -43,6 +43,7 @@ describe("WebGPUEngine.updateTextureDimensions", () => {
                 texture.width = texture.baseWidth = width;
                 texture.height = texture.baseHeight = height;
                 texture.depth = texture.baseDepth = depth;
+                return texture._hardwareTexture;
             }),
         };
         return helper;
@@ -155,6 +156,7 @@ describe("WebGPUEngine.updateTextureDimensions with an RGB raw cube texture", ()
                 internalTexture.width = internalTexture.baseWidth = width;
                 internalTexture.height = internalTexture.baseHeight = height;
                 internalTexture.depth = internalTexture.baseDepth = depth;
+                return internalTexture._hardwareTexture;
             },
             updateCubeTextures: (data: Uint8Array[]) => uploads.push(data),
         };
