@@ -1663,6 +1663,11 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
+        if (this.normalBias && !material.backFaceCulling && !this.forceBackFacesOnly) {
+            // A double-sided caster can face the light with either winding.
+            defines.push("#define SM_NORMALBIAS_TWOSIDED");
+        }
+
         if (shadowDepthWrapper) {
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances, this._scene.getEngine().currentRenderPassId)) {
                 return false;
