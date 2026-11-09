@@ -2522,6 +2522,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const scene = this.getScene();
         const engine = scene.getEngine();
         fillMode = this._getRenderingFillMode(fillMode);
+        // the GPU-written arguments of the pass (SubMesh.setIndirectDrawBuffer), or none, on the draw context the draw goes through
+        const indirect = subMesh._indirectDrawBuffers?.get(engine.currentRenderPassId);
+        engine._currentDrawContext?._setExternalIndirectDraw?.(indirect?.buffer ?? null, indirect?.byteOffset ?? 0);
 
         // the draws below are the mesh's, in whatever draw context its material gives them (its own, or one shared by the meshes of the
         // material): in all its passes they wait together for their render pipelines (WebGPU asynchronous pipeline creation). A draw done

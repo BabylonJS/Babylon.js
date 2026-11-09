@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
 import { type IWebGPURenderPassCommandRecorderProvider } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
-import { WebGPURenderPassCommandStreamProtocolVersion } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
+import { WebGPURenderPassCommandOpcode, WebGPURenderPassCommandStreamProtocolVersion } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
 import { Logger } from "core/Misc/logger";
 
 function createEngine() {
@@ -236,6 +236,69 @@ describe("WebGPU draw submission", () => {
         } finally {
             errorSpy.mockRestore();
         }
+    });
+
+    // SubMesh.setIndirectDrawBuffer: the application's buffer of GPU-written arguments goes at its byte offset on every path of a draw
+    describe.each([true, false])("an application's indirect buffer at a byte offset, with indexed=%s", (indexed) => {
+        const setUp = () => {
+            const created = createEngine();
+            const gpuBuffer = {};
+            Object.assign(created.state._currentDrawContext, { _externalIndirectDrawBuffer: { underlyingResource: gpuBuffer }, _externalIndirectDrawByteOffset: 40 });
+            const draw = () => (indexed ? created.engine.drawElementsType(0, 5, 36, 2) : created.engine.drawArraysType(0, 5, 36, 2));
+            return { ...created, gpuBuffer, draw };
+        };
+        const method = indexed ? "drawIndexedIndirect" : "drawIndirect";
+
+        it("is drawn at that offset directly, and the CPU does not write into it", () => {
+            const { renderPass, state, gpuBuffer, draw } = setUp();
+            draw();
+            expect(renderPass[method]).toHaveBeenCalledExactlyOnceWith(gpuBuffer, 40);
+            expect(state._currentDrawContext.setIndirectData).not.toHaveBeenCalled();
+        });
+
+        it("is drawn at that offset in a render bundle", () => {
+            const { engine, bundleEncoder, gpuBuffer, draw } = setUp();
+            engine.compatibilityMode = false;
+            draw();
+            expect(bundleEncoder[method]).toHaveBeenCalledExactlyOnceWith(gpuBuffer, 40);
+        });
+
+        it("is recorded at that offset in a native batch", () => {
+            const { engine, renderPass, draw } = setUp();
+            engine.renderPassCommandRecorderProvider = createProvider();
+            draw();
+            engine._flushRenderPassCommands();
+            expect(renderPass[method]).not.toHaveBeenCalled();
+            const words = renderPass._recordCommands.mock.calls[0][0 as never] as unknown as Uint32Array;
+            const opcode = indexed ? WebGPURenderPassCommandOpcode.drawIndexedIndirect : WebGPURenderPassCommandOpcode.drawIndirect;
+            // an indirect draw is its opcode, the buffer's id (u64) and the offset (u64, its low word first)
+            const at = words.findIndex((word, i) => word === opcode && words[i + 3] === 40 && words[i + 4] === 0);
+            expect(at).toBeGreaterThanOrEqual(0);
+        });
+
+        it("is replayed at that offset when the host rejects the batch it was recorded in", () => {
+            const { engine, renderPass, gpuBuffer, draw } = setUp();
+            engine.renderPassCommandRecorderProvider = createProvider();
+            renderPass._recordCommands.mockReturnValueOnce(false);
+            const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+            try {
+                draw();
+                expect(renderPass[method]).not.toHaveBeenCalled();
+                engine._flushRenderPassCommands();
+                expect(renderPass._recordCommands).toHaveBeenCalledOnce();
+                expect(renderPass[method]).toHaveBeenCalledExactlyOnceWith(gpuBuffer, 40);
+            } finally {
+                errorSpy.mockRestore();
+            }
+        });
+
+        it("is drawn at that offset when a native batch rejects the draw and it is replayed", () => {
+            const { engine, renderPass, gpuBuffer, draw } = setUp();
+            engine.renderPassCommandRecorderProvider = createProvider();
+            delete (renderPass as { _recordCommands?: unknown })._recordCommands; // a pass that cannot record: the stream refuses the draw
+            draw();
+            expect(renderPass[method]).toHaveBeenCalledExactlyOnceWith(gpuBuffer, 40);
+        });
     });
 
     it("constructs and reuses render bundles without initializing command batching", () => {
