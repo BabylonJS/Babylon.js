@@ -1,5 +1,5 @@
 {
-    "fromTag": "9.33.3",
+    "fromTag": "9.34.0",
     "changelog": {
         "9.34.0": [
             {
@@ -55,6 +55,203 @@
                     "packages/dev/sharedUiComponents/package.json",
                     "packages/public/@babylonjs/inspector-v2/package.json",
                     "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": []
+            }
+        ],
+        "9.35.0": [
+            {
+                "pr": "19122",
+                "title": "Remove legacy filename conversion from Native tests",
+                "description": "*[Created by Copilot on behalf of @bghgary]*\n\nNative nightly packages now contain the published ECMAScript 5 (ES5) bundle names after [BabylonJS/BabylonNative#2024](https://github.com/BabylonJS/BabylonNative/pull/2024). The compatibility conversion introduced in [BabylonJS/Babylon.js#19118](https://github.com/BabylonJS/Babylon.js/pull/19118) is no longer needed.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml"
+                ],
+                "tags": [
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "19033",
+                "title": "Fix WebGL effect samplers being dropped when compiled during context loss",
+                "description": "Closes #19007\n\n## Problem\n\n`WebGLPipelineContext._fillEffectInformation` removes every sampler whose uniform location is `null` from the effect's sampler list, in place. While the WebGL context is lost, every `getUniformLocation` returns `null`, so an effect that finishes compiling during a context loss ends up with an empty sampler list.\n\n`webglcontextrestored` then recompiles the effect from that already emptied list (`_rebuildEffects` -> `_prepareEffect`). No sampler gets a texture unit, all samplers stay on unit 0, and a shader that mixes an integer and a float sampler (`usampler2D` + `sampler2D`) fails every draw with `GL_INVALID_OPERATION: Two textures of different types use the same sampler location`. The output stays blank until the page is reloaded.\n\n## Fix\n\nSkip the null-location pruning while `engine._gl?.isContextLost()` is true. The sampler list keeps the declared names, and the rebuild after restore prunes against the real program as before. Behavior with a live context is unchanged. (`_gl?.` matches the `engine._gl?.` access in `basis.pure.ts` and covers `NullEngine`, which uses this pipeline context without a `_gl`.)\n\n## Before / after\n\nRepro from the issue (WebGL2, `WEBGL_lose_context`), Chrome 155.0.8059.85 on Windows, UMD build of this branch vs. `master` (`df5cab5`):\n\n| | `master` | this branch |\n|---|---|---|\n| `effect.getSamplers()` after restore | `[]` | `[\"codes\",\"colour\"]` |\n| `gl.getError()` after draws | `1282` (`INVALID_OPERATION`) | `0` |\n| browser console | `GL_INVALID_OPERATION: glDrawElements: Two textures of different types use the same sampler location` on every draw | none |\n| centre pixel | `0,0,0,255` (blank) | `255,128,0,255` |\n\n## Tests\n\nNew `packages/dev/core/test/unit/Engines/webGLPipelineContext.test.ts`:\n\n- samplers compiled while the context is lost keep their declared list and units, both right away and when the same list is filled again after the context is restored (red on `master`, green here);\n- with a live context, unused samplers are still pruned and the rest renumbered, including an engine without `_gl`.\n\n`npx vitest run --project=unit packages/dev/core/test/unit/Engines` and the Materials and Instrumentation unit folders pass; `node scripts/lint-changed.mjs` and `prettier --check` are clean.\n",
+                "author": {
+                    "name": "serdarucel",
+                    "url": "https://github.com/serdarucel"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/test/unit/Engines/webGLPipelineContext.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19121",
+                "title": "Release GPU resources in ProceduralTexture, HDRIrradianceFiltering and DynamicTexture dispose",
+                "description": "`ProceduralTexture`, `HDRIrradianceFiltering` and `DynamicTexture` leak GPU resources until garbage collection.\n\n- **`ProceduralTexture.dispose()`** never disposes `_rtWrapper`. `BaseTexture.dispose` releases the internal texture, but the wrapper's framebuffers stay alive. `IblCdfGenerator` creates several procedural textures every time it rebuilds, so every scene that uses CDF importance sampling leaks framebuffers when it is disposed. The fix follows the `RenderTargetTexture.dispose` pattern: dispose the wrapper, then null `_texture`. If the texture was already released or swapped out, only the framebuffers are released.\n- **`HDRIrradianceFiltering._prefilterInternal`** wraps `outputTexture.texture` in a new `BaseTexture` but never releases the six cube-face framebuffers. It now calls `outputTexture.dispose(true)` (framebuffers only) after the handoff. That also removes the wrapper from the engine's restore cache, so the irradiance texture gets an `onRebuildCallback` that recreates its storage on context restore. Radiance `HDRFiltering` already does the equivalent through `_swapAndDie`.\n- **`DynamicTexture.dispose()`** only calls `remove()` on a canvas it owns. That detaches the canvas, but a Babylon Native canvas keeps its GPU resources until GC. It now also calls the native-only `INativeCanvas.dispose()` hook when present.\n\nWebGL eventually reclaims these through GC. Babylon Native holds hard handles, though, and its full validation run exhausted the framebuffer pool (2048) and hung (BabylonJS/BabylonNative#2029, BabylonJS/BabylonNative#2030). With these fixes the full BN validation suite (831 tests) passes, and peak live framebuffers drop from pool exhaustion to 121.\n\nUnit tests cover `ProceduralTexture.dispose()` (including after `releaseInternalTexture()`) and `DynamicTexture.dispose()` with owned and caller-provided canvases. They fail without the fix.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrIrradianceFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.pure.ts",
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/dynamicTexture.dispose.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/hdrIrradianceFiltering.dispose.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/proceduralTextureResize.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "native",
+                    "texture",
+                    "memory leak"
+                ]
+            },
+            {
+                "pr": "19120",
+                "title": "NativeEngine: Honor MRT attachment mip generation intent",
+                "description": "## Summary\n\nCoordinated follow-up for https://github.com/BabylonJS/BabylonNative/issues/2027.\n\nForward each color texture's `generateMipMaps` intent through the optional ninth native MRT argument. Preserve authored mip storage without automatic regeneration in regular and layered MRTs, frame graph targets, explicit-depth attachment, and sample-count reconstruction. The legacy single-target fallback forwards the first color's flag without shifting layer/mip arguments.\n\nInclude generation policies in layered and shared frame graph framebuffer compatibility checks, so changing intent cannot reuse a framebuffer with stale generation flags. Existing argument positions and older-runtime behavior remain compatible.\n\nCompanion BabylonNative PR: https://github.com/BabylonJS/BabylonNative/pull/2028\n\nHonoring the new MRT argument requires the companion Native runtime change; older runtimes continue their existing behavior.\n\n## Verification\n\n- Added focused mip-policy regressions, including nine review-follow-up cases; all **101 ThinNativeEngine tests** pass. The initial regressions fail without the forwarding change.\n- All required repository commands pass: `format:check`, `lint:check`, `build:source`, `lint:advisory`, and `test:unit`.\n- Full unit suite: **551 files passed; 8,272 tests passed**, one expected failure and 34 skips.\n- Built and exercised a focused devhost scene in a real browser, checking mixed attachment flags and legacy fallback argument positions. Removed the temporary scene changes and stopped the server.\n- Built the changed Babylon.js 9.34.0 bundle and ran it with the paired Native build on real Metal: **180 post-render readbacks passed**, covering RGBA8/RGBA32F, disabled/enabled/mixed generation, regular/frame graph/layered MRTs, explicit depth, and MSAA reconstruction.\n- Replayed 13 previously recovered Native rendering cases with the paired runtime: **13 passed**, no missing references.\n\nNo image references, tolerances, or test exclusions changed. This is not a full Native or iPhone sweep.\n\n## Review follow-up\n\n- Forward intent through both volume slice paths, including explicit depth and sample-count reconstruction.\n- Revalidate retained shared frame graph wrappers on rebind without changing reference counts for unchanged bindings.\n- Restore physical mip storage before per-attachment policy during context cloning, then rebuild with the correct mixed flags.\n- Encode the optional ordered Native `COMMAND_GENERATEMIPMAPS` for explicit storage-only generation. Older runtimes retain their previous resolve/no-op behavior, with a warning when this command is unavailable. Executing storage-only generation requires the companion Native runtime.\n- **60 additional real-Metal readbacks pass** across RGBA8/RGBA32F retained wrappers, both mixed-policy context rebuilds, volumes with/without explicit depth, and the actual `FrameGraphGenerateMipMapsTask`. The previous **180 GPU controls** and **13 recovered rendering cases** remain passing.\n- A focused devhost browser app exercised the actual explicit-generation bridge path with automatic generation disabled; temporary changes and server were removed. All five required quality commands pass on the final code.\n\n## Native CI compatibility follow-up\n\nCommit 1785e6133f restores legacy automatic frame graph mip resolves only when the runtime lacks `COMMAND_GENERATEMIPMAPS`. Only textures with allocated mips opt into that fallback; their logical `generateMipMaps` flags remain unchanged. Supported runtimes still preserve authored mip chains and generate explicitly on request. Framebuffer cache metadata tracks the effective resolve policy.\n\nAzure build 62163 repeatedly failed only **FrameGraph nrge transmission**: 705/706 passed, with a stable 30.566% pixel difference in that case. Disabling the new Native command locally reproduces 30.562%. With this fix, both command-enabled and legacy variants pass at 0.744% using the unchanged 2.5% comparison allowance.\n\nVerification: 103 focused tests; all five mandatory quality commands; full unit suite **8,274 passed, one expected failure, 34 skipped** (`--maxWorkers=2` without competing builds); 60 paired real-Metal review controls; devhost actual bridge checks for single/multiple attachments, mixed mip storage, and cache reuse. Fresh CI is pending. No reference, tolerance, exclusion, or dependency changes.\n\n## Retained shared framebuffer review follow-up\n\nCommit 2e1245568e preserves the retained compatible fast path, then checks the hardware texture's compatible shared cache entry before allocating a replacement. Acquiring that replacement increments its reference count before releasing the stale retained framebuffer. The two-candidate search adds no render-loop allocations.\n\nNew single/multiple-color regressions bind two retained wrappers before changing a shared mip policy, then verify common replacement identity, reference counts, continued use after the first disposal, and exactly one deletion per native handle. Fixtures follow FrameGraphRenderTarget's existing attachment-retain convention. The legacy capability gate in 1785e6133f is unchanged.\n\nVerification: **105 focused tests**, **24 real-Metal sharing/disposal readbacks**, the previous **60 paired GPU controls**, and devhost actual bridge sharing/refcount checks pass. All five mandatory quality commands pass. Full unit suite: **8,276 passed, one expected failure, 34 skipped** (`--maxWorkers=1 --retry=1`; an earlier run hit an unrelated wall-clock flow/throttle flake). No references, tolerances, exclusions, or dependency pins changed. Fresh CI for this head is pending. Native companion #2028 has merged.\n",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "native"
+                ]
+            },
+            {
+                "pr": "19119",
+                "title": "Add audio engine inspection to Inspector Lite",
+                "description": "## Summary\n\nLite audio engines can exist independently of the graphics engine and may be created after the Inspector opens. This adds dynamic audio-engine attachment to Inspector Lite without transferring ownership to the Inspector.\n\n- Add `LiteInspectorToken.setAudioEngine` and an observable `IAudioEngineContext` service.\n- Support multiple Explorer roots and display the audio routing hierarchy, playback and spatial properties, with links in both directions between audio nodes and scene entities.\n- Add a representative audio fixture, documentation, and unit and browser coverage.\n\nLite 1.38.1 does not expose public APIs for discovering the audio graph, reading node volume, or finding spatial attachments. The Inspector isolates this behind a guarded, read-only adapter for Lite internals; edits use public APIs, and unsupported layouts are reported.\n\n## Screenshots\n\n**Audio hierarchy and sound properties**\n\n![Inspector Lite showing the audio hierarchy, sound controls, and an attached mesh](https://github.com/user-attachments/assets/74d11d5c-944e-4934-be95-442c735f8058)\n\n**Scene entity linking back to its sound**\n\n![Red Box properties linking back to an attached sound in the audio hierarchy](https://github.com/user-attachments/assets/a0727614-821e-460d-a876-4a26dc671bcb)\n\n## Validation\n\n- Inspector Lite unit and Playwright coverage; repository format, lint, advisory lint, and source build checks passed.\n- The full unit suite encountered unrelated timing failures. The UMD timeout passed in isolation; the build-tools Nx cache test repeatedly exceeded its hard-coded 180-second timeout even when run alone.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/lite/audioEngineContext.ts",
+                    "packages/dev/inspector-v2/src/lite/audioEngineExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/audioEngineGraph.ts",
+                    "packages/dev/inspector-v2/src/lite/components/properties/audioProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/engineExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/index.ts",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/audioPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/explorer/explorerPane.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/sceneExplorerService.ts",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/app/liteAudio.ts",
+                    "packages/dev/inspector-v2/test/integration/liteAudio.test.ts",
+                    "packages/dev/inspector-v2/test/unit/audioEngineContext.test.ts",
+                    "packages/dev/inspector-v2/test/unit/explorerPane.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/explorerPaneSelection.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteAudioProperties.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteExplorerServices.test.ts",
+                    "packages/dev/inspector-v2/test/unit/sceneExplorerSection.test.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "19118",
+                "title": "Preserve published bundle names in Native tests",
+                "description": "*[Created by Copilot on behalf of @bghgary]*\n\nThe Native test job cannot replace published ECMAScript 5 (ES5) artifacts: `babylon.es5.js` becomes the nonexistent `babylon.es5.es5.js`. Existing artifact names and non-JavaScript companions must remain supported.\n\nThis must land before [BabylonJS/BabylonNative#2024](https://github.com/BabylonJS/BabylonNative/pull/2024), which packages the published filenames directly.\n\nLocally exercised both Windows batch loops against snapshot archives: legacy, ES5, mixed, and companion files passed; the original commands failed on ES5 names.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml"
+                ],
+                "tags": [
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "19114",
+                "title": "Sample IBL CDF radiance at the icdf bin center",
+                "description": "The CDF-based irradiance prefilter estimates radiance as `c / pdf`, where `pdf` is the piecewise-constant value of the icdf bin, but `c` was sampled bilinearly at a continuous position inside that bin. Near very bright texels (e.g. a sun in an HDR environment) bilinear spill lands in neighbouring low-pdf bins, so a few samples get hugely over-weighted and the result becomes extremely sensitive to tiny input differences.\n\nIn practice, a single fp16 ULP difference in the input cube's sun texel (Mali GLES vs. D3D) changed the prefiltered irradiance enough to produce 17–40% pixel differences on the OpenPBR / IBL visualization tests on a Pixel 9a (Mali-G715).\n\nThis snaps the sampled icdf coordinate to the bin center, so radiance is evaluated where the luminance and pdf were computed. GLSL and WGSL are updated identically.\n\nValidation (Babylon Native validation suite, same reference images as the WebGL2 visualization tests):\n- Android / Mali-G715 GLES: 108/109 IBL, OpenPBR, F82, Conductor and CDF tests pass (previously ~32 failing; the remaining failure is unrelated analytic-lights test).\n- Win32 / D3D11: 108/108 pass, no regressions.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/F82-Specular-Metal-vs-Weight.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/F82-Specular-Roughness-vs-Weight.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-IBL-F82-Specular-Metal-vs-Weight.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/openpbr-base-diffuse-roughness-realtime-ibl.png"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "19117",
+                "title": "Remove nonexistent root entrypoints from @babylonjs/shared-ui-components",
+                "description": "## Problem\n\n`@babylonjs/shared-ui-components` declares a root entrypoint (`main`, `module`, `types`, `esnext`, and `exports[\".\"]` → `index.js` / `index.d.ts`), but those files are never built or packed. A release-payload validator correctly rejected the mismatch.\n\n## Root cause\n\nThe package has never had a root barrel. `packages/dev/sharedUiComponents/src/index.ts` has never existed in history. The root fields date back to the initial publish in #13113. So `tsc` never emits `index.js` or `index.d.ts`.\n\nPublished tarballs I inspected (5.28.0, 8.0.0, 9.33.3) also have no `package/index.js` or `package/index.d.ts`. I reproduced the issue on unmodified public source at `545c73ae6c` (current master): after `nx build` and `npm pack --ignore-scripts`, the tarball contained `lite/index.*` and the deep-import files but no root `index.*`. Running `import \"@babylonjs/shared-ui-components\"` failed with `ERR_MODULE_NOT_FOUND`. In-repo consumers and published downstream packages (`@babylonjs/inspector` 9.33.3) only use deep imports.\n\n## Fix\n\n- Remove the misleading root declarations from the manifest. The `./lite`, `./*`, `./*.js`, `./*.d.ts`, `./*.map`, `./*.svg`, `./*.scss` and `./package.json` exports are unchanged.\n- Update `liteEntryPoint.test.ts`, which asserted the broken `\".\"` export.\n- Add a short readme note about the supported import paths.\n- Add `packages/tools/tests/test/es6/sharedUiComponentsPackage.test.ts`. It runs in CI's \"Test ES6 packages\" step after `build:es6`. The test:\n  - packs the real tarball and extracts it\n  - asserts every declared static runtime and type entrypoint exists\n  - resolves `./lite` and deep subpaths at runtime, and imports `stringTools`\n  - resolves types with Bundler and NodeNext module resolution\n  - asserts the root is not exported\n\n## Compatibility\n\nNo working import is removed. A root import already failed in every inspected release. It now fails earlier, with `ERR_PACKAGE_PATH_NOT_EXPORTED` instead of `ERR_MODULE_NOT_FOUND`. The packed file set is unchanged (938 entries before and after).\n\n## Validation\n\n- New tarball test: passes with the fix. Against the original manifest it fails, reporting the missing `index.js`/`index.d.ts` targets and `ERR_MODULE_NOT_FOUND`.\n- `npm run build:es6` (including tree-shaking checks): passed.\n- `npm run test:es6-packages -w @tools/tests`: 24/24 passed.\n- `liteEntryPoint` unit test, ESLint and Prettier: passed.\n- Fresh `npm pack`: no root fields, `lite/index.*` and deep files present.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/test/unit/liteEntryPoint.test.ts",
+                    "packages/public/@babylonjs/shared-ui-components/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/readme.md",
+                    "packages/tools/tests/test/es6/sharedUiComponentsPackage.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19116",
+                "title": "Update HTML-in-Canvas typings to the latest WICG explainer API",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nThe [WICG HTML-in-Canvas explainer](https://github.com/WICG/html-in-canvas#idl-changes) has updated its IDL since #19052. This PR updates Babylon's ambient typings (`LibDeclarations/htmlInCanvas.d.ts`) to match. Legacy members are kept and marked `@deprecated`, because they are part of the published `@babylonjs/core` declarations and older Chrome builds and the `three-html-render` polyfill still expose them.\n\n`HtmlTexture` already uses the current runtime APIs (`content=\"drawable\"`, `texElementSubImage2D`, `drawElementImageToTexture`). Runtime behavior is unchanged. The only source change is the rename to `CanvasPaintEvent`.\n\n## Changes\n\n- **`getElementImageDefaultSize()`**: added on `HTMLCanvasElement` and `OffscreenCanvas` (`ElementImageDefaultSize`). `ElementImage.width`/`height` are deprecated because the explainer removed them.\n- **`CanvasPaintEvent`**: replaces `PaintEvent`, including a constructor and `CanvasPaintEventInit`. `PaintEvent` remains as a deprecated alias.\n- **`ElementGeometryUpdateEvent`**: adds `onelementgeometryupdate` and the `elementgeometryupdate` event.\n- **`OffscreenCanvas`**: adds `updateElementGeometry`, `clearElementGeometry` and `getElementImageDefaultSize`.\n- **`drawElementImage`**: declared on a `CanvasDrawElementImage` interface shared by `CanvasRenderingContext2D` and `OffscreenCanvasRenderingContext2D`. It now accepts `DrawElementImageOptions` (`preserveElementGeometry`) and returns `void`, matching the IDL. The old 8-argument call shape is kept as a deprecated overload.\n- **`getElementTransform(element)`**: now the primary signature. The legacy `(element, drawTransform)` overload is deprecated.\n- **Typed `paint` listeners**: `HTMLCanvasElementEventMap` now extends `HTMLElementEventMap` and is used by `addEventListener`/`removeEventListener`, so `paint` listeners receive a typed event. Before this change the event map was declared but unused.\n- **Deprecated legacy APIs**: `layoutSubtree`, `texElementImage2D` and `GPUQueue.copyElementImageToTexture`.\n\n## Compatibility\n\n`drawElementImage` previously returned `DOMMatrix`. Browsers now return `undefined`, so code that used the return value was already wrong at runtime. Such code will now fail to compile. All other existing call shapes still compile.\n\n## Validation\n\n- `npm run build:source` (all packages)\n- A temporary type check that exercised the new and legacy overloads and the typed listeners\n- ESLint and Prettier on the changed files\n- `vitest` for `packages/dev/core/test/unit/Materials/Textures/HTML` (66 tests passed)\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/htmlInCanvas.d.ts",
+                    "packages/dev/core/src/Materials/Textures/HTML/htmlTexture.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/HTML/htmlInCanvasTypes.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/HTML/htmlTexture.test.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "19115",
+                "title": "WebGPU/Effect: don't rebuild effects whose shader code is still loading after a context loss",
+                "description": "Fixes #19067.\n\nWhen the WebGPU device is lost while an effect's shader code is still being loaded or processed, the restore throws once for each such effect:\n\n```\nTypeError: Cannot read properties of undefined (reading 'shaderLanguage')\n    at WebGPUEngine._preparePipelineContextAsync\n```\n\nAs Popov72 confirmed on the issue, `createEffect` puts the effect in `_compiledEffects` right away, but the effect only creates its shader processing context once `extraInitializationsAsync` has resolved, and only stores its processed sources at the end of `_processShaderCodeAsync`, once its shader files and includes are loaded. That covers `extraInitializationsAsync` (the lazy WGSL shader imports of StandardMaterial/PBR, for example), shader files still downloading, and includes still loading. `_rebuildEffects` calls `_prepareEffect()` on every cached effect, including these. On WebGPU that reads the missing processing context inside the async `_preparePipelineContextAsync`, so the TypeError escapes as an unhandled rejection. On WebGL, the same rebuild compiles that effect from empty sources.\n\n### Changes\n\n1. **Skip effects whose initial shader processing is pending** (`effect.pure.ts`, `abstractEngine.pure.ts`)\n   - New internal `Effect._isShaderCodeProcessingPending`. It is set when the constructor starts the initial `_processShaderCodeAsync`, and cleared when the processed sources are stored, right before the effect prepares itself. So it covers the whole loading/processing step, `extraInitializationsAsync` included. It belongs to the effect, behaves the same on WebGL and WebGPU, and does not depend on `_processingContext`, which is legitimately `null` on WebGL.\n   - `_rebuildEffects` skips such effects. They have no pipeline context to rebuild yet, and their normal initialization path prepares them on the restored context when processing completes.\n   - If the initial processing fails, the flag stays set. A failed effect has no sources, so rebuilding it could only fail again.\n   - Effects created from a cached pipeline context never set the flag, and re-processing an already prepared effect (non-float vertex buffers) does not set it either. Both behave exactly as before.\n\n2. **Route a rejected async pipeline preparation to the effect's error path** (`effect.pure.ts`)\n   - WebGPU's `_preparePipelineContextAsync` is `async`, so anything it throws (here, the TypeError) becomes a rejected promise that `createAndPreparePipelineContext` neither awaits nor catches. The `try/catch` in `_prepareEffect` never sees it, and because WebGPU pipeline contexts are not `isAsync`, nothing polls them either. The effect stays \"not ready\" with no error reported (unless something prepares it again), and the console shows an unhandled rejection.\n   - `_prepareEffect` now passes an arrow function (this also replaces one `Function.bind`). If the engine returns a promise, a rejection goes to `_processCompilationErrors(e, previousPipelineContext)`, the same path a synchronous failure takes (fallbacks, `onError`, `onEffectErrorObservable`). It is ignored if the effect has meanwhile moved on to another pipeline context or was disposed. Synchronous engines (WebGL, Native) are untouched: their errors still propagate synchronously as before.\n   - This is a separate commit, so it can be dropped if you'd rather handle it separately.\n\n### Tests\n\n`packages/dev/core/test/unit/Engines/abstractEngineRestoration.test.ts` (NullEngine, real `_restoreEngineAfterContextLost` and `_rebuildGraphicsResources`):\n- an effect whose `extraInitializationsAsync` is held open across the restore is not prepared by the rebuild; once released, it prepares once with its processed sources and becomes ready;\n- the same with the effect's shader files held at loading (`EngineFunctionContext.loadFile`), so the check covers loading/processing as a whole and not just `extraInitializationsAsync`;\n- an effect whose shader code was processed is still rebuilt (gets a new pipeline context).\n\n`packages/dev/core/test/unit/Materials/effect.shaderPreparation.test.ts`:\n- a rejected async `_preparePipelineContextAsync` recovers through the define fallbacks, like the existing synchronous-failure test;\n- with no fallback left, it is reported through `onEffectErrorObservable` and `getCompilationError()`.\n\nResults (Windows, Node 24, `npx vitest run --project=unit <the two files>`):\n- on master's `effect.pure.ts` / `abstractEngine.pure.ts`: the two restoration tests with a pending effect fail (`_preparePipelineContextAsync` was called during the rebuild, with `\"\"` as vertex and fragment source), and the other three pass;\n- with only the first commit: all 5 restoration tests pass, and the two new rejection tests fail (the effect never becomes ready / `onEffectErrorObservable` is never called);\n- with both commits: all 10 tests in the two files pass.\n\nLocal checks: `prettier --check` and the repo's ESLint config (pre-commit hook, `lint-changed.mjs --staged`) pass on the changed files; `tsc -b packages/dev/core/tsconfig.build.json` passes; the two test files typecheck. The related unit test folders (`Engines`, `Materials`, `PostProcesses`, `Compute` under `packages/dev/core/test/unit`): 97 files, 1007 passed, 1 expected fail, 0 failures. The repo-wide `npm run lint:check`, `npm run build:source` and the full `npm run test:unit` were not run locally.\n\n### Repro (WebGPU, device destruction)\n\nA Playground-style snippet, run with `?engine=webgpu`: a WGSL `ShaderMaterial` whose `extraInitializationsAsync` is held open by hand; after 3 frames `engine._device.destroy()`; once `onContextRestoredObservable` fires, the hold is released and the center pixel is read back.\n\nRun headless in Chrome (WebGPU, real GPU) against a bundle of the local `packages/dev/core/src`, once with master's two files and once with the fix:\n\n```\nmaster:   [19067] unhandled rejection: TypeError: Cannot read properties of undefined (reading 'shaderLanguage')\n          [19067] material ready after restore: true; center pixel rgba(0,0,255,255)   (BGRA red: the box)\nwith fix: no error\n          [19067] material ready after restore: true; center pixel rgba(0,0,255,255)\n          [19067] PASS: no error, the effect renders on the restored device\n```\n\nOn master the box still shows up after the error, because the effect's own processing prepares it again once the hold is released, so the visible symptom is the unhandled TypeError.\n\n<details><summary>Snippet (TypeScript Playground, run with <code>?engine=webgpu</code>)</summary>\n\n```ts\n// Repro for https://github.com/BabylonJS/Babylon.js/issues/19067\n// WebGPU: device-loss restore prepares effects still awaiting extraInitializationsAsync\n// (TypeError: Cannot read properties of undefined (reading 'shaderLanguage')).\n//\n// Run it in the Playground with WebGPU forced: append ?engine=webgpu to the Playground URL.\n//\n// What it does:\n// 1. A WGSL ShaderMaterial on a box whose extraInitializationsAsync is held open by hand, so its effect sits in the\n//    engine's effect cache with its shader code not yet processed.\n// 2. Once the effect exists (and is still waiting), the WebGPU device is destroyed. Babylon gets a new device and\n//    rebuilds every cached effect.\n// 3. When the engine reports the restore, the held initialization is released, the effect finishes on the new device,\n//    and the center pixel of the canvas is read back.\n//\n// Before the fix: one \"TypeError ... reading 'shaderLanguage'\" unhandled rejection during the restore (the box still\n// shows up afterwards because the effect's own processing prepares it again).\n// With the fix: no error, the box is drawn red on the new device.\n\nclass Playground {\n    public static async CreateScene(engine: BABYLON.AbstractEngine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> {\n        const report = (line: string) => {\n            console.log(\"[19067] \" + line);\n        };\n        const errors: string[] = [];\n        window.addEventListener(\"unhandledrejection\", (event) => {\n            const reason = event.reason;\n            const message = reason instanceof Error ? reason.name + \": \" + reason.message : String(reason);\n            errors.push(message);\n            report(\"unhandled rejection: \" + message);\n        });\n        engine.onEffectErrorObservable.add((info) => {\n            errors.push(\"effect error: \" + info.errors);\n            report(\"effect error: \" + info.errors);\n        });\n\n        if (!engine.isWebGPU) {\n            report(\"This repro needs WebGPU: add ?engine=webgpu to the Playground URL.\");\n        }\n\n        const scene = new BABYLON.Scene(engine);\n        scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);\n        const camera = new BABYLON.ArcRotateCamera(\"camera\", -Math.PI / 2, Math.PI / 2.5, 4, BABYLON.Vector3.Zero(), scene);\n        camera.attachControl(canvas, true);\n\n        // The effect of this material waits in extraInitializationsAsync until releaseShaderCode() is called,\n        // like Babylon's own materials do while their WGSL shaders are being imported on first use.\n        let releaseShaderCode!: () => void;\n        const shaderCodeReady = new Promise<void>((resolve) => {\n            releaseShaderCode = resolve;\n        });\n        const material = new BABYLON.ShaderMaterial(\n            \"heldMaterial\",\n            scene,\n            {\n                vertexSource: `\n                    attribute position : vec3<f32>;\n                    uniform worldViewProjection : mat4x4<f32>;\n                    @vertex\n                    fn main(input : VertexInputs) -> FragmentInputs {\n                        vertexOutputs.position = uniforms.worldViewProjection * vec4<f32>(vertexInputs.position, 1.0);\n                    }`,\n                fragmentSource: `\n                    @fragment\n                    fn main(input : FragmentInputs) -> FragmentOutputs {\n                        fragmentOutputs.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);\n                    }`,\n            },\n            {\n                attributes: [\"position\"],\n                uniforms: [\"worldViewProjection\"],\n                shaderLanguage: BABYLON.ShaderLanguage.WGSL,\n                extraInitializationsAsync: async () => {\n                    await shaderCodeReady;\n                },\n            }\n        );\n        const box = BABYLON.MeshBuilder.CreateBox(\"box\", { size: 2 }, scene);\n        box.material = material;\n\n        let frames = 0;\n        let deviceDestroyed = false;\n        scene.onAfterRenderObservable.add(() => {\n            frames++;\n            // A few frames in, the material has created its effect, which is still waiting: lose the device now\n            if (frames === 3 && !deviceDestroyed) {\n                deviceDestroyed = true;\n                report(\"effect still waiting for its shader code: \" + !material.isReady(box) + \"; destroying the device\");\n                engine.onContextRestoredObservable.addOnce(() => {\n                    report(\"engine restored; releasing the held shader code\");\n                    releaseShaderCode();\n                    void CheckRenderedAsync();\n                });\n                (engine as BABYLON.WebGPUEngine)._device.destroy();\n            }\n        });\n\n        const CheckRenderedAsync = async () => {\n            await scene.whenReadyAsync();\n            const pixel = await new Promise<Uint8Array>((resolve) => {\n                scene.onAfterRenderObservable.addOnce(() => {\n                    // The center of the canvas is covered by the box\n                    void engine.readPixels(engine.getRenderWidth() >> 1, engine.getRenderHeight() >> 1, 1, 1, true, true).then((data) => resolve(new Uint8Array(data.buffer, data.byteOffset, 4)));\n                });\n            });\n            // (the swap chain may be BGRA: accept red in either channel order)\n            const red = pixel[1] < 50 && Math.max(pixel[0], pixel[2]) > 200 && Math.min(pixel[0], pixel[2]) < 50;\n            report(\"material ready after restore: \" + material.isReady(box) + \"; center pixel rgba(\" + Array.from(pixel).join(\",\") + \")\" + (red ? \" = the box, drawn\" : \" (box not drawn)\"));\n            report(errors.length === 0 && red ? \"PASS: no error, the effect renders on the restored device\" : \"FAIL: \" + (errors.length ? errors.join(\" | \") : \"box not drawn\"));\n        };\n\n        return scene;\n    }\n}\n```\n\n</details>\n\n### Not included (same pattern, left out to keep this focused)\n\n- `EffectWrapper` re-prepares its effect from its own `onContextRestoredObservable` handler (`effectRenderer.pure.ts`) when `useShaderStore` is false, and could hit the same race.\n- `ComputeEffect` loads its shader asynchronously too, and `WebGPUEngine._rebuildComputeEffects` re-prepares every compute effect.\n\nI can add either here, or in a follow-up, if you'd like.\n\n---\n\nThis change was prepared with an AI coding assistant (Claude), as was the original issue. The tests and the repro were run locally.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\n",
+                "author": {
+                    "name": "Deadlywolf712",
+                    "url": "https://github.com/Deadlywolf712"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.pure.ts",
+                    "packages/dev/core/src/Materials/effect.pure.ts",
+                    "packages/dev/core/test/unit/Engines/abstractEngineRestoration.test.ts",
+                    "packages/dev/core/test/unit/Materials/effect.shaderPreparation.test.ts"
                 ],
                 "tags": []
             }

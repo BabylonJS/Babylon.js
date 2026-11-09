@@ -55,6 +55,7 @@ function createEngine(textureFloatLinearFiltering: boolean) {
     const renderPass = { setPipeline: vi.fn(), setIndexBuffer: vi.fn(), setVertexBuffer: vi.fn(), setBindGroup: vi.fn(), drawIndexed: vi.fn() };
     const depthCullingState = new DepthCullingState();
     depthCullingState.depthFunc = Constants.LEQUAL;
+    depthCullingState.frontFace = 1; // the canvas winding of a draw whose side isn't reversed, which setState sets and a prewarm defaults to
 
     const engine = Object.create(WebGPUEngine.prototype) as WebGPUEngine;
     Object.assign(engine, {

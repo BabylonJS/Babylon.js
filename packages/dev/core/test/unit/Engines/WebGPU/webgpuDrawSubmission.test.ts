@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
 import { type IWebGPURenderPassCommandRecorderProvider } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
 import { WebGPURenderPassCommandOpcode, WebGPURenderPassCommandStreamProtocolVersion } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
@@ -79,6 +79,7 @@ function createProvider(): IWebGPURenderPassCommandRecorderProvider {
     let nextId = 1;
     return {
         protocolVersion: WebGPURenderPassCommandStreamProtocolVersion,
+        recordsAtomically: true,
         isEnabled: () => true,
         getResourceId: (resource) => {
             if (!resource) {
@@ -95,6 +96,35 @@ function createProvider(): IWebGPURenderPassCommandRecorderProvider {
 }
 
 describe("WebGPU draw submission", () => {
+    it("accepts the legacy provider type and submits its draws directly", () => {
+        const { engine, renderPass } = createEngine();
+        const provider = {
+            protocolVersion: WebGPURenderPassCommandStreamProtocolVersion,
+            isEnabled: () => true,
+            getResourceId: vi.fn(() => 1),
+        };
+
+        // Keep the original provider shape assignable to the public setter without a type assertion.
+        expectTypeOf(provider).toExtend<NonNullable<WebGPUEngine["renderPassCommandRecorderProvider"]>>();
+        engine.renderPassCommandRecorderProvider = provider;
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            engine.drawElementsType(0, 5, 36, 2);
+            engine.drawArraysType(0, 4, 12, 1);
+            engine._flushRenderPassCommands();
+
+            expect(engine.renderPassCommandRecorderProvider).toBe(provider);
+            expect(renderPass.drawIndexed).toHaveBeenCalledExactlyOnceWith(36, 2, 5, 0, 0);
+            expect(renderPass.draw).toHaveBeenCalledExactlyOnceWith(12, 1, 4, 0);
+            expect(renderPass._recordCommands).not.toHaveBeenCalled();
+            expect(provider.getResourceId).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("recordsAtomically"));
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
     it("submits indexed draws directly without initializing command batching", () => {
         const { engine, renderPass, pipeline, indexBuffer, bindGroups } = createEngine();
 

@@ -53,6 +53,7 @@ function createTrackedResource<T extends object>(): T {
 
 const Provider: IWebGPURenderPassCommandRecorderProvider = {
     protocolVersion: WebGPURenderPassCommandStreamProtocolVersion,
+    recordsAtomically: true,
     isEnabled: () => true,
     getResourceId: (resource: Nullable<object>) => (resource ? (ResourceIds.get(resource) ?? 0) : 0),
 };
