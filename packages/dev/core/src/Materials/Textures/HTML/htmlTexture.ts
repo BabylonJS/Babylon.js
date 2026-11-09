@@ -25,7 +25,7 @@ function _WarnMissingApi(apiName: string): void {
     }
     _HasWarnedAboutMissingApi = true;
     Logger.Warn(
-        `HTML-in-Canvas: ${apiName} is not available. Enable chrome://flags/#canvas-draw-element, the built-in SVG fallback, or an HTML-in-Canvas polyfill such as @underglass/html-in-canvas-polyfill to use HtmlTexture.`
+        `HTML-in-Canvas: ${apiName} is not available. Enable chrome://flags/#canvas-draw-element, use the built-in SVG fallback (useSvgFallback), or import an HTML-in-Canvas polyfill such as @underglass/html-in-canvas-polyfill to use HtmlTexture.`
     );
 }
 
