@@ -481,11 +481,18 @@ describe("WebGPUEngine asynchronous pipeline creation, through the draw path", (
         };
     };
 
-    // the passes are ready to draw (their effects are compiled), as a scene waits for its passes
-    const readyAsync = async (isReady: () => boolean) => {
-        for (let i = 0; i < 50 && !isReady(); i++) {
+    // what these tests wait for hangs on dynamic imports of shaders: bounded by time, not by a number of turns, which a busy machine spends first
+    const waitAsync = async (done: () => boolean, turn?: () => void) => {
+        const start = performance.now();
+        while (!done() && performance.now() - start < 10000) {
+            turn?.();
             await new Promise((resolve) => setTimeout(resolve, 0));
         }
+    };
+
+    // the passes are ready to draw (their effects are compiled), as a scene waits for its passes
+    const readyAsync = async (isReady: () => boolean) => {
+        await waitAsync(isReady);
         expect(isReady()).toBe(true);
     };
 
@@ -651,11 +658,13 @@ describe("WebGPUEngine asynchronous pipeline creation, through the draw path", (
             requestAsync: async <T>(request: (picker: GPUPicker) => Promise<T>): Promise<T> => {
                 let result: { value: T } | undefined;
                 void request(picker).then((value) => (result = { value }));
-                for (let i = 0; i < 50 && !result; i++) {
-                    pixel = 0;
-                    frame();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                }
+                await waitAsync(
+                    () => result !== undefined,
+                    () => {
+                        pixel = 0;
+                        frame();
+                    }
+                );
                 expect(result).toBeDefined();
                 return result!.value;
             },
@@ -719,10 +728,10 @@ describe("WebGPUEngine asynchronous pipeline creation, through the draw path", (
         const box = newMesh("box");
         const renderer = scene.getBoundingBoxRenderer();
         const drawn = vi.spyOn(nullEngine, "drawElementsType");
-        for (let i = 0; i < 20 && drawn.mock.calls.length === 0; i++) {
-            renderer.renderOcclusionBoundingBox(box.mesh);
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        }
+        await waitAsync(
+            () => drawn.mock.calls.length > 0,
+            () => renderer.renderOcclusionBoundingBox(box.mesh)
+        );
         expect(drawn).toHaveBeenCalled();
         const queryContext = box.context((renderer as any)._renderPassIdForOcclusionQuery);
 

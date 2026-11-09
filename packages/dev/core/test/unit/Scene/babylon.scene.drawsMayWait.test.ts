@@ -85,7 +85,8 @@ describe("Passes whose mesh draws may wait for their pipelines", () => {
             }
         });
         CreateScreenshotUsingRenderTarget(engine, camera, 32, () => {});
-        for (let i = 0; i < 50 && shot.length === 0; i++) {
+        const start = performance.now();
+        while (shot.length === 0 && performance.now() - start < 10000) {
             await new Promise((ok) => setTimeout(ok, 10));
         }
         expect(shot).toEqual([false]);

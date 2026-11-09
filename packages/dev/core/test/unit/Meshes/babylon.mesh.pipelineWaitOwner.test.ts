@@ -18,6 +18,15 @@ import { Scene } from "core/scene";
 import "core/Shaders/pass.fragment";
 import "core/Shaders/postprocess.vertex";
 
+// what these tests wait for hangs on dynamic imports of shaders: bounded by time, not by a number of turns, which a busy machine spends first
+async function WaitAsync(done: () => boolean, turn?: () => void): Promise<void> {
+    const start = performance.now();
+    while (!done() && performance.now() - start < 10000) {
+        turn?.();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+}
+
 /**
  * Asynchronous pipeline creation (WebGPU): Mesh._processRendering gives the draws it submits their owner (AbstractEngine._pipelineWaitOwner):
  * the mesh, in all its passes and whatever draw context its material gives them, so that the passes of a mesh wait together for their
@@ -100,10 +109,10 @@ describe("The owner of the draws of a mesh", () => {
         const renderer = scene.getBoundingBoxRenderer();
         const draws = watchDraws();
         // the renderer draws once its shader is ready
-        for (let i = 0; i < 20 && draws.length === 0; i++) {
-            renderer.renderOcclusionBoundingBox(box);
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        }
+        await WaitAsync(
+            () => draws.length > 0,
+            () => renderer.renderOcclusionBoundingBox(box)
+        );
         expect(draws.length).toBeGreaterThan(0);
         expect(draws.map((draw) => draw.owner)).toEqual(draws.map(() => null));
     });
@@ -113,9 +122,7 @@ describe("The owner of the draws of a mesh", () => {
         const effectRenderer = new EffectRenderer(engine);
         const pass = new EffectWrapper({ engine, name: "pass", fragmentShader: "pass", useShaderStore: true });
         await scene.whenReadyAsync();
-        for (let i = 0; i < 20 && !pass.isReady(); i++) {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        }
+        await WaitAsync(() => pass.isReady());
         expect(pass.isReady()).toBe(true);
         box.onBeforeDrawObservable.add(() => effectRenderer.render(pass));
         const draws = watchDraws();
@@ -148,9 +155,7 @@ describe("The owner of the draws of a mesh", () => {
         for (const compositor of compositors) {
             compositor.material = shader;
         }
-        for (let i = 0; i < 20 && !compositors.every((compositor) => shader.isReady(compositor)); i++) {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        }
+        await WaitAsync(() => compositors.every((compositor) => shader.isReady(compositor)));
         const draws = watchDraws();
 
         for (const compositor of compositors) {
