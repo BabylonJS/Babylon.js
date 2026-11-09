@@ -1575,6 +1575,24 @@ describe("ThinNativeEngine", () => {
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
         });
 
+        it.each([false, true])("shares an auto-generated depth buffer (stencil: %s) by promoting it to a depth texture", (generateStencilBuffer) => {
+            const { engine, bound } = createEngine();
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateStencilBuffer }) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            expect(source._depthStencilTexture).toBeFalsy();
+
+            source.shareDepth(destination);
+
+            const sharedDepth = source._depthStencilTexture!;
+            expect(sharedDepth).toBeTruthy();
+            expect(sharedDepth.format).toBe(generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT);
+            expect(destination._depthStencilTexture).toBe(sharedDepth);
+            engine.bindFramebuffer(source);
+            expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+            engine.bindFramebuffer(destination);
+            expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+        });
+
         it("releases cached per-mip framebuffers when the texture is recreated for a new sample count", () => {
             const { engine, released, bound } = createEngine();
             const rtWrapper = engine.createRenderTargetCubeTexture(64, { generateMipMaps: true }) as NativeRenderTargetWrapper;
