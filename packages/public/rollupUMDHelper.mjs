@@ -628,6 +628,23 @@ function copyMinToMaxPlugin(outputDir, primaryName, chunkNames) {
 }
 
 /**
+ * Creates the terser plugin used for production UMD bundles.
+ *
+ * `_` is reserved from mangling because the ES5 sibling is produced by down-leveling the minified
+ * output with TypeScript. When TypeScript renames a block-scoped `_` it picks `_1`, `_2`, ..., the same
+ * `_<n>` namespace it uses for its own temporaries, and it can hand one name to both (e.g. an array and a
+ * `for..of` iterator result), which breaks the ES5 bundle at runtime.
+ * @returns {import("rollup").Plugin} The terser plugin.
+ */
+function createTerserPlugin() {
+    return terser({
+        compress: { passes: 2, dead_code: true },
+        mangle: { reserved: ["_"] },
+        format: { comments: false },
+    });
+}
+
+/**
  * Produces the ES5 UMD sibling consumed by Babylon Native.
  *
  * @param {string} outputDir Absolute path to the output directory.
@@ -840,14 +857,7 @@ export function commonUMDRollupConfiguration(options) {
         nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
         commonjs(),
         rewriteDynamicExternalImportsPlugin(production),
-        ...(production
-            ? [
-                  terser({
-                      compress: { passes: 2, dead_code: true },
-                      format: { comments: false },
-                  }),
-              ]
-            : []),
+        ...(production ? [createTerserPlugin()] : []),
         ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, chunkNames)] : []),
         ...(es5EntryPoint && production ? [generateEs5Plugin(resolve(outputPath), primaryFilename, es5EntryPoint)] : []),
     ];
@@ -958,14 +968,7 @@ export function commonUMDRollupConfiguration(options) {
                 nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
                 commonjs(),
                 rewriteDynamicExternalImportsPlugin(production),
-                ...(production
-                    ? [
-                          terser({
-                              compress: { passes: 2, dead_code: true },
-                              format: { comments: false },
-                          }),
-                      ]
-                    : []),
+                ...(production ? [createTerserPlugin()] : []),
                 ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, [chunkName])] : []),
                 ...(es5EntryPoint === chunkName && production ? [generateEs5Plugin(resolve(outputPath), primaryFilename, chunkName)] : []),
             ];
