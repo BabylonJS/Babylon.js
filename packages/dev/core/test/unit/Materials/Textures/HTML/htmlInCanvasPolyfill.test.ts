@@ -51,6 +51,25 @@ describe("InstallHtmlInCanvasPolyfill", () => {
         expect(install).toHaveBeenCalledWith({ force: true });
     });
 
+    it("warns once that the installer is deprecated", async () => {
+        vi.resetModules();
+        const { Logger } = await import("core/Misc/logger");
+        const polyfill = await import("core/Materials/Textures/HTML/htmlInCanvasPolyfill");
+        const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+        try {
+            await polyfill.InstallHtmlInCanvasPolyfill({ polyfillModule: { installHtmlInCanvasPolyfill: vi.fn() } });
+            await polyfill.InstallHtmlInCanvasPolyfill({ polyfillModule: { installHtmlInCanvasPolyfill: vi.fn() } });
+
+            const deprecationWarnings = warn.mock.calls.filter(([message]) => String(message).includes("deprecated"));
+            expect(deprecationWarnings).toHaveLength(1);
+            expect(String(deprecationWarnings[0][0])).toContain("@underglass/html-in-canvas-polyfill");
+        } finally {
+            polyfill.UninstallHtmlInCanvasPolyfill();
+            warn.mockRestore();
+        }
+    });
+
     it("returns false when the module does not expose an installer", async () => {
         const installed = await InstallHtmlInCanvasPolyfill({ polyfillModule: {} });
         expect(installed).toBe(false);
