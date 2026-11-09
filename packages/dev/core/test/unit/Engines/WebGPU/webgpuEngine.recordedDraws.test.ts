@@ -315,6 +315,7 @@ describe("WebGPUEngine recorded draws and the render pass command batcher", () =
     };
     const provider: IWebGPURenderPassCommandRecorderProvider = {
         protocolVersion: WebGPURenderPassCommandStreamProtocolVersion,
+        recordsAtomically: true,
         isEnabled: () => true,
         getResourceId: (r: Nullable<object>) => (r ? (ids.get(r) ?? 0) : 0),
     };
@@ -460,30 +461,33 @@ describe("WebGPUEngine recorded draws and the render pass command batcher", () =
         expect(encoder.draws).toEqual(["batched 0", "batched 36", "direct 100", "batched 200"]);
     });
 
-    it("flushes before it encodes when the host rejects the batch: the recorded draw comes first of what is left, and the next draws go direct", () => {
+    it("flushes before it encodes when the host rejects the batch: the stream replays the draws it held, the recorded draw follows them, and the next draws go direct", () => {
         const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
         try {
             const { encoder, hold, replay } = setup(WebGPURenderPassDrawKind.INDEXED);
             (encoder as unknown as { _recordCommands: () => boolean })._recordCommands = () => false;
             expect(hold(0)).toBe(true);
             expect(replay()).toBe(true);
-            // the rejected batch is dropped, as the stream documents; the stream is off, so the next draw is direct, after the recorded one
+            // the rejected batch is replayed through direct calls; the stream is off, so the next draw is direct, after the recorded one
             expect(hold(200)).toBe(false);
-            expect(encoder.draws).toEqual(["direct 100", "direct 200"]);
+            expect(encoder.draws).toEqual(["direct 0", "direct 100", "direct 200"]);
         } finally {
             errorSpy.mockRestore();
         }
     });
 
-    it("encodes nothing when the batch it flushes throws: no recorded draw goes ahead of the draws the batcher held", () => {
-        const { encoder, bundleList, hold, replay } = setup(WebGPURenderPassDrawKind.INDEXED);
-        (encoder as unknown as { _recordCommands: () => boolean })._recordCommands = () => {
-            throw new Error("host decoder");
-        };
-        expect(hold(0)).toBe(true);
-        const drawCalls = bundleList.numDrawCalls;
-        expect(replay).toThrow("host decoder");
-        expect(encoder.draws).toEqual([]);
-        expect(bundleList.numDrawCalls).toBe(drawCalls);
+    it("flushes before it encodes when the batch it flushes throws: no recorded draw goes ahead of the draws the batcher held", () => {
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        try {
+            const { encoder, hold, replay } = setup(WebGPURenderPassDrawKind.INDEXED);
+            (encoder as unknown as { _recordCommands: () => boolean })._recordCommands = () => {
+                throw new Error("host decoder");
+            };
+            expect(hold(0)).toBe(true);
+            expect(replay()).toBe(true);
+            expect(encoder.draws).toEqual(["direct 0", "direct 100"]);
+        } finally {
+            errorSpy.mockRestore();
+        }
     });
 });
