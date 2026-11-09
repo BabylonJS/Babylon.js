@@ -35,6 +35,7 @@ export class IblCdfGenerator {
     private _dummyTexture: RawTexture;
     private _iblSourceLoadUnsubscribe: Nullable<() => void> = null;
     private _iblSourceReadyRetryObserver: Nullable<() => void> = null;
+    private _iblSourceImageUnsubscribe: Nullable<() => void> = null;
 
     private _cachedDominantDirection: Nullable<Vector3> = null;
 
@@ -66,11 +67,22 @@ export class IblCdfGenerator {
         }
 
         this._clearIblSourceReadinessObservers();
+        this._clearIblSourceImageObserver();
         this._disposeTextures();
         this._iblSource = source;
 
         if (!source) {
             return;
+        }
+
+        if (source instanceof Texture) {
+            // replaceImage gives the texture another image without loading it: the maps are generated again from that image
+            const observer = source._onImageReplaced.add(() => {
+                this._cachedDominantDirection = null;
+                this._disposeTextures();
+                this._recreateAssetsFromNewIbl();
+            });
+            this._iblSourceImageUnsubscribe = () => source._onImageReplaced.remove(observer);
         }
 
         const recreateFromObservedSourceIfReady = () => {
@@ -120,6 +132,11 @@ export class IblCdfGenerator {
 
         const internalTexture = source.getInternalTexture();
         return !!internalTexture && internalTexture.isReady;
+    }
+
+    private _clearIblSourceImageObserver() {
+        this._iblSourceImageUnsubscribe?.();
+        this._iblSourceImageUnsubscribe = null;
     }
 
     private _clearIblSourceReadinessObservers() {
@@ -521,6 +538,7 @@ export class IblCdfGenerator {
      */
     public dispose() {
         this._clearIblSourceReadinessObservers();
+        this._clearIblSourceImageObserver();
         this._disposeTextures();
         this._dummyTexture.dispose();
         if (this._debugPass) {
