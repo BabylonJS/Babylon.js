@@ -218,6 +218,22 @@ describe("WebGPU draw submission", () => {
             expect(at).toBeGreaterThanOrEqual(0);
         });
 
+        it("is replayed at that offset when the host rejects the batch it was recorded in", () => {
+            const { engine, renderPass, gpuBuffer, draw } = setUp();
+            engine.renderPassCommandRecorderProvider = createProvider();
+            renderPass._recordCommands.mockReturnValueOnce(false);
+            const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+            try {
+                draw();
+                expect(renderPass[method]).not.toHaveBeenCalled();
+                engine._flushRenderPassCommands();
+                expect(renderPass._recordCommands).toHaveBeenCalledOnce();
+                expect(renderPass[method]).toHaveBeenCalledExactlyOnceWith(gpuBuffer, 40);
+            } finally {
+                errorSpy.mockRestore();
+            }
+        });
+
         it("is drawn at that offset when a native batch rejects the draw and it is replayed", () => {
             const { engine, renderPass, gpuBuffer, draw } = setUp();
             engine.renderPassCommandRecorderProvider = createProvider();
