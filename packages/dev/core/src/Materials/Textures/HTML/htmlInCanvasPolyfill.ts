@@ -5,9 +5,18 @@ import { Logger } from "../../../Misc/logger";
 
 // Attribution: the WICG HTML-in-Canvas polyfill is `three-html-render` by Palash Bansal (`repalash`),
 // MIT. It is consumed as an optional, lazily-imported dependency and is never bundled into Babylon.
+// This installer is deprecated: `three-html-render` implements an outdated version of the proposal. Applications
+// should import an up-to-date polyfill, such as `@underglass/html-in-canvas-polyfill`, directly instead.
+
+const RecommendedPolyfillMessage =
+    'Import an up-to-date HTML-in-Canvas polyfill directly instead, for example `import "@underglass/html-in-canvas-polyfill/auto";` before creating the engine.';
+
+let _HasWarnedAboutDeprecation = false;
 
 /**
  * Shape of the `three-html-render` polyfill module (only the parts this wrapper uses).
+ * @deprecated {@link InstallHtmlInCanvasPolyfill} is deprecated. Import an up-to-date polyfill, such as
+ * `@underglass/html-in-canvas-polyfill`, directly instead.
  */
 export interface IHtmlInCanvasPolyfillModule {
     /** Installs the WICG HTML-in-Canvas polyfill onto the relevant DOM prototypes. */
@@ -18,6 +27,8 @@ export interface IHtmlInCanvasPolyfillModule {
 
 /**
  * Options for {@link InstallHtmlInCanvasPolyfill}.
+ * @deprecated {@link InstallHtmlInCanvasPolyfill} is deprecated. Import an up-to-date polyfill, such as
+ * `@underglass/html-in-canvas-polyfill`, directly instead.
  */
 export interface IInstallHtmlInCanvasPolyfillOptions {
     /** Install the polyfill even when the browser already supports the API natively (default false). */
@@ -59,8 +70,17 @@ export function IsHtmlInCanvasSupportedNatively(): boolean {
  * flag is present.
  * @param options optional installation configuration
  * @returns a promise that resolves to true when the polyfill was installed, false otherwise
+ * @deprecated `three-html-render` implements an outdated version of the HTML-in-Canvas proposal, and polyfills
+ * installed through this function make {@link HtmlTexture} use legacy APIs. Import an up-to-date polyfill
+ * directly instead, before creating the engine, for example `import "@underglass/html-in-canvas-polyfill/auto";`.
+ * {@link HtmlTexture} and the interaction managers detect such a polyfill like a native implementation.
  */
 export async function InstallHtmlInCanvasPolyfill(options: IInstallHtmlInCanvasPolyfillOptions = {}): Promise<boolean> {
+    if (!_HasWarnedAboutDeprecation) {
+        _HasWarnedAboutDeprecation = true;
+        Logger.Warn(`HTML-in-Canvas: InstallHtmlInCanvasPolyfill is deprecated. ${RecommendedPolyfillMessage}`);
+    }
+
     const force = options.force ?? _HasPolyfillUrlFlag();
 
     if (!force && IsHtmlInCanvasSupportedNatively()) {
@@ -80,6 +100,8 @@ export async function InstallHtmlInCanvasPolyfill(options: IInstallHtmlInCanvasP
 
 /**
  * Removes a polyfill previously installed by {@link InstallHtmlInCanvasPolyfill}.
+ * @deprecated {@link InstallHtmlInCanvasPolyfill} is deprecated. Polyfills imported directly provide their own
+ * removal API, such as `uninstall()` from `@underglass/html-in-canvas-polyfill`.
  */
 export function UninstallHtmlInCanvasPolyfill(): void {
     if (_InstalledModule && typeof _InstalledModule.uninstallHtmlInCanvasPolyfill === "function") {
@@ -96,7 +118,7 @@ async function _ImportPolyfill(specifier: string): Promise<Nullable<IHtmlInCanva
         // UMD consumers should pass `polyfillModule` instead.
         return (await import(/* @vite-ignore */ /* webpackIgnore: true */ specifier)) as IHtmlInCanvasPolyfillModule;
     } catch {
-        Logger.Warn(`HTML-in-Canvas: could not load polyfill module "${specifier}". Install three-html-render or pass a polyfillModule.`);
+        Logger.Warn(`HTML-in-Canvas: could not load polyfill module "${specifier}". ${RecommendedPolyfillMessage}`);
         return null;
     }
 }

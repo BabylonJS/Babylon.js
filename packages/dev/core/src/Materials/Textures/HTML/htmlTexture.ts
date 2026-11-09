@@ -25,7 +25,7 @@ function _WarnMissingApi(apiName: string): void {
     }
     _HasWarnedAboutMissingApi = true;
     Logger.Warn(
-        `HTML-in-Canvas: ${apiName} is not available. Enable chrome://flags/#canvas-draw-element, the built-in SVG fallback, or the three-html-render polyfill to use HtmlTexture.`
+        `HTML-in-Canvas: ${apiName} is not available. Enable chrome://flags/#canvas-draw-element, the built-in SVG fallback, or an HTML-in-Canvas polyfill such as @underglass/html-in-canvas-polyfill to use HtmlTexture.`
     );
 }
 
@@ -294,9 +294,11 @@ export interface IHtmlTextureOptions {
  * The element is hosted as a drawable child of the engine's rendering canvas (marked `content="drawable"`,
  * or `layoutsubtree` on older implementations) so the browser can lay it out and snapshot it.
  * Content is uploaded through `WebGLRenderingContext.texElementSubImage2D` (WebGL) or
- * `GPUQueue.drawElementImageToTexture` (WebGPU), with support for older browsers and the three-html-render
- * polyfill (https://github.com/repalash/three-html-render). When neither is present, a built-in SVG
- * `<foreignObject>` fallback is used instead (see `useSvgFallback`).
+ * `GPUQueue.drawElementImageToTexture` (WebGPU), with support for older browsers. In browsers without native
+ * support, import an HTML-in-Canvas polyfill such as `@underglass/html-in-canvas-polyfill` before creating
+ * the engine. The deprecated `three-html-render` polyfill installed through `InstallHtmlInCanvasPolyfill` is
+ * still supported. When neither is present, a built-in SVG `<foreignObject>` fallback is used instead
+ * (see `useSvgFallback`).
  *
  * As with {@link HtmlElementTexture}, updates are not automatic unless `autoUpdate` is enabled; in
  * that case the texture refreshes whenever the host canvas reports a paint change.
