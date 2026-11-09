@@ -2955,11 +2955,21 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             return;
         }
 
-        const additionalUsages = (texture._hardwareTexture as WebGPUHardwareTexture).textureAdditionalUsages;
+        const previousHardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
+        const additionalUsages = previousHardwareTexture.textureAdditionalUsages;
+        // Non-resource metadata that the replacement wrapper can't recompute from the internal texture (see createRawCubeTexture / updateRawCubeTexture)
+        const originalFormatIsRGB = previousHardwareTexture._originalFormatIsRGB;
 
-        texture._hardwareTexture.release(); // don't defer the releasing! Else we will release at the end of this frame the gpu texture we are about to create in the next line...
+        // The previous gpu texture may still be used by commands recorded in the current frame, so its release is deferred to the end of the frame.
+        // The internal texture gets a new wrapper for the replacement gpu texture, so that releasing the previous one doesn't release the new one.
+        texture._hardwareTexture = null;
+        this._textureHelper.releaseHardwareTexture(previousHardwareTexture);
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
+        const hardwareTexture = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, additionalUsages);
+        hardwareTexture._originalFormatIsRGB = originalFormatIsRGB;
+
+        // The texture is now backed by a different gpu resource: refresh the unique id so that the caches keyed by it (like the bind group cache) don't return bind groups referencing the previous one.
+        texture._setUniqueId(InternalTexture._Counter++);
     }
 
     /**
@@ -4167,7 +4177,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._applyRenderPassChanges(bundleList);
             if (!this._snapshotRendering.record) {
                 this._counters.numBundleReuseNonCompatMode++;
-                if (this._currentDrawContext.indirectDrawBuffer) {
+                // the arguments of a bound application buffer are written on the GPU: the CPU does not touch them
+                if (this._currentDrawContext.indirectDrawBuffer && !this._currentDrawContext._externalIndirectDrawBuffer) {
                     this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
                 }
                 bundleList.addBundle(this._currentDrawContext.fastBundle);
@@ -4209,14 +4220,20 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
-        const indirectDrawBuffer =
-            (nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer
-                ? this._currentDrawContext.indirectDrawBuffer
-                : null;
+        // the application's buffer of GPU-written arguments (SubMesh.setIndirectDrawBuffer) goes first, in every mode, at its offset, and
+        // the CPU never writes into it
+        const externalIndirectDrawBuffer = this._currentDrawContext._externalIndirectDrawBuffer;
+        const indirectDrawBuffer = externalIndirectDrawBuffer
+            ? (externalIndirectDrawBuffer.underlyingResource as GPUBuffer)
+            : (nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer
+              ? this._currentDrawContext.indirectDrawBuffer
+              : null;
 
-        if (indirectDrawBuffer) {
+        if (indirectDrawBuffer && !externalIndirectDrawBuffer) {
             this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
         }
+
+        const indirectDrawByteOffset = externalIndirectDrawBuffer ? this._currentDrawContext._externalIndirectDrawByteOffset : 0;
 
         const commandBatching = this._renderPassCommandRecorderProvider && this._renderPassCommandBatching;
         if (commandBatching && this.compatibilityMode && !this._snapshotRendering.record) {
@@ -4237,6 +4254,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             drawCommand.instancesCount = instancesCount;
             drawCommand.start = start;
             drawCommand.indirectDrawBuffer = indirectDrawBuffer;
+            drawCommand.indirectDrawByteOffset = indirectDrawByteOffset;
 
             commandBatching.batcher.submit(drawCommand);
             this._reportDrawCall();
@@ -4272,9 +4290,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (indirectDrawBuffer) {
             if (drawKind === WebGPURenderPassDrawKind.INDEXED) {
-                renderPass2.drawIndexedIndirect(indirectDrawBuffer, 0);
+                renderPass2.drawIndexedIndirect(indirectDrawBuffer, indirectDrawByteOffset);
             } else {
-                renderPass2.drawIndirect(indirectDrawBuffer, 0);
+                renderPass2.drawIndirect(indirectDrawBuffer, indirectDrawByteOffset);
             }
         } else if (drawKind === WebGPURenderPassDrawKind.INDEXED) {
             renderPass2.drawIndexed(count, instancesCount || 1, start, 0, 0);

@@ -65,7 +65,7 @@
         }
     },
     "devDependencies": {
-        "@babylonjs/lite": "1.38.1",
+        "@babylonjs/lite": "1.39.1",
         "@dev/build-tools": "^1.0.0",
         "@dev/inspector": "1.0.0",
         "@rollup/plugin-alias": "^6.0.1",
