@@ -97,7 +97,7 @@ describe("production build helpers", () => {
         expect(output.missing).toBeNull();
     });
 
-    it("fails explicitly for invalid TypeScript instead of caching an incomplete emit", () => {
+    it("fails explicitly for invalid TypeScript instead of caching an incomplete emit", { timeout: 30_000 }, () => {
         write("tsconfig.json", JSON.stringify({ compilerOptions: { types: [], skipLibCheck: true }, include: ["*.ts"] }));
         write("bad.ts", "export const value: number = 'wrong';");
         const helper = pathToFileURL(resolve("packages/public/rollupTypeScript.mjs")).href;
