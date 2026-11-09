@@ -71,9 +71,9 @@ export function IsHtmlInCanvasSupportedNatively(): boolean {
  * @param options optional installation configuration
  * @returns a promise that resolves to true when the polyfill was installed, false otherwise
  * @deprecated `three-html-render` implements an outdated version of the HTML-in-Canvas proposal, and polyfills
- * installed through this function make {@link HtmlTexture} use legacy APIs. Import an up-to-date polyfill
+ * installed through this function make `HtmlTexture` use legacy APIs. Import an up-to-date polyfill
  * directly instead, before creating the engine, for example `import "@underglass/html-in-canvas-polyfill/auto";`.
- * {@link HtmlTexture} and the interaction managers detect such a polyfill like a native implementation.
+ * `HtmlTexture` and the interaction managers detect such a polyfill like a native implementation.
  */
 export async function InstallHtmlInCanvasPolyfill(options: IInstallHtmlInCanvasPolyfillOptions = {}): Promise<boolean> {
     if (!_HasWarnedAboutDeprecation) {
