@@ -77,6 +77,7 @@ describe("WebGPUEngine recorded draws and shader hot swapping", () => {
             vertexBuffers: [],
             vertexOffsets: [],
             indirectBuffer: null,
+            indirectByteOffset: 0,
             indexed: true,
             count: 36,
             instances: 1,
@@ -244,6 +245,19 @@ describe("WebGPUEngine recorded draws", () => {
         expect(replay()).toBe(true);
         expect(drawContext.indirectDrawBuffer).not.toBe(indirectBuffer);
         expect(encoder.drawIndexedIndirect).toHaveBeenLastCalledWith(drawContext.indirectDrawBuffer, 0);
+    });
+
+    it("encodes again a draw with the application's indirect buffer, at its byte offset", () => {
+        const { engine, drawContext, keep, replay, reset } = setup();
+        const encoder = engine._bundleList.getBundleEncoder();
+        encoder.drawIndexedIndirect = vi.fn();
+        const buffer = {};
+        drawContext._externalIndirectDrawBuffer = { underlyingResource: buffer } as any;
+        drawContext._externalIndirectDrawByteOffset = 40;
+        keep();
+        reset();
+        expect(replay()).toBe(true);
+        expect(encoder.drawIndexedIndirect).toHaveBeenLastCalledWith(buffer, 40);
     });
 
     it("reuses none of the commands recorded before snapshotRenderingReset(true), and the recording after it reuses the new ones", () => {

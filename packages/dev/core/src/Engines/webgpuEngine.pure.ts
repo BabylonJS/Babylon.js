@@ -4341,7 +4341,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             draw.vertexBuffers[i] = vertexBuffer.effectiveBuffer?.underlyingResource ?? null;
             draw.vertexOffsets[i] = vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset;
         }
-        draw.indirectBuffer = drawContext._enableIndirectDrawInCompatMode ? (drawContext.indirectDrawBuffer ?? null) : null;
+        const externalIndirectDrawBuffer = drawContext._externalIndirectDrawBuffer;
+        draw.indirectBuffer = externalIndirectDrawBuffer
+            ? (externalIndirectDrawBuffer.underlyingResource as GPUBuffer)
+            : drawContext._enableIndirectDrawInCompatMode
+              ? (drawContext.indirectDrawBuffer ?? null)
+              : null;
+        draw.indirectByteOffset = externalIndirectDrawBuffer ? drawContext._externalIndirectDrawByteOffset : 0;
         draw.indexed = drawKind === WebGPURenderPassDrawKind.INDEXED;
         draw.count = count;
         draw.instances = instancesCount || 1;
@@ -4425,9 +4431,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
         if (draw.indirectBuffer) {
             if (draw.indexed) {
-                encoder.drawIndexedIndirect(draw.indirectBuffer, 0);
+                encoder.drawIndexedIndirect(draw.indirectBuffer, draw.indirectByteOffset);
             } else {
-                encoder.drawIndirect(draw.indirectBuffer, 0);
+                encoder.drawIndirect(draw.indirectBuffer, draw.indirectByteOffset);
             }
         } else if (draw.indexed) {
             encoder.drawIndexed(draw.count, draw.instances, draw.start, 0, 0);

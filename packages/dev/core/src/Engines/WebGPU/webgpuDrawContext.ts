@@ -31,6 +31,7 @@ export interface IWebGPURecordedDraw {
     vertexBuffers: Nullable<GPUBuffer>[];
     vertexOffsets: number[];
     indirectBuffer: Nullable<GPUBuffer>;
+    indirectByteOffset: number;
     indexed: boolean;
     count: number;
     instances: number;
