@@ -207,6 +207,37 @@ describe("WebGPU draw submission", () => {
         expect(renderPass.drawIndexed).not.toHaveBeenCalled();
     });
 
+    it("replays once a draw that waited for its pipeline when the host rejects its batch, and reports it once", () => {
+        const { engine, state, renderPass, pipeline } = createEngine();
+        const tryGetRenderPipeline = vi.fn((): object | null => null);
+        Object.assign(state._cacheRenderPipeline, { tryGetRenderPipeline });
+        const owner = { _pipelinePendingFrameId: -1, _pipelineDrawnFrameId: -1 };
+        Object.assign(engine, { asynchronousPipelineCreation: true, _drawsMayWait: true, _pipelineWaitOwner: owner, _lastPipelineWaitFrameId: -1, _frameId: 10 });
+        engine.renderPassCommandRecorderProvider = createProvider();
+        const frame = (frameId: number) => {
+            Object.assign(engine, { _frameId: frameId });
+            engine.drawElementsType(0, 0, 3);
+            engine._flushRenderPassCommands();
+        };
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            frame(10); // the pipeline is being created
+            tryGetRenderPipeline.mockReturnValue(pipeline);
+            frame(11); // ready, and held back one frame for the other passes of the mesh
+            expect(renderPass._recordCommands).not.toHaveBeenCalled();
+            expect(renderPass.drawIndexed).not.toHaveBeenCalled();
+
+            renderPass._recordCommands.mockReturnValueOnce(false);
+            frame(12);
+            expect(renderPass._recordCommands).toHaveBeenCalledOnce();
+            expect(renderPass.drawIndexed).toHaveBeenCalledExactlyOnceWith(3, 1, 0, 0, 0);
+            expect(state._reportDrawCall).toHaveBeenCalledOnce();
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
     it("constructs and reuses render bundles without initializing command batching", () => {
         const { engine, state, renderPass, bundleEncoder, bundle } = createEngine();
         engine.compatibilityMode = false;
