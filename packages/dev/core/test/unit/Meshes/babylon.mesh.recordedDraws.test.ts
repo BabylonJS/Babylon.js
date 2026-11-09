@@ -1341,6 +1341,55 @@ describe("Mesh recorded draws", () => {
         expect(unchanged()).toBe(true);
     });
 
+    // a box with a material of its own, and the wait for its effect: the shaders a standard material imports load asynchronously
+    const boxWithMaterial = (name: string) => {
+        const box = MeshBuilder.CreateBox(name, {}, scene);
+        const boxMaterial = new StandardMaterial(name, scene);
+        box.material = boxMaterial;
+        return { box, boxMaterial };
+    };
+    const whenCompiled = async (box: Mesh, boxMaterial: Material) => {
+        while (!boxMaterial.isReadyForSubMesh(box, box.subMeshes[0], false)) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+    };
+    // A has two observers; the first compiles B, of the same class. The second has to receive A's effect and sub mesh
+    const nestedCompile = async (bHasObserver: boolean) => {
+        // the shaders are in memory first, so that B creates its effect inside the observer's own call
+        const preload = boxWithMaterial("preload");
+        await whenCompiled(preload.box, preload.boxMaterial);
+        const a = boxWithMaterial("A");
+        const b = boxWithMaterial("B");
+        if (bHasObserver) {
+            b.boxMaterial.onEffectCreatedObservable.add(() => {});
+        }
+        const seen: { effect: Effect; subMesh: SubMesh | null }[] = [];
+        let nested: Effect | null = null;
+        a.boxMaterial.onEffectCreatedObservable.add(() => {
+            b.boxMaterial.isReadyForSubMesh(b.box, b.box.subMeshes[0], false);
+            nested = b.box.subMeshes[0].effect;
+        });
+        a.boxMaterial.onEffectCreatedObservable.add((parameters) => seen.push({ ...parameters }));
+        await whenCompiled(a.box, a.boxMaterial);
+        expect(nested).not.toBeNull();
+        expect(seen[0].subMesh).toBe(a.box.subMeshes[0]);
+        expect(seen[0].effect).toBe(a.box.subMeshes[0].effect);
+    };
+
+    it("gives the next observer of a created effect its own effect when an observer compiles a material without observers", () => nestedCompile(false));
+
+    it("gives the next observer of a created effect its own effect when an observer compiles a material with observers", () => nestedCompile(true));
+
+    it("keeps the references when a material whose observable of created effects has no observers left creates an effect", async () => {
+        expect(unchanged()).toBe(true);
+        const b = boxWithMaterial("B");
+        const observer = b.boxMaterial.onEffectCreatedObservable.add(() => {});
+        b.boxMaterial.onEffectCreatedObservable.remove(observer);
+        await whenCompiled(b.box, b.boxMaterial);
+        expect(b.box.subMeshes[0].effect).not.toBeNull();
+        expect(unchanged()).toBe(true);
+    });
+
     it("needs a full draw after an observer of a rendering group ran, which can change a shared material in place between two groups", () => {
         // A draws in group 0, in full: the frame's reference of the material. C, recorded before, compares with it in group 1
         const seen: boolean[] = [];

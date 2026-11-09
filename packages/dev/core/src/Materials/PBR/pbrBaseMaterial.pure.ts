@@ -74,8 +74,6 @@ import { UVDefinesMixin } from "../uv.defines";
 import { PrepassDefinesMixin } from "../prepass.defines";
 import { ImageProcessingMixin } from "../imageProcessing";
 
-const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
-
 class PBRMaterialDefinesBase extends PrepassDefinesMixin(UVDefinesMixin(MaterialDefines)) {}
 
 /**
@@ -1242,9 +1240,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
         let forceWasNotReadyPreviously = false;
 
         if (effect) {
-            onCreatedEffectParameters.effect = effect;
-            onCreatedEffectParameters.subMesh = subMesh;
-            this._notifyEffectCreated(onCreatedEffectParameters);
+            this._notifyEffectCreated(effect, subMesh);
 
             // Use previous effect while new one is compiling
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
@@ -1893,9 +1889,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
             }
             const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
             const effect = this._prepareEffect(mesh, mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
-            onCreatedEffectParameters.effect = effect;
-            onCreatedEffectParameters.subMesh = null;
-            this._notifyEffectCreated(onCreatedEffectParameters);
+            this._notifyEffectCreated(effect, null);
             if (effect.isReady()) {
                 if (onCompiled) {
                     onCompiled(this);

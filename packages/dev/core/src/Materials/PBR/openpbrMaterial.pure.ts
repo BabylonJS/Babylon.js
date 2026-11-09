@@ -73,8 +73,6 @@ import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer.pure";
 import { RegisterClass } from "../../Misc/typeStore";
 
-const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
-
 function _GetComponentCount(value: PropertyType): number {
     if (typeof value === "number") {
         return 1;
@@ -2268,9 +2266,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 ...(this._samplerDefines || {}),
             });
             const effect = this._prepareEffect(mesh, mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
-            onCreatedEffectParameters.effect = effect;
-            onCreatedEffectParameters.subMesh = null;
-            this._notifyEffectCreated(onCreatedEffectParameters);
+            this._notifyEffectCreated(effect, null);
             if (effect.isReady()) {
                 if (onCompiled) {
                     onCompiled(this);
@@ -2434,9 +2430,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         let forceWasNotReadyPreviously = false;
 
         if (effect) {
-            onCreatedEffectParameters.effect = effect;
-            onCreatedEffectParameters.subMesh = subMesh;
-            this._notifyEffectCreated(onCreatedEffectParameters);
+            this._notifyEffectCreated(effect, subMesh);
 
             // Use previous effect while new one is compiling
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {

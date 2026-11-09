@@ -1109,12 +1109,14 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @internal Notifies the observers that an effect was created for a sub mesh, and ends the epoch of the references of the frame:
      * an observer runs code of the user in the middle of a frame, where the defines of a material are dirty (another material's,
      * say), and it can change any material in place, so no reference kept before it stands for the draws after it (see
-     * _getRecordedDrawReference)
-     * @param onCreatedEffectParameters the effect created and the sub mesh it was created for
+     * _getRecordedDrawReference). Without observers it does nothing. Each notification has its own object: an observer can compile
+     * another material, whose own notification would otherwise overwrite what the next observer of this one reads
+     * @param effect the effect created
+     * @param subMesh the sub mesh it was created for
      */
-    public _notifyEffectCreated(onCreatedEffectParameters: { effect: Effect; subMesh: Nullable<SubMesh> }): void {
-        if (this._onEffectCreatedObservable) {
-            this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+    public _notifyEffectCreated(effect: Effect, subMesh: Nullable<SubMesh>): void {
+        if (this._onEffectCreatedObservable?.hasObservers()) {
+            this._onEffectCreatedObservable.notifyObservers({ effect, subMesh });
             this.getScene().getEngine()._recordedDrawReferencesEpoch++;
         }
     }

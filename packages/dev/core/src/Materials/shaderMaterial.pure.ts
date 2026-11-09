@@ -39,8 +39,6 @@ import { type InternalTexture } from "./Textures/internalTexture";
 import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "./vertexPullingHelper.functions";
 import { RegisterClass } from "../Misc/typeStore";
 
-const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
-
 // vp_*_info uniforms are bound through the metadata, so callers must pass a copy of the array rather than the shared options one
 function AddVertexPullingUniforms(uniforms: string[], metadata: Map<string, IVertexPullingMetadata>): void {
     metadata.forEach((_, attribute) => {
@@ -1019,9 +1017,7 @@ export class ShaderMaterial extends PushMaterial {
                 drawWrapper.setEffect(effect, join);
             }
 
-            OnCreatedEffectParameters.effect = effect;
-            OnCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
-            this._notifyEffectCreated(OnCreatedEffectParameters);
+            this._notifyEffectCreated(effect, subMesh ?? mesh?.subMeshes[0] ?? null);
         }
 
         drawWrapper!._wasPreviouslyUsingInstances = !!useInstances;

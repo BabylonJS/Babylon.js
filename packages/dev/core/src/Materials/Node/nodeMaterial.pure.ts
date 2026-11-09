@@ -74,8 +74,6 @@ import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrende
 import { UVDefinesMixin } from "../uv.defines";
 import { ImageProcessingMixin } from "../imageProcessing";
 
-const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
-
 // declare NODEEDITOR namespace for compilation issue
 declare let NODEEDITOR: any;
 declare let BABYLON: any;
@@ -1802,9 +1800,7 @@ export class NodeMaterial extends NodeMaterialBase {
             );
 
             if (effect) {
-                onCreatedEffectParameters.effect = effect;
-                onCreatedEffectParameters.subMesh = subMesh;
-                this._notifyEffectCreated(onCreatedEffectParameters);
+                this._notifyEffectCreated(effect, subMesh);
 
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
