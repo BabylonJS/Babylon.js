@@ -6045,6 +6045,21 @@
             "playgroundId": "#GRQHVV#341",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "SubMesh indirect draw buffer - GPU-written arguments per pass",
+            "playgroundId": "#1GU3CM#2",
+            "referenceImage": "submesh-indirect-draw-buffer.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Compute", "Meshes", "Shadows"]
+        },
+        {
+            "title": "SubMesh indirect draw buffer - GPU-written arguments per pass - compatibility mode",
+            "playgroundId": "#1GU3CM#2",
+            "referenceImage": "submesh-indirect-draw-buffer.png",
+            "replace": "const compatibilityMode = false;, const compatibilityMode = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Compute", "Meshes", "Shadows"]
         }
     ]
 }
