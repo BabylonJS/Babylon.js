@@ -362,6 +362,8 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     public override shareDepth(renderTarget: RenderTargetWrapper): void {
         const dest = renderTarget as NativeRenderTargetWrapper;
         if (!this._depthStencilTexture && (this._generateDepthBuffer || this._generateStencilBuffer) && dest && dest !== this && dest._engine === this._engine) {
+            // Validate before promoting so a rejected share leaves the source's depth untouched.
+            this._engine._assertDepthAttachmentCompatible(dest, this.samples);
             // WebGL shares the source's depth renderbuffer, but on Native an auto-generated depth buffer is
             // internal to the bgfx framebuffer and cannot be attached elsewhere. Promote it to a depth texture
             // (this rebuilds the source framebuffer around it) so the destination renders against the same

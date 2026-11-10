@@ -1593,6 +1593,21 @@ describe("ThinNativeEngine", () => {
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
         });
 
+        it("rejects sharing an auto-generated depth buffer with a mismatched sample count before promoting it", () => {
+            const { engine, created } = createEngine();
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { samples: 1 }) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false, samples: 4 }) as NativeRenderTargetWrapper;
+            const sourceFramebuffer = source._framebuffer;
+            const createdCount = created.length;
+
+            expect(() => source.shareDepth(destination)).toThrow("must use the render target's sample count");
+
+            expect(source._depthStencilTexture).toBeFalsy();
+            expect(source._framebuffer).toBe(sourceFramebuffer);
+            expect(destination._depthStencilTexture).toBeFalsy();
+            expect(created).toHaveLength(createdCount);
+        });
+
         it("releases cached per-mip framebuffers when the texture is recreated for a new sample count", () => {
             const { engine, released, bound } = createEngine();
             const rtWrapper = engine.createRenderTargetCubeTexture(64, { generateMipMaps: true }) as NativeRenderTargetWrapper;
