@@ -271,4 +271,43 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         scene.dispose();
         engine.dispose();
     }, 30000);
+
+    it("uploads only the requested rows of a spherical harmonics texture", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const width = 4;
+        const height = 3;
+        const texture = new RawTexture(
+            null,
+            width,
+            height,
+            Constants.TEXTUREFORMAT_RGBA_INTEGER,
+            scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+        );
+        const updateRawTexture = vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const updateTextureData = vi.fn();
+        (engine as any).updateTextureData = updateTextureData;
+
+        // An incremental update only owns the rows from lineStart: the rows above hold neutral placeholder SH.
+        (mesh as any)._updateShTextureData(texture, new Uint8Array(width * height * 16), width, 1, 2);
+
+        expect(updateRawTexture).not.toHaveBeenCalled();
+        expect(updateTextureData).toHaveBeenCalledOnce();
+        const [internalTexture, data, xOffset, yOffset, updateWidth, updateHeight] = updateTextureData.mock.calls[0];
+        expect(internalTexture).toBe(texture.getInternalTexture());
+        expect([xOffset, yOffset, updateWidth, updateHeight]).toEqual([0, 1, width, 2]);
+        expect(data.byteOffset).toBe(width * 16);
+        expect(data.byteLength).toBe(width * 2 * 16);
+
+        scene.dispose();
+        engine.dispose();
+    });
 });

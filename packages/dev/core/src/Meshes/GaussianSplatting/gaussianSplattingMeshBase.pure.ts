@@ -4329,9 +4329,10 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _updateShTextureData(texture: BaseTexture, shData: Uint8Array, textureWidth: number, lineStart: number, lineCount: number): void {
         const engine = this._getTextureDataUpdateEngine();
 
-        // NativeEngine/NullEngine, updateTextureData unsupported
-        if (!engine._gl && !engine.isWebGPU) {
-            const internalTexture = texture.getInternalTexture()!;
+        // NativeEngine/NullEngine: upload complete textures as raw data. Partial (incremental) updates must only
+        // write their own rows, so they go through updateTextureData below like on the other engines.
+        const internalTexture = texture.getInternalTexture()!;
+        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
             const expectedByteLength = textureWidth * internalTexture.height * 16;
             let uploadData: Uint32Array;
             if (shData.byteLength === expectedByteLength && shData.byteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
