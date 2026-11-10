@@ -1505,7 +1505,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     public _getCameraDirection(camera: Camera): Vector3 {
         const cameraViewMatrix = camera.getViewMatrix();
         const cameraProjectionMatrix = camera.getProjectionMatrix();
-        const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
+        // Kept on the instance: the Native sort dispatched right after this call reuses it.
+        const cameraViewProjectionMatrix = this._nativeSortViewProjectionMatrix;
         cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
 
         const modelMatrix = this.computeWorldMatrix(true);
@@ -1636,7 +1637,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                         );
                     } else if (Native?.sortSplatIndices || Native?.sortSplats) {
                         if (Native.sortSplatIndices) {
-                            this._sortSplatIndicesNative(camera, worldMatrix);
+                            this._sortSplatIndicesNative(worldMatrix);
                         } else if (this._activeSplatRanges) {
                             // Native sort can't filter ranges: fall back to the (already range-filtered) identity index buffer.
                             this._updateSplatIndexBuffer(this._vertexCount);
@@ -1805,12 +1806,12 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     // Sorts the active splats (honoring the range filter and compound parts) with the Native sort.
-    private _sortSplatIndicesNative(camera: Camera, worldMatrix: Matrix): void {
+    // The view-projection matrix was computed by _getCameraDirection for this camera just before dispatch.
+    private _sortSplatIndicesNative(worldMatrix: Matrix): void {
         const renderedPadded = Math.max((this.renderedSplatCount + 15) & ~0xf, 16);
         if (this._splatIndex!.length !== renderedPadded) {
             this._updateSplatIndexBuffer(this._vertexCount);
         }
-        camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._nativeSortViewProjectionMatrix);
         const partIndices = this._getSortPartIndices();
         const partMatrices = partIndices ? this._getGpuSortPartMatrices() : null;
         const compound = !!partMatrices && partMatrices.length > 0;
