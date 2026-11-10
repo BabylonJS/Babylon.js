@@ -210,4 +210,65 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         scene.dispose();
         engine.dispose();
     });
+
+    it("sorts only the active splat ranges with sortSplatIndices and retries a rejected sort", async () => {
+        const sortSplatIndices = vi.fn(() => true);
+        (globalThis as any)._native.sortSplatIndices = sortSplatIndices;
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.updateData(createSplatData(40));
+        sortSplatIndices.mockClear();
+        sortSplatIndices.mockReturnValueOnce(false);
+        mesh.setSplatIndexRanges([
+            { offset: 3, count: 2 },
+            { offset: 20, count: 18 },
+        ]);
+
+        expect(sortSplatIndices).toHaveBeenCalledOnce();
+        const [, worldMatrices, positions, splatIndex, vertexCount, intervals, partIndices] = sortSplatIndices.mock.calls[0] as any[];
+        expect(worldMatrices).toEqual([mesh.getWorldMatrix()]);
+        expect(positions).toBe((mesh as any)._splatPositions);
+        expect(splatIndex).toBe((mesh as any)._splatIndex);
+        expect(splatIndex.length).toBe(32);
+        expect(vertexCount).toBe(40);
+        expect(Array.from(intervals)).toEqual([3, 2, 20, 18]);
+        expect(partIndices).toBeNull();
+        expect(sortSplats).not.toHaveBeenCalled();
+        expect(mesh._isDepthSortSettled).toBe(false);
+
+        mesh._postToWorker();
+        expect(sortSplatIndices).toHaveBeenCalledTimes(2);
+        expect(mesh._isDepthSortSettled).toBe(true);
+
+        scene.dispose();
+        engine.dispose();
+    }, 30000);
+
+    it("sorts compound parts with their own world matrices with sortSplatIndices", async () => {
+        const sortSplatIndices = vi.fn(() => true);
+        (globalThis as any)._native.sortSplatIndices = sortSplatIndices;
+        const { GaussianSplattingCompoundMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh");
+        const { Matrix } = await import("core/Maths/math.vector");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingCompoundMesh("compound", null, scene);
+        const parts = Uint8Array.from({ length: 40 }, (_, i) => (i < 20 ? 0 : 1));
+        mesh.updateData(createSplatData(40), undefined, undefined, parts);
+        mesh.setWorldMatrixForPart(0, Matrix.Translation(-1, 0, 0));
+        sortSplatIndices.mockClear();
+        mesh.setWorldMatrixForPart(1, Matrix.Translation(0, 0, 3));
+
+        expect(sortSplatIndices).toHaveBeenCalledOnce();
+        const [, worldMatrices, , , vertexCount, intervals, partIndices] = sortSplatIndices.mock.calls[0] as any[];
+        expect(worldMatrices.map((matrix: any) => Array.from(matrix.m))).toEqual([Array.from(Matrix.Translation(-1, 0, 0).m), Array.from(Matrix.Translation(0, 0, 3).m)]);
+        expect(vertexCount).toBe(40);
+        expect(intervals).toBeNull();
+        expect(Array.from(partIndices.subarray(0, 40))).toEqual(Array.from(parts));
+        expect(sortSplats).not.toHaveBeenCalled();
+
+        scene.dispose();
+        engine.dispose();
+    }, 30000);
 });
