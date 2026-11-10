@@ -1704,6 +1704,16 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(nativeMode);
         this._commandBufferEncoder.finishEncodingCommand();
 
+        // Like WebGL/WebGPU, ALPHA_MIN and ALPHA_MAX imply a blend equation. Restore ADD when switching
+        // away from them; other equation changes are left to explicit setAlphaEquation calls.
+        if (mode === Constants.ALPHA_MIN) {
+            this.setAlphaEquation(Constants.ALPHA_EQUATION_MIN, targetIndex);
+        } else if (mode === Constants.ALPHA_MAX) {
+            this.setAlphaEquation(Constants.ALPHA_EQUATION_MAX, targetIndex);
+        } else if (this._alphaMode[targetIndex] === Constants.ALPHA_MIN || this._alphaMode[targetIndex] === Constants.ALPHA_MAX) {
+            this.setAlphaEquation(Constants.ALPHA_EQUATION_ADD, targetIndex);
+        }
+
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
         }

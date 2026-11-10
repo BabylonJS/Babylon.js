@@ -91,6 +91,41 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("alpha mode", () => {
+        it("encodes ALPHA_MAX as ONEONE_ONEONE with a MAX equation and restores ADD afterwards", () => {
+            const engine = Object.create(ThinNativeEngine.prototype) as ThinNativeEngine & {
+                _alphaMode: number[];
+                _alphaEquation: number[];
+                _commandBufferEncoder: object;
+            };
+            const commands: number[][] = [];
+            vi.stubGlobal("_native", {
+                Engine: { COMMAND_SETBLENDMODE: 100, COMMAND_SETBLENDEQUATION: 101, ALPHA_ONEONE_ONEONE: 7, ALPHA_COMBINE: 2 },
+            });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._alphaMode = [];
+            engine._alphaEquation = [];
+            engine._commandBufferEncoder = {
+                startEncodingCommand: (command: number) => commands.push([command]),
+                encodeCommandArgAsUInt32: (value: number) => commands[commands.length - 1].push(value),
+                finishEncodingCommand: () => {},
+            };
+            vi.spyOn(engine, "setDepthWrite").mockImplementation(() => {});
+
+            engine.setAlphaMode(Constants.ALPHA_MAX);
+            engine.setAlphaMode(Constants.ALPHA_COMBINE);
+
+            expect(commands).toEqual([
+                [100, 7],
+                [101, Constants.ALPHA_EQUATION_MAX],
+                [100, 2],
+                [101, Constants.ALPHA_EQUATION_ADD],
+            ]);
+        });
+    });
+
     describe("render loop", () => {
         it("returns the custom animation frame request id", () => {
             const thinNativeEngine = Object.create(ThinNativeEngine.prototype) as TestThinNativeEngine;
