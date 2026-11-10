@@ -92,11 +92,16 @@ describe("ThinNativeEngine", () => {
     });
 
     describe("alpha mode", () => {
-        it("encodes ALPHA_MAX as ONEONE_ONEONE with a MAX equation and restores ADD afterwards", () => {
-            const engine = Object.create(ThinNativeEngine.prototype) as ThinNativeEngine & {
+        it.each([
+            ["ALPHA_MIN", Constants.ALPHA_MIN, Constants.ALPHA_EQUATION_MIN],
+            ["ALPHA_MAX", Constants.ALPHA_MAX, Constants.ALPHA_EQUATION_MAX],
+        ])("encodes %s as ONEONE_ONEONE with its blend equation and restores ADD afterwards", (_name, mode, equation) => {
+            const engine = Object.create(ThinNativeEngine.prototype) as {
                 _alphaMode: number[];
                 _alphaEquation: number[];
                 _commandBufferEncoder: object;
+                setAlphaMode: (mode: number) => void;
+                setDepthWrite: (enable: boolean) => void;
             };
             const commands: number[][] = [];
             vi.stubGlobal("_native", {
@@ -114,12 +119,12 @@ describe("ThinNativeEngine", () => {
             };
             vi.spyOn(engine, "setDepthWrite").mockImplementation(() => {});
 
-            engine.setAlphaMode(Constants.ALPHA_MAX);
+            engine.setAlphaMode(mode);
             engine.setAlphaMode(Constants.ALPHA_COMBINE);
 
             expect(commands).toEqual([
                 [100, 7],
-                [101, Constants.ALPHA_EQUATION_MAX],
+                [101, equation],
                 [100, 2],
                 [101, Constants.ALPHA_EQUATION_ADD],
             ]);
