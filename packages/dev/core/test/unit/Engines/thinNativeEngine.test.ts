@@ -1611,6 +1611,37 @@ describe("ThinNativeEngine", () => {
             expect(released.filter((framebuffer) => (framebuffer as unknown) === generatedDepthFramebuffer)).toHaveLength(1);
         });
 
+        it.each([false, true])("unbinds a bound source before releasing its generated-depth framebuffer (multi: %s)", (multi) => {
+            const { engine, bound, released } = createEngine();
+            const source = (
+                multi ? engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2 }) : engine.createRenderTargetTexture({ width: 64, height: 64 }, {})
+            ) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            const generatedDepthFramebuffer = source._framebuffer as unknown as FakeFramebuffer;
+            engine.bindFramebuffer(source);
+            expect(bound()).toBe(generatedDepthFramebuffer);
+
+            const bindSpy = vi.mocked((engine as any)._bindUnboundFramebuffer);
+            const boundAtRelease: unknown[] = [];
+            const recordRelease = (engine as any)._releaseFramebufferObjects;
+            (engine as any)._releaseFramebufferObjects = function (framebuffer: FakeFramebuffer | null) {
+                if (framebuffer === generatedDepthFramebuffer) {
+                    boundAtRelease.push(bindSpy.mock.lastCall![0]);
+                }
+                recordRelease.call(this, framebuffer);
+            };
+
+            source.shareDepth(destination);
+
+            // The engine switched away from the generated-depth framebuffer before it was released...
+            expect(boundAtRelease).toEqual([null]);
+            expect(released.filter((framebuffer) => framebuffer === generatedDepthFramebuffer)).toHaveLength(1);
+            // ...and the source is bound again through its replacement framebuffer.
+            expect(engine._currentRenderTarget).toBe(source);
+            expect(bound()).not.toBe(generatedDepthFramebuffer);
+            expect(bound().explicitDepth).toBe(resourceOf(source._depthStencilTexture!));
+        });
+
         it("rejects sharing an auto-generated depth buffer with a mismatched sample count before promoting it", () => {
             const { engine, created } = createEngine();
             const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { samples: 1 }) as NativeRenderTargetWrapper;

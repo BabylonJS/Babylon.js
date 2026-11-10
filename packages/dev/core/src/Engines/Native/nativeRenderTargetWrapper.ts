@@ -364,6 +364,13 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         if (!this._depthStencilTexture && (this._generateDepthBuffer || this._generateStencilBuffer) && dest && dest !== this && dest._engine === this._engine) {
             // Validate before promoting so a rejected share leaves the source's depth untouched.
             this._engine._assertDepthAttachmentCompatible(dest, this.samples);
+            // Promotion releases the source's current framebuffer, so unbind it first if it is bound and
+            // rebind the source (now built around the depth texture) afterwards.
+            const engine = this._engine;
+            const wasBound = engine._currentRenderTarget === this;
+            if (wasBound) {
+                engine._bindUnboundFramebuffer(null);
+            }
             // WebGL shares the source's depth renderbuffer, but on Native an auto-generated depth buffer is
             // internal to the bgfx framebuffer and cannot be attached elsewhere. Promote it to a depth texture
             // (this rebuilds the source framebuffer around it) so the destination renders against the same
@@ -376,6 +383,10 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
                 this._generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT
             );
             this._retireGeneratedDepthFramebuffer();
+            if (wasBound) {
+                engine._currentRenderTarget = null;
+                engine.bindFramebuffer(this);
+            }
         }
 
         if (this._depthStencilTexture && dest?._engine === this._engine) {
