@@ -239,7 +239,7 @@ export class DracoDecoder extends DracoCodec {
                             size,
                             byteOffset,
                             byteStride,
-                            normalized,
+                            normalized: applyGltfNormalizedOverride(kind, normalized),
                         });
                     }
                 );
