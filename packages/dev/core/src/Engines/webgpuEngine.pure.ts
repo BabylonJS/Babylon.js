@@ -37,7 +37,7 @@ import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer"
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
 import { type DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
-import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
+import { type IWebGPURecordedDraw, WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUCacheTextureView } from "./WebGPU/webgpuCacheTextureView";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad.pure";
@@ -314,6 +314,13 @@ export interface IWebGPURenderPipelineAsyncCreationOptions {
     textures?: { [name: string]: Nullable<InternalTexture> };
 }
 
+function CopyInto<T>(source: T[], target: T[]): void {
+    target.length = source.length;
+    for (let i = 0; i < source.length; i++) {
+        target[i] = source[i];
+    }
+}
+
 /**
  * The web GPU engine class provides support for WebGPU version of babylon.js.
  * @since 5.0.0
@@ -520,9 +527,63 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     * @param forceFullRecording with snapshotRenderingReuseDraws on, reuses none of the commands recorded so far: every draw of the new
+     * snapshot is recorded in full, and keeps new commands that the snapshots after it reuse (default: false)
      */
-    public snapshotRenderingReset(): void {
+    public snapshotRenderingReset(forceFullRecording = false): void {
+        if (forceFullRecording) {
+            this._recordedDrawsGeneration++;
+        }
         this._snapshotRendering.reset();
+    }
+
+    /**
+     * Gets or sets whether a new snapshot (see snapshotRenderingReset) reuses, for a draw whose mesh and material did not change since
+     * it was last recorded, the commands it was recorded with, instead of binding its mesh and material again (default: false, every
+     * new snapshot records every draw in full). The scene is walked again at each recording, as without it: culling, LOD, the order
+     * and the set of draws
+     */
+    public snapshotRenderingReuseDraws = false;
+
+    // the recorded commands of an older generation are not reused (snapshotRenderingReset(true))
+    private _recordedDrawsGeneration = 0;
+
+    /** @internal */
+    public override get _recordsDraws(): boolean {
+        return this._snapshotRendering.record && this.snapshotRenderingReuseDraws;
+    }
+
+    // the draw context whose commands the next draw records (see _keepInheritedState)
+    private _recordedDrawContext: Nullable<WebGPUDrawContext> = null;
+
+    /** @internal */
+    public override _keepInheritedState(drawWrapper: DrawWrapper): void {
+        super._keepInheritedState(drawWrapper);
+        // the next draw records its commands: until it does, they are not encoded again
+        const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
+        if (drawContext?._recordedDraw) {
+            drawContext._recordedDraw.kept = false;
+        }
+        this._recordedDrawContext = drawContext;
+    }
+
+    /** @internal */
+    protected override _getInheritedState(target: number[]): number {
+        let length = super._getInheritedState(target);
+        // the pipeline reads two more outside of the engine's state objects: alpha to coverage (from the pipeline cache, as the
+        // alphaToCoverage extension sets it there) and the attachments the draw writes
+        let attachments = 0;
+        const mrtAttachments = this._mrtAttachments;
+        if (mrtAttachments) {
+            for (let i = 0; i < mrtAttachments.length; i++) {
+                if (mrtAttachments[i] !== 0) {
+                    attachments += 1 << i;
+                }
+            }
+        }
+        target[length++] = (this._cacheRenderPipeline as unknown as { _alphaToCoverageEnabled?: boolean })._alphaToCoverageEnabled ? 1 : 0;
+        target[length++] = attachments;
+        return length;
     }
 
     /**
@@ -2432,6 +2493,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._forceEnableEffect = false;
 
+        // the bind callbacks of the effect are code of the user, which a recorded draw does not run (see _canEncodeRecordedDraw): they
+        // can change any material in place, so no reference kept before them in the frame stands for the draws after them
+        if (this._currentEffect.onBind || this._currentEffect._onBindObservable?.hasObservers()) {
+            this._recordedDrawReferencesEpoch++;
+        }
         if (this._currentEffect.onBind) {
             this._currentEffect.onBind(this._currentEffect);
         }
@@ -4133,6 +4199,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
 
+        // only a draw announced by _keepInheritedState is recorded
+        if (this._recordedDrawContext) {
+            if (this._recordedDrawContext === this._currentDrawContext) {
+                this._keepRecordedDraw(pipeline, bindGroups, drawKind, count, instancesCount, start);
+            }
+            this._recordedDrawContext = null;
+        }
+
         if (!this._snapshotRendering.record) {
             this._applyRenderPassChanges(!this.compatibilityMode ? bundleList : null);
             if (!this.compatibilityMode) {
@@ -4232,6 +4306,161 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         this._reportDrawCall();
+    }
+
+    private _keepRecordedDraw(
+        pipeline: GPURenderPipeline,
+        bindGroups: GPUBindGroup[],
+        drawKind: WebGPURenderPassDrawKind,
+        count: number,
+        instancesCount: number,
+        start: number
+    ): void {
+        const drawContext = this._currentDrawContext;
+        // the per-draw values of the effect are checked through the slot the draw context owns in the leftover uniform buffer
+        const leftOver = (this._currentEffect!._pipelineContext as WebGPUPipelineContext).uniformBuffer;
+        if (leftOver && (!this._useOwnerKeyedUniformBufferSlots || !leftOver._isOwnerSlotBound(drawContext))) {
+            return;
+        }
+        const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
+        const indexBuffer = this._currentIndexBuffer;
+        // the record of the context and its arrays are filled again
+        const draw = (drawContext._recordedDraw ??= { bindGroups: [], vertexBuffers: [], vertexOffsets: [], colorFormats: [] } as unknown as IWebGPURecordedDraw);
+        draw.renderTarget = this._currentRenderTarget;
+        draw.sampleCount = this.currentSampleCount;
+        CopyInto(this._cacheRenderPipeline.colorFormats, draw.colorFormats);
+        draw.depthFormat = this._depthTextureFormat;
+        draw.pipeline = pipeline;
+        CopyInto(bindGroups, draw.bindGroups);
+        draw.indexBuffer = indexBuffer ? indexBuffer.underlyingResource : null;
+        draw.indexFormat = indexBuffer?.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
+        const length = vertexBuffers.length;
+        draw.vertexBuffers.length = draw.vertexOffsets.length = length;
+        for (let i = 0; i < length; i++) {
+            const vertexBuffer = vertexBuffers[i];
+            draw.vertexBuffers[i] = vertexBuffer.effectiveBuffer?.underlyingResource ?? null;
+            draw.vertexOffsets[i] = vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset;
+        }
+        const externalIndirectDrawBuffer = drawContext._externalIndirectDrawBuffer;
+        draw.indirectBuffer = externalIndirectDrawBuffer
+            ? (externalIndirectDrawBuffer.underlyingResource as GPUBuffer)
+            : drawContext._enableIndirectDrawInCompatMode
+              ? (drawContext.indirectDrawBuffer ?? null)
+              : null;
+        draw.indirectByteOffset = externalIndirectDrawBuffer ? drawContext._externalIndirectDrawByteOffset : 0;
+        draw.indexed = drawKind === WebGPURenderPassDrawKind.INDEXED;
+        draw.count = count;
+        draw.instances = instancesCount || 1;
+        draw.start = start;
+        draw.generation = this._recordedDrawsGeneration;
+        draw.kept = true;
+    }
+
+    private static _HasSameFormats(recorded: (GPUTextureFormat | null)[], current: (GPUTextureFormat | null)[]): boolean {
+        if (recorded.length !== current.length) {
+            return false;
+        }
+        for (let i = 0; i < recorded.length; i++) {
+            if (recorded[i] !== current[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** @internal */
+    public override _canEncodeRecordedDraw(drawWrapper: DrawWrapper): boolean {
+        const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
+        const materialContext = drawWrapper.materialContext as Nullable<WebGPUMaterialContext>;
+        const draw = drawContext?._recordedDraw;
+        const effect = drawWrapper.effect;
+        if (
+            !this._snapshotRendering.record ||
+            !draw?.kept ||
+            draw.generation !== this._recordedDrawsGeneration ||
+            !materialContext ||
+            // a full draw enables the effect, which calls them
+            effect?.onBind ||
+            effect?._onBindObservable?.hasObservers() ||
+            draw.renderTarget !== this._currentRenderTarget ||
+            draw.sampleCount !== this.currentSampleCount ||
+            // the bundle encoder takes the current formats, which its pipeline must match
+            draw.depthFormat !== this._depthTextureFormat ||
+            !WebGPUEngine._HasSameFormats(draw.colorFormats, this._cacheRenderPipeline.colorFormats) ||
+            drawContext!.isDirty(materialContext.updateId) ||
+            materialContext.isDirty ||
+            materialContext.forceBindGroupCreation
+        ) {
+            return false;
+        }
+        return true;
+    }
+
+    /** @internal */
+    public override _replayRecordedDraw(drawWrapper: DrawWrapper): boolean {
+        if (!this._canEncodeRecordedDraw(drawWrapper)) {
+            return false;
+        }
+        const drawContext = drawWrapper.drawContext as WebGPUDrawContext;
+        const draw = drawContext._recordedDraw!;
+        // the bind groups reference the slot of the draw context: used this frame, it is neither overwritten nor taken by another one
+        (drawWrapper.effect?._pipelineContext as Nullable<WebGPUPipelineContext>)?.uniformBuffer?._markOwnerSlotUsed(drawContext);
+
+        const bundleList = this._bundleList;
+        this._getCurrentRenderPass();
+        // as _draw: the stencil composer computes the effective state (enabled, reference) from the material's stencil the mesh set
+        this.applyStates();
+        this._applyRenderPassChanges(bundleList);
+        // as before a full draw: the draws the batcher holds go first
+        this._flushRenderPassCommands();
+        const encoder = bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount);
+        bundleList.numDrawCalls++;
+
+        encoder.setPipeline(draw.pipeline);
+        if (draw.indexBuffer) {
+            encoder.setIndexBuffer(draw.indexBuffer, draw.indexFormat, 0);
+        }
+        for (let i = 0; i < draw.vertexBuffers.length; i++) {
+            const buffer = draw.vertexBuffers[i];
+            if (buffer) {
+                encoder.setVertexBuffer(i, buffer, draw.vertexOffsets[i]);
+            }
+        }
+        for (let i = 0; i < draw.bindGroups.length; i++) {
+            encoder.setBindGroup(i, draw.bindGroups[i]);
+        }
+        if (draw.indirectBuffer) {
+            if (draw.indexed) {
+                encoder.drawIndexedIndirect(draw.indirectBuffer, draw.indirectByteOffset);
+            } else {
+                encoder.drawIndirect(draw.indirectBuffer, draw.indirectByteOffset);
+            }
+        } else if (draw.indexed) {
+            encoder.drawIndexed(draw.count, draw.instances, draw.start, 0, 0);
+        } else {
+            encoder.draw(draw.count, draw.instances, draw.start, 0);
+        }
+
+        this._reportDrawCall();
+        return true;
+    }
+
+    /** @internal */
+    public override _canKeepRecordedDraw(drawWrapper: DrawWrapper): boolean {
+        const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
+        const leftOver = (drawWrapper.effect?._pipelineContext as Nullable<WebGPUPipelineContext>)?.uniformBuffer;
+        return !!drawContext && (!leftOver || (this._useOwnerKeyedUniformBufferSlots && leftOver._isOwnerSlotBound(drawContext)));
+    }
+
+    /** @internal */
+    public override _hasSameDrawValues(drawWrapper: DrawWrapper, reference: DrawWrapper): boolean {
+        const leftOver = (drawWrapper.effect?._pipelineContext as Nullable<WebGPUPipelineContext>)?.uniformBuffer;
+        if (!leftOver) {
+            return true;
+        }
+        const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
+        const referenceContext = reference.drawContext as Nullable<WebGPUDrawContext>;
+        return !!drawContext && !!referenceContext && leftOver._isOwnerSlotEqual(drawContext, referenceContext);
     }
 
     /**

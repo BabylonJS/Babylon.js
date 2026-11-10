@@ -850,6 +850,79 @@ export class UniformBuffer {
         this._freeSlots.push(idx);
     }
 
+    /**
+     * Whether the slots owned by two draw contexts hold the same bytes (see WebGPUEngine._hasSameDrawValues). Two slots flushed
+     * with the same data generation do; otherwise their CPU copies are compared, and a slot found equal takes the generation of
+     * the other one (the data generation changes on every change, also when the data comes back to what it was)
+     * @param owner the draw context
+     * @param reference the draw context it is compared to
+     * @returns true if the slots hold the same bytes
+     * @internal
+     */
+    public _isOwnerSlotEqual(owner: WebGPUDrawContext, reference: WebGPUDrawContext): boolean {
+        const idx = this._slotByOwner?.get(owner);
+        const referenceIdx = this._slotByOwner?.get(reference);
+        if (idx === undefined || referenceIdx === undefined) {
+            return false;
+        }
+        if (this._slotGeneration[idx] === this._slotGeneration[referenceIdx]) {
+            return true;
+        }
+        const data = this._buffers[idx][1];
+        const referenceData = this._buffers[referenceIdx][1];
+        if (!data || !referenceData || !this._buffersEqual(data, referenceData)) {
+            return false;
+        }
+        this._slotGeneration[idx] = this._slotGeneration[referenceIdx];
+        return true;
+    }
+
+    /**
+     * Marks the slot owned by a draw context as used in the current frame, as a flush does: a draw encoded again from its recorded
+     * commands references it
+     * @param owner the draw context
+     * @internal
+     */
+    public _markOwnerSlotUsed(owner: WebGPUDrawContext): void {
+        const idx = this._slotByOwner?.get(owner);
+        if (idx !== undefined) {
+            this._checkNewFrame();
+            this._slotFrameId[idx] = this._currentFrameId;
+        }
+    }
+
+    /**
+     * Whether the last flush on behalf of a draw context used the slot it owns (and not a slot taken for a second flush in the frame)
+     * @param owner the draw context
+     * @returns true if the owned slot is bound
+     * @internal
+     */
+    public _isOwnerSlotBound(owner: WebGPUDrawContext): boolean {
+        return this._slotByOwner?.get(owner) === this._bufferIndex;
+    }
+
+    /**
+     * Whether the buffer bound last is the first one of the frame: a draw recorded with a later one depends on the order of the
+     * frame's writes
+     * @returns true if it is the first buffer
+     * @internal
+     */
+    public _isFirstBufferBound(): boolean {
+        return this._noUBO || !this._trackUBOsInFrame || this._bufferIndex <= 0;
+    }
+
+    /**
+     * Marks the buffer bound now as used in the current frame, as an update does: a draw encoded again from its recorded commands binds
+     * it without updating it, and the first write of a frame would otherwise go to that buffer, under the draw, instead of a new one
+     * @internal
+     */
+    public _markBufferUsed(): void {
+        if (this._trackUBOsInFrame) {
+            this._checkNewFrame();
+            this._createBufferOnWrite = true;
+        }
+    }
+
     private _removeOwnerBacklink(list: UniformBuffer[]): void {
         const index = list.indexOf(this);
         if (index !== -1) {

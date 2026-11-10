@@ -26,7 +26,7 @@ import { type RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { MaterialFlags } from "./materialFlags";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
-import { type Effect, type IEffectCreationOptions } from "./effect.pure";
+import { type IEffectCreationOptions } from "./effect.pure";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { AddClipPlaneUniforms, BindClipPlane } from "./clipPlaneMaterialHelper";
 import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "./vertexPullingHelper.functions";
@@ -67,8 +67,6 @@ import { ImageProcessingMixin } from "./imageProcessing";
 import { RegisterClass } from "../Misc/typeStore";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
-const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 class StandardMaterialDefinesBase extends PrepassDefinesMixin(UVDefinesMixin(MaterialDefines)) {}
 
@@ -1291,11 +1289,7 @@ export class StandardMaterial extends StandardMaterialBase {
             this._eventInfo.customCode = undefined;
 
             if (effect) {
-                if (this._onEffectCreatedObservable) {
-                    onCreatedEffectParameters.effect = effect;
-                    onCreatedEffectParameters.subMesh = subMesh;
-                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
-                }
+                this._notifyEffectCreated(effect, subMesh);
 
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {

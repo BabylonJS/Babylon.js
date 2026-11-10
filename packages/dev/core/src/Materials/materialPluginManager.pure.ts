@@ -46,6 +46,20 @@ export class MaterialPluginManager {
     /** @internal */
     public _plugins: MaterialPluginBase[] = [];
     protected _activePlugins: MaterialPluginBase[] = [];
+
+    /**
+     * @internal Whether an active plugin binds what can change on each draw: one that binds on extra events (hard bind), or one that does
+     * not declare it binds only values of its material and the scene (see MaterialPluginBase._bindsMaterialValuesOnly)
+     */
+    public get _bindsOnEachDraw(): boolean {
+        const plugins = this._activePlugins;
+        for (let i = 0; i < plugins.length; i++) {
+            if (plugins[i].registerForExtraEvents || !plugins[i]._bindsMaterialValuesOnly) {
+                return true;
+            }
+        }
+        return false;
+    }
     protected _activePluginsForExtraEvents: MaterialPluginBase[] = [];
     protected _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
     protected _defineNamesFromPlugins?: { [name: string]: { type: string; default: any } };
