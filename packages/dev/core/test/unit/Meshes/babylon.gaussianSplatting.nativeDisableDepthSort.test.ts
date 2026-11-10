@@ -353,4 +353,46 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         scene.dispose();
         engine.dispose();
     });
+
+    it("keeps the existing SH rows when a part is appended without growing the atlas", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { GaussianSplattingCompoundMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh");
+        const { engine, scene } = await createScene();
+        // Atlas width 16: 20 splats use rows [0, 2), and 4 more still fit in row 1, so the append is incremental.
+        (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 16;
+
+        const createSource = (name: string, count: number) => {
+            const source = new GaussianSplattingMesh(name, null, scene);
+            source.disableDepthSort = true;
+            source.updateData(createSplatData(count), [new Uint8Array(count * 16).fill(7)], undefined, undefined, 1);
+            return source;
+        };
+
+        const compound = new GaussianSplattingCompoundMesh("compound", null, scene, true);
+        compound.disableDepthSort = true;
+        compound.addPart(createSource("a", 20), false);
+        const shTextures = (compound as any)._shTextures as any[];
+        expect(shTextures?.length).toBe(1);
+        const shInternalTexture = shTextures[0].getInternalTexture();
+        const textureHeight = shInternalTexture.height;
+
+        const updateRawTexture = vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const updateTextureData = vi.fn();
+        (engine as any).updateTextureData = updateTextureData;
+
+        compound.addPart(createSource("b", 4), false);
+
+        expect((compound as any)._shTextures[0]).toBe(shTextures[0]);
+        expect(shInternalTexture.height).toBe(textureHeight);
+        // A full upload would overwrite the rows of the first part (on the GPU, possibly streamed SH) with the CPU copy.
+        expect(updateRawTexture.mock.calls.filter((call) => call[0] === shInternalTexture)).toHaveLength(0);
+        const shUploads = updateTextureData.mock.calls.filter((call) => call[0] === shInternalTexture);
+        expect(shUploads.length).toBeGreaterThan(0);
+        for (const call of shUploads) {
+            expect(call[3]).toBeGreaterThanOrEqual(1);
+        }
+
+        scene.dispose();
+        engine.dispose();
+    }, 30000);
 });
