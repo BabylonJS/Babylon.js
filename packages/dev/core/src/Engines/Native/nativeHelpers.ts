@@ -391,6 +391,11 @@ export function getNativeAlphaMode(mode: number): number {
             return _native.Engine.ALPHA_ONEONE;
         case Constants.ALPHA_ONEONE_ONEONE:
             return _native.Engine.ALPHA_ONEONE_ONEONE ?? _getFallbackAlphaMode(mode, "ALPHA_ONEONE_ONEONE");
+        // MIN and MAX use ONE/ONE factors with a MIN/MAX blend equation (see getNativeAlphaEquationForMode).
+        case Constants.ALPHA_MIN:
+            return _native.Engine.ALPHA_ONEONE_ONEONE ?? _getFallbackAlphaMode(mode, "ALPHA_MIN");
+        case Constants.ALPHA_MAX:
+            return _native.Engine.ALPHA_ONEONE_ONEONE ?? _getFallbackAlphaMode(mode, "ALPHA_MAX");
         case Constants.ALPHA_LAYER_ACCUMULATE:
             return _native.Engine.ALPHA_LAYER_ACCUMULATE ?? _getFallbackAlphaMode(mode, "ALPHA_LAYER_ACCUMULATE");
         case Constants.ALPHA_PREMULTIPLIED:
@@ -405,6 +410,23 @@ export function getNativeAlphaMode(mode: number): number {
             return _native.Engine.ALPHA_REPLACE_COLOR ?? _getFallbackAlphaMode(mode, "ALPHA_REPLACE_COLOR", _native.Engine.ALPHA_COMBINE, "ALPHA_COMBINE");
         default:
             throw new Error(`Unsupported alpha mode: ${mode}.`);
+    }
+}
+
+/**
+ * Returns the blend equation (a Constants.ALPHA_EQUATION_* value) that an alpha mode implies. Like WebGL and
+ * WebGPU, setting an alpha mode also resets the blend equation.
+ * @param mode the alpha mode (a Constants.ALPHA_* value)
+ * @returns the blend equation for the alpha mode
+ */
+export function getNativeAlphaEquationForMode(mode: number): number {
+    switch (mode) {
+        case Constants.ALPHA_MIN:
+            return Constants.ALPHA_EQUATION_MIN;
+        case Constants.ALPHA_MAX:
+            return Constants.ALPHA_EQUATION_MAX;
+        default:
+            return Constants.ALPHA_EQUATION_ADD;
     }
 }
 

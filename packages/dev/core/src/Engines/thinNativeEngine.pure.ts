@@ -56,6 +56,7 @@ import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
 import { type IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import {
+    getNativeAlphaEquationForMode,
     getNativeAlphaMode,
     getNativeAttribType,
     getNativeSamplingMode,
@@ -1703,6 +1704,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETBLENDMODE);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(nativeMode);
         this._commandBufferEncoder.finishEncodingCommand();
+        this.setAlphaEquation(getNativeAlphaEquationForMode(mode), targetIndex);
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);

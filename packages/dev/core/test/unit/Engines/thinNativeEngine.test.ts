@@ -91,6 +91,43 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("alpha modes", () => {
+        it("uses the MIN and MAX blend equations for ALPHA_MIN and ALPHA_MAX and restores ADD afterwards", () => {
+            vi.stubGlobal("_native", {
+                Engine: { COMMAND_SETBLENDMODE: "blendMode", COMMAND_SETBLENDEQUATION: "blendEquation", ALPHA_ONEONE_ONEONE: 11, ALPHA_COMBINE: 2 },
+            });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            const commands: unknown[][] = [];
+            let currentCommand: unknown[] = [];
+            const engine = Object.assign(Object.create(ThinNativeEngine.prototype), {
+                _alphaMode: Array(8).fill(-1),
+                _alphaEquation: Array(8).fill(-1),
+                _commandBufferEncoder: {
+                    startEncodingCommand: (command: unknown) => {
+                        currentCommand = [command];
+                    },
+                    encodeCommandArgAsUInt32: (arg: unknown) => currentCommand.push(arg),
+                    finishEncodingCommand: () => commands.push(currentCommand),
+                },
+            }) as ThinNativeEngine;
+
+            engine.setAlphaMode(Constants.ALPHA_MAX, true);
+            engine.setAlphaMode(Constants.ALPHA_MIN, true);
+            engine.setAlphaMode(Constants.ALPHA_COMBINE, true);
+
+            expect(commands).toEqual([
+                ["blendMode", 11],
+                ["blendEquation", Constants.ALPHA_EQUATION_MAX],
+                ["blendMode", 11],
+                ["blendEquation", Constants.ALPHA_EQUATION_MIN],
+                ["blendMode", 2],
+                ["blendEquation", Constants.ALPHA_EQUATION_ADD],
+            ]);
+        });
+    });
+
     describe("render loop", () => {
         it("returns the custom animation frame request id", () => {
             const thinNativeEngine = Object.create(ThinNativeEngine.prototype) as TestThinNativeEngine;
