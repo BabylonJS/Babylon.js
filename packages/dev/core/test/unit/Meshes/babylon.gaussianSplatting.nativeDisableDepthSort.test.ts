@@ -281,6 +281,8 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         const mesh = new GaussianSplattingMesh("gs", null, scene);
         const width = 4;
         const height = 3;
+        const bytesPerTexel = 16; // RGBA32UI
+        const bytesPerRow = width * bytesPerTexel;
         const texture = new RawTexture(
             null,
             width,
@@ -297,15 +299,15 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         (engine as any).updateTextureData = updateTextureData;
 
         // An incremental update only owns the rows from lineStart: the rows above hold neutral placeholder SH.
-        (mesh as any)._updateShTextureData(texture, new Uint8Array(width * height * 16), width, 1, 2);
+        (mesh as any)._updateShTextureData(texture, new Uint8Array(bytesPerRow * height), width, 1, 2);
 
         expect(updateRawTexture).not.toHaveBeenCalled();
         expect(updateTextureData).toHaveBeenCalledOnce();
         const [internalTexture, data, xOffset, yOffset, updateWidth, updateHeight] = updateTextureData.mock.calls[0];
         expect(internalTexture).toBe(texture.getInternalTexture());
         expect([xOffset, yOffset, updateWidth, updateHeight]).toEqual([0, 1, width, 2]);
-        expect(data.byteOffset).toBe(width * 16);
-        expect(data.byteLength).toBe(width * 2 * 16);
+        expect(data.byteOffset).toBe(bytesPerRow);
+        expect(data.byteLength).toBe(bytesPerRow * 2);
 
         scene.dispose();
         engine.dispose();
