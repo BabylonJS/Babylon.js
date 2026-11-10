@@ -570,6 +570,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     public _vertexCount = 0;
     protected _worker: Nullable<Worker> = null;
     private _modelViewProjectionMatrix = Matrix.Identity();
+    private _nativeSortViewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     protected _canPostToWorker = true;
     private _readyToDisplay = false;
@@ -1589,7 +1590,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         // The native sort writes into _splatPositions/_splatIndex: both must be allocated (they still are
         // null before any splat data has been committed) or the native binding throws on the conversion.
-        const hasNativeSort = !!Native?.sortSplats && !!this._splatPositions && !!this._splatIndex;
+        const hasNativeSort = !!(Native?.sortSplatIndices || Native?.sortSplats) && !!this._splatPositions && !!this._splatIndex;
         // When depth sort is disabled, no sort function must run: fall through to the no-sort path below.
         const sortRequired = this._isSortRequired();
         const hasSortFunction = sortRequired && !this._disableDepthSort && (this._worker || hasNativeSort);
@@ -1633,12 +1634,14 @@ export class GaussianSplattingMeshBase extends Mesh {
                             },
                             [this._depthMix.buffer]
                         );
-                    } else if (Native?.sortSplats) {
-                        if (this._activeSplatRanges) {
+                    } else if (Native?.sortSplatIndices || Native?.sortSplats) {
+                        if (Native.sortSplatIndices) {
+                            this._sortSplatIndicesNative(camera, worldMatrix);
+                        } else if (this._activeSplatRanges) {
                             // Native sort can't filter ranges: fall back to the (already range-filtered) identity index buffer.
                             this._updateSplatIndexBuffer(this._vertexCount);
                         } else {
-                            Native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                            Native.sortSplats!(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
                         }
                         if (cameraViewInfos.splatIndexBufferSet) {
                             cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
@@ -1784,6 +1787,39 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     protected _getGpuSortPartMatrices(): Nullable<ReadonlyArray<Matrix>> {
         return null;
+    }
+
+    /**
+     * Part index of each splat, for compound meshes. Null for a regular mesh.
+     * @returns the part indices
+     */
+    protected _getSortPartIndices(): Nullable<Uint8Array> {
+        return null;
+    }
+
+    // Sorts the active splats (honoring the range filter and compound parts) with the Native sort.
+    private _sortSplatIndicesNative(camera: Camera, worldMatrix: Matrix): void {
+        const renderedPadded = Math.max((this.renderedSplatCount + 15) & ~0xf, 16);
+        if (this._splatIndex!.length !== renderedPadded) {
+            this._updateSplatIndexBuffer(this._vertexCount);
+        }
+        camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._nativeSortViewProjectionMatrix);
+        const partIndices = this._getSortPartIndices();
+        const partMatrices = partIndices ? this._getGpuSortPartMatrices() : null;
+        const compound = !!partMatrices && partMatrices.length > 0;
+        const sorted = Native!.sortSplatIndices!(
+            this._nativeSortViewProjectionMatrix,
+            compound ? partMatrices : [worldMatrix],
+            this._splatPositions!,
+            this._splatIndex!,
+            this._vertexCount,
+            this._activeSplatRanges,
+            compound ? partIndices : null
+        );
+        if (!sorted) {
+            // Part indices and matrices disagree mid-rebuild: keep the last order and sort again next frame.
+            this._forcedSortPending = true;
+        }
     }
 
     /**

@@ -828,6 +828,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         return this._partMatrices;
     }
 
+    protected override _getSortPartIndices(): Nullable<Uint8Array> {
+        // Same condition as isCompound: without part matrices the mesh sorts as a regular one.
+        return this._partMatrices.length > 0 ? this._partIndices : null;
+    }
+
     /**
      * Ensures the part-index GPU texture exists at the start of an incremental update.
      * Called before the sub-texture upload so the correct texture is available for the first batch.

@@ -573,6 +573,26 @@ export interface INative {
 
     // GaussianSplatting
     sortSplats?(modelViewMatrix: Matrix, splatPositions: Float32Array, splatIndex: Float32Array, useRightHandedSystem: boolean): void;
+    /**
+     * Writes the active splats to `splatIndex` sorted back to front, like the Gaussian Splatting sort worker.
+     * @param viewProjection camera view projection matrix
+     * @param worldMatrices the mesh world matrix, or one world matrix per part when `partIndices` is set
+     * @param splatPositions splat centers (stride 4)
+     * @param splatIndex receives the sorted active splat indices, padded with `vertexCount`
+     * @param vertexCount number of source splats
+     * @param intervals active source splat ranges as [start0, count0, ...], or null for every splat
+     * @param partIndices part index of each splat for compound meshes, or null
+     * @returns false when a part index has no world matrix, leaving `splatIndex` unchanged
+     */
+    sortSplatIndices?(
+        viewProjection: Matrix,
+        worldMatrices: ReadonlyArray<Matrix>,
+        splatPositions: Float32Array,
+        splatIndex: Float32Array,
+        vertexCount: number,
+        intervals: Nullable<Uint32Array>,
+        partIndices: Nullable<Uint8Array>
+    ): boolean;
 
     // NativeDraco plugin — synchronous native replacement for the WASM Draco decoder.
     decodeDracoMesh?(
