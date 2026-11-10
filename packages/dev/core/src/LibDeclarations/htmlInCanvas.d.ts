@@ -2,7 +2,7 @@
 /* eslint-disable no-var */
 // Type definitions for the WICG HTML-in-Canvas proposal (https://github.com/WICG/html-in-canvas).
 // These augment the standard DOM, WebGL and WebGPU types so Babylon can consume the API - whether
-// provided natively (behind chrome://flags/#canvas-draw-element) or by the three-html-render polyfill -
+// provided natively (behind chrome://flags/#canvas-draw-element) or by a polyfill -
 // without TypeScript errors. The proposal is experimental; signatures track the explainer IDL and
 // may change. Members removed from the explainer are kept (and deprecated) while implementations still ship them.
 

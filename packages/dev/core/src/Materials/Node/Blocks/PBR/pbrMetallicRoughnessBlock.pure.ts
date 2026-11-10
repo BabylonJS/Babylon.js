@@ -919,6 +919,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
+     * @internal See NodeMaterialBlock._bindsMaterialValuesOnly: not with an explicit light, whose buffers a recorded draw does not check
+     * (only the lights of its mesh)
+     */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return !this.light;
+    }
+
+    /**
      * Bind data to effect
      * @param effect - the effect to bind data to
      * @param nodeMaterial - the node material

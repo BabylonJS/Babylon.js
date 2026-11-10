@@ -3,6 +3,7 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildStateSharedData } from "../../nodeMaterialBuildStateSharedData";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 
@@ -33,6 +34,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
     private _linearDefineName: string;
     private _gammaDefineName: string;
+    private _conversionDefinesData: Nullable<NodeMaterialBuildStateSharedData> = null;
     private _tempTextureRead: string;
     private _samplerName: string;
     private _transformedUVName: string;
@@ -472,6 +474,11 @@ export class TextureBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind data to effect
      * @param effect - the effect to bind to
@@ -543,6 +550,9 @@ export class TextureBlock extends NodeMaterialBlock {
         if (!this._outputs.some((o) => o.isConnectedInVertexShader)) {
             return;
         }
+
+        // the conversions of the outputs are written whatever the gamma space, as in the fragment shader: they need the helpers here too
+        state._emitFunctionFromInclude("helperFunctions", `//${this.name}`);
 
         this._writeTextureRead(state, true);
 
@@ -619,13 +629,12 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
         if (swizzle !== "a") {
-            // no conversion if the output is "a" (alpha)
-            if (!this.texture || !this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._linearDefineName}
-                    ${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});
-                    #endif
-                `;
-            }
+            // no conversion if the output is "a" (alpha). Both conversions are written whatever the texture's gamma space when the graph is
+            // built: their defines follow the texture's image, which can change (Texture.replaceImage) without building the graph again
+            state.compilationString += `#ifdef ${this._linearDefineName}
+                ${output.associatedVariableName} = ${state._toGammaSpace(output)};
+                #endif
+            `;
 
             state.compilationString += `#ifdef ${this._gammaDefineName}
                 ${output.associatedVariableName} = ${state._toLinearSpace(output)};
@@ -671,8 +680,13 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || state.target === NodeMaterialBlockTargets.Fragment) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
-            this._linearDefineName = state._getFreeDefineName("ISLINEAR");
-            this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
+            // one pair of defines per build, for both shaders: prepareDefines sets the last names given, so new names in the fragment
+            // shader would leave the conversions of a texture the vertex shader reads under defines nothing sets
+            if (this._conversionDefinesData !== state.sharedData) {
+                this._conversionDefinesData = state.sharedData;
+                this._linearDefineName = state._getFreeDefineName("ISLINEAR");
+                this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
+            }
         }
 
         if ((!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment) || (this._isMixed && state.target === NodeMaterialBlockTargets.Vertex)) {

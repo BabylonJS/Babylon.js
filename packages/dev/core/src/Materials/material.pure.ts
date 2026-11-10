@@ -982,6 +982,173 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     private _scene: Scene;
     protected _needToBindSceneUbo: boolean;
 
+    /** @internal Changes when what the material binds may have changed (see DrawWrapper._recordedMaterialVersion) */
+    public _drawCacheVersion = 0;
+
+    private _texturesVersion = 0;
+    // by effect, weakly: a material that goes through shader variants does not keep the effects it no longer uses, nor their draws
+    private _recordedDrawReferences: Nullable<
+        WeakMap<object, { frameId: number; epoch: number; view: Nullable<object>; domain: Nullable<object>; drawWrapper: Nullable<DrawWrapper> }>
+    > = null;
+
+    /**
+     * @internal Keeps the draw a full bind of this material did with an effect in this frame: the draws of this material recorded with
+     * the same per-draw values as that draw can be encoded again without binding. Without a domain (the main passes), it is kept for
+     * the current pass and view, those of the scene uniform buffer bound (an object renderer binds its own, for each of its passes):
+     * the per-draw values a material computes from them (from the camera's, say) are the same only for the draws that bind the same
+     * one. A domain's draws share it between its passes and views: the cascades of a shadow map only differ by the scene uniform
+     * buffer each one binds, and the per-draw values are the generator's
+     * @param effect the effect of the draw
+     * @param drawWrapper the draw wrapper of the draw, or null if its per-draw values cannot be compared
+     * @param domain what else wrote its per-draw values (a shadow generator its bias), or null
+     */
+    public _keepRecordedDrawReference(effect: object, drawWrapper: Nullable<DrawWrapper>, domain: Nullable<object> = null): void {
+        const references = (this._recordedDrawReferences ??= new WeakMap());
+        const engine = this._scene.getEngine();
+        const frameId = engine.frameId;
+        const epoch = engine._recordedDrawReferencesEpoch;
+        const view = domain ? null : this._scene.getSceneUniformBuffer();
+        const entry = references.get(effect);
+        if (entry) {
+            entry.frameId = frameId;
+            entry.epoch = epoch;
+            entry.view = view;
+            entry.domain = domain;
+            entry.drawWrapper = drawWrapper;
+        } else {
+            references.set(effect, { frameId, epoch, view, domain, drawWrapper });
+        }
+    }
+
+    /**
+     * @internal Drops the draws kept by _keepRecordedDrawReference: a draw of the material that is not recorded runs code around it (the
+     * observers of its mesh, say), which can change the material after them, so the draws after it need a full draw to compare with
+     */
+    public _dropRecordedDrawReferences(): void {
+        this._recordedDrawReferences = null;
+    }
+
+    /**
+     * @internal Gets the draw kept by _keepRecordedDrawReference for an effect in this frame, in the current pass and view when it has
+     * no domain
+     * @param effect the effect of the draw
+     * @param domain what else wrote its per-draw values, or null
+     * @returns the draw wrapper, or null if no full bind of this material with this effect and domain was kept in this frame (without
+     * a domain, in the pass and view of the scene uniform buffer bound)
+     */
+    public _getRecordedDrawReference(effect: object, domain: Nullable<object> = null): Nullable<DrawWrapper> {
+        const entry = this._recordedDrawReferences?.get(effect);
+        const engine = this._scene.getEngine();
+        return entry &&
+            entry.frameId === engine.frameId &&
+            entry.epoch === engine._recordedDrawReferencesEpoch &&
+            entry.view === (domain ? null : this._scene.getSceneUniformBuffer()) &&
+            entry.domain === domain
+            ? entry.drawWrapper
+            : null;
+    }
+    private _texturesVersionFrameId = -1;
+    private _texturesVersionDrawCacheVersion = -1;
+    private _texturesVersionTextures: BaseTexture[] = [];
+    private _texturesVersionInternals: Nullable<object>[] = [];
+    private _texturesVersionSamplers: number[] = [];
+
+    // the sampler a bind of the texture sets (see WebGPUCacheSampler.GetSamplerHashCode): the wrap modes and the anisotropy it reads from
+    // the texture, and the filtering, mipmapping and comparison of its GPU texture. Changing them does not dirty the material
+    private static _GetSamplerKey(texture: BaseTexture): number {
+        const internal = texture.getInternalTexture();
+        const filtering = (internal?.samplingMode ?? 0) + 16 * (internal?.useMipMaps ? 1 : 0) + 32 * (internal?._comparisonFunction ?? 0);
+        return texture.wrapU + 4 * (texture.wrapV + 4 * (texture.wrapR + 4 * (texture.anisotropicFilteringLevel + 64 * filtering)));
+    }
+
+    /**
+     * @internal Changes when a texture of the material uses another GPU texture or sampler without dirtying the material (a streamed
+     * texture swapping its internal texture, a wrap mode set). The textures are listed once per frame and when the material is dirtied (a
+     * texture set), their internal textures and samplers compared on each call: one can change between two passes of a frame (see
+     * DrawWrapper._recordedTexturesVersion)
+     * @returns the version
+     */
+    public _getTexturesVersion(): number {
+        const frameId = this._scene.getEngine().frameId;
+        if (this._texturesVersionFrameId !== frameId || this._texturesVersionDrawCacheVersion !== this._drawCacheVersion) {
+            this._texturesVersionFrameId = frameId;
+            this._texturesVersionDrawCacheVersion = this._drawCacheVersion;
+            this._texturesVersionTextures = this.getActiveTextures();
+        }
+        const textures = this._texturesVersionTextures;
+        const internals = this._texturesVersionInternals;
+        const samplers = this._texturesVersionSamplers;
+        let changed = textures.length !== internals.length;
+        for (let i = 0; i < textures.length; i++) {
+            const internal = textures[i].getInternalTexture();
+            const sampler = Material._GetSamplerKey(textures[i]);
+            if (internals[i] !== internal || samplers[i] !== sampler) {
+                internals[i] = internal;
+                samplers[i] = sampler;
+                changed = true;
+            }
+        }
+        internals.length = samplers.length = textures.length;
+        if (changed) {
+            this._texturesVersion++;
+        }
+        return this._texturesVersion;
+    }
+
+    /**
+     * @internal Whether a full bind of the material runs code that is not the material's own: its bind observers, an active plugin
+     * that does not declare it binds only the values of its material (see MaterialPluginManager._bindsOnEachDraw), and for a node
+     * material a block or a value callback of the user. Such a draw is not encoded again, and the code can change any material
+     * @returns true if a full bind runs such code
+     */
+    public _runsCodeOnBind(): boolean {
+        return !!this._onBindObservable?.hasObservers() || !!this._onUnBindObservable?.hasObservers() || !!this.pluginManager?._bindsOnEachDraw;
+    }
+
+    /**
+     * @internal Notifies the observers that an effect was created for a sub mesh, and ends the epoch of the references of the frame:
+     * an observer runs code of the user in the middle of a frame, where the defines of a material are dirty (another material's,
+     * say), and it can change any material in place, so no reference kept before it stands for the draws after it (see
+     * _getRecordedDrawReference). Without observers it does nothing. Each notification has its own object: an observer can compile
+     * another material, whose own notification would otherwise overwrite what the next observer of this one reads
+     * @param effect the effect created
+     * @param subMesh the sub mesh it was created for
+     */
+    public _notifyEffectCreated(effect: Effect, subMesh: Nullable<SubMesh>): void {
+        if (this._onEffectCreatedObservable?.hasObservers()) {
+            this._onEffectCreatedObservable.notifyObservers({ effect, subMesh });
+            this.getScene().getEngine()._recordedDrawReferencesEpoch++;
+        }
+    }
+
+    /**
+     * @internal Whether a draw a snapshot recorded with this material can be encoded again without binding it: only WGSL (its values
+     * are in the effect's leftover uniform buffer, which the engine checks), and not when binding or unbinding it runs code that can
+     * change on each draw (bind and unbind observers, plugins binding on each draw) or sets states outside of the pipeline (stencil,
+     * two passes)
+     */
+    public _canReplayRecordedDraw(): boolean {
+        return (
+            this._shaderLanguage === ShaderLanguage.WGSL &&
+            this._storeEffectOnSubMeshes &&
+            !this._runsCodeOnBind() &&
+            !this.stencil.enabled &&
+            // a full draw leaves the depth writes on for the draws after it
+            !this.forceDepthWrite &&
+            // the depth prepass draws it through the same draw wrapper with another effect (DEPTHPREPASS), which resets its draw context
+            !this.needDepthPrePass &&
+            !(this.separateCullingPass && !this.backFaceCulling)
+        );
+    }
+
+    /**
+     * @internal The plain fields the material applies to the pipeline state when it binds, packed in a number: changing them does not
+     * mark the material dirty, so a recorded draw compares them (with zOffset and zOffsetUnits) before it is encoded again
+     */
+    public _getPipelineStateKey(): number {
+        return (this.disableDepthWrite ? 1 : 0) | (this.disableColorWrite ? 2 : 0) | (this.forceDepthWrite ? 4 : 0) | (this.depthFunction << 3);
+    }
+
     /**
      * Stores the fill mode state
      */
@@ -1428,17 +1595,29 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
 
         engine.enableEffect(effectiveDrawWrapper);
-        engine.setState(
-            this.backFaceCulling,
-            this.zOffset,
-            false,
-            reverse,
-            this._scene._mirroredCameraPosition ? !this.cullBackFaces : this.cullBackFaces,
-            this.stencil,
-            this.zOffsetUnits
-        );
+        this._setStates(reverse);
 
         return reverse;
+    }
+
+    /**
+     * @internal Sets the states a draw of the material sets in the engine before it binds (see _preBind): the culling, the depth offset
+     * and the stencil. A draw a snapshot encodes again without binding sets them too, as its full draw did: its render pass reads the
+     * stencil reference at the draw, and the draws after it inherit them
+     * @param reverse whether the culling is reversed
+     */
+    public _setStates(reverse: boolean): void {
+        this._scene
+            .getEngine()
+            .setState(
+                this.backFaceCulling,
+                this.zOffset,
+                false,
+                reverse,
+                this._scene._mirroredCameraPosition ? !this.cullBackFaces : this.cullBackFaces,
+                this.stencil,
+                this.zOffsetUnits
+            );
     }
 
     /**
@@ -1879,6 +2058,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param func defines a function which checks material defines against the submeshes
      */
     protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
+        // what the material binds may have changed: the draws a snapshot recorded with it are bound again
+        this._drawCacheVersion++;
         const scene = this.getScene();
         if (scene.blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;

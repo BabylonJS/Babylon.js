@@ -230,6 +230,11 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap, true);
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind data to effect
      * @param effect - defines the effect to bind data to
