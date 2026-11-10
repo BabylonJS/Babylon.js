@@ -119,6 +119,11 @@ export class MeshoptCompression implements IDisposable {
             return _native.decodeMeshopt!(source, count, stride, mode, filter);
         }
         await this._decoderModulePromise!;
+        // Without Worker support (e.g. Babylon Native without its native decoder), keep the
+        // decoder on the main thread; MeshoptDecoder decodes synchronously when it has no workers.
+        if (typeof Worker === "undefined") {
+            return await MeshoptDecoder.decodeGltfBufferAsync(count, stride, source, mode, filter);
+        }
         if (NumberOfWorkers === 0) {
             MeshoptDecoder.useWorkers(1);
             NumberOfWorkers = 1;
