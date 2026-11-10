@@ -61,6 +61,12 @@ var textureSampler: texture_2d<f32>;
 		var depth: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV, 0.0).r;
 		var depthSign: f32 = sign(depth);
 		depth = depth * depthSign;
+		// Nothing was rendered here (e.g. sky). The cleared normal is zero and normalize(vec3f(0.0))
+		// is undefined (NaN on some GPUs), so output no occlusion instead.
+		if (depth == 0.0) {
+			fragmentOutputs.color = vec4f(1.0);
+			return fragmentOutputs;
+		}
 		var normal: vec3f = normalize(textureSampleLevel(normalSampler, normalSamplerSampler, input.vUV, 0.0).rgb);
 #ifdef NORMAL_WORLDSPACE
 		normal = normalize(uniforms.normalWorldToView * normal);
