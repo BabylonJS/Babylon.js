@@ -395,4 +395,22 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         scene.dispose();
         engine.dispose();
     }, 30000);
+
+    it("keeps streaming reservations working on a NullEngine created in a Native runtime", async () => {
+        const { GaussianSplattingCompoundMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh");
+        const { engine, scene } = await createScene();
+
+        const compound = new GaussianSplattingCompoundMesh("compound", null, scene);
+        compound.disableDepthSort = true;
+        const handle = compound.reserveStreamingPart(30);
+
+        // NullEngine has no MRT support, so the render-target atlas must not be created even though `_native` exists.
+        expect((compound as any)._mrtAtlas).toBeFalsy();
+        expect(handle.base).toBe(0);
+        expect(compound.partCount).toBe(1);
+        expect((compound as any)._vertexCount).toBe(handle.capacity);
+
+        scene.dispose();
+        engine.dispose();
+    });
 });
