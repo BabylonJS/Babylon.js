@@ -129,6 +129,28 @@ describe("ThinNativeEngine", () => {
                 [101, Constants.ALPHA_EQUATION_ADD],
             ]);
         });
+
+        it.each([
+            ["ALPHA_MIN", Constants.ALPHA_MIN],
+            ["ALPHA_MAX", Constants.ALPHA_MAX],
+        ])("rejects %s without encoding anything when the runtime lacks blend equations", (_name, mode) => {
+            const engine = Object.create(ThinNativeEngine.prototype) as {
+                _alphaMode: number[];
+                _commandBufferEncoder: object;
+                setAlphaMode: (mode: number) => void;
+            };
+            const startEncodingCommand = vi.fn();
+            vi.stubGlobal("_native", { Engine: { COMMAND_SETBLENDMODE: 100, ALPHA_ONEONE_ONEONE: 7 } });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._alphaMode = [];
+            engine._commandBufferEncoder = { startEncodingCommand };
+
+            expect(() => engine.setAlphaMode(mode)).toThrow(`Unsupported alpha mode: ${mode}`);
+            expect(startEncodingCommand).not.toHaveBeenCalled();
+            expect(engine._alphaMode[0]).toBeUndefined();
+        });
     });
 
     describe("render loop", () => {

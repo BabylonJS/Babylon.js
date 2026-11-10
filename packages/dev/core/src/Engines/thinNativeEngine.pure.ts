@@ -1698,6 +1698,11 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
 
+        if ((mode === Constants.ALPHA_MIN || mode === Constants.ALPHA_MAX) && !_native.Engine.COMMAND_SETBLENDEQUATION) {
+            // Without blend-equation support these modes would silently blend additively.
+            throw new Error(`Unsupported alpha mode: ${mode}. This Babylon Native runtime does not support blend equations.`);
+        }
+
         const nativeMode = getNativeAlphaMode(mode);
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETBLENDMODE);
