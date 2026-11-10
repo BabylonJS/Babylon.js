@@ -1575,11 +1575,22 @@ describe("ThinNativeEngine", () => {
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
         });
 
-        it.each([false, true])("shares an auto-generated depth buffer (stencil: %s) by promoting it to a depth texture", (generateStencilBuffer) => {
-            const { engine, bound } = createEngine();
-            const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateStencilBuffer }) as NativeRenderTargetWrapper;
+        it.each([
+            [false, false],
+            [false, true],
+            [true, false],
+            [true, true],
+        ])("shares an auto-generated depth buffer (multi: %s, stencil: %s) by promoting it to a depth texture", (multi, generateStencilBuffer) => {
+            const { engine, bound, released } = createEngine();
+            const source = (
+                multi
+                    ? engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2, generateStencilBuffer })
+                    : engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateStencilBuffer })
+            ) as NativeRenderTargetWrapper;
             const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
             expect(source._depthStencilTexture).toBeFalsy();
+            const generatedDepthFramebuffer = source._framebuffer;
+            expect(generatedDepthFramebuffer).toBeTruthy();
 
             source.shareDepth(destination);
 
@@ -1587,10 +1598,17 @@ describe("ThinNativeEngine", () => {
             expect(sharedDepth).toBeTruthy();
             expect(sharedDepth.format).toBe(generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT);
             expect(destination._depthStencilTexture).toBe(sharedDepth);
+            // The framebuffer built around the generated depth is superseded and released right away, exactly once.
+            expect(released.filter((framebuffer) => (framebuffer as unknown) === generatedDepthFramebuffer)).toHaveLength(1);
+            expect(source._framebuffer).not.toBe(generatedDepthFramebuffer);
             engine.bindFramebuffer(source);
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+            expect(bound().colors).toEqual(source.textures!.map((texture) => resourceOf(texture)));
             engine.bindFramebuffer(destination);
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+
+            source.dispose();
+            expect(released.filter((framebuffer) => (framebuffer as unknown) === generatedDepthFramebuffer)).toHaveLength(1);
         });
 
         it("rejects sharing an auto-generated depth buffer with a mismatched sample count before promoting it", () => {

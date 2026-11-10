@@ -375,6 +375,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
                 this.samples,
                 this._generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT
             );
+            this._retireGeneratedDepthFramebuffer();
         }
 
         if (this._depthStencilTexture && dest?._engine === this._engine) {
@@ -389,6 +390,21 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         }
 
         this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(dest);
+    }
+
+    // After an auto-generated depth buffer was promoted to a depth texture, the framebuffer built around the
+    // generated depth is no longer bound; release it now instead of keeping it alive until dispose.
+    private _retireGeneratedDepthFramebuffer(): void {
+        if (this.isMulti) {
+            // Rebuild the multi framebuffer around the depth texture; this drops the temporary depth/stencil
+            // framebuffer and the setter releases the superseded one.
+            if (this.__framebuffer || this._usesLayeredFramebuffer) {
+                this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(this);
+            }
+        } else if (!this.__framebuffers && !this.is3D && this._framebufferDepthStencil) {
+            // bindFramebuffer prefers _framebufferDepthStencil (color + depth texture); the setter releases this one.
+            this._framebuffer = null;
+        }
     }
 
     public override dispose(disposeOnlyFramebuffers = false): void {

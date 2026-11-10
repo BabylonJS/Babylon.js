@@ -11,6 +11,9 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.p
 import { Logger } from "../Misc/logger";
 import { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
 import { RegisterDepthPeelingSceneComponent } from "./depthPeelingSceneComponent.pure";
+import { type Nullable } from "../types";
+import { type Observer } from "../Misc/observable";
+import { type PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -41,6 +44,8 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
 
     private _blendBackTexture: InternalTexture;
 
+    private _prePassTexturesRecreatedObserver: Nullable<Observer<PrePassRenderTarget>> = null;
+
     /**
      * Instanciates the depth peeling renderer
      * @param scene Scene to attach to
@@ -61,6 +66,15 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
         this._prePassEffectConfiguration = new DepthPeelingEffectConfiguration();
         this._createTextures();
         this._createEffects("oitFinal", ["uFrontColor", "uBackColor"]);
+
+        // Share the depth as soon as the prepass recreates its textures, before they are cleared and the opaque
+        // meshes are rendered into them. Sharing later (when the transparent meshes are rendered) is too late for
+        // engines that cannot share an auto-generated depth buffer in place and have to reallocate it (Native).
+        this._prePassTexturesRecreatedObserver = scene.prePassRenderer!.defaultRT._onInternalTexturesRecreatedObservable.add(() => {
+            if (this._scene.useOrderIndependentTransparency) {
+                this._updateTextures();
+            }
+        });
     }
 
     protected override _createTextures() {
@@ -181,5 +195,15 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
         this._engine.unBindFramebuffer(this._colorMrts[1].renderTarget!);
 
         this._finalCompose(1);
+    }
+
+    /**
+     * Disposes the depth peeling renderer and associated resources
+     */
+    public override dispose() {
+        this._prePassTexturesRecreatedObserver?.remove();
+        this._prePassTexturesRecreatedObserver = null;
+
+        super.dispose();
     }
 }

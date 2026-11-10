@@ -5,6 +5,7 @@ import { type Scene } from "../../scene";
 import { type PostProcess } from "../../PostProcesses/postProcess";
 import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingPostProcess";
 import { type Nullable } from "../../types";
+import { Observable } from "../../Misc/observable.pure";
 
 /**
  * A multi render target designed to render the prepass.
@@ -44,6 +45,13 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * @internal
      */
     public _internalTextureDirty = false;
+
+    /**
+     * Raised right after the internal textures were recreated (resize or attachment count change), before the
+     * target is cleared or rendered into, so dependents can re-bind resources (e.g. shared depth) in time.
+     * @internal
+     */
+    public readonly _onInternalTexturesRecreatedObservable = new Observable<PrePassRenderTarget>();
 
     /**
      * Is this render target enabled for prepass rendering
@@ -86,6 +94,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
             this.resize({ width: requiredWidth, height: requiredHeight });
 
             this._internalTextureDirty = true;
+            this._onInternalTexturesRecreatedObservable.notifyObservers(this);
         }
     }
 
@@ -99,6 +108,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public override updateCount(count: number, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         super.updateCount(count, options, textureNames);
         this._internalTextureDirty = true;
+        this._onInternalTexturesRecreatedObservable.notifyObservers(this);
     }
 
     /**
@@ -116,6 +126,9 @@ export class PrePassRenderTarget extends MultiRenderTarget {
         const scene = this._scene;
 
         super.dispose();
+
+        // Optional: MultiRenderTarget's constructor disposes unsupported targets before field initializers run.
+        this._onInternalTexturesRecreatedObservable?.clear();
 
         if (scene && scene.prePassRenderer) {
             const index = scene.prePassRenderer.renderTargets.indexOf(this);
