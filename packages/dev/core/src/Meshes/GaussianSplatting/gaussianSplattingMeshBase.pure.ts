@@ -1797,6 +1797,13 @@ export class GaussianSplattingMeshBase extends Mesh {
         return null;
     }
 
+    private _nativeSortWorldMatrices: Matrix[] = [];
+
+    private _getNativeSortWorldMatrices(worldMatrix: Matrix): Matrix[] {
+        this._nativeSortWorldMatrices[0] = worldMatrix;
+        return this._nativeSortWorldMatrices;
+    }
+
     // Sorts the active splats (honoring the range filter and compound parts) with the Native sort.
     private _sortSplatIndicesNative(camera: Camera, worldMatrix: Matrix): void {
         const renderedPadded = Math.max((this.renderedSplatCount + 15) & ~0xf, 16);
@@ -1809,7 +1816,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         const compound = !!partMatrices && partMatrices.length > 0;
         const sorted = Native!.sortSplatIndices!(
             this._nativeSortViewProjectionMatrix,
-            compound ? partMatrices : [worldMatrix],
+            compound ? partMatrices : this._getNativeSortWorldMatrices(worldMatrix),
             this._splatPositions!,
             this._splatIndex!,
             this._vertexCount,
