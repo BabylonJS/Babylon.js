@@ -4320,12 +4320,12 @@ export class GaussianSplattingMeshBase extends Mesh {
     };
 
     /**
-     * Whether the engine can back the data atlas with render targets (WebGL2, WebGPU, and Native; not NullEngine).
+     * Whether the engine can back the data atlas with render targets (WebGL, WebGPU, and Native with MRT support; not NullEngine).
      * @returns true when render-target atlases can be created
      */
     protected _supportsRenderTargetAtlas(): boolean {
         const engine = this._getTextureDataUpdateEngine();
-        return IsNative || !!engine._gl || !!engine.isWebGPU;
+        return !!engine._gl || !!engine.isWebGPU || (IsNative && this.getEngine().getCaps().drawBuffersExtension);
     }
 
     protected _getTextureDataUpdateEngine(): ITextureDataUpdateCapableEngine {
