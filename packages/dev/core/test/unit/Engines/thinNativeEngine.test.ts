@@ -91,6 +91,68 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("alpha mode", () => {
+        it.each([
+            ["ALPHA_MIN", Constants.ALPHA_MIN, Constants.ALPHA_EQUATION_MIN],
+            ["ALPHA_MAX", Constants.ALPHA_MAX, Constants.ALPHA_EQUATION_MAX],
+        ])("encodes %s as ONEONE_ONEONE with its blend equation and restores ADD afterwards", (_name, mode, equation) => {
+            const engine = Object.create(ThinNativeEngine.prototype) as {
+                _alphaMode: number[];
+                _alphaEquation: number[];
+                _commandBufferEncoder: object;
+                setAlphaMode: (mode: number) => void;
+                setDepthWrite: (enable: boolean) => void;
+            };
+            const commands: number[][] = [];
+            vi.stubGlobal("_native", {
+                Engine: { COMMAND_SETBLENDMODE: 100, COMMAND_SETBLENDEQUATION: 101, ALPHA_ONEONE_ONEONE: 7, ALPHA_COMBINE: 2 },
+            });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._alphaMode = [];
+            engine._alphaEquation = [];
+            engine._commandBufferEncoder = {
+                startEncodingCommand: (command: number) => commands.push([command]),
+                encodeCommandArgAsUInt32: (value: number) => commands[commands.length - 1].push(value),
+                finishEncodingCommand: () => {},
+            };
+            vi.spyOn(engine, "setDepthWrite").mockImplementation(() => {});
+
+            engine.setAlphaMode(mode);
+            engine.setAlphaMode(Constants.ALPHA_COMBINE);
+
+            expect(commands).toEqual([
+                [100, 7],
+                [101, equation],
+                [100, 2],
+                [101, Constants.ALPHA_EQUATION_ADD],
+            ]);
+        });
+
+        it.each([
+            ["ALPHA_MIN", Constants.ALPHA_MIN],
+            ["ALPHA_MAX", Constants.ALPHA_MAX],
+        ])("rejects %s without encoding anything when the runtime lacks blend equations", (_name, mode) => {
+            const engine = Object.create(ThinNativeEngine.prototype) as {
+                _alphaMode: number[];
+                _commandBufferEncoder: object;
+                setAlphaMode: (mode: number) => void;
+            };
+            const startEncodingCommand = vi.fn();
+            vi.stubGlobal("_native", { Engine: { COMMAND_SETBLENDMODE: 100, ALPHA_ONEONE_ONEONE: 7 } });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._alphaMode = [];
+            engine._commandBufferEncoder = { startEncodingCommand };
+
+            expect(() => engine.setAlphaMode(mode)).toThrow(`Unsupported alpha mode: ${mode}`);
+            expect(startEncodingCommand).not.toHaveBeenCalled();
+            expect(engine._alphaMode[0]).toBeUndefined();
+        });
+    });
+
     describe("render loop", () => {
         it("returns the custom animation frame request id", () => {
             const thinNativeEngine = Object.create(ThinNativeEngine.prototype) as TestThinNativeEngine;
