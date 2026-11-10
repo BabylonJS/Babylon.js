@@ -3,6 +3,7 @@ import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Constants } from "../constants";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
+import { Logger } from "../../Misc/logger";
 import { type NativeFramebuffer } from "./nativeInterfaces";
 import { type ThinNativeEngine } from "../thinNativeEngine";
 
@@ -34,6 +35,13 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     // (a shared texture swapped into an attachment) are honored. The 3D voxelization MRT uses the is3D route.
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _isMixedTypeMRT: boolean = false;
+
+    // Set when this target is bound for rendering. Promoting an auto-generated depth buffer to a shareable depth
+    // texture cannot carry over what was already rendered into it (see shareDepth).
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public _hasBeenBound: boolean = false;
+
+    private static _WarnedAboutRenderedDepthPromotion = false;
 
     public get _framebuffer(): Nullable<NativeFramebuffer> {
         return this.__framebuffer;
@@ -357,6 +365,9 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
      * Shares this wrapper's depth texture with another render target and rebuilds the destination
      * framebuffer when needed so Native actually samples the shared depth (bgfx attaches depth at
      * framebuffer creation time; a pointer-only shareDepth would leave the auto-depth from creation).
+     * On Native an auto-generated depth buffer is promoted to a depth texture the first time it is shared. Its
+     * existing contents cannot be carried over, so share before rendering into the source (as depth peeling does);
+     * sharing an already-rendered source logs a warning.
      * @param renderTarget The render target that receives the shared depth texture
      */
     public override shareDepth(renderTarget: RenderTargetWrapper): void {
@@ -364,10 +375,17 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         if (!this._depthStencilTexture && (this._generateDepthBuffer || this._generateStencilBuffer) && dest && dest !== this && dest._engine === this._engine) {
             // Validate before promoting so a rejected share leaves the source's depth untouched.
             this._engine._assertDepthAttachmentCompatible(dest, this.samples);
+            if (this._hasBeenBound && !NativeRenderTargetWrapper._WarnedAboutRenderedDepthPromotion) {
+                NativeRenderTargetWrapper._WarnedAboutRenderedDepthPromotion = true;
+                Logger.Warn(
+                    "shareDepth: on Native, the auto-generated depth/stencil of a render target that was already rendered is replaced by a new, uninitialized depth texture. Share the depth before rendering into the source."
+                );
+            }
             // Promotion releases the source's current framebuffer, so unbind it first if it is bound and
-            // rebind the source (now built around the depth texture) afterwards.
+            // rebind the source (now built around the depth texture) afterwards with the same layer/face/viewport selection.
             const engine = this._engine;
             const wasBound = engine._currentRenderTarget === this;
+            const bindArguments = engine._currentFramebufferBindArguments;
             if (wasBound) {
                 engine._bindUnboundFramebuffer(null);
             }
@@ -385,7 +403,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             this._retireGeneratedDepthFramebuffer();
             if (wasBound) {
                 engine._currentRenderTarget = null;
-                engine.bindFramebuffer(this);
+                engine.bindFramebuffer(this, ...bindArguments);
             }
         }
 

@@ -278,6 +278,15 @@ export class ThinNativeEngine extends ThinEngine {
     private _int2Scratch: Int32Array;
     private _int3Scratch: Int32Array;
     private _int4Scratch: Int32Array;
+    /** @internal Arguments (after the target) of the last bindFramebuffer call, to rebind the same layer/face/viewport selection. */
+    public _currentFramebufferBindArguments: [
+        faceIndex?: number,
+        requiredWidth?: number,
+        requiredHeight?: number,
+        forceFullscreenViewport?: boolean,
+        lodLevel?: number,
+        layer?: number,
+    ] = [];
     // Reference counts + metadata for framebuffers shared across frame graph render-target wrappers
     // (see _buildFrameGraphFramebuffer). Initialized in _initializeNativeEngine to match the other fields.
     private _frameGraphFramebufferRefCount: Map<
@@ -4417,6 +4426,8 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         this._currentRenderTarget = texture;
+        this._currentFramebufferBindArguments = [faceIndex, requiredWidth, requiredHeight, forceFullscreenViewport, lodLevel, layer];
+        nativeRTWrapper._hasBeenBound = true;
 
         // Multi render target whose color attachments each target a specific layer/face of a texture: the IBL
         // voxelization MRTs (several Z-slices of one shared 3D texture, routed via is3D) and mixed-type MRTs

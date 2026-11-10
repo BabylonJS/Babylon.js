@@ -1,5 +1,5 @@
 import { ThinNativeEngine } from "core/Engines/thinNativeEngine";
-import { type NativeRenderTargetWrapper } from "core/Engines/Native/nativeRenderTargetWrapper";
+import { NativeRenderTargetWrapper } from "core/Engines/Native/nativeRenderTargetWrapper";
 import { NullEngine } from "core/Engines/nullEngine";
 import { RegisterNativeEngineCubeTexture } from "core/Engines/Native/Extensions/nativeEngine.cubeTexture.pure";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
@@ -1640,6 +1640,43 @@ describe("ThinNativeEngine", () => {
             expect(engine._currentRenderTarget).toBe(source);
             expect(bound()).not.toBe(generatedDepthFramebuffer);
             expect(bound().explicitDepth).toBe(resourceOf(source._depthStencilTexture!));
+        });
+
+        it("rebinds a bound 2D-array source with its original layer and viewport selection after promoting its depth", () => {
+            const { engine, bound } = createEngine();
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 }, {}) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            engine.bindFramebuffer(source, undefined, undefined, undefined, true, undefined, 2);
+            expect(bound().layers).toEqual([2]);
+            const bindFramebuffer = vi.spyOn(engine, "bindFramebuffer");
+
+            source.shareDepth(destination);
+
+            expect(engine._currentRenderTarget).toBe(source);
+            expect(bindFramebuffer).toHaveBeenCalledWith(source, undefined, undefined, undefined, true, undefined, 2);
+            expect(bound().layers).toEqual([2]);
+            expect(bound().explicitDepth).toBe(resourceOf(source._depthStencilTexture!));
+        });
+
+        it("warns when promoting the generated depth of a source that was already rendered", () => {
+            const { engine } = createEngine();
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            (NativeRenderTargetWrapper as any)._WarnedAboutRenderedDepthPromotion = false;
+            try {
+                const unrendered = engine.createRenderTargetTexture({ width: 64, height: 64 }, {}) as NativeRenderTargetWrapper;
+                unrendered.shareDepth(engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }));
+                expect(warn).not.toHaveBeenCalled();
+
+                const rendered = engine.createRenderTargetTexture({ width: 64, height: 64 }, {}) as NativeRenderTargetWrapper;
+                engine.bindFramebuffer(rendered);
+                engine.unBindFramebuffer(rendered);
+                rendered.shareDepth(engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }));
+                expect(warn).toHaveBeenCalledOnce();
+                expect(warn.mock.lastCall![0]).toContain("Share the depth before rendering into the source");
+            } finally {
+                warn.mockRestore();
+                (NativeRenderTargetWrapper as any)._WarnedAboutRenderedDepthPromotion = false;
+            }
         });
 
         it("rejects sharing an auto-generated depth buffer with a mismatched sample count before promoting it", () => {
