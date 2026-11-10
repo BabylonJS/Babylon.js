@@ -3428,9 +3428,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._useRGBACovariants = true;
         const engine = this.getEngine();
         // No real GPU (NullEngine): skip MRT allocation. The reservation's part/index/range logic still runs;
-        // texture population requires a real (WebGL2/WebGPU) backend.
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        // texture population requires a real (WebGL2/WebGPU/Native) backend.
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const covType = engine.getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
@@ -3479,8 +3478,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param textureSize atlas dimensions (width, height)
      */
     protected _createShMrtAtlas(textureSize: Vector2): void {
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const count = this._shMrtAtlasTextureCount;
@@ -3532,8 +3530,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param textureSize atlas dimensions (width, height)
      */
     protected _createRotMrtAtlas(textureSize: Vector2): void {
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const rotType = this.getEngine().getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
@@ -4321,6 +4318,15 @@ export class GaussianSplattingMeshBase extends Mesh {
         const engine = this._getTextureDataUpdateEngine();
         engine.updateTextureData(texture.getInternalTexture()!, data, xOffset, yOffset, width, height, 0, 0, false);
     };
+
+    /**
+     * Whether the engine can back the data atlas with render targets (WebGL2, WebGPU, and Native; not NullEngine).
+     * @returns true when render-target atlases can be created
+     */
+    protected _supportsRenderTargetAtlas(): boolean {
+        const engine = this._getTextureDataUpdateEngine();
+        return IsNative || !!engine._gl || !!engine.isWebGPU;
+    }
 
     protected _getTextureDataUpdateEngine(): ITextureDataUpdateCapableEngine {
         return this.getEngine() as unknown as ITextureDataUpdateCapableEngine;
