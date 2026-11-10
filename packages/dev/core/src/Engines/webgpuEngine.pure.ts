@@ -4479,7 +4479,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /** @internal */
-    public override _canEncodeRecordedDraw(drawWrapper: DrawWrapper): boolean {
+    public override _canEncodeRecordedDraw(drawWrapper: DrawWrapper, waitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null): boolean {
         const drawContext = drawWrapper.drawContext as Nullable<WebGPUDrawContext>;
         const materialContext = drawWrapper.materialContext as Nullable<WebGPUMaterialContext>;
         const draw = drawContext?._recordedDraw;
@@ -4503,16 +4503,30 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         ) {
             return false;
         }
+        // a mesh that waits for a render pipeline in one of its passes is left out of all of them (see _draw): its full draw does it
+        if (
+            waitOwner &&
+            this.asynchronousPipelineCreation &&
+            this._drawsMayWait &&
+            this._lastPipelineWaitFrameId >= this.frameId - 1 &&
+            waitOwner._pipelinePendingFrameId >= this.frameId - 1
+        ) {
+            return false;
+        }
         return true;
     }
 
     /** @internal */
-    public override _replayRecordedDraw(drawWrapper: DrawWrapper): boolean {
-        if (!this._canEncodeRecordedDraw(drawWrapper)) {
+    public override _replayRecordedDraw(drawWrapper: DrawWrapper, waitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null): boolean {
+        if (!this._canEncodeRecordedDraw(drawWrapper, waitOwner)) {
             return false;
         }
         const drawContext = drawWrapper.drawContext as WebGPUDrawContext;
         const draw = drawContext._recordedDraw!;
+        // drawn while recording, as a full draw marks it: a later pass whose pipeline the mesh waits for records the next frame (see _omitDraw)
+        if (waitOwner && this.asynchronousPipelineCreation && this._drawsMayWait) {
+            waitOwner._pipelineDrawnFrameId = this.frameId;
+        }
         // the bind groups reference the slot of the draw context: used this frame, it is neither overwritten nor taken by another one
         (drawWrapper.effect?._pipelineContext as Nullable<WebGPUPipelineContext>)?.uniformBuffer?._markOwnerSlotUsed(drawContext);
 

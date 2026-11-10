@@ -175,4 +175,38 @@ describe("The owner of the draws of a mesh", () => {
         expect(() => scene.render()).toThrow("draw");
         expect(engine._pipelineWaitOwner).toBeNull();
     });
+
+    it("gives a draw encoded again from its recorded commands the owner of its full draw, in its main pass and in its shadow map", async () => {
+        const light = new DirectionalLight("light", new Vector3(0, -1, 0.3), scene);
+        light.position = new Vector3(0, 10, -3);
+        const shadowGenerator = new ShadowGenerator(64, light);
+        const box = MeshBuilder.CreateBox("box", {}, scene);
+        box.material = new StandardMaterial("box", scene);
+        shadowGenerator.addShadowCaster(box);
+        await scene.whenReadyAsync();
+        scene.render();
+        try {
+            // a snapshot records again and nothing of the box changed: both passes encode its draw from the commands it was recorded with
+            vi.spyOn(engine, "_recordsDraws", "get").mockReturnValue(true);
+            vi.spyOn(box as any, "_canRecordDraw").mockReturnValue(true);
+            vi.spyOn(box as any, "_getUnchangedRecordedDraw").mockImplementation((subMesh: any) => subMesh._drawWrapper);
+            vi.spyOn(box, "_isRecordedDrawUnchanged").mockReturnValue(true);
+            const calls: Array<{ pass: number; owner: unknown }> = [];
+            const watch = (_wrapper: unknown, owner: unknown) => {
+                calls.push({ pass: engine.currentRenderPassId, owner });
+                return true;
+            };
+            vi.spyOn(engine, "_canEncodeRecordedDraw").mockImplementation(watch);
+            vi.spyOn(engine, "_replayRecordedDraw").mockImplementation(watch);
+
+            scene.render();
+
+            const passes = new Set(calls.map((call) => call.pass));
+            expect(passes.has(scene.activeCamera!.renderPassId)).toBe(true);
+            expect(passes.has(shadowGenerator.getShadowMap()!.renderPassId)).toBe(true);
+            expect(calls.map((call) => call.owner)).toEqual(calls.map(() => box._internalAbstractMeshDataInfo));
+        } finally {
+            vi.restoreAllMocks();
+        }
+    });
 });

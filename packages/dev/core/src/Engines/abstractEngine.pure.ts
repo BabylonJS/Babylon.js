@@ -2628,9 +2628,10 @@ export abstract class AbstractEngine {
 
     /**
      * @internal While a snapshot records, encodes again the draw last recorded for this draw wrapper, if it is still valid,
-     * instead of binding its mesh and material. Returns false when the draw must be rendered normally.
+     * instead of binding its mesh and material. Returns false when the draw must be rendered normally. waitOwner is the owner its full
+     * draw would have (see _pipelineWaitOwner): the draws of a mesh wait together for their render pipelines, recorded ones too
      */
-    public _replayRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+    public _replayRecordedDraw(_drawWrapper: DrawWrapper, _waitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null): boolean {
         return false;
     }
 
@@ -2646,7 +2647,7 @@ export abstract class AbstractEngine {
      * @internal Whether _replayRecordedDraw would encode again the draw last recorded for this draw wrapper now: a mesh runs the scene's
      * steps around its draw only once it knows the draw will not be rendered normally instead
      */
-    public _canEncodeRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+    public _canEncodeRecordedDraw(_drawWrapper: DrawWrapper, _waitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null): boolean {
         return false;
     }
 

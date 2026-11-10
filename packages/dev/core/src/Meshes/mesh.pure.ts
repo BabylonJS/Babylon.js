@@ -3134,8 +3134,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
         if (recordsDraw) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh);
+            // the owner its full draw would have (see _processRendering): a recorded draw waits with the other passes of its mesh too
+            const meshDataInfo = subMesh.getMesh()._internalAbstractMeshDataInfo;
+            const pipelineWaitOwner = meshDataInfo._pipelineWaitOwner ?? meshDataInfo;
             // as _processRendering: a mesh still rendered for its instances or its batch but not drawn itself draws nothing
-            if (recordedDrawWrapper && batch.renderSelf[subMesh._id] && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
+            if (recordedDrawWrapper && batch.renderSelf[subMesh._id] && engine._canEncodeRecordedDraw(recordedDrawWrapper, pipelineWaitOwner)) {
                 if (enableAlphaMode) {
                     this._setAlphaModes(engine, subMesh.getMaterial()!);
                 }
@@ -3146,7 +3149,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 // the states its material sets before it binds, as in its full draw: the stencil an earlier draw set would stay in the
                 // engine, whose reference the render pass reads at the draw
                 subMesh.getMaterial()!._setStates(recordedDrawWrapper._recordedReverse);
-                engine._replayRecordedDraw(recordedDrawWrapper);
+                engine._replayRecordedDraw(recordedDrawWrapper, pipelineWaitOwner);
                 this._uniformBuffer._markBufferUsed();
                 for (const step of scene._afterRenderingMeshStage) {
                     step.action(this, subMesh, batch, recordedEffect);
