@@ -503,7 +503,8 @@ void main(void) {
         shadowAccum += (1.0 - opacity * (1.0 - pow(rcos, 8.0)));
         sampleWeight += 1.0;
         // spec shadow
-        vec3 VR = -(viewMtx * vec4(reflect(-L.xyz, N), 0.0)).xyz;
+        // abs() matches the WGSL shader; pow() of a negative base is undefined and returns NaN on some GPUs.
+        vec3 VR = abs((viewMtx * vec4(reflect(-L.xyz, N), 0.0)).xyz);
         specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
       #endif
     }
