@@ -312,4 +312,45 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         scene.dispose();
         engine.dispose();
     });
+
+    it("uploads the requested rows of an unaligned spherical harmonics view", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const width = 4;
+        const height = 3;
+        const bytesPerTexel = 16; // RGBA32UI
+        const bytesPerRow = width * bytesPerTexel;
+        const texture = new RawTexture(
+            null,
+            width,
+            height,
+            Constants.TEXTUREFORMAT_RGBA_INTEGER,
+            scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+        );
+        vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const updateTextureData = vi.fn();
+        (engine as any).updateTextureData = updateTextureData;
+
+        const shData = new Uint8Array(new ArrayBuffer(bytesPerRow * height + 1), 1, bytesPerRow * height);
+        shData.forEach((_, index) => (shData[index] = index & 0xff));
+
+        (mesh as any)._updateShTextureData(texture, shData, width, 1, 2);
+
+        expect(updateTextureData).toHaveBeenCalledOnce();
+        const [, data, xOffset, yOffset, updateWidth, updateHeight] = updateTextureData.mock.calls[0];
+        expect([xOffset, yOffset, updateWidth, updateHeight]).toEqual([0, 1, width, 2]);
+        expect(data.byteOffset % Uint32Array.BYTES_PER_ELEMENT).toBe(0);
+        expect(Array.from(new Uint8Array(data.buffer, data.byteOffset, data.byteLength))).toEqual(Array.from(shData.subarray(bytesPerRow, bytesPerRow * 3)));
+
+        scene.dispose();
+        engine.dispose();
+    });
 });

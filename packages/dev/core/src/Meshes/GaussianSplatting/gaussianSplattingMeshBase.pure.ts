@@ -4361,7 +4361,14 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         const createView = (byteOffset: number, viewTexelCount: number) => {
-            return new Uint32Array(shData.buffer, shData.byteOffset + byteOffset, viewTexelCount * componentsPerTexel);
+            const absoluteByteOffset = shData.byteOffset + byteOffset;
+            if (absoluteByteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
+                return new Uint32Array(shData.buffer, absoluteByteOffset, viewTexelCount * componentsPerTexel);
+            }
+            // Uint32Array views must be 4-byte aligned: copy only the requested range into aligned storage.
+            const aligned = new Uint32Array(viewTexelCount * componentsPerTexel);
+            new Uint8Array(aligned.buffer).set(shData.subarray(byteOffset, byteOffset + aligned.byteLength));
+            return aligned;
         };
 
         const fullRowCount = Math.floor(texelCount / textureWidth);
