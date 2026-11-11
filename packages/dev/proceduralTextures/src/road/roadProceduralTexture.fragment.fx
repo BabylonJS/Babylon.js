@@ -3,8 +3,11 @@
 varying vec2 vUV;                    
 uniform vec3 roadColor;
 
+// Arithmetic-only hash: sin/cos of large arguments differ between GPUs, so a trig hash isn't reproducible.
 float rand(vec2 n) {
-	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+	vec3 p3 = fract(vec3(n.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
 }
 
 float noise(vec2 n) {
@@ -30,7 +33,8 @@ void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
-	float ratioy = mod(gl_FragCoord.y * 100.0 , fbm(vUV * 2.0));
+	// Per-texel grain in [0, fbm). mod() of a large value amplifies precision differences between GPUs.
+	float ratioy = fbm(vUV * 2.0) * rand(gl_FragCoord.xy);
 	vec3 color = roadColor * ratioy;
 	gl_FragColor = vec4(color, 1.0);
 

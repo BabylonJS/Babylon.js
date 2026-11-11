@@ -8,8 +8,11 @@ uniform vec3 herb2Color;
 uniform vec3 herb3Color;
 uniform vec3 groundColor;
 
+// Arithmetic-only hash: sin/cos of large arguments differ between GPUs, so a trig hash isn't reproducible.
 float rand(vec2 n) {
-	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+	vec3 p3 = fract(vec3(n.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
 }
 
 float noise(vec2 n) {
