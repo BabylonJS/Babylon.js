@@ -176,6 +176,13 @@ export interface INativeEngine {
         autoGenerateMips?: boolean
     ): NativeFramebuffer;
 
+    /**
+     * Optional: older runtimes cannot share a framebuffer's generated depth/stencil. Moves it into texture without
+     * rebuilding the framebuffer, so it can be attached elsewhere with its current contents; it cannot be sampled.
+     * Returns false when the framebuffer has no generated depth/stencil of its own.
+     */
+    shareFrameBufferDepthStencil?(frameBuffer: NativeFramebuffer, texture: NativeTexture): boolean;
+
     /** Optional: older runtimes only support single-attachment framebuffers. Omitted mip flags retain automatic generation for all color attachments. */
     createMultiFrameBuffer?(
         colorTextures: NativeTexture[],

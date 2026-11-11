@@ -3030,6 +3030,40 @@ export class ThinNativeEngine extends ThinEngine {
         this.updateTextureComparisonFunction(texture, texture._comparisonFunction);
     }
 
+    /**
+     * Wraps a render target's auto-generated depth/stencil buffer in a depth texture without rebuilding the render
+     * target, so it can be shared with its current contents, like WebGL shares the depth renderbuffer. The texture can
+     * be attached to other framebuffers but not sampled. Returns null when the runtime cannot do this or when the
+     * depth is not owned by a single framebuffer (cube, layered and volume targets).
+     * @internal
+     */
+    public _wrapGeneratedDepthStencil(nativeRTWrapper: NativeRenderTargetWrapper): Nullable<InternalTexture> {
+        const framebuffer = nativeRTWrapper._framebuffer;
+        if (!this._engine.shareFrameBufferDepthStencil || !framebuffer || nativeRTWrapper._framebuffers || nativeRTWrapper.is3D || nativeRTWrapper._usesLayeredFramebuffer) {
+            return null;
+        }
+
+        const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+        if (!this._engine.shareFrameBufferDepthStencil(framebuffer, texture._hardwareTexture!.underlyingResource)) {
+            texture.dispose();
+            return null;
+        }
+
+        const generateStencil = nativeRTWrapper._generateStencilBuffer;
+        texture.baseWidth = nativeRTWrapper.width;
+        texture.baseHeight = nativeRTWrapper.height;
+        texture.width = nativeRTWrapper.width;
+        texture.height = nativeRTWrapper.height;
+        texture.isReady = true;
+        texture.samples = nativeRTWrapper.samples;
+        texture.generateMipMaps = false;
+        texture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        texture.format = generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+        nativeRTWrapper._depthStencilTextureWithStencil = generateStencil;
+        return texture;
+    }
+
     // Reallocates a render target's sampleable depth/stencil texture with a new sample count and reattaches it to
     // the (already rebuilt) color framebuffer(s), so rendering and later depth sampling keep using the same resource.
     private _recreateDepthStencilTexture(nativeRTWrapper: NativeRenderTargetWrapper, samples: number): void {
