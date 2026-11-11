@@ -475,6 +475,8 @@ export class ThinNativeEngine extends ThinEngine {
             supportMSAA: true,
             supportSSAO2: false,
             supportIBLShadows: false,
+            // The runtime must clear integer color attachments with integer values and never blend them.
+            supportMeshBlending: !!_native.Engine.CAPS_INTEGER_COLOR_ATTACHMENTS,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,

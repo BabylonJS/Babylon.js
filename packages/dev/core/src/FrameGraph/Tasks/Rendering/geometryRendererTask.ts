@@ -12,7 +12,7 @@ import {
 import { Color4 } from "core/Maths/math.color.pure";
 import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType, type GeometryRenderingObjectIdProvider } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
-import { _IsMeshBlendingSupported } from "../../../Meshes/meshBlendingTag";
+import { _CanBlendWithMeshBlendTag, _IsMeshBlendingSupported } from "../../../Meshes/meshBlendingTag";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 
 /**
@@ -454,7 +454,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             if (!_IsMeshBlendingSupported(engine)) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures require WebGL2 or WebGPU`);
             }
-            if ((this.renderTransparentMeshes || this.renderSprites || this.renderParticles) && !engine.isWebGPU && !engine.getCaps().blendParametersPerTarget) {
+            if ((this.renderTransparentMeshes || this.renderSprites || this.renderParticles) && !_CanBlendWithMeshBlendTag(engine)) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: transparent mesh-blending tags require per-target blend parameters`);
             }
             if (this.samples !== 1) {

@@ -88,7 +88,7 @@ describe("FrameGraphMeshBlendingTask", () => {
         expect(() => recordTask(task)).not.toThrow();
     });
 
-    it("rejects Native even though it reports a WebGL2-compatible version", () => {
+    it("rejects Native when the runtime does not support mesh blending", () => {
         (engine as any)._shaderPlatformName = "NATIVE";
 
         expect(() => new FrameGraphMeshBlendingTask("meshBlend", frameGraph)).toThrow("requires WebGL2 or WebGPU");

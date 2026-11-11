@@ -33,7 +33,7 @@ import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial.pure";
 import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
 import { _IsGaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplatting.functions";
-import { _IsMeshBlendingSupported } from "../Meshes/meshBlendingTag";
+import { _CanBlendWithMeshBlendTag, _IsMeshBlendingSupported } from "../Meshes/meshBlendingTag";
 import {
     _GetGeometryRenderingMeshBlendTag,
     _GetGeometryRenderingObjectId,
@@ -203,7 +203,7 @@ export class GeometryBufferRenderer {
     }
 
     public set renderTransparentMeshes(value: boolean) {
-        if (value && this._enableMeshBlendTag && !this._scene.getEngine().getCaps().blendParametersPerTarget) {
+        if (value && this._enableMeshBlendTag && !_CanBlendWithMeshBlendTag(this._scene.getEngine())) {
             throw new Error("GeometryBufferRenderer: transparent mesh-blending tags require per-target blend parameters");
         }
         this._renderTransparentMeshes = value;
@@ -673,7 +673,7 @@ export class GeometryBufferRenderer {
             if (!_IsMeshBlendingSupported(engine)) {
                 throw new Error("GeometryBufferRenderer: mesh-blending tag textures require WebGL2 or WebGPU");
             }
-            if (this.renderTransparentMeshes && !engine.isWebGPU && !engine.getCaps().blendParametersPerTarget) {
+            if (this.renderTransparentMeshes && !_CanBlendWithMeshBlendTag(engine)) {
                 throw new Error("GeometryBufferRenderer: transparent mesh-blending tags require per-target blend parameters");
             }
             if (this._linkedWithPrePass) {

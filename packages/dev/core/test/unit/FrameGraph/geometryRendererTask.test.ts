@@ -627,13 +627,23 @@ describe("FrameGraphGeometryRendererTask mesh-blending tags", () => {
         expect(() => (task as any)._checkParameters()).toThrow("mesh-blending tag textures require WebGL2 or WebGPU");
     });
 
-    it("rejects Native even though it reports a WebGL2-compatible version", () => {
+    it("rejects Native when the runtime does not support mesh blending", () => {
         engine._webGLVersion = 2;
         (engine as any)._shaderPlatformName = "NATIVE";
         const { task } = createTask();
         task.textureDescriptions = [meshBlendTagDescription];
 
         expect(() => (task as any)._checkParameters()).toThrow("mesh-blending tag textures require WebGL2 or WebGPU");
+    });
+
+    it("allows transparent mesh-blending tags on Native without per-target blend parameters", () => {
+        (engine as any)._shaderPlatformName = "NATIVE";
+        engine._features.supportMeshBlending = true;
+        const { task } = createTask();
+        task.renderTransparentMeshes = true;
+        task.textureDescriptions = [meshBlendTagDescription];
+
+        expect(() => (task as any)._checkParameters()).not.toThrow();
     });
 
     it("requires per-target blend parameters for transparent mesh-blending tags on WebGL2", () => {

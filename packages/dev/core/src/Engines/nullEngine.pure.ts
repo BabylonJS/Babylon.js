@@ -228,6 +228,7 @@ export class NullEngine extends Engine {
             supportMSAA: false,
             supportSSAO2: false,
             supportIBLShadows: false,
+            supportMeshBlending: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
