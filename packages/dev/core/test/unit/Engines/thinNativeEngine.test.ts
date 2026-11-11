@@ -1,4 +1,5 @@
 import { ThinNativeEngine } from "core/Engines/thinNativeEngine";
+import { NativeEngine, RegisterNativeEngine } from "core/Engines/nativeEngine.pure";
 import { type NativeRenderTargetWrapper } from "core/Engines/Native/nativeRenderTargetWrapper";
 import { NullEngine } from "core/Engines/nullEngine";
 import { RegisterNativeEngineCubeTexture } from "core/Engines/Native/Extensions/nativeEngine.cubeTexture.pure";
@@ -150,6 +151,84 @@ describe("ThinNativeEngine", () => {
             expect(() => engine.setAlphaMode(mode)).toThrow(`Unsupported alpha mode: ${mode}`);
             expect(startEncodingCommand).not.toHaveBeenCalled();
             expect(engine._alphaMode[0]).toBeUndefined();
+        });
+    });
+
+    describe("alpha to coverage", () => {
+        type TestAlphaToCoverageEngine = {
+            _alphaToCoverage: boolean;
+            _commandBufferEncoder: object;
+            getAlphaToCoverage: () => boolean;
+            setAlphaToCoverage: (enable: boolean) => void;
+        };
+
+        it("encodes only state changes", () => {
+            const engine = Object.create(ThinNativeEngine.prototype) as TestAlphaToCoverageEngine;
+            const commands: number[][] = [];
+            vi.stubGlobal("_native", { Engine: { COMMAND_SETALPHATOCOVERAGE: 102 } });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._alphaToCoverage = false;
+            engine._commandBufferEncoder = {
+                startEncodingCommand: (command: number) => commands.push([command]),
+                encodeCommandArgAsUInt32: (value: number) => commands[commands.length - 1].push(value),
+                finishEncodingCommand: () => {},
+            };
+
+            engine.setAlphaToCoverage(false);
+            engine.setAlphaToCoverage(true);
+            engine.setAlphaToCoverage(true);
+            expect(engine.getAlphaToCoverage()).toBe(true);
+            engine.setAlphaToCoverage(false);
+
+            expect(commands).toEqual([
+                [102, 1],
+                [102, 0],
+            ]);
+            expect(engine.getAlphaToCoverage()).toBe(false);
+        });
+
+        it("tracks the state without encoding when the runtime lacks alpha-to-coverage", () => {
+            const engine = Object.create(ThinNativeEngine.prototype) as TestAlphaToCoverageEngine;
+            const startEncodingCommand = vi.fn();
+            vi.stubGlobal("_native", { Engine: {} });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._alphaToCoverage = false;
+            engine._commandBufferEncoder = { startEncodingCommand };
+
+            engine.setAlphaToCoverage(true);
+
+            expect(engine.getAlphaToCoverage()).toBe(true);
+            expect(startEncodingCommand).not.toHaveBeenCalled();
+        });
+
+        it("initializes the state on the mixed-in NativeEngine", () => {
+            RegisterNativeEngine();
+            const engine = Object.create(NativeEngine.prototype) as TestAlphaToCoverageEngine & { _initializeNativeEngine: (adaptToDeviceRatio: boolean) => void };
+            vi.spyOn(ThinNativeEngine, "_createNativeDataStream").mockReturnValue({} as ReturnType<typeof ThinNativeEngine._createNativeDataStream>);
+            // A mismatched protocol version stops initialization once the render state is set up.
+            vi.stubGlobal("_native", {
+                Engine: class {
+                    public static PROTOCOL_VERSION = -1;
+                    public static COMMAND_SETALPHATOCOVERAGE = 102;
+                    public setCommandDataStream() {}
+                },
+            });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+                vi.restoreAllMocks();
+            });
+
+            expect(() => engine._initializeNativeEngine(false)).toThrow("Protocol version mismatch");
+
+            const startEncodingCommand = vi.fn();
+            engine._commandBufferEncoder = { startEncodingCommand };
+            expect(engine.getAlphaToCoverage()).toBe(false);
+            engine.setAlphaToCoverage(false);
+            expect(startEncodingCommand).not.toHaveBeenCalled();
         });
     });
 

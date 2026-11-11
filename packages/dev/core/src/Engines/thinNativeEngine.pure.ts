@@ -243,6 +243,7 @@ export class ThinNativeEngine extends ThinEngine {
     protected _engine: INativeEngine;
     private _camera: Nullable<INativeCamera>;
     private _commandBufferEncoder: CommandBufferEncoder;
+    private _alphaToCoverage: boolean;
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
     private _fontMeasureCanvas?: INativeCanvas;
@@ -354,6 +355,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._cachedZOffset = 0;
         this._cachedZOffsetUnits = 0;
         this._depthWrite = true;
+        this._alphaToCoverage = false;
         // warning for non supported fill mode has already been displayed
         this._fillModeWarningDisplayed = false;
         this._int2Scratch = new Int32Array(2);
@@ -1750,6 +1752,36 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.startEncodingCommand(command);
         // Pass the Babylon Constants.ALPHA_EQUATION_* value; NativeEngine::SetBlendEquation maps it to bgfx.
         this._commandBufferEncoder.encodeCommandArgAsUInt32(equation);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    /**
+     * Gets a boolean indicating if alpha-to-coverage is enabled
+     * @returns true if alpha-to-coverage is enabled
+     */
+    public override getAlphaToCoverage(): boolean {
+        return this._alphaToCoverage;
+    }
+
+    /**
+     * Enable or disable alpha-to-coverage. Like WebGL, it has no effect on single-sample targets.
+     * @param enable defines the state to set
+     */
+    public override setAlphaToCoverage(enable: boolean): void {
+        if (this._alphaToCoverage === enable) {
+            return;
+        }
+
+        this._alphaToCoverage = enable;
+
+        const command = _native.Engine.COMMAND_SETALPHATOCOVERAGE;
+        if (!command) {
+            // Older Babylon Native binaries predating alpha-to-coverage support.
+            return;
+        }
+
+        this._commandBufferEncoder.startEncodingCommand(command);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
