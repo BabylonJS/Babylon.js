@@ -1,0 +1,77 @@
+name: Dependency Review
+
+# Blocks pull requests that add dependencies with known high or critical
+# vulnerabilities by comparing the dependency graph of the base and head commits.
+# It does not scan the existing dependency backlog and is not malware detection.
+# No dependencies are installed and no repository code is executed.
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  dependency-review:
+    name: dependency-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime, development, unknown
+          license-check: false
+
+      # The action omits advisories below fail-on-severity from its report, so list
+      # added low/moderate advisories in the job summary without blocking the PR.
+      - name: Report lower-severity advisories
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ || ! "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::warning title=Dependency review::Base/head commit SHAs are unavailable; lower-severity report skipped."
+            exit 0
+          fi
+          if ! changes="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/dependency-graph/compare/${BASE_SHA}...${HEAD_SHA}" | jq -s 'add // []')"; then
+            echo "::warning title=Dependency review::Could not fetch the dependency comparison; lower-severity report skipped."
+            exit 0
+          fi
+          if ! rows="$(jq -r '
+            def cell: tostring | gsub("[\r\n]+"; " ") | gsub("\\|"; "\\|");
+            [ .[] | select(.change_type == "added") | . as $change
+              | (.vulnerabilities // [])[]
+              | select(.severity == "moderate" or .severity == "low")
+              | "| \(.severity | cell) | \($change.ecosystem | cell) | \($change.name | cell) | \($change.version | cell) | \($change.manifest | cell) | \(($change.scope // "unknown") | cell) | [\(.advisory_ghsa_id | cell)](\(.advisory_url | cell)) | \(.advisory_summary | cell) |"
+            ] | unique | .[]
+          ' <<< "$changes")"; then
+            echo "::warning title=Dependency review::Could not parse the dependency comparison; lower-severity report skipped."
+            exit 0
+          fi
+          if [[ -z "$rows" ]]; then
+            echo "No added low or moderate severity advisories."
+            echo "No added dependencies with low or moderate severity advisories." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          count="$(wc -l <<< "$rows" | tr -d ' ')"
+          echo "::warning title=Dependency review (non-blocking)::${count} low/moderate advisories in added dependencies. See the job summary."
+          {
+            echo "### Non-blocking low/moderate advisories"
+            echo
+            echo "These added dependencies have advisories below the blocking threshold (high):"
+            echo
+            echo "| Severity | Ecosystem | Package | Version | Manifest | Scope | Advisory | Summary |"
+            echo "| --- | --- | --- | --- | --- | --- | --- | --- |"
+            printf '%s\n' "$rows"
+          } >> "$GITHUB_STEP_SUMMARY"
