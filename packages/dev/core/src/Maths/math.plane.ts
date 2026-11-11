@@ -101,7 +101,10 @@ export class Plane implements IPlaneLike {
      * @returns the dot product (float) of the point coordinates and the plane normal.
      */
     public dotCoordinate(point: DeepImmutable<Vector3>): number {
-        return this.normal.x * point.x + this.normal.y * point.y + this.normal.z * point.z + this.d;
+        // Read the backing fields: this runs for every culled bounding box and sphere, and accessor
+        // calls are not inlined by interpreter-only JavaScript engines.
+        const normal = this.normal;
+        return normal._x * point._x + normal._y * point._y + normal._z * point._z + this.d;
     }
 
     /**

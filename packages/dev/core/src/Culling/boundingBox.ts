@@ -157,16 +157,45 @@ export class BoundingBox implements ICullable {
         const vectorsWorld = this.vectorsWorld;
         const vectors = this.vectors;
 
-        if (!world.isIdentity()) {
-            minWorld.setAll(Number.MAX_VALUE);
-            maxWorld.setAll(-Number.MAX_VALUE);
+        const m = world.m;
 
+        if (!world.isIdentity()) {
+            let minX = Number.MAX_VALUE;
+            let minY = Number.MAX_VALUE;
+            let minZ = Number.MAX_VALUE;
+            let maxX = -Number.MAX_VALUE;
+            let maxY = -Number.MAX_VALUE;
+            let maxZ = -Number.MAX_VALUE;
+
+            // Vector3.TransformCoordinatesToRef, minimizeInPlace and maximizeInPlace written out for the
+            // 8 corners: this runs for every mesh whose world matrix changed, and the per-corner function
+            // and accessor calls are not inlined by interpreter-only JavaScript engines.
             for (let index = 0; index < 8; ++index) {
-                const v = vectorsWorld[index];
-                Vector3.TransformCoordinatesToRef(vectors[index], world, v);
-                minWorld.minimizeInPlace(v);
-                maxWorld.maximizeInPlace(v);
+                const vector = vectors[index];
+                const x = vector._x;
+                const y = vector._y;
+                const z = vector._z;
+                const rw = 1 / (x * m[3] + y * m[7] + z * m[11] + m[15]);
+                const wx = (x * m[0] + y * m[4] + z * m[8] + m[12]) * rw;
+                const wy = (x * m[1] + y * m[5] + z * m[9] + m[13]) * rw;
+                const wz = (x * m[2] + y * m[6] + z * m[10] + m[14]) * rw;
+
+                const vectorWorld = vectorsWorld[index];
+                vectorWorld._x = wx;
+                vectorWorld._y = wy;
+                vectorWorld._z = wz;
+                vectorWorld._isDirty = true;
+
+                minX = Math.min(wx, minX);
+                minY = Math.min(wy, minY);
+                minZ = Math.min(wz, minZ);
+                maxX = Math.max(wx, maxX);
+                maxY = Math.max(wy, maxY);
+                maxZ = Math.max(wz, maxZ);
             }
+
+            minWorld.copyFromFloats(minX, minY, minZ);
+            maxWorld.copyFromFloats(maxX, maxY, maxZ);
 
             // Extend
             maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
@@ -183,9 +212,9 @@ export class BoundingBox implements ICullable {
             this.centerWorld.copyFrom(this.center);
         }
 
-        Vector3.FromArrayToRef(world.m, 0, directions[0]);
-        Vector3.FromArrayToRef(world.m, 4, directions[1]);
-        Vector3.FromArrayToRef(world.m, 8, directions[2]);
+        Vector3.FromArrayToRef(m, 0, directions[0]);
+        Vector3.FromArrayToRef(m, 4, directions[1]);
+        Vector3.FromArrayToRef(m, 8, directions[2]);
 
         this._worldMatrix = world;
     }
