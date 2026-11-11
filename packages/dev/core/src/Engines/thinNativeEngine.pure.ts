@@ -243,7 +243,7 @@ export class ThinNativeEngine extends ThinEngine {
     protected _engine: INativeEngine;
     private _camera: Nullable<INativeCamera>;
     private _commandBufferEncoder: CommandBufferEncoder;
-    private _alphaToCoverage = false;
+    private _alphaToCoverage: boolean;
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
     private _fontMeasureCanvas?: INativeCanvas;
@@ -355,6 +355,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._cachedZOffset = 0;
         this._cachedZOffsetUnits = 0;
         this._depthWrite = true;
+        this._alphaToCoverage = false;
         // warning for non supported fill mode has already been displayed
         this._fillModeWarningDisplayed = false;
         this._int2Scratch = new Int32Array(2);
