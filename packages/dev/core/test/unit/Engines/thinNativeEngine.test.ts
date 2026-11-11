@@ -153,6 +153,58 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("alpha to coverage", () => {
+        type TestAlphaToCoverageEngine = {
+            _alphaToCoverage: boolean;
+            _commandBufferEncoder: object;
+            getAlphaToCoverage: () => boolean;
+            setAlphaToCoverage: (enable: boolean) => void;
+        };
+
+        it("encodes only state changes", () => {
+            const engine = Object.create(ThinNativeEngine.prototype) as TestAlphaToCoverageEngine;
+            const commands: number[][] = [];
+            vi.stubGlobal("_native", { Engine: { COMMAND_SETALPHATOCOVERAGE: 102 } });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._alphaToCoverage = false;
+            engine._commandBufferEncoder = {
+                startEncodingCommand: (command: number) => commands.push([command]),
+                encodeCommandArgAsUInt32: (value: number) => commands[commands.length - 1].push(value),
+                finishEncodingCommand: () => {},
+            };
+
+            engine.setAlphaToCoverage(false);
+            engine.setAlphaToCoverage(true);
+            engine.setAlphaToCoverage(true);
+            expect(engine.getAlphaToCoverage()).toBe(true);
+            engine.setAlphaToCoverage(false);
+
+            expect(commands).toEqual([
+                [102, 1],
+                [102, 0],
+            ]);
+            expect(engine.getAlphaToCoverage()).toBe(false);
+        });
+
+        it("tracks the state without encoding when the runtime lacks alpha-to-coverage", () => {
+            const engine = Object.create(ThinNativeEngine.prototype) as TestAlphaToCoverageEngine;
+            const startEncodingCommand = vi.fn();
+            vi.stubGlobal("_native", { Engine: {} });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            engine._alphaToCoverage = false;
+            engine._commandBufferEncoder = { startEncodingCommand };
+
+            engine.setAlphaToCoverage(true);
+
+            expect(engine.getAlphaToCoverage()).toBe(true);
+            expect(startEncodingCommand).not.toHaveBeenCalled();
+        });
+    });
+
     describe("render loop", () => {
         it("returns the custom animation frame request id", () => {
             const thinNativeEngine = Object.create(ThinNativeEngine.prototype) as TestThinNativeEngine;
