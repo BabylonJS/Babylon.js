@@ -13,11 +13,21 @@ uniform float alphaThreshold;
 
 varying vec2 vUV;
 
-// Arithmetic-only hash: sin/cos of large arguments differ between GPUs, so a trig hash isn't reproducible.
+// Integer permutation hash. Every intermediate is an integer below 2^24, so float32 math (with or
+// without FMA) is exact on all GPUs, unlike trig or fract-based hashes.
+float mod289(float x) {
+	x -= floor(x * (1.0 / 289.0)) * 289.0;
+	return x < 0.0 ? x + 289.0 : (x >= 289.0 ? x - 289.0 : x);
+}
+
+float permute(float x) {
+	return mod289((34.0 * x + 1.0) * x);
+}
+
 float rand(vec2 n) {
-	vec3 p3 = fract(vec3(n.xyx) * 0.1031);
-	p3 += dot(p3, p3.yzx + 33.33);
-	return fract((p3.x + p3.y) * p3.z);
+	float x = mod289(floor(n.x));
+	float h = permute(permute(x) + mod289(floor(n.y)));
+	return (h * 289.0 + permute(h + x)) * (1.0 / 83521.0);
 }
 
 float noise(vec2 n) {
