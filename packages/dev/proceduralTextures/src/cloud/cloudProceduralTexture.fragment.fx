@@ -1,4 +1,4 @@
-﻿precision highp float;
+precision highp float;
 
 varying vec2 vUV;
 
@@ -7,21 +7,24 @@ uniform vec4 cloudColor;
 uniform float amplitude;
 uniform int numOctaves;
 
-// Integer permutation hash. Every intermediate is an integer below 2^24, so float32 math (with or
-// without FMA) is exact on all GPUs, unlike trig or fract-based hashes.
-float mod289(float x) {
-	x -= floor(x * (1.0 / 289.0)) * 289.0;
-	return x < 0.0 ? x + 289.0 : (x >= 289.0 ? x - 289.0 : x);
+// Integer hash over [0, 251). Each product is reduced before the next, so intermediates stay at or below
+// 250 * 250 = 62500: exact in float32 on every GPU, and finite under mediump (half float max is 65504).
+// x -> x^3 is a permutation because 251 = 2 (mod 3). The prime modulus avoids the shift symmetry of mod-289
+// permutations (P(t + 17) = P(t) + 17), and the offsets break the cube's point symmetry.
+float mod251(float x) {
+	x -= floor(x * (1.0 / 251.0)) * 251.0;
+	return x < 0.0 ? x + 251.0 : (x >= 251.0 ? x - 251.0 : x);
 }
 
-float permute(float x) {
-	return mod289((34.0 * x + 1.0) * x);
+float cube251(float x) {
+	return mod251(mod251(x * x) * x);
 }
 
 float rand(vec2 n) {
-	float x = mod289(floor(n.x));
-	float h = permute(permute(x) + mod289(floor(n.y)));
-	return (h * 289.0 + permute(h + x)) * (1.0 / 83521.0);
+	float x = mod251(floor(n.x));
+	float y = mod251(floor(n.y));
+	float h = cube251(mod251(cube251(x) + cube251(mod251(y + 101.0)) + 37.0));
+	return (h + cube251(mod251(h + x)) * (1.0 / 251.0)) * (1.0 / 251.0);
 }
 
 float noise(vec2 n) {
