@@ -447,6 +447,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETCOLORWRITE: NativeData;
     readonly COMMAND_SETBLENDMODE: NativeData;
     readonly COMMAND_SETBLENDEQUATION?: NativeData;
+    readonly COMMAND_SETALPHATOCOVERAGE?: NativeData;
     readonly COMMAND_SETFLOAT: NativeData;
     readonly COMMAND_SETFLOAT2: NativeData;
     readonly COMMAND_SETFLOAT3: NativeData;

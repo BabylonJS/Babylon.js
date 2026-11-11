@@ -3428,9 +3428,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._useRGBACovariants = true;
         const engine = this.getEngine();
         // No real GPU (NullEngine): skip MRT allocation. The reservation's part/index/range logic still runs;
-        // texture population requires a real (WebGL2/WebGPU) backend.
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        // texture population requires a real (WebGL2/WebGPU/Native) backend.
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const covType = engine.getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
@@ -3479,8 +3478,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param textureSize atlas dimensions (width, height)
      */
     protected _createShMrtAtlas(textureSize: Vector2): void {
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const count = this._shMrtAtlasTextureCount;
@@ -3532,8 +3530,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param textureSize atlas dimensions (width, height)
      */
     protected _createRotMrtAtlas(textureSize: Vector2): void {
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const rotType = this.getEngine().getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
@@ -4322,6 +4319,15 @@ export class GaussianSplattingMeshBase extends Mesh {
         engine.updateTextureData(texture.getInternalTexture()!, data, xOffset, yOffset, width, height, 0, 0, false);
     };
 
+    /**
+     * Whether the engine can back the data atlas with render targets (WebGL, WebGPU, and Native with MRT support; not NullEngine).
+     * @returns true when render-target atlases can be created
+     */
+    protected _supportsRenderTargetAtlas(): boolean {
+        const engine = this._getTextureDataUpdateEngine();
+        return !!engine._gl || !!engine.isWebGPU || (IsNative && this.getEngine().getCaps().drawBuffersExtension);
+    }
+
     protected _getTextureDataUpdateEngine(): ITextureDataUpdateCapableEngine {
         return this.getEngine() as unknown as ITextureDataUpdateCapableEngine;
     }
@@ -4329,9 +4335,10 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _updateShTextureData(texture: BaseTexture, shData: Uint8Array, textureWidth: number, lineStart: number, lineCount: number): void {
         const engine = this._getTextureDataUpdateEngine();
 
-        // NativeEngine/NullEngine, updateTextureData unsupported
-        if (!engine._gl && !engine.isWebGPU) {
-            const internalTexture = texture.getInternalTexture()!;
+        // NativeEngine/NullEngine: upload complete textures as raw data. Partial (incremental) updates must only
+        // write their own rows, so they go through updateTextureData below like on the other engines.
+        const internalTexture = texture.getInternalTexture()!;
+        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
             const expectedByteLength = textureWidth * internalTexture.height * 16;
             let uploadData: Uint32Array;
             if (shData.byteLength === expectedByteLength && shData.byteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
@@ -4360,7 +4367,14 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         const createView = (byteOffset: number, viewTexelCount: number) => {
-            return new Uint32Array(shData.buffer, shData.byteOffset + byteOffset, viewTexelCount * componentsPerTexel);
+            const absoluteByteOffset = shData.byteOffset + byteOffset;
+            if (absoluteByteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
+                return new Uint32Array(shData.buffer, absoluteByteOffset, viewTexelCount * componentsPerTexel);
+            }
+            // Uint32Array views must be 4-byte aligned: copy only the requested range into aligned storage.
+            const aligned = new Uint32Array(viewTexelCount * componentsPerTexel);
+            new Uint8Array(aligned.buffer).set(shData.subarray(byteOffset, byteOffset + aligned.byteLength));
+            return aligned;
         };
 
         const fullRowCount = Math.floor(texelCount / textureWidth);
