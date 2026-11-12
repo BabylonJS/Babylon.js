@@ -132,18 +132,8 @@ interface ITextureDataUpdateCapableEngine {
         lod?: number,
         generateMipMaps?: boolean
     ): void;
-    updateRawTexture(
-        texture: Nullable<InternalTexture>,
-        data: Nullable<ArrayBufferView>,
-        format: number,
-        invertY: boolean,
-        compression?: Nullable<string>,
-        type?: number,
-        useSRGBBuffer?: boolean
-    ): void;
     _gl?: unknown;
     isWebGPU?: boolean;
-    name?: string;
 }
 
 // @internal
@@ -4306,26 +4296,10 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
         const engine = this._getTextureDataUpdateEngine();
-        const internalTexture = texture.getInternalTexture()!;
-        // NullEngine supports complete raw uploads, but not sub-texture uploads.
-        if (this._usesRawFullUploads(engine) && lineStart === 0 && lineCount === internalTexture.height) {
-            engine.updateRawTexture(internalTexture, data, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
-            return;
-        }
-        engine.updateTextureData(internalTexture, data, 0, lineStart, width, lineCount, 0, 0, false);
+        // Complete uploads also use updateTextureData: Native applies a raw upload of an existing texture after
+        // every sub-texture update of the frame, which would overwrite a partial update that follows it.
+        engine.updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
     };
-
-    /**
-     * Whether complete texture uploads go through updateRawTexture instead of updateTextureData.
-     * Native defers a raw upload of an existing texture until after every sub-texture update of the frame, so a
-     * partial update following a full upload in the same frame would be overwritten. Using updateTextureData for
-     * both keeps them in call order.
-     * @param engine the engine performing the upload
-     * @returns true for engines without WebGL or WebGPU sub-texture uploads, other than Native
-     */
-    private _usesRawFullUploads(engine: ITextureDataUpdateCapableEngine): boolean {
-        return !engine._gl && !engine.isWebGPU && engine.name !== "Native";
-    }
 
     protected _updateTextureFromDataRect = (texture: BaseTexture, data: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number) => {
         const engine = this._getTextureDataUpdateEngine();

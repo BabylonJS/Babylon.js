@@ -354,13 +354,14 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         engine.dispose();
     });
 
-    it("keeps a partial update after a full upload in the same frame in call order on Native", async () => {
+    it.each(["Native", "Renamed"])("keeps a partial update after a full upload in the same frame in call order (engine named %s)", async (engineName) => {
         const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
         const { RawTexture } = await import("core/Materials/Textures/rawTexture");
         const { Constants } = await import("core/Engines/constants");
         const { engine, scene } = await createScene();
-        // Native defers raw uploads of an existing texture after the frame's sub-texture updates.
-        (engine as any)._name = "Native";
+        // Native applies raw uploads of an existing texture after the frame's sub-texture updates, so every upload
+        // must go through updateTextureData. The choice must not depend on the (writable) engine name.
+        engine.name = engineName;
 
         const mesh = new GaussianSplattingMesh("gs", null, scene);
         const width = 4;
@@ -395,6 +396,29 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
             [centersTexture.getInternalTexture(), 0, height],
             [centersTexture.getInternalTexture(), 1, 2],
         ]);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("records complete uploads and ignores partial ones on NullEngine", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const width = 4;
+        const height = 3;
+        const texture = new RawTexture(null, width, height, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        const internalTexture = texture.getInternalTexture()!;
+        const full = new Uint8Array(width * height * 4);
+
+        // NullEngine has no GL context: neither upload may reach the WebGL implementation.
+        expect(() => (mesh as any)._updateTextureFromData(texture, full, width, 0, height)).not.toThrow();
+        expect(internalTexture._bufferView).toBe(full);
+        expect(() => (mesh as any)._updateTextureFromData(texture, new Uint8Array(width * 2 * 4), width, 1, 2)).not.toThrow();
+        expect(internalTexture._bufferView).toBe(full);
 
         scene.dispose();
         engine.dispose();
