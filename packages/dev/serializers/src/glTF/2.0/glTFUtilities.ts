@@ -475,6 +475,8 @@ export function ShouldExportOpenPBRSurfaceTintCoat(material: OpenPBRMaterial, di
         !material.unlit &&
         !material.geometryThinWalled &&
         material._gltfDiffuseTransmissionSurfaceToCoat &&
+        material.subsurfaceWeight > 0 &&
+        (!!material._gltfDiffuseTransmissionColorTexture || !material._gltfDiffuseTransmissionColor.equalsFloats(1, 1, 1)) &&
         !ShouldExportOpenPBRDiffuseTransmission(material, diffuseTransmissionEnabled)
     );
 }

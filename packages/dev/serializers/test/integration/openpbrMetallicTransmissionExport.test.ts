@@ -181,14 +181,17 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
         "edited independent coat",
         "edited zero coat",
         "edited full coat",
+        "edited white tint coat",
+        "edited zero subsurface coat",
     ] as const) {
         const withAuthoredCoat = tintVariant.endsWith("coat");
         const independentCoat = tintVariant === "edited independent coat";
-        const withColorTexture = tintVariant.endsWith("texture") || withAuthoredCoat;
+        const inactiveTint = tintVariant === "edited white tint coat" || tintVariant === "edited zero subsurface coat";
+        const withColorTexture = tintVariant.endsWith("texture") || (withAuthoredCoat && tintVariant !== "edited white tint coat");
         const edited = tintVariant.startsWith("edited");
         const coatWeight = tintVariant === "edited zero coat" ? 0 : tintVariant === "edited full coat" ? 1 : 0.25;
-        for (const transmissionWeight of [0, 0.35]) {
-            for (const withWeightTextures of [false, true]) {
+        for (const transmissionWeight of inactiveTint ? [0.35] : [0, 0.35]) {
+            for (const withWeightTextures of inactiveTint ? [false] : [false, true]) {
                 test(`imported volumetric diffuse tint round-trips (${tintVariant}, transmission: ${transmissionWeight}, weight textures: ${withWeightTextures})`, async () => {
                     const result = await page.evaluate(
                         async ({ withColorTexture, transmissionWeight, withWeightTextures, tintVariant, edited, withAuthoredCoat, independentCoat, coatWeight }) => {
@@ -247,7 +250,7 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                                 : {}),
                                             KHR_materials_diffuse_transmission: {
                                                 diffuseTransmissionFactor: 0.6,
-                                                diffuseTransmissionColorFactor: [0.2, 0.7, 0.4],
+                                                diffuseTransmissionColorFactor: tintVariant === "edited white tint coat" ? [1, 1, 1] : [0.2, 0.7, 0.4],
                                                 ...(withColorTexture
                                                     ? {
                                                           diffuseTransmissionColorTexture: {
@@ -308,6 +311,9 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                             const material = loaded.meshes.find((mesh) => mesh.material)!.material as InstanceType<typeof BABYLON.OpenPBRMaterial>;
                             if (edited) {
                                 material.subsurfaceScatterAnisotropy = 0.3;
+                            }
+                            if (tintVariant === "edited zero subsurface coat") {
+                                material.subsurfaceWeight = 0;
                             }
                             const snapshot = async (mat: InstanceType<typeof BABYLON.OpenPBRMaterial>) => {
                                 const textureState = async (texture: InstanceType<typeof BABYLON.BaseTexture> | null, factor: number, channel: number) => {
@@ -385,6 +391,19 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                     expect(Number.isFinite(result.volume.attenuationDistance)).toBe(true);
                     expect(result.volume.attenuationDistance).toBeGreaterThan(0);
                     expect(result.sourceAfter).toEqual(result.before);
+                    if (inactiveTint) {
+                        expect(result.diffuse).toBeUndefined();
+                        expect(result.coat.coatFactor).toBe(coatWeight);
+                        expect(result.coat.coatColorFactor).toEqual(result.before.coatColor);
+                        expect(result.coat.coatRoughnessFactor).toBe(result.before.coatRoughness);
+                        expect(result.coat.coatIor).toBe(result.before.coatIor);
+                        expect(result.coat.coatDarkeningFactor).toBe(result.before.coatDarkening);
+                        expect(result.clearcoat.clearcoatFactor).toBe(coatWeight);
+                        expect(result.after.coatWeight).toBe(coatWeight);
+                        expect(result.after.coatPixels).toEqual(result.before.coatPixels);
+                        expect(result.after.coatTexture).toEqual(result.before.coatTexture);
+                        return;
+                    }
                     if (edited) {
                         expect(result.diffuse).toBeUndefined();
                         expect(result.scatter).toBeDefined();
