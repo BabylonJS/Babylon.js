@@ -1034,6 +1034,8 @@ jobs:
           vmImage: windows-latest
       steps:
           - template: templates/checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 2
 
           - task: DownloadPipelineArtifact@2
             displayName: "Download Pipeline Artifact"
@@ -1080,6 +1082,13 @@ jobs:
                 )
             displayName: "Update scripts from snapshot (ES5)"
             retryCountOnTaskFailure: 5
+
+          - script: |
+                node --test .azure-pipelines\scripts\update-native-test-inputs.test.mjs
+                if errorlevel 1 exit /b %errorlevel%
+                node .azure-pipelines\scripts\update-native-test-inputs.mjs ..\BabylonNativeNightlyPlayground\RelWithDebInfo
+            displayName: "Update Native test inputs from pull request"
+            condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
 
           - script: |
                 cd
