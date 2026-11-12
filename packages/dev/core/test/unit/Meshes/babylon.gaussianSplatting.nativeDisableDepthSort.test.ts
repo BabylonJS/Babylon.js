@@ -354,6 +354,52 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         engine.dispose();
     });
 
+    it("keeps a partial update after a full upload in the same frame in call order on Native", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { engine, scene } = await createScene();
+        // Native defers raw uploads of an existing texture after the frame's sub-texture updates.
+        (engine as any)._name = "Native";
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const width = 4;
+        const height = 3;
+        const bytesPerRow = width * 16; // RGBA32UI
+        const shTexture = new RawTexture(
+            null,
+            width,
+            height,
+            Constants.TEXTUREFORMAT_RGBA_INTEGER,
+            scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+        );
+        const centersTexture = new RawTexture(null, width, height, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        const updateRawTexture = vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const updateTextureData = vi.fn();
+        (engine as any).updateTextureData = updateTextureData;
+
+        (mesh as any)._updateShTextureData(shTexture, new Uint8Array(bytesPerRow * height), width, 0, height);
+        (mesh as any)._updateShTextureData(shTexture, new Uint8Array(bytesPerRow * height), width, 1, 2);
+        (mesh as any)._updateTextureFromData(centersTexture, new Uint8Array(width * height * 4), width, 0, height);
+        (mesh as any)._updateTextureFromData(centersTexture, new Uint8Array(width * 2 * 4), width, 1, 2);
+
+        expect(updateRawTexture).not.toHaveBeenCalled();
+        const regions = updateTextureData.mock.calls.map((call) => [call[0], call[3], call[5]]);
+        expect(regions).toEqual([
+            [shTexture.getInternalTexture(), 0, height],
+            [shTexture.getInternalTexture(), 1, 2],
+            [centersTexture.getInternalTexture(), 0, height],
+            [centersTexture.getInternalTexture(), 1, 2],
+        ]);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("keeps the existing SH rows when a part is appended without growing the atlas", async () => {
         const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
         const { GaussianSplattingCompoundMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh");

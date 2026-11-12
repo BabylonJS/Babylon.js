@@ -143,6 +143,7 @@ interface ITextureDataUpdateCapableEngine {
     ): void;
     _gl?: unknown;
     isWebGPU?: boolean;
+    name?: string;
 }
 
 // @internal
@@ -4306,13 +4307,25 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
         const engine = this._getTextureDataUpdateEngine();
         const internalTexture = texture.getInternalTexture()!;
-        // NativeEngine and NullEngine support complete raw uploads, but not sub-texture uploads.
-        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
+        // NullEngine supports complete raw uploads, but not sub-texture uploads.
+        if (this._usesRawFullUploads(engine) && lineStart === 0 && lineCount === internalTexture.height) {
             engine.updateRawTexture(internalTexture, data, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
             return;
         }
         engine.updateTextureData(internalTexture, data, 0, lineStart, width, lineCount, 0, 0, false);
     };
+
+    /**
+     * Whether complete texture uploads go through updateRawTexture instead of updateTextureData.
+     * Native defers a raw upload of an existing texture until after every sub-texture update of the frame, so a
+     * partial update following a full upload in the same frame would be overwritten. Using updateTextureData for
+     * both keeps them in call order.
+     * @param engine the engine performing the upload
+     * @returns true for engines without WebGL or WebGPU sub-texture uploads, other than Native
+     */
+    private _usesRawFullUploads(engine: ITextureDataUpdateCapableEngine): boolean {
+        return !engine._gl && !engine.isWebGPU && engine.name !== "Native";
+    }
 
     protected _updateTextureFromDataRect = (texture: BaseTexture, data: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number) => {
         const engine = this._getTextureDataUpdateEngine();
@@ -4335,8 +4348,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _updateShTextureData(texture: BaseTexture, shData: Uint8Array, textureWidth: number, lineStart: number, lineCount: number): void {
         const engine = this._getTextureDataUpdateEngine();
 
-        // NativeEngine/NullEngine: upload complete textures as raw data. Partial (incremental) updates must only
-        // write their own rows, so they go through updateTextureData below like on the other engines.
+        // NativeEngine/NullEngine: upload complete textures as one padded image. Partial (incremental) updates must only
+        // write their own rows, so they go through the row uploads below like on the other engines.
         const internalTexture = texture.getInternalTexture()!;
         if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
             const expectedByteLength = textureWidth * internalTexture.height * 16;
@@ -4348,7 +4361,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 padded.set(shData.subarray(0, Math.min(shData.byteLength, expectedByteLength)));
                 uploadData = new Uint32Array(padded.buffer);
             }
-            engine.updateRawTexture(internalTexture, uploadData, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
+            this._updateTextureFromData(texture, uploadData, textureWidth, 0, internalTexture.height);
             return;
         }
 
