@@ -645,7 +645,9 @@ export class GLTFMaterialExporter {
                                                 { texture: mergedTexture },
                                                 CreateFactorOperand(new Color4(1, 1, 1, 1)),
                                                 babylonPBRMaterial.getScene(),
-                                                TextureColorSpace.SRGB
+                                                TextureColorSpace.SRGB,
+                                                undefined,
+                                                { samplingMode: mergedTexture.samplingMode }
                                             );
                                             baseColorOpacityTexture = encoded.texture!;
                                         }

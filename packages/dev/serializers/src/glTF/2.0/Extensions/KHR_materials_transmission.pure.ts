@@ -178,7 +178,9 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                             { texture: packedTexture, dispose: () => packedTexture.dispose() },
                             CreateFactorOperand(new Color4(1, 1, 1, 1)),
                             babylonMaterial.getScene(),
-                            TextureColorSpace.SRGB
+                            TextureColorSpace.SRGB,
+                            undefined,
+                            { samplingMode: packedTexture.samplingMode }
                         );
                         baseColorTexture = encoded.texture ?? null;
                     }

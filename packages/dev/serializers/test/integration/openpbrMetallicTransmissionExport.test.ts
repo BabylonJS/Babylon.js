@@ -546,6 +546,10 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                 expect(result.texCoord).toBe(1);
                 expect(result.sampler.wrapS).toBe(33071);
                 expect(result.sampler.wrapT).toBe(33648);
+                if (imported) {
+                    expect(result.sampler.minFilter).toBe(9728);
+                    expect(result.sampler.magFilter).toBe(9728);
+                }
                 // Native inputs neutralize transmission tint; imported glTF inputs keep their authored RGB.
                 const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
                 const toSRGB = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
