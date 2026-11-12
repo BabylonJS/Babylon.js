@@ -221,7 +221,8 @@ describe("Procedural textures hash", () => {
 
     // A random table bottoms out near 0.9 of the overall variance here; a hash that cancels a coordinate along some line
     // (as x + y + 101 = 0 (mod 251) did for an earlier version) gives 0.
-    it("varies along every lattice line over the whole period", () => {
+    // The whole 4001x4001 period takes about 2 s alone, more under a parallel CI run, so allow it more than the default timeout.
+    it("varies along every lattice line over the whole period", { timeout: 60_000 }, () => {
         const { rand } = CompileHash(glsl);
         const values = new Float32Array(Modulus * Modulus);
         let sum = 0;
