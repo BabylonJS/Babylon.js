@@ -9,9 +9,27 @@ import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, Create
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { type Nullable } from "core/types";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
-import { GetSampledTextureKey } from "../glTFUtilities";
+import { Color4 } from "core/Maths/math.color.pure";
+import {
+    type ITextureProcessOperand,
+    CreateFactorOperand,
+    CreateTextureWithFactorOperand,
+    LerpTexturesAsync,
+    MultiplyTexturesAsync,
+    TextureChannel,
+    TextureColorSpace,
+} from "core/Materials/Textures/textureProcessor";
+import { Logger } from "core/Misc/logger";
+import { GetSampledTextureKey, ShouldExportOpenPBRSurfaceTintCoat } from "../glTFUtilities";
 
 const NAME = "KHR_materials_coat";
+
+type SurfaceTintCoat = {
+    color: ITextureProcessOperand;
+    roughness: ITextureProcessOperand;
+    ior: number;
+    darkening: number;
+};
 
 // Convert OpenPBR anisotropy values to glTF-compatible values
 function OpenpbrAnisotropyStrengthToGltf(baseRoughness: number, anisotropy: number) {
@@ -166,6 +184,8 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
      */
     private _cachedInternalTexturesMap: Record<string, InternalTexture> = {};
 
+    private _surfaceTintCoats = new Map<OpenPBRMaterial, SurfaceTintCoat>();
+
     public dispose() {
         for (const key of Object.keys(this._mergedTexturesMap)) {
             const texture = this._mergedTexturesMap[key];
@@ -177,11 +197,114 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
             internalTexture.dispose();
         }
         this._cachedInternalTexturesMap = {};
+        this._surfaceTintCoats.clear();
     }
 
     /** @internal */
     public get wasUsed() {
         return this._wasUsed;
+    }
+
+    private async _bakeSurfaceTintCoatAsync(context: string, material: OpenPBRMaterial): Promise<SurfaceTintCoat> {
+        const scene = material.getScene();
+        const weight = material.coatWeight;
+        const weightOperand = () => CreateTextureWithFactorOperand(weight > 0 ? material.coatWeightTexture : null, new Color4(weight, weight, weight, weight), TextureChannel.R);
+        const colorSpace = (texture: Nullable<BaseTexture>) => (texture?.gammaSpace ? TextureColorSpace.SRGB : TextureColorSpace.Linear);
+        const white = () => CreateFactorOperand(new Color4(1, 1, 1, 1));
+        const cache = (name: string, operand: ITextureProcessOperand) => {
+            if (operand.texture) {
+                this._mergedTexturesMap[`${name}_${material.uniqueId}`] = operand.texture;
+            }
+            return operand;
+        };
+        // Retained surface tint belongs to the renderer's full-weight coat, not the scattering albedo.
+        const coatColor =
+            weight === 0
+                ? white()
+                : await LerpTexturesAsync(
+                      `authored coat tint (${material.name})`,
+                      white(),
+                      CreateTextureWithFactorOperand(material.coatColorTexture, material.coatColor.toColor4(), TextureChannel.RGBA, colorSpace(material.coatColorTexture)),
+                      weightOperand(),
+                      scene,
+                      TextureColorSpace.SRGB
+                  );
+        let surfaceColor: ITextureProcessOperand | undefined;
+        let color: ITextureProcessOperand;
+        try {
+            const subsurfaceWeight = material.subsurfaceWeight;
+            let tintTexture = material._gltfDiffuseTransmissionColorTexture;
+            let tintWeightTexture = material.subsurfaceWeightTexture;
+            const coatCoordinates = coatColor.texture?.coordinatesIndex;
+            if (coatCoordinates !== undefined && [tintTexture, tintWeightTexture].some((texture) => texture && texture.coordinatesIndex !== coatCoordinates)) {
+                Logger.Warn(
+                    `${context}: The authored coat and diffuse surface tint of material '${material.name}' use different UV sets; ignoring diffuse tint/weight textures that do not use UV set ${coatCoordinates}.`
+                );
+                if (tintTexture && tintTexture.coordinatesIndex !== coatCoordinates) {
+                    tintTexture = null;
+                }
+                if (tintWeightTexture && tintWeightTexture.coordinatesIndex !== coatCoordinates) {
+                    tintWeightTexture = null;
+                }
+            }
+            surfaceColor = await LerpTexturesAsync(
+                `diffuse surface tint (${material.name})`,
+                white(),
+                CreateTextureWithFactorOperand(tintTexture, material._gltfDiffuseTransmissionColor.toColor4(), TextureChannel.RGBA, colorSpace(tintTexture)),
+                CreateTextureWithFactorOperand(
+                    tintWeightTexture,
+                    new Color4(subsurfaceWeight, subsurfaceWeight, subsurfaceWeight, subsurfaceWeight),
+                    material._useSubsurfaceWeightFromTextureAlpha ? TextureChannel.A : TextureChannel.R
+                ),
+                scene,
+                TextureColorSpace.SRGB,
+                undefined,
+                { samplingMode: tintTexture?.samplingMode ?? tintWeightTexture?.samplingMode }
+            );
+            color = cache(
+                "surfaceTintColor",
+                await MultiplyTexturesAsync(
+                    `combined surface coat tint (${material.name})`,
+                    { ...coatColor, dispose: undefined },
+                    { ...surfaceColor, dispose: undefined },
+                    scene,
+                    TextureColorSpace.SRGB,
+                    undefined,
+                    { samplingMode: coatColor.texture?.samplingMode ?? surfaceColor.texture?.samplingMode }
+                )
+            );
+        } finally {
+            coatColor.dispose?.();
+            surfaceColor?.dispose?.();
+        }
+        const specularRoughnessTexture = material._useRoughnessFromMetallicTextureGreen ? material.baseMetalnessTexture : material.specularRoughnessTexture;
+        const roughness = cache(
+            "surfaceTintRoughness",
+            await LerpTexturesAsync(
+                `surface coat roughness (${material.name})`,
+                CreateTextureWithFactorOperand(
+                    weight === 1 && !material.coatWeightTexture ? null : specularRoughnessTexture,
+                    new Color4(material.specularRoughness, material.specularRoughness, material.specularRoughness, 1),
+                    material._useRoughnessFromMetallicTextureGreen ? TextureChannel.G : TextureChannel.R
+                ),
+                CreateTextureWithFactorOperand(
+                    weight === 0 ? null : material.coatRoughnessTexture,
+                    new Color4(material.coatRoughness, material.coatRoughness, material.coatRoughness, 1),
+                    material._useCoatRoughnessFromGreenChannel ? TextureChannel.G : TextureChannel.R
+                ),
+                weightOperand(),
+                scene
+            )
+        );
+        if (material.coatWeightTexture || material.geometryCoatNormalTexture || material.coatRoughnessAnisotropy > 0) {
+            Logger.Warn(`${context}: Textured coat weight and coat normal/anisotropy blending cannot be preserved exactly for the surface coat of material '${material.name}'.`);
+        }
+        return {
+            color,
+            roughness,
+            ior: material.specularIor + (material.coatIor - material.specularIor) * weight,
+            darkening: material.coatDarkening * weight,
+        };
     }
 
     public async postExportMaterialAdditionalTexturesAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
@@ -203,66 +326,79 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
                 return additionalTextures;
             }
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
-            if (babylonMaterial.coatWeight > 0) {
-                // We will merge the coat_weight and coat_roughness textures, if needed.
-                // However, we want to retain the original texture's transforms and sampling info.
-                let coatNeedsMerge = false;
-                if (babylonMaterial.coatWeightTexture) {
-                    // If we don't have a coat_roughness texture or if the coat_weight and coat_roughness
-                    // textures are already merged, export them as-is.
-                    if (!babylonMaterial.coatRoughnessTexture) {
-                        additionalTextures.push(babylonMaterial.coatWeightTexture);
-                    } else if (
-                        babylonMaterial._useCoatRoughnessFromGreenChannel &&
-                        babylonMaterial.coatWeightTexture.getInternalTexture() === babylonMaterial.coatRoughnessTexture.getInternalTexture()
-                    ) {
-                        additionalTextures.push(babylonMaterial.coatWeightTexture);
-                        additionalTextures.push(babylonMaterial.coatRoughnessTexture);
-                    } else {
-                        coatNeedsMerge = true;
+            let surfaceTintCoat = this._surfaceTintCoats.get(babylonMaterial);
+            if (!surfaceTintCoat && ShouldExportOpenPBRSurfaceTintCoat(babylonMaterial, this._exporter.isExtensionEnabled("KHR_materials_diffuse_transmission"))) {
+                surfaceTintCoat = await this._bakeSurfaceTintCoatAsync(context, babylonMaterial);
+                this._surfaceTintCoats.set(babylonMaterial, surfaceTintCoat);
+            }
+            if (babylonMaterial.coatWeight > 0 || surfaceTintCoat) {
+                if (surfaceTintCoat) {
+                    if (surfaceTintCoat.color.texture) {
+                        additionalTextures.push(surfaceTintCoat.color.texture);
                     }
-                } else if (babylonMaterial.coatRoughnessTexture) {
-                    if (babylonMaterial._useCoatRoughnessFromGreenChannel) {
-                        additionalTextures.push(babylonMaterial.coatRoughnessTexture);
-                    } else {
-                        coatNeedsMerge = true;
+                    if (surfaceTintCoat.roughness.texture) {
+                        additionalTextures.push(surfaceTintCoat.roughness.texture);
+                    }
+                } else {
+                    // We will merge the coat_weight and coat_roughness textures, if needed.
+                    // However, we want to retain the original texture's transforms and sampling info.
+                    let coatNeedsMerge = false;
+                    if (babylonMaterial.coatWeightTexture) {
+                        // If we don't have a coat_roughness texture or if the coat_weight and coat_roughness
+                        // textures are already merged, export them as-is.
+                        if (!babylonMaterial.coatRoughnessTexture) {
+                            additionalTextures.push(babylonMaterial.coatWeightTexture);
+                        } else if (
+                            babylonMaterial._useCoatRoughnessFromGreenChannel &&
+                            babylonMaterial.coatWeightTexture.getInternalTexture() === babylonMaterial.coatRoughnessTexture.getInternalTexture()
+                        ) {
+                            additionalTextures.push(babylonMaterial.coatWeightTexture);
+                            additionalTextures.push(babylonMaterial.coatRoughnessTexture);
+                        } else {
+                            coatNeedsMerge = true;
+                        }
+                    } else if (babylonMaterial.coatRoughnessTexture) {
+                        if (babylonMaterial._useCoatRoughnessFromGreenChannel) {
+                            additionalTextures.push(babylonMaterial.coatRoughnessTexture);
+                        } else {
+                            coatNeedsMerge = true;
+                        }
+                    }
+                    if (coatNeedsMerge) {
+                        // Merge the two textures together but retain the transforms for each.
+                        // We do this by caching the internal texture that is created during the merge,
+                        // and then creating temporary textures that use that internal texture but
+                        // have the original texture's transforms/sampling info.
+                        const texId = GetCoatTextureId(babylonMaterial);
+                        if (!this._cachedInternalTexturesMap[texId]) {
+                            const internalTexture = await CreateMergedCoatInternalTextureAsync(babylonMaterial);
+                            if (internalTexture) {
+                                this._cachedInternalTexturesMap[texId] = internalTexture;
+                            }
+                        }
+                        if (this._cachedInternalTexturesMap[texId]) {
+                            if (babylonMaterial.coatWeightTexture) {
+                                this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId] = CreateTempTexture(
+                                    this._cachedInternalTexturesMap[texId],
+                                    babylonMaterial.coatWeightTexture
+                                );
+                                additionalTextures.push(this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId]);
+                            }
+                            if (babylonMaterial.coatRoughnessTexture) {
+                                this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId] = CreateTempTexture(
+                                    this._cachedInternalTexturesMap[texId],
+                                    babylonMaterial.coatRoughnessTexture
+                                );
+                                additionalTextures.push(this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId]);
+                            }
+                        }
                     }
                 }
-                if (coatNeedsMerge) {
-                    // Merge the two textures together but retain the transforms for each.
-                    // We do this by caching the internal texture that is created during the merge,
-                    // and then creating temporary textures that use that internal texture but
-                    // have the original texture's transforms/sampling info.
-                    const texId = GetCoatTextureId(babylonMaterial);
-                    if (!this._cachedInternalTexturesMap[texId]) {
-                        const internalTexture = await CreateMergedCoatInternalTextureAsync(babylonMaterial);
-                        if (internalTexture) {
-                            this._cachedInternalTexturesMap[texId] = internalTexture;
-                        }
-                    }
-                    if (this._cachedInternalTexturesMap[texId]) {
-                        if (babylonMaterial.coatWeightTexture) {
-                            this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId] = CreateTempTexture(
-                                this._cachedInternalTexturesMap[texId],
-                                babylonMaterial.coatWeightTexture
-                            );
-                            additionalTextures.push(this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId]);
-                        }
-                        if (babylonMaterial.coatRoughnessTexture) {
-                            this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId] = CreateTempTexture(
-                                this._cachedInternalTexturesMap[texId],
-                                babylonMaterial.coatRoughnessTexture
-                            );
-                            additionalTextures.push(this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId]);
-                        }
-                    }
-                }
-
                 if (babylonMaterial.geometryCoatNormalTexture) {
                     additionalTextures.push(babylonMaterial.geometryCoatNormalTexture);
                 }
 
-                if (babylonMaterial.coatColorTexture) {
+                if (!surfaceTintCoat && babylonMaterial.coatColorTexture) {
                     additionalTextures.push(babylonMaterial.coatColorTexture);
                 }
                 if (babylonMaterial.coatRoughnessAnisotropy > 0) {
@@ -331,7 +467,8 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
 
                 node.extensions[NAME] = coatInfo;
             } else if (babylonMaterial instanceof OpenPBRMaterial) {
-                if (babylonMaterial.coatWeight == 0.0) {
+                const surfaceTintCoat = this._surfaceTintCoats.get(babylonMaterial);
+                if (babylonMaterial.coatWeight == 0.0 && !surfaceTintCoat) {
                     resolve(node);
                     return;
                 }
@@ -342,7 +479,7 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
 
                 let coatWeightTexture: Nullable<BaseTexture>;
                 let coatTextureInfo;
-                if (babylonMaterial.coatWeightTexture) {
+                if (!surfaceTintCoat && babylonMaterial.coatWeightTexture) {
                     if (this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId]) {
                         coatWeightTexture = this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId];
                     } else {
@@ -353,7 +490,10 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
 
                 let coatRoughnessTexture: Nullable<BaseTexture>;
                 let coatRoughnessTextureInfo;
-                if (babylonMaterial.coatRoughnessTexture) {
+                if (surfaceTintCoat) {
+                    coatRoughnessTexture = surfaceTintCoat.roughness.texture;
+                    coatRoughnessTextureInfo = this._exporter._materialExporter.getTextureInfo(coatRoughnessTexture);
+                } else if (babylonMaterial.coatRoughnessTexture) {
                     if (this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId]) {
                         coatRoughnessTexture = this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId];
                     } else {
@@ -363,9 +503,9 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
                 }
 
                 const coatNormalTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.geometryCoatNormalTexture);
-                const coatColorTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.coatColorTexture);
-                const coatIor: number = babylonMaterial.coatIor;
-                const coatDarkeningFactor = babylonMaterial.coatDarkening;
+                const coatColorTextureInfo = this._exporter._materialExporter.getTextureInfo(surfaceTintCoat ? surfaceTintCoat.color.texture : babylonMaterial.coatColorTexture);
+                const coatIor = surfaceTintCoat ? surfaceTintCoat.ior : babylonMaterial.coatIor;
+                const coatDarkeningFactor = surfaceTintCoat ? surfaceTintCoat.darkening : babylonMaterial.coatDarkening;
 
                 // Check if we can convert from OpenPBR anisotropy to glTF anisotropy
                 // Conversion involves both specular roughness and anisotropic roughness changes so,
@@ -414,12 +554,14 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
                 }
 
                 const coatInfo: IKHRMaterialsCoat = {
-                    coatFactor: babylonMaterial.coatWeight,
+                    coatFactor: surfaceTintCoat ? 1 : babylonMaterial.coatWeight,
                     coatTexture: coatTextureInfo ?? undefined,
-                    coatRoughnessFactor: babylonMaterial.coatRoughness,
+                    coatRoughnessFactor: surfaceTintCoat ? (surfaceTintCoat.roughness.factor?.r ?? 1) : babylonMaterial.coatRoughness,
                     coatRoughnessTexture: coatRoughnessTextureInfo ?? undefined,
                     coatNormalTexture: coatNormalTextureInfo ?? undefined,
-                    coatColorFactor: babylonMaterial.coatColor.asArray(),
+                    coatColorFactor: surfaceTintCoat
+                        ? [surfaceTintCoat.color.factor?.r ?? 1, surfaceTintCoat.color.factor?.g ?? 1, surfaceTintCoat.color.factor?.b ?? 1]
+                        : babylonMaterial.coatColor.asArray(),
                     coatColorTexture: coatColorTextureInfo ?? undefined,
                     coatIor: coatIor !== 1.5 ? coatIor : undefined,
                     coatDarkeningFactor: coatDarkeningFactor !== 1.0 ? coatDarkeningFactor : undefined,

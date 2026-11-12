@@ -12,6 +12,7 @@ import { Texture } from "core/Materials/Textures/texture.pure";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 import { _CopyTextureMetadata } from "core/Materials/Textures/textureSampling.functions";
 import { type Nullable } from "core/types";
+import { ShouldExportOpenPBRSurfaceTintCoat } from "../glTFUtilities";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -249,7 +250,11 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
 
                 node.extensions[NAME] = clearCoatInfo;
             } else if (babylonMaterial instanceof OpenPBRMaterial) {
-                if (babylonMaterial.coatWeight == 0.0) {
+                if (
+                    babylonMaterial.coatWeight == 0.0 ||
+                    (this._exporter.isExtensionEnabled("KHR_materials_coat") &&
+                        ShouldExportOpenPBRSurfaceTintCoat(babylonMaterial, this._exporter.isExtensionEnabled("KHR_materials_diffuse_transmission")))
+                ) {
                     resolve(node);
                     return;
                 }

@@ -465,6 +465,21 @@ export function ShouldExportOpenPBRDiffuseTransmission(material: OpenPBRMaterial
 }
 
 /**
+ * Whether retained diffuse-transmission surface tint must be exported through a full-weight coat.
+ * @param material The OpenPBR material
+ * @param diffuseTransmissionEnabled Whether KHR_materials_diffuse_transmission is enabled for export
+ * @returns Whether the merged-volume fallback needs a surface coat
+ */
+export function ShouldExportOpenPBRSurfaceTintCoat(material: OpenPBRMaterial, diffuseTransmissionEnabled: boolean): boolean {
+    return (
+        !material.unlit &&
+        !material.geometryThinWalled &&
+        material._gltfDiffuseTransmissionSurfaceToCoat &&
+        !ShouldExportOpenPBRDiffuseTransmission(material, diffuseTransmissionEnabled)
+    );
+}
+
+/**
  * Computes the KHR_materials_volume attenuation exported for a volumetric OpenPBR material, blending the
  * transmission and subsurface slabs. The transmission extinction is the renderer's: absorption is shifted to be
  * non-negative using the (untextured) transmission scatter factor, since glTF attenuation can't be textured.

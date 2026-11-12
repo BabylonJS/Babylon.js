@@ -170,13 +170,28 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
         }
     }
 
-    for (const tintVariant of ["factor", "texture", "white volume", "default volume"] as const) {
-        const withColorTexture = tintVariant === "texture";
+    for (const tintVariant of [
+        "factor",
+        "texture",
+        "white volume",
+        "default volume",
+        "edited factor",
+        "edited texture",
+        "edited shared coat",
+        "edited independent coat",
+        "edited zero coat",
+        "edited full coat",
+    ] as const) {
+        const withAuthoredCoat = tintVariant.endsWith("coat");
+        const independentCoat = tintVariant === "edited independent coat";
+        const withColorTexture = tintVariant.endsWith("texture") || withAuthoredCoat;
+        const edited = tintVariant.startsWith("edited");
+        const coatWeight = tintVariant === "edited zero coat" ? 0 : tintVariant === "edited full coat" ? 1 : 0.25;
         for (const transmissionWeight of [0, 0.35]) {
             for (const withWeightTextures of [false, true]) {
                 test(`imported volumetric diffuse tint round-trips (${tintVariant}, transmission: ${transmissionWeight}, weight textures: ${withWeightTextures})`, async () => {
                     const result = await page.evaluate(
-                        async ({ withColorTexture, transmissionWeight, withWeightTextures, tintVariant }) => {
+                        async ({ withColorTexture, transmissionWeight, withWeightTextures, tintVariant, edited, withAuthoredCoat, independentCoat, coatWeight }) => {
                             const scene = window.scene!;
                             const withScatter = withColorTexture && transmissionWeight > 0;
                             const image = (colors: string[]) => {
@@ -200,6 +215,7 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                     "KHR_materials_volume",
                                     "KHR_materials_scatter",
                                     "KHR_texture_transform",
+                                    ...(withAuthoredCoat ? ["KHR_materials_coat"] : []),
                                 ],
                                 scene: 0,
                                 scenes: [{ nodes: [0] }],
@@ -211,6 +227,24 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                         alphaMode: "BLEND",
                                         pbrMetallicRoughness: { metallicFactor: 0, baseColorFactor: [0.8, 0.4, 0.2, 0.4], baseColorTexture: { index: 0 } },
                                         extensions: {
+                                            ...(withAuthoredCoat
+                                                ? {
+                                                      KHR_materials_coat: {
+                                                          coatFactor: coatWeight,
+                                                          coatColorFactor: [0.7, 0.8, 0.9],
+                                                          coatColorTexture: independentCoat
+                                                              ? { index: 0 }
+                                                              : {
+                                                                    index: 1,
+                                                                    texCoord: 1,
+                                                                    extensions: { KHR_texture_transform: { offset: [0.1, 0.2], scale: [2, 1], rotation: 0.4 } },
+                                                                },
+                                                          coatRoughnessFactor: 0.2,
+                                                          coatIor: 1.2,
+                                                          coatDarkeningFactor: 0.6,
+                                                      },
+                                                  }
+                                                : {}),
                                             KHR_materials_diffuse_transmission: {
                                                 diffuseTransmissionFactor: 0.6,
                                                 diffuseTransmissionColorFactor: [0.2, 0.7, 0.4],
@@ -223,7 +257,17 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                                           },
                                                       }
                                                     : {}),
-                                                ...(withWeightTextures ? { diffuseTransmissionTexture: { index: 2, texCoord: 1 } } : {}),
+                                                ...(withWeightTextures
+                                                    ? {
+                                                          diffuseTransmissionTexture: {
+                                                              index: 2,
+                                                              texCoord: 1,
+                                                              ...(edited && withColorTexture
+                                                                  ? { extensions: { KHR_texture_transform: { offset: [0.1, 0.2], scale: [2, 1], rotation: 0.4 } } }
+                                                                  : {}),
+                                                          },
+                                                      }
+                                                    : {}),
                                             },
                                             KHR_materials_transmission: {
                                                 transmissionFactor: transmissionWeight,
@@ -262,6 +306,9 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                             });
                             await scene.whenReadyAsync();
                             const material = loaded.meshes.find((mesh) => mesh.material)!.material as InstanceType<typeof BABYLON.OpenPBRMaterial>;
+                            if (edited) {
+                                material.subsurfaceScatterAnisotropy = 0.3;
+                            }
                             const snapshot = async (mat: InstanceType<typeof BABYLON.OpenPBRMaterial>) => {
                                 const textureState = async (texture: InstanceType<typeof BABYLON.BaseTexture> | null, factor: number, channel: number) => {
                                     const pixels = texture ? await texture.readPixels() : null;
@@ -286,6 +333,13 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                     baseTexture: await textureState(mat.baseColorTexture, 1, 0),
                                     tint: mat._gltfDiffuseTransmissionColor.asArray(),
                                     tintTexture: await textureState(mat._gltfDiffuseTransmissionColorTexture, 1, 0),
+                                    coatWeight: mat.coatWeight,
+                                    coatColor: mat.coatColor.asArray(),
+                                    coatRoughness: mat.coatRoughness,
+                                    coatIor: mat.coatIor,
+                                    coatDarkening: mat.coatDarkening,
+                                    coatTexture: await textureState(mat.coatColorTexture, 1, 0),
+                                    coatPixels: mat.coatColorTexture ? Array.from((await mat.coatColorTexture.readPixels()) as Uint8Array) : null,
                                     diffuse: await textureState(mat.subsurfaceWeightTexture, mat.subsurfaceWeight, mat._useSubsurfaceWeightFromTextureAlpha ? 3 : 0),
                                     transmission: await textureState(mat.transmissionWeightTexture, mat.transmissionWeight, 0),
                                     extinction: mat.transmissionColor.asArray().map((value) => (mat.transmissionDepth > 0 ? -Math.log(value) / mat.transmissionDepth : 0)),
@@ -295,6 +349,7 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                 };
                             };
                             const before = await snapshot(material);
+                            BABYLON.Logger.ClearLogCache();
                             const exported = await BABYLON.GLTF2Export.GLTFAsync(scene, "diffuse");
                             const json = JSON.parse(exported.files["diffuse.gltf"] as string);
                             const exportedMaterial = json.materials.find((entry: { name: string }) => entry.name === "diffuseTint");
@@ -310,7 +365,11 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                 const after = await snapshot(reimported.meshes.find((mesh) => mesh.material)!.material as InstanceType<typeof BABYLON.OpenPBRMaterial>);
                                 return {
                                     before,
+                                    sourceAfter: await snapshot(material),
+                                    warnings: BABYLON.Logger.LogCache,
                                     after,
+                                    coat: exportedMaterial.extensions?.KHR_materials_coat,
+                                    clearcoat: exportedMaterial.extensions?.KHR_materials_clearcoat,
                                     diffuse: exportedMaterial.extensions?.KHR_materials_diffuse_transmission,
                                     scatter: exportedMaterial.extensions?.KHR_materials_scatter,
                                     volume: exportedMaterial.extensions?.KHR_materials_volume,
@@ -320,11 +379,57 @@ test.describe("OpenPBR KHR_materials_transmission export base color", () => {
                                 reimportedScene.dispose();
                             }
                         },
-                        { withColorTexture, transmissionWeight, withWeightTextures, tintVariant }
+                        { withColorTexture, transmissionWeight, withWeightTextures, tintVariant, edited, withAuthoredCoat, independentCoat, coatWeight }
                     );
                     expect(result.volume.attenuationColor.every((value: number) => value !== null && Number.isFinite(value))).toBe(true);
                     expect(Number.isFinite(result.volume.attenuationDistance)).toBe(true);
                     expect(result.volume.attenuationDistance).toBeGreaterThan(0);
+                    expect(result.sourceAfter).toEqual(result.before);
+                    if (edited) {
+                        expect(result.diffuse).toBeUndefined();
+                        expect(result.scatter).toBeDefined();
+                        const fraction = transmissionWeight / (transmissionWeight + (1 - transmissionWeight) * 0.6);
+                        expect(result.scatter.scatterAnisotropy).toBeCloseTo((withColorTexture ? 0.2 : 0) * fraction + 0.3 * (1 - fraction), 5);
+                        expect(result.coat).toBeDefined();
+                        expect(result.coat.coatFactor).toBe(1);
+                        expect(result.clearcoat).toBeUndefined();
+                        expect(result.after.coatWeight).toBe(1);
+                        if (withAuthoredCoat) {
+                            expect(result.after.coatIor).toBeCloseTo(1.5 + (1.2 - 1.5) * coatWeight, 5);
+                            expect(result.after.coatDarkening).toBeCloseTo(0.6 * coatWeight, 5);
+                            expect(result.after.coatRoughness).toBeCloseTo(1 + (0.2 - 1) * coatWeight, 5);
+                        }
+                        if (independentCoat) {
+                            expect(result.warnings).toContain("authored coat and diffuse surface tint");
+                            expect(result.warnings).toContain("ignoring diffuse tint/weight textures that do not use UV set 0");
+                        }
+                        if (result.after.coatPixels) {
+                            const pixels = result.after.coatPixels;
+                            expect(result.after.coatColor).toEqual([1, 1, 1]);
+                            expect(result.after.coatTexture.coordinatesIndex).toBe(independentCoat ? 0 : 1);
+                            if (withColorTexture) {
+                                const matrix = independentCoat ? result.before.coatTexture.matrix : result.before.tintTexture.matrix;
+                                result.after.coatTexture.matrix?.forEach((value, i) => expect(value).toBeCloseTo(matrix![i], 5));
+                            }
+                            for (let i = 0; i < pixels.length; i += 4) {
+                                const weight = independentCoat ? 0.6 : result.before.diffuse.values[withWeightTextures ? i / 4 : 0];
+                                const tint = withColorTexture && !independentCoat ? (i % 8 === 0 ? [0.2, 0, 0] : [0, 0.7, 0]) : [0.2, 0.7, 0.4];
+                                for (let channel = 0; channel < 3; channel++) {
+                                    const encoded = pixels[i + channel] / 255;
+                                    const coatEncoded = (result.before.coatPixels?.[i + channel] ?? 255) / 255;
+                                    const coatLinear = coatEncoded <= 0.04045 ? coatEncoded / 12.92 : Math.pow((coatEncoded + 0.055) / 1.055, 2.4);
+                                    const coatTint = withAuthoredCoat ? 1 + (coatLinear * result.before.coatColor[channel] - 1) * coatWeight : 1;
+                                    const expectedLinear = coatTint * (1 + (tint[channel] - 1) * weight);
+                                    const expectedEncoded = expectedLinear <= 0.0031308 ? expectedLinear * 12.92 : 1.055 * Math.pow(expectedLinear, 1 / 2.4) - 0.055;
+                                    // Three unsigned-byte processing passes can accumulate rounding.
+                                    expect(Math.abs(encoded - expectedEncoded)).toBeLessThan(2 / 255);
+                                }
+                            }
+                        } else {
+                            result.after.coatColor.forEach((value, channel) => expect(value).toBeCloseTo(1 + ([0.2, 0.7, 0.4][channel] - 1) * 0.6, 5));
+                        }
+                        return;
+                    }
                     expect(result.diffuse).toBeDefined();
                     expect(result.diffuse.diffuseTransmissionFactor).toBe(0.6);
                     expect(result.diffuse.diffuseTransmissionColorFactor).toEqual([0.2, 0.7, 0.4]);
