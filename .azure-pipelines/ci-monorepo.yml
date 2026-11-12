@@ -1093,7 +1093,6 @@ jobs:
                 cd ..\BabylonNativeNightlyPlayground\RelWithDebInfo
                 Playground.exe app:///Scripts/validation_native.js
             displayName: "Run visualization tests"
-            retryCountOnTaskFailure: 3
 
           - pwsh: |
                 New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Results" | Out-Null
