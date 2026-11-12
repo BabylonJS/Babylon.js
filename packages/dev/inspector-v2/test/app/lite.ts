@@ -6,7 +6,11 @@ import {
     FgBlockType,
     FgType,
     addFlowGraph,
+    addBillboardSpriteIndex,
+    addBillboardSystemToScene,
+    addDepthHostedSpriteLayerToScene,
     addSprite2DIndex,
+    addTextRenderableToScene,
     addToScene,
     buildNodeParticleSet,
     cloneTransformNode,
@@ -22,6 +26,7 @@ import {
     createDirectionalLight,
     createEngine,
     createGridSpriteAtlas,
+    createFacingBillboardSystem,
     createGpuPicker,
     createHemisphericLight,
     createPcfDirectionalShadowGenerator,
@@ -37,6 +42,7 @@ import {
     createSpotLight,
     createSurface,
     createTextLayer,
+    createTextRenderable,
     createTextRenderer,
     createTransformNode,
     detachFlowGraph,
@@ -55,11 +61,15 @@ import {
     enableBoneControl,
     getMeshSkeleton,
     getParticleSystems,
+    getSceneBillboardSystems,
     isParticleSystemStarted,
     loadGltf,
     parseNodeParticleSource,
     registerNodeParticleSet,
     removeFromScene,
+    removeBillboardSystemFromScene,
+    removeDepthHostedSpriteLayerFromScene,
+    removeTextRenderableFromScene,
     loadFont,
     getRenderingContexts,
     getFrameGraph,
@@ -162,7 +172,41 @@ function CreateParticleGraph(name: string) {
                 name: "Create",
                 inputs: [
                     { name: "lifeTime", value: 2, valueType: "number" },
-                    { name: "size", value: 0.05, valueType: "number" },
+                    { name: "size", value: 0.12, valueType: "number" },
+                    { name: "emitPower", value: 1, valueType: "number" },
+                ],
+            },
+            {
+                id: 3,
+                customType: "BABYLON.BoxShapeBlock",
+                name: "Emitter",
+                inputs: [
+                    { name: "particle", targetBlockId: 1, targetConnectionName: "particle" },
+                    { name: "direction1", value: [-0.3, 1, -0.3], valueType: "BABYLON.Vector3" },
+                    { name: "direction2", value: [0.3, 1, 0.3], valueType: "BABYLON.Vector3" },
+                    { name: "minEmitBox", value: [-0.1, -0.5, -0.1], valueType: "BABYLON.Vector3" },
+                    { name: "maxEmitBox", value: [0.1, -0.5, 0.1], valueType: "BABYLON.Vector3" },
+                ],
+            },
+            { id: 4, customType: "BABYLON.ParticleInputBlock", name: "Position", type: 8, contextualValue: 1 },
+            { id: 5, customType: "BABYLON.ParticleInputBlock", name: "Scaled Direction", type: 8, contextualValue: 6 },
+            {
+                id: 6,
+                customType: "BABYLON.ParticleMathBlock",
+                name: "Add Position",
+                operation: 0,
+                inputs: [
+                    { name: "left", targetBlockId: 4, targetConnectionName: "output" },
+                    { name: "right", targetBlockId: 5, targetConnectionName: "output" },
+                ],
+            },
+            {
+                id: 7,
+                customType: "BABYLON.UpdatePositionBlock",
+                name: "Move",
+                inputs: [
+                    { name: "particle", targetBlockId: 3, targetConnectionName: "output" },
+                    { name: "position", targetBlockId: 6, targetConnectionName: "output" },
                 ],
             },
             {
@@ -172,8 +216,8 @@ function CreateParticleGraph(name: string) {
                 capacity: 100,
                 updateSpeed: 0.01,
                 inputs: [
-                    { name: "particle", targetBlockId: 1, targetConnectionName: "particle" },
-                    { name: "emitRate", value: 10, valueType: "number" },
+                    { name: "particle", targetBlockId: 7, targetConnectionName: "output" },
+                    { name: "emitRate", value: 20, valueType: "number" },
                 ],
             },
         ],
@@ -297,7 +341,8 @@ morphClone.position.set(2, -1, 0);
 addToScene(primaryScene, morphClone);
 
 const particleSet = await buildNodeParticleSet(engine, primaryScene, CreateParticleGraph("P9 Sparks"));
-particleSet.systems.forEach((system) => (system.texture = blueTexture));
+const sparkTexture = createSolidTexture2D(engine, 1, 0.75, 0.2);
+particleSet.systems.forEach((system) => (system.texture = sparkTexture));
 registerNodeParticleSet(primaryScene, particleSet);
 
 const animationManager = createAnimationManager({ engine });
@@ -427,6 +472,33 @@ const sphereGlowAccessor: FgAccessor = {
 const defaultFlowGraph = await addFlowGraph(primaryScene, await buildFgGraph(defaultFlowGraphSpecs), {
     accessors: { "/blueSphere/glowing": sphereGlowAccessor },
 });
+let sceneRenderableFixture:
+    | {
+          textData: ReturnType<typeof createDefaultTextData>;
+          text: ReturnType<typeof createTextRenderable>;
+          sprite: ReturnType<typeof createSprite2DLayer>;
+          billboard: ReturnType<typeof createFacingBillboardSystem>;
+      }
+    | undefined;
+if (new URLSearchParams(window.location.search).get("sceneRenderables") === "on") {
+    const font = await loadFont("/fonts/Roboto-Regular.ttf");
+    const textData = createDefaultTextData(font, 16, "Scene text", [1, 1, 1, 1]);
+    const text = createTextRenderable(textData, {
+        position: { x: -0.4, y: 2.4, z: 0 },
+        scaling: { x: 0.01, y: 0.01, z: 0.01 },
+        // Avoid Lite 1.39.3's scene bind-group mismatch in the fixture's default draw order.
+        order: 201,
+    });
+    const atlas = createGridSpriteAtlas(blueTexture, { cellWidthPx: 1, cellHeightPx: 1 });
+    const sprite = createSprite2DLayer(atlas, { depth: "test" });
+    const billboard = createFacingBillboardSystem(atlas);
+    addSprite2DIndex(sprite, { positionPx: [canvas.width * 0.5, canvas.height * 0.1], sizePx: [96, 96], z: 0.99 });
+    addBillboardSpriteIndex(billboard, { position: [1.7, 1, 0], sizeWorld: [0.6, 0.6] });
+    addTextRenderableToScene(primaryScene, text);
+    addDepthHostedSpriteLayerToScene(primaryScene, sprite);
+    addBillboardSystemToScene(primaryScene, billboard);
+    sceneRenderableFixture = { textData, text, sprite, billboard };
+}
 await registerScene(primaryScene);
 
 const overlayFont = await loadFont("/fonts/Roboto-Regular.ttf");
@@ -568,6 +640,11 @@ Object.assign(globalThis, {
     liteMeshes: [box, sphere, smallBox],
     liteLights: [hemisphericLight, directionalLight, pointLight, spotLight],
     litePrimaryScene: primaryScene,
+    liteSceneRenderableFixture: sceneRenderableFixture,
+    liteGetSceneBillboardSystems: () => getSceneBillboardSystems(primaryScene),
+    liteRemoveSceneText: () => sceneRenderableFixture && removeTextRenderableFromScene(primaryScene, sceneRenderableFixture.text),
+    liteRemoveSceneSprite: () => sceneRenderableFixture && removeDepthHostedSpriteLayerFromScene(primaryScene, sceneRenderableFixture.sprite),
+    liteRemoveSceneBillboard: () => sceneRenderableFixture && removeBillboardSystemFromScene(primaryScene, sceneRenderableFixture.billboard),
     liteGetFrameGraphTaskState: () => getFrameGraphTasks(getFrameGraph(primaryScene)).map((task) => ({ name: task.name, executionEnabled: task.executionEnabled })),
     liteRegisterScene: registerScene,
     liteSecondarySurface: secondarySurface,
@@ -603,6 +680,9 @@ window.addEventListener(
         disposeDefaultTextData(overlayTextData);
         disposeDefaultTextData(backgroundTextData);
         disposeScene(primaryScene);
+        if (sceneRenderableFixture) {
+            disposeDefaultTextData(sceneRenderableFixture.textData);
+        }
         disposeSpriteRenderer(spriteRenderer);
         disposeSurface(secondarySurface);
         disposeEngine(engine);

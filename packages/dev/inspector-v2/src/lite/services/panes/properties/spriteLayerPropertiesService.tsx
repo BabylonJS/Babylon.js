@@ -24,13 +24,17 @@ import { BoundProperty, ComputedProperty, DerivedProperty } from "../../../../co
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
 import { GetRenderingLayerDisplayName } from "../../../renderingLayerUtils";
+import { IsSceneSpriteLayer } from "../../../sceneRenderableUtils";
 
 const SpriteLayerDisplayNameGetters = new WeakMap<EngineContext, (layer: Sprite2DLayer) => string>();
 
 function GetSpriteLayerDisplayNameGetter(engine: EngineContext): (layer: Sprite2DLayer) => string {
     let getter = SpriteLayerDisplayNameGetters.get(engine);
     if (!getter) {
-        getter = (layer) => GetRenderingLayerDisplayName<Sprite2DLayer, SpriteRenderer>(engine, "sprite-renderer", layer, "Sprite Layer");
+        getter = (layer) =>
+            IsSceneSpriteLayer(engine, layer)
+                ? "Depth-hosted Sprite Layer"
+                : GetRenderingLayerDisplayName<Sprite2DLayer, SpriteRenderer>(engine, "sprite-renderer", layer, "Sprite Layer");
         SpriteLayerDisplayNameGetters.set(engine, getter);
     }
     return getter;
@@ -128,9 +132,12 @@ function IsRegisteredSpriteLayer(engine: EngineContext, entity: unknown): entity
         return false;
     }
 
-    return engine.surfaces.some((surface) =>
-        getRenderingContexts(surface).some(
-            (context) => getRenderingContextKind(context) === "sprite-renderer" && (context as SpriteRenderer).layers.includes(entity as Sprite2DLayer)
+    return (
+        IsSceneSpriteLayer(engine, entity) ||
+        engine.surfaces.some((surface) =>
+            getRenderingContexts(surface).some(
+                (context) => getRenderingContextKind(context) === "sprite-renderer" && (context as SpriteRenderer).layers.includes(entity as Sprite2DLayer)
+            )
         )
     );
 }
@@ -142,7 +149,11 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
         <>
             <ComputedProperty component={TextPropertyLine} label="Name" target={layer} getValue={GetSpriteLayerDisplayNameGetter(engine)} />
             <BoundProperty component={SwitchPropertyLine} label="Visible" target={layer} propertyKey="visible" />
-            <BoundProperty component={NumberInputPropertyLine} label="Order" target={layer} propertyKey="order" />
+            {layer.depth === "none" ? (
+                <BoundProperty component={NumberInputPropertyLine} label="Order" target={layer} propertyKey="order" />
+            ) : (
+                <TextPropertyLine label="Order" value="Not used by depth-hosted layers." />
+            )}
             <BoundProperty component={NumberInputPropertyLine} label="Opacity" target={layer} propertyKey="opacity" min={0} max={1} step={0.01} />
             <ComputedProperty component={StringifiedPropertyLine} label="Sprite Count" target={layer} getValue={GetSpriteCount} />
             <TextPropertyLine label="Depth Mode" value={layer.depth} />
@@ -221,7 +232,11 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 max={1}
                 step={0.01}
             />
-            <TextPropertyLine label="Default Depth" value="Not applicable to renderer-owned layers." />
+            {layer.depth === "none" ? (
+                <TextPropertyLine label="Default Depth" value="Not applicable to renderer-owned layers." />
+            ) : (
+                <BoundProperty component={NumberInputPropertyLine} label="Default Depth" target={layer} propertyKey="layerZ" min={0} max={1} step={0.01} />
+            )}
             <TextPropertyLine label="Atlas Frames" value={layer.atlas.frames.length.toString()} />
             <TextPropertyLine label="Atlas Size" value={`${layer.atlas.textureSizePx[0]} x ${layer.atlas.textureSizePx[1]} px`} />
             <TextPropertyLine label="Premultiplied Alpha" value={layer.atlas.premultipliedAlpha ? "True" : "False"} />
