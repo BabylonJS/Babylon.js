@@ -65,6 +65,8 @@ describe("P4 Inspector import boundaries", () => {
         });
         expect(textureService).toContain('import("./textureMetadataProperties")');
         expect(textureService).not.toMatch(/^import .*textureMetadataProperties/m);
+        expect(textureService).toContain('import("./texturePreviewProperties")');
+        expect(textureService).not.toMatch(/^import .*texturePreviewProperties/m);
     });
 
     it("keeps Lite lazy adapter sources free of Babylon.js implementation and preview/editor dependencies", () => {
@@ -112,6 +114,13 @@ describe("P4 Inspector import boundaries", () => {
             expect(source).not.toMatch(/from ["'](?:@babylonjs\/lite|@dev\/core|core\/)/);
             expect(source).not.toMatch(PreviewOrEditorDependency);
         });
+        for (const file of ["components/properties/textures/texturePreviewCore.tsx", "misc/textureChannels.ts", "misc/download.ts"]) {
+            expect(ReadInspectorSource(file)).not.toMatch(/from ["'](?:@babylonjs\/lite|@dev\/core|core\/)/);
+        }
+        const preview = ReadInspectorSource("lite/services/panes/properties/texturePreviewProperties.tsx");
+        expect(preview).not.toMatch(NativeRuntimeImplementation);
+        expect(preview).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);
+        expect(preview).toContain("texturePreviewCore");
     });
 
     it("keeps native BJS bindings and Lite derived fields independent", () => {
