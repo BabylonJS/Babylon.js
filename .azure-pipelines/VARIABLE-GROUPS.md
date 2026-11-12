@@ -11,14 +11,14 @@ it to every pipeline that references it.
 
 ### Core Infrastructure
 
-| Variable                    | Description                                                                | Example                                |
-| --------------------------- | -------------------------------------------------------------------------- | -------------------------------------- |
-| `SNAPSHOTS_STORAGE_ACCOUNT` | Azure Storage account for PR/branch snapshots                              | `mystorageaccount`                     |
-| `TOOLS_STORAGE_ACCOUNT`     | Azure Storage account for production tool deployments                      | `mytoolsaccount`                       |
-| `SNAPSHOT_CDN_URL`          | Base URL of the snapshot CDN (no trailing slash)                           | `https://my-cdn.example.net`           |
-| `GITHUB_SERVICE_CONNECTION` | GitHub service connection ID for `GitHubComment` and `GitHubRelease` tasks | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `DEVOPS_PROJECT_ID`         | Azure DevOps project GUID (used for cross-project artifact downloads)      | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `BOT_EMAIL`                 | Email address used for automated git commits in the publish pipeline       | `bot@example.com`                      |
+| Variable                    | Description                                                                  | Example                                |
+| --------------------------- | ---------------------------------------------------------------------------- | -------------------------------------- |
+| `SNAPSHOTS_STORAGE_ACCOUNT` | Azure Storage account for PR/branch snapshots                                | `mystorageaccount`                     |
+| `TOOLS_STORAGE_ACCOUNT`     | Azure Storage account for production tool deployments                        | `mytoolsaccount`                       |
+| `SNAPSHOT_CDN_URL`          | Base URL of the snapshot CDN (no trailing slash)                             | `https://my-cdn.example.net`           |
+| `GITHUB_SERVICE_CONNECTION` | GitHub service connection ID for `GitHubComment` and `GitHubRelease` tasks   | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `DEVOPS_PROJECT_ID`         | Azure DevOps project GUID (used for cross-project artifact downloads)        | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `BOT_EMAIL`                 | Email address used for automated git commits in the retired publish pipeline | `bot@example.com`                      |
 
 ### Deployment Server API Endpoints
 
@@ -113,7 +113,7 @@ deploy tools.
 | `DEPLOY_TOKEN`      | Deployment server authorization token |
 | `DEPLOYMENT_SERVER` | Deployment server base URL            |
 
-Linked by: ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-publish, cd-tools.
+Linked by: ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-cdn-deploy, cd-publish (retired), cd-tools.
 
 ## Variable Group: `NPM_Publish`
 
@@ -123,30 +123,50 @@ npm registry credentials used to publish packages.
 | ----------- | -------------------------------------- |
 | `NPM_TOKEN` | npm registry auth token for publishing |
 
-Linked by: cd-publish.
+Linked by: cd-publish (retired; manual fallback only). Stable and preview npm
+releases are published by the internal engine release pipeline, so
+`cd-cdn-deploy` must not link this group.
 
 ### Secret Variables (per-pipeline)
 
 These must be configured as **secret variables** on each pipeline (not in the
 variable group) because they contain credentials:
 
-| Variable     | Used By          | Description                                                   |
-| ------------ | ---------------- | ------------------------------------------------------------- |
-| `GitHubPAT`  | cd-publish       | GitHub Personal Access Token for git push and version scripts |
-| `SEARCH_KEY` | ci-documentation | Search API key for documentation builds                       |
+| Variable          | Used By                  | Description                                                                      |
+| ----------------- | ------------------------ | -------------------------------------------------------------------------------- |
+| `GitHubPAT`       | cd-publish (retired)     | GitHub Personal Access Token for git push and version scripts                    |
+| `GitHubReadToken` | cd-cdn-deploy (optional) | Read-only GitHub token for polling the release API without anonymous rate limits |
+| `SEARCH_KEY`      | ci-documentation         | Search API key for documentation builds                                          |
 
 ### Manual YAML Configuration
 
 These values must be edited directly in the YAML files because Azure DevOps
 `resources.pipelines.source` does not support runtime variable expansion.
 
-| Value                          | File            | Description                                                     |
-| ------------------------------ | --------------- | --------------------------------------------------------------- |
-| `<PUBLISH_PIPELINE_NAME>`      | ci-monorepo.yml | Name of the cd-publish YAML pipeline (build completion trigger) |
-| `<NATIVE_TESTS_PIPELINE_NAME>` | ci-monorepo.yml | Name of the native tests pipeline (artifact download source)    |
+| Value                      | File                                     | Description                                                                   |
+| -------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
+| `CDN deploy pipeline`      | cd-tools.yml, ci-monorepo.yml            | Definition name of the cd-cdn-deploy YAML pipeline (build completion trigger) |
+| `CDN deploy pipeline`      | templates/checkout-with-tag-override.yml | Default `triggeringPipeline` used for classic build completion triggers       |
+| `BabylonNative Nightly CI` | ci-monorepo.yml                          | Name of the native tests pipeline (artifact download source)                  |
 
-Replace the `<...>` placeholders with the actual pipeline names after creating
-them in Azure DevOps.
+If a pipeline definition is renamed in Azure DevOps, update these values to
+match.
+
+## Stable Release Flow
+
+1. The internal engine release pipeline publishes the npm packages, pushes the
+   `Version update X` commit and annotated tag `X` to master, and creates the
+   GitHub release `X` with the `cdnSnapshot.zip` asset. Preview releases create
+   no tag or GitHub release.
+2. The stable tag triggers `cd-cdn-deploy` ("CDN deploy pipeline"). It waits for
+   the release asset, validates it, uploads it to `cdn/master/v<version>`, and
+   verifies `https://cdn.babylonjs.com/v<version>/`. It can be rerun manually
+   with the `version` parameter.
+3. A successful deploy triggers `cd-tools` ("Tools CD"), which checks out the
+   latest version tag and deploys the tools.
+
+`cd-publish` ("Publish pipeline") has no automatic trigger and is kept only as
+a manual emergency fallback.
 
 ## Linking the Variable Group
 
@@ -161,8 +181,9 @@ variables:
 
 After creating a new YAML pipeline, go to **Pipeline → Edit → Variables →
 Variable groups** and link every variable group referenced by its YAML. The
-pipeline must be authorized to access each group. In particular, `cd-publish`
-must link and authorize `NPM_Publish`.
+pipeline must be authorized to access each group. `cd-cdn-deploy` must link
+and authorize `BabylonJS-CI-Infrastructure` and `BabylonJS-Deployment`; only
+the retired `cd-publish` fallback uses `NPM_Publish`.
 
 > **Note:** The `GITHUB_SERVICE_CONNECTION` variable is used in `GitHubComment@0`
 > and `GitHubRelease@1` task inputs. After linking the variable group, you may

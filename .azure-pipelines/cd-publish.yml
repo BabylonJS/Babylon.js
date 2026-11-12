@@ -1,10 +1,15 @@
 # =============================================================================
-# Publish Pipeline (Definition ID: 15)
+# Publish Pipeline (Definition ID: 50, "Publish pipeline") - RETIRED
 # Converted from Azure DevOps Classic Pipeline
 #
-# Triggered when .build/config.json is changed on master.
-# Handles versioning, building, publishing to npm, creating GitHub releases,
-# and pushing tags.
+# RETIRED: Babylon.js releases are now published by the internal engine
+# release pipeline, which publishes npm packages, pushes the version commit and
+# tag, and creates the GitHub release with cdnSnapshot.zip. The versioned CDN
+# upload is handled by cd-cdn-deploy.yml ("CDN deploy pipeline").
+#
+# This pipeline has no automatic trigger so it can never double-publish. It is
+# kept only as a manual emergency fallback; running it publishes to npm, pushes
+# to master, and creates a GitHub release.
 #
 # Variable groups:
 #   - BabylonJS-CI-Infrastructure
@@ -15,14 +20,7 @@
 #   - GitHubPAT
 # =============================================================================
 
-trigger:
-    batch: true
-    branches:
-        include:
-            - master
-    paths:
-        include:
-            - .build/config.json
+trigger: none
 
 pr: none
 
@@ -180,30 +178,9 @@ jobs:
 
           - script: |
                 set -euo pipefail
-
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-                  -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/master/v$(PackageVersion)" \
-                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "saveZip=true" \
-                  -F "zip=@$(Build.ArtifactStagingDirectory)/snapshot.zip"
-            displayName: "Update snapshot"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
-
-          - script: |
-                set -euo pipefail
                 cd packages/tools/tests/dist
                 zip "$(Build.ArtifactStagingDirectory)/fileSize.zip" fileSizes.json
-                cd ../../../..
-
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-                  -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/master/v$(PackageVersion)" \
-                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "zip=@$(Build.ArtifactStagingDirectory)/fileSize.zip"
-            displayName: "Update snapshot modules size"
+            displayName: "Create fileSize.zip"
             condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
 
           - script: |
@@ -214,47 +191,12 @@ jobs:
             displayName: "Preserve release notes"
             condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
 
-          - script: |
-                set -euo pipefail
-
-                baseUrl="https://cdn.babylonjs.com/v$(PackageVersion)"
-                assets=(
-                    "babylon.js"
-                    "babylon.max.js"
-                    "loaders/babylonjs.loaders.js"
-                    "babylon.ktx2Decoder.js"
-                    "ktx2Transcoders/1/msc_basis_transcoder.js"
-                    "ktx2Transcoders/1/msc_basis_transcoder.wasm"
-                    "zstddec.wasm"
-                    "fileSizes.json"
-                )
-                deadline=$((SECONDS + 600))
-                for asset in "${assets[@]}"; do
-                    url="${baseUrl}/${asset}"
-                    status="000"
-                    attempt=0
-                    while (( SECONDS < deadline )); do
-                        attempt=$((attempt + 1))
-                        # Unique query avoids reusing a cached 404 while the upload propagates.
-                        if status=$(curl --connect-timeout 10 --max-time 60 --silent --show-error \
-                            --output /dev/null --write-out "%{http_code}" "${url}?releaseCheck=$(Build.BuildId)-${attempt}"); then
-                            if [[ "$status" == "200" ]]; then
-                                echo "Verified ${url}"
-                                break
-                            fi
-                        else
-                            status="000"
-                        fi
-                        echo "Waiting for ${url} (HTTP ${status})"
-                        sleep 15
-                    done
-                    if [[ "$status" != "200" ]]; then
-                        echo "CDN asset did not become available: ${url} (last HTTP status ${status})" >&2
-                        exit 1
-                    fi
-                done
-            displayName: "Verify versioned CDN snapshot"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+          - template: templates/cdn-snapshot-deploy.yml
+            parameters:
+                version: $(PackageVersion)
+                snapshotZip: $(Build.ArtifactStagingDirectory)/snapshot.zip
+                fileSizeZip: $(Build.ArtifactStagingDirectory)/fileSize.zip
+                condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
 
           - script: echo "//registry.npmjs.org/:_authToken=$(NPM_TOKEN)" > ./.npmrc
             displayName: "write npmrc"

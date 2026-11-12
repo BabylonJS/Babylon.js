@@ -1,0 +1,254 @@
+# =============================================================================
+# CDN Deploy Pipeline
+#
+# Deploys the versioned CDN snapshot (https://cdn.babylonjs.com/v<version>/)
+# for a stable Babylon.js release.
+#
+# The internal engine release pipeline publishes npm packages, pushes the
+# "Version update X" commit and annotated tag X to master, and then creates the
+# GitHub release X with the cdnSnapshot.zip asset. This pipeline runs when the
+# stable tag X is pushed, waits for the release asset, and uploads it to the
+# CDN. Preview (prerelease) versions are rejected and never deployed.
+#
+# The pipeline never publishes to npm, pushes to git, or creates tags or
+# releases, and it is safe to rerun for the same version.
+#
+# Triggers:
+#   - Stable semver tags (X.Y.Z, no "v" prefix, no prerelease suffix).
+#   - Manual run with the "version" parameter for reruns and backfills.
+#
+# Downstream: Tools CD (cd-tools.yml) runs after every successful deploy, and
+# Monorepo CI (ci-monorepo.yml) runs after manual deploys from master. Both
+# reference this pipeline by its definition name "CDN deploy pipeline".
+#
+# Variable groups:
+#   - BabylonJS-CI-Infrastructure
+#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER, ...)
+#
+# Optional secret variable (configure in pipeline UI):
+#   - GitHubReadToken: read-only GitHub token used to avoid anonymous API
+#     rate limits while waiting for the release asset.
+# =============================================================================
+
+# Tags only: excluding every branch disables branch CI while the tag filter
+# still applies.
+trigger:
+    branches:
+        exclude:
+            - "*"
+    tags:
+        include:
+            - "*.*.*"
+        exclude:
+            - "*-*"
+
+pr: none
+
+parameters:
+    - name: version
+      displayName: "Stable version to deploy (for example 9.36.0). Leave as 'fromTag' for tag-triggered runs."
+      type: string
+      default: fromTag
+
+variables:
+    - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-Deployment
+    - name: SnapshotWorkDir
+      value: $(Agent.TempDirectory)/cdn-snapshot
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    - job: DeployCdnSnapshot
+      displayName: "Deploy versioned CDN snapshot"
+      timeoutInMinutes: 90
+      steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            fetchTags: true
+            persistCredentials: false
+
+          - script: |
+                set -euo pipefail
+
+                version="$(echo "${PARAM_VERSION}" | xargs)"
+                if [[ -z "$version" || "$version" == "fromTag" ]]; then
+                    if [[ "$SOURCE_BRANCH" != refs/tags/* ]]; then
+                        echo "##vso[task.logissue type=error]No version parameter was provided and the run was not triggered by a tag (source: ${SOURCE_BRANCH})."
+                        exit 1
+                    fi
+                    version="${SOURCE_BRANCH#refs/tags/}"
+                fi
+
+                if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "##vso[task.logissue type=error]'${version}' is not a stable X.Y.Z version. Prerelease versions are not deployed to the CDN."
+                    exit 1
+                fi
+
+                echo "Deploying CDN snapshot for version ${version}"
+                echo "##vso[task.setvariable variable=CDN_VERSION]${version}"
+                echo "##vso[build.updatebuildnumber]${version}-$(Build.BuildId)"
+            displayName: "Resolve release version"
+            env:
+                PARAM_VERSION: ${{ parameters.version }}
+                SOURCE_BRANCH: $(Build.SourceBranch)
+
+          - script: |
+                set -euo pipefail
+
+                git fetch --force --tags origin "+refs/heads/master:refs/remotes/origin/master"
+
+                if ! commit=$(git rev-parse --verify --quiet "refs/tags/${CDN_VERSION}^{commit}"); then
+                    echo "##vso[task.logissue type=error]Tag ${CDN_VERSION} does not exist in BabylonJS/Babylon.js."
+                    exit 1
+                fi
+                if ! git merge-base --is-ancestor "$commit" origin/master; then
+                    echo "##vso[task.logissue type=error]Tag ${CDN_VERSION} (${commit}) is not reachable from origin/master."
+                    exit 1
+                fi
+                echo "Tag ${CDN_VERSION} -> ${commit} is on master"
+            displayName: "Verify release tag is on master"
+
+          - script: |
+                set -euo pipefail
+
+                api="https://api.github.com/repos/BabylonJS/Babylon.js/releases/tags/${CDN_VERSION}"
+                headers=(-H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
+                interval=60
+                # An undefined pipeline variable is passed through as the literal macro text.
+                if [[ -n "${GITHUB_TOKEN:-}" && "$GITHUB_TOKEN" != '$('* ]]; then
+                    headers+=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+                    interval=30
+                else
+                    echo "GitHubReadToken is not set; using anonymous GitHub API requests every ${interval}s."
+                fi
+
+                # The tag is pushed before the release is created and the ~106 MB
+                # asset is uploaded, so tag-triggered runs usually have to wait.
+                releaseJson="$(Agent.TempDirectory)/release.json"
+                deadline=$((SECONDS + 1800))
+                while true; do
+                    status=$(curl --connect-timeout 10 --max-time 60 --silent --show-error \
+                        --output "$releaseJson" --write-out "%{http_code}" "${headers[@]}" "$api") || status="000"
+
+                    if [[ "$status" == "200" ]]; then
+                        if [[ "$(jq -r '.draft' "$releaseJson")" != "false" || "$(jq -r '.prerelease' "$releaseJson")" != "false" ]]; then
+                            echo "##vso[task.logissue type=error]GitHub release ${CDN_VERSION} is a draft or prerelease; refusing to deploy."
+                            exit 1
+                        fi
+                        asset=$(jq -c '[.assets[] | select(.name == "cdnSnapshot.zip")] | first // empty' "$releaseJson")
+                        if [[ -n "$asset" && "$(jq -r '.state' <<< "$asset")" == "uploaded" ]]; then
+                            break
+                        fi
+                        reason="release exists, cdnSnapshot.zip is not uploaded yet"
+                    else
+                        reason="HTTP ${status}"
+                    fi
+
+                    if (( SECONDS >= deadline )); then
+                        echo "##vso[task.logissue type=error]GitHub release ${CDN_VERSION} with an uploaded cdnSnapshot.zip was not available after 30 minutes (${reason})."
+                        exit 1
+                    fi
+                    echo "Waiting for GitHub release ${CDN_VERSION} (${reason})"
+                    sleep "$interval"
+                done
+
+                assetUrl=$(jq -r '.browser_download_url' <<< "$asset")
+                assetSize=$(jq -r '.size' <<< "$asset")
+                echo "Found ${assetUrl} (${assetSize} bytes)"
+                echo "##vso[task.setvariable variable=SNAPSHOT_ASSET_URL]${assetUrl}"
+                echo "##vso[task.setvariable variable=SNAPSHOT_ASSET_SIZE]${assetSize}"
+            displayName: "Wait for GitHub release asset"
+            env:
+                GITHUB_TOKEN: $(GitHubReadToken)
+
+          - script: |
+                set -euo pipefail
+
+                workDir="$(SnapshotWorkDir)"
+                rm -rf "$workDir"
+                mkdir -p "$workDir"
+                releaseZip="$workDir/cdnSnapshot.zip"
+
+                curl --fail --location --silent --show-error \
+                    --retry 5 --retry-delay 10 --retry-all-errors \
+                    --connect-timeout 30 --max-time 1200 \
+                    --output "$releaseZip" "$(SNAPSHOT_ASSET_URL)"
+
+                archiveSize=$(stat -c%s "$releaseZip")
+                if [[ "$archiveSize" != "$(SNAPSHOT_ASSET_SIZE)" ]]; then
+                    echo "Downloaded ${archiveSize} bytes, expected $(SNAPSHOT_ASSET_SIZE)" >&2
+                    exit 1
+                fi
+                # Healthy releases are about 106 MB compressed. This 50 MB floor
+                # allows substantial size variation while rejecting truncated snapshots.
+                minimumArchiveSize=50000000
+                if (( archiveSize < minimumArchiveSize )); then
+                    echo "CDN snapshot archive is too small: ${archiveSize} bytes (minimum ${minimumArchiveSize})" >&2
+                    exit 1
+                fi
+            displayName: "Download cdnSnapshot.zip"
+
+          - script: |
+                set -euo pipefail
+
+                workDir="$(SnapshotWorkDir)"
+                releaseZip="$workDir/cdnSnapshot.zip"
+                cd "$workDir"
+
+                unzip -tq "$releaseZip"
+                # List entries to a file so early-exiting greps cannot SIGPIPE unzip under pipefail.
+                entries="$workDir/entries.txt"
+                unzip -Z1 "$releaseZip" > "$entries"
+                if grep -q -v -E '^\.snapshot/' "$entries"; then
+                    echo "cdnSnapshot.zip contains entries outside .snapshot/" >&2
+                    exit 1
+                fi
+                if grep -q -E '(^|/)\.\.(/|$)' "$entries"; then
+                    echo "cdnSnapshot.zip contains parent-directory entries" >&2
+                    exit 1
+                fi
+                unzip -q "$releaseZip"
+
+                requiredFiles=(
+                    ".snapshot/babylon.js"
+                    ".snapshot/babylon.max.js"
+                    ".snapshot/loaders/babylonjs.loaders.js"
+                    ".snapshot/babylon.ktx2Decoder.js"
+                    ".snapshot/ktx2Transcoders/1/msc_basis_transcoder.js"
+                    ".snapshot/ktx2Transcoders/1/msc_basis_transcoder.wasm"
+                    ".snapshot/ktx2Transcoders/1/uastc_rgba8_unorm_v2.wasm"
+                    ".snapshot/zstddec.wasm"
+                    ".snapshot/fileSizes.json"
+                )
+                for file in "${requiredFiles[@]}"; do
+                    if [[ ! -s "$file" ]]; then
+                        echo "Required CDN snapshot asset is missing or empty: $file" >&2
+                        exit 1
+                    fi
+                done
+                if ! grep -q -F "\"${CDN_VERSION}\"" .snapshot/babylon.js; then
+                    echo ".snapshot/babylon.js does not report version ${CDN_VERSION}" >&2
+                    exit 1
+                fi
+
+                # Match the legacy publish layout: snapshot.zip has no .snapshot/ prefix.
+                stagingDir="$(Build.ArtifactStagingDirectory)"
+                mkdir -p "$stagingDir"
+                rm -f "$stagingDir/snapshot.zip" "$stagingDir/fileSize.zip"
+                cd .snapshot
+                zip -r -q "$stagingDir/snapshot.zip" *
+                zip -q "$stagingDir/fileSize.zip" fileSizes.json
+            displayName: "Validate and repack snapshot"
+
+          - template: templates/cdn-snapshot-deploy.yml
+            parameters:
+                version: $(CDN_VERSION)
+                snapshotZip: $(Build.ArtifactStagingDirectory)/snapshot.zip
+                fileSizeZip: $(Build.ArtifactStagingDirectory)/fileSize.zip
+
+          - script: rm -rf "$(SnapshotWorkDir)"
+            displayName: "Clean up snapshot workspace"
+            condition: always()

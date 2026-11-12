@@ -14,8 +14,9 @@
 # 3. Authorize the GitHub service connection (GITHUB_SERVICE_CONNECTION)
 #    for this pipeline.
 #
-# 4. Update the 'resources.pipelines' source names to match your actual
-#    pipeline names in Azure DevOps.
+# 4. The 'resources.pipelines' source names must match the pipeline
+#    definition names in Azure DevOps ("CDN deploy pipeline",
+#    "BabylonNative Nightly CI").
 # =============================================================================
 
 trigger:
@@ -45,9 +46,13 @@ schedules:
 
 resources:
     pipelines:
-        # Build completion trigger - cd-publish pipeline (Definition 15)
+        # Build completion trigger - CDN deploy pipeline (cd-cdn-deploy.yml).
+        # Only runs from master trigger this pipeline. Tag-triggered deploy runs
+        # (refs/tags/<version>) are excluded because snapshot paths and the
+        # Deploy job use the source branch. The release's "Version update"
+        # push to master already triggers this pipeline through CI.
         - pipeline: buildCompletionTrigger
-          source: "Publish pipeline"
+          source: "CDN deploy pipeline"
           trigger:
               branches:
                   include:
