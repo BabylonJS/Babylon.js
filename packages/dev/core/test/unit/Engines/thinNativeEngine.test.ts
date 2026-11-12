@@ -1794,6 +1794,18 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.createFrameBuffer.mock.calls.map((call: unknown[]) => call[8])).toEqual(new Array(6).fill(false));
         });
 
+        it("only filters depth textures that use a comparison function", () => {
+            const { engine } = createEngine();
+            const createDepth = (comparisonFunction: number) =>
+                (engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper).createDepthStencilTexture(
+                    comparisonFunction,
+                    true
+                );
+
+            expect(createDepth(0).samplingMode).toBe(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            expect(createDepth(Constants.LEQUAL).samplingMode).toBe(Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        });
+
         it("records native depth formats and routes frame graph copies through the depth path", () => {
             const { engine } = createEngine();
             const depthOnlyTarget = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;

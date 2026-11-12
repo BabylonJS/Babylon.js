@@ -2971,7 +2971,10 @@ export class ThinNativeEngine extends ThinEngine {
         texture.isReady = true;
         texture.samples = samples;
         texture.generateMipMaps = false;
-        texture.samplingMode = options.bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        // Like WebGL (engine.renderTarget), only comparison samplers may filter depth: OpenGL ES 3 treats a
+        // LINEAR-filtered depth texture without a compare mode as incomplete, so it samples as zero.
+        const bilinearFiltering = !!options.comparisonFunction && options.bilinearFiltering;
+        texture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         texture.format = generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
         texture._comparisonFunction = options.comparisonFunction ?? 0;
