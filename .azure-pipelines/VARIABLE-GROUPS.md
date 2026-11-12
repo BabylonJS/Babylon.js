@@ -162,8 +162,12 @@ match.
    the release asset, validates it, uploads it to `cdn/master/v<version>`, and
    verifies `https://cdn.babylonjs.com/v<version>/`. It can be rerun manually
    with the `version` parameter.
-3. A successful deploy triggers `cd-tools` ("Tools CD"), which checks out the
-   latest version tag and deploys the tools.
+3. A successful deploy triggers `cd-tools` ("Tools CD") and `ci-monorepo`
+   ("Monorepo CI"). Both check out the latest version tag on master. Tools CD
+   deploys the tools (including the Playground), and Monorepo CI builds and
+   deploys the general CDN (`cdn/master`). Runs triggered from a release tag
+   (`refs/tags/X`) use the `refs/heads/master` snapshot path and deploy to
+   `cdn/master`.
 
 `cd-publish` ("Publish pipeline") has no automatic trigger and is kept only as
 a manual emergency fallback.

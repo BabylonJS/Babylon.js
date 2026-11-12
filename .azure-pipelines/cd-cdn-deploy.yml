@@ -17,9 +17,10 @@
 #   - Stable semver tags (X.Y.Z, no "v" prefix, no prerelease suffix).
 #   - Manual run with the "version" parameter for reruns and backfills.
 #
-# Downstream: Tools CD (cd-tools.yml) runs after every successful deploy, and
-# Monorepo CI (ci-monorepo.yml) runs after manual deploys from master. Both
-# reference this pipeline by its definition name "CDN deploy pipeline".
+# Downstream: Tools CD (cd-tools.yml) and Monorepo CI (ci-monorepo.yml) run
+# after every successful deploy. Monorepo CI treats tag-triggered runs as master
+# runs and refreshes the general CDN (cdn/master). Both reference this pipeline
+# by its definition name "CDN deploy pipeline".
 #
 # Variable groups:
 #   - BabylonJS-CI-Infrastructure

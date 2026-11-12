@@ -47,16 +47,17 @@ schedules:
 resources:
     pipelines:
         # Build completion trigger - CDN deploy pipeline (cd-cdn-deploy.yml).
-        # Only runs from master trigger this pipeline. Tag-triggered deploy runs
-        # (refs/tags/<version>) are excluded because snapshot paths and the
-        # Deploy job use the source branch. The release's "Version update"
-        # push to master already triggers this pipeline through CI.
+        # Stable releases run the CDN deploy from the release tag, so this
+        # pipeline is then queued on refs/tags/<version>. Such runs are treated
+        # as master runs (see BuildName/DeployBranch below) so the general CDN
+        # (cdn/master) is refreshed after every stable release.
         - pipeline: buildCompletionTrigger
           source: "CDN deploy pipeline"
           trigger:
               branches:
                   include:
                       - master
+                      - refs/tags/*
         # Native tests artifact source - pipeline ID 36
         - pipeline: nativeTestsArtifact
           source: "BabylonNative Nightly CI"
@@ -66,8 +67,18 @@ variables:
     - group: BabylonJS-CI-Infrastructure
     - group: Browserstack-Opensource
     - group: BabylonJS-Deployment
-    - name: BuildName
-      value: $(Build.SourceBranch)
+    # Snapshot path and CDN deploy branch. Release-tag runs triggered by the CDN
+    # deploy pipeline check out the latest tag on master and deploy as master.
+    - ${{ if and(in(variables['Build.Reason'], 'ResourceTrigger', 'BuildCompletion'), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
+          - name: BuildName
+            value: refs/heads/master
+          - name: DeployBranch
+            value: master
+    - ${{ else }}:
+          - name: BuildName
+            value: $(Build.SourceBranch)
+          - name: DeployBranch
+            value: $(Build.SourceBranchName)
     - name: BROWSERSTACK_BROWSER
       value: "chrome@143:OSX Sonoma"
     - name: system.debug
@@ -143,7 +154,7 @@ jobs:
           - script: |
                 curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Clear snapshot"
-            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['Build.SourceBranchName'], 'master')))
+            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['DeployBranch'], 'master')))
 
           - task: GitHubComment@0
             displayName: "Tag your PR!"
@@ -488,7 +499,7 @@ jobs:
     # ============================================================================
     - job: TypeDocCheck
       displayName: "TypeDoc check"
-      condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+      condition: ne(variables['BuildName'], 'refs/heads/master')
       steps:
           - template: templates/checkout-with-tag-override.yml
             parameters:
@@ -1290,8 +1301,8 @@ jobs:
           and(
             succeeded(),
             or(
-              eq(variables['Build.SourceBranchName'], 'master'),
-              eq(variables['Build.SourceBranchName'], 'preview')
+              eq(variables['DeployBranch'], 'master'),
+              eq(variables['DeployBranch'], 'preview')
             ),
             or(
               eq(variables['Build.Reason'], 'Manual'),
@@ -1314,7 +1325,7 @@ jobs:
                 curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/$(Build.SourceBranchName)" \
+                  -F "path=cdn/$(DeployBranch)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@snapshot.zip"
 
@@ -1325,7 +1336,7 @@ jobs:
                 curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/$(Build.SourceBranchName)" \
+                  -F "path=cdn/$(DeployBranch)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@fileSize.zip"
             displayName: "Update CDN"
