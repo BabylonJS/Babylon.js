@@ -232,4 +232,29 @@ describe("runtime-neutral texture preview", () => {
         expect(NativeMocks.whenReady).toHaveBeenCalledWith(texture);
         expect(NativeMocks.getPixels).toHaveBeenLastCalledWith(texture, 4, 2, 1, { R: true, G: true, B: true, A: true }, 0, 0);
     });
+
+    it.each([false, true])("renders a Babylon.js nonzero mip at its actual size (array: %s)", async (isArray) => {
+        const texture = {
+            _texture: { width: 4, height: 4, depth: isArray ? 2 : 1, generateMipMaps: true, is3D: false },
+            isCube: false,
+            is2DArray: isArray,
+            isRenderTarget: false,
+            getSize: () => ({ width: 4, height: 4 }),
+        } as unknown as BaseTexture;
+        await act(async () => {
+            root.render(
+                <FluentProvider theme={webLightTheme}>
+                    <TexturePreview texture={texture} />
+                </FluentProvider>
+            );
+        });
+        const lod = container.querySelector<HTMLInputElement>('input[aria-label="LOD"]')!;
+        await act(async () => {
+            Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(lod, "1");
+            lod.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        expect(NativeMocks.getPixels).toHaveBeenLastCalledWith(texture, 2, 2, 0, { R: true, G: true, B: true, A: true }, 1, 0);
+        const canvas = container.querySelector("canvas")!;
+        expect([canvas.width, canvas.height]).toEqual([2, 2]);
+    });
 });

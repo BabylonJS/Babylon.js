@@ -72,6 +72,8 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             if (is3DTexture) {
                 textureWidth = textureHeight = Math.max(1, Math.min(textureWidth, textureHeight));
             }
+            textureWidth = Math.max(1, Math.floor(textureWidth / 2 ** selection.lod));
+            textureHeight = Math.max(1, Math.floor(textureHeight / 2 ** selection.lod));
             const data = await ApplyChannelsToTextureDataAsync(
                 texture,
                 textureWidth,

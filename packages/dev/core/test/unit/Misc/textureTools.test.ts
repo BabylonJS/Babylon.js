@@ -96,3 +96,36 @@ it("rejects shader compilation failure and cleans up instead of leaving readback
         engine.dispose();
     }
 });
+
+it.each([
+    [false, 4, 4, 2, 2],
+    [true, 4, 4, 2, 2],
+    [false, 3, 5, 1, 2],
+    [true, 3, 5, 1, 2],
+])("reads the selected mip at its natural dimensions (array: %s, base: %sx%s)", async (isArray, width, height, mipWidth, mipHeight) => {
+    const engine = new NullEngine();
+    const texture = new RawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, engine, false);
+    texture.getInternalTexture()!.isReady = true;
+    texture.is2DArray = isArray;
+    const pixels = new Uint8Array(mipWidth * mipHeight * 4).fill(42);
+    const readPixels = vi.spyOn(texture, "readPixels").mockResolvedValue(pixels);
+    try {
+        expect(await GetTextureDataAsync(texture, mipWidth, mipHeight, 1, 1)).toEqual(pixels);
+        expect(readPixels).toHaveBeenCalledWith(1, 1, null, true, false, 0, 0, mipWidth, mipHeight);
+        expect(await GetTextureDataAsync(texture, width, height, 1, 1)).toEqual(pixels);
+    } finally {
+        engine.dispose();
+    }
+});
+
+it("normalizes the channels of a direct mip readback using the mip pixel count", async () => {
+    const engine = new NullEngine();
+    const texture = new RawTexture(new Uint8Array(16), 4, 4, Constants.TEXTUREFORMAT_R, engine, false);
+    texture.getInternalTexture()!.isReady = true;
+    vi.spyOn(texture, "readPixels").mockResolvedValue(new Uint8Array([10, 20, 30, 40]));
+    try {
+        expect(await GetTextureDataAsync(texture, 4, 4, 0, 1)).toEqual(new Uint8Array([10, 10, 10, 255, 20, 20, 20, 255, 30, 30, 30, 255, 40, 40, 40, 255]));
+    } finally {
+        engine.dispose();
+    }
+});

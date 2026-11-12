@@ -428,8 +428,8 @@ async function ReadPixelsUsingRTT(
  * This is convenient to get 8-bit RGBA values for a texture in a GPU compressed format.
  * When direct readback returns non-RGBA channel layouts, the result is normalized to RGBA8.
  * @param texture the source texture
- * @param width the target width of the result, which does not have to match the source texture width
- * @param height the target height of the result, which does not have to match the source texture height
+ * @param width the target width of the result; direct readback returns the selected mip's width when this is the base or mip width
+ * @param height the target height of the result; direct readback returns the selected mip's height when this is the base or mip height
  * @param face if the texture has multiple faces, the face index to use for the source
  * @param lod if the texture has multiple LODs, the lod index to use for the source
  * @param forceRTT if true, forces the use of the RTT path for reading pixels (useful for cube maps to ensure correct orientation and gamma)
@@ -454,19 +454,22 @@ export async function GetTextureDataAsync(
     const { width: textureWidth, height: textureHeight } = texture.getSize();
     const targetWidth = width ?? textureWidth;
     const targetHeight = height ?? textureHeight;
+    const mipWidth = Math.max(1, Math.floor(textureWidth / 2 ** lod));
+    const mipHeight = Math.max(1, Math.floor(textureHeight / 2 ** lod));
+    const directSize = (targetWidth === textureWidth && targetHeight === textureHeight) || (targetWidth === mipWidth && targetHeight === mipHeight);
 
     // If the internal texture format is compressed, we cannot read the pixels directly.
     // If we're resizing the texture, we need to use a render target texture.
     // forceRTT can be used to ensure correct orientation and gamma for cube maps.
     // 3D textures must also use RTT because direct readPixels does not expose slice selection.
-    if (forceRTT || is3DTexture || _IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+    if (forceRTT || is3DTexture || _IsCompressedTextureFormat(texture.textureFormat) || !directSize) {
         if (texture.is2DArray) {
             throw new Error(`Reading pixels from 2D array textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
         }
         return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod, slice, applyGammaCorrection);
     }
 
-    let data = (await texture.readPixels(face, lod)) as Nullable<Uint8Array | Float32Array>;
+    let data = (await texture.readPixels(face, lod, null, true, false, 0, 0, mipWidth, mipHeight)) as Nullable<Uint8Array | Float32Array>;
     if (!data) {
         throw new Error(`Failed to read pixels from texture ${texture.name}.`);
     }
@@ -485,7 +488,7 @@ export async function GetTextureDataAsync(
     // Some backends (notably WebGPU for single/dual/triple channel formats) can return
     // readback data that is not RGBA8. The inspector preview pipeline expects 4 bytes
     // per pixel, so normalize to RGBA here when needed.
-    const pixelCount = targetWidth * targetHeight;
+    const pixelCount = mipWidth * mipHeight;
     const expectedLength = pixelCount * 4;
 
     if (data.length !== expectedLength) {
