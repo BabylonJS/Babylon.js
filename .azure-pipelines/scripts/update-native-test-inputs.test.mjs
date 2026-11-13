@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,6 +16,7 @@ const reencodedPng = Buffer.from(
     "base64"
 );
 const changedPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAADHRFWHRzb3VyY2UAb3RoZXK20iDWAAAAEUlEQVR4AWOsd1D4z8DAwAAAC4UB4KwDQlAAAAAASUVORK5CYII=", "base64");
+const nativePng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGM0mib3P0qOiwEADUECaSbFfIgAAAAASUVORK5CYII=", "base64");
 
 function fixture(t, before, after, native, oldImages, newImages, roots = {}) {
     const root = mkdtempSync(join(tmpdir(), "native-inputs-"));
@@ -22,8 +24,12 @@ function fixture(t, before, after, native, oldImages, newImages, roots = {}) {
     const repo = join(root, "repo");
     const playground = join(root, "playground");
     mkdirSync(join(repo, images), { recursive: true });
+    mkdirSync(join(repo, ".azure-pipelines", "scripts"), { recursive: true });
     mkdirSync(join(playground, "Scripts"), { recursive: true });
     mkdirSync(join(playground, "ReferenceImages"), { recursive: true });
+    copyFileSync(script, join(repo, ".azure-pipelines", "scripts", "update-native-test-inputs.mjs"));
+    copyFileSync(join(dirname(script), "compare-native-images.ps1"), join(repo, ".azure-pipelines", "scripts", "compare-native-images.ps1"));
+    writeFileSync(join(repo, ".azure-pipelines", "scripts", "native-reference-overrides.json"), JSON.stringify(roots.referenceOverrides || {}));
     const git = (...args) =>
         execFileSync("git", ["-c", "user.name=Test", "-c", "user.email=test@example.com", ...args], {
             cwd: repo,
@@ -58,7 +64,7 @@ function fixture(t, before, after, native, oldImages, newImages, roots = {}) {
 }
 
 function run(repo, playground) {
-    return spawnSync(process.execPath, [script, playground], { cwd: repo, encoding: "utf8" });
+    return spawnSync(process.execPath, [join(repo, ".azure-pipelines", "scripts", "update-native-test-inputs.mjs"), playground], { cwd: repo, encoding: "utf8" });
 }
 
 function nativeTests(playground) {
@@ -125,6 +131,105 @@ test("handles a renamed test and reference while preserving Native-only entries"
     assert.deepEqual(tests[0].excludedGraphicsApis, ["Vulkan"]);
     assert.equal(tests[1].playgroundId, "#B#0");
     assert.equal(readFileSync(join(playground, "ReferenceImages", "new-reference.png"), "utf8"), "new");
+});
+
+test("renames a test and updates its Playground revision without losing Native overrides", (t) => {
+    const before = [{ title: "Old title", playgroundId: "#A#1", referenceImage: "test.png" }];
+    const after = [{ title: "New title", playgroundId: "#A#2", referenceImage: "test.png" }];
+    const native = [{ ...before[0], workarounds: ["native"] }];
+    const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
+    const result = run(repo, playground);
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(nativeTests(playground), [{ ...after[0], workarounds: ["native"] }]);
+});
+
+test("rejects a rename that collides with a Native-only test identity", (t) => {
+    const before = [{ title: "Old title", playgroundId: "#A#1", referenceImage: "test.png" }];
+    const after = [{ ...before[0], title: "New title" }];
+    const native = [before[0], { ...after[0], workarounds: ["native"] }];
+    const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
+    const result = run(repo, playground);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Ambiguous Native test/);
+    assert.deepEqual(nativeTests(playground), native);
+});
+
+test("rejects a source update that collides with a Native-only test identity", (t) => {
+    const before = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
+    const after = [{ ...before[0], playgroundId: "#A#2" }];
+    const native = [before[0], { ...after[0], workarounds: ["native"] }];
+    const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
+    const result = run(repo, playground);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Ambiguous Native test/);
+    assert.deepEqual(nativeTests(playground), native);
+});
+
+for (const source of [
+    { sceneFolder: "scenes/", sceneFilename: "one.babylon" },
+    { scriptToRun: "scripts/scene.js", functionToCall: "createScene" },
+]) {
+    test(`renames a ${source.sceneFolder ? "scene" : "script"} test without losing Native overrides`, (t) => {
+        const before = [{ title: "Old title", ...source, referenceImage: "test.png" }];
+        const after = [{ title: "New title", ...source, referenceImage: "test.png" }];
+        const native = [{ ...before[0], workarounds: ["native"] }];
+        const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
+        const result = run(repo, playground);
+        assert.equal(result.status, 0, result.stderr);
+        assert.deepEqual(nativeTests(playground), [{ ...after[0], workarounds: ["native"] }]);
+    });
+}
+
+test("rejects ambiguous Playground renames instead of losing Native tests", (t) => {
+    const before = [
+        { title: "First variant", playgroundId: "#A#1", referenceImage: "test.png" },
+        { title: "Second variant", playgroundId: "#A#2", referenceImage: "test.png" },
+    ];
+    const after = [{ title: "New title", playgroundId: "#A#3", referenceImage: "test.png" }];
+    const { repo, playground } = fixture(t, before, after, before, { "test.png": "old" }, {});
+    const result = run(repo, playground);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /ambiguous/i);
+    assert.deepEqual(nativeTests(playground), before);
+});
+
+for (const [source, otherSource, update] of [
+    [{ sceneFolder: "scenes/", sceneFilename: "one.babylon" }, { sceneFolder: "scenes/", sceneFilename: "other.babylon" }, true],
+    [{ scriptToRun: "scripts/scene.js", functionToCall: "createScene" }, { scriptToRun: "scripts/other.js", functionToCall: "createScene" }, false],
+]) {
+    test(`rejects a matching title with a different ${source.sceneFolder ? "scene" : "script"} source`, (t) => {
+        const before = [{ title: "Shared title", ...source, referenceImage: "test.png" }];
+        const native = [{ title: "Shared title", ...otherSource, referenceImage: "test.png" }];
+        const after = update ? [{ ...before[0], renderCount: 2 }] : [];
+        const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
+        const result = run(repo, playground);
+        assert.notEqual(result.status, 0);
+        assert.match(result.stderr, /does not match/);
+        assert.deepEqual(nativeTests(playground), native);
+    });
+}
+
+test("preserves a recorded Native reference override when the web image changes", { skip: process.platform !== "win32" }, (t) => {
+    const before = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
+    const after = [{ ...before[0], playgroundId: "#A#2" }];
+    const referenceOverrides = { "test.png": { sha256: createHash("sha256").update(nativePng).digest("hex") } };
+    const { repo, playground } = fixture(t, before, after, before, { "test.png": oldPng }, { "test.png": changedPng }, { referenceOverrides });
+    writeFileSync(join(playground, "ReferenceImages", "test.png"), nativePng);
+    const result = run(repo, playground);
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(readFileSync(join(playground, "ReferenceImages", "test.png")), nativePng);
+    assert.deepEqual(nativeTests(playground), after);
+});
+
+test("rejects a Native reference that differs from its recorded override", { skip: process.platform !== "win32" }, (t) => {
+    const tests = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
+    const referenceOverrides = { "test.png": { sha256: createHash("sha256").update(nativePng).digest("hex") } };
+    const { repo, playground } = fixture(t, tests, tests, tests, { "test.png": oldPng }, { "test.png": reencodedPng }, { referenceOverrides });
+    writeFileSync(join(playground, "ReferenceImages", "test.png"), changedPng);
+    const result = run(repo, playground);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /differs from both pull-request versions/);
+    assert.deepEqual(readFileSync(join(playground, "ReferenceImages", "test.png")), changedPng);
 });
 
 test("rejects conflicting Native references before writing any inputs", { skip: process.platform !== "win32" }, (t) => {

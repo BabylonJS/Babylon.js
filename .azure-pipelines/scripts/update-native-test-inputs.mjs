@@ -1,4 +1,5 @@
 import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -34,6 +35,23 @@ function referenceName(test) {
     return `${name.replace(/[\x00-\x2C\x2E-\x2F\x3A-\x40\x5B-\x60\x7B-\x7F]+/g, "-")}.png`;
 }
 
+function sourceKey(test) {
+    if (test.sceneFolder) {
+        return JSON.stringify(["scene", test.sceneFolder, test.sceneFilename]);
+    }
+    if (test.playgroundId) {
+        return JSON.stringify(["playground", test.playgroundId]);
+    }
+    if (test.scriptToRun) {
+        return JSON.stringify(["script", test.scriptToRun, test.functionToCall]);
+    }
+    return undefined;
+}
+
+function playgroundFamily(test) {
+    return !test.sceneFolder && test.playgroundId ? test.playgroundId.replace(/#\d+$/, "") : undefined;
+}
+
 function sameImage(bytes, path) {
     if (bytes.equals(readFileSync(path))) {
         return true;
@@ -64,6 +82,9 @@ const nativeConfigPath = join(nativeDirectory, "Scripts", "config.json");
 const native = JSON.parse(readFileSync(nativeConfigPath, "utf8"));
 const oldTests = testsByTitle(previous.tests, "Pull-request base");
 const newTests = testsByTitle(current.tests, "Pull-request checkout");
+const addedTests = current.tests.filter((test) => !oldTests.has(test.title));
+// Hashes pin intentional Native images without accepting arbitrary stale artifacts.
+const referenceOverrides = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "native-reference-overrides.json"), "utf8"));
 if (previous.root !== current.root) {
     if (native.root === previous.root) {
         native.root = current.root;
@@ -104,16 +125,41 @@ const removed = new Set();
 const references = [];
 const pairedNewTitles = new Set();
 
-for (const oldTest of previous.tests) {
-    let newTest = newTests.get(oldTest.title);
-    if (!newTest && oldTest.playgroundId) {
-        const oldWithId = previous.tests.filter((test) => test.playgroundId === oldTest.playgroundId);
-        const renamed = current.tests.filter((test) => test.playgroundId === oldTest.playgroundId && !oldTests.has(test.title));
-        if (oldWithId.length === 1 && renamed.length === 1) {
-            newTest = renamed[0];
+function findRenamedTest(oldTest) {
+    const identities = [
+        (test) => {
+            const source = sourceKey(test);
+            return source && JSON.stringify([source, referenceName(test)]);
+        },
+        sourceKey,
+        (test) => {
+            const family = playgroundFamily(test);
+            return family && JSON.stringify([family, referenceName(test)]);
+        },
+    ];
+    for (const identity of identities) {
+        const key = identity(oldTest);
+        if (!key) {
+            continue;
+        }
+        const previousMatches = previous.tests.filter((test) => identity(test) === key);
+        const currentMatches = current.tests.filter((test) => identity(test) === key);
+        if (previousMatches.length === 1 && currentMatches.length === 1 && !oldTests.has(currentMatches[0].title)) {
+            return currentMatches[0];
         }
     }
+    return undefined;
+}
+
+for (const oldTest of previous.tests) {
+    let newTest = newTests.get(oldTest.title);
+    if (!newTest) {
+        newTest = findRenamedTest(oldTest);
+    }
     if (newTest) {
+        if (pairedNewTitles.has(newTest.title)) {
+            throw new Error(`Ambiguous rename to "${newTest.title}"`);
+        }
         pairedNewTitles.add(newTest.title);
     }
 
@@ -126,9 +172,10 @@ for (const oldTest of previous.tests) {
     }
 
     const candidates = native.tests.filter((test) => test.title === oldTest.title);
-    const matches = candidates.filter((test) => same(test.playgroundId, oldTest.playgroundId));
+    const source = sourceKey(oldTest);
+    const matches = candidates.filter((test) => source && sourceKey(test) === source);
     if (matches.length > 1) {
-        throw new Error(`Ambiguous Native test "${oldTest.title}" with Playground ID "${oldTest.playgroundId}"`);
+        throw new Error(`Ambiguous Native test "${oldTest.title}" with source ${source}`);
     }
     if (!matches.length) {
         if (candidates.length) {
@@ -140,6 +187,16 @@ for (const oldTest of previous.tests) {
 
     const test = matches[0];
     if (!newTest) {
+        const family = playgroundFamily(oldTest);
+        const possibleRename = addedTests.some(
+            (candidate) =>
+                (source && sourceKey(candidate) === source) ||
+                (family && playgroundFamily(candidate) === family) ||
+                (oldTest.referenceImage && oldTest.referenceImage === candidate.referenceImage)
+        );
+        if (possibleRename) {
+            throw new Error(`Ambiguous rename or removal of Native test "${oldTest.title}"; update the Native artifact before applying its changes`);
+        }
         removed.add(test);
         console.log(`Removed Native test "${test.title}"`);
         continue;
@@ -166,6 +223,10 @@ for (const oldTest of previous.tests) {
         }
         console.log(`Updated ${field} for "${test.title}"`);
     }
+    const updatedSource = sourceKey(test);
+    if (updatedSource && native.tests.some((other) => other !== test && other.title === test.title && sourceKey(other) === updatedSource)) {
+        throw new Error(`Ambiguous Native test "${test.title}" with source ${updatedSource} after update`);
+    }
     if (referenceChanged) {
         if (test.referenceImage !== oldReference) {
             console.warn(`Keeping Native-specific reference for "${test.title}"`);
@@ -175,6 +236,11 @@ for (const oldTest of previous.tests) {
         const newImage = readFileSync(join(imagesPath, newReference));
         const existingImagePath = join(nativeDirectory, "ReferenceImages", oldReference);
         if (!sameImage(oldImage, existingImagePath) && !(oldReference === newReference && sameImage(newImage, existingImagePath))) {
+            const hash = createHash("sha256").update(readFileSync(existingImagePath)).digest("hex");
+            if (referenceOverrides[oldReference]?.sha256 === hash) {
+                console.warn(`Keeping recorded Native reference "${oldReference}"`);
+                continue;
+            }
             throw new Error(`Native reference "${oldReference}" differs from both pull-request versions`);
         }
         references.push({ test, name: newReference, data: newImage });
