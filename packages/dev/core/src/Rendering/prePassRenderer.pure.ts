@@ -621,6 +621,7 @@ export class PrePassRenderer {
     private _bindFrameBuffer() {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
+            this._currentTarget._retryInternalTexturesRecreatedNotification();
             const internalTexture = this._currentTarget.renderTarget;
             if (internalTexture) {
                 this._engine.bindFramebuffer(internalTexture);
@@ -688,6 +689,8 @@ export class PrePassRenderer {
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount || this.renderTargets[i].count !== this.mrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtTypes, formats: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
+            } else {
+                this.renderTargets[i]._retryInternalTexturesRecreatedNotification();
             }
 
             this.renderTargets[i]._resetPostProcessChain();
@@ -960,11 +963,11 @@ export class PrePassRenderer {
         }
 
         this._markAllMaterialsAsPrePassDirty();
-        this._isDirty = false;
 
         if (enablePrePass) {
             this._enable();
         }
+        this._isDirty = false;
     }
 
     private _markAllMaterialsAsPrePassDirty() {

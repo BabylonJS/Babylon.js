@@ -666,6 +666,58 @@ export class ThinNativeEngine extends ThinEngine {
         this._flagContextRestored();
     }
 
+    protected override _rebuildGraphicsResources(): void {
+        const generatedDepthShares = new Map<
+            NativeRenderTargetWrapper,
+            {
+                wrappers: NativeRenderTargetWrapper[];
+                format: number;
+                samples: number;
+                generateStencil: boolean;
+            }
+        >();
+
+        for (const wrapper of this._renderTargetWrapperCache as NativeRenderTargetWrapper[]) {
+            const source = wrapper._generatedDepthShareSource;
+            if (!source) {
+                continue;
+            }
+
+            const depth = wrapper._depthStencilTexture;
+            let group = generatedDepthShares.get(source);
+            if (!group) {
+                group = {
+                    wrappers: [],
+                    format: depth?.format ?? (source._generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT),
+                    samples: depth?.samples ?? wrapper.samples,
+                    generateStencil: wrapper._depthStencilTextureWithStencil,
+                };
+                generatedDepthShares.set(source, group);
+            }
+            group.wrappers.push(wrapper);
+
+            wrapper._depthStencilTexture = null;
+            wrapper._generatedDepthShareSource = null;
+            depth?.dispose();
+        }
+
+        super._rebuildGraphicsResources();
+
+        for (const [originalSource, group] of generatedDepthShares) {
+            // Context restoration has already discarded the old contents, so recreate the group around an explicit
+            // depth texture. This does not depend on the original source still being alive or a lazy source already
+            // having a framebuffer.
+            const source = group.wrappers.includes(originalSource) ? originalSource : group.wrappers[0];
+            source.createDepthStencilTexture(0, false, group.generateStencil, group.samples, group.format);
+            source._generatedDepthShareSource = source;
+            for (const wrapper of group.wrappers) {
+                if (wrapper !== source) {
+                    source.shareDepth(wrapper);
+                }
+            }
+        }
+    }
+
     /**
      * Override default engine behavior.
      * @param framebuffer
@@ -3072,6 +3124,40 @@ export class ThinNativeEngine extends ThinEngine {
         this.updateTextureComparisonFunction(texture, texture._comparisonFunction);
     }
 
+    /**
+     * Wraps a render target's auto-generated depth/stencil buffer in a depth texture without rebuilding the render
+     * target, so it can be shared with its current contents, like WebGL shares the depth renderbuffer. The texture can
+     * be attached to other framebuffers but not sampled. Cube, array, layered and volume targets use one generated
+     * depth allocation across their face/layer framebuffers in runtimes that implement this API.
+     * @internal
+     */
+    public _wrapGeneratedDepthStencil(nativeRTWrapper: NativeRenderTargetWrapper): Nullable<InternalTexture> {
+        const framebuffer = nativeRTWrapper._framebuffer ?? nativeRTWrapper._layerFramebuffers?.values().next().value;
+        if (!this._engine.shareFrameBufferDepthStencil || !framebuffer) {
+            return null;
+        }
+
+        const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+        if (!this._engine.shareFrameBufferDepthStencil(framebuffer, texture._hardwareTexture!.underlyingResource)) {
+            texture.dispose();
+            return null;
+        }
+
+        const generateStencil = nativeRTWrapper._generateStencilBuffer;
+        texture.baseWidth = nativeRTWrapper.width;
+        texture.baseHeight = nativeRTWrapper.height;
+        texture.width = nativeRTWrapper.width;
+        texture.height = nativeRTWrapper.height;
+        texture.isReady = true;
+        texture.samples = nativeRTWrapper.samples;
+        texture.generateMipMaps = false;
+        texture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        texture.format = generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+        nativeRTWrapper._depthStencilTextureWithStencil = generateStencil;
+        return texture;
+    }
+
     // Reallocates a render target's sampleable depth/stencil texture with a new sample count and reattaches it to
     // the (already rebuilt) color framebuffer(s), so rendering and later depth sampling keep using the same resource.
     private _recreateDepthStencilTexture(nativeRTWrapper: NativeRenderTargetWrapper, samples: number): void {
@@ -4468,7 +4554,6 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         this._currentRenderTarget = texture;
-
         // Multi render target whose color attachments each target a specific layer/face of a texture: the IBL
         // voxelization MRTs (several Z-slices of one shared 3D texture, routed via is3D) and mixed-type MRTs
         // (2D-array layer / cube face / 2D attachments, routed via _isMixedTypeMRT). The color textures may be

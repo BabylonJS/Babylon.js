@@ -11,6 +11,9 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.p
 import { Logger } from "../Misc/logger";
 import { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer.pure";
 import { RegisterDepthPeelingSceneComponent } from "./depthPeelingSceneComponent.pure";
+import { type Nullable } from "../types";
+import { type Observer } from "../Misc/observable";
+import { type PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -41,6 +44,8 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
 
     private _blendBackTexture: InternalTexture;
 
+    private _prePassTexturesRecreatedObserver: Nullable<Observer<PrePassRenderTarget>> = null;
+
     /**
      * Instanciates the depth peeling renderer
      * @param scene Scene to attach to
@@ -61,6 +66,29 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
         this._prePassEffectConfiguration = new DepthPeelingEffectConfiguration();
         this._createTextures();
         this._createEffects("oitFinal", ["uFrontColor", "uBackColor"]);
+
+        // Share the depth as soon as the prepass recreates its textures, before they are cleared and the opaque
+        // meshes are rendered into them. Sharing later (when the transparent meshes are rendered) is too late for
+        // engines that cannot share an auto-generated depth buffer in place and have to reallocate it (Native).
+        this._prePassTexturesRecreatedObserver = scene.prePassRenderer!.defaultRT._onInternalTexturesRecreatedObservable.add(() => {
+            if (this._scene.useOrderIndependentTransparency) {
+                this._updateTextures(true);
+            }
+        });
+    }
+
+    protected override _getTextureSize(): { width: number; height: number } {
+        if (this.blendOutput) {
+            return super._getTextureSize();
+        }
+        const prePassRenderTarget = this._scene.prePassRenderer?.defaultRT;
+        if (prePassRenderTarget) {
+            return {
+                width: prePassRenderTarget.getRenderWidth(),
+                height: prePassRenderTarget.getRenderHeight(),
+            };
+        }
+        return super._getTextureSize();
     }
 
     protected override _createTextures() {
@@ -95,15 +123,21 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
         super._disposeTextures();
     }
 
-    private _updateTextures() {
-        if (this._depthMrts[0].getSize().width !== this._engine.getRenderWidth() || this._depthMrts[0].getSize().height !== this._engine.getRenderHeight()) {
+    private _updateTextures(forceShareDepth = false) {
+        const currentSize = this._depthMrts[0].getSize();
+        const blendOutput = this.blendOutput;
+        const prePassRenderTarget = !blendOutput ? this._scene.prePassRenderer?.defaultRT : null;
+        const width = blendOutput?.width ?? prePassRenderTarget?.getRenderWidth() ?? this._engine.getRenderWidth();
+        const height = blendOutput?.height ?? prePassRenderTarget?.getRenderHeight() ?? this._engine.getRenderHeight();
+        if (currentSize.width !== width || currentSize.height !== height) {
             this._disposeTextures();
             this._createTextures();
+            forceShareDepth = true;
         }
-        return this._updateTextureReferences();
+        return this._updateTextureReferences(forceShareDepth);
     }
 
-    private _updateTextureReferences() {
+    private _updateTextureReferences(forceShareDepth = false) {
         const prePassRenderer = this._scene.prePassRenderer;
 
         if (!prePassRenderer) {
@@ -118,7 +152,8 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
             return false;
         }
 
-        if (this._blendBackTexture !== prePassTexture) {
+        const textureReferencesChanged = this._blendBackTexture !== prePassTexture || !this._thinTextures[6];
+        if (textureReferencesChanged) {
             this._blendBackTexture = prePassTexture;
             this._blendBackMrt.setInternalTexture(this._blendBackTexture, 0);
 
@@ -126,7 +161,9 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
                 this._thinTextures[6].dispose();
             }
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
+        }
 
+        if (forceShareDepth || textureReferencesChanged) {
             prePassRenderer.defaultRT.renderTarget!.shareDepth(this._depthMrts[0].renderTarget!);
         }
 
@@ -181,5 +218,15 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
         this._engine.unBindFramebuffer(this._colorMrts[1].renderTarget!);
 
         this._finalCompose(1);
+    }
+
+    /**
+     * Disposes the depth peeling renderer and associated resources
+     */
+    public override dispose() {
+        this._prePassTexturesRecreatedObserver?.remove();
+        this._prePassTexturesRecreatedObserver = null;
+
+        super.dispose();
     }
 }

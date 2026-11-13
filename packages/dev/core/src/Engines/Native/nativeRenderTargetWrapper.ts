@@ -5,8 +5,11 @@ import { Constants } from "../constants";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { type NativeFramebuffer } from "./nativeInterfaces";
 import { type ThinNativeEngine } from "../thinNativeEngine";
+import { Logger } from "../../Misc/logger";
 
 export class NativeRenderTargetWrapper extends RenderTargetWrapper {
+    private static _HasWarnedAboutGeneratedDepthSharing = false;
+
     public override readonly _engine: ThinNativeEngine;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -34,6 +37,9 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     // (a shared texture swapped into an attachment) are honored. The 3D voxelization MRT uses the is3D route.
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _isMixedTypeMRT: boolean = false;
+
+    /** @internal */
+    public _generatedDepthShareSource: Nullable<NativeRenderTargetWrapper> = null;
 
     public get _framebuffer(): Nullable<NativeFramebuffer> {
         return this.__framebuffer;
@@ -168,6 +174,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             this._engine._assertDepthAttachmentCompatible(this, texture.samples);
         }
 
+        this._generatedDepthShareSource = null;
         const previous = this._depthStencilTexture;
         super.setDepthStencilTexture(texture, disposeExisting);
 
@@ -186,6 +193,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     ): InternalTexture {
         // Validate before the base class disposes the current depth texture.
         this._engine._assertDepthAttachmentCompatible(this, samples);
+        this._generatedDepthShareSource = null;
         return super.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);
     }
 
@@ -355,12 +363,31 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
 
     /**
      * Shares this wrapper's depth texture with another render target and rebuilds the destination
-     * framebuffer when needed so Native actually samples the shared depth (bgfx attaches depth at
+     * framebuffer when needed so Native actually uses the shared depth (bgfx attaches depth at
      * framebuffer creation time; a pointer-only shareDepth would leave the auto-depth from creation).
+     * An auto-generated depth buffer is handed over as is, keeping its contents, like WebGL shares its depth
+     * renderbuffer. Runtimes that cannot share generated depth leave both wrappers unchanged.
      * @param renderTarget The render target that receives the shared depth texture
      */
     public override shareDepth(renderTarget: RenderTargetWrapper): void {
         const dest = renderTarget as NativeRenderTargetWrapper;
+        if (!this._depthStencilTexture && (this._generateDepthBuffer || this._generateStencilBuffer) && dest && dest !== this && dest._engine === this._engine) {
+            // Validate before asking Native to transfer ownership so a rejected share leaves both wrappers untouched.
+            this._engine._assertDepthAttachmentCompatible(dest, this.samples);
+            const generatedDepth = this._engine._wrapGeneratedDepthStencil(this);
+            if (!generatedDepth) {
+                if (!NativeRenderTargetWrapper._HasWarnedAboutGeneratedDepthSharing) {
+                    Logger.Warn(
+                        "shareDepth: this Babylon Native runtime cannot share an auto-generated depth/stencil buffer. Continuing with separate depth buffers; create an explicit depth/stencil texture before sharing, or update Babylon Native."
+                    );
+                    NativeRenderTargetWrapper._HasWarnedAboutGeneratedDepthSharing = true;
+                }
+                return;
+            }
+            this._depthStencilTexture = generatedDepth;
+            this._generatedDepthShareSource = this;
+        }
+
         if (this._depthStencilTexture && dest?._engine === this._engine) {
             // Validate before the base class releases the destination's current depth texture.
             this._engine._assertDepthAttachmentCompatible(dest, this._depthStencilTexture.samples);
@@ -372,6 +399,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             return;
         }
 
+        dest._generatedDepthShareSource = this._generatedDepthShareSource;
         this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(dest);
     }
 
