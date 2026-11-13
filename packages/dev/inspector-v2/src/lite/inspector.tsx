@@ -32,6 +32,7 @@ import { RenderingContextPropertiesServiceDefinition } from "./services/panes/pr
 import { SceneNodePropertiesServiceDefinition } from "./services/panes/properties/sceneNodePropertiesService";
 import { ShadowGeneratorPropertiesServiceDefinition } from "./services/panes/properties/shadowGeneratorPropertiesService";
 import { SpriteLayerPropertiesServiceDefinition } from "./services/panes/properties/spriteLayerPropertiesService";
+import { SceneRenderablePropertiesServiceDefinition } from "./services/panes/properties/sceneRenderablePropertiesService";
 import { TextLayerPropertiesServiceDefinition } from "./services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { LiteAudioPropertiesServiceDefinition } from "./services/panes/properties/audioPropertiesService";
@@ -47,6 +48,7 @@ import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplor
 import { SceneResourceIndexServiceDefinition } from "./services/panes/scene/sceneResourceIndexService";
 import { ShadowGeneratorExplorerServiceDefinition } from "./services/panes/scene/shadowGeneratorExplorerService";
 import { SpriteLayerExplorerServiceDefinition } from "./services/panes/scene/spriteLayerExplorerService";
+import { SceneRenderableExplorerServiceDefinition } from "./services/panes/scene/sceneRenderableExplorerService";
 import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/textureExplorerService";
 import { PhysicsExplorerServiceDefinition } from "./services/panes/scene/physicsExplorerService";
@@ -117,6 +119,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 TextureExplorerServiceDefinition,
                 TextLayerExplorerServiceDefinition,
                 SpriteLayerExplorerServiceDefinition,
+                SceneRenderableExplorerServiceDefinition,
                 AnimationGroupExplorerServiceDefinition,
                 SkeletonExplorerServiceDefinition,
                 ParticleSystemExplorerServiceDefinition,
@@ -136,6 +139,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 LiteAudioPropertiesServiceDefinition,
                 TextLayerPropertiesServiceDefinition,
                 SpriteLayerPropertiesServiceDefinition,
+                SceneRenderablePropertiesServiceDefinition,
                 AnimationPropertiesServiceDefinition,
                 SkeletonPropertiesServiceDefinition,
                 ParticleSystemPropertiesServiceDefinition,

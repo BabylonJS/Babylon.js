@@ -46,7 +46,13 @@ The three ordinary fixture bodies form a stationary, zero-gravity row above the 
 
 Limitations: Lite has no physics-engine enable flag. Mesh, convex-hull, heightfield and container shape parameters are unavailable. Material combine modes, motors, sleep state, per-instance editing, pivot editing, creating/releasing physics objects, character controllers, raycasts and impulses are not exposed. Releasing a shape still attached to a live body violates Lite's lifetime contract and cannot be made safe by Inspector.
 
-Inspector's Lite entry point requires `@babylonjs/lite` 1.38.1 or later, matching its optional peer dependency (`^1.38.1`). Physics inspection uses the discovery/readback APIs (including constraint enable, density, child count, stable constraint debug data and constraint hide) and the opt-in utility overlay API shared with gizmos.
+Inspector's Lite entry point requires `@babylonjs/lite` 1.39.3 or later, matching its optional peer dependency (`^1.39.3`). Physics inspection uses the discovery/readback APIs (including constraint enable, density, child count, stable constraint debug data and constraint hide) and the opt-in utility overlay API shared with gizmos.
+
+## Babylon Lite Scene Renderables
+
+The Lite Explorer lists scene-hosted text renderables, depth-hosted sprite layers, and billboard systems separately from standalone renderer layers. Additions and removals update the Explorer; properties expose supported transforms, visibility, opacity, depth and atlas details. Particle-owned billboard systems also appear in the billboard collection. Scene-hosted text has no visibility property, and its depth mode is established when the renderable is built. A depth-hosted layer's default depth applies to newly added sprites; its `order` is not used by the scene render path.
+
+For the Inspector test app, add `&sceneRenderables=on` to `?experience=lite` to include examples of all three scene-hosted families. The fixture uses text order 201 to avoid a Lite 1.39.3 scene bind-group mismatch in the default view.
 
 ## Babylon Lite Picking
 
