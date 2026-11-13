@@ -363,7 +363,8 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
      * framebuffer when needed so Native actually uses the shared depth (bgfx attaches depth at
      * framebuffer creation time; a pointer-only shareDepth would leave the auto-depth from creation).
      * An auto-generated depth buffer is handed over as is, keeping its contents, like WebGL shares its depth
-     * renderbuffer. Runtimes that cannot share generated depth leave both wrappers unchanged.
+     * renderbuffer. Runtimes that cannot share generated depth reject the operation rather than rendering with
+     * unrelated depth buffers.
      * @param renderTarget The render target that receives the shared depth texture
      */
     public override shareDepth(renderTarget: RenderTargetWrapper): void {
@@ -373,7 +374,9 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             this._engine._assertDepthAttachmentCompatible(dest, this.samples);
             const generatedDepth = this._engine._wrapGeneratedDepthStencil(this);
             if (!generatedDepth) {
-                return;
+                throw new Error(
+                    "shareDepth: this Babylon Native runtime cannot share an auto-generated depth/stencil buffer. Create an explicit depth/stencil texture before sharing, or update Babylon Native."
+                );
             }
             this._depthStencilTexture = generatedDepth;
             this._generatedDepthShareSource = this;

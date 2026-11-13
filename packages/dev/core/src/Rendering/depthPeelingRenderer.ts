@@ -124,8 +124,12 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
     }
 
     private _updateTextures(forceShareDepth = false) {
-        const size = this._getTextureSize();
-        if (this._depthMrts[0].getSize().width !== size.width || this._depthMrts[0].getSize().height !== size.height) {
+        const currentSize = this._depthMrts[0].getSize();
+        const blendOutput = this.blendOutput;
+        const prePassRenderTarget = !blendOutput ? this._scene.prePassRenderer?.defaultRT : null;
+        const width = blendOutput?.width ?? prePassRenderTarget?.getRenderWidth() ?? this._engine.getRenderWidth();
+        const height = blendOutput?.height ?? prePassRenderTarget?.getRenderHeight() ?? this._engine.getRenderHeight();
+        if (currentSize.width !== width || currentSize.height !== height) {
             this._disposeTextures();
             this._createTextures();
             forceShareDepth = true;

@@ -621,6 +621,7 @@ export class PrePassRenderer {
     private _bindFrameBuffer() {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
+            this._currentTarget._retryInternalTexturesRecreatedNotification();
             const internalTexture = this._currentTarget.renderTarget;
             if (internalTexture) {
                 this._engine.bindFramebuffer(internalTexture);

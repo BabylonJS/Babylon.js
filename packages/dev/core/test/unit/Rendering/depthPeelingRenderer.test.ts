@@ -34,8 +34,13 @@ describe("DepthPeelingRenderer", () => {
             rtWrapper.setTextures(textures);
             return rtWrapper;
         });
+        const events: string[] = [];
+        let scene: Scene | undefined;
         vi.spyOn(engine, "bindFramebuffer").mockImplementation((rtWrapper) => {
             engine._currentRenderTarget = rtWrapper;
+            if (rtWrapper === scene?.prePassRenderer?.defaultRT.renderTarget) {
+                events.push(`bind:${rtWrapper.width}`);
+            }
         });
         vi.spyOn(engine, "unBindFramebuffer").mockImplementation(() => {
             engine._currentRenderTarget = null;
@@ -47,7 +52,7 @@ describe("DepthPeelingRenderer", () => {
             texture.height = texture.baseHeight = size.height;
             return texture;
         });
-        const scene = new Scene(engine);
+        scene = new Scene(engine);
         new FreeCamera("camera", new Vector3(0, 0, -10), scene);
         const createEffects = vi.spyOn(ThinDepthPeelingRenderer.prototype as any, "_createEffects").mockImplementation(function (this: any) {
             this._blendBackEffectWrapper = { dispose: vi.fn() };
@@ -57,11 +62,14 @@ describe("DepthPeelingRenderer", () => {
         scene.useOrderIndependentTransparency = true;
         expect(scene.depthPeelingRenderer).toBeTruthy();
         await Promise.resolve();
-        scene.prePassRenderer!.samples = 4;
 
-        const events: string[] = [];
+        let rejectGeneratedDepth = true;
+        let rejectResize = false;
         const shareDepth = vi.spyOn(RenderTargetWrapper.prototype, "shareDepth").mockImplementation(function (this: RenderTargetWrapper) {
-            if (scene.prePassRenderer!.samples > 1) {
+            if (rejectGeneratedDepth) {
+                throw new Error("cannot share an auto-generated depth/stencil buffer");
+            }
+            if (rejectResize) {
                 throw new Error("sample mismatch");
             }
             events.push(`share:${this.width}`);
@@ -74,20 +82,36 @@ describe("DepthPeelingRenderer", () => {
         });
 
         try {
-            expect(() => scene.render()).toThrow("sample mismatch");
+            expect(() => scene.render()).toThrow("cannot share an auto-generated depth/stencil buffer");
             expect((scene.prePassRenderer as any)._isDirty).toBe(true);
 
-            scene.prePassRenderer!.samples = 1;
+            rejectGeneratedDepth = false;
             scene.render();
             expect((scene.prePassRenderer as any)._isDirty).toBe(false);
             expect(events.indexOf("share:256")).toBeGreaterThanOrEqual(0);
             expect(events.indexOf("share:256")).toBeLessThan(events.indexOf("clear:256"));
+
+            const getTextureSize = vi.spyOn(scene.depthPeelingRenderer as any, "_getTextureSize");
+            expect((scene.depthPeelingRenderer as any)._updateTextures()).toBe(true);
+            expect(getTextureSize).not.toHaveBeenCalled();
+            getTextureSize.mockRestore();
 
             events.length = 0;
             renderWidth = renderHeight = 128;
             scene.render();
             expect(events.indexOf("share:128")).toBeGreaterThanOrEqual(0);
             expect(events.indexOf("share:128")).toBeLessThan(events.indexOf("clear:128"));
+
+            events.length = 0;
+            rejectResize = true;
+            renderWidth = renderHeight = 64;
+            expect(() => scene.prePassRenderer!.defaultRT._checkSize()).toThrow("sample mismatch");
+            expect((scene.prePassRenderer as any)._isDirty).toBe(false);
+
+            rejectResize = false;
+            (scene.prePassRenderer as any)._bindFrameBuffer();
+            expect(events.indexOf("share:64")).toBeGreaterThanOrEqual(0);
+            expect(events.indexOf("share:64")).toBeLessThan(events.indexOf("bind:64"));
         } finally {
             createEffects.mockRestore();
             shareDepth.mockRestore();

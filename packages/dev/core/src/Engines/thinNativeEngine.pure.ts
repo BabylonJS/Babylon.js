@@ -279,15 +279,6 @@ export class ThinNativeEngine extends ThinEngine {
     private _int2Scratch: Int32Array;
     private _int3Scratch: Int32Array;
     private _int4Scratch: Int32Array;
-    /** @internal Arguments (after the target) of the last bindFramebuffer call, to rebind the same layer/face/viewport selection. */
-    public _currentFramebufferBindArguments: [
-        faceIndex?: number,
-        requiredWidth?: number,
-        requiredHeight?: number,
-        forceFullscreenViewport?: boolean,
-        lodLevel?: number,
-        layer?: number,
-    ] = [];
     // Reference counts + metadata for framebuffers shared across frame graph render-target wrappers
     // (see _buildFrameGraphFramebuffer). Initialized in _initializeNativeEngine to match the other fields.
     private _frameGraphFramebufferRefCount: Map<
@@ -676,7 +667,15 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     protected override _rebuildGraphicsResources(): void {
-        const generatedDepthShares = new Map<NativeRenderTargetWrapper, NativeRenderTargetWrapper[]>();
+        const generatedDepthShares = new Map<
+            NativeRenderTargetWrapper,
+            {
+                wrappers: NativeRenderTargetWrapper[];
+                format: number;
+                samples: number;
+                generateStencil: boolean;
+            }
+        >();
 
         for (const wrapper of this._renderTargetWrapperCache as NativeRenderTargetWrapper[]) {
             const source = wrapper._generatedDepthShareSource;
@@ -684,14 +683,19 @@ export class ThinNativeEngine extends ThinEngine {
                 continue;
             }
 
-            let wrappers = generatedDepthShares.get(source);
-            if (!wrappers) {
-                wrappers = [];
-                generatedDepthShares.set(source, wrappers);
-            }
-            wrappers.push(wrapper);
-
             const depth = wrapper._depthStencilTexture;
+            let group = generatedDepthShares.get(source);
+            if (!group) {
+                group = {
+                    wrappers: [],
+                    format: depth?.format ?? (source._generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT),
+                    samples: depth?.samples ?? wrapper.samples,
+                    generateStencil: wrapper._depthStencilTextureWithStencil,
+                };
+                generatedDepthShares.set(source, group);
+            }
+            group.wrappers.push(wrapper);
+
             wrapper._depthStencilTexture = null;
             wrapper._generatedDepthShareSource = null;
             depth?.dispose();
@@ -699,8 +703,14 @@ export class ThinNativeEngine extends ThinEngine {
 
         super._rebuildGraphicsResources();
 
-        for (const [source, wrappers] of generatedDepthShares) {
-            for (const wrapper of wrappers) {
+        for (const [originalSource, group] of generatedDepthShares) {
+            // Context restoration has already discarded the old contents, so recreate the group around an explicit
+            // depth texture. This does not depend on the original source still being alive or a lazy source already
+            // having a framebuffer.
+            const source = group.wrappers.includes(originalSource) ? originalSource : group.wrappers[0];
+            source.createDepthStencilTexture(0, false, group.generateStencil, group.samples, group.format);
+            source._generatedDepthShareSource = source;
+            for (const wrapper of group.wrappers) {
                 if (wrapper !== source) {
                     source.shareDepth(wrapper);
                 }
@@ -4525,7 +4535,6 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         this._currentRenderTarget = texture;
-        this._currentFramebufferBindArguments = [faceIndex, requiredWidth, requiredHeight, forceFullscreenViewport, lodLevel, layer];
         // Multi render target whose color attachments each target a specific layer/face of a texture: the IBL
         // voxelization MRTs (several Z-slices of one shared 3D texture, routed via is3D) and mixed-type MRTs
         // (2D-array layer / cube face / 2D attachments, routed via _isMixedTypeMRT). The color textures may be
