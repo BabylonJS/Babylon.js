@@ -893,7 +893,6 @@ jobs:
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
                 CI: "true"
-                EXCLUDE_REGEX_ARRAY: "Procedural textures playground"
                 BSTACK_TEST_TYPE: "webgl2"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
