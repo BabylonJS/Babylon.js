@@ -2096,8 +2096,24 @@ export class ThinNativeEngine extends ThinEngine {
 
     protected override _deleteTexture(texture: Nullable<WebGLHardwareTexture>): void {
         if (texture) {
-            this._engine.deleteTexture(texture.underlyingResource as NativeTexture);
+            this._deleteNativeTexture(texture.underlyingResource as NativeTexture);
         }
+    }
+
+    /**
+     * Deletes a native texture after the commands already encoded in the command stream, like WebGL keeps a deleted
+     * texture alive for draws issued before the delete. Runtimes without the command delete it immediately.
+     * @internal
+     */
+    public _deleteNativeTexture(texture: NativeTexture): void {
+        const command = _native.Engine.COMMAND_DELETETEXTURE;
+        if (!command) {
+            this._engine.deleteTexture(texture);
+            return;
+        }
+        this._commandBufferEncoder.startEncodingCommand(command);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -2791,7 +2807,7 @@ export class ThinNativeEngine extends ThinEngine {
      * @returns the babylon internal texture
      */
     public wrapNativeTexture(texture: NativeTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
-        const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
+        const hardwareTexture = new NativeHardwareTexture(texture, (nativeTexture) => this._deleteNativeTexture(nativeTexture));
         const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.baseWidth = this._engine.getTextureWidth(texture);
@@ -2869,7 +2885,7 @@ export class ThinNativeEngine extends ThinEngine {
             }
         }
 
-        internalTexture._hardwareTexture = new NativeHardwareTexture(texture, this._engine);
+        internalTexture._hardwareTexture = new NativeHardwareTexture(texture, (nativeTexture) => this._deleteNativeTexture(nativeTexture));
         internalTexture.isReady = true;
         this.updateTextureSamplingMode(internalTexture.samplingMode, internalTexture);
 
@@ -3554,7 +3570,7 @@ export class ThinNativeEngine extends ThinEngine {
 
     /** @internal */
     public override _createHardwareTexture(): IHardwareTextureWrapper {
-        return new NativeHardwareTexture(this._createTexture() as NativeTexture, this._engine);
+        return new NativeHardwareTexture(this._createTexture() as NativeTexture, (nativeTexture) => this._deleteNativeTexture(nativeTexture));
     }
 
     /** @internal */

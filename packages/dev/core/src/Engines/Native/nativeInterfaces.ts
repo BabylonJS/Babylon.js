@@ -430,6 +430,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETTEXTURE: NativeData;
     readonly COMMAND_UNSETTEXTURE: NativeData;
     readonly COMMAND_DISCARDALLTEXTURES: NativeData;
+    readonly COMMAND_DELETETEXTURE?: NativeData;
     readonly COMMAND_BINDVERTEXARRAY: NativeData;
     readonly COMMAND_SETSTATE: NativeData;
     readonly COMMAND_DELETEPROGRAM: NativeData;
