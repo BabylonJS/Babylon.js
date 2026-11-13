@@ -219,23 +219,29 @@ describe("Procedural textures hash", () => {
         expect(worst.correlation, `shift (${worst.dx}, ${worst.dy})`).toBeLessThan(0.05);
     });
 
-    // A random table bottoms out near 0.9 of the overall variance here; a hash that cancels a coordinate along some line
-    // (as x + y + 101 = 0 (mod 251) did for an earlier version) gives 0.
-    // The whole 4001x4001 period takes about 2 s alone, more under a parallel CI run, so allow it more than the default timeout.
-    it("varies along every lattice line over the whole period", { timeout: 60_000 }, () => {
+    // Every line of the period is sampled at Band points: a line with dy != 0 crosses each row once, and a line with dy = 0 is a
+    // row, which crosses each column once. So Band rows and Band columns cover all lines at a fraction of the whole period's cost.
+    // With 256 samples per line, a random table bottoms out near 0.75 of the overall variance here; a hash that cancels a
+    // coordinate along some line (as x + y + 101 = 0 (mod 251) did for an earlier version) gives 0.
+    it("varies along every lattice line", () => {
+        const Band = 256;
         const { rand } = CompileHash(glsl);
-        const values = new Float32Array(Modulus * Modulus);
+        const rows = new Float32Array(Band * Modulus);
+        const columns = new Float32Array(Band * Modulus);
         let sum = 0;
         let sumSquares = 0;
-        for (let y = 0; y < Modulus; y++) {
-            for (let x = 0; x < Modulus; x++) {
-                const value = rand({ x, y });
-                values[y * Modulus + x] = value;
-                sum += value;
-                sumSquares += value * value;
+        for (let i = 0; i < Band; i++) {
+            for (let j = 0; j < Modulus; j++) {
+                const row = rand({ x: j, y: i });
+                const column = rand({ x: i, y: j });
+                rows[i * Modulus + j] = row;
+                columns[i * Modulus + j] = column;
+                sum += row + column;
+                sumSquares += row * row + column * column;
             }
         }
-        const variance = sumSquares / values.length - (sum / values.length) ** 2;
+        const count = 2 * Band * Modulus;
+        const variance = sumSquares / count - (sum / count) ** 2;
         let worst = { ratio: Infinity, dx: 0, dy: 0, line: 0 };
         const lineSum = new Float64Array(Modulus);
         const lineSquares = new Float64Array(Modulus);
@@ -247,17 +253,19 @@ describe("Procedural textures hash", () => {
                 // Points on one line in direction (dx, dy) share dy * x - dx * y (mod m).
                 lineSum.fill(0);
                 lineSquares.fill(0);
-                for (let y = 0; y < Modulus; y++) {
-                    let line = Mod(-dx * y, Modulus);
-                    const step = Mod(dy, Modulus);
-                    for (let x = 0; x < Modulus; x++, line = line + step >= Modulus ? line + step - Modulus : line + step) {
-                        const value = values[y * Modulus + x];
+                for (let i = 0; i < Band; i++) {
+                    // Rows are (j, i); for dy = 0 use columns (i, j), whose line index -dx * j steps by -dx along j.
+                    let line = dy === 0 ? 0 : Mod(-dx * i, Modulus);
+                    const step = dy === 0 ? Mod(-dx, Modulus) : dy;
+                    const values = dy === 0 ? columns : rows;
+                    for (let j = 0; j < Modulus; j++, line = line + step >= Modulus ? line + step - Modulus : line + step) {
+                        const value = values[i * Modulus + j];
                         lineSum[line] += value;
                         lineSquares[line] += value * value;
                     }
                 }
                 for (let line = 0; line < Modulus; line++) {
-                    const ratio = (lineSquares[line] / Modulus - (lineSum[line] / Modulus) ** 2) / variance;
+                    const ratio = (lineSquares[line] / Band - (lineSum[line] / Band) ** 2) / variance;
                     if (ratio < worst.ratio) {
                         worst = { ratio, dx, dy, line };
                     }
