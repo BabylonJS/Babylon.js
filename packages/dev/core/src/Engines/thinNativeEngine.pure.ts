@@ -221,6 +221,10 @@ const _FullscreenViewport: IViewportLike = { x: 0, y: 0, width: 1, height: 1 };
 // generateMipMaps so sample-count changes and context-loss rebuilds keep an explicitly authored mip chain.
 const _TexturesWithMipStorage = /*#__PURE__*/ new WeakSet<InternalTexture>();
 
+// Raw textures created without data. Native allocates their storage on the first loadRawTexture, and updateTextureData
+// requires that storage, so a complete update of one of these textures has to go through loadRawTexture instead.
+const _RawTexturesWithoutStorage = /*#__PURE__*/ new WeakSet<InternalTexture>();
+
 /**
  * Sentinel for "no attachment masking": every color attachment of the bound framebuffer takes part in
  * the clear. Native treats this value specially and skips the bgfx color-palette clear path.
@@ -2181,6 +2185,9 @@ export class ThinNativeEngine extends ThinEngine {
         texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !generateMipMaps);
 
         this.updateRawTexture(texture, data, format, invertY, compression, type, texture._useSRGBBuffer);
+        if (!data) {
+            _RawTexturesWithoutStorage.add(texture);
+        }
 
         if (texture._hardwareTexture) {
             const webGLTexture = texture._hardwareTexture.underlyingResource;
@@ -2347,6 +2354,7 @@ export class ThinNativeEngine extends ThinEngine {
                 texture.invertY,
                 useSRGBBuffer
             );
+            _RawTexturesWithoutStorage.delete(texture);
         }
 
         texture.isReady = true;
@@ -4980,6 +4988,12 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
 
+        const fullBaseLevel = faceIndex === 0 && lod === 0 && xOffset === 0 && yOffset === 0 && width === texture.width && height === texture.height;
+        if (fullBaseLevel && _RawTexturesWithoutStorage.has(texture)) {
+            this.updateRawTexture(texture, imageData, texture.format, texture.invertY, texture._compression, texture.type, texture._useSRGBBuffer);
+            return;
+        }
+
         if (!this._engine.updateTextureData) {
             throw new Error("updateTextureData not implemented.");
         }
@@ -5056,6 +5070,7 @@ export class ThinNativeEngine extends ThinEngine {
             texture.invertY,
             texture._useSRGBBuffer
         );
+        _RawTexturesWithoutStorage.delete(texture);
     }
 
     /**
