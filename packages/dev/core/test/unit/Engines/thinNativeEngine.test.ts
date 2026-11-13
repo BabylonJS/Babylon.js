@@ -2202,7 +2202,7 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.updateTextureData).toHaveBeenCalledWith(resourceOf(texture), mip, 0, 0, 2, 2, 0, 1, texture.invertY, false);
         });
 
-        it("routes complete base-level updates through ordered raw uploads", () => {
+        it("allocates an empty raw texture through an ordered upload, then uses sub-texture updates", () => {
             const { engine, nativeEngine } = createEngine();
             const texture = engine.createRawTexture(null, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             const full = new Uint8Array(4 * 2 * 4);
@@ -2212,18 +2212,37 @@ describe("ThinNativeEngine", () => {
             engine.updateTextureData(texture, row, 0, 1, 4, 1);
             engine.updateTextureData(texture, full, 0, 0, 4, 2);
 
-            expect(nativeEngine.loadRawTexture.mock.calls.map((call: unknown[]) => [call[1], call[2], call[3]])).toEqual([
-                [full, 4, 2],
-                [full, 4, 2],
+            expect(nativeEngine.loadRawTexture.mock.calls.map((call: unknown[]) => [call[1], call[2], call[3]])).toEqual([[full, 4, 2]]);
+            expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => [call[1], call[3], call[5]])).toEqual([
+                [row, 1, 1],
+                [full, 0, 2],
             ]);
-            expect(nativeEngine.updateTextureData).toHaveBeenCalledExactlyOnceWith(resourceOf(texture), row, 0, 1, 4, 1, 0, 0, texture.invertY, false);
+        });
+
+        it("keeps a complete update followed by a subrectangle update in runtime call order", () => {
+            const { engine, nativeEngine } = createEngine();
+            const initial = new Uint8Array(4 * 2 * 4);
+            const texture = engine.createRawTexture(initial, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            const full = new Uint8Array(4 * 2 * 4).fill(1);
+            const subrect = new Uint8Array(2 * 1 * 4).fill(2);
+            nativeEngine.loadRawTexture.mockClear();
+            nativeEngine.updateTextureData.mockClear();
+
+            engine.updateTextureData(texture, full, 0, 0, 4, 2);
+            engine.updateTextureData(texture, subrect, 1, 1, 2, 1);
+
+            expect(nativeEngine.loadRawTexture).not.toHaveBeenCalled();
+            expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => [call[1], call[2], call[3], call[4], call[5]])).toEqual([
+                [full, 0, 0, 4, 2],
+                [subrect, 1, 1, 2, 1],
+            ]);
         });
 
         it("keeps complete updates on non-raw and mip-chain textures on the sub-texture path", () => {
             const { engine, nativeEngine } = createEngine();
             const nonRaw = engine._createInternalTexture({ width: 4, height: 2 }, {}, true, InternalTextureSource.Url);
             const mipChain = engine.createRawTexture(new Uint8Array(4 * 2 * 4), 4, 2, Constants.TEXTUREFORMAT_RGBA, true, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-            const authoredMipChain = engine.createRawTexture(null, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            const authoredMipChain = engine.createRawTexture(new Uint8Array(4 * 2 * 4), 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             (engine as any)._setHasMipStorage(authoredMipChain, true);
             const full = new Uint8Array(4 * 2 * 4);
             nativeEngine.loadRawTexture.mockClear();
