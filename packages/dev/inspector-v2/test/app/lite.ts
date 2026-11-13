@@ -329,16 +329,6 @@ boxGroup.children.push(smallBox);
 smallBox.parent = boxGroup;
 addToScene(primaryScene, boxGroup);
 
-const duckAsset = await loadGltf(engine, "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb");
-const duckRoot = duckAsset.entities.find(IsSceneNode);
-if (!duckRoot) {
-    throw new Error("The textured Duck glTF did not contain a scene node.");
-}
-duckRoot.name = "Textured Duck";
-duckRoot.position.set(0, -1.25, -1.5);
-duckRoot.scaling.set(duckRoot.scaling.x * 0.65, duckRoot.scaling.y * 0.65, duckRoot.scaling.z * 0.65);
-addToScene(primaryScene, duckAsset);
-
 enableBoneControl();
 const skeletonAsset = await loadGltf(engine, CreateSkeletonMorphGlb());
 addToScene(primaryScene, skeletonAsset);
@@ -703,6 +693,22 @@ Object.assign(globalThis, {
     liteTransformNode: boxGroup,
     liteShadowGenerator: shadowGenerator,
 });
+
+void (async () => {
+    try {
+        const duckAsset = await loadGltf(engine, "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb");
+        const duckRoot = duckAsset.entities.find(IsSceneNode);
+        if (!duckRoot) {
+            throw new Error("The textured Duck glTF did not contain a scene node.");
+        }
+        duckRoot.name = "Textured Duck";
+        duckRoot.position.set(0, -1.25, -1.5);
+        duckRoot.scaling.set(duckRoot.scaling.x * 0.65, duckRoot.scaling.y * 0.65, duckRoot.scaling.z * 0.65);
+        addToScene(primaryScene, duckAsset);
+    } catch (error) {
+        console.error("Failed to load the optional textured Duck fixture:", error);
+    }
+})();
 
 window.addEventListener(
     "beforeunload",

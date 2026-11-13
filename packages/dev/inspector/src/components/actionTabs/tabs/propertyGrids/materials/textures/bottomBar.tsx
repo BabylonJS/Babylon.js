@@ -9,8 +9,8 @@ interface IBottomBarProps {
 export class BottomBar extends React.PureComponent<IBottomBarProps> {
     override render() {
         const factor = Math.pow(2, this.props.mipLevel);
-        const width = Math.ceil(this.props.texture.getSize().width / factor);
-        const height = Math.ceil(this.props.texture.getSize().height / factor);
+        const width = Math.max(1, Math.floor(this.props.texture.getSize().width / factor));
+        const height = Math.max(1, Math.floor(this.props.texture.getSize().height / factor));
         return (
             <div id="bottom-bar">
                 <span id="file-url">{this.props.texture.name}</span>

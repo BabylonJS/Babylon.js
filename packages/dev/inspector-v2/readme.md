@@ -10,7 +10,7 @@ The preview displays GPU storage row 0 at the top and does not apply the texture
 
 Texture preview requires `@babylonjs/lite` 1.39.3 or later, which exposes `getTextureReadbackInfo` and `readTexturePixelsRGBA8` at the package root.
 
-The `?experience=lite` test scene includes the small [Khronos Duck glTF sample](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Duck), loaded from GitHub with its embedded color texture. Expand **Textured Duck** to inspect its mesh and material, or select its texture under **Textures** to preview or export it. Loading this model requires network access.
+The `?experience=lite` test scene loads the small [Khronos Duck glTF sample](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Duck) asynchronously from GitHub with its embedded color texture. Expand **Textured Duck** to inspect its mesh and material, or select its texture under **Textures** to preview or export it. Loading this optional model requires network access; failures are reported in the console.
 
 ## Babylon Lite Audio
 

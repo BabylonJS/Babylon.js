@@ -46,6 +46,69 @@ async function PreviewPixels(page: Page): Promise<number[]> {
     });
 }
 
+test("Lite Inspector starts while the optional Duck download is stalled", async ({ page }) => {
+    test.setTimeout(60000);
+    let releaseDuck!: () => void;
+    const duckGate = new Promise<void>((resolve) => (releaseDuck = resolve));
+    let requested = false;
+    await page.route("**/Duck/glTF-Binary/Duck.glb", async (route) => {
+        requested = true;
+        await duckGate;
+        await route.abort();
+    });
+    try {
+        await page.goto(TestUrl, { waitUntil: "commit" });
+        await expect.poll(() => requested, { timeout: 30000 }).toBe(true);
+        await page.waitForFunction(() => "liteInspectorToken" in window && "liteCreateTexturePreviewFixture" in window);
+    } finally {
+        releaseDuck();
+    }
+});
+
+test("native texture editor paints an inverted mip at the base canvas size", async ({ page }) => {
+    await page.goto(TestUrl, { waitUntil: "commit" });
+    const result = await page.evaluate(async (moduleUrl) => {
+        const { TextureCanvasManager } = await import(moduleUrl);
+        const canvas = document.createElement("canvas");
+        const manager = Object.create(TextureCanvasManager.prototype);
+        Object.assign(manager, {
+            _originalTexture: {
+                isReady: () => true,
+                getSize: () => ({ width: 4, height: 4 }),
+                getInternalTexture: () => ({ format: 5 }),
+                getScene: () => null,
+                textureFormat: 5,
+                invertY: true,
+                readPixels: async () => new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255]),
+            },
+            _mipLevel: 1,
+            _face: 0,
+            _window: window,
+            _2DCanvas: canvas,
+            _3DCanvasTexture: { update: () => {} },
+            setSize: (size: { width: number; height: number }) => {
+                canvas.width = size.width;
+                canvas.height = size.height;
+            },
+            updateDisplay: () => {},
+        });
+        await manager.grabOriginalTexture();
+        return {
+            size: [canvas.width, canvas.height],
+            pixels: Array.from(canvas.getContext("2d")!.getImageData(0, 0, 4, 4).data),
+            cached: Array.from(manager._imageData),
+        };
+    }, "/src/components/textureEditor/canvasManager.ts");
+    const red = [255, 0, 0, 255];
+    const green = [0, 255, 0, 255];
+    const blue = [0, 0, 255, 255];
+    const yellow = [255, 255, 0, 255];
+    const pixels = [...blue, ...blue, ...yellow, ...yellow, ...blue, ...blue, ...yellow, ...yellow, ...red, ...red, ...green, ...green, ...red, ...red, ...green, ...green];
+    expect(result.size).toEqual([4, 4]);
+    expect(result.pixels).toEqual(pixels);
+    expect(result.cached).toEqual(pixels);
+});
+
 test("Lite Inspector previews storage-row pixels, filters channels and exports the displayed PNG", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
