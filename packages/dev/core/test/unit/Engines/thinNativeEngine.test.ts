@@ -1078,6 +1078,34 @@ describe("ThinNativeEngine", () => {
             expect(texture.generateMipMaps).toBe(false);
         });
 
+        it("queues texture deletes in the command stream behind earlier commands", () => {
+            const { engine, nativeEngine, commands } = createEngine();
+            const native = [{ id: "native-0" }, { id: "native-1" }];
+            nativeEngine.createTexture = vi.fn().mockReturnValueOnce(native[0]).mockReturnValueOnce(native[1]);
+            const hardwareTexture = ThinNativeEngine.prototype._createHardwareTexture.call(engine);
+            const wrapped = ThinNativeEngine.prototype._createHardwareTexture.call(engine);
+            commands.push(["DRAW"]);
+
+            hardwareTexture.release();
+            (engine as any)._deleteTexture(wrapped);
+
+            expect(commands).toEqual([["DRAW"], ["COMMAND_DELETETEXTURE", native[0]], ["COMMAND_DELETETEXTURE", native[1]]]);
+            expect(nativeEngine.deleteTexture).not.toHaveBeenCalled();
+            expect(hardwareTexture.underlyingResource).toBeNull();
+        });
+
+        it("deletes textures immediately when the runtime lacks the delete command", () => {
+            vi.stubGlobal("_native", { Engine: new Proxy({}, { get: (_target, name) => (name === "COMMAND_DELETETEXTURE" ? undefined : String(name)) }) });
+            const { engine, nativeEngine, commands } = createEngine();
+            const native = { id: "native" };
+            nativeEngine.createTexture = vi.fn(() => native);
+
+            ThinNativeEngine.prototype._createHardwareTexture.call(engine).release();
+
+            expect(nativeEngine.deleteTexture).toHaveBeenCalledWith(native);
+            expect(commands).toEqual([]);
+        });
+
         it("reports the legacy resolve fallback when explicit generation is unavailable", () => {
             vi.stubGlobal("_native", { Engine: {} });
             const { engine } = createEngine();

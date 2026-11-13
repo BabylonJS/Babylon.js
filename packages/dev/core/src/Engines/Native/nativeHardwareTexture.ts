@@ -1,10 +1,15 @@
 import { type IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import { type Nullable } from "../../types";
-import { type INativeEngine, type NativeTexture, type NativeFramebuffer } from "./nativeInterfaces";
+import { type NativeTexture, type NativeFramebuffer } from "./nativeInterfaces";
+
+/** @internal */
+export interface INativeTextureDeleter {
+    _deleteNativeTexture(texture: NativeTexture): void;
+}
 
 /** @internal */
 export class NativeHardwareTexture implements IHardwareTextureWrapper {
-    private readonly _engine: INativeEngine;
+    private readonly _deleter: INativeTextureDeleter;
     private _nativeTexture: Nullable<NativeTexture>;
 
     /**
@@ -19,8 +24,8 @@ export class NativeHardwareTexture implements IHardwareTextureWrapper {
         return this._nativeTexture;
     }
 
-    constructor(existingTexture: NativeTexture, engine: INativeEngine) {
-        this._engine = engine;
+    constructor(existingTexture: NativeTexture, deleter: INativeTextureDeleter) {
+        this._deleter = deleter;
         this.set(existingTexture);
     }
 
@@ -36,7 +41,7 @@ export class NativeHardwareTexture implements IHardwareTextureWrapper {
 
     public release() {
         if (this._nativeTexture) {
-            this._engine.deleteTexture(this._nativeTexture);
+            this._deleter._deleteNativeTexture(this._nativeTexture);
         }
 
         this.reset();
