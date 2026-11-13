@@ -210,4 +210,207 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         scene.dispose();
         engine.dispose();
     });
+
+    it("sorts only the active splat ranges with sortSplatIndices and retries a rejected sort", async () => {
+        const sortSplatIndices = vi.fn(() => true);
+        (globalThis as any)._native.sortSplatIndices = sortSplatIndices;
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.updateData(createSplatData(40));
+        sortSplatIndices.mockClear();
+        sortSplatIndices.mockReturnValueOnce(false);
+        mesh.setSplatIndexRanges([
+            { offset: 3, count: 2 },
+            { offset: 20, count: 18 },
+        ]);
+
+        expect(sortSplatIndices).toHaveBeenCalledOnce();
+        const [, worldMatrices, positions, splatIndex, vertexCount, intervals, partIndices] = sortSplatIndices.mock.calls[0] as any[];
+        expect(worldMatrices).toEqual([mesh.getWorldMatrix()]);
+        expect(positions).toBe((mesh as any)._splatPositions);
+        expect(splatIndex).toBe((mesh as any)._splatIndex);
+        expect(splatIndex.length).toBe(32);
+        expect(vertexCount).toBe(40);
+        expect(Array.from(intervals)).toEqual([3, 2, 20, 18]);
+        expect(partIndices).toBeNull();
+        expect(sortSplats).not.toHaveBeenCalled();
+        expect(mesh._isDepthSortSettled).toBe(false);
+
+        mesh._postToWorker();
+        expect(sortSplatIndices).toHaveBeenCalledTimes(2);
+        expect(mesh._isDepthSortSettled).toBe(true);
+
+        scene.dispose();
+        engine.dispose();
+    }, 30000);
+
+    it("sorts compound parts with their own world matrices with sortSplatIndices", async () => {
+        const sortSplatIndices = vi.fn(() => true);
+        (globalThis as any)._native.sortSplatIndices = sortSplatIndices;
+        const { GaussianSplattingCompoundMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh");
+        const { Matrix } = await import("core/Maths/math.vector");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingCompoundMesh("compound", null, scene);
+        const parts = Uint8Array.from({ length: 40 }, (_, i) => (i < 20 ? 0 : 1));
+        mesh.updateData(createSplatData(40), undefined, undefined, parts);
+        mesh.setWorldMatrixForPart(0, Matrix.Translation(-1, 0, 0));
+        sortSplatIndices.mockClear();
+        mesh.setWorldMatrixForPart(1, Matrix.Translation(0, 0, 3));
+
+        expect(sortSplatIndices).toHaveBeenCalledOnce();
+        const [, worldMatrices, , , vertexCount, intervals, partIndices] = sortSplatIndices.mock.calls[0] as any[];
+        expect(worldMatrices.map((matrix: any) => Array.from(matrix.m))).toEqual([Array.from(Matrix.Translation(-1, 0, 0).m), Array.from(Matrix.Translation(0, 0, 3).m)]);
+        expect(vertexCount).toBe(40);
+        expect(intervals).toBeNull();
+        expect(Array.from(partIndices.subarray(0, 40))).toEqual(Array.from(parts));
+        expect(sortSplats).not.toHaveBeenCalled();
+
+        scene.dispose();
+        engine.dispose();
+    }, 30000);
+
+    it("uploads only the requested rows of a spherical harmonics texture", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const width = 4;
+        const height = 3;
+        const bytesPerTexel = 16; // RGBA32UI
+        const bytesPerRow = width * bytesPerTexel;
+        const texture = new RawTexture(
+            null,
+            width,
+            height,
+            Constants.TEXTUREFORMAT_RGBA_INTEGER,
+            scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+        );
+        const updateRawTexture = vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const updateTextureData = vi.fn();
+        (engine as any).updateTextureData = updateTextureData;
+
+        // An incremental update only owns the rows from lineStart: the rows above hold neutral placeholder SH.
+        (mesh as any)._updateShTextureData(texture, new Uint8Array(bytesPerRow * height), width, 1, 2);
+
+        expect(updateRawTexture).not.toHaveBeenCalled();
+        expect(updateTextureData).toHaveBeenCalledOnce();
+        const [internalTexture, data, xOffset, yOffset, updateWidth, updateHeight] = updateTextureData.mock.calls[0];
+        expect(internalTexture).toBe(texture.getInternalTexture());
+        expect([xOffset, yOffset, updateWidth, updateHeight]).toEqual([0, 1, width, 2]);
+        expect(data.byteOffset).toBe(bytesPerRow);
+        expect(data.byteLength).toBe(bytesPerRow * 2);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("uploads the requested rows of an unaligned spherical harmonics view", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const width = 4;
+        const height = 3;
+        const bytesPerTexel = 16; // RGBA32UI
+        const bytesPerRow = width * bytesPerTexel;
+        const texture = new RawTexture(
+            null,
+            width,
+            height,
+            Constants.TEXTUREFORMAT_RGBA_INTEGER,
+            scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+        );
+        vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const updateTextureData = vi.fn();
+        (engine as any).updateTextureData = updateTextureData;
+
+        const shData = new Uint8Array(new ArrayBuffer(bytesPerRow * height + 1), 1, bytesPerRow * height);
+        shData.forEach((_, index) => (shData[index] = index & 0xff));
+
+        (mesh as any)._updateShTextureData(texture, shData, width, 1, 2);
+
+        expect(updateTextureData).toHaveBeenCalledOnce();
+        const [, data, xOffset, yOffset, updateWidth, updateHeight] = updateTextureData.mock.calls[0];
+        expect([xOffset, yOffset, updateWidth, updateHeight]).toEqual([0, 1, width, 2]);
+        expect(data.byteOffset % Uint32Array.BYTES_PER_ELEMENT).toBe(0);
+        expect(Array.from(new Uint8Array(data.buffer, data.byteOffset, data.byteLength))).toEqual(Array.from(shData.subarray(bytesPerRow, bytesPerRow * 3)));
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps the existing SH rows when a part is appended without growing the atlas", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { GaussianSplattingCompoundMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh");
+        const { engine, scene } = await createScene();
+        // Atlas width 16: 20 splats use rows [0, 2), and 4 more still fit in row 1, so the append is incremental.
+        (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 16;
+
+        const createSource = (name: string, count: number) => {
+            const source = new GaussianSplattingMesh(name, null, scene);
+            source.disableDepthSort = true;
+            source.updateData(createSplatData(count), [new Uint8Array(count * 16).fill(7)], undefined, undefined, 1);
+            return source;
+        };
+
+        const compound = new GaussianSplattingCompoundMesh("compound", null, scene, true);
+        compound.disableDepthSort = true;
+        compound.addPart(createSource("a", 20), false);
+        const shTextures = (compound as any)._shTextures as any[];
+        expect(shTextures?.length).toBe(1);
+        const shInternalTexture = shTextures[0].getInternalTexture();
+        const textureHeight = shInternalTexture.height;
+
+        const updateRawTexture = vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const updateTextureData = vi.fn();
+        (engine as any).updateTextureData = updateTextureData;
+
+        compound.addPart(createSource("b", 4), false);
+
+        expect((compound as any)._shTextures[0]).toBe(shTextures[0]);
+        expect(shInternalTexture.height).toBe(textureHeight);
+        // A full upload would overwrite the rows of the first part (on the GPU, possibly streamed SH) with the CPU copy.
+        expect(updateRawTexture.mock.calls.filter((call) => call[0] === shInternalTexture)).toHaveLength(0);
+        const shUploads = updateTextureData.mock.calls.filter((call) => call[0] === shInternalTexture);
+        expect(shUploads.length).toBeGreaterThan(0);
+        for (const call of shUploads) {
+            expect(call[3]).toBeGreaterThanOrEqual(1);
+        }
+
+        scene.dispose();
+        engine.dispose();
+    }, 30000);
+
+    it("keeps streaming reservations working on a NullEngine created in a Native runtime", async () => {
+        const { GaussianSplattingCompoundMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh");
+        const { engine, scene } = await createScene();
+
+        const compound = new GaussianSplattingCompoundMesh("compound", null, scene);
+        compound.disableDepthSort = true;
+        const handle = compound.reserveStreamingPart(30);
+
+        // NullEngine has no MRT support, so the render-target atlas must not be created even though `_native` exists.
+        expect((compound as any)._mrtAtlas).toBeFalsy();
+        expect(handle.base).toBe(0);
+        expect(compound.partCount).toBe(1);
+        expect((compound as any)._vertexCount).toBe(handle.capacity);
+
+        scene.dispose();
+        engine.dispose();
+    });
 });

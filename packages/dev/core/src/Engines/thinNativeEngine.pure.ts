@@ -243,6 +243,7 @@ export class ThinNativeEngine extends ThinEngine {
     protected _engine: INativeEngine;
     private _camera: Nullable<INativeCamera>;
     private _commandBufferEncoder: CommandBufferEncoder;
+    private _alphaToCoverage: boolean;
     private _frameStats: NativeFrameStats;
     private _boundBuffersVertexArray: any;
     private _fontMeasureCanvas?: INativeCanvas;
@@ -354,6 +355,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._cachedZOffset = 0;
         this._cachedZOffsetUnits = 0;
         this._depthWrite = true;
+        this._alphaToCoverage = false;
         // warning for non supported fill mode has already been displayed
         this._fillModeWarningDisplayed = false;
         this._int2Scratch = new Int32Array(2);
@@ -1698,11 +1700,26 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
 
+        if ((mode === Constants.ALPHA_MIN || mode === Constants.ALPHA_MAX) && !_native.Engine.COMMAND_SETBLENDEQUATION) {
+            // Without blend-equation support these modes would silently blend additively.
+            throw new Error(`Unsupported alpha mode: ${mode}. This Babylon Native runtime does not support blend equations.`);
+        }
+
         const nativeMode = getNativeAlphaMode(mode);
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETBLENDMODE);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(nativeMode);
         this._commandBufferEncoder.finishEncodingCommand();
+
+        // Like WebGL/WebGPU, ALPHA_MIN and ALPHA_MAX imply a blend equation. Restore ADD when switching
+        // away from them; other equation changes are left to explicit setAlphaEquation calls.
+        if (mode === Constants.ALPHA_MIN) {
+            this.setAlphaEquation(Constants.ALPHA_EQUATION_MIN, targetIndex);
+        } else if (mode === Constants.ALPHA_MAX) {
+            this.setAlphaEquation(Constants.ALPHA_EQUATION_MAX, targetIndex);
+        } else if (this._alphaMode[targetIndex] === Constants.ALPHA_MIN || this._alphaMode[targetIndex] === Constants.ALPHA_MAX) {
+            this.setAlphaEquation(Constants.ALPHA_EQUATION_ADD, targetIndex);
+        }
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
@@ -1735,6 +1752,36 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.startEncodingCommand(command);
         // Pass the Babylon Constants.ALPHA_EQUATION_* value; NativeEngine::SetBlendEquation maps it to bgfx.
         this._commandBufferEncoder.encodeCommandArgAsUInt32(equation);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    /**
+     * Gets a boolean indicating if alpha-to-coverage is enabled
+     * @returns true if alpha-to-coverage is enabled
+     */
+    public override getAlphaToCoverage(): boolean {
+        return this._alphaToCoverage;
+    }
+
+    /**
+     * Enable or disable alpha-to-coverage. Like WebGL, it has no effect on single-sample targets.
+     * @param enable defines the state to set
+     */
+    public override setAlphaToCoverage(enable: boolean): void {
+        if (this._alphaToCoverage === enable) {
+            return;
+        }
+
+        this._alphaToCoverage = enable;
+
+        const command = _native.Engine.COMMAND_SETALPHATOCOVERAGE;
+        if (!command) {
+            // Older Babylon Native binaries predating alpha-to-coverage support.
+            return;
+        }
+
+        this._commandBufferEncoder.startEncodingCommand(command);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -2924,7 +2971,10 @@ export class ThinNativeEngine extends ThinEngine {
         texture.isReady = true;
         texture.samples = samples;
         texture.generateMipMaps = false;
-        texture.samplingMode = options.bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        // Like WebGL (engine.renderTarget), only comparison samplers may filter depth: OpenGL ES 3 treats a
+        // LINEAR-filtered depth texture without a compare mode as incomplete, so it samples as zero.
+        const bilinearFiltering = !!options.comparisonFunction && options.bilinearFiltering;
+        texture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         texture.format = generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
         texture._comparisonFunction = options.comparisonFunction ?? 0;

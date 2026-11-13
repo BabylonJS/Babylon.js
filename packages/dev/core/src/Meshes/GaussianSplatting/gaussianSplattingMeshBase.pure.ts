@@ -570,6 +570,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     public _vertexCount = 0;
     protected _worker: Nullable<Worker> = null;
     private _modelViewProjectionMatrix = Matrix.Identity();
+    private _nativeSortViewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     protected _canPostToWorker = true;
     private _readyToDisplay = false;
@@ -1504,7 +1505,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     public _getCameraDirection(camera: Camera): Vector3 {
         const cameraViewMatrix = camera.getViewMatrix();
         const cameraProjectionMatrix = camera.getProjectionMatrix();
-        const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
+        // Kept on the instance: the Native sort dispatched right after this call reuses it.
+        const cameraViewProjectionMatrix = this._nativeSortViewProjectionMatrix;
         cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
 
         const modelMatrix = this.computeWorldMatrix(true);
@@ -1589,7 +1591,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         // The native sort writes into _splatPositions/_splatIndex: both must be allocated (they still are
         // null before any splat data has been committed) or the native binding throws on the conversion.
-        const hasNativeSort = !!Native?.sortSplats && !!this._splatPositions && !!this._splatIndex;
+        const hasNativeSort = !!(Native?.sortSplatIndices || Native?.sortSplats) && !!this._splatPositions && !!this._splatIndex;
         // When depth sort is disabled, no sort function must run: fall through to the no-sort path below.
         const sortRequired = this._isSortRequired();
         const hasSortFunction = sortRequired && !this._disableDepthSort && (this._worker || hasNativeSort);
@@ -1633,12 +1635,14 @@ export class GaussianSplattingMeshBase extends Mesh {
                             },
                             [this._depthMix.buffer]
                         );
-                    } else if (Native?.sortSplats) {
-                        if (this._activeSplatRanges) {
+                    } else if (Native?.sortSplatIndices || Native?.sortSplats) {
+                        if (Native.sortSplatIndices) {
+                            this._sortSplatIndicesNative(worldMatrix);
+                        } else if (this._activeSplatRanges) {
                             // Native sort can't filter ranges: fall back to the (already range-filtered) identity index buffer.
                             this._updateSplatIndexBuffer(this._vertexCount);
                         } else {
-                            Native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                            Native.sortSplats!(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
                         }
                         if (cameraViewInfos.splatIndexBufferSet) {
                             cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
@@ -1784,6 +1788,46 @@ export class GaussianSplattingMeshBase extends Mesh {
      */
     protected _getGpuSortPartMatrices(): Nullable<ReadonlyArray<Matrix>> {
         return null;
+    }
+
+    /**
+     * Part index of each splat, for compound meshes. Null for a regular mesh.
+     * @returns the part indices
+     */
+    protected _getSortPartIndices(): Nullable<Uint8Array> {
+        return null;
+    }
+
+    private _nativeSortWorldMatrices: Matrix[] = [];
+
+    private _getNativeSortWorldMatrices(worldMatrix: Matrix): Matrix[] {
+        this._nativeSortWorldMatrices[0] = worldMatrix;
+        return this._nativeSortWorldMatrices;
+    }
+
+    // Sorts the active splats (honoring the range filter and compound parts) with the Native sort.
+    // The view-projection matrix was computed by _getCameraDirection for this camera just before dispatch.
+    private _sortSplatIndicesNative(worldMatrix: Matrix): void {
+        const renderedPadded = Math.max((this.renderedSplatCount + 15) & ~0xf, 16);
+        if (this._splatIndex!.length !== renderedPadded) {
+            this._updateSplatIndexBuffer(this._vertexCount);
+        }
+        const partIndices = this._getSortPartIndices();
+        const partMatrices = partIndices ? this._getGpuSortPartMatrices() : null;
+        const compound = !!partMatrices && partMatrices.length > 0;
+        const sorted = Native!.sortSplatIndices!(
+            this._nativeSortViewProjectionMatrix,
+            compound ? partMatrices : this._getNativeSortWorldMatrices(worldMatrix),
+            this._splatPositions!,
+            this._splatIndex!,
+            this._vertexCount,
+            this._activeSplatRanges,
+            compound ? partIndices : null
+        );
+        if (!sorted) {
+            // Part indices and matrices disagree mid-rebuild: keep the last order and sort again next frame.
+            this._forcedSortPending = true;
+        }
     }
 
     /**
@@ -3384,9 +3428,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._useRGBACovariants = true;
         const engine = this.getEngine();
         // No real GPU (NullEngine): skip MRT allocation. The reservation's part/index/range logic still runs;
-        // texture population requires a real (WebGL2/WebGPU) backend.
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        // texture population requires a real (WebGL2/WebGPU/Native) backend.
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const covType = engine.getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
@@ -3435,8 +3478,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param textureSize atlas dimensions (width, height)
      */
     protected _createShMrtAtlas(textureSize: Vector2): void {
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const count = this._shMrtAtlasTextureCount;
@@ -3488,8 +3530,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param textureSize atlas dimensions (width, height)
      */
     protected _createRotMrtAtlas(textureSize: Vector2): void {
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const rotType = this.getEngine().getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
@@ -4278,6 +4319,15 @@ export class GaussianSplattingMeshBase extends Mesh {
         engine.updateTextureData(texture.getInternalTexture()!, data, xOffset, yOffset, width, height, 0, 0, false);
     };
 
+    /**
+     * Whether the engine can back the data atlas with render targets (WebGL, WebGPU, and Native with MRT support; not NullEngine).
+     * @returns true when render-target atlases can be created
+     */
+    protected _supportsRenderTargetAtlas(): boolean {
+        const engine = this._getTextureDataUpdateEngine();
+        return !!engine._gl || !!engine.isWebGPU || (IsNative && this.getEngine().getCaps().drawBuffersExtension);
+    }
+
     protected _getTextureDataUpdateEngine(): ITextureDataUpdateCapableEngine {
         return this.getEngine() as unknown as ITextureDataUpdateCapableEngine;
     }
@@ -4285,9 +4335,10 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _updateShTextureData(texture: BaseTexture, shData: Uint8Array, textureWidth: number, lineStart: number, lineCount: number): void {
         const engine = this._getTextureDataUpdateEngine();
 
-        // NativeEngine/NullEngine, updateTextureData unsupported
-        if (!engine._gl && !engine.isWebGPU) {
-            const internalTexture = texture.getInternalTexture()!;
+        // NativeEngine/NullEngine: upload complete textures as raw data. Partial (incremental) updates must only
+        // write their own rows, so they go through updateTextureData below like on the other engines.
+        const internalTexture = texture.getInternalTexture()!;
+        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
             const expectedByteLength = textureWidth * internalTexture.height * 16;
             let uploadData: Uint32Array;
             if (shData.byteLength === expectedByteLength && shData.byteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
@@ -4316,7 +4367,14 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         const createView = (byteOffset: number, viewTexelCount: number) => {
-            return new Uint32Array(shData.buffer, shData.byteOffset + byteOffset, viewTexelCount * componentsPerTexel);
+            const absoluteByteOffset = shData.byteOffset + byteOffset;
+            if (absoluteByteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
+                return new Uint32Array(shData.buffer, absoluteByteOffset, viewTexelCount * componentsPerTexel);
+            }
+            // Uint32Array views must be 4-byte aligned: copy only the requested range into aligned storage.
+            const aligned = new Uint32Array(viewTexelCount * componentsPerTexel);
+            new Uint8Array(aligned.buffer).set(shData.subarray(byteOffset, byteOffset + aligned.byteLength));
+            return aligned;
         };
 
         const fullRowCount = Math.floor(texelCount / textureWidth);
