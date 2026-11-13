@@ -8,14 +8,15 @@ import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/
 import "core/Rendering/depthPeelingSceneComponent";
 import "core/Rendering/prePassRendererSceneComponent";
 import { Scene } from "core/scene";
+import { ThinDepthPeelingRenderer } from "core/Rendering/thinDepthPeelingRenderer.pure";
 
 describe("DepthPeelingRenderer", () => {
     it("shares the prepass depth before the prepass is cleared, including after a resize", async () => {
         const engine = new NullEngine();
         let renderWidth = 256;
         let renderHeight = 256;
-        vi.spyOn(engine, "getRenderWidth").mockImplementation(() => renderWidth);
-        vi.spyOn(engine, "getRenderHeight").mockImplementation(() => renderHeight);
+        vi.spyOn(engine, "getRenderWidth").mockImplementation((useScreen) => (useScreen ? renderWidth : (engine._currentRenderTarget?.width ?? renderWidth)));
+        vi.spyOn(engine, "getRenderHeight").mockImplementation((useScreen) => (useScreen ? renderHeight : (engine._currentRenderTarget?.height ?? renderHeight)));
         vi.spyOn(engine, "buildTextureLayout").mockImplementation((textureStatus) => textureStatus.map((enabled, index) => (enabled ? index + 1 : 0)));
         engine.getCaps().drawBuffersExtension = true;
         vi.spyOn(engine, "createMultipleRenderTarget").mockImplementation((size: any, options: any) => {
@@ -48,12 +49,21 @@ describe("DepthPeelingRenderer", () => {
         });
         const scene = new Scene(engine);
         new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        const createEffects = vi.spyOn(ThinDepthPeelingRenderer.prototype as any, "_createEffects").mockImplementation(function (this: any) {
+            this._blendBackEffectWrapper = { dispose: vi.fn() };
+            this._finalEffectWrapper = { dispose: vi.fn() };
+            this._effectRenderer = { dispose: vi.fn() };
+        });
         scene.useOrderIndependentTransparency = true;
         expect(scene.depthPeelingRenderer).toBeTruthy();
         await Promise.resolve();
+        scene.prePassRenderer!.samples = 4;
 
         const events: string[] = [];
         const shareDepth = vi.spyOn(RenderTargetWrapper.prototype, "shareDepth").mockImplementation(function (this: RenderTargetWrapper) {
+            if (scene.prePassRenderer!.samples > 1) {
+                throw new Error("sample mismatch");
+            }
             events.push(`share:${this.width}`);
         });
         vi.spyOn(engine, "clear").mockImplementation(() => {
@@ -64,7 +74,12 @@ describe("DepthPeelingRenderer", () => {
         });
 
         try {
+            expect(() => scene.render()).toThrow("sample mismatch");
+            expect((scene.prePassRenderer as any)._isDirty).toBe(true);
+
+            scene.prePassRenderer!.samples = 1;
             scene.render();
+            expect((scene.prePassRenderer as any)._isDirty).toBe(false);
             expect(events.indexOf("share:256")).toBeGreaterThanOrEqual(0);
             expect(events.indexOf("share:256")).toBeLessThan(events.indexOf("clear:256"));
 
@@ -74,6 +89,7 @@ describe("DepthPeelingRenderer", () => {
             expect(events.indexOf("share:128")).toBeGreaterThanOrEqual(0);
             expect(events.indexOf("share:128")).toBeLessThan(events.indexOf("clear:128"));
         } finally {
+            createEffects.mockRestore();
             shareDepth.mockRestore();
             scene.dispose();
             engine.dispose();

@@ -177,9 +177,10 @@ export interface INativeEngine {
     ): NativeFramebuffer;
 
     /**
-     * Optional: older runtimes cannot share a framebuffer's generated depth/stencil. Moves it into texture without
-     * rebuilding the framebuffer, so it can be attached elsewhere with its current contents; it cannot be sampled.
-     * Returns false when the framebuffer has no generated depth/stencil of its own.
+     * Moves a framebuffer's generated depth/stencil into a texture without rebuilding the framebuffer, so it can be
+     * attached elsewhere with its current contents; it cannot be sampled. Layered render targets share one generated
+     * depth allocation across their face/layer framebuffers. Returns false when the framebuffer has no generated
+     * depth/stencil of its own.
      */
     shareFrameBufferDepthStencil?(frameBuffer: NativeFramebuffer, texture: NativeTexture): boolean;
 

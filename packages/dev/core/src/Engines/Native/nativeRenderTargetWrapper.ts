@@ -3,7 +3,6 @@ import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Constants } from "../constants";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
-import { Logger } from "../../Misc/logger";
 import { type NativeFramebuffer } from "./nativeInterfaces";
 import { type ThinNativeEngine } from "../thinNativeEngine";
 
@@ -36,12 +35,8 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _isMixedTypeMRT: boolean = false;
 
-    // Set when this target is bound for rendering. Promoting an auto-generated depth buffer to a shareable depth
-    // texture cannot carry over what was already rendered into it (see shareDepth).
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public _hasBeenBound: boolean = false;
-
-    private static _WarnedAboutRenderedDepthPromotion = false;
+    /** @internal */
+    public _generatedDepthShareSource: Nullable<NativeRenderTargetWrapper> = null;
 
     public get _framebuffer(): Nullable<NativeFramebuffer> {
         return this.__framebuffer;
@@ -176,6 +171,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             this._engine._assertDepthAttachmentCompatible(this, texture.samples);
         }
 
+        this._generatedDepthShareSource = null;
         const previous = this._depthStencilTexture;
         super.setDepthStencilTexture(texture, disposeExisting);
 
@@ -194,6 +190,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     ): InternalTexture {
         // Validate before the base class disposes the current depth texture.
         this._engine._assertDepthAttachmentCompatible(this, samples);
+        this._generatedDepthShareSource = null;
         return super.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);
     }
 
@@ -366,21 +363,20 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
      * framebuffer when needed so Native actually uses the shared depth (bgfx attaches depth at
      * framebuffer creation time; a pointer-only shareDepth would leave the auto-depth from creation).
      * An auto-generated depth buffer is handed over as is, keeping its contents, like WebGL shares its depth
-     * renderbuffer. Runtimes that cannot do that promote it to a new depth texture the first time it is shared; its
-     * contents cannot be carried over there, so sharing an already-rendered source logs a warning.
+     * renderbuffer. Runtimes that cannot share generated depth leave both wrappers unchanged.
      * @param renderTarget The render target that receives the shared depth texture
      */
     public override shareDepth(renderTarget: RenderTargetWrapper): void {
         const dest = renderTarget as NativeRenderTargetWrapper;
         if (!this._depthStencilTexture && (this._generateDepthBuffer || this._generateStencilBuffer) && dest && dest !== this && dest._engine === this._engine) {
-            // Validate before promoting so a rejected share leaves the source's depth untouched.
+            // Validate before asking Native to transfer ownership so a rejected share leaves both wrappers untouched.
             this._engine._assertDepthAttachmentCompatible(dest, this.samples);
             const generatedDepth = this._engine._wrapGeneratedDepthStencil(this);
-            if (generatedDepth) {
-                this._depthStencilTexture = generatedDepth;
-            } else {
-                this._promoteGeneratedDepthStencil();
+            if (!generatedDepth) {
+                return;
             }
+            this._depthStencilTexture = generatedDepth;
+            this._generatedDepthShareSource = this;
         }
 
         if (this._depthStencilTexture && dest?._engine === this._engine) {
@@ -394,53 +390,8 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             return;
         }
 
+        dest._generatedDepthShareSource = this._generatedDepthShareSource;
         this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(dest);
-    }
-
-    // Fallback for runtimes that cannot share a generated depth buffer: replace it with a new depth texture and
-    // rebuild this render target's framebuffer around it. The existing depth contents are lost.
-    private _promoteGeneratedDepthStencil(): void {
-        if (this._hasBeenBound && !NativeRenderTargetWrapper._WarnedAboutRenderedDepthPromotion) {
-            NativeRenderTargetWrapper._WarnedAboutRenderedDepthPromotion = true;
-            Logger.Warn(
-                "shareDepth: this Babylon Native runtime cannot share an auto-generated depth/stencil buffer, so the depth of a render target that was already rendered is replaced by a new, uninitialized depth texture. Share the depth before rendering into the source, or update Babylon Native."
-            );
-        }
-        // Promotion releases the source's current framebuffer, so unbind it first if it is bound and
-        // rebind the source (now built around the depth texture) afterwards with the same layer/face/viewport selection.
-        const engine = this._engine;
-        const wasBound = engine._currentRenderTarget === this;
-        const bindArguments = engine._currentFramebufferBindArguments;
-        if (wasBound) {
-            engine._bindUnboundFramebuffer(null);
-        }
-        this.createDepthStencilTexture(
-            0,
-            false,
-            this._generateStencilBuffer,
-            this.samples,
-            this._generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT
-        );
-        this._retireGeneratedDepthFramebuffer();
-        if (wasBound) {
-            engine._currentRenderTarget = null;
-            engine.bindFramebuffer(this, ...bindArguments);
-        }
-    }
-
-    // After an auto-generated depth buffer was promoted to a depth texture, the framebuffer built around the
-    // generated depth is no longer bound; release it now instead of keeping it alive until dispose.
-    private _retireGeneratedDepthFramebuffer(): void {
-        if (this.isMulti) {
-            // Rebuild the multi framebuffer around the depth texture; this drops the temporary depth/stencil
-            // framebuffer and the setter releases the superseded one.
-            if (this.__framebuffer || this._usesLayeredFramebuffer) {
-                this._engine._rebuildRenderTargetFramebuffersAfterDepthChange(this);
-            }
-        } else if (!this.__framebuffers && !this.is3D && this._framebufferDepthStencil) {
-            // bindFramebuffer prefers _framebufferDepthStencil (color + depth texture); the setter releases this one.
-            this._framebuffer = null;
-        }
     }
 
     public override dispose(disposeOnlyFramebuffers = false): void {

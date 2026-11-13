@@ -53,6 +53,22 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      */
     public readonly _onInternalTexturesRecreatedObservable = new Observable<PrePassRenderTarget>();
 
+    private _internalTexturesRecreatedNotificationPending = false;
+
+    /** @internal */
+    public _notifyInternalTexturesRecreated(): void {
+        this._internalTexturesRecreatedNotificationPending = true;
+        this._onInternalTexturesRecreatedObservable.notifyObservers(this);
+        this._internalTexturesRecreatedNotificationPending = false;
+    }
+
+    /** @internal */
+    public _retryInternalTexturesRecreatedNotification(): void {
+        if (this._internalTexturesRecreatedNotificationPending) {
+            this._notifyInternalTexturesRecreated();
+        }
+    }
+
     /**
      * Is this render target enabled for prepass rendering
      */
@@ -94,7 +110,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
             this.resize({ width: requiredWidth, height: requiredHeight });
 
             this._internalTextureDirty = true;
-            this._onInternalTexturesRecreatedObservable.notifyObservers(this);
+            this._notifyInternalTexturesRecreated();
         }
     }
 
@@ -108,7 +124,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public override updateCount(count: number, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         super.updateCount(count, options, textureNames);
         this._internalTextureDirty = true;
-        this._onInternalTexturesRecreatedObservable.notifyObservers(this);
+        this._notifyInternalTexturesRecreated();
     }
 
     /**

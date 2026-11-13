@@ -675,6 +675,39 @@ export class ThinNativeEngine extends ThinEngine {
         this._flagContextRestored();
     }
 
+    protected override _rebuildGraphicsResources(): void {
+        const generatedDepthShares = new Map<NativeRenderTargetWrapper, NativeRenderTargetWrapper[]>();
+
+        for (const wrapper of this._renderTargetWrapperCache as NativeRenderTargetWrapper[]) {
+            const source = wrapper._generatedDepthShareSource;
+            if (!source) {
+                continue;
+            }
+
+            let wrappers = generatedDepthShares.get(source);
+            if (!wrappers) {
+                wrappers = [];
+                generatedDepthShares.set(source, wrappers);
+            }
+            wrappers.push(wrapper);
+
+            const depth = wrapper._depthStencilTexture;
+            wrapper._depthStencilTexture = null;
+            wrapper._generatedDepthShareSource = null;
+            depth?.dispose();
+        }
+
+        super._rebuildGraphicsResources();
+
+        for (const [source, wrappers] of generatedDepthShares) {
+            for (const wrapper of wrappers) {
+                if (wrapper !== source) {
+                    source.shareDepth(wrapper);
+                }
+            }
+        }
+    }
+
     /**
      * Override default engine behavior.
      * @param framebuffer
@@ -3065,13 +3098,13 @@ export class ThinNativeEngine extends ThinEngine {
     /**
      * Wraps a render target's auto-generated depth/stencil buffer in a depth texture without rebuilding the render
      * target, so it can be shared with its current contents, like WebGL shares the depth renderbuffer. The texture can
-     * be attached to other framebuffers but not sampled. Returns null when the runtime cannot do this or when the
-     * depth is not owned by a single framebuffer (cube, layered and volume targets).
+     * be attached to other framebuffers but not sampled. Cube, array, layered and volume targets use one generated
+     * depth allocation across their face/layer framebuffers in runtimes that implement this API.
      * @internal
      */
     public _wrapGeneratedDepthStencil(nativeRTWrapper: NativeRenderTargetWrapper): Nullable<InternalTexture> {
-        const framebuffer = nativeRTWrapper._framebuffer;
-        if (!this._engine.shareFrameBufferDepthStencil || !framebuffer || nativeRTWrapper._framebuffers || nativeRTWrapper.is3D || nativeRTWrapper._usesLayeredFramebuffer) {
+        const framebuffer = nativeRTWrapper._framebuffer ?? nativeRTWrapper._layerFramebuffers?.values().next().value;
+        if (!this._engine.shareFrameBufferDepthStencil || !framebuffer) {
             return null;
         }
 
@@ -4493,8 +4526,6 @@ export class ThinNativeEngine extends ThinEngine {
 
         this._currentRenderTarget = texture;
         this._currentFramebufferBindArguments = [faceIndex, requiredWidth, requiredHeight, forceFullscreenViewport, lodLevel, layer];
-        nativeRTWrapper._hasBeenBound = true;
-
         // Multi render target whose color attachments each target a specific layer/face of a texture: the IBL
         // voxelization MRTs (several Z-slices of one shared 3D texture, routed via is3D) and mixed-type MRTs
         // (2D-array layer / cube face / 2D attachments, routed via _isMixedTypeMRT). The color textures may be

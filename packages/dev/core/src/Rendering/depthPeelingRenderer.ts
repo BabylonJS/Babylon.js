@@ -72,9 +72,23 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
         // engines that cannot share an auto-generated depth buffer in place and have to reallocate it (Native).
         this._prePassTexturesRecreatedObserver = scene.prePassRenderer!.defaultRT._onInternalTexturesRecreatedObservable.add(() => {
             if (this._scene.useOrderIndependentTransparency) {
-                this._updateTextures();
+                this._updateTextures(true);
             }
         });
+    }
+
+    protected override _getTextureSize(): { width: number; height: number } {
+        if (this.blendOutput) {
+            return super._getTextureSize();
+        }
+        const prePassRenderTarget = this._scene.prePassRenderer?.defaultRT;
+        if (prePassRenderTarget) {
+            return {
+                width: prePassRenderTarget.getRenderWidth(),
+                height: prePassRenderTarget.getRenderHeight(),
+            };
+        }
+        return super._getTextureSize();
     }
 
     protected override _createTextures() {
@@ -109,15 +123,17 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
         super._disposeTextures();
     }
 
-    private _updateTextures() {
-        if (this._depthMrts[0].getSize().width !== this._engine.getRenderWidth() || this._depthMrts[0].getSize().height !== this._engine.getRenderHeight()) {
+    private _updateTextures(forceShareDepth = false) {
+        const size = this._getTextureSize();
+        if (this._depthMrts[0].getSize().width !== size.width || this._depthMrts[0].getSize().height !== size.height) {
             this._disposeTextures();
             this._createTextures();
+            forceShareDepth = true;
         }
-        return this._updateTextureReferences();
+        return this._updateTextureReferences(forceShareDepth);
     }
 
-    private _updateTextureReferences() {
+    private _updateTextureReferences(forceShareDepth = false) {
         const prePassRenderer = this._scene.prePassRenderer;
 
         if (!prePassRenderer) {
@@ -132,7 +148,8 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
             return false;
         }
 
-        if (this._blendBackTexture !== prePassTexture) {
+        const textureReferencesChanged = this._blendBackTexture !== prePassTexture || !this._thinTextures[6];
+        if (textureReferencesChanged) {
             this._blendBackTexture = prePassTexture;
             this._blendBackMrt.setInternalTexture(this._blendBackTexture, 0);
 
@@ -140,7 +157,9 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
                 this._thinTextures[6].dispose();
             }
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
+        }
 
+        if (forceShareDepth || textureReferencesChanged) {
             prePassRenderer.defaultRT.renderTarget!.shareDepth(this._depthMrts[0].renderTarget!);
         }
 

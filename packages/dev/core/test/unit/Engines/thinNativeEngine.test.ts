@@ -1666,7 +1666,6 @@ describe("ThinNativeEngine", () => {
 
         it.each([false, true])("shares an auto-generated depth buffer with its contents when the runtime supports it (stencil: %s)", (generateStencilBuffer) => {
             const { engine, bound, created, released, nativeEngine } = createEngine({ shareGeneratedDepth: true });
-            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
             const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateStencilBuffer }) as NativeRenderTargetWrapper;
             const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
             const sourceFramebuffer = source._framebuffer;
@@ -1687,130 +1686,93 @@ describe("ThinNativeEngine", () => {
             expect(created.slice(createdCount).every((framebuffer) => framebuffer.explicitDepth === resourceOf(sharedDepth))).toBe(true);
             engine.bindFramebuffer(destination);
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
-            expect(warn).not.toHaveBeenCalled();
-        });
-
-        it("falls back to promoting the generated depth when the runtime cannot share it", () => {
-            const { engine, released, nativeEngine } = createEngine({ shareGeneratedDepth: true });
-            nativeEngine.shareFrameBufferDepthStencil.mockReturnValue(false);
-            const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, {}) as NativeRenderTargetWrapper;
-            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
-            const sourceFramebuffer = source._framebuffer;
-
-            source.shareDepth(destination);
-
-            expect(nativeEngine.shareFrameBufferDepthStencil).toHaveBeenCalledOnce();
-            expect(destination._depthStencilTexture).toBe(source._depthStencilTexture);
-            expect(released).toContain(sourceFramebuffer);
-            expect(source._framebuffer).not.toBe(sourceFramebuffer);
         });
 
         it.each([
-            [false, false],
-            [false, true],
-            [true, false],
-            [true, true],
-        ])("shares an auto-generated depth buffer (multi: %s, stencil: %s) by promoting it to a depth texture", (multi, generateStencilBuffer) => {
-            const { engine, bound, released } = createEngine();
-            const source = (
-                multi
-                    ? engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2, generateStencilBuffer })
-                    : engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateStencilBuffer })
-            ) as NativeRenderTargetWrapper;
+            ["cube", (engine: ThinNativeEngine) => engine.createRenderTargetCubeTexture(64, {})],
+            ["2D array", (engine: ThinNativeEngine) => engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 }, {})],
+            ["3D", (engine: ThinNativeEngine) => engine.createRenderTargetTexture({ width: 64, height: 64, depth: 3 }, {})],
+            [
+                "layered MRT",
+                (engine: ThinNativeEngine) =>
+                    engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 1, targetTypes: [Constants.TEXTURE_2D_ARRAY], layerCounts: [3], layerIndex: [1] }),
+            ],
+        ])("shares one generated depth allocation across a %s target", (_name, createSource) => {
+            const { engine, bound, nativeEngine } = createEngine({ shareGeneratedDepth: true });
+            const source = createSource(engine) as NativeRenderTargetWrapper;
             const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
-            expect(source._depthStencilTexture).toBeFalsy();
-            const generatedDepthFramebuffer = source._framebuffer;
-            expect(generatedDepthFramebuffer).toBeTruthy();
+            if (source.is3D) {
+                engine.bindFramebuffer(source, undefined, undefined, undefined, undefined, 0, 0);
+            } else if (source._usesLayeredFramebuffer) {
+                engine.bindFramebuffer(source);
+            }
+            const sourceFramebuffer = source._framebuffer ?? source._layerFramebuffers?.values().next().value;
 
             source.shareDepth(destination);
 
             const sharedDepth = source._depthStencilTexture!;
-            expect(sharedDepth).toBeTruthy();
-            expect(sharedDepth.format).toBe(generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT);
+            expect(sourceFramebuffer).toBeTruthy();
+            expect(nativeEngine.shareFrameBufferDepthStencil).toHaveBeenCalledWith(sourceFramebuffer, resourceOf(sharedDepth));
             expect(destination._depthStencilTexture).toBe(sharedDepth);
-            // The framebuffer built around the generated depth is superseded and released right away, exactly once.
-            expect(released.filter((framebuffer) => (framebuffer as unknown) === generatedDepthFramebuffer)).toHaveLength(1);
-            expect(source._framebuffer).not.toBe(generatedDepthFramebuffer);
-            engine.bindFramebuffer(source);
-            expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
-            expect(bound().colors).toEqual(source.textures!.map((texture) => resourceOf(texture)));
             engine.bindFramebuffer(destination);
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
-
-            source.dispose();
-            expect(released.filter((framebuffer) => (framebuffer as unknown) === generatedDepthFramebuffer)).toHaveLength(1);
         });
 
-        it.each([false, true])("unbinds a bound source before releasing its generated-depth framebuffer (multi: %s)", (multi) => {
-            const { engine, bound, released } = createEngine();
-            const source = (
-                multi ? engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 2 }) : engine.createRenderTargetTexture({ width: 64, height: 64 }, {})
-            ) as NativeRenderTargetWrapper;
-            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
-            const generatedDepthFramebuffer = source._framebuffer as unknown as FakeFramebuffer;
-            engine.bindFramebuffer(source);
-            expect(bound()).toBe(generatedDepthFramebuffer);
-
-            const bindSpy = vi.mocked((engine as any)._bindUnboundFramebuffer);
-            const boundAtRelease: unknown[] = [];
-            const recordRelease = (engine as any)._releaseFramebufferObjects;
-            (engine as any)._releaseFramebufferObjects = function (framebuffer: FakeFramebuffer | null) {
-                if (framebuffer === generatedDepthFramebuffer) {
-                    boundAtRelease.push(bindSpy.mock.lastCall![0]);
-                }
-                recordRelease.call(this, framebuffer);
-            };
+        it.each([false, true])("leaves both wrappers unchanged when generated depth sharing is unsupported (API present: %s)", (apiPresent) => {
+            const { engine, nativeEngine, created, released } = createEngine({ shareGeneratedDepth: apiPresent });
+            if (apiPresent) {
+                nativeEngine.shareFrameBufferDepthStencil.mockReturnValue(false);
+            }
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, {}) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, {}) as NativeRenderTargetWrapper;
+            const sourceFramebuffer = source._framebuffer;
+            const destinationFramebuffer = destination._framebuffer;
+            const createdCount = created.length;
+            const releasedCount = released.length;
 
             source.shareDepth(destination);
 
-            // The engine switched away from the generated-depth framebuffer before it was released...
-            expect(boundAtRelease).toEqual([null]);
-            expect(released.filter((framebuffer) => framebuffer === generatedDepthFramebuffer)).toHaveLength(1);
-            // ...and the source is bound again through its replacement framebuffer.
-            expect(engine._currentRenderTarget).toBe(source);
-            expect(bound()).not.toBe(generatedDepthFramebuffer);
-            expect(bound().explicitDepth).toBe(resourceOf(source._depthStencilTexture!));
+            expect(source._depthStencilTexture).toBeNull();
+            expect(destination._depthStencilTexture).toBeNull();
+            expect(source._framebuffer).toBe(sourceFramebuffer);
+            expect(destination._framebuffer).toBe(destinationFramebuffer);
+            expect(created).toHaveLength(createdCount);
+            expect(released).toHaveLength(releasedCount);
         });
 
-        it("rebinds a bound 2D-array source with its original layer and viewport selection after promoting its depth", () => {
-            const { engine, bound } = createEngine();
+        it("restores generated depth sharing after native resources are rebuilt", () => {
+            const { engine, nativeEngine, bound } = createEngine({ shareGeneratedDepth: true });
             const source = engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 }, {}) as NativeRenderTargetWrapper;
             const destination = engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
-            engine.bindFramebuffer(source, undefined, undefined, undefined, true, undefined, 2);
-            expect(bound().layers).toEqual([2]);
-            const bindFramebuffer = vi.spyOn(engine, "bindFramebuffer");
-
             source.shareDepth(destination);
+            const previousDepth = resourceOf(source._depthStencilTexture!);
 
-            expect(engine._currentRenderTarget).toBe(source);
-            expect(bindFramebuffer).toHaveBeenCalledWith(source, undefined, undefined, undefined, true, undefined, 2);
-            expect(bound().layers).toEqual([2]);
-            expect(bound().explicitDepth).toBe(resourceOf(source._depthStencilTexture!));
+            Object.assign(engine as any, {
+                wipeCaches: vi.fn(),
+                _rebuildEffects: vi.fn(),
+                _rebuildComputeEffects: vi.fn(),
+                _rebuildBuffers: vi.fn(),
+                _rebuildInternalTextures: vi.fn(),
+                _rebuildTextures: vi.fn(),
+                _rebuildRenderTargetWrappers: () => {
+                    for (const wrapper of [...engine._renderTargetWrapperCache]) {
+                        wrapper._rebuild();
+                    }
+                },
+            });
+
+            (engine as any)._rebuildGraphicsResources();
+
+            const sharedDepth = source._depthStencilTexture!;
+            expect(resourceOf(sharedDepth)).not.toBe(previousDepth);
+            expect(destination._depthStencilTexture).toBe(sharedDepth);
+            expect(nativeEngine.shareFrameBufferDepthStencil).toHaveBeenCalledTimes(2);
+            engine.bindFramebuffer(destination, undefined, undefined, undefined, undefined, undefined, 2);
+            expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
         });
 
-        it("warns when promoting the generated depth of a source that was already rendered", () => {
-            const { engine } = createEngine();
-            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
-            (NativeRenderTargetWrapper as any)._WarnedAboutRenderedDepthPromotion = false;
-            try {
-                const unrendered = engine.createRenderTargetTexture({ width: 64, height: 64 }, {}) as NativeRenderTargetWrapper;
-                unrendered.shareDepth(engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }));
-                expect(warn).not.toHaveBeenCalled();
-
-                const rendered = engine.createRenderTargetTexture({ width: 64, height: 64 }, {}) as NativeRenderTargetWrapper;
-                engine.bindFramebuffer(rendered);
-                engine.unBindFramebuffer(rendered);
-                rendered.shareDepth(engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }));
-                expect(warn).toHaveBeenCalledOnce();
-                expect(warn.mock.lastCall![0]).toContain("Share the depth before rendering into the source");
-            } finally {
-                warn.mockRestore();
-                (NativeRenderTargetWrapper as any)._WarnedAboutRenderedDepthPromotion = false;
-            }
-        });
-
-        it("rejects sharing an auto-generated depth buffer with a mismatched sample count before promoting it", () => {
-            const { engine, created } = createEngine();
+        it("rejects sharing an auto-generated depth buffer with a mismatched sample count before wrapping it", () => {
+            const { engine, created } = createEngine({ shareGeneratedDepth: true });
             const source = engine.createRenderTargetTexture({ width: 64, height: 64 }, { samples: 1 }) as NativeRenderTargetWrapper;
             const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false, samples: 4 }) as NativeRenderTargetWrapper;
             const sourceFramebuffer = source._framebuffer;
