@@ -356,6 +356,41 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         engine.dispose();
     });
 
+    it("batches spherical harmonics full-row and partial-row writes into one Native upload", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const width = 4;
+        const texture = new RawTexture(
+            null,
+            width,
+            2,
+            Constants.TEXTUREFORMAT_RGBA_INTEGER,
+            scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_UNSIGNED_INTEGER
+        );
+        const uploads: Uint8Array[] = [];
+        vi.spyOn(engine, "updateRawTexture").mockImplementation((_texture, data) => {
+            uploads.push(new Uint8Array(data!.buffer, data!.byteOffset, data!.byteLength).slice());
+        });
+        const shData = new Uint8Array(6 * 16).fill(5);
+
+        (mesh as any)._updateShTextureData(texture, shData, width, 0, 2);
+
+        expect(uploads).toHaveLength(1);
+        expect(Array.from(uploads[0].subarray(0, shData.byteLength))).toEqual(Array(shData.byteLength).fill(5));
+        expect(Array.from(uploads[0].subarray(shData.byteLength))).toEqual(Array(2 * 16).fill(0));
+
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("keeps complete uploads ordered between two camera draws", async () => {
         const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
         const { RawTexture } = await import("core/Materials/Textures/rawTexture");
@@ -424,7 +459,10 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
             [1, 9, 3, 4],
         ]);
         expect(updateTextureData).not.toHaveBeenCalled();
+        expect((mesh as any)._nativeTextureData.has(texture.getInternalTexture())).toBe(true);
 
+        mesh.dispose();
+        expect((mesh as any)._nativeTextureData.has(texture.getInternalTexture())).toBe(false);
         scene.dispose();
         engine.dispose();
     });
@@ -506,6 +544,36 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         expect(handle.base).toBe(0);
         expect(compound.partCount).toBe(1);
         expect((compound as any)._vertexCount).toBe(handle.capacity);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("stages one Native upload per texture for a multi-row streaming write", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { engine, scene } = await createScene();
+        (engine.getCaps() as { maxTextureSize: number }).maxTextureSize = 4;
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        const makeTexture = (type: number) => new RawTexture(null, 4, 4, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, type);
+        (mesh as any)._vertexCount = 16;
+        (mesh as any)._splatPositions = new Float32Array(16 * 4);
+        (mesh as any)._covariancesATexture = makeTexture(Constants.TEXTURETYPE_HALF_FLOAT);
+        (mesh as any)._covariancesBTexture = makeTexture(Constants.TEXTURETYPE_HALF_FLOAT);
+        (mesh as any)._centersTexture = makeTexture(Constants.TEXTURETYPE_FLOAT);
+        (mesh as any)._colorsTexture = makeTexture(Constants.TEXTURETYPE_UNSIGNED_BYTE);
+        const textures = [(mesh as any)._covariancesATexture, (mesh as any)._covariancesBTexture, (mesh as any)._centersTexture, (mesh as any)._colorsTexture].map((texture) =>
+            texture.getInternalTexture()
+        );
+        const updateRawTexture = vi.spyOn(engine, "updateRawTexture");
+
+        (mesh as any)._writeStreamingSplats(0, 10, createSplatData(10));
+
+        for (const texture of textures) {
+            expect(updateRawTexture.mock.calls.filter((call) => call[0] === texture)).toHaveLength(1);
+        }
 
         scene.dispose();
         engine.dispose();

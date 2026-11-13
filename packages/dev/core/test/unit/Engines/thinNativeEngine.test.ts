@@ -2219,6 +2219,36 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.updateTextureData).toHaveBeenCalledExactlyOnceWith(resourceOf(texture), row, 0, 1, 4, 1, 0, 0, texture.invertY, false);
         });
 
+        it("keeps complete updates on non-raw and mip-chain textures on the sub-texture path", () => {
+            const { engine, nativeEngine } = createEngine();
+            const nonRaw = engine._createInternalTexture({ width: 4, height: 2 }, {}, true, InternalTextureSource.Url);
+            const mipChain = engine.createRawTexture(new Uint8Array(4 * 2 * 4), 4, 2, Constants.TEXTUREFORMAT_RGBA, true, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            const authoredMipChain = engine.createRawTexture(null, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            (engine as any)._setHasMipStorage(authoredMipChain, true);
+            const full = new Uint8Array(4 * 2 * 4);
+            nativeEngine.loadRawTexture.mockClear();
+            nativeEngine.updateTextureData.mockClear();
+
+            engine.updateTextureData(nonRaw, full, 0, 0, 4, 2);
+            engine.updateTextureData(mipChain, full, 0, 0, 4, 2);
+            engine.updateTextureData(authoredMipChain, full, 0, 0, 4, 2);
+
+            expect(nativeEngine.loadRawTexture).not.toHaveBeenCalled();
+            expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => call[0])).toEqual([resourceOf(nonRaw), resourceOf(mipChain), resourceOf(authoredMipChain)]);
+        });
+
+        it("honors generateMipMaps on an ordered complete raw upload", () => {
+            const { engine, nativeEngine } = createEngine();
+            const texture = engine.createRawTexture(null, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            const full = new Uint8Array(4 * 2 * 4);
+
+            engine.updateTextureData(texture, full, 0, 0, 4, 2, 0, 0, true);
+
+            expect(nativeEngine.loadRawTexture.mock.lastCall![5]).toBe(true);
+            expect(engine._hasMipStorage(texture)).toBe(true);
+            expect(nativeEngine.updateTextureData).not.toHaveBeenCalled();
+        });
+
         it("keeps complete updates working after an empty raw texture rebuild", () => {
             const { engine, nativeEngine } = createEngine();
             const texture = engine.createRawTexture(null, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);

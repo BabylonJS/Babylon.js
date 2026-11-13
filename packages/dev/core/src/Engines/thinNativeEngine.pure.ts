@@ -4990,10 +4990,21 @@ export class ThinNativeEngine extends ThinEngine {
             yOffset === 0 &&
             width === texture.width &&
             height === texture.height;
-        if (fullBaseLevel) {
+        if (fullBaseLevel && texture.source === InternalTextureSource.Raw && !this._hasMipStorage(texture)) {
             // loadRawTexture allocates an empty raw texture, works on older runtimes without updateTextureData,
             // and stages replacement uploads in view order so draws already encoded in this frame keep the old data.
-            this.updateRawTexture(texture, imageData, texture.format, texture.invertY, texture._compression, texture.type, texture._useSRGBBuffer);
+            this._engine.loadRawTexture(
+                texture._hardwareTexture.underlyingResource,
+                imageData,
+                texture.width,
+                texture.height,
+                getNativeTextureFormat(texture.format, texture.type),
+                generateMipMaps,
+                texture.invertY,
+                texture._useSRGBBuffer
+            );
+            this._setHasMipStorage(texture, generateMipMaps);
+            texture.isReady = true;
             return;
         }
 
