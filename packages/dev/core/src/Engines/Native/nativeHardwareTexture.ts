@@ -3,8 +3,13 @@ import { type Nullable } from "../../types";
 import { type NativeTexture, type NativeFramebuffer } from "./nativeInterfaces";
 
 /** @internal */
+export interface INativeTextureDeleter {
+    _deleteNativeTexture(texture: NativeTexture): void;
+}
+
+/** @internal */
 export class NativeHardwareTexture implements IHardwareTextureWrapper {
-    private readonly _deleteTexture: (texture: NativeTexture) => void;
+    private readonly _deleter: INativeTextureDeleter;
     private _nativeTexture: Nullable<NativeTexture>;
 
     /**
@@ -19,8 +24,8 @@ export class NativeHardwareTexture implements IHardwareTextureWrapper {
         return this._nativeTexture;
     }
 
-    constructor(existingTexture: NativeTexture, deleteTexture: (texture: NativeTexture) => void) {
-        this._deleteTexture = deleteTexture;
+    constructor(existingTexture: NativeTexture, deleter: INativeTextureDeleter) {
+        this._deleter = deleter;
         this.set(existingTexture);
     }
 
@@ -36,7 +41,7 @@ export class NativeHardwareTexture implements IHardwareTextureWrapper {
 
     public release() {
         if (this._nativeTexture) {
-            this._deleteTexture(this._nativeTexture);
+            this._deleter._deleteNativeTexture(this._nativeTexture);
         }
 
         this.reset();

@@ -1081,7 +1081,7 @@ describe("ThinNativeEngine", () => {
         it("queues texture deletes in the command stream behind earlier commands", () => {
             const { engine, nativeEngine, commands } = createEngine();
             const native = [{ id: "native-0" }, { id: "native-1" }];
-            nativeEngine.createTexture = vi.fn(() => native[nativeEngine.createTexture.mock.calls.length - 1]);
+            nativeEngine.createTexture = vi.fn().mockReturnValueOnce(native[0]).mockReturnValueOnce(native[1]);
             const hardwareTexture = ThinNativeEngine.prototype._createHardwareTexture.call(engine);
             const wrapped = ThinNativeEngine.prototype._createHardwareTexture.call(engine);
             commands.push(["DRAW"]);

@@ -2807,7 +2807,7 @@ export class ThinNativeEngine extends ThinEngine {
      * @returns the babylon internal texture
      */
     public wrapNativeTexture(texture: NativeTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
-        const hardwareTexture = new NativeHardwareTexture(texture, (nativeTexture) => this._deleteNativeTexture(nativeTexture));
+        const hardwareTexture = new NativeHardwareTexture(texture, this);
         const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.baseWidth = this._engine.getTextureWidth(texture);
@@ -2885,7 +2885,7 @@ export class ThinNativeEngine extends ThinEngine {
             }
         }
 
-        internalTexture._hardwareTexture = new NativeHardwareTexture(texture, (nativeTexture) => this._deleteNativeTexture(nativeTexture));
+        internalTexture._hardwareTexture = new NativeHardwareTexture(texture, this);
         internalTexture.isReady = true;
         this.updateTextureSamplingMode(internalTexture.samplingMode, internalTexture);
 
@@ -3570,7 +3570,7 @@ export class ThinNativeEngine extends ThinEngine {
 
     /** @internal */
     public override _createHardwareTexture(): IHardwareTextureWrapper {
-        return new NativeHardwareTexture(this._createTexture() as NativeTexture, (nativeTexture) => this._deleteNativeTexture(nativeTexture));
+        return new NativeHardwareTexture(this._createTexture() as NativeTexture, this);
     }
 
     /** @internal */
