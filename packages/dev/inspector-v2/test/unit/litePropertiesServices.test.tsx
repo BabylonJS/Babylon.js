@@ -185,7 +185,7 @@ describe("Babylon Lite properties services", () => {
             EnginePropertiesServiceDefinition.factory(propertiesService, engineContext),
             RenderingContextPropertiesServiceDefinition.factory(propertiesService, engineContext),
             MaterialPropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!),
-            TexturePropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!),
+            TexturePropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!, engineContext),
             TextLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
             SpriteLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
         ];
@@ -193,7 +193,12 @@ describe("Babylon Lite properties services", () => {
         expect(EnginePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(RenderingContextPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(MaterialPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, SceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
-        expect(TexturePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, SceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
+        expect(TexturePropertiesServiceDefinition.consumes).toEqual([
+            PropertiesServiceIdentity,
+            SceneResourceIndexServiceIdentity,
+            SelectionServiceIdentity,
+            EngineContextIdentity,
+        ]);
         expect(TextLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(SpriteLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(registrations.size).toBe(13);
@@ -207,6 +212,8 @@ describe("Babylon Lite properties services", () => {
         expect(registrations.get("Babylon Lite Sprite Renderer Properties")?.predicate(spriteRenderer)).toBe(true);
         expect(registrations.get("Babylon Lite standard Material Properties")?.predicate(material)).toBe(true);
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate(texture)).toBe(true);
+        const textureContent = registrations.get("Babylon Lite Texture Properties")!.content;
+        expect(textureContent.map(({ section }) => section)).toEqual(["Preview", "General"]);
         expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate(textLayer)).toBe(true);
         expect(registrations.get("Babylon Lite Sprite Layer Properties")?.predicate(spriteLayer)).toBe(true);
 

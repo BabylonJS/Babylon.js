@@ -41,6 +41,9 @@ import {
     createStandardMaterial,
     createSpotLight,
     createSurface,
+    createTexture2DArrayFromPixels,
+    createTexture2DFromPixels,
+    createTexture3DFromPixels,
     createTextLayer,
     createTextRenderable,
     createTextRenderer,
@@ -64,6 +67,7 @@ import {
     getSceneBillboardSystems,
     isParticleSystemStarted,
     loadGltf,
+    loadCubeTexture,
     parseNodeParticleSource,
     registerNodeParticleSet,
     removeFromScene,
@@ -84,6 +88,9 @@ import {
     registerScene,
     registerSpriteRenderer,
     registerTextRenderer,
+    releaseTexture,
+    setMeshVisible,
+    setStandardReflectionCubeTexture,
     setShadowTaskCasterMeshes,
     setRenderTaskGpuTimingEnabled,
     setPbrEmissive,
@@ -96,7 +103,7 @@ import {
 } from "@babylonjs/lite";
 
 import { ShowInspector } from "../../src/lite/inspector";
-import { GetSceneNodes, IsMesh } from "../../src/lite/sceneEntityUtils";
+import { GetSceneNodes, IsMesh, IsSceneNode } from "../../src/lite/sceneEntityUtils";
 import { CreateLiteAudioFixture, type LiteAudioFixture } from "./liteAudio";
 
 // Self-contained GLB: one triangle, two joints and two named morphs. No external buffers, textures or assets.
@@ -270,6 +277,7 @@ const defaultFlowGraphSpecs: readonly FgNodeSpec[] = [
 ];
 
 const sphereEmissive: [number, number, number] = [0, 0, 0];
+const previewFixtureTextures: Array<ReturnType<typeof createTexture2DFromPixels>> = [];
 
 const canvas = document.getElementById("canvas");
 if (!(canvas instanceof HTMLCanvasElement)) {
@@ -586,6 +594,33 @@ const createPhysicsFixture = () =>
     })());
 
 Object.assign(globalThis, {
+    liteCreateTexturePreviewFixture: async (kind: "2d" | "2d-array" | "3d" | "cube") => {
+        const first = [255, 0, 0, 255, 0, 255, 0, 128, 0, 0, 255, 255, 255, 255, 0, 255];
+        const second = [0, 255, 255, 255, 255, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255];
+        const material = createStandardMaterial();
+        material.name = "Texture Preview Fixture Material";
+        let texture: Awaited<ReturnType<typeof loadCubeTexture>> | ReturnType<typeof createTexture2DFromPixels>;
+        if (kind === "cube") {
+            texture = await loadCubeTexture(engine, "/texture-preview-fixture", ".png");
+            setStandardReflectionCubeTexture(material, texture);
+        } else {
+            texture =
+                kind === "2d-array"
+                    ? createTexture2DArrayFromPixels(engine, new Uint8Array([...first, ...second]), 2, 2, 2, { mipMaps: true })
+                    : kind === "3d"
+                      ? createTexture3DFromPixels(engine, new Uint8Array([...first, ...second]), 2, 2, 2)
+                      : createTexture2DFromPixels(engine, new Uint8Array(first), 2, 2);
+            texture.invertY = true;
+            previewFixtureTextures.push(texture);
+            material.diffuseTexture = texture;
+        }
+        const mesh = createBox(engine);
+        mesh.name = "Texture Preview Fixture";
+        mesh.material = material;
+        setMeshVisible(mesh, false);
+        addToScene(primaryScene, mesh);
+        Object.assign(globalThis, { liteTexturePreviewFixture: texture });
+    },
     liteCreatePhysics: createPhysicsFixture,
     liteSkinnedMesh: skinnedMesh,
     liteMorphClone: morphClone,
@@ -659,6 +694,22 @@ Object.assign(globalThis, {
     liteShadowGenerator: shadowGenerator,
 });
 
+void (async () => {
+    try {
+        const duckAsset = await loadGltf(engine, "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb");
+        const duckRoot = duckAsset.entities.find(IsSceneNode);
+        if (!duckRoot) {
+            throw new Error("The textured Duck glTF did not contain a scene node.");
+        }
+        duckRoot.name = "Textured Duck";
+        duckRoot.position.set(0, -1.25, -1.5);
+        duckRoot.scaling.set(duckRoot.scaling.x * 0.65, duckRoot.scaling.y * 0.65, duckRoot.scaling.z * 0.65);
+        addToScene(primaryScene, duckAsset);
+    } catch (error) {
+        console.error("Failed to load the optional textured Duck fixture:", error);
+    }
+})();
+
 window.addEventListener(
     "beforeunload",
     () => {
@@ -676,6 +727,7 @@ window.addEventListener(
         stopEngine(engine);
         stopAnimationManager(animationManager);
         clearAnimationManager(animationManager);
+        previewFixtureTextures.forEach((texture) => releaseTexture(texture));
         disposeTextRenderer(textRenderer);
         disposeDefaultTextData(overlayTextData);
         disposeDefaultTextData(backgroundTextData);

@@ -2,6 +2,16 @@
 
 This document covers the high level aspects of the Inspector V2 architecture. Note that much of this may move to a shared tooling package as it is intended to be usable by other tools (Sandbox, Playground, NME, etc.) in the future if we find enough value in integrating the framework into those tools.
 
+## Babylon Lite Texture Preview
+
+Select a texture in Explorer to open its **Preview**. The preview supports sampleable color textures, including 2D textures, cube faces, 2D array layers, 3D slices, and mip levels. The channel buttons display individual channels as grayscale; cube textures use face buttons instead. **Refresh** reads the texture again, including changes made by the application. **Export Preview as PNG** downloads the currently displayed subresource and channel selection, not the original texture file.
+
+The preview displays GPU storage row 0 at the top and does not apply the texture's UV transform or `invertY`. It preserves sRGB-encoded source colors, does not apply exposure or tone mapping, and clamps floating-point and signed-normalized colors to the display range. Readback does not require `COPY_SRC` on the source texture or modify its pixels. Depth, integer, multisampled, unavailable, and other non-sampleable textures show an error instead of a preview.
+
+Texture preview requires `@babylonjs/lite` 1.39.3 or later, which exposes `getTextureReadbackInfo` and `readTexturePixelsRGBA8` at the package root.
+
+The `?experience=lite` test scene loads the small [Khronos Duck glTF sample](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Duck) asynchronously from GitHub with its embedded color texture. Expand **Textured Duck** to inspect its mesh and material, or select its texture under **Textures** to preview or export it. Loading this optional model requires network access; failures are reported in the console.
+
 ## Babylon Lite Audio
 
 The Lite Inspector can inspect an independently created audio engine alongside its graphics engine. After calling `ShowInspector(engine)`, use `inspector.setAudioEngine(audioEngine)` to attach or replace the audio engine, or `inspector.setAudioEngine(null)` to detach it. The Inspector does not create, own, or dispose the audio engine. Extensions can observe changes through `IAudioEngineContext`; Explorer root providers can contribute additional independent roots through `IEngineExplorerService`.
@@ -69,6 +79,7 @@ Select a mesh or a mesh-hierarchy transform node in Explorer, then enable **Tran
 Gizmos use Lite's public native utility-layer and pointer-drag APIs, without Babylon.js gizmo implementations or proxy nodes. They currently support registered scenes on the engine's primary HTML canvas only: Lite's utility-layer and gizmo factories target that canvas. Lite supports one gizmo utility layer per canvas, so Inspector controls should not be used simultaneously with application-owned gizmos on that canvas. Cameras, lights, non-node resources, offscreen canvases, and auxiliary-surface nodes have disabled transform controls. Gizmo utility scenes and their resources are hidden from Inspector discovery and picking. Selection changes reattach or dispose gizmos; mode changes, removed scenes/nodes, and Inspector disposal release their utility layers and pointer bindings. If Inspector is replaced during registration, its replacement waits for the previous layer to settle and retire before creating gizmos on the same canvas. Removing the last supported scene resets the mode.
 
 One of the goals of the Inspector V2 architecture is to allow new functionality to easily be added to the Inspector in one of two ways:
+
 1. **Modularity**: In code, using `Inspector.Show`. For example, the Sandbox might want to include additional features in the Inspector that make sense in the context of the Sandbox.
 2. **Extensibility**: By the end user opting into optional features by installing extensions from the Inspector UI. For example, we might have an extension for advanced skeleton diagnostics, which a user would only care about if they are heavily working with skeletal animations. In the future, we can open up extensibility to make it possible for the community to publish their own extensions to a community extension feed. This makes it possible to drastically extend the power of Inspector without overwhelming all users with every single potential capability of the Inspector.
 
@@ -258,7 +269,7 @@ export MyServiceDefinition: ServiceDefinition<[IMyService], [IOtherService]> = {
 
 **Service Catalog & Container** - service definitions are added to a service catalog. The service catalog creates service container instances, which in turn instantiate all the contained services in the right order, passing instantiated service instances along to other services that depend on those services. When a service container instance is disposed, the services are likewise all torn down in the correct order. When a service is "torn down," if it has a `dispose` function it will be called.
 
-If service definitions are added to a service catalog and there are "active" service container instances, the new services will be instantiated within these active service containers. ***This is the basis for runtime extensibility.***
+If service definitions are added to a service catalog and there are "active" service container instances, the new services will be instantiated within these active service containers. _**This is the basis for runtime extensibility.**_
 
 ## Extensibility
 
@@ -283,6 +294,7 @@ Currently there is only a `BuiltInsExtensionFeed`, which allows extensions that 
 ## Modular Tools
 
 The modularity and extensibility described above is valuable for the Inspector, but it could equally be leveraged by other tools (Sandbox, Playground, etc.). This could provide value in the following ways:
+
 - Unifying the "shell" of the tools and the inspector when they are used together. This would mean tabbed side panes and toolbars could be unified, and also a single Fluent provider could manage theming for both the tool in question and the Inspector.
 - Interoperability and service sharing. For example, if the Inspector has a "notification service" that makes it easy to report info/warnings/errors to the user, this could be trivially re-used across tools and the inspector.
 - Tool extensibility. The same infrastructure could be leveraged to allow for tool specific extensions, such as new NME node types for example.
@@ -569,7 +581,7 @@ export const MyPropertiesContentServiceDefinition: ServiceDefinition<[], [IPrope
                     // Order is optional, and relative to other content in this section.
                     order: 10,
                     // This is a React component (class or function).
-                    component: ({entity: AbstractMesh}) => {
+                    component: ({ entity: AbstractMesh }) => {
                         return <>Some content for the General section</>;
                     },
                 },
@@ -579,7 +591,7 @@ export const MyPropertiesContentServiceDefinition: ServiceDefinition<[], [IPrope
                     // Order is optional, and relative to other content in this section.
                     order: 10,
                     // This is a React component (class or function).
-                    component: ({entity: AbstractMesh}) => {
+                    component: ({ entity: AbstractMesh }) => {
                         return <>Some content for the My Properties section</>;
                     },
                 },
@@ -606,13 +618,13 @@ If you want your service to always be active (a new tab in a side pane that is a
 If you want your service to be explicitly enabled by the user (a more niche feature that will not be as commonly used and would otherwise overwhelm the default UI, for example), then do the following:
 
 1. Have a file somewhere with a default export that contains your `ServiceDefinition` (or multiple `ServiceDefinitions` that make up an "extension"). For example:
-   ```ts
-   export default {
-     serviceDefinitions: [MyServiceDefinition1, MyServiceDefinition2],
-   } as const;
-   ```
+    ```ts
+    export default {
+        serviceDefinitions: [MyServiceDefinition1, MyServiceDefinition2],
+    } as const;
+    ```
 2. Add an entry for your new extension in [`builtInsExtensionFeed.ts`](./src/extensibility/builtInsExtensionFeed.ts). This includes:
 
-   - Define the metadata for the extension.
-   - Add the metadata to the extensions array.
-   - Add a block of code to `getExtensionModuleAsync` that dynamically imports your extension module (the file with the default export).
+    - Define the metadata for the extension.
+    - Add the metadata to the extensions array.
+    - Add a block of code to `getExtensionModuleAsync` that dynamically imports your extension module (the file with the default export).

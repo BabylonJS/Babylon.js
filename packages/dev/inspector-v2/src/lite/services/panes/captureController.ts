@@ -2,6 +2,8 @@ import { captureScreenshot, type EngineContext, type SurfaceContext } from "@bab
 
 import { Observable } from "core/Misc/observable";
 
+import { DownloadBlob } from "../../../misc/download";
+
 /**
  * Owns capture operations for one Lite Inspector, independently of mounted panes.
  * @internal
@@ -88,7 +90,7 @@ export class CaptureController {
             context.putImageData(image, 0, 0);
             const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => (value ? resolve(value) : reject(new Error("PNG encoding failed."))), "image/png"));
             if (this._isCurrent(generation, surface)) {
-                Download(blob, "screenshot.png", this._getDocument(document));
+                DownloadBlob(blob, "screenshot.png", this._getDocument(document));
             }
         } catch (error) {
             if (this._isCurrent(generation, surface)) {
@@ -158,7 +160,7 @@ export class CaptureController {
                     if (!chunks.length) {
                         throw new Error("The recorder produced no video data.");
                     }
-                    Download(new Blob(chunks, { type: recorder.mimeType }), mimeType.startsWith("video/mp4") ? "recording.mp4" : "recording.webm", this._getDocument(document));
+                    DownloadBlob(new Blob(chunks, { type: recorder.mimeType }), mimeType.startsWith("video/mp4") ? "recording.mp4" : "recording.webm", this._getDocument(document));
                 } catch (error) {
                     this.error = `Video capture failed: ${error instanceof Error ? error.message : String(error)}`;
                 }
@@ -229,23 +231,5 @@ export class CaptureController {
         }
         this.recording = false;
         this._releaseStream();
-    }
-}
-
-function Download(blob: Blob, filename: string, document: Document): void {
-    const url = URL.createObjectURL(blob);
-    try {
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = filename;
-        document.body.appendChild(anchor);
-        try {
-            anchor.click();
-        } finally {
-            anchor.remove();
-        }
-    } finally {
-        // Give the browser time to consume the download before releasing its backing URL.
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 }

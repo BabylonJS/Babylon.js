@@ -524,11 +524,33 @@ export class TextureCanvasManager {
     public async grabOriginalTexture() {
         // Grab image data from original texture and paint it onto the context of a DynamicTexture
         const size = this._originalTexture.getSize();
+        const mipSize = {
+            width: Math.max(1, Math.floor(size.width / 2 ** this._mipLevel)),
+            height: Math.max(1, Math.floor(size.height / 2 ** this._mipLevel)),
+        };
         // Fetch texture data BEFORE setting size (which clears the canvas) to avoid flicker
-        const data = await ApplyChannelsToTextureDataAsync(this._originalTexture, size.width, size.height, this._face, { R: true, G: true, B: true, A: true }, this._mipLevel);
+        const data = await ApplyChannelsToTextureDataAsync(
+            this._originalTexture,
+            mipSize.width,
+            mipSize.height,
+            this._face,
+            { R: true, G: true, B: true, A: true },
+            this._mipLevel
+        );
         this.setSize(size);
-        this._imageData = data;
-        this.paintPixelsOnCanvas(data, this._2DCanvas);
+        if (mipSize.width !== size.width || mipSize.height !== size.height) {
+            const mipCanvas = this._window.document.createElement("canvas");
+            mipCanvas.width = mipSize.width;
+            mipCanvas.height = mipSize.height;
+            this.paintPixelsOnCanvas(data, mipCanvas);
+            const context = this._2DCanvas.getContext("2d")!;
+            context.imageSmoothingEnabled = false;
+            context.drawImage(mipCanvas, 0, 0, size.width, size.height);
+            this._imageData = context.getImageData(0, 0, size.width, size.height).data;
+        } else {
+            this._imageData = data;
+            this.paintPixelsOnCanvas(data, this._2DCanvas);
+        }
         this._3DCanvasTexture.update();
         this.updateDisplay();
         return data;
