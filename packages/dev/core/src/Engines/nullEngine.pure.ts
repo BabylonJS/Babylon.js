@@ -1069,6 +1069,7 @@ export class NullEngine extends Engine {
      * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not (ignored by NullEngine)
      */
     public override updateTextureData(
         texture: InternalTexture,
@@ -1078,8 +1079,10 @@ export class NullEngine extends Engine {
         width: number,
         height: number,
         faceIndex: number = 0,
-        lod: number = 0
+        lod: number = 0,
+        generateMipMaps: boolean = false
     ): void {
+        void generateMipMaps;
         if (faceIndex === 0 && lod === 0 && xOffset === 0 && yOffset === 0 && width === texture.width && height === texture.height) {
             texture._bufferView = imageData;
         }

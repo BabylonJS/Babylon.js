@@ -294,20 +294,21 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_INTEGER
         );
-        const updateRawTexture = vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const uploads: Uint8Array[] = [];
+        const updateRawTexture = vi.spyOn(engine, "updateRawTexture").mockImplementation((_texture, data) => {
+            uploads.push(new Uint8Array(data!.buffer, data!.byteOffset, data!.byteLength).slice());
+        });
         const updateTextureData = vi.fn();
         (engine as any).updateTextureData = updateTextureData;
 
         // An incremental update only owns the rows from lineStart: the rows above hold neutral placeholder SH.
-        (mesh as any)._updateShTextureData(texture, new Uint8Array(bytesPerRow * height), width, 1, 2);
+        const shData = new Uint8Array(bytesPerRow * height).fill(7);
+        (mesh as any)._updateShTextureData(texture, shData, width, 1, 2);
 
-        expect(updateRawTexture).not.toHaveBeenCalled();
-        expect(updateTextureData).toHaveBeenCalledOnce();
-        const [internalTexture, data, xOffset, yOffset, updateWidth, updateHeight] = updateTextureData.mock.calls[0];
-        expect(internalTexture).toBe(texture.getInternalTexture());
-        expect([xOffset, yOffset, updateWidth, updateHeight]).toEqual([0, 1, width, 2]);
-        expect(data.byteOffset).toBe(bytesPerRow);
-        expect(data.byteLength).toBe(bytesPerRow * 2);
+        expect(updateRawTexture).toHaveBeenCalledOnce();
+        expect(updateTextureData).not.toHaveBeenCalled();
+        expect(Array.from(uploads[0].subarray(0, bytesPerRow))).toEqual(Array(bytesPerRow).fill(0));
+        expect(Array.from(uploads[0].subarray(bytesPerRow))).toEqual(Array(bytesPerRow * 2).fill(7));
 
         scene.dispose();
         engine.dispose();
@@ -335,7 +336,10 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_INTEGER
         );
-        vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
+        const uploads: Uint8Array[] = [];
+        vi.spyOn(engine, "updateRawTexture").mockImplementation((_texture, data) => {
+            uploads.push(new Uint8Array(data!.buffer, data!.byteOffset, data!.byteLength).slice());
+        });
         const updateTextureData = vi.fn();
         (engine as any).updateTextureData = updateTextureData;
 
@@ -344,58 +348,82 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
 
         (mesh as any)._updateShTextureData(texture, shData, width, 1, 2);
 
-        expect(updateTextureData).toHaveBeenCalledOnce();
-        const [, data, xOffset, yOffset, updateWidth, updateHeight] = updateTextureData.mock.calls[0];
-        expect([xOffset, yOffset, updateWidth, updateHeight]).toEqual([0, 1, width, 2]);
-        expect(data.byteOffset % Uint32Array.BYTES_PER_ELEMENT).toBe(0);
-        expect(Array.from(new Uint8Array(data.buffer, data.byteOffset, data.byteLength))).toEqual(Array.from(shData.subarray(bytesPerRow, bytesPerRow * 3)));
+        expect(updateTextureData).not.toHaveBeenCalled();
+        expect(Array.from(uploads[0].subarray(0, bytesPerRow))).toEqual(Array(bytesPerRow).fill(0));
+        expect(Array.from(uploads[0].subarray(bytesPerRow))).toEqual(Array.from(shData.subarray(bytesPerRow, bytesPerRow * 3)));
 
         scene.dispose();
         engine.dispose();
     });
 
-    it.each(["Native", "Renamed"])("keeps a partial update after a full upload in the same frame in call order (engine named %s)", async (engineName) => {
+    it("keeps complete uploads ordered between two camera draws", async () => {
+        const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { RawTexture } = await import("core/Materials/Textures/rawTexture");
+        const { Constants } = await import("core/Engines/constants");
+        const { FreeCamera } = await import("core/Cameras/freeCamera");
+        const { Vector3 } = await import("core/Maths/math.vector");
+        const { engine, scene } = await createScene();
+
+        const mesh = new GaussianSplattingMesh("gs", null, scene);
+        mesh.setEnabled(false);
+        const texture = new RawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        const commands: Array<() => void> = [];
+        const readbacks: number[] = [];
+        let gpuData = new Uint8Array(4);
+        vi.spyOn(engine, "updateRawTexture").mockImplementation((_texture, data) => {
+            const snapshot = new Uint8Array(data!.buffer, data!.byteOffset, data!.byteLength).slice();
+            commands.push(() => {
+                gpuData = snapshot;
+            });
+        });
+        vi.spyOn(engine, "updateTextureData").mockImplementation((_texture, data) => {
+            // Models Babylon Native's immediate updateTextureData path: both queued draws would observe the last value.
+            gpuData = new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice();
+        });
+
+        const firstCamera = scene.activeCamera!;
+        const secondCamera = new FreeCamera("secondCamera", new Vector3(0, 0, -10), scene);
+        scene.activeCameras = [firstCamera, secondCamera];
+        scene.onBeforeCameraRenderObservable.add((camera) => {
+            const value = camera === firstCamera ? 1 : 2;
+            (mesh as any)._updateTextureFromData(texture, new Uint8Array([value, 0, 0, 0]), 1, 0, 1);
+        });
+        scene.onAfterCameraRenderObservable.add(() => {
+            commands.push(() => readbacks.push(gpuData[0]));
+        });
+
+        scene.render();
+        commands.forEach((command) => command());
+
+        expect(readbacks).toEqual([1, 2]);
+        expect(engine.updateTextureData).not.toHaveBeenCalled();
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("keeps partial Native uploads in call order by staging complete texture images", async () => {
         const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
         const { RawTexture } = await import("core/Materials/Textures/rawTexture");
         const { Constants } = await import("core/Engines/constants");
         const { engine, scene } = await createScene();
-        // Native applies raw uploads of an existing texture after the frame's sub-texture updates, so every upload
-        // must go through updateTextureData. The choice must not depend on the (writable) engine name.
-        engine.name = engineName;
 
         const mesh = new GaussianSplattingMesh("gs", null, scene);
-        const width = 4;
-        const height = 3;
-        const bytesPerRow = width * 16; // RGBA32UI
-        const shTexture = new RawTexture(
-            null,
-            width,
-            height,
-            Constants.TEXTUREFORMAT_RGBA_INTEGER,
-            scene,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_UNSIGNED_INTEGER
-        );
-        const centersTexture = new RawTexture(null, width, height, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-        const updateRawTexture = vi.spyOn(engine, "updateRawTexture").mockImplementation(() => {});
-        const updateTextureData = vi.fn();
-        (engine as any).updateTextureData = updateTextureData;
+        const texture = new RawTexture(null, 2, 2, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        const uploads: Uint8Array[] = [];
+        vi.spyOn(engine, "updateRawTexture").mockImplementation((_texture, data) => {
+            uploads.push(new Uint8Array(data!.buffer, data!.byteOffset, data!.byteLength).slice());
+        });
+        const updateTextureData = vi.spyOn(engine, "updateTextureData");
 
-        (mesh as any)._updateShTextureData(shTexture, new Uint8Array(bytesPerRow * height), width, 0, height);
-        (mesh as any)._updateShTextureData(shTexture, new Uint8Array(bytesPerRow * height), width, 1, 2);
-        (mesh as any)._updateTextureFromData(centersTexture, new Uint8Array(width * height * 4), width, 0, height);
-        (mesh as any)._updateTextureFromData(centersTexture, new Uint8Array(width * 2 * 4), width, 1, 2);
+        (mesh as any)._updateTextureFromData(texture, new Uint8Array([1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0]), 2, 0, 2);
+        (mesh as any)._updateTextureFromDataRect(texture, new Uint8Array([9, 0, 0, 0]), 1, 0, 1, 1);
 
-        expect(updateRawTexture).not.toHaveBeenCalled();
-        const regions = updateTextureData.mock.calls.map((call) => [call[0], call[3], call[5]]);
-        expect(regions).toEqual([
-            [shTexture.getInternalTexture(), 0, height],
-            [shTexture.getInternalTexture(), 1, 2],
-            [centersTexture.getInternalTexture(), 0, height],
-            [centersTexture.getInternalTexture(), 1, 2],
+        expect(uploads.map((upload) => [upload[0], upload[4], upload[8], upload[12]])).toEqual([
+            [1, 2, 3, 4],
+            [1, 9, 3, 4],
         ]);
+        expect(updateTextureData).not.toHaveBeenCalled();
 
         scene.dispose();
         engine.dispose();
@@ -416,9 +444,10 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
 
         // NullEngine has no GL context: neither upload may reach the WebGL implementation.
         expect(() => (mesh as any)._updateTextureFromData(texture, full, width, 0, height)).not.toThrow();
-        expect(internalTexture._bufferView).toBe(full);
+        expect(Array.from(internalTexture._bufferView as Uint8Array)).toEqual(Array.from(full));
         expect(() => (mesh as any)._updateTextureFromData(texture, new Uint8Array(width * 2 * 4), width, 1, 2)).not.toThrow();
-        expect(internalTexture._bufferView).toBe(full);
+        expect((internalTexture._bufferView as Uint8Array).byteLength).toBe(full.byteLength);
+        engine.updateTextureData(internalTexture, full, 0, 0, width, height, 0, 0, true);
 
         scene.dispose();
         engine.dispose();
@@ -454,13 +483,11 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
 
         expect((compound as any)._shTextures[0]).toBe(shTextures[0]);
         expect(shInternalTexture.height).toBe(textureHeight);
-        // A full upload would overwrite the rows of the first part (on the GPU, possibly streamed SH) with the CPU copy.
-        expect(updateRawTexture.mock.calls.filter((call) => call[0] === shInternalTexture)).toHaveLength(0);
-        const shUploads = updateTextureData.mock.calls.filter((call) => call[0] === shInternalTexture);
+        const shUploads = updateRawTexture.mock.calls.filter((call) => call[0] === shInternalTexture);
         expect(shUploads.length).toBeGreaterThan(0);
-        for (const call of shUploads) {
-            expect(call[3]).toBeGreaterThanOrEqual(1);
-        }
+        const uploadedBytes = new Uint8Array(shUploads.at(-1)![1]!.buffer, shUploads.at(-1)![1]!.byteOffset, shUploads.at(-1)![1]!.byteLength);
+        expect(Array.from(uploadedBytes.subarray(0, 20 * 16))).toEqual(Array(20 * 16).fill(7));
+        expect(updateTextureData.mock.calls.filter((call) => call[0] === shInternalTexture)).toHaveLength(0);
 
         scene.dispose();
         engine.dispose();

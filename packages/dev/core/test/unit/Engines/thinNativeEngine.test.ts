@@ -2202,24 +2202,45 @@ describe("ThinNativeEngine", () => {
             expect(nativeEngine.updateTextureData).toHaveBeenCalledWith(resourceOf(texture), mip, 0, 0, 2, 2, 0, 1, texture.invertY, false);
         });
 
-        it("allocates a raw texture created without data on its first complete updateTextureData", () => {
+        it("routes complete base-level updates through ordered raw uploads", () => {
             const { engine, nativeEngine } = createEngine();
             const texture = engine.createRawTexture(null, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             const full = new Uint8Array(4 * 2 * 4);
             const row = new Uint8Array(4 * 4);
 
-            // Native has no storage for the texture yet, so a partial update would be rejected; the first complete update
-            // must allocate it through loadRawTexture. Later updates, complete or partial, go through updateTextureData.
             engine.updateTextureData(texture, full, 0, 0, 4, 2);
             engine.updateTextureData(texture, row, 0, 1, 4, 1);
             engine.updateTextureData(texture, full, 0, 0, 4, 2);
 
-            expect(nativeEngine.loadRawTexture).toHaveBeenCalledTimes(1);
-            expect(nativeEngine.loadRawTexture.mock.calls[0].slice(0, 4)).toEqual([resourceOf(texture), full, 4, 2]);
-            expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => [call[1], call[3], call[5]])).toEqual([
-                [row, 1, 1],
-                [full, 0, 2],
+            expect(nativeEngine.loadRawTexture.mock.calls.map((call: unknown[]) => [call[1], call[2], call[3]])).toEqual([
+                [full, 4, 2],
+                [full, 4, 2],
             ]);
+            expect(nativeEngine.updateTextureData).toHaveBeenCalledExactlyOnceWith(resourceOf(texture), row, 0, 1, 4, 1, 0, 0, texture.invertY, false);
+        });
+
+        it("keeps complete updates working after an empty raw texture rebuild", () => {
+            const { engine, nativeEngine } = createEngine();
+            const texture = engine.createRawTexture(null, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            const full = new Uint8Array(4 * 2 * 4);
+
+            engine.updateTextureData(texture, full, 0, 0, 4, 2);
+            texture._rebuild();
+            engine.updateTextureData(texture, full, 0, 0, 4, 2);
+
+            expect(nativeEngine.loadRawTexture).toHaveBeenCalledTimes(2);
+            expect(nativeEngine.updateTextureData).not.toHaveBeenCalled();
+        });
+
+        it("supports complete updates when the native runtime has no updateTextureData", () => {
+            const { engine, nativeEngine } = createEngine();
+            delete nativeEngine.updateTextureData;
+            const texture = engine.createRawTexture(null, 4, 2, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            const full = new Uint8Array(4 * 2 * 4);
+
+            expect(() => engine.updateTextureData(texture, full, 0, 0, 4, 2)).not.toThrow();
+            expect(() => engine.updateTextureData(texture, new Uint8Array(4 * 4), 0, 1, 4, 1)).toThrow("updateTextureData not implemented.");
+            expect(nativeEngine.loadRawTexture).toHaveBeenCalledOnce();
         });
 
         const mockKtx2MipChain = () => {
