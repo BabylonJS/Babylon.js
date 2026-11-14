@@ -4,11 +4,25 @@ import { type ThinEngine } from "../Engines/thinEngine.pure";
 /**
  * Checks whether an engine supports the render-target and shader features required by mesh blending.
  * @param engine Engine to check.
- * @returns True for WebGL2 and WebGPU engines, and false for Native and WebGL1 engines.
+ * @returns True for WebGL2 and WebGPU engines, and for Native engines whose runtime supports integer color attachments.
  * @internal
  */
 export function _IsMeshBlendingSupported(engine: AbstractEngine): boolean {
-    return engine.shaderPlatformName !== "NATIVE" && (engine.isWebGPU || (engine as ThinEngine).webGLVersion === 2);
+    if (engine.shaderPlatformName === "NATIVE") {
+        return engine._features.supportMeshBlending;
+    }
+    return engine.isWebGPU || (engine as ThinEngine).webGLVersion === 2;
+}
+
+/**
+ * Checks whether an engine can render blended geometry into a target that includes the integer mesh-blending tag attachment.
+ * WebGPU and Native never blend integer attachments, while WebGL2 needs per-target blend parameters to disable blending on them.
+ * @param engine Engine to check.
+ * @returns True if blended draws can write mesh-blending tags.
+ * @internal
+ */
+export function _CanBlendWithMeshBlendTag(engine: AbstractEngine): boolean {
+    return engine.isWebGPU || engine.shaderPlatformName === "NATIVE" || engine.getCaps().blendParametersPerTarget;
 }
 
 /**

@@ -1215,6 +1215,13 @@ describe("ThinNativeEngine", () => {
             }
         });
 
+        // Mesh blending tags its geometry with an 8-bit unsigned integer attachment.
+        it("allocates a RED_INTEGER unsigned byte render target as R8U", () => {
+            const { engine, nativeEngine } = createEngine();
+            engine._createInternalTexture({ width: 64, height: 64 }, { format: Constants.TEXTUREFORMAT_RED_INTEGER, type: Constants.TEXTURETYPE_UNSIGNED_BYTE });
+            expect(nativeEngine.initializeTexture.mock.lastCall![4]).toBe("TEXTURE_FORMAT_R8U");
+        });
+
         it("rebuilds the shared frame graph framebuffer when a non-primary attachment changes", () => {
             const { engine, bound } = createEngine();
             const primary = engine._createInternalTexture({ width: 64, height: 64 }, {});

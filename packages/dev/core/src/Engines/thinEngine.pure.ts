@@ -838,6 +838,7 @@ export class ThinEngine extends AbstractEngine {
             supportMSAA: this._webGLVersion !== 1,
             supportSSAO2: this._webGLVersion !== 1,
             supportIBLShadows: this._webGLVersion !== 1,
+            supportMeshBlending: this._webGLVersion !== 1,
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,

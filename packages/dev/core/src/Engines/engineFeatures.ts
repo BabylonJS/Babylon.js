@@ -46,6 +46,9 @@ export interface EngineFeatures {
     /** Indicates that IBL Shadows are supported */
     supportIBLShadows: boolean;
 
+    /** Indicates that mesh blending (which renders integer mesh-blending tags alongside other color attachments) is supported */
+    supportMeshBlending: boolean;
+
     /** Indicates that some additional texture formats are supported (like TEXTUREFORMAT_R for eg) */
     supportExtendedTextureFormats: boolean;
 

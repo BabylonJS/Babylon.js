@@ -132,6 +132,14 @@ export function getNativeTextureFormat(format: number, type: number): number {
             break;
         }
 
+        case Constants.TEXTUREFORMAT_RED_INTEGER: {
+            switch (type) {
+                case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                    return _native.Engine.TEXTURE_FORMAT_R8U;
+            }
+            break;
+        }
+
         case Constants.TEXTUREFORMAT_RGBA_INTEGER: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
