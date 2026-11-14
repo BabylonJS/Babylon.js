@@ -42,8 +42,8 @@ export abstract class AnimationPropertyInfo {
         public readonly getStride: (target: any) => number
     ) {}
 
-    protected _buildAnimation(name: string, fps: number, keys: any[]): Animation {
-        const babylonAnimation = new Animation(name, this.name, fps, this.type);
+    protected _buildAnimation(name: string, fps: number, keys: any[], propertyName = this.name): Animation {
+        const babylonAnimation = new Animation(name, propertyName, fps, this.type);
         babylonAnimation.setKeys(keys, true);
         return babylonAnimation;
     }

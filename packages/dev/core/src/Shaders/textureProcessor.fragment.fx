@@ -1,5 +1,5 @@
 // Texture processing fragment shader
-// Supports multiply, max, lerp, and invert operations with texture/constant/combined operands.
+// Supports multiply, max, lerp, invert, channel maximum, and normal scaling with texture/constant/combined operands.
 //
 // Defines:
 //   OPERAND_A_TEXTURE      - operand A has a texture
@@ -31,6 +31,7 @@
 //   INVERT_B               - invert the blue channel (used with OP_INVERT)
 //   INVERT_A               - invert the alpha channel (used with OP_INVERT)
 //   OP_CHANNEL_MAX         - unary: broadcast max(r,g,b[,a]) of operand A to all output channels
+//   OP_NORMAL_SCALE        - decode A normal, scale X/Y by B.r, normalize and re-encode
 //   OP_MULTI_SCATTER_TO_SINGLE_SCATTER - unary: convert multi-scatter albedo A.rgb to single-scatter albedo (uses scatterAniso uniform)
 //   MULTI_SCATTER_SCALE_B  - multiply operand A by operand B before OP_MULTI_SCATTER_TO_SINGLE_SCATTER
 //   OP_SINGLE_SCATTER_TO_MULTI_SCATTER - unary: convert single-scatter albedo A.rgb to multi-scatter albedo (inverse of the above; uses scatterAniso uniform)
@@ -143,7 +144,10 @@ void main() {
     #endif
 
     // Apply operation
-    #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
+    #ifdef OP_NORMAL_SCALE
+    vec3 normal = (a.rgb * 2.0 - 1.0) * vec3(b.r, b.r, 1.0);
+    vec4 result = vec4(normal / max(length(normal), 1e-8) * 0.5 + 0.5, a.a);
+    #elif defined(OP_MULTI_SCATTER_TO_SINGLE_SCATTER)
     #ifdef MULTI_SCATTER_SCALE_B
     vec4 multiScatter = a * b;
     #else
