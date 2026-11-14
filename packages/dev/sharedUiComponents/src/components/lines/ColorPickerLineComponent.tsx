@@ -60,7 +60,9 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerLineCo
     }
 
     override shouldComponentUpdate(nextProps: IColorPickerLineComponentProps, nextState: IColorPickerComponentState) {
-        const diffProps = this.getHexString(nextProps) !== this.getHexString();
+        // Compare the components rather than the hex strings: toHexString clamps to [0, 1], so two
+        // different HDR colors can share a hex string and the cached picker color would go stale.
+        const diffProps = !this._areSameColor(nextProps.value, this.props.value);
 
         if (diffProps) {
             nextState.color = nextProps.value;
@@ -68,6 +70,10 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerLineCo
         }
 
         return diffProps || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
+    }
+
+    private _areSameColor(a: Color3 | Color4, b: Color3 | Color4) {
+        return a.r === b.r && a.g === b.g && a.b === b.b && (a as Color4).a === (b as Color4).a;
     }
 
     getHexString(props = this.props) {
