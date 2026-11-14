@@ -54,7 +54,13 @@
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL
-	coatNormalW = perturbNormal(TBN, TEXRD(geometryCoatNormalSampler, vGeometryCoatNormalUV + uvOffset).xyz, vGeometryCoatNormalInfos.y);
+    #ifdef GLTF_COAT_NORMAL_INDEPENDENT_TBN
+        vec2 coatTBNUV = gl_FrontFacing ? vGeometryCoatNormalUV : -vGeometryCoatNormalUV;
+        mat3 coatTBN = cotangent_frame(normalW, vPositionW, coatTBNUV, vTangentSpaceParams);
+        coatNormalW = perturbNormal(coatTBN, TEXRD(geometryCoatNormalSampler, vGeometryCoatNormalUV + uvOffset).xyz, vGeometryCoatNormalInfos.y);
+    #else
+        coatNormalW = perturbNormal(TBN, TEXRD(geometryCoatNormalSampler, vGeometryCoatNormalUV + uvOffset).xyz, vGeometryCoatNormalInfos.y);
+    #endif
 #endif
 
 #ifdef GEOMETRY_NORMAL

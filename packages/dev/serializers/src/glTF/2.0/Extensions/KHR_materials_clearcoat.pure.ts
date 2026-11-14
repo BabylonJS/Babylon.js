@@ -10,7 +10,9 @@ import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
+import { _CopyTextureMetadata } from "core/Materials/Textures/textureSampling.functions";
 import { type Nullable } from "core/types";
+import { ShouldExportOpenPBRSurfaceTintCoat } from "../glTFUtilities";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -67,16 +69,7 @@ async function CreateMergedCoatInternalTextureAsync(babylonMaterial: OpenPBRMate
 function CreateTempTexture(internalTexture: InternalTexture, sourceTexture: BaseTexture): Texture {
     const tempTexture = new Texture(sourceTexture.name, sourceTexture.getScene());
     tempTexture._texture = internalTexture;
-    tempTexture.coordinatesIndex = sourceTexture.coordinatesIndex;
-    if (sourceTexture instanceof Texture) {
-        tempTexture.uOffset = sourceTexture.uOffset;
-        tempTexture.vOffset = sourceTexture.vOffset;
-        tempTexture.uScale = sourceTexture.uScale;
-        tempTexture.vScale = sourceTexture.vScale;
-        tempTexture.wAng = sourceTexture.wAng;
-    }
-    tempTexture.wrapU = sourceTexture.wrapU;
-    tempTexture.wrapV = sourceTexture.wrapV;
+    _CopyTextureMetadata(sourceTexture, tempTexture, sourceTexture instanceof Texture);
     return tempTexture;
 }
 
@@ -257,7 +250,11 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
 
                 node.extensions[NAME] = clearCoatInfo;
             } else if (babylonMaterial instanceof OpenPBRMaterial) {
-                if (babylonMaterial.coatWeight == 0.0) {
+                if (
+                    babylonMaterial.coatWeight == 0.0 ||
+                    (this._exporter.isExtensionEnabled("KHR_materials_coat") &&
+                        ShouldExportOpenPBRSurfaceTintCoat(babylonMaterial, this._exporter.isExtensionEnabled("KHR_materials_diffuse_transmission")))
+                ) {
                     resolve(node);
                     return;
                 }
@@ -269,14 +266,14 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                 let coatWeightTexture: Nullable<BaseTexture>;
                 let coatTextureInfo;
                 if (babylonMaterial.coatWeightTexture) {
-                    coatWeightTexture = this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId];
+                    coatWeightTexture = this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId] ?? babylonMaterial.coatWeightTexture;
                     coatTextureInfo = this._exporter._materialExporter.getTextureInfo(coatWeightTexture);
                 }
 
                 let coatRoughnessTexture: Nullable<BaseTexture>;
                 let coatRoughnessTextureInfo;
                 if (babylonMaterial.coatRoughnessTexture) {
-                    coatRoughnessTexture = this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId];
+                    coatRoughnessTexture = this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId] ?? babylonMaterial.coatRoughnessTexture;
                     coatRoughnessTextureInfo = this._exporter._materialExporter.getTextureInfo(coatRoughnessTexture);
                 }
 
