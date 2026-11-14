@@ -221,6 +221,10 @@ const _FullscreenViewport: IViewportLike = { x: 0, y: 0, width: 1, height: 1 };
 // generateMipMaps so sample-count changes and context-loss rebuilds keep an explicitly authored mip chain.
 const _TexturesWithMipStorage = /*#__PURE__*/ new WeakSet<InternalTexture>();
 
+// Raw texture resources created without data. Native allocates their storage on the first loadRawTexture,
+// and updateTextureData requires that storage to exist.
+const _RawTextureResourcesWithoutStorage = /*#__PURE__*/ new WeakSet<IHardwareTextureWrapper>();
+
 /**
  * Sentinel for "no attachment masking": every color attachment of the bound framebuffer takes part in
  * the clear. Native treats this value specially and skips the bgfx color-palette clear path.
@@ -2197,6 +2201,9 @@ export class ThinNativeEngine extends ThinEngine {
         texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !generateMipMaps);
 
         this.updateRawTexture(texture, data, format, invertY, compression, type, texture._useSRGBBuffer);
+        if (!data && texture._hardwareTexture) {
+            _RawTextureResourcesWithoutStorage.add(texture._hardwareTexture);
+        }
 
         if (texture._hardwareTexture) {
             const webGLTexture = texture._hardwareTexture.underlyingResource;
@@ -2363,6 +2370,7 @@ export class ThinNativeEngine extends ThinEngine {
                 texture.invertY,
                 useSRGBBuffer
             );
+            _RawTextureResourcesWithoutStorage.delete(texture._hardwareTexture);
         }
 
         texture.isReady = true;
@@ -4996,6 +5004,37 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
 
+        const fullBaseLevel =
+            !texture.isCube &&
+            !texture.is2DArray &&
+            !texture.is3D &&
+            faceIndex === 0 &&
+            lod === 0 &&
+            xOffset === 0 &&
+            yOffset === 0 &&
+            width === texture.width &&
+            height === texture.height;
+        const rawTextureNeedsStorage = texture.source === InternalTextureSource.Raw && _RawTextureResourcesWithoutStorage.has(texture._hardwareTexture);
+        const rawTextureNeedsCapabilityFallback = texture.source === InternalTextureSource.Raw && !this._engine.updateTextureData && !this._hasMipStorage(texture);
+        if (fullBaseLevel && (rawTextureNeedsStorage || rawTextureNeedsCapabilityFallback)) {
+            // loadRawTexture allocates an empty raw texture, works on older runtimes without updateTextureData,
+            // and stages replacement uploads in view order so draws already encoded in this frame keep the old data.
+            this._engine.loadRawTexture(
+                texture._hardwareTexture.underlyingResource,
+                imageData,
+                texture.width,
+                texture.height,
+                getNativeTextureFormat(texture.format, texture.type),
+                generateMipMaps,
+                texture.invertY,
+                texture._useSRGBBuffer
+            );
+            _RawTextureResourcesWithoutStorage.delete(texture._hardwareTexture);
+            this._setHasMipStorage(texture, generateMipMaps);
+            texture.isReady = true;
+            return;
+        }
+
         if (!this._engine.updateTextureData) {
             throw new Error("updateTextureData not implemented.");
         }
@@ -5072,6 +5111,7 @@ export class ThinNativeEngine extends ThinEngine {
             texture.invertY,
             texture._useSRGBBuffer
         );
+        _RawTextureResourcesWithoutStorage.delete(texture._hardwareTexture);
     }
 
     /**

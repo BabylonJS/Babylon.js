@@ -15,7 +15,7 @@ import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaus
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget.pure";
 import { Color4 } from "core/Maths/math.color.pure";
-import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { InternalTextureSource, type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
 import { FromHalfFloat, ToHalfFloat } from "core/Misc/textureTools";
 import { type Material } from "core/Materials/material.pure";
@@ -143,6 +143,14 @@ interface ITextureDataUpdateCapableEngine {
     ): void;
     _gl?: unknown;
     isWebGPU?: boolean;
+}
+
+interface ITextureDataRect {
+    data: ArrayBufferView;
+    xOffset: number;
+    yOffset: number;
+    width: number;
+    height: number;
 }
 
 // @internal
@@ -622,6 +630,9 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _flipY = false;
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
+    // Native stages raw uploads in view order, so raw GS textures keep a CPU image that lets partial writes use
+    // that ordered path. This intentionally mirrors their GPU footprint until dispose releases the WeakMap.
+    private _nativeTextureData = new WeakMap<InternalTexture, Uint8Array>();
     protected _useRGBACovariants = false;
     protected _useSog = false;
     protected _sogParams: Nullable<ISogPackInternal> = null;
@@ -3140,6 +3151,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._shTextures = null;
         this._cachedBoundingMin = null;
         this._cachedBoundingMax = null;
+        this._nativeTextureData = new WeakMap();
         // Note: _splatsData and _shData are intentionally kept alive after dispose.
         // They can still be used as runtime source buffers by a compound mesh that retained
         // this mesh's data before disposal.
@@ -3571,8 +3583,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         const textureSize = this._getTextureSize(this._vertexCount);
         // Update the textures
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
-            return new RawTexture(
-                data,
+            const engine = this._getTextureDataUpdateEngine();
+            const texture = new RawTexture(
+                engine._gl || engine.isWebGPU ? data : null,
                 width,
                 height,
                 format,
@@ -3583,11 +3596,16 @@ export class GaussianSplattingMeshBase extends Mesh {
                 Constants.TEXTURETYPE_FLOAT,
                 Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
             );
+            if (!engine._gl && !engine.isWebGPU) {
+                this._updateTextureFromData(texture, data, width, 0, height);
+            }
+            return texture;
         };
 
         const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
-            return new RawTexture(
-                data,
+            const engine = this._getTextureDataUpdateEngine();
+            const texture = new RawTexture(
+                engine._gl || engine.isWebGPU ? data : null,
                 width,
                 height,
                 format,
@@ -3598,6 +3616,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                 Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
             );
+            if (!engine._gl && !engine.isWebGPU) {
+                this._updateTextureFromData(texture, data, width, 0, height);
+            }
+            return texture;
         };
 
         const createEmptyTextureU32 = (width: number, height: number, format: number) => {
@@ -3616,8 +3638,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         };
 
         const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
-            return new RawTexture(
-                data,
+            const engine = this._getTextureDataUpdateEngine();
+            const texture = new RawTexture(
+                engine._gl || engine.isWebGPU ? data : null,
                 width,
                 height,
                 format,
@@ -3628,6 +3651,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                 Constants.TEXTURETYPE_HALF_FLOAT,
                 Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
             );
+            if (!engine._gl && !engine.isWebGPU) {
+                this._updateTextureFromData(texture, data, width, 0, height);
+            }
+            return texture;
         };
 
         const firstTime = this._covariancesATexture === null;
@@ -4015,6 +4042,10 @@ export class GaussianSplattingMeshBase extends Mesh {
         // Upload only the written texels, one contiguous per-row run at a time (rectangular sub-uploads never
         // clobber texels outside [globalOffset, end), so neighboring parts on a shared boundary row are safe).
         const positions = this._splatPositions;
+        const covAUpdates: ITextureDataRect[] = [];
+        const covBUpdates: ITextureDataRect[] = [];
+        const centerUpdates: ITextureDataRect[] = [];
+        const colorUpdates: ITextureDataRect[] = [];
         let gi = globalOffset;
         while (gi < end) {
             const row = Math.floor(gi / width);
@@ -4023,12 +4054,22 @@ export class GaussianSplattingMeshBase extends Mesh {
             const runLen = runEnd - gi;
             // covA/covB/colorArray are count-sized (0-based), so rebase by globalOffset; positions stays global.
             const li = gi - globalOffset;
-            this._updateTextureFromDataRect(this._covariancesATexture!, new Uint16Array(covA.buffer, li * 4 * 2, runLen * 4), col, row, runLen, 1);
-            this._updateTextureFromDataRect(this._covariancesBTexture!, new Uint16Array(covB.buffer, li * covBSItemSize * 2, runLen * covBSItemSize), col, row, runLen, 1);
-            this._updateTextureFromDataRect(this._centersTexture!, new Float32Array(positions.buffer, gi * 4 * 4, runLen * 4), col, row, runLen, 1);
-            this._updateTextureFromDataRect(this._colorsTexture!, new Uint8Array(colorArray.buffer, li * 4, runLen * 4), col, row, runLen, 1);
+            covAUpdates.push({ data: new Uint16Array(covA.buffer, li * 4 * 2, runLen * 4), xOffset: col, yOffset: row, width: runLen, height: 1 });
+            covBUpdates.push({
+                data: new Uint16Array(covB.buffer, li * covBSItemSize * 2, runLen * covBSItemSize),
+                xOffset: col,
+                yOffset: row,
+                width: runLen,
+                height: 1,
+            });
+            centerUpdates.push({ data: new Float32Array(positions.buffer, gi * 4 * 4, runLen * 4), xOffset: col, yOffset: row, width: runLen, height: 1 });
+            colorUpdates.push({ data: new Uint8Array(colorArray.buffer, li * 4, runLen * 4), xOffset: col, yOffset: row, width: runLen, height: 1 });
             gi = runEnd;
         }
+        this._updateTextureDataRects(this._covariancesATexture!, covAUpdates);
+        this._updateTextureDataRects(this._covariancesBTexture!, covBUpdates);
+        this._updateTextureDataRects(this._centersTexture!, centerUpdates);
+        this._updateTextureDataRects(this._colorsTexture!, colorUpdates);
 
         this._postWorkerPositionsRange(globalOffset, count);
     }
@@ -4303,20 +4344,61 @@ export class GaussianSplattingMeshBase extends Mesh {
         this.forcedInstanceCount = Math.max(paddedVertexCount >> 4, 1);
     }
 
-    protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
-        const engine = this._getTextureDataUpdateEngine();
-        const internalTexture = texture.getInternalTexture()!;
-        // NativeEngine and NullEngine support complete raw uploads, but not sub-texture uploads.
-        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
-            engine.updateRawTexture(internalTexture, data, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
+    private _updateTextureDataRects(texture: BaseTexture, updates: readonly ITextureDataRect[]): void {
+        if (updates.length === 0) {
             return;
         }
-        engine.updateTextureData(internalTexture, data, 0, lineStart, width, lineCount, 0, 0, false);
+        const engine = this._getTextureDataUpdateEngine();
+        const internalTexture = texture.getInternalTexture()!;
+        if (engine._gl || engine.isWebGPU || internalTexture.source !== InternalTextureSource.Raw) {
+            for (const update of updates) {
+                engine.updateTextureData(internalTexture, update.data, update.xOffset, update.yOffset, update.width, update.height, 0, 0, false);
+            }
+            return;
+        }
+
+        // Native raw uploads are staged between views, whereas updateTextureData is applied before the frame's
+        // draws. Patch every rectangle into the CPU image first, then stage one complete upload for this batch.
+        const firstUpdate = updates[0];
+        const bytesPerTexel = firstUpdate.data.byteLength / (firstUpdate.width * firstUpdate.height);
+        const requiredByteLength = internalTexture.width * internalTexture.height * bytesPerTexel;
+        if (!Number.isInteger(bytesPerTexel) || !Number.isInteger(requiredByteLength)) {
+            throw new Error("Gaussian splatting texture update data does not contain a whole number of texels.");
+        }
+        let textureData = this._nativeTextureData.get(internalTexture);
+        if (!textureData || textureData.byteLength !== requiredByteLength) {
+            textureData = new Uint8Array(requiredByteLength);
+            this._nativeTextureData.set(internalTexture, textureData);
+        }
+        for (const update of updates) {
+            const source = new Uint8Array(update.data.buffer, update.data.byteOffset, update.data.byteLength);
+            const rowByteLength = update.width * bytesPerTexel;
+            if (source.byteLength !== rowByteLength * update.height) {
+                throw new Error("Gaussian splatting texture update rectangles must use the same texel size.");
+            }
+            for (let row = 0; row < update.height; row++) {
+                const sourceOffset = row * rowByteLength;
+                const destinationOffset = ((update.yOffset + row) * internalTexture.width + update.xOffset) * bytesPerTexel;
+                textureData.set(source.subarray(sourceOffset, sourceOffset + rowByteLength), destinationOffset);
+            }
+        }
+        engine.updateRawTexture(
+            internalTexture,
+            textureData,
+            internalTexture.format,
+            internalTexture.invertY,
+            internalTexture._compression,
+            internalTexture.type,
+            internalTexture._useSRGBBuffer
+        );
+    }
+
+    protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
+        this._updateTextureDataRects(texture, [{ data, xOffset: 0, yOffset: lineStart, width, height: lineCount }]);
     };
 
     protected _updateTextureFromDataRect = (texture: BaseTexture, data: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number) => {
-        const engine = this._getTextureDataUpdateEngine();
-        engine.updateTextureData(texture.getInternalTexture()!, data, xOffset, yOffset, width, height, 0, 0, false);
+        this._updateTextureDataRects(texture, [{ data, xOffset, yOffset, width, height }]);
     };
 
     /**
@@ -4335,8 +4417,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _updateShTextureData(texture: BaseTexture, shData: Uint8Array, textureWidth: number, lineStart: number, lineCount: number): void {
         const engine = this._getTextureDataUpdateEngine();
 
-        // NativeEngine/NullEngine: upload complete textures as raw data. Partial (incremental) updates must only
-        // write their own rows, so they go through updateTextureData below like on the other engines.
+        // NativeEngine/NullEngine: upload complete textures as one padded image. Partial (incremental) updates must only
+        // write their own rows, so they go through the row uploads below like on the other engines.
         const internalTexture = texture.getInternalTexture()!;
         if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
             const expectedByteLength = textureWidth * internalTexture.height * 16;
@@ -4348,7 +4430,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 padded.set(shData.subarray(0, Math.min(shData.byteLength, expectedByteLength)));
                 uploadData = new Uint32Array(padded.buffer);
             }
-            engine.updateRawTexture(internalTexture, uploadData, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
+            this._updateTextureFromData(texture, uploadData, textureWidth, 0, internalTexture.height);
             return;
         }
 
@@ -4377,17 +4459,31 @@ export class GaussianSplattingMeshBase extends Mesh {
             return aligned;
         };
 
+        const updates: ITextureDataRect[] = [];
         const fullRowCount = Math.floor(texelCount / textureWidth);
         if (fullRowCount > 0) {
             const fullRowTexelCount = fullRowCount * textureWidth;
-            this._updateTextureFromData(texture, createView(startTexel * bytesPerTexel, fullRowTexelCount), textureWidth, lineStart, fullRowCount);
+            updates.push({
+                data: createView(startTexel * bytesPerTexel, fullRowTexelCount),
+                xOffset: 0,
+                yOffset: lineStart,
+                width: textureWidth,
+                height: fullRowCount,
+            });
             texelCount -= fullRowTexelCount;
         }
 
         if (texelCount > 0) {
             const partialRowOffset = (startTexel + fullRowCount * textureWidth) * bytesPerTexel;
-            this._updateTextureFromDataRect(texture, createView(partialRowOffset, texelCount), 0, lineStart + fullRowCount, texelCount, 1);
+            updates.push({
+                data: createView(partialRowOffset, texelCount),
+                xOffset: 0,
+                yOffset: lineStart + fullRowCount,
+                width: texelCount,
+                height: 1,
+            });
         }
+        this._updateTextureDataRects(texture, updates);
     }
 
     protected _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
