@@ -180,6 +180,64 @@ describe("WebGPU draw submission", () => {
         expect(engine).toHaveProperty("_renderPassCommandBatching", null);
     });
 
+    it("never puts a draw that waits for its pipeline in a native batch, and submits it once when its pipeline is ready", () => {
+        const { engine, state, renderPass, pipeline } = createEngine();
+        const tryGetRenderPipeline = vi.fn((): object | null => null);
+        Object.assign(state._cacheRenderPipeline, { tryGetRenderPipeline });
+        const owner = { _pipelinePendingFrameId: -1, _pipelineDrawnFrameId: -1 };
+        Object.assign(engine, { asynchronousPipelineCreation: true, _drawsMayWait: true, _pipelineWaitOwner: owner, _lastPipelineWaitFrameId: -1, _frameId: 10 });
+        engine.renderPassCommandRecorderProvider = createProvider();
+        const frame = (frameId: number) => {
+            Object.assign(engine, { _frameId: frameId });
+            engine.drawElementsType(0, 0, 3);
+            engine._flushRenderPassCommands();
+        };
+
+        frame(10); // the pipeline is being created: nothing is batched or drawn
+        expect(state._reportDrawCall).not.toHaveBeenCalled();
+        expect(renderPass._recordCommands).not.toHaveBeenCalled();
+
+        tryGetRenderPipeline.mockReturnValue(pipeline);
+        frame(11); // ready, and held back one frame so that all the passes of the mesh show it together
+        expect(renderPass._recordCommands).not.toHaveBeenCalled();
+
+        frame(12);
+        expect(renderPass._recordCommands).toHaveBeenCalledExactlyOnceWith(expect.any(Uint32Array), 1, 0, 0, expect.any(Number));
+        expect(state._reportDrawCall).toHaveBeenCalledOnce();
+        expect(renderPass.drawIndexed).not.toHaveBeenCalled();
+    });
+
+    it("replays once a draw that waited for its pipeline when the host rejects its batch, and reports it once", () => {
+        const { engine, state, renderPass, pipeline } = createEngine();
+        const tryGetRenderPipeline = vi.fn((): object | null => null);
+        Object.assign(state._cacheRenderPipeline, { tryGetRenderPipeline });
+        const owner = { _pipelinePendingFrameId: -1, _pipelineDrawnFrameId: -1 };
+        Object.assign(engine, { asynchronousPipelineCreation: true, _drawsMayWait: true, _pipelineWaitOwner: owner, _lastPipelineWaitFrameId: -1, _frameId: 10 });
+        engine.renderPassCommandRecorderProvider = createProvider();
+        const frame = (frameId: number) => {
+            Object.assign(engine, { _frameId: frameId });
+            engine.drawElementsType(0, 0, 3);
+            engine._flushRenderPassCommands();
+        };
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+        try {
+            frame(10); // the pipeline is being created
+            tryGetRenderPipeline.mockReturnValue(pipeline);
+            frame(11); // ready, and held back one frame for the other passes of the mesh
+            expect(renderPass._recordCommands).not.toHaveBeenCalled();
+            expect(renderPass.drawIndexed).not.toHaveBeenCalled();
+
+            renderPass._recordCommands.mockReturnValueOnce(false);
+            frame(12);
+            expect(renderPass._recordCommands).toHaveBeenCalledOnce();
+            expect(renderPass.drawIndexed).toHaveBeenCalledExactlyOnceWith(3, 1, 0, 0, 0);
+            expect(state._reportDrawCall).toHaveBeenCalledOnce();
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
     // SubMesh.setIndirectDrawBuffer: the application's buffer of GPU-written arguments goes at its byte offset on every path of a draw
     describe.each([true, false])("an application's indirect buffer at a byte offset, with indexed=%s", (indexed) => {
         const setUp = () => {

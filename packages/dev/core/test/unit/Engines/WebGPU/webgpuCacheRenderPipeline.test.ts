@@ -6,6 +6,8 @@ import { type VertexBuffer } from "core/Buffers/buffer";
 import { type WebGPUPipelineContext } from "core/Engines/WebGPU/webgpuPipelineContext";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "core/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure";
+import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
+import { Logger } from "core/Misc/logger";
 
 // Minimal mock types for the pipeline cache tests
 function createMockDevice(): GPUDevice {
@@ -345,6 +347,170 @@ describe("WebGPUCacheRenderPipeline", () => {
             cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect3, 1, 0);
 
             expect(device.createRenderPipeline).not.toHaveBeenCalled();
+        });
+
+        it("should create a pipeline configuration once while it is pending", async () => {
+            const p1 = cache.preWarmPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+            const p2 = cache.preWarmPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(p2).toBe(p1);
+            expect(device.createRenderPipelineAsync).toHaveBeenCalledTimes(1);
+            expect(WebGPUCacheRenderPipelineTree.NumPendingPipelines).toBe(1);
+
+            await p1;
+            expect(WebGPUCacheRenderPipelineTree.NumPendingPipelines).toBe(0);
+        });
+    });
+
+    describe("tryGetRenderPipeline", () => {
+        it("should return null while the pipeline is created asynchronously, then the cached pipeline", async () => {
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            expect(device.createRenderPipelineAsync).toHaveBeenCalledTimes(1);
+
+            const pipeline = await cache.lastPendingPipeline!;
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBe(pipeline);
+            expect(device.createRenderPipeline).not.toHaveBeenCalled();
+        });
+
+        it("should share the creation started by preWarmPipeline", () => {
+            const prewarm = cache.preWarmPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            expect(cache.lastPendingPipeline).toBe(prewarm);
+            expect(device.createRenderPipelineAsync).toHaveBeenCalledTimes(1);
+        });
+
+        it("should report a failed creation and create the pipeline synchronously at the next miss", async () => {
+            vi.mocked(device.createRenderPipelineAsync).mockImplementationOnce(() => Promise.reject(new Error("invalid pipeline")));
+            const error = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            await expect(cache.lastPendingPipeline!).rejects.toThrow("invalid pipeline");
+            expect(error).toHaveBeenCalledTimes(1);
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).not.toBeNull();
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(1);
+            error.mockRestore();
+        });
+
+        it("should create the pipeline synchronously when the cache is disabled", () => {
+            cache.disabled = true;
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).not.toBeNull();
+            expect(device.createRenderPipelineAsync).not.toHaveBeenCalled();
+        });
+
+        it("should forget a pending creation when the cache is reset (a device change), and ignore it when it completes", async () => {
+            let resolve!: (pipeline: GPURenderPipeline) => void;
+            vi.mocked(device.createRenderPipelineAsync).mockImplementationOnce(() => new Promise((r) => (resolve = r)));
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            const late = cache.lastPendingPipeline!;
+            WebGPUCacheRenderPipelineTree.ResetCache();
+            expect(WebGPUCacheRenderPipelineTree.NumPendingPipelines).toBe(0);
+
+            const misses = WebGPUCacheRenderPipelineTree.NumCacheMiss;
+            resolve({ label: "from the previous device" } as unknown as GPURenderPipeline);
+            await late;
+            expect(WebGPUCacheRenderPipelineTree.NumCacheMiss).toBe(misses);
+        });
+
+        it("should neither report nor mark as failed a creation that fails after the cache was reset", async () => {
+            let reject!: (error: Error) => void;
+            vi.mocked(device.createRenderPipelineAsync).mockImplementationOnce(() => new Promise((_, r) => (reject = r)));
+            const error = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            const late = cache.lastPendingPipeline!;
+            WebGPUCacheRenderPipelineTree.ResetCache();
+            reject(new Error("device lost"));
+            await expect(late).rejects.toThrow("device lost");
+            expect(error).not.toHaveBeenCalled();
+
+            // the next miss is created asynchronously again, not synchronously as after a failure
+            expect(cache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0)).toBeNull();
+            expect(device.createRenderPipeline).not.toHaveBeenCalled();
+            error.mockRestore();
+        });
+    });
+
+    describe("the creations an engine waits for", () => {
+        // a WebGPU engine that opts in to asynchronous pipeline creation, with its own cache (one per engine, on its own device), and
+        // what it resets when its device is lost
+        const newEngine = (engineCache: WebGPUCacheRenderPipelineTree) =>
+            Object.assign(Object.create(WebGPUEngine.prototype), {
+                asynchronousPipelineCreation: true,
+                _cacheRenderPipeline: engineCache,
+                _snapshotPendingPipelines: new Set(),
+                _pendingPipelinesGeneration: 0,
+            }) as WebGPUEngine;
+        const newCache = () => {
+            const engineCache = new WebGPUCacheRenderPipelineTree(createMockDevice(), createMockVertexBuffer());
+            engineCache.reset();
+            return engineCache;
+        };
+        // the next asynchronous creation on the cache's device completes when the test says so
+        const nextCreation = (engineCache: WebGPUCacheRenderPipelineTree) => {
+            let resolve!: (pipeline: GPURenderPipeline) => void;
+            vi.mocked(engineCache["_device"].createRenderPipelineAsync).mockImplementationOnce(() => new Promise((r) => (resolve = r)));
+            return async () => {
+                resolve({ label: "created" } as unknown as GPURenderPipeline);
+                await new Promise((r) => setTimeout(r, 0));
+            };
+        };
+        const draw = (engineCache: WebGPUCacheRenderPipelineTree) => engineCache.tryGetRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+        it("keeps an engine ready while another engine creates a pipeline it does not draw", async () => {
+            const other = newCache();
+            const engines = [newEngine(cache), newEngine(other)];
+            const complete = nextCreation(cache);
+
+            // a draw of the first engine waits for its pipeline
+            expect(draw(cache)).toBeNull();
+            expect(engines.map((engine) => engine.areAllEffectsReady())).toEqual([false, true]);
+            // the creations of all the engines, for diagnostics
+            expect(WebGPUCacheRenderPipelineTree.NumPendingPipelines).toBe(1);
+
+            await complete();
+            expect(engines.map((engine) => engine.areAllEffectsReady())).toEqual([true, true]);
+            expect(WebGPUCacheRenderPipelineTree.NumPendingPipelines).toBe(0);
+        });
+
+        it("makes an engine wait for a pipeline another engine is creating once it draws it too", async () => {
+            const other = newCache();
+            const engines = [newEngine(cache), newEngine(other)];
+            const complete = nextCreation(cache);
+
+            expect(draw(cache)).toBeNull();
+            // the second engine draws the same pipeline configuration: it shares the creation, and waits for it
+            expect(draw(other)).toBeNull();
+            expect(other.lastPendingPipeline).toBe(cache.lastPendingPipeline);
+            expect(engines.map((engine) => engine.areAllEffectsReady())).toEqual([false, false]);
+
+            await complete();
+            expect(engines.map((engine) => engine.areAllEffectsReady())).toEqual([true, true]);
+        });
+
+        it("forgets the creations an engine waits for when its device is lost, and a creation that completes after it", async () => {
+            const engine = newEngine(cache);
+            const complete = nextCreation(cache);
+            expect(draw(cache)).toBeNull();
+            expect(engine.areAllEffectsReady()).toBe(false);
+
+            // what the engine resets when its device is lost (WebGPUEngine._restoreEngineAfterContextLost)
+            WebGPUCacheRenderPipelineTree.ResetCache();
+            (engine as unknown as { _forgetPendingPipelines: () => void })._forgetPendingPipelines();
+            expect(engine.areAllEffectsReady()).toBe(true);
+
+            // a draw waits again, for a new creation: the late completion of the forgotten one does not end it
+            const completeAgain = nextCreation(cache);
+            expect(draw(cache)).toBeNull();
+            await complete();
+            expect(engine.areAllEffectsReady()).toBe(false);
+            await completeAgain();
+            expect(engine.areAllEffectsReady()).toBe(true);
         });
     });
 });

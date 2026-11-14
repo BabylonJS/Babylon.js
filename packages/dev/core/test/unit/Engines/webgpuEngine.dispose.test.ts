@@ -73,6 +73,16 @@ describe("WebGPUEngine.dispose", () => {
         expect(resetBindGroups).toHaveBeenCalledOnce();
     });
 
+    it("forgets the pipeline creations the engine waits for, which another WebGPU engine does not wait for", () => {
+        const pipelines = { _forgetAwaitedPipelines: vi.fn() };
+        const engine = Object.assign(CreateWebGPULikeEngine(), { _cacheRenderPipeline: pipelines });
+        CreateWebGPULikeEngine();
+
+        DisposeAsWebGPUEngine(engine);
+
+        expect(pipelines._forgetAwaitedPipelines).toHaveBeenCalledOnce();
+    });
+
     it.each([
         ["initialization never ran", false, false],
         ["only the device was acquired", true, false],

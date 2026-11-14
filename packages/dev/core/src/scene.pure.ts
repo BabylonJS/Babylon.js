@@ -5668,8 +5668,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        // Render the graph
-        this.frameGraph?.execute();
+        // Render the graph: its passes are rendered again in the next frames, so their mesh draws may wait for their pipelines (but for
+        // those rendered once: an object renderer with REFRESHRATE_RENDER_ONCE, the voxelization of IBL shadows)
+        const drawsMayWait = this._engine._drawsMayWait;
+        this._engine._drawsMayWait = this._engine._renderingOnce === 0;
+        try {
+            this.frameGraph?.execute();
+        } finally {
+            this._engine._drawsMayWait = drawsMayWait;
+        }
     }
 
     /**
@@ -5692,7 +5699,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // Camera
             this.updateTransformMatrix();
 
-            renderTarget.render(useCameraPostProcess, dumpForDebug);
+            // rendered by the scene's frame: its mesh draws may wait for their pipelines, unless it renders once (ObjectRenderer.render)
+            const drawsMayWait = this._engine._drawsMayWait;
+            this._engine._drawsMayWait = this._engine._renderingOnce === 0;
+            try {
+                renderTarget.render(useCameraPostProcess, dumpForDebug);
+            } finally {
+                this._engine._drawsMayWait = drawsMayWait;
+            }
         }
         this._intermediateRendering = false;
     }
@@ -5835,17 +5849,24 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 step.action(this._renderTargets);
             }
 
-            // Multi-cameras?
-            if (this.activeCameras && this.activeCameras.length > 0) {
-                for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                    this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
-                }
-            } else {
-                if (!this.activeCamera) {
-                    throw new Error("No camera defined");
-                }
+            // Multi-cameras? The cameras are rendered again in the next frames: their mesh draws may wait for their pipelines, unless this
+            // frame is rendered once (a screenshot)
+            const drawsMayWait = this._engine._drawsMayWait;
+            this._engine._drawsMayWait = this._engine._renderingOnce === 0;
+            try {
+                if (this.activeCameras && this.activeCameras.length > 0) {
+                    for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                        this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
+                    }
+                } else {
+                    if (!this.activeCamera) {
+                        throw new Error("No camera defined");
+                    }
 
-                this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+                    this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+                }
+            } finally {
+                this._engine._drawsMayWait = drawsMayWait;
             }
         }
 

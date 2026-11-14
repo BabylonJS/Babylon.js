@@ -6070,6 +6070,37 @@
             "dependsOn": ["Materials", "Meshes", "Textures"]
         },
         {
+            "title": "WebGPU asynchronous pipeline creation - every mesh in all its passes",
+            "playgroundId": "#XX5SUM#1",
+            "referenceImage": "webgpu-asynchronous-pipeline-creation.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
+        },
+        {
+            "title": "WebGPU asynchronous pipeline creation - every mesh in all its passes - non-compatibility mode",
+            "playgroundId": "#XX5SUM#1",
+            "referenceImage": "webgpu-asynchronous-pipeline-creation.png",
+            "replace": "const compatibilityMode = true;, const compatibilityMode = false;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
+        },
+        {
+            "title": "WebGPU asynchronous pipeline creation - every mesh in all its passes - snapshot rendering",
+            "playgroundId": "#XX5SUM#1",
+            "referenceImage": "webgpu-asynchronous-pipeline-creation.png",
+            "replace": "const snapshotRendering = false;, const snapshotRendering = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
+        },
+        {
+            "title": "WebGPU asynchronous pipeline creation - every mesh in all its passes - synchronous creation",
+            "playgroundId": "#XX5SUM#1",
+            "referenceImage": "webgpu-asynchronous-pipeline-creation.png",
+            "replace": "const asynchronousPipelineCreation = true;, const asynchronousPipelineCreation = false;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
+        },
+        {
             "title": "SubMesh indirect draw buffer - GPU-written arguments per pass",
             "playgroundId": "#1GU3CM#2",
             "referenceImage": "submesh-indirect-draw-buffer.png",
