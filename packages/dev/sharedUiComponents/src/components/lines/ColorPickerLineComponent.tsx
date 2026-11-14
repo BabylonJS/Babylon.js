@@ -25,10 +25,12 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerLineCo
     private _floatRef: React.RefObject<HTMLDivElement>;
     private _floatHostRef: React.RefObject<HTMLDivElement>;
     private _coverRef: React.RefObject<HTMLDivElement>;
+    private _latestColor: Color3 | Color4;
 
     constructor(props: IColorPickerLineComponentProps) {
         super(props);
 
+        this._latestColor = props.value;
         this.state = { pickerEnabled: false, color: this.props.value, hex: this.getHexString(props) };
 
         this._floatRef = React.createRef();
@@ -60,12 +62,13 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerLineCo
     }
 
     override shouldComponentUpdate(nextProps: IColorPickerLineComponentProps, nextState: IColorPickerComponentState) {
-        // Compare the components rather than the hex strings: toHexString clamps to [0, 1], so two
-        // different HDR colors can share a hex string and the cached picker color would go stale.
         const diffProps = !this._areSameColor(nextProps.value, this.props.value);
 
         if (diffProps) {
-            nextState.color = nextProps.value;
+            // Cache the latest prop color for when the picker next opens. Don't sync nextState.color
+            // here: passing a new color to an already-open ColorPicker can trigger onColorChanged from
+            // a prop-driven update rather than user interaction.
+            this._latestColor = nextProps.value;
             nextState.hex = this.getHexString(nextProps);
         }
 
@@ -92,7 +95,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerLineCo
         return (
             <div className={style.colorPicker}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
-                <div className={style.colorRectBackground} ref={this._floatHostRef} onClick={() => this.setState({ pickerEnabled: true })}>
+                <div className={style.colorRectBackground} ref={this._floatHostRef} onClick={() => this.setState({ pickerEnabled: true, color: this._latestColor })}>
                     <div className={style.colorRect} style={{ background: this.state.hex }}></div>
                 </div>
                 {this.state.pickerEnabled && (

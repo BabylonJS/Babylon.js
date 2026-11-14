@@ -42,12 +42,12 @@ describe.each([
         pickerColors.length = 0;
     });
 
-    function Render(value: Color3 | Color4) {
+    function Render(value: Color3 | Color4, onColorChanged: (hex: string) => void = () => {}) {
         const container = document.createElement("div");
         document.body.appendChild(container);
         const root = createRoot(container);
         roots.push(root);
-        const render = (nextValue: Color3 | Color4) => act(() => root.render(<LineComponent value={nextValue} onColorChanged={() => {}} />));
+        const render = (nextValue: Color3 | Color4) => act(() => root.render(<LineComponent value={nextValue} onColorChanged={onColorChanged} />));
         render(value);
         return { container, render };
     }
@@ -65,5 +65,22 @@ describe.each([
         act(() => swatch.click());
 
         expect(pickerColors.at(-1)).toBe(second);
+    });
+
+    it.each([
+        ["Color3", new Color3(2, 0.5, 0.25), new Color3(3, 0.5, 0.25)],
+        ["Color4", new Color4(0.5, 0.5, 0.25, 2), new Color4(0.5, 0.5, 0.25, 3)],
+    ])("does not emit onColorChanged when %s prop changes while picker is open", (_, first, second) => {
+        expect(first.toHexString()).toBe(second.toHexString());
+
+        const onColorChanged = vi.fn();
+        const { container, render } = Render(first, onColorChanged);
+
+        const swatch = container.firstElementChild!.firstElementChild as HTMLElement;
+        act(() => swatch.click());
+
+        render(second);
+
+        expect(onColorChanged).not.toHaveBeenCalled();
     });
 });
