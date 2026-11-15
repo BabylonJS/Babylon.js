@@ -183,4 +183,34 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
         expect(usda).toContain(`float4 inputs:bias = (${xyBias}, ${xyBias}, -1, 0)`);
         expect(usda).toContain('token inputs:sourceColorSpace = "raw"');
     });
+
+    it("does not emit duplicate inputs:opacity when diffuse texture uses alpha blending", async () => {
+        const box = CreateBox("box", { size: 1 }, scene);
+        const material = new PBRMaterial("mat", scene);
+        const texture = new Texture("albedo.png", scene);
+        const internal = texture.getInternalTexture()!;
+        internal.invertY = false;
+        internal._buffer = OnePixelRedPng;
+        (texture as any)._mimeType = "image/png";
+        material.albedoTexture = texture;
+        material.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
+        box.material = material;
+
+        await USDZExportAsync(scene, {});
+        const usda = new TextDecoder().decode(unwrapFileBytes(captured.value!["model.usda"]));
+        const opacityMatches = usda.match(/inputs:opacity/g) || [];
+        expect(opacityMatches).toHaveLength(1);
+        expect(usda).toContain("float inputs:opacity.connect");
+    });
+
+    it("emits scalar inputs:opacity when material is semi-transparent without texture alpha", async () => {
+        const box = CreateBox("box", { size: 1 }, scene);
+        const material = new PBRMaterial("mat", scene);
+        material.alpha = 0.6;
+        box.material = material;
+
+        await USDZExportAsync(scene, {});
+        const usda = new TextDecoder().decode(unwrapFileBytes(captured.value!["model.usda"]));
+        expect(usda).toContain("float inputs:opacity = 0.6");
+    });
 });
