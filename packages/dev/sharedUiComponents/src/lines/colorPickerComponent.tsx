@@ -68,7 +68,10 @@ export class ColorPickerLine extends React.Component<IColorPickerLineProps, ICol
             nextState.hex = this.getHexString(nextProps);
         }
 
-        return diffProps || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
+        // Only rerender when what is displayed changes. A raw value change that keeps the same hex
+        // (HDR components clamp to the same string) must not rerender an open picker, because the
+        // picker's componentDidUpdate reports its current color back through onColorChanged.
+        return nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
     }
 
     private _areSameColor(a: Color3 | Color4, b: Color3 | Color4) {
