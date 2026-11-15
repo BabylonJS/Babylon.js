@@ -160,4 +160,22 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
             loadFileSpy.mockRestore();
         }
     });
+
+    it("exports normal map shader with scale and bias for [-1, 1] range decoding", async () => {
+        const box = CreateBox("box", { size: 1 }, scene);
+        const material = new PBRMaterial("mat", scene);
+        const normalTex = new Texture("normal.png", scene);
+        const internal = normalTex.getInternalTexture()!;
+        internal.invertY = false;
+        internal._buffer = OnePixelRedPng;
+        (normalTex as any)._mimeType = "image/png";
+        material.bumpTexture = normalTex;
+        box.material = material;
+
+        await USDZExportAsync(scene, {});
+        const usda = new TextDecoder().decode(unwrapFileBytes(captured.value!["model.usda"]));
+        expect(usda).toContain("Texture_" + normalTex.uniqueId + "_normal");
+        expect(usda).toContain("float4 inputs:scale = (2, 2, 2, 1)");
+        expect(usda).toContain("float4 inputs:bias = (-1, -1, -1, 0)");
+    });
 });
