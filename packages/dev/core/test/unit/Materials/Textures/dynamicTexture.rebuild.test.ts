@@ -52,7 +52,7 @@ describe("DynamicTexture._rebuild", () => {
     it("keeps invertY = true when the last update used it", () => {
         const upload = recordUploads();
         const texture = new DynamicTexture("tex", 16, scene);
-        texture.update(true);
+        texture.update(true, false);
         upload.mockClear();
 
         texture._rebuild();
@@ -62,14 +62,14 @@ describe("DynamicTexture._rebuild", () => {
         expect(upload.mock.calls[0][3]).toBe(false);
     });
 
-    it("uses the update defaults when the texture was never updated", () => {
-        const upload = recordUploads();
+    it("calls update() with no arguments when the texture was never updated", () => {
+        recordUploads();
         const texture = new DynamicTexture("tex", 16, scene);
+        const update = vi.spyOn(texture, "update");
 
         texture._rebuild();
 
-        expect(upload).toHaveBeenCalledTimes(1);
-        expect(upload.mock.calls[0][2]).toBe(true);
-        expect(upload.mock.calls[0][3]).toBe(false);
+        expect(update).toHaveBeenCalledTimes(1);
+        expect(update.mock.calls[0]).toEqual([]);
     });
 });
