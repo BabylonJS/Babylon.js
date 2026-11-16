@@ -221,6 +221,58 @@ test("keeps a Native variant's Playground ID and reference while applying compat
     assert.deepEqual(readFileSync(join(playground, "ReferenceImages", "particles.png")), nativePng);
 });
 
+for (const [description, oldSource, nativeSource, newSource] of [
+    ["Playground-to-scene", { playgroundId: "#A#1" }, { playgroundId: "#B#1" }, { sceneFolder: "scenes/", sceneFilename: "web.babylon" }],
+    [
+        "scene-to-script",
+        { sceneFolder: "web/", sceneFilename: "web.babylon" },
+        { sceneFolder: "native/", sceneFilename: "native.babylon" },
+        { scriptToRun: "web.js", functionToCall: "createScene" },
+    ],
+    ["script-to-Playground", { scriptToRun: "web.js", functionToCall: "createScene" }, { scriptToRun: "native.js", functionToCall: "createScene" }, { playgroundId: "#A#1" }],
+    [
+        "scene folder",
+        { sceneFolder: "shared/", sceneFilename: "web.babylon" },
+        { sceneFolder: "shared/", sceneFilename: "native.babylon" },
+        { sceneFolder: "updated/", sceneFilename: "web.babylon" },
+    ],
+]) {
+    test(`keeps the Native variant source selector for a ${description} change`, (t) => {
+        const before = [{ title: "Test", ...oldSource, referenceImage: "test.png", renderCount: 1 }];
+        const after = [{ title: "Test", ...newSource, referenceImage: "test.png", renderCount: 2 }];
+        const native = [{ title: "Test", ...nativeSource, referenceImage: "test.png", renderCount: 1 }];
+        const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
+        const result = run(repo, playground);
+        assert.equal(result.status, 0, result.stderr);
+        assert.deepEqual(nativeTests(playground), [{ ...native[0], renderCount: 2 }]);
+    });
+}
+
+test("updates the source selector when Native matches the web test", (t) => {
+    const before = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
+    const after = [{ title: "Test", sceneFolder: "scenes/", sceneFilename: "web.babylon", referenceImage: "test.png" }];
+    const { repo, playground } = fixture(t, before, after, before, { "test.png": "old" }, {});
+    const result = run(repo, playground);
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(nativeTests(playground), after);
+});
+
+test("keeps a variant's shared reference when the web image changes", (t) => {
+    const before = [
+        { title: "Variant", playgroundId: "#A#1", referenceImage: "shared.png" },
+        { title: "Matching", playgroundId: "#C#1", referenceImage: "shared.png" },
+    ];
+    const native = [{ ...before[0], playgroundId: "#B#1" }, before[1]];
+    const { repo, playground } = fixture(t, before, before, native, { "shared.png": oldPng }, { "shared.png": changedPng });
+    const result = run(repo, playground);
+    assert.equal(result.status, 0, result.stderr);
+    const [variant, matching] = nativeTests(playground);
+    assert.equal(variant.referenceImage, "shared.png");
+    assert.notEqual(matching.referenceImage, variant.referenceImage);
+    assert.deepEqual(readFileSync(join(playground, "ReferenceImages", variant.referenceImage)), oldPng);
+    assert.deepEqual(readFileSync(join(playground, "ReferenceImages", matching.referenceImage)), changedPng);
+});
+
 test("rejects several same-title Native entries when none matches the source", (t) => {
     const before = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
     const after = [{ ...before[0], playgroundId: "#A#2" }];

@@ -93,12 +93,9 @@ if (previous.root !== current.root) {
         console.warn("Keeping Native-specific test root");
     }
 }
+const sourceFields = ["playgroundId", "sceneFolder", "sceneFilename", "scriptToRun", "functionToCall"];
 const fields = [
-    "playgroundId",
-    "sceneFolder",
-    "sceneFilename",
-    "scriptToRun",
-    "functionToCall",
+    ...sourceFields,
     "replace",
     "replaceUrl",
     "rootPath",
@@ -218,6 +215,10 @@ for (const oldTest of previous.tests) {
         if (same(oldTest[field], newTest[field])) {
             continue;
         }
+        if (variant && sourceFields.includes(field)) {
+            console.warn(`Keeping Native-specific ${field} for "${test.title}"`);
+            continue;
+        }
         if ((field === "onlyVisual" || field === "excludeFromAutomaticTesting") && test[field]) {
             console.warn(`Keeping Native-specific ${field} for "${test.title}"`);
             continue;
@@ -238,7 +239,7 @@ for (const oldTest of previous.tests) {
         throw new Error(`Ambiguous Native test "${test.title}" with source ${updatedSource} after update`);
     }
     if (referenceChanged) {
-        if (test.referenceImage !== oldReference) {
+        if (variant || test.referenceImage !== oldReference) {
             console.warn(`Keeping Native-specific reference for "${test.title}"`);
             continue;
         }
@@ -249,10 +250,6 @@ for (const oldTest of previous.tests) {
             const hash = createHash("sha256").update(readFileSync(existingImagePath)).digest("hex");
             if (referenceOverrides[oldReference]?.sha256 === hash) {
                 console.warn(`Keeping recorded Native reference "${oldReference}"`);
-                continue;
-            }
-            if (variant) {
-                console.warn(`Keeping Native-specific reference for "${test.title}"`);
                 continue;
             }
             throw new Error(`Native reference "${oldReference}" differs from both pull-request versions`);
