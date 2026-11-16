@@ -344,6 +344,18 @@ function BuildTexture(
     offset.x += xRotationOffset * repeat.x;
     offset.y += (1 - yRotationOffset) * repeat.y;
 
+    let scaleAndBias = "";
+    if (mapType === "normal") {
+        const scale = texture.level ?? 1;
+        const bias = -scale === 0 ? 0 : -scale;
+        scaleAndBias = `
+        float4 inputs:scale = (${2 * scale}, ${2 * scale}, 2, 1)
+        float4 inputs:bias = (${bias}, ${bias}, -1, 0)`;
+    } else if (color) {
+        scaleAndBias = `
+        float4 inputs:scale = ${BuildColor4(color)}`;
+    }
+
     return `
     def Shader "PrimvarReader_${mapType}"
     {
@@ -367,9 +379,8 @@ function BuildTexture(
     {
         uniform token info:id = "UsdUVTexture"
         asset inputs:file = @textures/Texture_${id}.${ext}@
-        float2 inputs:st.connect = </Root/Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
-        ${color ? "float4 inputs:scale = " + BuildColor4(color) : ""}
-        token inputs:sourceColorSpace = "${texture.gammaSpace ? "sRGB" : "raw"}"
+        float2 inputs:st.connect = </Root/Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>${scaleAndBias}
+        token inputs:sourceColorSpace = "${mapType === "normal" ? "raw" : texture.gammaSpace ? "sRGB" : "raw"}"
         token inputs:wrapS = "${BuildWrapping(texture.wrapU)}"
         token inputs:wrapT = "${BuildWrapping(texture.wrapV)}"
         float outputs:r
