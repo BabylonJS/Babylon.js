@@ -161,10 +161,11 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
         }
     });
 
-    it("exports normal map shader with scale and bias for [-1, 1] range decoding", async () => {
+    it.each([0.5, 0])("exports normal map shader with scale and bias for [-1, 1] decoding and raw color space (level = %s)", async (level) => {
         const box = CreateBox("box", { size: 1 }, scene);
         const material = new PBRMaterial("mat", scene);
         const normalTex = new Texture("normal.png", scene);
+        normalTex.level = level;
         const internal = normalTex.getInternalTexture()!;
         internal.invertY = false;
         internal._buffer = OnePixelRedPng;
@@ -174,8 +175,12 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
 
         await USDZExportAsync(scene, {});
         const usda = new TextDecoder().decode(unwrapFileBytes(captured.value!["model.usda"]));
+        const xyScale = 2 * level;
+        const xyBias = -level === 0 ? 0 : -level;
+
         expect(usda).toContain("Texture_" + normalTex.uniqueId + "_normal");
-        expect(usda).toContain("float4 inputs:scale = (2, 2, 2, 1)");
-        expect(usda).toContain("float4 inputs:bias = (-1, -1, -1, 0)");
+        expect(usda).toContain(`float4 inputs:scale = (${xyScale}, ${xyScale}, 2, 1)`);
+        expect(usda).toContain(`float4 inputs:bias = (${xyBias}, ${xyBias}, -1, 0)`);
+        expect(usda).toContain('token inputs:sourceColorSpace = "raw"');
     });
 });
