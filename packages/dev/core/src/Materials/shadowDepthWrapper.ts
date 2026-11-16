@@ -23,6 +23,7 @@ export interface IIOptionShadowDepthMaterial {
      * So, if the variable holding the world position in your vertex shader is not named worldPos, you must tell the system
      * the name to use instead by using: ["worldPos", "myWorldPosVar"] assuming the variable is named myWorldPosVar in your code.
      * If the normal must also be remapped: ["worldPos", "myWorldPosVar", "vNormalW", "myWorldNormal"]
+     * WGSL shaders declaring a vNormalW varying default to vertexOutputs.vNormalW unless explicitly remapped.
      */
     remappedVariables?: string[];
 
@@ -269,11 +270,19 @@ export class ShadowDepthWrapper {
         }
 
         if (!this.doNotInjectCode) {
+            let normalBiasRemappedVariables = this._options?.remappedVariables;
+            if (
+                origEffect.shaderLanguage === ShaderLanguage.WGSL &&
+                /\bvarying\s+vNormalW\s*:/.test(vertexCode) &&
+                !normalBiasRemappedVariables?.some((name, index) => index % 2 === 0 && name === "vNormalW")
+            ) {
+                normalBiasRemappedVariables = [...(normalBiasRemappedVariables ?? []), "vNormalW", "vertexOutputs.vNormalW"];
+            }
+
             // Declare the shadow map includes
-            const vertexNormalBiasCode =
-                    this._options && this._options.remappedVariables
-                        ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})`
-                        : `#include<shadowMapVertexNormalBias>`,
+            const vertexNormalBiasCode = normalBiasRemappedVariables
+                    ? `#include<shadowMapVertexNormalBias>(${normalBiasRemappedVariables.join(",")})`
+                    : `#include<shadowMapVertexNormalBias>`,
                 vertexMetricCode =
                     this._options && this._options.remappedVariables
                         ? `#include<shadowMapVertexMetric>(${this._options.remappedVariables.join(",")})`
