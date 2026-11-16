@@ -1,5 +1,5 @@
 import { NullEngine } from "core/Engines/nullEngine";
-import { LoadImage } from "core/Misc/fileTools";
+import { DecodeBase64UrlToString, LoadFile, LoadImage } from "core/Misc/fileTools";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 class BitmapNullEngine extends NullEngine {
@@ -81,5 +81,22 @@ describe("LoadImage", () => {
         });
 
         engine.dispose();
+    });
+});
+
+describe("LoadFile", () => {
+    const text = '{"name":"Würfel 立方体 🎲"}';
+    const dataUrl = "data:application/json;base64," + Buffer.from(text, "utf-8").toString("base64");
+
+    it("decodes a base64 data URL as UTF-8 text", () => {
+        expect(DecodeBase64UrlToString(dataUrl)).toBe(text);
+    });
+
+    it("returns the UTF-8 text of a base64 data URL when not loading an ArrayBuffer", async () => {
+        const data = await new Promise<string | ArrayBuffer>((resolve, reject) => {
+            LoadFile(dataUrl, resolve, undefined, undefined, false, (_request, exception) => reject(exception));
+        });
+
+        expect(data).toBe(text);
     });
 });

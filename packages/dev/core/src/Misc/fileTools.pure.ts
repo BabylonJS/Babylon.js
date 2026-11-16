@@ -9,7 +9,7 @@ import { Observable } from "./observable.pure";
 import { FilesInputStore } from "./filesInputStore";
 import { RetryStrategy } from "./retryStrategy";
 import { BaseError, ErrorCodes, RuntimeError } from "./error";
-import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from "./stringTools";
+import { Decode, DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "./stringTools";
 import { EngineStore } from "../Engines/engineStore";
 import { EngineFunctionContext } from "../Engines/abstractEngine.functions";
 import { _FunctionContainer } from "../Engines/Processors/shaderProcessor";
@@ -888,7 +888,8 @@ export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
  * @internal
  */
 export const DecodeBase64UrlToString = (uri: string): string => {
-    return DecodeBase64ToString(uri.split(",")[1]);
+    // atob alone yields one character per byte, which garbles any multi-byte UTF-8 character
+    return Decode(new Uint8Array(DecodeBase64UrlToBinary(uri)));
 };
 
 /**
