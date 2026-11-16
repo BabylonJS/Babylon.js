@@ -105,6 +105,23 @@ fn main(input: VertexInputs) -> FragmentInputs {
         expect(code).not.toContain("vertexOutputs.vNormalW");
     });
 
+    it.each(["var", "let", "const", "var<function>"])("keeps a %s normal when its output varying is assigned after the bias hook", async (declaration) => {
+        const code = await createDepthEffect(`
+varying vNormalW: vec3f;
+@vertex
+fn main(input: VertexInputs) -> FragmentInputs {
+    var worldPos = vec4f(0.0, 0.0, 0.0, 1.0);
+    ${declaration} vNormalW = vec3f(0.0, 1.0, 0.0);
+#define SHADOWDEPTH_NORMALBIAS
+    vertexOutputs.vNormalW = vNormalW;
+    vertexOutputs.position = worldPos;
+}`);
+
+        expect(code).toMatch(/dot\(vNormalW,\s*worldLightDirSM\)/);
+        expect(code).toMatch(/worldPos\.xyz\s*-\s*vNormalW\s*\*\s*normalBiasSM/);
+        expect(code).not.toMatch(/dot\(vertexOutputs\.vNormalW,/);
+    });
+
     it("does not remap GLSL normals", async () => {
         const code = await createDepthEffect(
             `varying vec3 vNormalW;

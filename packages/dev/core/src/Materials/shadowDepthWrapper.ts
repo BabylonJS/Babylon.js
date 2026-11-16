@@ -23,7 +23,7 @@ export interface IIOptionShadowDepthMaterial {
      * So, if the variable holding the world position in your vertex shader is not named worldPos, you must tell the system
      * the name to use instead by using: ["worldPos", "myWorldPosVar"] assuming the variable is named myWorldPosVar in your code.
      * If the normal must also be remapped: ["worldPos", "myWorldPosVar", "vNormalW", "myWorldNormal"]
-     * WGSL shaders declaring a vNormalW varying default to vertexOutputs.vNormalW unless explicitly remapped.
+     * WGSL shaders declaring a vNormalW varying default to vertexOutputs.vNormalW unless a vNormalW variable exists or is explicitly remapped.
      */
     remappedVariables?: string[];
 
@@ -274,6 +274,7 @@ export class ShadowDepthWrapper {
             if (
                 origEffect.shaderLanguage === ShaderLanguage.WGSL &&
                 /\bvarying\s+vNormalW\s*:/.test(vertexCode) &&
+                !/\b(?:var(?:\s*<[^>]+>)?|let|const)\s+vNormalW\b/.test(vertexCode) &&
                 !normalBiasRemappedVariables?.some((name, index) => index % 2 === 0 && name === "vNormalW")
             ) {
                 normalBiasRemappedVariables = [...(normalBiasRemappedVariables ?? []), "vNormalW", "vertexOutputs.vNormalW"];
