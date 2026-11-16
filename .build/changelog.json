@@ -1,6 +1,241 @@
 {
-    "fromTag": "9.35.0",
+    "fromTag": "9.36.0",
     "changelog": {
+        "9.37.0": [
+            {
+                "pr": "19165",
+                "title": "Fix(USDZ): decode tangent-space normal maps with scale and bias",
+                "description": "### Description\nPer the [Pixar UsdPreviewSurface specification](https://graphics.pixar.com/usd/docs/UsdPreviewSurface-Proposal.html#normal-maps), normal map textures store tangent-space normals encoded in the `[0, 1]` color range. In order to decode them into the standard `[-1, 1]` vector range, `UsdUVTexture` requires:\n- `float4 inputs:scale = (2 * scale, 2 * scale, 2, 1)`\n- `float4 inputs:bias = (-scale, -scale, -1, 0)`\n\nPreviously, `usdzExporter.ts` did not author `inputs:scale` or `inputs:bias` on `UsdUVTexture` for normal maps, causing normal vectors to be read directly as positive `[0, 1]` values and resulting in flattened or distorted surface normals in Apple AR Quick Look, RealityKit, and USD viewers.\n\n### Changes\n- Added `inputs:scale` and `inputs:bias` authored to `UsdUVTexture` for normal maps, factoring in `texture.level`.\n- Added unit test in `usdzExporter.test.ts` verifying that normal map textures output `inputs:scale` and `inputs:bias`.\n\n### Testing\n- Verified with `npx vitest run --project=unit usdzExporter` (all tests passing).\n- Verified with `npm run build:source` and `npm run lint:changed`.",
+                "author": {
+                    "name": "ShakilUrRehman21",
+                    "url": "https://github.com/ShakilUrRehman21"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts",
+                    "packages/dev/serializers/test/unit/USDZ/usdzExporter.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19169",
+                "title": "Decode base64 data URLs as UTF-8 when loading text",
+                "description": "Loading text from a base64 data URL garbles every non-ASCII character. For example, with a `.babylon` or `.gltf` file passed as `data:...;base64,...`, a mesh named `Würfel` comes back as `WÃ¼rfel`.\n\n`LoadFile` handles base64 data URLs itself. With `useArrayBuffer` false it returns `DecodeBase64UrlToString(url)`, whose doc says it returns \"a UTF-8 encoded string\", but it was just `atob()`. `atob` gives one character per byte, so every multi-byte UTF-8 sequence turns into Latin-1 mojibake. The same file loaded from a normal URL is decoded as UTF-8, so the result depended on how the file was passed in.\n\n`DecodeBase64UrlToString` now decodes the bytes from `DecodeBase64UrlToBinary` with the existing `Decode` helper from `stringTools` (TextDecoder, with the same byte-per-char fallback where TextDecoder is missing). ASCII content is unchanged. `DecodeBase64ToString` itself is left as is, since its doc says it returns ASCII.\n\nTests: two cases in `core/test/unit/Misc/fileTools.test.ts`, one calling `DecodeBase64UrlToString` directly and one going through `LoadFile` with `useArrayBuffer` false. Both use the text `{\"name\":\"Würfel 立方体 🎲\"}`. Before the fix they get `{\"name\":\"WÃ¼rfel ç«æ¹ä½ ð²\"}`; after, they get the original text. I ran the core `Misc` and `Loading` unit tests and the loaders `glTF` unit tests with and without the fix, and the only difference is these two tests. A few files in those folders fail in both runs because this checkout has no generated shader modules (`build:shaders` wasn't run), plus one `textureTools` test. prettier is clean and eslint reports no errors on the changed files.\n",
+                "author": {
+                    "name": "SwastikTripathi",
+                    "url": "https://github.com/SwastikTripathi"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.pure.ts",
+                    "packages/dev/core/test/unit/Misc/fileTools.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19162",
+                "title": "Clamp color components in Color3/Color4 toHexString",
+                "description": "`Color3.toHexString()` and `Color4.toHexString()` produce invalid strings when a component is outside [0, 1], which is normal for HDR colors (emissive above 1, for instance):\n\n```js\nnew Color3(0.5, 1, 1.2).toHexString();       // \"#80FF132\"\nnew Color3(2, 0.5, -0.25).toHexString();     // \"#1FE800-40\"\nnew Color4(4, -1, 0.5, 1.2).toHexString();   // \"#3FC0-FF80132\"\n```\n\n**Cause:** both methods pass `Math.round(component * 255)` straight to `ToHex`, so 1.2 becomes `132` (three digits) and a negative value becomes `-40`. The result has the wrong length, so `FromHexString` rejects it and returns black, and an `<input type=\"color\">` given that value (the Inspector V2 color picker sets `gammaColor.toHexString()` on one) falls back to black as well.\n\n**Fix:** clamp each component to [0, 1] before converting, in both `Color3.toHexString` and `Color4.toHexString` (including alpha). In-range colors give exactly the same string as before. The doc comments now mention the clamping.\n\n**Tests:** a new unit test, `test/unit/Math/babylon.math.color.test.ts`, checks an in-range color, out-of-range Color3 and Color4 values (with and without `returnAsColor3`), and that `FromHexString` reads back the clamped string. The two out-of-range cases fail before the fix.\n",
+                "author": {
+                    "name": "SwastikTripathi",
+                    "url": "https://github.com/SwastikTripathi"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.pure.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.color.test.ts",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorPickerComponent.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/lines/colorPickerLine.test.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/lines/colorPickerLineRealPicker.test.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19157",
+                "title": "Gaussian Splatting: keep full and partial texture uploads in call order on Native",
+                "description": "Follow-up to the review on #19144 (https://github.com/BabylonJS/Babylon.js/pull/19144#issuecomment-6837994914).\n\n## Problem\n\nOn Native, Gaussian Splatting uploads complete textures with `updateRawTexture` and partial rows with `updateTextureData`. If rendering has already started in the frame, Babylon Native stages a raw upload of an existing texture as a blit that runs in view order, so earlier cameras keep their data. `updateTextureData` maps to `bgfx::updateTexture2D`, which bgfx applies at the start of the frame, before any view.\n\nSo a full upload followed by a partial update in the same frame ends with the **full upload as the final write**, and the partial update is lost.\n\nI reproduced this with a Babylon Native unit test on current master, using D3D11. In the second camera's `onBeforeCameraRenderObservable`, it does a full red `RawTexture.update` and then a green `engine.updateTextureData`. The texture sampled red. When both uploads go through `updateTextureData`, it samples green.\n\n## Fix\n\nOn Native, `_updateTextureFromData` and `_updateShTextureData` now send complete uploads through `updateTextureData` as well, so full and partial updates apply in call order. The engine is identified by `engine.name === \"Native\"`.\n\n- The SH path keeps its zero padding to the full texture size and its alignment handling.\n- `updateTextureData` uses the same `invertY` flip as `loadRawTexture`.\n- NullEngine keeps the `updateRawTexture` path, including when it runs inside a Native runtime.\n\n## Verification\n\n- New unit test \"keeps a partial update after a full upload in the same frame in call order on Native\" checks two full-then-partial sequences, one on an SH texture and one on a centers texture. All four uploads must reach `updateTextureData` in call order, and none may reach `updateRawTexture`. It fails without the fix.\n- `packages/dev/core/test/unit/Meshes`: 483/483 pass. `tsc -p packages/dev/core/tsconfig.build.json --noEmit` is clean.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.pure.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.nativeDisableDepthSort.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19147",
+                "title": "Use a GPU-independent hash in the procedural textures library",
+                "description": "## Summary\r\n\r\nThe brick, cloud, fire, grass, marble, road and wood procedural textures hash lattice points with `fract(cos(dot(n, k)) * 43758.5453)`. `cos` of large arguments is approximated differently by each GPU and driver, so these textures render differently on each platform. Rendering \"Procedural textures playground\" (`#24C4KC#67`) gives:\r\n\r\n| Comparison | Before | After |\r\n|---|---|---|\r\n| Chrome (ANGLE D3D11, NVIDIA) vs SwiftShader | 45.1% | 0.12% |\r\n| Chrome (ANGLE D3D11) vs the current reference image | 23.0% | (new reference) |\r\n| Babylon Native D3D11 vs Chrome D3D11 | 23.97% | 0.000% |\r\n| Babylon Native Vulkan vs Chrome D3D11 | — | 0.024% |\r\n\r\n(percentage of pixels with a channel difference above 25; measured with an earlier revision of the hash. The current hash output is bit-identical across SwiftShader and D3D11.)\r\n\r\n## Changes\r\n\r\n- `rand` is an exact integer hash: a permutation polynomial modulo the prime 4001, evaluated in `highp`.\r\n  - Every intermediate is an integer below 2^24, so every GPU computes the same value regardless of FMA contraction or how `1/4001` rounds. On SwiftShader and D3D11 the raw output is bit-identical.\r\n  - Because 4001 is prime, it is coprime to the power-of-two layer scales, so the textures repeat only every 4001 pixels.\r\n  - It costs about nine multiply/floor/fma steps: 512² grass on SwiftShader takes 2.1 ms vs 0.9–1.3 ms with the `cos` hash.\r\n  - It is guarded by `#ifdef GL_FRAGMENT_PRECISION_HIGH` (like `pbrIBLFunctions.fx`). Devices without fragment highp keep the original hash.\r\n- `proceduralHash.test.ts` checks:\r\n  - that all shaders share the hash\r\n  - exactness under perturbed rounding\r\n  - no repeat within the period\r\n  - no short-range or lattice-symmetry correlation\r\n  - per-line variance\r\n- The road texture's grain was `mod(gl_FragCoord.y * 100.0, fbm(vUV * 2.0))`. Its quotient reaches ~10^5, so a 1-ULP difference in `fbm` changes the result. It is now `fbm(vUV * 2.0) * rand(gl_FragCoord.xy)`, which has the same `[0, fbm)` distribution and mean (verified numerically: 0.295 vs 0.296 with the old hash).\r\n\r\nThe textures keep their character, but the random values change, so patterns differ from before (for example, the road comes out somewhat lighter in this scene). Before this change the output already differed between GPUs.\r\n\r\n## Reference images\r\n\r\n`proceduralTexturePlayground.png` needs a new reference. I'll update it from this PR's CI render. Also using these textures:\r\n- \"DepthRenderer rhs\" (Fire): my local old-vs-new diff is 0.92%. I'll update its reference if CI flags it.\r\n- \"depth-renderer\": unchanged (0%).\r\n\r\nOnce this ships, Babylon Native can enable \"Procedural textures playground\", which is currently excluded because of the GPU-dependent hash.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml",
+                    "packages/dev/proceduralTextures/src/brick/brickProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/cloud/cloudProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/fire/fireProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/grass/grassProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/marble/marbleProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/road/roadProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/wood/woodProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/test/unit/proceduralHash.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/proceduralTexturePlayground.png"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "native",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "19156",
+                "title": "Add texture previews to Inspector Lite",
+                "description": "Inspector Lite users need to inspect and export textures without losing the existing Babylon.js Inspector preview behavior.\n\nThis extracts a shared preview core with Babylon.js and Lite adapters. Lite supports channel filtering, cube faces, array layers, 3D slices, mip levels, refresh, and PNG export using the public readback APIs in `@babylonjs/lite` 1.39.3. The test scene also includes a textured Duck model.\n\n### Screenshots\n\nDuck texture preview:\n\n![Inspector Lite previewing the Duck model texture](https://github.com/user-attachments/assets/a013db11-04f4-45bd-b1bb-41972e9ec8d8)\n\n3D texture slice preview:\n\n![Inspector Lite previewing a 3D texture slice](https://github.com/user-attachments/assets/6b078620-9762-4dc9-bfeb-0dae846b306f)\n\n### Validation\n\n- `npm run build:source`, `npm run lint:check`, and `npm run format:check`\n- 31 focused Inspector unit tests\n- Four browser integration tests repeated four times without retries\n\nRelates to BabylonJS/Babylon-Lite#55",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/textureTools.ts",
+                    "packages/dev/core/test/unit/Misc/textureTools.test.ts",
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/components/properties/textures/texturePreview.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/textures/texturePreviewCore.tsx",
+                    "packages/dev/inspector-v2/src/components/textureEditor/canvasManager.ts",
+                    "packages/dev/inspector-v2/src/components/textureEditor/status.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/captureController.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/texturePreviewProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/texturePropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/misc/download.ts",
+                    "packages/dev/inspector-v2/src/misc/textureChannels.ts",
+                    "packages/dev/inspector-v2/src/misc/textureTools.ts",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/integration/liteTexturePreview.test.ts",
+                    "packages/dev/inspector-v2/test/unit/litePropertiesServices.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteTexturePreview.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/p4ImportBoundaries.test.ts",
+                    "packages/dev/inspector-v2/test/unit/textureEditorMip.test.ts",
+                    "packages/dev/inspector-v2/test/unit/texturePreview.test.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/bottomBar.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19160",
+                "title": "NativeEngine: queue texture deletes behind earlier commands",
+                "description": "## Summary\n\n`deleteTexture` is an immediate native call. Commands already encoded in the native command stream but not yet submitted can still reference the texture. For example, `EffectLayer.render()` composites with its main texture and then recreates it on the first frame, so the queued `SetTexture` sees a freed handle. On Metal, the validation layer then reports a missing sampler binding.\n\nThis encodes a `COMMAND_DELETETEXTURE` instead, the same way framebuffer, buffer, program and vertex-array deletes are already queued. Both `_deleteTexture` and `NativeHardwareTexture.release` go through the new `ThinNativeEngine._deleteNativeTexture`. Runtimes that don't expose the command keep the immediate `deleteTexture` call, so older Babylon Native builds behave as before.\n\nThe native side is BabylonJS/BabylonNative#2071.\n\n## Tests\n\n- New unit test: a texture released after an earlier command is deleted through the command stream, after that command, and the immediate `deleteTexture` is not called. It fails without this change.\n- New unit test: without `COMMAND_DELETETEXTURE`, the texture is deleted immediately.\n- `thinNativeEngine.test.ts`: 115/115 pass. Prettier and eslint are clean.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19159",
+                "title": "Inspect Lite scene renderables",
+                "description": "Babylon Lite's scene-hosted text, sprites, and billboards were not discoverable in Inspector. Lite 1.39.3 exposes collection APIs for these renderables, allowing Inspector to show and inspect them separately from scene hierarchy nodes and standalone renderer layers.\n\n- Add Explorer groups with live membership updates, selection cleanup, visibility controls, and supported properties.\n- Update the Lite dependency and add populated test-app examples, including visible animated particles.\n- Add unit and browser coverage for discovery, property edits, and removal.\n\nParticle-owned billboards also appear in the billboard collection. The test fixture orders text after sprites to avoid a Lite 1.39.3 bind-group mismatch in the default view; this is not a general fix for that upstream rendering issue.\n\n**Validation:** Source build, formatting, lint, advisory lint, focused Inspector tests, and the browser test passed. The full unit run had eight timeouts and one missing test-tools build; all seven affected suites passed when retried with fewer workers after building test-tools.\n\n### Screenshots\n\nScene text:\n![Scene text selected in the Inspector](https://github.com/user-attachments/assets/3c0d62f8-f5ad-4f71-8ac9-dd252a625dc3)\n\nDepth-hosted sprite layer:\n![Depth-hosted sprite layer properties in the Inspector](https://github.com/user-attachments/assets/2ee29546-eb4f-44a7-afcf-b64ee6895f9a)\n\nBillboard system:\n![Billboard system properties in the Inspector](https://github.com/user-attachments/assets/b4a222d8-e4d7-417f-8a3b-172ed2257b4e)\n\nRelates to BabylonJS/Babylon-Lite#55\n\nLite collection APIs: BabylonJS/Babylon-Lite#907",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/lite/components/properties/sceneNodeProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/sceneRenderableUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/sceneRenderablePropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/spriteLayerPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/sceneRenderableExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/integration/liteSceneRenderables.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteSceneRenderableMembership.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteSceneRenderables.test.tsx",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/public/@babylonjs/inspector-v2/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19163",
+                "title": "Fix Sandbox tests waiting for loading screens",
+                "description": "## Summary\n- Replace the five stale `#babylonjsLoadingDiv` waits with one shared load-completion helper.\n- Wait for the scene-dependent Inspector button before checking that every `[id^=\"babylonjsLoadingDiv\"]` overlay has been removed. This handles canvas-indexed IDs such as `babylonjsLoadingDiv-0` and avoids succeeding before app startup.\n- Keep screenshot tolerances and reference images unchanged.\n\nThis fixes the loading-screen race investigated in the unrelated #19156 CI failure. With the original waits, a local reproduction still had `babylonjsLoadingDiv-0` at opacity 0.63 when the screenshot would begin; the corrected waits returned with zero loading screens.\n\n## Validation\nUsing the deployed Sandbox with Firefox and snapshot URLs (this PR changes tests only):\n- Model-query screenshot: **5/5 passed** against `refs/heads/master`, **3/3 passed** against `refs/pull/19156/merge`, without retries.\n- Four of the five affected tests passed against master. The Inspector-open test passed the new loading wait and visibility assertion but its screenshot differed in Windows font/layout rendering (27,316 pixels versus the existing 15,000-pixel limit). No baseline or tolerance changes were made.\n- `npm run format:check`, `npm run lint:check`, `npm run lint:advisory`, and `npm run build:source` passed.\n- Full unit run: 561 files passed, 6 had unrelated timeouts. Focused reruns cleared the build-helper, tree-shaking, KTX2, formatting, and loader failures; lint initialization and a UMD dynamic-import test still timed out. These limitations were reviewed and approved before opening this PR.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/sandbox/test/interaction.sandbox.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19155",
+                "title": "Remove retries from native visualization tests",
+                "description": "*[Created by Copilot on behalf of @bghgary]*\r\n\r\nA single visualization failure currently restarts the entire suite, delaying feedback and potentially hiding intermittent failures. Setup retries remain unchanged.\r\n",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml"
+                ],
+                "tags": [
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "19154",
+                "title": "Add CDN deploy pipeline for stable releases; retire cd-publish trigger",
+                "description": "Babylon.js npm publishing now runs in the internal engine release pipeline. That pipeline does not upload the versioned CDN snapshot, and the old `cd-publish.yml` trigger (`.build/config.json` on master) never fires in the new flow. If it did fire, it would publish to npm, push to master and create the release a second time.\n\n## New flow\n\n```\ninternal engine release → npm publish (ESRP)\n  → push \"Version update X\" + tag X to master\n  → GitHub release X with cdnSnapshot.zip\n     → cd-cdn-deploy.yml (\"CDN deploy pipeline\", tag trigger)\n        → cd-tools.yml (\"Tools CD\") via resources.pipelines\n```\n\nPreview releases create no tag or release, so the CDN is never deployed for them.\n\n## Changes\n\n**`.azure-pipelines/cd-cdn-deploy.yml` (new)**\n- **Triggers:** tags `*.*.*` (excluding `*-*`), plus a manual `version` parameter for reruns and backfills. It has no branch CI trigger and no PR trigger.\n- **Variable groups:** `BabylonJS-CI-Infrastructure` and `BabylonJS-Deployment` only. It does not use `NPM_Publish`.\n- **Steps:**\n  1. Resolve the version from the parameter or the tag. Reject prerelease versions.\n  2. Verify that the tag exists and is reachable from `origin/master`.\n  3. Poll the GitHub API for up to 30 minutes until release `X` exists, is neither a draft nor a prerelease, and has `cdnSnapshot.zip` in state `uploaded`. The tag is pushed before the release is created and the asset is uploaded, so a tag-triggered run usually waits here. The optional `GitHubReadToken` secret makes polling authenticated and every 30 s; without it, requests are anonymous every 60 s.\n  4. Download the asset with retries and check its byte count. Require at least 50 MB.\n  5. Run `unzip -t`, reject entries outside `.snapshot/` or containing `..`, and require the core files plus `.snapshot/fileSizes.json`. Check that `babylon.js` reports the version.\n  6. Repack `snapshot.zip` without the `.snapshot/` prefix, matching cd-publish's layout, and build `fileSize.zip`.\n  7. Upload and verify through the shared template.\n- It never publishes to npm, pushes to git, or creates tags or releases. It is idempotent and safe to rerun.\n\n**`.azure-pipelines/templates/cdn-snapshot-deploy.yml` (new)**\n- Holds the upload and verification logic extracted from cd-publish:\n  - the two `curl --fail-with-body $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD)` uploads to `cdn/master/v<version>`, with `saveZip=true` for the snapshot only;\n  - the `cdn.babylonjs.com/v<version>` polling (600 s total, every 15 s).\n- Both pipelines use it.\n\n**`cd-publish.yml` (retired, not deleted)**\n- Set to `trigger: none` with a RETIRED header, so it can never publish to npm, push or create a release automatically.\n- I kept it rather than deleting it so it remains a manual emergency fallback, with its run history and definition 50 intact. It can be deleted later once the new flow has shipped a few releases.\n\n**`cd-tools.yml` and `templates/checkout-with-tag-override.yml`**\n- Both now point at `\"CDN deploy pipeline\"`. cd-tools accepts both `master` and `refs/tags/*` source branches. Its cron triggers are unchanged.\n\n**`ci-monorepo.yml`**\n- Its resource now points at `\"CDN deploy pipeline\"`, but it is kept master-only. Tag runs would set `Build.SourceBranch=refs/tags/X`, which breaks its build name, its Deploy condition and the `cdn/$(Build.SourceBranchName)` paths.\n- The release's \"Version update\" push to master already triggers this pipeline through CI.\n\n**`VARIABLE-GROUPS.md`**\n- Updated variable group links and pipeline names.\n- Added the optional `GitHubReadToken` secret.\n- Added a \"Stable Release Flow\" section.\n\n## Manual ADO steps after merge\nThese are in dev.azure.com/babylonjs, project ContinousIntegration.\n1. Create a pipeline from `.azure-pipelines/cd-cdn-deploy.yml` using the existing BabylonJS/Babylon.js GitHub connection.\n2. Name it exactly **`CDN deploy pipeline`**.\n3. Authorize `BabylonJS-CI-Infrastructure` and `BabylonJS-Deployment`.\n4. Make sure no UI trigger override is set, so the YAML tag trigger stays active. Optionally add a `GitHubReadToken` secret variable.\n5. Authorize the new pipeline resource for Tools CD (49) and Monorepo CI (48) on their first run.\n6. Optionally disable definition 50 (\"Publish pipeline\").\n\n## Notes\n- **Reruns:** uploads to the deployment server overwrite blobs in `cdn/master/v<version>`, including the saved `cdnSnapshot.zip`. They do not delete files that exist in storage but not in the new zip. Reruns are therefore safe.\n- **Other dependents on cd-publish:** only Tools CD, Monorepo CI and the checkout template referenced \"Publish pipeline\", and all three are updated here. No docs or sandbox pipelines reference it.\n- **Validation:**\n  - All changed YAML files parse.\n  - Every script block in the two new files passes `bash -n`.\n  - `prettier --check .azure-pipelines/` passes.\n  - No pipelines were queued.\n\n### Update: Monorepo CI after tag-triggered deploys\nMonorepo CI's completion trigger now includes `refs/tags/*`. A run triggered from a release tag is treated as a master run (`BuildName=refs/heads/master`, `DeployBranch=master`), so the general CDN (`cdn/master`) is rebuilt, uploaded and purged after every stable release, as it was with cd-publish.\n\n### Confirmed answers\n- The deployment server overwrites an existing `cdn/master/v<version>` path, so reruns are safe.\n- Only Tools CD (Playground) and Monorepo CI (general CDN) depended on cd-publish. Both now follow \"CDN deploy pipeline\".\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/VARIABLE-GROUPS.md",
+                    ".azure-pipelines/cd-cdn-deploy.yml",
+                    ".azure-pipelines/cd-publish.yml",
+                    ".azure-pipelines/cd-tools.yml",
+                    ".azure-pipelines/ci-monorepo.yml",
+                    ".azure-pipelines/templates/cdn-snapshot-deploy.yml",
+                    ".azure-pipelines/templates/checkout-with-tag-override.yml"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "19152",
+                "title": "Floating origin: offset projective world matrices correctly (fixes CameraGizmo frustum)",
+                "description": "With floating origin on (`useFloatingOrigin` on the scene, or `useLargeWorldRendering` on the engine), `CameraGizmo`'s frustum is drawn wrong: instead of a pyramid from the camera, its lines run off across the scene.\r\n\r\n**Repro:** [Simple example in Playground](https://playground.babylonjs.com/#IZ715B). Set `useFloatingOrigin` to `false` to see it as it should be: a pyramid from the camera down to the red square, where its view meets the ground.\r\n\r\n| Before | After |\r\n|---|---|\r\n| <img width=\"900\" height=\"600\" alt=\"before\" src=\"https://github.com/user-attachments/assets/541af76c-692f-431d-860a-0938317b55d5\" /> | <img width=\"900\" height=\"600\" alt=\"after\" src=\"https://github.com/user-attachments/assets/946335d4-5ece-4425-9ba1-5adeb9168b82\" /> |\r\n\r\n**Cause:** `OffsetWorldToRef` (`floatingOriginMatrixOverrides.ts`) subtracts the offset from the translation row only. That's `world * translation(-offset)` for an affine matrix, but not for a projective one. `CameraGizmo` draws the frustum through the camera's inverse projection (see `CameraGizmo._update`), so its world matrix is projective, and the frustum is distorted. The further the camera is from the origin, the worse it gets.\r\n\r\n**Fix:** each row moves by its w (its last column) times the offset, which is the full `world * translation(-offset)`. For an affine matrix, w is 0 in the first three rows and 1 in the last, so that's exactly what it did before. `world`, `worldView`, `worldViewProjection` and the node material `u_World...` uniforms all go through `OffsetWorldToRef`, so they're all fixed.\r\n\r\n**Tests:** a new unit test, `test/unit/Materials/floatingOriginMatrixOverrides.test.ts`, checks that an offset world matrix places each corner of a cube exactly `offset` from where the original places it, for an affine matrix and for a projective one like the gizmo's. The projective case fails before the fix. The core unit tests all pass (281 files, 4,736 tests).\r\n",
+                "author": {
+                    "name": "trymedo",
+                    "url": "https://github.com/trymedo"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/floatingOriginMatrixOverrides.ts",
+                    "packages/dev/core/test/unit/Materials/floatingOriginMatrixOverrides.test.ts"
+                ],
+                "tags": []
+            }
+        ],
         "9.36.0": [
             {
                 "pr": "19153",
