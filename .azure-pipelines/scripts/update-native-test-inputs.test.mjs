@@ -197,17 +197,52 @@ for (const [source, otherSource, update] of [
     [{ sceneFolder: "scenes/", sceneFilename: "one.babylon" }, { sceneFolder: "scenes/", sceneFilename: "other.babylon" }, true],
     [{ scriptToRun: "scripts/scene.js", functionToCall: "createScene" }, { scriptToRun: "scripts/other.js", functionToCall: "createScene" }, false],
 ]) {
-    test(`rejects a matching title with a different ${source.sceneFolder ? "scene" : "script"} source`, (t) => {
+    test(`keeps a Native variant with the same title and a different ${source.sceneFolder ? "scene" : "script"} source`, (t) => {
         const before = [{ title: "Shared title", ...source, referenceImage: "test.png" }];
         const native = [{ title: "Shared title", ...otherSource, referenceImage: "test.png" }];
         const after = update ? [{ ...before[0], renderCount: 2 }] : [];
         const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
         const result = run(repo, playground);
-        assert.notEqual(result.status, 0);
-        assert.match(result.stderr, /does not match/);
-        assert.deepEqual(nativeTests(playground), native);
+        assert.equal(result.status, 0, result.stderr);
+        assert.match(result.stderr, /Keeping Native-specific source for "Shared title"/);
+        assert.deepEqual(nativeTests(playground), update ? [{ ...native[0], renderCount: 2 }] : native);
     });
 }
+
+test("keeps a Native variant's Playground ID and reference while applying compatible web changes", { skip: process.platform !== "win32" }, (t) => {
+    const before = [{ title: "Particles", playgroundId: "#UPXK98#0", referenceImage: "particles.png", renderCount: 1 }];
+    const after = [{ ...before[0], playgroundId: "#UPXK98#1", renderCount: 2 }];
+    const native = [{ ...before[0], playgroundId: "#G3ZYFU#7" }];
+    const { repo, playground } = fixture(t, before, after, native, { "particles.png": oldPng }, { "particles.png": changedPng });
+    writeFileSync(join(playground, "ReferenceImages", "particles.png"), nativePng);
+    const result = run(repo, playground);
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(nativeTests(playground), [{ ...native[0], renderCount: 2 }]);
+    assert.deepEqual(readFileSync(join(playground, "ReferenceImages", "particles.png")), nativePng);
+});
+
+test("rejects several same-title Native entries when none matches the source", (t) => {
+    const before = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
+    const after = [{ ...before[0], playgroundId: "#A#2" }];
+    const native = [
+        { ...before[0], playgroundId: "#B#0" },
+        { ...before[0], playgroundId: "#C#0" },
+    ];
+    const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
+    const result = run(repo, playground);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Ambiguous Native test "Test": no entry matches source/);
+    assert.deepEqual(nativeTests(playground), native);
+});
+
+test("keeps a Native variant when its web test is removed", (t) => {
+    const before = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
+    const native = [{ ...before[0], playgroundId: "#B#0" }];
+    const { repo, playground } = fixture(t, before, [], native, { "test.png": "old" }, {});
+    const result = run(repo, playground);
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(nativeTests(playground), native);
+});
 
 test("preserves a recorded Native reference override when the web image changes", { skip: process.platform !== "win32" }, (t) => {
     const before = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
@@ -274,14 +309,14 @@ test("rejects ambiguous duplicate identities", (t) => {
     assert.match(result.stderr, /Ambiguous Native test/);
 });
 
-test("rejects changes when the Native test is older than the pull-request base", (t) => {
+test("keeps a Native Playground revision that differs from the pull-request base", (t) => {
     const before = [{ title: "Test", playgroundId: "#A#1", referenceImage: "test.png" }];
     const after = [{ ...before[0], playgroundId: "#A#2" }];
     const native = [{ ...before[0], playgroundId: "#A#0" }];
     const { repo, playground } = fixture(t, before, after, native, { "test.png": "old" }, {});
     const result = run(repo, playground);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /does not match the pull-request base/);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stderr, /Keeping Native-specific playgroundId/);
     assert.equal(nativeTests(playground)[0].playgroundId, "#A#0");
 });
 

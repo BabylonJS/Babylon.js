@@ -173,19 +173,29 @@ for (const oldTest of previous.tests) {
 
     const candidates = native.tests.filter((test) => test.title === oldTest.title);
     const source = sourceKey(oldTest);
-    const matches = candidates.filter((test) => source && sourceKey(test) === source);
+    let matches = candidates.filter((test) => source && sourceKey(test) === source);
     if (matches.length > 1) {
         throw new Error(`Ambiguous Native test "${oldTest.title}" with source ${source}`);
     }
+    // A unique same-title entry with another source is a curated Native variant; keep its source and Native-specific values.
+    const variant = !matches.length && candidates.length === 1;
+    if (variant) {
+        matches = candidates;
+        console.warn(`Keeping Native-specific source for "${oldTest.title}"`);
+    }
     if (!matches.length) {
         if (candidates.length) {
-            throw new Error(`Native test "${oldTest.title}" does not match the pull-request base; update the Native artifact before applying its changes`);
+            throw new Error(`Ambiguous Native test "${oldTest.title}": no entry matches source ${source}`);
         }
         console.warn(`No matching Native test for "${oldTest.title}"; preserving the curated Native suite`);
         continue;
     }
 
     const test = matches[0];
+    if (!newTest && variant) {
+        console.warn(`Keeping Native variant "${test.title}" after its web test was removed`);
+        continue;
+    }
     if (!newTest) {
         const family = playgroundFamily(oldTest);
         const possibleRename = addedTests.some(
@@ -239,6 +249,10 @@ for (const oldTest of previous.tests) {
             const hash = createHash("sha256").update(readFileSync(existingImagePath)).digest("hex");
             if (referenceOverrides[oldReference]?.sha256 === hash) {
                 console.warn(`Keeping recorded Native reference "${oldReference}"`);
+                continue;
+            }
+            if (variant) {
+                console.warn(`Keeping Native-specific reference for "${test.title}"`);
                 continue;
             }
             throw new Error(`Native reference "${oldReference}" differs from both pull-request versions`);
