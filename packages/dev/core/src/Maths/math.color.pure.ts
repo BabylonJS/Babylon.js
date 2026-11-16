@@ -741,7 +741,8 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      */
     public static HSVtoRGBToRef<T extends IColor3Like>(hue: number, saturation: number, value: number, result: T): T {
         const chroma = value * saturation;
-        const h = hue / 60;
+        // wrap the hue into [0, 360) so an animated or negative hue keeps its color
+        const h = (((hue % 360) + 360) % 360) / 60;
         const x = chroma * (1 - Math.abs((h % 2) - 1));
         let r = 0;
         let g = 0;
