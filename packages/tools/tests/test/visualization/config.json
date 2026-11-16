@@ -1398,6 +1398,13 @@
             "dependsOn": ["Animations", "Gizmos", "LibMaterials", "Lights", "Materials", "NodeMaterial", "ProceduralTextures", "Shaders", "Shadows"]
         },
         {
+            "title": "Shadow depth wrappers with normal bias",
+            "playgroundId": "#ASETQ9#0",
+            "referenceImage": "shadowDepthWrappersNormalBias.png",
+            "renderCount": 10,
+            "dependsOn": ["Lights", "Materials", "PBR", "Shadows"]
+        },
+        {
             "title": "Displacement map",
             "playgroundId": "#WZ8JL4#1",
             "referenceImage": "displacementMap.png",
