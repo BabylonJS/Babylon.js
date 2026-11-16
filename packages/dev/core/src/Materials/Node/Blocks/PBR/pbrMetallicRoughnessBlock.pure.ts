@@ -1031,6 +1031,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 replaceStrings: [
                     { search: /{X}/g, replace: this._lightId.toString() },
                     { search: /worldPos/g, replace: worldPos.associatedVariableName },
+                    { search: isWebGPU ? /uniforms\.view/g : /\bview\b/g, replace: this.view.associatedVariableName },
                 ],
             });
         } else {
@@ -1044,6 +1045,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
+                substitutionVars: isWebGPU ? "uniforms.view,view" : undefined,
             });
         }
     }
