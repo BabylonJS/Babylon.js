@@ -42,6 +42,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     public _generatedDepthShareSource: Nullable<NativeRenderTargetWrapper> = null;
 
     private _pendingGeneratedDepthShares: Nullable<Set<NativeRenderTargetWrapper>> = null;
+    private _pendingGeneratedDepthShareSources: Nullable<Set<NativeRenderTargetWrapper>> = null;
 
     public get _framebuffer(): Nullable<NativeFramebuffer> {
         return this.__framebuffer;
@@ -176,6 +177,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             this._engine._assertDepthAttachmentCompatible(this, texture.samples);
         }
 
+        this._cancelPendingGeneratedDepthShares();
         this._generatedDepthShareSource = null;
         const previous = this._depthStencilTexture;
         super.setDepthStencilTexture(texture, disposeExisting);
@@ -195,6 +197,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     ): InternalTexture {
         // Validate before the base class disposes the current depth texture.
         this._engine._assertDepthAttachmentCompatible(this, samples);
+        this._cancelPendingGeneratedDepthShares();
         this._generatedDepthShareSource = null;
         return super.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);
     }
@@ -372,6 +375,10 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
      * @param renderTarget The render target that receives the shared depth texture
      */
     public override shareDepth(renderTarget: RenderTargetWrapper): void {
+        this._shareDepth(renderTarget, false);
+    }
+
+    private _shareDepth(renderTarget: RenderTargetWrapper, resolvingDeferredShare: boolean): void {
         const dest = renderTarget as NativeRenderTargetWrapper;
         if (!this._depthStencilTexture && (this._generateDepthBuffer || this._generateStencilBuffer) && dest && dest !== this && dest._engine === this._engine) {
             if (!this._engine._supportsGeneratedDepthSharing()) {
@@ -382,7 +389,9 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             // Validate before asking Native to transfer ownership so a rejected share leaves both wrappers untouched.
             this._engine._assertDepthAttachmentCompatible(dest, this.samples);
             if (!this._framebuffer && !this._layerFramebuffers?.size) {
+                dest._cancelPendingGeneratedDepthShares();
                 (this._pendingGeneratedDepthShares ??= new Set()).add(dest);
+                (dest._pendingGeneratedDepthShareSources ??= new Set()).add(this);
                 return;
             }
 
@@ -400,6 +409,9 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             this._engine._assertDepthAttachmentCompatible(dest, this._depthStencilTexture.samples);
         }
 
+        if (!resolvingDeferredShare && dest?._engine === this._engine) {
+            dest._cancelPendingGeneratedDepthShares();
+        }
         super.shareDepth(renderTarget);
 
         if (!dest || dest._engine !== this._engine) {
@@ -417,9 +429,43 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
             return;
         }
 
-        this._pendingGeneratedDepthShares = null;
         for (const destination of pendingShares) {
-            this.shareDepth(destination);
+            this._shareDepth(destination, true);
+            this._removePendingGeneratedDepthShare(destination);
+        }
+    }
+
+    private _removePendingGeneratedDepthShare(destination: NativeRenderTargetWrapper): void {
+        this._pendingGeneratedDepthShares?.delete(destination);
+        if (this._pendingGeneratedDepthShares?.size === 0) {
+            this._pendingGeneratedDepthShares = null;
+        }
+
+        destination._pendingGeneratedDepthShareSources?.delete(this);
+        if (destination._pendingGeneratedDepthShareSources?.size === 0) {
+            destination._pendingGeneratedDepthShareSources = null;
+        }
+    }
+
+    private _cancelPendingGeneratedDepthShares(): void {
+        const pendingSources = this._pendingGeneratedDepthShareSources;
+        if (!pendingSources) {
+            return;
+        }
+
+        for (const source of pendingSources) {
+            source._removePendingGeneratedDepthShare(this);
+        }
+    }
+
+    private _cancelPendingGeneratedDepthShareDestinations(): void {
+        const pendingDestinations = this._pendingGeneratedDepthShares;
+        if (!pendingDestinations) {
+            return;
+        }
+
+        for (const destination of pendingDestinations) {
+            this._removePendingGeneratedDepthShare(destination);
         }
     }
 
@@ -433,7 +479,10 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     }
 
     public override dispose(disposeOnlyFramebuffers = false): void {
-        this._pendingGeneratedDepthShares = null;
+        if (!disposeOnlyFramebuffers) {
+            this._cancelPendingGeneratedDepthShares();
+            this._cancelPendingGeneratedDepthShareDestinations();
+        }
         this._releaseLayerFramebuffers();
         this._layeredFramebufferKey = null;
 

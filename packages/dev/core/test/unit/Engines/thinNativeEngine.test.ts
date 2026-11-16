@@ -1840,6 +1840,60 @@ describe("ThinNativeEngine", () => {
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
         });
 
+        it("cancels a deferred generated depth share when the destination is disposed", () => {
+            const { engine, nativeEngine } = createEngine({ shareGeneratedDepth: true });
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 3 }, {}) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+
+            source.shareDepth(destination);
+            destination.dispose();
+            engine.bindFramebuffer(source, undefined, undefined, undefined, undefined, 0, 0);
+
+            expect(nativeEngine.shareFrameBufferDepthStencil).not.toHaveBeenCalled();
+            expect(source._depthStencilTexture).toBeNull();
+            expect(destination._depthStencilTexture).toBeNull();
+            expect(destination._framebuffer).toBeNull();
+            expect(destination._framebufferDepthStencil).toBeNull();
+        });
+
+        it("cancels a deferred generated depth share when the destination creates explicit depth", () => {
+            const { engine, nativeEngine } = createEngine({ shareGeneratedDepth: true });
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 3 }, {}) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+
+            source.shareDepth(destination);
+            const explicitDepth = destination.createDepthStencilTexture(0, false, false, 1);
+            engine.bindFramebuffer(source, undefined, undefined, undefined, undefined, 0, 0);
+
+            expect(nativeEngine.shareFrameBufferDepthStencil).not.toHaveBeenCalled();
+            expect(source._depthStencilTexture).toBeNull();
+            expect(destination._depthStencilTexture).toBe(explicitDepth);
+        });
+
+        it("retries failed and unprocessed deferred generated depth shares", () => {
+            const { engine, nativeEngine } = createEngine({ shareGeneratedDepth: true });
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 3 }, { samples: 1 }) as NativeRenderTargetWrapper;
+            const correctedDestination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false, samples: 1 }) as NativeRenderTargetWrapper;
+            const compatibleDestination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false, samples: 1 }) as NativeRenderTargetWrapper;
+
+            source.shareDepth(correctedDestination);
+            source.shareDepth(compatibleDestination);
+            engine.updateRenderTargetTextureSampleCount(correctedDestination, 4);
+
+            expect(() => engine.bindFramebuffer(source, undefined, undefined, undefined, undefined, 0, 0)).toThrow("must use the render target's sample count");
+            expect(nativeEngine.shareFrameBufferDepthStencil).not.toHaveBeenCalled();
+            expect(correctedDestination._depthStencilTexture).toBeNull();
+            expect(compatibleDestination._depthStencilTexture).toBeNull();
+
+            engine.updateRenderTargetTextureSampleCount(correctedDestination, 1);
+            engine.bindFramebuffer(source, undefined, undefined, undefined, undefined, 0, 0);
+
+            const sharedDepth = source._depthStencilTexture!;
+            expect(nativeEngine.shareFrameBufferDepthStencil).toHaveBeenCalledTimes(1);
+            expect(correctedDestination._depthStencilTexture).toBe(sharedDepth);
+            expect(compatibleDestination._depthStencilTexture).toBe(sharedDepth);
+        });
+
         it("does not validate generated depth samples when the runtime lacks sharing support", () => {
             const previousWarningState = (NativeRenderTargetWrapper as any)._HasWarnedAboutGeneratedDepthSharing;
             const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
