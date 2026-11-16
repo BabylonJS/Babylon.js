@@ -337,6 +337,12 @@ export class DynamicTexture extends Texture {
 
     /** @internal */
     public override _rebuild(): void {
-        this.update();
+        const texture = this._texture;
+        if (texture?._dynamicTextureSource) {
+            // Re-upload with the orientation and alpha mode of the last update(), not the update() defaults
+            this.update(texture.invertY, texture._premulAlpha);
+        } else {
+            this.update();
+        }
     }
 }

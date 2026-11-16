@@ -368,6 +368,7 @@ export class LightBlock extends NodeMaterialBlock {
                 replaceStrings: [
                     { search: /{X}/g, replace: this._lightId.toString() },
                     { search: /worldPos/g, replace: worldPos.associatedVariableName },
+                    { search: state.shaderLanguage === ShaderLanguage.WGSL ? /uniforms\.view/g : /\bview\b/g, replace: this.view.associatedVariableName },
                 ],
             });
         } else {
@@ -381,6 +382,7 @@ export class LightBlock extends NodeMaterialBlock {
             }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
+                substitutionVars: state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms.view,view" : undefined,
             });
         }
     }
