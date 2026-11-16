@@ -486,7 +486,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 , ${isWebGPU ? "input." : ""}${this._vEnvironmentIrradianceName}
             #endif
             #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
-                    , ${this._reflectionMatrixName}
+                    , ${(isWebGPU ? "uniforms." : "") + this._reflectionMatrixName}
             #endif
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler         // ** not handled **
