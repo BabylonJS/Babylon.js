@@ -235,6 +235,11 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         defines.setValue("ANISOTROPIC_LEGACY", !this.roughness.isConnected);
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind data to effect
      * @param effect - the effect to bind data to

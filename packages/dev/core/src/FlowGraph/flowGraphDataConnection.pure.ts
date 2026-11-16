@@ -6,9 +6,36 @@ import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnect
 import { type FlowGraphContext } from "./flowGraphContext";
 import { type RichType } from "./flowGraphRichTypes.pure";
 import { Observable } from "core/Misc/observable.pure";
-import { defaultValueSerializationFunction, GetSceneNodeFromSerializedReference } from "./serialization";
+import { defaultValueSerializationFunction, GetSceneNodeFromSerializedReference, _IsSerializedNodeReference } from "./serialization";
 import { RegisterClass } from "../Misc/typeStore";
 import { type Scene } from "core/scene";
+import { type Node } from "core/node";
+
+/**
+ * Resolves a node or a serialized node reference against a scene.
+ * @param value a scene node, or a serialized node reference left by the parser
+ * @param scene the scene to resolve the reference against
+ * @returns the matching node in the scene, or undefined when the value does not need to (or cannot) be rebound
+ */
+function _ReresolveNodeReference(value: any, scene: Scene): Node | undefined {
+    if (!value || typeof value !== "object") {
+        return undefined;
+    }
+    let reference: { id?: string; name?: string; className?: string; uniqueId?: number };
+    if (typeof value.getClassName === "function" && typeof value.getScene === "function") {
+        // A scene node — only rebind when it belongs to a different scene.
+        if (value.getScene() === scene) {
+            return undefined;
+        }
+        reference = { id: value.id, name: value.name, className: value.getClassName(), uniqueId: value.uniqueId };
+    } else if (_IsSerializedNodeReference(value)) {
+        // An unresolved serialized node reference left by the parser.
+        reference = value;
+    } else {
+        return undefined;
+    }
+    return GetSceneNodeFromSerializedReference(reference, scene);
+}
 /**
  * Represents a connection point for data.
  * An unconnected input point can have a default value.
@@ -137,21 +164,23 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
             return;
         }
 
-        let reference: { id?: string; name?: string; className?: string; uniqueId?: number } | undefined;
-        if (typeof value.getClassName === "function" && typeof value.getScene === "function") {
-            // A scene node — only rebind when it belongs to a different scene.
-            if (value.getScene() === scene) {
-                return;
+        if (Array.isArray(value)) {
+            let changed = false;
+            const resolved = value.map((entry) => {
+                const node = _ReresolveNodeReference(entry, scene);
+                if (node) {
+                    changed = true;
+                    return node;
+                }
+                return entry;
+            });
+            if (changed) {
+                this._defaultValue = resolved as unknown as T;
             }
-            reference = { id: value.id, name: value.name, className: value.getClassName(), uniqueId: value.uniqueId };
-        } else if (typeof value.className === "string" && (value.id || value.name) && value.value === undefined) {
-            // An unresolved serialized node reference left by the parser.
-            reference = value;
-        } else {
             return;
         }
 
-        const node = GetSceneNodeFromSerializedReference(reference, scene);
+        const node = _ReresolveNodeReference(value, scene);
         if (node) {
             this._defaultValue = node as unknown as T;
         }

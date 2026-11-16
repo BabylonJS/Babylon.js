@@ -27,6 +27,7 @@ uniform Material {
     vec2 vBaseWeightInfos;
     vec2 vBaseDiffuseRoughnessInfos;
     vec4 vAmbientInfos;
+    vec2 vBentNormalInfos;
     vec2 vOpacityInfos;
     vec2 vEmissiveInfos;
     vec2 vLightmapInfos;
@@ -37,6 +38,7 @@ uniform Material {
     mat4 baseWeightMatrix;
     mat4 baseDiffuseRoughnessMatrix;
     mat4 ambientMatrix;
+    mat4 bentNormalMatrix;
     mat4 opacityMatrix;
     mat4 emissiveMatrix;
     mat4 lightmapMatrix;

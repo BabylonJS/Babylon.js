@@ -25,7 +25,6 @@ uniform alpha: f32;
 #ifdef PREPASS
 #if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
 uniform previousWorld: mat4x4f;
-uniform previousViewProjection: mat4x4f;
 #if IS_COMPOUND
 uniform previousPartWorld: array<mat4x4<f32>, MAX_PART_COUNT>;
 #endif
@@ -228,9 +227,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
     vertexOutputs.vGeometryCurrentPosition = vertexOutputs.position;
     #if IS_COMPOUND
-        vertexOutputs.vGeometryPreviousPosition = uniforms.previousViewProjection * uniforms.previousPartWorld[splat.partIndex] * vec4f(geometryPlanePositionL, 1.0);
+        vertexOutputs.vGeometryPreviousPosition = scene.previousViewProjection * uniforms.previousPartWorld[splat.partIndex] * vec4f(geometryPlanePositionL, 1.0);
     #else
-        vertexOutputs.vGeometryPreviousPosition = uniforms.previousViewProjection * uniforms.previousWorld * vec4f(geometryPlanePositionL, 1.0);
+        vertexOutputs.vGeometryPreviousPosition = scene.previousViewProjection * uniforms.previousWorld * vec4f(geometryPlanePositionL, 1.0);
     #endif
 #endif
 #endif

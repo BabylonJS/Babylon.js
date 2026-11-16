@@ -37,7 +37,7 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
     const namePropertyDescriptor = useMemo(() => GetPropertyDescriptor(commonEntity, "name")?.[1], [commonEntity]);
     const isNameReadonly = !namePropertyDescriptor || IsPropertyReadonly(namePropertyDescriptor);
 
-    const className = commonEntity.getClassName?.();
+    const className = commonEntity.getClassName?.() ?? "Unknown";
 
     return (
         <>

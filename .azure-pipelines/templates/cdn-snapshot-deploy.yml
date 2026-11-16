@@ -1,0 +1,106 @@
+# =============================================================================
+# Versioned CDN Snapshot Deploy Template
+#
+# Uploads a prepared snapshot to cdn/master/v<version> on the deployment server
+# and waits until the versioned files are served from cdn.babylonjs.com.
+#
+# Requires the BabylonJS-CI-Infrastructure and BabylonJS-Deployment variable
+# groups (DEPLOYMENT_SERVER, DEPLOY_ENDPOINT_UPLOAD, DEPLOY_TOKEN,
+# SNAPSHOTS_STORAGE_ACCOUNT).
+#
+# Uploads overwrite existing blobs, so rerunning for the same version is safe.
+# =============================================================================
+
+parameters:
+    # Version without a "v" prefix, usually a runtime macro such as $(CDN_VERSION).
+    - name: version
+      type: string
+    # Snapshot archive whose entries are relative to the snapshot root (no .snapshot/ prefix).
+    - name: snapshotZip
+      type: string
+    # Archive containing only fileSizes.json.
+    - name: fileSizeZip
+      type: string
+    - name: condition
+      type: string
+      default: succeeded()
+
+steps:
+    - script: |
+          set -euo pipefail
+          if [[ -z "${CDN_VERSION// /}" || "$CDN_VERSION" == *'$('* ]]; then
+              echo "##vso[task.logissue type=error]CDN version is not set ('${CDN_VERSION}')."
+              exit 1
+          fi
+
+          curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+            -H "Content-Type: multipart/form-data" \
+            -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
+            -F "path=cdn/master/v${CDN_VERSION}" \
+            -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+            -F "saveZip=true" \
+            -F "zip=@${SNAPSHOT_ZIP}"
+      displayName: "Update snapshot"
+      condition: ${{ parameters.condition }}
+      env:
+          CDN_VERSION: ${{ parameters.version }}
+          SNAPSHOT_ZIP: ${{ parameters.snapshotZip }}
+
+    - script: |
+          set -euo pipefail
+
+          curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+            -H "Content-Type: multipart/form-data" \
+            -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
+            -F "path=cdn/master/v${CDN_VERSION}" \
+            -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+            -F "zip=@${FILE_SIZE_ZIP}"
+      displayName: "Update snapshot modules size"
+      condition: ${{ parameters.condition }}
+      env:
+          CDN_VERSION: ${{ parameters.version }}
+          FILE_SIZE_ZIP: ${{ parameters.fileSizeZip }}
+
+    - script: |
+          set -euo pipefail
+
+          baseUrl="https://cdn.babylonjs.com/v${CDN_VERSION}"
+          assets=(
+              "babylon.js"
+              "babylon.max.js"
+              "loaders/babylonjs.loaders.js"
+              "babylon.ktx2Decoder.js"
+              "ktx2Transcoders/1/msc_basis_transcoder.js"
+              "ktx2Transcoders/1/msc_basis_transcoder.wasm"
+              "zstddec.wasm"
+              "fileSizes.json"
+          )
+          deadline=$((SECONDS + 600))
+          for asset in "${assets[@]}"; do
+              url="${baseUrl}/${asset}"
+              status="000"
+              attempt=0
+              while (( SECONDS < deadline )); do
+                  attempt=$((attempt + 1))
+                  # Unique query avoids reusing a cached 404 while the upload propagates.
+                  if status=$(curl --connect-timeout 10 --max-time 60 --silent --show-error \
+                      --output /dev/null --write-out "%{http_code}" "${url}?releaseCheck=$(Build.BuildId)-${attempt}"); then
+                      if [[ "$status" == "200" ]]; then
+                          echo "Verified ${url}"
+                          break
+                      fi
+                  else
+                      status="000"
+                  fi
+                  echo "Waiting for ${url} (HTTP ${status})"
+                  sleep 15
+              done
+              if [[ "$status" != "200" ]]; then
+                  echo "CDN asset did not become available: ${url} (last HTTP status ${status})" >&2
+                  exit 1
+              fi
+          done
+      displayName: "Verify versioned CDN snapshot"
+      condition: ${{ parameters.condition }}
+      env:
+          CDN_VERSION: ${{ parameters.version }}

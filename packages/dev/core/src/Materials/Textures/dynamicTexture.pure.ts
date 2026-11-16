@@ -7,6 +7,7 @@ import { type ISize } from "../../Maths/math.size";
 import { type ITextureCreationOptions, Texture } from "../../Materials/Textures/texture.pure";
 import { Constants } from "../../Engines/constants";
 import { type ICanvas, type ICanvasRenderingContext } from "../../Engines/ICanvas";
+import { type INativeCanvas } from "../../Engines/Native/nativeInterfaces";
 import { RegisterEnginesExtensionsEngineDynamicTexture } from "../../Engines/Extensions/engine.dynamicTexture.pure";
 
 /**
@@ -273,6 +274,12 @@ export class DynamicTexture extends Texture {
 
         if (this._ownCanvas) {
             this._canvas?.remove?.();
+            // Native canvases keep GPU resources alive until garbage collection unless disposed explicitly.
+            // Only dispose when the runtime defers the release past commands already queued this frame (e.g. by update()).
+            const nativeCanvas = this._canvas as Partial<INativeCanvas> | null;
+            if (nativeCanvas?.supportsDeferredDispose) {
+                nativeCanvas.dispose?.();
+            }
         }
         (this._canvas as any) = null;
         (this._context as any) = null;

@@ -49,6 +49,7 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
                 icon={value ? <props.checkedIcon /> : props.uncheckedIcon ? <props.uncheckedIcon /> : <props.checkedIcon />}
                 appearance={appearance}
                 checked={value}
+                disabled={props.disabled}
                 onClick={toggle}
             />
         </Tooltip>

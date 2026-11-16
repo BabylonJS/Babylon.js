@@ -993,7 +993,8 @@ export class WebGPUTextureManager {
         usage = -1,
         additionalUsages = 0,
         label?: string,
-        mipLevelCount?: number
+        mipLevelCount?: number,
+        noRenderAttachment = false
     ): GPUTexture {
         sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
@@ -1018,7 +1019,8 @@ export class WebGPUTextureManager {
 
         if (!isCompressedFormat && !is3D) {
             // we don't know in advance if the texture will be updated with copyExternalImageToTexture (which requires to have those flags), so we need to force the flags all the times
-            additionalUsages |= renderAttachmentFlag | WebGPUConstants.TextureUsage.CopyDst;
+            // unless the caller guarantees the texture is only filled from typed arrays: render attachment textures can use a GPU memory layout that is much slower for random texel fetches
+            additionalUsages |= (noRenderAttachment ? 0 : renderAttachmentFlag) | WebGPUConstants.TextureUsage.CopyDst;
         }
 
         const gpuTexture = this._device.createTexture({
@@ -1416,7 +1418,8 @@ export class WebGPUTextureManager {
                 gpuTextureWrapper.textureUsages,
                 gpuTextureWrapper.textureAdditionalUsages,
                 label,
-                texture.is3D ? mipmapCount : undefined
+                texture.is3D ? mipmapCount : undefined,
+                ((creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY) !== 0 && !hasMipMaps && !texture.invertY && !texture.is3D
             );
 
             gpuTextureWrapper.set(gpuTexture);
@@ -1771,6 +1774,14 @@ export class WebGPUTextureManager {
         } else {
             this._deferredReleaseTextures.push([texture, null]);
         }
+    }
+
+    /**
+     * Releases a hardware texture wrapper at the end of the frame, because the objects it holds could still be used by commands recorded in the current frame.
+     * @param hardwareTexture the wrapper to release
+     */
+    public releaseHardwareTexture(hardwareTexture: IHardwareTextureWrapper): void {
+        this._deferredReleaseTextures.push([hardwareTexture, null]);
     }
 
     public destroyDeferredTextures(): void {

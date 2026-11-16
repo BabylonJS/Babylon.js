@@ -1,4 +1,4 @@
-import { type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
+import { type IDisposable, type IReadonlyObservable } from "core/index";
 
 import { type ComponentType, type FunctionComponent, useCallback, useEffect, useState } from "react";
 
@@ -32,40 +32,19 @@ export type ExplorerPaneOptions = Readonly<{
     title: string;
 
     /**
-     * Gets the root object of the hierarchy (e.g. a Scene for the Full Inspector, or an engine for
-     * the Babylon Lite Inspector). It is displayed as the root node, and nothing is rendered while
-     * it is null. This is re-evaluated whenever `onRootChanged` notifies.
+     * Gets the root nodes of the hierarchy. Each root represents an inspected object and may
+     * contribute its own top-level nodes.
      */
-    getRoot: () => Nullable<object>;
+    getRoots: () => readonly ExplorerPaneRoot[];
 
     /**
-     * The name displayed for the root node (e.g. "Scene" or "Engine").
+     * Notifies when the roots returned by `getRoots` change.
      */
-    rootLabel: string;
+    onRootsChanged?: IReadonlyObservable<unknown>;
 
     /**
-     * An optional icon component to render for the root node.
-     */
-    rootIcon?: ComponentType<{ entity: object }>;
-
-    /**
-     * An optional observable that notifies when the object returned by `getRoot` changes. Products
-     * with a fixed root (such as the Babylon Lite Inspector, which inspects a single engine for the
-     * lifetime of the pane) can omit it.
-     */
-    onRootChanged?: IReadonlyObservable<unknown>;
-
-    /**
-     * Enumerates the top level nodes of the hierarchy (excluding the root node, which represents the
-     * object being inspected and is added automatically). This is re-invoked whenever the Explorer
-     * rebuilds its tree, so it should always reflect the current state.
-     */
-    getNodes: () => readonly ExplorerNodeDescription[];
-
-    /**
-     * An optional observable that notifies when the set of nodes returned by `getNodes` changes
-     * (e.g. a new top level node was added). Changes within an already described node are
-     * communicated through that node's own change observables instead.
+     * An optional observable that notifies when the nodes returned beneath any root change.
+     * Changes within an already described node are communicated through that node's own change observables.
      */
     onNodesChanged?: IReadonlyObservable<void>;
 
@@ -83,6 +62,33 @@ export type ExplorerPaneOptions = Readonly<{
      * Optional command providers for group nodes (the command context is the group's display name).
      */
     groupCommandProviders?: IReadonlyObservableCollection<ExplorerCommandProvider<string, "contextMenu">>;
+}>;
+
+/**
+ * Describes one root in an Explorer hierarchy.
+ * @internal
+ */
+export type ExplorerPaneRoot = Readonly<{
+    /**
+     * An identifier that is stable across rebuilds and unique among the roots in the pane.
+     */
+    id: string;
+    /**
+     * The object represented by this root.
+     */
+    entity: object;
+    /**
+     * The name displayed for the root node.
+     */
+    label: string;
+    /**
+     * An optional icon component to render for the root node.
+     */
+    icon?: ComponentType<{ entity: object }>;
+    /**
+     * Enumerates the top-level nodes beneath this root.
+     */
+    getNodes: () => readonly ExplorerNodeDescription[];
 }>;
 
 // Rebuilds the tree when the owner reports that its set of top level nodes changed.
@@ -121,11 +127,8 @@ function useNodeProvidersVersion(providers: IReadonlyObservableCollection<Explor
 
 type ExplorerPaneProps = Readonly<{
     selectionService: ISelectionService;
-    getRoot: () => Nullable<object>;
-    rootLabel: string;
-    rootIcon?: ComponentType<{ entity: object }>;
-    onRootChanged?: IReadonlyObservable<unknown>;
-    getNodes: () => readonly ExplorerNodeDescription[];
+    getRoots: () => readonly ExplorerPaneRoot[];
+    onRootsChanged?: IReadonlyObservable<unknown>;
     onNodesChanged?: IReadonlyObservable<void>;
     nodeProviders: IReadonlyObservableCollection<ExplorerNodeProvider<object>>;
     itemCommandProviders: IReadonlyObservableCollection<ExplorerCommandProvider<object>>;
@@ -133,40 +136,33 @@ type ExplorerPaneProps = Readonly<{
 }>;
 
 const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
-    const { selectionService, getRoot, rootLabel, rootIcon, onRootChanged, getNodes, onNodesChanged, nodeProviders, itemCommandProviders, groupCommandProviders } = props;
+    const { selectionService, getRoots, onRootsChanged, onNodesChanged, nodeProviders, itemCommandProviders, groupCommandProviders } = props;
 
     const currentNodeProviders = useObservableCollection(nodeProviders);
     const itemCommands = useOrderedObservableCollection(itemCommandProviders);
     const groupCommands = useOrderedObservableCollection(groupCommandProviders);
     const nodesVersion = useNodesVersion(onNodesChanged);
     const nodeProvidersVersion = useNodeProvidersVersion(nodeProviders);
-    const root = useObservableState(
-        useCallback(() => getRoot(), [getRoot]),
-        onRootChanged
+    const roots = useObservableState(
+        useCallback(() => getRoots(), [getRoots]),
+        onRootsChanged
     );
     const entity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
 
     const getExplorerNodes = useCallback(() => {
-        if (!root) {
-            return [];
-        }
-
-        // The root node represents the object being inspected (e.g. a Scene or an Engine).
-        const rootNode: ExplorerNodeDescription = {
-            id: "root",
-            kind: "root",
-            entity: root,
-            icon: rootIcon,
-            getDisplayInfo: () => ({ name: rootLabel }),
-            getChildren: () => GetExplorerNodeChildren(root, getNodes(), currentNodeProviders),
-        };
-
-        return [rootNode];
-    }, [rootLabel, rootIcon, getNodes, nodesVersion, nodeProvidersVersion, currentNodeProviders, root]);
+        return roots.map((root) => ({
+            id: `root-${root.id}`,
+            kind: "root" as const,
+            entity: root.entity,
+            icon: root.icon,
+            getDisplayInfo: () => ({ name: root.label }),
+            getChildren: () => GetExplorerNodeChildren(root.entity, root.getNodes(), currentNodeProviders),
+        }));
+    }, [roots, nodesVersion, nodeProvidersVersion, currentNodeProviders]);
 
     return (
         <>
-            {root && (
+            {roots.length > 0 && (
                 <Explorer
                     getNodes={getExplorerNodes}
                     itemCommandProviders={itemCommands}
@@ -188,7 +184,7 @@ const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
  * @internal
  */
 export function CreateExplorerPaneRegistration(shellService: IShellService, selectionService: ISelectionService, options: ExplorerPaneOptions): IDisposable {
-    const { key, title, getRoot, rootLabel, rootIcon, onRootChanged, getNodes, onNodesChanged } = options;
+    const { key, title, getRoots, onRootsChanged, onNodesChanged } = options;
 
     // These are created once per pane so the identities passed to the hooks below are stable.
     const nodeProviders = options.nodeProviders ?? new ObservableCollection<ExplorerNodeProvider<object>>();
@@ -206,11 +202,8 @@ export function CreateExplorerPaneRegistration(shellService: IShellService, sele
         content: () => (
             <ExplorerPane
                 selectionService={selectionService}
-                getRoot={getRoot}
-                rootLabel={rootLabel}
-                rootIcon={rootIcon}
-                onRootChanged={onRootChanged}
-                getNodes={getNodes}
+                getRoots={getRoots}
+                onRootsChanged={onRootsChanged}
                 onNodesChanged={onNodesChanged}
                 nodeProviders={nodeProviders}
                 itemCommandProviders={itemCommandProviders}

@@ -61,6 +61,20 @@ describe("WebGPUCacheTextureView", () => {
         expect(texture.createView).toHaveBeenCalledTimes(2);
     });
 
+    it("keeps its own copy of a descriptor, which the caller can reuse for another view", () => {
+        const texture = createMockTexture();
+        const descriptor = createDescriptor({ baseArrayLayer: 0 });
+
+        const view0 = cache.getView(texture, descriptor);
+        descriptor.baseArrayLayer = 1;
+        const view1 = cache.getView(texture, descriptor);
+        descriptor.baseArrayLayer = 0;
+
+        expect(view1).not.toBe(view0);
+        expect(cache.getView(texture, descriptor)).toBe(view0);
+        expect(texture.createView).toHaveBeenCalledTimes(2);
+    });
+
     it("should not share cache entries between different textures", () => {
         const textureA = createMockTexture();
         const textureB = createMockTexture();

@@ -374,6 +374,10 @@
         {
           "name": "iridescence",
           "displayName": "iridescence"
+        },
+        {
+          "name": "bentNormal",
+          "displayName": "bentNormal"
         }
       ],
       "outputs": [

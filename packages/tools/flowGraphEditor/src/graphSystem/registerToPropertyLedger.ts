@@ -10,6 +10,8 @@ import { DataSwitchPropertyComponent } from "./properties/dataSwitchPropertyComp
 import { SetVariablePropertyComponent } from "./properties/setVariablePropertyComponent";
 import { CustomEventPropertyComponent } from "./properties/customEventPropertyComponent";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
+import { SoundInputPropertyComponent } from "./properties/soundInputPropertyComponent";
+import { MeshIntersectionPropertyComponent } from "./properties/meshIntersectionPropertyComponent";
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
@@ -23,6 +25,16 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls[FlowGraphBlockNames.PointerOverEvent] = PointerEventPropertyComponent;
     PropertyLedger.RegisteredControls[FlowGraphBlockNames.PointerOutEvent] = PointerEventPropertyComponent;
     PropertyLedger.RegisteredControls[FlowGraphBlockNames.MeshPickEvent] = PointerEventPropertyComponent;
+    PropertyLedger.RegisteredControls[FlowGraphBlockNames.MeshIntersectionEvent] = MeshIntersectionPropertyComponent;
+
+    // Audio blocks — name-based coordinator sound asset picker
+    PropertyLedger.RegisteredControls[FlowGraphBlockNames.AudioPlaySound] = SoundInputPropertyComponent;
+    PropertyLedger.RegisteredControls[FlowGraphBlockNames.AudioStopSound] = SoundInputPropertyComponent;
+    PropertyLedger.RegisteredControls[FlowGraphBlockNames.AudioPauseSound] = SoundInputPropertyComponent;
+    PropertyLedger.RegisteredControls[FlowGraphBlockNames.AudioSetVolume] = SoundInputPropertyComponent;
+    PropertyLedger.RegisteredControls[FlowGraphBlockNames.AudioSoundEndedEvent] = SoundInputPropertyComponent;
+    PropertyLedger.RegisteredControls[FlowGraphBlockNames.AudioGetVolume] = SoundInputPropertyComponent;
+    PropertyLedger.RegisteredControls[FlowGraphBlockNames.AudioIsSoundPlaying] = SoundInputPropertyComponent;
 
     // Animation — animation group picker
     PropertyLedger.RegisteredControls[FlowGraphBlockNames.PlayAnimation] = PlayAnimationPropertyComponent;

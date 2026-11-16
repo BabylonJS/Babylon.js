@@ -1,3 +1,6 @@
+import { type DataBuffer } from "../Buffers/dataBuffer";
+import { type Nullable } from "../types";
+
 /**
  * Interface representing a draw context at the GPU level (draw call)
  */
@@ -31,8 +34,12 @@ export interface IDrawContext {
      * Resets the draw context to its initial state.
      */
     reset(): void;
+    /** Invalidates cached vertex bindings without releasing draw resources. @internal */
+    _invalidateVertexBuffers?(): void;
     /** Releases effect-specific uniform-buffer reservations. @internal */
     _releaseUniformBufferSlots?(): void;
+    /** Binds the application's buffer of GPU-written draw arguments, or clears it with null (SubMesh.setIndirectDrawBuffer). @internal */
+    _setExternalIndirectDraw?(buffer: Nullable<DataBuffer>, byteOffset: number): void;
     /**
      * Disposes the draw context and its resources.
      */

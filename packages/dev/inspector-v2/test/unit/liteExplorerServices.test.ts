@@ -1,6 +1,7 @@
 import {
     type CubeTexture,
     type EngineContext,
+    type FgRuntime,
     type Material,
     type Mesh,
     type NodeInputHandle,
@@ -12,10 +13,13 @@ import {
     type TextLayer,
     type TextRenderer,
     type Texture2D,
+    createSceneContext,
+    flowGraphRuntimes,
     getPbrClearCoat,
     getTextureMetadata,
 } from "@babylonjs/lite";
 import { tokens } from "@fluentui/react-components";
+import { FlowchartRegular } from "@fluentui/react-icons";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -38,6 +42,7 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
     const field = (name: string) => (material: Record<string, unknown>) => material[name];
     return {
         ...original,
+        flowGraphRuntimes: vi.fn((scene: SceneContext & { _flowGraphs?: FgRuntime[] }) => scene._flowGraphs ?? []),
         getMaterialSource: (material: { source?: object }) => material.source ?? material,
         getMaterialFamily: (material: { source?: { family?: string }; family?: string }) => material.source?.family ?? material.family,
         getStandardEmissiveTexture: field("emissiveTexture"),
@@ -84,10 +89,12 @@ import {
     type RenderingContextNodeProvider,
     type RenderingContextPresentationProvider,
 } from "../../src/lite/engineExplorerService";
+import { FlowGraphExplorerServiceDefinition } from "../../src/lite/services/panes/scene/flowGraphExplorerService";
 import { MaterialExplorerServiceDefinition } from "../../src/lite/services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/scene/meshExplorerService";
 import { SceneResourceIndexServiceDefinition, SceneResourceIndexServiceIdentity } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { SceneResourceIndex } from "../../src/lite/services/panes/scene/sceneResources";
+import { InspectorUtilityScenes } from "../../src/lite/sceneEntityUtils";
 import { SpriteLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
@@ -201,6 +208,93 @@ function GetNames(nodes: readonly ExplorerNode[]): string[] {
 }
 
 describe("Babylon Lite engine explorer service", () => {
+    it("excludes Inspector gizmo utility scenes and their resources without hiding user utility scenes", () => {
+        const mainMaterial = CreateMaterial("standard", "Main");
+        const gizmoMaterial = CreateMaterial("standard", "Gizmo");
+        const scenes: SceneContext[] = [];
+        const engine = CreateResourceEngine(scenes);
+        Object.assign(engine, { engine });
+        const mainScene = createSceneContext(engine, { defaultRenderTask: false });
+        mainScene.meshes.push(CreateMesh("Main", mainMaterial));
+        const utilityScene = createSceneContext(engine, { defaultRenderTask: false });
+        utilityScene.name = "UtilityLayer";
+        utilityScene.meshes.push(CreateMesh("Gizmo", gizmoMaterial));
+        const userUtilityScene = createSceneContext(engine, { defaultRenderTask: false });
+        userUtilityScene.name = "UtilityLayer";
+        InspectorUtilityScenes.add(utilityScene);
+        scenes.push(mainScene, utilityScene, userUtilityScene);
+        const watcher = CreateTopologyWatcherService();
+        const service = EngineExplorerServiceDefinition.factory({ engine }, {} as IShellService, {} as ISelectionService, watcher.watcherService)!;
+        const nodes = PaneRegistrations.at(-1)!.options.getRoots()[0].getNodes();
+        expect(nodes.map((node) => node.entity)).toEqual([mainScene, userUtilityScene]);
+        const index = new SceneResourceIndex(engine);
+        expect(index.getMaterialRecord(mainMaterial)?.scenes).toEqual([mainScene]);
+        expect(index.getMaterialRecord(gizmoMaterial)).toBeUndefined();
+        expect(index.getTopologySnapshot()).not.toContain(utilityScene);
+        index.dispose();
+        service.dispose?.();
+    });
+
+    it("supports dynamically contributed Explorer roots", () => {
+        PaneRegistrations.length = 0;
+        const engine = CreateResourceEngine([]);
+        const watcher = CreateTopologyWatcherService();
+        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcher.watcherService)!;
+        const pane = PaneRegistrations.at(-1)!.options;
+        const onNodesChanged = vi.fn();
+        const rootChanged = new Observable<void>();
+        const audioEngine = {};
+        pane.onNodesChanged?.add(onNodesChanged);
+        const rootRegistration = service.addRootProvider({
+            getRoots: () => [{ id: "audio-engine", entity: audioEngine, label: "Audio Engine", getNodes: () => [] }],
+            onChanged: rootChanged,
+        });
+
+        expect(pane.getRoots().map((root) => root.label)).toEqual(["Engine", "Audio Engine"]);
+        expect(onNodesChanged).toHaveBeenCalledOnce();
+
+        rootChanged.notifyObservers();
+        expect(onNodesChanged).toHaveBeenCalledTimes(2);
+
+        rootRegistration.dispose();
+        expect(pane.getRoots().map((root) => root.label)).toEqual(["Engine"]);
+        expect(onNodesChanged).toHaveBeenCalledTimes(3);
+        expect(rootChanged.hasObservers()).toBe(false);
+        rootChanged.notifyObservers();
+        expect(onNodesChanged).toHaveBeenCalledTimes(3);
+
+        const remainingRegistration = service.addRootProvider({
+            getRoots: () => [{ id: "audio-engine", entity: audioEngine, label: "Audio Engine", getNodes: () => [] }],
+            onChanged: rootChanged,
+        });
+        expect(rootChanged.hasObservers()).toBe(true);
+        service.dispose?.();
+        expect(rootChanged.hasObservers()).toBe(false);
+        remainingRegistration.dispose();
+    });
+
+    it("does not skip other observers when a root is removed during notification", () => {
+        PaneRegistrations.length = 0;
+        const engine = CreateResourceEngine([]);
+        const watcher = CreateTopologyWatcherService();
+        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcher.watcherService)!;
+        const pane = PaneRegistrations.at(-1)!.options;
+        const rootChanged = new Observable<void>();
+        const rootRegistration = service.addRootProvider({
+            getRoots: () => [{ id: "audio-engine", entity: {}, label: "Audio Engine", getNodes: () => [] }],
+            onChanged: rootChanged,
+        });
+        const otherObserver = vi.fn();
+        rootChanged.add(otherObserver);
+        pane.onNodesChanged?.add(() => rootRegistration.dispose());
+
+        rootChanged.notifyObservers();
+
+        expect(otherObserver).toHaveBeenCalledOnce();
+        expect(pane.getRoots().map((root) => root.label)).toEqual(["Engine"]);
+        service.dispose?.();
+    });
+
     it("uses scene names with fallback and updates them live", () => {
         PaneRegistrations.length = 0;
         const unnamedScene = { _kind: "scene", name: "" } as SceneContext;
@@ -229,7 +323,7 @@ describe("Babylon Lite engine explorer service", () => {
 
         const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcherService)!;
         const registration = PaneRegistrations.at(-1)!;
-        const nodes = registration.options.getNodes();
+        const nodes = registration.options.getRoots()[0].getNodes();
         const unnamedDisplayInfo = nodes[0].getDisplayInfo();
         const utilityDisplayInfo = nodes[1].getDisplayInfo();
         const effectDisplayInfo = nodes[2].getDisplayInfo();
@@ -569,7 +663,7 @@ describe("Babylon Lite engine explorer service", () => {
         paneOptions.onNodesChanged?.add(onNodesChanged);
         const CustomIcon = ({ entity }: { entity: CustomRenderingContext }) => createElement("span", null, entity.iconLabel);
 
-        const getContextNode = () => paneOptions.getNodes()[0];
+        const getContextNode = () => paneOptions.getRoots()[0].getNodes()[0];
         expect(getContextNode().getDisplayInfo().name).toBe("custom-rendering-context");
         expect(getContextNode().icon).toBeUndefined();
 
@@ -652,6 +746,126 @@ describe("Babylon Lite engine explorer service", () => {
         service.dispose?.();
         expect(paneOptions.itemCommandProviders?.items).toEqual([]);
         expect(paneOptions.groupCommandProviders?.items).toEqual([]);
+    });
+});
+
+describe("Babylon Lite flow graph explorer service", () => {
+    it("registers one scene-only provider with copied, unnamed runtime nodes and disposes it", () => {
+        const providers: RenderingContextNodeProvider<RenderingContext>[] = [];
+        const dispose = vi.fn();
+        const engineExplorerService = {
+            addRenderingContextNodeProvider: vi.fn((provider: RenderingContextNodeProvider<RenderingContext>) => {
+                providers.push(provider);
+                return { dispose };
+            }),
+        } as unknown as IEngineExplorerService;
+        const first = {} as FgRuntime;
+        const second = {} as FgRuntime;
+        const runtimes = [first, second];
+        const scene = { _kind: "scene", _flowGraphs: runtimes } as unknown as SceneContext;
+        const service = FlowGraphExplorerServiceDefinition.factory(engineExplorerService)!;
+
+        expect(FlowGraphExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
+        expect(engineExplorerService.addRenderingContextNodeProvider).toHaveBeenCalledOnce();
+        const provider = providers[0];
+        expect(provider.order).toBe(410);
+        expect(provider.predicate(scene)).toBe(true);
+        expect(provider.predicate({ _kind: "effect-renderer" } as RenderingContext)).toBe(false);
+        expect(provider.predicate({ _kind: "frame-graph-context" } as RenderingContext)).toBe(false);
+
+        const sections = provider.getNodes(scene);
+        expect(sections).toHaveLength(1);
+        expect(sections[0].id).toBe("flow-graphs");
+        expect(sections[0].getDisplayInfo().name).toBe("Flow Graphs");
+        runtimes.length = 0;
+        const nodes = sections[0].getChildren!();
+        expect(nodes.map((node) => node.entity)).toEqual([first, second]);
+        expect(GetNames(BuildExplorerTree(sections).nodes[0].children)).toEqual(["Unnamed Flow Graph", "Unnamed Flow Graph"]);
+        for (const node of nodes) {
+            expect(node.kind).toBe("item");
+            expect(node.getChildren).toBeUndefined();
+            expect(renderToStaticMarkup(createElement(node.icon!, { entity: node.entity! }))).toBe(
+                renderToStaticMarkup(createElement(FlowchartRegular, { color: tokens.colorPaletteGreenForeground2 }))
+            );
+        }
+
+        service.dispose?.();
+        expect(dispose).toHaveBeenCalledOnce();
+    });
+
+    it("returns live snapshots for additions, removals, and clearing", () => {
+        let provider: RenderingContextNodeProvider<RenderingContext> | undefined;
+        const engineExplorerService = {
+            addRenderingContextNodeProvider: (value: RenderingContextNodeProvider<RenderingContext>) => {
+                provider = value;
+                return { dispose: vi.fn() };
+            },
+        } as IEngineExplorerService;
+        const first = {} as FgRuntime;
+        const second = {} as FgRuntime;
+        const runtimes = [first];
+        const scene = { _kind: "scene", _flowGraphs: runtimes } as unknown as SceneContext;
+        const service = FlowGraphExplorerServiceDefinition.factory(engineExplorerService)!;
+
+        expect(provider!.getSnapshot(scene)).toBe(runtimes);
+        runtimes.push(second);
+        expect(provider!.getSnapshot(scene)).toEqual([first, second]);
+        runtimes.splice(0, 1);
+        expect(provider!.getSnapshot(scene)).toEqual([second]);
+        runtimes.length = 0;
+        expect(provider!.getSnapshot(scene)).toEqual([]);
+        service.dispose?.();
+    });
+
+    it("does not refresh repeatedly for fresh empty runtime arrays and polls live changes", async () => {
+        const scene = { _kind: "scene" } as SceneContext;
+        expect(flowGraphRuntimes(scene)).not.toBe(flowGraphRuntimes(scene));
+        const watcher = CreateTopologyWatcherService();
+        const engineService = EngineExplorerServiceDefinition.factory(
+            { engine: CreateResourceEngine([scene]) },
+            {} as IShellService,
+            {} as ISelectionService,
+            watcher.watcherService
+        )!;
+        const service = FlowGraphExplorerServiceDefinition.factory(engineService)!;
+        const pane = PaneRegistrations.at(-1)!.options;
+        const onNodesChanged = vi.fn();
+        pane.onNodesChanged?.add(onNodesChanged);
+        const getSections = () => GetExplorerNodeChildren(scene, [], pane.nodeProviders?.items ?? []);
+
+        expect(getSections()[0].getChildren!()).toEqual([]);
+        expect(BuildExplorerTree(getSections()).nodes).toEqual([]);
+        // Settle the provider registration, then sample multiple polling intervals.
+        await watcher.refresh();
+        onNodesChanged.mockClear();
+        for (let index = 0; index < 5; index++) {
+            await watcher.refresh();
+        }
+        expect(onNodesChanged).not.toHaveBeenCalled();
+
+        const runtimes: FgRuntime[] = [{} as FgRuntime];
+        Object.assign(scene, { _flowGraphs: runtimes });
+        await watcher.refresh();
+        expect(onNodesChanged).toHaveBeenCalledTimes(1);
+        expect(getSections()[0].getChildren!()[0].entity).toBe(runtimes[0]);
+        runtimes.push({} as FgRuntime);
+        await watcher.refresh();
+        expect(onNodesChanged).toHaveBeenCalledTimes(2);
+        expect(getSections()[0].getChildren!()).toHaveLength(2);
+        runtimes.splice(0, 1);
+        await watcher.refresh();
+        expect(onNodesChanged).toHaveBeenCalledTimes(3);
+        runtimes.length = 0;
+        await watcher.refresh();
+        expect(onNodesChanged).toHaveBeenCalledTimes(4);
+        await watcher.refresh();
+        expect(onNodesChanged).toHaveBeenCalledTimes(4);
+        expect(BuildExplorerTree(getSections()).nodes).toEqual([]);
+
+        service.dispose?.();
+        expect(getSections()).toEqual([]);
+        engineService.dispose?.();
+        expect(watcher.dispose).toHaveBeenCalledOnce();
     });
 });
 

@@ -25,9 +25,15 @@ function OffsetWorldToRef(offset: IVector3Like, world: DeepImmutable<IMatrixLike
     for (let i = 0; i < 16; i++) {
         refArray[i] = worldArray[i];
     }
-    refArray[12] -= offset.x;
-    refArray[13] -= offset.y;
-    refArray[14] -= offset.z;
+    // world * translation(-offset): each row moves by its w (its last column) times the offset. For an affine matrix that's
+    // only the translation row, but a projective one (such as CameraGizmo's frustum, drawn through an inverse
+    // projection) has w in the other rows too
+    for (let row = 0; row < 16; row += 4) {
+        const w = refArray[row + 3];
+        refArray[row] -= w * offset.x;
+        refArray[row + 1] -= w * offset.y;
+        refArray[row + 2] -= w * offset.z;
+    }
     ref.markAsUpdated();
     return ref;
 }

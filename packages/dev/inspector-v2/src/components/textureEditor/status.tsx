@@ -41,8 +41,8 @@ export const StatusBar: FunctionComponent<StatusBarProps> = (props) => {
     const classes = useStyles();
 
     const factor = Math.pow(2, mipLevel);
-    const width = Math.ceil(texture.getSize().width / factor);
-    const height = Math.ceil(texture.getSize().height / factor);
+    const width = Math.max(1, Math.floor(texture.getSize().width / factor));
+    const height = Math.max(1, Math.floor(texture.getSize().height / factor));
 
     return (
         <div className={classes.statusBar}>

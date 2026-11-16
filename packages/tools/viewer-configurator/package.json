@@ -22,8 +22,8 @@
         "@tools/viewer": "1.0.0"
     },
     "devDependencies": {
-        "@fluentui/react-components": "^9.74.9",
-        "@fluentui/react-icons": "^2.0.341",
+        "@fluentui/react-components": "^9.74.11",
+        "@fluentui/react-icons": "^2.0.344",
         "@types/react": "^18.3.31",
         "@types/react-dom": "^18.3.7",
         "react": "^18.3.1",

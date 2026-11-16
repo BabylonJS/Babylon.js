@@ -10,6 +10,8 @@ Vitest is configured with `globals: true`, so `describe`, `it`, `test`, and `exp
 
 Run unit tests with `npm test` or `npx vitest run --project=unit` from the repo root.
 
+Resolve temporary directories with `fs.realpathSync.native` before watching them on Windows. The JavaScript `fs.realpathSync` implementation can preserve short directory names, which trigger native watcher assertions in affected Node versions.
+
 When reviewing code, check if new APIs are being introduced without unit tests. If they are missing and the APIs are well suited for unit tests, try to add new tests yourself, otherwise at least flag missing tests in the review comments.
 
 # Integration, Performance, and Interaction Tests (Playwright)

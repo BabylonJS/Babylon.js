@@ -265,9 +265,10 @@ export function _finalizePipelineContext(pipelineContext: WebGLPipelineContext, 
     pipelineContext.vertexShader = undefined;
     pipelineContext.fragmentShader = undefined;
 
-    if (pipelineContext.onCompiled) {
-        pipelineContext.onCompiled();
+    const onCompiled = pipelineContext.onCompiled;
+    if (onCompiled) {
         pipelineContext.onCompiled = undefined;
+        onCompiled();
     }
 }
 

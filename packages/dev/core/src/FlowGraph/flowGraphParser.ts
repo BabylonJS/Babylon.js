@@ -10,13 +10,89 @@ import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import { _GetDefaultEventDataParseCount, defaultValueParseFunction, needsPathConverter } from "./serialization";
-import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext } from "./typeDefinitions";
+import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext, type SerializedFlowGraphReferenceProvenance } from "./typeDefinitions";
 import { type Node } from "core/node";
 import { type Scene } from "core/scene";
 import { getRichTypeByFlowGraphType, RichType } from "./flowGraphRichTypes.pure";
 import { type FlowGraphConnection } from "./flowGraphConnection";
 import { Constants } from "core/Engines/constants";
 import { WebRequest } from "core/Misc/webRequest";
+import { Logger } from "core/Misc/logger";
+import { type AudioEngineV2 } from "core/AudioV2/abstractAudio/audioEngineV2";
+import { type IFlowGraphSoundAsset } from "./flowGraphSoundAssets";
+
+function _CreateReferenceProvenanceParseFunction(
+    baseValueParseFunction: NonNullable<IFlowGraphParseOptions["valueParseFunction"]>,
+    provenance: SerializedFlowGraphReferenceProvenance
+): NonNullable<IFlowGraphParseOptions["valueParseFunction"]> {
+    const locations = new Map<number, SerializedFlowGraphReferenceProvenance[number][1][]>();
+    const provenanceIndexes = new Map<SerializedFlowGraphReferenceProvenance[number][1], number>();
+    for (let provenanceIndex = 0; provenanceIndex < provenance.length; provenanceIndex++) {
+        const [uniqueId, location] = provenance[provenanceIndex];
+        const matchingLocations = locations.get(uniqueId) ?? [];
+        matchingLocations.push(location);
+        locations.set(uniqueId, matchingLocations);
+        provenanceIndexes.set(location, provenanceIndex);
+    }
+
+    const resolve = (serializedValue: any, parsedValue: any, scene: Scene): any => {
+        if (Array.isArray(serializedValue)) {
+            if (
+                !Array.isArray(parsedValue) ||
+                !serializedValue.every((entry) => entry && typeof entry === "object" && typeof entry.uniqueId === "number" && typeof entry.className === "string")
+            ) {
+                return parsedValue;
+            }
+            let changed = false;
+            const resolved = serializedValue.map((entry, index) => {
+                const resolvedEntry = resolve(entry, parsedValue[index], scene);
+                changed ||= resolvedEntry !== parsedValue[index];
+                return resolvedEntry;
+            });
+            return changed ? resolved : parsedValue;
+        }
+        if (!serializedValue || typeof serializedValue !== "object" || typeof serializedValue.uniqueId !== "number" || typeof serializedValue.className !== "string") {
+            return parsedValue;
+        }
+        const matchingLocations = locations.get(serializedValue.uniqueId);
+        const location =
+            matchingLocations?.find(
+                (candidate) => candidate.className === serializedValue.className && candidate.id === serializedValue.id && candidate.name === serializedValue.name
+            ) ??
+            matchingLocations?.find((candidate) => candidate.className === serializedValue.className && candidate.id === serializedValue.id) ??
+            matchingLocations?.find((candidate) => candidate.className === serializedValue.className && candidate.name === serializedValue.name) ??
+            (matchingLocations?.length === 1 ? matchingLocations[0] : undefined);
+        if (!location) {
+            return parsedValue;
+        }
+        const nodes = scene.getNodes().filter((node) => node.getClassName() === location.className);
+        let candidates = nodes.filter((node) => node.id === location.id);
+        let index = location.idIndex;
+        if (candidates.length === 0) {
+            candidates = nodes.filter((node) => node.name === location.name);
+            index = location.nameIndex;
+        }
+        const resolved = (location.sceneUid === scene.uid ? candidates.find((node) => node.uniqueId === serializedValue.uniqueId) : undefined) ?? candidates[index];
+        if (!resolved) {
+            return serializedValue;
+        }
+        const resolvedNodes = scene.getNodes().filter((node) => node.getClassName() === resolved.getClassName());
+        provenance[provenanceIndexes.get(location)!] = [
+            resolved.uniqueId,
+            {
+                id: resolved.id,
+                name: resolved.name,
+                className: resolved.getClassName(),
+                idIndex: resolvedNodes.filter((node) => node.id === resolved.id).indexOf(resolved),
+                nameIndex: resolvedNodes.filter((node) => node.name === resolved.name).indexOf(resolved),
+                sceneUid: scene.uid,
+            },
+        ];
+        return resolved;
+    };
+
+    return (key, serializationObject, assetsContainer, scene) => resolve(serializationObject[key], baseValueParseFunction(key, serializationObject, assetsContainer, scene), scene);
+}
 
 function ParseCustomEventData(
     serializedEventData: unknown,
@@ -94,6 +170,22 @@ function ApplyCoordinatorSerializationSettings(serializedObject: any, coordinato
     }
 }
 
+async function LoadSerializedSoundAssetsAsync(serializedObject: any, coordinator: FlowGraphCoordinator, audioEngine?: AudioEngineV2): Promise<void> {
+    const soundAssets: IFlowGraphSoundAsset[] | undefined = serializedObject.soundAssets;
+    if (!Array.isArray(soundAssets) || soundAssets.length === 0) {
+        return;
+    }
+    await Promise.all(
+        soundAssets.map(async (asset) => {
+            try {
+                await coordinator.addSoundAssetAsync(asset, audioEngine);
+            } catch (e) {
+                Logger.Warn(`FlowGraph: unable to load sound asset "${asset.name}": ${e}`);
+            }
+        })
+    );
+}
+
 /**
  * Given a list of blocks, find an output data connection that has a specific unique id
  * @param blocks a list of flow graph blocks
@@ -142,11 +234,17 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: IFlo
 
     ApplyCoordinatorSerializationSettings(serializedObject, coordinator);
 
-    await options.scene.whenReadyAsync();
+    await Promise.all([options.scene.whenReadyAsync(), LoadSerializedSoundAssetsAsync(serializedObject, coordinator, options.audioEngine)]);
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
         serializedObject._flowGraphs?.map(
-            async (serializedGraph: any) => await ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter })
+            async (serializedGraph: any) =>
+                await ParseFlowGraphAsync(serializedGraph, {
+                    coordinator,
+                    valueParseFunction,
+                    pathConverter: options.pathConverter,
+                    referenceProvenance: serializedObject.referenceProvenance,
+                })
         )
     );
     return coordinator;
@@ -167,7 +265,12 @@ export async function ParseFlowGraphCoordinatorFromSnippetAsync(snippetId: strin
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     const coordinator = new FlowGraphCoordinator({ scene: options.scene });
     await options.scene.whenReadyAsync();
-    await ParseFlowGraphAsync(serializedObject, { coordinator, valueParseFunction, pathConverter: options.pathConverter });
+    await ParseFlowGraphAsync(serializedObject, {
+        coordinator,
+        valueParseFunction,
+        pathConverter: options.pathConverter,
+        referenceProvenance: serializedObject.referenceProvenance,
+    });
     return coordinator;
 }
 
@@ -187,10 +290,18 @@ export async function ParseFlowGraphFromSnippetAsync(snippetId: string, options:
     }
 
     ApplyCoordinatorSerializationSettings(serializedObject, options.coordinator);
+    await LoadSerializedSoundAssetsAsync(serializedObject, options.coordinator);
     const parsedGraphs: FlowGraph[] = [];
     for (const serializedGraph of serializedObject._flowGraphs) {
-        // eslint-disable-next-line no-await-in-loop -- graph order matters for the active graph index.
-        parsedGraphs.push(await ParseFlowGraphAsync(serializedGraph, { coordinator: options.coordinator, valueParseFunction, pathConverter: options.pathConverter }));
+        parsedGraphs.push(
+            // eslint-disable-next-line no-await-in-loop -- graph order matters for the active graph index.
+            await ParseFlowGraphAsync(serializedGraph, {
+                coordinator: options.coordinator,
+                valueParseFunction,
+                pathConverter: options.pathConverter,
+                referenceProvenance: serializedObject.referenceProvenance,
+            })
+        );
     }
 
     const activeGraphIndex = serializedObject.activeGraphIndex ?? 0;
@@ -233,7 +344,13 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
     }
     graph.metadata = serializationObject.metadata;
     const blocks: FlowGraphBlock[] = [];
-    const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+    const baseValueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+    const serializedReferenceProvenance = options.referenceProvenance ?? serializationObject.referenceProvenance;
+    const referenceProvenance = serializedReferenceProvenance?.map(([uniqueId, location]) => [uniqueId, { ...location }] as SerializedFlowGraphReferenceProvenance[number]);
+    const valueParseFunction = referenceProvenance ? _CreateReferenceProvenanceParseFunction(baseValueParseFunction, referenceProvenance) : baseValueParseFunction;
+    if (referenceProvenance) {
+        graph._setReferenceProvenance(referenceProvenance);
+    }
     // Parse all blocks
     // for (const serializedBlock of serializationObject.allBlocks) {
     for (let i = 0; i < serializationObject.allBlocks.length; i++) {

@@ -25,7 +25,7 @@ export class NativeEngine extends Engine {
      * @internal
      */
     public constructor(options: NativeEngineOptions = {}) {
-        super(null, false, undefined, options.adaptToDeviceRatio);
+        super(null, false, options, options.adaptToDeviceRatio);
 
         this._initializeNativeEngine(options.adaptToDeviceRatio ?? false);
     }

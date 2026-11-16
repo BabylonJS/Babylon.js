@@ -1,15 +1,17 @@
 import * as React from "react";
-import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { Body1, Dropdown, Option, makeStyles, tokens } from "@fluentui/react-components";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
-import { Body1, makeStyles, tokens } from "@fluentui/react-components";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
-import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
-import { RenderGeneralSection, RenderConstructorVariablesSection, RenderDataConnectionsSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type Observer } from "core/Misc/observable";
+
 import { type GlobalState } from "../../globalState";
 import { type SceneContext } from "../../sceneContext";
-import { type Observer } from "core/Misc/observable";
+import { RenderGeneralSection, RenderConstructorVariablesSection, RenderDataConnectionsSection, RenderGenericPropStoreSections } from "./genericNodePropertyComponent";
+import { GetSourceMeshPickerOptions } from "./meshIntersectionPropertyComponent";
 
 interface IPointerEventPropertyState {
     sceneContext: SceneContext | null;
@@ -21,40 +23,44 @@ const useStyles = makeStyles({
         color: tokens.colorNeutralForeground3,
         fontStyle: "italic",
     },
+    dropdown: {
+        minWidth: 0,
+        width: "100%",
+    },
 });
 
 const TargetMeshContent: React.FunctionComponent<{
     sceneContext: SceneContext | null;
-    currentUniqueId: number;
-    onMeshChange: (uniqueId: number) => void;
-    blockId: string;
-}> = ({ sceneContext, currentUniqueId, onMeshChange, blockId }) => {
+    currentMesh?: AbstractMesh;
+    onMeshChange: (mesh: AbstractMesh | undefined) => void;
+}> = ({ sceneContext, currentMesh, onMeshChange }) => {
     const classes = useStyles();
-    return (
+    const meshes = sceneContext?.meshes ?? [];
+    const options = GetSourceMeshPickerOptions(meshes, currentMesh);
+    const selectedKey = currentMesh ? (meshes.includes(currentMesh) ? `live:${currentMesh.uniqueId}` : `unresolved:${currentMesh.uniqueId}`) : "none";
+    const selectedOption = options.find((option) => option.key === selectedKey);
+    return sceneContext ? (
         <>
-            {sceneContext ? (
-                <>
-                    <NumberDropdownPropertyLine
-                        key={`mesh-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
-                        label="Mesh"
-                        options={
-                            [
-                                { label: "(none)", value: -1 },
-                                ...sceneContext.meshes.map((m) => ({
-                                    label: m.name || `(id ${m.uniqueId})`,
-                                    value: m.uniqueId,
-                                })),
-                            ] as DropdownOption<number>[]
-                        }
-                        value={currentUniqueId}
-                        onChange={onMeshChange}
-                    />
-                    {sceneContext.meshes.length === 0 && <Body1 className={classes.helpText}>No meshes found in the scene.</Body1>}
-                </>
-            ) : (
-                <Body1 className={classes.helpText}>Load a scene snippet in the Preview panel to pick meshes by name.</Body1>
-            )}
+            <PropertyLine label="Mesh">
+                <Dropdown
+                    aria-label="Mesh"
+                    className={classes.dropdown}
+                    size="small"
+                    value={selectedOption?.label ?? "(none)"}
+                    selectedOptions={[selectedKey]}
+                    onOptionSelect={(_, data) => onMeshChange(options.find((option) => option.key === data.optionValue)?.mesh)}
+                >
+                    {options.map((option) => (
+                        <Option key={option.key} value={option.key} text={option.label}>
+                            {option.label}
+                        </Option>
+                    ))}
+                </Dropdown>
+            </PropertyLine>
+            {meshes.length === 0 && <Body1 className={classes.helpText}>No meshes found in the scene.</Body1>}
         </>
+    ) : (
+        <Body1 className={classes.helpText}>Load a scene snippet in the Preview panel to pick meshes by name.</Body1>
     );
 };
 
@@ -90,85 +96,32 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
         return this.props.nodeData.data as FlowGraphBlock;
     }
 
-    /**
-     * MeshPickEventBlock registers the input as "asset"; pointer blocks use "targetMesh".
-     * @returns The data input for the target mesh, or null if not found.
-     */
     private _getTargetMeshInput() {
         const block = this._getBlock();
         return block.getDataInput("targetMesh") ?? block.getDataInput("asset");
     }
 
-    private _onMeshChange(uniqueId: number) {
+    private _onMeshChange(mesh: AbstractMesh | undefined) {
         const block = this._getBlock();
         const meshInput = this._getTargetMeshInput();
         if (!meshInput) {
             return;
         }
-
-        const { sceneContext } = this.state;
-        if (!sceneContext) {
-            return;
-        }
-
-        const mesh = uniqueId === -1 ? undefined : sceneContext.meshes.find((m) => m.uniqueId === uniqueId);
-
         if (!block.config) {
             (block as any).config = {};
         }
         (block.config as any).targetMesh = mesh;
         (block.config as any)._meshName = mesh?.name;
-        (meshInput as any)._defaultValue = mesh;
-
+        const globalState = this.props.stateManager.data as GlobalState;
+        globalState.setUnconnectedInputValue(meshInput, mesh);
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.forceUpdate();
     }
 
-    /**
-     * Resolve the current mesh uniqueId, rebinding by saved name when the
-     * stored reference is stale (e.g. after a scene reset that creates new
-     * objects with different uniqueIds).
-     * @param sceneContext - The current scene context, or null if unavailable.
-     * @returns The uniqueId of the current mesh, or -1 if none.
-     */
-    private _resolveCurrentMeshId(sceneContext: SceneContext | null): number {
-        const meshInput = this._getTargetMeshInput();
-        const currentMesh = meshInput ? (meshInput as any)._defaultValue : undefined;
-        if (!sceneContext) {
-            return currentMesh?.uniqueId ?? -1;
-        }
-
-        if (currentMesh && typeof currentMesh === "object") {
-            const uid = currentMesh.uniqueId;
-            // If the stored uniqueId still matches a mesh in the scene, use it
-            if (sceneContext.meshes.some((m) => m.uniqueId === uid)) {
-                return uid;
-            }
-        }
-
-        // Stale or missing reference — try to rebind by the saved name
-        const block = this._getBlock();
-        const savedName: string | undefined = (block.config as any)?._meshName ?? (currentMesh && typeof currentMesh === "object" ? currentMesh.name : undefined);
-        if (savedName) {
-            const match = sceneContext.meshes.find((m) => m.name === savedName);
-            if (match) {
-                if (!block.config) {
-                    (block as any).config = {};
-                }
-                (block.config as any).targetMesh = match;
-                (meshInput as any)._defaultValue = match;
-                return match.uniqueId;
-            }
-        }
-
-        return -1;
-    }
-
     override render() {
         const { sceneContext } = this.state;
-        const block = this._getBlock();
-        const blockId = block.uniqueId;
-        const currentUniqueId = this._resolveCurrentMeshId(sceneContext);
+        const meshInput = this._getTargetMeshInput();
+        const currentMesh = meshInput ? ((meshInput as any)._defaultValue as AbstractMesh | undefined) : undefined;
 
         return (
             <Accordion uniqueId="FlowGraphPointerEventProperties" enablePinnedItems enableSearchItems>
@@ -176,7 +129,7 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
                 {RenderConstructorVariablesSection(this.props)}
 
                 <AccordionSection title="Target Mesh" collapseByDefault={false}>
-                    <TargetMeshContent sceneContext={sceneContext} currentUniqueId={currentUniqueId} onMeshChange={(id) => this._onMeshChange(id)} blockId={blockId} />
+                    <TargetMeshContent sceneContext={sceneContext} currentMesh={currentMesh} onMeshChange={(mesh) => this._onMeshChange(mesh)} />
                 </AccordionSection>
 
                 {RenderDataConnectionsSection(this.props)}

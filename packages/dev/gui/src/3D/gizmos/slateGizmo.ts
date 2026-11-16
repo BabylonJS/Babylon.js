@@ -51,7 +51,7 @@ export class SlateGizmo extends Gizmo {
     private _attachedSlate: Nullable<HolographicSlate> = null;
     private _existingSlateScale = new Vector3();
     /**
-     * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: true)
+     * If set, the handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
      */
     public fixedScreenSize = false;
     /**

@@ -51,6 +51,14 @@ export class MaterialPluginBase {
     public registerForExtraEvents: boolean = false;
 
     /**
+     * @internal Whether the plugin binds only what is the same for every draw of its material with the same effect: the values of its
+     * material, of the scene and of the defines of the sub mesh, never of the mesh or the sub mesh. A draw a snapshot recorded is encoded
+     * again without binding only when every active plugin of its material does (see Material._canReplayRecordedDraw): the built-in
+     * plugins that do set it
+     */
+    public _bindsMaterialValuesOnly = false;
+
+    /**
      * Specifies if the material plugin should be serialized, `true` to skip serialization
      */
     public doNotSerialize = false;

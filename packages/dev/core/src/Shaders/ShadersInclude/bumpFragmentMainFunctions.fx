@@ -3,8 +3,8 @@
     #define TEXRD_DEFINED
 #endif
 
-#if defined(BUMP) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC) || defined(DETAIL)
-	#if defined(TANGENT) && defined(NORMAL) 
+#if defined(BUMP) || defined(BENTNORMAL) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC) || defined(DETAIL)
+	#if defined(TANGENT) && defined(NORMAL)
 		varying mat3 vTBN;
 	#endif
 

@@ -3,7 +3,7 @@
 import { Constants } from "../../Engines/constants";
 import { type Engine } from "../../Engines/engine.pure";
 import { ShaderMaterial } from "../../Materials/shaderMaterial.pure";
-import { MultiRenderTarget } from "../../Materials/Textures/multiRenderTarget.pure";
+import { MultiRenderTarget, type IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget.pure";
 import { RenderTargetTexture, type RenderTargetTextureOptions } from "../../Materials/Textures/renderTargetTexture.pure";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../../Maths/math.color.pure";
@@ -501,6 +501,31 @@ export class _IblShadowsVoxelRenderer {
         compute.dispatch(groups, groups, groups);
     }
 
+    /**
+     * Builds the options of one voxelization slab MRT. Every attachment renders into a Z-slice of the shared voxel
+     * grid, which is attached afterwards through setInternalTexture, so the attachment slots are deferred
+     * (target type -1) instead of allocating a throw-away volume per draw buffer.
+     * @param maxDrawBuffers number of draw buffers (attachments) of the MRT
+     * @param voxelResolution resolution of the voxel grid
+     * @param mrtIndex index of the slab
+     * @returns the MRT creation options
+     * @internal
+     */
+    public static _CreateVoxelSlabMRTOptions(maxDrawBuffers: number, voxelResolution: number, mrtIndex: number): IMultiRenderTargetOptions {
+        return {
+            types: new Array(maxDrawBuffers).fill(Constants.TEXTURETYPE_UNSIGNED_BYTE),
+            samplingModes: new Array(maxDrawBuffers).fill(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE),
+            generateMipMaps: false,
+            targetTypes: new Array(maxDrawBuffers).fill(-1),
+            formats: new Array(maxDrawBuffers).fill(Constants.TEXTUREFORMAT_R),
+            faceIndex: new Array(maxDrawBuffers).fill(0),
+            layerIndex: Array.from({ length: maxDrawBuffers }, (_, index) => mrtIndex * maxDrawBuffers + index),
+            layerCounts: new Array(maxDrawBuffers).fill(voxelResolution),
+            generateDepthBuffer: false,
+            generateStencilBuffer: false,
+        };
+    }
+
     private _createVoxelMRTs(name: string, voxelRT: RenderTargetTexture, numSlabs: number): MultiRenderTarget[] {
         voxelRT.wrapU = Texture.CLAMP_ADDRESSMODE;
         voxelRT.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -509,12 +534,8 @@ export class _IblShadowsVoxelRenderer {
         voxelRT.wrapR = Texture.CLAMP_ADDRESSMODE;
         voxelRT.noPrePassRenderer = true;
         const mrtArray: MultiRenderTarget[] = [];
-        const targetTypes = new Array(this._maxDrawBuffers).fill(Constants.TEXTURE_3D);
 
         for (let mrtIndex = 0; mrtIndex < numSlabs; mrtIndex++) {
-            let layerIndices = new Array(this._maxDrawBuffers).fill(0);
-            layerIndices = layerIndices.map((value, index) => mrtIndex * this._maxDrawBuffers + index);
-
             let textureNames = new Array(this._maxDrawBuffers).fill("");
             textureNames = textureNames.map((value, index) => "voxel_grid_" + name + (mrtIndex * this._maxDrawBuffers + index));
 
@@ -523,18 +544,7 @@ export class _IblShadowsVoxelRenderer {
                 { width: this._voxelResolution, height: this._voxelResolution, depth: this._voxelResolution },
                 this._maxDrawBuffers, // number of draw buffers
                 this._scene,
-                {
-                    types: new Array(this._maxDrawBuffers).fill(Constants.TEXTURETYPE_UNSIGNED_BYTE),
-                    samplingModes: new Array(this._maxDrawBuffers).fill(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE),
-                    generateMipMaps: false,
-                    targetTypes,
-                    formats: new Array(this._maxDrawBuffers).fill(Constants.TEXTUREFORMAT_R),
-                    faceIndex: new Array(this._maxDrawBuffers).fill(0),
-                    layerIndex: layerIndices,
-                    layerCounts: new Array(this._maxDrawBuffers).fill(this._voxelResolution),
-                    generateDepthBuffer: false,
-                    generateStencilBuffer: false,
-                },
+                _IblShadowsVoxelRenderer._CreateVoxelSlabMRTOptions(this._maxDrawBuffers, this._voxelResolution, mrtIndex),
                 textureNames
             );
 

@@ -27,6 +27,7 @@
         "FlowGraph/Blocks/Data/flowGraphTransformCoordinatesSystemBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Event/flowGraphKeyDownEventBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Event/flowGraphKeyUpEventBlock.ts": ["top-level-call"],
+        "FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Event/flowGraphPhysicsCollisionEventBlock.ts": ["top-level-call"],
         "FlowGraph/Blocks/Event/flowGraphPointerDownEventBlock.ts": ["top-level-call"],

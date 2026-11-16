@@ -14,8 +14,9 @@
 # 3. Authorize the GitHub service connection (GITHUB_SERVICE_CONNECTION)
 #    for this pipeline.
 #
-# 4. Update the 'resources.pipelines' source names to match your actual
-#    pipeline names in Azure DevOps.
+# 4. The 'resources.pipelines' source names must match the pipeline
+#    definition names in Azure DevOps ("CDN deploy pipeline",
+#    "BabylonNative Nightly CI").
 # =============================================================================
 
 trigger:
@@ -45,13 +46,18 @@ schedules:
 
 resources:
     pipelines:
-        # Build completion trigger - cd-publish pipeline (Definition 15)
+        # Build completion trigger - CDN deploy pipeline (cd-cdn-deploy.yml).
+        # Stable releases run the CDN deploy from the release tag, so this
+        # pipeline is then queued on refs/tags/<version>. Such runs are treated
+        # as master runs (see BuildName/DeployBranch below) so the general CDN
+        # (cdn/master) is refreshed after every stable release.
         - pipeline: buildCompletionTrigger
-          source: "Publish pipeline"
+          source: "CDN deploy pipeline"
           trigger:
               branches:
                   include:
                       - master
+                      - refs/tags/*
         # Native tests artifact source - pipeline ID 36
         - pipeline: nativeTestsArtifact
           source: "BabylonNative Nightly CI"
@@ -61,8 +67,18 @@ variables:
     - group: BabylonJS-CI-Infrastructure
     - group: Browserstack-Opensource
     - group: BabylonJS-Deployment
-    - name: BuildName
-      value: $(Build.SourceBranch)
+    # Snapshot path and CDN deploy branch. Release-tag runs triggered by the CDN
+    # deploy pipeline check out the latest tag on master and deploy as master.
+    - ${{ if and(in(variables['Build.Reason'], 'ResourceTrigger', 'BuildCompletion'), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
+          - name: BuildName
+            value: refs/heads/master
+          - name: DeployBranch
+            value: master
+    - ${{ else }}:
+          - name: BuildName
+            value: $(Build.SourceBranch)
+          - name: DeployBranch
+            value: $(Build.SourceBranchName)
     - name: BROWSERSTACK_BROWSER
       value: "chrome@143:OSX Sonoma"
     - name: system.debug
@@ -138,7 +154,7 @@ jobs:
           - script: |
                 curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Clear snapshot"
-            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['Build.SourceBranchName'], 'master')))
+            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['DeployBranch'], 'master')))
 
           - task: GitHubComment@0
             displayName: "Tag your PR!"
@@ -483,7 +499,7 @@ jobs:
     # ============================================================================
     - job: TypeDocCheck
       displayName: "TypeDoc check"
-      condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+      condition: ne(variables['BuildName'], 'refs/heads/master')
       steps:
           - template: templates/checkout-with-tag-override.yml
             parameters:
@@ -539,7 +555,7 @@ jobs:
                   NodeVersion: "22.22.2"
               WindowsNode24:
                   vmImage: "windows-latest"
-                  NodeVersion: "24.15.0"
+                  NodeVersion: "24.16.0"
               LinuxNode22:
                   vmImage: "ubuntu-latest"
                   NodeVersion: "22.22.2"
@@ -877,7 +893,6 @@ jobs:
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
                 CI: "true"
-                EXCLUDE_REGEX_ARRAY: "Procedural textures playground"
                 BSTACK_TEST_TYPE: "webgl2"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
@@ -1013,7 +1028,7 @@ jobs:
       dependsOn:
           - Build
           - FormatLint
-      timeoutInMinutes: 35
+      timeoutInMinutes: 90
       pool:
           vmImage: windows-latest
       steps:
@@ -1053,25 +1068,13 @@ jobs:
                 setlocal EnableDelayedExpansion
                 set destDir=..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets
                 for /f %%i in ('dir /b %destDir%\babylon*') do (
-                  set sourceName=%%i
-                  if /i "!sourceName:~-3!"==".js" (
-                    set sourceName=!sourceName:.max.js=.es5.js!
-                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
-                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
-                  )
-                  unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
+                  unzip -p snapshot.zip "**%%i" > %destDir%\%%i
                   if errorlevel 1 exit /b !errorlevel!
                 )
 
                 set destDir=..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
                 for /f %%i in ('dir /b %destDir%\babylon*') do (
-                  set sourceName=%%i
-                  if /i "!sourceName:~-3!"==".js" (
-                    set sourceName=!sourceName:.max.js=.es5.js!
-                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
-                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
-                  )
-                  unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
+                  unzip -p snapshot.zip "**%%i" > %destDir%\%%i
                   if errorlevel 1 exit /b !errorlevel!
                 )
             displayName: "Update scripts from snapshot (ES5)"
@@ -1089,7 +1092,6 @@ jobs:
                 cd ..\BabylonNativeNightlyPlayground\RelWithDebInfo
                 Playground.exe app:///Scripts/validation_native.js
             displayName: "Run visualization tests"
-            retryCountOnTaskFailure: 3
 
           - pwsh: |
                 New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Results" | Out-Null
@@ -1297,8 +1299,8 @@ jobs:
           and(
             succeeded(),
             or(
-              eq(variables['Build.SourceBranchName'], 'master'),
-              eq(variables['Build.SourceBranchName'], 'preview')
+              eq(variables['DeployBranch'], 'master'),
+              eq(variables['DeployBranch'], 'preview')
             ),
             or(
               eq(variables['Build.Reason'], 'Manual'),
@@ -1321,7 +1323,7 @@ jobs:
                 curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/$(Build.SourceBranchName)" \
+                  -F "path=cdn/$(DeployBranch)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@snapshot.zip"
 
@@ -1332,7 +1334,7 @@ jobs:
                 curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=cdn/$(Build.SourceBranchName)" \
+                  -F "path=cdn/$(DeployBranch)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@fileSize.zip"
             displayName: "Update CDN"

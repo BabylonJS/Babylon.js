@@ -101,12 +101,24 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
         return this._currentRenderTarget === null;
     }
 
+    /**
+     * Submits any render-pass commands that were batched for deferred recording. This must be called
+     * before mutating the current render pass directly (occlusion queries, debug markers, dynamic
+     * state, pass end) so that batched draws keep their position relative to those commands.
+     * No-op for engines that do not batch render-pass commands.
+     * @internal
+     */
+    public _flushRenderPassCommands(): void {
+        // Overridden by engines that batch render-pass command submission.
+    }
+
     /** @internal */
     public _endCurrentRenderPass(): number {
         if (!this._currentRenderPass) {
             return 0;
         }
 
+        this._flushRenderPassCommands();
         this._debugPopBeforeEndOfEncoder();
 
         const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;
@@ -155,7 +167,11 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             this._textureHelper.generateCubeMipmaps(gpuHardwareTexture, mipmapCount, commandEncoder);
         } else if (texture.is3D) {
             this._textureHelper.generate3DMipmaps(gpuHardwareTexture, gpuHardwareTexture.underlyingResource?.mipLevelCount ?? mipmapCount, commandEncoder);
-        } else if (texture._source === InternalTextureSource.Raw || texture._source === InternalTextureSource.Raw2DArray) {
+        } else if (texture._source === InternalTextureSource.Raw2DArray) {
+            for (let layer = 0; layer < texture.depth; ++layer) {
+                this._textureHelper.generateMipmaps(gpuHardwareTexture, texture.mipLevelCount, layer, commandEncoder);
+            }
+        } else if (texture._source === InternalTextureSource.Raw) {
             this._textureHelper.generateMipmaps(gpuHardwareTexture, texture.mipLevelCount, 0, commandEncoder);
         } else {
             this._textureHelper.generateMipmaps(gpuHardwareTexture, mipmapCount, 0, commandEncoder);

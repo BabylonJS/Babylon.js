@@ -6,6 +6,6 @@ layout(location=2) out vec4 backColor;
 #define MAX_DEPTH 99999.0
 highp vec4 gl_FragColor;
 
-uniform sampler2D oitDepthSampler;
+uniform highp sampler2D oitDepthSampler;
 uniform sampler2D oitFrontColorSampler;
 #endif

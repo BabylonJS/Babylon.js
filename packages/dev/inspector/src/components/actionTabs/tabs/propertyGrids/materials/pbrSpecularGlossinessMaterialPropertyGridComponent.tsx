@@ -59,6 +59,22 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
                 <TextureLinkLineComponent
+                    label="Bent Normal"
+                    texture={material.bentNormalTexture}
+                    propertyName="bentNormalTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Occlusion"
+                    texture={material.occlusionTexture}
+                    propertyName="occlusionTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
                     label="Environment"
                     texture={material.environmentTexture}
                     propertyName="environmentTexture"

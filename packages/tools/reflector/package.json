@@ -10,10 +10,10 @@
         "start:ssl": "node ./dist/index.js --ssl"
     },
     "devDependencies": {
-        "@types/ws": "^8.18.1"
+        "@types/ws": "^8.18.2"
     },
     "dependencies": {
-        "ws": "^8.21.3"
+        "ws": "^8.22.0"
     },
     "optionalDependencies": {
         "bufferutil": "^4.1.0",

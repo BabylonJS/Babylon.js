@@ -296,12 +296,12 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 
 		#ifdef REFLECTIONFRESNELFROMSPECULAR
 			#ifdef SPECULARTERM
-				reflectionColor = vec4f(reflectionColor.rgb * specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb, reflectionColor.a);
+				reflectionColor = vec4f(reflectionColor.rgb * (specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb), reflectionColor.a);
 			#else
-				reflectionColor = vec4f(reflectionColor.rgb * uniforms.reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb, reflectionColor.a);
+				reflectionColor = vec4f(reflectionColor.rgb * (uniforms.reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb), reflectionColor.a);
 			#endif
 		#else
-			reflectionColor = vec4f(reflectionColor.rgb * uniforms.reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb, reflectionColor.a);
+			reflectionColor = vec4f(reflectionColor.rgb * (uniforms.reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb), reflectionColor.a);
 		#endif
 	#endif
 #endif
@@ -309,7 +309,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 #ifdef REFRACTIONFRESNEL
 	var refractionFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, uniforms.refractionRightColor.a, uniforms.refractionLeftColor.a);
 
-	refractionColor = vec4f(refractionColor.rgb * uniforms.refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * uniforms.refractionRightColor.rgb, refractionColor.a);
+	refractionColor = vec4f(refractionColor.rgb * (uniforms.refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * uniforms.refractionRightColor.rgb), refractionColor.a);
 #endif
 
 #include<defaultFragmentAlpha>

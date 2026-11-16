@@ -6,6 +6,7 @@ import { type Nullable } from "../../../types";
 
 import { Matrix, Vector3 } from "../../../Maths/math.vector.pure";
 import { Viewport } from "../../../Maths/math.viewport";
+import { _IsHtmlInCanvasPolyfillInstalled } from "./htmlInCanvasPolyfill";
 
 // Attribution: the overlay-and-hit-test technique used here is prior art from `three-html-render`
 // (Palash Bansal, MIT), three.js' `InteractionManager`, and Jake Archibald's `curved-markup` demo.
@@ -52,9 +53,9 @@ export interface IHtmlInteractionManagerOptions {
  * Overlays the live HTML element of an {@link HtmlTexture} on top of the projected face of a planar mesh,
  * so the browser hit-tests the real DOM element natively (enabling focus, text selection and form input).
  *
- * Each frame the mesh face is projected to screen space and the element is translated, scaled and rotated
- * to match. This is best suited to planar, camera-facing surfaces. For arbitrary or curved meshes, use the
- * UV-based {@link HtmlRaycastInteractionManager} instead.
+ * Each frame the mesh face is projected to screen space and the element's canvas geometry is updated
+ * to match. Older implementations use a CSS transform instead. This is best suited to planar,
+ * camera-facing surfaces. For arbitrary or curved meshes, use the UV-based {@link HtmlRaycastInteractionManager} instead.
  *
  * The overlay is screen-aligned (position, size and in-plane rotation); it does not apply a full
  * perspective skew, so steeply oblique faces will not be perspective-correct.
@@ -65,6 +66,11 @@ export class HtmlInteractionManager {
     private readonly _element: HTMLElement;
     private _observer: Nullable<Observer<Scene>>;
     private _previousTransform: string = "";
+    private readonly _canvas: Nullable<HTMLCanvasElement> = null;
+    private readonly _canvasTransform: Nullable<DOMMatrix> = null;
+    private readonly _geometryOptions: Nullable<UpdateElementGeometryOptions> = null;
+    private _geometryRegistered = false;
+    private readonly _stopPointerCapture = (event: Event) => event.stopPropagation();
 
     // Reused across frames to avoid per-frame allocations.
     private readonly _viewport = new Viewport(0, 0, 0, 0);
@@ -88,6 +94,23 @@ export class HtmlInteractionManager {
         this._scene = scene;
         this._mesh = mesh;
         this._element = options.targetElement ?? texture.element;
+
+        if (
+            typeof HTMLCanvasElement !== "undefined" &&
+            texture.host instanceof HTMLCanvasElement &&
+            texture.host.content === "drawable" &&
+            typeof texture.host.updateElementGeometry === "function" &&
+            typeof texture.host.clearElementGeometry === "function" &&
+            this._element.hasAttribute("drawable") &&
+            texture.host.contains(this._element) &&
+            !_IsHtmlInCanvasPolyfillInstalled()
+        ) {
+            this._canvas = texture.host;
+            this._canvasTransform = new DOMMatrix();
+            this._geometryOptions = { canvasTransform: this._canvasTransform, preserveHitTestOrder: true };
+            // Otherwise the engine captures the pointer on the canvas and retargets the button's up/click.
+            this._element.addEventListener("pointerdown", this._stopPointerCapture);
+        }
 
         this._element.style.position = "absolute";
         this._element.style.left = "0px";
@@ -133,7 +156,11 @@ export class HtmlInteractionManager {
 
         // Hide the overlay when the face is behind the camera.
         if (this._projectedCenter.z < 0 || this._projectedCenter.z > 1) {
-            this._setTransform("translate(-99999px, -99999px)");
+            if (this._canvas) {
+                this._clearGeometry();
+            } else {
+                this._setTransform("translate(-99999px, -99999px)");
+            }
             return;
         }
 
@@ -150,7 +177,39 @@ export class HtmlInteractionManager {
         const scaleX = (2 * halfWidth) / elementWidth;
         const scaleY = (2 * halfHeight) / elementHeight;
 
-        this._setTransform(ComputeOverlayCssTransform(centerX, centerY, scaleX, scaleY, rotation, elementWidth, elementHeight));
+        if (this._canvas && this._canvasTransform && this._geometryOptions) {
+            const cosine = Math.cos(rotation);
+            const sine = Math.sin(rotation);
+            const a = cosine * scaleX;
+            const b = sine * scaleX;
+            const c = -sine * scaleY;
+            const d = cosine * scaleY;
+            const e = centerX - (a * elementWidth + c * elementHeight) / 2;
+            const f = centerY - (b * elementWidth + d * elementHeight) / 2;
+            const matrix = this._canvasTransform;
+            if (this._geometryRegistered && matrix.a === a && matrix.b === b && matrix.c === c && matrix.d === d && matrix.e === e && matrix.f === f) {
+                return;
+            }
+            matrix.a = a;
+            matrix.b = b;
+            matrix.c = c;
+            matrix.d = d;
+            matrix.e = e;
+            matrix.f = f;
+            this._canvas.updateElementGeometry(this._element, this._geometryOptions);
+            this._geometryRegistered = true;
+        } else {
+            this._setTransform(ComputeOverlayCssTransform(centerX, centerY, scaleX, scaleY, rotation, elementWidth, elementHeight));
+        }
+    }
+
+    private _clearGeometry(): void {
+        if (this._geometryRegistered && this._canvas) {
+            if (this._element.hasAttribute("drawable") && this._canvas.contains(this._element)) {
+                this._canvas.clearElementGeometry(this._element);
+            }
+            this._geometryRegistered = false;
+        }
     }
 
     private _setTransform(transform: string): void {
@@ -165,6 +224,8 @@ export class HtmlInteractionManager {
      * Detaches the manager and stops updating the overlay.
      */
     public dispose(): void {
+        this._clearGeometry();
+        this._element.removeEventListener("pointerdown", this._stopPointerCapture);
         if (this._restoreInertOnDispose) {
             this._element.setAttribute("inert", "");
             this._restoreInertOnDispose = false;

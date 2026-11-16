@@ -4,15 +4,27 @@
 // Conditional texture uniforms based on defines
 #ifdef USE_TEXTURE0
 uniform sampler2D inputTexture0;
+#ifdef TEXTURE0_MATRIX
+uniform mat4 inputTexture0Matrix;
+#endif
 #endif
 #ifdef USE_TEXTURE1
 uniform sampler2D inputTexture1;
+#ifdef TEXTURE1_MATRIX
+uniform mat4 inputTexture1Matrix;
+#endif
 #endif
 #ifdef USE_TEXTURE2
 uniform sampler2D inputTexture2;
+#ifdef TEXTURE2_MATRIX
+uniform mat4 inputTexture2Matrix;
+#endif
 #endif
 #ifdef USE_TEXTURE3
 uniform sampler2D inputTexture3;
+#ifdef TEXTURE3_MATRIX
+uniform mat4 inputTexture3Matrix;
+#endif
 #endif
 
 // Channel configuration uniforms (only for texture-based channels)
@@ -53,19 +65,35 @@ vec4 sampleTexture(int textureIndex, vec2 uv) {
     switch (textureIndex) {
         #ifdef USE_TEXTURE0
         case 0:
+            #ifdef TEXTURE0_MATRIX
+            return texture2D(inputTexture0, (inputTexture0Matrix * vec4(uv, 1.0, 0.0)).xy);
+            #else
             return texture2D(inputTexture0, uv);
+            #endif
         #endif
         #ifdef USE_TEXTURE1
         case 1:
+            #ifdef TEXTURE1_MATRIX
+            return texture2D(inputTexture1, (inputTexture1Matrix * vec4(uv, 1.0, 0.0)).xy);
+            #else
             return texture2D(inputTexture1, uv);
+            #endif
         #endif
         #ifdef USE_TEXTURE2
         case 2:
+            #ifdef TEXTURE2_MATRIX
+            return texture2D(inputTexture2, (inputTexture2Matrix * vec4(uv, 1.0, 0.0)).xy);
+            #else
             return texture2D(inputTexture2, uv);
+            #endif
         #endif
         #ifdef USE_TEXTURE3
         case 3:
+            #ifdef TEXTURE3_MATRIX
+            return texture2D(inputTexture3, (inputTexture3Matrix * vec4(uv, 1.0, 0.0)).xy);
+            #else
             return texture2D(inputTexture3, uv);
+            #endif
         #endif
         default:
             return vec4(0.0, 0.0, 0.0, 1.0); // Fallback

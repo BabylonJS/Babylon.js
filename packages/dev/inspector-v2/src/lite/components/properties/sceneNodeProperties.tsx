@@ -1,4 +1,4 @@
-import { setSubtreeVisible, type SceneNode } from "@babylonjs/lite";
+import { setSubtreeVisible, type SceneNode, type TextRenderable } from "@babylonjs/lite";
 import { type FunctionComponent } from "react";
 
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -10,15 +10,17 @@ import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../..
 import { SetQuaternionValue, SetVector3Value } from "../../sceneEntityUtils";
 import { QuaternionPropertyLine, Vector3PropertyLine } from "shared-ui-components/lite/fluent/hoc/propertyLines/vectorPropertyLine";
 
-function GetPosition(node: SceneNode): readonly [number, number, number] {
+type Transformable = SceneNode | TextRenderable;
+
+function GetPosition(node: Transformable): readonly [number, number, number] {
     return [node.position.x, node.position.y, node.position.z];
 }
 
-function GetRotation(node: SceneNode): readonly [number, number, number, number] {
+function GetRotation(node: Transformable): readonly [number, number, number, number] {
     return [node.rotationQuaternion.x, node.rotationQuaternion.y, node.rotationQuaternion.z, node.rotationQuaternion.w];
 }
 
-function GetScaling(node: SceneNode): readonly [number, number, number] {
+function GetScaling(node: Transformable): readonly [number, number, number] {
     return [node.scaling.x, node.scaling.y, node.scaling.z];
 }
 
@@ -30,15 +32,15 @@ function SetVisibility(node: SceneNode, visible: boolean): void {
     setSubtreeVisible(node, visible);
 }
 
-function SetPosition(node: SceneNode, value: Parameters<typeof SetVector3Value>[1]): void {
+function SetPosition(node: Transformable, value: Parameters<typeof SetVector3Value>[1]): void {
     SetVector3Value(node.position, value);
 }
 
-function SetRotation(node: SceneNode, value: Parameters<typeof SetQuaternionValue>[1]): void {
+function SetRotation(node: Transformable, value: Parameters<typeof SetQuaternionValue>[1]): void {
     SetQuaternionValue(node.rotationQuaternion, value);
 }
 
-function SetScaling(node: SceneNode, value: Parameters<typeof SetVector3Value>[1]): void {
+function SetScaling(node: Transformable, value: Parameters<typeof SetVector3Value>[1]): void {
     SetVector3Value(node.scaling, value);
 }
 
@@ -53,7 +55,7 @@ export const SceneNodeGeneralProperties: FunctionComponent<{ node: SceneNode }> 
     );
 };
 
-export const SceneNodeTransformProperties: FunctionComponent<{ node: SceneNode }> = (props) => {
+export const SceneNodeTransformProperties: FunctionComponent<{ node: Transformable }> = (props) => {
     const { node } = props;
     const [useDegrees] = useSetting(UseDegreesSettingDescriptor);
     const [useEuler] = useSetting(UseEulerSettingDescriptor);

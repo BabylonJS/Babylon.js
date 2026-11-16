@@ -7,7 +7,7 @@ import { RichTypeAny, RichTypeNumber } from "../../../flowGraphRichTypes.pure";
 import { type FlowGraphSignalConnection } from "../../../flowGraphSignalConnection.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { type AbstractSound } from "../../../../AudioV2/abstractAudio/abstractSound";
+import { type FlowGraphSoundReference, ResolveFlowGraphSound } from "../../../flowGraphSoundAssets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -16,9 +16,9 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  */
 export class FlowGraphSetSoundVolumeBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
-     * Input connection: The sound to set the volume on.
+     * Input connection: The sound to set the volume on. Accepts an Audio V2 sound or the name of a sound asset declared on the coordinator.
      */
-    public readonly sound: FlowGraphDataConnection<AbstractSound>;
+    public readonly sound: FlowGraphDataConnection<FlowGraphSoundReference>;
 
     /**
      * Input connection: The target volume (0–1). Defaults to 1.
@@ -39,7 +39,7 @@ export class FlowGraphSetSoundVolumeBlock extends FlowGraphExecutionBlockWithOut
      * @internal
      */
     public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
-        const soundValue = this.sound.getValue(context);
+        const soundValue = ResolveFlowGraphSound(context, this.sound.getValue(context));
         if (!soundValue) {
             this._reportError(context, "No sound provided");
             this.out._activateSignal(context);

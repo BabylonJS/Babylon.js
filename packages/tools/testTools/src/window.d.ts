@@ -37,6 +37,6 @@ declare global {
                 opts?: { sync?: boolean; cacheGlobally?: boolean; filter?: (line: string) => boolean }
             ) => string;
         };
-        sourcemapPromises: Promise<?StacktracedObject>[];
+        sourcemapPromises: Promise<StacktracedObject>[];
     }
 }

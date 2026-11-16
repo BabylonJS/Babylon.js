@@ -98,6 +98,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
 
     constructor(material: PBRBaseMaterial | StandardMaterial, addToPluginList = true) {
         super(material, "DetailMap", 140, new MaterialDetailMapDefines(), addToPluginList);
+        this._bindsMaterialValuesOnly = true;
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }

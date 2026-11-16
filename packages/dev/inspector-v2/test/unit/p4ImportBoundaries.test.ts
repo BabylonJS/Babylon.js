@@ -22,6 +22,38 @@ const RemovedLiteInspectionApi =
 const RemovedAwaitedRebuildContract = /\b(?:AwaitedRebuildMaterialOptions|awaitCompletion)\b/;
 
 describe("P4 Inspector import boundaries", () => {
+    it("keeps Lite physics lazy and free of Babylon.js physics implementation imports", () => {
+        const service = ReadInspectorSource("lite/services/panes/properties/physicsPropertiesService.tsx");
+        expect(service).toContain('import("../../../components/properties/physicsProperties")');
+        expect(service).not.toMatch(/^import .*components\/properties\/physicsProperties/m);
+        for (const file of [
+            "lite/physicsUtils.ts",
+            "lite/components/properties/physicsProperties.tsx",
+            "lite/services/panes/properties/physicsPropertiesService.tsx",
+            "lite/services/panes/scene/physicsExplorerService.tsx",
+        ]) {
+            const source = ReadInspectorSource(file);
+            expect(source).not.toMatch(NativeRuntimeImplementation);
+            expect(source).not.toMatch(/(?:core|@dev\/core)\/Physics/);
+            expect(source).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);
+        }
+    });
+    it("keeps P9 skeleton, morph and particle property components lazy and runtime-neutral", () => {
+        const skeletonService = ReadInspectorSource("lite/services/panes/properties/skeletonPropertiesService.tsx");
+        const particleService = ReadInspectorSource("lite/services/panes/properties/particleSystemPropertiesService.tsx");
+        for (const component of ["skeletonProperties", "morphTargetProperties"]) {
+            expect(skeletonService).toContain(`import("../../../components/properties/${component}")`);
+            expect(skeletonService).not.toMatch(new RegExp(`^import .*components/properties/${component}`, "m"));
+        }
+        expect(particleService).toContain('import("../../../components/properties/particleSystemProperties")');
+        expect(particleService).not.toMatch(/^import .*components\/properties\/particleSystemProperties/m);
+        for (const file of ["skeletonProperties", "morphTargetProperties", "particleSystemProperties"]) {
+            const source = ReadInspectorSource(`lite/components/properties/${file}.tsx`);
+            expect(source).not.toMatch(NativeRuntimeImplementation);
+            expect(source).not.toMatch(PreviewOrEditorDependency);
+            expect(source).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);
+        }
+    });
     it("keeps every material family and texture metadata adapter behind its own lazy entrypoint", () => {
         const materialService = ReadInspectorSource("lite/services/panes/properties/materialPropertiesService.tsx");
         const textureService = ReadInspectorSource("lite/services/panes/properties/texturePropertiesService.tsx");
@@ -33,6 +65,8 @@ describe("P4 Inspector import boundaries", () => {
         });
         expect(textureService).toContain('import("./textureMetadataProperties")');
         expect(textureService).not.toMatch(/^import .*textureMetadataProperties/m);
+        expect(textureService).toContain('import("./texturePreviewProperties")');
+        expect(textureService).not.toMatch(/^import .*texturePreviewProperties/m);
     });
 
     it("keeps Lite lazy adapter sources free of Babylon.js implementation and preview/editor dependencies", () => {
@@ -80,6 +114,13 @@ describe("P4 Inspector import boundaries", () => {
             expect(source).not.toMatch(/from ["'](?:@babylonjs\/lite|@dev\/core|core\/)/);
             expect(source).not.toMatch(PreviewOrEditorDependency);
         });
+        for (const file of ["components/properties/textures/texturePreviewCore.tsx", "misc/textureChannels.ts", "misc/download.ts"]) {
+            expect(ReadInspectorSource(file)).not.toMatch(/from ["'](?:@babylonjs\/lite|@dev\/core|core\/)/);
+        }
+        const preview = ReadInspectorSource("lite/services/panes/properties/texturePreviewProperties.tsx");
+        expect(preview).not.toMatch(NativeRuntimeImplementation);
+        expect(preview).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);
+        expect(preview).toContain("texturePreviewCore");
     });
 
     it("keeps native BJS bindings and Lite derived fields independent", () => {

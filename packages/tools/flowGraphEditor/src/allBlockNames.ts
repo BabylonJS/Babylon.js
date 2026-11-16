@@ -8,6 +8,7 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
         "FlowGraphSceneReadyEventBlock",
         "FlowGraphSceneTickEventBlock",
         "FlowGraphMeshPickEventBlock",
+        "FlowGraphMeshIntersectionEventBlock",
         "FlowGraphPointerDownEventBlock",
         "FlowGraphPointerUpEventBlock",
         "FlowGraphPointerMoveEventBlock",

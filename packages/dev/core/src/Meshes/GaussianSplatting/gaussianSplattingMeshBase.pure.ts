@@ -10,12 +10,12 @@ import { VertexData } from "../mesh.vertexData";
 import { Matrix, TmpVectors, Vector2, Vector3, type Quaternion } from "core/Maths/math.vector.pure";
 
 import { Logger } from "core/Misc/logger";
-import { Observable } from "core/Misc/observable";
+import { Observable, type Observer } from "core/Misc/observable";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget.pure";
 import { Color4 } from "core/Maths/math.color.pure";
-import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { InternalTextureSource, type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
 import { FromHalfFloat, ToHalfFloat } from "core/Misc/textureTools";
 import { type Material } from "core/Materials/material.pure";
@@ -29,9 +29,29 @@ import { type INative } from "core/Engines/Native/nativeInterfaces";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
 import { GaussianSplattingSortWorker, GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
+import { GaussianSplattingGpuSorter, type GaussianSplattingGpuSortOutput, type IGaussianSplattingGpuSortOptions } from "./gaussianSplattingGpuSorter";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
+
+// The compute shaders of the GPU sorter are loaded lazily, only when a WebGPU mesh uses the GPU sort.
+let _GpuSortDependenciesReady = false;
+let _GpuSortDependenciesFailed = false;
+let _GpuSortDependenciesLoading = false;
+
+async function _LoadGpuSortDependenciesAsync(): Promise<void> {
+    if (_GpuSortDependenciesLoading) {
+        return;
+    }
+    _GpuSortDependenciesLoading = true;
+    try {
+        await GaussianSplattingGpuSorter.LoadDependenciesAsync();
+        _GpuSortDependenciesReady = true;
+    } catch (e) {
+        _GpuSortDependenciesFailed = true;
+        Logger.Warn("Gaussian Splatting GPU sort shaders failed to load, falling back to the CPU sort: " + e);
+    }
+}
 
 /** Internal mirror of ISogTexturePack (defined in loaders) — avoids a circular import. */
 interface ISogPackInternal {
@@ -125,6 +145,14 @@ interface ITextureDataUpdateCapableEngine {
     isWebGPU?: boolean;
 }
 
+interface ITextureDataRect {
+    data: ArrayBufferView;
+    xOffset: number;
+    yOffset: number;
+    width: number;
+    height: number;
+}
+
 // @internal
 const UnpackUnorm = (value: number, bits: number) => {
     const t = (1 << bits) - 1;
@@ -202,6 +230,11 @@ interface ICameraViewInfo {
     mesh: Mesh;
     frameIdLastUpdate: number;
     splatIndexBufferSet: boolean;
+    // GPU sort only: the camera's own sort output, the data revision it was last sorted for and the buffers version bound on `mesh`.
+    gpuOutput: Nullable<GaussianSplattingGpuSortOutput>;
+    gpuAppliedRevision: number;
+    gpuBuffersVersion: number;
+    gpuLastSortFrameId: number;
 }
 /**
  * Representation of the types
@@ -502,6 +535,38 @@ export class GaussianSplattingMeshBase extends Mesh {
     public static LogSortPerformance = false;
 
     /**
+     * When true, meshes sort their splats on the GPU with a compute shader when the engine is WebGPU with compute shader support
+     * and the splat count is within the GPU sorter limit. The CPU worker is then not created. False by default: the asynchronous CPU
+     * worker is usually faster on low-end GPUs while the camera moves, because the GPU sort competes with rendering. Other engines
+     * (WebGL, Native) always use the CPU worker. Meshes of a scene using a custom render function (`scene.customRenderFunction`, other than
+     * the frame graph one) also keep the CPU worker, because the GPU sort is dispatched from `onBeforeRenderObservable`.
+     * A mesh leaves the GPU sort for the CPU worker, and does not come back to it, when depth sorting is disabled at runtime
+     * (see {@link GaussianSplattingMeshBase.disableDepthSort}), when point splatting is enabled, or when it starts streaming parts.
+     * After a WebGPU device restoration, the sorter and its buffers are recreated.
+     * Progressive loading sorts only the batches already uploaded, making them displayable before loading completes.
+     * Read when the mesh instantiates its sort, so set it before loading data.
+     * See also {@link GaussianSplattingMeshBase.useGpuSort} to override it on a single mesh.
+     * @experimental
+     */
+    public static UseGpuSort = false;
+
+    /**
+     * Minimum number of frames between two GPU sorts of the same camera view when only the view changed (the camera moved or the mesh world
+     * transform changed). Sorts caused by data changes (new splat data, parts, ranges) and the first sort of a view bypass this throttle.
+     * After the first render, requests are coalesced at the next scene pre-render; initial readiness checks can sort synchronously.
+     * The default of 1 re-sorts whenever the view changed. On a slow GPU the sort competes with rendering; a value of 2 or
+     * more trades a slightly stale order during camera motion for a lower GPU cost, like the asynchronous CPU worker does.
+     * @experimental
+     */
+    public static GpuSortMinFrameInterval = 1;
+
+    /**
+     * Overrides {@link GaussianSplattingMeshBase.UseGpuSort} for this mesh when not null. Set it before loading data.
+     * @experimental
+     */
+    public useGpuSort: Nullable<boolean> = null;
+
+    /**
      * Safe-orbit camera limits parsed from the source file's metadata, or `null` when the file
      * carries none. The loader also auto-applies these to an active ArcRotateCamera at load time
      * (unless `disableAutoCameraLimits` is set); this field exposes the raw values so they can be
@@ -513,6 +578,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     public _vertexCount = 0;
     protected _worker: Nullable<Worker> = null;
     private _modelViewProjectionMatrix = Matrix.Identity();
+    private _nativeSortViewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     protected _canPostToWorker = true;
     private _readyToDisplay = false;
@@ -564,6 +630,9 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _flipY = false;
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
+    // Native stages raw uploads in view order, so raw GS textures keep a CPU image that lets partial writes use
+    // that ordered path. This intentionally mirrors their GPU footprint until dispose releases the WeakMap.
+    private _nativeTextureData = new WeakMap<InternalTexture, Uint8Array>();
     protected _useRGBACovariants = false;
     protected _useSog = false;
     protected _sogParams: Nullable<ISogPackInternal> = null;
@@ -575,6 +644,32 @@ export class GaussianSplattingMeshBase extends Mesh {
     private _sortIsDirty = false;
     // A forced sort requested while no classic pass needed sorting; runs on the next classic pass.
     private _forcedSortPending = false;
+
+    // GPU sort state. `_gpuMode` is true when this mesh sorts with the GPU sorter instead of the worker.
+    private _gpuMode = false;
+    private _gpuSorter: Nullable<GaussianSplattingGpuSorter> = null;
+    private _gpuObserver: Nullable<Observer<Scene>> = null;
+    private _gpuRestoreObserver: Nullable<Observer<AbstractEngine>> = null;
+    // Incremented whenever the sort inputs change (data, ranges, part matrices): every camera output is then sorted again.
+    private _gpuDataRevision = 1;
+    private _gpuSourceDirty = true;
+    private _gpuIntervalsDirty = true;
+    // Null outside progressive loading; otherwise only this prefix of the source has been uploaded.
+    private _gpuProgressiveCount: Nullable<number> = null;
+    private _gpuSortPending = false;
+    private _gpuPaddedCount = 0;
+    private _gpuBoundsMin: Nullable<Vector3> = null;
+    private _gpuBoundsMax: Nullable<Vector3> = null;
+    private _gpuBoundsDirty = true;
+    private _gpuSortOptions: IGaussianSplattingGpuSortOptions = {};
+    private _gpuViewInfos: ICameraViewInfo[] = [];
+    private _gpuCollectFrameId = 0;
+    private _gpuCameraPosition = [0, 0, 0];
+    // Set when the worker has to be (re)created lazily after leaving the GPU sort mode.
+    private _workerPending = false;
+    private _gpuPartMatricesDirty = false;
+    // Set when the mesh cannot use the GPU sort (e.g. an external work buffer is used as centers).
+    private _gpuSortForbidden = false;
     protected _activeSplatRanges: Nullable<Uint32Array> = null;
     private _activeSplatRangeKey = "";
     private _activeSplatRenderCount = 0;
@@ -600,6 +695,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
+    private _cameraRemovedObserver: Nullable<Observer<Camera>> = null;
 
     protected static readonly _DefaultViewUpdateThreshold = 1e-4;
 
@@ -695,6 +791,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     /**
      * If true, disables depth sorting of the splats (default: false)
      * Disabling sorting also discards deferred forced-sort requests.
+     * A mesh sorted on the GPU (see {@link GaussianSplattingMeshBase.UseGpuSort}) leaves the GPU sort when it is disabled at runtime
+     * and uses the identity index buffer of the CPU path. It does not return to the GPU sort when sorting is enabled again: the CPU worker is used instead.
      */
     public get disableDepthSort() {
         return this._disableDepthSort;
@@ -705,6 +803,10 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._worker = null;
             this._disableDepthSort = true;
             this._forcedSortPending = false;
+            if (this._gpuMode) {
+                // The GPU sort has no identity output: the CPU path provides valid indices for every view and data update.
+                this._switchToWorkerSort();
+            }
         } else if (this._disableDepthSort && !value) {
             this._disableDepthSort = false;
             this._sortIsDirty = true;
@@ -749,7 +851,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * Number of splats in the mesh
      */
     public get splatCount() {
-        return this._splatIndex?.length;
+        return this._gpuMode ? this._gpuPaddedCount : this._splatIndex?.length;
     }
 
     /**
@@ -780,6 +882,13 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._activeSplatRangeKey = rangeData.key;
         this._activeSplatRenderCount = rangeData.count;
         this._activeRangeVersion++;
+        if (this._gpuMode) {
+            this._gpuIntervalsDirty = true;
+            this._gpuDataRevision++;
+            this._sortIsDirty = true;
+            this._postToWorker(true);
+            return;
+        }
         this._postIntervalsToWorker();
         if (this._worker) {
             // Defer swapping the rendered index buffer until the worker returns a depth sort computed for
@@ -808,6 +917,9 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @internal
      */
     public get _isDepthSortSettled(): boolean {
+        if (this._gpuMode) {
+            return this._readyToDisplay && !this._gpuSortPending && !this._forcedSortPending && this._canPostToWorker;
+        }
         return this._readyToDisplay && !this._sortIsDirty && !this._forcedSortPending && this._canPostToWorker;
     }
 
@@ -828,6 +940,11 @@ export class GaussianSplattingMeshBase extends Mesh {
      * a single interval covering all source splats is sent so the worker never assumes the full set.
      */
     private _postIntervalsToWorker(): void {
+        if (this._gpuMode) {
+            this._gpuIntervalsDirty = true;
+            this._gpuDataRevision++;
+            return;
+        }
         if (!this._worker) {
             return;
         }
@@ -885,6 +1002,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._rotationScaleTexture = rotationTextures[2];
             this._needsRotationScaleTextures = true;
         }
+        // The centers are an external render target: only the CPU worker sorts this mesh for now.
+        this._gpuSortForbidden = true;
         this._activeSplatRanges = null;
         this._activeSplatRangeKey = "";
         this._activeSplatRenderCount = 0;
@@ -930,49 +1049,56 @@ export class GaussianSplattingMeshBase extends Mesh {
     public static ProgressiveUpdateAmount = 0;
 
     /**
-     * Gets the covariancesA texture
+     * Gets the covariancesA texture.
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get covariancesATexture() {
         return this._covariancesATexture;
     }
 
     /**
-     * Gets the covariancesB texture
+     * Gets the covariancesB texture.
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get covariancesBTexture() {
         return this._covariancesBTexture;
     }
 
     /**
-     * Gets the centers texture
+     * Gets the centers texture.
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get centersTexture() {
         return this._centersTexture;
     }
 
     /**
-     * Gets the colors texture
+     * Gets the colors texture.
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get colorsTexture() {
         return this._colorsTexture;
     }
 
     /**
-     * Gets the rotation matrix A texture (rotation elements m[0],m[1],m[2],m[4])
+     * Gets the rotation matrix A texture (rotation elements m[0],m[1],m[2],m[4]).
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get rotationsATexture() {
         return this._rotationsATexture;
     }
 
     /**
-     * Gets the rotation matrix B texture (rotation elements m[5],m[6],m[8],m[9])
+     * Gets the rotation matrix B texture (rotation elements m[5],m[6],m[8],m[9]).
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get rotationsBTexture() {
         return this._rotationsBTexture;
     }
 
     /**
-     * Gets the rotation scale texture (rotation element m[10] followed by scale diagonal sx,sy,sz)
+     * Gets the rotation scale texture (rotation element m[10] followed by scale diagonal sx,sy,sz).
+     * On WebGPU it is created as a sampled-data-only texture (no render attachment usage), so it cannot be used as a render target.
      */
     public get rotationScaleTexture() {
         return this._rotationScaleTexture;
@@ -1003,7 +1129,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     }
 
     /**
-     * Gets the SH textures
+     * Gets the SH textures.
+     * On WebGPU these are created as sampled-data-only textures (no render attachment usage), so they cannot be used as render targets.
      */
     public get shTextures() {
         return this._shTextures;
@@ -1221,7 +1348,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._material = gaussianSplattingMaterial;
 
         // delete meshes created for cameras on camera removal
-        this._scene.onCameraRemovedObservable.add((camera: Camera) => {
+        this._cameraRemovedObserver = this._scene.onCameraRemovedObservable.add((camera: Camera) => {
             const cameraId = camera.uniqueId;
             // delete mesh for this camera
             const cameraViewInfos = this._cameraViewInfos.get(cameraId);
@@ -1233,6 +1360,8 @@ export class GaussianSplattingMeshBase extends Mesh {
                     this._geometry = null;
                 }
                 cameraViewInfos.mesh.dispose();
+                cameraViewInfos.gpuOutput?.dispose();
+                cameraViewInfos.gpuOutput = null;
                 this._cameraViewInfos.delete(cameraId);
             }
         });
@@ -1387,7 +1516,8 @@ export class GaussianSplattingMeshBase extends Mesh {
     public _getCameraDirection(camera: Camera): Vector3 {
         const cameraViewMatrix = camera.getViewMatrix();
         const cameraProjectionMatrix = camera.getProjectionMatrix();
-        const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
+        // Kept on the instance: the Native sort dispatched right after this call reuses it.
+        const cameraViewProjectionMatrix = this._nativeSortViewProjectionMatrix;
         cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
 
         const modelMatrix = this.computeWorldMatrix(true);
@@ -1435,8 +1565,15 @@ export class GaussianSplattingMeshBase extends Mesh {
 
     /** @internal */
     public _postToWorker(forced = false): void {
-        const scene = this._scene;
-        const frameId = scene.getFrameId();
+        if (this._gpuMode) {
+            this._postToGpuSort(forced);
+            return;
+        }
+        if (this._workerPending && this._vertexCount && this._splatPositions) {
+            // Left the GPU sort mode: the worker is created lazily.
+            this._instantiateWorker();
+        }
+        const frameId = this._scene.getFrameId();
         // force update or at least frame update for camera is outdated
         let outdated = false;
         this._cameraViewInfos.forEach((cameraViewInfos) => {
@@ -1445,55 +1582,9 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
         });
 
-        // array of cameras used for rendering
-        const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
-        // list view infos for active cameras
+        // list view infos for active cameras, creating the missing ones
         const activeViewInfos: ICameraViewInfo[] = [];
-        cameras.forEach((camera) => {
-            if (!camera) {
-                return;
-            }
-            const cameraId = camera.uniqueId;
-
-            const cameraViewInfos = this._cameraViewInfos.get(cameraId);
-            if (cameraViewInfos) {
-                activeViewInfos.push(cameraViewInfos);
-            } else {
-                // mesh doesn't exist yet for this camera
-                const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
-                cameraMesh.doNotSerialize = true;
-                // not visible with inspector or the scene graph
-                cameraMesh.reservedDataStore = { hidden: true, _gaussianSplattingSourceMesh: this };
-                cameraMesh.setEnabled(false);
-                cameraMesh.material = this.material;
-                if (cameraMesh.material && cameraMesh.material instanceof GaussianSplattingMaterial) {
-                    const gsMaterial = cameraMesh.material as GaussianSplattingMaterial;
-                    // GaussianSplattingMaterial source mesh may not have been set yet.
-                    // This happens for cloned resources from asset containers for instance,
-                    // where material is cloned before mesh.
-                    if (!gsMaterial.getSourceMesh()) {
-                        // Cast is safe: see constructor comment above.
-                        gsMaterial.setSourceMesh(this as any);
-                    }
-                }
-                GaussianSplattingMeshBase._MakeSplatGeometryForMesh(cameraMesh);
-
-                const newViewInfos: ICameraViewInfo = {
-                    camera: camera,
-                    cameraDirection: new Vector3(0, 0, 0),
-                    sortWorldMatrix: Matrix.Identity(),
-                    sortCameraForward: new Vector3(0, 0, 0),
-                    sortCameraPosition: new Vector3(0, 0, 0),
-                    sortRequestId: 0,
-                    sortAppliedId: 0,
-                    mesh: cameraMesh,
-                    frameIdLastUpdate: frameId,
-                    splatIndexBufferSet: false,
-                };
-                activeViewInfos.push(newViewInfos);
-                this._cameraViewInfos.set(cameraId, newViewInfos);
-            }
-        });
+        this._collectActiveViewInfos(frameId, false, activeViewInfos);
         // Sort view infos: cameras without a completed initial sort come first so they don't get starved
         // by a `forced` re-sort of an already-initialized camera (which would consume `_canPostToWorker`).
         // A camera can already have the shared index buffer bound when another camera's first sort resizes it,
@@ -1511,7 +1602,7 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         // The native sort writes into _splatPositions/_splatIndex: both must be allocated (they still are
         // null before any splat data has been committed) or the native binding throws on the conversion.
-        const hasNativeSort = !!Native?.sortSplats && !!this._splatPositions && !!this._splatIndex;
+        const hasNativeSort = !!(Native?.sortSplatIndices || Native?.sortSplats) && !!this._splatPositions && !!this._splatIndex;
         // When depth sort is disabled, no sort function must run: fall through to the no-sort path below.
         const sortRequired = this._isSortRequired();
         const hasSortFunction = sortRequired && !this._disableDepthSort && (this._worker || hasNativeSort);
@@ -1555,12 +1646,14 @@ export class GaussianSplattingMeshBase extends Mesh {
                             },
                             [this._depthMix.buffer]
                         );
-                    } else if (Native?.sortSplats) {
-                        if (this._activeSplatRanges) {
+                    } else if (Native?.sortSplatIndices || Native?.sortSplats) {
+                        if (Native.sortSplatIndices) {
+                            this._sortSplatIndicesNative(worldMatrix);
+                        } else if (this._activeSplatRanges) {
                             // Native sort can't filter ranges: fall back to the (already range-filtered) identity index buffer.
                             this._updateSplatIndexBuffer(this._vertexCount);
                         } else {
-                            Native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                            Native.sortSplats!(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
                         }
                         if (cameraViewInfos.splatIndexBufferSet) {
                             cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
@@ -1571,6 +1664,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                         cameraViewInfos.sortAppliedId = cameraViewInfos.sortRequestId;
                         this._canPostToWorker = true;
                         this._readyToDisplay = true;
+                        this._sortIsDirty = false;
                     }
                 }
             });
@@ -1600,6 +1694,551 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
         }
     }
+
+    // Fills `out` with the view infos of the active cameras, creating the missing ones.
+    private _collectActiveViewInfos(frameId: number, stampFrame: boolean, out: ICameraViewInfo[]): void {
+        out.length = 0;
+        const activeCameras = this._scene.activeCameras;
+        if (activeCameras && activeCameras.length) {
+            for (let i = 0; i < activeCameras.length; i++) {
+                this._collectCameraViewInfo(activeCameras[i], frameId, stampFrame, out);
+            }
+        } else {
+            this._collectCameraViewInfo(this._scene.activeCamera, frameId, stampFrame, out);
+        }
+    }
+
+    private _collectCameraViewInfo(camera: Nullable<Camera>, frameId: number, stampFrame: boolean, out: ICameraViewInfo[]): void {
+        if (!camera) {
+            return;
+        }
+        const cameraId = camera.uniqueId;
+        const existingViewInfos = this._cameraViewInfos.get(cameraId);
+        if (existingViewInfos) {
+            if (stampFrame) {
+                existingViewInfos.frameIdLastUpdate = frameId;
+            }
+            out.push(existingViewInfos);
+            return;
+        }
+
+        // mesh doesn't exist yet for this camera
+        const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
+        cameraMesh.doNotSerialize = true;
+        // not visible with inspector or the scene graph
+        cameraMesh.reservedDataStore = { hidden: true, _gaussianSplattingSourceMesh: this };
+        cameraMesh.setEnabled(false);
+        cameraMesh.material = this.material;
+        if (cameraMesh.material && cameraMesh.material instanceof GaussianSplattingMaterial) {
+            const gsMaterial = cameraMesh.material as GaussianSplattingMaterial;
+            // GaussianSplattingMaterial source mesh may not have been set yet.
+            // This happens for cloned resources from asset containers for instance,
+            // where material is cloned before mesh.
+            if (!gsMaterial.getSourceMesh()) {
+                // Cast is safe: see constructor comment above.
+                gsMaterial.setSourceMesh(this as any);
+            }
+        }
+        GaussianSplattingMeshBase._MakeSplatGeometryForMesh(cameraMesh);
+
+        const newViewInfos: ICameraViewInfo = {
+            camera: camera,
+            cameraDirection: new Vector3(0, 0, 0),
+            sortWorldMatrix: Matrix.Identity(),
+            sortCameraForward: new Vector3(0, 0, 0),
+            sortCameraPosition: new Vector3(0, 0, 0),
+            sortRequestId: 0,
+            sortAppliedId: 0,
+            mesh: cameraMesh,
+            frameIdLastUpdate: frameId,
+            splatIndexBufferSet: false,
+            gpuOutput: null,
+            gpuAppliedRevision: 0,
+            gpuBuffersVersion: 0,
+            gpuLastSortFrameId: 0,
+        };
+        out.push(newViewInfos);
+        this._cameraViewInfos.set(cameraId, newViewInfos);
+    }
+
+    /**
+     * Whether the sort of this mesh runs on the GPU (WebGPU compute) instead of the CPU worker.
+     * @internal
+     */
+    public get _isGpuSortActive(): boolean {
+        return this._gpuMode;
+    }
+
+    // Tells the GPU sorter its source (textures, bounds, intervals, part matrices) changed and every camera must be sorted again.
+    /** @internal */
+    public _markGpuSourceDirty(): void {
+        this._gpuSourceDirty = true;
+        this._gpuIntervalsDirty = true;
+        this._gpuBoundsDirty = true;
+        this._gpuDataRevision++;
+    }
+
+    // Tells the GPU sorter the part transforms of a compound mesh changed.
+    /** @internal */
+    public _markGpuPartMatricesDirty(): void {
+        this._gpuPartMatricesDirty = true;
+        this._gpuDataRevision++;
+    }
+
+    /**
+     * Texture holding the part index of each splat, for compound meshes. Null for a regular mesh.
+     * @returns the part indices texture
+     */
+    protected _getGpuSortPartIndicesTexture(): Nullable<BaseTexture> {
+        return null;
+    }
+
+    /**
+     * Transforms of the parts of a compound mesh. They replace the world matrix when sorting. Null for a regular mesh.
+     * @returns the part matrices
+     */
+    protected _getGpuSortPartMatrices(): Nullable<ReadonlyArray<Matrix>> {
+        return null;
+    }
+
+    /**
+     * Part index of each splat, for compound meshes. Null for a regular mesh.
+     * @returns the part indices
+     */
+    protected _getSortPartIndices(): Nullable<Uint8Array> {
+        return null;
+    }
+
+    private _nativeSortWorldMatrices: Matrix[] = [];
+
+    private _getNativeSortWorldMatrices(worldMatrix: Matrix): Matrix[] {
+        this._nativeSortWorldMatrices[0] = worldMatrix;
+        return this._nativeSortWorldMatrices;
+    }
+
+    // Sorts the active splats (honoring the range filter and compound parts) with the Native sort.
+    // The view-projection matrix was computed by _getCameraDirection for this camera just before dispatch.
+    private _sortSplatIndicesNative(worldMatrix: Matrix): void {
+        const renderedPadded = Math.max((this.renderedSplatCount + 15) & ~0xf, 16);
+        if (this._splatIndex!.length !== renderedPadded) {
+            this._updateSplatIndexBuffer(this._vertexCount);
+        }
+        const partIndices = this._getSortPartIndices();
+        const partMatrices = partIndices ? this._getGpuSortPartMatrices() : null;
+        const compound = !!partMatrices && partMatrices.length > 0;
+        const sorted = Native!.sortSplatIndices!(
+            this._nativeSortViewProjectionMatrix,
+            compound ? partMatrices : this._getNativeSortWorldMatrices(worldMatrix),
+            this._splatPositions!,
+            this._splatIndex!,
+            this._vertexCount,
+            this._activeSplatRanges,
+            compound ? partIndices : null
+        );
+        if (!sorted) {
+            // Part indices and matrices disagree mid-rebuild: keep the last order and sort again next frame.
+            this._forcedSortPending = true;
+        }
+    }
+
+    /**
+     * Synchronizes compound part transforms before checking whether the GPU sort is up to date.
+     */
+    protected _syncPartProxyWorldMatrices(): void {}
+
+    // Whether this mesh can use the GPU sorter. `vertexCount` is the (possibly upcoming) source splat count.
+    private _isGpuSortEligible(vertexCount: number): boolean {
+        if (!(this.useGpuSort ?? GaussianSplattingMeshBase.UseGpuSort) || IsNative || this._gpuSortForbidden || _GpuSortDependenciesFailed) {
+            return false;
+        }
+        // Streaming parts decode into a render-target atlas: they keep using the CPU worker.
+        if (this._useMrtAtlas || this._mrtAtlas) {
+            return false;
+        }
+        // A custom render function (other than the frame graph one) does not notify onBeforeRenderObservable, where the sort is dispatched.
+        const scene = this._scene;
+        if (scene.customRenderFunction && !scene.frameGraph) {
+            return false;
+        }
+        const engine = scene.getEngine();
+        if (!GaussianSplattingGpuSorter.IsSupported(engine) || vertexCount > GaussianSplattingGpuSorter.GetMaxSupportedSplatCount(engine)) {
+            return false;
+        }
+        // The mode is chosen when the sort buffers are first created: a mesh already bound to an identity index buffer keeps its worker.
+        return this._gpuMode || (!this._disableDepthSort && !this._splatIndex);
+    }
+
+    private _enterGpuMode(): void {
+        this._gpuMode = true;
+        this._workerPending = false;
+        this._worker?.terminate();
+        this._worker = null;
+        this._canPostToWorker = true;
+        this._markGpuSourceDirty();
+        if (!this._gpuObserver) {
+            this._gpuObserver = this._scene.onBeforeRenderObservable.add(() => this._runGpuSort());
+        }
+        if (!this._gpuRestoreObserver) {
+            this._gpuRestoreObserver = this._scene.getEngine().onContextRestoredObservable.add(() => this._onGpuContextRestored());
+        }
+        // The compute shaders are loaded lazily: the first sort waits for them.
+        void _LoadGpuSortDependenciesAsync();
+    }
+
+    // After a device restoration the rebuilt storage buffers are empty, the sorter caches (radix parameters, intervals, bindings) describe the lost buffers,
+    // and the geometry rebuild recreates the vertex buffer wrappers separately from the storage buffers they alias.
+    // The sorter is dropped with all its outputs and every view is invalidated: the next sort recreates and rebinds everything from the current source.
+    private _onGpuContextRestored(): void {
+        if (!this._gpuMode) {
+            return;
+        }
+        this._resetGpuViews();
+        this._gpuSorter?.dispose();
+        this._gpuSorter = null;
+        this._readyToDisplay = false;
+        this._gpuSortPending = true;
+        this._canPostToWorker = true;
+        this._markGpuSourceDirty();
+    }
+
+    // Drops the sort output bound to each view: they must be sorted and bound again.
+    private _resetGpuViews(): void {
+        this._cameraViewInfos.forEach((info) => {
+            info.gpuOutput = null;
+            info.gpuAppliedRevision = 0;
+            info.gpuBuffersVersion = 0;
+            info.splatIndexBufferSet = false;
+            info.sortAppliedId = 0;
+            info.sortRequestId = 0;
+            info.mesh.forcedInstanceCount = 0;
+        });
+    }
+
+    // Leaves the GPU sort mode. The worker is created by the next _postToWorker call.
+    private _exitGpuMode(): void {
+        if (!this._gpuMode) {
+            return;
+        }
+        this._gpuMode = false;
+        if (this._gpuObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._gpuObserver);
+            this._gpuObserver = null;
+        }
+        if (this._gpuRestoreObserver) {
+            this._scene.getEngine().onContextRestoredObservable.remove(this._gpuRestoreObserver);
+            this._gpuRestoreObserver = null;
+        }
+        this._resetGpuViews();
+        this._gpuSorter?.dispose();
+        this._gpuSorter = null;
+        this._gpuSortPending = false;
+        this._readyToDisplay = false;
+        this._canPostToWorker = true;
+        this._sortIsDirty = true;
+        this._workerPending = true;
+    }
+
+    /**
+     * Switches a mesh sorted on the GPU to the CPU worker (e.g. when it starts streaming, which needs a render-target atlas).
+     * @internal
+     */
+    public _switchToWorkerSort(): void {
+        this._gpuSortForbidden = true;
+        this._exitGpuMode();
+    }
+
+    private _postToGpuSort(forced: boolean): void {
+        if (this._scene.customRenderFunction && !this._scene.frameGraph) {
+            this._switchToWorkerSort();
+            this._postToWorker(forced);
+            return;
+        }
+        const frameId = this._scene.getFrameId();
+        this._collectActiveViewInfos(frameId, true, this._gpuViewInfos);
+        const sortRequired = this._isSortRequired();
+        if (forced) {
+            if (!sortRequired) {
+                // Deferred to the next classic pass, like the worker path.
+                if (!this._disableDepthSort) {
+                    this._forcedSortPending = true;
+                }
+            } else if (!this._gpuSortPending) {
+                this._gpuDataRevision++;
+            }
+            this._gpuSortPending = true;
+        } else if (sortRequired && this._forcedSortPending && !this._disableDepthSort) {
+            this._forcedSortPending = false;
+            if (!this._gpuSortPending) {
+                this._gpuDataRevision++;
+            }
+            this._gpuSortPending = true;
+        }
+
+        if (!sortRequired) {
+            this._commitDelayedTextureUpdate();
+            this._canPostToWorker = true;
+            return;
+        }
+        // Readiness polling must progress without a render loop. Once rendered, coalesce mutations at scene pre-render.
+        if ((!this._readyToDisplay || !this._hasRenderedOnce) && !this._scene._isInRenderingMeshEvaluation() && !this._scene.getEngine()._currentRenderTarget) {
+            this._runGpuSort();
+        }
+    }
+
+    private _gpuViewNeedsSort(info: ICameraViewInfo, world: Matrix): boolean {
+        if (info.gpuAppliedRevision !== this._gpuDataRevision || info.sortAppliedId === 0) {
+            return true;
+        }
+        const minInterval = GaussianSplattingMeshBase.GpuSortMinFrameInterval;
+        if (minInterval > 1 && this._scene.getFrameId() - info.gpuLastSortFrameId < minInterval) {
+            return false;
+        }
+        return !this._disableDepthSort && this._isSortStateDirty(info, world, info.camera);
+    }
+
+    // Collects the view infos that were rendered or prepared during the previous or current frame.
+    private _collectRecentViewInfo = (info: ICameraViewInfo) => {
+        if (this._gpuCollectFrameId - info.frameIdLastUpdate <= 1 && this._gpuViewInfos.indexOf(info) < 0) {
+            this._gpuViewInfos.push(info);
+        }
+    };
+
+    private _ensureGpuSorter(): boolean {
+        if (this._gpuSorter) {
+            return true;
+        }
+        if (_GpuSortDependenciesFailed) {
+            this._exitGpuMode();
+            return false;
+        }
+        if (!_GpuSortDependenciesReady) {
+            void _LoadGpuSortDependenciesAsync();
+            return false;
+        }
+        this._gpuSorter = new GaussianSplattingGpuSorter(this._scene.getEngine(), this.name + "_gpuSort");
+        this._gpuSourceDirty = true;
+        return true;
+    }
+
+    // Local-space bounds of the splat centers, used by the sorter to derive the depth range.
+    private _updateGpuBounds(): boolean {
+        const positions = this._splatPositions;
+        if (!positions) {
+            return false;
+        }
+        if (!this._gpuBoundsDirty && this._gpuBoundsMin) {
+            return true;
+        }
+        const min = (this._gpuBoundsMin ??= new Vector3());
+        const max = (this._gpuBoundsMax ??= new Vector3());
+        min.setAll(Number.MAX_VALUE);
+        max.setAll(-Number.MAX_VALUE);
+        const count = Math.min(this._gpuProgressiveCount ?? this._vertexCount, Math.floor(positions.length / 4));
+        for (let i = 0; i < count; i++) {
+            const x = positions[i * 4];
+            const y = positions[i * 4 + 1];
+            const z = positions[i * 4 + 2];
+            if (x < min.x) {
+                min.x = x;
+            }
+            if (y < min.y) {
+                min.y = y;
+            }
+            if (z < min.z) {
+                min.z = z;
+            }
+            if (x > max.x) {
+                max.x = x;
+            }
+            if (y > max.y) {
+                max.y = y;
+            }
+            if (z > max.z) {
+                max.z = z;
+            }
+        }
+        if (count === 0) {
+            min.setAll(0);
+            max.setAll(0);
+        }
+        this._gpuBoundsDirty = false;
+        return true;
+    }
+
+    private _applyGpuIntervals(sorter: GaussianSplattingGpuSorter): boolean {
+        let intervals = this._activeSplatRanges;
+        const uploaded = this._gpuProgressiveCount;
+        if (uploaded !== null) {
+            if (intervals) {
+                intervals = new Uint32Array(intervals);
+                for (let i = 0; i < intervals.length; i += 2) {
+                    intervals[i + 1] = Math.max(0, Math.min(intervals[i + 1], uploaded - intervals[i]));
+                }
+            } else {
+                intervals = new Uint32Array([0, uploaded]);
+            }
+        }
+        if (!sorter.setIntervals(intervals)) {
+            this._switchToWorkerSort();
+            return false;
+        }
+        this._gpuIntervalsDirty = false;
+        return true;
+    }
+
+    private _applyGpuSource(sorter: GaussianSplattingGpuSorter): boolean {
+        const sog = this._useSog ? this._sogParams : null;
+        const centersTexture = sog ? sog.meansTextureL : this._centersTexture;
+        if (!centersTexture) {
+            return false;
+        }
+        const partIndicesTexture = this._getGpuSortPartIndicesTexture();
+        let accepted: boolean;
+        if (sog) {
+            accepted = sorter.setSource({
+                vertexCount: this._vertexCount,
+                textureWidth: this._textureSize.x,
+                centersTexture,
+                sog: { meansHighTexture: sog.meansTextureU, meansMin: sog.meansMin, meansMax: sog.meansMax },
+            });
+        } else {
+            if (!this._updateGpuBounds()) {
+                return false;
+            }
+            accepted = sorter.setSource({
+                vertexCount: this._vertexCount,
+                textureWidth: this._textureSize.x,
+                centersTexture,
+                partIndicesTexture: partIndicesTexture ?? undefined,
+                boundsMin: this._gpuBoundsMin!.asArray(),
+                boundsMax: this._gpuBoundsMax!.asArray(),
+            });
+        }
+        if (!accepted) {
+            this._switchToWorkerSort();
+            return false;
+        }
+        if (!this._applyGpuIntervals(sorter)) {
+            return false;
+        }
+        sorter.setPartMatrices(partIndicesTexture ? this._getGpuSortPartMatrices() : null);
+        this._gpuSourceDirty = false;
+        this._gpuPartMatricesDirty = false;
+        return true;
+    }
+
+    private _bindGpuOutput(info: ICameraViewInfo, output: GaussianSplattingGpuSortOutput): void {
+        const mesh = info.mesh;
+        if (info.gpuBuffersVersion !== output.buffersVersion || !info.splatIndexBufferSet) {
+            const vertexBuffers = output.vertexBuffers;
+            for (let i = 0; i < vertexBuffers.length; i++) {
+                // The sort output owns the vertex buffers
+                mesh.setVerticesBuffer(vertexBuffers[i], false);
+            }
+            info.gpuBuffersVersion = output.buffersVersion;
+        }
+        mesh.forcedInstanceCount = Math.max(output.instanceCount, 1);
+    }
+
+    // Sorts the splats of every view that needs it. Runs before the scene renders: compute work cannot be dispatched during a render pass.
+    private _runGpuSort(): void {
+        if (
+            !this._gpuMode ||
+            !this._canPostToWorker ||
+            !this._vertexCount ||
+            !this._centersTexture ||
+            (this._splatDataPending && !this._gpuProgressiveCount) ||
+            !this._isSortRequired()
+        ) {
+            return;
+        }
+        this._syncPartProxyWorldMatrices();
+        const scene = this._scene;
+        const frameId = scene.getFrameId();
+        const views = this._gpuViewInfos;
+        views.length = 0;
+        this._gpuCollectFrameId = frameId;
+        this._cameraViewInfos.forEach(this._collectRecentViewInfo);
+        if (views.length === 0) {
+            return;
+        }
+
+        const world = this.computeWorldMatrix(true);
+        let needsSort = false;
+        for (let i = 0; i < views.length && !needsSort; i++) {
+            needsSort = this._gpuViewNeedsSort(views[i], world);
+        }
+        if (!needsSort) {
+            return;
+        }
+
+        if (!this._ensureGpuSorter()) {
+            return;
+        }
+        const sorter = this._gpuSorter!;
+        // The pending texture rows are uploaded right before sorting so the centers match the sort source.
+        this._commitDelayedTextureUpdate();
+        if (this._gpuSourceDirty && !this._applyGpuSource(sorter)) {
+            return;
+        }
+        if (this._gpuIntervalsDirty && !this._applyGpuIntervals(sorter)) {
+            return;
+        }
+        if (this._gpuPartMatricesDirty) {
+            sorter.setPartMatrices(this._getGpuSortPartIndicesTexture() ? this._getGpuSortPartMatrices() : null);
+            this._gpuPartMatricesDirty = false;
+        }
+
+        const options = this._gpuSortOptions;
+        options.rightHanded = scene.useRightHandedSystem;
+        const cameraPosition = this._gpuCameraPosition;
+        options.cameraPosition = cameraPosition;
+
+        const revision = this._gpuDataRevision;
+        let allApplied = true;
+        for (let i = 0; i < views.length; i++) {
+            const info = views[i];
+            if (!this._gpuViewNeedsSort(info, world)) {
+                continue;
+            }
+            const camera = info.camera;
+            const viewMatrix = camera.getViewMatrix();
+            const position = camera.globalPosition;
+            cameraPosition[0] = position.x;
+            cameraPosition[1] = position.y;
+            cameraPosition[2] = position.z;
+
+            const output = (info.gpuOutput ??= sorter.createOutput());
+            if (!sorter.sort(output, world, viewMatrix, options)) {
+                allApplied = false;
+                if (info.gpuBuffersVersion !== output.buffersVersion) {
+                    // The output buffers were recreated: the bound ones are gone, so wait for the next successful sort to render this view.
+                    this._bindGpuOutput(info, output);
+                    info.splatIndexBufferSet = false;
+                    info.sortAppliedId = 0;
+                }
+                continue;
+            }
+            this._bindGpuOutput(info, output);
+
+            info.sortWorldMatrix.copyFrom(world);
+            info.sortCameraForward.set(viewMatrix.m[2], viewMatrix.m[6], viewMatrix.m[10]);
+            info.sortCameraPosition.copyFrom(position);
+            info.sortRequestId = info.sortAppliedId = ++this._sortRequestId;
+            info.gpuAppliedRevision = revision;
+            info.gpuLastSortFrameId = frameId;
+            info.splatIndexBufferSet = true;
+            this._gpuPaddedCount = output.paddedCount;
+            this.forcedInstanceCount = Math.max(output.instanceCount, 1);
+            this._readyToDisplay = true;
+            this._sortIsDirty = false;
+        }
+        if (allApplied) {
+            this._gpuSortPending = false;
+            this._forcedSortPending = false;
+        }
+    }
+
     /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
@@ -2512,6 +3151,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._shTextures = null;
         this._cachedBoundingMin = null;
         this._cachedBoundingMax = null;
+        this._nativeTextureData = new WeakMap();
         // Note: _splatsData and _shData are intentionally kept alive after dispose.
         // They can still be used as runtime source buffers by a compound mesh that retained
         // this mesh's data before disposal.
@@ -2523,15 +3163,33 @@ export class GaussianSplattingMeshBase extends Mesh {
         this.onPartCountChangedObservable.clear();
         this.onPartRemovedObservable.clear();
 
+        this._scene.onCameraRemovedObservable.remove(this._cameraRemovedObserver);
+        this._cameraRemovedObserver = null;
+
         // delete meshes created for each camera
         this._cameraViewInfos.forEach((cameraViewInfo) => {
             cameraViewInfo.mesh.dispose();
+            cameraViewInfo.gpuOutput?.dispose();
+            cameraViewInfo.gpuOutput = null;
         });
+        if (this._gpuObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._gpuObserver);
+            this._gpuObserver = null;
+        }
+        if (this._gpuRestoreObserver) {
+            this._scene.getEngine().onContextRestoredObservable.remove(this._gpuRestoreObserver);
+            this._gpuRestoreObserver = null;
+        }
+        this._gpuSorter?.dispose();
+        this._gpuSorter = null;
+        this._gpuMode = false;
 
         super.dispose(doNotRecurse, true);
     }
 
     protected _copyTextures(source: GaussianSplattingMeshBase): void {
+        // The texture dimensions are not copied with the underscore-prefixed fields: the sort source and incremental updates read them.
+        this._textureSize.copyFrom(source._textureSize);
         this._covariancesATexture = source.covariancesATexture?.clone()!;
         this._covariancesBTexture = source.covariancesBTexture?.clone()!;
         this._centersTexture = source.centersTexture?.clone()!;
@@ -2565,6 +3223,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         newGS._readyToDisplay = false;
         newGS._hasRenderedOnce = false;
         newGS._disableDepthSort = this._disableDepthSort;
+        newGS.useGpuSort = this.useGpuSort;
         newGS._instantiateWorker();
 
         const binfo = this.getBoundingInfo();
@@ -2781,9 +3440,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._useRGBACovariants = true;
         const engine = this.getEngine();
         // No real GPU (NullEngine): skip MRT allocation. The reservation's part/index/range logic still runs;
-        // texture population requires a real (WebGL2/WebGPU) backend.
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        // texture population requires a real (WebGL2/WebGPU/Native) backend.
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const covType = engine.getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
@@ -2832,8 +3490,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param textureSize atlas dimensions (width, height)
      */
     protected _createShMrtAtlas(textureSize: Vector2): void {
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const count = this._shMrtAtlasTextureCount;
@@ -2885,8 +3542,7 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param textureSize atlas dimensions (width, height)
      */
     protected _createRotMrtAtlas(textureSize: Vector2): void {
-        const updateEngine = this._getTextureDataUpdateEngine();
-        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+        if (!this._supportsRenderTargetAtlas()) {
             return;
         }
         const rotType = this.getEngine().getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
@@ -2927,19 +3583,78 @@ export class GaussianSplattingMeshBase extends Mesh {
         const textureSize = this._getTextureSize(this._vertexCount);
         // Update the textures
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            const engine = this._getTextureDataUpdateEngine();
+            const texture = new RawTexture(
+                engine._gl || engine.isWebGPU ? data : null,
+                width,
+                height,
+                format,
+                this._scene,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT,
+                Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
+            );
+            if (!engine._gl && !engine.isWebGPU) {
+                this._updateTextureFromData(texture, data, width, 0, height);
+            }
+            return texture;
         };
 
         const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+            const engine = this._getTextureDataUpdateEngine();
+            const texture = new RawTexture(
+                engine._gl || engine.isWebGPU ? data : null,
+                width,
+                height,
+                format,
+                this._scene,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
+            );
+            if (!engine._gl && !engine.isWebGPU) {
+                this._updateTextureFromData(texture, data, width, 0, height);
+            }
+            return texture;
         };
 
         const createEmptyTextureU32 = (width: number, height: number, format: number) => {
-            return new RawTexture(null, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_INTEGER);
+            return new RawTexture(
+                null,
+                width,
+                height,
+                format,
+                this._scene,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_UNSIGNED_INTEGER,
+                Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
+            );
         };
 
         const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
+            const engine = this._getTextureDataUpdateEngine();
+            const texture = new RawTexture(
+                engine._gl || engine.isWebGPU ? data : null,
+                width,
+                height,
+                format,
+                this._scene,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_HALF_FLOAT,
+                Constants.TEXTURE_CREATIONFLAG_SAMPLED_DATA_ONLY
+            );
+            if (!engine._gl && !engine.isWebGPU) {
+                this._updateTextureFromData(texture, data, width, 0, height);
+            }
+            return texture;
         };
 
         const firstTime = this._covariancesATexture === null;
@@ -2962,32 +3677,50 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         if (!firstTime && !textureSizeChanged && !needsMrtConversion) {
             this._setDelayedTextureUpdate(covA, covB, colorArray, sh);
-            const positions = Float32Array.from(this._splatPositions!);
-            const vertexCount = this._vertexCount;
             if (this._worker) {
+                const positions = Float32Array.from(this._splatPositions!);
+                const vertexCount = this._vertexCount;
                 this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
                 // Re-sync the active interval set in case the source splat count changed.
                 this._postIntervalsToWorker();
+            } else if (this._gpuMode) {
+                this._markGpuSourceDirty();
             }
 
-            // Handle SH textures in update path - create if they don't exist. Skip when the SH atlas is
-            // render-backed (_useShMrtAtlas): those targets are created/managed by _createShMrtAtlas, not here.
-            if (sh && !this._shTextures && !this._useShMrtAtlas) {
-                this._shTextures = [];
-                for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
+            // No sort-worker reply will flush the delayed upload (Native / no-worker path), so it is committed
+            // below. That commit uploads every existing data, rotation and SH texture, so don't upload them here too.
+            const commitWithoutWorker = !this._worker;
+
+            // Handle SH textures in update path - create any that don't exist yet (including when a higher SH
+            // degree needs more textures than are allocated). Skip when the SH atlas is render-backed
+            // (_useShMrtAtlas): those targets are created/managed by _createShMrtAtlas, not here.
+            if (sh && !this._useShMrtAtlas && (!this._shTextures || this._shTextures.length < sh.length)) {
+                this._shTextures ??= [];
+                for (let textureIndex = this._shTextures.length; textureIndex < sh.length; textureIndex++) {
                     const shTexture = createEmptyTextureU32(textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
                     shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                     this._shTextures!.push(shTexture);
-                    this._updateShTextureData(shTexture, sh[textureIndex], textureSize.x, 0, textureSize.y);
+                    if (!commitWithoutWorker) {
+                        this._updateShTextureData(shTexture, sh[textureIndex], textureSize.x, 0, textureSize.y);
+                    }
                 }
+            }
+
+            if (commitWithoutWorker) {
+                // Commit after the SH textures exist (the upload writes them) but before any rotation textures
+                // are created below, since those are created with their data already.
+                this._commitDelayedTextureUpdate();
             }
 
             if (this._needsRotationScaleTextures && this._rotationDataA) {
                 if (this._rotationsATexture) {
-                    this._updateTextureFromData(this._rotationsATexture, this._rotationDataA, textureSize.x, 0, textureSize.y);
-                    this._updateTextureFromData(this._rotationsBTexture!, this._rotationDataB!, textureSize.x, 0, textureSize.y);
-                    this._updateTextureFromData(this._rotationScaleTexture!, this._rotationScaleData!, textureSize.x, 0, textureSize.y);
+                    // Without a worker, the commit above already uploaded the rotation data.
+                    if (!commitWithoutWorker) {
+                        this._updateTextureFromData(this._rotationsATexture, this._rotationDataA, textureSize.x, 0, textureSize.y);
+                        this._updateTextureFromData(this._rotationsBTexture!, this._rotationDataB!, textureSize.x, 0, textureSize.y);
+                        this._updateTextureFromData(this._rotationScaleTexture!, this._rotationScaleData!, textureSize.x, 0, textureSize.y);
+                    }
                 } else {
                     // Rotation textures not yet created (needsRotationScaleTextures was enabled after initial load).
                     this._rotationsATexture = createTextureFromDataF16(this._rotationDataA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
@@ -3154,6 +3887,8 @@ export class GaussianSplattingMeshBase extends Mesh {
                     this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
                     // Re-sync the active interval set in case the source splat count changed.
                     this._postIntervalsToWorker();
+                } else if (this._gpuMode) {
+                    this._markGpuSourceDirty();
                 }
                 this._postToWorker(true);
             }
@@ -3214,6 +3949,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             // The source splat count may have changed (e.g. addPart): re-sync the worker's active
             // interval set so it covers the current splats instead of a stale (smaller) range.
             this._postIntervalsToWorker();
+        } else if (this._gpuMode) {
+            this._markGpuSourceDirty();
         }
         this._sortIsDirty = true;
     }
@@ -3228,6 +3965,11 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param splatCount number of splats in the updated range
      */
     protected _postWorkerPositionsRange(splatOffset: number, splatCount: number): void {
+        if (this._gpuMode && splatCount > 0) {
+            this._markGpuSourceDirty();
+            this._sortIsDirty = true;
+            return;
+        }
         if (!this._worker || !this._splatPositions || splatCount <= 0) {
             return;
         }
@@ -3300,6 +4042,10 @@ export class GaussianSplattingMeshBase extends Mesh {
         // Upload only the written texels, one contiguous per-row run at a time (rectangular sub-uploads never
         // clobber texels outside [globalOffset, end), so neighboring parts on a shared boundary row are safe).
         const positions = this._splatPositions;
+        const covAUpdates: ITextureDataRect[] = [];
+        const covBUpdates: ITextureDataRect[] = [];
+        const centerUpdates: ITextureDataRect[] = [];
+        const colorUpdates: ITextureDataRect[] = [];
         let gi = globalOffset;
         while (gi < end) {
             const row = Math.floor(gi / width);
@@ -3308,12 +4054,22 @@ export class GaussianSplattingMeshBase extends Mesh {
             const runLen = runEnd - gi;
             // covA/covB/colorArray are count-sized (0-based), so rebase by globalOffset; positions stays global.
             const li = gi - globalOffset;
-            this._updateTextureFromDataRect(this._covariancesATexture!, new Uint16Array(covA.buffer, li * 4 * 2, runLen * 4), col, row, runLen, 1);
-            this._updateTextureFromDataRect(this._covariancesBTexture!, new Uint16Array(covB.buffer, li * covBSItemSize * 2, runLen * covBSItemSize), col, row, runLen, 1);
-            this._updateTextureFromDataRect(this._centersTexture!, new Float32Array(positions.buffer, gi * 4 * 4, runLen * 4), col, row, runLen, 1);
-            this._updateTextureFromDataRect(this._colorsTexture!, new Uint8Array(colorArray.buffer, li * 4, runLen * 4), col, row, runLen, 1);
+            covAUpdates.push({ data: new Uint16Array(covA.buffer, li * 4 * 2, runLen * 4), xOffset: col, yOffset: row, width: runLen, height: 1 });
+            covBUpdates.push({
+                data: new Uint16Array(covB.buffer, li * covBSItemSize * 2, runLen * covBSItemSize),
+                xOffset: col,
+                yOffset: row,
+                width: runLen,
+                height: 1,
+            });
+            centerUpdates.push({ data: new Float32Array(positions.buffer, gi * 4 * 4, runLen * 4), xOffset: col, yOffset: row, width: runLen, height: 1 });
+            colorUpdates.push({ data: new Uint8Array(colorArray.buffer, li * 4, runLen * 4), xOffset: col, yOffset: row, width: runLen, height: 1 });
             gi = runEnd;
         }
+        this._updateTextureDataRects(this._covariancesATexture!, covAUpdates);
+        this._updateTextureDataRects(this._covariancesBTexture!, covBUpdates);
+        this._updateTextureDataRects(this._centersTexture!, centerUpdates);
+        this._updateTextureDataRects(this._colorsTexture!, colorUpdates);
 
         this._postWorkerPositionsRange(globalOffset, count);
     }
@@ -3332,6 +4088,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._flipY = flipY;
         this._splatDataRevision++;
         this._splatDataPending = true;
+        this._gpuProgressiveCount = GaussianSplattingMeshBase.ProgressiveUpdateAmount ? 0 : null;
 
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
@@ -3438,6 +4195,14 @@ export class GaussianSplattingMeshBase extends Mesh {
 
                 this._updateSubTextures(this._splatPositions, covA, covB, colorArray, uploadStartLine, batchEndLine - uploadStartLine, sh);
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+                if (this._gpuMode) {
+                    this._gpuProgressiveCount = Math.min(batchEndTexel, vertexCount);
+                    this._markGpuSourceDirty();
+                    // The batch loop already accumulated the bounds of the uploaded centers.
+                    (this._gpuBoundsMin ??= new Vector3()).copyFrom(minimum);
+                    (this._gpuBoundsMax ??= new Vector3()).copyFrom(maximum);
+                    this._gpuBoundsDirty = false;
+                }
                 if (isAsync) {
                     yield;
                 }
@@ -3479,6 +4244,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._cachedBoundingMax = maximum.clone();
 
         this._splatDataPending = false;
+        this._gpuProgressiveCount = null;
         this._postToWorker(true);
     }
 
@@ -3520,6 +4286,19 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _updateSplatIndexBuffer(vertexCount: number): void {
         const renderedSplatCount = this._activeSplatRanges ? this._activeSplatRenderCount : vertexCount;
         const paddedVertexCount = Math.max((renderedSplatCount + 15) & ~0xf, 16);
+
+        const gpuEligible = this._isGpuSortEligible(vertexCount);
+        if (!this._gpuMode && gpuEligible) {
+            this._enterGpuMode();
+        } else if (this._gpuMode && !gpuEligible) {
+            this._exitGpuMode();
+        }
+        if (this._gpuMode) {
+            // The sort output holds the indices: no CPU index buffer is needed.
+            this._gpuPaddedCount = paddedVertexCount;
+            this.forcedInstanceCount = Math.max(paddedVertexCount >> 4, 1);
+            return;
+        }
 
         const previousIndex = this._splatIndex;
 
@@ -3565,21 +4344,71 @@ export class GaussianSplattingMeshBase extends Mesh {
         this.forcedInstanceCount = Math.max(paddedVertexCount >> 4, 1);
     }
 
-    protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
-        const engine = this._getTextureDataUpdateEngine();
-        const internalTexture = texture.getInternalTexture()!;
-        // NativeEngine and NullEngine support complete raw uploads, but not sub-texture uploads.
-        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
-            engine.updateRawTexture(internalTexture, data, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
+    private _updateTextureDataRects(texture: BaseTexture, updates: readonly ITextureDataRect[]): void {
+        if (updates.length === 0) {
             return;
         }
-        engine.updateTextureData(internalTexture, data, 0, lineStart, width, lineCount, 0, 0, false);
+        const engine = this._getTextureDataUpdateEngine();
+        const internalTexture = texture.getInternalTexture()!;
+        if (engine._gl || engine.isWebGPU || internalTexture.source !== InternalTextureSource.Raw) {
+            for (const update of updates) {
+                engine.updateTextureData(internalTexture, update.data, update.xOffset, update.yOffset, update.width, update.height, 0, 0, false);
+            }
+            return;
+        }
+
+        // Native raw uploads are staged between views, whereas updateTextureData is applied before the frame's
+        // draws. Patch every rectangle into the CPU image first, then stage one complete upload for this batch.
+        const firstUpdate = updates[0];
+        const bytesPerTexel = firstUpdate.data.byteLength / (firstUpdate.width * firstUpdate.height);
+        const requiredByteLength = internalTexture.width * internalTexture.height * bytesPerTexel;
+        if (!Number.isInteger(bytesPerTexel) || !Number.isInteger(requiredByteLength)) {
+            throw new Error("Gaussian splatting texture update data does not contain a whole number of texels.");
+        }
+        let textureData = this._nativeTextureData.get(internalTexture);
+        if (!textureData || textureData.byteLength !== requiredByteLength) {
+            textureData = new Uint8Array(requiredByteLength);
+            this._nativeTextureData.set(internalTexture, textureData);
+        }
+        for (const update of updates) {
+            const source = new Uint8Array(update.data.buffer, update.data.byteOffset, update.data.byteLength);
+            const rowByteLength = update.width * bytesPerTexel;
+            if (source.byteLength !== rowByteLength * update.height) {
+                throw new Error("Gaussian splatting texture update rectangles must use the same texel size.");
+            }
+            for (let row = 0; row < update.height; row++) {
+                const sourceOffset = row * rowByteLength;
+                const destinationOffset = ((update.yOffset + row) * internalTexture.width + update.xOffset) * bytesPerTexel;
+                textureData.set(source.subarray(sourceOffset, sourceOffset + rowByteLength), destinationOffset);
+            }
+        }
+        engine.updateRawTexture(
+            internalTexture,
+            textureData,
+            internalTexture.format,
+            internalTexture.invertY,
+            internalTexture._compression,
+            internalTexture.type,
+            internalTexture._useSRGBBuffer
+        );
+    }
+
+    protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
+        this._updateTextureDataRects(texture, [{ data, xOffset: 0, yOffset: lineStart, width, height: lineCount }]);
     };
 
     protected _updateTextureFromDataRect = (texture: BaseTexture, data: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number) => {
-        const engine = this._getTextureDataUpdateEngine();
-        engine.updateTextureData(texture.getInternalTexture()!, data, xOffset, yOffset, width, height, 0, 0, false);
+        this._updateTextureDataRects(texture, [{ data, xOffset, yOffset, width, height }]);
     };
+
+    /**
+     * Whether the engine can back the data atlas with render targets (WebGL, WebGPU, and Native with MRT support; not NullEngine).
+     * @returns true when render-target atlases can be created
+     */
+    protected _supportsRenderTargetAtlas(): boolean {
+        const engine = this._getTextureDataUpdateEngine();
+        return !!engine._gl || !!engine.isWebGPU || (IsNative && this.getEngine().getCaps().drawBuffersExtension);
+    }
 
     protected _getTextureDataUpdateEngine(): ITextureDataUpdateCapableEngine {
         return this.getEngine() as unknown as ITextureDataUpdateCapableEngine;
@@ -3588,9 +4417,10 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _updateShTextureData(texture: BaseTexture, shData: Uint8Array, textureWidth: number, lineStart: number, lineCount: number): void {
         const engine = this._getTextureDataUpdateEngine();
 
-        // NativeEngine/NullEngine, updateTextureData unsupported
-        if (!engine._gl && !engine.isWebGPU) {
-            const internalTexture = texture.getInternalTexture()!;
+        // NativeEngine/NullEngine: upload complete textures as one padded image. Partial (incremental) updates must only
+        // write their own rows, so they go through the row uploads below like on the other engines.
+        const internalTexture = texture.getInternalTexture()!;
+        if (!engine._gl && !engine.isWebGPU && lineStart === 0 && lineCount === internalTexture.height) {
             const expectedByteLength = textureWidth * internalTexture.height * 16;
             let uploadData: Uint32Array;
             if (shData.byteLength === expectedByteLength && shData.byteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
@@ -3600,7 +4430,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 padded.set(shData.subarray(0, Math.min(shData.byteLength, expectedByteLength)));
                 uploadData = new Uint32Array(padded.buffer);
             }
-            engine.updateRawTexture(internalTexture, uploadData, internalTexture.format, internalTexture.invertY, null, internalTexture.type, internalTexture._useSRGBBuffer);
+            this._updateTextureFromData(texture, uploadData, textureWidth, 0, internalTexture.height);
             return;
         }
 
@@ -3619,20 +4449,41 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         const createView = (byteOffset: number, viewTexelCount: number) => {
-            return new Uint32Array(shData.buffer, shData.byteOffset + byteOffset, viewTexelCount * componentsPerTexel);
+            const absoluteByteOffset = shData.byteOffset + byteOffset;
+            if (absoluteByteOffset % Uint32Array.BYTES_PER_ELEMENT === 0) {
+                return new Uint32Array(shData.buffer, absoluteByteOffset, viewTexelCount * componentsPerTexel);
+            }
+            // Uint32Array views must be 4-byte aligned: copy only the requested range into aligned storage.
+            const aligned = new Uint32Array(viewTexelCount * componentsPerTexel);
+            new Uint8Array(aligned.buffer).set(shData.subarray(byteOffset, byteOffset + aligned.byteLength));
+            return aligned;
         };
 
+        const updates: ITextureDataRect[] = [];
         const fullRowCount = Math.floor(texelCount / textureWidth);
         if (fullRowCount > 0) {
             const fullRowTexelCount = fullRowCount * textureWidth;
-            this._updateTextureFromData(texture, createView(startTexel * bytesPerTexel, fullRowTexelCount), textureWidth, lineStart, fullRowCount);
+            updates.push({
+                data: createView(startTexel * bytesPerTexel, fullRowTexelCount),
+                xOffset: 0,
+                yOffset: lineStart,
+                width: textureWidth,
+                height: fullRowCount,
+            });
             texelCount -= fullRowTexelCount;
         }
 
         if (texelCount > 0) {
             const partialRowOffset = (startTexel + fullRowCount * textureWidth) * bytesPerTexel;
-            this._updateTextureFromDataRect(texture, createView(partialRowOffset, texelCount), 0, lineStart + fullRowCount, texelCount, 1);
+            updates.push({
+                data: createView(partialRowOffset, texelCount),
+                xOffset: 0,
+                yOffset: lineStart + fullRowCount,
+                width: texelCount,
+                height: 1,
+            });
         }
+        this._updateTextureDataRects(texture, updates);
     }
 
     protected _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
@@ -3670,6 +4521,14 @@ export class GaussianSplattingMeshBase extends Mesh {
         // The identity index buffer must exist even when no sort worker is needed: every render path
         // (including the Native one) reads it, and a null buffer breaks the Native bindings.
         this._updateSplatIndexBuffer(this._vertexCount);
+        if (this._gpuMode) {
+            // The sort runs on the GPU: no worker. The sorter picks up the (new) source before its next sort.
+            this._markGpuSourceDirty();
+            this._sortIsDirty = true;
+            this._canPostToWorker = true;
+            return;
+        }
+        this._workerPending = false;
         if (this._disableDepthSort) {
             return;
         }

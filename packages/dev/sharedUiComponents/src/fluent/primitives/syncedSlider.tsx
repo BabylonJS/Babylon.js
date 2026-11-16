@@ -63,6 +63,10 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
     compact?: boolean;
     /** When true, slider grows to fill all available space (no maxWidth constraint) */
     growSlider?: boolean;
+    /**
+     * When true, min/max only bound the slider; the numeric input accepts any finite value.
+     */
+    unboundedInput?: boolean;
 };
 
 /**
@@ -72,7 +76,7 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
  */
 export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) => {
     SyncedSliderInput.displayName = "SyncedSliderInput";
-    const { infoLabel, ...passthroughProps } = props;
+    const { infoLabel, unboundedInput, ...passthroughProps } = props;
     const classes = useSyncedSliderStyles();
     const [value, setValue] = useState<number>(props.value ?? 0);
     const pendingValueRef = useRef<number>(undefined);
@@ -143,6 +147,8 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                 )}
                 <SpinButton
                     {...passthroughProps}
+                    min={unboundedInput ? undefined : props.min}
+                    max={unboundedInput ? undefined : props.max}
                     className={useCompactSizing ? classes.compactSpinButton : classes.spinButton}
                     inputClassName={useCompactSizing ? classes.compactSpinButtonInput : classes.spinButtonInput}
                     value={value}

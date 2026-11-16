@@ -13,6 +13,7 @@ export const enum FlowGraphBlockNames {
     ReceiveCustomEvent = "FlowGraphReceiveCustomEventBlock",
     StopEventPropagation = "FlowGraphStopEventPropagationBlock",
     MeshPickEvent = "FlowGraphMeshPickEventBlock",
+    MeshIntersectionEvent = "FlowGraphMeshIntersectionEventBlock",
     PointerEvent = "FlowGraphPointerEventBlock",
     PointerDownEvent = "FlowGraphPointerDownEventBlock",
     PointerUpEvent = "FlowGraphPointerUpEventBlock",

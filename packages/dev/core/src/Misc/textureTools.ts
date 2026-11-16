@@ -8,12 +8,16 @@ import { Constants } from "../Engines/constants";
 import { type Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { type Observable } from "./observable";
+import { MapSRGBToLinear } from "./textureFormat.functions";
 import { type Nullable } from "../types";
 import { Clamp } from "../Maths/math.scalar.functions";
 import { FromHalfFloat, ToHalfFloat } from "./halfFloat";
 
 export { FromHalfFloat, ToHalfFloat };
+
+const DisplayGamma = 0;
+const PreserveChannels = 1;
+const RestoreHardwareSRGB = 2;
 
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
@@ -175,8 +179,11 @@ export function ApplyPostProcess(
     });
 }
 
-function IsCompressedTextureFormat(format: number): boolean {
+/** @internal */
+export function _IsCompressedTextureFormat(format: number): boolean {
     switch (format) {
+        case 0x8c00: // COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+        case 0x8c02: // COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
         case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
         case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
@@ -233,28 +240,52 @@ function IsCompressedTextureFormat(format: number): boolean {
 /**
  * Waits for when the given texture is ready to be used (downloaded, converted, mip mapped...)
  * @param texture the texture to wait for
+ * @param signal optional signal to abort the readiness wait
  * @returns a promise that resolves when the texture is ready
  */
-export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void> {
+export async function WhenTextureReadyAsync(texture: BaseTexture, signal?: AbortSignal): Promise<void> {
+    signal?.throwIfAborted();
     if (texture.isReady()) {
         return;
     }
-
-    if (texture.loadingError) {
-        throw new Error(texture.errorObject?.message || `Texture ${texture.name} errored while loading.`);
+    const internalTexture = texture.getInternalTexture();
+    if (texture.loadingError || internalTexture?._loadError) {
+        throw new Error(texture.errorObject?.message || internalTexture?._loadError?.message || `Texture ${texture.name} errored while loading.`);
     }
-
-    const onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
-    if (onLoadObservable) {
-        return await new Promise((res) => onLoadObservable.addOnce(() => res()));
+    const onLoadObservable = (texture as Texture).onLoadObservable ?? texture._texture?.onLoadedObservable;
+    if (!onLoadObservable) {
+        throw new Error(`Cannot determine readiness of texture ${texture.name}.`);
     }
-
-    const onLoadedObservable = texture._texture?.onLoadedObservable;
-    if (onLoadedObservable) {
-        return await new Promise((res) => onLoadedObservable.addOnce(() => res()));
-    }
-
-    throw new Error(`Cannot determine readiness of texture ${texture.name}.`);
+    await new Promise<void>((resolve, reject) => {
+        const cleanup = () => {
+            onLoadObservable.removeCallback(onLoad);
+            Texture.OnTextureLoadErrorObservable.remove(onError);
+            internalTexture?.onErrorObservable.remove(onInternalError ?? null);
+            signal?.removeEventListener("abort", onAbort);
+            texture.onDisposeObservable.remove(onDispose);
+        };
+        const fail = (error: Error) => {
+            cleanup();
+            reject(error);
+        };
+        const onLoad = () => {
+            cleanup();
+            resolve();
+        };
+        const onAbort = () => fail(signal!.reason);
+        const onError = Texture.OnTextureLoadErrorObservable.add((failedTexture) => {
+            if (failedTexture === texture) {
+                fail(new Error(texture.errorObject?.message || `Texture ${texture.name} errored while loading.`));
+            }
+        });
+        const onInternalError = internalTexture?.onErrorObservable.add((error) => fail(new Error(error.message || `Texture ${texture.name} errored while loading.`)));
+        const onDispose = texture.onDisposeObservable.add(() => fail(new Error(`Texture ${texture.name} was disposed while waiting for readiness.`)));
+        onLoadObservable.addOnce(onLoad);
+        signal?.addEventListener("abort", onAbort, { once: true });
+        if (signal?.aborted) {
+            onAbort();
+        }
+    });
 }
 
 /**
@@ -262,7 +293,15 @@ export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void>
  * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format, which cannot be read using readPixels.
  * @internal
  */
-async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: number, face: number, lod: number, slice: number = 0): Promise<Uint8Array> {
+async function ReadPixelsUsingRTT(
+    texture: BaseTexture,
+    width: number,
+    height: number,
+    face: number,
+    lod: number,
+    slice: number,
+    applyGammaCorrection: boolean
+): Promise<Uint8Array> {
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
     const sourceInternalTexture = texture.getInternalTexture();
@@ -313,26 +352,48 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
         });
     }
 
-    await new Promise((resolve) => {
-        lodPostProcess.onEffectCreatedObservable.addOnce((e) => {
-            e.executeWhenCompiled(() => {
-                resolve(0);
+    let rtt: RenderTargetTexture | undefined;
+    try {
+        await new Promise<void>((resolve, reject) => {
+            lodPostProcess.onEffectCreatedObservable.addOnce((effect) => {
+                const cleanup = () => {
+                    effect.onCompileObservable.remove(onCompile);
+                    effect.onErrorObservable.remove(onError);
+                };
+                const onCompile = effect.onCompileObservable.addOnce(() => {
+                    cleanup();
+                    resolve();
+                });
+                const onError = effect.onErrorObservable.addOnce(() => {
+                    cleanup();
+                    reject(new Error(effect.getCompilationError() || "Texture readback shader compilation failed."));
+                });
+                const compilationError = effect.getCompilationError();
+                if (compilationError) {
+                    cleanup();
+                    reject(new Error(compilationError));
+                } else if (effect.isReady()) {
+                    cleanup();
+                    resolve();
+                }
             });
         });
-    });
 
-    const rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
+        rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
 
-    lodPostProcess.onApply = function (effect) {
-        effect.setTexture("textureSampler", texture);
-        effect.setFloat("lod", lod);
-        effect.setInt("gamma", texture.gammaSpace ? 1 : 0);
-        if (is3DTexture) {
-            effect.setFloat("slice", slice);
-        }
-    };
+        lodPostProcess.onApply = function (effect) {
+            effect.setTexture("textureSampler", texture);
+            effect.setFloat("lod", lod);
+            const hardwareSRGB =
+                sourceInternalTexture?._useSRGBBuffer ||
+                MapSRGBToLinear(texture.textureFormat) !== null ||
+                texture.textureFormat === Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+            effect.setInt("gamma", hardwareSRGB ? RestoreHardwareSRGB : !applyGammaCorrection || texture.gammaSpace ? PreserveChannels : DisplayGamma);
+            if (is3DTexture) {
+                effect.setFloat("slice", slice);
+            }
+        };
 
-    try {
         if (rtt.renderTarget && sourceInternalTexture) {
             const samplingMode = sourceInternalTexture.samplingMode;
             if (lod !== 0) {
@@ -356,7 +417,7 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
             throw Error("Render to texture failed.");
         }
     } finally {
-        rtt.dispose();
+        rtt?.dispose();
         lodPostProcess.dispose();
     }
 }
@@ -367,12 +428,13 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
  * This is convenient to get 8-bit RGBA values for a texture in a GPU compressed format.
  * When direct readback returns non-RGBA channel layouts, the result is normalized to RGBA8.
  * @param texture the source texture
- * @param width the target width of the result, which does not have to match the source texture width
- * @param height the target height of the result, which does not have to match the source texture height
+ * @param width the target width of the result; direct readback returns the selected mip's width when this is the base or mip width
+ * @param height the target height of the result; direct readback returns the selected mip's height when this is the base or mip height
  * @param face if the texture has multiple faces, the face index to use for the source
  * @param lod if the texture has multiple LODs, the lod index to use for the source
  * @param forceRTT if true, forces the use of the RTT path for reading pixels (useful for cube maps to ensure correct orientation and gamma)
  * @param slice if the texture is 3D, the depth slice index to use for the source
+ * @param applyGammaCorrection if true (default), converts linear RTT pixels to display gamma and previews single-channel data as grayscale. If false, preserves sampled channel semantics, including undoing hardware sRGB decoding.
  * @returns the 8-bit texture data
  */
 export async function GetTextureDataAsync(
@@ -382,7 +444,8 @@ export async function GetTextureDataAsync(
     face: number = 0,
     lod: number = 0,
     forceRTT: boolean = false,
-    slice: number = 0
+    slice: number = 0,
+    applyGammaCorrection: boolean = true
 ): Promise<Uint8Array> {
     await WhenTextureReadyAsync(texture);
     const internalTexture = texture.getInternalTexture();
@@ -391,19 +454,22 @@ export async function GetTextureDataAsync(
     const { width: textureWidth, height: textureHeight } = texture.getSize();
     const targetWidth = width ?? textureWidth;
     const targetHeight = height ?? textureHeight;
+    const mipWidth = Math.max(1, Math.floor(textureWidth / 2 ** lod));
+    const mipHeight = Math.max(1, Math.floor(textureHeight / 2 ** lod));
+    const directSize = (targetWidth === textureWidth && targetHeight === textureHeight) || (targetWidth === mipWidth && targetHeight === mipHeight);
 
     // If the internal texture format is compressed, we cannot read the pixels directly.
     // If we're resizing the texture, we need to use a render target texture.
     // forceRTT can be used to ensure correct orientation and gamma for cube maps.
     // 3D textures must also use RTT because direct readPixels does not expose slice selection.
-    if (forceRTT || is3DTexture || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+    if (forceRTT || is3DTexture || _IsCompressedTextureFormat(texture.textureFormat) || !directSize) {
         if (texture.is2DArray) {
             throw new Error(`Reading pixels from 2D array textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
         }
-        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod, slice);
+        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod, slice, applyGammaCorrection);
     }
 
-    let data = (await texture.readPixels(face, lod)) as Nullable<Uint8Array | Float32Array>;
+    let data = (await texture.readPixels(face, lod, null, true, false, 0, 0, mipWidth, mipHeight)) as Nullable<Uint8Array | Float32Array>;
     if (!data) {
         throw new Error(`Failed to read pixels from texture ${texture.name}.`);
     }
@@ -422,7 +488,7 @@ export async function GetTextureDataAsync(
     // Some backends (notably WebGPU for single/dual/triple channel formats) can return
     // readback data that is not RGBA8. The inspector preview pipeline expects 4 bytes
     // per pixel, so normalize to RGBA here when needed.
-    const pixelCount = targetWidth * targetHeight;
+    const pixelCount = mipWidth * mipHeight;
     const expectedLength = pixelCount * 4;
 
     if (data.length !== expectedLength) {
@@ -435,22 +501,22 @@ export async function GetTextureDataAsync(
                 const c0 = data[src++];
 
                 if (componentCount === 1) {
-                    // Luminance/R-style data: replicate to RGB and use opaque alpha.
-                    normalizedData[dst] = c0;
-                    normalizedData[dst + 1] = c0;
-                    normalizedData[dst + 2] = c0;
-                    normalizedData[dst + 3] = 255;
+                    const alphaOnly = !applyGammaCorrection && texture.textureFormat === Constants.TEXTUREFORMAT_ALPHA;
+                    const redOnly = !applyGammaCorrection && (texture.textureFormat === Constants.TEXTUREFORMAT_R || texture.textureFormat === Constants.TEXTUREFORMAT_RED_INTEGER);
+                    normalizedData[dst] = alphaOnly ? 0 : c0;
+                    normalizedData[dst + 1] = alphaOnly || redOnly ? 0 : c0;
+                    normalizedData[dst + 2] = alphaOnly || redOnly ? 0 : c0;
+                    normalizedData[dst + 3] = alphaOnly ? c0 : 255;
                     continue;
                 }
 
                 const c1 = data[src++];
                 if (componentCount === 2) {
-                    // Two-channel data has no standard blue/alpha semantics for preview,
-                    // so preserve R/G, clear B, and force opaque alpha.
+                    const luminanceAlpha = !applyGammaCorrection && texture.textureFormat === Constants.TEXTUREFORMAT_LUMINANCE_ALPHA;
                     normalizedData[dst] = c0;
-                    normalizedData[dst + 1] = c1;
-                    normalizedData[dst + 2] = 0;
-                    normalizedData[dst + 3] = 255;
+                    normalizedData[dst + 1] = luminanceAlpha ? c0 : c1;
+                    normalizedData[dst + 2] = luminanceAlpha ? c0 : 0;
+                    normalizedData[dst + 3] = luminanceAlpha ? c1 : 255;
                     continue;
                 }
 

@@ -1,28 +1,9 @@
 import { type BaseTexture, type Texture } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { GetTextureDataAsync } from "core/Misc/textureTools";
+import { ApplyTextureChannels, type TextureChannelsToDisplay } from "./textureChannels";
 
-/**
- * Defines which channels of the texture to retrieve with {@link TextureHelper.GetTextureDataAsync}.
- */
-export type TextureChannelsToDisplay = {
-    /**
-     * True if the red channel should be included.
-     */
-    R: boolean;
-    /**
-     * True if the green channel should be included.
-     */
-    G: boolean;
-    /**
-     * True if the blue channel should be included.
-     */
-    B: boolean;
-    /**
-     * True if the alpha channel should be included.
-     */
-    A: boolean;
-};
+export type { TextureChannelsToDisplay } from "./textureChannels";
 
 /**
  * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
@@ -82,58 +63,7 @@ export async function ApplyChannelsToTextureDataAsync(
         }
     }
 
-    if (!channels.R || !channels.G || !channels.B || !channels.A) {
-        for (let i = 0; i < width * height * 4; i += 4) {
-            // If alpha is the only channel, just display alpha across all channels
-            if (channels.A && !channels.R && !channels.G && !channels.B) {
-                data[i] = data[i + 3];
-                data[i + 1] = data[i + 3];
-                data[i + 2] = data[i + 3];
-                data[i + 3] = 255;
-                continue;
-            }
-            let r = data[i],
-                g = data[i + 1],
-                b = data[i + 2],
-                a = data[i + 3];
-            // If alpha is not visible, make everything 100% alpha
-            if (!channels.A) {
-                a = 255;
-            }
-            // If only one color channel is selected, map both colors to it. If two are selected, the unused one gets set to 0
-            if (!channels.R) {
-                if (channels.G && !channels.B) {
-                    r = g;
-                } else if (channels.B && !channels.G) {
-                    r = b;
-                } else {
-                    r = 0;
-                }
-            }
-            if (!channels.G) {
-                if (channels.R && !channels.B) {
-                    g = r;
-                } else if (channels.B && !channels.R) {
-                    g = b;
-                } else {
-                    g = 0;
-                }
-            }
-            if (!channels.B) {
-                if (channels.R && !channels.G) {
-                    b = r;
-                } else if (channels.G && !channels.R) {
-                    b = g;
-                } else {
-                    b = 0;
-                }
-            }
-            data[i] = r;
-            data[i + 1] = g;
-            data[i + 2] = b;
-            data[i + 3] = a;
-        }
-    }
+    ApplyTextureChannels(data, channels, width * height);
 
     //To flip image on Y axis.
     if ((texture as Texture).invertY || texture.isCube) {

@@ -10,6 +10,57 @@ interface ILogComponentProps {
     globalState: GlobalState;
 }
 
+const MaxLogEntries = 1000;
+
+export class LogEntryBuffer {
+    private readonly _pending = new Array<LogEntry | undefined>(MaxLogEntries);
+    private _pendingStart = 0;
+    private _pendingCount = 0;
+    private _frameId = 0;
+
+    public constructor(
+        private readonly _publish: (entries: LogEntry[]) => void,
+        private readonly _requestFrame: (callback: FrameRequestCallback) => number = (callback) => globalThis.requestAnimationFrame(callback),
+        private readonly _cancelFrame: (handle: number) => void = (handle) => globalThis.cancelAnimationFrame(handle)
+    ) {}
+
+    public enqueue(entry: LogEntry): void {
+        const index = (this._pendingStart + this._pendingCount) % MaxLogEntries;
+        this._pending[index] = entry;
+        if (this._pendingCount < MaxLogEntries) {
+            this._pendingCount++;
+        } else {
+            this._pendingStart = (this._pendingStart + 1) % MaxLogEntries;
+        }
+        if (!this._frameId) {
+            this._frameId = this._requestFrame(() => this._flush());
+        }
+    }
+
+    public dispose(): void {
+        if (this._frameId) {
+            this._cancelFrame(this._frameId);
+            this._frameId = 0;
+        }
+        this._pending.fill(undefined);
+        this._pendingStart = 0;
+        this._pendingCount = 0;
+    }
+
+    private _flush(): void {
+        this._frameId = 0;
+        const entries = Array.from({ length: this._pendingCount }, (_, index) => {
+            const pendingIndex = (this._pendingStart + index) % MaxLogEntries;
+            const entry = this._pending[pendingIndex]!;
+            this._pending[pendingIndex] = undefined;
+            return entry;
+        });
+        this._pendingStart = 0;
+        this._pendingCount = 0;
+        this._publish(entries);
+    }
+}
+
 export class LogEntry {
     public time = new Date();
 
@@ -64,10 +115,20 @@ export const LogComponent: FunctionComponent<ILogComponentProps> = (props) => {
     const [logs, setLogs] = useState<LogEntry[]>([]);
 
     useEffect(() => {
-        const observer = globalState.onLogRequiredObservable.add((entry) => {
-            setLogs((prev) => [...prev, entry]);
+        const buffer = new LogEntryBuffer((entries) => {
+            setLogs((previous) => [...previous, ...entries].slice(-MaxLogEntries));
         });
-        return () => observer?.remove();
+        const observer = globalState.onLogRequiredObservable.add((entry) => {
+            buffer.enqueue(entry);
+        });
+        const debugObserver = globalState.onDebugLogRequiredObservable.add(({ message, block }) => {
+            buffer.enqueue(new LogEntry(message, false, block));
+        });
+        return () => {
+            observer?.remove();
+            debugObserver?.remove();
+            buffer.dispose();
+        };
     }, [globalState]);
 
     // Auto-scroll to the latest entry whenever logs change.

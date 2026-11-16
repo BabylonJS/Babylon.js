@@ -312,7 +312,9 @@ export class ComputeShader {
      * @returns true if the compute shader is ready to be executed
      */
     public isReady(): boolean {
-        let effect = this._effect;
+        // Select the effect for the current defines before checking resources, so the effect (and any compilation
+        // error) always belongs to the requested variant, and compilation can proceed while resources load.
+        const effect = this._getRequestedEffect();
 
         for (const key in this._bindings) {
             const binding = this._bindings[key],
@@ -339,6 +341,14 @@ export class ComputeShader {
             }
         }
 
+        if (!effect.isReady()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private _getRequestedEffect(): ComputeEffect {
         const defines = ["#define " + this._options.entryPoint];
 
         const shaderName = this._shaderPath;
@@ -354,22 +364,16 @@ export class ComputeShader {
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
 
-            effect = this._engine.createComputeEffect(shaderName, <IComputeEffectCreationOptions>{
+            this._effect = this._engine.createComputeEffect(shaderName, <IComputeEffectCreationOptions>{
                 defines: join,
                 entryPoint: this._options.entryPoint,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 useExplicitComputePipelineLayout: this._options.useExplicitComputePipelineLayout,
             });
-
-            this._effect = effect;
         }
 
-        if (!effect.isReady()) {
-            return false;
-        }
-
-        return true;
+        return this._effect;
     }
 
     /**
@@ -465,12 +469,33 @@ export class ComputeShader {
      * @param y Number of workgroups to execute on the Y dimension (default: 1)
      * @param z Number of workgroups to execute on the Z dimension (default: 1)
      * @param delay Delay between the retries while the shader is not ready (in milliseconds - 10 by default)
-     * @returns A promise that is resolved once the shader has been sent to the GPU. Note that it does not mean that the shader execution itself is finished!
+     * @returns A promise that is resolved once the shader has been sent to the GPU, or rejected if compilation or dispatch fails or readiness times out. Note that resolution does not mean that the shader execution itself is finished!
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async dispatchWhenReady(x: number, y?: number, z?: number, delay = 10): Promise<void> {
-        return await new Promise((resolve) => {
-            _RetryWithInterval(() => this.dispatch(x, y, z), resolve, undefined, delay);
+        return await new Promise<void>((resolve, reject) => {
+            const throwIfCompilationFailed = () => {
+                // A failed recompile keeps its error while a previous valid pipeline stays ready, so only fail
+                // when the effect itself cannot dispatch.
+                const compilationError = this._effect?.getCompilationError();
+                if (compilationError && !this._effect.isReady()) {
+                    throw new Error(`Compute shader '${this.name}' compilation failed: ${compilationError}`);
+                }
+            };
+
+            _RetryWithInterval(
+                () => {
+                    const dispatched = this.dispatch(x, y, z);
+                    if (dispatched) {
+                        return true;
+                    }
+                    throwIfCompilationFailed();
+                    return false;
+                },
+                resolve,
+                reject,
+                delay
+            );
         });
     }
 

@@ -2,9 +2,12 @@ import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Vector3 } from "core/Maths/math.vector";
-import { type Effect } from "core/Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "core/Materials/effect";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type ShaderMaterial } from "core/Materials/shaderMaterial";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -200,5 +203,118 @@ describe("GaussianSplattingMaterial compensation", () => {
         (mesh.material as GaussianSplattingMaterial).compensation = false;
 
         expect(await isCompensationCompiledAsync()).toBe(false);
+    });
+});
+
+describe("GaussianSplattingMaterial shared attributes", () => {
+    let engine: NullEngine;
+    let scene: Scene;
+    let mesh: GaussianSplattingMesh;
+
+    const createSplatData = (count: number) => {
+        const data = new ArrayBuffer(count * 32);
+        const floats = new Float32Array(data);
+        const bytes = new Uint8Array(data);
+        for (let i = 0; i < count; i++) {
+            floats[i * 8 + 0] = i;
+            floats[i * 8 + 3] = 0.5;
+            floats[i * 8 + 4] = 0.5;
+            floats[i * 8 + 5] = 0.5;
+            bytes.fill(255, i * 32 + 24, i * 32 + 28);
+            bytes.fill(128, i * 32 + 29, i * 32 + 32);
+        }
+        return data;
+    };
+
+    const getSharedAttribs = () => (GaussianSplattingMaterial as unknown as { _Attribs: string[] })._Attribs;
+
+    // Dirties the defines and runs isReadyForSubMesh like a render would.
+    const dirtyAndPrepare = () => {
+        const material = mesh.material!;
+        const subMesh = mesh.subMeshes[0];
+        mesh._markSubMeshesAsLightDirty();
+        scene.incrementRenderId();
+        material.isReadyForSubMesh(mesh, subMesh, true);
+        expect(subMesh.effect).toBeTruthy();
+    };
+
+    beforeEach(() => {
+        engine = new NullEngine();
+        (engine.getCaps() as { maxVertexUniformVectors: number }).maxVertexUniformVectors = 256;
+        scene = new Scene(engine);
+        scene.activeCamera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        mesh = new GaussianSplattingMesh("gs", null, scene);
+        // No sort worker in Node.
+        mesh.disableDepthSort = true;
+        mesh.updateData(createSplatData(4));
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not grow the shared attribute list when the defines are dirtied repeatedly", async () => {
+        dirtyAndPrepare();
+        const expected = getSharedAttribs().slice();
+
+        for (let i = 0; i < 10; i++) {
+            dirtyAndPrepare();
+        }
+
+        expect(getSharedAttribs()).toEqual(expected);
+        expect(getSharedAttribs()).not.toContain("world0");
+        await mesh.subMeshes[0].effect!.whenCompiledAsync();
+    });
+
+    it("gives the depth rendering material its own attribute list", async () => {
+        const material = mesh.material as GaussianSplattingMaterial;
+        const depthMaterial = material.makeDepthRenderingMaterial(scene, ShaderLanguage.GLSL);
+        const initialLength = depthMaterial.options.attributes.length;
+
+        for (let i = 0; i < 10; i++) {
+            dirtyAndPrepare();
+        }
+
+        expect(depthMaterial.options.attributes).not.toBe(getSharedAttribs());
+        expect(depthMaterial.options.attributes.length).toBe(initialLength);
+        await mesh.subMeshes[0].effect!.whenCompiledAsync();
+    });
+
+    it("gives the voxel rendering material its own attribute list", () => {
+        const material = mesh.material as GaussianSplattingMaterial;
+        const voxelMaterial = material.makeVoxelRenderingMaterial(scene, ShaderLanguage.GLSL, 8);
+
+        expect(voxelMaterial.options.attributes).not.toBe(getSharedAttribs());
+        expect(voxelMaterial.options.attributes).toEqual(getSharedAttribs());
+    });
+
+    it("gives the shadow depth wrapper's material its own attribute list", () => {
+        const wrapper = GaussianSplattingMaterial["_MakeGaussianSplattingShadowDepthWrapper"](scene, ShaderLanguage.GLSL);
+        const shadowMaterial = wrapper.baseMaterial as ShaderMaterial;
+
+        expect(shadowMaterial.options.attributes).not.toBe(getSharedAttribs());
+        expect(shadowMaterial.options.attributes).toEqual(getSharedAttribs());
+    });
+
+    it("does not grow the shared uniform lists when the depth material uses vertex pulling", () => {
+        const sharedUniforms = GaussianSplattingMaterial["_Uniforms"];
+        const sharedUniformsSnapshot = sharedUniforms.slice();
+        const material = mesh.material as GaussianSplattingMaterial;
+        const depthMaterial = material.makeDepthRenderingMaterial(scene, ShaderLanguage.GLSL);
+        depthMaterial.useVertexPulling = true;
+        const createEffect = vi.spyOn(engine, "createEffect");
+
+        // The splat mesh has no geometry, so use a regular mesh to reach the vertex pulling path.
+        const box = CreateBox("box", {}, scene);
+
+        for (let i = 0; i < 10; i++) {
+            depthMaterial.isReady(box);
+        }
+
+        expect(sharedUniforms).toEqual(sharedUniformsSnapshot);
+        expect(depthMaterial.options.uniforms).toBe(sharedUniforms);
+        const options = createEffect.mock.calls[0][1] as IEffectCreationOptions;
+        expect(options.uniformsNames).toContain("vp_position_info");
     });
 });

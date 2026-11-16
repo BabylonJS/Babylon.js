@@ -321,7 +321,10 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             let randZ : f32 = sin(phi) * sin(theta);
 
             newPosition = (params.radius - (params.radius * params.radiusRange * randoms2.z)) * vec3<f32>(randX, abs(randY), randZ);
-            newDirection = normalize(newPosition + params.directionRandomizer * randoms3);
+            let hemisphereDirection : vec3<f32> = newPosition + params.directionRandomizer * randoms3;
+            let hemisphereDirectionLength : f32 = length(hemisphereDirection);
+            // Match CPU Vector3.normalize(), which leaves a zero vector unchanged (e.g. radius 0, directionRandomizer 0).
+            newDirection = select(vec3<f32>(0.0), hemisphereDirection / hemisphereDirectionLength, hemisphereDirectionLength > 0.0);
         #elif defined(SPHEREEMITTER)
             let randoms2 : vec3<f32> = getRandomVec3(seed.y, vertexID);
             let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);

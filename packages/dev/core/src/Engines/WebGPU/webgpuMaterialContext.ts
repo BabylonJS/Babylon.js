@@ -17,6 +17,8 @@ interface IWebGPUMaterialContextSamplerCache {
 /** @internal */
 interface IWebGPUMaterialContextTextureCache {
     texture: Nullable<InternalTexture | ExternalTexture>;
+    // unique id of the texture when it was bound: the unique id of an internal texture can change while the same object stays bound
+    uniqueId: number;
     isFloatOrDepthTexture: boolean;
     isExternalTexture: boolean;
 }
@@ -93,9 +95,9 @@ export class WebGPUMaterialContext implements IMaterialContext {
         let textureCache = this.textures[name];
         let currentTextureId = -1;
         if (!textureCache) {
-            this.textures[name] = textureCache = { texture, isFloatOrDepthTexture: false, isExternalTexture: false };
+            this.textures[name] = textureCache = { texture, uniqueId: -1, isFloatOrDepthTexture: false, isExternalTexture: false };
         } else {
-            currentTextureId = textureCache.texture?.uniqueId ?? -1;
+            currentTextureId = textureCache.uniqueId;
         }
 
         if (textureCache.isExternalTexture) {
@@ -122,8 +124,9 @@ export class WebGPUMaterialContext implements IMaterialContext {
         }
 
         textureCache.texture = texture;
+        textureCache.uniqueId = texture?.uniqueId ?? -1;
 
-        const isDirty = currentTextureId !== (texture?.uniqueId ?? -1);
+        const isDirty = currentTextureId !== textureCache.uniqueId;
         if (isDirty) {
             this.updateId++;
         }

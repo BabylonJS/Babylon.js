@@ -13,16 +13,54 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
+import { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { type Scene } from "core/scene";
 import { type SceneContext } from "./sceneContext";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
+import { FlowGraphValidationSeverity, type IFlowGraphValidationIssue, type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
 import { type HelpTopicId } from "./components/help/helpContent";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { type IFlowGraphSoundAsset } from "core/FlowGraph/flowGraphSoundAssets";
+import { Logger } from "core/Misc/logger";
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
+
+export type SceneReferenceLocation = { id: string; name: string; className: string; idIndex: number; nameIndex: number; sceneUid?: string };
+type SceneReferenceProvenance = Array<[number, SceneReferenceLocation]>;
+
+function SerializeEditorValue(value: any): any {
+    const className = value?.getClassName?.() ?? "";
+    if (className && typeof value.asArray === "function") {
+        return { value: value.asArray(), className };
+    }
+    if (className === "FlowGraphInteger") {
+        return { value: value.value, className };
+    }
+    if (className && (value.id || value.name)) {
+        return { id: value.id, name: value.name, className, uniqueId: value.uniqueId };
+    }
+    const isSceneReference = (entry: any) => entry && typeof entry.getClassName === "function" && !!(entry.id || entry.name);
+    const isSerializedReference = (entry: any) =>
+        entry && typeof entry === "object" && typeof entry.className === "string" && !!(entry.id || entry.name) && entry.value === undefined;
+    if (Array.isArray(value) && value.length > 0 && value.every((entry) => isSceneReference(entry) || isSerializedReference(entry))) {
+        return value.map((entry) => (isSceneReference(entry) ? { id: entry.id, name: entry.name, className: entry.getClassName(), uniqueId: entry.uniqueId } : { ...entry }));
+    }
+    if (typeof value !== "object" || value === null) {
+        return value;
+    }
+    if (Object.values(value).some((entry) => typeof entry === "function")) {
+        return undefined;
+    }
+    try {
+        return JSON.parse(JSON.stringify(value));
+    } catch {
+        Logger.Warn("Flow Graph editor serialization skipped a value that is not JSON-serializable.");
+        return undefined;
+    }
+}
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -52,6 +90,10 @@ export class GlobalState {
     onSortGraphRequiredObservable = new Observable<void>();
     /** Observable triggered when log entry is required */
     onLogRequiredObservable = new Observable<LogEntry>();
+    /** Observable triggered when a debug execution entry should be added to the log. */
+    onDebugLogRequiredObservable = new Observable<{ message: string; block: FlowGraphBlock }>();
+    /** Observable triggered when coordinator sound assets change. */
+    onSoundAssetsChanged = new Observable<void>();
     /** Observable triggered when loading state changes */
     onIsLoadingChanged = new Observable<boolean>();
     /** Observable triggered on frame  */
@@ -175,12 +217,15 @@ export class GlobalState {
     // ── Multi-Graph / Coordinator ──────────────────────────────────────
     /** The coordinator that owns all graphs in this editor session. */
     private _coordinator: Nullable<FlowGraphCoordinator> = null;
+    private _soundAssetChangedObserver: Nullable<Observer<string>> = null;
+    private _lifetimeGeneration = 0;
 
     /** Coordinators created by editor parsing or graph creation and therefore safe for the editor to dispose. */
     private readonly _editorOwnedCoordinators = new WeakSet<FlowGraphCoordinator>();
 
     /** Index of the currently active (displayed) graph within the coordinator. */
     private _activeGraphIndex: number = 0;
+    private _skipNextOutgoingGraphSnapshot = false;
 
     /** Observable triggered when the active graph changes (graph switch, add, remove). */
     onActiveGraphChanged = new Observable<FlowGraph>();
@@ -210,16 +255,261 @@ export class GlobalState {
      * Sets the active coordinator and records whether its lifecycle belongs to the editor.
      * @param coordinator coordinator to activate
      * @param editorOwned whether the editor may dispose the coordinator when replacing it
+     * @param activate whether to activate the coordinator's first graph immediately
      */
-    public setCoordinator(coordinator: Nullable<FlowGraphCoordinator>, editorOwned = false): void {
+    public setCoordinator(coordinator: Nullable<FlowGraphCoordinator>, editorOwned = false, activate = true): void {
+        const coordinatorChanged = this._coordinator !== coordinator;
+        this._lifetimeGeneration++;
+        this._soundAssetChangedObserver?.remove();
+        this._soundAssetChangedObserver = null;
+        if (coordinatorChanged) {
+            this._savedUserVariables = null;
+            this._savedConnectionValues = null;
+            this._savedContextSnapshots = null;
+            this._savedContextRuntimeData = null;
+            this._perGraphContextSnapshots.clear();
+            this._perGraphContextRuntimeData.clear();
+            this._referenceLocationsByOccurrence = new WeakMap();
+            this._restoredReferenceProvenance = null;
+            this._skipNextOutgoingGraphSnapshot = true;
+            this._lastSuccessfulSoundAssets.clear();
+        }
         if (coordinator && editorOwned) {
             this._editorOwnedCoordinators.add(coordinator);
         }
         this._coordinator = coordinator;
-        if (coordinator && coordinator.flowGraphs.length > 0) {
+        this._soundAssetChangedObserver = coordinator?.onSoundAssetChangedObservable.add(() => this.onSoundAssetsChanged.notifyObservers()) ?? null;
+        this._exportValidationIssues = [];
+        this._validationResult = null;
+        this.onValidationResultChanged.notifyObservers(null);
+        this.onSoundAssetsChanged.notifyObservers();
+        if (activate && coordinator && coordinator.flowGraphs.length > 0) {
             this._activeGraphIndex = 0;
             this._activateGraph(coordinator.flowGraphs[0]);
         }
+    }
+
+    /** Releases editor-owned subscriptions and restores patched host graph signals. */
+    public dispose(): void {
+        this._lifetimeGeneration++;
+        this._unsubscribeDebugObservers();
+        this._debugNewNodeObserver?.remove();
+        this._debugNewNodeObserver = null;
+        this._debugNodeRemovalObserver?.remove();
+        this._debugNodeRemovalObserver = null;
+        this._soundAssetChangedObserver?.remove();
+        this._soundAssetChangedObserver = null;
+    }
+
+    /**
+     * Captures the current editor lifetime for deferred work.
+     * @returns current lifetime generation
+     */
+    public get lifetimeGeneration(): number {
+        return this._lifetimeGeneration;
+    }
+
+    /**
+     * Checks whether deferred work still belongs to the active editor coordinator.
+     * @param coordinator coordinator captured when the work started
+     * @param generation editor lifetime captured when the work started
+     * @returns true while the work may safely update the coordinator
+     */
+    public isLifetimeCurrent(coordinator: FlowGraphCoordinator, generation: number): boolean {
+        return this._coordinator === coordinator && this._lifetimeGeneration === generation;
+    }
+
+    /**
+     * Updates an unconnected input default and any context values that still mirror the old default.
+     * Context-specific overrides remain unchanged.
+     * @param input input connection to update
+     * @param value new editor value
+     */
+    public setUnconnectedInputValue<T>(input: FlowGraphDataConnection<T>, value: T): void {
+        const previousValue = (input as any)._defaultValue as T;
+        (input as any)._defaultValue = value;
+        const updatedContexts: FlowGraphContext[] = [];
+
+        for (let index = 0; index < this._flowGraph.contextCount; index++) {
+            const context = this._flowGraph.getContext(index);
+            if (!context) {
+                continue;
+            }
+            if (!context._hasConnectionValue(input)) {
+                updatedContexts.push(context);
+            } else if (this._editableValuesMatch(context._getConnectionValue(input), previousValue)) {
+                input.setValue(value, context);
+                updatedContexts.push(context);
+            }
+        }
+        this._updateSavedInputValues(input.uniqueId, previousValue, value);
+        const ownerBlock = input._ownerBlock;
+        if (!input.isConnected() && ownerBlock.getClassName() === "FlowGraphSoundEndedEventBlock" && this._flowGraph.state === FlowGraphState.Started) {
+            const eventBlock = ownerBlock as FlowGraphEventBlock;
+            for (const context of updatedContexts) {
+                eventBlock._cancelPendingTasks(context);
+                if (value) {
+                    eventBlock._preparePendingTasks(context);
+                }
+            }
+        }
+        this._snapshotUserVariablesFrom();
+    }
+
+    private _updateSavedInputValues<T>(connectionId: string, previousValue: T, value: T): void {
+        const updateRuntime = (contexts: Array<{ connectionValues: { [key: string]: any } }> | null) => {
+            const updatedIndexes = new Set<number>();
+            contexts?.forEach((context, index) => {
+                if (connectionId in context.connectionValues && this._editableValuesMatch(context.connectionValues[connectionId], previousValue)) {
+                    context.connectionValues[connectionId] = value;
+                    updatedIndexes.add(index);
+                }
+            });
+            return updatedIndexes;
+        };
+        const updateSerialized = (contexts: any[] | null, updatedIndexes: Set<number>) => {
+            const serializedValue = SerializeEditorValue(value);
+            contexts?.forEach((context, index) => {
+                const connectionValues = context._connectionValues;
+                if (updatedIndexes.has(index) && connectionValues && connectionId in connectionValues) {
+                    connectionValues[connectionId] = serializedValue;
+                    this._rememberSerializedReferenceLocations(value, serializedValue);
+                }
+            });
+        };
+        const runtimeSnapshots = this._perGraphContextRuntimeData.get(this._flowGraph.uniqueId) ?? null;
+        const updatedIndexes = updateRuntime(runtimeSnapshots);
+        updateSerialized(this._savedContextSnapshots, updatedIndexes);
+        updateSerialized(this._perGraphContextSnapshots.get(this._flowGraph.uniqueId) ?? null, updatedIndexes);
+    }
+
+    private _editableValuesMatch(left: unknown, right: unknown): boolean {
+        if (Object.is(left, right)) {
+            return true;
+        }
+        if (Array.isArray(left) && Array.isArray(right)) {
+            return left.length === right.length && left.every((value, index) => this._editableValuesMatch(value, right[index]));
+        }
+        if (left && right && typeof left === "object" && typeof right === "object") {
+            const leftReference = left as { uniqueId?: number; id?: string; name?: string; className?: string; getClassName?: () => string; getScene?: () => Scene };
+            const rightReference = right as { uniqueId?: number; id?: string; name?: string; className?: string; getClassName?: () => string; getScene?: () => Scene };
+            if (leftReference.uniqueId !== undefined || rightReference.uniqueId !== undefined) {
+                if (
+                    leftReference.uniqueId !== rightReference.uniqueId ||
+                    leftReference.id !== rightReference.id ||
+                    leftReference.name !== rightReference.name ||
+                    (leftReference.getClassName?.() ?? leftReference.className) !== (rightReference.getClassName?.() ?? rightReference.className)
+                ) {
+                    return false;
+                }
+                const leftIsLive = typeof leftReference.getScene === "function";
+                const rightIsLive = typeof rightReference.getScene === "function";
+                if (leftIsLive && rightIsLive) {
+                    return false;
+                }
+                if (leftIsLive !== rightIsLive) {
+                    const leftLocation = this._getReferenceLocation(leftReference);
+                    const rightLocation = this._getReferenceLocation(rightReference);
+                    return !!leftLocation && !!rightLocation && this._referenceLocationsMatch(leftLocation, rightLocation);
+                }
+                return true;
+            }
+            if (leftReference.id !== undefined || rightReference.id !== undefined || leftReference.name !== undefined || rightReference.name !== undefined) {
+                return leftReference.id === rightReference.id && leftReference.name === rightReference.name;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Adds or replaces a named sound asset on the active coordinator.
+     * @param asset sound asset declaration
+     */
+    public async addSoundAssetAsync(asset: IFlowGraphSoundAsset): Promise<void> {
+        if (!this._coordinator) {
+            throw new Error("No flow graph coordinator is available.");
+        }
+        try {
+            await this._coordinator.addSoundAssetAsync(asset);
+        } catch (error) {
+            // Failed loads remain declared by the coordinator and must still be manageable in the panel.
+            this.onSoundAssetsChanged.notifyObservers();
+            throw error;
+        }
+    }
+
+    /**
+     * Removes a named sound asset from the active coordinator.
+     * Name-based block references are intentionally left unchanged.
+     * @param name sound asset name
+     */
+    public removeSoundAsset(name: string): void {
+        this.beginSoundAssetOperation(name, true);
+        this._lastSuccessfulSoundAssets.delete(name);
+        this._coordinator?.removeSoundAsset(name);
+    }
+
+    /**
+     * Gets the last sound declaration known to have loaded successfully.
+     * @param coordinator coordinator that owns the declaration
+     * @param name sound asset name
+     * @returns stable rollback declaration, if one exists
+     */
+    public getSoundAssetRollback(coordinator: FlowGraphCoordinator, name: string): IFlowGraphSoundAsset | undefined {
+        const current = coordinator.soundAssets.find((asset) => asset.name === name);
+        if (current && coordinator.getSoundAsset(name)) {
+            this._lastSuccessfulSoundAssets.set(name, current);
+            return current;
+        }
+        const cached = this._lastSuccessfulSoundAssets.get(name);
+        if (cached) {
+            return cached;
+        }
+        if (current) {
+            this._lastSuccessfulSoundAssets.set(name, current);
+        }
+        return current;
+    }
+
+    /**
+     * Records a sound declaration after its audio loaded successfully.
+     * @param asset loaded sound declaration
+     */
+    public markSoundAssetLoaded(asset: IFlowGraphSoundAsset): void {
+        this._lastSuccessfulSoundAssets.set(asset.name, { ...asset });
+    }
+
+    /**
+     * Starts a sound-asset operation and invalidates earlier work for the same name.
+     * @param name sound asset name
+     * @param removed whether this operation removes the asset
+     * @returns operation token
+     */
+    public beginSoundAssetOperation(name: string, removed = false): number {
+        const token = (this._soundAssetOperations.get(name)?.token ?? 0) + 1;
+        this._soundAssetOperations.set(name, { token, removed });
+        return token;
+    }
+
+    /**
+     * Checks whether a sound-asset operation is still the newest operation for its name.
+     * @param name sound asset name
+     * @param token operation token
+     * @returns whether this is the current operation
+     */
+    public isSoundAssetOperationCurrent(name: string, token: number): boolean {
+        return this._soundAssetOperations.get(name)?.token === token;
+    }
+
+    /**
+     * Checks whether a newer remove operation superseded a sound import.
+     * @param name sound asset name
+     * @param token import operation token
+     * @returns whether a later operation removed the asset
+     */
+    public wasSoundAssetRemovedAfter(name: string, token: number): boolean {
+        const operation = this._soundAssetOperations.get(name);
+        return !!operation && operation.token !== token && operation.removed;
     }
 
     /**
@@ -301,6 +591,7 @@ export class GlobalState {
             }
             this._activateGraph(graphs[this._activeGraphIndex]);
         }
+        this.forgetGraphSnapshots(graph.uniqueId);
         // If index > _activeGraphIndex, no adjustment needed (active graph unchanged)
         this.onGraphListChanged.notifyObservers();
         return true;
@@ -330,12 +621,13 @@ export class GlobalState {
      */
     private _activateGraph(graph: FlowGraph): void {
         // Let observers (e.g. graphEditor) persist canvas state before the switch
-        if (this._flowGraph) {
+        if (this._flowGraph && !this._skipNextOutgoingGraphSnapshot) {
             // Snapshot user variables/contexts for the outgoing graph so they
             // survive the stop() that the flowGraph setter triggers.
             this._snapshotUserVariablesFrom(this._flowGraph);
             this.onBeforeActiveGraphChanged.notifyObservers(this._flowGraph);
         }
+        this._skipNextOutgoingGraphSnapshot = false;
         // Use the existing setter which does all the wiring
         this.flowGraph = graph;
         this.onActiveGraphChanged.notifyObservers(graph);
@@ -348,6 +640,8 @@ export class GlobalState {
     onLiveValidationChanged = new Observable<boolean>();
     /** The latest validation result. Null if validation has not run yet. */
     private _validationResult: Nullable<IFlowGraphValidationResult> = null;
+    /** Export diagnostics collected by the latest KHR_interactivity export attempt. */
+    private _exportValidationIssues: IFlowGraphValidationIssue[] = [];
     /** Observable triggered when validation results change. */
     onValidationResultChanged = new Observable<Nullable<IFlowGraphValidationResult>>();
     /** Debounce timer for live validation */
@@ -399,7 +693,42 @@ export class GlobalState {
             }
         }
         this._validationResult = ValidateFlowGraphWithBlockList(this._flowGraph, allBlocks);
+        const additionalIssues: IFlowGraphValidationIssue[] = [...this._exportValidationIssues];
+        for (const block of allBlocks) {
+            if (block.getClassName() === "FlowGraphUnsupportedInteractivityBlock") {
+                const operation = String((block.config as any)?.operation ?? "unknown operation");
+                additionalIssues.push({
+                    severity: FlowGraphValidationSeverity.Warning,
+                    message: `KHR_interactivity operation "${operation}" has no runtime implementation and is preserved as an unsupported block.`,
+                    block,
+                });
+            }
+        }
+        for (const issue of additionalIssues) {
+            this._validationResult.issues.push(issue);
+            if (issue.block) {
+                const blockIssues = this._validationResult.issuesByBlock.get(issue.block.uniqueId) ?? [];
+                blockIssues.push(issue);
+                this._validationResult.issuesByBlock.set(issue.block.uniqueId, blockIssues);
+            }
+        }
+        this._validationResult.issues.sort((a, b) => a.severity - b.severity);
+        this._validationResult.errorCount = this._validationResult.issues.filter((issue) => issue.severity === FlowGraphValidationSeverity.Error).length;
+        this._validationResult.warningCount = this._validationResult.issues.filter((issue) => issue.severity === FlowGraphValidationSeverity.Warning).length;
+        this._validationResult.isValid = this._validationResult.errorCount === 0;
         this.onValidationResultChanged.notifyObservers(this._validationResult);
+    }
+
+    /**
+     * Replaces the KHR export diagnostics surfaced by graph validation.
+     * @param diagnostics export diagnostics, or an empty array after a successful export
+     */
+    public setExportValidationDiagnostics(diagnostics: { path: string; message: string }[]): void {
+        this._exportValidationIssues = diagnostics.map((diagnostic) => ({
+            severity: FlowGraphValidationSeverity.Error,
+            message: `KHR_interactivity export error at ${diagnostic.path}: ${diagnostic.message}`,
+        }));
+        this.runValidation();
     }
 
     /**
@@ -488,10 +817,16 @@ export class GlobalState {
     private _debugExecutionObserver: Nullable<Observer<FlowGraphBlock>> = null;
     /** Observer tracking graph state changes for debug re-subscription */
     private _debugStateObserver: Nullable<Observer<FlowGraphState>> = null;
+    /** Observer tracking event blocks added while debug instrumentation is active. */
+    private _debugNewNodeObserver: Nullable<Observer<GraphNode>> = null;
+    /** Observer tracking event blocks removed while debug instrumentation is active. */
+    private _debugNodeRemovalObserver: Nullable<Observer<GraphNode>> = null;
     /** Per-node throttle timestamps to avoid excessive highlighting */
     private _highlightThrottleMap = new Map<string, number>();
     /** Blocks that executed since the last debug frame — batched to avoid per-call DOM work */
     private _debugPendingBlocks = new Set<FlowGraphBlock>();
+    /** Restores event signal methods patched for accurate debug event logging. */
+    private _debugEventSignalRestorers = new Map<string, Array<() => void>>();
     /** rAF handle for batched debug updates */
     private _debugRafId: number = 0;
     /** Port elements currently glowing — tracked so we can clear them on stop */
@@ -596,6 +931,7 @@ export class GlobalState {
                 // Detach the per-context observer but keep the state observer alive
                 this._debugExecutionObserver?.remove();
                 this._debugExecutionObserver = null;
+                this._restoreDebugEventSignals();
                 this._highlightThrottleMap.clear();
                 this._clearAllPortHighlights();
             }
@@ -621,17 +957,66 @@ export class GlobalState {
 
         // Install breakpoint predicate when attaching to a context
         this._installBreakpointPredicate(context);
+        this._patchDebugEventSignals();
 
-        // The observer callback is kept as cheap as possible — it only adds
-        // the block to a pending set.  All DOM work is deferred to a single
-        // requestAnimationFrame pass per frame to avoid freezing on graphs
-        // with many blocks executing every frame.
+        // Event entries are emitted by patched event output signals so data-output reads
+        // cannot be mistaken for another event dispatch. Other blocks are logged here.
         this._debugExecutionObserver = context.onNodeExecutedObservable.add((block) => {
             this._debugPendingBlocks.add(block);
+            if (!(block instanceof FlowGraphEventBlock)) {
+                this.onDebugLogRequiredObservable.notifyObservers({
+                    message: `Block ran: ${block.name ?? block.getClassName()}`,
+                    block,
+                });
+            }
             if (!this._debugRafId) {
                 this._debugRafId = requestAnimationFrame(() => this._flushDebugHighlights());
             }
         });
+    }
+
+    private _patchDebugEventSignals(): void {
+        this._restoreDebugEventSignals();
+        this._flowGraph?.visitAllBlocks((block) => {
+            if (!(block instanceof FlowGraphEventBlock)) {
+                return;
+            }
+            const specializedOutputs = block.signalOutputs.filter((signal) => signal.name !== "out" && signal.name !== "done" && signal.name !== "error");
+            const eventOutputs = specializedOutputs.length > 0 ? specializedOutputs : block.signalOutputs.filter((signal) => signal.name === "out");
+            const restorers: Array<() => void> = [];
+            for (const signal of eventOutputs) {
+                const originalActivateSignal = signal._activateSignal;
+                const patchedActivateSignal = (context: FlowGraphContext) => {
+                    if (context === this._flowGraph?.getContext(this.selectedContextIndex)) {
+                        const suffix = specializedOutputs.length > 1 ? ` (${signal.name})` : "";
+                        this.onDebugLogRequiredObservable.notifyObservers({
+                            message: `Event fired: ${block.name ?? block.getClassName()}${suffix}`,
+                            block,
+                        });
+                    }
+                    originalActivateSignal.call(signal, context);
+                };
+                signal._activateSignal = patchedActivateSignal;
+                restorers.push(() => {
+                    if (signal._activateSignal === patchedActivateSignal) {
+                        signal._activateSignal = originalActivateSignal;
+                    }
+                });
+            }
+            this._debugEventSignalRestorers.set(block.uniqueId, restorers);
+        });
+    }
+
+    private _restoreDebugEventSignals(block?: FlowGraphBlock): void {
+        const restorers = block ? (this._debugEventSignalRestorers.get(block.uniqueId) ?? []) : [...this._debugEventSignalRestorers.values()].flat();
+        for (const restore of restorers) {
+            restore();
+        }
+        if (block) {
+            this._debugEventSignalRestorers.delete(block.uniqueId);
+        } else {
+            this._debugEventSignalRestorers.clear();
+        }
     }
 
     /**
@@ -753,6 +1138,7 @@ export class GlobalState {
     private _unsubscribeDebugObservers(): void {
         this._debugExecutionObserver?.remove();
         this._debugExecutionObserver = null;
+        this._restoreDebugEventSignals();
         this._debugStateObserver?.remove();
         this._debugStateObserver = null;
         this._highlightThrottleMap.clear();
@@ -966,6 +1352,13 @@ export class GlobalState {
      */
     private _cachedOldIdToName: Map<string, Map<number, string>> | null = null;
 
+    /** Cached position of each previous-scene node among nodes with the same identity. */
+    private _cachedOldNodeLocations: Map<number, SceneReferenceLocation> | null = null;
+    private _restoredReferenceProvenance: Map<number, SceneReferenceLocation[]> | null = null;
+    private _referenceLocationsByOccurrence = new WeakMap<object, SceneReferenceLocation>();
+    private readonly _soundAssetOperations = new Map<string, { token: number; removed: boolean }>();
+    private readonly _lastSuccessfulSoundAssets = new Map<string, IFlowGraphSoundAsset>();
+
     /**
      * Saved user variables from the last execution context before setScene cleared it.
      * These are restored into the newly created context to preserve mesh references.
@@ -992,6 +1385,16 @@ export class GlobalState {
      * Used to preserve context data for inactive graphs during multi-graph serialization.
      */
     private _perGraphContextSnapshots = new Map<string, any[]>();
+    private _perGraphContextRuntimeData = new Map<
+        string,
+        Array<{
+            userVariables: { [key: string]: any };
+            connectionValues: { [key: string]: any };
+            variableTypes: { [key: string]: string };
+            name: string;
+            uniqueId: string;
+        }>
+    >();
 
     /**
      * Runtime (non-serialized) copies of each execution context's data.
@@ -1057,6 +1460,8 @@ export class GlobalState {
         if (!flowGraph) {
             return;
         }
+        this._savedContextSnapshots = this._perGraphContextSnapshots.get(flowGraph.uniqueId) ?? null;
+        this._savedContextRuntimeData = this._perGraphContextRuntimeData.get(flowGraph.uniqueId) ?? null;
 
         // Snapshot user variables so Start/Reset can restore them regardless of run state.
         // These variables (e.g. pickedMesh_0 from KHR_interactivity) are set during parsing and
@@ -1095,20 +1500,23 @@ export class GlobalState {
                 // (the old scene is already disposed by the time this fires).
                 this._remapAssetReferences(ctx.scene);
 
-                // Cache the NEW scene's id→name map for the next reload
-                this._cacheSceneIdToNameMap(ctx.scene);
-
                 // Snapshot user variables before setScene clears contexts —
                 // they contain mesh references (pickedMesh_0 etc.) from
                 // KHR_interactivity that must survive scene switches.
                 this._snapshotUserVariables();
+                const reboundDefaults = this._rebindSavedConnectionReferences(ctx.scene);
 
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(ctx.scene);
                 }
+                this._restoreReboundDefaults(reboundDefaults);
                 // Re-create contexts from snapshots so the editor UI has
                 // live contexts after setScene() clears them.
                 this._restoreContextsFromSnapshots(flowGraph);
+                this._snapshotUserVariables();
+
+                // Cache the NEW scene's node mappings for the next reload.
+                this._cacheSceneIdToNameMap(ctx.scene);
             }
         });
 
@@ -1195,13 +1603,16 @@ export class GlobalState {
                 // couldn't be resolved during parsing because the graph was parsed
                 // against the editor's host scene, not the preview scene.
                 this._remapAssetReferences(this.sceneContext.scene);
-                this._cacheSceneIdToNameMap(this.sceneContext.scene);
+                const reboundDefaults = this._rebindSavedConnectionReferences(this.sceneContext.scene);
                 if (typeof flowGraph.setScene === "function") {
                     flowGraph.setScene(this.sceneContext.scene);
                 }
+                this._restoreReboundDefaults(reboundDefaults);
                 // Re-create contexts from snapshots so the editor UI has live
                 // contexts to display (variables panel, context selector, etc.)
                 this._restoreContextsFromSnapshots(flowGraph);
+                this._snapshotUserVariables();
+                this._cacheSceneIdToNameMap(this.sceneContext.scene);
             }
         }
 
@@ -1371,7 +1782,18 @@ export class GlobalState {
         if (isObjectRef && newScene.meshes.some((m) => m === currentMesh)) {
             return;
         }
-        const savedName: string | undefined = (block.config as any)?._meshName ?? (isObjectRef ? currentMesh.name : undefined);
+        if (isObjectRef) {
+            const reboundMesh = this._rebindSceneValue(currentMesh, newScene);
+            if (reboundMesh !== currentMesh) {
+                if (!block.config) {
+                    (block as any).config = {};
+                }
+                (block.config as any).targetMesh = reboundMesh;
+                (meshInput as any)._defaultValue = reboundMesh;
+            }
+            return;
+        }
+        const savedName: string | undefined = (block.config as any)?._meshName;
         const savedUniqueId: number | undefined = isObjectRef ? currentMesh.uniqueId : undefined;
         if (!savedName && savedUniqueId === undefined) {
             return;
@@ -1499,6 +1921,160 @@ export class GlobalState {
     }
 
     /**
+     * Rebinds scene-node references retained in input defaults and saved execution-context values.
+     * @param newScene - replacement scene that should own the restored references
+     * @returns authoritative input defaults to restore after the core scene switch
+     */
+    private _rebindSavedConnectionReferences(newScene: Scene): Map<FlowGraphDataConnection<any>, any> {
+        const reboundDefaults = new Map<FlowGraphDataConnection<any>, any>();
+        for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
+            for (const block of this._getAllGraphBlocks(graph)) {
+                for (const input of block.dataInputs) {
+                    const currentValue = (input as any)._defaultValue;
+                    const reboundValue = this._rebindSceneValue(currentValue, newScene);
+                    (input as any)._defaultValue = reboundValue;
+                    reboundDefaults.set(input, reboundValue);
+                }
+            }
+            for (let index = 0; index < graph.contextCount; index++) {
+                const context = graph.getContext(index);
+                const connectionValues = (context as any)?._connectionValues;
+                for (const key in connectionValues) {
+                    connectionValues[key] = this._rebindSceneValue(connectionValues[key], newScene);
+                }
+            }
+            this._perGraphContextSnapshots.get(graph.uniqueId)?.forEach((context) => {
+                for (const key in context._connectionValues) {
+                    const reboundValue = this._rebindSceneValue(context._connectionValues[key], newScene);
+                    const serializedValue = this._serializeValue(reboundValue);
+                    context._connectionValues[key] = serializedValue;
+                    this._rememberSerializedReferenceLocations(reboundValue, serializedValue);
+                }
+            });
+        }
+
+        if (this._savedConnectionValues) {
+            for (const key in this._savedConnectionValues) {
+                this._savedConnectionValues[key] = this._rebindSceneValue(this._savedConnectionValues[key], newScene);
+            }
+        }
+
+        for (const runtimeSnapshots of this._perGraphContextRuntimeData.values()) {
+            for (const contextData of runtimeSnapshots) {
+                for (const key in contextData.connectionValues) {
+                    contextData.connectionValues[key] = this._rebindSceneValue(contextData.connectionValues[key], newScene);
+                }
+            }
+        }
+        return reboundDefaults;
+    }
+
+    /**
+     * Removes saved context data for a graph that no longer belongs to the coordinator.
+     * @param graphUniqueId graph identifier to forget
+     */
+    public forgetGraphSnapshots(graphUniqueId: string): void {
+        this._perGraphContextSnapshots.delete(graphUniqueId);
+        this._perGraphContextRuntimeData.delete(graphUniqueId);
+        if (this._flowGraph?.uniqueId === graphUniqueId) {
+            this._savedUserVariables = null;
+            this._savedConnectionValues = null;
+            this._savedContextSnapshots = null;
+            this._savedContextRuntimeData = null;
+        }
+    }
+
+    private _getAllGraphBlocks(graph: FlowGraph): FlowGraphBlock[] {
+        const blocks = new Map<string, FlowGraphBlock>();
+        graph.visitAllBlocks((block) => blocks.set(block.uniqueId, block));
+        graph.getAllBlocks().forEach((block) => blocks.set(block.uniqueId, block));
+        return Array.from(blocks.values());
+    }
+
+    private _serializeValue(value: any): any {
+        return SerializeEditorValue(value);
+    }
+
+    private _restoreReboundDefaults(reboundDefaults: Map<FlowGraphDataConnection<any>, any>): void {
+        for (const [input, value] of reboundDefaults) {
+            (input as any)._defaultValue = value;
+        }
+    }
+
+    private _rebindSceneValue(value: any, newScene: Scene): any {
+        if (Array.isArray(value)) {
+            return value.map((entry) => this._rebindSceneValue(entry, newScene));
+        }
+        if (!value || typeof value !== "object") {
+            return value;
+        }
+
+        const isSceneNode = typeof value.getClassName === "function" && typeof value.getScene === "function";
+        const isSerializedNode = typeof value.className === "string" && !!(value.id || value.name) && value.value === undefined;
+        if (!isSceneNode && !isSerializedNode) {
+            return value;
+        }
+        if (isSceneNode && value.getScene() === newScene) {
+            return value;
+        }
+
+        const reference = {
+            id: value.id as string | undefined,
+            name: value.name as string | undefined,
+            className: (isSceneNode ? value.getClassName() : value.className) as string | undefined,
+            uniqueId: value.uniqueId as number | undefined,
+        };
+        const allNodes = newScene.getNodes();
+        const filterByClass = (nodes: typeof allNodes) => {
+            if (!reference.className) {
+                return nodes;
+            }
+            const classMatches = nodes.filter((node) => node.getClassName() === reference.className);
+            return classMatches.length > 0 ? classMatches : nodes;
+        };
+
+        let candidates = reference.id ? filterByClass(allNodes.filter((node) => node.id === reference.id)) : [];
+        let locationIndex: number | undefined;
+        const oldLocation =
+            reference.uniqueId === undefined ? undefined : isSerializedNode ? this._getReferenceLocation(value) : this._cachedOldNodeLocations?.get(reference.uniqueId);
+        if (candidates.length > 0) {
+            locationIndex = oldLocation && oldLocation.id === reference.id && oldLocation.className === reference.className ? oldLocation.idIndex : undefined;
+        } else if (reference.name) {
+            candidates = filterByClass(allNodes.filter((node) => node.name === reference.name));
+            locationIndex = oldLocation && oldLocation.name === reference.name && oldLocation.className === reference.className ? oldLocation.nameIndex : undefined;
+        }
+        if (candidates.length === 0) {
+            return value;
+        }
+
+        if (oldLocation?.sceneUid === newScene.uid && reference.uniqueId !== undefined) {
+            const sameSceneNode = candidates.find((node) => node.uniqueId === reference.uniqueId);
+            if (sameSceneNode) {
+                return sameSceneNode;
+            }
+        }
+
+        if (locationIndex !== undefined) {
+            return candidates[locationIndex] ?? value;
+        }
+
+        return (reference.uniqueId === undefined ? undefined : candidates.find((node) => node.uniqueId === reference.uniqueId)) ?? candidates[0];
+    }
+
+    private _getRestoredReferenceLocation(uniqueId: number, reference: { id?: string; name?: string; className?: string }): SceneReferenceLocation | undefined {
+        const locations = this._restoredReferenceProvenance?.get(uniqueId);
+        if (!locations) {
+            return undefined;
+        }
+        return (
+            locations.find((location) => location.className === reference.className && location.id === reference.id && location.name === reference.name) ??
+            locations.find((location) => location.className === reference.className && location.id === reference.id) ??
+            locations.find((location) => location.className === reference.className && location.name === reference.name) ??
+            (locations.length === 1 ? locations[0] : undefined)
+        );
+    }
+
+    /**
      * Snapshot user variables and connection values from the selected execution context of a flow graph,
      * falling back to the first execution context when the selected one is unavailable.
      * Also serializes ALL execution contexts so they survive stop()/setScene().
@@ -1534,9 +2110,11 @@ export class GlobalState {
             this._savedContextRuntimeData = [];
             for (let i = 0; i < fg.contextCount; i++) {
                 const context = fg.getContext(i);
+                Object.values((context as any)._connectionValues ?? {}).forEach((value) => this._rememberReferenceLocations(value));
                 // Serialized snapshot for SerializationTools
                 const serialized: any = {};
                 context.serialize(serialized);
+                this._rememberSerializedReferenceLocations((context as any)._connectionValues, serialized._connectionValues);
                 this._savedContextSnapshots.push(serialized);
                 // Runtime snapshot for createContext wrapper
                 this._savedContextRuntimeData.push({
@@ -1549,6 +2127,7 @@ export class GlobalState {
             }
             // Store per-graph snapshots for multi-graph serialization
             this._perGraphContextSnapshots.set(fg.uniqueId, [...this._savedContextSnapshots!]);
+            this._perGraphContextRuntimeData.set(fg.uniqueId, [...this._savedContextRuntimeData!]);
         }
     }
 
@@ -1611,6 +2190,235 @@ export class GlobalState {
         return this._perGraphContextSnapshots.get(graphUniqueId) ?? null;
     }
 
+    private _getLiveReferenceLocation(value: any): SceneReferenceLocation | undefined {
+        if (typeof value?.getScene !== "function" || typeof value?.getClassName !== "function") {
+            return undefined;
+        }
+        const scene = value.getScene() as Scene;
+        const className = value.getClassName();
+        const classNodes = scene.getNodes().filter((node) => node.getClassName() === className);
+        if (!classNodes.includes(value)) {
+            return undefined;
+        }
+        return {
+            id: value.id,
+            name: value.name,
+            className,
+            idIndex: classNodes.filter((node) => node.id === value.id).indexOf(value),
+            nameIndex: classNodes.filter((node) => node.name === value.name).indexOf(value),
+            sceneUid: scene.uid,
+        };
+    }
+
+    private _referenceLocationsMatch(left: SceneReferenceLocation, right: SceneReferenceLocation): boolean {
+        return left.className === right.className && left.id === right.id && left.name === right.name && left.idIndex === right.idIndex && left.nameIndex === right.nameIndex;
+    }
+
+    private _getReferenceLocation(value: any): SceneReferenceLocation | undefined {
+        const liveLocation = this._getLiveReferenceLocation(value);
+        if (liveLocation) {
+            return liveLocation;
+        }
+        if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
+            return undefined;
+        }
+        return this._referenceLocationsByOccurrence.get(value) ?? this._getRestoredReferenceLocation(value.uniqueId, value) ?? this._cachedOldNodeLocations?.get(value.uniqueId);
+    }
+
+    private _forEachReferenceValue(callback: (value: any) => void): void {
+        const collect = (value: any) => {
+            if (Array.isArray(value)) {
+                value.forEach(collect);
+                return;
+            }
+            if (!value || typeof value !== "object" || typeof value.uniqueId !== "number") {
+                return;
+            }
+            if (
+                (typeof value.getScene === "function" && typeof value.getClassName === "function") ||
+                (typeof value.className === "string" && typeof value.getScene !== "function")
+            ) {
+                callback(value);
+            }
+        };
+        for (const graph of this._coordinator?.flowGraphs ?? [this._flowGraph]) {
+            this._getAllGraphBlocks(graph).forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            for (let index = 0; index < graph.contextCount; index++) {
+                Object.values((graph.getContext(index) as any)?._connectionValues ?? {}).forEach(collect);
+            }
+            this._perGraphContextSnapshots.get(graph.uniqueId)?.forEach((context) => Object.values(context._connectionValues ?? {}).forEach(collect));
+        }
+        if (this._savedConnectionValues) {
+            Object.values(this._savedConnectionValues).forEach(collect);
+        }
+        for (const runtimeSnapshots of this._perGraphContextRuntimeData.values()) {
+            runtimeSnapshots.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
+        }
+    }
+
+    private _rememberReferenceLocations(value: any): void {
+        const collect = (entry: any) => {
+            if (Array.isArray(entry)) {
+                entry.forEach(collect);
+                return;
+            }
+            const location = this._getLiveReferenceLocation(entry);
+            if (!location) {
+                return;
+            }
+            this._cachedOldNodeLocations ??= new Map();
+            this._cachedOldNodeLocations.set(entry.uniqueId, location);
+        };
+        collect(value);
+    }
+
+    private _rememberSerializedReferenceLocations(runtimeValue: any, serializedValue: any): void {
+        if (Array.isArray(runtimeValue) && Array.isArray(serializedValue)) {
+            runtimeValue.forEach((entry, index) => this._rememberSerializedReferenceLocations(entry, serializedValue[index]));
+            return;
+        }
+        if (!runtimeValue || !serializedValue || typeof runtimeValue !== "object" || typeof serializedValue !== "object") {
+            return;
+        }
+        const location = this._getReferenceLocation(runtimeValue);
+        if (location && typeof serializedValue.uniqueId === "number") {
+            this._referenceLocationsByOccurrence.set(serializedValue, location);
+            return;
+        }
+        for (const key of Object.keys(serializedValue)) {
+            this._rememberSerializedReferenceLocations(runtimeValue[key], serializedValue[key]);
+        }
+    }
+
+    /**
+     * Associates a parsed reference occurrence with the provenance entry that resolved it.
+     * @param value parsed live or unresolved reference value
+     * @param location durable reference location
+     */
+    public rememberReferenceOccurrence(value: object, location: SceneReferenceLocation): void {
+        this._referenceLocationsByOccurrence.set(value, location);
+    }
+
+    /** Gets durable scene-reference provenance for editor serialization. */
+    public get referenceProvenance(): SceneReferenceProvenance {
+        const provenance = new Map<number, [number, SceneReferenceLocation]>();
+        this._forEachReferenceValue((value) => {
+            const location = this._getReferenceLocation(value);
+            if (location) {
+                provenance.set(value.uniqueId, [value.uniqueId, location]);
+            }
+        });
+        return Array.from(provenance.values());
+    }
+
+    /**
+     * Temporarily remaps serialized reference descriptors so each serialized id names one identity.
+     * @returns cleanup callback that restores editor runtime state after serialization
+     */
+    public prepareReferenceProvenanceForSerialization(): () => void {
+        for (const [graphUniqueId, runtimeSnapshots] of this._perGraphContextRuntimeData) {
+            const serializedSnapshots = this._perGraphContextSnapshots.get(graphUniqueId);
+            runtimeSnapshots.forEach((runtimeData, index) => {
+                const serialized = serializedSnapshots?.[index];
+                if (serialized) {
+                    this._rememberSerializedReferenceLocations(runtimeData.connectionValues, serialized._connectionValues);
+                }
+            });
+        }
+        const occurrences: Array<{ value: any; location: SceneReferenceLocation; live: boolean }> = [];
+        const usedIds = new Set<number>();
+        this._forEachReferenceValue((value) => {
+            usedIds.add(value.uniqueId);
+            const location = this._getReferenceLocation(value);
+            if (location) {
+                occurrences.push({ value, location, live: typeof value.getScene === "function" });
+            }
+        });
+        for (const uniqueId of this._restoredReferenceProvenance?.keys() ?? []) {
+            usedIds.add(uniqueId);
+        }
+
+        const identityKey = (uniqueId: number, location: SceneReferenceLocation) =>
+            `${uniqueId}\0${location.className}\0${location.id}\0${location.name}\0${location.idIndex}\0${location.nameIndex}`;
+        const identitiesById = new Map<number, Map<string, { location: SceneReferenceLocation; live: boolean }>>();
+        for (const occurrence of occurrences) {
+            const identities = identitiesById.get(occurrence.value.uniqueId) ?? new Map();
+            const key = identityKey(occurrence.value.uniqueId, occurrence.location);
+            const identity = identities.get(key);
+            identities.set(key, { location: occurrence.location, live: occurrence.live || identity?.live === true });
+            identitiesById.set(occurrence.value.uniqueId, identities);
+        }
+
+        const remappedIds = new Map<string, number>();
+        let nextId = -1;
+        for (const identities of identitiesById.values()) {
+            if (identities.size < 2) {
+                continue;
+            }
+            const keeper = Array.from(identities.entries()).find(([, identity]) => identity.live)?.[0] ?? identities.keys().next().value;
+            for (const [key] of identities) {
+                if (key === keeper) {
+                    continue;
+                }
+                while (usedIds.has(nextId)) {
+                    nextId--;
+                }
+                remappedIds.set(key, nextId);
+                usedIds.add(nextId);
+                nextId--;
+            }
+        }
+
+        const originalProvenance = this._restoredReferenceProvenance;
+        const preparedProvenance = new Map<number, SceneReferenceLocation[]>(originalProvenance ? Array.from(originalProvenance, ([id, locations]) => [id, [...locations]]) : []);
+        const changedValues: Array<{ value: any; uniqueId: number }> = [];
+        for (const occurrence of occurrences) {
+            if (occurrence.live) {
+                continue;
+            }
+            const key = identityKey(occurrence.value.uniqueId, occurrence.location);
+            const remappedId = remappedIds.get(key);
+            if (remappedId !== undefined) {
+                changedValues.push({ value: occurrence.value, uniqueId: occurrence.value.uniqueId });
+                occurrence.value.uniqueId = remappedId;
+                preparedProvenance.set(remappedId, [occurrence.location]);
+            }
+        }
+        this._restoredReferenceProvenance = preparedProvenance;
+
+        return () => {
+            for (const changed of changedValues) {
+                changed.value.uniqueId = changed.uniqueId;
+            }
+            this._restoredReferenceProvenance = originalProvenance;
+        };
+    }
+
+    /**
+     * Restores durable scene-reference provenance before a deserialized coordinator is activated.
+     * @param entries serialized provenance entries
+     * @param occurrences provenance paired with exact parsed reference values
+     * @param replace whether to replace all coordinator provenance or merge these entries
+     */
+    public restoreReferenceProvenance(entries: SceneReferenceProvenance, occurrences: Array<[object, SceneReferenceLocation]> = [], replace = true): void {
+        if (replace || !this._restoredReferenceProvenance) {
+            this._restoredReferenceProvenance = new Map();
+        }
+        if (replace) {
+            this._referenceLocationsByOccurrence = new WeakMap();
+        }
+        for (const [uniqueId, location] of entries) {
+            const locations = this._restoredReferenceProvenance.get(uniqueId) ?? [];
+            if (!locations.some((candidate) => this._referenceLocationsMatch(candidate, location) && candidate.sceneUid === location.sceneUid)) {
+                locations.push(location);
+            }
+            this._restoredReferenceProvenance.set(uniqueId, locations);
+        }
+        for (const [value, location] of occurrences) {
+            this.rememberReferenceOccurrence(value, location);
+        }
+    }
+
     /**
      * Re-create execution contexts on the flow graph from `_savedContextSnapshots`.
      * Called after setScene() clears live contexts so the editor UI (variables panel,
@@ -1645,6 +2453,56 @@ export class GlobalState {
             ["AnimationGroup", new Map(scene.animationGroups.map((ag) => [ag.uniqueId, ag.name]))],
             ["Animation", new Map(scene.animations.map((a) => [a.uniqueId, a.name]))],
         ]);
+
+        const retainedLocationIds = this._getUnresolvedSceneNodeUniqueIds(scene);
+        const previousLocations = this._cachedOldNodeLocations;
+        this._cachedOldNodeLocations = new Map(previousLocations ? Array.from(previousLocations).filter(([uniqueId]) => retainedLocationIds.has(uniqueId)) : undefined);
+        const idCounts = new Map<string, number>();
+        const nameCounts = new Map<string, number>();
+        for (const node of scene.getNodes()) {
+            const className = node.getClassName();
+            const idKey = `${className}\0${node.id}`;
+            const nameKey = `${className}\0${node.name}`;
+            const idIndex = idCounts.get(idKey) ?? 0;
+            const nameIndex = nameCounts.get(nameKey) ?? 0;
+            this._cachedOldNodeLocations.set(node.uniqueId, { id: node.id, name: node.name, className, idIndex, nameIndex, sceneUid: scene.uid });
+            idCounts.set(idKey, idIndex + 1);
+            nameCounts.set(nameKey, nameIndex + 1);
+        }
+    }
+
+    private _getUnresolvedSceneNodeUniqueIds(scene: Scene): Set<number> {
+        const uniqueIds = new Set<number>();
+        const collect = (value: any) => {
+            if (Array.isArray(value)) {
+                value.forEach(collect);
+                return;
+            }
+            if (!value || typeof value !== "object") {
+                return;
+            }
+            const isSceneReference = typeof value.getScene === "function" || typeof value.className === "string";
+            if (typeof value.uniqueId === "number" && isSceneReference && this._rebindSceneValue(value, scene) === value) {
+                uniqueIds.add(value.uniqueId);
+            }
+        };
+        const graphs = this._coordinator?.flowGraphs ?? [this._flowGraph];
+        for (const graph of graphs) {
+            this._getAllGraphBlocks(graph).forEach((block) => block.dataInputs.forEach((input) => collect((input as any)._defaultValue)));
+            for (let index = 0; index < graph.contextCount; index++) {
+                const context = graph.getContext(index);
+                Object.values((context as any)?._connectionValues ?? {}).forEach(collect);
+            }
+            const snapshots = this._perGraphContextSnapshots.get(graph.uniqueId);
+            snapshots?.forEach((context) => Object.values(context._connectionValues ?? {}).forEach(collect));
+        }
+        if (this._savedConnectionValues) {
+            Object.values(this._savedConnectionValues).forEach(collect);
+        }
+        for (const runtimeSnapshots of this._perGraphContextRuntimeData.values()) {
+            runtimeSnapshots.forEach((contextData) => Object.values(contextData.connectionValues).forEach(collect));
+        }
+        return uniqueIds;
     }
 
     /**
@@ -1662,6 +2520,18 @@ export class GlobalState {
         RegisterNodePortDesign(this.stateManager);
         RegisterDefaultInput(this.stateManager);
         RegisterExportData(this.stateManager);
+
+        this._debugNewNodeObserver = this.stateManager.onNewNodeCreatedObservable.add((node) => {
+            if (this._isDebugMode && this._flowGraph?.state === FlowGraphState.Started && node.content.data instanceof FlowGraphEventBlock) {
+                this._patchDebugEventSignals();
+            }
+        });
+        this._debugNodeRemovalObserver = this.stateManager.onGraphNodeRemovalObservable.add((node) => {
+            const block = node.content.data;
+            if (block instanceof FlowGraphEventBlock) {
+                this._restoreDebugEventSignals(block);
+            }
+        });
     }
 
     /**

@@ -1,10 +1,54 @@
 import { Engine } from "core/Engines/engine";
 import { ThinEngine } from "core/Engines/thinEngine";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Color4 } from "core/Maths/math.color";
+import { Constants } from "core/Engines/constants";
 import "core/Engines/Extensions/engine.multiRender";
 
 type RenderFrameCallback = (timestamp: number) => void;
+
+/**
+ * Creates a canvas whose getContext("webgl2") returns a minimal mocked WebGL2 context, so that the engine
+ * goes through the full context initialization (_initGLContext) in a node environment.
+ * Constants are numbers (LEQUAL and GEQUAL have their real values), methods return null unless listed below.
+ * @returns the mocked canvas, and the spy on the context clear() method
+ */
+function CreateMockWebGL2Canvas() {
+    const knownConstants: Record<string, number> = { LEQUAL: Constants.LEQUAL, GEQUAL: Constants.GEQUAL };
+    let nextConstant = 0x10000;
+    const methods: Record<string, (...args: unknown[]) => unknown> = {
+        getContextAttributes: () => ({ stencil: true, antialias: false }),
+        getParameter: () => 16,
+        getShaderPrecisionFormat: () => ({ precision: 23, rangeMin: 127, rangeMax: 127 }),
+        getSupportedExtensions: () => [],
+        clear: vi.fn(),
+    };
+    const gl = new Proxy({} as Record<string, unknown>, {
+        get: (target, name) => {
+            if (typeof name !== "string") {
+                return undefined;
+            }
+            if (!(name in target)) {
+                target[name] = /^[A-Z0-9_]+$/.test(name) ? (knownConstants[name] ?? nextConstant++) : (methods[name] ?? (() => null));
+            }
+            return target[name];
+        },
+    });
+    const canvas = {
+        width: 300,
+        height: 150,
+        clientWidth: 300,
+        clientHeight: 150,
+        style: {},
+        getContext: (contextType: string) => (contextType === "webgl2" ? gl : null),
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        setAttribute: () => {},
+        getBoundingClientRect: () => ({ width: 300, height: 150 }),
+    };
+    gl.canvas = canvas;
+    return { canvas: canvas as unknown as HTMLCanvasElement, clear: methods.clear };
+}
 
 describe("Engine", () => {
     describe("constructor", () => {
@@ -16,6 +60,71 @@ describe("Engine", () => {
             } finally {
                 engine.dispose();
             }
+        });
+
+        it("sets useReverseDepthBuffer from engine options", () => {
+            const engine = new Engine(null, undefined, { useReverseDepthBuffer: true });
+
+            try {
+                expect(engine.useReverseDepthBuffer).toBe(true);
+                expect(engine.depthCullingState.depthFunc).toBe(Constants.GEQUAL);
+            } finally {
+                engine.dispose();
+            }
+        });
+
+        it("keeps the standard depth buffer when useReverseDepthBuffer is omitted", () => {
+            const engine = new Engine(null);
+
+            try {
+                expect(engine.useReverseDepthBuffer).toBe(false);
+                expect(engine.depthCullingState.depthFunc).not.toBe(Constants.GEQUAL);
+            } finally {
+                engine.dispose();
+            }
+        });
+
+        it("gives the same depth state as setting useReverseDepthBuffer after creation", () => {
+            const fromOptions = new Engine(null, undefined, { useReverseDepthBuffer: true });
+            const fromProperty = new Engine(null);
+
+            try {
+                fromProperty.useReverseDepthBuffer = true;
+
+                expect(fromOptions.useReverseDepthBuffer).toBe(fromProperty.useReverseDepthBuffer);
+                expect(fromOptions.depthCullingState.depthFunc).toBe(fromProperty.depthCullingState.depthFunc);
+            } finally {
+                fromOptions.dispose();
+                fromProperty.dispose();
+            }
+        });
+
+        describe("with a WebGL2 context", () => {
+            beforeEach(() => {
+                vi.stubGlobal("WebGL2RenderingContext", { SRGB: 0x8c40, SRGB8: 0x8c41, SRGB8_ALPHA8: 0x8c43 });
+            });
+
+            afterEach(() => {
+                vi.unstubAllGlobals();
+            });
+
+            it.each([
+                { options: { useReverseDepthBuffer: true }, expectedDepthFunc: Constants.GEQUAL, expectedName: "GEQUAL" },
+                { options: { useReverseDepthBuffer: false }, expectedDepthFunc: Constants.LEQUAL, expectedName: "LEQUAL" },
+                { options: {}, expectedDepthFunc: Constants.LEQUAL, expectedName: "LEQUAL" },
+            ])("initializes the depth function to $expectedName with options $options", ({ options, expectedDepthFunc }) => {
+                const { canvas, clear } = CreateMockWebGL2Canvas();
+                const engine = new Engine(canvas, false, options);
+
+                try {
+                    expect(engine.webGLVersion).toBe(2);
+                    expect(clear).not.toHaveBeenCalled();
+                    expect(engine.useReverseDepthBuffer).toBe(!!options.useReverseDepthBuffer);
+                    expect(engine.depthCullingState.depthFunc).toBe(expectedDepthFunc);
+                } finally {
+                    engine.dispose();
+                }
+            });
         });
     });
 });

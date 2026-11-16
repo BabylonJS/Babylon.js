@@ -3,6 +3,7 @@ import * as Addons from "@babylonjs/addons";
 import * as Core from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import * as Ktx2Decoder from "@babylonjs/ktx2decoder";
+import * as Ktx2Encoder from "@babylonjs/ktx2encoder";
 import * as Loaders from "@babylonjs/loaders";
 import "@babylonjs/loaders/glTF";
 import "@babylonjs/loaders/OBJ";
@@ -22,6 +23,7 @@ const packageNamespaces = {
     Core,
     GUI,
     Ktx2Decoder,
+    Ktx2Encoder,
     Loaders,
     Materials,
     PostProcesses,
@@ -36,6 +38,6 @@ const packageNamespaces = {
 const globalObject = globalThis as typeof globalThis & { __babylonEs6PackageImportSmoke?: typeof packageNamespaces };
 globalObject.__babylonEs6PackageImportSmoke = packageNamespaces;
 
-if (Object.keys(packageNamespaces).length !== 14) {
+if (Object.keys(packageNamespaces).length !== 15) {
     throw new Error("The ES6 package import smoke test is missing a package namespace.");
 }

@@ -112,6 +112,11 @@ export interface IShadowGenerator {
      */
     bindShadowLight(lightIndex: string, effect: Effect): void;
     /**
+     * @internal The uniform buffer of the generator that a receiver bound now gets (the cascades of the camera, or of the eye in
+     * floating origin mode), if any: a draw recorded by a snapshot with another one is bound again
+     */
+    _getReceiversUniformBuffer?(): Nullable<UniformBuffer>;
+    /**
      * Gets the transformation matrix used to project the meshes into the map from the light point of view.
      * (eq to shadow projection matrix * light transform matrix)
      * @returns The transform matrix used to create the shadow map
@@ -408,6 +413,19 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public set depthScale(value: number) {
         this._depthScale = value;
+    }
+
+    // the domain of the frame's references of its casters (see Material._keepRecordedDrawReference): they are shared between its cascades
+    // while the values it writes in each draw stay the same, and a new one is used once they change (the bias for a later cascade only)
+    private _recordedDrawsDomain = { bias: NaN, normalBias: NaN, depthScale: NaN };
+
+    private _getRecordedDrawsDomain(): object {
+        const domain = this._recordedDrawsDomain;
+        const depthScale = this.depthScale;
+        if (domain.bias !== this.bias || domain.normalBias !== this.normalBias || domain.depthScale !== depthScale) {
+            this._recordedDrawsDomain = { bias: this.bias, normalBias: this.normalBias, depthScale };
+        }
+        return this._recordedDrawsDomain;
     }
 
     protected _validateFilter(filter: number): number {
@@ -1360,6 +1378,17 @@ export class ShadowGenerator implements IShadowGenerator {
         effect.setMatrix("viewProjection", this.getTransformMatrix());
     }
 
+    // whether code of the user runs around the draw of a caster in the shadow map: the observables of the generator, notified by a
+    // full draw before and after it (the draw observers of the mesh are its own, see AbstractMesh._hasDrawObservers)
+    private _runsCodeOnShadowMapRender(): boolean {
+        return (
+            this.onBeforeShadowMapRenderMeshObservable.hasObservers() ||
+            this.onBeforeShadowMapRenderObservable.hasObservers() ||
+            this.onAfterShadowMapRenderObservable.hasObservers() ||
+            this.onAfterShadowMapRenderMeshObservable.hasObservers()
+        );
+    }
+
     protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent: boolean = false): void {
         const renderingMesh = subMesh.getRenderingMesh();
         const effectiveMesh = subMesh.getEffectiveMesh();
@@ -1400,8 +1429,59 @@ export class ShadowGenerator implements IShadowGenerator {
             engine.getCaps().instancedArrays &&
             ((batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined) || renderingMesh.hasThinInstances);
 
-        if (this.customAllowRendering && !this.customAllowRendering(subMesh)) {
-            return;
+        if (this.customAllowRendering) {
+            const allowRendering = this.customAllowRendering(subMesh);
+            // code of the user, as the observers of a caster (see _runsCodeOnShadowMapRender): it runs before the draw is checked, and
+            // can change any material in place, so no reference kept before it in the frame stands for the draws after it
+            engine._recordedDrawReferencesEpoch++;
+            if (!allowRendering) {
+                return;
+            }
+        }
+
+        // While a snapshot records again, a draw whose mesh, material and per-draw values did not change is encoded from the commands
+        // it was recorded with. forceBackFacesOnly changes the culling inside the full draw, and useOpacityTextureForTransparentShadow the
+        // texture of its alpha test (diffuseSampler): they are compared with the values the draw was recorded with
+        const domainState = (this.forceBackFacesOnly ? 1 : 0) + (this.useOpacityTextureForTransparentShadow ? 2 : 0);
+        const replayable =
+            engine._recordsDraws &&
+            // an instance drawn as a regular mesh (mirrored from its source): its full draw binds the uniform buffer of its source mesh,
+            // as the main pass, which does not encode it again either
+            effectiveMesh === renderingMesh &&
+            !material.shadowDepthWrapper &&
+            (!hardwareInstancedRendering || (renderingMesh.hasThinInstances && !batch.visibleInstances[subMesh._id])) &&
+            renderingMesh._canRecordThinInstances() &&
+            !renderingMesh.skeleton &&
+            !renderingMesh.morphTargetManager &&
+            !renderingMesh.bakedVertexAnimationManager &&
+            // a full draw of the mesh notifies its draw observers (Mesh._draw), in the shadow map too
+            !renderingMesh._hasDrawObservers() &&
+            !(isTransparent && this.enableSoftTransparentShadow) &&
+            !this.onBeforeShadowMapRenderMeshObservable.hasObservers() &&
+            !this.onBeforeShadowMapRenderObservable.hasObservers() &&
+            !this.onAfterShadowMapRenderObservable.hasObservers() &&
+            !this.onAfterShadowMapRenderMeshObservable.hasObservers();
+        if (replayable) {
+            const recorded = subMesh._getDrawWrapper();
+            if (
+                recorded &&
+                // as _processRendering: a mesh still rendered for its instances or its batch but not drawn itself draws nothing
+                batch.renderSelf[subMesh._id] &&
+                renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), domainState) &&
+                engine._replayRecordedDraw(recorded)
+            ) {
+                // as the update of a full draw: a later write of the frame goes to a new buffer, not to the one this draw binds
+                effectiveMesh._uniformBuffer._markBufferUsed();
+                subMesh._renderId = scene.getRenderId();
+                return;
+            }
+        }
+
+        // code of the user runs around the full draw of a caster (its draw observers, which a full draw notifies in the shadow map too,
+        // and the observables of the generator), and no such draw is encoded again: as Mesh.render, it can change any material in
+        // place, so no reference kept before it in the frame stands for the draws after it
+        if (renderingMesh._hasDrawObservers() || this._runsCodeOnShadowMapRender()) {
+            engine._recordedDrawReferencesEpoch++;
         }
 
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
@@ -1412,6 +1492,9 @@ export class ShadowGenerator implements IShadowGenerator {
             const drawWrapper = shadowDepthWrapper?.getEffect(subMesh, this, engine.currentRenderPassId) ?? subMesh._getDrawWrapper()!;
             const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
+            if (replayable) {
+                engine._keepInheritedState(drawWrapper);
+            }
             engine.enableEffect(drawWrapper);
 
             if (!hardwareInstancedRendering) {
@@ -1510,6 +1593,12 @@ export class ShadowGenerator implements IShadowGenerator {
             // Observables
             this.onAfterShadowMapRenderObservable.notifyObservers(effect);
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
+
+            // as Mesh.render and the replay path: a caster still rendered for its instances or its batch but not drawn itself
+            // submits nothing, so its slot keeps last frame's bytes and must not become this frame's reference
+            if (replayable && batch.renderSelf[subMesh._id]) {
+                renderingMesh._keepRecordedDraw(drawWrapper, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), domainState);
+            }
         } else {
             // Need to reset refresh rate of the shadowMap
             if (this._shadowMap) {

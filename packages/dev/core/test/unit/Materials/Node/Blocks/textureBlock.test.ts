@@ -5,11 +5,39 @@ import { Effect } from "core/Materials/effect";
 import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { NodeMaterialBuildState } from "core/Materials/Node/nodeMaterialBuildState";
+import { NodeMaterialBuildStateSharedData } from "core/Materials/Node/nodeMaterialBuildStateSharedData";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { type Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Scene } from "core/scene";
 
 describe("TextureBlock", () => {
+    it.each([
+        ["rgb, GLSL", ShaderLanguage.GLSL, "rgb", "toGammaSpace(rgb)"],
+        ["rgb, WGSL", ShaderLanguage.WGSL, "rgb", "toGammaSpaceVec3(rgb)"],
+        ["r, GLSL", ShaderLanguage.GLSL, "r", "toGammaSpace(r)"],
+        ["r, WGSL", ShaderLanguage.WGSL, "r", "toGammaSpaceVec3(vec3f(r)).x"],
+    ])("writes both conversions of a gamma space texture's color under their defines, which follow its image (%s)", (_, shaderLanguage, name, toGammaSpace) => {
+        const state = new NodeMaterialBuildState();
+        state.sharedData = new NodeMaterialBuildStateSharedData();
+        state.sharedData.nodeMaterial = { shaderLanguage } as NodeMaterial;
+        const block = new TextureBlock("texture");
+        block.texture = { gammaSpace: true, getScene: () => null } as unknown as Texture;
+        Object.assign(block, { _linearDefineName: "ISLINEAR", _gammaDefineName: "ISGAMMA" });
+        const output = name === "rgb" ? block.rgb : block.r;
+        output.associatedVariableName = name;
+
+        block["_generateConversionCode"](state, output, name);
+
+        // the image can become linear (Texture.replaceImage) without building the graph again. WGSL has no overloads: a 3-component
+        // output and a float are converted with toGammaSpaceVec3
+        const conversion = toGammaSpace.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        expect(state.compilationString).toMatch(new RegExp(`#ifdef ISLINEAR\\s+${name} = ${conversion};\\s+#endif`));
+        expect(state.compilationString).toMatch(new RegExp(`#ifdef ISGAMMA\\s+${name} = toLinearSpace\\w*\\(${name}\\);\\s+#endif`));
+    });
+
     it("binds a default texture for missing texture resources on WebGPU", () => {
         let engine: AbstractEngine;
         const emptyTexture = { getEngine: () => engine };

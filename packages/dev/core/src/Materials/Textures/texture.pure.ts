@@ -16,13 +16,14 @@ import { Plane } from "../../Maths/math.plane";
 import { EncodeArrayBufferToBase64 } from "../../Misc/stringTools";
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "../../Misc/copyTools";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
-import { type InternalTexture } from "./internalTexture";
+import { type InternalTexture, InternalTextureSource } from "./internalTexture";
 import { type CubeTexture } from "../../Materials/Textures/cubeTexture.pure";
 import { type MirrorTexture } from "../../Materials/Textures/mirrorTexture.pure";
 import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 import { type Scene } from "../../scene.pure";
 import { type VideoTexture, type VideoTextureSettings } from "./videoTexture.pure";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { type WebGPUEngine } from "../../Engines/webgpuEngine.pure";
 
 /**
  * Defines the available options when creating a texture
@@ -72,6 +73,30 @@ export interface ITextureCreationOptions {
 
     /** Defines the extension to use to pick the right loader */
     forcedExtension?: string;
+}
+
+// a 2D image loaded from a url or a buffer, and ready: what Texture.replaceImage can take and replace (the images of render target,
+// procedural, raw, dynamic and video textures have other sources, and their textures write into them)
+function IsLoadedImage(texture: Nullable<InternalTexture>): texture is InternalTexture {
+    return !!texture && texture.isReady && texture.source === InternalTextureSource.Url && !texture.isCube && !texture.is3D && !texture.is2DArray;
+}
+
+// the name Texture.Parse loads url from, relative to root: null when they cannot be related without the page url
+function NameFrom(root: string, url: string): Nullable<string> {
+    if (root && !root.endsWith("/")) {
+        return null;
+    }
+    if (url.startsWith(root)) {
+        return url.slice(root.length);
+    }
+    if (url.indexOf("://") > 0 || url.startsWith("data:")) {
+        return url;
+    }
+    // both relative to the page: up from the root to the page
+    if (url[0] !== "/" && root[0] !== "/" && root.indexOf("://") < 0 && !/(^|\/)\.\.?\//.test(root)) {
+        return "../".repeat(root.split("/").length - 1) + url;
+    }
+    return null;
 }
 
 /**
@@ -343,6 +368,8 @@ export class Texture extends BaseTexture {
     /** @internal */
     public _useSRGBBuffer?: boolean;
     private _forcedExtension?: string;
+    // the root the name is relative to, kept by replaceImage: a name that went up from it no longer tells it
+    private _nameRoot?: string;
 
     /** Returns the texture mime type if it was defined by a loader (undefined else) */
     public get mimeType() {
@@ -601,6 +628,163 @@ export class Texture extends BaseTexture {
 
         this._delayedOnLoad = load;
         this.delayLoad();
+    }
+
+    private _onImageReplacedObservable: Nullable<Observable<Texture>> = null;
+
+    /**
+     * Notified when replaceImage gives this texture another image. What was generated from the previous image (the IBL CDF maps)
+     * listens to it, since a replacement does not load anything and so does not notify onLoadObservable
+     * @internal
+     */
+    public get _onImageReplaced(): Observable<Texture> {
+        return (this._onImageReplacedObservable ??= new Observable<Texture>());
+    }
+
+    /**
+     * Replaces the image of this texture with the image of another texture, already loaded, without loading it again. This texture shows
+     * the source's image from the next frame on and keeps its own settings for the materials (UV transform, coordinatesIndex, alpha and
+     * wrapping); it takes the source's loading description (url or buffer, mipmaps, sampling mode, format, sRGB buffer, loader options),
+     * so serializing it and loading it again gives the image it shows. Both textures then share the source's GPU texture, which stays alive
+     * until both are disposed.
+     * Texture.Parse loads from rootUrl + name: a name that followed the url the image was loaded from follows the source's url, relative to
+     * the same root (going up from it for a source outside it, when both urls are relative to the page), or the source's full url for an
+     * absolute or data url. The texture keeps that root for its next replacements, and gives it to its clones. A name of its own is kept: as
+     * for any texture, Texture.Parse then loads from that name.
+     * The materials that use this texture, frozen ones included, compute their defines again when something they turn into defines
+     * changes (gamma space, RGBD encoding, linear specular LOD, irradiance texture); for the scene's environment texture, every material
+     * of the scene, since materials read it without having it. What they only write into uniforms or bind (size, LOD generation, LOD
+     * textures) reaches the frozen ones only: the others write it at their next bind, so replacing an image with the same image at
+     * another size, as streaming does, marks no material that is not frozen. With snapshot rendering, the snapshot is recorded again
+     * when the image or the defines change. As with the gammaSpace setter, the node material post-processes and procedural textures,
+     * which keep their own defines, follow a change of gamma space once they are built again. The IBL CDF maps generated from this texture
+     * (IBL shadows) are generated again from the new image.
+     * @param source the loaded texture whose image this texture takes
+     * @returns true when this texture shows the source's image (replacing a texture with itself included); false when the image cannot be
+     * taken, both textures then left unchanged: one of them is not a plain Texture (render target, procedural, raw, dynamic and video
+     * textures manage their image, also a video texture showing its poster or a procedural texture its fallback), the image of one of
+     * them is not a 2D image loaded from a url or a buffer and ready, they belong to different engines, the source
+     * has no loading description (neither url nor buffer), or their effective orientations differ (invertY, and whether loading inverted
+     * the V scale)
+     */
+    public replaceImage(source: Texture): boolean {
+        if (source === this) {
+            return true;
+        }
+        const scene = this.getScene();
+        const image = source._texture;
+        const own = this._texture;
+        if (
+            !scene ||
+            // a subclass manages the image of its wrapper (a video texture showing its poster, a procedural texture its fallback)
+            Object.getPrototypeOf(this) !== Texture.prototype ||
+            Object.getPrototypeOf(source) !== Texture.prototype ||
+            !IsLoadedImage(image) ||
+            !IsLoadedImage(own) ||
+            image.getEngine() !== own.getEngine() ||
+            (!source.url && !source._buffer) ||
+            source._invertY !== this._invertY ||
+            !!image._invertVScale !== !!own._invertVScale
+        ) {
+            return false;
+        }
+
+        // the root the name is relative to: the one kept by the last replacement while the name is the one it gave, else from the url the
+        // own image was loaded from (after a parse, url and name hold the serialized values, not rootUrl + name)
+        const loadedUrl = own.url || this.url || "";
+        let root: Nullable<string> | undefined = this._nameRoot;
+        if (root === undefined || NameFrom(root, loadedUrl) !== this.name) {
+            root = this.name && loadedUrl.endsWith(this.name) ? loadedUrl.slice(0, loadedUrl.length - this.name.length) : null;
+        }
+        const sourceUrl = image.url || source.url;
+
+        // what the materials read from the image, before the swap: what they turn into defines, and what they only write into uniforms or
+        // bind (a material that is not frozen does it at each bind). The gamma space is read as the gammaSpace getter reads it, without
+        // setting it on an image that has none yet: the source's image keeps the source's gamma, which then comes from the source's wrapper,
+        // as the getter would set it, and not from this one's, also when both wrappers already share the image
+        const gammaSpace = (own._gammaSpace ?? this._gammaSpace) && !own._useSRGBBuffer;
+        const isRGBD = this.isRGBD;
+        const linearSpecularLOD = this.linearSpecularLOD;
+        const irradianceTexture = this.irradianceTexture;
+        const size = this.getSize();
+        const width = size.width;
+        const height = size.height;
+        const lodGenerationOffset = this.lodGenerationOffset;
+        const lodGenerationScale = this.lodGenerationScale;
+        const lodTextureHigh = this._lodTextureHigh;
+        const lodTextureMid = this._lodTextureMid;
+        const lodTextureLow = this._lodTextureLow;
+        if (image._gammaSpace === null) {
+            image._gammaSpace = source._gammaSpace;
+        }
+
+        if (image !== own) {
+            // taken before the own one is released: the two can be the same internal texture shared by several wrappers
+            image.incrementReferences();
+            this.releaseInternalTexture();
+            this._texture = image;
+        }
+        // Texture.Parse loads from rootUrl + name, or from the name alone when it is an absolute or data url: a name that followed the old
+        // url follows the new one, so the round-trip loads the image shown
+        if (root !== null && sourceUrl) {
+            const name = NameFrom(root, sourceUrl);
+            if (name !== null) {
+                this.name = name;
+                this._nameRoot = root;
+            }
+        }
+        this.url = source.url;
+        this._buffer = source._buffer;
+        this._noMipmap = source._noMipmap;
+        // the sampling mode is the image's: a later load uses the one it shows
+        this._initialSamplingMode = image.samplingMode;
+        this._format = source._format;
+        this._forcedExtension = source._forcedExtension;
+        this._mimeType = source._mimeType;
+        this._loaderOptions = source._loaderOptions;
+        this._creationFlags = source._creationFlags;
+        this._useSRGBBuffer = source._useSRGBBuffer;
+        this._gammaSpace = source._gammaSpace;
+        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+
+        const gammaChanged = this.gammaSpace !== gammaSpace;
+        const definesChanged = gammaChanged || this.isRGBD !== isRGBD || this.linearSpecularLOD !== linearSpecularLOD || this.irradianceTexture !== irradianceTexture;
+        const newSize = this.getSize();
+        const uniformsChanged =
+            newSize.width !== width ||
+            newSize.height !== height ||
+            this.lodGenerationOffset !== lodGenerationOffset ||
+            this.lodGenerationScale !== lodGenerationScale ||
+            this._lodTextureHigh !== lodTextureHigh ||
+            this._lodTextureMid !== lodTextureMid ||
+            this._lodTextureLow !== lodTextureLow;
+        if (definesChanged || uniformsChanged) {
+            // the scene's environment texture is read by materials that do not have it (a PBR material without a reflection texture)
+            const environment = scene.environmentTexture === this;
+            for (const material of scene.materials) {
+                // when only uniforms change, only the frozen materials need to know: the others are not asked whether they use the texture
+                if ((!definesChanged && !material.isFrozen) || (!environment && !material.hasTexture(this))) {
+                    continue;
+                }
+                if (material.isFrozen) {
+                    // a frozen material skips the dirty flags and its uniform writes: markDirty(true) makes it do both again
+                    material.markDirty(true);
+                } else {
+                    // a StandardMaterial computes whether its reflection and refraction are linear with its image processing defines
+                    material.markAsDirty(gammaChanged ? Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_ImageProcessingDirtyFlag : Constants.MATERIAL_TextureDirtyFlag);
+                }
+            }
+        }
+        // a snapshot replays the bundles it recorded, whose bind groups hold the previous image, in both modes: a STANDARD one binds the
+        // new image to the materials but draws nothing new
+        const engine = scene.getEngine() as WebGPUEngine;
+        if ((image !== own || definesChanged) && engine.snapshotRendering) {
+            engine.snapshotRenderingReset();
+        }
+        if (image !== own) {
+            this._onImageReplacedObservable?.notifyObservers(this);
+        }
+        return true;
     }
 
     /**
@@ -884,7 +1068,10 @@ export class Texture extends BaseTexture {
         };
 
         return SerializationHelper.Clone(() => {
-            return new Texture(this._texture ? this._texture.url : null, this.getScene(), options);
+            const texture = new Texture(this._texture ? this._texture.url : null, this.getScene(), options);
+            // the name it copies stays relative to the same root
+            texture._nameRoot = this._nameRoot;
+            return texture;
         }, this);
     }
 
@@ -954,6 +1141,7 @@ export class Texture extends BaseTexture {
         super.dispose();
 
         this.onLoadObservable.clear();
+        this._onImageReplacedObservable?.clear();
 
         this._delayedOnLoad = null;
         this._delayedOnError = null;

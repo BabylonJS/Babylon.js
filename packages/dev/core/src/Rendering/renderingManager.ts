@@ -2,6 +2,7 @@ import { type Immutable, type Nullable } from "../types";
 import { type SmartArray } from "../Misc/smartArray";
 import { type ISpriteManager } from "../Sprites/spriteManager";
 import { type IParticleSystem } from "../Particles/IParticleSystem";
+import { type Observable } from "../Misc/observable";
 import { RenderingGroup } from "./renderingGroup";
 
 import { type Scene } from "../scene";
@@ -190,6 +191,15 @@ export class RenderingManager {
         this._depthStencilBufferAlreadyCleaned = true;
     }
 
+    // the observers of a rendering group are code of the user between the draws of the frame: they can change any material in place,
+    // so no reference kept before them stands for the draws after them (see Material._getRecordedDrawReference)
+    private _notifyRenderingGroupObservers(observable: Observable<RenderingGroupInfo>, info: RenderingGroupInfo, renderingGroupMask: number): void {
+        if (observable.hasObservers()) {
+            observable.notifyObservers(info, renderingGroupMask);
+            this._scene.getEngine()._recordedDrawReferencesEpoch++;
+        }
+    }
+
     /**
      * Renders the entire managed groups. This is used by the scene or the different render targets.
      * @internal
@@ -240,7 +250,7 @@ export class RenderingManager {
             info.renderingGroupId = index;
 
             // Before Observable
-            this._scene.onBeforeRenderingGroupObservable.notifyObservers(info, renderingGroupMask);
+            this._notifyRenderingGroupObservers(this._scene.onBeforeRenderingGroupObservable, info, renderingGroupMask);
 
             // Clear depth/stencil if needed
             if (RenderingManager.AUTOCLEAR) {
@@ -271,7 +281,7 @@ export class RenderingManager {
             }
 
             // After Observable
-            this._scene.onAfterRenderingGroupObservable.notifyObservers(info, renderingGroupMask);
+            this._notifyRenderingGroupObservers(this._scene.onAfterRenderingGroupObservable, info, renderingGroupMask);
         }
     }
 

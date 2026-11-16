@@ -82,6 +82,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => await _LoadBlock(import("./Event/flowGraphStopEventPropagationBlock.pure"), "FlowGraphStopEventPropagationBlock");
         case FlowGraphBlockNames.MeshPickEvent:
             return async () => await _LoadBlock(import("./Event/flowGraphMeshPickEventBlock.pure"), "FlowGraphMeshPickEventBlock");
+        case FlowGraphBlockNames.MeshIntersectionEvent:
+            return async () => await _LoadBlock(import("./Event/flowGraphMeshIntersectionEventBlock.pure"), "FlowGraphMeshIntersectionEventBlock");
         case FlowGraphBlockNames.E:
             return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphEBlock");
         case FlowGraphBlockNames.PI:

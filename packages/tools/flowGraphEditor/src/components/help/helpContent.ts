@@ -155,6 +155,7 @@ export const HelpTopics: IHelpTopic[] = [
 <li><b>Block execution highlighting</b> — Blocks flash with a green glow when they execute.</li>
 <li><b>Port activity</b> — Input ports that received data and output ports that fired glow green.</li>
 <li><b>Flow animation</b> — Traveling dots animate along connections when signals fire or data flows, showing the direction and timing of execution.</li>
+<li><b>Event log</b> — The Log panel records which event fired and which blocks ran. Click an entry to navigate to that block.</li>
 </ul>
 <p><em>Debug mode adds some overhead. It throttles visual updates to 100ms per node to keep the editor responsive.</em></p>`,
             },
@@ -253,7 +254,7 @@ export const HelpTopics: IHelpTopic[] = [
             {
                 heading: "Live Validation",
                 html: `<p>Click the <b>Live Validation</b> toggle (⚡) to enable automatic validation whenever the graph changes. Validation runs on a debounced schedule so it doesn't slow down editing.</p>
-<p>Validation issues include the block name, severity (error/warning), and a descriptive message.</p>`,
+<p>Validation issues include the block name, severity (error/warning), and a descriptive message. Unsupported imported KHR_interactivity operations and diagnostics from failed KHR exports are also surfaced here.</p>`,
             },
         ],
     },
@@ -498,8 +499,10 @@ export const HelpTopics: IHelpTopic[] = [
 <li><strong>Animation Patterns</strong> — Lerp Animation</li>
 <li><strong>Communication</strong> — Custom Event Bridge</li>
 <li><strong>glTF Interactivity</strong> — Get → Set Property, Get → Set Variable</li>
+<li><strong>Reactions</strong> — Pick → Play Sound, Intersection → Play Sound, Add Reaction to Existing Event</li>
 </ul>
-<p>After dropping a template, each block can be configured individually in the property panel.</p>`,
+<p>Reaction templates create ordinary editable blocks. Select meshes, a coordinator sound asset name, or an existing custom event id in the normal property panel, then continue rewiring the graph as needed.</p>
+<p>Use the <strong>Sound Assets</strong> section of the property panel to import, preview, replace, or remove embedded audio. Replacing an asset keeps its name, so block references remain valid. Sound assets are included in file and snippet saves.</p>`,
             },
         ],
     },

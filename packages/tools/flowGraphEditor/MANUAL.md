@@ -46,6 +46,19 @@ The loaded scene's objects (meshes, lights, cameras, etc.) become available as r
 - **Load from file** — Import a previously saved JSON file.
 - **Load from snippet** — Enter a snippet ID to restore a graph (and its associated scene, if any).
 
+Coordinator sound assets are included in file and snippet saves. Imported audio is embedded as a `data:` URL, so the saved graph remains self-contained.
+
+### Sound Assets
+
+Use the **Sound Assets** section in the property panel when no block is selected:
+
+- **Import audio** accepts common browser audio formats such as MP3, OGG, M4A, and WAV.
+- **Preview** and **Stop** audition a loaded sound without running the graph.
+- **Replace** reloads audio under the same asset name, so every name-based block reference keeps working.
+- **Remove** disposes the sound asset. Existing block input strings are left intact so the asset can be restored later under the same name.
+
+Audio block `sound` inputs store the selected asset name as a plain string.
+
 ### How to Use (Embed Code)
 
 Click the **&lt;/&gt;** button in the toolbar to open the **How to Use** dialog. It shows copy-to-clipboard code samples for integrating your flow graph into a project:
@@ -117,8 +130,11 @@ The palette contains a **Templates** section with pre-built multi-block patterns
 - **Animation Patterns** — Lerp Animation (tick-driven interpolation)
 - **Communication** — Custom Event Bridge (send + receive pair)
 - **glTF Interactivity** — Get → Set Property, Get → Set Variable
+- **Reactions** — Pick → Play Sound, Intersection → Play Sound, Add Reaction to Existing Event
 
-Drag a template from the palette onto the canvas. All blocks are created and internally wired automatically. You can then edit individual blocks (change targets, configure conditions, etc.).
+The intersection template reacts to bounding-volume overlap through `FlowGraphMeshIntersectionEventBlock`. It is not a physics-impact event: an overlap may exist on startup, fast crossings can be missed between frames, and adding the same pair in both directions creates two independent sensors. Contact-position audio remains a separate authoring task.
+
+Drag a template from the palette onto the canvas. All blocks are created and internally wired automatically. These templates emit ordinary blocks rather than editor-only behavior: select the pick/intersection meshes, sound asset name, or custom event id in the normal property panel and continue editing or rewiring the graph.
 
 ---
 
@@ -189,6 +205,7 @@ When enabled, you'll see:
 - **Block execution highlighting** — Blocks flash with a green glow when they execute.
 - **Port activity** — Input ports that received data and output ports that fired glow green.
 - **Flow animation** — Traveling dots animate along connections when signals fire or data flows, showing the direction and timing of execution.
+- **Event log** — The Log panel records each event that fired and each block that ran. Click an entry to navigate to the block.
 
 > Debug mode adds some overhead. It throttles visual updates to 100ms per node to keep the editor responsive.
 
@@ -290,6 +307,8 @@ Click the **Validate** button (✓) in the toolbar. The button shows a count of 
 Click the **Live Validation** toggle (⚡) to enable automatic validation whenever the graph changes. Validation runs on a debounced schedule so it doesn't slow down editing.
 
 Validation issues include the block name, severity (error/warning), and a descriptive message.
+
+Imported `FlowGraphUnsupportedInteractivityBlock` nodes are reported as errors. Diagnostics from a failed KHR_interactivity export also remain in validation until the next successful export.
 
 ### Connection Type Compatibility
 
@@ -473,7 +492,7 @@ The editor includes a set of blocks for interacting with the Babylon.js Physics 
 
 ## Audio Blocks
 
-The editor includes blocks for controlling audio playback using the Babylon.js Audio V2 system. These blocks operate on `AbstractSound` references (either `StaticSound` or `StreamingSound` instances created via `CreateSoundAsync` / `CreateStreamingSoundAsync`).
+The editor includes blocks for controlling audio playback using the Babylon.js Audio V2 system. A `sound` input can use an `AbstractSound` reference or the name of a sound asset declared in the editor's **Sound Assets** panel. The property panel provides a picker for the declared names.
 
 ### Audio Actions (Execution Blocks)
 
@@ -497,7 +516,7 @@ The editor includes blocks for controlling audio playback using the Babylon.js A
 | **GetSoundVolume** | Reads the current volume of a sound.                        |
 | **IsSoundPlaying** | Returns true if the sound is currently playing or starting. |
 
-> **Note:** Audio blocks require sounds created via the Audio V2 API (`CreateSoundAsync`, `CreateStreamingSoundAsync`). The legacy `Sound` class (V1) is not supported by these blocks.
+> **Note:** Imported sound assets are loaded through Audio V2. The legacy `Sound` class (V1) is not supported by these blocks.
 
 ---
 

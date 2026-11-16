@@ -75,6 +75,7 @@ export const babylonGlobals = {
     "babylonjs-accessibility": "BABYLON.Accessibility",
     "babylonjs-addons": "ADDONS",
     "babylonjs-ktx2decoder": "KTX2DECODER",
+    "babylonjs-ktx2encoder": "KTX2ENCODER",
 };
 
 /**

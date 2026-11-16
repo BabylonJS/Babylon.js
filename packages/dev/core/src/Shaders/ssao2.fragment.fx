@@ -58,6 +58,12 @@ varying vec2 vUV;
 		float depth = textureLod(depthSampler, vUV, 0.0).r;
 		float depthSign = sign(depth);
 		depth = depth * depthSign;
+		// Nothing was rendered here (e.g. sky). The cleared normal is zero and normalize(vec3(0.0))
+		// is undefined (NaN on some GPUs), so output no occlusion instead.
+		if (depth == 0.0) {
+			gl_FragColor = vec4(1.0);
+			return;
+		}
 		vec3 normal = normalize(textureLod(normalSampler, vUV, 0.0).rgb);
 #ifdef NORMAL_WORLDSPACE
 		normal = normalize(normalWorldToView * normal);

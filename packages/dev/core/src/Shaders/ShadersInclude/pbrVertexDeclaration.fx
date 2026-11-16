@@ -26,6 +26,11 @@ uniform mat4 ambientMatrix;
 uniform vec4 vAmbientInfos;
 #endif
 
+#ifdef BENTNORMAL
+uniform mat4 bentNormalMatrix;
+uniform vec2 vBentNormalInfos;
+#endif
+
 #ifdef OPACITY
 uniform mat4 opacityMatrix;
 uniform vec2 vOpacityInfos;

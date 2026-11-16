@@ -1,4 +1,4 @@
-import { GetTypedArrayData, VertexBuffer } from "core/Buffers";
+import { Buffer, GetTypedArrayData, VertexBuffer } from "core/Buffers";
 import { Constants, Engine, NullEngine } from "core/Engines";
 import { CreateBoxVertexData, VertexData } from "core/Meshes";
 
@@ -296,6 +296,46 @@ describe("VertexBuffer", () => {
             expect(result.constructor).toBe(source.constructor);
             expect(result).toStrictEqual(source);
             expect(result.buffer === source.buffer).toBeTruthy();
+        });
+    });
+});
+
+describe("Buffer", () => {
+    describe("updateDirectly", () => {
+        let engine: Engine;
+
+        beforeEach(function () {
+            engine = new NullEngine();
+        });
+
+        it("should not upload anything when vertexCount is 0", () => {
+            const data = new Float32Array(16 * 4);
+            const buffer = new Buffer(engine, data, true, 4);
+            const spy = vi.spyOn(engine, "updateDynamicVertexBuffer");
+
+            buffer.updateDirectly(data, 0, 0);
+
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it("should upload only the given vertex count", () => {
+            const data = new Float32Array(16 * 4);
+            const buffer = new Buffer(engine, data, true, 4);
+            const spy = vi.spyOn(engine, "updateDynamicVertexBuffer");
+
+            buffer.updateDirectly(data, 0, 3);
+
+            expect(spy).toHaveBeenCalledWith(expect.anything(), data, 0, 3 * 4 * Float32Array.BYTES_PER_ELEMENT);
+        });
+
+        it("should upload the whole data when vertexCount is not given", () => {
+            const data = new Float32Array(16 * 4);
+            const buffer = new Buffer(engine, data, true, 4);
+            const spy = vi.spyOn(engine, "updateDynamicVertexBuffer");
+
+            buffer.updateDirectly(data, 0);
+
+            expect(spy).toHaveBeenCalledWith(expect.anything(), data, 0, undefined);
         });
     });
 });
