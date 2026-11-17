@@ -435,6 +435,18 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         }
     }
 
+    /** @internal */
+    public _resolvePendingGeneratedDepthShareSources(): void {
+        const pendingSources = this._pendingGeneratedDepthShareSources;
+        if (!pendingSources) {
+            return;
+        }
+
+        for (const source of pendingSources) {
+            this._engine._resolvePendingGeneratedDepthShares(source);
+        }
+    }
+
     private _removePendingGeneratedDepthShare(destination: NativeRenderTargetWrapper): void {
         this._pendingGeneratedDepthShares?.delete(destination);
         if (this._pendingGeneratedDepthShares?.size === 0) {

@@ -1840,6 +1840,28 @@ describe("ThinNativeEngine", () => {
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
         });
 
+        it.each([
+            ["3D", (engine: ThinNativeEngine) => engine.createRenderTargetTexture({ width: 64, height: 64, depth: 3 }, {})],
+            [
+                "layered MRT",
+                (engine: ThinNativeEngine) =>
+                    engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 1, targetTypes: [Constants.TEXTURE_2D_ARRAY], layerCounts: [3], layerIndex: [1] }),
+            ],
+        ])("applies a generated depth share when the destination binds before its lazy %s source", (_name, createSource) => {
+            const { engine, bound, nativeEngine } = createEngine({ shareGeneratedDepth: true });
+            const source = createSource(engine) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+
+            source.shareDepth(destination);
+            engine.bindFramebuffer(destination);
+
+            const sharedDepth = source._depthStencilTexture!;
+            expect(nativeEngine.shareFrameBufferDepthStencil).toHaveBeenCalledTimes(1);
+            expect(destination._depthStencilTexture).toBe(sharedDepth);
+            expect(bound().colors).toEqual([resourceOf(destination.texture!)]);
+            expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+        });
+
         it("cancels a deferred generated depth share when the destination is disposed", () => {
             const { engine, nativeEngine } = createEngine({ shareGeneratedDepth: true });
             const source = engine.createRenderTargetTexture({ width: 64, height: 64, depth: 3 }, {}) as NativeRenderTargetWrapper;
@@ -1957,6 +1979,25 @@ describe("ThinNativeEngine", () => {
             expect(destination._depthStencilTexture).toBe(sharedDepth);
             expect(nativeEngine.shareFrameBufferDepthStencil).toHaveBeenCalledTimes(1);
             engine.bindFramebuffer(destination, undefined, undefined, undefined, undefined, undefined, 2);
+            expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+        });
+
+        it("restores a 2D array generated depth share as one depth layer", () => {
+            const { engine, bound } = createEngine({ shareGeneratedDepth: true });
+            const source = engine.createRenderTargetTexture({ width: 64, height: 64, layers: 3 }, {}) as NativeRenderTargetWrapper;
+            const destination = engine.createRenderTargetTexture({ width: 64, height: 64 }, { generateDepthBuffer: false }) as NativeRenderTargetWrapper;
+            source.shareDepth(destination);
+
+            rebuildGraphicsResources(engine);
+
+            const sharedDepth = source._depthStencilTexture!;
+            expect(sharedDepth.is2DArray).toBe(false);
+            expect(sharedDepth.depth).toBe(0);
+            expect(destination._depthStencilTexture).toBe(sharedDepth);
+
+            engine.bindFramebuffer(source, undefined, undefined, undefined, undefined, undefined, 2);
+            expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+            engine.bindFramebuffer(destination);
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
         });
 

@@ -714,7 +714,21 @@ export class ThinNativeEngine extends ThinEngine {
             // depth texture. This does not depend on the original source still being alive or a lazy source already
             // having a framebuffer.
             const source = group.wrappers.includes(originalSource) ? originalSource : group.wrappers[0];
-            source.createDepthStencilTexture(0, false, group.generateStencil, group.samples, group.format);
+            if (source.is2DArray) {
+                source._depthStencilTexture = this.createDepthStencilTexture(
+                    { width: source.width, height: source.height },
+                    {
+                        bilinearFiltering: false,
+                        comparisonFunction: 0,
+                        generateStencil: group.generateStencil,
+                        samples: group.samples,
+                        depthTextureFormat: group.format,
+                    },
+                    source
+                );
+            } else {
+                source.createDepthStencilTexture(0, false, group.generateStencil, group.samples, group.format);
+            }
             source._generatedDepthShareSource = source;
             for (const wrapper of group.wrappers) {
                 if (wrapper !== source) {
@@ -3143,6 +3157,22 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     /**
+     * Creates a lazy source framebuffer, if needed, and applies its pending generated depth shares.
+     * @param nativeRTWrapper Source render target wrapper
+     * @internal
+     */
+    public _resolvePendingGeneratedDepthShares(nativeRTWrapper: NativeRenderTargetWrapper): void {
+        if (!nativeRTWrapper._framebuffer && !nativeRTWrapper._layerFramebuffers?.size) {
+            if (nativeRTWrapper.isMulti && (nativeRTWrapper.is3D || nativeRTWrapper._isMixedTypeMRT || this._isLayeredFrameGraphMRT(nativeRTWrapper))) {
+                this._bindLayeredMultiFramebuffer(nativeRTWrapper, false);
+            } else if (nativeRTWrapper.is3D) {
+                this._get3DLayerFramebuffer(nativeRTWrapper, 0, 0);
+            }
+        }
+        nativeRTWrapper._resolvePendingGeneratedDepthShares();
+    }
+
+    /**
      * Wraps a render target's auto-generated depth/stencil buffer in a depth texture without rebuilding the render
      * target, so it can be shared with its current contents.
      * @internal
@@ -4569,6 +4599,7 @@ export class ThinNativeEngine extends ThinEngine {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
 
+        nativeRTWrapper._resolvePendingGeneratedDepthShareSources();
         this._currentRenderTarget = texture;
         // Multi render target whose color attachments each target a specific layer/face of a texture: the IBL
         // voxelization MRTs (several Z-slices of one shared 3D texture, routed via is3D) and mixed-type MRTs
@@ -4786,7 +4817,7 @@ export class ThinNativeEngine extends ThinEngine {
     // are specific layers of 2D-array textures and/or faces of cube textures, plus plain 2D). Textures may be
     // assigned via setInternalTexture and layers/faces retargeted via setLayerAndFaceIndex after creation, so the
     // framebuffer is built lazily here and rebuilt whenever its attachment layout changes.
-    private _bindLayeredMultiFramebuffer(nativeRTWrapper: NativeRenderTargetWrapper): void {
+    private _bindLayeredMultiFramebuffer(nativeRTWrapper: NativeRenderTargetWrapper, bindFramebuffer = true): void {
         const textures = nativeRTWrapper.textures;
         const layerIndices = nativeRTWrapper.layerIndices;
         const expectedCount = nativeRTWrapper._attachments?.length ?? textures?.length ?? 0;
@@ -4835,7 +4866,9 @@ export class ThinNativeEngine extends ThinEngine {
             nativeRTWrapper._layeredFramebufferKey = { colors: colorTextures, layers, depth, samples, autoGenerateMips };
             this._applyDepthTextureSampling(nativeRTWrapper);
         }
-        this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
+        if (bindFramebuffer) {
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
+        }
     }
 
     public override unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
