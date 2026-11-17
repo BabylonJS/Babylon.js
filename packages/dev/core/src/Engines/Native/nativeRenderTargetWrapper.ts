@@ -375,10 +375,10 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
      * @param renderTarget The render target that receives the shared depth texture
      */
     public override shareDepth(renderTarget: RenderTargetWrapper): void {
-        this._shareDepth(renderTarget, false);
+        this._applyDepthShare(renderTarget, false);
     }
 
-    private _shareDepth(renderTarget: RenderTargetWrapper, resolvingDeferredShare: boolean): void {
+    private _applyDepthShare(renderTarget: RenderTargetWrapper, resolvingDeferredShare: boolean): void {
         const dest = renderTarget as NativeRenderTargetWrapper;
         if (!this._depthStencilTexture && (this._generateDepthBuffer || this._generateStencilBuffer) && dest && dest !== this && dest._engine === this._engine) {
             if (!this._engine._supportsGeneratedDepthSharing()) {
@@ -430,7 +430,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         }
 
         for (const destination of pendingShares) {
-            this._shareDepth(destination, true);
+            this._applyDepthShare(destination, true);
             this._removePendingGeneratedDepthShare(destination);
         }
     }
