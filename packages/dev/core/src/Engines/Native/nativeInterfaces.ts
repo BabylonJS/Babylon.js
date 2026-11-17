@@ -217,6 +217,7 @@ interface INativeEngineConstructor {
 
     readonly CAPS_LIMITS_MAX_TEXTURE_SIZE: number;
     readonly CAPS_LIMITS_MAX_TEXTURE_LAYERS: number;
+    readonly CAPS_INTEGER_COLOR_ATTACHMENTS?: boolean;
 
     readonly TEXTURE_NEAREST_NEAREST: number;
     readonly TEXTURE_LINEAR_LINEAR: number;

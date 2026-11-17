@@ -1166,6 +1166,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             supportMSAA: true,
             supportSSAO2: true,
             supportIBLShadows: true,
+            supportMeshBlending: true,
             supportExtendedTextureFormats: true,
             supportSwitchCaseInShader: true,
             supportSyncTextureRead: false,
