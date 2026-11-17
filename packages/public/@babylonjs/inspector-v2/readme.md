@@ -32,6 +32,12 @@ import { ShowInspector } from "@babylonjs/inspector/lite";
 ShowInspector(engine);
 ```
 
+### Building declarations
+
+The declaration build uses `tsc` rather than declaration bundling to keep memory usage low. Shared UI is bundled into Inspector's JavaScript, so its reachable declarations are copied from `packages/dev/sharedUiComponents/dist` into `lib/shared-ui-components` with package-local imports. Full and Lite use the same declaration files for shared service identities; consumers do not need to install `@babylonjs/shared-ui-components`.
+
+Build the development dependencies first using the repository build workflow. `npm run bundle:declarations -w @babylonjs/inspector` emits and packages declarations, then checks for leaked shared-UI imports and missing local declarations. Run the focused packaging tests with `npm run test:declarations -w @babylonjs/inspector`.
+
 ## Headless Inspectable (No UI)
 
 You can make a scene inspectable for the CLI without showing the Inspector UI by calling `StartInspectable`:
