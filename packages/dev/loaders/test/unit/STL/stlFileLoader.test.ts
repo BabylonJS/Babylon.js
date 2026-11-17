@@ -89,4 +89,13 @@ endsolid numeric
         expect(meshes).toHaveLength(1);
         expect(Array.from(meshes[0].getVerticesData("position")!)).toEqual([1, 30, -2.5, 0.4, 6, 5, 7, 900, 8.25]);
     });
+
+    it("ignores solids and facets without terminators", () => {
+        const facet = "facet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\n";
+        const meshes: AbstractMesh[] = [];
+
+        expect(new STLFileLoader().importMesh(null, scene, `solid a\n${facet}facet normal 0 0 1\nendsolid a\nsolid b\n${facet}`, "", meshes)).toBe(true);
+        expect(meshes.map((mesh) => mesh.name)).toEqual(["a"]);
+        expect(meshes[0].getTotalVertices()).toBe(3);
+    });
 });

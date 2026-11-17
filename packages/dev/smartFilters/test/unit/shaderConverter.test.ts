@@ -149,6 +149,12 @@ vec4 apply(vec2 vUV) { // main
             expect(multiLine.namespace).toBe("Test");
         });
 
+        it("stops a single-line header at a carriage return", () => {
+            const shader = `// {"smartFilterBlockType":"CarriageReturn"}\runiform sampler2D input; // main\rvec4 apply(vec2 vUV) { // main\r    return texture2D(input, vUV);\r}`;
+
+            expect(ParseFragmentShader(shader).blockType).toBe("CarriageReturn");
+        });
+
         it("parses annotated const properties", () => {
             const shader = `
 // {"smartFilterBlockType":"AnnotatedConst"}

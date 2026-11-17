@@ -550,10 +550,12 @@ function ReadHeader(fragmentShader: string): {
     }
 
     if (fragmentShader.startsWith("//", startIndex)) {
-        const lineEnd = fragmentShader.indexOf("\n", startIndex + 2);
-        const matchEnd = lineEnd === -1 ? fragmentShader.length : lineEnd;
         const openingBrace = fragmentShader.indexOf("{", startIndex + 2);
-        const closingBrace = fragmentShader.lastIndexOf("}", matchEnd - 1);
+        let lineEnd = openingBrace === -1 ? fragmentShader.length : openingBrace;
+        while (lineEnd < fragmentShader.length && !"\n\r\u2028\u2029".includes(fragmentShader[lineEnd])) {
+            lineEnd++;
+        }
+        const closingBrace = fragmentShader.lastIndexOf("}", lineEnd - 1);
         if (openingBrace !== -1 && openingBrace < closingBrace && fragmentShader.slice(startIndex + 2, openingBrace).trim() === "") {
             return {
                 header: ParseHeader(fragmentShader.slice(openingBrace, closingBrace + 1).trim()),
