@@ -5,16 +5,21 @@ describe("FetchSnippet", () => {
         vi.unstubAllGlobals();
     });
 
-    it("encodes snippet path segments before fetching", async () => {
+    it.each([
+        ["#ABC123#2", "ABC123/2"],
+        ["ABC123/2", "ABC123/2"],
+        ["ABC123", "ABC123/0"],
+        ["AB C?#2", "AB%20C%3F/2"],
+    ])("requests %s as %s", async (snippetId, expectedPath) => {
         const fetchMock = vi.fn().mockResolvedValue({
             ok: true,
             json: async () => ({ jsonPayload: "{}" }),
         });
         vi.stubGlobal("fetch", fetchMock);
 
-        await FetchSnippet("#ABC/123#2");
+        await FetchSnippet(snippetId, "https://snippets.test");
 
-        expect(fetchMock).toHaveBeenCalledWith("https://snippet.babylonjs.com/ABC%2F123/2");
+        expect(fetchMock).toHaveBeenCalledWith(`https://snippets.test/${expectedPath}`);
     });
 
     it("rejects an empty snippet identifier", async () => {

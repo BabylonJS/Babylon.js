@@ -53,16 +53,45 @@ export class WebRequest implements IWebRequest {
     }
 
     private static _ShouldSkipRequestModifications(url: string): boolean {
-        if (!WebRequest.SkipRequestModificationForBabylonCDN || typeof URL === "undefined") {
+        if (!WebRequest.SkipRequestModificationForBabylonCDN) {
             return false;
         }
 
-        try {
-            const parsedUrl = new URL(url, typeof location !== "undefined" ? location.href : undefined);
-            return parsedUrl.hostname === "preview.babylonjs.com" || parsedUrl.hostname === "cdn.babylonjs.com";
-        } catch {
-            return false;
+        const hostname = WebRequest._GetHostname(WebRequest._CleanUrl(url));
+        return hostname === "preview.babylonjs.com" || hostname === "cdn.babylonjs.com";
+    }
+
+    /**
+     * Extracts the lower-cased hostname of an absolute or protocol-relative URL without relying on the URL
+     * constructor, which is not available in every environment (e.g. Babylon Native installs a non-constructible shim).
+     * @param url - The URL to inspect.
+     * @returns The hostname, or an empty string for relative URLs.
+     */
+    private static _GetHostname(url: string): string {
+        let authorityStart = -1;
+        if (url.startsWith("//")) {
+            authorityStart = 2;
+        } else {
+            const schemeEnd = url.indexOf("://");
+            if (schemeEnd > 0 && /^[a-z][a-z0-9+.-]*$/i.test(url.substring(0, schemeEnd))) {
+                authorityStart = schemeEnd + 3;
+            }
         }
+        if (authorityStart === -1) {
+            return "";
+        }
+
+        let authorityEnd = authorityStart;
+        while (authorityEnd < url.length && "/?#\\".indexOf(url[authorityEnd]) === -1) {
+            authorityEnd++;
+        }
+        let host = url.substring(authorityStart, authorityEnd);
+        host = host.substring(host.lastIndexOf("@") + 1);
+        const portStart = host.lastIndexOf(":");
+        if (portStart !== -1 && host.indexOf("]") < portStart) {
+            host = host.substring(0, portStart);
+        }
+        return host.toLowerCase();
     }
 
     /**

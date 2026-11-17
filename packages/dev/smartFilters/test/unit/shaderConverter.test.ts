@@ -149,6 +149,27 @@ vec4 apply(vec2 vUV) { // main
             expect(multiLine.namespace).toBe("Test");
         });
 
+        it("finds a main input whose marker is on the next line", () => {
+            const shader = `// {"smartFilterBlockType":"NextLineMain"}
+uniform sampler2D input;
+// main
+vec4 apply(vec2 vUV) { // main
+    return texture2D(input, vUV);
+}`;
+
+            expect(ParseFragmentShader(shader).shaderCode.mainInputTexture).toBe("_input_");
+        });
+
+        it("rejects a long non-matching main input declaration quickly", () => {
+            const shader = `// {"smartFilterBlockType":"LongName"}
+uniform sampler2D ${"a".repeat(20000)}[1]; // main
+vec4 apply(vec2 vUV) { // main
+    return vec4(0.);
+}`;
+
+            expect(ParseFragmentShader(shader).shaderCode.mainInputTexture).toBeUndefined();
+        });
+
         it("stops a single-line header at a carriage return", () => {
             const shader = `// {"smartFilterBlockType":"CarriageReturn"}\runiform sampler2D input; // main\rvec4 apply(vec2 vUV) { // main\r    return texture2D(input, vUV);\r}`;
 

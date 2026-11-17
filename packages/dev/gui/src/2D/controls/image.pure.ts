@@ -647,8 +647,8 @@ export class Image extends Control {
                     const name = attr.name;
                     const value = attr.value;
 
-                    // Remove dangerous attributes
-                    if (dangerousAttrs.some((regex) => regex.test(name))) {
+                    // Remove dangerous attributes; references to fragments of the sanitized document itself are kept
+                    if (dangerousAttrs.some((regex) => regex.test(name)) && !(/href$/.test(name) && value.trim().startsWith("#"))) {
                         el.removeAttribute(name);
                     }
 
@@ -671,6 +671,44 @@ export class Image extends Control {
         return new XMLSerializer().serializeToString(doc);
     }
 
+    private static readonly _SVGSourceAttribute = "data-babylon-svg-source";
+
+    private static _FindSVGObject(svgsrc: string): Nullable<HTMLObjectElement> {
+        const objects = document.body.getElementsByTagName("object");
+        for (let i = 0; i < objects.length; i++) {
+            if (objects[i].getAttribute(Image._SVGSourceAttribute) === svgsrc) {
+                return objects[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Loads the SVG markup, sanitizes it, and only then exposes it to the hidden object element, so that scripts or
+     * event handlers in the source document never run in an active document.
+     * @param svgsrc the url of the svg document
+     * @param svgObject the object element used to measure the svg elements
+     */
+    private _loadSanitizedSVG(svgsrc: string, svgObject: HTMLObjectElement) {
+        Tools.LoadFile(
+            svgsrc,
+            (data) => {
+                if (!svgObject.isConnected) {
+                    return;
+                }
+                const blobUrl = URL.createObjectURL(new Blob([this._sanitizeSVG(data as string)], { type: "image/svg+xml" }));
+                svgObject.addEventListener("load", () => URL.revokeObjectURL(blobUrl), { once: true });
+                svgObject.data = blobUrl;
+            },
+            undefined,
+            undefined,
+            false,
+            (_request, exception) => {
+                Tools.Warn(`Unable to load SVG ${svgsrc}: ${exception}`);
+            }
+        );
+    }
+
     /**
      * Checks for svg document with icon id present
      * @param value the source svg
@@ -687,11 +725,10 @@ export class Image extends Control {
         const pathEnd = Math.min(queryIndex === -1 ? value.length : queryIndex, fragmentIndex === -1 ? value.length : fragmentIndex);
         if (window.SVGSVGElement && value.slice(0, pathEnd).toLowerCase().endsWith(".svg") && fragmentIndex === value.lastIndexOf("#")) {
             this._isSVG = true;
-            value = this._sanitizeSVG(value);
             const svgsrc = fragmentIndex === -1 ? value : value.slice(0, fragmentIndex);
             const elemid = fragmentIndex === -1 ? "" : value.slice(fragmentIndex + 1);
             // check if object alr exist in document
-            const svgExist = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
+            const svgExist = Image._FindSVGObject(svgsrc);
             if (svgExist) {
                 const svgDoc = svgExist.contentDocument;
                 // get viewbox width and height, get svg document width and height in px
@@ -713,18 +750,19 @@ export class Image extends Control {
             } else {
                 // create document object
                 const svgImage = document.createElement("object");
-                svgImage.data = svgsrc;
+                svgImage.setAttribute(Image._SVGSourceAttribute, svgsrc);
                 svgImage.type = "image/svg+xml";
                 svgImage.width = "0%";
                 svgImage.height = "0%";
                 document.body.appendChild(svgImage);
                 // when the object has loaded, get the element attribs
                 svgImage.onload = () => {
-                    const svgobj = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
+                    const svgobj = Image._FindSVGObject(svgsrc);
                     if (svgobj) {
                         this._getSVGAttribs(svgobj, elemid);
                     }
                 };
+                this._loadSanitizedSVG(svgsrc, svgImage);
             }
             return svgsrc;
         } else {

@@ -30,11 +30,13 @@ describe("RGBE_ReadHeader", () => {
         expect(() => RGBE_ReadHeader(noSize)).toThrow("HDR Bad header format, no size");
     });
 
-    it("should reject non-numeric dimensions", () => {
-        const header = new TextEncoder().encode("#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 64px +X 128\n");
-        const malformedSize = new Uint8Array(header.length * 3);
-        malformedSize.set(header);
-        expect(() => RGBE_ReadHeader(malformedSize)).toThrow("HDR Bad header format, no size");
+    it("should accept extra spaces around the dimensions", () => {
+        const header = new TextEncoder().encode("#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y  64 +X 128 \n");
+        const paddedSize = new Uint8Array(header.length * 3);
+        paddedSize.set(header);
+        const info = RGBE_ReadHeader(paddedSize);
+        expect(info.width).toBe(128);
+        expect(info.height).toBe(64);
     });
 
     it("should throw when width is out of supported range", () => {
