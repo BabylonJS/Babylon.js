@@ -34,11 +34,6 @@ describe.each([
         }
         const original = [...pixels];
         const readPixels = vi.spyOn(texture, "readPixels").mockResolvedValue(pixels);
-        const sourceReadPixels = vi.fn().mockResolvedValue({
-            data: new Uint8Array([...pixels.slice(mipWidth * 4), ...pixels.slice(0, mipWidth * 4)]),
-            width: mipWidth,
-            height: mipHeight,
-        });
         const putImageData = vi.fn();
         const mipCanvas = document.createElement("canvas");
         Object.defineProperty(mipCanvas, "getContext", {
@@ -61,7 +56,7 @@ describe.each([
         const updateDisplay = vi.fn();
         const update = vi.fn();
         if (Manager === InspectorCanvasManager) {
-            Reflect.set(manager, "_source", { size: { width, height }, readPixelsAsync: sourceReadPixels });
+            Reflect.set(manager, "_source", new BabylonTextureEditorSource(texture));
         } else {
             Reflect.set(manager, "_originalTexture", texture);
         }
@@ -75,11 +70,7 @@ describe.each([
 
         try {
             await manager.grabOriginalTexture();
-            if (Manager === InspectorCanvasManager) {
-                expect(sourceReadPixels).toHaveBeenCalledWith(1, 0);
-            } else {
-                expect(readPixels).toHaveBeenCalledWith(0, 1, null, true, false, 0, 0, mipWidth, mipHeight);
-            }
+            expect(readPixels).toHaveBeenCalledWith(0, 1, null, true, false, 0, 0, mipWidth, mipHeight);
             expect(setSize).toHaveBeenCalledWith({ width, height });
             expect([mipCanvas.width, mipCanvas.height]).toEqual([mipWidth, mipHeight]);
             const flipped = [...original.slice(mipWidth * 4), ...original.slice(0, mipWidth * 4)];

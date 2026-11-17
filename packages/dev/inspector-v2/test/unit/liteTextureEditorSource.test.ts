@@ -92,6 +92,18 @@ describe("LiteTextureEditorSource", () => {
         });
     });
 
+    it("captures the reset snapshot when the editor first reads, not on the first write", async () => {
+        const source = new LiteTextureEditorSource(engine, texture, () => true);
+        const openingPixels = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+
+        await source.readPixelsAsync(0);
+        liteApi.readTexturePixelsRGBA8.mockResolvedValue({ pixels: new Uint8Array(16).fill(99), width: 2, height: 2 });
+        await source.writePixelsAsync(new Uint8Array(16).fill(42), canvas, { width: 2, height: 2 });
+        await source.resetAsync();
+
+        expect(liteApi.updateTexture2DFromPixels).toHaveBeenLastCalledWith(engine, texture, openingPixels);
+    });
+
     it("rejects dimension changes and operations after the texture becomes unavailable", async () => {
         let available = true;
         const source = new LiteTextureEditorSource(engine, texture, () => available);

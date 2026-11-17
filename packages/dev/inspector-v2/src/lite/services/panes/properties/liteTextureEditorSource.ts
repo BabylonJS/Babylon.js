@@ -113,6 +113,8 @@ export class LiteTextureEditorSource implements ITextureEditorSource {
     }
 
     public async readPixelsAsync(mipLevel: number): Promise<TextureEditorPixels> {
+        // The editor's first read happens when it opens, so this is when Reset's baseline is captured.
+        await this._captureOriginalPixelsAsync();
         this._assertAvailable();
         const result = await readTexturePixelsRGBA8(this._engine, this._texture, { mipLevel });
         this._assertAvailable();

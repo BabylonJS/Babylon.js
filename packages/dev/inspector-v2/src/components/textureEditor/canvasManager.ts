@@ -42,6 +42,16 @@ export interface IPixelData {
     a?: number;
 }
 
+function FlipRows(data: Uint8Array | Uint8ClampedArray, width: number, height: number): Uint8Array {
+    const rowLength = width * 4;
+    const flipped = new Uint8Array(rowLength * height);
+    for (let y = 0; y < height; y++) {
+        const sourceStart = (height - y - 1) * rowLength;
+        flipped.set(data.subarray(sourceStart, sourceStart + rowLength), y * rowLength);
+    }
+    return flipped;
+}
+
 export class TextureCanvasManager {
     private readonly _engine: Engine;
     private readonly _scene: Scene;
@@ -374,7 +384,12 @@ export class TextureCanvasManager {
                 if (!imageData) {
                     throw new Error("The edited texture pixels are not available.");
                 }
-                const pixels = imageData instanceof Uint8Array ? imageData : new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
+                // WebGL readback is bottom-up, while sources expect top-down rows like canvas image data.
+                const pixels = this._editing3D
+                    ? FlipRows(imageData, this._size.width, this._size.height)
+                    : imageData instanceof Uint8Array
+                      ? imageData
+                      : new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
                 await this._source.writePixelsAsync(pixels, element, this._size);
             } catch (error) {
                 this._reportError(error);

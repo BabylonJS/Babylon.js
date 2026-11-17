@@ -32,6 +32,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 
     const childWindow = useRef<ChildWindow>(null);
     const [editorSource, setEditorSource] = useState<BabylonTextureEditorSource | null>(null);
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
 
     return (
         <>
@@ -45,8 +46,9 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
                 }}
                 icon={EditRegular}
             />
-            <ChildWindow id="Texture Editor" imperativeRef={childWindow} onOpenChange={(isOpen) => !isOpen && setEditorSource(null)}>
-                {editorSource && <TextureEditor source={editorSource} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />}
+            {/* Reopening fires close for the replaced popup and then open for the new one, so render based on the latest open state. */}
+            <ChildWindow id="Texture Editor" imperativeRef={childWindow} onOpenChange={setIsEditorOpen}>
+                {isEditorOpen && editorSource && <TextureEditor source={editorSource} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />}
             </ChildWindow>
         </>
     );

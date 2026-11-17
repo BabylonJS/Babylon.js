@@ -53,6 +53,7 @@ export const TexturePreviewProperties: FunctionComponent<TexturePreviewPropertie
     const childWindow = useRef<ChildWindowHandle>(null);
     const texturePreviewImperativeRef = useRef<TexturePreviewImperativeRef>(null);
     const [editorSource, setEditorSource] = useState<LiteTextureEditorSource | null>(null);
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
     const editability = GetLiteTextureEditability(texture);
     const getSnapshot = useCallback((): PreviewSnapshot => {
         if (resourceIndexService.isDisposed) {
@@ -119,8 +120,10 @@ export const TexturePreviewProperties: FunctionComponent<TexturePreviewPropertie
                 ariaLabel="Edit Texture"
                 onClick={openEditor}
             />
-            <ChildWindow id="Lite Texture Editor" imperativeRef={childWindow} onOpenChange={(isOpen) => !isOpen && setEditorSource(null)}>
-                {editorSource &&
+            {/* Reopening fires close for the replaced popup and then open for the new one, so render based on the latest open state. */}
+            <ChildWindow id="Lite Texture Editor" imperativeRef={childWindow} onOpenChange={setIsEditorOpen}>
+                {isEditorOpen &&
+                    editorSource &&
                     createElement(textureEditor, {
                         source: editorSource,
                         onUpdate: () => {
