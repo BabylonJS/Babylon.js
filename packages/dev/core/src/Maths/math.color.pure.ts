@@ -733,7 +733,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
 
     /**
      * Converts Hue, saturation and value to a Color3 (RGB)
-     * @param hue defines the hue (value between 0 and 360)
+     * @param hue defines the hue in degrees; any value is accepted and wrapped modulo 360 (e.g. 480 and 120 produce the same color)
      * @param saturation defines the saturation (value between 0 and 1)
      * @param value defines the value (value between 0 and 1)
      * @param result defines the Color3 where to store the RGB values
@@ -777,7 +777,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
 
     /**
      * Converts Hue, saturation and value to a new Color3 (RGB)
-     * @param hue defines the hue (value between 0 and 360)
+     * @param hue defines the hue in degrees; any value is accepted and wrapped modulo 360 (e.g. 480 and 120 produce the same color)
      * @param saturation defines the saturation (value between 0 and 1)
      * @param value defines the value (value between 0 and 1)
      * @returns a new Color3 object
