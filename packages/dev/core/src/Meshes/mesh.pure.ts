@@ -2143,12 +2143,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        if (this._internalMeshDataInfo._onBeforeDrawObservable) {
-            this._internalMeshDataInfo._onBeforeDrawObservable.notifyObservers(this);
-        }
-
         const scene = this.getScene();
         const engine = scene.getEngine();
+
+        if (this._internalMeshDataInfo._onBeforeDrawObservable) {
+            // what the observers draw is not the mesh's: it never waits for its pipeline (see _processRendering)
+            const pipelineWaitOwner = engine._pipelineWaitOwner;
+            engine._pipelineWaitOwner = null;
+            try {
+                this._internalMeshDataInfo._onBeforeDrawObservable.notifyObservers(this);
+            } finally {
+                engine._pipelineWaitOwner = pipelineWaitOwner;
+            }
+        }
+
         const currentMaterialContext = engine._currentMaterialContext;
         const useVertexPulling = currentMaterialContext && currentMaterialContext.useVertexPulling;
 
@@ -2518,51 +2526,61 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const indirect = subMesh._indirectDrawBuffers?.get(engine.currentRenderPassId);
         engine._currentDrawContext?._setExternalIndirectDraw?.(indirect?.buffer ?? null, indirect?.byteOffset ?? 0);
 
-        if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
-            this._renderWithThinInstances(subMesh, fillMode, effect, engine);
-            return this;
-        }
-
-        if (hardwareInstancedRendering) {
-            this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
-        } else {
-            if (engine._currentDrawContext) {
-                engine._currentDrawContext.useInstancing = false;
+        // the draws below are the mesh's, in whatever draw context its material gives them (its own, or one shared by the meshes of the
+        // material): in all its passes they wait together for their render pipelines (WebGPU asynchronous pipeline creation). A draw done
+        // anywhere else never waits
+        const pipelineWaitOwner = engine._pipelineWaitOwner;
+        const meshDataInfo = subMesh.getMesh()._internalAbstractMeshDataInfo;
+        engine._pipelineWaitOwner = meshDataInfo._pipelineWaitOwner ?? meshDataInfo;
+        try {
+            if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
+                this._renderWithThinInstances(subMesh, fillMode, effect, engine);
+                return this;
             }
 
-            let instanceCount = 0;
-            if (batch.renderSelf[subMesh._id]) {
-                // Draw
-                if (onBeforeDraw) {
-                    onBeforeDraw(false, renderingMesh.getWorldMatrix(), effectiveMaterial);
+            if (hardwareInstancedRendering) {
+                this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
+            } else {
+                if (engine._currentDrawContext) {
+                    engine._currentDrawContext.useInstancing = false;
                 }
-                instanceCount++;
 
-                this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
-            }
+                let instanceCount = 0;
+                if (batch.renderSelf[subMesh._id]) {
+                    // Draw
+                    if (onBeforeDraw) {
+                        onBeforeDraw(false, renderingMesh.getWorldMatrix(), effectiveMaterial);
+                    }
+                    instanceCount++;
 
-            const visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
+                    this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
+                }
 
-            if (visibleInstancesForSubMesh) {
-                const visibleInstanceCount = visibleInstancesForSubMesh.length;
-                instanceCount += visibleInstanceCount;
+                const visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
+
+                if (visibleInstancesForSubMesh) {
+                    const visibleInstanceCount = visibleInstancesForSubMesh.length;
+                    instanceCount += visibleInstanceCount;
+
+                    // Stats
+                    for (let instanceIndex = 0; instanceIndex < visibleInstanceCount; instanceIndex++) {
+                        const instance = visibleInstancesForSubMesh[instanceIndex];
+
+                        // World
+                        const world = instance.getWorldMatrix();
+                        if (onBeforeDraw) {
+                            onBeforeDraw(true, world, effectiveMaterial);
+                        }
+                        // Draw
+                        this._draw(subMesh, fillMode);
+                    }
+                }
 
                 // Stats
-                for (let instanceIndex = 0; instanceIndex < visibleInstanceCount; instanceIndex++) {
-                    const instance = visibleInstancesForSubMesh[instanceIndex];
-
-                    // World
-                    const world = instance.getWorldMatrix();
-                    if (onBeforeDraw) {
-                        onBeforeDraw(true, world, effectiveMaterial);
-                    }
-                    // Draw
-                    this._draw(subMesh, fillMode);
-                }
+                scene._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
             }
-
-            // Stats
-            scene._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
+        } finally {
+            engine._pipelineWaitOwner = pipelineWaitOwner;
         }
         return this;
     }
@@ -3116,8 +3134,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
         if (recordsDraw) {
             const recordedDrawWrapper = this._getUnchangedRecordedDraw(subMesh);
+            // the owner its full draw would have (see _processRendering): a recorded draw waits with the other passes of its mesh too
+            const meshDataInfo = subMesh.getMesh()._internalAbstractMeshDataInfo;
+            const pipelineWaitOwner = meshDataInfo._pipelineWaitOwner ?? meshDataInfo;
             // as _processRendering: a mesh still rendered for its instances or its batch but not drawn itself draws nothing
-            if (recordedDrawWrapper && batch.renderSelf[subMesh._id] && engine._canEncodeRecordedDraw(recordedDrawWrapper)) {
+            if (recordedDrawWrapper && batch.renderSelf[subMesh._id] && engine._canEncodeRecordedDraw(recordedDrawWrapper, pipelineWaitOwner)) {
                 if (enableAlphaMode) {
                     this._setAlphaModes(engine, subMesh.getMaterial()!);
                 }
@@ -3128,7 +3149,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 // the states its material sets before it binds, as in its full draw: the stencil an earlier draw set would stay in the
                 // engine, whose reference the render pass reads at the draw
                 subMesh.getMaterial()!._setStates(recordedDrawWrapper._recordedReverse);
-                engine._replayRecordedDraw(recordedDrawWrapper);
+                engine._replayRecordedDraw(recordedDrawWrapper, pipelineWaitOwner);
                 this._uniformBuffer._markBufferUsed();
                 for (const step of scene._afterRenderingMeshStage) {
                     step.action(this, subMesh, batch, recordedEffect);

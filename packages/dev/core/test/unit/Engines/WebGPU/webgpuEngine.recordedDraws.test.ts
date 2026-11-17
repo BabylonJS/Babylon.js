@@ -127,12 +127,12 @@ describe("WebGPUEngine recorded draws", () => {
             _reportDrawCall: () => {},
             _recordedDrawContext: null,
         };
-        engine._canEncodeRecordedDraw = (wrapper: DrawWrapper) => WebGPUEngine.prototype._canEncodeRecordedDraw.call(engine, wrapper);
+        engine._canEncodeRecordedDraw = (wrapper: DrawWrapper, owner: any) => WebGPUEngine.prototype._canEncodeRecordedDraw.call(engine, wrapper, owner);
         engine._cacheRenderPipeline.setAlphaBlendEnabled = vi.fn();
         engine.applyStates = () => WebGPUEngine.prototype.applyStates.call(engine);
         engine._keepInheritedState = (wrapper: DrawWrapper) => WebGPUEngine.prototype._keepInheritedState.call(engine, wrapper);
         const keep = () => (WebGPUEngine.prototype as any)._keepRecordedDraw.call(engine, {}, [{}, {}], 0, 36, 1, 0);
-        const replay = () => WebGPUEngine.prototype._replayRecordedDraw.call(engine, drawWrapper);
+        const replay = (owner: any = null) => WebGPUEngine.prototype._replayRecordedDraw.call(engine, drawWrapper, owner);
         const reset = (forceFullRecording?: boolean) => WebGPUEngine.prototype.snapshotRenderingReset.call(engine, forceFullRecording);
         keep();
         return { engine, effect, drawWrapper, drawContext, keep, replay, reset, markOwnerSlotUsed };
@@ -142,6 +142,28 @@ describe("WebGPUEngine recorded draws", () => {
         const { replay, markOwnerSlotUsed, drawContext } = setup();
         expect(replay()).toBe(true);
         expect(markOwnerSlotUsed).toHaveBeenCalledWith(drawContext);
+    });
+
+    it("leaves out the recorded draw of a mesh that waits for a render pipeline in another pass, as its full draw is (asynchronous pipeline creation)", () => {
+        const { engine, replay } = setup();
+        Object.assign(engine, { asynchronousPipelineCreation: true, _drawsMayWait: true, frameId: 10, _lastPipelineWaitFrameId: 10 });
+        // the mesh waits for the pipeline of its main pass in this frame: its shadow map must not show it alone
+        const owner = { _pipelinePendingFrameId: 10, _pipelineDrawnFrameId: -1 };
+        expect(replay(owner)).toBe(false);
+        expect(engine._bundleList.numDrawCalls).toBe(0);
+        // it waited in the frame before: still held back, until a frame in which none of its draws waited
+        owner._pipelinePendingFrameId = 9;
+        expect(replay(owner)).toBe(false);
+        // a draw that has no owner never waits
+        expect(replay()).toBe(true);
+    });
+
+    it("marks the mesh drawn in the frame when it encodes its recorded draw, so that a later pass waiting for its pipeline records the next frame", () => {
+        const { engine, replay } = setup();
+        Object.assign(engine, { asynchronousPipelineCreation: true, _drawsMayWait: true, frameId: 10, _lastPipelineWaitFrameId: 3 });
+        const owner = { _pipelinePendingFrameId: 3, _pipelineDrawnFrameId: -1 };
+        expect(replay(owner)).toBe(true);
+        expect(owner._pipelineDrawnFrameId).toBe(10);
     });
 
     it("composes the stencil before it encodes a draw again, as a full draw does: the render pass reads the reference of the material's stencil, else the global one", () => {
