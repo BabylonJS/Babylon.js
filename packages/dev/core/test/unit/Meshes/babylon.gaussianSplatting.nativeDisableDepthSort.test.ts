@@ -63,7 +63,7 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         expect(() => mesh._postToWorker(true)).not.toThrow();
 
         for (const call of sortSplats.mock.calls) {
-            // args: (modelViewProjection, splatPositions, splatIndex, rightHanded)
+            // args: (modelView, splatPositions, splatIndex, rightHanded)
             expect(call[1], "splatPositions passed to Native.sortSplats must not be null").not.toBeNull();
             expect(call[2], "splatIndex passed to Native.sortSplats must not be null").not.toBeNull();
         }
@@ -111,16 +111,24 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
 
     it("settles the depth sort after synchronous native sorting", async () => {
         const { GaussianSplattingMesh } = await import("core/Meshes/GaussianSplatting/gaussianSplattingMesh");
+        const { Matrix } = await import("core/Maths/math.vector");
         const { engine, scene } = await createScene();
 
         const mesh = new GaussianSplattingMesh("gs", null, scene);
         mesh.updateData(createSplatData(4));
 
         sortSplats.mockClear();
-        mesh.position.x = 1;
+        scene.useRightHandedSystem = false;
+        mesh.position.set(1, 2, 3);
         mesh._postToWorker(true);
 
         expect(sortSplats).toHaveBeenCalledOnce();
+        const [modelView, , , useRightHandedSystem] = sortSplats.mock.calls[0];
+        const expectedModelView = mesh.getWorldMatrix().multiply(scene.activeCamera!.getViewMatrix());
+        expect(Array.from(modelView.m)).toEqual(Array.from(expectedModelView.m));
+        expect(Array.from(modelView.m)).not.toEqual(Array.from(expectedModelView.multiply(scene.activeCamera!.getProjectionMatrix()).m));
+        expect(useRightHandedSystem).toBe(false);
+        expect(modelView).toBeInstanceOf(Matrix);
         expect(mesh._isDepthSortSettled).toBe(true);
 
         scene.dispose();
@@ -221,13 +229,16 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         mesh.updateData(createSplatData(40));
         sortSplatIndices.mockClear();
         sortSplatIndices.mockReturnValueOnce(false);
+        scene.useRightHandedSystem = true;
         mesh.setSplatIndexRanges([
             { offset: 3, count: 2 },
             { offset: 20, count: 18 },
         ]);
 
         expect(sortSplatIndices).toHaveBeenCalledOnce();
-        const [, worldMatrices, positions, splatIndex, vertexCount, intervals, partIndices] = sortSplatIndices.mock.calls[0] as any[];
+
+        const [view, worldMatrices, positions, splatIndex, vertexCount, intervals, partIndices, useRightHandedSystem] = sortSplatIndices.mock.calls[0] as any[];
+        expect(Array.from(view.m)).toEqual(Array.from(scene.activeCamera!.getViewMatrix().m));
         expect(worldMatrices).toEqual([mesh.getWorldMatrix()]);
         expect(positions).toBe((mesh as any)._splatPositions);
         expect(splatIndex).toBe((mesh as any)._splatIndex);
@@ -235,6 +246,7 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         expect(vertexCount).toBe(40);
         expect(Array.from(intervals)).toEqual([3, 2, 20, 18]);
         expect(partIndices).toBeNull();
+        expect(useRightHandedSystem).toBe(true);
         expect(sortSplats).not.toHaveBeenCalled();
         expect(mesh._isDepthSortSettled).toBe(false);
 

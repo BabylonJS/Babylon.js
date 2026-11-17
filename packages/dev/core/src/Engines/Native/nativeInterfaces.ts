@@ -583,26 +583,35 @@ export interface INative {
     endPerformanceCounter?(counter: unknown): void;
 
     // GaussianSplatting
+    /**
+     * Sorts splats back to front using model-view depth.
+     * @param modelViewMatrix mesh world matrix multiplied by the camera view matrix
+     * @param splatPositions splat centers (stride 4)
+     * @param splatIndex receives the sorted splat indices
+     * @param useRightHandedSystem whether the scene uses a right-handed coordinate system
+     */
     sortSplats?(modelViewMatrix: Matrix, splatPositions: Float32Array, splatIndex: Float32Array, useRightHandedSystem: boolean): void;
     /**
      * Writes the active splats to `splatIndex` sorted back to front, like the Gaussian Splatting sort worker.
-     * @param viewProjection camera view projection matrix
+     * @param view camera view matrix
      * @param worldMatrices the mesh world matrix, or one world matrix per part when `partIndices` is set
      * @param splatPositions splat centers (stride 4)
      * @param splatIndex receives the sorted active splat indices, padded with `vertexCount`
      * @param vertexCount number of source splats
      * @param intervals active source splat ranges as [start0, count0, ...], or null for every splat
      * @param partIndices part index of each splat for compound meshes, or null
+     * @param useRightHandedSystem whether the scene uses a right-handed coordinate system
      * @returns false when a part index has no world matrix, leaving `splatIndex` unchanged
      */
     sortSplatIndices?(
-        viewProjection: Matrix,
+        view: Matrix,
         worldMatrices: ReadonlyArray<Matrix>,
         splatPositions: Float32Array,
         splatIndex: Float32Array,
         vertexCount: number,
         intervals: Nullable<Uint32Array>,
-        partIndices: Nullable<Uint8Array>
+        partIndices: Nullable<Uint8Array>,
+        useRightHandedSystem: boolean
     ): boolean;
 
     // NativeDraco plugin — synchronous native replacement for the WASM Draco decoder.
