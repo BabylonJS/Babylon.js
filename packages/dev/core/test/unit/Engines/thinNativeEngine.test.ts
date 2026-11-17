@@ -92,6 +92,45 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("render state", () => {
+        it("starts with culling disabled and sends the first culling-enabled state", () => {
+            RegisterNativeEngine();
+            const engine = Object.create(NativeEngine.prototype) as {
+                _cachedCulling: boolean;
+                _commandBufferEncoder: object;
+                _initializeNativeEngine: (adaptToDeviceRatio: boolean) => void;
+                setState: (culling: boolean) => void;
+            };
+            vi.spyOn(ThinNativeEngine, "_createNativeDataStream").mockReturnValue({} as ReturnType<typeof ThinNativeEngine._createNativeDataStream>);
+            vi.stubGlobal("_native", {
+                Engine: class {
+                    public static PROTOCOL_VERSION = -1;
+                    public static COMMAND_SETSTATE = 100;
+                    public setCommandDataStream() {}
+                },
+            });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+                vi.restoreAllMocks();
+            });
+
+            expect(() => engine._initializeNativeEngine(false)).toThrow("Protocol version mismatch");
+            expect(engine._cachedCulling).toBe(false);
+
+            const commands: number[][] = [];
+            engine._commandBufferEncoder = {
+                startEncodingCommand: (command: number) => commands.push([command]),
+                encodeCommandArgAsUInt32: (value: number) => commands[commands.length - 1].push(value),
+                encodeCommandArgAsFloat32: (value: number) => commands[commands.length - 1].push(value),
+                finishEncodingCommand: () => {},
+            };
+
+            engine.setState(true);
+
+            expect(commands).toEqual([[100, 1, 0, 0, 1, 0]]);
+        });
+    });
+
     describe("alpha mode", () => {
         it.each([
             ["ALPHA_MIN", Constants.ALPHA_MIN, Constants.ALPHA_EQUATION_MIN],

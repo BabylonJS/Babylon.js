@@ -353,7 +353,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._stencilOpStencilDepthPass = Constants.REPLACE;
         this._zOffset = 0;
         this._zOffsetUnits = 0;
-        this._cachedCulling = true;
+        this._cachedCulling = false;
         this._cachedReverseSide = false;
         this._cachedCullBackFaces = true;
         this._cachedZOffset = 0;
