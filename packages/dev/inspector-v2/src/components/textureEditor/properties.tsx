@@ -1,7 +1,8 @@
 import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 
-import { type BaseTexture, type ISize } from "core/index";
+import { type ISize } from "core/index";
 import { type IPixelData } from "./canvasManager";
+import { type ITextureEditorSource } from "./textureEditorSource";
 
 import { Input, Label, makeStyles, tokens, Toolbar, ToolbarButton, ToolbarDivider, Tooltip } from "@fluentui/react-components";
 import { ArrowResetRegular, ArrowUploadRegular, ChevronDownRegular, ChevronUpRegular, ResizeRegular, SaveRegular } from "@fluentui/react-icons";
@@ -57,7 +58,7 @@ const useStyles = makeStyles({
 });
 
 type PropertiesBarProps = {
-    texture: BaseTexture;
+    source: ITextureEditorSource;
     size: ISize;
     saveTexture: () => void;
     pixelData: IPixelData;
@@ -88,7 +89,7 @@ const CubeFaces = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"] as const;
  * @returns The properties bar component
  */
 export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
-    const { texture, size, saveTexture, pixelData, face, setFace, resetTexture, resizeTexture, uploadTexture, mipLevel, setMipLevel } = props;
+    const { source, size, saveTexture, pixelData, face, setFace, resetTexture, resizeTexture, uploadTexture, mipLevel, setMipLevel } = props;
 
     const classes = useStyles();
     const uploadInputRef = useRef<HTMLInputElement>(null);
@@ -101,9 +102,7 @@ export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
         setHeight(size.height);
     }, [size.width, size.height]);
 
-    const maxLevels = Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
-    const engine = texture.getScene()?.getEngine();
-    const mipsEnabled = !texture.noMipmap && engine?.getCaps().textureLOD;
+    const mipsEnabled = source.mipPreviewEnabled;
 
     const handleUploadClick = useCallback(() => {
         uploadInputRef.current?.click();
@@ -142,7 +141,9 @@ export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
                     size="small"
                     type="text"
                     value={width.toString()}
-                    readOnly={texture.isCube}
+                    readOnly={source.isCube}
+                    disabled={!source.canResize && !source.isCube}
+                    title={source.canResize ? undefined : source.resizeDisabledReason}
                     onChange={(_, data) => setWidth(getNewDimension(width, data.value))}
                 />
                 <Label>H:</Label>
@@ -151,12 +152,20 @@ export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
                     size="small"
                     type="text"
                     value={height.toString()}
-                    readOnly={texture.isCube}
+                    readOnly={source.isCube}
+                    disabled={!source.canResize && !source.isCube}
+                    title={source.canResize ? undefined : source.resizeDisabledReason}
                     onChange={(_, data) => setHeight(getNewDimension(height, data.value))}
                 />
-                {!texture.isCube && (
-                    <Tooltip content="Resize" relationship="label">
-                        <ToolbarButton icon={<ResizeRegular />} onClick={handleResize} />
+                {!source.isCube && (
+                    <Tooltip content={source.canResize ? "Resize" : (source.resizeDisabledReason ?? "Resizing is not supported.")} relationship="label">
+                        <ToolbarButton
+                            icon={<ResizeRegular />}
+                            aria-label="Resize"
+                            aria-description={source.resizeDisabledReason}
+                            disabled={!source.canResize}
+                            onClick={handleResize}
+                        />
                     </Tooltip>
                 )}
             </div>
@@ -180,7 +189,7 @@ export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
             </div>
 
             {/* Cube Face Selection */}
-            {texture.isCube && (
+            {source.isCube && (
                 <>
                     <ToolbarDivider />
                     <Toolbar size="small">
@@ -204,7 +213,7 @@ export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
                         </Tooltip>
                         <Label>{mipLevel}</Label>
                         <Tooltip content="Mip Preview Down" relationship="label">
-                            <ToolbarButton icon={<ChevronDownRegular />} disabled={mipLevel >= maxLevels} onClick={() => setMipLevel(mipLevel + 1)} />
+                            <ToolbarButton icon={<ChevronDownRegular />} disabled={mipLevel >= source.maxMipLevel} onClick={() => setMipLevel(mipLevel + 1)} />
                         </Tooltip>
                     </div>
                 </>
@@ -215,14 +224,14 @@ export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
             {/* Actions */}
             <Toolbar size="small">
                 <Tooltip content="Reset" relationship="label">
-                    <ToolbarButton icon={<ArrowResetRegular />} onClick={resetTexture} />
+                    <ToolbarButton icon={<ArrowResetRegular />} aria-label="Reset" onClick={resetTexture} />
                 </Tooltip>
                 <Tooltip content="Upload" relationship="label">
-                    <ToolbarButton icon={<ArrowUploadRegular />} onClick={handleUploadClick} />
+                    <ToolbarButton icon={<ArrowUploadRegular />} aria-label="Upload" onClick={handleUploadClick} />
                 </Tooltip>
-                <input ref={uploadInputRef} className={classes.uploadInput} type="file" accept=".jpg, .png, .tga, .dds, .env, .exr" onChange={handleFileChange} />
+                <input ref={uploadInputRef} className={classes.uploadInput} type="file" accept={source.uploadAccept} onChange={handleFileChange} />
                 <Tooltip content="Save" relationship="label">
-                    <ToolbarButton icon={<SaveRegular />} onClick={saveTexture} />
+                    <ToolbarButton icon={<SaveRegular />} aria-label="Save" onClick={saveTexture} />
                 </Tooltip>
             </Toolbar>
         </div>

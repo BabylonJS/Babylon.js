@@ -53,6 +53,7 @@ import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textL
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/textureExplorerService";
 import { PhysicsExplorerServiceDefinition } from "./services/panes/scene/physicsExplorerService";
 import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
+import { TextureEditorServiceDefinition } from "../services/textureEditor/textureEditorService";
 
 /**
  * A token returned by the Babylon Lite `ShowInspector` function.
@@ -136,6 +137,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 ShadowGeneratorPropertiesServiceDefinition,
                 MaterialPropertiesServiceDefinition,
                 TexturePropertiesServiceDefinition,
+                TextureEditorServiceDefinition,
                 LiteAudioPropertiesServiceDefinition,
                 TextLayerPropertiesServiceDefinition,
                 SpriteLayerPropertiesServiceDefinition,

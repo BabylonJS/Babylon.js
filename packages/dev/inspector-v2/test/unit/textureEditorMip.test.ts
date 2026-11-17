@@ -9,6 +9,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { TextureCanvasManager as InspectorCanvasManager } from "../../src/components/textureEditor/canvasManager";
+import { BabylonTextureEditorSource } from "../../src/components/textureEditor/babylonTextureEditorSource";
 import { StatusBar } from "../../src/components/textureEditor/status";
 import { TextureCanvasManager as LegacyCanvasManager } from "../../../inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
 import { BottomBar } from "../../../inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/bottomBar";
@@ -33,6 +34,11 @@ describe.each([
         }
         const original = [...pixels];
         const readPixels = vi.spyOn(texture, "readPixels").mockResolvedValue(pixels);
+        const sourceReadPixels = vi.fn().mockResolvedValue({
+            data: new Uint8Array([...pixels.slice(mipWidth * 4), ...pixels.slice(0, mipWidth * 4)]),
+            width: mipWidth,
+            height: mipHeight,
+        });
         const putImageData = vi.fn();
         const mipCanvas = document.createElement("canvas");
         Object.defineProperty(mipCanvas, "getContext", {
@@ -54,7 +60,11 @@ describe.each([
         const setSize = vi.fn();
         const updateDisplay = vi.fn();
         const update = vi.fn();
-        Reflect.set(manager, "_originalTexture", texture);
+        if (Manager === InspectorCanvasManager) {
+            Reflect.set(manager, "_source", { size: { width, height }, readPixelsAsync: sourceReadPixels });
+        } else {
+            Reflect.set(manager, "_originalTexture", texture);
+        }
         Reflect.set(manager, "_mipLevel", 1);
         Reflect.set(manager, "_face", 0);
         Reflect.set(manager, "_window", { document: { createElement: () => mipCanvas } });
@@ -65,7 +75,11 @@ describe.each([
 
         try {
             await manager.grabOriginalTexture();
-            expect(readPixels).toHaveBeenCalledWith(0, 1, null, true, false, 0, 0, mipWidth, mipHeight);
+            if (Manager === InspectorCanvasManager) {
+                expect(sourceReadPixels).toHaveBeenCalledWith(1, 0);
+            } else {
+                expect(readPixels).toHaveBeenCalledWith(0, 1, null, true, false, 0, 0, mipWidth, mipHeight);
+            }
             expect(setSize).toHaveBeenCalledWith({ width, height });
             expect([mipCanvas.width, mipCanvas.height]).toEqual([mipWidth, mipHeight]);
             const flipped = [...original.slice(mipWidth * 4), ...original.slice(0, mipWidth * 4)];
@@ -91,7 +105,11 @@ it.each([
     const engine = new NullEngine();
     const texture = new RawTexture(new Uint8Array(3 * 5 * 4), 3, 5, Constants.TEXTUREFORMAT_RGBA, engine, true);
     try {
-        expect(renderToStaticMarkup(createElement(Component, { texture, mipLevel: 1 }))).toContain(dimensions);
+        const markup =
+            Component === StatusBar
+                ? renderToStaticMarkup(createElement(StatusBar, { source: new BabylonTextureEditorSource(texture), mipLevel: 1 }))
+                : renderToStaticMarkup(createElement(BottomBar, { texture, mipLevel: 1 }));
+        expect(markup).toContain(dimensions);
     } finally {
         texture.dispose();
         engine.dispose();
