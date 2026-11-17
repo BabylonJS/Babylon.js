@@ -5,6 +5,7 @@ import * as path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { addJsExtensionsToCompiledFiles } from "../../src/addJSToCompiledFiles";
+import { PostCompileTransformCommand } from "../../src/postCompileTransform";
 import { prepareES6Build } from "../../src/prepareEs6Build";
 import { externalArgs } from "../../src/utils";
 
@@ -159,6 +160,44 @@ describe("build postprocessing", () => {
             await expect(prepareES6Build()).rejects.toThrow("build failed");
             expect(log).toHaveBeenCalledWith(failure);
             expect(exit).toHaveBeenCalledWith(1);
+        });
+    });
+
+    describe("post-compile local package paths", () => {
+        it("rewrites package imports to local output paths", () => {
+            writeFile(
+                "lib/index.d.ts",
+                [
+                    'export { type ServiceDefinition } from "shared-ui-components/modularTool/serviceDefinition";',
+                    'export type Container = import("shared-ui-components/modularTool/serviceContainer").Container;',
+                ].join("\n")
+            );
+            writeFile("lib/shared-ui-components/modularTool/serviceDefinition.d.ts", 'export { type Container } from "shared-ui-components/modularTool/serviceContainer";');
+            writeFile("lib/shared-ui-components/modularTool/serviceContainer.d.ts", "export type Container = {};");
+            externalArgs.push(
+                "--outDir",
+                path.join(tempDir, "lib"),
+                "--buildType",
+                "es6",
+                "--basePackage",
+                "@babylonjs/inspector",
+                "--appendJS",
+                "--localPackagePaths",
+                "shared-ui-components=shared-ui-components"
+            );
+            vi.spyOn(console, "log").mockImplementation(() => {});
+
+            PostCompileTransformCommand();
+
+            expect(fs.readFileSync(path.join(tempDir, "lib/index.d.ts"), "utf8")).toBe(
+                [
+                    'export { type ServiceDefinition } from "./shared-ui-components/modularTool/serviceDefinition.js";',
+                    'export type Container = import("./shared-ui-components/modularTool/serviceContainer.js").Container;',
+                ].join("\n")
+            );
+            expect(fs.readFileSync(path.join(tempDir, "lib/shared-ui-components/modularTool/serviceDefinition.d.ts"), "utf8")).toBe(
+                'export { type Container } from "./serviceContainer.js";'
+            );
         });
     });
 });
