@@ -89,6 +89,10 @@ const _GetComputePipelineLayout = (
     const bindGroupLayoutEntries: GPUBindGroupLayoutEntry[][] = [];
 
     const addEntry = (group: number, entry: GPUBindGroupLayoutEntry) => {
+        if (!Number.isInteger(group) || group < 0) {
+            throw new Error(`Invalid compute binding group '${group}'`);
+        }
+
         const entries = (bindGroupLayoutEntries[group] ??= []);
         const existingIndex = entries.findIndex((item) => item.binding === entry.binding);
         if (existingIndex >= 0) {

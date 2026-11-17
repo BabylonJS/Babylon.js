@@ -106,16 +106,15 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
     lineIndex += line.length + 1;
     line = ReadStringLine(uint8array, lineIndex);
 
-    const sizeRegexp = /^-Y (.*) \+X (.*)$/g;
-    const match = sizeRegexp.exec(line);
-
+    // Equivalent to matching /^-Y (.*) \+X (.*)$/ but without the polynomial backtracking of the two wildcards.
     // TODO. Support +Y and -X if needed.
-    if (!match || match.length < 3) {
+    const sizeSeparatorIndex = line.lastIndexOf(" +X ");
+    if (!line.startsWith("-Y ") || sizeSeparatorIndex < 3 || /[\n\r\u2028\u2029]/.test(line)) {
         // eslint-disable-next-line no-throw-literal
         throw "HDR Bad header format, no size";
     }
-    const width = parseInt(match[2]);
-    const height = parseInt(match[1]);
+    const width = parseInt(line.substring(sizeSeparatorIndex + 4));
+    const height = parseInt(line.substring(3, sizeSeparatorIndex));
 
     if (width < 8 || width > 0x7fff) {
         // eslint-disable-next-line no-throw-literal

@@ -343,7 +343,7 @@ export class WebXRFeaturesManager implements IDisposable {
             latest: number;
             [version: number]: WebXRFeatureConstructor;
         };
-    } = {};
+    } = Object.create(null);
 
     private _features: {
         [name: string]: {
@@ -402,14 +402,18 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param stable is that a stable version of this module
      */
     public static AddWebXRFeature(featureName: string, constructorFunction: WebXRFeatureConstructor, version: number = 1, stable: boolean = false) {
-        this._AvailableFeatures[featureName] = this._AvailableFeatures[featureName] || { latest: version };
-        if (version > this._AvailableFeatures[featureName].latest) {
-            this._AvailableFeatures[featureName].latest = version;
+        let availableFeature = this._AvailableFeatures[featureName];
+        if (!availableFeature) {
+            availableFeature = Object.create(null);
+            availableFeature.latest = version;
+            this._AvailableFeatures[featureName] = availableFeature;
+        } else if (version > availableFeature.latest) {
+            availableFeature.latest = version;
         }
         if (stable) {
-            this._AvailableFeatures[featureName].stable = version;
+            availableFeature.stable = version;
         }
-        this._AvailableFeatures[featureName][version] = constructorFunction;
+        availableFeature[version] = constructorFunction;
     }
 
     /**

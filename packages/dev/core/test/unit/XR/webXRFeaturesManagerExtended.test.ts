@@ -80,7 +80,7 @@ describe("WebXRFeaturesManager – extended", () => {
     let featuresManager: WebXRFeaturesManager;
 
     beforeEach(() => {
-        savedAvailableFeatures = { ...(WebXRFeaturesManager as any)._AvailableFeatures };
+        savedAvailableFeatures = Object.assign(Object.create(null), (WebXRFeaturesManager as any)._AvailableFeatures);
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -97,7 +97,7 @@ describe("WebXRFeaturesManager – extended", () => {
         featuresManager.dispose();
         scene.dispose();
         engine.dispose();
-        (WebXRFeaturesManager as any)._AvailableFeatures = savedAvailableFeatures;
+        (WebXRFeaturesManager as any)._AvailableFeatures = Object.assign(Object.create(null), savedAvailableFeatures);
     });
 
     describe("static feature registration", () => {
@@ -108,6 +108,14 @@ describe("WebXRFeaturesManager – extended", () => {
 
             const available = WebXRFeaturesManager.GetAvailableFeatures();
             expect(available).toContain(name);
+        });
+
+        it("registers feature names without modifying object prototypes", () => {
+            const mockFeature = createMockFeature();
+            WebXRFeaturesManager.AddWebXRFeature("__proto__", createMockFeatureConstructor(mockFeature), 1, true);
+
+            expect(WebXRFeaturesManager.GetAvailableFeatures()).toContain("__proto__");
+            expect((Object.prototype as any).latest).toBeUndefined();
         });
 
         it("GetLatestVersionOfFeature returns the highest version", () => {

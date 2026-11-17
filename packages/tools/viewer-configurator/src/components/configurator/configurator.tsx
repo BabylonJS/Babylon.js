@@ -1228,7 +1228,8 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             try {
                 let url = "https://snippet.babylonjs.com";
                 if (window.location.hash) {
-                    url = `${url}/${window.location.hash.substring(1)}`;
+                    const snippetId = window.location.hash.substring(1).split("#")[0];
+                    url = `${url}/${encodeURIComponent(snippetId)}`;
                 }
 
                 const response = await fetch(url, {

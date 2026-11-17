@@ -998,11 +998,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     private _extractSnippetId(input: string): string {
         let cleaned = input.trim();
 
-        // Full URL: https://playground.babylonjs.com/#ABC123#4
-        if (cleaned.includes("playground.babylonjs.com")) {
-            const hashIndex = cleaned.indexOf("#");
-            if (hashIndex !== -1) {
-                cleaned = cleaned.substring(hashIndex + 1);
+        if (URL.canParse(cleaned)) {
+            const url = new URL(cleaned);
+            if (url.hostname === "playground.babylonjs.com") {
+                cleaned = url.hash.substring(1);
             }
         }
 

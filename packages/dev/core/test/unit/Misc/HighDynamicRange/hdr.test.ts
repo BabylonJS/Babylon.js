@@ -1,4 +1,5 @@
 import { RGBE_ReadHeader, GetCubeMapTextureData } from "core/Misc/HighDynamicRange/hdr";
+import { describe, expect, it } from "vitest";
 
 /**
  * Tests for HDR (RGBE) texture file parsing.
@@ -27,6 +28,15 @@ describe("RGBE_ReadHeader", () => {
         // Valid magic, valid FORMAT, but no valid size line
         const noSize = new TextEncoder().encode("#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\nBAD_SIZE_LINE\n");
         expect(() => RGBE_ReadHeader(noSize)).toThrow("HDR Bad header format, no size");
+    });
+
+    it("should accept extra spaces around the dimensions", () => {
+        const header = new TextEncoder().encode("#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y  64 +X 128 \n");
+        const paddedSize = new Uint8Array(header.length * 3);
+        paddedSize.set(header);
+        const info = RGBE_ReadHeader(paddedSize);
+        expect(info.width).toBe(128);
+        expect(info.height).toBe(64);
     });
 
     it("should throw when width is out of supported range", () => {

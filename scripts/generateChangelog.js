@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
 const path = require("path");
 const fs = require("fs");
-const exec = require("child_process").exec;
+const execFile = require("child_process").execFile;
 
-function runCommand(command) {
+function runCommand(command, args) {
     return new Promise((resolve, reject) => {
-        // console.log(command);
-        exec(command, function (error, stdout, stderr) {
+        execFile(command, args, function (error, stdout, stderr) {
             if (error || typeof stderr !== "string") {
                 console.log(error);
                 return reject(error || stderr);
@@ -89,7 +88,7 @@ async function generateChangelog(nextVersion) {
         console.log(`git log "--pretty=%h|%D|%s|%cd" ${forceUpdateFrom}..${latestTag.replace("\n", "")}`);
         // get the latest tag
         // get all commits since the last major release
-        const prs = await runCommand(`git log "--pretty=%h|%D|%s|%cd" ${forceUpdateFrom}..${latestTag.replace("\n", "")}`);
+        const prs = await runCommand("git", ["log", "--pretty=%h|%D|%s|%cd", `${forceUpdateFrom}..${latestTag.replace("\n", "")}`]);
         console.log(prs);
         nextVersion = nextVersion || "upcoming";
         // split according to version
@@ -121,12 +120,17 @@ async function generateChangelog(nextVersion) {
                 // get the github json for each PR
                 const prsJson = await Promise.all(
                     versions[version].map(async (prNumber) => {
-                        const prJson = await runCommand(`curl -u ${githubPatToken} -s https://api.github.com/repos/BabylonJS/Babylon.js/pulls/${prNumber}`);
+                        const prJson = await runCommand("curl", ["-u", githubPatToken, "-s", `https://api.github.com/repos/BabylonJS/Babylon.js/pulls/${prNumber}`]);
                         const pr = JSON.parse(prJson);
                         if (!pr.user || pr.message === "Not Found") {
                             return null;
                         }
-                        const prFilesJson = await runCommand(`curl -u ${githubPatToken} -s https://api.github.com/repos/BabylonJS/Babylon.js/pulls/${prNumber}/files?per_page=100`);
+                        const prFilesJson = await runCommand("curl", [
+                            "-u",
+                            githubPatToken,
+                            "-s",
+                            `https://api.github.com/repos/BabylonJS/Babylon.js/pulls/${prNumber}/files?per_page=100`,
+                        ]);
                         return { prNumber, pr: JSON.parse(prJson), files: JSON.parse(prFilesJson) };
                     })
                 );
@@ -149,7 +153,12 @@ async function generateChangelog(nextVersion) {
                             let title = pr.pr.title || "Issue title not found";
                             if (matches.length) {
                                 // get the title of the issue
-                                const issueTitle = await runCommand(`curl -u ${githubPatToken} -s https://api.github.com/repos/BabylonJS/Babylon.js/issues/${matches[0][1]}`);
+                                const issueTitle = await runCommand("curl", [
+                                    "-u",
+                                    githubPatToken,
+                                    "-s",
+                                    `https://api.github.com/repos/BabylonJS/Babylon.js/issues/${matches[0][1]}`,
+                                ]);
                                 title = JSON.parse(issueTitle).title;
                             }
 

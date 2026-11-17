@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
+import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
 import { basename, extname, join } from "path";
 
 export const SIDE_EFFECTS_MANIFEST_VERSION = 1;
@@ -113,9 +113,7 @@ export function writeSideEffectsManifest(path, entries) {
         return path;
     }
 
-    if (existsSync(path)) {
-        rmSync(path, { recursive: true, force: true });
-    }
+    rmSync(path, { recursive: true, force: true });
     mkdirSync(path, { recursive: true });
 
     const entriesByShard = new Map();

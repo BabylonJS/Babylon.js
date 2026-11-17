@@ -125,6 +125,51 @@ describe("snippetLoader", () => {
         expect(scene).toEqual({ engine, canvas, ok: true, marker: "loaded" });
     });
 
+    it("transforms imports containing tabs and trailing whitespace", async () => {
+        const manifest = {
+            v: 2,
+            language: "JS",
+            entry: "index.js",
+            imports: {},
+            files: {
+                "index.js": "\timport\t{ makeScene }\tfrom\t'./factory.js' ;  \nexport function createScene() { return makeScene(); }",
+                "factory.js": "export function makeScene() { return { ok: true }; }",
+            },
+        };
+
+        const response = makeResponse({ code: JSON.stringify(manifest) });
+        const result = await ParseSnippetResponse(response, "TEST#3", { moduleFormat: "script" });
+
+        expect(result.type).toBe("playground");
+        if (result.type !== "playground") {
+            return;
+        }
+
+        await expect(result.createScene({} as any, {} as any)).resolves.toEqual({ ok: true });
+    });
+
+    it("transforms imports whose module specifier is on the next line", async () => {
+        const manifest = {
+            v: 2,
+            language: "JS",
+            entry: "index.js",
+            imports: {},
+            files: {
+                "index.js": "import { makeScene } from\n'./factory.js';\nexport function createScene() { return makeScene(); }",
+                "factory.js": "export function makeScene() { return { ok: true }; }",
+            },
+        };
+
+        const result = await ParseSnippetResponse(makeResponse({ code: JSON.stringify(manifest) }), "TEST#5", { moduleFormat: "script" });
+
+        expect(result.type).toBe("playground");
+        if (result.type !== "playground") {
+            return;
+        }
+
+        await expect(result.createScene({} as any, {} as any)).resolves.toEqual({ ok: true });
+    });
+
     it("does not eagerly execute ESM modules while parsing", async () => {
         const response = makeResponse({
             code: "export const createScene = function () { return { ok: true }; };",
@@ -134,7 +179,7 @@ describe("snippetLoader", () => {
             throw new Error("should not execute during parse");
         });
 
-        const result = await ParseSnippetResponse(response, "TEST#3", { moduleFormat: "esm" });
+        const result = await ParseSnippetResponse(response, "TEST#4", { moduleFormat: "esm" });
 
         expect(result.type).toBe("playground");
         if (result.type !== "playground") {

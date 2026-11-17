@@ -9,6 +9,8 @@ let skipUnneededTest = false;
 let fileSizes: Record<string, number>;
 let fileSizesBaseline: Record<string, number>;
 
+const sanitizeLogValue = (value: string) => value.replace(/\p{Cc}/gu, "");
+
 describe("ES6 modules files size", () => {
     beforeAll(async () => {
         // read the json file with the file sizes
@@ -36,7 +38,7 @@ describe("ES6 modules files size", () => {
                     let data: Buffer[] = [];
                     const headerDate = res.headers && res.headers.date ? res.headers.date : "no response date";
                     console.log("Status Code:", res.statusCode);
-                    console.log("Date in Response header:", headerDate);
+                    console.log("Date in Response header:", sanitizeLogValue(headerDate));
 
                     res.on("data", (chunk) => {
                         data.push(chunk);

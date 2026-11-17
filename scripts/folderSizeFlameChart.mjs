@@ -16,34 +16,29 @@ import { glob } from "glob";
 import chalk from "chalk";
 import open from "open";
 
-async function downloadFlameGraphScript() {
-    // This is the temp path where the flamegraph.pl script will be downloaded
-    const flameGraphScriptPath = path.join(os.tmpdir(), "flamegraph.pl");
+async function downloadFlameGraphScript(tempDirectory) {
+    const flameGraphScriptPath = path.join(tempDirectory, "flamegraph.pl");
 
     return new Promise((resolve, reject) => {
-        // If the flamegraph.pl script does not exist, download it
-        if (!fs.existsSync(flameGraphScriptPath)) {
-            const downloadUrl = "https://raw.githubusercontent.com/brendangregg/FlameGraph/cd9ee4c4449775a2f867acf31c84b7fe4b132ad5/flamegraph.pl";
-            console.log(`Downloading flamegraph.pl from ${downloadUrl}`);
-            https.get(downloadUrl, (response) => {
-                if (response.statusCode !== 200) {
-                    reject(`Failed to download flamegraph.pl script. Status code: ${response.statusCode}`);
-                } else {
-                    const file = fs.createWriteStream(flameGraphScriptPath);
-                    response.pipe(file);
-                    file.on("finish", () => {
-                        file.close();
-                        fs.chmodSync(flameGraphScriptPath, "755");
-                        resolve(flameGraphScriptPath);
-                    }).on("error", (err) => {
-                        fs.unlinkSync(flameGraphScriptPath);
-                        reject(err);
-                    });
-                }
+        const downloadUrl = "https://raw.githubusercontent.com/brendangregg/FlameGraph/cd9ee4c4449775a2f867acf31c84b7fe4b132ad5/flamegraph.pl";
+        console.log(`Downloading flamegraph.pl from ${downloadUrl}`);
+        https.get(downloadUrl, (response) => {
+            if (response.statusCode !== 200) {
+                response.resume();
+                reject(new Error(`Failed to download flamegraph.pl script. Status code: ${response.statusCode}`));
+                return;
+            }
+
+            const file = fs.createWriteStream(flameGraphScriptPath);
+            response.pipe(file);
+            file.on("finish", () => {
+                file.close();
+                resolve(flameGraphScriptPath);
+            }).on("error", (err) => {
+                fs.rmSync(flameGraphScriptPath, { force: true });
+                reject(err);
             });
-        } else {
-            resolve(flameGraphScriptPath);
-        }
+        });
     });
 }
 
@@ -57,50 +52,83 @@ async function downloadFlameGraphScript() {
  * @returns {Promise<void>} A promise that resolves when the flame chart has been generated.
  */
 export async function generateFlameChart(folder, pattern, outputFile, chartSubtitle, coerceSize) {
-    const flameGraphScriptPath = await downloadFlameGraphScript();
+    const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "folder-size-flame-chart-"));
 
-    // Resolve to an absolute path
-    folder = path.resolve(folder);
+    try {
+        const flameGraphScriptPath = await downloadFlameGraphScript(tempDirectory);
 
-    // patterns is a comma separated list
-    const patterns = pattern.split(",");
+        // Resolve to an absolute path
+        folder = path.resolve(folder);
 
-    // glob doesn't directly support the ! operator, so we need to separate positive and negative patterns
-    const positivePatterns = patterns.filter((p) => !p.startsWith("!"));
-    const negativePatterns = patterns.filter((p) => p.startsWith("!")).map((p) => p.substring(1));
+        // patterns is a comma separated list
+        const patterns = pattern.split(",");
 
-    // Iterate over all files matching the patterns to create a list of "stacks"
-    let stacks = [];
-    for (const filePath of glob.globIterateSync(positivePatterns, {
-        ignore: negativePatterns,
-        cwd: folder,
-    })) {
-        // Get file stats given the absolute file path
-        const absolutePath = path.resolve(folder, filePath);
-        const stats = fs.statSync(absolutePath);
+        // glob doesn't directly support the ! operator, so we need to separate positive and negative patterns
+        const positivePatterns = patterns.filter((p) => !p.startsWith("!"));
+        const negativePatterns = patterns.filter((p) => p.startsWith("!")).map((p) => p.substring(1));
 
-        // Only process files (folder info is implicit in the flame chart)
-        if (stats.isFile()) {
-            let size = stats.size;
-            if (coerceSize) {
-                size = coerceSize(absolutePath, size);
+        // Iterate over all files matching the patterns to create a list of "stacks"
+        const stacks = [];
+        for (const filePath of glob.globIterateSync(positivePatterns, {
+            ignore: negativePatterns,
+            cwd: folder,
+        })) {
+            // Get file stats given the absolute file path
+            const absolutePath = path.resolve(folder, filePath);
+            const stats = fs.statSync(absolutePath);
+
+            // Only process files (folder info is implicit in the flame chart)
+            if (stats.isFile()) {
+                let size = stats.size;
+                if (coerceSize) {
+                    size = coerceSize(absolutePath, size);
+                }
+
+                // The format of each stack is "path/to/file; size"
+                stacks.push(`${filePath.replace(/\//g, ";")} ${size}`);
             }
-
-            // The format of each stack is "path/to/file; size"
-            stacks.push(`${filePath.replace(/[\/]/g, ";")} ${size}`);
         }
+
+        // Write the stacks to a temp file
+        const tempFilePath = path.join(tempDirectory, "fileSizeStacks.txt");
+        fs.writeFileSync(tempFilePath, stacks.join("\n"));
+
+        const flameGraphArgs = [
+            flameGraphScriptPath,
+            "--title",
+            "File &amp; Folder Sizes",
+            "--subtitle",
+            chartSubtitle,
+            "--width",
+            "1800",
+            "--height",
+            "32",
+            "--countname",
+            "bytes",
+            "--nametype",
+            "Folder/File",
+            tempFilePath,
+        ];
+        console.log(`${chalk.bold(chalk.italic("Running command"))}: ${chalk.italic(`perl ${flameGraphArgs.join(" ")}`)}`);
+
+        const outputPath = `${outputFile}.svg`;
+        const outputDescriptor = fs.openSync(outputPath, "w");
+        try {
+            const result = child_process.spawnSync("perl", flameGraphArgs, {
+                stdio: ["ignore", outputDescriptor, "inherit"],
+            });
+            if (result.error) {
+                throw result.error;
+            }
+            if (result.status !== 0) {
+                throw new Error(`Flame graph generation failed with exit code ${result.status}.`);
+            }
+        } finally {
+            fs.closeSync(outputDescriptor);
+        }
+    } finally {
+        fs.rmSync(tempDirectory, { recursive: true, force: true });
     }
-
-    // Write the stacks to a temp file
-    const tempFilePath = path.join(os.tmpdir(), "fileSizeStacks.txt");
-    fs.writeFileSync(tempFilePath, stacks.join("\n"));
-
-    // Construct the flamegraph command
-    const flameGraphCommand = `${flameGraphScriptPath} --title "File &amp; Folder Sizes" --subtitle "${chartSubtitle}" --width 1800 --height 32 --countname "bytes" --nametype Folder/File ${tempFilePath} > ${outputFile}.svg`;
-    console.log(`${chalk.bold(chalk.italic(`Running command`))}: ${chalk.italic(flameGraphCommand)}`);
-
-    // Execute the flamegraph command, waiting for it to finish
-    child_process.execSync(flameGraphCommand);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
