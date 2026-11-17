@@ -605,7 +605,8 @@ export class MonacoManager {
         ];
 
         // snapshot/version/local overrides
-        const searchParams = new URLSearchParams(window.location.search);
+        // Keep literal "+" characters (valid in git refs) instead of decoding them as spaces.
+        const searchParams = new URLSearchParams(window.location.search.replace(/\+/g, "%2B"));
         const snapshot = searchParams.get("snapshot");
         if (snapshot) {
             const encodedSnapshot = snapshot.split("/").map(encodeURIComponent).join("/");
