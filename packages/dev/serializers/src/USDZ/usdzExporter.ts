@@ -298,8 +298,8 @@ function BuildWrapping(wrapping: number) {
     }
 }
 
-function BuildColor4(color: Color3) {
-    return `(${color.r}, ${color.g}, ${color.b}, 1.0)`;
+function BuildColor4(color: Color3, alpha = 1.0) {
+    return `(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
 }
 
 function BuildVector2(vector: Vector2) {
@@ -353,7 +353,7 @@ function BuildTexture(
         float4 inputs:bias = (${bias}, ${bias}, -1, 0)`;
     } else if (color) {
         scaleAndBias = `
-        float4 inputs:scale = ${BuildColor4(color)}`;
+        float4 inputs:scale = ${BuildColor4(color, mapType === "diffuse" ? material.alpha : 1.0)}`;
     }
 
     return `
@@ -491,6 +491,8 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Te
         clearCoatRoughnessMap,
     } = ExtractTextureInformations(material);
 
+    const hasDiffuseOpacity = diffuseMap !== null && (material.needAlphaBlending() || material.needAlphaTesting());
+
     if (diffuseMap !== null) {
         inputs.push(`${pad}color3f inputs:diffuseColor.connect = </Root/Materials/Material_${material.uniqueId}/Texture_${diffuseMap.uniqueId}_diffuse.outputs:rgb>`);
 
@@ -549,7 +551,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Te
         inputs.push(`${pad}float inputs:opacityThreshold = 0.0001`);
 
         samplers.push(BuildTexture(alphaMap as Texture, material, "opacity", null, textureToExports, options));
-    } else {
+    } else if (!hasDiffuseOpacity) {
         inputs.push(`${pad}float inputs:opacity = ${material.alpha}`);
     }
 
