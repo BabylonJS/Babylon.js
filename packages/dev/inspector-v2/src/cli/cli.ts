@@ -58,7 +58,10 @@ const KnownOptions = new Set(["help", "stop", "session", "command", "bridge-scri
  * @returns The value converted to a string without terminal control characters.
  */
 export function SanitizeConsoleValue(value: unknown): string {
-    return String(value).replace(/\p{Cc}/gu, "");
+    // Line breaks are removed with their own replace (the form static analysis recognizes), then any other control characters.
+    return String(value)
+        .replace(/\n|\r/g, "")
+        .replace(/\p{Cc}/gu, "");
 }
 
 /**
