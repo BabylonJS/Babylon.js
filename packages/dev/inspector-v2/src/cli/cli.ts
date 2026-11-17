@@ -349,7 +349,7 @@ async function HandleSessions(socket: WebSocket, explicitId?: string): Promise<v
 
     if (explicitId !== undefined) {
         const match = ValidateSessionId(explicitId, response.sessions);
-        console.log(`  [${match.id}] ${SanitizeConsoleValue(match.name)} (connected: ${SanitizeConsoleValue(match.connectedAt)})`);
+        console.log(`  [${SanitizeConsoleValue(match.id)}] ${SanitizeConsoleValue(match.name)} (connected: ${SanitizeConsoleValue(match.connectedAt)})`);
         return;
     }
 
@@ -358,7 +358,7 @@ async function HandleSessions(socket: WebSocket, explicitId?: string): Promise<v
     } else {
         console.log("Active sessions:");
         for (const session of response.sessions) {
-            console.log(`  [${session.id}] ${SanitizeConsoleValue(session.name)} (connected: ${SanitizeConsoleValue(session.connectedAt)})`);
+            console.log(`  [${SanitizeConsoleValue(session.id)}] ${SanitizeConsoleValue(session.name)} (connected: ${SanitizeConsoleValue(session.connectedAt)})`);
         }
     }
 }
