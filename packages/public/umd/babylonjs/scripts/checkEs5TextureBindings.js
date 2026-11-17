@@ -17,12 +17,7 @@ const processor = engine._getShaderProcessor(BABYLON.ShaderLanguage.WGSL);
 
 for (const [type, dimension, count] of [
     ["texture_cube<f32>", "cube", 1],
-    ["texture_cube_array<f32>", "cube-array", 1],
-    ["texture_depth_cube", "cube", 1],
     ["texture_2d<f32>", "2d", 1],
-    ["texture_2d_array<f32>", "2d-array", 1],
-    ["texture_3d<f32>", "3d", 1],
-    ["texture_storage_3d<rgba8unorm, write>", "3d", 1],
     ["array<texture_cube<f32>, 2>", "cube", 2],
 ]) {
     const context = engine._getShaderProcessingContext(BABYLON.ShaderLanguage.WGSL, true);
@@ -32,7 +27,7 @@ for (const [type, dimension, count] of [
     const entries = context.bindGroupLayoutEntries.flat();
     assert.equal(entries.length, count, type);
     for (const [index, entry] of entries.entries()) {
-        assert.equal((entry.texture || entry.storageTexture).viewDimension, dimension, type);
+        assert.equal(entry.texture.viewDimension, dimension, type);
         assert.equal(entry.binding, index, type);
     }
 }

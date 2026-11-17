@@ -244,7 +244,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             }
 
             for (let i = 0; i < arraySize; ++i) {
-                // Avoid a destructuring temporary colliding with minified locals in the ES5 bundle.
                 const groupIndex = textureInfo.textures[i].groupIndex;
                 const bindingIndex = textureInfo.textures[i].bindingIndex;
 
