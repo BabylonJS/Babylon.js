@@ -3167,6 +3167,12 @@ export class ThinNativeEngine extends ThinEngine {
                 this._bindLayeredMultiFramebuffer(nativeRTWrapper, false);
             } else if (nativeRTWrapper.is3D) {
                 this._get3DLayerFramebuffer(nativeRTWrapper, 0, 0);
+            } else if (
+                !nativeRTWrapper._framebuffers &&
+                !nativeRTWrapper._framebufferDepthStencil &&
+                (!nativeRTWrapper._framebuffer || this._frameGraphFramebufferRefCount.has(nativeRTWrapper._framebuffer))
+            ) {
+                this._buildFrameGraphFramebuffer(nativeRTWrapper);
             }
         }
         nativeRTWrapper._resolvePendingGeneratedDepthShares();

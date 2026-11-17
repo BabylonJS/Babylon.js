@@ -1847,6 +1847,14 @@ describe("ThinNativeEngine", () => {
                 (engine: ThinNativeEngine) =>
                     engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 1, targetTypes: [Constants.TEXTURE_2D_ARRAY], layerCounts: [3], layerIndex: [1] }),
             ],
+            [
+                "flat frame graph MRT",
+                (engine: ThinNativeEngine) => {
+                    const source = engine.createMultipleRenderTarget({ width: 64, height: 64 }, { textureCount: 1, dontCreateTextures: true }) as NativeRenderTargetWrapper;
+                    source.setTexture(engine._createInternalTexture({ width: 64, height: 64 }, {}), 0, false);
+                    return source;
+                },
+            ],
         ])("applies a generated depth share when the destination binds before its lazy %s source", (_name, createSource) => {
             const { engine, bound, nativeEngine } = createEngine({ shareGeneratedDepth: true });
             const source = createSource(engine) as NativeRenderTargetWrapper;
@@ -1860,6 +1868,14 @@ describe("ThinNativeEngine", () => {
             expect(destination._depthStencilTexture).toBe(sharedDepth);
             expect(bound().colors).toEqual([resourceOf(destination.texture!)]);
             expect(bound().explicitDepth).toBe(resourceOf(sharedDepth));
+
+            if (source.is3D) {
+                engine.bindFramebuffer(source, undefined, undefined, undefined, undefined, 0, 0);
+            } else {
+                engine.bindFramebuffer(source);
+            }
+            expect(nativeEngine.shareFrameBufferDepthStencil).toHaveBeenCalledTimes(1);
+            expect(destination._depthStencilTexture).toBe(sharedDepth);
         });
 
         it("cancels a deferred generated depth share when the destination is disposed", () => {
