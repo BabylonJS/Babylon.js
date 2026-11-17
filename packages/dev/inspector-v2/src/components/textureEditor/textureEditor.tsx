@@ -1,12 +1,13 @@
 import { type ComponentType, type FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { type BaseTexture, type ISize, type PointerInfo, type Scene, type Vector2 } from "core/index";
+import { type ISize, type PointerInfo, type Scene, type Vector2 } from "core/index";
 import { type IPixelData, TextureCanvasManager } from "./canvasManager";
 import { type Channel, ChannelsBar } from "./channels";
+import { type ITextureEditorSource } from "./textureEditorSource";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 
-import { Constants } from "core/Engines/constants";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { PropertiesBar } from "./properties";
 import { StatusBar } from "./status";
 import { ToolBar } from "./tools";
@@ -181,7 +182,7 @@ const useStyles = makeStyles({
 });
 
 export type TextureEditorProps = {
-    texture: BaseTexture;
+    source: ITextureEditorSource;
     toolProviders?: readonly TextureEditorToolProvider[];
     window?: Window;
     onUpdate?: () => void;
@@ -195,7 +196,7 @@ const PREVIEW_UPDATE_DELAY_MS = 160;
  * @returns The texture editor component
  */
 export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
-    const { texture, toolProviders = [], window: editorWindow, onUpdate } = props;
+    const { source, toolProviders = [], window: editorWindow, onUpdate } = props;
 
     const classes = useStyles();
 
@@ -225,7 +226,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
             { name: "Blue", visible: true, editable: true, id: "B" },
         ];
         baseChannels.push({
-            name: texture.isCube ? "Display" : "Alpha",
+            name: source.isCube ? "Display" : "Alpha",
             visible: true,
             editable: true,
             id: "A",
@@ -235,7 +236,8 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
     const [pixelData, setPixelData] = useState<IPixelData>({});
     const [face, setFace] = useState(0);
     const [mipLevel, setMipLevel] = useState(0);
-    const [size, setSize] = useState<ISize>(texture.getSize());
+    const [size, setSize] = useState<ISize>(source.size);
+    const [editorError, setEditorError] = useState<string | null>(null);
 
     // Callbacks
     const textureDidUpdate = useCallback(() => {
@@ -305,7 +307,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
     }, []);
 
     const resetTexture = useCallback(() => {
-        canvasManagerRef.current?.reset();
+        void canvasManagerRef.current?.reset();
     }, []);
 
     const resizeTexture = useCallback((width: number, height: number) => {
@@ -313,7 +315,8 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
     }, []);
 
     const uploadTexture = useCallback((file: File) => {
-        canvasManagerRef.current?.upload(file);
+        setEditorError(null);
+        void canvasManagerRef.current?.upload(file);
     }, []);
 
     // Initialize canvas manager
@@ -323,7 +326,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
         }
 
         const manager = new TextureCanvasManager(
-            texture,
+            source,
             editorWindow ?? uiCanvasRef.current.ownerDocument.defaultView ?? window,
             uiCanvasRef.current,
             canvas2DRef.current,
@@ -332,7 +335,8 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
             metadata,
             textureDidUpdate,
             setMetadata,
-            setMipLevel
+            setMipLevel,
+            setEditorError
         );
 
         canvasManagerRef.current = manager;
@@ -342,7 +346,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
             manager.dispose();
             canvasManagerRef.current = null;
         };
-    }, [texture, editorWindow]);
+    }, [source, editorWindow]);
 
     // Update canvas manager when channels/face/mipLevel change
     useEffect(() => {
@@ -371,15 +375,13 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
         cursor = toolProviders[activeToolIndex].cursor;
     }
 
-    const hasAlpha = texture.textureFormat === -1 || texture.textureFormat === Constants.TEXTUREFORMAT_RGBA;
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const CurrentToolSettings = useMemo(() => tools[activeToolIndex]?.settingsComponent, [tools, activeToolIndex]);
 
     return (
         <div className={classes.textureEditor}>
             <PropertiesBar
-                texture={texture}
+                source={source}
                 saveTexture={saveTexture}
                 pixelData={pixelData}
                 face={face}
@@ -391,6 +393,8 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
                 setMipLevel={setMipLevel}
                 size={canvasManagerRef.current?.size || size}
             />
+            {source.infoMessage && <MessageBar intent="info" message={source.infoMessage} />}
+            {editorError && <MessageBar title="Texture Editor" intent="error" message={editorError} />}
             <div className={classes.mainContent}>
                 <div className={classes.canvasContainer} style={{ cursor }}>
                     <canvas ref={uiCanvasRef} className={classes.canvasUI} tabIndex={1} />
@@ -402,7 +406,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
                         <CurrentToolSettings />
                     </div>
                 )}
-                {!texture.isCube && (
+                {!source.isCube && (
                     <div className={classes.sidebarLeft}>
                         <ToolBar
                             tools={toolProviders}
@@ -410,7 +414,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
                             changeTool={changeTool}
                             metadata={metadata}
                             setMetadata={setMetadata}
-                            hasAlpha={hasAlpha}
+                            hasAlpha={source.hasAlpha}
                         />
                     </div>
                 )}
@@ -418,7 +422,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
                     <ChannelsBar channels={channels} setChannels={setChannels} />
                 </div>
             </div>
-            <StatusBar texture={texture} mipLevel={mipLevel} />
+            <StatusBar source={source} mipLevel={mipLevel} />
         </div>
     );
 };

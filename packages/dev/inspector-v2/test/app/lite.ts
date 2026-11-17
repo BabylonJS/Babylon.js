@@ -41,6 +41,7 @@ import {
     createStandardMaterial,
     createSpotLight,
     createSurface,
+    createDynamicTexture,
     createTexture2DArrayFromPixels,
     createTexture2DFromPixels,
     createTexture3DFromPixels,
@@ -68,6 +69,7 @@ import {
     isParticleSystemStarted,
     loadGltf,
     loadCubeTexture,
+    readTexturePixelsRGBA8,
     parseNodeParticleSource,
     registerNodeParticleSet,
     removeFromScene,
@@ -95,6 +97,7 @@ import {
     setRenderTaskGpuTimingEnabled,
     setPbrEmissive,
     startEngine,
+    updateDynamicTexture,
     stopEngine,
     startAnimationManager,
     stopAnimationManager,
@@ -278,6 +281,7 @@ const defaultFlowGraphSpecs: readonly FgNodeSpec[] = [
 
 const sphereEmissive: [number, number, number] = [0, 0, 0];
 const previewFixtureTextures: Array<ReturnType<typeof createTexture2DFromPixels>> = [];
+let previewFixtureTexture: Awaited<ReturnType<typeof loadCubeTexture>> | ReturnType<typeof createTexture2DFromPixels> | undefined;
 
 const canvas = document.getElementById("canvas");
 if (!(canvas instanceof HTMLCanvasElement)) {
@@ -599,27 +603,47 @@ Object.assign(globalThis, {
         const second = [0, 255, 255, 255, 255, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255];
         const material = createStandardMaterial();
         material.name = "Texture Preview Fixture Material";
-        let texture: Awaited<ReturnType<typeof loadCubeTexture>> | ReturnType<typeof createTexture2DFromPixels>;
+        let texture: Awaited<ReturnType<typeof loadCubeTexture>> | ReturnType<typeof createTexture2DFromPixels> | ReturnType<typeof createDynamicTexture>;
         if (kind === "cube") {
             texture = await loadCubeTexture(engine, "/texture-preview-fixture", ".png");
             setStandardReflectionCubeTexture(material, texture);
         } else {
-            texture =
-                kind === "2d-array"
-                    ? createTexture2DArrayFromPixels(engine, new Uint8Array([...first, ...second]), 2, 2, 2, { mipMaps: true })
-                    : kind === "3d"
-                      ? createTexture3DFromPixels(engine, new Uint8Array([...first, ...second]), 2, 2, 2)
-                      : createTexture2DFromPixels(engine, new Uint8Array(first), 2, 2);
+            if (kind === "2d-array") {
+                texture = createTexture2DArrayFromPixels(engine, new Uint8Array([...first, ...second]), 2, 2, 2, { mipMaps: true });
+            } else if (kind === "3d") {
+                texture = createTexture3DFromPixels(engine, new Uint8Array([...first, ...second]), 2, 2, 2);
+            } else {
+                const canvas = document.createElement("canvas");
+                canvas.width = 2;
+                canvas.height = 2;
+                const context = canvas.getContext("2d");
+                if (!context) {
+                    throw new Error("Could not create the Lite texture preview fixture.");
+                }
+                const imageData = context.createImageData(2, 2);
+                imageData.data.set(first);
+                context.putImageData(imageData, 0, 0);
+                texture = createDynamicTexture(engine, 2, 2, { mipMaps: true });
+                updateDynamicTexture(engine, texture, canvas, { invertY: false });
+            }
             texture.invertY = true;
             previewFixtureTextures.push(texture);
             material.diffuseTexture = texture;
         }
+        previewFixtureTexture = texture;
         const mesh = createBox(engine);
         mesh.name = "Texture Preview Fixture";
         mesh.material = material;
         setMeshVisible(mesh, false);
         addToScene(primaryScene, mesh);
         Object.assign(globalThis, { liteTexturePreviewFixture: texture });
+    },
+    liteReadTexturePreviewFixture: async (mipLevel = 0) => {
+        if (!previewFixtureTexture) {
+            throw new Error("Create the Lite texture preview fixture before reading it.");
+        }
+        const { pixels, width, height } = await readTexturePixelsRGBA8(engine, previewFixtureTexture, { mipLevel });
+        return { pixels: Array.from(pixels), width, height };
     },
     liteCreatePhysics: createPhysicsFixture,
     liteSkinnedMesh: skinnedMesh,
