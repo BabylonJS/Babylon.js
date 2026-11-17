@@ -90,6 +90,12 @@ window.addEventListener("resize", () => {
 
 Please see the [Contributing Guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md).
 
+From the repository root, `npm run build:prod -w babylonjs` also generates
+`packages/public/umd/babylonjs/babylon.es5.js`. Run `npm run test:es5 -w babylonjs`
+afterward to check WebGPU texture binding dimensions in the actual downleveled
+bundle without requiring a GPU. The full `npm run build -w babylonjs` runs this
+check automatically.
+
 ## Useful links
 
 - Official web site: [www.babylonjs.com](https://www.babylonjs.com/)
