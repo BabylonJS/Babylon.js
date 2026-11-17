@@ -1,7 +1,10 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { type IShaderProcessor } from "../Processors/iShaderProcessor";
 
-const VaryingRegex = /(flat\s)?\s*varying\s*.*/;
+const VaryingRegex = /varying/;
+const DrawBuffersExtensionRegex = /#extension[ \t]+GL_EXT_draw_buffers[ \t]*:[ \t]*require/;
+const ExtensionRegex =
+    /#extension[ \t]+(?:GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers)[ \t]*:[ \t]*(?:enable|require)/g;
 
 /** @internal */
 export class WebGL2ShaderProcessor implements IShaderProcessor {
@@ -20,11 +23,10 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
     }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean) {
-        const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
+        const hasDrawBuffersExtension = DrawBuffersExtensionRegex.test(code);
 
         // Remove extensions
-        const regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
-        code = code.replace(regex, "");
+        code = code.replace(ExtensionRegex, "");
 
         // Replace instructions
         code = code.replace(/texture2D\s*\(/g, "texture(");

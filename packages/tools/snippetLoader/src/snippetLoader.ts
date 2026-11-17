@@ -602,7 +602,37 @@ function TransformModuleSyntaxToCjs(code: string): string {
         return `const ${tmp} = require(${specLit});\nconst ${trimmed} = (${tmp} && Object.prototype.hasOwnProperty.call(${tmp}, "default")) ? ${tmp}.default : ${tmp};`;
     };
 
-    result = result.replace(/^\s*import\s+([^"'\n;]+?)\s+from\s+["']([^"']+)["']\s*;?\s*$/gm, (_m, clause: string, spec: string) => {
+    result = result.replace(/[^\r\n]+/g, (line) => {
+        let statement = line.trim();
+        if (!statement.startsWith("import") || !statement[6] || !/\s/.test(statement[6])) {
+            return line;
+        }
+
+        if (statement.endsWith(";")) {
+            statement = statement.slice(0, -1).trimEnd();
+        }
+
+        const quote = statement[statement.length - 1];
+        if (quote !== '"' && quote !== "'") {
+            return line;
+        }
+
+        const specStart = statement.lastIndexOf(quote, statement.length - 2);
+        if (specStart === -1) {
+            return line;
+        }
+
+        const beforeSpecifier = statement.slice(0, specStart).trimEnd();
+        const fromStart = beforeSpecifier.length - "from".length;
+        if (fromStart <= "import".length || beforeSpecifier.slice(fromStart) !== "from" || !/\s/.test(beforeSpecifier[fromStart - 1])) {
+            return line;
+        }
+
+        const clause = beforeSpecifier.slice("import".length, fromStart).trim();
+        const spec = statement.slice(specStart + 1, -1);
+        if (!clause || !spec || /["';]/.test(clause) || /["']/.test(spec)) {
+            return line;
+        }
         return convertImportClause(clause, spec);
     });
 
@@ -919,7 +949,10 @@ async function InitializeRuntimeAsync(features: IRuntimeFeatures, options?: IIni
     const g = globalThis as any;
     const inject = options?.loadScripts === true;
     const urls = options?.scriptUrls ?? {};
-    const base = (options?.baseUrl ?? DefaultRuntimeBaseUrl).replace(/\/+$/, "");
+    let base = options?.baseUrl ?? DefaultRuntimeBaseUrl;
+    while (base.endsWith("/")) {
+        base = base.slice(0, -1);
+    }
 
     const resolveUrl = (feature: keyof IRuntimeFeatures): string => urls[feature] ?? `${base}/${RuntimeScriptPaths[feature]}`;
 

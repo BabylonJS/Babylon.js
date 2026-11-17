@@ -1,7 +1,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ParseCliArgs, ParseCommandArgs, PrintCommandHelp, ResolveSessionId, SendAndReceive, ValidateSessionId } from "../../../src/cli/cli";
+import {
+    ParseCliArgs,
+    ParseCommandArgs,
+    PrintCommandHelp,
+    ResolveSessionId,
+    SanitizeConsoleOutput,
+    SanitizeConsoleValue,
+    SendAndReceive,
+    ValidateSessionId,
+} from "../../../src/cli/cli";
 import { type CommandArgInfo, type CommandInfo, type SessionInfo, type SessionsResponse } from "shared-ui-components/modularTool/services/cli/protocol";
 import { EventEmitter } from "events";
+
+describe("SanitizeConsoleValue", () => {
+    it("preserves normal text and removes terminal control characters", () => {
+        expect(SanitizeConsoleValue("normal value")).toBe("normal value");
+        expect(SanitizeConsoleValue("first\r\nsecond\u001b[31m")).toBe("firstsecond[31m");
+    });
+
+    it("preserves line breaks and tabs in command output", () => {
+        expect(SanitizeConsoleOutput("first\r\n\tsecond\u001b[31m")).toBe("first\r\n\tsecond[31m");
+    });
+});
 
 // ---------------------------------------------------------------------------
 // ParseCliArgs

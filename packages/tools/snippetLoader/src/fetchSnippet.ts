@@ -14,10 +14,14 @@ export const DEFAULT_SNIPPET_URL = "https://snippet.babylonjs.com";
  */
 export async function FetchSnippet(snippetId: string, snippetUrl: string = DEFAULT_SNIPPET_URL): Promise<ISnippetServerResponse> {
     // Normalise "ID#revision" → "ID/revision", and ensure a revision exists.
-    let path = snippetId.replace(/#/g, "/");
-    if (!path.includes("/")) {
-        path += "/0";
+    const parts = snippetId.split("#").filter(Boolean);
+    if (parts.length === 0) {
+        throw new Error("Snippet identifier cannot be empty.");
     }
+    if (parts.length === 1) {
+        parts.push("0");
+    }
+    const path = parts.map((part) => encodeURIComponent(part)).join("/");
 
     const url = `${snippetUrl}/${path}`;
     const response = await fetch(url);

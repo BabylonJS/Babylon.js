@@ -18,14 +18,14 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { execSync, spawnSync } from "child_process";
+import { execFileSync, spawnSync } from "child_process";
 import path from "path";
 
 const ROOT = process.cwd();
 const CORE_SRC = path.join(ROOT, "packages/dev/core/src");
 
 // Find all declare module paths in .pure.ts files
-const grepOut = execSync(`grep -rh "declare module \\"" ${CORE_SRC} --include="*.pure.ts"`, { encoding: "utf-8" });
+const grepOut = execFileSync("grep", ["-rh", "--include=*.pure.ts", 'declare module "', CORE_SRC], { encoding: "utf-8" });
 const modPaths = [
     ...new Set(
         grepOut

@@ -180,8 +180,11 @@ export async function SaveSnippet(input: SaveSnippetInput, options?: ISaveSnippe
     const body = BuildEnvelope(innerPayload, options);
 
     // Determine the POST URL.
-    const baseUrl = (options?.snippetUrl ?? DEFAULT_SNIPPET_URL).replace(/\/+$/, "");
-    const existingId = options?.snippetId ? BaseSnippetId(options.snippetId) : "";
+    let baseUrl = options?.snippetUrl ?? DEFAULT_SNIPPET_URL;
+    while (baseUrl.endsWith("/")) {
+        baseUrl = baseUrl.slice(0, -1);
+    }
+    const existingId = options?.snippetId ? encodeURIComponent(BaseSnippetId(options.snippetId)) : "";
     const url = existingId ? `${baseUrl}/${existingId}` : baseUrl;
 
     const response = await fetch(url, {

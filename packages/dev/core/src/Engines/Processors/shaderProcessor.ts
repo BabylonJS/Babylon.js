@@ -22,7 +22,7 @@ import { type AbstractEngine } from "../abstractEngine";
 const RegexSe = /defined\s*?\((.+?)\)/g;
 const RegexSeRevert = /defined\s*?\[(.+?)\]/g;
 const RegexMacroName = /^[A-Za-z_]\w*$/;
-const RegexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+const RegexShaderInclude = /#include[ \t]?<([^>\r\n]+)>(\(([^\r\n]*)\))?(\[([^\]\r\n]*)\])?/g;
 const RegexShaderDecl = /__decl__/;
 const RegexLightX = /light\{X\}.(\w*)/g;
 const RegexX = /\{X\}/g;

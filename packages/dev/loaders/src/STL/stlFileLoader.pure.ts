@@ -15,14 +15,16 @@ import { STLFileLoaderMetadata } from "./stlFileLoader.metadata";
  */
 export class STLFileLoader implements ISceneLoaderPlugin {
     /** @internal */
-    public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
+    public solidPattern = /solid (\S*)((?:(?!endsolid)[\s\S])*)endsolid[ ]*(\S*)/g;
 
     /** @internal */
-    public facetsPattern = /facet([\s\S]*?)endfacet/g;
+    public facetsPattern = /facet((?:(?!endfacet)[\s\S])*)endfacet/g;
     /** @internal */
-    public normalPattern = /normal[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
+    public normalPattern =
+        /normal[\s]+([-+]?[0-9]+(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?)[\s]+([-+]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)[\s]+([-+]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)/g;
     /** @internal */
-    public vertexPattern = /vertex[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
+    public vertexPattern =
+        /vertex[\s]+([-+]?[0-9]+(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?)[\s]+([-+]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)[\s]+([-+]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)/g;
 
     /**
      * Defines the name of the plugin.
@@ -245,15 +247,15 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             if (!normalMatches) {
                 continue;
             }
-            const normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
+            const normal = [Number(normalMatches[1]), Number(normalMatches[3]), Number(normalMatches[2])];
 
             let vertexMatch;
             while ((vertexMatch = this.vertexPattern.exec(facet))) {
                 if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
-                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[2]));
                     normals.push(normal[0], normal[1], normal[2]);
                 } else {
-                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[2]), Number(vertexMatch[3]));
 
                     // Flipping the second and third component because inverted
                     // when normal was declared.

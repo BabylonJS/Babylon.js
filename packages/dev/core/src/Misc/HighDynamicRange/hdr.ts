@@ -106,7 +106,7 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
     lineIndex += line.length + 1;
     line = ReadStringLine(uint8array, lineIndex);
 
-    const sizeRegexp = /^-Y (.*) \+X (.*)$/g;
+    const sizeRegexp = /^-Y (\d+) \+X (\d+)$/;
     const match = sizeRegexp.exec(line);
 
     // TODO. Support +Y and -X if needed.

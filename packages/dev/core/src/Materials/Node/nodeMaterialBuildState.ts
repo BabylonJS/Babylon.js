@@ -546,15 +546,15 @@ export class NodeMaterialBuildState {
         }
 
         if (options.removeAttributes) {
-            this.functions[key] = this.functions[key].replace(/\s*?attribute .+?;/g, "\n");
+            this.functions[key] = this.functions[key].replace(/\s*attribute [^;\r\n]*;/g, "\n");
         }
 
         if (options.removeUniforms) {
-            this.functions[key] = this.functions[key].replace(/\s*?uniform .*?;/g, "\n");
+            this.functions[key] = this.functions[key].replace(/\s*uniform [^;\r\n]*;/g, "\n");
         }
 
         if (options.removeVaryings) {
-            this.functions[key] = this.functions[key].replace(/\s*?(varying|in) .+?;/g, "\n");
+            this.functions[key] = this.functions[key].replace(/\s*(?:varying|in) [^;\r\n]*;/g, "\n");
         }
 
         if (options.replaceStrings) {

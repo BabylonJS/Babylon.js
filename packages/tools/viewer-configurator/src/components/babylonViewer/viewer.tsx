@@ -47,8 +47,8 @@ export const Viewer: FunctionComponent<{
             let options: ViewerOptions = {};
             if (window.location.hash) {
                 try {
-                    const id = window.location.hash.substring(1).replace("#", "/");
-                    const response = await fetch(`https://snippet.babylonjs.com/${id}`);
+                    const snippetPath = window.location.hash.substring(1).split("#").filter(Boolean).map(encodeURIComponent).join("/");
+                    const response = await fetch(`https://snippet.babylonjs.com/${snippetPath}`);
                     options = JSON.parse((await response.json()).jsonPayload);
                 } catch (error: unknown) {
                     Logger.Error(`Failed to load snippet from URL: ${error}`);

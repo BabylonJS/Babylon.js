@@ -53,7 +53,16 @@ export class WebRequest implements IWebRequest {
     }
 
     private static _ShouldSkipRequestModifications(url: string): boolean {
-        return WebRequest.SkipRequestModificationForBabylonCDN && (url.includes("preview.babylonjs.com") || url.includes("cdn.babylonjs.com"));
+        if (!WebRequest.SkipRequestModificationForBabylonCDN || typeof URL === "undefined") {
+            return false;
+        }
+
+        try {
+            const parsedUrl = new URL(url, typeof location !== "undefined" ? location.href : undefined);
+            return parsedUrl.hostname === "preview.babylonjs.com" || parsedUrl.hostname === "cdn.babylonjs.com";
+        } catch {
+            return false;
+        }
     }
 
     /**

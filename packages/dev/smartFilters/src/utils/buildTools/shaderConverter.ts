@@ -124,16 +124,8 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
 
     // Read the uniforms
     const uniforms: UniformMetadata[] = [];
-    const uniformRegExp = new RegExp(/(\/\/\s*\{.*\}\s*(?:\r\n|\r|\n)+)?(uniform .*)/gm);
-    const uniformGroups = fragmentShader.matchAll(uniformRegExp);
-    for (const matches of uniformGroups) {
-        const annotationJSON = matches[1];
-        const uniformLine = matches[2];
-
-        if (!uniformLine) {
-            throw new Error("Uniform line not found");
-        }
-
+    const uniformGroups = FindDeclarations(fragmentShader, "uniform");
+    for (const { annotationJSON, declaration: uniformLine } of uniformGroups) {
         const uniformLineMatches = new RegExp(/^uniform\s+(\w+)\s+(\w+)\s*;?/gm).exec(uniformLine);
         if (!uniformLineMatches || uniformLineMatches.length < 3) {
             throw new Error(`Uniforms must have a type and a name: '${uniformLine}'`);
@@ -187,11 +179,8 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
 
     // Read the property consts (consts to be exposed as properties)
     const fragmentConstProperties: ConstPropertyMetadata[] = [];
-    const constRegExp = new RegExp(/(\/\/\s*\{.*\}\s*(?:\r\n|\r|\n)+)?(const .*)/gm);
-    const constGroups = fragmentShader.matchAll(constRegExp);
-    for (const matches of constGroups) {
-        const annotationJSON = matches[1];
-
+    const constGroups = FindDeclarations(fragmentShader, "const");
+    for (const { annotationJSON, declaration: constLine } of constGroups) {
         // If it doesn't have any annotation, treat it as a regular const
         if (!annotationJSON) {
             continue;
@@ -204,13 +193,11 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
             continue;
         }
 
-        const constLine = matches[2];
-
-        if (!constLine) {
-            throw new Error("Const line not found");
+        let constDefinition = constLine.trim();
+        if (constDefinition.endsWith(";")) {
+            constDefinition = constDefinition.slice(0, -1).trimEnd();
         }
-
-        const constLineMatches = new RegExp(/^const\s+(\w+)\s+(\w+)\s*=\s*([^\s;]+)\s*;?\s*$/gm).exec(constLine);
+        const constLineMatches = /^const[ \t]+(\w+)[ \t]+(\w+)[ \t]*=[ \t]*([^ \t;]+)$/.exec(constDefinition);
         if (!constLineMatches || constLineMatches.length < 4) {
             throw new Error(`Consts must have a name, type, and a default value: '${constLine}'`);
         }
@@ -251,7 +238,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
     // Collect uniform, const, and function names which need to be decorated
     const uniformNames = uniforms.map((uniform) => uniform.name);
     log(`Uniforms found: ${JSON.stringify(uniforms)}`);
-    const consts = [...fragmentShader.matchAll(/\S*const\s+\w*\s+(\w*)\s*=.*;/g)].map((match) => match[1]);
+    const consts = FindDeclarationNames(fragmentShader, "const");
     log(`Consts found: ${JSON.stringify(consts)}`);
     const constPropertyFriendlyNames = fragmentConstProperties.map((c) => c.friendlyName);
     log(`Const properties found: ${JSON.stringify(constPropertyFriendlyNames)}`);
@@ -285,7 +272,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
     const finalDefines = [...fragmentShaderWithRenamedSymbols.matchAll(new RegExp(GetDefineRegExString, GetDefineRegExOptions))].map((match) => match[0]);
 
     // Find the main input
-    const mainInputs = [...fragmentShaderWithRenamedSymbols.matchAll(/\S*uniform.*\s(\w*);\s*\/\/\s*main/gm)].map((match) => match[1]);
+    const mainInputs = FindMainInputNames(fragmentShaderWithRenamedSymbols);
     if (mainInputs.length > 1) {
         throw new Error("Shaders may have no more than 1 main input");
     }
@@ -439,6 +426,78 @@ function RemoveFunctionBodies(input: string): string {
     return output;
 }
 
+function FindDeclarations(input: string, keyword: "uniform" | "const"): { annotationJSON?: string; declaration: string }[] {
+    const declarations: { annotationJSON?: string; declaration: string }[] = [];
+    let annotationJSON: string | undefined;
+
+    for (const line of input.split(/\r\n|\r|\n/)) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("//")) {
+            const annotation = trimmed.slice(2).trim();
+            annotationJSON = annotation.startsWith("{") && annotation.endsWith("}") ? trimmed : undefined;
+            continue;
+        }
+        if (trimmed === "") {
+            continue;
+        }
+        if (trimmed.startsWith(`${keyword} `) || trimmed.startsWith(`${keyword}\t`)) {
+            declarations.push({ annotationJSON, declaration: trimmed });
+        }
+        annotationJSON = undefined;
+    }
+
+    return declarations;
+}
+
+function FindDeclarationNames(input: string, keyword: "const"): string[] {
+    const names: string[] = [];
+    for (const line of input.split(/\r\n|\r|\n/)) {
+        let searchIndex = 0;
+        while (searchIndex < line.length) {
+            const keywordIndex = line.indexOf(keyword, searchIndex);
+            if (keywordIndex === -1) {
+                break;
+            }
+            const match = /^const[ \t]+\w+[ \t]+(\w+)[ \t]*=/.exec(line.slice(keywordIndex));
+            if (match) {
+                names.push(match[1]);
+                break;
+            }
+            searchIndex = keywordIndex + keyword.length;
+        }
+    }
+    return names;
+}
+
+function FindMainInputNames(input: string): string[] {
+    const names: string[] = [];
+    for (const line of input.split(/\r\n|\r|\n/)) {
+        const commentIndex = line.indexOf("//");
+        if (
+            commentIndex === -1 ||
+            !line
+                .slice(commentIndex + 2)
+                .trimStart()
+                .startsWith("main")
+        ) {
+            continue;
+        }
+        const declaration = line.slice(0, commentIndex).trim();
+        if (declaration.indexOf("uniform") === -1) {
+            continue;
+        }
+        const semicolonIndex = declaration.lastIndexOf(";");
+        if (semicolonIndex === -1) {
+            continue;
+        }
+        const match = /(\w+)[ \t]*$/.exec(declaration.slice(0, semicolonIndex));
+        if (match) {
+            names.push(match[1]);
+        }
+    }
+    return names;
+}
+
 const SmartFilterBlockTypeKey = "smartFilterBlockType";
 
 /**
@@ -485,20 +544,40 @@ function ReadHeader(fragmentShader: string): {
      */
     fragmentShaderWithoutHeader: string;
 } {
-    const singleLineHeaderMatch = new RegExp(/^\n*\s*\/\/\s*(\{.*\})/g).exec(fragmentShader);
-    if (singleLineHeaderMatch && singleLineHeaderMatch[1]) {
-        return {
-            header: ParseHeader(singleLineHeaderMatch[1].trim()),
-            fragmentShaderWithoutHeader: fragmentShader.replace(singleLineHeaderMatch[0], ""),
-        };
+    let startIndex = 0;
+    while (startIndex < fragmentShader.length && /\s/.test(fragmentShader[startIndex])) {
+        startIndex++;
     }
 
-    const multiLineHeaderMatch = new RegExp(/^\n*\s*\/\*\s*(\{.*\})\s*\*\//gs).exec(fragmentShader);
-    if (multiLineHeaderMatch && multiLineHeaderMatch[1]) {
-        return {
-            header: ParseHeader(multiLineHeaderMatch[1].trim()),
-            fragmentShaderWithoutHeader: fragmentShader.replace(multiLineHeaderMatch[0], ""),
-        };
+    if (fragmentShader.startsWith("//", startIndex)) {
+        const lineEnd = fragmentShader.indexOf("\n", startIndex + 2);
+        const matchEnd = lineEnd === -1 ? fragmentShader.length : lineEnd;
+        const openingBrace = fragmentShader.indexOf("{", startIndex + 2);
+        const closingBrace = fragmentShader.lastIndexOf("}", matchEnd - 1);
+        if (openingBrace !== -1 && openingBrace < closingBrace && fragmentShader.slice(startIndex + 2, openingBrace).trim() === "") {
+            return {
+                header: ParseHeader(fragmentShader.slice(openingBrace, closingBrace + 1).trim()),
+                fragmentShaderWithoutHeader: fragmentShader.slice(closingBrace + 1),
+            };
+        }
+    }
+
+    if (fragmentShader.startsWith("/*", startIndex)) {
+        const commentEnd = fragmentShader.indexOf("*/", startIndex + 2);
+        const openingBrace = fragmentShader.indexOf("{", startIndex + 2);
+        const closingBrace = commentEnd === -1 ? -1 : fragmentShader.lastIndexOf("}", commentEnd);
+        if (
+            commentEnd !== -1 &&
+            openingBrace !== -1 &&
+            openingBrace < closingBrace &&
+            fragmentShader.slice(startIndex + 2, openingBrace).trim() === "" &&
+            fragmentShader.slice(closingBrace + 1, commentEnd).trim() === ""
+        ) {
+            return {
+                header: ParseHeader(fragmentShader.slice(openingBrace, closingBrace + 1).trim()),
+                fragmentShaderWithoutHeader: fragmentShader.slice(commentEnd + 2),
+            };
+        }
     }
 
     return {

@@ -17,10 +17,22 @@ export class FlowGraphPathConverter implements IPathToObjectConverter<IObjectAcc
         if (parts.length < 2) {
             throw new Error(`Path ${path} is invalid`);
         }
-        let currentObject = this._context.getVariable(parts[0]);
+
+        const root = parts[0];
+        if (root === "__proto__" || root === "prototype" || root === "constructor") {
+            throw new Error(`Path ${path} is invalid`);
+        }
+        let currentObject = this._context.getVariable(root);
         const property = parts[parts.length - 1];
         for (let i = 1; i < parts.length - 1; i++) {
-            currentObject = currentObject[parts[i]];
+            const part = parts[i];
+            if (part === "__proto__" || part === "prototype" || part === "constructor") {
+                throw new Error(`Path ${path} is invalid`);
+            }
+            currentObject = currentObject[part];
+        }
+        if (property === "__proto__" || property === "prototype" || property === "constructor") {
+            throw new Error(`Path ${path} is invalid`);
         }
         return {
             object: currentObject,

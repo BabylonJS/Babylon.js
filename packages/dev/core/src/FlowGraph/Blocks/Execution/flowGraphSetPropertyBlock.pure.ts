@@ -129,12 +129,19 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         let obj = target as any;
         for (let i = 0; i < path.length - 1; i++) {
             const prop = path[i];
+            if (prop === "__proto__" || prop === "prototype" || prop === "constructor") {
+                throw new Error(`Invalid property path: ${propertyName}`);
+            }
             if (obj[prop] === undefined) {
                 obj[prop] = {};
             }
             obj = obj[prop];
         }
-        obj[path[path.length - 1]] = value;
+        const finalProperty = path[path.length - 1];
+        if (finalProperty === "__proto__" || finalProperty === "prototype" || finalProperty === "constructor") {
+            throw new Error(`Invalid property path: ${propertyName}`);
+        }
+        obj[finalProperty] = value;
     }
 
     public override getClassName(): string {

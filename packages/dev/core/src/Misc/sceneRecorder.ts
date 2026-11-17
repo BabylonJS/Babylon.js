@@ -288,6 +288,10 @@ export class SceneRecorder implements IDisposable {
 
     private static _ApplyPropertiesToEntity(deltaJSON: any, entity: any) {
         for (const prop in deltaJSON) {
+            if (prop === "__proto__" || prop === "prototype" || prop === "constructor") {
+                continue;
+            }
+
             const source = deltaJSON[prop];
             const property = entity[prop];
 

@@ -652,8 +652,9 @@ export class Image extends Control {
                         el.removeAttribute(name);
                     }
 
-                    // Remove javascript: links
-                    if (typeof value === "string" && value.trim().toLowerCase().startsWith("javascript:")) {
+                    const normalizedValue = value.trim().toLowerCase();
+                    const isUnsafeDataUrl = normalizedValue.startsWith("data:") && !/^data:image\/(?:png|jpeg|gif|webp);base64,/.test(normalizedValue);
+                    if (normalizedValue.startsWith("javascript:") || normalizedValue.startsWith("vbscript:") || isUnsafeDataUrl) {
                         el.removeAttribute(name);
                     }
                 }
@@ -681,11 +682,14 @@ export class Image extends Control {
             return value;
         }
 
-        if (window.SVGSVGElement && value.search(/(\.svg|\.svg?[?|#].*)$/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
+        const fragmentIndex = value.indexOf("#");
+        const queryIndex = value.indexOf("?");
+        const pathEnd = Math.min(queryIndex === -1 ? value.length : queryIndex, fragmentIndex === -1 ? value.length : fragmentIndex);
+        if (window.SVGSVGElement && value.slice(0, pathEnd).toLowerCase().endsWith(".svg") && fragmentIndex === value.lastIndexOf("#")) {
             this._isSVG = true;
             value = this._sanitizeSVG(value);
-            const svgsrc = value.split("#")[0];
-            const elemid = value.split("#")[1];
+            const svgsrc = fragmentIndex === -1 ? value : value.slice(0, fragmentIndex);
+            const elemid = fragmentIndex === -1 ? "" : value.slice(fragmentIndex + 1);
             // check if object alr exist in document
             const svgExist = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {

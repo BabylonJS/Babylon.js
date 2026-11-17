@@ -1,5 +1,5 @@
 import { NullEngine } from "core/Engines/nullEngine";
-import { DecodeBase64UrlToString, LoadFile, LoadImage } from "core/Misc/fileTools";
+import { DecodeBase64UrlToString, IsBase64DataUrl, LoadFile, LoadImage, TestBase64DataUrl } from "core/Misc/fileTools";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 class BitmapNullEngine extends NullEngine {
@@ -98,5 +98,21 @@ describe("LoadFile", () => {
         });
 
         expect(data).toBe(text);
+    });
+});
+
+describe("base64 data URLs", () => {
+    it.each([
+        ["data:;base64,AA==", ""],
+        ["data:application/octet-stream;base64,AA==", "application/octet-stream"],
+        ["data:image/svg+xml;charset=utf-8;base64,AA==", "image/svg+xml;charset=utf-8"],
+    ])("recognizes %s", (url, expectedType) => {
+        expect(IsBase64DataUrl(url)).toBe(true);
+        expect(TestBase64DataUrl(url)).toEqual({ match: true, type: expectedType });
+    });
+
+    it.each(["data:application;base64,AA==", "data:/json;base64,AA==", "data:application/;base64,AA==", "https://example.com/data:image/png;base64,AA=="])("rejects %s", (url) => {
+        expect(IsBase64DataUrl(url)).toBe(false);
+        expect(TestBase64DataUrl(url)).toEqual({ match: false, type: "" });
     });
 });
