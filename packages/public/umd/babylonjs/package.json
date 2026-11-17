@@ -15,8 +15,7 @@
         "build:declaration": "build-tools -c pud --config ./config.json --skipDocumentation",
         "clean": "rimraf dist && rimraf babylon*.* -g",
         "postinstall": "node ./scripts/postinstall.js",
-        "test:escheck": "node ../../../../scripts/checkEcmaVersion.mjs es6 ./babylon.max.js",
-        "test:es5": "node ./scripts/checkEs5TextureBindings.js"
+        "test:escheck": "node ../../../../scripts/checkEcmaVersion.mjs es6 ./babylon.max.js"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
