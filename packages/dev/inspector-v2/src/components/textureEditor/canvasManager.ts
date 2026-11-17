@@ -42,14 +42,36 @@ export interface IPixelData {
     a?: number;
 }
 
-function FlipRows(data: Uint8Array | Uint8ClampedArray, width: number, height: number): Uint8Array {
+/**
+ * Converts a WebGL framebuffer readback (bottom-up rows, premultiplied alpha) into top-down, straight-alpha
+ * RGBA rows matching canvas image data.
+ * @param data - The framebuffer pixels.
+ * @param width - The width in pixels.
+ * @param height - The height in pixels.
+ * @returns The converted pixels.
+ */
+export function FramebufferToImagePixels(data: Uint8Array | Uint8ClampedArray, width: number, height: number): Uint8Array {
     const rowLength = width * 4;
-    const flipped = new Uint8Array(rowLength * height);
+    const result = new Uint8Array(rowLength * height);
     for (let y = 0; y < height; y++) {
         const sourceStart = (height - y - 1) * rowLength;
-        flipped.set(data.subarray(sourceStart, sourceStart + rowLength), y * rowLength);
+        const targetStart = y * rowLength;
+        for (let i = 0; i < rowLength; i += 4) {
+            const alpha = data[sourceStart + i + 3];
+            const target = targetStart + i;
+            result[target + 3] = alpha;
+            if (alpha === 255) {
+                result[target] = data[sourceStart + i];
+                result[target + 1] = data[sourceStart + i + 1];
+                result[target + 2] = data[sourceStart + i + 2];
+            } else if (alpha > 0) {
+                result[target] = Math.min(255, Math.round((data[sourceStart + i] * 255) / alpha));
+                result[target + 1] = Math.min(255, Math.round((data[sourceStart + i + 1] * 255) / alpha));
+                result[target + 2] = Math.min(255, Math.round((data[sourceStart + i + 2] * 255) / alpha));
+            }
+        }
     }
-    return flipped;
+    return result;
 }
 
 export class TextureCanvasManager {
@@ -131,6 +153,8 @@ export class TextureCanvasManager {
     private _imageData: Nullable<Uint8Array | Uint8ClampedArray> = null;
     private _canPush = true;
     private _shouldPush = false;
+    private _pushGeneration = 0;
+    private _activePush: Promise<void> = Promise.resolve();
     private _isDisposed = false;
     private readonly _paintCanvas: HTMLCanvasElement;
 
@@ -369,30 +393,10 @@ export class TextureCanvasManager {
         if (this._canPush) {
             this._canPush = false;
             this._shouldPush = false;
+            const push = this._pushPixelsAsync(this._pushGeneration);
+            this._activePush = push;
             try {
-                if (this._editing3D) {
-                    const bufferView = await this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
-                    this._imageData = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
-                } else {
-                    this._imageData = this._2DCanvas.getContext("2d")!.getImageData(0, 0, this._size.width, this._size.height).data;
-                }
-                if (this._isDisposed) {
-                    return;
-                }
-                const element = this._editing3D ? this._3DCanvas : this._2DCanvas;
-                const imageData = this._imageData;
-                if (!imageData) {
-                    throw new Error("The edited texture pixels are not available.");
-                }
-                // WebGL readback is bottom-up, while sources expect top-down rows like canvas image data.
-                const pixels = this._editing3D
-                    ? FlipRows(imageData, this._size.width, this._size.height)
-                    : imageData instanceof Uint8Array
-                      ? imageData
-                      : new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
-                await this._source.writePixelsAsync(pixels, element, this._size);
-            } catch (error) {
-                this._reportError(error);
+                await push;
             } finally {
                 setTimeout(() => {
                     this._canPush = true;
@@ -403,6 +407,35 @@ export class TextureCanvasManager {
             }
         } else {
             this._shouldPush = true;
+        }
+    }
+
+    private async _pushPixelsAsync(generation: number): Promise<void> {
+        try {
+            if (this._editing3D) {
+                const bufferView = await this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
+                this._imageData = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+            } else {
+                this._imageData = this._2DCanvas.getContext("2d")!.getImageData(0, 0, this._size.width, this._size.height).data;
+            }
+            // A reset that started after this push must not be overwritten by the pre-reset pixels.
+            if (this._isDisposed || generation !== this._pushGeneration) {
+                return;
+            }
+            const element = this._editing3D ? this._3DCanvas : this._2DCanvas;
+            const imageData = this._imageData;
+            if (!imageData) {
+                throw new Error("The edited texture pixels are not available.");
+            }
+            // Sources expect top-down, straight-alpha rows like canvas image data.
+            const pixels = this._editing3D
+                ? FramebufferToImagePixels(imageData, this._size.width, this._size.height)
+                : imageData instanceof Uint8Array
+                  ? imageData
+                  : new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
+            await this._source.writePixelsAsync(pixels, element, this._size);
+        } catch (error) {
+            this._reportError(error);
         }
     }
 
@@ -638,7 +671,11 @@ export class TextureCanvasManager {
         if (this._tool && this._tool.reset) {
             this._tool.reset();
         }
+        // Discard writes queued by the tool reset (and any still in flight) so they can't land after restoration.
+        this._pushGeneration++;
+        this._shouldPush = false;
         try {
+            await this._activePush;
             await this._source.resetAsync();
             await this.grabOriginalTexture();
             this.makePlane();
