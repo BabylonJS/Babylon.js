@@ -1518,6 +1518,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         const modelMatrix = this.computeWorldMatrix(true);
         const modelViewMatrix = TmpVectors.Matrix[1];
         modelMatrix.multiplyToRef(cameraViewMatrix, modelViewMatrix);
+        // Kept on the instance: the legacy Native sortSplats call dispatched right after this reuses it.
         this._nativeSortModelViewMatrix.copyFrom(modelViewMatrix);
 
         // return vector used to compute distance to camera

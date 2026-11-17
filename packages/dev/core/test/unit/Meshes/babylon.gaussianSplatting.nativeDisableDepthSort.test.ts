@@ -118,6 +118,7 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
         mesh.updateData(createSplatData(4));
 
         sortSplats.mockClear();
+        scene.useRightHandedSystem = false;
         mesh.position.set(1, 2, 3);
         mesh._postToWorker(true);
 
