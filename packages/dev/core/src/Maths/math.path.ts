@@ -27,23 +27,57 @@ export class BezierCurve {
      * @returns the interpolated value
      */
     public static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
-        if (t === 0) {
+        if (t <= 0) {
             return 0;
         }
+        if (t >= 1) {
+            return 1;
+        }
+
         // Extract X (which is equal to time here)
         const f0 = 1 - 3 * x2 + 3 * x1;
         const f1 = 3 * x2 - 6 * x1;
         const f2 = 3 * x1;
 
+        // Find the curve parameter whose x is t. Newton's method converges in a few steps
+        // where the curve is steep, but its slope is 0 at an end point when x1 is 0 or x2 is 1
+        // (as in the common ease-in curve (0.42, 0, 1, 1)), and in the middle of (1, 0, 0, 1).
+        // Dividing by that slope gave NaN, so fall back to bisection when Newton stalls.
         let refinedT = t;
-        for (let i = 0; i < 5; i++) {
-            const refinedT2 = refinedT * refinedT;
-            const refinedT3 = refinedT2 * refinedT;
+        let solved = false;
+        for (let i = 0; i < 8; i++) {
+            const x = ((f0 * refinedT + f1) * refinedT + f2) * refinedT - t;
+            if (Math.abs(x) < 1e-7) {
+                solved = true;
+                break;
+            }
+            const slope = (3.0 * f0 * refinedT + 2.0 * f1) * refinedT + f2;
+            if (Math.abs(slope) < 1e-6) {
+                break;
+            }
+            refinedT -= x / slope;
+            if (refinedT < 0 || refinedT > 1) {
+                break;
+            }
+        }
 
-            const x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
-            const slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
-            refinedT -= (x - t) * slope;
-            refinedT = Math.min(1, Math.max(0, refinedT));
+        if (!solved) {
+            // x grows monotonically from 0 to 1 for x1 and x2 in [0, 1]
+            let low = 0;
+            let high = 1;
+            refinedT = t;
+            for (let i = 0; i < 40; i++) {
+                const x = ((f0 * refinedT + f1) * refinedT + f2) * refinedT;
+                if (Math.abs(x - t) < 1e-7) {
+                    break;
+                }
+                if (x < t) {
+                    low = refinedT;
+                } else {
+                    high = refinedT;
+                }
+                refinedT = (low + high) / 2;
+            }
         }
 
         // Resolve cubic bezier for the given x
