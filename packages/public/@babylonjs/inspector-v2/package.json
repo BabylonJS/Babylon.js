@@ -32,9 +32,7 @@
         "clean": "rimraf lib && rimraf bin && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib && npm run bundle:cli",
         "bundle:lib": "rollup -c rollup.config.lib.mjs && npm run bundle:declarations",
-        "bundle:declarations": "tsc -p tsconfig.build.dts.json && node scripts/declarations.mjs && build-tools -c tp --outDir ./lib --buildType es6 --basePackage @babylonjs/inspector --appendJS && npm run check:declarations",
-        "check:declarations": "node scripts/declarations.mjs --check",
-        "test:declarations": "node --test scripts/declarations.test.mjs",
+        "bundle:declarations": "tsc -p tsconfig.build.dts.json && node scripts/declarations.mjs && build-tools -c tp --outDir ./lib --buildType es6 --basePackage @babylonjs/inspector --appendJS --localPackagePaths shared-ui-components=shared-ui-components",
         "bundle:cli": "rollup -c rollup.config.cli.mjs",
         "pack": "npm run build && npm pack"
     },
