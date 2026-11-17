@@ -628,16 +628,16 @@ export class Image extends Control {
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgString, "image/svg+xml");
 
-        const dangerousTags = ["script", "iframe", "foreignObject", "object", "embed", "link", "style"];
+        const dangerousTags = ["script", "iframe", "foreignobject", "object", "embed", "link", "style"];
         const dangerousAttrs = [/^on/i, /^xlink:href$/, /^href$/];
 
-        // Remove dangerous elements
-        dangerousTags.forEach((tag) => {
-            const elements = doc.getElementsByTagName(tag);
-            for (let i = elements.length - 1; i >= 0; i--) {
+        // Remove dangerous elements, comparing local names so that namespace prefixes (e.g. "s:script") cannot bypass the check
+        const elements = doc.getElementsByTagName("*");
+        for (let i = elements.length - 1; i >= 0; i--) {
+            if (dangerousTags.indexOf(elements[i].localName.toLowerCase()) !== -1) {
                 elements[i].remove();
             }
-        });
+        }
 
         // Recursively sanitize attributes
         function sanitizeElement(el: Element) {
@@ -673,32 +673,32 @@ export class Image extends Control {
 
     private static readonly _SVGSourceAttribute = "data-babylon-svg-source";
 
-    private static _FindSVGObject(svgsrc: string): Nullable<HTMLObjectElement> {
-        const objects = document.body.getElementsByTagName("object");
-        for (let i = 0; i < objects.length; i++) {
-            if (objects[i].getAttribute(Image._SVGSourceAttribute) === svgsrc) {
-                return objects[i];
+    private static _FindSVGFrame(svgsrc: string): Nullable<HTMLIFrameElement> {
+        const frames = document.body.getElementsByTagName("iframe");
+        for (let i = 0; i < frames.length; i++) {
+            if (frames[i].getAttribute(Image._SVGSourceAttribute) === svgsrc) {
+                return frames[i];
             }
         }
         return null;
     }
 
     /**
-     * Loads the SVG markup, sanitizes it, and only then exposes it to the hidden object element, so that scripts or
-     * event handlers in the source document never run in an active document.
+     * Loads the SVG markup, sanitizes it, and exposes it to the hidden measuring frame. The frame is sandboxed without
+     * "allow-scripts", so any active content that survives sanitization still cannot run with the application's origin.
      * @param svgsrc the url of the svg document
-     * @param svgObject the object element used to measure the svg elements
+     * @param svgFrame the sandboxed frame used to measure the svg elements
      */
-    private _loadSanitizedSVG(svgsrc: string, svgObject: HTMLObjectElement) {
+    private _loadSanitizedSVG(svgsrc: string, svgFrame: HTMLIFrameElement) {
         Tools.LoadFile(
             svgsrc,
             (data) => {
-                if (!svgObject.isConnected) {
+                if (!svgFrame.isConnected) {
                     return;
                 }
                 const blobUrl = URL.createObjectURL(new Blob([this._sanitizeSVG(data as string)], { type: "image/svg+xml" }));
-                svgObject.addEventListener("load", () => URL.revokeObjectURL(blobUrl), { once: true });
-                svgObject.data = blobUrl;
+                svgFrame.addEventListener("load", () => URL.revokeObjectURL(blobUrl), { once: true });
+                svgFrame.src = blobUrl;
             },
             undefined,
             undefined,
@@ -727,8 +727,8 @@ export class Image extends Control {
             this._isSVG = true;
             const svgsrc = fragmentIndex === -1 ? value : value.slice(0, fragmentIndex);
             const elemid = fragmentIndex === -1 ? "" : value.slice(fragmentIndex + 1);
-            // check if object alr exist in document
-            const svgExist = Image._FindSVGObject(svgsrc);
+            // check if the measuring frame already exists in the document
+            const svgExist = Image._FindSVGFrame(svgsrc);
             if (svgExist) {
                 const svgDoc = svgExist.contentDocument;
                 // get viewbox width and height, get svg document width and height in px
@@ -743,21 +743,24 @@ export class Image extends Control {
                     }
                 }
 
-                // wait for object to load
+                // wait for the frame to load
                 svgExist.addEventListener("load", () => {
                     this._getSVGAttribs(svgExist, elemid);
                 });
             } else {
-                // create document object
-                const svgImage = document.createElement("object");
+                // create the measuring frame
+                const svgImage = document.createElement("iframe");
                 svgImage.setAttribute(Image._SVGSourceAttribute, svgsrc);
-                svgImage.type = "image/svg+xml";
-                svgImage.width = "0%";
-                svgImage.height = "0%";
+                // Same origin is needed to read the measurements; scripts stay disabled.
+                svgImage.setAttribute("sandbox", "allow-same-origin");
+                svgImage.width = "0";
+                svgImage.height = "0";
+                svgImage.style.border = "0";
+                svgImage.style.position = "absolute";
                 document.body.appendChild(svgImage);
-                // when the object has loaded, get the element attribs
+                // when the frame has loaded, get the element attribs
                 svgImage.onload = () => {
-                    const svgobj = Image._FindSVGObject(svgsrc);
+                    const svgobj = Image._FindSVGFrame(svgsrc);
                     if (svgobj) {
                         this._getSVGAttribs(svgobj, elemid);
                     }
@@ -776,7 +779,7 @@ export class Image extends Control {
      * @param svgsrc
      * @param elemid
      */
-    private _getSVGAttribs(svgsrc: HTMLObjectElement, elemid: string) {
+    private _getSVGAttribs(svgsrc: HTMLIFrameElement, elemid: string) {
         const svgDoc = svgsrc.contentDocument;
         // get viewbox width and height, get svg document width and height in px
         if (svgDoc && svgDoc.documentElement) {

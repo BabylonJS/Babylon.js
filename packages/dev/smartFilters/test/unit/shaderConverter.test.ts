@@ -157,7 +157,7 @@ vec4 apply(vec2 vUV) { // main
     return texture2D(input, vUV);
 }`;
 
-            expect(ParseFragmentShader(shader).shaderCode.mainInputTexture).toBe("_input_");
+            expect(ParseFragmentShader(shader).shaderCode.mainInputTexture).toBe(decorated("input"));
         });
 
         it("rejects a long non-matching main input declaration quickly", () => {

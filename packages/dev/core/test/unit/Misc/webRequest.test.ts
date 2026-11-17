@@ -17,6 +17,25 @@ describe("WebRequest customizations", () => {
         expect(WebRequest._CollectCustomizations("https://example.com/cdn.babylonjs.com/file.bin").headers).toEqual({ Authorization: "test" });
     });
 
+    it.each([
+        ["with", false],
+        ["without", true],
+    ])("applies the request URL normalization %s a URL constructor", (_label, useShim) => {
+        WebRequest.CustomRequestHeaders.Authorization = "test";
+        const originalUrl = globalThis.URL;
+        if (useShim) {
+            (globalThis as any).URL = { createObjectURL: () => "", revokeObjectURL: () => {} };
+        }
+        try {
+            expect(WebRequest._CollectCustomizations(" https://cdn.babylonjs.com/file.bin ").headers).toEqual({});
+            expect(WebRequest._CollectCustomizations("\u0001https://cdn.babylon\tjs.com/file.bin").headers).toEqual({});
+            expect(WebRequest._CollectCustomizations("https://preview.babylon\njs.com\r/file.bin").headers).toEqual({});
+            expect(WebRequest._CollectCustomizations(" https://cdn.babylonjs.com.example.com/file.bin").headers).toEqual({ Authorization: "test" });
+        } finally {
+            globalThis.URL = originalUrl;
+        }
+    });
+
     it("matches CDN hosts without a URL constructor and through the file: wrapper", () => {
         WebRequest.CustomRequestHeaders.Authorization = "test";
         const originalUrl = globalThis.URL;

@@ -12,10 +12,10 @@ describe("Image SVG sources", () => {
         document.body.innerHTML = "";
     });
 
-    it("loads SVG sprite sheets into the measuring object only after sanitizing them", async () => {
+    it("measures SVG sprite sheets in a script-disabled frame after sanitizing them", async () => {
         const svg =
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10" width="10" height="10" onload="alert(1)">' +
-            '<script>alert(2)</script><symbol id="shape"><rect width="1" height="1"/></symbol>' +
+            '<script>alert(2)</script><s:script xmlns:s="http://www.w3.org/2000/svg">alert(4)</s:script><symbol id="shape"><rect width="1" height="1"/></symbol>' +
             '<use id="logo" href="#shape"/><a xlink:href="javascript:alert(3)"><rect id="link"/></a><image href="data:text/html,x"/></svg>';
         vi.spyOn(Tools, "LoadFile").mockImplementation((_url, onSuccess) => {
             onSuccess(svg);
@@ -34,13 +34,13 @@ describe("Image SVG sources", () => {
         image.source = "/icons.svg#logo";
 
         expect(Tools.LoadFile).toHaveBeenCalledWith("/icons.svg", expect.any(Function), undefined, undefined, false, expect.any(Function));
-        const svgObject = document.body.querySelector("object")!;
-        expect(svgObject.getAttribute("data-babylon-svg-source")).toBe("/icons.svg");
-        expect(svgObject.getAttribute("data")).toBe("blob:sanitized");
+        const svgFrame = document.body.querySelector("iframe")!;
+        expect(svgFrame.getAttribute("sandbox")?.split(" ")).not.toContain("allow-scripts");
+        expect(svgFrame.getAttribute("src")).toBe("blob:sanitized");
 
         const sanitized = await sanitizedBlob!.text();
         expect(sanitized).not.toContain("onload");
-        expect(sanitized).not.toContain("<script");
+        expect(sanitized).not.toContain("script");
         expect(sanitized).not.toContain("javascript:");
         expect(sanitized).not.toContain("data:text/html");
         expect(sanitized).toContain('href="#shape"');

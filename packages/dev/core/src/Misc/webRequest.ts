@@ -62,12 +62,33 @@ export class WebRequest implements IWebRequest {
     }
 
     /**
-     * Extracts the lower-cased hostname of an absolute or protocol-relative URL without relying on the URL
-     * constructor, which is not available in every environment (e.g. Babylon Native installs a non-constructible shim).
+     * Gets the lower-cased hostname of the URL a request will actually target. Uses the URL parser when it is available,
+     * and otherwise a string parser that applies the same input normalization, since not every environment provides a
+     * constructible URL (e.g. Babylon Native installs a non-constructible shim).
      * @param url - The URL to inspect.
-     * @returns The hostname, or an empty string for relative URLs.
+     * @returns The hostname, or an empty string for URLs without a host.
      */
     private static _GetHostname(url: string): string {
+        if (typeof URL === "function") {
+            try {
+                return new URL(url, typeof location !== "undefined" ? location.href : undefined).hostname;
+            } catch {
+                // Fall back to the string parser below.
+            }
+        }
+
+        // Like the URL parser, remove tabs and newlines and trim leading and trailing C0 controls and spaces.
+        url = url.replace(/[\t\n\r]/g, "");
+        let start = 0;
+        let end = url.length;
+        while (start < end && url.charCodeAt(start) <= 0x20) {
+            start++;
+        }
+        while (end > start && url.charCodeAt(end - 1) <= 0x20) {
+            end--;
+        }
+        url = url.substring(start, end);
+
         let authorityStart = -1;
         if (url.startsWith("//")) {
             authorityStart = 2;
