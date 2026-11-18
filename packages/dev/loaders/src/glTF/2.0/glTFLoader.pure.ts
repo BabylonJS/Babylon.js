@@ -62,6 +62,7 @@ import {
     type IAnimationChannel,
     type IAnimationSampler,
     type _IAnimationSamplerData,
+    GetNodeTransform,
 } from "./glTFLoaderInterfaces";
 import { type IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { type IGLTFLoader, type IGLTFLoaderData, GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader.pure";
@@ -1051,7 +1052,7 @@ export class GLTFLoader implements IGLTFLoader {
                                         if (node.index === parentNode.index) {
                                             babylonTransformNode.parent = babylonTransformNodeForSkin.parent;
                                         } else {
-                                            babylonTransformNode.parent = parentNode._babylonTransformNode!;
+                                            babylonTransformNode.parent = GetNodeTransform(parentNode)!;
                                         }
                                     } else {
                                         babylonTransformNode.parent = this._rootBabylonMesh;
@@ -1497,12 +1498,6 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private static _LoadTransform(node: INode, babylonNode: TransformNode): void {
-        // Ignore the TRS of skinned nodes.
-        // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-        if (node.skin != undefined) {
-            return;
-        }
-
         let position = Vector3.Zero();
         let rotation = Quaternion.Identity();
         let scaling = Vector3.One();
@@ -1659,7 +1654,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._postSceneLoadActions.push(() => {
             // Link the Babylon bone with the corresponding Babylon transform node.
             // A glTF joint is a pointer to a glTF node in the glTF node hierarchy similar to Unity3D.
-            babylonBone.linkTransformNode(node._babylonTransformNode!);
+            babylonBone.linkTransformNode(GetNodeTransform(node)!);
         });
 
         return babylonBone;

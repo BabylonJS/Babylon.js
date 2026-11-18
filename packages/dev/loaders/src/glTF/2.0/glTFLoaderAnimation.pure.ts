@@ -2,7 +2,7 @@
 
 import { Animation } from "core/Animations/animation.pure";
 import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
-import { type INode } from "./glTFLoaderInterfaces";
+import { type INode, GetNodeTransform } from "./glTFLoaderInterfaces";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { SetInterpolationForKey } from "./Extensions/objectModelMapping";
 
@@ -57,7 +57,7 @@ export class TransformNodeAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
     public buildAnimations(target: INode, name: string, fps: number, keys: any[]) {
         const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
-        babylonAnimations.push({ babylonAnimatable: target._babylonTransformNode!, babylonAnimation: this._buildAnimation(name, fps, keys) });
+        babylonAnimations.push({ babylonAnimatable: GetNodeTransform(target)!, babylonAnimation: this._buildAnimation(name, fps, keys) });
         return babylonAnimations;
     }
 }

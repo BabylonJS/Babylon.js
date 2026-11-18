@@ -853,7 +853,8 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         const indexOrUndefined = (index: number | undefined): number | undefined => (index !== undefined && index >= 0 ? index : undefined);
         return (this._sourceIndexContext = {
             getNodeCount: () => sourceGLTF?.nodes?.length ?? 0,
-            getNodeIndex: (node) => indexOrUndefined(sourceGLTF?.nodes?.findIndex((candidate) => candidate._babylonTransformNode === node)),
+            getNodeIndex: (node) =>
+                indexOrUndefined(sourceGLTF?.nodes?.findIndex((candidate) => candidate._babylonTransformNode === node || candidate._babylonTransformNodeForSkin === node)),
             getAnimationIndex: (animation) => indexOrUndefined(sourceGLTF?.animations?.findIndex((candidate) => candidate._babylonAnimationGroup === animation)),
             getCameraIndex: (camera) => indexOrUndefined(sourceGLTF?.cameras?.findIndex((candidate) => candidate._babylonCamera === camera)),
             getMaterialIndex: (material) =>
