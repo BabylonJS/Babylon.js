@@ -84,12 +84,18 @@ describe("glTF skinned node transforms", () => {
 
         expect(node.computeWorldMatrix(true).getTranslation().x).toBe(7);
         expect(child.computeWorldMatrix(true).getTranslation().x).toBe(11);
-        expect(mesh.computeWorldMatrix(true).getTranslation().x).toBe(5);
+        expect(mesh.computeWorldMatrix(true).getTranslation().x).toBe(jointLocation === "child" ? 7 : 5);
+        const getWorldVertexX = () => {
+            container.skeletons[0].prepare(true);
+            return Vector3.TransformCoordinates(Vector3.FromArray(mesh.getPositionData(true)!), mesh.computeWorldMatrix(true)).x;
+        };
+        expect(getWorldVertexX()).toBe(jointLocation === "sibling" ? 5 : 7);
         expect(translation.getTarget(data.json.nodes[1])).toBe(node);
         expect(globalMatrix.get(data.json.nodes[1]).getTranslation().x).toBe(7);
         translation.set!(new Vector3(3, 0, 0), data.json.nodes[1]);
         expect(child.computeWorldMatrix(true).getTranslation().x).toBe(12);
-        expect(mesh.computeWorldMatrix(true).getTranslation().x).toBe(5);
+        expect(mesh.computeWorldMatrix(true).getTranslation().x).toBe(jointLocation === "child" ? 8 : 5);
+        expect(getWorldVertexX()).toBe(jointLocation === "sibling" ? 5 : 8);
         translation.set!(new Vector3(2, 0, 0), data.json.nodes[1]);
 
         const group = container.animationGroups[0];
@@ -97,7 +103,8 @@ describe("glTF skinned node transforms", () => {
         group.start(false);
         group.goToFrame(group.to);
         expect(child.computeWorldMatrix(true).getTranslation().x).toBe(12);
-        expect(mesh.computeWorldMatrix(true).getTranslation().x).toBe(5);
+        expect(mesh.computeWorldMatrix(true).getTranslation().x).toBe(jointLocation === "child" ? 8 : 5);
+        expect(getWorldVertexX()).toBe(jointLocation === "sibling" ? 5 : 8);
         if (jointLocation === "self") {
             expect(container.skeletons[0].bones[0].getTransformNode()).toBe(node);
         } else if (jointLocation === "child") {
