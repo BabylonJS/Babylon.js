@@ -8,7 +8,8 @@ import { WebGPUDataBuffer } from "core/Meshes/WebGPU/webgpuDataBuffer";
 import { Scene } from "core/scene";
 import { Matrix } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { type Mesh } from "core/Meshes/mesh";
+import { Mesh } from "core/Meshes/mesh";
+import { VertexData } from "core/Meshes/mesh.vertexData";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { type DrawWrapper } from "core/Materials/drawWrapper";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
@@ -434,6 +435,39 @@ describe("Geometry WebGPU draw cache invalidation", () => {
         expect(context.buffers.Scene).toBe(sceneBuffer);
         expect(context.buffers.tint).toBe(buffers.tint.effectiveBuffer);
         expect(context.buffers.tint).not.toBe(previousBuffer);
+    });
+
+    it("applies empty vertex data to a mesh without submeshes", () => {
+        const empty = new Mesh("empty", scene);
+        const data = new VertexData();
+        data.positions = [];
+        data.normals = [];
+        data.indices = [];
+
+        expect(() => data.applyToMesh(empty)).not.toThrow();
+        expect(empty.subMeshes).toBeUndefined();
+        expect(empty.isVerticesDataPresent(VertexBuffer.NormalKind)).toBe(true);
+    });
+
+    it("invalidates cached draws once a mesh created from empty vertex data gets submeshes", () => {
+        const target = new Mesh("filled-later", scene);
+        const empty = new VertexData();
+        empty.positions = [];
+        empty.normals = [];
+        empty.indices = [];
+        empty.applyToMesh(target, true);
+
+        const triangle = new VertexData();
+        triangle.positions = [0, 0, 0, 1, 0, 0, 0, 1, 0];
+        triangle.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1];
+        triangle.indices = [0, 1, 2];
+        triangle.applyToMesh(target, true);
+        expect(target.subMeshes).toHaveLength(1);
+        const draws = cacheDraws(target);
+
+        target.setVerticesData(VertexBuffer.NormalKind, [0, 1, 0, 0, 1, 0, 0, 1, 0]);
+
+        expectInvalidated(draws);
     });
 
     it("does not invalidate WebGL draws", () => {
