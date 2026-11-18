@@ -891,6 +891,9 @@ export class GLTFLoader implements IGLTFLoader {
                 if (node._babylonTransformNodeForSkin) {
                     transformNodes.push(node._babylonTransformNodeForSkin);
                 }
+                if (node._babylonCameraTransformNode) {
+                    transformNodes.push(node._babylonCameraTransformNode);
+                }
             }
         }
 
@@ -984,9 +987,18 @@ export class GLTFLoader implements IGLTFLoader {
                 const camera = ArrayItem.Get(`${context}/camera`, this._gltf.cameras, node.camera);
                 promises.push(
                     this.loadCameraAsync(`/cameras/${camera.index}`, camera, (babylonCamera) => {
-                        babylonCamera.parent = babylonTransformNode;
                         if (!this._babylonScene.useRightHandedSystem) {
-                            babylonTransformNode.scaling.x = -1; // Cancelling root node scaling for handedness so the view matrix does not end up flipped.
+                            const cameraTransform = this._babylonScene._executeWithBlockedEntityCollection(
+                                !!this._assetContainer,
+                                () => new TransformNode(`${babylonTransformNode.name}_camera`, this._babylonScene)
+                            );
+                            cameraTransform._parentContainer = this._assetContainer;
+                            cameraTransform.parent = babylonTransformNode;
+                            cameraTransform.scaling.x = -1;
+                            node._babylonCameraTransformNode = cameraTransform;
+                            babylonCamera.parent = cameraTransform;
+                        } else {
+                            babylonCamera.parent = babylonTransformNode;
                         }
                     })
                 );

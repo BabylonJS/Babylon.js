@@ -187,6 +187,9 @@ export interface INode extends GLTF2.INode, IArrayItem {
     _babylonTransformNodeForSkin?: TransformNode;
 
     /** @internal */
+    _babylonCameraTransformNode?: TransformNode;
+
+    /** @internal */
     _primitiveBabylonMeshes?: AbstractMesh[];
 
     /** @internal */
