@@ -168,11 +168,11 @@ export class VertexAnimationBaker {
         return texture;
     }
     /**
-     * Serializes our vertexData to an object, with a nice string for the vertexData.
-     * @param vertexData The vertex array data.
+     * Serializes our vertexData to an object, preserving its full-float or half-float precision.
+     * @param vertexData The vertex array data, as full floats (Float32Array) or half-float bit patterns (Uint16Array).
      * @returns This object serialized to a JS dict.
      */
-    public serializeBakedVertexDataToObject(vertexData: Float32Array): Record<string, any> {
+    public serializeBakedVertexDataToObject(vertexData: Float32Array | Uint16Array): Record<string, any> {
         if (!this._skeleton) {
             throw new Error("No skeleton provided.");
         }
@@ -186,32 +186,34 @@ export class VertexAnimationBaker {
             vertexData: EncodeArrayBufferToBase64(vertexData),
             width,
             height,
+            isHalfFloat: vertexData instanceof Uint16Array,
         };
         return data;
     }
     /**
-     * Loads previously baked data.
+     * Loads previously baked data, preserving its precision. Data without precision metadata is loaded as full floats.
      * @param data The object as serialized by serializeBakedVertexDataToObject()
-     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
+     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array or Uint16Array.
      */
-    public loadBakedVertexDataFromObject(data: Record<string, any>): Float32Array {
-        return new Float32Array(DecodeBase64ToBinary(data.vertexData));
+    public loadBakedVertexDataFromObject(data: Record<string, any>): Float32Array | Uint16Array {
+        const buffer = DecodeBase64ToBinary(data.vertexData);
+        return data.isHalfFloat ? new Uint16Array(buffer) : new Float32Array(buffer);
     }
     /**
-     * Serializes our vertexData to a JSON string, with a nice string for the vertexData.
-     * Should be called right after bakeVertexData().
-     * @param vertexData The vertex array data.
+     * Serializes our vertexData to a JSON string, preserving its full-float or half-float precision.
+     * Should be called right after bakeVertexData() or bakeVertexDataSync().
+     * @param vertexData The vertex array data, as full floats (Float32Array) or half-float bit patterns (Uint16Array).
      * @returns This object serialized to a safe string.
      */
-    public serializeBakedVertexDataToJSON(vertexData: Float32Array): string {
+    public serializeBakedVertexDataToJSON(vertexData: Float32Array | Uint16Array): string {
         return JSON.stringify(this.serializeBakedVertexDataToObject(vertexData));
     }
     /**
-     * Loads previously baked data in string format.
+     * Loads previously baked data in string format, preserving its precision. Data without precision metadata is loaded as full floats.
      * @param json The json string as serialized by serializeBakedVertexDataToJSON().
-     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
+     * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array or Uint16Array.
      */
-    public loadBakedVertexDataFromJSON(json: string): Float32Array {
+    public loadBakedVertexDataFromJSON(json: string): Float32Array | Uint16Array {
         return this.loadBakedVertexDataFromObject(JSON.parse(json));
     }
 }
