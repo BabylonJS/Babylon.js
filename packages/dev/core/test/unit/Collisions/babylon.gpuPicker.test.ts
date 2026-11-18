@@ -3,6 +3,9 @@ import { GPUMultiPickReadbackStrategy, GPUPicker, type IGPUMultiPickOptions } fr
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { pickingPixelShader } from "core/Shaders/picking.fragment";
 import { type Nullable } from "core/types";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
 
 type ClientRectSize = {
     width: number;
@@ -57,6 +60,42 @@ const createPicker = (): GPUPickerInternals => {
 };
 
 describe("GPUPicker", () => {
+    it.each(["single", "multi", "box"] as const)("allows retrying a %s pick after material readiness throws", async (mode) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const picker = new GPUPicker();
+        try {
+            picker.setPickingList([new Mesh("__root__", scene)]);
+            const material = picker.defaultRenderMaterials.find((material) => material !== null)!;
+            const error = new Error("Picking material readiness failed");
+            const isReady = vi.spyOn(material, "isReady").mockImplementation(() => {
+                throw error;
+            });
+            const renderPassId = engine.currentRenderPassId;
+            const pick = () =>
+                mode === "single"
+                    ? picker.pickAsync(0, 0)
+                    : mode === "multi"
+                      ? picker.multiPickAsync([
+                            { x: 0, y: 0 },
+                            { x: 1, y: 1 },
+                        ])
+                      : picker.boxPickAsync(0, 0, 1, 1);
+
+            await expect(pick()).rejects.toBe(error);
+            expect(picker.pickingInProgress).toBe(false);
+            expect(engine.currentRenderPassId).toBe(renderPassId);
+
+            await expect(pick()).rejects.toBe(error);
+            expect(isReady).toHaveBeenCalledTimes(2);
+            expect(picker.pickingInProgress).toBe(false);
+        } finally {
+            picker.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
     it("uses high precision integers for WebGL2 picking ID bit shifts", () => {
         expect(pickingPixelShader.shader).toContain("precision highp int;");
     });
