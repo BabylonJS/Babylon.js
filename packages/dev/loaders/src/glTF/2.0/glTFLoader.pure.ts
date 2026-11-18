@@ -2510,6 +2510,9 @@ export class GLTFLoader implements IGLTFLoader {
 
         // Set emission color using adapter
         adapter.emissionColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
+        if (material.emissiveStrength !== undefined) {
+            adapter.emissionLuminance = material.emissiveStrength;
+        }
 
         // Set double-sided properties using adapter
         if (material.doubleSided) {

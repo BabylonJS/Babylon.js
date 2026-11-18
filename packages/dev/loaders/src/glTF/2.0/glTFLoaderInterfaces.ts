@@ -132,6 +132,9 @@ export interface IMaterialPbrMetallicRoughness extends GLTF2.IMaterialPbrMetalli
  * Loader interface with additional members.
  */
 export interface IMaterial extends GLTF2.IMaterial, IArrayItem {
+    /** The multiplier for the material's emissive luminance. */
+    emissiveStrength?: number;
+
     /** @internal */
     pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;
 
