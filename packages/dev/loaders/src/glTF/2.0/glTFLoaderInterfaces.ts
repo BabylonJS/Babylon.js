@@ -177,6 +177,9 @@ export interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
  * Loader interface with additional members.
  */
 export interface INode extends GLTF2.INode, IArrayItem {
+    /** The node's authored bounding volume. */
+    boundingVolume?: IBoundingVolume;
+
     /** @internal */
     parent?: INode;
 
@@ -310,6 +313,31 @@ export interface IGLTF extends GLTF2.IGLTF {
 
     /** @internal */
     textures?: ITexture[];
+
+    /** @internal */
+    shapes?: IShape[];
+}
+
+/** A shape defined by a glTF asset. */
+export interface IShape extends GLTF2.IChildRootProperty, IArrayItem {
+    /** The type of shape. */
+    type: string;
+    /** Box dimensions, when the shape is a box. */
+    box?: { size?: number[] };
+    /** Sphere radius, when the shape is a sphere. */
+    sphere?: { radius?: number };
+}
+
+/** A shape instance used as a node's bounding volume. */
+export interface IBoundingVolume extends GLTF2.IProperty {
+    /** Index of the referenced shape. */
+    shape: number;
+    /** Translation relative to the node. */
+    translation?: number[];
+    /** Rotation relative to the node. */
+    rotation?: number[];
+    /** Scale relative to the node. */
+    scale?: number[];
 }
 
 /**

@@ -81,6 +81,7 @@ import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import { Lazy } from "core/Misc/lazy";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { InitializeGLTFBoundingVolume } from "./glTFBoundingVolume";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
 const LazyAnimationGroupModulePromise = /*#__PURE__*/ new Lazy(() => import("core/Animations/animationGroup.pure"));
@@ -690,6 +691,7 @@ export class GLTFLoader implements IGLTFLoader {
         ArrayItem.Assign(this._gltf.scenes);
         ArrayItem.Assign(this._gltf.skins);
         ArrayItem.Assign(this._gltf.textures);
+        ArrayItem.Assign(this._gltf.shapes);
 
         if (this._gltf.nodes) {
             const nodeParents: { [index: number]: number } = {};
@@ -982,6 +984,15 @@ export class GLTFLoader implements IGLTFLoader {
         const loadNode = (babylonTransformNode: TransformNode) => {
             GLTFLoader.AddPointerMetadata(babylonTransformNode, context);
             GLTFLoader._LoadTransform(node, babylonTransformNode);
+
+            if (node.boundingVolume) {
+                const shape = ArrayItem.Get(`${context}/boundingVolume/shape`, this._gltf.shapes, node.boundingVolume.shape);
+                if (shape.type === "box" || shape.type === "sphere") {
+                    InitializeGLTFBoundingVolume(babylonTransformNode, shape, node.boundingVolume);
+                } else {
+                    Logger.Warn(`${context}/boundingVolume: Unsupported shape type '${shape.type}'`);
+                }
+            }
 
             if (node.camera != undefined) {
                 const camera = ArrayItem.Get(`${context}/camera`, this._gltf.cameras, node.camera);
