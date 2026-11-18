@@ -31,6 +31,15 @@ describe("BezierCurve.Interpolate", () => {
         expect(BezierCurve.Interpolate(0.5, 1, 0, 0, 1)).toBeCloseTo(0.5, 6);
     });
 
+    it("is accurate near a nearly-flat asymmetric x slope (the 0.05-step grid misses this case)", () => {
+        // x1=0.99999, x2=0.0000102: the x slope is about 1.5e-5 at the midpoint.
+        // A residual-only convergence check exits with an error > 0.003; bracket-based
+        // convergence drives the error below 1e-5.
+        const got = BezierCurve.Interpolate(0.5, 0.99999, 0, 0.0000102, 1);
+        const ref = reference(0.5, 0.99999, 0, 0.0000102, 1);
+        expect(Math.abs(got - ref)).toBeLessThan(1e-4);
+    });
+
     it("matches the curve for any x1 and x2 in [0, 1]", () => {
         let worst = 0;
         for (let a = 0; a <= 20; a++) {
