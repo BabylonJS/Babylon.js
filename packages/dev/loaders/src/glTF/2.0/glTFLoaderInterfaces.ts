@@ -313,6 +313,28 @@ export interface IGLTF extends GLTF2.IGLTF {
 
     /** @internal */
     textures?: ITexture[];
+    /** @internal */
+    shapes?: IShape[];
+}
+
+/** A shape defined by a glTF asset. */
+export interface IShape extends GLTF2.IChildRootProperty, IArrayItem {
+    /** The type of shape. */
+    type: string;
+    /** Box dimensions, when the shape is a box. */
+    box?: { size?: number[] };
+    /** Sphere radius, when the shape is a sphere. */
+    sphere?: { radius?: number };
+    /** Capsule parameters. */
+    capsule?: { height?: number; radiusTop?: number; radiusBottom?: number };
+    /** Cylinder parameters. */
+    cylinder?: { height?: number; radiusTop?: number; radiusBottom?: number };
+    /** Plane extents. Omitted extents are infinite. */
+    plane?: { sizeX?: number; sizeZ?: number };
+    /** Mesh used by a mesh shape. */
+    mesh?: { mesh: number };
+    /** Mesh used by a convex mesh shape. */
+    convexMesh?: { mesh: number };
 }
 
 /**

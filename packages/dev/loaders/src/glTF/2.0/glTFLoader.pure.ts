@@ -28,6 +28,7 @@ import { type ISceneLoaderAsyncResult, type ISceneLoaderProgressEvent } from "co
 import { type Scene } from "core/scene";
 import {
     type IProperty,
+    type IKHRDracoMeshCompression,
     AnimationChannelTargetPath,
     AnimationSamplerInterpolation,
     AccessorType,
@@ -81,6 +82,7 @@ import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import { Lazy } from "core/Misc/lazy";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { type GLTFShape } from "./glTFShape";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
 const LazyAnimationGroupModulePromise = /*#__PURE__*/ new Lazy(() => import("core/Animations/animationGroup.pure"));
@@ -302,6 +304,176 @@ export class GLTFLoader implements IGLTFLoader {
             const bytes = await loader.loadImageAsync(`/images/${image.index}`, image);
             return { data: new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength), mimeType: image.mimeType ?? GetMimeType(image.uri ?? "") };
         } finally {
+            loader.dispose();
+        }
+    }
+
+    /**
+     * Loads a glTF shape without loading its scene.
+     * Mesh shapes include the mesh's default morph weights and triangle-list indices.
+     * @param scene The scene used to load external resources
+     * @param data Parsed glTF data, a glTF JSON string, or a binary glTF file
+     * @param rootUrl The URL relative to which external resources are resolved
+     * @param shapeIndex The index in the asset's shapes array
+     * @returns The resolved shape
+     */
+    public static async LoadShapeAsync(scene: Scene, data: IGLTFLoaderData | string | ArrayBufferView, rootUrl: string, shapeIndex: number): Promise<GLTFShape> {
+        const fileLoader = new GLTFFileLoader();
+        const parsed: IGLTFLoaderData =
+            typeof data === "string" ? { json: JSON.parse(data), bin: null } : ArrayBuffer.isView(data) ? await fileLoader._unpackBinaryViewAsync(data) : data;
+        const gltf = parsed.json as IGLTF;
+        const shape = ArrayItem.Get("/shapes", gltf.shapes, shapeIndex);
+        switch (shape.type) {
+            case "box":
+                return { type: "box", size: [...(shape.box?.size ?? [1, 1, 1])] };
+            case "sphere":
+                return { type: "sphere", radius: shape.sphere?.radius ?? 0.5 };
+            case "capsule":
+            case "cylinder": {
+                const parameters = shape[shape.type];
+                return {
+                    type: shape.type,
+                    height: parameters?.height ?? (shape.type === "capsule" ? 1 : 2),
+                    radiusTop: parameters?.radiusTop ?? 0.5,
+                    radiusBottom: parameters?.radiusBottom ?? 0.5,
+                };
+            }
+            case "plane":
+                return { type: "plane", sizeX: shape.plane?.sizeX, sizeZ: shape.plane?.sizeZ };
+            case "mesh":
+            case "convexMesh":
+                break;
+            default:
+                throw new Error(`/shapes/${shapeIndex}: Unsupported shape type '${shape.type}'`);
+        }
+
+        const loader = new GLTFLoader(fileLoader);
+        loader._babylonScene = scene;
+        loader._rootUrl = rootUrl;
+        loader._gltf = {
+            ...gltf,
+            accessors: gltf.accessors?.map((accessor) => ({ ...accessor, _data: undefined, _babylonVertexBuffer: undefined, _activeLoaderExtensionFunctions: undefined })),
+            buffers: gltf.buffers?.map((buffer) => ({ ...buffer, _data: undefined, _activeLoaderExtensionFunctions: undefined })),
+            bufferViews: gltf.bufferViews?.map((bufferView) => ({
+                ...bufferView,
+                _data: undefined,
+                _babylonBuffer: undefined,
+                _dracoBabylonGeometry: undefined,
+                _meshOptData: undefined,
+                _activeLoaderExtensionFunctions: undefined,
+            })),
+            meshes: gltf.meshes?.map((mesh) => ({
+                ...mesh,
+                primitives: mesh.primitives.map((primitive) => ({ ...primitive, _instanceData: undefined, _activeLoaderExtensionFunctions: undefined })),
+            })),
+        };
+        ArrayItem.Assign(loader._gltf.accessors);
+        ArrayItem.Assign(loader._gltf.buffers);
+        ArrayItem.Assign(loader._gltf.bufferViews);
+        ArrayItem.Assign(loader._gltf.meshes);
+        const copyBuffer = (buffer: IDataBuffer): IDataBuffer => ({
+            byteLength: buffer.byteLength,
+            readAsync: async (offset, length) => {
+                const view = await buffer.readAsync(offset, length);
+                return Uint8Array.from(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
+            },
+        });
+        loader._bin = parsed.bin ? copyBuffer(parsed.bin) : null;
+        loader._chunks = (parsed.chunks ?? []).map(copyBuffer);
+
+        const temporaryMesh = scene._executeWithBlockedEntityCollection(true, () => new Mesh("__gltfShape", scene));
+        let geometry: Geometry | undefined;
+        try {
+            await loader._loadExtensionsAsync();
+            const mesh = ArrayItem.Get(`/shapes/${shapeIndex}/${shape.type}/mesh`, loader._gltf.meshes, shape[shape.type]?.mesh);
+            if (mesh.primitives.length !== 1) {
+                throw new Error(`/meshes/${mesh.index}: A shape mesh must have exactly one primitive`);
+            }
+            const primitive = mesh.primitives[0];
+            const context = `/meshes/${mesh.index}/primitives/0`;
+            const mode = primitive.mode ?? MeshPrimitiveMode.TRIANGLES;
+            if (mode !== MeshPrimitiveMode.TRIANGLES && mode !== MeshPrimitiveMode.TRIANGLE_STRIP && mode !== MeshPrimitiveMode.TRIANGLE_FAN) {
+                throw new Error(`${context}: A shape mesh must use triangles`);
+            }
+            const positionAccessor = ArrayItem.Get(`${context}/attributes/POSITION`, loader._gltf.accessors, primitive.attributes?.POSITION);
+            if (positionAccessor.type !== AccessorType.VEC3) {
+                throw new Error(`${context}/attributes/POSITION: Expected VEC3`);
+            }
+
+            let positions: Float32Array;
+            let indices: ArrayLike<number>;
+            let indicesAreTriangles = mode === MeshPrimitiveMode.TRIANGLES;
+            const draco = primitive.extensions?.KHR_draco_mesh_compression as IKHRDracoMeshCompression | undefined;
+            const extensionPromise = loader._extensionsLoadVertexDataAsync(context, primitive, temporaryMesh);
+            if (extensionPromise) {
+                geometry = await extensionPromise;
+                const vertexData = geometry.getVerticesData(VertexBuffer.PositionKind);
+                if (vertexData) {
+                    positions = Float32Array.from(vertexData);
+                } else if (draco && draco.attributes.POSITION === undefined) {
+                    positions = Float32Array.from(await loader._loadFloatAccessorAsync(`/accessors/${positionAccessor.index}`, positionAccessor));
+                } else {
+                    throw new Error(`${context}: Shape positions are missing`);
+                }
+                indices = geometry.getIndices() ?? Uint32Array.from({ length: positions.length / 3 }, (_, i) => i);
+                if (draco) {
+                    indicesAreTriangles = true;
+                }
+            } else {
+                if (draco && positionAccessor.bufferView === undefined && !positionAccessor.sparse) {
+                    throw new Error(`${context}: Draco-compressed shape positions are not available`);
+                }
+                positions = Float32Array.from(await loader._loadFloatAccessorAsync(`/accessors/${positionAccessor.index}`, positionAccessor));
+                if (primitive.indices === undefined) {
+                    indices = Uint32Array.from({ length: positions.length / 3 }, (_, i) => i);
+                } else {
+                    const accessor = ArrayItem.Get(`${context}/indices`, loader._gltf.accessors, primitive.indices);
+                    indices = await loader._loadIndicesAccessorAsync(`/accessors/${accessor.index}`, accessor);
+                }
+            }
+
+            if (positions.length !== positionAccessor.count * 3) {
+                throw new Error(`${context}/attributes/POSITION: Invalid vertex count`);
+            }
+            for (let targetIndex = 0; targetIndex < (primitive.targets?.length ?? 0); targetIndex++) {
+                const weight = mesh.weights?.[targetIndex] ?? 0;
+                const position = primitive.targets![targetIndex].POSITION;
+                if (weight !== 0 && position !== undefined) {
+                    const accessor = ArrayItem.Get(`${context}/targets/${targetIndex}/POSITION`, loader._gltf.accessors, position);
+                    // eslint-disable-next-line no-await-in-loop -- apply targets in their declared order
+                    const delta = await loader._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor);
+                    if (accessor.type !== AccessorType.VEC3 || delta.length !== positions.length) {
+                        throw new Error(`${context}/targets/${targetIndex}/POSITION: Invalid morph target`);
+                    }
+                    for (let i = 0; i < positions.length; i++) {
+                        positions[i] += delta[i] * weight;
+                    }
+                }
+            }
+
+            for (let i = 0; i < indices.length; i++) {
+                if (indices[i] < 0 || indices[i] >= positions.length / 3) {
+                    throw new Error(`${context}/indices: Index out of range`);
+                }
+            }
+            if (indicesAreTriangles && indices.length % 3 !== 0) {
+                throw new Error(`${context}/indices: Invalid triangle count`);
+            }
+            const triangles = new Uint32Array(indicesAreTriangles ? indices.length : Math.max(0, indices.length - 2) * 3);
+            if (indicesAreTriangles) {
+                triangles.set(indices);
+            } else {
+                for (let i = 2; i < indices.length; i++) {
+                    const offset = (i - 2) * 3;
+                    triangles[offset] = mode === MeshPrimitiveMode.TRIANGLE_FAN ? indices[0] : indices[i - (i % 2 ? 1 : 2)];
+                    triangles[offset + 1] = mode === MeshPrimitiveMode.TRIANGLE_FAN ? indices[i - 1] : indices[i - (i % 2 ? 2 : 1)];
+                    triangles[offset + 2] = indices[i];
+                }
+            }
+            return { type: shape.type, positions, indices: triangles };
+        } finally {
+            geometry?.dispose();
+            temporaryMesh.dispose();
             loader.dispose();
         }
     }
