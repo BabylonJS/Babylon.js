@@ -76,6 +76,9 @@ export interface IAnimation extends GLTF2.IAnimation, IArrayItem {
  * Loader interface with additional members.
  */
 export interface IBuffer extends GLTF2.IBuffer, IArrayItem {
+    /** The index of the GLB chunk containing this buffer. */
+    chunk?: number;
+
     /** @internal */
     _data?: Promise<ArrayBufferView>;
 }

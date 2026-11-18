@@ -222,6 +222,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _uniqueRootUrl: Nullable<string> = null;
     private _gltf: IGLTF;
     private _bin: Nullable<IDataBuffer> = null;
+    private _chunks: readonly IDataBuffer[] = [];
     private _babylonScene: Scene;
     private _rootBabylonMesh: Nullable<TransformNode> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
@@ -395,6 +396,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         (this._gltf as Nullable<IGLTF>) = null; // TODO
         this._bin = null;
+        this._chunks = [];
         (this._babylonScene as Nullable<Scene>) = null; // TODO
         this._rootBabylonMesh = null;
         this._defaultBabylonMaterialData = {};
@@ -660,17 +662,18 @@ export class GLTFLoader implements IGLTFLoader {
     private _loadData(data: IGLTFLoaderData): void {
         this._gltf = data.json as IGLTF;
         this._setupData();
+        this._chunks = data.chunks ?? [];
 
         if (data.bin) {
             const buffers = this._gltf.buffers;
-            if (buffers && buffers[0] && !buffers[0].uri) {
+            if (buffers && buffers[0] && !buffers[0].uri && buffers[0].chunk === undefined) {
                 const binaryBuffer = buffers[0];
-                if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
+                if (binaryBuffer.byteLength > data.bin.byteLength || (data.containerVersion !== 3 && binaryBuffer.byteLength < data.bin.byteLength - 3)) {
                     Logger.Warn(`Binary buffer length (${binaryBuffer.byteLength}) from JSON does not match chunk length (${data.bin.byteLength})`);
                 }
 
                 this._bin = data.bin;
-            } else {
+            } else if (!buffers?.some((buffer) => buffer.chunk !== undefined)) {
                 Logger.Warn("Unexpected BIN chunk");
             }
         }
@@ -2068,6 +2071,26 @@ export class GLTFLoader implements IGLTFLoader {
         const extensionPromise = this._extensionsLoadBufferAsync(context, buffer, byteOffset, byteLength);
         if (extensionPromise) {
             return extensionPromise;
+        }
+
+        if (buffer.chunk !== undefined) {
+            const chunk = this._chunks[buffer.chunk];
+            if (!chunk) {
+                throw new Error(`${context}: GLB chunk ${buffer.chunk} is missing`);
+            }
+            if (
+                !Number.isSafeInteger(buffer.byteLength) ||
+                !Number.isSafeInteger(byteOffset) ||
+                !Number.isSafeInteger(byteLength) ||
+                buffer.byteLength < 0 ||
+                buffer.byteLength > chunk.byteLength ||
+                byteOffset < 0 ||
+                byteLength < 0 ||
+                byteOffset > buffer.byteLength - byteLength
+            ) {
+                throw new Error(`${context}: Invalid buffer or chunk range`);
+            }
+            return chunk.readAsync(byteOffset, byteLength);
         }
 
         if (!buffer._data) {

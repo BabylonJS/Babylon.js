@@ -53,6 +53,21 @@ function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: num
     }
 }
 
+function createBinaryChunk(buffer: IDataBuffer, start: number, length: number, encoding = 0): IDataBuffer {
+    return {
+        byteLength: length,
+        readAsync: (byteOffset, byteLength) => {
+            if (encoding !== 0) {
+                return Promise.reject(new Error(`Unsupported GLB chunk encoding: ${encoding}`));
+            }
+            if (!Number.isSafeInteger(byteOffset) || !Number.isSafeInteger(byteLength) || byteOffset < 0 || byteLength < 0 || byteOffset > length - byteLength) {
+                return Promise.reject(new Error("GLB chunk read exceeds its length"));
+            }
+            return buffer.readAsync(start + byteOffset, byteLength);
+        },
+    };
+}
+
 function readViewAsync(arrayBufferView: ArrayBufferView, byteOffset: number, byteLength: number): Promise<Uint8Array> {
     try {
         if (byteOffset < 0 || byteOffset >= arrayBufferView.byteLength) {
@@ -117,6 +132,16 @@ export interface IGLTFLoaderData {
      * The BIN chunk of a binary glTF.
      */
     bin: Nullable<IDataBuffer>;
+
+    /**
+     * The chunks of a binary glTF, in file order.
+     */
+    chunks?: readonly IDataBuffer[];
+
+    /**
+     * The binary glTF container version.
+     */
+    containerVersion?: number;
 }
 
 /**
@@ -1269,8 +1294,15 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
                 this._log(`Binary version: ${version}`);
             }
 
-            const length = dataReader.readUint32();
+            const lengthLow = dataReader.readUint32();
+            const length = version === 3 ? lengthLow + dataReader.readUint32() * 0x100000000 : lengthLow;
+            if (!Number.isSafeInteger(length)) {
+                throw new Error("GLB length exceeds the supported integer range");
+            }
             if (!this.useRangeRequests && length !== dataReader.buffer.byteLength) {
+                if (version === 3) {
+                    throw new Error(`GLB length does not match the data length: ${length} != ${dataReader.buffer.byteLength}`);
+                }
                 Logger.Warn(`Length in header does not match actual data length: ${length} != ${dataReader.buffer.byteLength}`);
             }
 
@@ -1282,6 +1314,10 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
                 }
                 case 2: {
                     unpacked = this._unpackBinaryV2Async(dataReader, length);
+                    break;
+                }
+                case 3: {
+                    unpacked = this._unpackBinaryV3Async(dataReader, length);
                     break;
                 }
                 default: {
@@ -1333,32 +1369,31 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         if (chunkFormat !== ChunkFormat.JSON) {
             throw new Error("First chunk format is not JSON");
         }
+        const chunks = [createBinaryChunk(dataReader.buffer, dataReader.byteOffset, chunkLength)];
 
         // Bail if there are no other chunks.
         if (dataReader.byteOffset + chunkLength === length) {
             return dataReader.loadAsync(chunkLength).then(() => {
-                return { json: this._parseJson(dataReader.readString(chunkLength)), bin: null };
+                return { json: this._parseJson(dataReader.readString(chunkLength)), bin: null, chunks, containerVersion: 2 };
             });
         }
 
         // Read the JSON chunk and the length and type of the next chunk.
         return dataReader.loadAsync(chunkLength + 8).then(() => {
-            const data: IGLTFLoaderData = { json: this._parseJson(dataReader.readString(chunkLength)), bin: null };
+            const data: IGLTFLoaderData = { json: this._parseJson(dataReader.readString(chunkLength)), bin: null, chunks, containerVersion: 2 };
 
             const readAsync = (): Promise<IGLTFLoaderData> => {
                 const chunkLength = dataReader.readUint32();
                 const chunkFormat = dataReader.readUint32();
+                const chunk = createBinaryChunk(dataReader.buffer, dataReader.byteOffset, chunkLength);
+                chunks.push(chunk);
 
                 switch (chunkFormat) {
                     case ChunkFormat.JSON: {
                         throw new Error("Unexpected JSON chunk");
                     }
                     case ChunkFormat.BIN: {
-                        const startByteOffset = dataReader.byteOffset;
-                        data.bin = {
-                            readAsync: (byteOffset, byteLength) => dataReader.buffer.readAsync(startByteOffset + byteOffset, byteLength),
-                            byteLength: chunkLength,
-                        };
+                        data.bin = chunk;
                         dataReader.skipBytes(chunkLength);
                         break;
                     }
@@ -1378,6 +1413,57 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
             return readAsync();
         });
+    }
+
+    private async _unpackBinaryV3Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
+        const jsonType = 0x4e4f534a;
+        const binType = 0x004e4942;
+        const chunks: IDataBuffer[] = [];
+        const chunkTypes: number[] = [];
+        let jsonOffset: number | undefined;
+        let jsonLength = 0;
+
+        while (dataReader.byteOffset < length) {
+            if (length - dataReader.byteOffset < 16) {
+                throw new Error("Incomplete GLB chunk header");
+            }
+            // Each header determines the offset of the next one.
+            // eslint-disable-next-line no-await-in-loop
+            await dataReader.loadAsync(16);
+            const type = dataReader.readUint32();
+            const encoding = dataReader.readUint32();
+            const chunkLength = dataReader.readUint32() + dataReader.readUint32() * 0x100000000;
+            const start = dataReader.byteOffset;
+            if (!Number.isSafeInteger(chunkLength) || chunkLength > length - start) {
+                throw new Error("Invalid GLB chunk length");
+            }
+
+            if (type === jsonType && jsonOffset === undefined) {
+                if (encoding !== 0) {
+                    throw new Error(`Unsupported GLB JSON chunk encoding: ${encoding}`);
+                }
+                jsonOffset = start;
+                jsonLength = chunkLength;
+            }
+
+            chunks.push(createBinaryChunk(dataReader.buffer, start, chunkLength, encoding));
+            chunkTypes.push(type);
+            const end = start + chunkLength;
+            dataReader.byteOffset = end < length ? Math.ceil(end / 8) * 8 : end;
+            if (end < length && dataReader.byteOffset >= length) {
+                throw new Error("Invalid GLB chunk padding");
+            }
+        }
+
+        if (jsonOffset === undefined) {
+            throw new Error("GLB JSON chunk is missing");
+        }
+
+        dataReader.byteOffset = jsonOffset;
+        await dataReader.loadAsync(jsonLength);
+        const json = this._parseJson(dataReader.readString(jsonLength));
+        const bin = chunkTypes[0] === jsonType && chunkTypes[1] === binType ? chunks[1] : null;
+        return { json, bin, chunks, containerVersion: 3 };
     }
 
     private static _parseVersion(version: string): Nullable<{ major: number; minor: number }> {

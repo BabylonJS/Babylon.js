@@ -305,7 +305,18 @@ export class MSFT_lod implements IGLTFLoaderExtension {
      */
     // eslint-disable-next-line no-restricted-syntax
     public loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
-        if (this._loader.parent.useRangeRequests && !buffer.uri) {
+        if (this._loader.parent.useRangeRequests && buffer.chunk !== undefined) {
+            const indexLOD = this._nodeIndexLOD ?? this._materialIndexLOD;
+            if (indexLOD !== null) {
+                const signals = this._nodeIndexLOD !== null ? this._nodeSignalLODs : this._materialSignalLODs;
+                const previousIndexLOD = indexLOD - 1;
+                signals[previousIndexLOD] = signals[previousIndexLOD] || new Deferred<void>();
+                return signals[previousIndexLOD].promise.then(async () => await this._loader.loadBufferAsync(context, buffer, byteOffset, byteLength));
+            }
+            return null;
+        }
+
+        if (this._loader.parent.useRangeRequests && !buffer.uri && buffer.chunk === undefined) {
             if (!this._loader.bin) {
                 throw new Error(`${context}: Uri is missing or the binary glTF is missing its binary chunk`);
             }
