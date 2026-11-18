@@ -34,6 +34,7 @@ import { type Mesh } from "core/Meshes/mesh";
 import { type Camera } from "core/Cameras/camera";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
+import { SetNodeVisibility } from "../glTFLoaderVisibility";
 
 /**
  * Top-level shape of the glTF Object Model accessor tree. Each property
@@ -75,6 +76,7 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
     length: IObjectAccessor<GLTFTargetType[], BabylonTargetType[], FlowGraphInteger>;
     __array__: {
         __target__: boolean;
+        visible: IObjectAccessor<GLTFTargetType, BabylonTargetType, boolean>;
         translation: IObjectAccessor<GLTFTargetType, BabylonTargetType, Vector3>;
         rotation: IObjectAccessor<GLTFTargetType, BabylonTargetType, Quaternion>;
         scale: IObjectAccessor<GLTFTargetType, BabylonTargetType, Vector3>;
@@ -448,6 +450,13 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
     ),
     __array__: {
         __target__: true,
+        visible: {
+            type: "boolean",
+            get: (node: INode) => node._visibility?.local,
+            set: (value: boolean, node: INode) => SetNodeVisibility(node, value),
+            getTarget: (node: INode) => node._babylonTransformNode,
+            getPropertyName: [() => "isVisible"],
+        },
         translation: {
             type: "Vector3",
             get: (node: INode) => node._babylonTransformNode?.position,

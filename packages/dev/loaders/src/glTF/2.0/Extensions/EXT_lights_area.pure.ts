@@ -89,6 +89,7 @@ export class EXT_lights_area implements IGLTFLoaderExtension {
 
                 babylonLight._parentContainer = this._loader._assetContainer;
                 light._babylonLight = babylonLight;
+                (node._babylonLights ??= []).push(babylonLight);
 
                 babylonLight.falloffType = Light.FALLOFF_GLTF;
                 babylonLight.diffuse = light.color ? Color3.FromArray(light.color) : Color3.White();

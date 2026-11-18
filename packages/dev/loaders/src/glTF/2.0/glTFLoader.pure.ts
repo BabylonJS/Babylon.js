@@ -81,6 +81,7 @@ import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import { Lazy } from "core/Misc/lazy";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
+import { InitializeNodeVisibility } from "./glTFLoaderVisibility";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
 const LazyAnimationGroupModulePromise = /*#__PURE__*/ new Lazy(() => import("core/Animations/animationGroup.pure"));
@@ -607,6 +608,14 @@ export class GLTFLoader implements IGLTFLoader {
                         this._completePromises.push(adapter.finalizeAsync(this));
                     }
 
+                    const version = this._gltf.asset.version.split(".").map(Number);
+                    const visibilityExtensionEnabled = this._extensions.some((extension) => extension.name === "KHR_node_visibility" && extension.enabled);
+                    if (
+                        this._gltf.nodes &&
+                        (visibilityExtensionEnabled || version[0] > 2 || (version[0] === 2 && version[1] >= 1) || this._gltf.nodes.some((node) => node.visible !== undefined))
+                    ) {
+                        InitializeNodeVisibility(this._gltf.nodes, visibilityExtensionEnabled);
+                    }
                     await this._extensionsOnReadyAsync();
                     this._parent._setState(GLTFLoaderState.READY);
                     if (!this._skipStartAnimationStep) {

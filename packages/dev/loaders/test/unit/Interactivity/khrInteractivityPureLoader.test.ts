@@ -258,6 +258,46 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(log).not.toHaveBeenCalledWith("interpolation error");
     });
 
+    it("writes and reads core node visibility", async () => {
+        const pointer = "/nodes/0/visible";
+        const graph = withReadback(
+            {
+                types: [{ signature: "bool" }],
+                declarations: [{ op: "event/onStart" }, { op: "pointer/set" }, { op: "debug/log" }],
+                nodes: [
+                    { declaration: 0, flows: { out: { node: 1 } } },
+                    {
+                        declaration: 1,
+                        configuration: { pointer: { value: [pointer] }, type: { value: [0] } },
+                        values: { value: { type: 0, value: [false] } },
+                        flows: { out: { node: 2 }, err: { node: 3 } },
+                    },
+                    { declaration: 2, configuration: { severity: { value: [0] }, message: { value: ["written"] } } },
+                    { declaration: 2, configuration: { severity: { value: [0] }, message: { value: ["write error"] } } },
+                ],
+            },
+            pointer
+        );
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(graph, ["KHR_interactivity"], {
+                ...materialContents([4]),
+                asset: { version: "2.1" },
+                nodes: [
+                    { name: "parent", children: [1] },
+                    { name: "child", mesh: 0 },
+                ],
+            }),
+            scene
+        );
+        scene.render();
+        const child = scene.meshes.find((mesh) => mesh.name === "child")!;
+        expect(child.isVisible).toBe(false);
+        expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBe(false);
+        expect(log).toHaveBeenCalledWith("written");
+        expect(log).not.toHaveBeenCalledWith("write error");
+    });
+
     it.each([{ modes: [4, 1] }, { modes: [1] }])("interpolates loaded primitive-mode variants ($modes)", async ({ modes }) => {
         const log = vi.spyOn(Logger, "Log");
         await AppendSceneAsync(asset(scalarInterpolation("/materials/0/pbrMetallicRoughness/metallicFactor", 0.8), ["KHR_interactivity"], materialContents(modes)), scene, {

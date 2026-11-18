@@ -9,6 +9,7 @@ import { AnimationPropertyInfo, RegisterGLTFLoaderAnimation } from "../glTFLoade
 import { Color3 } from "core/Maths/math.color.pure";
 import { SetInterpolationForKey } from "./objectModelMapping";
 import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
+import { SetNodeVisibility } from "../glTFLoaderVisibility";
 
 function getColor3(_target: any, source: Float32Array, offset: number, scale: number): Color3 {
     return Color3.FromArray(source, offset).scale(scale);
@@ -87,12 +88,21 @@ class AreaLightDimensionsAnimationPropertyInfo extends AnimationPropertyInfo {
     }
 }
 
-class MeshAnimationPropertyInfo extends AnimationPropertyInfo {
-    /** @internal */
+class NodeVisibilityAnimationPropertyInfo extends AnimationPropertyInfo {
     public buildAnimations(target: INode, name: string, fps: number, keys: any[]) {
-        return target._primitiveBabylonMeshes
-            ? target._primitiveBabylonMeshes.map((mesh) => ({ babylonAnimatable: mesh, babylonAnimation: this._buildAnimation(name, fps, keys) }))
-            : [];
+        const visibility = {
+            animations: null,
+            get value(): number {
+                if (!target._visibility) {
+                    throw new Error("Node visibility has not been initialized.");
+                }
+                return target._visibility.local ? 1 : 0;
+            },
+            set value(value: number) {
+                SetNodeVisibility(target, value !== 0);
+            },
+        };
+        return [{ babylonAnimatable: visibility, babylonAnimation: this._buildAnimation(name, fps, keys) }];
     }
 }
 
@@ -396,5 +406,7 @@ export function _RegisterKHRAnimationPointerData(): void {
     SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
     SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/multiplier", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
 
-    SetInterpolationForKey("/nodes/{}/extensions/KHR_node_visibility/visible", [new MeshAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "isVisible", getFloat, () => 1)]);
+    const visibilityAnimation = [new NodeVisibilityAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "value", getFloat, () => 1)];
+    SetInterpolationForKey("/nodes/{}/visible", visibilityAnimation);
+    SetInterpolationForKey("/nodes/{}/extensions/KHR_node_visibility/visible", visibilityAnimation);
 }

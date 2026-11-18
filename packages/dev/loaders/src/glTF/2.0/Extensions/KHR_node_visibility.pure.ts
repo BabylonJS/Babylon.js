@@ -4,6 +4,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type INode } from "../glTFLoaderInterfaces";
 import { AddObjectAccessorToKey } from "./objectModelMapping";
+import { SetNodeVisibility } from "../glTFLoaderVisibility";
 
 const NAME = "KHR_node_visibility";
 
@@ -42,6 +43,9 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
         const nodes = this._loader.gltf.nodes;
         if (nodes) {
             for (const node of nodes) {
+                if (node._visibility) {
+                    continue;
+                }
                 const babylonTransformNode = node._babylonTransformNode;
                 if (babylonTransformNode) {
                     babylonTransformNode.inheritVisibility = true;
@@ -83,6 +87,9 @@ export function _RegisterKHRNodeVisibilityRuntime(): void {
 
     AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_visibility/visible", {
         get: (node: INode) => {
+            if (node._visibility) {
+                return node._visibility.local;
+            }
             const tn = node._babylonTransformNode as any;
             if (tn && tn.isVisible !== undefined) {
                 return tn.isVisible;
@@ -90,6 +97,10 @@ export function _RegisterKHRNodeVisibilityRuntime(): void {
             return true;
         },
         set: (value: boolean, node: INode) => {
+            if (node._visibility) {
+                SetNodeVisibility(node, value);
+                return;
+            }
             node._primitiveBabylonMeshes?.forEach((mesh) => {
                 mesh.inheritVisibility = true;
             });

@@ -177,8 +177,23 @@ export interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
  * Loader interface with additional members.
  */
 export interface INode extends GLTF2.INode, IArrayItem {
+    /** Whether the node and its descendants are visible. */
+    visible?: boolean;
+
     /** @internal */
     parent?: INode;
+
+    /** @internal */
+    _visibility?: {
+        local: boolean;
+        effective: boolean;
+        children: INode[];
+        hiddenNodes: Map<TransformNode, boolean>;
+        hiddenLights: Map<Light, boolean>;
+    };
+
+    /** @internal */
+    _babylonLights?: Light[];
 
     /** @internal */
     _babylonTransformNode?: TransformNode;
