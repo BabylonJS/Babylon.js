@@ -85,8 +85,9 @@ describe("WebGPUEngine.createComputeEffect cache hits", () => {
 
         failCompilation("notDefinedAnywhere is not defined");
 
-        expect(firstOnError).toHaveBeenCalledExactlyOnceWith(first, "error: notDefinedAnywhere is not defined");
-        expect(secondOnError).toHaveBeenCalledExactlyOnceWith(first, "error: notDefinedAnywhere is not defined");
+        expect(first.getCompilationError()).toEqual(expect.stringContaining("notDefinedAnywhere is not defined"));
+        expect(firstOnError).toHaveBeenCalledExactlyOnceWith(first, first.getCompilationError());
+        expect(secondOnError).toHaveBeenCalledExactlyOnceWith(first, first.getCompilationError());
         expect(secondOnCompiled).not.toHaveBeenCalled();
         expect(first.onCompileObservable.hasObservers()).toBe(false);
         expect(first.onErrorObservable.hasObservers()).toBe(false);
@@ -119,7 +120,7 @@ describe("WebGPUEngine.createComputeEffect cache hits", () => {
         const secondOnCompiled = vi.fn();
         createComputeEffect({ onError: secondOnError, onCompiled: secondOnCompiled });
 
-        expect(secondOnError).toHaveBeenCalledExactlyOnceWith(first, "error: notDefinedAnywhere is not defined");
+        expect(secondOnError).toHaveBeenCalledExactlyOnceWith(first, first.getCompilationError());
         expect(secondOnCompiled).not.toHaveBeenCalled();
         expect(first.onErrorObservable.hasObservers()).toBe(false);
     });
