@@ -1,5 +1,7 @@
 /** Pure barrel — re-exports only side-effect-free modules */
 /* eslint-disable @typescript-eslint/no-restricted-imports */
+export * from "./BABYLON_materials_neural_texture.pure";
+export * from "./BABYLON_materials_neural_texture.types";
 export * from "./objectModelMapping";
 export * from "./EXT_lights_image_based.pure";
 export * from "./EXT_mesh_gpu_instancing.pure";
