@@ -11,7 +11,7 @@ import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
 import { _AddInteractivityObjectModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity";
-import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { GetMappingForKey, GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
@@ -351,6 +351,62 @@ describe("glTF interactivity Object Model", () => {
         );
 
         expect(log).toHaveBeenCalledWith(new Vector3(1, 2, 3));
+    });
+
+    it("uses the authored transform for object-model access to a skinned node", () => {
+        const mesh = new Mesh("skinMesh", scene);
+        const coordinateRoot = new TransformNode("coordinateRoot", scene);
+        const parent = new TransformNode("parent", scene);
+        const skinTransform = new TransformNode("skinTransform", scene);
+        coordinateRoot.scaling.z = -1;
+        parent.parent = coordinateRoot;
+        parent.position.x = 5;
+        skinTransform.parent = parent;
+        skinTransform.position.x = 2;
+        skinTransform.rotationQuaternion = Quaternion.Identity();
+        const root = { index: -1, _babylonTransformNode: coordinateRoot };
+        const gltfParent = { index: 0, parent: root, _babylonTransformNode: parent };
+        const node = { index: 1, parent: gltfParent, _babylonTransformNode: mesh, _babylonTransformNodeForSkin: skinTransform };
+        const translation = GetMappingForKey("/nodes/{}/translation")!;
+        const rotation = GetMappingForKey("/nodes/{}/rotation")!;
+        const scale = GetMappingForKey("/nodes/{}/scale")!;
+        const matrix = GetMappingForKey("/nodes/{}/matrix")!;
+        const globalMatrix = GetMappingForKey("/nodes/{}/globalMatrix")!;
+
+        expect(translation.get(node)).toBe(skinTransform.position);
+        expect(rotation.get(node)).toBe(skinTransform.rotationQuaternion);
+        expect(scale.get(node)).toBe(skinTransform.scaling);
+        expect(translation.getTarget(node)).toBe(skinTransform);
+        expect(rotation.getTarget(node)).toBe(skinTransform);
+        expect(scale.getTarget(node)).toBe(skinTransform);
+        expect(matrix.get(node).getTranslation().x).toBe(2);
+        expect(globalMatrix.get(node).getTranslation().x).toBe(7);
+        expect(coordinateRoot.getWorldMatrix().m[10]).toBe(-1);
+        translation.set!(new Vector3(3, 0, 0), node);
+        rotation.set!(Quaternion.FromEulerAngles(0, 1, 0), node);
+        scale.set!(new Vector3(2, 3, 4), node);
+        expect(skinTransform.position.x).toBe(3);
+        expect(skinTransform.rotationQuaternion!.y).not.toBe(0);
+        expect(skinTransform.scaling.asArray()).toEqual([2, 3, 4]);
+        expect(globalMatrix.get(node).getTranslation().x).toBe(8);
+        expect(mesh.position.asArray()).toEqual([0, 0, 0]);
+    });
+
+    it("does not mutate the root world matrix when reading a node's global matrix", () => {
+        const rootTransform = new TransformNode("root", scene);
+        rootTransform.position.x = 3;
+        rootTransform.scaling.x = 2;
+        const childTransform = new TransformNode("child", scene);
+        childTransform.parent = rootTransform;
+        childTransform.position.x = 5;
+        const root = { index: -1, _babylonTransformNode: rootTransform };
+        const node = { index: 0, parent: root, _babylonTransformNode: childTransform };
+        const globalMatrix = GetMappingForKey("/nodes/{}/globalMatrix")!;
+        const rootBefore = rootTransform.computeWorldMatrix(true).clone();
+
+        expect(globalMatrix.get(node).getTranslation().x).toBe(5);
+        expect(rootTransform.getWorldMatrix().asArray()).toEqual(rootBefore.asArray());
+        expect(globalMatrix.get(node).getTranslation().x).toBe(5);
     });
 
     it("should report node weights.length as invalid when the node has no mesh", async () => {

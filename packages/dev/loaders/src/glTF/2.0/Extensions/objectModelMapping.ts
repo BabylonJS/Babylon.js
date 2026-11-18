@@ -15,6 +15,7 @@ import {
     type INode,
     type IScene,
     type ISkin,
+    GetNodeTransform,
 } from "../glTFLoaderInterfaces";
 import { type Vector3, Matrix, Quaternion, Vector2 } from "core/Maths/math.vector.pure";
 import { Constants } from "core/Engines/constants";
@@ -450,23 +451,23 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
         __target__: true,
         translation: {
             type: "Vector3",
-            get: (node: INode) => node._babylonTransformNode?.position,
-            set: (value: Vector3, node: INode) => node._babylonTransformNode?.position.copyFrom(value),
-            getTarget: (node: INode) => node._babylonTransformNode,
+            get: (node: INode) => GetNodeTransform(node)?.position,
+            set: (value: Vector3, node: INode) => GetNodeTransform(node)?.position.copyFrom(value),
+            getTarget: (node: INode) => GetNodeTransform(node),
             getPropertyName: [() => "position"],
         },
         rotation: {
             type: "Quaternion",
-            get: (node: INode) => node._babylonTransformNode?.rotationQuaternion!,
-            set: (value: Quaternion, node: INode) => node._babylonTransformNode?.rotationQuaternion?.copyFrom(value),
-            getTarget: (node: INode) => node._babylonTransformNode,
+            get: (node: INode) => GetNodeTransform(node)?.rotationQuaternion!,
+            set: (value: Quaternion, node: INode) => GetNodeTransform(node)?.rotationQuaternion?.copyFrom(value),
+            getTarget: (node: INode) => GetNodeTransform(node),
             getPropertyName: [() => "rotationQuaternion"],
         },
         scale: {
             type: "Vector3",
-            get: (node: INode) => node._babylonTransformNode?.scaling,
-            set: (value: Vector3, node: INode) => node._babylonTransformNode?.scaling.copyFrom(value),
-            getTarget: (node: INode) => node._babylonTransformNode,
+            get: (node: INode) => GetNodeTransform(node)?.scaling,
+            set: (value: Vector3, node: INode) => GetNodeTransform(node)?.scaling.copyFrom(value),
+            getTarget: (node: INode) => GetNodeTransform(node),
             getPropertyName: [() => "scaling"],
         },
         weights: {
@@ -539,34 +540,37 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
         // readonly!
         matrix: {
             type: "Matrix",
-            get: (node: INode) => Matrix.Compose(node._babylonTransformNode?.scaling!, node._babylonTransformNode?.rotationQuaternion!, node._babylonTransformNode?.position!),
-            getTarget: (node: INode) => node._babylonTransformNode,
+            get: (node: INode) => {
+                const transformNode = GetNodeTransform(node);
+                return Matrix.Compose(transformNode?.scaling!, transformNode?.rotationQuaternion!, transformNode?.position!);
+            },
+            getTarget: (node: INode) => GetNodeTransform(node),
             isReadOnly: true,
         },
         globalMatrix: {
             type: "Matrix",
             get: (node: INode) => {
                 const matrix = Matrix.Identity();
+                const transformNode = GetNodeTransform(node);
                 // RHS/LHS support
                 let rootNode = node.parent;
                 while (rootNode && rootNode.parent) {
                     rootNode = rootNode.parent;
                 }
-                const forceUpdate =
-                    node._babylonTransformNode?.position._isDirty || node._babylonTransformNode?.rotationQuaternion?._isDirty || node._babylonTransformNode?.scaling._isDirty;
+                const forceUpdate = transformNode?.position._isDirty || transformNode?.rotationQuaternion?._isDirty || transformNode?.scaling._isDirty;
                 if (rootNode) {
                     // take the parent root node's world matrix, invert it, and multiply it with the current node's world matrix
                     // This will provide the global matrix, ignoring the RHS->LHS conversion
-                    const rootMatrix = rootNode._babylonTransformNode?.computeWorldMatrix(true).invert();
+                    const rootMatrix = GetNodeTransform(rootNode)?.computeWorldMatrix(true).clone().invert();
                     if (rootMatrix) {
-                        node._babylonTransformNode?.computeWorldMatrix(forceUpdate)?.multiplyToRef(rootMatrix, matrix);
+                        transformNode?.computeWorldMatrix(forceUpdate)?.multiplyToRef(rootMatrix, matrix);
                     }
-                } else if (node._babylonTransformNode) {
-                    matrix.copyFrom(node._babylonTransformNode.computeWorldMatrix(forceUpdate));
+                } else if (transformNode) {
+                    matrix.copyFrom(transformNode.computeWorldMatrix(forceUpdate));
                 }
                 return matrix;
             },
-            getTarget: (node: INode) => node._babylonTransformNode,
+            getTarget: (node: INode) => GetNodeTransform(node),
             isReadOnly: true,
         },
         camera: {

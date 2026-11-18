@@ -206,6 +206,11 @@ export interface INode extends GLTF2.INode, IArrayItem {
 }
 
 /** @internal */
+export function GetNodeTransform(node: INode): TransformNode | undefined {
+    return node._babylonTransformNodeForSkin ?? node._babylonTransformNode;
+}
+
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _ISamplerData {
     /** @internal */

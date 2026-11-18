@@ -1941,6 +1941,21 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(exported.graphs[0].variables).toEqual([{ type: 0, value: ["/nodes/3"] }]);
     });
 
+    it("resolves a skinned node's authored transform when retaining source indices", async () => {
+        const mesh = new TransformNode("mesh", scene);
+        const transform = new TransformNode("authored", scene);
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }],
+            variables: [{ type: 0, value: ["/nodes/0"] }],
+        };
+        const sourceGLTF = { nodes: [{ index: 0, _babylonTransformNode: mesh, _babylonTransformNodeForSkin: transform }] };
+        const plan = await CreatePlan({ graphs: [graph] }, sourceGLTF, true);
+        coordinator.flowGraphs[0].metadata!.khrInteractivity!.authoredVariableTypes = { 0: "TransformNode" };
+        coordinator.flowGraphs[0].metadata!.khrInteractivity!.authoredVariableValues = { 0: [transform] };
+
+        expect(plan.buildWithSourceIndices().graphs[0].variables).toEqual([{ type: 0, value: ["/nodes/0"] }]);
+    });
+
     it("exports a primitive variable changed to an empty scene-object ref", async () => {
         const graph: IKHRInteractivity_Graph = {
             types: [{ signature: "float" }],
