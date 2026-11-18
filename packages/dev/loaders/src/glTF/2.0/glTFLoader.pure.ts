@@ -262,6 +262,51 @@ export class GLTFLoader implements IGLTFLoader {
     public static readonly DefaultSampler: ISampler = { index: -1 };
 
     /**
+     * Loads the thumbnail image from parsed glTF data without loading its scene.
+     * @param scene The scene used to load external resources
+     * @param data Parsed glTF data, a glTF JSON string, or a binary glTF file
+     * @param rootUrl The URL relative to which external resources are resolved
+     * @returns The image bytes and media type, or undefined if no thumbnail is declared
+     */
+    public static async LoadThumbnailAsync(
+        scene: Scene,
+        data: IGLTFLoaderData | string | ArrayBufferView,
+        rootUrl: string
+    ): Promise<{ data: Uint8Array; mimeType: string | undefined } | undefined> {
+        const fileLoader = new GLTFFileLoader();
+        const parsed: IGLTFLoaderData =
+            typeof data === "string" ? { json: JSON.parse(data), bin: null } : ArrayBuffer.isView(data) ? await fileLoader._unpackBinaryViewAsync(data) : data;
+        const gltf = parsed.json as IGLTF;
+        if (gltf.asset.thumbnail === undefined) {
+            return undefined;
+        }
+
+        const loader = new GLTFLoader(fileLoader);
+        loader._babylonScene = scene;
+        loader._rootUrl = rootUrl;
+        loader._gltf = {
+            ...gltf,
+            images: gltf.images?.map((image) => ({ ...image, _data: undefined })),
+            buffers: gltf.buffers?.map((buffer) => ({ ...buffer, _data: undefined })),
+            bufferViews: gltf.bufferViews?.map((bufferView) => ({ ...bufferView, _data: undefined, _babylonBuffer: undefined })),
+        };
+        ArrayItem.Assign(loader._gltf.images);
+        ArrayItem.Assign(loader._gltf.buffers);
+        ArrayItem.Assign(loader._gltf.bufferViews);
+        loader._bin = parsed.bin;
+        loader._chunks = parsed.chunks ?? [];
+
+        try {
+            await loader._loadExtensionsAsync(false);
+            const image = ArrayItem.Get("/asset/thumbnail", loader._gltf.images, gltf.asset.thumbnail);
+            const bytes = await loader.loadImageAsync(`/images/${image.index}`, image);
+            return { data: new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength), mimeType: image.mimeType ?? GetMimeType(image.uri ?? "") };
+        } finally {
+            loader.dispose();
+        }
+    }
+
+    /**
      * Registers a loader extension.
      * @param name The name of the loader extension.
      * @param factory The factory function that creates the loader extension.
@@ -712,7 +757,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
-    private async _loadExtensionsAsync() {
+    private async _loadExtensionsAsync(checkRequired = true) {
         const extensionPromises: Promise<IGLTFLoaderExtension>[] = [];
 
         registeredGLTFExtensions.forEach((registeredExtension, name) => {
@@ -744,7 +789,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._extensions.sort((a, b) => (a.order || Number.MAX_VALUE) - (b.order || Number.MAX_VALUE));
         this._parent.onExtensionLoadedObservable.clear();
 
-        if (this._gltf.extensionsRequired) {
+        if (checkRequired && this._gltf.extensionsRequired) {
             for (const name of this._gltf.extensionsRequired) {
                 const available = this._extensions.some((extension) => extension.name === name && extension.enabled);
                 if (!available) {

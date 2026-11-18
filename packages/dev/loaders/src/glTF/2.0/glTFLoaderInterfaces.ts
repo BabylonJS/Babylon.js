@@ -272,6 +272,9 @@ export interface ITextureInfo extends GLTF2.ITextureInfo {
  * Loader interface with additional members.
  */
 export interface IGLTF extends GLTF2.IGLTF {
+    /** Asset metadata, including the optional thumbnail image index. */
+    asset: GLTF2.IAsset & { thumbnail?: number };
+
     /** @internal */
     accessors?: IAccessor[];
 
