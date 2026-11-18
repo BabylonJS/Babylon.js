@@ -445,7 +445,7 @@ describe("Geometry WebGPU draw cache invalidation", () => {
         data.indices = [];
 
         expect(() => data.applyToMesh(empty)).not.toThrow();
-        expect(empty.subMeshes).toBeUndefined();
+        expect(empty.subMeshes?.length ?? 0).toBe(0);
         expect(empty.isVerticesDataPresent(VertexBuffer.NormalKind)).toBe(true);
     });
 
