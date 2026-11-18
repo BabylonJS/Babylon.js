@@ -20,6 +20,7 @@ import { type Vector3, Matrix, Quaternion, Vector2 } from "core/Maths/math.vecto
 import { Constants } from "core/Engines/constants";
 import { type Color3, Color4 } from "core/Maths/math.color.pure";
 import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type Material } from "core/Materials/material";
 import { type Light } from "core/Lights/light";
 import { type Nullable } from "core/types";
 import { SpotLight } from "core/Lights/spotLight.pure";
@@ -159,6 +160,7 @@ export interface IGLTFObjectModelTreeMaterialsObject {
             };
         };
         emissiveFactor: IObjectAccessor<IMaterial, PBRMaterial, Color3>;
+        emissiveStrength: IObjectAccessor<IMaterial, Material, number>;
         normalTexture: {
             scale: IObjectAccessor<IMaterial, PBRMaterial, number>;
             extensions: {
@@ -857,6 +859,23 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
             getPropertyName: [() => "emissiveColor"],
         },
+        emissiveStrength: {
+            type: "number",
+            get: (material, index?, payload?) => {
+                const target = _GetEmissiveStrengthTarget(GetMaterial(material, index, payload));
+                return "emissionLuminance" in target ? target.emissionLuminance : target.emissiveIntensity;
+            },
+            set: /*#__PURE__*/ _CreateMaterialSetter((value: number, material) => {
+                const target = _GetEmissiveStrengthTarget(material);
+                if ("emissionLuminance" in target) {
+                    target.emissionLuminance = value;
+                } else {
+                    target.emissiveIntensity = value;
+                }
+            }),
+            getTarget: (material, index?, payload?) => GetMaterial(material, index, payload),
+            getPropertyName: [(material, index?) => ("emissionLuminance" in _GetEmissiveStrengthTarget(GetMaterial(material, index)) ? "emissionLuminance" : "emissiveIntensity")],
+        },
         emissiveTexture: {
             extensions: {
                 KHR_texture_transform: GenerateTextureMap("emissiveTexture"),
@@ -1351,6 +1370,19 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
 
 function GetTexture(material: IMaterial, payload: any, textureType: keyof PBRMaterial, textureInObject?: string) {
     return _GetMaterialTexture(GetMaterial(material, undefined, payload), textureType, textureInObject);
+}
+function HasEmissionLuminance(material: Material): material is Material & { emissionLuminance: number } {
+    return "emissionLuminance" in material && typeof material.emissionLuminance === "number";
+}
+function HasEmissiveIntensity(material: Material): material is Material & { emissiveIntensity: number } {
+    return "emissiveIntensity" in material && typeof material.emissiveIntensity === "number";
+}
+/** @internal */
+export function _GetEmissiveStrengthTarget(material: Material): (Material & { emissionLuminance: number }) | (Material & { emissiveIntensity: number }) {
+    if (HasEmissionLuminance(material) || HasEmissiveIntensity(material)) {
+        return material;
+    }
+    throw new Error("Material does not support emissive strength.");
 }
 function _GetMaterialTexture(material: PBRMaterial, textureType: keyof PBRMaterial, textureInObject?: string) {
     return textureInObject ? material[textureType][textureInObject] : material[textureType];

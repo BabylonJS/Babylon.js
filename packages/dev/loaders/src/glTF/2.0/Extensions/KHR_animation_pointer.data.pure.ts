@@ -7,7 +7,7 @@ import { type ICamera, type IEXTLightsArea_Light, type IKHRLightsPunctual_Light,
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationPropertyInfo, RegisterGLTFLoaderAnimation } from "../glTFLoaderAnimation.pure";
 import { Color3 } from "core/Maths/math.color.pure";
-import { SetInterpolationForKey } from "./objectModelMapping";
+import { _GetEmissiveStrengthTarget, SetInterpolationForKey } from "./objectModelMapping";
 import { _GetAreaLightDimensions } from "./gltfAreaLightDimensions";
 
 function getColor3(_target: any, source: Float32Array, offset: number, scale: number): Color3 {
@@ -66,6 +66,20 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
             });
         }
         return babylonAnimations;
+    }
+}
+
+class EmissiveStrengthAnimationPropertyInfo extends AnimationPropertyInfo {
+    public buildAnimations(target: IMaterial, name: string, fps: number, keys: any[]) {
+        const animations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
+        for (const fillMode in target._data) {
+            const material = _GetEmissiveStrengthTarget(target._data[Number(fillMode)].babylonMaterial);
+            const property = "emissionLuminance" in material ? "emissionLuminance" : "emissiveIntensity";
+            const animation = new Animation(name, property, fps, this.type);
+            animation.setKeys(keys, true);
+            animations.push({ babylonAnimatable: material, babylonAnimation: animation });
+        }
+        return animations;
     }
 }
 
@@ -147,6 +161,7 @@ export function _RegisterKHRAnimationPointerData(): void {
     SetInterpolationForKey("/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/rotation", metallicRoughnessTextureInterpolation.rotation);
 
     SetInterpolationForKey("/materials/{}/emissiveFactor", [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", getColor3, () => 3)]);
+    SetInterpolationForKey("/materials/{}/emissiveStrength", [new EmissiveStrengthAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "emissiveStrength", getFloat, () => 1)]);
     const normalTextureInterpolation = getTextureTransformTree("bumpTexture");
     SetInterpolationForKey("/materials/{}/normalTexture/scale", [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "bumpTexture.level", getFloat, () => 1)]);
 

@@ -16,6 +16,7 @@ import { GetKHRInteractivityImportResult, RegisterKHR_interactivity } from "../.
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { DelayReferencePrefix } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityReferences";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { type SpotLight } from "core/Lights/spotLight.pure";
 import { type RectAreaLight } from "core/Lights/rectAreaLight.pure";
 
@@ -256,6 +257,47 @@ describe("KHR_interactivity minimal public loader imports", () => {
         expect(material[property]).toBeCloseTo(0.8);
         expect(material[untouched]).toBeCloseTo(otherInitial);
         expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
+    it.each([false, true])("interpolates core emissive strength (OpenPBR: %s)", async (useOpenPBR) => {
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(scalarInterpolation("/materials/0/emissiveStrength", 4), ["KHR_interactivity"], {
+                scenes: [{ nodes: [] }],
+                materials: [{ name: "target material", emissiveStrength: 2 }],
+            }),
+            scene,
+            { pluginOptions: { gltf: { loadAllMaterials: true, useOpenPBR } } }
+        );
+        const material = scene.materials.find((entry) => entry.name === "target material");
+        const group = scene.animationGroups[0];
+        expect(group.targetedAnimations).toHaveLength(1);
+        expect(group.targetedAnimations[0].target).toBe(material);
+        group.goToFrame(60);
+        expect(material).toBeInstanceOf(useOpenPBR ? OpenPBRMaterial : PBRMaterial);
+        const strength = material instanceof OpenPBRMaterial ? material.emissionLuminance : material instanceof PBRMaterial ? material.emissiveIntensity : undefined;
+        expect(strength).toBeCloseTo(4);
+        expect(log).not.toHaveBeenCalledWith("interpolation error");
+    });
+
+    it.each([false, true])("writes and reads core emissive strength (OpenPBR: %s)", async (useOpenPBR) => {
+        const log = vi.spyOn(Logger, "Log");
+        await AppendSceneAsync(
+            asset(pointerWrite("/materials/0/emissiveStrength", 4), ["KHR_interactivity"], {
+                scenes: [{ nodes: [] }],
+                materials: [{ name: "target material" }],
+            }),
+            scene,
+            { pluginOptions: { gltf: { loadAllMaterials: true, useOpenPBR } } }
+        );
+        scene.render();
+        const material = scene.materials.find((entry) => entry.name === "target material");
+        expect(material).toBeInstanceOf(useOpenPBR ? OpenPBRMaterial : PBRMaterial);
+        const strength = material instanceof OpenPBRMaterial ? material.emissionLuminance : material instanceof PBRMaterial ? material.emissiveIntensity : undefined;
+        expect(strength).toBe(4);
+        expect(GetKHRInteractivityImportResult(scene)!.graphs[0].flowGraph!.getContext(0).getVariable("staticVariable_0")).toBe(4);
+        expect(log).toHaveBeenCalledWith("written");
+        expect(log).not.toHaveBeenCalledWith("write error");
     });
 
     it.each([{ modes: [4, 1] }, { modes: [1] }])("interpolates loaded primitive-mode variants ($modes)", async ({ modes }) => {
