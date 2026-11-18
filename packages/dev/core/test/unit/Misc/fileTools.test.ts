@@ -129,6 +129,13 @@ describe("GetMimeType", () => {
         expect(GetMimeType("textures/brick.png#preview")).toBe("image/png");
     });
 
+    it("returns the correct type for a URL-encoded filename with a literal # in its name", () => {
+        // Callers such as FBXFileLoader._getMimeType pass encodeURIComponent(filename) so that
+        // a '#' in an embedded texture name (e.g. "albedo#1.jpg") is not treated as a fragment.
+        expect(GetMimeType(encodeURIComponent("albedo#1.jpg"))).toBe("image/jpeg");
+        expect(GetMimeType(encodeURIComponent("diffuse?map.png"))).toBe("image/png");
+    });
+
     it("returns undefined for an unknown extension", () => {
         expect(GetMimeType("textures/brick.xyz")).toBeUndefined();
     });
