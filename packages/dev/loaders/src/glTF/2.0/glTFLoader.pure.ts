@@ -1070,13 +1070,8 @@ export class GLTFLoader implements IGLTFLoader {
                                 this._postSceneLoadActions.push(() => {
                                     if (skin.skeleton != undefined) {
                                         // Place the skinned mesh node as a sibling of the skeleton root node.
-                                        // Handle special case when the parent of the skeleton root is the skinned mesh.
                                         const parentNode = ArrayItem.Get(`/skins/${skin.index}/skeleton`, this._gltf.nodes, skin.skeleton).parent!;
-                                        if (node.index === parentNode.index) {
-                                            babylonTransformNode.parent = babylonTransformNodeForSkin.parent;
-                                        } else {
-                                            babylonTransformNode.parent = GetNodeTransform(parentNode)!;
-                                        }
+                                        babylonTransformNode.parent = GetNodeTransform(parentNode)!;
                                     } else {
                                         babylonTransformNode.parent = this._rootBabylonMesh;
                                     }
