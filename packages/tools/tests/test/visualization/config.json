@@ -1833,6 +1833,7 @@
         {
             "title": "GLTF Serializer camera rotation animation, RH -> LH",
             "playgroundId": "#DM9YI8#0",
+            "replace": "camera.parent.name,camera.parent.parent.name",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
@@ -1851,6 +1852,7 @@
         {
             "title": "GLTF Serializer camera rotation animation, LH -> LH",
             "playgroundId": "#UUOR2W#0",
+            "replace": "camera.parent.name,camera.parent.parent.name",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png",
             "dependsOn": ["Animations", "Cameras", "GUI", "Gizmos", "Loaders", "PBR", "Serializers", "Textures", "glTF"]
         },
@@ -3682,7 +3684,7 @@
         {
             "title": "glTF Loader Cameras LH",
             "playgroundId": "#933H4X#11",
-            "replace": "//options//, useRightHandedSystem = false;",
+            "replace": "//options//, useRightHandedSystem = false;,camera.parent.name,camera.parent.parent.name",
             "referenceImage": "glTFLoaderCameras.png",
             "dependsOn": ["Cameras", "GUI", "Gizmos", "Loaders", "Textures", "glTF"]
         },

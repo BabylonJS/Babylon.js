@@ -19,7 +19,7 @@ describe.each([
             throw new Error(`Missing camera rotation fixture: ${title}`);
         }
         expect(fixture.playgroundId).toBe(playgroundId);
-        expect(fixture.replace).toBeUndefined();
+        expect(fixture.replace).toBe(destRH ? undefined : "camera.parent.name,camera.parent.parent.name");
         expect(fixture.referenceImage).toBe("glTFSerializerCameraRotationAnimation.png");
 
         const rotation = srcRH ? Quaternion.FromLookDirectionRH(Vector3.Forward(srcRH), Vector3.Up()) : Quaternion.FromLookDirectionLH(Vector3.Forward(srcRH), Vector3.Up());
