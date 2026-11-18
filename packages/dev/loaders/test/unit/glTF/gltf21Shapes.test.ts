@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createRequire } from "node:module";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { Geometry } from "core/Meshes/geometry";
 import { VertexBuffer } from "core/Buffers/buffer.pure";
 import { DracoDecoder } from "core/Meshes/Compression/dracoDecoder";
+import { DracoEncoder } from "core/Meshes/Compression/dracoEncoder";
 import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader.pure";
 import { registerGLTFExtension, unregisterGLTFExtension } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
 import { KHR_draco_mesh_compression } from "loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression.pure";
@@ -225,6 +227,65 @@ describe("glTF 2.1 shapes", () => {
         };
         await expect(GLTFLoader.LoadShapeAsync(scene, data, "", 0)).rejects.toThrow("Draco-compressed shape positions are not available");
         expect(scene.meshes).toHaveLength(0);
+    });
+
+    it("loads a shape through the real Draco encoder and decoder", async () => {
+        const require = createRequire(import.meta.url);
+        const encoderModule = require("../../../../../tools/babylonServer/public/draco_encoder.js");
+        const decoderModule = require("../../../../../tools/babylonServer/public/draco_decoder_gltf.js");
+        const encoder = new DracoEncoder({ numWorkers: 0, jsModule: encoderModule });
+        const decoder = new DracoDecoder({ numWorkers: 0, jsModule: decoderModule });
+        const geometry = new Geometry("source", scene);
+        geometry.setVerticesData(VertexBuffer.PositionKind, [0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0]);
+        geometry.setIndices([0, 1, 2, 2, 1, 3]);
+        try {
+            const compressed = await encoder.encodeMeshAsync(geometry);
+            geometry.dispose();
+            registerGLTFExtension("KHR_draco_mesh_compression", true, (loader) => {
+                const extension = new KHR_draco_mesh_compression(loader);
+                extension.enabled = true;
+                extension.dracoDecoder = decoder;
+                return extension;
+            });
+            const bytes = new Uint8Array(compressed.data.buffer, compressed.data.byteOffset, compressed.data.byteLength);
+            const data = {
+                json: {
+                    asset: { version: "2.1" },
+                    extensionsUsed: ["KHR_draco_mesh_compression"],
+                    extensionsRequired: ["KHR_draco_mesh_compression"],
+                    shapes: [{ type: "mesh", mesh: { mesh: 0 } }],
+                    meshes: [
+                        {
+                            primitives: [
+                                {
+                                    attributes: { POSITION: 0 },
+                                    extensions: { KHR_draco_mesh_compression: { bufferView: 0, attributes: { POSITION: compressed.attributeIds.position } } },
+                                },
+                            ],
+                        },
+                    ],
+                    accessors: [{ componentType: 5126, count: 4, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
+                    bufferViews: [{ buffer: 0, byteLength: bytes.length }],
+                    buffers: [{ byteLength: bytes.length }],
+                },
+                bin: { byteLength: bytes.length, readAsync: async (offset: number, length: number) => bytes.subarray(offset, offset + length) },
+            };
+            const shape = await GLTFLoader.LoadShapeAsync(scene, data, "", 0);
+            if (shape.type !== "mesh") {
+                throw new Error("Expected a mesh shape");
+            }
+            const triangles = [];
+            for (let i = 0; i < shape.indices.length; i += 3) {
+                const vertices = Array.from(shape.indices.subarray(i, i + 3), (index) => Array.from(shape.positions.subarray(index * 3, index * 3 + 3)).join(","));
+                triangles.push(vertices.sort().join(";"));
+            }
+            expect(triangles.sort()).toEqual(["0,0,0;0,1,0;1,0,0", "0,1,0;1,0,0;1,1,0"]);
+            expect(scene.geometries).toHaveLength(0);
+        } finally {
+            geometry.dispose();
+            encoder.dispose();
+            decoder.dispose();
+        }
     });
 
     it("uses triangle indices produced by the Draco decoder for a triangle strip", async () => {
