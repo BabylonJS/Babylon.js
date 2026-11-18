@@ -1131,6 +1131,16 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         });
     }
 
+    /** @internal */
+    public _unpackBinaryViewAsync(data: ArrayBufferView): Promise<IGLTFLoaderData> {
+        return this._unpackBinaryAsync(
+            new DataReader({
+                readAsync: (byteOffset, byteLength) => readViewAsync(data, byteOffset, byteLength),
+                byteLength: data.byteLength,
+            })
+        );
+    }
+
     /**
      * @internal
      */

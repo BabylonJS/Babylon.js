@@ -6,6 +6,7 @@ import { Observable } from "core/Misc/observable";
 import { WebRequest } from "core/Misc/webRequest";
 import { Scene } from "core/scene";
 import { GLTFFileLoader, type IGLTFLoaderData } from "loaders/glTF/glTFFileLoader.pure";
+import { GLTFLoader } from "loaders/glTF/2.0/glTFLoader.pure";
 import "loaders/glTF/2.0/glTFLoader";
 import "loaders/glTF/2.0/Extensions/MSFT_lod";
 
@@ -88,6 +89,22 @@ describe("GLB version 3", () => {
         const loader = new GLTFFileLoader();
         return (await loader.directLoad(scene, `model/gltf-binary;base64,${Buffer.from(bytes).toString("base64")}`)) as IGLTFLoaderData;
     }
+
+    it("loads a thumbnail from a GLB 3 view with a nonzero offset", async () => {
+        const json = {
+            asset: { version: "2.1", thumbnail: 0 },
+            images: [{ bufferView: 0, mimeType: "image/png" }],
+            bufferViews: [{ buffer: 0, byteLength: 3 }],
+            buffers: [{ chunk: 0, byteLength: 3 }],
+        };
+        const bytes = glb3([{ type: BIN_CHUNK, bytes: new Uint8Array([1, 2, 3]) }, jsonChunk(json)]);
+        const padded = new Uint8Array(bytes.length + 10);
+        padded.set(bytes, 5);
+
+        const thumbnail = await GLTFLoader.LoadThumbnailAsync(scene, padded.subarray(5, 5 + bytes.length), "");
+        expect(thumbnail?.mimeType).toBe("image/png");
+        expect(Array.from(thumbnail!.data)).toEqual([1, 2, 3]);
+    });
 
     it("loads buffers from arbitrary chunks around the JSON chunk", async () => {
         const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
