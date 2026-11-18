@@ -180,6 +180,10 @@ export function LoadBoundingInfoFromPositionAccessor(accessor: IAccessor): Nulla
             const oneOverDivider = 1 / divider;
             minVector.scaleInPlace(oneOverDivider);
             maxVector.scaleInPlace(oneOverDivider);
+            if (accessor.componentType === AccessorComponentType.BYTE || accessor.componentType === AccessorComponentType.SHORT) {
+                minVector.maximizeInPlaceFromFloats(-1, -1, -1);
+                maxVector.maximizeInPlaceFromFloats(-1, -1, -1);
+            }
         }
         return new BoundingInfo(minVector, maxVector);
     }
