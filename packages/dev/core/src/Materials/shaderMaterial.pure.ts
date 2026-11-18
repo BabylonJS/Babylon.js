@@ -39,7 +39,12 @@ import { type InternalTexture } from "./Textures/internalTexture";
 import { PrepareVertexPullingUniforms, BindVertexPullingUniforms, type IVertexPullingMetadata } from "./vertexPullingHelper.functions";
 import { RegisterClass } from "../Misc/typeStore";
 
-const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
+// vp_*_info uniforms are bound through the metadata, so callers must pass a copy of the array rather than the shared options one
+function AddVertexPullingUniforms(uniforms: string[], metadata: Map<string, IVertexPullingMetadata>): void {
+    metadata.forEach((_, attribute) => {
+        uniforms.push(`vp_${attribute}_info`);
+    });
+}
 
 interface IShaderMaterialMatrixArrayAccess {
     _matrixArrays: { [name: string]: Float32Array | Array<number> };
@@ -113,6 +118,13 @@ export interface IShaderMaterialOptions {
      * Defines additional code to call to prepare the shader code
      */
     extraInitializationsAsync?: () => Promise<void>;
+}
+
+function IsEmpty(dictionary: object): boolean {
+    for (const _ in dictionary) {
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -235,6 +247,23 @@ export class ShaderMaterial extends PushMaterial {
      * Mainly use in serialization.
      * @returns the class name
      */
+    /**
+     * @internal Its setters only change dictionaries: a draw binding custom buffers or textures that the engine does not check
+     * (getActiveTextures) is not encoded again from its recorded commands
+     * @returns true if the recorded draws can be encoded again
+     */
+    public override _canReplayRecordedDraw(): boolean {
+        return (
+            super._canReplayRecordedDraw() &&
+            IsEmpty(this._uniformBuffers) &&
+            IsEmpty(this._storageBuffers) &&
+            IsEmpty(this._externalTextures) &&
+            IsEmpty(this._internalTextures) &&
+            IsEmpty(this._textureArrays) &&
+            IsEmpty(this._textureSamplers)
+        );
+    }
+
     public override getClassName(): string {
         return "ShaderMaterial";
     }
@@ -259,6 +288,9 @@ export class ShaderMaterial extends PushMaterial {
         if (this._options.uniforms.indexOf(uniformName) === -1) {
             this._options.uniforms.push(uniformName);
         }
+        // a value is set: the draws a snapshot recorded with the material are bound again (set after the frame's reference draw, it is
+        // not in the values they are compared with). Many values are kept by reference, so a value set again is not told from a new one
+        this._drawCacheVersion++;
     }
 
     /**
@@ -271,7 +303,11 @@ export class ShaderMaterial extends PushMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
             this._options.samplers.push(name);
         }
-        this._textures[name] = texture;
+        if (this._textures[name] !== texture) {
+            this._textures[name] = texture;
+            // what the material binds changed: the draws a snapshot recorded with it are bound again
+            this._drawCacheVersion++;
+        }
 
         return this;
     }
@@ -296,7 +332,11 @@ export class ShaderMaterial extends PushMaterial {
      * @param name Define the name of the texture to remove
      */
     public removeTexture(name: string): void {
-        delete this._textures[name];
+        if (name in this._textures) {
+            delete this._textures[name];
+            // what the material binds changed: the draws a snapshot recorded with it are bound again
+            this._drawCacheVersion++;
+        }
     }
 
     /**
@@ -674,6 +714,8 @@ export class ShaderMaterial extends PushMaterial {
         if (typeof value !== "boolean" || value) {
             this.options.defines.push(defineName + value);
         }
+        // the effect may change: the draws a snapshot recorded with the material are bound again
+        this._drawCacheVersion++;
 
         return this;
     }
@@ -907,16 +949,13 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         const renderingMesh = subMesh ? subMesh.getRenderingMesh() : mesh;
+        // Metadata prepared by this call only; this._vertexPullingMetadata can be stale from a previous call
+        let vertexPullingMetadata: Nullable<Map<string, IVertexPullingMetadata>> = null;
         if (renderingMesh && this.useVertexPulling) {
             // Add vertex buffer metadata defines for proper stride/offset handling
             const geometry = renderingMesh.geometry;
             if (geometry) {
-                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
-                if (this._vertexPullingMetadata) {
-                    this._vertexPullingMetadata.forEach((_, attribute) => {
-                        uniforms.push(`vp_${attribute}_info`);
-                    });
-                }
+                vertexPullingMetadata = this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
             }
 
             defines.push("#define USE_VERTEX_PULLING");
@@ -930,10 +969,15 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
+        let hasVertexPullingUniforms = false;
         if (this.customShaderNameResolve) {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
             samplers = samplers.slice();
+            if (vertexPullingMetadata) {
+                AddVertexPullingUniforms(uniforms, vertexPullingMetadata);
+                hasVertexPullingUniforms = true;
+            }
             shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
@@ -944,6 +988,11 @@ export class ShaderMaterial extends PushMaterial {
 
         let effect = previousEffect;
         if (previousDefines !== join) {
+            if (vertexPullingMetadata && !hasVertexPullingUniforms) {
+                // Copy only when creating the effect, as the array may be shared with the material options
+                uniforms = uniforms.slice();
+                AddVertexPullingUniforms(uniforms, vertexPullingMetadata);
+            }
             effect = engine.createEffect(
                 shaderName,
                 <IEffectCreationOptions>{
@@ -968,11 +1017,7 @@ export class ShaderMaterial extends PushMaterial {
                 drawWrapper.setEffect(effect, join);
             }
 
-            if (this._onEffectCreatedObservable) {
-                OnCreatedEffectParameters.effect = effect;
-                OnCreatedEffectParameters.subMesh = subMesh ?? mesh?.subMeshes[0] ?? null;
-                this._onEffectCreatedObservable.notifyObservers(OnCreatedEffectParameters);
-            }
+            this._notifyEffectCreated(effect, subMesh ?? mesh?.subMeshes[0] ?? null);
         }
 
         drawWrapper!._wasPreviouslyUsingInstances = !!useInstances;

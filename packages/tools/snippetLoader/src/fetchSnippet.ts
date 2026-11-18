@@ -8,16 +8,20 @@ export const DEFAULT_SNIPPET_URL = "https://snippet.babylonjs.com";
  * Fetches a raw snippet envelope from the snippet server.
  *
  * @param snippetId - The snippet identifier, e.g. `"ABC123"` or `"ABC123#2"`.
- *   The `#` separator between id and revision is normalised to `/` for the HTTP request.
+ *   The `#` separator between id and revision is normalised to `/` for the HTTP request; `"ABC123/2"` is also accepted.
  * @param snippetUrl - Base URL of the snippet server (defaults to `https://snippet.babylonjs.com`).
  * @returns The parsed server response envelope.
  */
 export async function FetchSnippet(snippetId: string, snippetUrl: string = DEFAULT_SNIPPET_URL): Promise<ISnippetServerResponse> {
-    // Normalise "ID#revision" → "ID/revision", and ensure a revision exists.
-    let path = snippetId.replace(/#/g, "/");
-    if (!path.includes("/")) {
-        path += "/0";
+    // Normalise "ID#revision" (or "ID/revision") → "ID/revision", and ensure a revision exists.
+    const parts = snippetId.split(/[#/]/).filter(Boolean);
+    if (parts.length === 0) {
+        throw new Error("Snippet identifier cannot be empty.");
     }
+    if (parts.length === 1) {
+        parts.push("0");
+    }
+    const path = parts.map((part) => encodeURIComponent(part)).join("/");
 
     const url = `${snippetUrl}/${path}`;
     const response = await fetch(url);

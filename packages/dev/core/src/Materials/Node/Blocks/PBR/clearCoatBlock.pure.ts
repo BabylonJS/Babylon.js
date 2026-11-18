@@ -221,6 +221,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_REMAP_F0", this.remapF0OnInterfaceChange, true);
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind data to effect
      * @param effect - the effect to bind data to

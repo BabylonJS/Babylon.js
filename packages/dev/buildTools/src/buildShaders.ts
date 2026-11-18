@@ -4,6 +4,17 @@ import * as path from "path";
 import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils.js";
 import { type DevPackageName } from "./packageMapping.js";
 
+function HasSameFileContent(filename: string, content: string): boolean {
+    try {
+        return getHashOfFile(filename) === getHashOfContent(content);
+    } catch (error) {
+        if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+            return false;
+        }
+        throw error;
+    }
+}
+
 // import * as glob from "glob";
 // import * as chokidar from "chokidar";
 // import { DevPackageName } from "./packageMapping";
@@ -112,15 +123,18 @@ function GetTransitiveIncludesMultiDir(directIncludes: Set<string>, localShaders
     const result: string[] = [];
     const extensions = isWGSL ? [".fx", ".wgsl"] : [".fx"];
 
-    function resolveIncludeFilePath(includeName: string): string | undefined {
-        for (const includeDir of [localShadersIncludeDir, coreShadersIncludeDir]) {
+    function resolveIncludeFilePath(includeName: string, forceCore: boolean): { filePath: string; fromCore: boolean } | undefined {
+        for (const includeDir of forceCore ? [coreShadersIncludeDir] : [localShadersIncludeDir, coreShadersIncludeDir]) {
             if (!includeDir) {
                 continue;
             }
             for (const extension of extensions) {
                 const includeFilePath = path.join(includeDir, includeName + extension);
                 if (fs.existsSync(includeFilePath)) {
-                    return includeFilePath;
+                    return {
+                        filePath: includeFilePath,
+                        fromCore: includeDir === coreShadersIncludeDir && coreShadersIncludeDir !== localShadersIncludeDir,
+                    };
                 }
             }
         }
@@ -135,20 +149,19 @@ function GetTransitiveIncludesMultiDir(directIncludes: Set<string>, localShaders
         }
         visited.add(resolvedName);
 
-        // Try to read the source file for this include to find nested includes.
-        // Check local directory first, then core.
-        const includeFilePath = resolveIncludeFilePath(resolvedName);
+        // Core includes and their dependencies must not resolve to addon-local names.
+        const include = resolveIncludeFilePath(resolvedName, includeName.startsWith("core/"));
 
-        if (includeFilePath) {
-            const includeSource = fs.readFileSync(includeFilePath, "utf8");
+        if (include) {
+            const includeSource = fs.readFileSync(include.filePath, "utf8");
             const nestedIncludes = GetIncludes(includeSource);
             for (const nested of nestedIncludes) {
-                visit(nested);
+                visit(include.fromCore && !nested.includes("/") ? `core/${nested}` : nested);
             }
         }
 
         // Add after visiting deps so dependencies come first
-        result.push(includeName);
+        result.push(include?.fromCore && !includeName.includes("/") ? `core/${includeName}` : includeName);
     }
 
     for (const inc of directIncludes) {
@@ -275,12 +288,8 @@ export function BuildShader(filePath: string, basePackageName: string | undefine
         const tsShaderFilename = path.join(directory, tsFilename);
         checkDirectorySync(path.dirname(tsShaderFilename));
         // check hash
-        if (fs.existsSync(tsShaderFilename)) {
-            const hash = getHashOfFile(tsShaderFilename);
-            const newHash = getHashOfContent(tsContent);
-            if (hash === newHash) {
-                return;
-            }
+        if (HasSameFileContent(tsShaderFilename, tsContent)) {
+            return;
         }
         fs.writeFileSync(tsShaderFilename, tsContent);
         isVerbose && console.log("Generated " + tsShaderFilename);
@@ -391,12 +400,8 @@ export const ${shaderName + (isWGSL ? "WGSL" : "")} = { name, shader };`
         const tsShaderFilename = path.join(directory, tsFilename);
         checkDirectorySync(path.dirname(tsShaderFilename));
         // check hash
-        if (fs.existsSync(tsShaderFilename)) {
-            const hash = getHashOfFile(tsShaderFilename);
-            const newHash = getHashOfContent(tsContent);
-            if (hash === newHash) {
-                return;
-            }
+        if (HasSameFileContent(tsShaderFilename, tsContent)) {
+            return;
         }
         fs.writeFileSync(tsShaderFilename, tsContent);
         isVerbose && console.log("Generated " + tsShaderFilename);

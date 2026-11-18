@@ -4,8 +4,8 @@
 # Wraps `checkout: self` and, when triggered by a build-completion/resource
 # trigger (Build.Reason == ResourceTrigger or Build.Reason == BuildCompletion),
 # checks out the latest version tag on origin/master. This ensures pipelines
-# triggered after a Publish build use the exact commit that was published,
-# not the stale commit the Publish pipeline originally started from.
+# triggered after a release CDN deploy use the latest released commit, not the
+# commit the triggering pipeline originally started from.
 #
 # For all other triggers (PR, Manual, Schedule, IndividualCI) the default
 # checkout behavior is preserved.
@@ -23,7 +23,7 @@ parameters:
       default: false
     - name: triggeringPipeline
       type: string
-      default: "Publish pipeline"
+      default: "CDN deploy pipeline"
 
 steps:
     - checkout: self

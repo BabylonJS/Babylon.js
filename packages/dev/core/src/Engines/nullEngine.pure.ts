@@ -228,6 +228,7 @@ export class NullEngine extends Engine {
             supportMSAA: false,
             supportSSAO2: false,
             supportIBLShadows: false,
+            supportMeshBlending: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
@@ -1055,6 +1056,36 @@ export class NullEngine extends Engine {
             texture._compression = compression;
             texture.type = type;
             texture._useSRGBBuffer = useSRGBBuffer;
+        }
+    }
+
+    /**
+     * Update a portion of an internal texture. NullEngine has no GPU texture, so only a complete update of the base level
+     * is recorded, like updateRawTexture does.
+     * @param texture defines the texture to update
+     * @param imageData defines the data to store into the texture
+     * @param xOffset defines the x coordinates of the update rectangle
+     * @param yOffset defines the y coordinates of the update rectangle
+     * @param width defines the width of the update rectangle
+     * @param height defines the height of the update rectangle
+     * @param faceIndex defines the face index if texture is a cube (0 by default)
+     * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not (ignored by NullEngine)
+     */
+    public override updateTextureData(
+        texture: InternalTexture,
+        imageData: ArrayBufferView,
+        xOffset: number,
+        yOffset: number,
+        width: number,
+        height: number,
+        faceIndex: number = 0,
+        lod: number = 0,
+        generateMipMaps: boolean = false
+    ): void {
+        void generateMipMaps;
+        if (faceIndex === 0 && lod === 0 && xOffset === 0 && yOffset === 0 && width === texture.width && height === texture.height) {
+            texture._bufferView = imageData;
         }
     }
 

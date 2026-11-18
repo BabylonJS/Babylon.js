@@ -250,8 +250,9 @@ export class ThinEngine extends AbstractEngine {
 
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
+     * @param _forceFullRecording reuses none of the recorded commands (WebGPU only, see WebGPUEngine.snapshotRenderingReuseDraws)
      */
-    public snapshotRenderingReset(): void {
+    public snapshotRenderingReset(_forceFullRecording = false): void {
         this.snapshotRendering = false;
     }
 
@@ -837,6 +838,7 @@ export class ThinEngine extends AbstractEngine {
             supportMSAA: this._webGLVersion !== 1,
             supportSSAO2: this._webGLVersion !== 1,
             supportIBLShadows: this._webGLVersion !== 1,
+            supportMeshBlending: this._webGLVersion !== 1,
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
@@ -2161,7 +2163,13 @@ export class ThinEngine extends AbstractEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        this.onBeforeShaderCompilationObservable.notifyObservers(this);
+        const beforeState = this.onBeforeShaderCompilationObservable._eventState;
+        const beforeTarget = beforeState.target;
+        try {
+            this.onBeforeShaderCompilationObservable.notifyObservers(this, -1, pipelineContext);
+        } finally {
+            beforeState.target = beforeTarget;
+        }
 
         const stateObject = getStateObject(this._gl);
         // assure the state object is correct
@@ -2170,7 +2178,15 @@ export class ThinEngine extends AbstractEngine {
 
         const program = createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context || this._gl, transformFeedbackVaryings);
 
-        this.onAfterShaderCompilationObservable.notifyObservers(this);
+        this._executeWhenRenderingStateIsCompiled(pipelineContext, () => {
+            const afterState = this.onAfterShaderCompilationObservable._eventState;
+            const afterTarget = afterState.target;
+            try {
+                this.onAfterShaderCompilationObservable.notifyObservers(this, -1, pipelineContext);
+            } finally {
+                afterState.target = afterTarget;
+            }
+        });
 
         return program;
     }

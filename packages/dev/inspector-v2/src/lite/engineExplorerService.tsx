@@ -4,20 +4,26 @@ import { EngineRegular, GlobeRegular, PersonSquareRegular, TextFieldRegular, Win
 import { createElement, type ComponentType, type FunctionComponent } from "react";
 
 import { type IDisposable, type IReadonlyObservable } from "core/index";
-import { Observable } from "core/Misc/observable";
+import { Observable, type IObserver } from "core/Misc/observable";
 
 import { type ExplorerDisplayInfo, type ExplorerNodeDescription } from "../components/explorer/explorerModel";
 import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 
-import { CreateExplorerPaneRegistration } from "../services/panes/explorer/explorerPane";
+import { CreateExplorerPaneRegistration, type ExplorerPaneRoot } from "../services/panes/explorer/explorerPane";
 import { CreateExplorerService, type IExplorerService, ExplorerServiceIdentity } from "../services/panes/explorer/explorerService";
 import { type ISelectionService, SelectionServiceIdentity } from "../services/selectionService";
 import { type IWatcherService, WatcherServiceIdentity } from "../services/watcherService";
 import { type IEngineContext, EngineContextIdentity } from "./engineContext";
 import { CreateWatchedNameDisplayInfo } from "./explorerDisplayInfo";
 import { GetInspectableRenderingContexts } from "./sceneEntityUtils";
+
+/**
+ * Describes one independent root displayed in the Babylon Lite Explorer.
+ * @experimental
+ */
+export type ExplorerRoot = ExplorerPaneRoot;
 
 /**
  * The unique identity symbol for the Babylon Lite engine explorer service.
@@ -65,6 +71,17 @@ export type RenderingContextPresentationProvider<T extends RenderingContext> = R
 }>;
 
 /**
+ * Contributes additional independent roots to the Babylon Lite Explorer.
+ * @experimental
+ */
+export type ExplorerRootProvider = Readonly<{
+    /** Gets the roots contributed by this provider. */
+    getRoots: () => readonly ExplorerRoot[];
+    /** Notifies when the roots returned by `getRoots` change. */
+    onChanged?: IReadonlyObservable<unknown>;
+}>;
+
+/**
  * Allows product-specific services to contribute hierarchy beneath Babylon Lite rendering contexts.
  * @experimental
  */
@@ -83,6 +100,14 @@ export interface IEngineExplorerService extends IService<typeof EngineExplorerSe
      * @returns A disposable that removes the provider.
      */
     addRenderingContextPresentationProvider<T extends RenderingContext>(provider: RenderingContextPresentationProvider<T>): IDisposable;
+
+    /**
+     * Adds a provider that contributes independent roots alongside the Engine root.
+     * Root IDs must be unique within the pane, and `onChanged` should notify when `getRoots` changes.
+     * @param provider The root provider to add.
+     * @returns A disposable that removes the provider.
+     */
+    addRootProvider(provider: ExplorerRootProvider): IDisposable;
 }
 
 type UntypedRenderingContextNodeProvider = RenderingContextNodeProvider<RenderingContext>;
@@ -314,7 +339,7 @@ function CreateEngineNodes(
 
 /**
  * Owns the "Explorer" pane of the Babylon Lite Inspector, which displays the engine hierarchy
- * (rendering contexts of the primary surface, and any auxiliary surfaces and their contexts).
+ * (rendering contexts of the primary surface and auxiliary surfaces) plus independent roots contributed by services.
  */
 export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorerService, IExplorerService], [IEngineContext, IShellService, ISelectionService, IWatcherService]> = {
     friendlyName: "Babylon Lite Engine Explorer",
@@ -324,6 +349,8 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
         const engine = engineContext.engine;
         const nodeProviders = new ObservableCollection<UntypedRenderingContextNodeProvider>();
         const presentationProviders = new ObservableCollection<UntypedRenderingContextPresentationProvider>();
+        const rootProviders = new ObservableCollection<ExplorerRootProvider>();
+        const rootProviderObservers = new Set<IObserver>();
         const explorerService = CreateExplorerService();
         const isRenderingContext = (entity: object): entity is RenderingContext =>
             engine.surfaces.some((surface) => GetInspectableRenderingContexts(surface).includes(entity as RenderingContext));
@@ -340,13 +367,21 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
             }));
 
         const onNodesChanged = new Observable<void>();
+        const getRoots = (): readonly ExplorerPaneRoot[] => [
+            {
+                id: "engine",
+                entity: engine,
+                label: "Engine",
+                icon: EngineIcon,
+                getNodes: () => CreateEngineNodes(engine, watcherService, presentationProviders.items),
+            },
+            ...rootProviders.items.flatMap((provider) => provider.getRoots()),
+        ];
         const paneRegistration = CreateExplorerPaneRegistration(shellService, selectionService, {
             key: "Explorer",
             title: "Explorer",
-            getRoot: () => engine,
-            rootLabel: "Engine",
-            rootIcon: EngineIcon,
-            getNodes: () => CreateEngineNodes(engine, watcherService, presentationProviders.items),
+            getRoots,
+            onRootsChanged: onNodesChanged,
             onNodesChanged,
             nodeProviders: explorerService.nodeProviders,
             itemCommandProviders: explorerService.itemCommandProviders,
@@ -356,6 +391,7 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
         const topologyWatcher = watcherService.watchValue(getTopologySnapshot, () => onNodesChanged.notifyObservers(), AreTopologySnapshotsEqual);
         const nodeProvidersObserver = nodeProviders.observable.add(() => onNodesChanged.notifyObservers());
         const presentationProvidersObserver = presentationProviders.observable.add(() => onNodesChanged.notifyObservers());
+        const rootProvidersObserver = rootProviders.observable.add(() => onNodesChanged.notifyObservers());
 
         // Lite keeps its rendering-context vocabulary while adapting hierarchy and commands onto the generic
         // entity-attached service. Structural groups such as "Auxiliary Surfaces" remain adapter-owned Explorer groups.
@@ -384,16 +420,42 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
                 };
             },
             addRenderingContextPresentationProvider: (provider) => presentationProviders.add(UntypeRenderingContextPresentationProvider(provider)),
+            addRootProvider: (provider) => {
+                const registration = rootProviders.add(provider);
+                const changedObserver = provider.onChanged?.add(() => onNodesChanged.notifyObservers());
+                if (changedObserver) {
+                    rootProviderObservers.add(changedObserver);
+                }
+                let isRegistered = true;
+                return {
+                    dispose: () => {
+                        if (!isRegistered) {
+                            return;
+                        }
+
+                        isRegistered = false;
+                        changedObserver?.remove(true);
+                        if (changedObserver) {
+                            rootProviderObservers.delete(changedObserver);
+                        }
+                        registration.dispose();
+                    },
+                };
+            },
             addNodeProvider: explorerService.addNodeProvider,
             addItemCommand: explorerService.addItemCommand,
             addGroupCommand: explorerService.addGroupCommand,
             dispose: () => {
                 nodeProvidersObserver.remove();
                 presentationProvidersObserver.remove();
+                rootProvidersObserver.remove();
                 topologyWatcher.dispose();
                 paneRegistration.dispose();
+                rootProviderObservers.forEach((observer) => observer.remove(true));
+                rootProviderObservers.clear();
                 nodeProviders.dispose();
                 presentationProviders.dispose();
+                rootProviders.dispose();
                 explorerService.dispose();
                 onNodesChanged.clear();
             },

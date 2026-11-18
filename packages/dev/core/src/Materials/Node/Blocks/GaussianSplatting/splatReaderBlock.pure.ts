@@ -93,6 +93,11 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly: the splat data of the mesh, which it binds, is not checked */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return false;
+    }
+
     /**
      * Bind data to effect
      * @param effect - defines the effect to bind data to

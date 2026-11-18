@@ -9,20 +9,68 @@ import { AssetContainer } from "core/assetContainer";
 import { type Scene } from "core/scene";
 import { STLFileLoaderMetadata } from "./stlFileLoader.metadata";
 
+function IsWhitespace(char: string): boolean {
+    return /\s/.test(char);
+}
+
+/**
+ * Finds the next "solid <name> ... endsolid <name>" block, matching the first "endsolid" after the name.
+ * Forward-only scanning keeps parsing linear even when a terminator is missing.
+ * @param data The ASCII STL data
+ * @param searchFrom The index to start searching from
+ * @returns The block, or null if there is none
+ */
+function FindNextSolid(data: string, searchFrom: number): { name: string; body: string; nameFromEnd: string; end: number } | null {
+    const solidStart = data.indexOf("solid ", searchFrom);
+    if (solidStart === -1) {
+        return null;
+    }
+    const nameStart = solidStart + 6;
+    let nameEnd = nameStart;
+    while (nameEnd < data.length && !IsWhitespace(data[nameEnd])) {
+        nameEnd++;
+    }
+    let endSolid = data.indexOf("endsolid", nameEnd);
+    if (endSolid === -1) {
+        // As with the previous regex, the name is only shortened to end at the last "endsolid" it contains.
+        endSolid = data.lastIndexOf("endsolid", nameEnd - 8);
+        if (endSolid < nameStart) {
+            return null;
+        }
+        nameEnd = endSolid;
+    }
+    let end = endSolid + 8;
+    while (data[end] === " ") {
+        end++;
+    }
+    const nameFromEndStart = end;
+    while (end < data.length && !IsWhitespace(data[end])) {
+        end++;
+    }
+    return {
+        name: data.substring(nameStart, nameEnd),
+        body: data.substring(nameEnd, endSolid),
+        nameFromEnd: data.substring(nameFromEndStart, end),
+        end,
+    };
+}
+
 /**
  * STL file type loader.
  * This is a babylon scene loader plugin.
  */
 export class STLFileLoader implements ISceneLoaderPlugin {
-    /** @internal */
-    public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
+    /** @internal Kept for backward compatibility; ASCII parsing uses linear delimiter scans instead. */
+    public solidPattern = /solid (\S*)((?:(?!endsolid)[\s\S])*)endsolid[ ]*(\S*)/g;
 
+    /** @internal Kept for backward compatibility; ASCII parsing uses linear delimiter scans instead. */
+    public facetsPattern = /facet((?:(?!endfacet)[\s\S])*)endfacet/g;
     /** @internal */
-    public facetsPattern = /facet([\s\S]*?)endfacet/g;
+    public normalPattern =
+        /normal[\s]+([-+]?[0-9]+(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?)[\s]+([-+]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)[\s]+([-+]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)/g;
     /** @internal */
-    public normalPattern = /normal[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
-    /** @internal */
-    public vertexPattern = /vertex[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
+    public vertexPattern =
+        /vertex[\s]+([-+]?[0-9]+(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?)[\s]+([-+]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)[\s]+([-+]?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)/g;
 
     /**
      * Defines the name of the plugin.
@@ -77,9 +125,11 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
         //if arrived here, data is a string, containing the STLA data.
 
-        while ((matches = this.solidPattern.exec(data))) {
-            let meshName = matches[1];
-            const meshNameFromEnd = matches[3];
+        let searchFrom = 0;
+        while ((matches = FindNextSolid(data, searchFrom))) {
+            searchFrom = matches.end;
+            let meshName = matches.name;
+            const meshNameFromEnd = matches.nameFromEnd;
             if (meshNameFromEnd && meshName != meshNameFromEnd) {
                 Tools.Error("Error in STL, solid name != endsolid name");
                 return false;
@@ -93,7 +143,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             }
 
             const babylonMesh = new Mesh(meshName, scene);
-            this._parseASCII(babylonMesh, matches[2]);
+            this._parseASCII(babylonMesh, matches.body);
             if (meshes) {
                 meshes.push(babylonMesh);
             }
@@ -236,24 +286,29 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         let indicesCount = 0;
 
         //load facets, ignoring loop as the standard doesn't define it can contain more than vertices
-        let matches;
-        while ((matches = this.facetsPattern.exec(solidData))) {
-            const facet = matches[1];
+        let facetStart = solidData.indexOf("facet");
+        while (facetStart !== -1) {
+            const facetEnd = solidData.indexOf("endfacet", facetStart + 5);
+            if (facetEnd === -1) {
+                break;
+            }
+            const facet = solidData.substring(facetStart + 5, facetEnd);
+            facetStart = solidData.indexOf("facet", facetEnd + 8);
             //one normal per face
             const normalMatches = this.normalPattern.exec(facet);
             this.normalPattern.lastIndex = 0;
             if (!normalMatches) {
                 continue;
             }
-            const normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
+            const normal = [Number(normalMatches[1]), Number(normalMatches[3]), Number(normalMatches[2])];
 
             let vertexMatch;
             while ((vertexMatch = this.vertexPattern.exec(facet))) {
                 if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
-                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[2]));
                     normals.push(normal[0], normal[1], normal[2]);
                 } else {
-                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[2]), Number(vertexMatch[3]));
 
                     // Flipping the second and third component because inverted
                     // when normal was declared.
@@ -269,7 +324,6 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             this.vertexPattern.lastIndex = 0;
         }
 
-        this.facetsPattern.lastIndex = 0;
         mesh.setVerticesData(VertexBuffer.PositionKind, positions);
         mesh.setVerticesData(VertexBuffer.NormalKind, normals);
         mesh.setIndices(indices);

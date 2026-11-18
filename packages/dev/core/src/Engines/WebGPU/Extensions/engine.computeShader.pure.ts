@@ -89,6 +89,10 @@ const _GetComputePipelineLayout = (
     const bindGroupLayoutEntries: GPUBindGroupLayoutEntry[][] = [];
 
     const addEntry = (group: number, entry: GPUBindGroupLayoutEntry) => {
+        if (!Number.isInteger(group) || group < 0) {
+            throw new Error(`Invalid compute binding group '${group}'`);
+        }
+
         const entries = (bindGroupLayoutEntries[group] ??= []);
         const existingIndex = entries.findIndex((item) => item.binding === entry.binding);
         if (existingIndex >= 0) {
@@ -218,8 +222,26 @@ export function RegisterEnginesWebGPUExtensionsEngineComputeShader(): void {
         const name = compute + "@" + options.defines + (options.useExplicitComputePipelineLayout ? "@explicitComputePipelineLayout" : "");
         if (this._compiledComputeEffects[name]) {
             const compiledEffect = this._compiledComputeEffects[name];
-            if (options.onCompiled && compiledEffect.isReady()) {
-                options.onCompiled(compiledEffect);
+            const { onCompiled, onError } = options;
+            if (compiledEffect.isReady()) {
+                onCompiled?.(compiledEffect);
+            } else if (compiledEffect.getCompilationError()) {
+                onError?.(compiledEffect, compiledEffect.getCompilationError());
+            } else {
+                // The cached effect only calls the callbacks of the caller that created it, so the
+                // callbacks of this caller are attached to the compilation result separately
+                const pendingOnCompiled = onCompiled !== compiledEffect.onCompiled ? onCompiled : null;
+                const pendingOnError = onError !== compiledEffect.onError ? onError : null;
+                if (pendingOnCompiled || pendingOnError) {
+                    const compileObserver = compiledEffect.onCompileObservable.addOnce((effect) => {
+                        compiledEffect.onErrorObservable.remove(errorObserver);
+                        pendingOnCompiled?.(effect);
+                    });
+                    const errorObserver = compiledEffect.onErrorObservable.addOnce((effect) => {
+                        compiledEffect.onCompileObservable.remove(compileObserver);
+                        pendingOnError?.(effect, effect.getCompilationError());
+                    });
+                }
             }
 
             return compiledEffect;

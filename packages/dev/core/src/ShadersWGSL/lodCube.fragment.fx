@@ -1,4 +1,7 @@
-const GammaEncodePowerApprox = 1.0 / 2.2;
+#ifndef USE_EXACT_SRGB_CONVERSIONS
+#define USE_EXACT_SRGB_CONVERSIONS
+#endif
+#include<helperFunctions>
 
 varying vUV: vec2f;
 
@@ -6,7 +9,7 @@ var textureSamplerSampler: sampler;
 var textureSampler: texture_cube<f32>;
 
 uniform lod: f32;
-uniform gamma: i32;
+uniform gamma: i32; // 0: display gamma, 1: preserve channels, 2: restore hardware sRGB.
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
@@ -31,5 +34,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
     if (uniforms.gamma == 0) {
         fragmentOutputs.color = vec4f(pow(fragmentOutputs.color.rgb, vec3f(GammaEncodePowerApprox)), fragmentOutputs.color.a);
+    } else if (uniforms.gamma == 2) {
+        fragmentOutputs.color = vec4f(toGammaSpaceExact(fragmentOutputs.color.rgb), fragmentOutputs.color.a);
     }
 }

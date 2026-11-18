@@ -1,0 +1,11 @@
+{
+    "extends": "../../../../tsconfig.build.json",
+    "compilerOptions": {
+        "outDir": "./",
+        "rootDir": "../../../tools/ktx2Encoder/src",
+        "declaration": true,
+        "importHelpers": true,
+        "target": "ES2020"
+    },
+    "include": ["../../../tools/ktx2Encoder/src/**/*"]
+}

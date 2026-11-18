@@ -101,10 +101,11 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
         const paneRegistration = CreateExplorerPaneRegistration(shellService, selectionService, {
             key: "Scene Explorer",
             title: "Scene Explorer",
-            getRoot: () => sceneContext.currentScene,
-            rootLabel: "Scene",
-            onRootChanged: sceneContext.currentSceneObservable,
-            getNodes: () => [],
+            getRoots: () => {
+                const scene = sceneContext.currentScene;
+                return scene ? [{ id: "scene", entity: scene, label: "Scene", getNodes: () => [] }] : [];
+            },
+            onRootsChanged: sceneContext.currentSceneObservable,
             nodeProviders: explorerService.nodeProviders,
             itemCommandProviders: explorerService.itemCommandProviders,
             groupCommandProviders: explorerService.groupCommandProviders,

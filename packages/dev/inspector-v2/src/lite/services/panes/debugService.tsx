@@ -4,6 +4,7 @@ import { type FunctionComponent, useCallback } from "react";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { UXContextProvider } from "shared-ui-components/modularTool/components/uxContextProvider";
@@ -18,7 +19,16 @@ const DebugPane: FunctionComponent<{ controller: DebugController }> = (props) =>
     const { controller } = props;
     const state = useObservableState(
         useCallback(
-            () => ({ scenes: controller.scenes, scene: controller.scene, grid: controller.gridEnabled, bounds: controller.boundsEnabled, error: controller.error }),
+            () => ({
+                scenes: controller.scenes,
+                scene: controller.scene,
+                grid: controller.gridEnabled,
+                bounds: controller.boundsEnabled,
+                physicsBodies: controller.physicsBodiesEnabled,
+                physicsConstraints: controller.physicsConstraintsEnabled,
+                hasPhysics: controller.hasPhysicsWorlds,
+                error: controller.error,
+            }),
             [controller]
         ),
         controller.onChanged
@@ -51,6 +61,26 @@ const DebugPane: FunctionComponent<{ controller: DebugController }> = (props) =>
                             description="Show mesh-local bounds that follow transforms every frame. Geometry and visibility updates follow Inspector's watch mode; deformations and individual thin instances are not included."
                             value={state.bounds}
                             onChange={(value) => controller.setBounds(value)}
+                        />
+                        <SwitchPropertyLine
+                            label="Physics Bodies"
+                            ariaLabel="Physics Bodies"
+                            description="Show base-shape wireframes. Thin-instance bodies are omitted because Lite's viewer does not follow instance transforms."
+                            controlled
+                            value={state.physicsBodies}
+                            disabled={!state.hasPhysics}
+                            onChange={(value) => controller.setPhysicsBodies(value)}
+                        />
+                        <Collapse visible={state.physicsBodies}>
+                            <MessageBar intent="info" message="Thin-instance body wireframes are omitted; Lite's viewer only follows the carrier node." />
+                        </Collapse>
+                        <SwitchPropertyLine
+                            label="Physics Constraints"
+                            ariaLabel="Physics Constraints"
+                            controlled
+                            value={state.physicsConstraints}
+                            disabled={!state.hasPhysics}
+                            onChange={(value) => controller.setPhysicsConstraints(value)}
                         />
                     </>
                 )}

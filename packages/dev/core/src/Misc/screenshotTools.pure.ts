@@ -427,10 +427,12 @@ export function CreateScreenshotUsingRenderTarget(
                 const currentMeshList = scene.meshes;
                 scene.meshes = texture.renderList || scene.meshes;
 
-                // render the scene on the RTT
+                // render the scene on the RTT, once: every mesh is drawn in it, none waits for its pipeline (asynchronous pipeline creation)
+                engine._renderingOnce++;
                 try {
                     scene.render();
                 } finally {
+                    engine._renderingOnce--;
                     // Restore the original scene camera setup
                     scene.activeCamera = originalCamera;
                     scene.activeCameras = originalCameras;

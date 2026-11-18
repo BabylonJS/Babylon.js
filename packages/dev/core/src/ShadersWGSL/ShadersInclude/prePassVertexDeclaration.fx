@@ -9,7 +9,6 @@ varying vPosition : vec3f;
     varying vNormViewDepth: f32;
 #endif
 #if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
-    uniform previousViewProjection: mat4x4f;
     varying vCurrentPosition: vec4f;
     varying vPreviousPosition: vec4f;
 #endif

@@ -1,13 +1,14 @@
 # =============================================================================
-# CD-Tools Pipeline (Definition ID: 16)
+# CD-Tools Pipeline (Definition ID: 49, "Tools CD")
 # Converted from Azure DevOps Classic Pipeline
 #
 # Builds and deploys all tools (Playground, Sandbox, NME, NGE, NRGE,
-# GUI Editor, NPE, FGE, SFE) to production storage after a successful publish.
+# GUI Editor, NPE, FGE, SFE) to production storage after a stable release is
+# deployed to the CDN.
 #
 # Triggers:
 #   - Schedule: midnight PST on Tue/Wed/Fri/Sat (daysToBuild: 22)
-#   - Build completion from Publish pipeline (ID: 15)
+#   - Completion of the CDN deploy pipeline (cd-cdn-deploy.yml)
 #
 # Variable groups:
 #   - BabylonJS-CI-Infrastructure
@@ -31,12 +32,16 @@ schedules:
 
 resources:
     pipelines:
-        - pipeline: publishPipeline
-          source: "Publish pipeline" # Update with actual pipeline name
+        # Must match the ADO definition name of cd-cdn-deploy.yml exactly.
+        # Tag-triggered deploy runs have the source branch refs/tags/<version>;
+        # manual reruns usually run from master.
+        - pipeline: cdnDeployPipeline
+          source: "CDN deploy pipeline"
           trigger:
               branches:
                   include:
                       - master
+                      - refs/tags/*
 
 variables:
     - group: BabylonJS-CI-Infrastructure

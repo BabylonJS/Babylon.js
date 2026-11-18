@@ -589,13 +589,14 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
     }
 
     /**
-     * Compute the Color3 hexadecimal code as a string
+     * Compute the Color3 hexadecimal code as a string.
+     * Components outside of the [0, 1] range (HDR colors for instance) are clamped.
      * @returns a string containing the hexadecimal representation of the Color3 object
      */
     public toHexString(): string {
-        const intR = Math.round(this.r * 255);
-        const intG = Math.round(this.g * 255);
-        const intB = Math.round(this.b * 255);
+        const intR = Math.round(Clamp(this.r) * 255);
+        const intG = Math.round(Clamp(this.g) * 255);
+        const intB = Math.round(Clamp(this.b) * 255);
         return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB);
     }
 
@@ -732,7 +733,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
 
     /**
      * Converts Hue, saturation and value to a Color3 (RGB)
-     * @param hue defines the hue (value between 0 and 360)
+     * @param hue defines the hue in degrees; any value is accepted and wrapped modulo 360 (e.g. 480 and 120 produce the same color)
      * @param saturation defines the saturation (value between 0 and 1)
      * @param value defines the value (value between 0 and 1)
      * @param result defines the Color3 where to store the RGB values
@@ -740,7 +741,8 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      */
     public static HSVtoRGBToRef<T extends IColor3Like>(hue: number, saturation: number, value: number, result: T): T {
         const chroma = value * saturation;
-        const h = hue / 60;
+        // wrap the hue into [0, 360) so an animated or negative hue keeps its color
+        const h = (((hue % 360) + 360) % 360) / 60;
         const x = chroma * (1 - Math.abs((h % 2) - 1));
         let r = 0;
         let g = 0;
@@ -775,7 +777,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
 
     /**
      * Converts Hue, saturation and value to a new Color3 (RGB)
-     * @param hue defines the hue (value between 0 and 360)
+     * @param hue defines the hue in degrees; any value is accepted and wrapped modulo 360 (e.g. 480 and 120 produce the same color)
      * @param saturation defines the saturation (value between 0 and 1)
      * @param value defines the value (value between 0 and 1)
      * @returns a new Color3 object
@@ -1589,20 +1591,21 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
     }
 
     /**
-     * Compute the Color4 hexadecimal code as a string
+     * Compute the Color4 hexadecimal code as a string.
+     * Components outside of the [0, 1] range (HDR colors for instance) are clamped.
      * @param returnAsColor3 defines if the string should only contains RGB values (off by default)
      * @returns a string containing the hexadecimal representation of the Color4 object
      */
     public toHexString(returnAsColor3 = false): string {
-        const intR = Math.round(this.r * 255);
-        const intG = Math.round(this.g * 255);
-        const intB = Math.round(this.b * 255);
+        const intR = Math.round(Clamp(this.r) * 255);
+        const intG = Math.round(Clamp(this.g) * 255);
+        const intB = Math.round(Clamp(this.b) * 255);
 
         if (returnAsColor3) {
             return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB);
         }
 
-        const intA = Math.round(this.a * 255);
+        const intA = Math.round(Clamp(this.a) * 255);
         return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB) + ToHex(intA);
     }
 

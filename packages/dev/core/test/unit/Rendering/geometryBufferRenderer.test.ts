@@ -146,7 +146,7 @@ describe("GeometryBufferRenderer mesh-blending tags", () => {
         }
     });
 
-    it("rejects Native even though it reports a WebGL2-compatible version", async () => {
+    it("rejects Native when the runtime does not support mesh blending", async () => {
         const engine = new NullEngine();
         engine._webGLVersion = 2;
         (engine as any)._shaderPlatformName = "NATIVE";
@@ -158,6 +158,27 @@ describe("GeometryBufferRenderer mesh-blending tags", () => {
             expect(() => {
                 renderer.enableMeshBlendingTag = true;
             }).toThrow("mesh-blending tag textures require WebGL2 or WebGPU");
+        } finally {
+            renderer.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("allows transparent mesh-blending tags on Native without per-target blend parameters", async () => {
+        const engine = new NullEngine();
+        (engine as any)._shaderPlatformName = "NATIVE";
+        engine._features.supportMeshBlending = true;
+        const scene = new Scene(engine);
+        const renderer = new GeometryBufferRenderer(scene);
+        await Promise.resolve();
+
+        try {
+            vi.spyOn(renderer as any, "_createRenderTargets").mockImplementation(() => {});
+            expect(() => {
+                renderer.enableMeshBlendingTag = true;
+                renderer.renderTransparentMeshes = true;
+            }).not.toThrow();
         } finally {
             renderer.dispose();
             scene.dispose();

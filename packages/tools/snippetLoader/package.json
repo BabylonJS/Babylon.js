@@ -14,7 +14,7 @@
         "compile": "tsc -b tsconfig.build.json"
     },
     "devDependencies": {
-        "monaco-editor": "^0.56.0"
+        "monaco-editor": "^0.57.0"
     },
     "sideEffects": false
 }

@@ -253,6 +253,11 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind data to effect
      * @param effect - defines the effect to bind data to

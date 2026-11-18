@@ -21,6 +21,7 @@ import { resolve, join, dirname, relative as pathRelative } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { transform as esbuildTransform } from "esbuild";
 import { downlevelJavaScriptToEs5 } from "../../scripts/downlevelJavaScriptToEs5.mjs";
+import { createTypeScriptEmitPlugins } from "./rollupTypeScript.mjs";
 
 // Repo root — used as the filterRoot for @rollup/plugin-typescript so that
 // `**/*.ts` patterns are matched against repo-relative paths (which never start
@@ -93,6 +94,7 @@ const devNameToUMDId = {
     "gui-editor": "babylonjs-gui-editor",
     accessibility: "babylonjs-accessibility",
     ktx2decoder: "babylonjs-ktx2decoder",
+    ktx2encoder: "babylonjs-ktx2encoder",
     "shared-ui-components": "babylonjs-shared-ui-components",
     addons: "babylonjs-addons",
     "smart-filters": "babylonjs-smart-filters",
@@ -116,6 +118,7 @@ const devNameToES6Id = {
     "gui-editor": "@babylonjs/gui-editor",
     accessibility: "@babylonjs/accessibility",
     ktx2decoder: "@babylonjs/ktx2decoder",
+    ktx2encoder: "@babylonjs/ktx2encoder",
     "shared-ui-components": "@babylonjs/shared-ui-components",
     addons: "@babylonjs/addons",
     "smart-filters": "@babylonjs/smart-filters",
@@ -142,6 +145,7 @@ export const umdGlobals = {
     "babylonjs-gui-editor": "GUIEDITOR",
     "babylonjs-accessibility": "BABYLON.Accessibility",
     "babylonjs-ktx2decoder": "KTX2DECODER",
+    "babylonjs-ktx2encoder": "KTX2ENCODER",
     "babylonjs-shared-ui-components": "BABYLON.SharedUIComponents",
     "babylonjs-addons": "ADDONS",
     "babylonjs-smart-filters": "BABYLON.SmartFilters",
@@ -166,6 +170,7 @@ const es6Globals = {
     "@babylonjs/gui-editor": "GUIEDITOR",
     "@babylonjs/accessibility": "BABYLON.Accessibility",
     "@babylonjs/ktx2decoder": "KTX2DECODER",
+    "@babylonjs/ktx2encoder": "KTX2ENCODER",
     "@babylonjs/shared-ui-components": "BABYLON.SharedUIComponents",
     "@babylonjs/addons": "ADDONS",
     "@babylonjs/smart-filters": "BABYLON.SmartFilters",
@@ -189,6 +194,7 @@ const umdPackageMeta = {
     "babylonjs-accessibility": { baseFilename: "babylon.accessibility" },
     "babylonjs-post-process": { baseFilename: "babylonjs.postProcess" },
     "babylonjs-ktx2decoder": { baseFilename: "babylon.ktx2Decoder" },
+    "babylonjs-ktx2encoder": { baseFilename: "babylon.ktx2Encoder" },
     "babylonjs-addons": { baseFilename: "babylonjs.addons" },
     "babylonjs-smart-filters": { baseFilename: "babylonjs.smartFilters" },
 };
@@ -622,6 +628,23 @@ function copyMinToMaxPlugin(outputDir, primaryName, chunkNames) {
 }
 
 /**
+ * Creates the terser plugin used for production UMD bundles.
+ *
+ * `_` is reserved from mangling because the ES5 sibling is produced by down-leveling the minified
+ * output with TypeScript. When TypeScript renames a block-scoped `_` it picks `_1`, `_2`, ..., the same
+ * `_<n>` namespace it uses for its own temporaries, and it can hand one name to both (e.g. an array and a
+ * `for..of` iterator result), which breaks the ES5 bundle at runtime.
+ * @returns {import("rollup").Plugin} The terser plugin.
+ */
+function createTerserPlugin() {
+    return terser({
+        compress: { passes: 2, dead_code: true },
+        mangle: { reserved: ["_"] },
+        format: { comments: false },
+    });
+}
+
+/**
  * Produces the ES5 UMD sibling consumed by Babylon Native.
  *
  * @param {string} outputDir Absolute path to the output directory.
@@ -791,27 +814,29 @@ export function commonUMDRollupConfiguration(options) {
     const useEsbuild = devMode && !production;
     const transpilePlugins = useEsbuild
         ? [esbuildTranspilePlugin({ sourceMap: true })]
-        : [
-              typescript({
-                  tsconfig: "tsconfig.build.json",
-                  // Rollup owns the bundle output; do not inherit the standalone tsc emit directory.
-                  outDir: undefined,
-                  declaration: false,
-                  declarationMap: false,
-                  sourceMap: true,
-                  // Embed source contents in the generated sourcemap so DevTools/playground
-                  // can display the original .ts files even when the relative source paths
-                  // (which start with `../../../../../../../`) cannot be fetched over HTTP.
-                  inlineSources: true,
-                  // filterRoot set to the repo root so **/*.ts patterns match files from
-                  // any package (including aliased cross-package tool sources).
-                  filterRoot: REPO_ROOT,
-                  include: ["**/*.ts", "**/*.tsx"],
-              }),
-              // Fallback: transpile .ts files that are outside the tsconfig rootDir
-              // (e.g. aliased tool sources) which @rollup/plugin-typescript skips.
-              transpileExternalTsPlugin(),
-          ];
+        : entryPoints && production
+          ? []
+          : [
+                typescript({
+                    tsconfig: "tsconfig.build.json",
+                    // Rollup owns the bundle output; do not inherit the standalone tsc emit directory.
+                    outDir: undefined,
+                    declaration: false,
+                    declarationMap: false,
+                    sourceMap: true,
+                    // Embed source contents in the generated sourcemap so DevTools/playground
+                    // can display the original .ts files even when the relative source paths
+                    // (which start with `../../../../../../../`) cannot be fetched over HTTP.
+                    inlineSources: true,
+                    // filterRoot set to the repo root so **/*.ts patterns match files from
+                    // any package (including aliased cross-package tool sources).
+                    filterRoot: REPO_ROOT,
+                    include: ["**/*.ts", "**/*.tsx"],
+                }),
+                // Fallback: transpile .ts files that are outside the tsconfig rootDir
+                // (e.g. aliased tool sources) which @rollup/plugin-typescript skips.
+                transpileExternalTsPlugin(),
+            ];
 
     const plugins = [
         stubOptionalPeerDepsPlugin(),
@@ -832,14 +857,7 @@ export function commonUMDRollupConfiguration(options) {
         nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
         commonjs(),
         rewriteDynamicExternalImportsPlugin(production),
-        ...(production
-            ? [
-                  terser({
-                      compress: { passes: 2, dead_code: true },
-                      format: { comments: false },
-                  }),
-              ]
-            : []),
+        ...(production ? [createTerserPlugin()] : []),
         ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, chunkNames)] : []),
         ...(es5EntryPoint && production ? [generateEs5Plugin(resolve(outputPath), primaryFilename, es5EntryPoint)] : []),
     ];
@@ -915,27 +933,29 @@ export function commonUMDRollupConfiguration(options) {
     });
 
     if (entryPoints) {
+        const sharedTypeScript = production && process.env.ROLLUP_WATCH !== "true" ? createTypeScriptEmitPlugins("tsconfig.build.json") : undefined;
         // Return an array of single-input configs (one per entry).
         // The copyMinToMaxPlugin is only attached to the first config to avoid
         // copying the same files multiple times.
         return Object.entries(entryPoints).map(([chunkName, inputFile], i) => {
             const perEntryExternals = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip], { bundleGltf2Interface, externalPackageType });
             const perEntryResolveGlobal = (id) => perEntryExternals.globals[id] ?? umdGlobals[id] ?? es6Globals[id] ?? id;
-            // In devMode, esbuild is stateless so the shared transpilePlugins can be reused.
-            // In non-devMode, each entry needs its own tsc plugin instance.
+            // Production entries share emit, while watch builds need independent compiler lifecycles.
             const perEntryTranspilePlugins = useEsbuild
                 ? transpilePlugins
                 : [
-                      typescript({
-                          tsconfig: "tsconfig.build.json",
-                          outDir: undefined,
-                          declaration: false,
-                          declarationMap: false,
-                          sourceMap: true,
-                          inlineSources: true,
-                          filterRoot: REPO_ROOT,
-                          include: ["**/*.ts", "**/*.tsx"],
-                      }),
+                      sharedTypeScript
+                          ? sharedTypeScript()
+                          : typescript({
+                                tsconfig: "tsconfig.build.json",
+                                outDir: undefined,
+                                declaration: false,
+                                declarationMap: false,
+                                sourceMap: true,
+                                inlineSources: true,
+                                filterRoot: REPO_ROOT,
+                                include: ["**/*.ts", "**/*.tsx"],
+                            }),
                       transpileExternalTsPlugin(),
                   ];
             const perEntryPlugins = [
@@ -948,14 +968,7 @@ export function commonUMDRollupConfiguration(options) {
                 nodeResolve({ mainFields: ["browser", "module", "main"], browser: true, extensions: [".ts", ".tsx", ".js", ".jsx"] }),
                 commonjs(),
                 rewriteDynamicExternalImportsPlugin(production),
-                ...(production
-                    ? [
-                          terser({
-                              compress: { passes: 2, dead_code: true },
-                              format: { comments: false },
-                          }),
-                      ]
-                    : []),
+                ...(production ? [createTerserPlugin()] : []),
                 ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, [chunkName])] : []),
                 ...(es5EntryPoint === chunkName && production ? [generateEs5Plugin(resolve(outputPath), primaryFilename, chunkName)] : []),
             ];

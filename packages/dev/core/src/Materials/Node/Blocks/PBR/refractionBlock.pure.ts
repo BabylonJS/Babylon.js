@@ -234,6 +234,11 @@ export class RefractionBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind data to effect
      * @param effect - the effect to bind to

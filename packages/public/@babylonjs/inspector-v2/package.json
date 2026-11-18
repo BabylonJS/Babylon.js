@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "9.32.0",
+    "version": "9.37.0",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -31,7 +31,8 @@
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf bin && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib && npm run bundle:cli",
-        "bundle:lib": "rollup -c rollup.config.lib.mjs && tsc -p tsconfig.build.dts.json && build-tools -c tp --outDir ./lib --buildType es6 --basePackage @babylonjs/inspector --appendJS",
+        "bundle:lib": "rollup -c rollup.config.lib.mjs && npm run bundle:declarations",
+        "bundle:declarations": "tsc -p tsconfig.build.dts.json && node scripts/declarations.mjs && build-tools -c tp --outDir ./lib --buildType es6 --basePackage @babylonjs/inspector --appendJS --localPackagePaths shared-ui-components=shared-ui-components",
         "bundle:cli": "rollup -c rollup.config.cli.mjs",
         "pack": "npm run build && npm pack"
     },
@@ -40,7 +41,7 @@
         "@babylonjs/core": "^9.0.0",
         "@babylonjs/gui": "^9.0.0",
         "@babylonjs/gui-editor": "^9.0.0",
-        "@babylonjs/lite": "^1.32.0",
+        "@babylonjs/lite": "^1.39.3",
         "@babylonjs/loaders": "^9.0.0",
         "@babylonjs/materials": "^9.0.0",
         "@babylonjs/node-editor": "^9.0.0",
@@ -65,18 +66,18 @@
         }
     },
     "devDependencies": {
-        "@babylonjs/lite": "1.32.0",
+        "@babylonjs/lite": "1.39.3",
         "@dev/build-tools": "^1.0.0",
         "@dev/inspector": "1.0.0",
-        "@rollup/plugin-alias": "^6.0.0",
+        "@rollup/plugin-alias": "^6.0.1",
         "@rollup/plugin-commonjs": "^29.0.3",
         "@rollup/plugin-node-resolve": "^16.0.3",
-        "@rollup/plugin-typescript": "^12.3.0",
-        "@types/ws": "^8.18.1",
+        "@rollup/plugin-typescript": "^12.3.1",
+        "@types/ws": "^8.18.2",
         "chalk": "^6.0.1",
-        "rollup": "^4.63.4",
+        "rollup": "^4.65.1",
         "rollup-plugin-dts": "^6.5.1",
-        "ws": "^8.21.3"
+        "ws": "^8.22.0"
     },
     "keywords": [
         "3D",

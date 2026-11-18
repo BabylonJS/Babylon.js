@@ -160,4 +160,82 @@ describe("USDZ Exporter - NullEngine / Node.js environment", () => {
             loadFileSpy.mockRestore();
         }
     });
+
+    it.each([0.5, 0])("exports normal map shader with scale and bias for [-1, 1] decoding and raw color space (level = %s)", async (level) => {
+        const box = CreateBox("box", { size: 1 }, scene);
+        const material = new PBRMaterial("mat", scene);
+        const normalTex = new Texture("normal.png", scene);
+        normalTex.level = level;
+        const internal = normalTex.getInternalTexture()!;
+        internal.invertY = false;
+        internal._buffer = OnePixelRedPng;
+        (normalTex as any)._mimeType = "image/png";
+        material.bumpTexture = normalTex;
+        box.material = material;
+
+        await USDZExportAsync(scene, {});
+        const usda = new TextDecoder().decode(unwrapFileBytes(captured.value!["model.usda"]));
+        const xyScale = 2 * level;
+        const xyBias = -level === 0 ? 0 : -level;
+
+        expect(usda).toContain("Texture_" + normalTex.uniqueId + "_normal");
+        expect(usda).toContain(`float4 inputs:scale = (${xyScale}, ${xyScale}, 2, 1)`);
+        expect(usda).toContain(`float4 inputs:bias = (${xyBias}, ${xyBias}, -1, 0)`);
+        expect(usda).toContain('token inputs:sourceColorSpace = "raw"');
+    });
+
+    it("does not emit duplicate inputs:opacity when diffuse texture uses alpha blending", async () => {
+        const box = CreateBox("box", { size: 1 }, scene);
+        const material = new PBRMaterial("mat", scene);
+        const texture = new Texture("albedo.png", scene);
+        const internal = texture.getInternalTexture()!;
+        internal.invertY = false;
+        internal._buffer = OnePixelRedPng;
+        (texture as any)._mimeType = "image/png";
+        material.albedoTexture = texture;
+        material.alpha = 0.7;
+        material.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
+        box.material = material;
+
+        await USDZExportAsync(scene, {});
+        const usda = new TextDecoder().decode(unwrapFileBytes(captured.value!["model.usda"]));
+        const opacityMatches = usda.match(/inputs:opacity\b/g) || [];
+        expect(opacityMatches).toHaveLength(1);
+        expect(usda).toContain("float inputs:opacity.connect");
+        expect(usda).toContain("float4 inputs:scale = (1, 1, 1, 0.7)");
+    });
+
+    it("does not emit duplicate inputs:opacity and emits opacityThreshold when diffuse texture uses alpha testing", async () => {
+        const box = CreateBox("box", { size: 1 }, scene);
+        const material = new PBRMaterial("mat", scene);
+        const texture = new Texture("albedo.png", scene);
+        const internal = texture.getInternalTexture()!;
+        internal.invertY = false;
+        internal._buffer = OnePixelRedPng;
+        (texture as any)._mimeType = "image/png";
+        material.albedoTexture = texture;
+        material.alphaCutOff = 0.4;
+        material.alpha = 0.8;
+        material.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
+        box.material = material;
+
+        await USDZExportAsync(scene, {});
+        const usda = new TextDecoder().decode(unwrapFileBytes(captured.value!["model.usda"]));
+        const opacityMatches = usda.match(/inputs:opacity\b/g) || [];
+        expect(opacityMatches).toHaveLength(1);
+        expect(usda).toContain("float inputs:opacity.connect");
+        expect(usda).toContain("float inputs:opacityThreshold = 0.4");
+        expect(usda).toContain("float4 inputs:scale = (1, 1, 1, 0.8)");
+    });
+
+    it("emits scalar inputs:opacity when material is semi-transparent without texture alpha", async () => {
+        const box = CreateBox("box", { size: 1 }, scene);
+        const material = new PBRMaterial("mat", scene);
+        material.alpha = 0.6;
+        box.material = material;
+
+        await USDZExportAsync(scene, {});
+        const usda = new TextDecoder().decode(unwrapFileBytes(captured.value!["model.usda"]));
+        expect(usda).toContain("float inputs:opacity = 0.6");
+    });
 });

@@ -60,6 +60,18 @@ Watchers use Chokidar 4: watch directories and filter file types rather than pas
 
 After building the UMD bundles, `npm run test:escheck` checks their ES2015 script syntax with the shared Acorn-based `scripts/checkEcmaVersion.mjs` checker. A missing bundle or unsupported syntax fails the check.
 
+### Production builds
+
+`npm run build:umd` and `npm run build:es6` use Nx's local build cache, including reuse between the library and tool phases. Build inputs include dependency sources, shared build helpers, root TypeScript configuration, the lockfile, and the Node version. Cached outputs include package-root JavaScript/declarations/maps as well as `dist`, `lib`, `bin`, assets, codec `wasm` directories (including licenses), and generated shader modules. Package overrides also include Shared UI's shipped SVG/SCSS assets and Smart Filters' copied sources. Viewer, MCP servers (including shared server prerequisites), and Smart Filter blocks explicitly hash their external source owners without scheduling redundant builds of those sources. After changing output locations or adding a shared build input, update `nx.json` or the package's `nx.targets.build` settings too.
+
+The local `nxCleanCache` plugin makes each public package's existing `clean` script an uncached prerequisite of its Nx build, after dependency builds complete. This also runs before a cache restore: Nx does not prune obsolete files when restoring file-glob outputs. Switching A to B and back to cached A therefore cannot leave B-only JavaScript, declarations, maps, or assets in publishable package roots. Direct npm package builds retain their existing clean/build scripts.
+
+Core source/manifest/barrel generation remains an uncached prerequisite because it updates shared source metadata. UMD documentation is assembled deterministically from the generated namespace declarations after the UMD library phase, including on cache hits. Run `npm run build:umd:documentation` to rebuild only `.snapshot/documentation.d.ts`. Individual package builds generate only their own declarations, without appending to the shared documentation file.
+
+Multi-entry production UMD packages share one TypeScript compilation per Rollup invocation. This preserves the package's compiler options, const-enum inlining, and decorator emit without compiling the same source program for every entry. Development/watch builds retain the normal Rollup TypeScript plugin.
+
+For a cold build comparison, use a fresh `NX_CACHE_DIRECTORY` and `NX_WORKSPACE_DATA_DIRECTORY`. For a restoration check, build once, remove specific generated artifacts, build again, and verify both a cache hit and the restored contents. Do not compare a cold build with a warm cached build as if it were a compiler-speed improvement.
+
 To validate your PR, please follow these steps:
 
 -   Run `npm run build:dev` locally and make sure that no error is generated

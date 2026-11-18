@@ -330,7 +330,18 @@ function _addWarning(diagnostics: IKHRInteractivityDiagnostic[], path: string, m
 }
 
 function _isValidJsonPointer(value: string): boolean {
-    return value === "" || /^(?:\/(?:[^~]|~[01])*)*$/.test(value);
+    if (value === "") {
+        return true;
+    }
+    if (value[0] !== "/") {
+        return false;
+    }
+    for (let index = 1; index < value.length; index++) {
+        if (value[index] === "~" && value[++index] !== "0" && value[index] !== "1") {
+            return false;
+        }
+    }
+    return true;
 }
 
 function _matchesOutputSocket(

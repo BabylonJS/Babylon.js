@@ -1,6 +1,9 @@
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
+import { FlowGraphMeshIntersectionEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphMeshIntersectionEventBlock.pure";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 import { NullEngine } from "core/Engines/nullEngine";
+import { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
 import { GlobalState } from "flow-graph-editor/globalState";
@@ -9,6 +12,7 @@ import { SceneContext } from "flow-graph-editor/sceneContext";
 import { _RegisterKHRInteractivityRuntime } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 import { CompositePathToObjectConverter } from "loaders/glTF/2.0/Extensions/compositePathToObjectConverter";
 import { InteractivityHostResolver } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityHostResolver";
+import { FlowGraphUnsupportedInteractivityBlock } from "loaders/glTF/2.0/Extensions/KHR_interactivity/flowGraphUnsupportedInteractivityBlock";
 import {
     _CaptureKHRInteractivityRuntimeInputDefaults,
     CreateKHRInteractivityDocument,
@@ -22,6 +26,180 @@ afterEach(() => {
 });
 
 describe("SerializationTools coordinator ownership", () => {
+    it("surfaces unsupported KHR blocks and export diagnostics through validation", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        globalState.coordinator = coordinator;
+        const unsupported = new FlowGraphUnsupportedInteractivityBlock({
+            operation: "EXT_example/event",
+            inputValueSockets: [],
+            outputValueSockets: [],
+            inputFlowSockets: [],
+            outputFlowSockets: [],
+        });
+        graph.addBlock(unsupported);
+        globalState.registerEditorBlocksProvider(() => [unsupported]);
+
+        globalState.runValidation();
+        expect(globalState.validationResult?.issues).toContainEqual(
+            expect.objectContaining({
+                severity: FlowGraphValidationSeverity.Warning,
+                message: 'KHR_interactivity operation "EXT_example/event" has no runtime implementation and is preserved as an unsupported block.',
+                block: unsupported,
+            })
+        );
+
+        globalState.setExportValidationDiagnostics([{ path: "/graphs/0/nodes/1", message: "Unsupported edit" }]);
+        expect(globalState.validationResult?.issues).toContainEqual(
+            expect.objectContaining({
+                message: "KHR_interactivity export error at /graphs/0/nodes/1: Unsupported edit",
+            })
+        );
+
+        const replacementCoordinator = new FlowGraphCoordinator({ scene });
+        replacementCoordinator.createGraph();
+        globalState.coordinator = replacementCoordinator;
+        expect(globalState.validationResult).toBeNull();
+
+        coordinator.dispose();
+        replacementCoordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("persists coordinator sound asset declarations in editor JSON", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        globalState.coordinator = coordinator;
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+        vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+
+        const serialized = JSON.parse(SerializationTools.Serialize(graph, globalState));
+
+        expect(serialized.soundAssets).toEqual([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("restores sound assets before parsing editor graphs", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const addSoundAsset = vi.spyOn(FlowGraphCoordinator.prototype, "addSoundAssetAsync").mockResolvedValue({} as any);
+        const serialized = {
+            soundAssets: [{ name: "click", url: "data:audio/wav;base64,UklGRg==" }],
+            _flowGraphs: [{ rightHanded: true, allBlocks: [], executionContexts: [] }],
+        };
+
+        const state = await SerializationTools.DeserializeToStateAsync(serialized, scene);
+
+        expect(addSoundAsset).toHaveBeenCalledWith(serialized.soundAssets[0]);
+        addSoundAsset.mockRestore();
+        state.coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("reports sound asset load failures without rejecting graph deserialization", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const loadError = new Error("Unsupported audio format");
+        const addSoundAsset = vi.spyOn(FlowGraphCoordinator.prototype, "addSoundAssetAsync").mockRejectedValue(loadError);
+        const serialized = {
+            soundAssets: [{ name: "click", url: "data:audio/invalid;base64,AA==" }],
+            _flowGraphs: [{ rightHanded: true, allBlocks: [], executionContexts: [] }],
+        };
+        const globalState = new GlobalState(scene);
+        const showError = vi.fn();
+        globalState.stateManager.onErrorMessageDialogRequiredObservable.add(showError);
+
+        const state = await SerializationTools.DeserializeToStateAsync(serialized, scene);
+        SerializationTools.ApplyDeserializedState(state, globalState);
+
+        expect(showError).toHaveBeenCalledWith('Could not load sound asset "click": Unsupported audio format', expect.anything());
+        addSoundAsset.mockRestore();
+        state.coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("includes sound asset declarations in BABYLON_flow_graph GLB exports", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const firstMesh = new Mesh("part", scene);
+        const secondMesh = new Mesh("part", scene);
+        secondMesh.id = firstMesh.id;
+        const block = new FlowGraphMeshIntersectionEventBlock();
+        const missingBlock = new FlowGraphMeshIntersectionEventBlock();
+        const liveBlock = new FlowGraphMeshIntersectionEventBlock();
+        graph.addEventBlock(block);
+        graph.addEventBlock(missingBlock);
+        graph.addEventBlock(liveBlock);
+        (block.targetMeshes as any)._defaultValue = [secondMesh];
+        const missingReference = { id: "missing", name: "missing", className: "Mesh", uniqueId: firstMesh.uniqueId };
+        (missingBlock.targetMeshes as any)._defaultValue = [missingReference];
+        (liveBlock.targetMeshes as any)._defaultValue = [firstMesh];
+        const context = graph.createContext();
+        missingBlock.targetMeshes.setValue([missingReference as any], context);
+        globalState.coordinator = coordinator;
+        globalState.restoreReferenceProvenance([[firstMesh.uniqueId, { id: "missing", name: "missing", className: "Mesh", idIndex: 0, nameIndex: 0 }]]);
+        (globalState.stateManager as any).storeEditorData = vi.fn();
+        vi.spyOn(coordinator, "soundAssets", "get").mockReturnValue([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+        const download = vi.spyOn(SerializationTools as any, "_DownloadBlob").mockImplementation(() => {});
+        graph.start();
+        globalState.snapshotUserVariables();
+        graph.stop();
+        expect(graph.contextCount).toBe(0);
+
+        await SerializationTools.ExportBabylonFlowGraphGlbAsync(graph, globalState, null);
+
+        const blob = download.mock.calls[0][0] as Blob;
+        const file = new File([blob], "flowGraph.glb");
+        const serialized = await SerializationTools.ReadFlowGraphFromGlbAsync(file);
+        expect(serialized.soundAssets).toEqual([{ name: "click", url: "data:audio/wav;base64,UklGRg==" }]);
+        const serializedMissingBlock = serialized.allBlocks.find((candidate: any) => candidate.uniqueId === missingBlock.uniqueId);
+        const serializedMissing = serializedMissingBlock.dataInputs.find((input: any) => input.name === "targetMeshes").defaultValue[0];
+        expect(serializedMissing.uniqueId).toBeLessThan(0);
+        expect(serialized.executionContexts[0]._connectionValues[missingBlock.targetMeshes.uniqueId][0].uniqueId).toBe(serializedMissing.uniqueId);
+        expect(serialized.referenceProvenance).toContainEqual([serializedMissing.uniqueId, expect.objectContaining({ id: "missing", name: "missing" })]);
+        expect(serialized.referenceProvenance).toContainEqual([firstMesh.uniqueId, expect.objectContaining({ id: "part", name: "part" })]);
+        expect((missingBlock.targetMeshes as any)._defaultValue[0].uniqueId).toBe(firstMesh.uniqueId);
+        const restoredScene = new Scene(engine);
+        const restoredMissing = new Mesh("missing", restoredScene);
+        restoredMissing.id = "missing";
+        const restoredFirst = new Mesh("part", restoredScene);
+        const restoredSecond = new Mesh("part", restoredScene);
+        restoredSecond.id = restoredFirst.id;
+        const restored = await SerializationTools.DeserializeToStateAsync(serialized, restoredScene);
+        const restoredBlock = restored.coordinator.flowGraphs[0].getAllBlocks().find((candidate) => candidate.uniqueId === block.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        const restoredMissingBlock = restored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.uniqueId === missingBlock.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        const restoredLiveBlock = restored.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((candidate) => candidate.uniqueId === liveBlock.uniqueId) as FlowGraphMeshIntersectionEventBlock;
+        expect((restoredBlock.targetMeshes as any)._defaultValue).toEqual([restoredSecond]);
+        expect((restoredMissingBlock.targetMeshes as any)._defaultValue).toEqual([restoredMissing]);
+        expect(restoredMissingBlock.targetMeshes.getValue(restored.coordinator.flowGraphs[0].getContext(0)!)).toEqual([restoredMissing]);
+        expect((restoredLiveBlock.targetMeshes as any)._defaultValue).toEqual([restoredFirst]);
+
+        download.mockRestore();
+        restored.coordinator.dispose();
+        restoredScene.dispose();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
     it("detaches a borrowed host coordinator without disposing its graphs", async () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);

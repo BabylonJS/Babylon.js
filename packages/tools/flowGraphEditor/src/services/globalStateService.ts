@@ -88,6 +88,7 @@ export function MakeGlobalStateService(options: IFlowGraphEditorOptions, hostEle
                 globalState,
                 dispose: () => {
                     options.customLoadObservable?.remove(loadObserver ?? null);
+                    globalState.dispose();
                     if (flowGraphEditorGlobal?.["_CurrentState"] === globalState) {
                         flowGraphEditorGlobal["_CurrentState"] = undefined;
                     }

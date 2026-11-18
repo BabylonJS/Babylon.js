@@ -1,4 +1,4 @@
-import { mkdirSync, rmSync, writeFileSync } from "fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -8,8 +8,7 @@ describe("Config Loader", () => {
     let tempDir: string;
 
     beforeEach(() => {
-        tempDir = join(tmpdir(), `inspector-config-test-${Date.now()}`);
-        mkdirSync(tempDir, { recursive: true });
+        tempDir = mkdtempSync(join(tmpdir(), "inspector-config-test-"));
     });
 
     afterEach(() => {

@@ -405,13 +405,14 @@ export class Sandbox extends React.Component<
      * @returns A formatted string of supported extensions like "gltf, glb, obj or babylon"
      */
     private _getSupportedExtensions(): string {
-        const fallbackExtensions = "babylon, babylonproj, gltf, glb, fbx, obj, ply, sog, splat, spz or stl";
+        const fallbackExtensions = "babylon, babylonproj, gltf, glb, fbx, obj, ply, sog, splat, spz, stl or usd";
 
         try {
             const plugins = BABYLON.GetRegisteredSceneLoaderPluginMetadata();
             let extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
-            // Keep the legacy prompt stable; the footer advertises USD support explicitly.
-            extensions = extensions.filter((ext) => !["json", "usd", "usda", "usdc", "usdz"].includes(ext));
+            extensions = extensions.filter((ext) => ext !== "json");
+            // Group all USD variants under a single format label in the drop prompt.
+            extensions = extensions.map((ext) => (["usd", "usda", "usdc", "usdz"].includes(ext) ? "usd" : ext));
             extensions = [...new Set([...extensions, "babylonproj"])];
             extensions.sort();
 

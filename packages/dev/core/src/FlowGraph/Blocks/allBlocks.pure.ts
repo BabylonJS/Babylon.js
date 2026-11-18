@@ -1,4 +1,5 @@
 // Event blocks
+import { RegisterFlowGraphMeshIntersectionEventBlock } from "./Event/flowGraphMeshIntersectionEventBlock.pure";
 import { RegisterFlowGraphMeshPickEventBlock } from "./Event/flowGraphMeshPickEventBlock.pure";
 import { RegisterFlowGraphPointerOutEventBlock } from "./Event/flowGraphPointerOutEventBlock.pure";
 import { RegisterFlowGraphPointerOverEventBlock } from "./Event/flowGraphPointerOverEventBlock.pure";
@@ -55,6 +56,7 @@ import { RegisterFlowGraphTransformCoordinatesSystemBlock } from "./Data/flowGra
  * Registers all event flow graph blocks for deserialization.
  */
 export function RegisterFlowGraphEventBlocks(): void {
+    RegisterFlowGraphMeshIntersectionEventBlock();
     RegisterFlowGraphMeshPickEventBlock();
     RegisterFlowGraphPointerOutEventBlock();
     RegisterFlowGraphPointerOverEventBlock();

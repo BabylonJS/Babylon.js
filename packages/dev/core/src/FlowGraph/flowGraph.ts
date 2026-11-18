@@ -7,7 +7,7 @@ import { type FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import { type FlowGraphCoordinator } from "./flowGraphCoordinator";
-import { type IObjectAccessor } from "./typeDefinitions";
+import { type IObjectAccessor, type SerializedFlowGraphReferenceProvenance } from "./typeDefinitions";
 import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { FlowGraphEventType } from "./flowGraphEventType";
@@ -97,6 +97,10 @@ export interface IFlowGraphParseOptions {
      * A function that converts a path to an object accessor.
      */
     pathConverter?: IPathToObjectConverter<IObjectAccessor>;
+    /**
+     * Optional scene-reference provenance used to disambiguate duplicate nodes.
+     */
+    referenceProvenance?: SerializedFlowGraphReferenceProvenance;
 }
 /**
  * Class used to represent a flow graph.
@@ -107,6 +111,8 @@ export interface IFlowGraphParseOptions {
  * @experimental FlowGraph is still in development and is subject to change.
  */
 export class FlowGraph {
+    private _referenceProvenance: SerializedFlowGraphReferenceProvenance | undefined;
+
     /**
      * A human-readable name for this graph.
      */
@@ -722,6 +728,45 @@ export class FlowGraph {
             context.serialize(serializedContext, valueSerializeFunction);
             serializationObject.executionContexts.push(serializedContext);
         }
+        if (this._referenceProvenance) {
+            const nodes = this._scene.getNodes();
+            for (let index = 0; index < this._referenceProvenance.length; index++) {
+                const [uniqueId, location] = this._referenceProvenance[index];
+                const candidates = nodes.filter((candidate) => candidate.uniqueId === uniqueId && candidate.getClassName() === location.className);
+                const node =
+                    candidates.find((candidate) => candidate.id === location.id && candidate.name === location.name) ??
+                    candidates.find((candidate) => candidate.id === location.id) ??
+                    candidates.find((candidate) => candidate.name === location.name) ??
+                    (candidates.length === 1 ? candidates[0] : undefined);
+                if (!node) {
+                    continue;
+                }
+                const sameClassNodes = nodes.filter((candidate) => candidate.getClassName() === node.getClassName());
+                this._referenceProvenance[index] = [
+                    node.uniqueId,
+                    {
+                        id: node.id,
+                        name: node.name,
+                        className: node.getClassName(),
+                        idIndex: sameClassNodes.filter((candidate) => candidate.id === node.id).indexOf(node),
+                        nameIndex: sameClassNodes.filter((candidate) => candidate.name === node.name).indexOf(node),
+                        sceneUid: this._scene.uid,
+                    },
+                ];
+            }
+            serializationObject.referenceProvenance = this._referenceProvenance;
+        } else {
+            delete serializationObject.referenceProvenance;
+        }
+    }
+
+    /**
+     * Retains serialized scene-reference provenance for subsequent graph serialization.
+     * @internal
+     * @param provenance serialized scene-reference provenance
+     */
+    public _setReferenceProvenance(provenance: SerializedFlowGraphReferenceProvenance): void {
+        this._referenceProvenance = provenance;
     }
 
     /**

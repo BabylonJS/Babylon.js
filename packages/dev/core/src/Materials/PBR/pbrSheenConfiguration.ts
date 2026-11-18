@@ -133,6 +133,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
 
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
         super(material, "Sheen", 120, new MaterialSheenDefines(), addToPluginList);
+        this._bindsMaterialValuesOnly = true;
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }

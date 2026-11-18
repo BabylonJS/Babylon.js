@@ -6,6 +6,8 @@ import * as chokidar from "chokidar";
 import { type DevPackageName } from "./packageMapping.js";
 import { BuildShader } from "./buildShaders.js";
 
+const EscapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const ProcessFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName; pathPrefix?: string; outputDir?: string } = {}) => {
     file = file.replace(/\\/g, "/");
     if (!options.outputDir) {
@@ -15,7 +17,7 @@ const ProcessFile = (file: string, options: { isCore?: boolean; basePackageName?
         BuildShader(file, options.basePackageName, options.isCore);
     } else {
         if (options.pathPrefix) {
-            const regex = new RegExp(`${options.pathPrefix.replace(/\//g, "\\/")}src([/\\\\])`);
+            const regex = new RegExp(`${EscapeRegExp(options.pathPrefix)}src([/\\\\])`);
             copyFile(file, file.replace(regex, `${options.outputDir}$1`), true, true);
         } else {
             copyFile(file, file.replace(/src([/\\])/, `${options.outputDir}$1`), true, true);

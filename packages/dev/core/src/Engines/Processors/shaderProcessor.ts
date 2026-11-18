@@ -21,11 +21,95 @@ import { type AbstractEngine } from "../abstractEngine";
 
 const RegexSe = /defined\s*?\((.+?)\)/g;
 const RegexSeRevert = /defined\s*?\[(.+?)\]/g;
-const RegexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+const RegexMacroName = /^[A-Za-z_]\w*$/;
 const RegexShaderDecl = /__decl__/;
 const RegexLightX = /light\{X\}.(\w*)/g;
 const RegexX = /\{X\}/g;
-const ReusableMatches: RegExpMatchArray[] = [];
+interface IShaderIncludeMatch {
+    /** The complete include directive */
+    directive: string;
+    /** The include name */
+    name: string;
+    /** The comma separated replacements inside parentheses, if any */
+    replacements?: string;
+    /** The index expression inside brackets, if any */
+    indices?: string;
+}
+
+const ReusableMatches: IShaderIncludeMatch[] = [];
+
+/**
+ * Finds the "#include<name>(replacements)[indices]" directives of a shader. The replacements extend to the last ")"
+ * of the line and the indices to the first "]". Implemented with forward-only scanning so it stays linear on any input.
+ * @param sourceCode The shader code
+ * @param matches The array receiving the matches
+ */
+function FindShaderIncludes(sourceCode: string, matches: IShaderIncludeMatch[]): void {
+    const length = sourceCode.length;
+    let lineEnd = -1;
+    let lastParenthesisInLine = -1;
+    let nextClosingAngle = -1;
+    let nextClosingBracket = -1;
+    let searchFrom = 0;
+
+    while (searchFrom < length) {
+        const directiveStart = sourceCode.indexOf("#include", searchFrom);
+        if (directiveStart === -1) {
+            return;
+        }
+        searchFrom = directiveStart + 1;
+
+        let position = directiveStart + 8;
+        if (sourceCode[position] === " " || sourceCode[position] === "\t") {
+            position++;
+        }
+        if (sourceCode[position] !== "<") {
+            continue;
+        }
+        const nameStart = position + 1;
+
+        if (lineEnd < nameStart) {
+            lineEnd = nameStart;
+            lastParenthesisInLine = -1;
+            while (lineEnd < length && sourceCode[lineEnd] !== "\n" && sourceCode[lineEnd] !== "\r") {
+                if (sourceCode[lineEnd] === ")") {
+                    lastParenthesisInLine = lineEnd;
+                }
+                lineEnd++;
+            }
+        }
+        if (nextClosingAngle !== -2 && nextClosingAngle < nameStart) {
+            const index = sourceCode.indexOf(">", nameStart);
+            nextClosingAngle = index === -1 ? -2 : index;
+        }
+        if (nextClosingAngle < 0 || nextClosingAngle >= lineEnd || nextClosingAngle === nameStart) {
+            continue;
+        }
+
+        const match: IShaderIncludeMatch = { directive: "", name: sourceCode.substring(nameStart, nextClosingAngle) };
+        position = nextClosingAngle + 1;
+
+        if (sourceCode[position] === "(" && lastParenthesisInLine > position) {
+            match.replacements = sourceCode.substring(position + 1, lastParenthesisInLine);
+            position = lastParenthesisInLine + 1;
+        }
+
+        if (sourceCode[position] === "[") {
+            if (nextClosingBracket !== -2 && nextClosingBracket <= position) {
+                const index = sourceCode.indexOf("]", position + 1);
+                nextClosingBracket = index === -1 ? -2 : index;
+            }
+            if (nextClosingBracket >= 0 && nextClosingBracket < lineEnd) {
+                match.indices = sourceCode.substring(position + 1, nextClosingBracket);
+                position = nextClosingBracket + 1;
+            }
+        }
+
+        match.directive = sourceCode.substring(directiveStart, position);
+        matches.push(match);
+        searchFrom = position;
+    }
+}
 
 const MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
 
@@ -118,7 +202,11 @@ function ExtractOperation(expression: string) {
     }
 
     if (indexOperator === -1) {
-        return new ShaderDefineIsDefinedOperator(expression);
+        // a define alone: #if !X is #if !defined(X), as #if X is #if defined(X) (it used to test a define named "!X"). Only a macro name
+        // is negated so: anything else after the "!" keeps its reading (#if !1 tests a define named "!1", which never exists)
+        const define = expression.trim();
+        const name = define.substring(1).trim();
+        return define[0] === "!" && RegexMacroName.test(name) ? new ShaderDefineIsDefinedOperator(name, true) : new ShaderDefineIsDefinedOperator(expression);
     }
 
     const define = expression.substring(0, indexOperator).trim();
@@ -307,6 +395,10 @@ function PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEng
     if (options.processor?.shaderLanguage === ShaderLanguage.GLSL) {
         preprocessors["GL_ES"] = "true";
     }
+    if (engine?.getCaps().highPrecisionShaderSupported) {
+        // Resolve the GLSL capability macro before the driver's own preprocessor runs.
+        preprocessors["GL_FRAGMENT_PRECISION_HIGH"] = "true";
+    }
     preprocessors["__VERSION__"] = options.version;
     preprocessors[options.platformName] = "true";
 
@@ -412,18 +504,14 @@ function ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, en
 /** @internal */
 export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions, callback: (data: any) => void): void {
     ReusableMatches.length = 0;
-    let match: RegExpMatchArray | null;
-    // stay back-compat to the old matchAll syntax
-    while ((match = RegexShaderInclude.exec(sourceCode)) !== null) {
-        ReusableMatches.push(match);
-    }
+    FindShaderIncludes(sourceCode, ReusableMatches);
 
     let parts = [sourceCode];
 
     let keepProcessing = false;
 
     for (const match of ReusableMatches) {
-        let includeFile = match[1];
+        let includeFile = match.name;
 
         // Uniform declaration
         if (includeFile.indexOf("__decl__") !== -1) {
@@ -437,8 +525,8 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
         if (options.includesShadersStore[includeFile]) {
             // Substitution
             let includeContent = options.includesShadersStore[includeFile];
-            if (match[2]) {
-                const splits = match[3].split(",");
+            if (match.replacements !== undefined) {
+                const splits = match.replacements.split(",");
 
                 for (let index = 0; index < splits.length; index += 2) {
                     const source = new RegExp(splits[index], "g");
@@ -448,8 +536,8 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
                 }
             }
 
-            if (match[4]) {
-                const indexString = match[5];
+            if (match.indices !== undefined) {
+                const indexString = match.indices;
 
                 if (indexString.indexOf("..") !== -1) {
                     const indexSplits = indexString.split("..");
@@ -483,10 +571,10 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
             }
 
             // Replace
-            // Split all parts on match[0] and intersperse the parts with the include content
+            // Split all parts on the directive and intersperse the parts with the include content
             const newParts = [];
             for (const part of parts) {
-                const splitPart = part.split(match[0]);
+                const splitPart = part.split(match.directive);
                 for (let i = 0; i < splitPart.length - 1; i++) {
                     newParts.push(splitPart[i]);
                     newParts.push(includeContent);

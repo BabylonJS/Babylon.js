@@ -13,9 +13,10 @@ const style = params.get("style") || "barrel";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
 
-const modules = import.meta.glob("./scenes/*/*.ts");
+type SceneModule = { run: (canvas: HTMLCanvasElement) => unknown };
+const modules = import.meta.glob("./scenes/*/*.ts") as Record<string, () => Promise<SceneModule>>;
 const key = `./scenes/${scene}/${style}.ts`;
-const loader = modules[key];
+const loader = Object.entries(modules).find(([path]) => path === key)?.[1];
 
 if (!loader) {
     const available = Object.keys(modules).join("\n  ");

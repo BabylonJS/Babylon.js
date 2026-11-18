@@ -294,9 +294,18 @@ export class LightBlock extends NodeMaterialBlock {
                 defines["IESLIGHTTEXTURE" + lightIndex],
                 defines["CLUSTLIGHT" + lightIndex],
                 defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
-                state.shaderLanguage === ShaderLanguage.WGSL
+                state.shaderLanguage === ShaderLanguage.WGSL,
+                !!defines["SHADOWCSMUBO" + lightIndex]
             );
         }
+    }
+
+    /**
+     * @internal See NodeMaterialBlock._bindsMaterialValuesOnly: not with an explicit light, whose buffers a recorded draw does not check
+     * (only the lights of its mesh)
+     */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return !this.light;
     }
 
     /**
@@ -359,6 +368,7 @@ export class LightBlock extends NodeMaterialBlock {
                 replaceStrings: [
                     { search: /{X}/g, replace: this._lightId.toString() },
                     { search: /worldPos/g, replace: worldPos.associatedVariableName },
+                    { search: state.shaderLanguage === ShaderLanguage.WGSL ? /uniforms\.view/g : /\bview\b/g, replace: this.view.associatedVariableName },
                 ],
             });
         } else {
@@ -372,6 +382,7 @@ export class LightBlock extends NodeMaterialBlock {
             }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
+                substitutionVars: state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms.view,view" : undefined,
             });
         }
     }

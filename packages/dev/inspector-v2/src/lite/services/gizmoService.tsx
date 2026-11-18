@@ -154,7 +154,7 @@ export const GizmoServiceDefinition: ServiceDefinition<[], [IEngineContext, IShe
                                         continue;
                                     }
                                 }
-                                const layer = createUtilityLayer(engine, target.scene);
+                                const layer = createUtilityLayer(target.scene);
                                 InspectorUtilityScenes.add(layer.scene);
                                 let gizmo: ReturnType<typeof CreateGizmo> | undefined;
                                 let unbindCameraGuard: (() => void) | undefined;

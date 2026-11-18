@@ -5,7 +5,53 @@ import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterface
 import { type IObjectAccessor } from "./typeDefinitions";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
+import { type Nullable } from "core/types";
+import { type AudioEngineV2 } from "../AudioV2/abstractAudio/audioEngineV2";
+import { type StaticSound } from "../AudioV2/abstractAudio/staticSound";
 import { type IFlowGraphHostResolver, GetDefaultEventReferenceKey, GetDefaultEventReference } from "./flowGraphHostResolver";
+import { type IFlowGraphSoundAsset } from "./flowGraphSoundAssets";
+
+interface ISoundAssetEntry {
+    asset: IFlowGraphSoundAsset;
+    sound: Nullable<StaticSound>;
+}
+
+/**
+ * Audio engine created by coordinators when no audio engine exists. It is shared by all coordinators
+ * that need a fallback engine and disposed when the last of them is disposed.
+ */
+let FallbackAudioEnginePromise: Nullable<Promise<AudioEngineV2>> = null;
+let FallbackAudioEngine: Nullable<AudioEngineV2> = null;
+let FallbackAudioEngineUsers = 0;
+
+function DisposeUnusedFallbackAudioEngine(): void {
+    if (FallbackAudioEngineUsers > 0 || !FallbackAudioEngine) {
+        return;
+    }
+    const engine = FallbackAudioEngine;
+    FallbackAudioEngine = null;
+    FallbackAudioEnginePromise = null;
+    engine.dispose();
+}
+
+async function GetFallbackAudioEngineAsync(): Promise<AudioEngineV2> {
+    if (!FallbackAudioEnginePromise) {
+        FallbackAudioEnginePromise = (async () => {
+            try {
+                const { CreateAudioEngineAsync } = await import("../AudioV2/webAudio/webAudioEngine");
+                const engine = await CreateAudioEngineAsync();
+                FallbackAudioEngine = engine;
+                // All users may have been disposed while the engine was being created.
+                DisposeUnusedFallbackAudioEngine();
+                return engine;
+            } catch (e) {
+                FallbackAudioEnginePromise = null;
+                throw e;
+            }
+        })();
+    }
+    return await FallbackAudioEnginePromise;
+}
 
 /**
  * Parameters used to create a flow graph engine.
@@ -42,6 +88,11 @@ export interface IFlowGraphCoordinatorParseOptions {
      * The scene that the flow graph coordinator belongs to.
      */
     scene: Scene;
+    /**
+     * The audio engine used to load the serialized sound assets.
+     * When omitted, the most recently created audio engine is used, and a new one is created if none exists.
+     */
+    audioEngine?: AudioEngineV2;
 }
 /**
  * This class holds all of the existing flow graphs and is responsible for creating new ones.
@@ -94,6 +145,16 @@ export class FlowGraphCoordinator {
     private readonly _flowGraphs: FlowGraph[] = [];
 
     private _customEventsMap: Map<string, Observable<any>> = new Map();
+
+    private readonly _soundAssets = new Map<string, ISoundAssetEntry>();
+
+    private _usesFallbackAudioEngine = false;
+
+    /**
+     * Observable raised with the name of a sound asset when its loaded sound changes,
+     * i.e. when the asset finishes loading, is replaced or is removed.
+     */
+    public readonly onSoundAssetChangedObservable = new Observable<string>();
 
     private _eventExecutionCounter: Map<string, number> = new Map();
 
@@ -232,7 +293,104 @@ export class FlowGraphCoordinator {
             FlowGraphCoordinator._OnFlowGraphRemovedObservable.notifyObservers(graph);
         }
         this._flowGraphs.length = 0;
+        for (const entry of this._soundAssets.values()) {
+            entry.sound?.dispose();
+        }
+        this._soundAssets.clear();
+        this.onSoundAssetChangedObservable.clear();
+        if (this._usesFallbackAudioEngine) {
+            this._usesFallbackAudioEngine = false;
+            FallbackAudioEngineUsers--;
+            DisposeUnusedFallbackAudioEngine();
+        }
         this._detachFromScene(this.config.scene);
+    }
+
+    /**
+     * Gets the sound assets declared on this coordinator.
+     * Declared sound assets are serialized with the coordinator.
+     */
+    public get soundAssets(): IFlowGraphSoundAsset[] {
+        return Array.from(this._soundAssets.values(), (entry) => ({ ...entry.asset }));
+    }
+
+    /**
+     * Gets the loaded sound of a declared sound asset.
+     * @param name the name of the sound asset
+     * @returns the loaded sound, or null if the asset is not declared or not loaded yet
+     */
+    public getSoundAsset(name: string): Nullable<StaticSound> {
+        return this._soundAssets.get(name)?.sound ?? null;
+    }
+
+    /**
+     * Declares a sound asset on this coordinator and loads its sound.
+     * An existing asset with the same name is replaced and its sound is disposed, so audio blocks that
+     * reference the asset by name will play the new sound.
+     * If loading fails, the asset stays declared (and serialized) without a sound, and the error is rethrown.
+     * @param asset the sound asset to declare
+     * @param audioEngine the audio engine used to load the sound. When omitted, the most recently created audio engine is used.
+     * If no audio engine exists, a fallback engine is created; it is shared between coordinators and disposed with the last coordinator using it.
+     * @returns a promise that resolves with the loaded sound
+     */
+    public async addSoundAssetAsync(asset: IFlowGraphSoundAsset, audioEngine?: AudioEngineV2): Promise<StaticSound> {
+        // Copy the descriptor so that changes made by the caller while the sound loads do not affect this load.
+        const entry: ISoundAssetEntry = { asset: { name: asset.name, url: asset.url }, sound: null };
+        const { name, url } = entry.asset;
+        this.removeSoundAsset(name);
+        this._soundAssets.set(name, entry);
+
+        const { CreateSoundAsync, LastCreatedAudioEngine } = await import("../AudioV2/abstractAudio/audioEngineV2");
+        this._throwIfSoundAssetChanged(entry);
+        let engine: AudioEngineV2;
+        if (audioEngine && audioEngine !== FallbackAudioEngine) {
+            engine = audioEngine;
+        } else {
+            // A fallback engine is already listed by LastCreatedAudioEngine while it initializes, so join a pending
+            // fallback before treating the last created engine as owned by someone else. Once the fallback is ready,
+            // an engine created later by the application takes precedence.
+            const isFallbackPending = !!FallbackAudioEnginePromise && !FallbackAudioEngine;
+            const lastEngine = audioEngine ?? (isFallbackPending ? null : LastCreatedAudioEngine());
+            if (lastEngine && lastEngine !== FallbackAudioEngine) {
+                engine = lastEngine;
+            } else {
+                if (!this._usesFallbackAudioEngine) {
+                    this._usesFallbackAudioEngine = true;
+                    FallbackAudioEngineUsers++;
+                }
+                engine = await GetFallbackAudioEngineAsync();
+                this._throwIfSoundAssetChanged(entry);
+            }
+        }
+
+        const sound = await CreateSoundAsync(name, url, {}, engine);
+        if (this._soundAssets.get(name) !== entry) {
+            sound.dispose();
+            this._throwIfSoundAssetChanged(entry);
+        }
+        entry.sound = sound;
+        this.onSoundAssetChangedObservable.notifyObservers(name);
+        return sound;
+    }
+
+    private _throwIfSoundAssetChanged(entry: ISoundAssetEntry): void {
+        if (this._soundAssets.get(entry.asset.name) !== entry) {
+            throw new Error(`Sound asset "${entry.asset.name}" was removed or replaced before it finished loading.`);
+        }
+    }
+
+    /**
+     * Removes a declared sound asset and disposes its sound.
+     * @param name the name of the sound asset to remove
+     */
+    public removeSoundAsset(name: string): void {
+        const entry = this._soundAssets.get(name);
+        if (!entry) {
+            return;
+        }
+        entry.sound?.dispose();
+        this._soundAssets.delete(name);
+        this.onSoundAssetChangedObservable.notifyObservers(name);
     }
 
     /**
@@ -243,11 +401,17 @@ export class FlowGraphCoordinator {
     public serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject._flowGraphs = [];
         for (const graph of this._flowGraphs) {
-            const serializedGraph = {};
+            const serializedGraph: any = {};
             graph.serialize(serializedGraph, valueSerializeFunction);
             serializationObject._flowGraphs.push(serializedGraph);
         }
         serializationObject.dispatchEventsSynchronously = this.dispatchEventsSynchronously;
+        if (this._soundAssets.size > 0) {
+            serializationObject.soundAssets = this.soundAssets;
+        } else {
+            delete serializationObject.soundAssets;
+        }
+        delete serializationObject.referenceProvenance;
     }
 
     /**

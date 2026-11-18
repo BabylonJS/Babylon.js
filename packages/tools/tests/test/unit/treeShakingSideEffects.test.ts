@@ -15,7 +15,7 @@
  * Prerequisites: both packages must be compiled before running.
  */
 
-import { writeFileSync, mkdirSync, readFileSync, rmSync, statSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync, readFileSync, rmSync, existsSync } from "fs";
 import { join, resolve } from "path";
 import { expect, it } from "vitest";
 
@@ -124,13 +124,15 @@ function normalizeModuleId(id: string): string {
 }
 
 function readBundleOutput(filePath: string): { content: string; size: number } {
-    if (!existsSync(filePath)) {
-        throw new Error(`Expected bundle output was not emitted: ${filePath}`);
+    try {
+        const content = readFileSync(filePath, "utf-8");
+        return { content, size: Buffer.byteLength(content) };
+    } catch (error) {
+        if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+            throw new Error(`Expected bundle output was not emitted: ${filePath}`, { cause: error });
+        }
+        throw error;
     }
-
-    const size = statSync(filePath).size;
-    const content = size > 0 ? readFileSync(filePath, "utf-8") : "";
-    return { content, size };
 }
 
 // ---------------------------------------------------------------------------

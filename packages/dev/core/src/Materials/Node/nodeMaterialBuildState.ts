@@ -11,6 +11,81 @@ import { type _IProcessingOptions } from "core/Engines/Processors/shaderProcessi
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 import { Logger } from "core/Misc/logger";
 
+const AttributeKeywords = ["attribute "];
+const UniformKeywords = ["uniform "];
+const VaryingKeywords = ["varying ", "in "];
+
+function IsLineTerminator(char: string): boolean {
+    return char === "\n" || char === "\r" || char === "\u2028" || char === "\u2029";
+}
+
+/**
+ * Replaces every "<whitespace><keyword><at least one char>;" declaration (on a single line) with a line feed.
+ * Equivalent to replacing /\s*?(keyword).+?;/g, but implemented with forward-only scanning so it stays linear.
+ * @param code The code to process
+ * @param keywords The declaration keywords, each including its trailing space
+ * @returns The code without the matching declarations
+ */
+function RemoveDeclarations(code: string, keywords: string[]): string {
+    const keywordIndices = keywords.map(() => -1);
+    let nextSemicolon = -1;
+    let nextLineTerminator = -1;
+    let result = "";
+    let copiedUntil = 0;
+    let searchFrom = 0;
+
+    while (searchFrom < code.length) {
+        let keywordIndex = -1;
+        let keywordLength = 0;
+        for (let i = 0; i < keywords.length; i++) {
+            if (keywordIndices[i] !== -2 && keywordIndices[i] < searchFrom) {
+                const index = code.indexOf(keywords[i], searchFrom);
+                keywordIndices[i] = index === -1 ? -2 : index;
+            }
+            if (keywordIndices[i] >= 0 && (keywordIndex === -1 || keywordIndices[i] < keywordIndex)) {
+                keywordIndex = keywordIndices[i];
+                keywordLength = keywords[i].length;
+            }
+        }
+        if (keywordIndex === -1) {
+            break;
+        }
+
+        // The declaration body must contain at least one character before the semicolon.
+        const bodyStart = keywordIndex + keywordLength;
+        if (nextSemicolon !== -2 && nextSemicolon < bodyStart + 1) {
+            const index = code.indexOf(";", bodyStart + 1);
+            nextSemicolon = index === -1 ? -2 : index;
+        }
+        if (nextSemicolon === -2) {
+            break;
+        }
+        if (nextLineTerminator !== -2 && nextLineTerminator < bodyStart) {
+            nextLineTerminator = -2;
+            for (let i = bodyStart; i < code.length; i++) {
+                if (IsLineTerminator(code[i])) {
+                    nextLineTerminator = i;
+                    break;
+                }
+            }
+        }
+        if (nextLineTerminator !== -2 && nextLineTerminator < nextSemicolon) {
+            searchFrom = keywordIndex + 1;
+            continue;
+        }
+
+        let start = keywordIndex;
+        while (start > copiedUntil && /\s/.test(code[start - 1])) {
+            start--;
+        }
+        result += code.substring(copiedUntil, start) + "\n";
+        copiedUntil = nextSemicolon + 1;
+        searchFrom = copiedUntil;
+    }
+
+    return copiedUntil === 0 ? code : result + code.substring(copiedUntil);
+}
+
 /**
  * Class used to store node based material build state
  */
@@ -546,15 +621,15 @@ export class NodeMaterialBuildState {
         }
 
         if (options.removeAttributes) {
-            this.functions[key] = this.functions[key].replace(/\s*?attribute .+?;/g, "\n");
+            this.functions[key] = RemoveDeclarations(this.functions[key], AttributeKeywords);
         }
 
         if (options.removeUniforms) {
-            this.functions[key] = this.functions[key].replace(/\s*?uniform .*?;/g, "\n");
+            this.functions[key] = RemoveDeclarations(this.functions[key], UniformKeywords);
         }
 
         if (options.removeVaryings) {
-            this.functions[key] = this.functions[key].replace(/\s*?(varying|in) .+?;/g, "\n");
+            this.functions[key] = RemoveDeclarations(this.functions[key], VaryingKeywords);
         }
 
         if (options.replaceStrings) {
@@ -786,6 +861,26 @@ export class NodeMaterialBuildState {
             return `toLinearSpace(${output.associatedVariableName})`;
         }
         return `toLinearSpace(${output.associatedVariableName})`;
+    }
+
+    /**
+     * @internal The conversion of an output to gamma space. WGSL has no overloads: its helper functions convert a vec4 (toGammaSpace)
+     * and a vec3 (toGammaSpaceVec3), and a float is converted as a vec3, with the same exact or approximate conversion
+     * @param output the output to convert
+     * @returns the expression of the converted output
+     */
+    public _toGammaSpace(output: NodeMaterialConnectionPoint) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            if (output.type === NodeMaterialBlockConnectionPointTypes.Color3 || output.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+                return `toGammaSpaceVec3(${output.associatedVariableName})`;
+            }
+            if (output.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                return `toGammaSpaceVec3(vec3f(${output.associatedVariableName})).x`;
+            }
+
+            return `toGammaSpace(${output.associatedVariableName})`;
+        }
+        return `toGammaSpace(${output.associatedVariableName})`;
     }
 
     /**

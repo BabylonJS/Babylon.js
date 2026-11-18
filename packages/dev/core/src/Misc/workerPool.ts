@@ -83,10 +83,14 @@ export class WorkerPool implements IDisposable {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface AutoReleaseWorkerPoolOptions {
     /**
-     * Idle time elapsed before workers are terminated.
+     * Idle time elapsed before workers are terminated, in milliseconds. A time setTimeout cannot hold (Infinity, or more than
+     * 2^31 - 1 ms) keeps the workers until the pool is disposed.
      */
     idleTimeElapsedBeforeRelease: number;
 }
+
+// the longest delay setTimeout holds: a longer one runs at once
+const MaxTimeoutDelay = 0x7fffffff;
 
 /**
  * Similar to the WorkerPool class except it creates and destroys workers automatically with a maximum of `maxWorkers` workers.
@@ -139,7 +143,7 @@ export class AutoReleaseWorkerPool extends WorkerPool {
             action(worker, () => {
                 onComplete();
 
-                if (workerInfo.idle) {
+                if (workerInfo.idle && this._options.idleTimeElapsedBeforeRelease <= MaxTimeoutDelay) {
                     // Schedule the worker to be terminated after the elapsed time.
                     workerInfo.timeoutId = setTimeout(() => {
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then

@@ -11,7 +11,7 @@ type LiteTestWindow = Window &
         liteShowInspector: (engine: EngineContext) => InspectorToken;
     };
 
-const TestUrl = `http://localhost:${process.env.INSPECTOR_TEST_PORT ?? "9001"}/?experience=lite`;
+const TestUrl = `http://localhost:${process.env.INSPECTOR_TEST_PORT ?? "9001"}/?experience=lite&physics=off`;
 
 test.skip(!process.env.INSPECTOR_TEST_PORT, "Set INSPECTOR_TEST_PORT to the running Inspector test app.");
 test.use({
@@ -66,10 +66,10 @@ test("Lite Inspector statistics show engine-wide counts, system info, and opt-in
     await expect(page.getByText("Surface 2", { exact: true })).toBeVisible();
     await expect(page.getByText("Babylon Lite (WebGPU)", { exact: true })).toBeVisible();
     for (const [label, value] of [
-        ["Total Meshes", 3],
+        ["Total Meshes", 5],
         ["Total Lights", 4],
-        ["Scene Materials", 2],
-        ["Scene Textures", 2],
+        ["Scene Materials", 3],
+        ["Scene Textures", 4],
         ["Surfaces", 2],
     ] as const) {
         const row = page.getByText(label, { exact: true }).locator("xpath=ancestor::div[div[@id='property']][1]");

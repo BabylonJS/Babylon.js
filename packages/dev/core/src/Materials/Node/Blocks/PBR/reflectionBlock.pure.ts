@@ -263,6 +263,11 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         }
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind data to effect
      * @param effect - the effect to bind data to
@@ -481,7 +486,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 , ${isWebGPU ? "input." : ""}${this._vEnvironmentIrradianceName}
             #endif
             #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
-                    , ${this._reflectionMatrixName}
+                    , ${(isWebGPU ? "uniforms." : "") + this._reflectionMatrixName}
             #endif
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler         // ** not handled **

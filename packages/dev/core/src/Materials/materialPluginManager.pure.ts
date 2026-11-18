@@ -46,6 +46,20 @@ export class MaterialPluginManager {
     /** @internal */
     public _plugins: MaterialPluginBase[] = [];
     protected _activePlugins: MaterialPluginBase[] = [];
+
+    /**
+     * @internal Whether an active plugin binds what can change on each draw: one that binds on extra events (hard bind), or one that does
+     * not declare it binds only values of its material and the scene (see MaterialPluginBase._bindsMaterialValuesOnly)
+     */
+    public get _bindsOnEachDraw(): boolean {
+        const plugins = this._activePlugins;
+        for (let i = 0; i < plugins.length; i++) {
+            if (plugins[i].registerForExtraEvents || !plugins[i]._bindsMaterialValuesOnly) {
+                return true;
+            }
+        }
+        return false;
+    }
     protected _activePluginsForExtraEvents: MaterialPluginBase[] = [];
     protected _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
     protected _defineNamesFromPlugins?: { [name: string]: { type: string; default: any } };
@@ -278,9 +292,10 @@ export class MaterialPluginManager {
 
             case MaterialPluginEvent.PrepareUniformBuffer: {
                 const eventData = info as MaterialPluginPrepareUniformBuffer;
-                this._uboDeclaration = "";
-                this._vertexDeclaration = "";
-                this._fragmentDeclaration = "";
+                // the declarations are joined: grown with +=, each one would stay a string of many pieces (a rope) as long as the material
+                const uboDeclaration: string[] = [];
+                const vertexDeclaration: string[] = [];
+                const fragmentDeclaration: string[] = [];
                 this._uniformList = [];
                 this._samplerList = [];
                 this._uboList = [];
@@ -308,22 +323,22 @@ export class MaterialPluginManager {
                                         }
 
                                         if (arraySize > 0) {
-                                            this._uboDeclaration += `uniform ${uniform.name}: array<${type}, ${arraySize}>;\n`;
+                                            uboDeclaration.push(`uniform ${uniform.name}: array<${type}, ${arraySize}>;\n`);
                                         } else {
-                                            this._uboDeclaration += `uniform ${uniform.name}: ${type};\n`;
+                                            uboDeclaration.push(`uniform ${uniform.name}: ${type};\n`);
                                         }
                                     } else {
-                                        this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\n`;
+                                        uboDeclaration.push(`${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\n`);
                                     }
                                 }
                                 this._uniformList.push(uniform.name);
                             }
                         }
                         if (uniforms.vertex) {
-                            this._vertexDeclaration += uniforms.vertex + "\n";
+                            vertexDeclaration.push(uniforms.vertex + "\n");
                         }
                         if (uniforms.fragment) {
-                            this._fragmentDeclaration += uniforms.fragment + "\n";
+                            fragmentDeclaration.push(uniforms.fragment + "\n");
                         }
 
                         // These are uniforms which are used by the shader but not updated by the plugin directly.
@@ -335,6 +350,9 @@ export class MaterialPluginManager {
                     plugin.getSamplers(this._samplerList);
                     plugin.getUniformBuffersNames(this._uboList);
                 }
+                this._uboDeclaration = uboDeclaration.join("");
+                this._vertexDeclaration = vertexDeclaration.join("");
+                this._fragmentDeclaration = fragmentDeclaration.join("");
                 break;
             }
         }

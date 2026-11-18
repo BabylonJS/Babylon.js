@@ -1,0 +1,394 @@
+import { afterEach, describe, expect, it, onTestFinished, vi } from "vitest";
+import { DataBuffer } from "core/Buffers/dataBuffer";
+import { ComputeShader } from "core/Compute/computeShader";
+import { NullEngine } from "core/Engines/nullEngine";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { Matrix } from "core/Maths/math.vector";
+import { Logger } from "core/Misc/logger";
+import {
+    GaussianSplattingGpuSorter,
+    GetGaussianSplattingGpuSorterMaxSplatCount,
+    _ClampGpuSortKeyBits,
+    _ComputeGpuSortDepthCoefficients,
+    _ComputeGpuSortDepthRange,
+    _ComputeGpuSortKeyScale,
+    _DecodeGpuSortSogMean,
+    _GetGpuSortPaddedCount,
+    _GetGpuSortPassCount,
+    _PackGpuSortIntervals,
+} from "core/Meshes/GaussianSplatting/gaussianSplattingGpuSorter";
+
+const Identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+describe("GaussianSplattingGpuSorter shader readiness", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it.each(["centers", "meansHigh", "partIndices"] as const)("refreshes every output when the %s texture view changes behind the same BaseTexture", async (input) => {
+        await GaussianSplattingGpuSorter.LoadDependenciesAsync();
+        const engine = new NullEngine();
+        engine["_isWebGPU"] = true;
+        engine.getCaps().supportComputeShaders = true;
+        Object.assign(engine, {
+            _storageBuffers: [],
+            createStorageBuffer: () => new DataBuffer(),
+            updateStorageBuffer: vi.fn(),
+            createComputeContext: () => ({ clear: vi.fn() }),
+            createComputeEffect: () => ({ isReady: () => true }),
+            computeDispatch: vi.fn(),
+        });
+        const createTexture = () => {
+            const texture = new BaseTexture(engine);
+            const hardware = {
+                underlyingResource: null,
+                view: {} as GPUTextureView,
+                set: vi.fn(),
+                setUsage: vi.fn(),
+                reset: vi.fn(),
+                release: vi.fn(),
+            };
+            texture._texture = new InternalTexture(engine, InternalTextureSource.Raw, true);
+            texture._texture._hardwareTexture = hardware;
+            vi.spyOn(texture, "isReady").mockReturnValue(true);
+            return { texture, hardware };
+        };
+        const textures = { centers: createTexture(), meansHigh: createTexture(), partIndices: createTexture() };
+        const sorter = new GaussianSplattingGpuSorter(engine);
+        onTestFinished(() => {
+            sorter.dispose();
+            Object.values(textures).forEach(({ texture }) => texture.dispose());
+            engine.dispose();
+        });
+        const source = {
+            vertexCount: 2,
+            textureWidth: 2,
+            centersTexture: textures.centers.texture,
+            sog: { meansHighTexture: textures.meansHigh.texture, meansMin: [0, 0, 0], meansMax: [1, 1, 1] },
+            partIndicesTexture: textures.partIndices.texture,
+        };
+        const identity = Matrix.Identity();
+        expect(sorter.setSource(source)).toBe(true);
+        sorter.setPartMatrices([identity]);
+        const outputs = [sorter.createOutput(), sorter.createOutput()];
+        outputs.forEach((output) => expect(sorter.sort(output, identity, identity)).toBe(true));
+        const oldContexts = outputs.map((output) => output._keysCs!["_context"]);
+        oldContexts.forEach((context) => vi.mocked(context.clear).mockClear());
+        const outputBuffers = outputs.map((output) => output.buffer);
+        const dispatchContexts = new Set<unknown>();
+        const dispatch = vi.mocked(engine.computeDispatch);
+        dispatch.mockImplementation((_effect, context) => {
+            dispatchContexts.add(context);
+        });
+
+        textures[input].hardware.view = {} as GPUTextureView;
+        expect(sorter.setSource(source)).toBe(true);
+        outputs.forEach((output) => expect(sorter.sort(output, identity, identity)).toBe(true));
+        oldContexts.forEach((context) => {
+            expect(dispatchContexts.has(context) && vi.mocked(context.clear).mock.calls.length === 0, "a reused keys context must be cleared after replacing the view").toBe(false);
+        });
+        outputs.forEach((output, i) => {
+            expect(output.buffer).toBe(outputBuffers[i]);
+            expect(output._keysCs!.fastMode).toBe(true);
+            expect(output._keysCs!.triggerContextRebuild).toBe(false);
+        });
+    });
+
+    it("returns to the fast path after refreshing the source with unchanged resources", async () => {
+        await GaussianSplattingGpuSorter.LoadDependenciesAsync();
+        const engine = new NullEngine();
+        engine["_isWebGPU"] = true;
+        engine.getCaps().supportComputeShaders = true;
+        Object.assign(engine, {
+            _storageBuffers: [],
+            createStorageBuffer: () => new DataBuffer(),
+            updateStorageBuffer: vi.fn(),
+            createComputeContext: () => ({ clear: vi.fn() }),
+            createComputeEffect: () => ({ isReady: () => true }),
+            computeDispatch: vi.fn(),
+        });
+        const texture = new BaseTexture(engine);
+        vi.spyOn(texture, "isReady").mockReturnValue(true);
+        const sorter = new GaussianSplattingGpuSorter(engine);
+        onTestFinished(() => {
+            sorter.dispose();
+            texture.dispose();
+            engine.dispose();
+        });
+        const source = { vertexCount: 40, textureWidth: 64, centersTexture: texture, boundsMin: [0, 0, 0], boundsMax: [1, 1, 1] };
+        expect(sorter.setSource(source)).toBe(true);
+        const output = sorter.createOutput();
+        const identity = Matrix.Identity();
+        expect(sorter.sort(output, identity, identity)).toBe(true);
+        const shaders = [output._keysCs!, output._outputCs, ...sorter["_countCs"], ...sorter["_scatterCs"], sorter["_scanLocalCs"], sorter["_scanSumsCs"]];
+        const bindings = shaders.map((shader) => Object.values(shader["_bindings"]).map((binding) => binding.object));
+        const clears = shaders.map((shader) => vi.spyOn(shader["_context"], "clear").mockClear());
+        const readiness = vi.spyOn(ComputeShader.prototype, "isReady");
+        const dispatch = vi.mocked(engine.computeDispatch);
+
+        expect(sorter.setSource(source)).toBe(true);
+        expect(sorter.sort(output, identity, identity)).toBe(true);
+        expect(readiness).toHaveBeenCalled();
+        shaders.forEach((shader, shaderIndex) => {
+            Object.values(shader["_bindings"]).forEach((binding, bindingIndex) => {
+                expect(binding.object).toBe(bindings[shaderIndex][bindingIndex]);
+            });
+        });
+        expect(clears.every((clear) => clear.mock.calls.length === 0)).toBe(true);
+        expect(shaders.every((shader) => shader.fastMode && !shader.triggerContextRebuild)).toBe(true);
+
+        readiness.mockClear();
+        dispatch.mockClear();
+        for (let i = 0; i < 3; i++) {
+            expect(sorter.sort(output, identity, identity)).toBe(true);
+        }
+        expect(dispatch).toHaveBeenCalledTimes(3 * (2 + 4 * sorter["_passCount"]));
+        expect(readiness).not.toHaveBeenCalled();
+        expect(clears.every((clear) => clear.mock.calls.length === 0)).toBe(true);
+    });
+
+    it("caches readiness and invalidates the fast path when shared or output bindings change", () => {
+        const shader = () => ({
+            isReady: vi.fn(() => true),
+            setStorageBuffer: vi.fn(),
+            setTexture: vi.fn(),
+            fastMode: false,
+            triggerContextRebuild: false,
+        });
+        const keys = shader();
+        const outputCs = shader();
+        const count = shader();
+        const scatter = shader();
+        const scanLocal = shader();
+        const scanSums = shader();
+        const shaders = [keys, outputCs, count, scatter, scanLocal, scanSums];
+        const sorter = Object.create(GaussianSplattingGpuSorter.prototype) as any;
+        Object.assign(sorter, {
+            _bindingsVersion: 1,
+            _sortShadersBoundVersion: -1,
+            _passCount: 1,
+            _passParams: [{}],
+            _countCs: [count],
+            _scatterCs: [scatter],
+            _scanLocalCs: scanLocal,
+            _scanSumsCs: scanSums,
+        });
+        const output = { buffersVersion: 1, _coefsBuffer: {}, _outputCs: outputCs };
+        sorter._bindResources(output, keys, false, false);
+        expect(sorter._isReady(keys, output)).toBe(true);
+        for (const cs of shaders) {
+            expect(cs.fastMode).toBe(true);
+            // The first dispatch still checks/clears the compute context before taking the fast path.
+            expect(cs.triggerContextRebuild).toBe(true);
+            cs.isReady.mockClear();
+        }
+        sorter._bindResources(output, keys, false, false);
+        expect(sorter._isReady(keys, output)).toBe(true);
+        for (const cs of shaders) {
+            expect(cs.isReady).not.toHaveBeenCalled();
+        }
+
+        sorter._bindingsVersion++;
+        sorter._bindResources(output, keys, false, false);
+        for (const cs of shaders) {
+            expect(cs.fastMode).toBe(false);
+        }
+        expect(sorter._isReady(keys, output)).toBe(true);
+        for (const cs of shaders) {
+            expect(cs.isReady).toHaveBeenCalledOnce();
+            cs.isReady.mockClear();
+        }
+
+        output.buffersVersion++;
+        output._coefsBuffer = {};
+        const newKeys = shader();
+        sorter._bindResources(output, newKeys, false, false);
+        expect(outputCs.fastMode).toBe(false);
+        expect(sorter._isReady(newKeys, output)).toBe(true);
+        expect(newKeys.isReady).toHaveBeenCalledOnce();
+        expect(outputCs.isReady).toHaveBeenCalledOnce();
+        for (const cs of [count, scatter, scanLocal, scanSums]) {
+            expect(cs.isReady).not.toHaveBeenCalled();
+        }
+    });
+});
+
+describe("GaussianSplattingGpuSorter helpers", () => {
+    it("pads the count to a multiple of 16, at least 16", () => {
+        expect(_GetGpuSortPaddedCount(0)).toBe(16);
+        expect(_GetGpuSortPaddedCount(1)).toBe(16);
+        expect(_GetGpuSortPaddedCount(16)).toBe(16);
+        expect(_GetGpuSortPaddedCount(17)).toBe(32);
+    });
+
+    it("clamps key bits and computes the pass count", () => {
+        expect(_ClampGpuSortKeyBits(2)).toBe(8);
+        expect(_ClampGpuSortKeyBits(40)).toBe(24);
+        expect(_ClampGpuSortKeyBits(15.6)).toBe(16);
+        expect(_GetGpuSortPassCount(16)).toBe(4);
+        expect(_GetGpuSortPassCount(18)).toBe(5);
+        expect(_GetGpuSortPassCount(24)).toBe(6);
+    });
+
+    it("packs intervals as (exclusive prefix, start), dropping empty and clamping", () => {
+        const packed = _PackGpuSortIntervals([10, 5, 20, 0, 90, 100, 200, 4], 100);
+        expect(packed.count).toBe(2);
+        expect(packed.total).toBe(15);
+        expect(Array.from(packed.data.subarray(0, 4))).toEqual([0, 10, 5, 90]);
+    });
+
+    it("packs an empty interval list", () => {
+        const packed = _PackGpuSortIntervals([], 100);
+        expect(packed.count).toBe(0);
+        expect(packed.total).toBe(0);
+        expect(packed.data.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("computes depth coefficients like the CPU worker", () => {
+        const view = Identity.slice();
+        view[14] = 5;
+        const world = Identity.slice();
+        world[12] = 1;
+        world[13] = 2;
+        world[14] = 3;
+        const out = new Float32Array(4);
+        _ComputeGpuSortDepthCoefficients(world, view, 1, null, out, 0);
+        expect(Array.from(out)).toEqual([0, 0, 1, 8]);
+
+        // equivalent camera position: view translation z = -dot(forward, camPos)
+        _ComputeGpuSortDepthCoefficients(world, view, 1, [0, 0, -5], out, 0);
+        expect(Array.from(out)).toEqual([0, 0, 1, 8]);
+
+        _ComputeGpuSortDepthCoefficients(world, view, -1, null, out, 0);
+        expect(Array.from(out)).toEqual([-0, -0, -1, -8]);
+    });
+
+    it("reads the world matrix at an offset of a flat array", () => {
+        const view = Identity.slice();
+        const flat = [...Identity, ...Identity];
+        flat[16 + 12] = 1;
+        flat[16 + 13] = 2;
+        flat[16 + 14] = 3;
+        const out = new Float32Array(8);
+        _ComputeGpuSortDepthCoefficients(flat, view, 1, null, out, 4, 16);
+        expect(Array.from(out.subarray(4))).toEqual([0, 0, 1, 3]);
+    });
+
+    it("computes the depth range of a box over several coefficient sets", () => {
+        const coefs = [0, 0, 1, 0, 0, 0, -1, 10];
+        const range = _ComputeGpuSortDepthRange(coefs, 2, [-1, -1, -2], [1, 1, 3]);
+        expect(range.min).toBe(-2);
+        expect(range.max).toBe(12);
+
+        const result = { min: 0, max: 0 };
+        expect(_ComputeGpuSortDepthRange(coefs, 2, [-1, -1, -2], [1, 1, 3], result)).toBe(result);
+        expect(result).toEqual({ min: -2, max: 12 });
+    });
+
+    it("computes the key scale", () => {
+        expect(_ComputeGpuSortKeyScale(0, 255, 8)).toBe(1);
+        expect(_ComputeGpuSortKeyScale(1, 1, 16)).toBe(0);
+        expect(_ComputeGpuSortKeyScale(0, 65535, 16)).toBe(1);
+    });
+
+    it("decodes SOG means range bounds", () => {
+        expect(_DecodeGpuSortSogMean(0)).toBe(0);
+        expect(_DecodeGpuSortSogMean(Math.log(3))).toBeCloseTo(2);
+        expect(_DecodeGpuSortSogMean(-Math.log(3))).toBeCloseTo(-2);
+    });
+});
+
+describe("GaussianSplattingGpuSorter support", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    const createValidationSorter = (maxSplatCount: number, vertexCount: number) => {
+        // Exercise interval validation without allocating storage for millions of keys.
+        const sorter = Object.create(GaussianSplattingGpuSorter.prototype) as GaussianSplattingGpuSorter;
+        Object.assign(sorter, { _name: "validation", _maxSplatCount: maxSplatCount, _maxIntervalCount: maxSplatCount, _vertexCount: vertexCount });
+        return sorter;
+    };
+
+    it.each(["maxStorageBufferBindingSize", "maxBufferSize"])("caps repeated interval-buffer growth by %s and rejects an oversized footprint", (limit) => {
+        const engine = new NullEngine();
+        engine.getCaps().supportComputeShaders = true;
+        vi.spyOn(GaussianSplattingGpuSorter, "IsSupported").mockReturnValue(true);
+        const allocate = vi.fn((_size: number) => new DataBuffer());
+        Object.assign(engine, {
+            currentLimits: { maxStorageBufferBindingSize: 4096, maxBufferSize: 4096, [limit]: 1027 },
+            _storageBuffers: [],
+            createStorageBuffer: allocate,
+            createComputeContext: () => ({ clear: vi.fn() }),
+        });
+        const sorter = new GaussianSplattingGpuSorter(engine);
+        const output = sorter.createOutput();
+        onTestFinished(() => {
+            sorter.dispose();
+            engine.dispose();
+        });
+        sorter["_vertexCount"] = 128;
+        allocate.mockClear();
+
+        for (const count of [64, 96, 128]) {
+            expect(sorter.setIntervals(Array.from({ length: count * 2 }, (_, i) => i % 2))).toBe(true);
+            sorter["_ensureIntervalsBuffer"]();
+            expect(sorter["_intervalsCapacity"]).toBe(count);
+            expect(allocate.mock.lastCall![0]).toBe(count * 8);
+        }
+        const buffer = sorter["_intervalsBuffer"];
+        allocate.mockClear();
+        const error = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        expect(sorter.setIntervals(Array.from({ length: 129 * 2 }, (_, i) => i % 2))).toBe(false);
+        expect(sorter.sort(output, { m: Identity }, { m: Identity })).toBe(false);
+        expect(error).toHaveBeenCalledOnce();
+        expect(allocate).not.toHaveBeenCalled();
+        expect(sorter["_intervalsBuffer"]).toBe(buffer);
+        expect(sorter.setIntervals([0, 128])).toBe(true);
+    });
+
+    it("rejects overlapping intervals exceeding the scan chunk capacity before allocating or dispatching", () => {
+        vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        const sorter = createValidationSorter(1 << 24, 8388609);
+        const ensureCapacity = vi.spyOn(sorter as any, "_ensureCapacity");
+
+        expect(sorter.setIntervals([0, 8388609, 0, 8388609])).toBe(false);
+        expect(sorter.sort({} as any, { m: Identity }, { m: Identity })).toBe(false);
+        expect(ensureCapacity).not.toHaveBeenCalled();
+        expect(sorter.setIntervals([0, 8388608, 0, 8388608])).toBe(true);
+        expect(sorter.activeCount).toBe(1 << 24);
+    });
+
+    it("validates the packed padded count against either storage buffer limit", () => {
+        vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        for (const limits of [
+            { maxStorageBufferBindingSize: 1000, maxBufferSize: 1 << 20 },
+            { maxStorageBufferBindingSize: 1 << 20, maxBufferSize: 1000 },
+        ]) {
+            const maxCount = GetGaussianSplattingGpuSorterMaxSplatCount({ currentLimits: limits } as any);
+            const sorter = createValidationSorter(maxCount, 121);
+            expect(sorter.setIntervals([0, 121, 0, 120])).toBe(false);
+            expect(sorter.setIntervals([0, 120, 0, 120])).toBe(true);
+            expect(sorter.paddedCount).toBe(240);
+        }
+    });
+
+    it("is only supported on WebGPU engines with compute shaders", () => {
+        const webgpu = { isWebGPU: true, getCaps: () => ({ supportComputeShaders: true }) };
+        const noCompute = { isWebGPU: true, getCaps: () => ({ supportComputeShaders: false }) };
+        const webgl = { isWebGPU: false, getCaps: () => ({ supportComputeShaders: false }) };
+        expect(GaussianSplattingGpuSorter.IsSupported(webgpu as any)).toBe(true);
+        expect(GaussianSplattingGpuSorter.IsSupported(noCompute as any)).toBe(false);
+        expect(GaussianSplattingGpuSorter.IsSupported(webgl as any)).toBe(false);
+    });
+
+    it("throws when created on an unsupported engine", () => {
+        expect(() => new GaussianSplattingGpuSorter({ isWebGPU: false, getCaps: () => ({ supportComputeShaders: false }) } as any)).toThrow();
+    });
+
+    it("limits the splat count by the device limits and float exactness", () => {
+        const limits = (maxStorageBufferBindingSize: number, maxBufferSize: number) => ({ currentLimits: { maxStorageBufferBindingSize, maxBufferSize } }) as any;
+        expect(GetGaussianSplattingGpuSorterMaxSplatCount(limits(134217728, 268435456))).toBe(1 << 24);
+        expect(GetGaussianSplattingGpuSorterMaxSplatCount(limits(1 << 20, 1 << 30))).toBe(1 << 18);
+        expect(GetGaussianSplattingGpuSorterMaxSplatCount(limits(1 << 30, 1 << 20))).toBe(1 << 18);
+        expect(GetGaussianSplattingGpuSorterMaxSplatCount({} as any)).toBe(1 << 24);
+        expect(GetGaussianSplattingGpuSorterMaxSplatCount(limits(1000, 1 << 20)) % 16).toBe(0);
+    });
+});

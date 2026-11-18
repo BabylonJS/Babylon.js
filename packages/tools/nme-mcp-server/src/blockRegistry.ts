@@ -1084,7 +1084,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "PBR",
         description:
             "Full PBR (Metallic-Roughness) lighting model. This is a powerful all-in-one block for physically-based rendering. " +
-            "Connect world position, normal, camera position, and material properties.",
+            "Connect world position, normal, camera position, and material properties. " +
+            "Connect a world-space bent normal and ambient occlusion to directionally occlude environment reflections.",
         target: "VertexAndFragment",
         defaultSerializedProperties: {
             lightFalloff: 0,
@@ -1128,6 +1129,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "subsurface", type: "Object", isOptional: true },
             { name: "anisotropy", type: "Object", isOptional: true },
             { name: "iridescence", type: "Object", isOptional: true },
+            { name: "bentNormal", type: "Vector3", isOptional: true },
         ],
         outputs: [
             { name: "ambientClr", type: "Color3" },

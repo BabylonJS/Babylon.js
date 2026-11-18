@@ -153,6 +153,9 @@ const updatePackages = (version) => {
             const packageJson = JSON.parse(data);
 
             const name = packageJson.name;
+            if (name === undefined) {
+                return;
+            }
             if (name.startsWith("babylonjs") || name.startsWith("@babylonjs") || name.startsWith("create-babylonjs")) {
                 // if not private bump the revision.
                 packageJson.version = version;

@@ -62,6 +62,15 @@ export class MSCTranscoder extends Transcoder {
                     if (MSCTranscoder.UseFromWorkerThread) {
                         importScripts(Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
                     }
+                    // Main thread without a DOM (e.g. Babylon Native, whose document has no element API): there is no <script> element to load the transcoder with.
+                    else if (typeof MSC_TRANSCODER === "undefined" && (typeof document === "undefined" || typeof document.getElementsByTagName !== "function")) {
+                        const response = await fetch(Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
+                        if (!response.ok) {
+                            throw new Error(`Could not fetch the MSC transcoder script: ${response.status} - ${response.statusText}`);
+                        }
+                        // The script declares MSC_TRANSCODER with a top-level var, so return it from the function scope it is evaluated in.
+                        (globalThis as any).MSC_TRANSCODER = new Function(`${await response.text()}\nreturn MSC_TRANSCODER;`)();
+                    }
                     // Worker Number = 0 and MSC_TRANSCODER has not been loaded yet.
                     else if (typeof MSC_TRANSCODER === "undefined") {
                         return await new Promise((resolve, reject) => {

@@ -496,6 +496,35 @@ export abstract class AbstractEngine {
     public currentRenderPassId = Constants.RENDERPASS_MAIN;
 
     /**
+     * @internal True while the scene renders a pass it renders again in the next frames (its cameras, the render targets of its frame,
+     * the frame graph): only there can a mesh draw wait for its pipeline (WebGPU asynchronous pipeline creation). A pass rendered once
+     * (an object renderer, of a render target or a frame graph task, with REFRESHRATE_RENDER_ONCE or rendered by a call that its
+     * shouldRender() did not ask for: a GPU picking, the voxelization of IBL shadows, a decal of MeshUVSpaceRenderer; a screenshot through
+     * a render target, a render outside the scene's frame) draws every mesh in that rendering.
+     */
+    public _drawsMayWait = false;
+
+    /**
+     * @internal The depth of the renderings done once that are in progress (an object renderer rendered once, a screenshot through a
+     * render target): while it is not zero, the passes of the scene's frame they render do not let their draws wait either.
+     */
+    public _renderingOnce = 0;
+
+    /**
+     * @internal The mesh whose draws are being submitted (Mesh._processRendering, in any of its passes and whatever draw context its
+     * material gives them): its draws wait together for their render pipelines (WebGPU asynchronous pipeline creation). Null for every
+     * other draw (the bounding box of an occlusion query, a post-process, sprites, particles...), which never waits.
+     */
+    public _pipelineWaitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null;
+
+    /**
+     * @internal The last frame in which a mesh draw waited for its render pipeline (WebGPU asynchronous pipeline creation). A mesh is held
+     * back in its passes in the frame of its last wait and the next one; until the frame after those, a render target refreshed every N
+     * frames renders in every frame (ObjectRenderer.shouldRender), so that it shows a mesh in the same frames as the other passes.
+     */
+    public _lastPipelineWaitFrameId = -Infinity;
+
+    /**
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;
@@ -689,6 +718,11 @@ export abstract class AbstractEngine {
     private _rebuildEffects(): void {
         for (const key in this._compiledEffects) {
             const effect = this._compiledEffects[key];
+
+            if (effect._isShaderCodeProcessingPending) {
+                // Nothing to rebuild yet: the effect prepares itself on the restored context once its shader code is processed
+                continue;
+            }
 
             effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
             effect._prepareEffect();
@@ -1217,11 +1251,13 @@ export abstract class AbstractEngine {
 
     /**
      * Observable raised when the engine is about to compile a shader
+     * In WebGL, the event state's target identifies the pipeline context being compiled.
      */
     public onBeforeShaderCompilationObservable = new Observable<AbstractEngine>();
 
     /**
      * Observable raised when the engine has just compiled a shader
+     * In WebGL, this waits for parallel compilation to complete successfully, and the event state's target identifies the pipeline context.
      */
     public onAfterShaderCompilationObservable = new Observable<AbstractEngine>();
 
@@ -1758,7 +1794,7 @@ export abstract class AbstractEngine {
 
         // processing for non-image formats
         if (loaderPromise) {
-            const callbackAsync = async (data: ArrayBufferView) => {
+            const callbackAsync = async (data: ArrayBufferView, ownsData = false) => {
                 const loader = await loaderPromise;
                 loader.loadData(
                     data,
@@ -1783,16 +1819,20 @@ export abstract class AbstractEngine {
                             );
                         }
                     },
-                    loaderOptions
+                    loaderOptions,
+                    ownsData
                 );
             };
 
             if (!buffer) {
+                // an offline provider can keep the buffers it serves (a cache), and LoadFile falls back to the last created scene's:
+                // only a file loaded without any provider is held by nothing else
+                const ownsData = !scene?.offlineProvider && !EngineStore.LastCreatedScene?.offlineProvider;
                 this._loadFile(
                     url,
                     async (data) => {
                         try {
-                            await callbackAsync(new Uint8Array(data as ArrayBuffer));
+                            await callbackAsync(new Uint8Array(data as ArrayBuffer), ownsData);
                         } catch (reason) {
                             onInternalError("Failed to parse texture data", reason);
                         }
@@ -2017,14 +2057,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.32.0";
+        return "babylonjs@9.37.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.32.0";
+        return "9.37.0";
     }
 
     /**
@@ -2576,6 +2616,140 @@ export abstract class AbstractEngine {
      */
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls?.addCount(numDrawCalls, false);
+    }
+
+    /**
+     * @internal Whether a snapshot is recording with the recorded draws switched on: only then do the meshes and the shadow maps
+     * check a draw against what it was recorded with, and keep what it is rendered with (nothing of it runs otherwise)
+     */
+    public get _recordsDraws(): boolean {
+        return false;
+    }
+
+    /**
+     * @internal While a snapshot records, encodes again the draw last recorded for this draw wrapper, if it is still valid,
+     * instead of binding its mesh and material. Returns false when the draw must be rendered normally. waitOwner is the owner its full
+     * draw would have (see _pipelineWaitOwner): the draws of a mesh wait together for their render pipelines, recorded ones too
+     */
+    public _replayRecordedDraw(_drawWrapper: DrawWrapper, _waitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null): boolean {
+        return false;
+    }
+
+    /**
+     * @internal Changes when code of the user runs between the draws of the frame (the observers of a mesh and the bind callbacks of its
+     * material, see Mesh.render, the bind callbacks of an effect, the observers of a rendering group and of its sprites and particles,
+     * and its callback before the transparent meshes): it can change any material in place, so the references the materials kept before
+     * it no longer stand for the draws after it (see Material._getRecordedDrawReference)
+     */
+    public _recordedDrawReferencesEpoch = 0;
+
+    /**
+     * @internal Whether _replayRecordedDraw would encode again the draw last recorded for this draw wrapper now: a mesh runs the scene's
+     * steps around its draw only once it knows the draw will not be rendered normally instead
+     */
+    public _canEncodeRecordedDraw(_drawWrapper: DrawWrapper, _waitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null): boolean {
+        return false;
+    }
+
+    /**
+     * @internal Whether the draw just done for a draw wrapper wrote its per-draw values (what its effect sets when it binds) in a
+     * slot of its own, which a draw recorded with it keeps referencing
+     */
+    public _canKeepRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+        return false;
+    }
+
+    /**
+     * @internal Whether the per-draw values of a draw wrapper are the same bytes as the ones of another draw wrapper of the same effect
+     */
+    public _hasSameDrawValues(_drawWrapper: DrawWrapper, _reference: DrawWrapper): boolean {
+        return false;
+    }
+
+    private _inheritedState: number[] = [];
+
+    /**
+     * @internal Keeps the states a draw inherits from the engine (see _getInheritedState) where it starts, before it sets any: where a
+     * recorded draw is checked before it is encoded again. A draw recorded with others is bound again
+     * @param drawWrapper the draw wrapper of the draw
+     */
+    public _keepInheritedState(drawWrapper: DrawWrapper): void {
+        const state = (drawWrapper._recordedEngineState ??= []);
+        const length = this._getInheritedState(state);
+        if (state.length !== length) {
+            state.length = length;
+        }
+    }
+
+    /**
+     * @internal Whether the engine has the states kept by _keepInheritedState for a draw wrapper
+     * @param drawWrapper the draw wrapper of the draw
+     * @returns true if they did not change
+     */
+    public _hasInheritedState(drawWrapper: DrawWrapper): boolean {
+        const recorded = drawWrapper._recordedEngineState;
+        if (!recorded) {
+            return false;
+        }
+        const current = this._inheritedState;
+        const length = this._getInheritedState(current);
+        if (length !== recorded.length) {
+            return false;
+        }
+        for (let i = 0; i < length; i++) {
+            if (current[i] !== recorded[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @internal Writes the states the pipeline of a draw reads from the engine, which the draw inherits unless it sets them (the depth
+     * prepass turns the color writes off, the rendering groups set the stencil, ThinDepthPeelingRenderer the blend equation): the color
+     * writes, the depth test, writes and function, the stencil of both faces, the culled faces the engine forces over the material's
+     * (cullBackFaces) and the blend of each target
+     * @param target the array to write them in, from its start
+     * @returns how many were written
+     */
+    protected _getInheritedState(target: number[]): number {
+        target[0] = this.getColorWrite() ? 1 : 0;
+        target[1] = this.getDepthBuffer() ? 1 : 0;
+        target[2] = this.getDepthWrite() ? 1 : 0;
+        target[3] = this.getDepthFunction() ?? 0;
+        target[4] = this.getStencilBuffer() ? 1 : 0;
+        target[5] = this.getStencilFunction();
+        target[6] = this.getStencilFunctionReference();
+        target[7] = this.getStencilFunctionMask();
+        target[8] = this.getStencilMask();
+        target[9] = this.getStencilOperationPass();
+        target[10] = this.getStencilOperationFail();
+        target[11] = this.getStencilOperationDepthFail();
+        target[12] = this.getStencilBackFunction();
+        target[13] = this.getStencilBackOperationPass();
+        target[14] = this.getStencilBackOperationFail();
+        target[15] = this.getStencilBackOperationDepthFail();
+        target[16] = this.cullBackFaces === true ? 1 : this.cullBackFaces === false ? 0 : -1;
+        // the blend as the pipeline reads it from the alpha state: the targets that blend, then the factors and equations of each one
+        // (an alpha mode does not tell the equations: setAlphaMode resets them only when the mode changes)
+        const alphaState = this._alphaState;
+        let blending = 0;
+        let length = 18;
+        if (alphaState._numTargetEnabled > 0) {
+            for (let i = 0; i < 8; i++) {
+                if (!alphaState._alphaBlend[i]) {
+                    continue;
+                }
+                blending |= 1 << i;
+                for (let j = i * 4; j < i * 4 + 4; j++) {
+                    target[length++] = alphaState._blendFunctionParameters[j] ?? -1;
+                }
+                target[length++] = alphaState._blendEquationParameters[i * 2] ?? -1;
+                target[length++] = alphaState._blendEquationParameters[i * 2 + 1] ?? -1;
+            }
+        }
+        target[17] = blending;
+        return length;
     }
     /**
      * Gets the current framerate

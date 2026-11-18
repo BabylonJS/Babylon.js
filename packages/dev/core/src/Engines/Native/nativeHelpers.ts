@@ -132,6 +132,14 @@ export function getNativeTextureFormat(format: number, type: number): number {
             break;
         }
 
+        case Constants.TEXTUREFORMAT_RED_INTEGER: {
+            switch (type) {
+                case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                    return _native.Engine.TEXTURE_FORMAT_R8U;
+            }
+            break;
+        }
+
         case Constants.TEXTUREFORMAT_RGBA_INTEGER: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
@@ -389,7 +397,10 @@ export function getNativeAlphaMode(mode: number): number {
             return _native.Engine.ALPHA_MAXIMIZED;
         case Constants.ALPHA_ONEONE:
             return _native.Engine.ALPHA_ONEONE;
+        // MIN/MAX use ONE/ONE factors; ThinNativeEngine.setAlphaMode sets the matching blend equation.
         case Constants.ALPHA_ONEONE_ONEONE:
+        case Constants.ALPHA_MIN:
+        case Constants.ALPHA_MAX:
             return _native.Engine.ALPHA_ONEONE_ONEONE ?? _getFallbackAlphaMode(mode, "ALPHA_ONEONE_ONEONE");
         case Constants.ALPHA_LAYER_ACCUMULATE:
             return _native.Engine.ALPHA_LAYER_ACCUMULATE ?? _getFallbackAlphaMode(mode, "ALPHA_LAYER_ACCUMULATE");

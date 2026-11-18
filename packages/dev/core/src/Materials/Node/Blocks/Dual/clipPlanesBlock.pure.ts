@@ -122,6 +122,11 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         defines.setValue("CLIPPLANE6", useClipPlane6, true);
     }
 
+    /** @internal See NodeMaterialBlock._bindsMaterialValuesOnly */
+    public override get _bindsMaterialValuesOnly(): boolean {
+        return true;
+    }
+
     /**
      * Bind data to effect
      * @param effect - the effect to bind to

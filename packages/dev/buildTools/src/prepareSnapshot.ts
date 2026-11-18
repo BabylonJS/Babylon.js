@@ -45,7 +45,7 @@ export const prepareSnapshot = () => {
 
     // copy all static files
     const baseLocation = path.join(baseDirectory, "packages", "tools", "babylonServer", "public");
-    const staticFiles = globSync(`${baseLocation}/**/*.*`);
+    const staticFiles = globSync(`${baseLocation}/**/*`, { nodir: true });
     for (const file of staticFiles) {
         // ignore package.json files
         if (path.basename(file) === "package.json") {

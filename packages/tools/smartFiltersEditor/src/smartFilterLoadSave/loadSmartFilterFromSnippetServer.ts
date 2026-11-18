@@ -16,7 +16,8 @@ export async function LoadSmartFilterFromSnippetServer(
     snippetToken: string,
     version: string | undefined
 ): Promise<SmartFilter> {
-    const response = await fetch(`${SnippetUrl}/${snippetToken}/${version || ""}`);
+    const snippetPath = `${encodeURIComponent(snippetToken)}/${version ? encodeURIComponent(version) : ""}`;
+    const response = await fetch(`${SnippetUrl}/${snippetPath}`);
 
     if (!response.ok) {
         throw new Error(`Could not fetch snippet ${snippetToken}. Response was: ${response.status}`);

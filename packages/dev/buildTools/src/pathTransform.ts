@@ -68,6 +68,25 @@ export const transformPackageLocation = (location: string, options: ITransformer
         return;
     }
 
+    const localPackagePath = options.localPackagePaths?.[basePackage];
+    if (localPackagePath) {
+        if (!sourceFilename || !options.outDir) {
+            return location;
+        }
+        const outputRoot = path.resolve(options.outDir);
+        const packageRoot = path.resolve(outputRoot, localPackagePath);
+        const relativePackageRoot = path.relative(outputRoot, packageRoot);
+        if (relativePackageRoot === ".." || relativePackageRoot.startsWith(`..${path.sep}`) || path.isAbsolute(relativePackageRoot)) {
+            throw new Error(`Local package path escapes its output directory: ${localPackagePath}`);
+        }
+        const target = path.resolve(packageRoot, ...(directoryParts.length ? directoryParts : ["index"]));
+        const relativeTarget = path.relative(packageRoot, target);
+        if (relativeTarget === ".." || relativeTarget.startsWith(`..${path.sep}`) || path.isAbsolute(relativeTarget)) {
+            throw new Error(`Local package import escapes its output directory: ${location}`);
+        }
+        return AddJS(GetRelativePath(target, sourceFilename), options.appendJS);
+    }
+
     // local file?
     if (basePackage.startsWith(".")) {
         return AddJS(location, options.appendJS);
@@ -127,6 +146,16 @@ export interface ITransformerOptions {
     appendJS?: boolean | string;
 
     keepDev?: boolean;
+
+    /**
+     * Resolve selected dev-package imports to paths relative to their copied package directories in outDir.
+     */
+    localPackagePaths?: Record<string, string>;
+
+    /**
+     * Output directory used as the root for localPackagePaths.
+     */
+    outDir?: string;
 }
 
 // inspired by https://github.com/OniVe/ts-transform-paths

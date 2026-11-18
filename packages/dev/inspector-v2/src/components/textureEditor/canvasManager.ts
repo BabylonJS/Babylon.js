@@ -1,18 +1,9 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-import {
-    type BaseTexture,
-    type CubeTexture,
-    type InternalTexture,
-    type ISize,
-    type IWheelEvent,
-    type Mesh,
-    type Nullable,
-    type PointerInfo,
-    type RawCubeTexture,
-} from "core/index";
+import { type ISize, type IWheelEvent, type Mesh, type Nullable, type PointerInfo } from "core/index";
 import { type Channel } from "./channels";
 import { type IMetadata } from "./textureEditor";
+import { type ITextureEditorSource } from "./textureEditorSource";
 
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
@@ -31,6 +22,10 @@ import { Scene } from "core/scene";
 import { ApplyChannelsToTextureDataAsync } from "../../misc/textureTools";
 import { canvasShader } from "./canvasShader";
 
+// Ensures scene picking (used by the editing tools) and enableEdgesRendering are available.
+import "core/Culling/ray";
+import "core/Rendering/edgesRenderer";
+
 export type CanvasManagerTool = {
     readonly is3D: boolean;
     activate(): void;
@@ -45,6 +40,38 @@ export interface IPixelData {
     g?: number;
     b?: number;
     a?: number;
+}
+
+/**
+ * Converts a WebGL framebuffer readback (bottom-up rows, premultiplied alpha) into top-down, straight-alpha
+ * RGBA rows matching canvas image data.
+ * @param data - The framebuffer pixels.
+ * @param width - The width in pixels.
+ * @param height - The height in pixels.
+ * @returns The converted pixels.
+ */
+export function FramebufferToImagePixels(data: Uint8Array | Uint8ClampedArray, width: number, height: number): Uint8Array {
+    const rowLength = width * 4;
+    const result = new Uint8Array(rowLength * height);
+    for (let y = 0; y < height; y++) {
+        const sourceStart = (height - y - 1) * rowLength;
+        const targetStart = y * rowLength;
+        for (let i = 0; i < rowLength; i += 4) {
+            const alpha = data[sourceStart + i + 3];
+            const target = targetStart + i;
+            result[target + 3] = alpha;
+            if (alpha === 255) {
+                result[target] = data[sourceStart + i];
+                result[target + 1] = data[sourceStart + i + 1];
+                result[target + 2] = data[sourceStart + i + 2];
+            } else if (alpha > 0) {
+                result[target] = Math.min(255, Math.round((data[sourceStart + i] * 255) / alpha));
+                result[target + 1] = Math.min(255, Math.round((data[sourceStart + i + 1] * 255) / alpha));
+                result[target + 2] = Math.min(255, Math.round((data[sourceStart + i + 2] * 255) / alpha));
+            }
+        }
+    }
+    return result;
 }
 
 export class TextureCanvasManager {
@@ -78,17 +105,7 @@ export class TextureCanvasManager {
     private _face = 0;
     private _mipLevel = 0;
 
-    /** The texture from the original engine that we invoked the editor on */
-    private readonly _originalTexture: BaseTexture;
-    /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
-    private _target: Nullable<HtmlElementTexture | RawCubeTexture> = null;
-    private readonly _originalTextureProperties: {
-        _texture: Nullable<InternalTexture>;
-        url: Nullable<string>;
-        _forceSerialize: boolean;
-    };
-    /** Keeps track of whether we have modified the texture */
-    private _didEdit = false;
+    private readonly _source: ITextureEditorSource;
 
     private _plane: Nullable<Mesh> = null;
     private readonly _planeMaterial: ShaderMaterial;
@@ -131,14 +148,18 @@ export class TextureCanvasManager {
 
     private readonly _onUpdate: () => void;
     private _setMetadata: (metadata: any) => void;
+    private readonly _onError: (message: string) => void;
 
     private _imageData: Nullable<Uint8Array | Uint8ClampedArray> = null;
     private _canPush = true;
     private _shouldPush = false;
+    private _pushGeneration = 0;
+    private _activePush: Promise<void> = Promise.resolve();
+    private _isDisposed = false;
     private readonly _paintCanvas: HTMLCanvasElement;
 
     public constructor(
-        texture: BaseTexture,
+        source: ITextureEditorSource,
         window: Window,
         canvasUI: HTMLCanvasElement,
         canvas2D: HTMLCanvasElement,
@@ -147,7 +168,8 @@ export class TextureCanvasManager {
         metadata: IMetadata,
         onUpdate: () => void,
         setMetadata: (metadata: any) => void,
-        setMipLevel: (level: number) => void
+        setMipLevel: (level: number) => void,
+        onError: (message: string) => void
     ) {
         this._window = window;
 
@@ -160,13 +182,9 @@ export class TextureCanvasManager {
         this._onUpdate = onUpdate;
         this._setMetadata = setMetadata;
         this._setMipLevel = setMipLevel;
+        this._onError = onError;
 
-        this._originalTexture = texture;
-        this._originalTextureProperties = {
-            _texture: this._originalTexture._texture,
-            url: (this._originalTexture as Texture).url,
-            _forceSerialize: this._originalTexture._forceSerialize,
-        };
+        this._source = source;
         this._engine = new Engine(this._uiCanvas, true);
         this._scene = new Scene(this._engine, { virtual: true });
         this._scene.clearColor = new Color4(0, 0, 0, 0);
@@ -177,7 +195,7 @@ export class TextureCanvasManager {
         this._camera.maxZ = 1.5;
         this._cameraPos = new Vector2();
 
-        this.setSize(texture.getSize());
+        this.setSize(source.size);
 
         this._channelsTexture = new HtmlElementTexture("ct", this._2DCanvas, {
             engine: this._engine,
@@ -355,59 +373,69 @@ export class TextureCanvasManager {
     }
 
     public async updateTexture() {
+        if (this._isDisposed) {
+            return;
+        }
         if (this._mipLevel !== 0) {
             this._setMipLevel(0);
         }
-        this._didEdit = true;
-        const element = this._editing3D ? this._3DCanvas : this._2DCanvas;
         if (this._editing3D) {
             this._3DCanvasTexture.update();
             this._3DScene.render();
         }
-        if (this._originalTexture.isCube) {
-            // TODO: fix cube map editing
-        } else {
-            if (!this._target) {
-                this._target = new HtmlElementTexture("editor", element, {
-                    engine: this._originalTexture.getScene()?.getEngine()!,
-                    scene: null,
-                    samplingMode: (this._originalTexture as Texture).samplingMode,
-                    generateMipMaps: this._originalTextureProperties._texture?.generateMipMaps,
-                });
-            } else {
-                (this._target as HtmlElementTexture).element = element;
-            }
-            this.pushTexture();
-        }
-        this._originalTexture._texture = this._target?._texture ?? null;
-        (this._originalTexture as Texture).url = null;
-        this._originalTexture._forceSerialize = true;
-        this._channelsTexture.element = element;
+        await this.pushTexture();
+        this._channelsTexture.element = this._editing3D ? this._3DCanvas : this._2DCanvas;
         this.updateDisplay();
         this._onUpdate();
     }
 
     private async pushTexture() {
-        if (this._canPush && this._target) {
-            const invertY = this._target.constructor.name === HtmlElementTexture.name ? false : (this._originalTexture as Texture).invertY;
-            (this._target as HtmlElementTexture).update(invertY);
-            this._target._texture?.updateSize(this._size.width, this._size.height);
+        if (this._canPush) {
+            this._canPush = false;
+            this._shouldPush = false;
+            const push = this._pushPixelsAsync(this._pushGeneration);
+            this._activePush = push;
+            try {
+                await push;
+            } finally {
+                setTimeout(() => {
+                    this._canPush = true;
+                    if (this._shouldPush && !this._isDisposed) {
+                        void this.pushTexture();
+                    }
+                }, this.PUSH_FREQUENCY);
+            }
+        } else {
+            this._shouldPush = true;
+        }
+    }
+
+    private async _pushPixelsAsync(generation: number): Promise<void> {
+        try {
             if (this._editing3D) {
                 const bufferView = await this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
                 this._imageData = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
             } else {
                 this._imageData = this._2DCanvas.getContext("2d")!.getImageData(0, 0, this._size.width, this._size.height).data;
             }
-            this._canPush = false;
-            this._shouldPush = false;
-            setTimeout(() => {
-                this._canPush = true;
-                if (this._shouldPush) {
-                    this.pushTexture();
-                }
-            }, this.PUSH_FREQUENCY);
-        } else {
-            this._shouldPush = true;
+            // A reset that started after this push must not be overwritten by the pre-reset pixels.
+            if (this._isDisposed || generation !== this._pushGeneration) {
+                return;
+            }
+            const element = this._editing3D ? this._3DCanvas : this._2DCanvas;
+            const imageData = this._imageData;
+            if (!imageData) {
+                throw new Error("The edited texture pixels are not available.");
+            }
+            // Sources expect top-down, straight-alpha rows like canvas image data.
+            const pixels = this._editing3D
+                ? FramebufferToImagePixels(imageData, this._size.width, this._size.height)
+                : imageData instanceof Uint8Array
+                  ? imageData
+                  : new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
+            await this._source.writePixelsAsync(pixels, element, this._size);
+        } catch (error) {
+            this._reportError(error);
         }
     }
 
@@ -522,16 +550,33 @@ export class TextureCanvasManager {
     }
 
     public async grabOriginalTexture() {
-        // Grab image data from original texture and paint it onto the context of a DynamicTexture
-        const size = this._originalTexture.getSize();
-        // Fetch texture data BEFORE setting size (which clears the canvas) to avoid flicker
-        const data = await ApplyChannelsToTextureDataAsync(this._originalTexture, size.width, size.height, this._face, { R: true, G: true, B: true, A: true }, this._mipLevel);
-        this.setSize(size);
-        this._imageData = data;
-        this.paintPixelsOnCanvas(data, this._2DCanvas);
-        this._3DCanvasTexture.update();
-        this.updateDisplay();
-        return data;
+        try {
+            const size = this._source.size;
+            const { data, width, height } = await this._source.readPixelsAsync(this._mipLevel, this._face);
+            if (this._isDisposed) {
+                return new Uint8Array();
+            }
+            this.setSize(size);
+            if (width !== size.width || height !== size.height) {
+                const mipCanvas = this._window.document.createElement("canvas");
+                mipCanvas.width = width;
+                mipCanvas.height = height;
+                this.paintPixelsOnCanvas(data, mipCanvas);
+                const context = this._2DCanvas.getContext("2d")!;
+                context.imageSmoothingEnabled = false;
+                context.drawImage(mipCanvas, 0, 0, size.width, size.height);
+                this._imageData = context.getImageData(0, 0, size.width, size.height).data;
+            } else {
+                this._imageData = data;
+                this.paintPixelsOnCanvas(data, this._2DCanvas);
+            }
+            this._3DCanvasTexture.update();
+            this.updateDisplay();
+            return data;
+        } catch (error) {
+            this._reportError(error);
+            return new Uint8Array();
+        }
     }
 
     public getMouseCoordinates(pointerInfo: PointerInfo) {
@@ -619,26 +664,47 @@ export class TextureCanvasManager {
         this._plane.material = this._planeMaterial;
     }
 
-    public reset(): void {
+    public async reset(): Promise<void> {
+        if (this._isDisposed) {
+            return;
+        }
         if (this._tool && this._tool.reset) {
             this._tool.reset();
         }
-        this._originalTexture._texture = this._originalTextureProperties._texture;
-        (this._originalTexture as Texture).url = this._originalTextureProperties.url;
-        this._originalTexture._forceSerialize = this._originalTextureProperties._forceSerialize;
-        this.grabOriginalTexture();
-        this.makePlane();
-        this._didEdit = false;
-        this._onUpdate();
+        // Discard writes queued by the tool reset (and any still in flight) so they can't land after restoration.
+        this._pushGeneration++;
+        this._shouldPush = false;
+        try {
+            await this._activePush;
+            await this._source.resetAsync();
+            await this.grabOriginalTexture();
+            this.makePlane();
+            this._onUpdate();
+        } catch (error) {
+            this._reportError(error);
+        }
     }
 
     public async resize(newSize: ISize) {
-        // Fetch texture data BEFORE setting size (which clears the canvas) to avoid flicker
-        const data = await ApplyChannelsToTextureDataAsync(this._originalTexture, newSize.width, newSize.height, this._face, { R: true, G: true, B: true, A: true });
-        this.setSize(newSize);
-        this.paintPixelsOnCanvas(data, this._2DCanvas);
-        this.updateTexture();
-        this._didEdit = true;
+        if (this._isDisposed) {
+            return;
+        }
+        if (!this._source.canResize) {
+            this._reportError(this._source.resizeDisabledReason ?? "Resizing is not supported for this texture.");
+            return;
+        }
+        try {
+            // Fetch texture data BEFORE setting size (which clears the canvas) to avoid flicker
+            const { data } = await this._source.readPixelsAsync(0, this._face, newSize);
+            if (this._isDisposed) {
+                return;
+            }
+            this.setSize(newSize);
+            this.paintPixelsOnCanvas(data, this._2DCanvas);
+            await this.updateTexture();
+        } catch (error) {
+            this._reportError(error);
+        }
     }
 
     public setSize(size: ISize) {
@@ -660,53 +726,75 @@ export class TextureCanvasManager {
         this.makePlane();
     }
 
-    public upload(file: File) {
-        Tools.ReadFile(
-            file,
-            (data) => {
-                const blob = new Blob([data], { type: "octet/stream" });
-                let extension: string | undefined = undefined;
-                if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                    extension = ".dds";
-                } else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                    extension = ".env";
-                }
+    public async upload(file: File) {
+        if (this._isDisposed) {
+            return;
+        }
+        try {
+            if (await this._source.uploadNativeFileAsync(file)) {
+                await this.grabOriginalTexture();
+                return;
+            }
+            const dataUrl = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
-                reader.readAsDataURL(blob);
-                reader.onloadend = () => {
-                    const base64data = reader.result as string;
-
-                    if (extension === ".dds" || extension === ".env") {
-                        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                        (this._originalTexture as CubeTexture).updateURL(base64data, extension, async () => await this.grabOriginalTexture());
+                reader.onload = () => {
+                    if (typeof reader.result === "string") {
+                        resolve(reader.result);
                     } else {
-                        const texture = new Texture(base64data, this._scene, this._originalTexture.noMipmap, false, Texture.NEAREST_SAMPLINGMODE, () => {
-                            // eslint-disable-next-line github/no-then
-                            ApplyChannelsToTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, { R: true, G: true, B: true, A: true }).then(
-                                async (pixels) => {
-                                    if (this._tool && this._tool.reset) {
-                                        this._tool.reset();
-                                    }
-                                    texture.dispose();
-                                    this.setSize(texture.getSize());
-                                    this.paintPixelsOnCanvas(pixels, this._2DCanvas);
-                                    await this.updateTexture();
-                                    this._setMipLevel(0);
-                                }
-                            );
-                        });
+                        reject(new Error("Could not read the selected image."));
                     }
                 };
-            },
-            undefined,
-            true
-        );
+                reader.onerror = () => reject(reader.error ?? new Error("Could not read the selected image."));
+                reader.readAsDataURL(file);
+            });
+            await new Promise<void>((resolve, reject) => {
+                const texture = new Texture(
+                    dataUrl,
+                    this._scene,
+                    this._source.noMipmap,
+                    false,
+                    Texture.NEAREST_SAMPLINGMODE,
+                    () => {
+                        void (async () => {
+                            try {
+                                if (this._isDisposed) {
+                                    resolve();
+                                    return;
+                                }
+                                const size = texture.getSize();
+                                if (!this._source.canResize && (size.width !== this._size.width || size.height !== this._size.height)) {
+                                    throw new Error(`The uploaded image must match the texture dimensions (${this._size.width} × ${this._size.height}).`);
+                                }
+                                const pixels = await ApplyChannelsToTextureDataAsync(texture, size.width, size.height, 0, { R: true, G: true, B: true, A: true });
+                                if (this._tool?.reset) {
+                                    this._tool.reset();
+                                }
+                                if (size.width !== this._size.width || size.height !== this._size.height) {
+                                    this.setSize(size);
+                                }
+                                this.paintPixelsOnCanvas(pixels, this._2DCanvas);
+                                await this.updateTexture();
+                                this._setMipLevel(0);
+                                resolve();
+                            } catch (error) {
+                                reject(error instanceof Error ? error : new Error(String(error)));
+                            } finally {
+                                texture.dispose();
+                            }
+                        })();
+                    },
+                    (message, error) => reject(error instanceof Error ? error : new Error(message ?? String(error ?? "Could not load the selected image.")))
+                );
+            });
+        } catch (error) {
+            this._reportError(error);
+        }
     }
 
     public saveTexture() {
         const canvas = this._editing3D ? this._3DCanvas : this._2DCanvas;
         Tools.ToBlob(canvas, (blob) => {
-            Tools.Download(blob!, this._originalTexture.name);
+            Tools.Download(blob!, this._source.name);
         });
     }
 
@@ -715,9 +803,8 @@ export class TextureCanvasManager {
     }
 
     public dispose() {
-        if (this._didEdit) {
-            this._originalTextureProperties._texture?.dispose();
-        }
+        this._isDisposed = true;
+        this._source.dispose();
         if (this._tool) {
             this._tool.deactivate();
         }
@@ -732,5 +819,11 @@ export class TextureCanvasManager {
         this._camera.dispose();
         this._scene.dispose();
         this._engine.dispose();
+    }
+
+    private _reportError(error: unknown): void {
+        if (!this._isDisposed) {
+            this._onError(error instanceof Error ? error.message : String(error));
+        }
     }
 }

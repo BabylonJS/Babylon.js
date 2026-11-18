@@ -207,4 +207,31 @@ export interface ISerializedFlowGraph {
      * Is the flow graph in RHS mode?
      */
     rightHanded?: boolean;
+    /**
+     * Optional scene-reference provenance used to disambiguate duplicate nodes.
+     */
+    referenceProvenance?: SerializedFlowGraphReferenceProvenance;
 }
+
+/**
+ * Describes the authored identity of a serialized scene-node reference.
+ */
+export interface ISerializedFlowGraphReferenceLocation {
+    /** Node id at serialization time. */
+    id: string;
+    /** Node name at serialization time. */
+    name: string;
+    /** Babylon class name. */
+    className: string;
+    /** Zero-based occurrence among same-class nodes with the same id. */
+    idIndex: number;
+    /** Zero-based occurrence among same-class nodes with the same name. */
+    nameIndex: number;
+    /** Scene identifier when the reference was captured. */
+    sceneUid?: string;
+}
+
+/**
+ * Maps serialized node unique ids to their authored scene identity.
+ */
+export type SerializedFlowGraphReferenceProvenance = Array<[number, ISerializedFlowGraphReferenceLocation]>;

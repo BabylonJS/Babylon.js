@@ -273,11 +273,14 @@ vec3 singleScatterToMultiScatterAlbedo(vec3 rho_ss) {
 
 vec3 multiScatterToSingleScatterAlbedo(vec3 rho_ms) {
     vec3 s = 4.09712 + 4.20863 * rho_ms - sqrt(9.59217 + 41.6808 * rho_ms + 17.7126 * rho_ms * rho_ms);
+    // The fit gives s slightly below 1 at rho_ms = 0; force s = 1 so the single-scatter albedo is exactly 0.
+    s = mix(s, vec3(1.0), vec3(lessThanEqual(rho_ms, vec3(0.0))));
     return 1.0 - s * s;
 }
 
 vec3 multiScatterToSingleScatterAlbedo(vec3 rho_ms, float aniso) {
     vec3 s = 4.09712 + 4.20863 * rho_ms - sqrt(9.59217 + 41.6808 * rho_ms + 17.7126 * rho_ms * rho_ms);
+    s = mix(s, vec3(1.0), vec3(lessThanEqual(rho_ms, vec3(0.0))));
     return (1.0 - s * s) / maxEps(1.0 - aniso * s * s);
 }
 

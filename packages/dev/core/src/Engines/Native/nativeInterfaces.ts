@@ -32,6 +32,12 @@ export interface INativeEngine {
      */
     readonly supportsMultisampledMipmaps?: boolean;
 
+    /**
+     * True when the runtime can copy a canvas into a dynamic texture with a mip chain and
+     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps)`).
+     */
+    readonly supportsDynamicTextureMipMaps?: boolean;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -170,7 +176,15 @@ export interface INativeEngine {
         autoGenerateMips?: boolean
     ): NativeFramebuffer;
 
-    /** Optional: older runtimes only support single-attachment framebuffers. */
+    /**
+     * Moves a framebuffer's generated depth/stencil into a texture without rebuilding the framebuffer, so it can be
+     * attached elsewhere with its current contents; it cannot be sampled. Layered render targets share one generated
+     * depth allocation across their face/layer framebuffers. Returns false when the framebuffer has no generated
+     * depth/stencil of its own.
+     */
+    shareFrameBufferDepthStencil?(frameBuffer: NativeFramebuffer, texture: NativeTexture): boolean;
+
+    /** Optional: older runtimes only support single-attachment framebuffers. Omitted mip flags retain automatic generation for all color attachments. */
     createMultiFrameBuffer?(
         colorTextures: NativeTexture[],
         width: number,
@@ -179,7 +193,8 @@ export interface INativeEngine {
         generateDepthBuffer: boolean,
         samples: number,
         layers?: number[],
-        explicitDepthTexture?: NativeTexture
+        explicitDepthTexture?: NativeTexture,
+        autoGenerateMips?: boolean[]
     ): NativeFramebuffer;
 
     getRenderWidth(): number;
@@ -210,6 +225,7 @@ interface INativeEngineConstructor {
 
     readonly CAPS_LIMITS_MAX_TEXTURE_SIZE: number;
     readonly CAPS_LIMITS_MAX_TEXTURE_LAYERS: number;
+    readonly CAPS_INTEGER_COLOR_ATTACHMENTS?: boolean;
 
     readonly TEXTURE_NEAREST_NEAREST: number;
     readonly TEXTURE_LINEAR_LINEAR: number;
@@ -423,6 +439,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETTEXTURE: NativeData;
     readonly COMMAND_UNSETTEXTURE: NativeData;
     readonly COMMAND_DISCARDALLTEXTURES: NativeData;
+    readonly COMMAND_DELETETEXTURE?: NativeData;
     readonly COMMAND_BINDVERTEXARRAY: NativeData;
     readonly COMMAND_SETSTATE: NativeData;
     readonly COMMAND_DELETEPROGRAM: NativeData;
@@ -433,12 +450,14 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETCOLORWRITE: NativeData;
     readonly COMMAND_SETBLENDMODE: NativeData;
     readonly COMMAND_SETBLENDEQUATION?: NativeData;
+    readonly COMMAND_SETALPHATOCOVERAGE?: NativeData;
     readonly COMMAND_SETFLOAT: NativeData;
     readonly COMMAND_SETFLOAT2: NativeData;
     readonly COMMAND_SETFLOAT3: NativeData;
     readonly COMMAND_SETFLOAT4: NativeData;
     readonly COMMAND_BINDFRAMEBUFFER: NativeData;
     readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
+    readonly COMMAND_GENERATEMIPMAPS?: NativeData;
     readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
     readonly COMMAND_DRAWINDEXED: NativeData;
     readonly COMMAND_DRAWINDEXEDINSTANCED: NativeData;
@@ -467,9 +486,23 @@ interface INativeCameraConstructor {
 }
 
 /** @internal */
+export interface INativeCanvas extends ICanvas {
+    /**
+     * Releases the native resources held by the canvas.
+     */
+    dispose(): void;
+
+    /**
+     * True when dispose() keeps the GPU resources alive until already-queued commands that reference them are submitted,
+     * so it is safe to call while a frame is being recorded. Older runtimes release them immediately and leave this undefined.
+     */
+    readonly supportsDeferredDispose?: boolean;
+}
+
+/** @internal */
 interface INativeCanvasConstructor {
-    prototype: ICanvas;
-    new (): ICanvas;
+    prototype: INativeCanvas;
+    new (): INativeCanvas;
 
     loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
 }
@@ -550,5 +583,57 @@ export interface INative {
     endPerformanceCounter?(counter: unknown): void;
 
     // GaussianSplatting
+    /**
+     * Sorts splats back to front using model-view depth.
+     * @param modelViewMatrix mesh world matrix multiplied by the camera view matrix
+     * @param splatPositions splat centers (stride 4)
+     * @param splatIndex receives the sorted splat indices
+     * @param useRightHandedSystem whether the scene uses a right-handed coordinate system
+     */
     sortSplats?(modelViewMatrix: Matrix, splatPositions: Float32Array, splatIndex: Float32Array, useRightHandedSystem: boolean): void;
+    /**
+     * Writes the active splats to `splatIndex` sorted back to front, like the Gaussian Splatting sort worker.
+     * @param view camera view matrix
+     * @param worldMatrices the mesh world matrix, or one world matrix per part when `partIndices` is set
+     * @param splatPositions splat centers (stride 4)
+     * @param splatIndex receives the sorted active splat indices, padded with `vertexCount`
+     * @param vertexCount number of source splats
+     * @param intervals active source splat ranges as [start0, count0, ...], or null for every splat
+     * @param partIndices part index of each splat for compound meshes, or null
+     * @param useRightHandedSystem whether the scene uses a right-handed coordinate system
+     * @returns false when a part index has no world matrix, leaving `splatIndex` unchanged
+     */
+    sortSplatIndices?(
+        view: Matrix,
+        worldMatrices: ReadonlyArray<Matrix>,
+        splatPositions: Float32Array,
+        splatIndex: Float32Array,
+        vertexCount: number,
+        intervals: Nullable<Uint32Array>,
+        partIndices: Nullable<Uint8Array>,
+        useRightHandedSystem: boolean
+    ): boolean;
+
+    // NativeDraco plugin — synchronous native replacement for the WASM Draco decoder.
+    decodeDracoMesh?(
+        data: Int8Array,
+        attributes?: { [kind: string]: number }
+    ): {
+        indices: Uint16Array | Uint32Array | null;
+        attributes: Array<{ kind: string; data: ArrayBufferView; size: number; byteOffset: number; byteStride: number; normalized: boolean }>;
+        totalVertices: number;
+    };
+
+    // NativeDraco plugin — synchronous native replacement for the WASM Draco encoder.
+    encodeDracoMesh?(
+        attributes: Array<{ kind: string; dracoName: string; size: number; data: ArrayBufferView }>,
+        indices: Uint16Array | Uint32Array | null,
+        options: { method?: string; encodeSpeed?: number; decodeSpeed?: number; quantizationBits?: { [name: string]: number } }
+    ): {
+        data: Int8Array;
+        attributeIds: { [kind: string]: number };
+    };
+
+    // NativeMeshopt plugin — synchronous native replacement for the WASM meshopt decoder.
+    decodeMeshopt?(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Uint8Array;
 }

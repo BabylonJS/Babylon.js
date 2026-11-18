@@ -6,9 +6,16 @@ import {
     FgBlockType,
     FgType,
     addFlowGraph,
+    addBillboardSpriteIndex,
+    addBillboardSystemToScene,
+    addDepthHostedSpriteLayerToScene,
     addSprite2DIndex,
+    addTextRenderableToScene,
     addToScene,
+    buildNodeParticleSet,
+    cloneTransformNode,
     attachControl,
+    attachSpatialTarget,
     buildFgGraph,
     createBox,
     createAnimationManager,
@@ -19,6 +26,7 @@ import {
     createDirectionalLight,
     createEngine,
     createGridSpriteAtlas,
+    createFacingBillboardSystem,
     createGpuPicker,
     createHemisphericLight,
     createPcfDirectionalShadowGenerator,
@@ -33,21 +41,45 @@ import {
     createStandardMaterial,
     createSpotLight,
     createSurface,
+    createDynamicTexture,
+    createTexture2DArrayFromPixels,
+    createTexture2DFromPixels,
+    createTexture3DFromPixels,
     createTextLayer,
+    createTextRenderable,
     createTextRenderer,
     createTransformNode,
     detachFlowGraph,
+    detachSpatialTarget,
     dispatchFlowGraphEvent,
     disposeDefaultTextData,
     disposeEngine,
+    disposeAudioBus,
     disposePicker,
     disposeScene,
+    disposeSound,
     disposeSpriteRenderer,
     disposeSurface,
     disposeTextRenderer,
     flowGraphRuntimes,
+    enableBoneControl,
+    getMeshSkeleton,
+    getParticleSystems,
+    getSceneBillboardSystems,
+    isParticleSystemStarted,
+    loadGltf,
+    loadCubeTexture,
+    readTexturePixelsRGBA8,
+    parseNodeParticleSource,
+    registerNodeParticleSet,
+    removeFromScene,
+    removeBillboardSystemFromScene,
+    removeDepthHostedSpriteLayerFromScene,
+    removeTextRenderableFromScene,
     loadFont,
     getRenderingContexts,
+    getFrameGraph,
+    getFrameGraphTasks,
     getViewProjectionMatrix,
     isGizmoDragging,
     isGizmoPickPending,
@@ -58,10 +90,14 @@ import {
     registerScene,
     registerSpriteRenderer,
     registerTextRenderer,
+    releaseTexture,
+    setMeshVisible,
+    setStandardReflectionCubeTexture,
     setShadowTaskCasterMeshes,
     setRenderTaskGpuTimingEnabled,
     setPbrEmissive,
     startEngine,
+    updateDynamicTexture,
     stopEngine,
     startAnimationManager,
     stopAnimationManager,
@@ -70,6 +106,133 @@ import {
 } from "@babylonjs/lite";
 
 import { ShowInspector } from "../../src/lite/inspector";
+import { GetSceneNodes, IsMesh, IsSceneNode } from "../../src/lite/sceneEntityUtils";
+import { CreateLiteAudioFixture, type LiteAudioFixture } from "./liteAudio";
+
+// Self-contained GLB: one triangle, two joints and two named morphs. No external buffers, textures or assets.
+function CreateSkeletonMorphGlb(): ArrayBuffer {
+    const arrays = [
+        new Float32Array([-0.5, 0, 0, 0.5, 0, 0, 0, 1, 0]),
+        new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        new Uint16Array([0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]),
+        new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]),
+        new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1, 0, 1]),
+        new Float32Array([-0.5, 0, 0, 0.5, 0, 0, 0, 0, 0]),
+        new Float32Array([0, 0, 0, 0, 0, 0, 0, 0.5, 0]),
+    ];
+    let byteLength = 0;
+    const bufferViews = arrays.map((array) => {
+        const view = { buffer: 0, byteOffset: byteLength, byteLength: array.byteLength };
+        byteLength += array.byteLength;
+        return view;
+    });
+    const json = {
+        asset: { version: "2.0" },
+        scene: 0,
+        scenes: [{ nodes: [0, 1] }],
+        nodes: [
+            { name: "P9 Skinned Morph Mesh", mesh: 0, skin: 0 },
+            { name: "P9 Root Bone", children: [2] },
+            { name: "P9 Child Bone", translation: [0, 1, 0] },
+        ],
+        skins: [{ joints: [1, 2], inverseBindMatrices: 4, skeleton: 1 }],
+        meshes: [
+            {
+                weights: [0, 0],
+                extras: { targetNames: ["Widen", "Lift"] },
+                primitives: [{ attributes: { POSITION: 0, NORMAL: 1, JOINTS_0: 2, WEIGHTS_0: 3 }, targets: [{ POSITION: 5 }, { POSITION: 6 }], material: 0 }],
+            },
+        ],
+        materials: [{ name: "P9 Morph Material", doubleSided: true, pbrMetallicRoughness: { baseColorFactor: [0.2, 0.8, 0.3, 1], metallicFactor: 0, roughnessFactor: 1 } }],
+        buffers: [{ byteLength }],
+        bufferViews,
+        accessors: [
+            { bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [-0.5, 0, 0], max: [0.5, 1, 0] },
+            { bufferView: 1, componentType: 5126, count: 3, type: "VEC3" },
+            { bufferView: 2, componentType: 5123, count: 3, type: "VEC4" },
+            { bufferView: 3, componentType: 5126, count: 3, type: "VEC4" },
+            { bufferView: 4, componentType: 5126, count: 2, type: "MAT4" },
+            { bufferView: 5, componentType: 5126, count: 3, type: "VEC3" },
+            { bufferView: 6, componentType: 5126, count: 3, type: "VEC3" },
+        ],
+    };
+    const jsonBytes = new TextEncoder().encode(JSON.stringify(json));
+    const jsonLength = (jsonBytes.length + 3) & ~3;
+    const glb = new ArrayBuffer(12 + 8 + jsonLength + 8 + byteLength);
+    const header = new DataView(glb);
+    header.setUint32(0, 0x46546c67, true);
+    header.setUint32(4, 2, true);
+    header.setUint32(8, glb.byteLength, true);
+    header.setUint32(12, jsonLength, true);
+    header.setUint32(16, 0x4e4f534a, true);
+    new Uint8Array(glb, 20, jsonLength).fill(32);
+    new Uint8Array(glb, 20, jsonBytes.length).set(jsonBytes);
+    header.setUint32(20 + jsonLength, byteLength, true);
+    header.setUint32(24 + jsonLength, 0x004e4942, true);
+    arrays.forEach((array, index) => new Uint8Array(glb, 28 + jsonLength + bufferViews[index].byteOffset, array.byteLength).set(new Uint8Array(array.buffer)));
+    return glb;
+}
+
+function CreateParticleGraph(name: string) {
+    return parseNodeParticleSource({
+        blocks: [
+            {
+                id: 1,
+                customType: "BABYLON.CreateParticleBlock",
+                name: "Create",
+                inputs: [
+                    { name: "lifeTime", value: 2, valueType: "number" },
+                    { name: "size", value: 0.12, valueType: "number" },
+                    { name: "emitPower", value: 1, valueType: "number" },
+                ],
+            },
+            {
+                id: 3,
+                customType: "BABYLON.BoxShapeBlock",
+                name: "Emitter",
+                inputs: [
+                    { name: "particle", targetBlockId: 1, targetConnectionName: "particle" },
+                    { name: "direction1", value: [-0.3, 1, -0.3], valueType: "BABYLON.Vector3" },
+                    { name: "direction2", value: [0.3, 1, 0.3], valueType: "BABYLON.Vector3" },
+                    { name: "minEmitBox", value: [-0.1, -0.5, -0.1], valueType: "BABYLON.Vector3" },
+                    { name: "maxEmitBox", value: [0.1, -0.5, 0.1], valueType: "BABYLON.Vector3" },
+                ],
+            },
+            { id: 4, customType: "BABYLON.ParticleInputBlock", name: "Position", type: 8, contextualValue: 1 },
+            { id: 5, customType: "BABYLON.ParticleInputBlock", name: "Scaled Direction", type: 8, contextualValue: 6 },
+            {
+                id: 6,
+                customType: "BABYLON.ParticleMathBlock",
+                name: "Add Position",
+                operation: 0,
+                inputs: [
+                    { name: "left", targetBlockId: 4, targetConnectionName: "output" },
+                    { name: "right", targetBlockId: 5, targetConnectionName: "output" },
+                ],
+            },
+            {
+                id: 7,
+                customType: "BABYLON.UpdatePositionBlock",
+                name: "Move",
+                inputs: [
+                    { name: "particle", targetBlockId: 3, targetConnectionName: "output" },
+                    { name: "position", targetBlockId: 6, targetConnectionName: "output" },
+                ],
+            },
+            {
+                id: 2,
+                customType: "BABYLON.SystemBlock",
+                name,
+                capacity: 100,
+                updateSpeed: 0.01,
+                inputs: [
+                    { name: "particle", targetBlockId: 7, targetConnectionName: "output" },
+                    { name: "emitRate", value: 20, valueType: "number" },
+                ],
+            },
+        ],
+    });
+}
 
 const inertFlowGraphSpecs: readonly FgNodeSpec[] = [
     {
@@ -117,6 +280,8 @@ const defaultFlowGraphSpecs: readonly FgNodeSpec[] = [
 ];
 
 const sphereEmissive: [number, number, number] = [0, 0, 0];
+const previewFixtureTextures: Array<ReturnType<typeof createTexture2DFromPixels>> = [];
+let previewFixtureTexture: Awaited<ReturnType<typeof loadCubeTexture>> | ReturnType<typeof createTexture2DFromPixels> | undefined;
 
 const canvas = document.getElementById("canvas");
 if (!(canvas instanceof HTMLCanvasElement)) {
@@ -167,6 +332,30 @@ const boxGroup = createTransformNode("Box Group", -0.75);
 boxGroup.children.push(smallBox);
 smallBox.parent = boxGroup;
 addToScene(primaryScene, boxGroup);
+
+enableBoneControl();
+const skeletonAsset = await loadGltf(engine, CreateSkeletonMorphGlb());
+addToScene(primaryScene, skeletonAsset);
+const skinnedMesh = GetSceneNodes(primaryScene)
+    .filter(IsMesh)
+    .find((mesh) => getMeshSkeleton(mesh) && mesh.morphTargets);
+if (!skinnedMesh) {
+    throw new Error("P9 fixture did not load a skinned morph mesh.");
+}
+skinnedMesh.name = "P9 Skinned Morph Mesh";
+skinnedMesh.position.set(-2, -1, 0);
+const morphClone = cloneTransformNode(skinnedMesh);
+if (!IsMesh(morphClone)) {
+    throw new Error("P9 fixture clone is not a mesh.");
+}
+morphClone.name = "P9 Shared Morph Clone";
+morphClone.position.set(2, -1, 0);
+addToScene(primaryScene, morphClone);
+
+const particleSet = await buildNodeParticleSet(engine, primaryScene, CreateParticleGraph("P9 Sparks"));
+const sparkTexture = createSolidTexture2D(engine, 1, 0.75, 0.2);
+particleSet.systems.forEach((system) => (system.texture = sparkTexture));
+registerNodeParticleSet(primaryScene, particleSet);
 
 const animationManager = createAnimationManager({ engine });
 const boxAnimation = createPropertyAnimationGroup(
@@ -295,6 +484,33 @@ const sphereGlowAccessor: FgAccessor = {
 const defaultFlowGraph = await addFlowGraph(primaryScene, await buildFgGraph(defaultFlowGraphSpecs), {
     accessors: { "/blueSphere/glowing": sphereGlowAccessor },
 });
+let sceneRenderableFixture:
+    | {
+          textData: ReturnType<typeof createDefaultTextData>;
+          text: ReturnType<typeof createTextRenderable>;
+          sprite: ReturnType<typeof createSprite2DLayer>;
+          billboard: ReturnType<typeof createFacingBillboardSystem>;
+      }
+    | undefined;
+if (new URLSearchParams(window.location.search).get("sceneRenderables") === "on") {
+    const font = await loadFont("/fonts/Roboto-Regular.ttf");
+    const textData = createDefaultTextData(font, 16, "Scene text", [1, 1, 1, 1]);
+    const text = createTextRenderable(textData, {
+        position: { x: -0.4, y: 2.4, z: 0 },
+        scaling: { x: 0.01, y: 0.01, z: 0.01 },
+        // Avoid Lite 1.39.3's scene bind-group mismatch in the fixture's default draw order.
+        order: 201,
+    });
+    const atlas = createGridSpriteAtlas(blueTexture, { cellWidthPx: 1, cellHeightPx: 1 });
+    const sprite = createSprite2DLayer(atlas, { depth: "test" });
+    const billboard = createFacingBillboardSystem(atlas);
+    addSprite2DIndex(sprite, { positionPx: [canvas.width * 0.5, canvas.height * 0.1], sizePx: [96, 96], z: 0.99 });
+    addBillboardSpriteIndex(billboard, { position: [1.7, 1, 0], sizeWorld: [0.6, 0.6] });
+    addTextRenderableToScene(primaryScene, text);
+    addDepthHostedSpriteLayerToScene(primaryScene, sprite);
+    addBillboardSystemToScene(primaryScene, billboard);
+    sceneRenderableFixture = { textData, text, sprite, billboard };
+}
 await registerScene(primaryScene);
 
 const overlayFont = await loadFont("/fonts/Roboto-Regular.ttf");
@@ -358,8 +574,92 @@ registerSpriteRenderer(spriteRenderer);
 await startEngine(engine);
 
 const inspectorToken = ShowInspector(engine);
+let testAudioFixture: LiteAudioFixture | null = null;
+const liteCreateAudioEngine = async () => {
+    testAudioFixture ??= await CreateLiteAudioFixture(camera, box, sphere, smallBox);
+    inspectorToken.setAudioEngine(testAudioFixture.engine);
+    return testAudioFixture.engine;
+};
+const liteDisposeAudioEngine = () => {
+    if (testAudioFixture) {
+        inspectorToken.setAudioEngine(null);
+        testAudioFixture.dispose();
+        testAudioFixture = null;
+    }
+};
+
+await liteCreateAudioEngine();
+
+let physicsFixture: Promise<void> | undefined;
+const createPhysicsFixture = () =>
+    (physicsFixture ??= (async () => {
+        const { CreateLitePhysicsFixture } = await import("./litePhysics");
+        Object.assign(globalThis, { litePhysics: await CreateLitePhysicsFixture(primaryScene, standardMaterial, pbrMaterial) });
+    })());
 
 Object.assign(globalThis, {
+    liteCreateTexturePreviewFixture: async (kind: "2d" | "2d-array" | "3d" | "cube") => {
+        const first = [255, 0, 0, 255, 0, 255, 0, 128, 0, 0, 255, 255, 255, 255, 0, 255];
+        const second = [0, 255, 255, 255, 255, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255];
+        const material = createStandardMaterial();
+        material.name = "Texture Preview Fixture Material";
+        let texture: Awaited<ReturnType<typeof loadCubeTexture>> | ReturnType<typeof createTexture2DFromPixels> | ReturnType<typeof createDynamicTexture>;
+        if (kind === "cube") {
+            texture = await loadCubeTexture(engine, "/texture-preview-fixture", ".png");
+            setStandardReflectionCubeTexture(material, texture);
+        } else {
+            if (kind === "2d-array") {
+                texture = createTexture2DArrayFromPixels(engine, new Uint8Array([...first, ...second]), 2, 2, 2, { mipMaps: true });
+            } else if (kind === "3d") {
+                texture = createTexture3DFromPixels(engine, new Uint8Array([...first, ...second]), 2, 2, 2);
+            } else {
+                const canvas = document.createElement("canvas");
+                canvas.width = 2;
+                canvas.height = 2;
+                const context = canvas.getContext("2d");
+                if (!context) {
+                    throw new Error("Could not create the Lite texture preview fixture.");
+                }
+                const imageData = context.createImageData(2, 2);
+                imageData.data.set(first);
+                context.putImageData(imageData, 0, 0);
+                texture = createDynamicTexture(engine, 2, 2, { mipMaps: true });
+                updateDynamicTexture(engine, texture, canvas, { invertY: false });
+            }
+            texture.invertY = true;
+            previewFixtureTextures.push(texture);
+            material.diffuseTexture = texture;
+        }
+        previewFixtureTexture = texture;
+        const mesh = createBox(engine);
+        mesh.name = "Texture Preview Fixture";
+        mesh.material = material;
+        setMeshVisible(mesh, false);
+        addToScene(primaryScene, mesh);
+        Object.assign(globalThis, { liteTexturePreviewFixture: texture });
+    },
+    liteReadTexturePreviewFixture: async (mipLevel = 0) => {
+        if (!previewFixtureTexture) {
+            throw new Error("Create the Lite texture preview fixture before reading it.");
+        }
+        const { pixels, width, height } = await readTexturePixelsRGBA8(engine, previewFixtureTexture, { mipLevel });
+        return { pixels: Array.from(pixels), width, height };
+    },
+    liteCreatePhysics: createPhysicsFixture,
+    liteSkinnedMesh: skinnedMesh,
+    liteMorphClone: morphClone,
+    liteSkeleton: getMeshSkeleton(skinnedMesh),
+    liteGetParticleSystems: getParticleSystems,
+    liteIsParticleSystemStarted: isParticleSystemStarted,
+    liteRegisterSecondParticleSet: async () => {
+        const set = await buildNodeParticleSet(engine, primaryScene, CreateParticleGraph("P9 Second Sparks"));
+        set.systems.forEach((system) => (system.texture = blueTexture));
+        registerNodeParticleSet(primaryScene, set);
+    },
+    liteRemoveSkinnedMeshes: () => {
+        removeFromScene(primaryScene, skinnedMesh);
+        removeFromScene(primaryScene, morphClone);
+    },
     liteDefaultFlowGraph: defaultFlowGraph,
     liteAttachFlowGraph: async () => addFlowGraph(primaryScene, await buildFgGraph(inertFlowGraphSpecs)),
     liteDetachFlowGraph: (runtime: FgRuntime) => {
@@ -373,6 +673,13 @@ Object.assign(globalThis, {
     liteBlueSphereGlowing: () => sphereGlowAccessor.get() === true,
     liteBlueSpherePickCount: () => spherePickCount,
     liteInspectorToken: inspectorToken,
+    liteCreateAudioEngine,
+    liteDisposeAudioEngine,
+    liteGetAudioFixture: () => testAudioFixture,
+    liteAttachSpatialTarget: attachSpatialTarget,
+    liteDetachSpatialTarget: detachSpatialTarget,
+    liteDisposeAudioBus: disposeAudioBus,
+    liteDisposeSound: disposeSound,
     liteShowInspector: ShowInspector,
     liteGetRenderTaskGpuTimings: getRenderTaskGpuTimings,
     liteSetRenderTaskGpuTimingEnabled: setRenderTaskGpuTimingEnabled,
@@ -392,6 +699,12 @@ Object.assign(globalThis, {
     liteMeshes: [box, sphere, smallBox],
     liteLights: [hemisphericLight, directionalLight, pointLight, spotLight],
     litePrimaryScene: primaryScene,
+    liteSceneRenderableFixture: sceneRenderableFixture,
+    liteGetSceneBillboardSystems: () => getSceneBillboardSystems(primaryScene),
+    liteRemoveSceneText: () => sceneRenderableFixture && removeTextRenderableFromScene(primaryScene, sceneRenderableFixture.text),
+    liteRemoveSceneSprite: () => sceneRenderableFixture && removeDepthHostedSpriteLayerFromScene(primaryScene, sceneRenderableFixture.sprite),
+    liteRemoveSceneBillboard: () => sceneRenderableFixture && removeBillboardSystemFromScene(primaryScene, sceneRenderableFixture.billboard),
+    liteGetFrameGraphTaskState: () => getFrameGraphTasks(getFrameGraph(primaryScene)).map((task) => ({ name: task.name, executionEnabled: task.executionEnabled })),
     liteRegisterScene: registerScene,
     liteSecondarySurface: secondarySurface,
     liteSpriteLayer: spriteLayer,
@@ -405,6 +718,22 @@ Object.assign(globalThis, {
     liteShadowGenerator: shadowGenerator,
 });
 
+void (async () => {
+    try {
+        const duckAsset = await loadGltf(engine, "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb");
+        const duckRoot = duckAsset.entities.find(IsSceneNode);
+        if (!duckRoot) {
+            throw new Error("The textured Duck glTF did not contain a scene node.");
+        }
+        duckRoot.name = "Textured Duck";
+        duckRoot.position.set(0, -1.25, -1.5);
+        duckRoot.scaling.set(duckRoot.scaling.x * 0.65, duckRoot.scaling.y * 0.65, duckRoot.scaling.z * 0.65);
+        addToScene(primaryScene, duckAsset);
+    } catch (error) {
+        console.error("Failed to load the optional textured Duck fixture:", error);
+    }
+})();
+
 window.addEventListener(
     "beforeunload",
     () => {
@@ -416,18 +745,27 @@ window.addEventListener(
         canvas.removeEventListener("pointermove", onSpherePointerMove);
         canvas.removeEventListener("pointerup", onSpherePointerUp);
         canvas.removeEventListener("pointercancel", onSpherePointerCancel);
+        liteDisposeAudioEngine();
         void inspectorToken.dispose();
         detachCameraControl();
         stopEngine(engine);
         stopAnimationManager(animationManager);
         clearAnimationManager(animationManager);
+        previewFixtureTextures.forEach((texture) => releaseTexture(texture));
         disposeTextRenderer(textRenderer);
         disposeDefaultTextData(overlayTextData);
         disposeDefaultTextData(backgroundTextData);
         disposeScene(primaryScene);
+        if (sceneRenderableFixture) {
+            disposeDefaultTextData(sceneRenderableFixture.textData);
+        }
         disposeSpriteRenderer(spriteRenderer);
         disposeSurface(secondarySurface);
         disposeEngine(engine);
     },
     { once: true }
 );
+
+if (new URLSearchParams(window.location.search).get("physics") !== "off") {
+    await createPhysicsFixture();
+}

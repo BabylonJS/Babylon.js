@@ -60,6 +60,24 @@ npm run test -w @tools/memory-leak-tests -- --scenario core-playground-2FDQT5-15
 The runner skips memlab's warmup phase by default because these scenarios already perform deterministic setup/settling and memlab's generic warmup can hang before
 the leak snapshots. Pass `--warmup` to enable memlab warmup when debugging that behavior explicitly.
 
+## Leak filtering
+
+The shared `CreateBabylonLeakFilter` uses MemLab's scenario `leakFilter` hook, including its annotated `pathEdge` retention chain.
+In addition to the existing size and noise filters, it excludes the Chromium DevTools network-inspector hash-table artifact:
+
+```text
+C++ Persistent roots (synthetic)
+  -> blink::DevToolsSession (native)
+  -> [optional native InspectorAgent HeapVectorBacking]
+  -> blink::InspectorNetworkAgent (native)
+  -> blink::NetworkResourcesData (native)
+  -> blink::HeapHashTableBacking<...> (native)
+```
+
+Only the native hash-table node with this complete retention chain is excluded. JavaScript objects, application-owned hash tables,
+other native allocations, and incomplete or different retention paths remain subject to the existing leak rules.
+The retained-size threshold is unchanged; native objects are not ignored as a category.
+
 ## Required servers
 
 The `ci` and `extended` suites expect the Babylon server at `http://localhost:1337` unless `CDN_BASE_URL` is set.

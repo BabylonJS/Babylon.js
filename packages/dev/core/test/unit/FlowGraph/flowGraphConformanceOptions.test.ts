@@ -15,6 +15,7 @@ import { Animation } from "core/Animations/animation.pure";
 import { AnimationGroup } from "core/Animations/animationGroup.pure";
 import { FlowGraphInterpolationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphInterpolationBlock.pure";
 import { FlowGraphJsonPointerParserBlock } from "core/FlowGraph/Blocks/Data/Transformers/flowGraphJsonPointerParserBlock.pure";
+import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 
 describe("FlowGraph optional execution semantics", () => {
     let engine: NullEngine;
@@ -407,5 +408,24 @@ describe("FlowGraph optional execution semantics", () => {
         block._execute(context, block.in);
         expect(out).toHaveBeenCalledTimes(stopOnError ? 0 : 1);
         expect(error).toHaveBeenCalledOnce();
+    });
+
+    it("rejects property paths that can modify object prototypes", () => {
+        const target = {};
+        const block = new FlowGraphSetPropertyBlock({ target: target as any, propertyName: "__proto__.polluted", stopOnError: true });
+        block.value.setValue(true, context);
+        const out = vi.spyOn(block.out, "_activateSignal");
+        const error = vi.spyOn(block.error, "_activateSignal");
+
+        block._execute(context, block.in);
+
+        expect((Object.prototype as any).polluted).toBeUndefined();
+        expect(out).not.toHaveBeenCalled();
+        expect(error).toHaveBeenCalledOnce();
+    });
+
+    it("rejects accessor paths that can modify object prototypes", () => {
+        const converter = new FlowGraphPathConverter(context);
+        expect(() => converter.convert("__proto__/polluted")).toThrow("is invalid");
     });
 });

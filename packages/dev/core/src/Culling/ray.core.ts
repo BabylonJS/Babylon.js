@@ -422,6 +422,8 @@ export class Ray {
         segb.subtractToRef(sega, u);
 
         this.direction.scaleToRef(Ray._Rayl, v);
+        // tc runs along direction * Ray._Rayl, so the ray end is at tc = length / Ray._Rayl
+        const tMax = Math.min(this.length / Ray._Rayl, 1);
         o.addToRef(v, rsegb);
 
         sega.subtractToRef(o, w);
@@ -436,6 +438,7 @@ export class Ray {
             sD = discriminant; // sc = sN / sD, default sD = D >= 0
         let tN: number,
             tD = discriminant; // tc = tN / tD, default tD = D >= 0
+        let isClampedAtRayEnd = false;
 
         // compute the line parameters of the two closest points
         if (discriminant < Ray._Smallnum) {
@@ -473,22 +476,31 @@ export class Ray {
                 sN = -d;
                 sD = a;
             }
-        } else if (tN > tD) {
-            // tc > 1 => the t=1 edge is visible
-            tN = tD;
+        } else if (tN > tMax * tD) {
+            // tc > tMax => the ray end is visible
+            isClampedAtRayEnd = true;
+            tN = tMax * tD;
             // recompute sc for this edge
-            if (-d + b < 0.0) {
+            if (-d + b * tMax < 0.0) {
                 sN = 0;
-            } else if (-d + b > a) {
+            } else if (-d + b * tMax > a) {
                 sN = sD;
             } else {
-                sN = -d + b;
+                sN = -d + b * tMax;
                 sD = a;
             }
         }
         // finally do the division to get sc and tc
-        const sc = Math.abs(sN) < Ray._Smallnum ? 0.0 : sN / sD;
-        const tc = Math.abs(tN) < Ray._Smallnum ? 0.0 : tN / tD;
+        let sc: number, tc: number;
+        if (isClampedAtRayEnd) {
+            // tc is tMax and 0 <= sN <= sD, but for a short ray or segment both numerators can be below _Smallnum:
+            // keep the normalized values and only guard the division for a zero-length segment (sD = a = 0)
+            sc = sD > 0.0 ? sN / sD : 0.0;
+            tc = tMax;
+        } else {
+            sc = Math.abs(sN) < Ray._Smallnum ? 0.0 : sN / sD;
+            tc = Math.abs(tN) < Ray._Smallnum ? 0.0 : tN / tD;
+        }
 
         // get the difference of the two closest points
         const qtc = TmpVectors.Vector3[4];
@@ -499,7 +511,7 @@ export class Ray {
         const dP = TmpVectors.Vector3[6];
         qsc.subtractToRef(qtc, dP); // = S1(sc) - S2(tc)
 
-        const isIntersected = tc > 0 && tc <= this.length && dP.lengthSquared() < threshold * threshold; // return intersection result
+        const isIntersected = tc > 0 && tc <= 1 && dP.lengthSquared() < threshold * threshold; // return intersection result
 
         if (isIntersected) {
             return qsc.length();

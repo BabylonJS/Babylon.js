@@ -48,10 +48,17 @@ describe("ThinMeshBlendingPostProcess", () => {
         expect(() => new ThinMeshBlendingPostProcess("meshBlend", engine)).toThrow("requires WebGL2 or WebGPU");
     });
 
-    it("rejects Native even though it reports a WebGL2-compatible version", () => {
+    it("rejects Native when the runtime does not support mesh blending", () => {
         (engine as any)._shaderPlatformName = "NATIVE";
 
         expect(() => new ThinMeshBlendingPostProcess("meshBlend", engine)).toThrow("requires WebGL2 or WebGPU");
+    });
+
+    it("accepts Native when the runtime supports mesh blending", () => {
+        (engine as any)._shaderPlatformName = "NATIVE";
+        engine._features.supportMeshBlending = true;
+
+        expect(() => new ThinMeshBlendingPostProcess("meshBlend", engine).dispose()).not.toThrow();
     });
 
     it("provides independent four-class radius defaults", () => {

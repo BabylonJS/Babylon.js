@@ -23,6 +23,7 @@ export interface IIOptionShadowDepthMaterial {
      * So, if the variable holding the world position in your vertex shader is not named worldPos, you must tell the system
      * the name to use instead by using: ["worldPos", "myWorldPosVar"] assuming the variable is named myWorldPosVar in your code.
      * If the normal must also be remapped: ["worldPos", "myWorldPosVar", "vNormalW", "myWorldNormal"]
+     * WGSL shaders declaring a vNormalW varying default to vertexOutputs.vNormalW unless a vNormalW variable exists or is explicitly remapped.
      */
     remappedVariables?: string[];
 
@@ -164,6 +165,25 @@ export class ShadowDepthWrapper {
     }
 
     /**
+     * Invalidates cached vertex bindings for this submesh without releasing shadow draw resources.
+     * @param subMesh defines the submesh whose shadow draws must be invalidated
+     * @internal
+     */
+    public _invalidateVertexBuffers(subMesh: SubMesh): void {
+        const entries = this._subMeshToDepthWrapper.mm.get(subMesh);
+        if (!entries) {
+            return;
+        }
+
+        for (const entry of entries.values()) {
+            entry.mainDrawWrapper.drawContext?._invalidateVertexBuffers?.();
+            for (const drawWrapper of entry.drawWrapper) {
+                drawWrapper?.drawContext?._invalidateVertexBuffers?.();
+            }
+        }
+    }
+
+    /**
      * Specifies that the submesh is ready to be used for depth rendering
      * @param subMesh submesh to check
      * @param defines the list of defines to take into account when checking the effect
@@ -250,11 +270,20 @@ export class ShadowDepthWrapper {
         }
 
         if (!this.doNotInjectCode) {
+            let normalBiasRemappedVariables = this._options?.remappedVariables;
+            if (
+                origEffect.shaderLanguage === ShaderLanguage.WGSL &&
+                /\bvarying\s+vNormalW\s*:/.test(vertexCode) &&
+                !/\b(?:var(?:\s*<[^>]+>)?|let|const)\s+vNormalW\b/.test(vertexCode) &&
+                !normalBiasRemappedVariables?.some((name, index) => index % 2 === 0 && name === "vNormalW")
+            ) {
+                normalBiasRemappedVariables = [...(normalBiasRemappedVariables ?? []), "vNormalW", "vertexOutputs.vNormalW"];
+            }
+
             // Declare the shadow map includes
-            const vertexNormalBiasCode =
-                    this._options && this._options.remappedVariables
-                        ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})`
-                        : `#include<shadowMapVertexNormalBias>`,
+            const vertexNormalBiasCode = normalBiasRemappedVariables
+                    ? `#include<shadowMapVertexNormalBias>(${normalBiasRemappedVariables.join(",")})`
+                    : `#include<shadowMapVertexNormalBias>`,
                 vertexMetricCode =
                     this._options && this._options.remappedVariables
                         ? `#include<shadowMapVertexMetric>(${this._options.remappedVariables.join(",")})`

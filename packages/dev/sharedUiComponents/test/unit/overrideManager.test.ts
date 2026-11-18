@@ -165,6 +165,20 @@ describe("OverrideManager", () => {
             expect(GetOverrides(scene).length).toBe(2);
         });
 
+        it("should reject prototype-polluting property paths", async () => {
+            await LoadSmartAssetAsync(scene, "chair", "models/chair.glb");
+
+            AddOverride(scene, {
+                targetType: "materials",
+                targetName: "Material1",
+                targetIndex: 0,
+                propertyPath: "__proto__.polluted",
+                value: true,
+            });
+
+            expect((Object.prototype as { polluted?: boolean }).polluted).toBeUndefined();
+        });
+
         it("should keep two same-name objects independent via targetIndex", async () => {
             const { LoadAssetContainerAsync } = await import("core/Loading/sceneLoader");
             const firstContainer = createMockContainer(["FirstMesh"], ["SharedMaterial"]);

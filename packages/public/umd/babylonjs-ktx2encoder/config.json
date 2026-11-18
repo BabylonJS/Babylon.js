@@ -1,0 +1,6 @@
+{
+    "declarationLibs": ["@tools/ktx2encoder"],
+    "devPackageName": "ktx2encoder",
+    "filename": "babylon.ktx2Encoder.module.d.ts",
+    "outputDirectory": "./"
+}

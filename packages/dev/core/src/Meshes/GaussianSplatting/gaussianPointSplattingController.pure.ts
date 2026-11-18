@@ -359,6 +359,8 @@ export class GaussianPointSplattingController implements IGaussianPointSplatting
         blitMesh.setEnabled(false);
         blitMesh.reservedDataStore = { hidden: true };
         blitMesh.computeWorldMatrix(true);
+        // its draws wait for their pipelines with those of the splats it composites (WebGPU asynchronous pipeline creation)
+        blitMesh._internalAbstractMeshDataInfo._pipelineWaitOwner = this._mesh._internalAbstractMeshDataInfo;
         return blitMesh;
     }
 

@@ -17,7 +17,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import path from "path";
 
 const DRY_RUN = process.argv.includes("--dry-run");
@@ -25,7 +25,7 @@ const ROOT = process.cwd();
 const CORE_SRC = path.join(ROOT, "packages/dev/core/src");
 
 // Find all .pure.ts files with `declare module` blocks
-const files = execSync(`grep -rl "declare module" ${CORE_SRC} --include="*.pure.ts"`, { encoding: "utf-8" }).trim().split("\n").filter(Boolean).sort();
+const files = execFileSync("grep", ["-rl", "--include=*.pure.ts", "declare module", CORE_SRC], { encoding: "utf-8" }).trim().split("\n").filter(Boolean).sort();
 
 console.log(`Found ${files.length} .pure.ts files with declare module blocks\n`);
 

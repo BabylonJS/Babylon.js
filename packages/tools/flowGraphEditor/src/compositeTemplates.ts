@@ -4,6 +4,7 @@
  * Each template describes a multi-block pattern that is instantiated as a group
  * when dropped onto the canvas from the palette.
  */
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
 
 /**
  * A connection between two blocks within a template.
@@ -29,10 +30,109 @@ export interface ITemplateBlockConfig {
     className: string;
     /** Optional config overrides passed to the block constructor */
     config?: Record<string, any>;
+    /** Optional default values assigned to named data inputs after construction */
+    inputValues?: Record<string, any>;
     /** X offset from the drop position */
     offsetX: number;
     /** Y offset from the drop position */
     offsetY: number;
+}
+
+/** Parameters shared by templates that play a declared sound asset. */
+export interface ISoundReactionTemplateParameters {
+    /** Coordinator sound asset name stored directly on the sound input. */
+    soundAssetName?: string;
+}
+
+/** Parameters for the pick-to-sound template. */
+export interface IPickPlaySoundTemplateParameters extends ISoundReactionTemplateParameters {
+    /** Optional mesh assigned to the pick event's asset input. */
+    targetMesh?: AbstractMesh;
+}
+
+/** Parameters for the intersection-to-sound template. */
+export interface IIntersectionPlaySoundTemplateParameters extends ISoundReactionTemplateParameters {
+    /** Mesh that is checked for intersections. */
+    sourceMesh?: AbstractMesh;
+    /** One or more meshes checked against the source mesh. */
+    targetMeshes?: AbstractMesh[];
+}
+
+/** Parameters for adding a reaction to a named custom event. */
+export interface IExistingEventReactionTemplateParameters extends ISoundReactionTemplateParameters {
+    /** Existing custom event id to react to. */
+    eventId?: string;
+    /** Event block class used as the reaction trigger. */
+    eventBlockClassName?: string;
+    /** Event signal output connected to the reaction. */
+    eventOutputPort?: string;
+    /** Constructor configuration for the event block. */
+    eventConfig?: Record<string, any>;
+}
+
+/**
+ * Creates a plain pick-event to play-sound pattern.
+ * @param parameters initial editable input values
+ * @returns composite template definition
+ */
+export function CreatePickPlaySoundTemplate(parameters: IPickPlaySoundTemplateParameters = {}): ICompositeTemplate {
+    return {
+        name: "Pick → Play Sound",
+        description: "Play a declared sound asset when a mesh is picked",
+        category: "Reactions",
+        blocks: [
+            { className: "FlowGraphMeshPickEventBlock", config: {}, inputValues: { asset: parameters.targetMesh }, offsetX: 0, offsetY: 0 },
+            { className: "FlowGraphPlaySoundBlock", config: {}, inputValues: { sound: parameters.soundAssetName ?? "" }, offsetX: 340, offsetY: 0 },
+        ],
+        connections: [{ fromBlock: 0, fromPort: "out", toBlock: 1, toPort: "in", isSignal: true }],
+    };
+}
+
+/**
+ * Creates a plain mesh-intersection to play-sound pattern.
+ * @param parameters initial editable input values
+ * @returns composite template definition
+ */
+export function CreateIntersectionPlaySoundTemplate(parameters: IIntersectionPlaySoundTemplateParameters = {}): ICompositeTemplate {
+    return {
+        name: "Intersection → Play Sound",
+        description: "Play a declared sound asset when meshes begin intersecting",
+        category: "Reactions",
+        blocks: [
+            {
+                className: "FlowGraphMeshIntersectionEventBlock",
+                config: {},
+                inputValues: {
+                    sourceMesh: parameters.sourceMesh,
+                    targetMeshes: parameters.targetMeshes ?? [],
+                },
+                offsetX: 0,
+                offsetY: 0,
+            },
+            { className: "FlowGraphPlaySoundBlock", config: {}, inputValues: { sound: parameters.soundAssetName ?? "" }, offsetX: 380, offsetY: 0 },
+        ],
+        connections: [{ fromBlock: 0, fromPort: "onEnter", toBlock: 1, toPort: "in", isSignal: true }],
+    };
+}
+
+/**
+ * Creates a plain named-event reaction that can be extended with any action.
+ * @param parameters initial editable values
+ * @returns composite template definition
+ */
+export function CreateExistingEventReactionTemplate(parameters: IExistingEventReactionTemplateParameters = {}): ICompositeTemplate {
+    const eventBlockClassName = parameters.eventBlockClassName ?? "FlowGraphReceiveCustomEventBlock";
+    const eventConfig = parameters.eventConfig ?? (eventBlockClassName === "FlowGraphReceiveCustomEventBlock" ? { eventId: parameters.eventId ?? "existingEvent" } : {});
+    return {
+        name: "Add Reaction to Existing Event",
+        description: "Add a play-sound reaction to a parameterized event block",
+        category: "Reactions",
+        blocks: [
+            { className: eventBlockClassName, config: eventConfig, offsetX: 0, offsetY: 0 },
+            { className: "FlowGraphPlaySoundBlock", config: {}, inputValues: { sound: parameters.soundAssetName ?? "" }, offsetX: 380, offsetY: 0 },
+        ],
+        connections: [{ fromBlock: 0, fromPort: parameters.eventOutputPort ?? "out", toBlock: 1, toPort: "in", isSignal: true }],
+    };
 }
 
 /**
@@ -196,6 +296,10 @@ const PointerInteraction: ICompositeTemplate = {
     ],
 };
 
+const PickPlaySound = CreatePickPlaySoundTemplate();
+const IntersectionPlaySound = CreateIntersectionPlaySoundTemplate();
+const ExistingEventReaction = CreateExistingEventReactionTemplate();
+
 /**
  * All available composite templates, keyed by their display name.
  */
@@ -211,6 +315,9 @@ export const AllCompositeTemplates: Record<string, ICompositeTemplate> = {
     "Get → Set Property": GetSetProperty,
     "Get → Set Variable": GetSetVariable,
     "Pointer Interaction": PointerInteraction,
+    "Pick → Play Sound": PickPlaySound,
+    "Intersection → Play Sound": IntersectionPlaySound,
+    "Add Reaction to Existing Event": ExistingEventReaction,
 };
 
 /**

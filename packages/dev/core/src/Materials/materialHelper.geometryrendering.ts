@@ -1,6 +1,7 @@
 import { type MaterialDefines, type Effect, type Mesh, type AbstractMesh, type Material, type AbstractEngine } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { Matrix } from "core/Maths/math.vector.pure";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Provides the object ID written by geometry rendering for a mesh.
@@ -465,6 +466,29 @@ export class MaterialHelperGeometryRendering {
     }
 
     /**
+     * @internal What a full bind of a mesh writes from the geometry rendering of a render pass besides its matrices, packed in a number:
+     * the culling it reverses, the object ID and the mesh-blending tag (see Bind). Their setters and providers invalidate nothing, so a
+     * draw recorded by a snapshot is compared to them
+     * @param renderPassId the render pass of the draw
+     * @param mesh the mesh of the draw
+     * @returns the state, 0 without geometry rendering in the pass
+     */
+    public static _GetRecordedDrawState(renderPassId: number, mesh: AbstractMesh): number {
+        const configuration = MaterialHelperGeometryRendering._Configurations[renderPassId];
+        if (!configuration) {
+            return 0;
+        }
+        let state = configuration.reverseCulling ? 1 : 0;
+        if (configuration.defines["PREPASS_OBJECT_ID_INDEX"] !== undefined) {
+            state += 512 * (configuration.objectIdProvider ? configuration.objectIdProvider(mesh) : mesh.uniqueId);
+        }
+        if (configuration.defines["PREPASS_MESH_BLEND_TAG_INDEX"] !== undefined) {
+            state += 2 * (configuration.meshBlendTagProvider ? configuration.meshBlendTagProvider(mesh) : mesh.meshBlendingTag);
+        }
+        return state;
+    }
+
+    /**
      * Binds geometry rendering data for a mesh.
      * @param renderPassId The render pass id the geometry rendering data is bound for.
      * @param effect The effect to bind the geometry rendering data to.
@@ -516,23 +540,27 @@ export class MaterialHelperGeometryRendering {
             }
             currentWorldMatrices[mesh.uniqueId].copyFrom(world);
 
-            if (configuration.lastUpdateFrameId === -1) {
-                configuration.lastUpdateFrameId = engine.frameId;
-                configuration.previousViewProjection.copyFrom(scene.getTransformMatrix());
-                configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
-            } else if (configuration.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
-                // First update of the prepass configuration for this rendering pass
-                configuration.lastUpdateFrameId = engine.frameId;
-                configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
-                configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
-            } else if (configuration.lastUpdateFrameId !== engine.frameId) {
-                // The scene transformation did not change from the previous frame (so no camera motion), we must update previousViewProjection accordingly
-                configuration.lastUpdateFrameId = engine.frameId;
-                configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
+            // WGSL shaders read the camera's previous view-projection from the scene uniform buffer (Scene.finalizeSceneUbo)
+            if (effect.shaderLanguage !== ShaderLanguage.WGSL) {
+                if (configuration.lastUpdateFrameId === -1) {
+                    configuration.lastUpdateFrameId = engine.frameId;
+                    configuration.previousViewProjection.copyFrom(scene.getTransformMatrix());
+                    configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
+                } else if (configuration.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
+                    // First update of the prepass configuration for this rendering pass
+                    configuration.lastUpdateFrameId = engine.frameId;
+                    configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
+                    configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
+                } else if (configuration.lastUpdateFrameId !== engine.frameId) {
+                    // The scene transformation did not change from the previous frame (so no camera motion), we must update previousViewProjection accordingly
+                    configuration.lastUpdateFrameId = engine.frameId;
+                    configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
+                }
+
+                effect.setMatrix("previousViewProjection", configuration.previousViewProjection);
             }
 
             effect.setMatrix("previousWorld", configuration.previousWorldMatrices[mesh.uniqueId]);
-            effect.setMatrix("previousViewProjection", configuration.previousViewProjection);
 
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 const skeleton = mesh.skeleton;

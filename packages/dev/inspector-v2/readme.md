@@ -2,6 +2,68 @@
 
 This document covers the high level aspects of the Inspector V2 architecture. Note that much of this may move to a shared tooling package as it is intended to be usable by other tools (Sandbox, Playground, NME, etc.) in the future if we find enough value in integrating the framework into those tools.
 
+## Babylon Lite Texture Preview
+
+Select a texture in Explorer to open its **Preview**. The preview supports sampleable color textures, including 2D textures, cube faces, 2D array layers, 3D slices, and mip levels. The channel buttons display individual channels as grayscale; cube textures use face buttons instead. **Refresh** reads the texture again, including changes made by the application. **Export Preview as PNG** downloads the currently displayed subresource and channel selection, not the original texture file.
+
+The preview displays GPU storage row 0 at the top and does not apply the texture's UV transform or `invertY`. It preserves sRGB-encoded source colors, does not apply exposure or tone mapping, and clamps floating-point and signed-normalized colors to the display range. Readback does not require `COPY_SRC` on the source texture or modify its pixels. Depth, integer, multisampled, unavailable, and other non-sampleable textures show an error instead of a preview.
+
+Texture preview requires `@babylonjs/lite` 1.39.3 or later, which exposes `getTextureReadbackInfo` and `readTexturePixelsRGBA8` at the package root.
+
+The `?experience=lite` test scene loads the small [Khronos Duck glTF sample](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/Duck) asynchronously from GitHub with its embedded color texture. Expand **Textured Duck** to inspect its mesh and material, or select its texture under **Textures** to preview or export it. Loading this optional model requires network access; failures are reported in the console.
+
+## Babylon Lite Audio
+
+The Lite Inspector can inspect an independently created audio engine alongside its graphics engine. After calling `ShowInspector(engine)`, use `inspector.setAudioEngine(audioEngine)` to attach or replace the audio engine, or `inspector.setAudioEngine(null)` to detach it. The Inspector does not create, own, or dispose the audio engine. Extensions can observe changes through `IAudioEngineContext`; Explorer root providers can contribute additional independent roots through `IEngineExplorerService`.
+
+The **Audio Engine** root displays buses, buffered and streaming sounds, and input sources according to their output routing. Engine and node properties include volume, sound playback controls, and links to output buses and spatially attached scene nodes. Scene entities and cameras expose an **Audio** section with links back to their directly attached sounds, buses, sources, and listener. These links follow attachment, graph, and inspected audio engine changes. Listener and spatial positions and graph changes follow the Inspector's polling or manual watch mode. Unnamed sounds receive numbered Explorer labels.
+
+Lite 1.38.1 does not expose public graph-discovery, node-volume readback, or spatial-attachment APIs. Inspection currently uses an isolated, read-only adapter for that internal layout; edits use public Lite functions. If the layout is unsupported, the root reports that graph inspection is unavailable rather than showing an incomplete hierarchy.
+
+The `?experience=lite` test app attaches an audio fixture by default: **Music**, **Effects**, and **Sphere Effects** buses, three buffered sounds, a streaming sound, and an oscillator input source. Spatial audio follows the red box, blue sphere, and small red box, while the listener follows the camera. Sounds do not autoplay; select a sound in Explorer to use its **Play**, **Pause**, and **Stop** controls. The oscillator starts silently; raise its volume in Inspector to hear it. The browser may require a user gesture before audio can play.
+
+## Babylon Lite Skeletons and Morph Targets
+
+The Lite Explorer lists skeletons and their bone hierarchy. Skeleton properties show the bone count and links to meshes; bone properties show read-only Name, derived Index, Skeleton and Parent links. Mesh **Skinning** links back to the skeleton. Bone editing, reset, debug rendering and gizmos are not supported.
+
+Skeleton discovery requires the application to call `enableBoneControl()` or `enableBoneControlForSkinnedAssets()` **before** loading its glTF. Inspector does not enable bone control itself. USD, authored and non-opt-in skins do not expose public skeletons. Cloned meshes share a skeleton.
+
+Mesh **Morph Targets** provides one weight slider per target. The slider spans 0–1. The numeric field accepts any finite weight, including negative values and values above 1. Labels use glTF `extras.targetNames`, USD target names or authored morph names when supplied, with numbered fallbacks. Changes use Lite's morph setter and affect every mesh sharing the data. Playing morph animations overwrite the weights each frame.
+
+## Babylon Lite Particle Systems
+
+The Lite Explorer lists CPU systems registered through `registerNodeParticleSet`, in first-registration order, using the NPE SystemBlock name when available. Start/Stop is available on the item and in **Commands**. **General** shows Name, Capacity, Active Particles and Started; stopped systems can still contain draining particles. **Emission** edits Emit Rate, Update Speed and Target Stop Duration (0 means run until stopped). A particle graph may override Emit Rate.
+
+Discovery is add-only until scene disposal. There is no particle removal, reset, lifetime/size/color editing, GPU particle support or particle editor.
+
+These features require `@babylonjs/lite` 1.37.1 or later.
+
+## Babylon Lite Physics
+
+The Lite Explorer discovers worlds created after Inspector opens under **Physics › Physics World [N] › Bodies / Constraints**. Worlds expose body and live-constraint counts, a Scene link, editable Gravity, Timestep (seconds; 0 uses the frame delta), and Max Linear / Angular Velocity. A node's **Physics** section links every body on the node, including bodies in different worlds, or shows **No Physics Body**.
+
+Body sections follow Inspector v2's order: **General** (Node, World, Motion Type, Prestep Type, Instances), **Shape** (Type, primitive parameters, Dynamic Friction, Static Friction, Restitution, Membership / Collide masks, Density, and container Child Count), **Damping** (Linear, Angular, Gravity Factor), **Velocity** (Linear and Angular), **Mass** (Mass, Center of Mass, Inertia, read-only Inertia Orientation), and live **Constraints** links. Quaternion displays use Euler degrees. Mass edits read current properties before writing to preserve unedited fields. Locked inertia axes read 0. Mass edits are rejected with an explanation if any instance has zero inertia: Lite's public readback does not expose the original pre-lock tensor, so writing the locked tensor back would corrupt later rotation unlocking. Unlock rotation in the application before editing mass properties.
+
+Thin bodies show **Instance 0 of K**. Every editable control stays editable, with **Applies to all K instances**: reads use instance 0 and edits fan out to all instances. Mass edits are rejected with an explanation if instances have different unedited mass properties: Lite has no public per-instance mass setter, so those values cannot safely be preserved in a fan-out write. Only the base shape is inspected. Shared shapes remain editable with a **Shape shared by N bodies** warning; material and filter edits affect every user of that shape. The warning counts bodies in the current world only, not other worlds.
+
+Constraints are labelled `Hinge (A ↔ B)` and expose Type, Body A / B links, editable Enabled, and read-only Collision, pivots, axes, perpendicular axes, Max Distance and Limits. Omitted pivots display zero. Constraints on thin bodies bind instance 0 only. Removing either endpoint hides the constraint from Explorer, properties and visualization, even if Lite still lists the constraint.
+
+The Debug pane's independent **Physics Bodies** and **Physics Constraints** switches maintain separate viewers per world, sharing one Inspector-owned physics utility overlay per target scene (separate from gizmos). Helpers draw on top of scene geometry without adding meshes or materials to the application scene. Helpers, including constraint arrowheads, are non-pickable and excluded from Explorer, resource discovery and bounding boxes. The overlay is released when both switches are off or Inspector/the target scene closes. Thin-instance body wireframes are omitted because Lite's viewer follows only the carrier node, not individual instance transforms. Container wireframes rebuild when children are added. Both switches are disabled when no worlds exist. Viewer reconciliation and property reads follow Inspector's watch mode; native errors are surfaced and failed helper switches roll back without disabling the other viewer. Overlay registration failures disable both physics switches and show an error.
+
+For manual physics inspection, run `npm run serve -w @dev/inspector` and open `http://localhost:9001/?experience=lite`. The test app loads the Havok fixture by default (four bodies, including shared shapes and three thin instances, plus hinge and distance constraints). Open **Physics** in Explorer or enable the Debug pane's physics switches. Use `?experience=lite&physics=off` to start without physics; `await window.liteCreatePhysics()` then creates the fixture once, allowing late-discovery testing without reloading. `INSPECTOR_TEST_PORT` selects a different server port when needed.
+
+The three ordinary fixture bodies form a stationary, zero-gravity row above the original scene objects at `y=1.8` (Box `x=-0.25`, Sphere `x=1`, Shared `x=1.75`). They reuse the scene's red/blue materials and start separated with satisfied constraints, so their white body wireframes and colored constraint helpers stay in the default camera view. Enable both **Physics Bodies** and **Physics Constraints** in **Debug** to inspect them; ordinary **Bounding Boxes** are not required. Thin instances remain at `(-2,4,0)`, `(0,4,0)` and `(2,4,0)`, outside this row, with their misleading carrier wireframe intentionally omitted.
+
+Limitations: Lite has no physics-engine enable flag. Mesh, convex-hull, heightfield and container shape parameters are unavailable. Material combine modes, motors, sleep state, per-instance editing, pivot editing, creating/releasing physics objects, character controllers, raycasts and impulses are not exposed. Releasing a shape still attached to a live body violates Lite's lifetime contract and cannot be made safe by Inspector.
+
+Inspector's Lite entry point requires `@babylonjs/lite` 1.39.3 or later, matching its optional peer dependency (`^1.39.3`). Physics inspection uses the discovery/readback APIs (including constraint enable, density, child count, stable constraint debug data and constraint hide) and the opt-in utility overlay API shared with gizmos.
+
+## Babylon Lite Scene Renderables
+
+The Lite Explorer lists scene-hosted text renderables, depth-hosted sprite layers, and billboard systems separately from standalone renderer layers. Additions and removals update the Explorer; properties expose supported transforms, visibility, opacity, depth and atlas details. Particle-owned billboard systems also appear in the billboard collection. Scene-hosted text has no visibility property, and its depth mode is established when the renderable is built. A depth-hosted layer's default depth applies to newly added sprites; its `order` is not used by the scene render path.
+
+For the Inspector test app, add `&sceneRenderables=on` to `?experience=lite` to include examples of all three scene-hosted families. The fixture uses text order 201 to avoid a Lite 1.39.3 scene bind-group mismatch in the default view.
+
 ## Babylon Lite Picking
 
 The Lite Inspector's **Enable Picking** toolbar toggle is available only while the engine has a registered scene context. It selects a mesh by tapping its scene canvas. Picks update the Explorer, Properties pane, and `debugNode` through the shared selection service. Camera drags and empty-space taps leave the selection unchanged. Press **Escape**, including from an undocked toolbar, or toggle picking off to exit; pending GPU results cannot change selection after exiting. Removing the last scene also exits picking and removes the toggle; registering another scene restores it with picking disabled.
@@ -17,6 +79,7 @@ Select a mesh or a mesh-hierarchy transform node in Explorer, then enable **Tran
 Gizmos use Lite's public native utility-layer and pointer-drag APIs, without Babylon.js gizmo implementations or proxy nodes. They currently support registered scenes on the engine's primary HTML canvas only: Lite's utility-layer and gizmo factories target that canvas. Lite supports one gizmo utility layer per canvas, so Inspector controls should not be used simultaneously with application-owned gizmos on that canvas. Cameras, lights, non-node resources, offscreen canvases, and auxiliary-surface nodes have disabled transform controls. Gizmo utility scenes and their resources are hidden from Inspector discovery and picking. Selection changes reattach or dispose gizmos; mode changes, removed scenes/nodes, and Inspector disposal release their utility layers and pointer bindings. If Inspector is replaced during registration, its replacement waits for the previous layer to settle and retire before creating gizmos on the same canvas. Removing the last supported scene resets the mode.
 
 One of the goals of the Inspector V2 architecture is to allow new functionality to easily be added to the Inspector in one of two ways:
+
 1. **Modularity**: In code, using `Inspector.Show`. For example, the Sandbox might want to include additional features in the Inspector that make sense in the context of the Sandbox.
 2. **Extensibility**: By the end user opting into optional features by installing extensions from the Inspector UI. For example, we might have an extension for advanced skeleton diagnostics, which a user would only care about if they are heavily working with skeletal animations. In the future, we can open up extensibility to make it possible for the community to publish their own extensions to a community extension feed. This makes it possible to drastically extend the power of Inspector without overwhelming all users with every single potential capability of the Inspector.
 
@@ -206,7 +269,7 @@ export MyServiceDefinition: ServiceDefinition<[IMyService], [IOtherService]> = {
 
 **Service Catalog & Container** - service definitions are added to a service catalog. The service catalog creates service container instances, which in turn instantiate all the contained services in the right order, passing instantiated service instances along to other services that depend on those services. When a service container instance is disposed, the services are likewise all torn down in the correct order. When a service is "torn down," if it has a `dispose` function it will be called.
 
-If service definitions are added to a service catalog and there are "active" service container instances, the new services will be instantiated within these active service containers. ***This is the basis for runtime extensibility.***
+If service definitions are added to a service catalog and there are "active" service container instances, the new services will be instantiated within these active service containers. _**This is the basis for runtime extensibility.**_
 
 ## Extensibility
 
@@ -231,6 +294,7 @@ Currently there is only a `BuiltInsExtensionFeed`, which allows extensions that 
 ## Modular Tools
 
 The modularity and extensibility described above is valuable for the Inspector, but it could equally be leveraged by other tools (Sandbox, Playground, etc.). This could provide value in the following ways:
+
 - Unifying the "shell" of the tools and the inspector when they are used together. This would mean tabbed side panes and toolbars could be unified, and also a single Fluent provider could manage theming for both the tool in question and the Inspector.
 - Interoperability and service sharing. For example, if the Inspector has a "notification service" that makes it easy to report info/warnings/errors to the user, this could be trivially re-used across tools and the inspector.
 - Tool extensibility. The same infrastructure could be leveraged to allow for tool specific extensions, such as new NME node types for example.
@@ -517,7 +581,7 @@ export const MyPropertiesContentServiceDefinition: ServiceDefinition<[], [IPrope
                     // Order is optional, and relative to other content in this section.
                     order: 10,
                     // This is a React component (class or function).
-                    component: ({entity: AbstractMesh}) => {
+                    component: ({ entity: AbstractMesh }) => {
                         return <>Some content for the General section</>;
                     },
                 },
@@ -527,7 +591,7 @@ export const MyPropertiesContentServiceDefinition: ServiceDefinition<[], [IPrope
                     // Order is optional, and relative to other content in this section.
                     order: 10,
                     // This is a React component (class or function).
-                    component: ({entity: AbstractMesh}) => {
+                    component: ({ entity: AbstractMesh }) => {
                         return <>Some content for the My Properties section</>;
                     },
                 },
@@ -554,13 +618,13 @@ If you want your service to always be active (a new tab in a side pane that is a
 If you want your service to be explicitly enabled by the user (a more niche feature that will not be as commonly used and would otherwise overwhelm the default UI, for example), then do the following:
 
 1. Have a file somewhere with a default export that contains your `ServiceDefinition` (or multiple `ServiceDefinitions` that make up an "extension"). For example:
-   ```ts
-   export default {
-     serviceDefinitions: [MyServiceDefinition1, MyServiceDefinition2],
-   } as const;
-   ```
+    ```ts
+    export default {
+        serviceDefinitions: [MyServiceDefinition1, MyServiceDefinition2],
+    } as const;
+    ```
 2. Add an entry for your new extension in [`builtInsExtensionFeed.ts`](./src/extensibility/builtInsExtensionFeed.ts). This includes:
 
-   - Define the metadata for the extension.
-   - Add the metadata to the extensions array.
-   - Add a block of code to `getExtensionModuleAsync` that dynamically imports your extension module (the file with the default export).
+    - Define the metadata for the extension.
+    - Add the metadata to the extensions array.
+    - Add a block of code to `getExtensionModuleAsync` that dynamically imports your extension module (the file with the default export).

@@ -25,7 +25,7 @@ const Mocks = vi.hoisted(() => {
     );
     const modes = ["Position", "Rotation", "Scale", "BoundingBox"] as const;
     return {
-        createLayer: vi.fn<(engine: EngineContext, scene: SceneContext) => UtilityLayer>(),
+        createLayer: vi.fn<(scene: SceneContext) => UtilityLayer>(),
         registerLayer: vi.fn<(layer: UtilityLayer) => Promise<void>>(),
         disposeLayer: vi.fn<(layer: UtilityLayer) => void>(),
         dragging: vi.fn<(canvas: HTMLCanvasElement) => boolean>(),
@@ -71,9 +71,9 @@ describe("Babylon Lite gizmo service", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        Mocks.createLayer.mockImplementation((engine, mainScene) => ({
+        Mocks.createLayer.mockImplementation((mainScene) => ({
             mainScene,
-            scene: { _kind: "scene", surface: engine, camera: mainScene.camera, meshes: [] } as unknown as SceneContext,
+            scene: { _kind: "scene", surface: mainScene.surface, camera: mainScene.camera, meshes: [] } as unknown as SceneContext,
         }));
         Mocks.registerLayer.mockResolvedValue();
         Mocks.dragging.mockReturnValue(false);
@@ -222,7 +222,7 @@ describe("Babylon Lite gizmo service", () => {
         await h.select(h.mesh);
         await h.click(button);
         const layer = Mocks.createLayer.mock.results[0].value;
-        expect(Mocks.createLayer).toHaveBeenCalledExactlyOnceWith(h.engine, h.scene);
+        expect(Mocks.createLayer).toHaveBeenCalledExactlyOnceWith(h.scene);
         expect(Mocks.create[kind]).toHaveBeenCalledExactlyOnceWith(h.engine, layer);
         expect(Mocks.attach[kind]).toHaveBeenCalledWith(expect.anything(), h.mesh);
         expect(h.button(button)?.getAttribute("aria-pressed")).toBe("true");
@@ -347,7 +347,7 @@ describe("Babylon Lite gizmo service", () => {
         otherScene.meshes.push(h.mesh);
         await h.refresh();
         expect(Mocks.disposeLayer).toHaveBeenCalledTimes(1);
-        expect(Mocks.createLayer).toHaveBeenLastCalledWith(h.engine, otherScene);
+        expect(Mocks.createLayer).toHaveBeenLastCalledWith(otherScene);
     });
 
     it("resets the mode after the last supported scene is removed", async () => {

@@ -60,6 +60,7 @@ interface WebGPUEngineRenderPassInternals {
         enabled: boolean;
     };
     _endCurrentRenderPass(): number;
+    _flushRenderPassCommands(): void;
     _startMainRenderPass(setClearStates: boolean): void;
     _startRenderTargetRenderPass(renderTargetWrapper: WebGPURenderTargetWrapper, setClearStates: boolean, clearColor: null, clearDepth: boolean, clearStencil: boolean): void;
     _debugPushAfterStartOfEncoder(): void;
@@ -204,6 +205,7 @@ describe("WebGPU engine queries", () => {
                 engine._currentRenderPass = null;
                 return 2;
             });
+            engine._flushRenderPassCommands = vi.fn();
             engine._startMainRenderPass = vi.fn(() => {
                 engine._mainRenderPassWrapper.renderPassDescriptor.occlusionQuerySet = engine._occlusionQuery.querySet;
                 engine._currentRenderPass = newRenderPass;

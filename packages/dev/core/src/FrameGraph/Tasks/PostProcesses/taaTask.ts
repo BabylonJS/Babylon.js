@@ -54,6 +54,8 @@ export class FrameGraphTAATask extends FrameGraphPostProcessTask {
         this._frameGraph.scene.onBeforeRenderObservable.remove(this._onBeforeRenderSceneObserver);
         this._onBeforeRenderSceneObserver = this._frameGraph.scene.onBeforeRenderObservable.add(() => {
             if (this.postProcess.reprojectHistory && !this.disabled) {
+                // the jitter is written for the camera the object renderer draws in this frame
+                this.postProcess.camera = this.objectRendererTask.objectRenderer.activeCamera;
                 this.postProcess._updateJitter();
             }
         });

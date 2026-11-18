@@ -67,6 +67,13 @@ async function getSandboxScene(page: Page): Promise<JSHandle<Scene>> {
     });
 }
 
+async function waitForSandboxLoad(page: Page): Promise<void> {
+    // The inspector button only appears once a scene is loaded, preventing an early match during app startup.
+    await expect(page.getByTitle("Display inspector")).toBeVisible({ timeout: 30000 });
+    // DefaultLoadingScreen appends a canvas index to each loading div's ID.
+    await expect(page.locator('[id^="babylonjsLoadingDiv"]')).toHaveCount(0, { timeout: 30000 });
+}
+
 async function dropTextFiles(page: Page, files: Array<{ name: string; path: string; contents: string }>): Promise<void> {
     const dataTransfer = await page.evaluateHandle((fileDefinitions) => {
         const transfer = new DataTransfer();
@@ -148,9 +155,7 @@ test("dropping an image to the sandbox", async ({ page }) => {
 
     // Now dispatch
     await page.dispatchEvent("#renderCanvas", "drop", { dataTransfer });
-    // wait for #babylonjsLoadingDiv to be hidden
-    await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
-    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await waitForSandboxLoad(page);
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => document.fonts.ready);
     // check snapshot of the rendering canvas (the full page includes Inspector, which has a lot of asynchrony and animation, making it hard to get a stable screenshot)
@@ -479,9 +484,7 @@ test("loading a model using query parameters", async ({ page }) => {
         width: 1920,
         height: 1080,
     });
-    // wait for #babylonjsLoadingDiv to be hidden
-    await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
-    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await waitForSandboxLoad(page);
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => document.fonts.ready);
     // check snapshot of the page
@@ -500,7 +503,7 @@ test("selecting the default camera after loading a camera from query parameters"
         height: 1080,
     });
     await waitForSandboxReady(page);
-    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await waitForSandboxLoad(page);
 
     const scene = await getSandboxScene(page);
     await scene.evaluate((scene) => {
@@ -553,7 +556,7 @@ test("moving a free camera loaded from query parameters", async ({ page }) => {
         height: 1080,
     });
     await waitForSandboxReady(page);
-    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await waitForSandboxLoad(page);
     await page.waitForLoadState("networkidle");
 
     const canvas = page.locator("#renderCanvas");
@@ -591,9 +594,7 @@ test("inspector is opened when clicking on the button", async ({ page }) => {
         height: 1080,
     });
 
-    // wait for #babylonjsLoadingDiv to be hidden
-    await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
-    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await waitForSandboxLoad(page);
     await page.waitForLoadState("networkidle");
 
     // click the "Inspector" button

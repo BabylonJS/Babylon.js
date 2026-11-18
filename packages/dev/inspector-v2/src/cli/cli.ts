@@ -53,6 +53,27 @@ ADDITIONAL RESOURCES
 const KnownOptions = new Set(["help", "stop", "session", "command", "bridge-script"]);
 
 /**
+ * Removes control characters from values before they are written to a terminal.
+ * @param value The value to sanitize.
+ * @returns The value converted to a string without terminal control characters.
+ */
+export function SanitizeConsoleValue(value: unknown): string {
+    // Line breaks are removed with their own replace (the form static analysis recognizes), then any other control characters.
+    return String(value)
+        .replace(/\n|\r/g, "")
+        .replace(/\p{Cc}/gu, "");
+}
+
+/**
+ * Removes terminal control characters from multi-line command output while keeping its line breaks and tabs.
+ * @param value The value to sanitize.
+ * @returns The value converted to a string without terminal control characters other than line breaks and tabs.
+ */
+export function SanitizeConsoleOutput(value: unknown): string {
+    return String(value).replace(/[^\P{Cc}\n\r\t]/gu, "");
+}
+
+/**
  * Parsed CLI arguments for the Inspector CLI.
  */
 export interface IParsedArgs {
@@ -246,7 +267,7 @@ export function ValidateSessionId(explicitId: string, sessions: SessionInfo[]): 
         if (sessions.length === 0) {
             throw new Error(`Session ${parsed} does not exist. No active sessions.`);
         }
-        const list = sessions.map((s) => `  [${s.id}] ${s.name}`).join("\n");
+        const list = sessions.map((s) => `  [${s.id}] ${SanitizeConsoleValue(s.name)}`).join("\n");
         throw new Error(`Session ${parsed} does not exist. Active sessions:\n${list}`);
     }
     return match;
@@ -300,16 +321,16 @@ export function ParseCommandArgs(rest: string[], globalHelp: boolean): { args: R
  */
 export function PrintCommandHelp(commandId: string, descriptor: CommandInfo, missingRequired: CommandArgInfo[], wantsHelp: boolean): void {
     if (missingRequired.length > 0 && !wantsHelp) {
-        console.error(`Missing required argument(s): ${missingRequired.map((a) => `--${a.name}`).join(", ")}\n`);
+        console.error(`Missing required argument(s): ${missingRequired.map((a) => `--${SanitizeConsoleValue(a.name)}`).join(", ")}\n`);
     }
-    console.log(`${commandId}: ${descriptor.description}\n`);
+    console.log(`${SanitizeConsoleValue(commandId)}: ${SanitizeConsoleValue(descriptor.description)}\n`);
     if (descriptor.args && descriptor.args.length > 0) {
         console.log("Arguments:");
-        const maxLen = Math.max(...descriptor.args.map((a) => `--${a.name}${a.required ? " (required)" : ""}`.length));
+        const maxLen = Math.max(...descriptor.args.map((a) => `--${SanitizeConsoleValue(a.name)}${a.required ? " (required)" : ""}`.length));
         for (const arg of descriptor.args) {
-            const label = `--${arg.name}${arg.required ? " (required)" : ""}`;
+            const label = `--${SanitizeConsoleValue(arg.name)}${arg.required ? " (required)" : ""}`;
             const typeHint = arg.type === "file" ? " [reads file content from path]" : "";
-            console.log(`  ${label.padEnd(maxLen)}  ${arg.description}${typeHint}`);
+            console.log(`  ${label.padEnd(maxLen)}  ${SanitizeConsoleValue(arg.description)}${typeHint}`);
         }
     }
     if (missingRequired.length > 0 && !wantsHelp) {
@@ -328,7 +349,7 @@ async function HandleSessions(socket: WebSocket, explicitId?: string): Promise<v
 
     if (explicitId !== undefined) {
         const match = ValidateSessionId(explicitId, response.sessions);
-        console.log(`  [${match.id}] ${match.name} (connected: ${match.connectedAt})`);
+        console.log(`  [${SanitizeConsoleValue(match.id)}] ${SanitizeConsoleValue(match.name)} (connected: ${SanitizeConsoleValue(match.connectedAt)})`);
         return;
     }
 
@@ -337,7 +358,7 @@ async function HandleSessions(socket: WebSocket, explicitId?: string): Promise<v
     } else {
         console.log("Active sessions:");
         for (const session of response.sessions) {
-            console.log(`  [${session.id}] ${session.name} (connected: ${session.connectedAt})`);
+            console.log(`  [${SanitizeConsoleValue(session.id)}] ${SanitizeConsoleValue(session.name)} (connected: ${SanitizeConsoleValue(session.connectedAt)})`);
         }
     }
 }
@@ -355,7 +376,7 @@ async function HandleCommand(socket: WebSocket, args: IParsedArgs): Promise<void
         const sessionId = await ResolveSessionId(socket, args.sessionId);
         const response = await SendAndReceive<CommandsResponse>(socket, { type: "commands", sessionId });
         if (response.error) {
-            console.error(`Error: ${response.error}`);
+            console.error(`Error: ${SanitizeConsoleValue(response.error)}`);
             process.exitCode = 1;
             return;
         }
@@ -365,7 +386,7 @@ async function HandleCommand(socket: WebSocket, args: IParsedArgs): Promise<void
             console.log("Available commands:");
             const maxLen = Math.max(...response.commands.map((c) => c.id.length));
             for (const cmd of response.commands) {
-                console.log(`  ${cmd.id.padEnd(maxLen)}  ${cmd.description}`);
+                console.log(`  ${SanitizeConsoleValue(cmd.id).padEnd(maxLen)}  ${SanitizeConsoleValue(cmd.description)}`);
             }
             console.log("\nRun --command <id> --help to see arguments for a command.");
             console.log("Run --command <id> [--arg value ...] to execute a command.");
@@ -381,7 +402,7 @@ async function HandleCommand(socket: WebSocket, args: IParsedArgs): Promise<void
     const descriptor = commandsResponse.commands?.find((c) => c.id === commandId);
 
     if (!descriptor) {
-        console.error(`Error: Unknown command "${commandId}".`);
+        console.error(`Error: Unknown command "${SanitizeConsoleValue(commandId)}".`);
         process.exitCode = 1;
         return;
     }
@@ -400,7 +421,7 @@ async function HandleCommand(socket: WebSocket, args: IParsedArgs): Promise<void
             try {
                 commandArgs[argDef.name] = readFileSync(filePath, "utf-8");
             } catch (err: unknown) {
-                console.error(`Error reading file for --${argDef.name}: ${err}`);
+                console.error(`Error reading file for --${SanitizeConsoleValue(argDef.name)}: ${SanitizeConsoleValue(err)}`);
                 process.exitCode = 1;
                 return;
             }
@@ -414,10 +435,10 @@ async function HandleCommand(socket: WebSocket, args: IParsedArgs): Promise<void
         args: commandArgs,
     });
     if (response.error) {
-        console.error(`Error: ${response.error}`);
+        console.error(`Error: ${SanitizeConsoleValue(response.error)}`);
         process.exitCode = 1;
     } else {
-        console.log(response.result ?? "");
+        console.log(SanitizeConsoleOutput(response.result ?? ""));
     }
 }
 
@@ -459,7 +480,7 @@ void (async () => {
     try {
         await Main();
     } catch (error: unknown) {
-        console.error(`Error: ${error}`);
+        console.error(`Error: ${SanitizeConsoleValue(error)}`);
         process.exitCode = 1;
     }
 })();
