@@ -54,6 +54,7 @@
         "USD/usdFileLoader.js",
         "glTF/1.0/glTFBinaryExtension.js",
         "glTF/1.0/glTFMaterialsCommonExtension.js",
+        "glTF/2.0/Extensions/BABYLON_materials_neural_texture.js",
         "glTF/2.0/Extensions/EXT_lights_area.js",
         "glTF/2.0/Extensions/EXT_lights_ies.js",
         "glTF/2.0/Extensions/EXT_lights_image_based.js",
