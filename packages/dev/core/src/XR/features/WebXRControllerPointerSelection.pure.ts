@@ -147,13 +147,17 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             return;
         }
 
-        const { laserPointer, selectionMesh } = this._generateNewMeshPair(this._options.forceGripIfAvailable && xrController.grip ? xrController.grip : xrController.pointer);
+        const { laserPointer, selectionMesh, laserPointerMaterial, selectionMeshMaterial } = this._generateNewMeshPair(
+            this._options.forceGripIfAvailable && xrController.grip ? xrController.grip : xrController.pointer
+        );
 
         // get two new meshes
         this._controllers[xrController.uniqueId] = {
             xrController,
             laserPointer,
             selectionMesh,
+            laserPointerMaterial,
+            selectionMeshMaterial,
             meshUnderPointer: null,
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
@@ -195,6 +199,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             onFrameObserver?: Nullable<Observer<XRFrame>>;
             laserPointer: AbstractMesh;
             selectionMesh: AbstractMesh;
+            /** The material this feature created for the laser pointer. Disposed with the controller. */
+            laserPointerMaterial?: StandardMaterial;
+            /** The material this feature created for the selection mesh. Disposed with the controller. */
+            selectionMeshMaterial?: StandardMaterial;
             meshUnderPointer: Nullable<AbstractMesh>;
             pick: Nullable<PickingInfo>;
             id: number;
@@ -316,12 +324,14 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (this._options.gazeCamera) {
             const webXRCamera = this._options.gazeCamera;
 
-            const { laserPointer, selectionMesh } = this._generateNewMeshPair(webXRCamera);
+            const { laserPointer, selectionMesh, laserPointerMaterial, selectionMeshMaterial } = this._generateNewMeshPair(webXRCamera);
 
             this._controllers["camera"] = {
                 webXRCamera,
                 laserPointer,
                 selectionMesh,
+                laserPointerMaterial,
+                selectionMeshMaterial,
                 meshUnderPointer: null,
                 pick: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
@@ -895,6 +905,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             try {
                 controllerData.selectionMesh.dispose();
                 controllerData.laserPointer.dispose();
+                // Disposing a mesh leaves its material in the scene. These two were created by this
+                // feature for this controller alone (see _generateNewMeshPair), and input sources come
+                // and go many times in a session (e.g. a hand that loses and regains tracking).
+                controllerData.selectionMeshMaterial?.dispose();
+                controllerData.laserPointerMaterial?.dispose();
                 // remove from the map
                 delete this._controllers[xrControllerUniqueId];
                 if (this._attachedController === xrControllerUniqueId) {
@@ -966,6 +981,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return {
             laserPointer,
             selectionMesh,
+            laserPointerMaterial,
+            selectionMeshMaterial: targetMat,
         };
     }
 

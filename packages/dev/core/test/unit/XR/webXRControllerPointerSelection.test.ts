@@ -3,6 +3,8 @@
  */
 
 import { NullEngine } from "core/Engines";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { WebXRControllerPointerSelection, WebXRSessionManager, type IWebXRControllerPointerSelectionOptions } from "core/XR";
 
@@ -277,6 +279,68 @@ describe("WebXRControllerPointerSelection", () => {
             injectControllers(feature, [{ uniqueId: "ctrl-left", handedness: "left" }], "ctrl-left");
 
             expect(feature.attachedControllerId).toBe("ctrl-left");
+        });
+    });
+
+    describe("controller removal", () => {
+        /**
+         * An input source as WebXRInput hands it to the feature: a real pointer node to parent the
+         * laser to, and a gamepad so selection is wired through the motion controller observable.
+         */
+        function createInputSource(uniqueId: string, handedness: XRHandedness) {
+            return {
+                uniqueId,
+                inputSource: { handedness, targetRayMode: "tracked-pointer" as XRTargetRayMode, gamepad: {} },
+                pointer: new TransformNode(`${uniqueId}-pointer`, scene),
+                grip: null,
+                motionController: null,
+                onMotionControllerInitObservable: new Observable(),
+            } as any;
+        }
+
+        /** Add an input source and remove it again, as happens whenever a hand loses and regains tracking. */
+        function addAndRemoveInputSource(feature: WebXRControllerPointerSelection, uniqueId: string) {
+            const inputSource = createInputSource(uniqueId, "right");
+            (feature as any)._attachController(inputSource);
+            (feature as any)._detachController(uniqueId);
+            // The meshes are disposed on the next frame.
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            inputSource.pointer.dispose();
+        }
+
+        it("creates the laser pointer and selection mesh with their own materials", () => {
+            const feature = createFeature();
+            const materialsBefore = scene.materials.length;
+
+            (feature as any)._attachController(createInputSource("ctrl-right", "right"));
+
+            expect(scene.materials.length).toBe(materialsBefore + 2);
+        });
+
+        it("leaves no meshes or materials behind when input sources come and go", () => {
+            const feature = createFeature();
+            const meshesBefore = scene.meshes.length;
+            const materialsBefore = scene.materials.length;
+
+            for (let i = 0; i < 5; i++) {
+                addAndRemoveInputSource(feature, `ctrl-${i}`);
+            }
+
+            expect(scene.meshes.length).toBe(meshesBefore);
+            expect(scene.materials.length).toBe(materialsBefore);
+        });
+
+        it("does not dispose a material the application assigned to the laser pointer", () => {
+            const feature = createFeature();
+            const inputSource = createInputSource("ctrl-right", "right");
+            (feature as any)._attachController(inputSource);
+            const applicationMaterial = { dispose: vi.fn() } as any;
+            (feature as any)._controllers["ctrl-right"].laserPointer.material = applicationMaterial;
+
+            (feature as any)._detachController("ctrl-right");
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+
+            expect(applicationMaterial.dispose).not.toHaveBeenCalled();
         });
     });
 });
