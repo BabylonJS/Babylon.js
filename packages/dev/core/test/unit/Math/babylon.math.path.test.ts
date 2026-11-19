@@ -31,10 +31,17 @@ describe("BezierCurve.Interpolate", () => {
         expect(BezierCurve.Interpolate(0.5, 1, 0, 0, 1)).toBeCloseTo(0.5, 6);
     });
 
+    it("keeps an exact root on a flat x slope instead of bisecting away from it", () => {
+        // x(0.5) is exactly 0.5 for (1, 0, 0, 1) and the slope there is 0. Parameters within
+        // about 3e-6 of 0.5 also evaluate to 0.5 in floating point, so bisection would drift.
+        expect(BezierCurve.Interpolate(0.5, 1, 0, 0, 1)).toBe(0.5);
+        expect(BezierCurve.Interpolate(0.5, 1, 0.2, 0, 0.9)).toBeCloseTo(0.5375, 12);
+    });
+
     it("is accurate near a nearly-flat asymmetric x slope (the 0.05-step grid misses this case)", () => {
         // x1=0.99999, x2=0.0000102: the x slope is about 1.5e-5 at the midpoint.
-        // A residual-only convergence check exits with an error > 0.003; bracket-based
-        // convergence drives the error below 1e-5.
+        // A residual-only convergence check exits with an error > 0.003; stopping on the
+        // Newton step size inside a bracket drives the error below 1e-5.
         const got = BezierCurve.Interpolate(0.5, 0.99999, 0, 0.0000102, 1);
         const ref = reference(0.5, 0.99999, 0, 0.0000102, 1);
         expect(Math.abs(got - ref)).toBeLessThan(1e-4);

@@ -42,51 +42,66 @@ export class BezierCurve {
         // Find the curve parameter whose x is t. Newton's method converges in a few steps
         // where the curve is steep, but its slope is 0 at an end point when x1 is 0 or x2 is 1
         // (as in the common ease-in curve (0.42, 0, 1, 1)), and in the middle of (1, 0, 0, 1).
-        // Dividing by that slope gave NaN, so fall back to bisection when Newton stalls.
+        // Dividing by that slope gave NaN, so keep a bracket around the root and fall back to
+        // bisection when the slope collapses or a Newton step leaves the bracket.
         //
-        // Convergence is based on parameter bracket width, not residual. Near a flat X slope the
-        // residual can be below 1e-7 while the parameter (and Y output) is still wrong by >0.003.
+        // Newton stops on the step size, not the residual: near a flat X slope the residual can be
+        // below 1e-7 while the parameter (and Y output) is still wrong by >0.003.
         let lo = 0;
         let hi = 1;
         let refinedT = t;
+        let converged = false;
         for (let i = 0; i < 8; i++) {
             const x = ((f0 * refinedT + f1) * refinedT + f2) * refinedT - t;
-            // Narrow the bracket before attempting a Newton step
+            if (x === 0) {
+                // Exact root. Keep it: on a flat X slope (t = 0.5 for (1, 0, 0, 1)) every
+                // parameter within a few 1e-6 also evaluates to t, so bisection could only lose accuracy.
+                converged = true;
+                break;
+            }
             if (x < 0) {
                 lo = refinedT;
             } else {
                 hi = refinedT;
             }
-            if (hi - lo < 1e-7) {
-                break;
-            }
             const slope = (3.0 * f0 * refinedT + 2.0 * f1) * refinedT + f2;
             if (Math.abs(slope) < 1e-6) {
                 break;
             }
-            const next = refinedT - x / slope;
+            const step = x / slope;
+            const next = refinedT - step;
             if (next < lo || next > hi) {
                 break;
             }
             refinedT = next;
-        }
-
-        // x grows monotonically from 0 to 1 for x1 and x2 in [0, 1]; bisect until the
-        // parameter bracket is narrow enough (not until the residual is small, which can
-        // mislead near a flat X slope).
-        for (let i = 0; i < 40; i++) {
-            if (hi - lo < 1e-7) {
+            if (Math.abs(step) < 1e-7) {
+                converged = true;
                 break;
             }
-            refinedT = (lo + hi) / 2;
-            const x = ((f0 * refinedT + f1) * refinedT + f2) * refinedT;
-            if (x < t) {
-                lo = refinedT;
-            } else {
-                hi = refinedT;
-            }
         }
-        refinedT = (lo + hi) / 2;
+
+        if (!converged) {
+            // x grows monotonically from 0 to 1 for x1 and x2 in [0, 1]; bisect until the
+            // parameter bracket is narrow enough.
+            for (let i = 0; i < 40; i++) {
+                if (hi - lo < 1e-7) {
+                    break;
+                }
+                const mid = (lo + hi) / 2;
+                const x = ((f0 * mid + f1) * mid + f2) * mid;
+                if (x === t) {
+                    lo = mid;
+                    hi = mid;
+                    break;
+                }
+                if (x < t) {
+                    lo = mid;
+                } else {
+                    hi = mid;
+                }
+            }
+            refinedT = (lo + hi) / 2;
+        }
 
         // Resolve cubic bezier for the given x
         return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 + 3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 + Math.pow(refinedT, 3);
