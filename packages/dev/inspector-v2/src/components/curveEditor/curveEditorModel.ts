@@ -62,6 +62,8 @@ export interface ICurveEditorAnimation {
     getKeys(): CurveEditorKey[];
     setKeys(keys: readonly CurveEditorKey[]): void;
     evaluate(frame: number): readonly number[];
+    /** Captures a consistent evaluator for sampling a curve path. */
+    createEvaluator?(): (frame: number) => readonly number[];
 }
 
 /**

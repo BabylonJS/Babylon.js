@@ -149,6 +149,7 @@ export function CreateBabylonCurveEditorAnimation(animation: Animation): ICurveE
         return undefined;
     }
 
+    const nativeKeysByEditorKey = new WeakMap<CurveEditorKey, IAnimationKey>();
     return {
         uniqueId: animation.uniqueId.toString(),
         name: animation.name,
@@ -158,9 +159,15 @@ export function CreateBabylonCurveEditorAnimation(animation: Animation): ICurveE
         supportsTangents: kind !== "quaternion",
         supportsInterpolationEditing: true,
         source: animation,
-        getKeys: () => (animation.getKeys() ?? []).map((key) => ToCurveEditorKey(key, kind)),
+        getKeys: () =>
+            (animation.getKeys() ?? []).map((key) => {
+                const editorKey = ToCurveEditorKey(key, kind);
+                nativeKeysByEditorKey.set(editorKey, key);
+                return editorKey;
+            }),
         setKeys: (keys) => {
             const nativeKeys: IAnimationKey[] = keys.map((key) => ({
+                ...nativeKeysByEditorKey.get(key),
                 frame: key.frame,
                 value: FromComponents(key.value, kind),
                 inTangent: key.inTangent === undefined ? undefined : FromComponents(key.inTangent, kind),
@@ -254,8 +261,13 @@ function CreateBabylonCurveEditorPlayback(options: BabylonCurveEditorSourceOptio
             }
         },
         getCurrentFrame: () => {
-            const runtimeAnimation = GetNativeAnimations(options).find((animation) => animation.hasRunningRuntimeAnimations)?.runtimeAnimations[0];
-            return runtimeAnimation?.currentFrame ?? currentFrame;
+            for (const entry of options.animations ?? []) {
+                const animation = options.useTargetAnimations ? (entry as TargetedAnimation).animation : (entry as Animation);
+                if (animation.hasRunningRuntimeAnimations) {
+                    return animation.runtimeAnimations[0]?.currentFrame ?? currentFrame;
+                }
+            }
+            return currentFrame;
         },
     };
 }

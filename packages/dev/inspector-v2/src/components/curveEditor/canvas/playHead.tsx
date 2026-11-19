@@ -151,6 +151,12 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = (props) => {
         };
     }, [observables, moveHead]);
 
+    useEffect(() => {
+        if (!isPlayingRef.current) {
+            moveHead(state.activeFrame);
+        }
+    }, [state.activeFrame, state.referenceMinFrame, state.referenceMaxFrame, moveHead]);
+
     // Track animation playback using requestAnimationFrame - separate from render cycle
     useEffect(() => {
         isPlayingRef.current = state.isPlaying;

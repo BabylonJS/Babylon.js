@@ -6,7 +6,7 @@
 import { type Nullable } from "core/types";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { type CurveData } from "./curveData";
+import { MoveSelectedKeyFrames, type CurveData } from "./curveData";
 import { type KeyPoint, type MainKeyPointInfo, type MainKeyPointPosition, useCurveEditor } from "../normalizedCurveEditorContext";
 import { CurveEditorInterpolation } from "../curveEditorModel";
 
@@ -511,12 +511,14 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 return;
             }
 
-            // Move frame for selected + siblings (but not first key)
-            if (keyId !== 0) {
+            // Move frame for selected + siblings
+            if (keyId !== 0 || state.capabilities.canEditBoundaryKeyFrames) {
                 const newX = pos.x + offsetToMain.current.x;
                 currentXRef.current = newX;
                 setCurrentX(newX);
-                onFrameValueChanged(invertX(newX));
+                if (!state.capabilities.constrainKeyFrames) {
+                    onFrameValueChanged(invertX(newX));
+                }
             }
 
             // Move value only for directly selected points
@@ -531,7 +533,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         return () => {
             observables.onMainKeyPointMoved.remove(observer);
         };
-    }, [observables, curve, keyId, selectedState, invertX, invertY, onFrameValueChanged, onKeyValueChanged]);
+    }, [observables, curve, keyId, selectedState, invertX, invertY, onFrameValueChanged, onKeyValueChanged, state.capabilities]);
 
     // Mouse/pointer handlers
     const handlePointerDown = useCallback(
@@ -659,27 +661,40 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 // Calculate new position using refs to avoid stale closure
                 let newX = currentXRef.current + (lockX.current ? 0 : diffX * scale);
                 let newY = currentYRef.current + (lockY.current ? 0 : diffY * scale);
-                if (state.capabilities.constrainKeyFrames) {
-                    newX = Math.max(convertX(state.referenceMinFrame), Math.min(convertX(state.clipLength), newX));
-                }
-
-                // Constrain to valid frame range
-                const previousX = getPreviousX();
-                const nextX = getNextX();
-                const epsilon = 0.01;
-
-                const spacing = state.capabilities.constrainKeyFrames ? epsilon : 0;
-                if (previousX !== null) {
-                    newX = Math.max(previousX + spacing, newX);
-                }
-                if (nextX !== null) {
-                    newX = Math.min(nextX - spacing, newX);
-                }
+                const activeKeyPoints = activeKeyPointsRef.current;
+                const moveSelectionTogether = state.capabilities.constrainKeyFrames && !!activeKeyPoints && activeKeyPoints.length > 1;
 
                 // Check frame lock constraints
                 if ((keyId !== 0 || state.capabilities.canEditBoundaryKeyFrames) && !(state.lockLastFrameFrame && keyId === curve.keys.length - 1)) {
+                    if (moveSelectionTogether) {
+                        const oldFrame = invertX(currentXRef.current);
+                        const spacing = Math.abs(invertX(currentXRef.current + 0.01) - oldFrame);
+                        const delta = MoveSelectedKeyFrames(
+                            activeKeyPoints,
+                            invertX(newX) - oldFrame,
+                            state.referenceMinFrame,
+                            state.clipLength,
+                            spacing,
+                            !state.capabilities.canEditBoundaryKeyFrames,
+                            state.lockLastFrameFrame
+                        );
+                        newX = convertX(oldFrame + delta);
+                    } else {
+                        if (state.capabilities.constrainKeyFrames) {
+                            newX = Math.max(convertX(state.referenceMinFrame), Math.min(convertX(state.clipLength), newX));
+                        }
+                        const previousX = getPreviousX();
+                        const nextX = getNextX();
+                        const spacing = state.capabilities.constrainKeyFrames ? 0.01 : 0;
+                        if (previousX !== null) {
+                            newX = Math.max(previousX + spacing, newX);
+                        }
+                        if (nextX !== null) {
+                            newX = Math.min(nextX - spacing, newX);
+                        }
+                        onFrameValueChanged(invertX(newX));
+                    }
                     const frame = invertX(newX);
-                    onFrameValueChanged(frame);
                     observables.onFrameSet.notifyObservers(frame);
                 } else {
                     newX = currentXRef.current;
@@ -701,11 +716,14 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 setCurrentY(newY);
 
                 // Notify other selected key points to follow (multi-point movement)
-                const activeKeyPoints = activeKeyPointsRef.current;
                 if (activeKeyPoints && activeKeyPoints.length > 1) {
-                    requestAnimationFrame(() => {
+                    if (moveSelectionTogether) {
                         observables.onMainKeyPointMoved.notifyObservers({ x: newX, y: newY });
-                    });
+                    } else {
+                        requestAnimationFrame(() => {
+                            observables.onMainKeyPointMoved.notifyObservers({ x: newX, y: newY });
+                        });
+                    }
                 }
             } else {
                 // Tangent manipulation

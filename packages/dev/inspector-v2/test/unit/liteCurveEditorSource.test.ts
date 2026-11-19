@@ -12,6 +12,7 @@ import {
 } from "@babylonjs/lite";
 import { describe, expect, it, vi } from "vitest";
 
+import { CurveData, MoveSelectedKeyFrames } from "../../src/components/curveEditor/canvas/curveData";
 import { CreateLiteCurveEditorAnimations, type LiteCurveKey } from "../../src/lite/components/curveEditor/curveEditorSource";
 
 const engine = {} as EngineContext;
@@ -101,8 +102,11 @@ describe("Lite curve editor adapter", () => {
         const step = CreateAdapter("step", [
             { time: 0, value: [1] },
             { time: 1, value: [3] },
+            { time: 2, value: [5] },
         ]);
         expect(step.animation.evaluate(15)).toEqual([1]);
+        expect(step.animation.evaluate(30)).toEqual([3]);
+        expect(step.animation.evaluate(45)).toEqual([3]);
 
         const quaternion = CreateAdapter(
             "linear",
@@ -133,5 +137,127 @@ describe("Lite curve editor adapter", () => {
         animation.setKeys(editedKeys);
 
         expect(setAnimationTrackKeys).toHaveBeenCalledWith(expect.anything(), 0, expect.arrayContaining([expect.objectContaining({ time: 0, outTangent: [30], inTangent: [2] })]));
+    });
+
+    it("samples a curve from one snapshot and refreshes the snapshot after edits", () => {
+        const group = {
+            frameRate: 30,
+            currentTime: 0,
+            isPlaying: true,
+            targetedAnimations: [{ path: "value" }],
+        } as unknown as AnimationGroup;
+        let keys: readonly LiteCurveKey[] = [
+            { time: 0, value: [0], inTangent: [0], outTangent: [0] },
+            { time: 1, value: [10], inTangent: [0], outTangent: [0] },
+        ];
+        const getAnimationGroupTracks = vi.fn(() => [{ target: group.targetedAnimations[0], interpolation: "cubicSpline", componentCount: 1, quaternion: false, keys }]);
+        const [animation] = CreateLiteCurveEditorAnimations(group, engine, {
+            getAnimationGroupTracks,
+            setAnimationTrackKeys: (_group, _index, nextKeys) => {
+                keys = nextKeys;
+            },
+        });
+        const curve = new CurveData("#fff", animation, 0);
+        curve.keys = animation.getKeys().map((key) => ({
+            frame: key.frame,
+            value: key.value[0],
+            inTangent: key.inTangent?.[0],
+            outTangent: key.outTangent?.[0],
+            lockedTangent: key.lockedTangent,
+        }));
+        getAnimationGroupTracks.mockClear();
+        const before = curve.getPathData(
+            (value) => value,
+            (value) => value
+        );
+        expect(getAnimationGroupTracks).toHaveBeenCalledTimes(1);
+
+        const edited = animation.getKeys();
+        edited[1].value = [20];
+        animation.setKeys(edited);
+        const after = curve.getPathData(
+            (value) => value,
+            (value) => value
+        );
+        expect(after).not.toBe(before);
+    });
+
+    it("clamps selected keys as a group and commits each track once", () => {
+        const { animation, setAnimationTrackKeys } = CreateAdapter(
+            "linear",
+            [0, 10, 20, 21, 30].map((frame) => ({ time: frame / 30, value: [frame] }))
+        );
+        const curve = new CurveData("#fff", animation, 0);
+        curve.keys = animation.getKeys().map((key) => ({ frame: key.frame, value: key.value[0], lockedTangent: key.lockedTangent }));
+        const delta = MoveSelectedKeyFrames(
+            [
+                { curve, keyId: 1 },
+                { curve, keyId: 2 },
+            ],
+            5,
+            0,
+            60,
+            0.01,
+            false,
+            false
+        );
+
+        expect(delta).toBeCloseTo(0.99);
+        expect(setAnimationTrackKeys).toHaveBeenCalledTimes(1);
+        expect(animation.getKeys().map((key) => key.frame)).toEqual([0, expect.closeTo(10.99), expect.closeTo(20.99), 21, 30]);
+    });
+
+    it("moves adjacent selected keys together without treating them as obstacles", () => {
+        const { animation, setAnimationTrackKeys } = CreateAdapter(
+            "linear",
+            [0, 10, 20, 21, 30].map((frame) => ({ time: frame / 30, value: [frame] }))
+        );
+        const curve = new CurveData("#fff", animation, 0);
+        curve.keys = animation.getKeys().map((key) => ({ frame: key.frame, value: key.value[0], lockedTangent: key.lockedTangent }));
+        const delta = MoveSelectedKeyFrames(
+            [
+                { curve, keyId: 1 },
+                { curve, keyId: 2 },
+                { curve, keyId: 3 },
+            ],
+            5,
+            0,
+            60,
+            0.01,
+            false,
+            false
+        );
+
+        expect(delta).toBe(5);
+        expect(setAnimationTrackKeys).toHaveBeenCalledTimes(1);
+        expect(animation.getKeys().map((key) => key.frame)).toEqual([0, 15, 25, 26, 30]);
+    });
+
+    it("moves adjacent keys through the real Lite track validation", () => {
+        const manager = createAnimationManager();
+        const clip = createPropertyAnimationClip("Test", [{ path: "value", keys: [0, 10, 20, 21, 30].map((frame) => ({ frame, value: frame })) }], { frameRate: 30 });
+        const group = createPropertyAnimationGroup(manager, { value: 0 }, clip);
+        const scene = { _kind: "scene", animationGroups: [group] };
+        const realEngine = { surfaces: [], _renderingContexts: [scene] } as unknown as EngineContext;
+        (realEngine as { surfaces: readonly EngineContext[] }).surfaces = [realEngine];
+        const [animation] = CreateLiteCurveEditorAnimations(group, realEngine, { getAnimationGroupTracks, setAnimationTrackKeys });
+        const curve = new CurveData("#fff", animation, 0);
+        curve.keys = animation.getKeys().map((key) => ({ frame: key.frame, value: key.value[0], lockedTangent: key.lockedTangent }));
+
+        const delta = MoveSelectedKeyFrames(
+            [
+                { curve, keyId: 1 },
+                { curve, keyId: 2 },
+                { curve, keyId: 3 },
+            ],
+            5,
+            0,
+            30,
+            0.01,
+            false,
+            false
+        );
+        expect(delta).toBe(5);
+        expect(animation.getKeys().map((key) => key.frame)).toEqual([0, expect.closeTo(15), expect.closeTo(25), expect.closeTo(26), 30]);
     });
 });

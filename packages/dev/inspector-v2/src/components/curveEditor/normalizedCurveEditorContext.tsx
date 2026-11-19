@@ -256,7 +256,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
     const [activeChannels, setActiveChannels] = useState<{ [key: string]: string }>({});
     const [activeKeyPoints, setActiveKeyPoints] = useState<Nullable<KeyPoint[]>>(null);
     const [mainKeyPoint, setMainKeyPoint] = useState<Nullable<KeyPoint>>(null);
-    const [activeFrame, setActiveFrame] = useState(0);
+    const [activeFrame, setActiveFrame] = useState(() => source.playback.getCurrentFrame());
     const [fromKey, setFromKey] = useState(0);
     const [toKey, setToKey] = useState(100);
     const [isPlaying, setIsPlaying] = useState(false);

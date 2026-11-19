@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CurveEditorProvider, useCurveEditor } from "../../src/components/curveEditor/normalizedCurveEditorContext";
 import { type ICurveEditorAnimation, type ICurveEditorSource } from "../../src/components/curveEditor/curveEditorModel";
+import { PlayHead } from "../../src/components/curveEditor/canvas/playHead";
 import { LiteCurveEditorSideBar } from "../../src/lite/components/curveEditor/sideBar";
 
 vi.hoisted(() => {
@@ -89,6 +90,61 @@ describe("Lite curve-editor track selection", () => {
 
         expect(container.querySelector("[data-testid='active-tracks']")?.textContent).toBe("First track");
 
+        await act(async () => root.unmount());
+    });
+
+    it("initializes and refreshes at the playback's current frame", async () => {
+        const moveToFrame = vi.fn();
+        const animation: ICurveEditorAnimation = {
+            uniqueId: "track",
+            name: "Track",
+            framePerSecond: 30,
+            kind: "float",
+            components: [{ name: "Value", color: "#fff" }],
+            supportsTangents: false,
+            supportsInterpolationEditing: false,
+            source: {},
+            getKeys: () => [],
+            setKeys: () => {},
+            evaluate: () => [0],
+        };
+        const source: ICurveEditorSource = {
+            animations: [animation],
+            initialActiveAnimations: [animation],
+            playback: { play: () => {}, stop: () => {}, moveToFrame, getCurrentFrame: () => 15 },
+            clipDuration: 30,
+            capabilities: {
+                canEditClipLength: false,
+                canDeleteBoundaryKeys: true,
+                canEditBoundaryKeyFrames: true,
+                canDeleteLastKey: false,
+                constrainKeyFrames: true,
+            },
+        };
+        let refresh: (() => void) | undefined;
+        let prepare: (() => void) | undefined;
+        const Probe = () => {
+            const { state, actions } = useCurveEditor();
+            refresh = actions.refreshTarget;
+            prepare = actions.prepare;
+            return <output>{state.activeFrame}</output>;
+        };
+        const root = createRoot(container);
+        await act(async () =>
+            root.render(
+                <CurveEditorProvider source={source}>
+                    <Probe />
+                    <PlayHead width={330} height={100} />
+                </CurveEditorProvider>
+            )
+        );
+        await act(async () => prepare?.());
+        expect(container.querySelector("output")?.textContent).toBe("15");
+        const handle = container.querySelectorAll("div")[2];
+        expect(handle.textContent).toBe("15");
+        expect(handle.style.left).toBe("180px");
+        await act(async () => refresh?.());
+        expect(moveToFrame).toHaveBeenCalledWith(15, expect.any(Number), expect.any(Number), false);
         await act(async () => root.unmount());
     });
 });

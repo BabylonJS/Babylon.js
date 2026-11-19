@@ -35,7 +35,7 @@ export const LiteAnimationCurveEditor: FunctionComponent<LiteAnimationCurveEdito
                 }
             />
             <ChildWindow id={`Lite Animation Curve Editor-${GetEntityId(group)}`} imperativeRef={childWindow}>
-                <LiteCurveEditor engine={engine} group={group} title={group.name || "Animation Group"} />
+                <LiteCurveEditor key={GetEntityId(group)} engine={engine} group={group} title={group.name || "Animation Group"} />
             </ChildWindow>
         </>
     );

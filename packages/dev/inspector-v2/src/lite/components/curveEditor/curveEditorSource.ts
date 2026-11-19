@@ -71,7 +71,7 @@ function EvaluateTrack(track: LiteCurveTrack, time: number): readonly number[] {
     }
 
     let rightIndex = 1;
-    while (keys[rightIndex].time < time) {
+    while (keys[rightIndex].time <= time) {
         rightIndex++;
     }
     const left = keys[rightIndex - 1];
@@ -168,6 +168,10 @@ export function CreateLiteCurveEditorAnimations(group: AnimationGroup, engine: E
                 }
             },
             evaluate: (frame) => EvaluateTrack(readTrack(), frame / frameRate),
+            createEvaluator: () => {
+                const track = readTrack();
+                return (frame) => EvaluateTrack(track, frame / frameRate);
+            },
         };
     });
 }

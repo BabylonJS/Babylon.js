@@ -1,4 +1,5 @@
 import { CurveEditorInterpolation, type CurveEditorKey, type ICurveEditorAnimation } from "../curveEditorModel";
+import { type KeyPoint } from "../normalizedCurveEditorContext";
 import { Observable } from "core/Misc/observable";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -9,6 +10,79 @@ export interface KeyEntry {
     outTangent?: number;
     lockedTangent: boolean;
     interpolation?: CurveEditorInterpolation;
+}
+
+/**
+ * Moves selected keys together, keeping each track ordered and within the clip.
+ * @param points Selected curve points.
+ * @param delta Requested frame delta.
+ * @param minFrame Minimum clip frame.
+ * @param maxFrame Maximum clip frame.
+ * @param spacing Minimum frame distance from unselected keys.
+ * @param lockBoundaryFrames Whether the first and last keys are fixed.
+ * @param lockLastFrame Whether the last key is fixed.
+ * @returns The applied frame delta.
+ */
+export function MoveSelectedKeyFrames(
+    points: readonly KeyPoint[],
+    delta: number,
+    minFrame: number,
+    maxFrame: number,
+    spacing: number,
+    lockBoundaryFrames: boolean,
+    lockLastFrame: boolean
+): number {
+    const groups = new Map<ICurveEditorAnimation, { keys: CurveEditorKey[]; indices: Set<number>; curves: Set<CurveData> }>();
+    for (const point of points) {
+        const animation = point.curve.animation;
+        let group = groups.get(animation);
+        if (!group) {
+            group = { keys: animation.getKeys(), indices: new Set(), curves: new Set() };
+            groups.set(animation, group);
+        }
+        group.indices.add(point.keyId);
+        for (const sibling of point.curve.siblings.length ? point.curve.siblings : [point.curve]) {
+            group.curves.add(sibling);
+        }
+    }
+
+    let minDelta = -Infinity;
+    let maxDelta = Infinity;
+    for (const { keys, indices } of groups.values()) {
+        for (const index of indices) {
+            const frame = keys[index].frame;
+            if ((lockBoundaryFrames && (index === 0 || index === keys.length - 1)) || (lockLastFrame && index === keys.length - 1)) {
+                minDelta = Math.max(minDelta, 0);
+                maxDelta = Math.min(maxDelta, 0);
+            }
+            minDelta = Math.max(minDelta, minFrame - frame);
+            maxDelta = Math.min(maxDelta, maxFrame - frame);
+            if (index > 0 && !indices.has(index - 1)) {
+                minDelta = Math.max(minDelta, keys[index - 1].frame + spacing - frame);
+            }
+            if (index < keys.length - 1 && !indices.has(index + 1)) {
+                maxDelta = Math.min(maxDelta, keys[index + 1].frame - spacing - frame);
+            }
+        }
+    }
+
+    const appliedDelta = minDelta <= maxDelta ? Math.max(minDelta, Math.min(maxDelta, delta)) : 0;
+    if (appliedDelta === 0) {
+        return 0;
+    }
+    for (const [animation, { keys, indices, curves }] of groups) {
+        for (const index of indices) {
+            keys[index].frame += appliedDelta;
+        }
+        animation.setKeys(keys);
+        for (const curve of curves) {
+            for (const index of indices) {
+                curve.keys[index].frame = keys[index].frame;
+            }
+            curve.onDataUpdatedObservable.notifyObservers();
+        }
+    }
+    return appliedDelta;
 }
 
 export class CurveData {
@@ -33,6 +107,7 @@ export class CurveData {
         if (keys.length < 2) {
             return "";
         }
+        const evaluate = this.animation.createEvaluator?.() ?? ((frame: number) => this.animation.evaluate(frame));
         let pathData = `M${convertX(keys[0].frame)} ${convertY(keys[0].value)}`;
 
         for (let keyIndex = 1; keyIndex < keys.length; keyIndex++) {
@@ -57,7 +132,7 @@ export class CurveData {
             }
 
             for (let frame = prevFrame; frame < currentFrame; frame += frameDist / CurveData.SampleRate) {
-                const keyValue = this.animation.evaluate(frame);
+                const keyValue = evaluate(frame);
                 pathData += ` L${convertX(frame)} ${convertY(keyValue[this._componentIndex()] ?? 0)}`;
             }
             pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
@@ -155,10 +230,10 @@ export class CurveData {
         this.keys[keyId].inTangent = slope;
         const keys = this.animation.getKeys();
         this._ensureTangent(keys, keyId, "inTangent");
-        this._setTangentComponent(keys, keyId, "inTangent", slope);
         if (keys[keyId - 1].outTangent === undefined) {
             this._ensureTangent(keys, keyId - 1, "outTangent");
         }
+        this._setTangentComponent(keys, keyId, "inTangent", slope);
         this.onDataUpdatedObservable.notifyObservers();
     }
 
@@ -166,10 +241,10 @@ export class CurveData {
         this.keys[keyId].outTangent = slope;
         const keys = this.animation.getKeys();
         this._ensureTangent(keys, keyId, "outTangent");
-        this._setTangentComponent(keys, keyId, "outTangent", slope);
         if (keys[keyId + 1].inTangent === undefined) {
             this._ensureTangent(keys, keyId + 1, "inTangent");
         }
+        this._setTangentComponent(keys, keyId, "outTangent", slope);
         this.onDataUpdatedObservable.notifyObservers();
     }
 
