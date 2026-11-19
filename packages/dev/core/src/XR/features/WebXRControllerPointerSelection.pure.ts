@@ -147,17 +147,13 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             return;
         }
 
-        const { laserPointer, selectionMesh, laserPointerMaterial, selectionMeshMaterial } = this._generateNewMeshPair(
-            this._options.forceGripIfAvailable && xrController.grip ? xrController.grip : xrController.pointer
-        );
+        const { laserPointer, selectionMesh } = this._generateNewMeshPair(this._options.forceGripIfAvailable && xrController.grip ? xrController.grip : xrController.pointer);
 
         // get two new meshes
         this._controllers[xrController.uniqueId] = {
             xrController,
             laserPointer,
             selectionMesh,
-            laserPointerMaterial,
-            selectionMeshMaterial,
             meshUnderPointer: null,
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
@@ -199,10 +195,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             onFrameObserver?: Nullable<Observer<XRFrame>>;
             laserPointer: AbstractMesh;
             selectionMesh: AbstractMesh;
-            /** The material this feature created for the laser pointer. Disposed with the controller. */
-            laserPointerMaterial?: StandardMaterial;
-            /** The material this feature created for the selection mesh. Disposed with the controller. */
-            selectionMeshMaterial?: StandardMaterial;
             meshUnderPointer: Nullable<AbstractMesh>;
             pick: Nullable<PickingInfo>;
             id: number;
@@ -324,14 +316,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (this._options.gazeCamera) {
             const webXRCamera = this._options.gazeCamera;
 
-            const { laserPointer, selectionMesh, laserPointerMaterial, selectionMeshMaterial } = this._generateNewMeshPair(webXRCamera);
+            const { laserPointer, selectionMesh } = this._generateNewMeshPair(webXRCamera);
 
             this._controllers["camera"] = {
                 webXRCamera,
                 laserPointer,
                 selectionMesh,
-                laserPointerMaterial,
-                selectionMeshMaterial,
                 meshUnderPointer: null,
                 pick: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
@@ -905,11 +895,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             try {
                 controllerData.selectionMesh.dispose();
                 controllerData.laserPointer.dispose();
-                // Disposing a mesh leaves its material in the scene. These two were created by this
-                // feature for this controller alone (see _generateNewMeshPair), and input sources come
-                // and go many times in a session (e.g. a hand that loses and regains tracking).
-                controllerData.selectionMeshMaterial?.dispose();
-                controllerData.laserPointerMaterial?.dispose();
                 // remove from the map
                 delete this._controllers[xrControllerUniqueId];
                 if (this._attachedController === xrControllerUniqueId) {
@@ -947,6 +932,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
+        // The material is created for this mesh alone, so it goes when the mesh goes: disposing a mesh leaves its
+        // material in the scene, and input sources come and go many times (e.g. a hand that loses and regains tracking).
+        laserPointer.onDisposeObservable.addOnce(() => {
+            laserPointerMaterial.dispose();
+        });
         laserPointer.rotation.x = Math.PI / 2;
         this._updatePointerDistance(laserPointer, 1);
         laserPointer.isPickable = false;
@@ -972,6 +962,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;
         selectionMesh.material = targetMat;
+        selectionMesh.onDisposeObservable.addOnce(() => {
+            targetMat.dispose();
+        });
 
         if (this._options.renderingGroupId !== undefined) {
             laserPointer.renderingGroupId = this._options.renderingGroupId;
@@ -981,8 +974,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return {
             laserPointer,
             selectionMesh,
-            laserPointerMaterial,
-            selectionMeshMaterial: targetMat,
         };
     }
 
