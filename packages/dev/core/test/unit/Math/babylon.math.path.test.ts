@@ -38,6 +38,15 @@ describe("BezierCurve.Interpolate", () => {
         expect(BezierCurve.Interpolate(0.5, 1, 0.2, 0, 0.9)).toBeCloseTo(0.5375, 12);
     });
 
+    it("is accurate for a small nonzero x2 near the stationary center", () => {
+        // With x2 = 2**-53 the polynomial evaluates to exactly 0.5 at s = 0.5 by
+        // cancellation, but the true root (and the correct y value) is near 0.49999673.
+        // A false-zero early exit from Newton returns 0.5 instead.
+        const got = BezierCurve.Interpolate(0.5, 1, 0, 2 ** -53, 1);
+        const ref = reference(0.5, 1, 0, 2 ** -53, 1);
+        expect(Math.abs(got - ref)).toBeLessThan(1e-5);
+    });
+
     it("is accurate near a nearly-flat asymmetric x slope (the 0.05-step grid misses this case)", () => {
         // x1=0.99999, x2=0.0000102: the x slope is about 1.5e-5 at the midpoint.
         // A residual-only convergence check exits with an error > 0.003; stopping on the

@@ -54,9 +54,14 @@ export class BezierCurve {
         for (let i = 0; i < 8; i++) {
             const x = ((f0 * refinedT + f1) * refinedT + f2) * refinedT - t;
             if (x === 0) {
-                // Exact root. Keep it: on a flat X slope (t = 0.5 for (1, 0, 0, 1)) every
-                // parameter within a few 1e-6 also evaluates to t, so bisection could only lose accuracy.
-                converged = true;
+                // The residual is computed zero. Near a stationary point (e.g. the midpoint of
+                // (1, 0, 0, 1) or a small-x2 perturbation of it) the polynomial rounds to t by
+                // cancellation even though the parameter is off. Only accept as an exact root
+                // when the slope is large enough that a true residual of 0 is not just cancellation.
+                const slope = (3.0 * f0 * refinedT + 2.0 * f1) * refinedT + f2;
+                if (Math.abs(slope) > 1e-3) {
+                    converged = true;
+                }
                 break;
             }
             if (x < 0) {
@@ -90,11 +95,29 @@ export class BezierCurve {
                 const mid = (lo + hi) / 2;
                 const x = ((f0 * mid + f1) * mid + f2) * mid;
                 if (x === t) {
-                    lo = mid;
-                    hi = mid;
-                    break;
-                }
-                if (x < t) {
+                    // Horner residual is zero. Near the stationary center this can be cancellation
+                    // (e.g. x2 = 2**-53 shifts the root by ~2e-6 but x(0.5) still rounds to t).
+                    // Use the Bernstein form with compensated summation to get the sign of the
+                    // true residual before accepting equality or bracketing.
+                    const sm = 1 - mid;
+                    const a = 3 * sm * sm * mid * x1;
+                    const b = 3 * sm * mid * mid * x2;
+                    const c = mid * mid * mid;
+                    const p = a + b, ep = b - (p - a);
+                    const q = p + c, eq = c - (q - p) + ep;
+                    const r = q - t, er = -t - (r - q) + eq;
+                    const cr = r + er;
+                    if (cr === 0) {
+                        lo = mid;
+                        hi = mid;
+                        break;
+                    }
+                    if (cr < 0) {
+                        lo = mid;
+                    } else {
+                        hi = mid;
+                    }
+                } else if (x < t) {
                     lo = mid;
                 } else {
                     hi = mid;
