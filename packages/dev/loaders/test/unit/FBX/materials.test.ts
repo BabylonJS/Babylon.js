@@ -201,6 +201,28 @@ describe("FBX material texture loading", () => {
         }
     });
 
+    it("reads the MIME type of an embedded texture whose name contains '#'", () => {
+        const createTexture = (FBXFileLoader as unknown as IFBXTextureFactoryForTest)._createTexture;
+
+        // '#' is a literal character in an FBX texture name, not a URL fragment delimiter
+        const texture = createTexture(
+            {
+                propertyName: "DiffuseColor",
+                fileName: "albedo#1.jpg",
+                relativeFileName: "textures\\albedo#1.jpg",
+                id: 3,
+                embeddedData: new Uint8Array([0xff, 0xd8, 0xff, 0xe0]),
+            },
+            scene,
+            "/textures/",
+            false
+        );
+
+        expect(texture).toBeDefined();
+        expect(texture?.name).toBe("albedo#1.jpg");
+        expect(texture?.mimeType).toBe("image/jpeg");
+    });
+
     it("keeps safe relative sidecar texture paths when embedded data is absent", () => {
         const createTexture = (FBXFileLoader as unknown as IFBXTextureFactoryForTest)._createTexture;
 

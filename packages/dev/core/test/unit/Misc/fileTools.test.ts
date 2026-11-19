@@ -1,5 +1,5 @@
 import { NullEngine } from "core/Engines/nullEngine";
-import { DecodeBase64UrlToString, IsBase64DataUrl, LoadFile, LoadImage, TestBase64DataUrl } from "core/Misc/fileTools";
+import { DecodeBase64UrlToString, GetMimeType, IsBase64DataUrl, LoadFile, LoadImage, TestBase64DataUrl } from "core/Misc/fileTools";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 class BitmapNullEngine extends NullEngine {
@@ -114,5 +114,29 @@ describe("base64 data URLs", () => {
     it.each(["data:application;base64,AA==", "data:/json;base64,AA==", "data:application/;base64,AA==", "https://example.com/data:image/png;base64,AA=="])("rejects %s", (url) => {
         expect(IsBase64DataUrl(url)).toBe(false);
         expect(TestBase64DataUrl(url)).toEqual({ match: false, type: "" });
+    });
+});
+
+describe("GetMimeType", () => {
+    it("reads the mime type from the file extension", () => {
+        expect(GetMimeType("textures/brick.JPG")).toBe("image/jpeg");
+        expect(GetMimeType("https://example.com/models/scene.glb")).toBe("model/gltf-binary");
+    });
+
+    it("ignores the query string and fragment", () => {
+        expect(GetMimeType("textures/brick.jpg?v=2")).toBe("image/jpeg");
+        expect(GetMimeType("https://cdn.example.com/textures/grass.png?token=a.b.c")).toBe("image/png");
+        expect(GetMimeType("textures/brick.png#preview")).toBe("image/png");
+    });
+
+    it("returns the correct type for a URL-encoded filename with a literal # in its name", () => {
+        // Callers such as FBXFileLoader._getMimeType pass encodeURIComponent(filename) so that
+        // a '#' in an embedded texture name (e.g. "albedo#1.jpg") is not treated as a fragment.
+        expect(GetMimeType(encodeURIComponent("albedo#1.jpg"))).toBe("image/jpeg");
+        expect(GetMimeType(encodeURIComponent("diffuse?map.png"))).toBe("image/png");
+    });
+
+    it("returns undefined for an unknown extension", () => {
+        expect(GetMimeType("textures/brick.xyz")).toBeUndefined();
     });
 });
