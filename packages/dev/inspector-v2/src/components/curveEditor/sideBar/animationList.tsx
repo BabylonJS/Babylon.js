@@ -90,7 +90,7 @@ type AnimationEntryProps = {
 const AnimationEntry: FunctionComponent<AnimationEntryProps> = (props) => {
     const { animation } = props;
     const styles = useStyles();
-    const { state: nativeState, observables: nativeObservables } = useBabylonCurveEditor();
+    const { observables: nativeObservables } = useBabylonCurveEditor();
     const { state, actions, observables } = useCurveEditor();
 
     const [isExpanded, setIsExpanded] = useState(false);
