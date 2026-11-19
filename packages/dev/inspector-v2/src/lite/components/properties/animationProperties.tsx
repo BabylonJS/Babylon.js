@@ -9,12 +9,15 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { Link } from "shared-ui-components/fluent/primitives/link";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
+import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 
 import { GetEntityId } from "../../../components/explorer/explorerModel";
 import { BoundProperty, ComputedProperty, DerivedProperty } from "../../../components/properties/boundProperty";
 import { useWatchedValue, useWatcher } from "../../../contexts/watcherContext";
 import { type ISelectionService } from "../../../services/selectionService";
 import { GetAnimationFrameRate, GetEntityAnimationGroups, GetTargetedAnimationDisplayName, SeekAnimationFrame } from "../../animationUtils";
+
+const LiteAnimationCurveEditor = MakeLazyComponent(async () => (await import("../curveEditor/curveEditorButton")).LiteAnimationCurveEditor);
 
 const GetIsPlaying = (group: AnimationGroup) => group.isPlaying;
 const GetCurrentFrame = (group: AnimationGroup) => group.currentTime * GetAnimationFrameRate(group);
@@ -67,6 +70,7 @@ export const AnimationGroupControlProperties: FunctionComponent<AnimationGroupPr
 
     return (
         <>
+            <LiteAnimationCurveEditor engine={engine} group={group} />
             <ButtonLine
                 uniqueId="Start/Stop"
                 label={isPlaying ? "Pause" : "Play"}

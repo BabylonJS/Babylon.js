@@ -6,7 +6,7 @@ import { makeStyles, tokens, Checkbox } from "@fluentui/react-components";
 import { StringTools } from "shared-ui-components/stringTools";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { useCurveEditor } from "../curveEditorContext";
+import { useBabylonCurveEditor } from "../curveEditorContext";
 
 const useStyles = makeStyles({
     root: {
@@ -55,20 +55,22 @@ type SaveAnimationPanelProps = {
 
 /**
  * Panel for saving animations to file or snippet server
+ * @param props - The panel props
  * @returns The save animation panel component
  */
-export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({ onClose: _onClose }) => {
+export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = (props) => {
+    const { onClose: _onClose } = props;
     const styles = useStyles();
-    const { state } = useCurveEditor();
+    const { state: nativeState } = useBabylonCurveEditor();
 
     const [selectedAnimations, setSelectedAnimations] = useState<Animation[]>(() => {
-        if (!state.animations) {
+        if (!nativeState.animations) {
             return [];
         }
-        if (state.useTargetAnimations) {
-            return (state.animations as TargetedAnimation[]).map((ta) => ta.animation);
+        if (nativeState.useTargetAnimations) {
+            return (nativeState.animations as TargetedAnimation[]).map((ta) => ta.animation);
         }
-        return [...(state.animations as Animation[])];
+        return [...(nativeState.animations as Animation[])];
     });
     const [snippetId, setSnippetId] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
@@ -76,9 +78,9 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
 
     const getAnimation = useCallback(
         (anim: Animation | TargetedAnimation): Animation => {
-            return state.useTargetAnimations ? (anim as TargetedAnimation).animation : (anim as Animation);
+            return nativeState.useTargetAnimations ? (anim as TargetedAnimation).animation : (anim as Animation);
         },
-        [state.useTargetAnimations]
+        [nativeState.useTargetAnimations]
     );
 
     const toggleAnimation = useCallback((animation: Animation, checked: boolean) => {
@@ -145,7 +147,7 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
             </div>
 
             <div className={styles.list}>
-                {state.animations?.map((anim, i) => {
+                {nativeState.animations?.map((anim, i) => {
                     const animation = getAnimation(anim);
                     const isChecked = selectedAnimations.includes(animation);
                     return <Checkbox key={i} label={animation.name} checked={isChecked} onChange={(_, data) => toggleAnimation(animation, !!data.checked)} />;

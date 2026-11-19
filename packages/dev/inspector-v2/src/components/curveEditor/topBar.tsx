@@ -3,11 +3,10 @@ import { type FunctionComponent, useCallback, useEffect, useState } from "react"
 import { makeStyles, tokens, Divider } from "@fluentui/react-components";
 import { AddRegular, DeleteRegular, FullScreenMaximizeRegular } from "@fluentui/react-icons";
 
-import { Animation } from "core/Animations/animation";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { FlatTangentIcon, LinearTangentIcon, BreakTangentIcon, UnifyTangentIcon, StepTangentIcon } from "shared-ui-components/fluent/icons";
-import { useCurveEditor } from "./curveEditorContext";
+import { useCurveEditor } from "./normalizedCurveEditorContext";
 
 const useStyles = makeStyles({
     root: {
@@ -62,8 +61,10 @@ export const TopBar: FunctionComponent = () => {
     const [frameControlEnabled, setFrameControlEnabled] = useState(false);
     const [valueControlEnabled, setValueControlEnabled] = useState(false);
 
-    const hasActiveAnimations = state.activeAnimations.length > 0;
+    const hasActiveAnimations = state.activeCurveAnimations.length > 0;
     const hasActiveKeyPoints = state.activeKeyPoints && state.activeKeyPoints.length > 0;
+    const hasUnsupportedTangent = state.activeKeyPoints?.some((keyPoint) => !keyPoint.curve.animation.supportsTangents) ?? false;
+    const hasInterpolationSupport = state.activeKeyPoints?.some((keyPoint) => keyPoint.curve.animation.supportsInterpolationEditing) ?? false;
 
     // Subscribe to observables
     useEffect(() => {
@@ -87,7 +88,7 @@ export const TopBar: FunctionComponent = () => {
         const onActiveKeyPointChangedObserver = observables.onActiveKeyPointChanged.add(() => {
             const numKeys = state.activeKeyPoints?.length || 0;
             const numAnims = state.activeKeyPoints ? new Set(state.activeKeyPoints.map((kp) => kp.curve.animation.uniqueId)).size : 0;
-            const hasActiveQuaternion = state.activeKeyPoints?.some((kp) => kp.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) ?? false;
+            const hasActiveQuaternion = state.activeKeyPoints?.some((kp) => kp.curve.animation.kind === "quaternion") ?? false;
 
             const frameEnabled = ((numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1)) && !hasActiveQuaternion;
             setFrameControlEnabled(frameEnabled);
@@ -170,35 +171,35 @@ export const TopBar: FunctionComponent = () => {
                 <Button
                     icon={FlatTangentIcon}
                     appearance="subtle"
-                    disabled={!hasActiveKeyPoints}
+                    disabled={!hasActiveKeyPoints || hasUnsupportedTangent}
                     onClick={() => observables.onFlattenTangentRequired.notifyObservers()}
                     title="Flatten tangent"
                 />
                 <Button
                     icon={LinearTangentIcon}
                     appearance="subtle"
-                    disabled={!hasActiveKeyPoints}
+                    disabled={!hasActiveKeyPoints || hasUnsupportedTangent}
                     onClick={() => observables.onLinearTangentRequired.notifyObservers()}
                     title="Linear tangent"
                 />
                 <Button
                     icon={BreakTangentIcon}
                     appearance="subtle"
-                    disabled={!hasActiveKeyPoints}
+                    disabled={!hasActiveKeyPoints || hasUnsupportedTangent}
                     onClick={() => observables.onBreakTangentRequired.notifyObservers()}
                     title="Break tangent"
                 />
                 <Button
                     icon={UnifyTangentIcon}
                     appearance="subtle"
-                    disabled={!hasActiveKeyPoints}
+                    disabled={!hasActiveKeyPoints || hasUnsupportedTangent}
                     onClick={() => observables.onUnifyTangentRequired.notifyObservers()}
                     title="Unify tangent"
                 />
                 <Button
                     icon={StepTangentIcon}
                     appearance="subtle"
-                    disabled={!hasActiveKeyPoints}
+                    disabled={!hasActiveKeyPoints || !hasInterpolationSupport}
                     onClick={() => observables.onStepTangentRequired.notifyObservers()}
                     title="Step tangent"
                 />

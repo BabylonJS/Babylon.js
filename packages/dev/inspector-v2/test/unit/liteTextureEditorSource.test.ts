@@ -11,7 +11,7 @@ const liteApi = vi.hoisted(() => ({
 vi.mock("@babylonjs/lite", () => liteApi);
 
 import { type Texture2D } from "@babylonjs/lite";
-import { GetLiteTextureEditability, LiteTextureEditorSource } from "../../src/lite/services/panes/properties/liteTextureEditorSource";
+import { GetLiteTextureEditability, LiteTextureEditorSource } from "../../src/lite/services/panes/properties/textureEditorSource";
 
 const gpuTexture = { usage: 2 };
 const texture = { width: 2, height: 2, texture: gpuTexture } as Texture2D;

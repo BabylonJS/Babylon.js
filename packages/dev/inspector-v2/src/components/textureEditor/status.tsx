@@ -1,6 +1,6 @@
 import { type FunctionComponent } from "react";
 
-import { type ITextureEditorSource } from "./textureEditorSource";
+import { type ITextureEditorSource } from "./textureEditorModel";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 

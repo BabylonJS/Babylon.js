@@ -7,7 +7,9 @@ import { ChevronDownRegular, ChevronRightRegular, SettingsRegular, DeleteRegular
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";
-import { useCurveEditor } from "../curveEditorContext";
+import { useCurveEditor } from "../normalizedCurveEditorContext";
+import { useBabylonCurveEditor } from "../curveEditorContext";
+import { CreateBabylonCurveEditorAnimations } from "../curveEditorSource";
 import { GetAnimationsWithChildren } from "../animatableAnimations";
 import { ChannelColors, ColorChannelColors } from "../curveEditorColors";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
@@ -82,36 +84,39 @@ type AnimationEntryProps = {
 
 /**
  * Single animation entry in the list
+ * @param props - The entry props
  * @returns Animation entry component
  */
-const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) => {
+const AnimationEntry: FunctionComponent<AnimationEntryProps> = (props) => {
+    const { animation } = props;
     const styles = useStyles();
+    const { state: nativeState, observables: nativeObservables } = useBabylonCurveEditor();
     const { state, actions, observables } = useCurveEditor();
 
     const [isExpanded, setIsExpanded] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
 
-    const isActive = state.activeAnimations.indexOf(animation) !== -1;
+    const isActive = state.activeCurveAnimations.some((curveAnimation) => curveAnimation.source === animation);
     const isExpandable = animation.dataType !== AnimationEnum.ANIMATIONTYPE_FLOAT;
 
     const handleClick = useCallback(
         (evt: React.MouseEvent) => {
             if (!evt.ctrlKey) {
-                actions.setActiveAnimations([animation]);
+                actions.setActiveCurveAnimations(CreateBabylonCurveEditorAnimations([animation]));
                 actions.resetAllActiveChannels();
             } else {
-                const index = state.activeAnimations.indexOf(animation);
+                const index = state.activeCurveAnimations.findIndex((curveAnimation) => curveAnimation.source === animation);
                 if (index !== -1) {
-                    actions.setActiveAnimations((prev) => prev.filter((a) => a !== animation));
+                    actions.setActiveCurveAnimations(state.activeCurveAnimations.filter((curveAnimation) => curveAnimation.source !== animation));
                 } else {
-                    actions.setActiveAnimations((prev) => [...prev, animation]);
+                    actions.setActiveCurveAnimations([...state.activeCurveAnimations, ...CreateBabylonCurveEditorAnimations([animation])]);
                 }
             }
-            actions.disableChannel(animation);
+            actions.disableChannel(animation.uniqueId);
             observables.onActiveAnimationChanged.notifyObservers({});
         },
-        [animation, actions, observables, state.activeAnimations]
+        [animation, actions, observables, state.activeCurveAnimations]
     );
 
     const handleExpandClick = useCallback((evt?: React.MouseEvent) => {
@@ -126,9 +131,9 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
     const handleDelete = useCallback(
         (evt?: React.MouseEvent) => {
             evt?.stopPropagation();
-            observables.onDeleteAnimation.notifyObservers(animation);
+            nativeObservables.onDeleteAnimation.notifyObservers(animation);
         },
-        [animation, observables]
+        [animation, nativeObservables]
     );
 
     const getSubEntries = () => {
@@ -215,23 +220,25 @@ type AnimationSubEntryProps = {
 
 /**
  * Sub-entry for vector/color animations (X, Y, Z, R, G, B, etc.)
+ * @param props - The sub-entry props
  * @returns Animation sub-entry component
  */
-const AnimationSubEntry: FunctionComponent<AnimationSubEntryProps> = ({ animation, subName, color }) => {
+const AnimationSubEntry: FunctionComponent<AnimationSubEntryProps> = (props) => {
+    const { animation, subName, color } = props;
     const styles = useStyles();
     const { actions, observables } = useCurveEditor();
 
-    const activeChannel = actions.getActiveChannel(animation);
+    const activeChannel = actions.getActiveChannel(animation.uniqueId);
     const isThisChannelActive = activeChannel === color;
     const isEnabled = activeChannel === undefined || isThisChannelActive;
 
     const handleClick = useCallback(() => {
         if (isThisChannelActive) {
             // Clicking on the already-active channel disables filtering (shows all)
-            actions.disableChannel(animation);
+            actions.disableChannel(animation.uniqueId);
         } else {
             // Clicking on a channel enables only that channel
-            actions.enableChannel(animation, color);
+            actions.enableChannel(animation.uniqueId, color);
         }
         observables.onActiveAnimationChanged.notifyObservers({});
     }, [animation, color, isThisChannelActive, actions, observables]);
@@ -250,7 +257,8 @@ const AnimationSubEntry: FunctionComponent<AnimationSubEntryProps> = ({ animatio
  */
 export const AnimationList: FunctionComponent = () => {
     const styles = useStyles();
-    const { state, observables } = useCurveEditor();
+    const { state: nativeState } = useBabylonCurveEditor();
+    const { observables } = useCurveEditor();
 
     // Re-render when animations are loaded or changed (e.g. animation deleted)
     // useCallback stabilizes the accessor to prevent infinite re-render loops
@@ -262,12 +270,12 @@ export const AnimationList: FunctionComponent = () => {
 
     // Read from the target if available (for dynamically added animations), including its child animatables'
     // animations (e.g. a skeleton's bones), so the list matches the animations pane. Otherwise use state.
-    const animations = state.target && !state.useTargetAnimations ? GetAnimationsWithChildren(state.target) : state.animations;
+    const animations = nativeState.target && !nativeState.useTargetAnimations ? GetAnimationsWithChildren(nativeState.target) : nativeState.animations;
 
     return (
         <div className={styles.root}>
             {animations?.map((a: Animation | TargetedAnimation, i: number) => {
-                const animation = state.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
+                const animation = nativeState.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
                 return <AnimationEntry key={animation.uniqueId ?? i} animation={animation} />;
             })}
         </div>

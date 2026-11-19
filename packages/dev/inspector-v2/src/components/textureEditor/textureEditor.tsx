@@ -3,7 +3,7 @@ import { type ComponentType, type FunctionComponent, useCallback, useEffect, use
 import { type ISize, type PointerInfo, type Scene, type Vector2 } from "core/index";
 import { type IPixelData, TextureCanvasManager } from "./canvasManager";
 import { type Channel, ChannelsBar } from "./channels";
-import { type ITextureEditorSource } from "./textureEditorSource";
+import { type ITextureEditorSource } from "./textureEditorModel";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 

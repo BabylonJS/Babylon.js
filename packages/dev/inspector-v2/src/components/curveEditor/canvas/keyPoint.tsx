@@ -3,14 +3,63 @@
  * This component renders individual key points on the curve editor canvas.
  * Includes full tangent editing support for feature parity with v1.
  */
-import { Animation } from "core/Animations/animation";
-import { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import { Vector2 } from "core/Maths/math.vector";
 import { type Nullable } from "core/types";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type CurveData } from "./curveData";
-import { type KeyPoint, type MainKeyPointInfo, type MainKeyPointPosition, useCurveEditor } from "../curveEditorContext";
+import { type KeyPoint, type MainKeyPointInfo, type MainKeyPointPosition, useCurveEditor } from "../normalizedCurveEditorContext";
+import { CurveEditorInterpolation } from "../curveEditorModel";
+
+class Vector2 {
+    public constructor(
+        public x = 0,
+        public y = 0
+    ) {}
+
+    public length(): number {
+        return Math.hypot(this.x, this.y);
+    }
+
+    public clone(): Vector2 {
+        return new Vector2(this.x, this.y);
+    }
+
+    public normalize(): this {
+        const length = this.length();
+        if (length !== 0) {
+            this.x /= length;
+            this.y /= length;
+        }
+        return this;
+    }
+
+    public scaleInPlace(scale: number): this {
+        this.x *= scale;
+        this.y *= scale;
+        return this;
+    }
+
+    public copyFrom(other: Vector2): this {
+        this.x = other.x;
+        this.y = other.y;
+        return this;
+    }
+
+    public rotateToRef(angle: number, result: Vector2): void {
+        const cosine = Math.cos(angle);
+        const sine = Math.sin(angle);
+        result.x = this.x * cosine - this.y * sine;
+        result.y = this.x * sine + this.y * cosine;
+    }
+
+    public static Dot(left: Vector2, right: Vector2): number {
+        return left.x * right.x + left.y * right.y;
+    }
+
+    public static Distance(left: Vector2, right: Vector2): number {
+        return Math.hypot(left.x - right.x, left.y - right.y);
+    }
+}
 
 // Inline SVG data URIs for key point icons
 const KEY_INACTIVE =
@@ -108,7 +157,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
 
     // Helper to compare curves by identity (animation + property) rather than reference
     const curvesMatch = useCallback((c1: CurveData, c2: CurveData) => {
-        return c1.animation.uniqueId === c2.animation.uniqueId && c1.property === c2.property;
+        return c1.animation.uniqueId === c2.animation.uniqueId && c1.componentIndex === c2.componentIndex;
     }, []);
 
     // Check if this key point is selected
@@ -180,11 +229,15 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
 
     // Tangent operations
     const flattenTangent = useCallback(() => {
+        if (!curve.animation.supportsTangents) {
+            return;
+        }
         // First update the interpolation mode to NONE without triggering observers
         const keys = curve.keys;
         const animationKeys = curve.animation.getKeys();
-        keys[keyId].interpolation = AnimationKeyInterpolation.NONE;
-        animationKeys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+        keys[keyId].interpolation = CurveEditorInterpolation.Linear;
+        animationKeys[keyId].interpolation = CurveEditorInterpolation.Linear;
+        curve.animation.setKeys(animationKeys);
 
         // Then update the tangents
         if (tangentSelectedIndex === -1 || tangentSelectedIndex === 0) {
@@ -203,11 +256,15 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     }, [keyId, tangentSelectedIndex, curve]);
 
     const linearTangent = useCallback(() => {
+        if (!curve.animation.supportsTangents) {
+            return;
+        }
         // First update the interpolation mode to NONE without triggering observers
         const keys = curve.keys;
         const animationKeys = curve.animation.getKeys();
-        keys[keyId].interpolation = AnimationKeyInterpolation.NONE;
-        animationKeys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+        keys[keyId].interpolation = CurveEditorInterpolation.Linear;
+        animationKeys[keyId].interpolation = CurveEditorInterpolation.Linear;
+        curve.animation.setKeys(animationKeys);
 
         // Then update the tangents
         if (tangentSelectedIndex === -1 || tangentSelectedIndex === 0) {
@@ -227,11 +284,15 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     }, [keyId, tangentSelectedIndex, curve]);
 
     const breakTangent = useCallback(() => {
+        if (!curve.animation.supportsTangents) {
+            return;
+        }
         // Update interpolation without triggering intermediate observers
         const keys = curve.keys;
         const animationKeys = curve.animation.getKeys();
-        keys[keyId].interpolation = AnimationKeyInterpolation.NONE;
-        animationKeys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+        keys[keyId].interpolation = CurveEditorInterpolation.Linear;
+        animationKeys[keyId].interpolation = CurveEditorInterpolation.Linear;
+        curve.animation.setKeys(animationKeys);
 
         curve.updateLockedTangentMode(keyId, false);
         curve.onDataUpdatedObservable.notifyObservers();
@@ -239,11 +300,15 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     }, [keyId, curve]);
 
     const unifyTangent = useCallback(() => {
+        if (!curve.animation.supportsTangents) {
+            return;
+        }
         // Update interpolation without triggering intermediate observers
         const keys = curve.keys;
         const animationKeys = curve.animation.getKeys();
-        keys[keyId].interpolation = AnimationKeyInterpolation.NONE;
-        animationKeys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+        keys[keyId].interpolation = CurveEditorInterpolation.Linear;
+        animationKeys[keyId].interpolation = CurveEditorInterpolation.Linear;
+        curve.animation.setKeys(animationKeys);
 
         curve.updateLockedTangentMode(keyId, true);
         curve.onDataUpdatedObservable.notifyObservers();
@@ -251,7 +316,9 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     }, [keyId, curve]);
 
     const stepTangent = useCallback(() => {
-        curve.updateInterpolationMode(keyId, AnimationKeyInterpolation.STEP);
+        if (curve.animation.supportsInterpolationEditing) {
+            curve.updateInterpolationMode(keyId, CurveEditorInterpolation.Step);
+        }
         setForceUpdate((v) => v + 1);
     }, [keyId, curve]);
 
@@ -303,8 +370,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 return;
             }
 
-            const animationType = curve.animation.dataType;
-            const isQuaternionAnimation = animationType === Animation.ANIMATIONTYPE_QUATERNION;
+            const isQuaternionAnimation = curve.animation.kind === "quaternion";
             if (isQuaternionAnimation) {
                 return;
             }
@@ -315,7 +381,8 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             // Update activeKeyPoints based on overlap
             actions.setActiveKeyPoints((prev) => {
                 const current = prev || [];
-                const matchesCurve = (kp: KeyPoint) => kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.property === curve.property && kp.keyId === keyId;
+                const matchesCurve = (kp: KeyPoint) =>
+                    kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.componentIndex === curve.componentIndex && kp.keyId === keyId;
                 const isCurrentlySelected = current.some(matchesCurve);
 
                 if (overlap && !isCurrentlySelected) {
@@ -339,16 +406,18 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 return;
             }
 
-            let newX = convertX(newValue);
+            const frameValue = state.capabilities.constrainKeyFrames ? Math.max(state.referenceMinFrame, Math.min(state.clipLength, newValue)) : newValue;
+            let newX = convertX(frameValue);
 
             // Clamp to neighbors
             const previousX = getPreviousX();
             const nextX = getNextX();
+            const spacing = state.capabilities.constrainKeyFrames ? 0.01 : 0;
             if (previousX !== null) {
-                newX = Math.max(previousX, newX);
+                newX = Math.max(previousX + spacing, newX);
             }
             if (nextX !== null) {
-                newX = Math.min(nextX, newX);
+                newX = Math.min(nextX - spacing, newX);
             }
 
             const frame = invertX(newX);
@@ -360,7 +429,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         return () => {
             observables.onFrameManuallyEntered.remove(observer);
         };
-    }, [observables, selectedState, convertX, invertX, getPreviousX, getNextX, onFrameValueChanged]);
+    }, [observables, selectedState, convertX, invertX, getPreviousX, getNextX, onFrameValueChanged, state.capabilities, state.referenceMinFrame, state.clipLength]);
 
     // Handle value manually entered from top bar
     useEffect(() => {
@@ -385,7 +454,8 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         const observer = observables.onSelectAllKeys.add(() => {
             actions.setActiveKeyPoints((prev) => {
                 const current = prev || [];
-                const matchesCurve = (kp: KeyPoint) => kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.property === curve.property && kp.keyId === keyId;
+                const matchesCurve = (kp: KeyPoint) =>
+                    kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.componentIndex === curve.componentIndex && kp.keyId === keyId;
                 const isCurrentlySelected = current.some(matchesCurve);
                 if (!isCurrentlySelected) {
                     return [...current, { curve, keyId }];
@@ -466,8 +536,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     // Mouse/pointer handlers
     const handlePointerDown = useCallback(
         (evt: React.PointerEvent<SVGSVGElement>) => {
-            const animationType = curve.animation.dataType;
-            const isQuaternionAnimation = animationType === Animation.ANIMATIONTYPE_QUATERNION;
+            const isQuaternionAnimation = curve.animation.kind === "quaternion";
 
             if (isQuaternionAnimation) {
                 return;
@@ -527,7 +596,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                     actions.setActiveKeyPoints((prev) => {
                         const current = prev || [];
                         const matchesCurve = (kp: KeyPoint) =>
-                            kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.property === curve.property && kp.keyId === keyId;
+                            kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.componentIndex === curve.componentIndex && kp.keyId === keyId;
                         return current.filter((kp) => !matchesCurve(kp));
                     });
                     actions.setMainKeyPoint(null);
@@ -590,21 +659,25 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 // Calculate new position using refs to avoid stale closure
                 let newX = currentXRef.current + (lockX.current ? 0 : diffX * scale);
                 let newY = currentYRef.current + (lockY.current ? 0 : diffY * scale);
+                if (state.capabilities.constrainKeyFrames) {
+                    newX = Math.max(convertX(state.referenceMinFrame), Math.min(convertX(state.clipLength), newX));
+                }
 
                 // Constrain to valid frame range
                 const previousX = getPreviousX();
                 const nextX = getNextX();
                 const epsilon = 0.01;
 
+                const spacing = state.capabilities.constrainKeyFrames ? epsilon : 0;
                 if (previousX !== null) {
-                    newX = Math.max(previousX + epsilon, newX);
+                    newX = Math.max(previousX + spacing, newX);
                 }
                 if (nextX !== null) {
-                    newX = Math.min(nextX - epsilon, newX);
+                    newX = Math.min(nextX - spacing, newX);
                 }
 
                 // Check frame lock constraints
-                if (keyId !== 0 && !(state.lockLastFrameFrame && keyId === curve.keys.length - 1)) {
+                if ((keyId !== 0 || state.capabilities.canEditBoundaryKeyFrames) && !(state.lockLastFrameFrame && keyId === curve.keys.length - 1)) {
                     const frame = invertX(newX);
                     onFrameValueChanged(frame);
                     observables.onFrameSet.notifyObservers(frame);
@@ -708,6 +781,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             selectedState,
             getPreviousX,
             getNextX,
+            convertX,
             invertX,
             invertY,
             scale,
@@ -717,6 +791,9 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             keyId,
             state.lockLastFrameFrame,
             state.lockLastFrameValue,
+            state.capabilities,
+            state.referenceMinFrame,
+            state.clipLength,
             observables,
             actions,
             extractSlope,
@@ -737,9 +814,8 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         return null;
     }
 
-    const animationType = curve.animation.dataType;
-    const isColorAnimation = animationType === Animation.ANIMATIONTYPE_COLOR3 || animationType === Animation.ANIMATIONTYPE_COLOR4;
-    const isQuaternionAnimation = animationType === Animation.ANIMATIONTYPE_QUATERNION;
+    const isColorAnimation = curve.animation.kind === "color3" || curve.animation.kind === "color4";
+    const isQuaternionAnimation = curve.animation.kind === "quaternion";
 
     // Determine icon based on selection state
     let icon: string;
@@ -759,8 +835,8 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     const isLockedTangent = key.lockedTangent ?? true;
     const hasStepTangentIn = keys[keyId - 1]?.interpolation ?? false;
     const hasStepTangentOut = key.interpolation ?? false;
-    const hasDefinedInTangent = curve.hasDefinedInTangent(keyId);
-    const hasDefinedOutTangent = curve.hasDefinedOutTangent(keyId);
+    const hasDefinedInTangent = curve.animation.supportsTangents && curve.hasDefinedInTangent(keyId);
+    const hasDefinedOutTangent = curve.animation.supportsTangents && curve.hasDefinedOutTangent(keyId);
 
     // Calculate tangent vectors from curve data (like v1's render method)
     // This recalculates on every render, including after tangent updates

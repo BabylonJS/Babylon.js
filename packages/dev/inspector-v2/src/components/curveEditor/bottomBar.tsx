@@ -3,12 +3,11 @@ import { type FunctionComponent, memo, useCallback, useEffect, useRef, useState 
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { PlayRegular, PreviousRegular, NextRegular, ArrowPreviousRegular, ArrowNextRegular, RecordStopRegular, TriangleLeftRegular } from "@fluentui/react-icons";
 
-import { type Animation } from "core/Animations/animation";
-
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
-import { useCurveEditor } from "./curveEditorContext";
+import { useCurveEditor } from "./normalizedCurveEditorContext";
 import { RangeSelector } from "./rangeSelector";
+import { type ICurveEditorAnimation } from "./curveEditorModel";
 
 /**
  * Checks whether any of the given animations has a key at the specified frame.
@@ -16,7 +15,7 @@ import { RangeSelector } from "./rangeSelector";
  * @param frame - The frame index to check for keys at
  * @returns True if a key exists at the frame, false otherwise.
  */
-function GetKeyAtAnyFrameIndex(animations: Animation[], frame: number): boolean {
+function GetKeyAtAnyFrameIndex(animations: ICurveEditorAnimation[], frame: number): boolean {
     for (const animation of animations) {
         for (const key of animation.getKeys()) {
             if (Math.floor(frame - key.frame) === 0) {
@@ -176,7 +175,7 @@ export const BottomBar: FunctionComponent = () => {
             observables.onMoveToFrameRequired.notifyObservers(newLength);
 
             // Create a key at the boundary if one doesn't exist
-            if (!GetKeyAtAnyFrameIndex(state.activeAnimations, newLength)) {
+            if (!GetKeyAtAnyFrameIndex(state.activeCurveAnimations, newLength)) {
                 observables.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
         });
@@ -189,7 +188,7 @@ export const BottomBar: FunctionComponent = () => {
             observables.onMoveToFrameRequired.notifyObservers(newLength);
 
             // Create a key at the boundary if one doesn't exist
-            if (!GetKeyAtAnyFrameIndex(state.activeAnimations, newLength)) {
+            if (!GetKeyAtAnyFrameIndex(state.activeCurveAnimations, newLength)) {
                 observables.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
 
@@ -204,7 +203,7 @@ export const BottomBar: FunctionComponent = () => {
             observables.onClipLengthIncreased.remove(onClipLengthIncreased);
             observables.onClipLengthDecreased.remove(onClipLengthDecreased);
         };
-    }, [observables, actions, state.activeAnimations]);
+    }, [observables, actions, state.activeCurveAnimations]);
 
     const handlePlayForward = useCallback(() => {
         actions.play(true);
@@ -267,7 +266,8 @@ export const BottomBar: FunctionComponent = () => {
         [state.clipLength, observables]
     );
 
-    const hasActiveAnimations = state.activeAnimations.length > 0;
+    const hasActiveAnimations = state.activeCurveAnimations.length > 0;
+    const canEditClipLength = state.capabilities.canEditClipLength;
 
     return (
         <div className={styles.root}>
@@ -292,11 +292,11 @@ export const BottomBar: FunctionComponent = () => {
                 <SpinButton className={styles.spinButton} value={displayFrame} onChange={handleFrameChange} min={state.fromKey} max={state.toKey} disabled={!hasActiveAnimations} />
             </div>
 
-            <RangeSelector />
+            <div className={styles.rangeSection}>{canEditClipLength && <RangeSelector />}</div>
 
             <div className={styles.clipLengthSection}>
                 <div className={styles.frameLabel}>Clip Length:</div>
-                <SpinButton className={styles.spinButton} value={clipLength} onChange={handleClipLengthChange} min={1} disabled={!hasActiveAnimations} />
+                <SpinButton className={styles.spinButton} value={clipLength} onChange={handleClipLengthChange} min={1} disabled={!hasActiveAnimations || !canEditClipLength} />
             </div>
         </div>
     );

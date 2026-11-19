@@ -6,7 +6,9 @@ import { Tools } from "core/Misc/tools";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { UploadButton } from "shared-ui-components/fluent/primitives/uploadButton";
-import { useCurveEditor } from "../curveEditorContext";
+import { useCurveEditor } from "../normalizedCurveEditorContext";
+import { useBabylonCurveEditor } from "../curveEditorContext";
+import { CreateBabylonCurveEditorAnimations } from "../curveEditorSource";
 
 const useStyles = makeStyles({
     root: {
@@ -53,11 +55,14 @@ type LoadAnimationPanelProps = {
 
 /**
  * Panel for loading animations from file or snippet server
+ * @param props - The panel props
  * @returns The load animation panel component
  */
-export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({ onClose }) => {
+export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = (props) => {
+    const { onClose } = props;
     const styles = useStyles();
-    const { state, actions, observables } = useCurveEditor();
+    const { actions, observables } = useCurveEditor();
+    const { state: nativeState } = useBabylonCurveEditor();
 
     const [snippetIdInput, setSnippetIdInput] = useState("");
     const [loadedSnippetId, setLoadedSnippetId] = useState<string | null>(null);
@@ -66,19 +71,19 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
     const loadAnimations = useCallback(
         (animations: Animation[]) => {
             // Update target
-            if (state.target) {
-                state.target.animations = animations;
+            if (nativeState.target) {
+                nativeState.target.animations = animations;
             }
 
             // Update active animations
-            actions.setActiveAnimations(animations.length ? animations : []);
+            actions.setActiveCurveAnimations(CreateBabylonCurveEditorAnimations(animations));
 
             // Close first so AnimationList mounts, then notify
             onClose();
             observables.onAnimationsLoaded.notifyObservers();
             observables.onActiveAnimationChanged.notifyObservers({});
         },
-        [state.target, actions, observables, onClose]
+        [nativeState.target, actions, observables, onClose]
     );
 
     const loadFromFile = useCallback(

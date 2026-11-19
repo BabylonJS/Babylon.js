@@ -2,7 +2,7 @@ import { type FunctionComponent, useCallback, useEffect, useRef, useState } from
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 
-import { useCurveEditor } from "../curveEditorContext";
+import { useCurveEditor } from "../normalizedCurveEditorContext";
 
 const useStyles = makeStyles({
     root: {
@@ -50,9 +50,11 @@ type PlayHeadProps = {
 /**
  * Playhead component showing current frame position
  * Uses direct DOM manipulation (like v1) to avoid render cycle flashing during animation
+ * @param props - Playhead dimensions.
  * @returns The playhead component
  */
-export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _height }) => {
+export const PlayHead: FunctionComponent<PlayHeadProps> = (props) => {
+    const { width } = props;
     const styles = useStyles();
     const { state, actions, observables } = useCurveEditor();
     const [isDragging, setIsDragging] = useState(false);
@@ -69,7 +71,7 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
     const referenceMaxFrameRef = useRef(state.referenceMaxFrame);
     const fromKeyRef = useRef(state.fromKey);
     const toKeyRef = useRef(state.toKey);
-    const activeAnimationsRef = useRef(state.activeAnimations);
+    const playbackRef = useRef(state.playback);
 
     // DOM refs for direct manipulation (avoids flash during playback)
     const lineRef = useRef<HTMLDivElement>(null);
@@ -84,8 +86,8 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
         referenceMaxFrameRef.current = state.referenceMaxFrame;
         fromKeyRef.current = state.fromKey;
         toKeyRef.current = state.toKey;
-        activeAnimationsRef.current = state.activeAnimations;
-    }, [state.referenceMinFrame, state.referenceMaxFrame, state.fromKey, state.toKey, state.activeAnimations]);
+        playbackRef.current = state.playback;
+    }, [state.referenceMinFrame, state.referenceMaxFrame, state.fromKey, state.toKey, state.playback]);
 
     // Calculate and apply playhead position directly to DOM
     const moveHead = useCallback(
@@ -158,19 +160,10 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
                 return;
             }
 
-            const animations = activeAnimationsRef.current;
-            if (animations.length > 0) {
-                const animation = animations[0];
-                if (animation && animation.runtimeAnimations && animation.runtimeAnimations.length > 0) {
-                    const runtimeAnimation = animation.runtimeAnimations[0];
-                    if (runtimeAnimation && runtimeAnimation.currentFrame !== undefined) {
-                        const frame = runtimeAnimation.currentFrame;
-                        moveHead(frame);
-                        // Notify other components (like RangeFrameBar) about the playhead position
-                        observables.onPlayheadMoved.notifyObservers(frame);
-                    }
-                }
-            }
+            const playback = playbackRef.current;
+            const frame = playback.getCurrentFrame();
+            moveHead(frame);
+            observables.onPlayheadMoved.notifyObservers(frame);
 
             animationFrameRef.current = requestAnimationFrame(trackAnimation);
         };

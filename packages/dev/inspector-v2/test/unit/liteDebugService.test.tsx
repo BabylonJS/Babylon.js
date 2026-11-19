@@ -74,8 +74,9 @@ describe("Babylon Lite debug service", () => {
 
     it("disables physics without worlds, discovers async worlds, and keeps both toggles independent", () => {
         const scene = { name: "Scene", meshes: [], _beforeRender: [] } as unknown as SceneContext;
-        const engine = { contexts: [scene] } as unknown as EngineContext;
+        const engine = { contexts: [scene], scRT: {} } as unknown as EngineContext;
         Object.assign(engine, { surfaces: [engine] });
+        Object.assign(scene, { surface: engine });
         let pane!: SidePaneDefinition;
         const shell = {
             addSidePane: (value: SidePaneDefinition) => {

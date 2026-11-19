@@ -8,7 +8,8 @@ import { type TargetedAnimation } from "core/Animations/animationGroup";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
-import { useCurveEditor } from "./curveEditorContext";
+import { useCurveEditor } from "./normalizedCurveEditorContext";
+import { useBabylonCurveEditor } from "./curveEditorContext";
 import { RemoveAnimationFromOwner } from "./animatableAnimations";
 import { AnimationList } from "./sideBar/animationList";
 import { AddAnimationPanel } from "./sideBar/addAnimationPanel";
@@ -73,6 +74,7 @@ type PopoverType = "add" | "load" | "save" | null;
  */
 export const SideBar: FunctionComponent = () => {
     const styles = useStyles();
+    const { state: nativeState, observables: nativeObservables } = useBabylonCurveEditor();
     const { state, actions, observables } = useCurveEditor();
 
     const [openPopover, setOpenPopover] = useState<PopoverType>(null);
@@ -80,11 +82,11 @@ export const SideBar: FunctionComponent = () => {
 
     // Get FPS from animations
     useEffect(() => {
-        if (state.animations && state.animations.length) {
-            const animation = state.useTargetAnimations ? (state.animations[0] as TargetedAnimation).animation : (state.animations[0] as Animation);
+        if (nativeState.animations && nativeState.animations.length) {
+            const animation = nativeState.useTargetAnimations ? (nativeState.animations[0] as TargetedAnimation).animation : (nativeState.animations[0] as Animation);
             setFps(animation.framePerSecond);
         }
-    }, [state.animations, state.useTargetAnimations]);
+    }, [nativeState.animations, nativeState.useTargetAnimations]);
 
     // Subscribe to animations loaded
     useEffect(() => {
@@ -96,19 +98,20 @@ export const SideBar: FunctionComponent = () => {
         };
     }, [observables]);
 
-    // Subscribe to delete animation request - use refs to access the current state.target and state.animations.
+    // Keep references to the latest native editor inputs for delete notifications.
     // The animations pane passes a new aggregate array on every render, so the mount-time array goes stale.
-    const targetRef = useRef(state.target);
-    targetRef.current = state.target;
-    const animationsRef = useRef(state.animations);
-    animationsRef.current = state.animations;
-    const useTargetAnimationsRef = useRef(state.useTargetAnimations);
-    useTargetAnimationsRef.current = state.useTargetAnimations;
+    const targetRef = useRef(nativeState.target);
+    targetRef.current = nativeState.target;
+    const animationsRef = useRef(nativeState.animations);
+    animationsRef.current = nativeState.animations;
+    const useTargetAnimationsRef = useRef(nativeState.useTargetAnimations);
+    useTargetAnimationsRef.current = nativeState.useTargetAnimations;
+    const activeCurveAnimationsRef = useRef(state.activeCurveAnimations);
+    activeCurveAnimationsRef.current = state.activeCurveAnimations;
 
     useEffect(() => {
-        const observer = observables.onDeleteAnimation.add((animation: Animation) => {
-            // Remove from active animations
-            actions.setActiveAnimations((prev) => prev.filter((a) => a !== animation));
+        const observer = nativeObservables.onDeleteAnimation.add((animation: Animation) => {
+            actions.setActiveCurveAnimations(activeCurveAnimationsRef.current.filter((curveAnimation) => curveAnimation.source !== animation));
 
             // Remove from whichever animatable owns it: the target or one of its child animatables (e.g. a bone of a skeleton)
             const target = targetRef.current;
@@ -116,7 +119,7 @@ export const SideBar: FunctionComponent = () => {
                 RemoveAnimationFromOwner(target, animation);
             }
 
-            // Also update state.animations if it's an array we can filter
+            // Also update the host animation list if it is an array we can filter
             // This mutates the array in place since we can't setState on a prop
             const animations = animationsRef.current;
             if (animations) {
@@ -133,17 +136,16 @@ export const SideBar: FunctionComponent = () => {
             observables.onActiveAnimationChanged.notifyObservers({});
         });
         return () => {
-            observables.onDeleteAnimation.remove(observer);
+            nativeObservables.onDeleteAnimation.remove(observer);
         };
-        // Note: We intentionally don't include actions in deps because setActiveAnimations is stable
-    }, [observables]);
+    }, [actions, observables, nativeObservables]);
 
     const handleFpsChange = useCallback(
         (value: number) => {
-            if (state.animations) {
+            if (nativeState.animations) {
                 setFps(value);
-                for (const anim of state.animations) {
-                    if (state.useTargetAnimations) {
+                for (const anim of nativeState.animations) {
+                    if (nativeState.useTargetAnimations) {
                         (anim as TargetedAnimation).animation.framePerSecond = value;
                     } else {
                         (anim as Animation).framePerSecond = value;
@@ -151,13 +153,13 @@ export const SideBar: FunctionComponent = () => {
                 }
             }
         },
-        [state.animations, state.useTargetAnimations]
+        [nativeState.animations, nativeState.useTargetAnimations]
     );
 
     return (
         <div className={styles.root}>
             <div className={styles.menuBar}>
-                {!state.useTargetAnimations && (
+                {!nativeState.useTargetAnimations && (
                     <>
                         <Popover
                             open={openPopover === "add"}
