@@ -5,6 +5,7 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
+import { WebXRWebGLLayerWrapper } from "core/XR/webXRWebGLLayer";
 import {
     WebGPUXREngineNotCompatibleErrorMessage,
     WebGPUXRNotSupportedErrorMessage,
@@ -620,6 +621,35 @@ describe("WebXRSessionManager", () => {
             expect(restoreDefaultFramebuffer).toHaveBeenCalledTimes(1);
             expect(sessionManager.inXRSession).toBe(false);
             expect((sessionManager as any)._graphicsBinding).toBeNull();
+        });
+    });
+
+    describe("browser session end cleanup", () => {
+        it("does not leave the XRWebGLLayer render target in the scene after each session", async () => {
+            let endHandler: (() => void) | undefined;
+            const requestSession = vi.fn().mockImplementation(async () => ({
+                addEventListener: (type: string, cb: () => void) => {
+                    if (type === "end") {
+                        endHandler = cb;
+                    }
+                },
+                end: vi.fn().mockResolvedValue(undefined),
+            }));
+            (sessionManager as any)._xrNavigator = { xr: { requestSession } };
+            const layer = { framebufferWidth: 4, framebufferHeight: 4, framebuffer: {} } as XRWebGLLayer;
+            const texturesBefore = scene.textures.length;
+
+            for (let session = 0; session < 3; session++) {
+                await sessionManager.initializeSessionAsync("immersive-vr", {});
+                expect(sessionManager.isNative).toBe(false);
+                sessionManager._setBaseLayerWrapper(new WebXRWebGLLayerWrapper(layer));
+                expect(sessionManager.getRenderTargetTextureForEye("left")).not.toBeNull();
+                expect(scene.textures.length).toBe(texturesBefore + 1);
+
+                endHandler!();
+            }
+
+            expect(scene.textures.length).toBe(texturesBefore);
         });
     });
 });
