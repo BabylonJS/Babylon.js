@@ -177,15 +177,11 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = (props) => {
         if (state.isPlaying) {
             animationFrameRef.current = requestAnimationFrame(trackAnimation);
         } else {
-            // When playback stops, sync the context's activeFrame
             if (animationFrameRef.current !== null) {
                 cancelAnimationFrame(animationFrameRef.current);
                 animationFrameRef.current = null;
             }
-            // Only update if the frame actually changed
-            if (currentFrameRef.current !== state.activeFrame) {
-                actions.setActiveFrame(currentFrameRef.current);
-            }
+            moveHead(state.activeFrame);
         }
 
         return () => {
@@ -194,7 +190,7 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = (props) => {
                 animationFrameRef.current = null;
             }
         };
-    }, [state.isPlaying, actions, moveHead, state.activeFrame]);
+    }, [state.isPlaying, moveHead, state.activeFrame]);
 
     // Convert x to frame
     const xToFrame = useCallback(

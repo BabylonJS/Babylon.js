@@ -125,6 +125,8 @@ export type CurveEditorActions = {
     stop: () => void;
     /** Move to specific frame */
     moveToFrame: (frame: number) => void;
+    /** Read the current playback frame without waiting for a render. */
+    getCurrentFrame: () => number;
     /** Refresh target state */
     refreshTarget: () => void;
     /** Clear key point selection */
@@ -322,21 +324,28 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
         setActiveCurveAnimations([...source.initialActiveAnimations]);
     }, [source]);
 
+    const getCurrentFrame = useCallback(() => (isPlaying ? source.playback.getCurrentFrame() : activeFrame), [source, isPlaying, activeFrame]);
+
     const play = useCallback(
         (forward: boolean) => {
+            const frame = getCurrentFrame();
+            setActiveFrame(frame);
             setIsPlaying(true);
-            source.playback.play(forward, fromKey, toKey, activeFrame);
+            source.playback.play(forward, fromKey, toKey, frame);
             setForwardAnimation(forward);
             observables.current.onAnimationStateChanged.notifyObservers();
         },
-        [source, fromKey, toKey, activeFrame]
+        [source, fromKey, toKey, getCurrentFrame]
     );
 
     const stop = useCallback(() => {
+        const frame = getCurrentFrame();
+        setActiveFrame(frame);
         setIsPlaying(false);
         source.playback.stop();
+        observables.current.onPlayheadMoved.notifyObservers(frame);
         observables.current.onAnimationStateChanged.notifyObservers();
-    }, [source]);
+    }, [source, getCurrentFrame]);
 
     const moveToFrame = useCallback(
         (frame: number) => {
@@ -399,12 +408,13 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             return null;
         }
 
+        const currentFrame = getCurrentFrame();
         let prevKey = -Number.MAX_VALUE;
 
         for (const animation of activeCurveAnimations) {
             const keys = animation.getKeys();
             for (const key of keys) {
-                if (key.frame < activeFrame && key.frame > prevKey) {
+                if (key.frame < currentFrame && key.frame > prevKey) {
                     prevKey = key.frame;
                 }
             }
@@ -415,19 +425,20 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
         }
 
         return prevKey;
-    }, [activeCurveAnimations, activeFrame, fromKey]);
+    }, [activeCurveAnimations, getCurrentFrame, fromKey]);
 
     const getNextKey = useCallback((): Nullable<number> => {
         if (activeCurveAnimations.length === 0) {
             return null;
         }
 
+        const currentFrame = getCurrentFrame();
         let nextKey = Number.MAX_VALUE;
 
         for (const animation of activeCurveAnimations) {
             const keys = animation.getKeys();
             for (const key of keys) {
-                if (key.frame > activeFrame && key.frame < nextKey) {
+                if (key.frame > currentFrame && key.frame < nextKey) {
                     nextKey = key.frame;
                 }
             }
@@ -438,7 +449,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
         }
 
         return nextKey;
-    }, [activeCurveAnimations, activeFrame, toKey]);
+    }, [activeCurveAnimations, getCurrentFrame, toKey]);
 
     // Build context value
     const state: CurveEditorState = useMemo(
@@ -501,6 +512,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             play,
             stop,
             moveToFrame,
+            getCurrentFrame,
             refreshTarget,
             clearSelection,
             enableChannel,
@@ -517,6 +529,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             play,
             stop,
             moveToFrame,
+            getCurrentFrame,
             refreshTarget,
             clearSelection,
             enableChannel,

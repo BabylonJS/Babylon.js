@@ -4,7 +4,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 
 import { useCurveEditor } from "../normalizedCurveEditorContext";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
-import { CurveData } from "./curveData";
+import { ClampFrameToClip, CurveData } from "./curveData";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
 import { DefaultCurveColor } from "../curveEditorColors";
@@ -185,7 +185,8 @@ export const Graph: FunctionComponent<GraphProps> = (props) => {
                     continue;
                 }
                 const keys = currentAnimation.getKeys();
-                const currentFrame = state.activeFrame;
+                const requestedFrame = actions.getCurrentFrame();
+                const currentFrame = state.capabilities.constrainKeyFrames ? ClampFrameToClip(requestedFrame, state.clipLength, currentAnimation.framePerSecond) : requestedFrame;
 
                 // Find where to insert the new key
                 let indexToAdd = -1;
@@ -203,10 +204,14 @@ export const Graph: FunctionComponent<GraphProps> = (props) => {
                 const leftKey = keys[indexToAdd];
                 const rightKey = keys[indexToAdd + 1];
 
-                if (leftKey && Math.fround(currentFrame) === Math.fround(leftKey.frame)) {
+                const sameFrame = (frame: number) =>
+                    state.capabilities.constrainKeyFrames
+                        ? Math.fround(currentFrame / currentAnimation.framePerSecond) === Math.fround(frame / currentAnimation.framePerSecond)
+                        : Math.fround(currentFrame) === Math.fround(frame);
+                if (leftKey && sameFrame(leftKey.frame)) {
                     // Key already exists at this frame, update it
                     leftKey.value = [...value];
-                } else if (rightKey && Math.fround(currentFrame) === Math.fround(rightKey.frame)) {
+                } else if (rightKey && sameFrame(rightKey.frame)) {
                     // Key already exists at this frame, update it
                     rightKey.value = [...value];
                 } else {
@@ -258,17 +263,17 @@ export const Graph: FunctionComponent<GraphProps> = (props) => {
             }
 
             // Group key points by animation
-            const keysByAnimation = new Map<ICurveEditorAnimation, Set<number>>();
+            const keysByAnimation = new Map<object, { animation: ICurveEditorAnimation; indices: Set<number> }>();
             for (const keyPoint of state.activeKeyPoints) {
                 const animation = keyPoint.curve.animation;
-                if (!keysByAnimation.has(animation)) {
-                    keysByAnimation.set(animation, new Set());
+                if (!keysByAnimation.has(animation.source)) {
+                    keysByAnimation.set(animation.source, { animation, indices: new Set() });
                 }
-                keysByAnimation.get(animation)!.add(keyPoint.keyId);
+                keysByAnimation.get(animation.source)!.indices.add(keyPoint.keyId);
             }
 
             // Delete keys from each animation (in reverse order to maintain indices)
-            for (const [animation, keyIndices] of keysByAnimation) {
+            for (const { animation, indices: keyIndices } of keysByAnimation.values()) {
                 const keys = animation.getKeys();
                 const sortedIndices = Array.from(keyIndices).sort((a, b) => b - a); // Sort descending
                 for (const index of sortedIndices) {
@@ -299,7 +304,7 @@ export const Graph: FunctionComponent<GraphProps> = (props) => {
             observables.onFrameRequired.remove(onFrameRequired);
             observables.onDeleteKeyActiveKeyPoints.remove(onDeleteKeyActiveKeyPoints);
         };
-    }, [observables, state.activeCurveAnimations, state.activeFrame, state.activeKeyPoints, actions]);
+    }, [observables, state.activeCurveAnimations, state.activeKeyPoints, state.capabilities, state.clipLength, actions]);
 
     // Invalidation counter — incremented when keys are added/deleted so curves recompute
     const [curveVersion, invalidateCurves] = useReducer((c: number) => c + 1, 0);
@@ -609,8 +614,6 @@ export const Graph: FunctionComponent<GraphProps> = (props) => {
                                 key={`${curveId}-key-${keyIndex}`}
                                 x={x}
                                 y={y}
-                                getPreviousX={() => (keyIndex > 0 ? frameToX(curve.keys[keyIndex - 1].frame) : null)}
-                                getNextX={() => (keyIndex < curve.keys.length - 1 ? frameToX(curve.keys[keyIndex + 1].frame) : null)}
                                 invertX={xToFrame}
                                 invertY={yToValue}
                                 convertX={frameToX}

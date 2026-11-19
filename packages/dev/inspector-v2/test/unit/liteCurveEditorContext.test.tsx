@@ -7,6 +7,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CurveEditorProvider, useCurveEditor } from "../../src/components/curveEditor/normalizedCurveEditorContext";
 import { type ICurveEditorAnimation, type ICurveEditorSource } from "../../src/components/curveEditor/curveEditorModel";
 import { PlayHead } from "../../src/components/curveEditor/canvas/playHead";
+import { Graph } from "../../src/components/curveEditor/canvas/graph";
+import { CurveData } from "../../src/components/curveEditor/canvas/curveData";
+import { RangeFrameBar } from "../../src/components/curveEditor/canvas/rangeFrameBar";
+import { CreateBabylonCurveEditorAnimation } from "../../src/components/curveEditor/curveEditorSource";
+import { Animation } from "core/Animations/animation";
+import { Quaternion } from "core/Maths/math.vector";
 import { LiteCurveEditorSideBar } from "../../src/lite/components/curveEditor/sideBar";
 
 vi.hoisted(() => {
@@ -123,10 +129,12 @@ describe("Lite curve-editor track selection", () => {
         };
         let refresh: (() => void) | undefined;
         let prepare: (() => void) | undefined;
+        let moveTo: ((frame: number) => void) | undefined;
         const Probe = () => {
             const { state, actions } = useCurveEditor();
             refresh = actions.refreshTarget;
             prepare = actions.prepare;
+            moveTo = actions.moveToFrame;
             return <output>{state.activeFrame}</output>;
         };
         const root = createRoot(container);
@@ -142,9 +150,222 @@ describe("Lite curve-editor track selection", () => {
         expect(container.querySelector("output")?.textContent).toBe("15");
         const handle = container.querySelectorAll("div")[2];
         expect(handle.textContent).toBe("15");
-        expect(handle.style.left).toBe("180px");
+        const midpoint = parseFloat(handle.style.left);
+        await act(async () => moveTo?.(0));
+        const start = parseFloat(handle.style.left);
+        await act(async () => moveTo?.(30));
+        const end = parseFloat(handle.style.left);
+        expect(midpoint).toBeCloseTo((start + end) / 2);
+        await act(async () => moveTo?.(15));
         await act(async () => refresh?.());
         expect(moveToFrame).toHaveBeenCalledWith(15, expect.any(Number), expect.any(Number), false);
         await act(async () => root.unmount());
+    });
+
+    it("uses the live playback frame when changing direction and pausing", async () => {
+        let currentFrame = 0;
+        const playback = { play: vi.fn(), stop: vi.fn(), moveToFrame: vi.fn(), getCurrentFrame: () => currentFrame };
+        const source: ICurveEditorSource = {
+            animations: [],
+            initialActiveAnimations: [],
+            playback,
+            capabilities: {
+                canEditClipLength: false,
+                canDeleteBoundaryKeys: true,
+                canEditBoundaryKeyFrames: true,
+                canDeleteLastKey: false,
+                constrainKeyFrames: true,
+            },
+        };
+        let play: ((forward: boolean) => void) | undefined;
+        let stop: (() => void) | undefined;
+        const Probe = () => {
+            const { state, actions } = useCurveEditor();
+            play = actions.play;
+            stop = actions.stop;
+            return <output>{state.activeFrame}</output>;
+        };
+        const root = createRoot(container);
+        await act(async () =>
+            root.render(
+                <CurveEditorProvider source={source}>
+                    <Probe />
+                </CurveEditorProvider>
+            )
+        );
+        await act(async () => play?.(true));
+        currentFrame = 30;
+        await act(async () => play?.(false));
+        expect(playback.play).toHaveBeenLastCalledWith(false, expect.any(Number), expect.any(Number), 30);
+        currentFrame = 42;
+        await act(async () => stop?.());
+        expect(container.querySelector("output")?.textContent).toBe("42");
+        await act(async () => play?.(true));
+        expect(playback.play).toHaveBeenLastCalledWith(true, expect.any(Number), expect.any(Number), 42);
+        await act(async () => root.unmount());
+    });
+
+    it("deletes selected keys from the same native track after it is toggled", async () => {
+        const native = new Animation("track", "value", 30, Animation.ANIMATIONTYPE_FLOAT);
+        native.setKeys([0, 10, 20, 30, 40].map((frame) => ({ frame, value: frame })));
+        const first = CreateBabylonCurveEditorAnimation(native)!;
+        const second = CreateBabylonCurveEditorAnimation(native)!;
+        const source: ICurveEditorSource = {
+            animations: [first],
+            initialActiveAnimations: [first],
+            playback: { play: () => {}, stop: () => {}, moveToFrame: () => {}, getCurrentFrame: () => 0 },
+            clipDuration: 40,
+            capabilities: {
+                canEditClipLength: true,
+                canDeleteBoundaryKeys: true,
+                canEditBoundaryKeyFrames: true,
+                canDeleteLastKey: true,
+                constrainKeyFrames: false,
+            },
+        };
+        let context: ReturnType<typeof useCurveEditor>;
+        const Probe = () => {
+            context = useCurveEditor();
+            return null;
+        };
+        const root = createRoot(container);
+        await act(async () =>
+            root.render(
+                <CurveEditorProvider source={source}>
+                    <Probe />
+                    <Graph width={300} height={200} />
+                </CurveEditorProvider>
+            )
+        );
+        await act(async () => context.actions.setActiveKeyPoints([{ curve: new CurveData("#fff", first), keyId: 1 }]));
+        await act(async () => context.actions.setActiveCurveAnimations([]));
+        await act(async () => context.actions.setActiveCurveAnimations([second]));
+        await act(async () => context.actions.setActiveKeyPoints((previous) => [...(previous ?? []), { curve: new CurveData("#fff", second), keyId: 2 }]));
+        await act(async () => context.observables.onDeleteKeyActiveKeyPoints.notifyObservers());
+        expect(native.getKeys().map((key) => key.frame)).toEqual([0, 30, 40]);
+        await act(async () => root.unmount());
+    });
+
+    it("keeps quaternion points out of bulk selections", async () => {
+        const translation = new Animation("translation", "x", 30, Animation.ANIMATIONTYPE_FLOAT);
+        translation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 10, value: 1 },
+        ]);
+        const rotation = new Animation("rotation", "rotationQuaternion", 30, Animation.ANIMATIONTYPE_QUATERNION);
+        rotation.setKeys([
+            { frame: 0, value: new Quaternion(0, 0, 0, 1) },
+            { frame: 10, value: new Quaternion(0, 1, 0, 0) },
+        ]);
+        const animations = [CreateBabylonCurveEditorAnimation(translation)!, CreateBabylonCurveEditorAnimation(rotation)!];
+        const source: ICurveEditorSource = {
+            animations,
+            initialActiveAnimations: animations,
+            playback: { play: () => {}, stop: () => {}, moveToFrame: () => {}, getCurrentFrame: () => 0 },
+            clipDuration: 10,
+            capabilities: {
+                canEditClipLength: false,
+                canDeleteBoundaryKeys: true,
+                canEditBoundaryKeyFrames: true,
+                canDeleteLastKey: false,
+                constrainKeyFrames: true,
+            },
+        };
+        let context: ReturnType<typeof useCurveEditor>;
+        const Probe = () => {
+            context = useCurveEditor();
+            return null;
+        };
+        const root = createRoot(container);
+        await act(async () =>
+            root.render(
+                <CurveEditorProvider source={source}>
+                    <Probe />
+                    <Graph width={300} height={200} />
+                </CurveEditorProvider>
+            )
+        );
+        await act(async () => context.actions.prepare());
+        await act(async () => context.observables.onSelectAllKeys.notifyObservers());
+        expect(context.state.activeKeyPoints).toHaveLength(2);
+        expect(context.state.activeKeyPoints?.every((point) => point.curve.animation.source === translation)).toBe(true);
+        await act(async () => context.observables.onMainKeyPointMoved.notifyObservers({ x: 150, y: 120 }));
+        expect(rotation.getKeys().map((key) => key.value.asArray())).toEqual([
+            [0, 0, 0, 1],
+            [0, 1, 0, 0],
+        ]);
+        await act(async () => root.unmount());
+    });
+
+    it("keeps end-of-range insertion in the clip and updates key markers", async () => {
+        const native = new Animation("track", "value", 30, Animation.ANIMATIONTYPE_FLOAT);
+        native.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 20, value: 20 },
+        ]);
+        const animation = CreateBabylonCurveEditorAnimation(native)!;
+        const source: ICurveEditorSource = {
+            animations: [animation],
+            initialActiveAnimations: [animation],
+            playback: { play: () => {}, stop: () => {}, moveToFrame: () => {}, getCurrentFrame: () => 0 },
+            clipDuration: 30.75,
+            capabilities: {
+                canEditClipLength: false,
+                canDeleteBoundaryKeys: true,
+                canEditBoundaryKeyFrames: true,
+                canDeleteLastKey: false,
+                constrainKeyFrames: true,
+            },
+        };
+        let context: ReturnType<typeof useCurveEditor>;
+        const Probe = () => {
+            context = useCurveEditor();
+            return null;
+        };
+        const root = createRoot(container);
+        const widthDescriptor = Object.getOwnPropertyDescriptor(SVGElement.prototype, "clientWidth");
+        Object.defineProperty(SVGElement.prototype, "clientWidth", { configurable: true, get: () => 300 });
+        try {
+            await act(async () =>
+                root.render(
+                    <CurveEditorProvider source={source}>
+                        <Probe />
+                        <RangeFrameBar width={300} />
+                        <Graph width={300} height={200} />
+                    </CurveEditorProvider>
+                )
+            );
+            await act(async () => context.actions.prepare());
+            const svg = container.querySelector("svg")!;
+            const bar = svg.parentElement!;
+            bar.setPointerCapture = () => {};
+            const markerPositions = () => [...svg.querySelectorAll('line[y1="0"][y2="40"]')].map((line) => Number(line.getAttribute("x1")));
+            expect(markerPositions()).toHaveLength(3);
+            const event = new MouseEvent("pointerdown", { bubbles: true });
+            Object.defineProperty(event, "offsetX", { value: 300 });
+            await act(async () => bar.dispatchEvent(event));
+            expect(context.state.activeFrame).toBe(30.75);
+            await act(async () => context.observables.onCreateOrUpdateKeyPointRequired.notifyObservers());
+            const inserted = native.getKeys().at(-1)!.frame;
+            expect(inserted).toBeLessThanOrEqual(30.75);
+            expect(Math.fround(inserted / 30)).toBeLessThanOrEqual(30.75 / 30);
+            expect(markerPositions()).toHaveLength(4);
+            const keys = animation.getKeys();
+            keys[1].frame = 10;
+            animation.setKeys(keys);
+            await act(async () => context.observables.onActiveKeyDataChanged.notifyObservers(1));
+            expect(markerPositions()).toContain((10 / 30.75) * 300);
+            keys.splice(1, 1);
+            animation.setKeys(keys);
+            await act(async () => context.observables.onActiveAnimationChanged.notifyObservers({}));
+            expect(markerPositions()).toHaveLength(3);
+        } finally {
+            await act(async () => root.unmount());
+            if (widthDescriptor) {
+                Object.defineProperty(SVGElement.prototype, "clientWidth", widthDescriptor);
+            } else {
+                Reflect.deleteProperty(SVGElement.prototype, "clientWidth");
+            }
+        }
     });
 });

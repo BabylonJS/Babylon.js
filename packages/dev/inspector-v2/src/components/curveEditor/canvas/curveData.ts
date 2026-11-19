@@ -12,6 +12,79 @@ export interface KeyEntry {
     interpolation?: CurveEditorInterpolation;
 }
 
+const Float32Value = new Float32Array(1);
+const Float32Bits = new Uint32Array(Float32Value.buffer);
+
+function AdjacentFloat32(value: number, direction: 1 | -1): number {
+    Float32Value[0] = value;
+    if ((direction > 0 && Float32Value[0] > value) || (direction < 0 && Float32Value[0] < value)) {
+        return Float32Value[0];
+    }
+    if (Float32Value[0] === 0) {
+        Float32Bits[0] = direction > 0 ? 1 : 0x80000001;
+    } else {
+        Float32Bits[0] += Float32Value[0] > 0 ? direction : -direction;
+    }
+    return Float32Value[0];
+}
+
+function FrameBounds(
+    keys: readonly { frame: number }[],
+    index: number,
+    minFrame: number,
+    maxFrame: number,
+    spacing: number,
+    frameRate: number | undefined,
+    selected?: ReadonlySet<number>
+): [number, number] {
+    let min = minFrame;
+    let max = maxFrame;
+    if (frameRate !== undefined && Number.isFinite(max)) {
+        const time = max / frameRate;
+        if (Math.fround(time) > time) {
+            max = AdjacentFloat32(time, -1) * frameRate;
+        }
+    }
+    if (index > 0 && !selected?.has(index - 1)) {
+        const previous = keys[index - 1].frame;
+        min = Math.max(min, previous + spacing, frameRate === undefined ? -Infinity : AdjacentFloat32(previous / frameRate, 1) * frameRate);
+    }
+    if (index < keys.length - 1 && !selected?.has(index + 1)) {
+        const next = keys[index + 1].frame;
+        max = Math.min(max, next - spacing, frameRate === undefined ? Infinity : AdjacentFloat32(next / frameRate, -1) * frameRate);
+    }
+    return [min, max];
+}
+
+/**
+ * Clamps a frame to a clip whose key times are stored as Float32 seconds.
+ * @param frame Requested frame.
+ * @param maxFrame Clip end frame.
+ * @param frameRate Frames per second.
+ * @returns A representable frame within the clip.
+ */
+export function ClampFrameToClip(frame: number, maxFrame: number, frameRate: number): number {
+    const time = maxFrame / frameRate;
+    const lastTime = Math.fround(time) > time ? AdjacentFloat32(time, -1) : time;
+    return Math.max(0, Math.min(frame, maxFrame, lastTime * frameRate));
+}
+
+/**
+ * Clamps a single key retime to the clip and its neighbors.
+ * @param curve The curve containing the key.
+ * @param index The key index.
+ * @param frame Requested frame.
+ * @param minFrame Minimum allowed frame.
+ * @param maxFrame Maximum allowed frame.
+ * @param spacing Minimum frame spacing.
+ * @param float32Time Whether the host stores key times as Float32 seconds.
+ * @returns A valid frame, or the original frame if no valid interval exists.
+ */
+export function ClampKeyFrame(curve: CurveData, index: number, frame: number, minFrame: number, maxFrame: number, spacing: number, float32Time: boolean): number {
+    const [min, max] = FrameBounds(curve.keys, index, minFrame, maxFrame, spacing, float32Time ? curve.animation.framePerSecond : undefined);
+    return min <= max ? Math.max(min, Math.min(max, frame)) : curve.keys[index].frame;
+}
+
 /**
  * Moves selected keys together, keeping each track ordered and within the clip.
  * @param points Selected curve points.
@@ -32,13 +105,13 @@ export function MoveSelectedKeyFrames(
     lockBoundaryFrames: boolean,
     lockLastFrame: boolean
 ): number {
-    const groups = new Map<ICurveEditorAnimation, { keys: CurveEditorKey[]; indices: Set<number>; curves: Set<CurveData> }>();
+    const groups = new Map<object, { animation: ICurveEditorAnimation; keys: CurveEditorKey[]; indices: Set<number>; curves: Set<CurveData> }>();
     for (const point of points) {
         const animation = point.curve.animation;
-        let group = groups.get(animation);
+        let group = groups.get(animation.source);
         if (!group) {
-            group = { keys: animation.getKeys(), indices: new Set(), curves: new Set() };
-            groups.set(animation, group);
+            group = { animation, keys: animation.getKeys(), indices: new Set(), curves: new Set() };
+            groups.set(animation.source, group);
         }
         group.indices.add(point.keyId);
         for (const sibling of point.curve.siblings.length ? point.curve.siblings : [point.curve]) {
@@ -48,21 +121,16 @@ export function MoveSelectedKeyFrames(
 
     let minDelta = -Infinity;
     let maxDelta = Infinity;
-    for (const { keys, indices } of groups.values()) {
+    for (const { animation, keys, indices } of groups.values()) {
         for (const index of indices) {
             const frame = keys[index].frame;
             if ((lockBoundaryFrames && (index === 0 || index === keys.length - 1)) || (lockLastFrame && index === keys.length - 1)) {
                 minDelta = Math.max(minDelta, 0);
                 maxDelta = Math.min(maxDelta, 0);
             }
-            minDelta = Math.max(minDelta, minFrame - frame);
-            maxDelta = Math.min(maxDelta, maxFrame - frame);
-            if (index > 0 && !indices.has(index - 1)) {
-                minDelta = Math.max(minDelta, keys[index - 1].frame + spacing - frame);
-            }
-            if (index < keys.length - 1 && !indices.has(index + 1)) {
-                maxDelta = Math.min(maxDelta, keys[index + 1].frame - spacing - frame);
-            }
+            const [min, max] = FrameBounds(keys, index, minFrame, maxFrame, spacing, animation.framePerSecond, indices);
+            minDelta = Math.max(minDelta, min - frame);
+            maxDelta = Math.min(maxDelta, max - frame);
         }
     }
 
@@ -70,7 +138,18 @@ export function MoveSelectedKeyFrames(
     if (appliedDelta === 0) {
         return 0;
     }
-    for (const [animation, { keys, indices, curves }] of groups) {
+    for (const { animation, keys, indices } of groups.values()) {
+        let previousTime = -Infinity;
+        for (let index = 0; index < keys.length; index++) {
+            const frame = keys[index].frame + (indices.has(index) ? appliedDelta : 0);
+            const time = Math.fround(frame / animation.framePerSecond);
+            if (time <= previousTime || frame < minFrame || frame > maxFrame || time > maxFrame / animation.framePerSecond) {
+                return 0;
+            }
+            previousTime = time;
+        }
+    }
+    for (const { animation, keys, indices, curves } of groups.values()) {
         for (const index of indices) {
             keys[index].frame += appliedDelta;
         }
@@ -107,7 +186,7 @@ export class CurveData {
         if (keys.length < 2) {
             return "";
         }
-        const evaluate = this.animation.createEvaluator?.() ?? ((frame: number) => this.animation.evaluate(frame));
+        let evaluate: ((frame: number) => readonly number[]) | undefined;
         let pathData = `M${convertX(keys[0].frame)} ${convertY(keys[0].value)}`;
 
         for (let keyIndex = 1; keyIndex < keys.length; keyIndex++) {
@@ -131,6 +210,7 @@ export class CurveData {
                 continue;
             }
 
+            evaluate ??= this.animation.createEvaluator?.() ?? ((frame: number) => this.animation.evaluate(frame));
             for (let frame = prevFrame; frame < currentFrame; frame += frameDist / CurveData.SampleRate) {
                 const keyValue = evaluate(frame);
                 pathData += ` L${convertX(frame)} ${convertY(keyValue[this._componentIndex()] ?? 0)}`;
@@ -212,6 +292,7 @@ export class CurveData {
 
     public storeDefaultInTangent(keyIndex: number): void {
         const keys = this.animation.getKeys();
+        this._ensureTangent(keys, keyIndex, "inTangent");
         if (this.hasDefinedInTangent(keyIndex)) {
             this.keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
         }
@@ -220,6 +301,7 @@ export class CurveData {
 
     public storeDefaultOutTangent(keyIndex: number): void {
         const keys = this.animation.getKeys();
+        this._ensureTangent(keys, keyIndex, "outTangent");
         if (this.hasDefinedOutTangent(keyIndex)) {
             this.keys[keyIndex].outTangent = this.evaluateOutTangent(keyIndex);
         }
@@ -285,6 +367,15 @@ export class CurveData {
         tangentValues[this._componentIndex()] = value;
         key[tangent] = tangentValues;
         this.animation.setKeys(keys);
+        for (const curve of this.siblings) {
+            for (let index = 0; index < keys.length; index++) {
+                curve.keys[index].inTangent = keys[index].inTangent?.[curve._componentIndex()];
+                curve.keys[index].outTangent = keys[index].outTangent?.[curve._componentIndex()];
+            }
+            if (curve !== this) {
+                curve.onDataUpdatedObservable.notifyObservers();
+            }
+        }
     }
 
     private _ensureTangent(keys: CurveEditorKey[], keyIndex: number, tangent: "inTangent" | "outTangent"): void {

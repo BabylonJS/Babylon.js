@@ -3,10 +3,9 @@
  * This component renders individual key points on the curve editor canvas.
  * Includes full tangent editing support for feature parity with v1.
  */
-import { type Nullable } from "core/types";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MoveSelectedKeyFrames, type CurveData } from "./curveData";
+import { ClampKeyFrame, MoveSelectedKeyFrames, type CurveData } from "./curveData";
 import { type KeyPoint, type MainKeyPointInfo, type MainKeyPointPosition, useCurveEditor } from "../normalizedCurveEditorContext";
 import { CurveEditorInterpolation } from "../curveEditorModel";
 
@@ -90,8 +89,6 @@ enum ControlMode {
 interface IKeyPointComponentProps {
     x: number;
     y: number;
-    getPreviousX: () => Nullable<number>;
-    getNextX: () => Nullable<number>;
     invertX: (x: number) => number;
     invertY: (y: number) => number;
     convertX: (x: number) => number;
@@ -111,7 +108,7 @@ interface IKeyPointComponentProps {
  * @returns The rendered key point SVG element
  */
 export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps> = (props) => {
-    const { x: initialX, y: initialY, getPreviousX, getNextX, invertX, invertY, convertX, convertY, scale, keyId, curve, channel, onFrameValueChanged, onKeyValueChanged } = props;
+    const { x: initialX, y: initialY, invertX, invertY, convertX, convertY, scale, keyId, curve, channel, onFrameValueChanged, onKeyValueChanged } = props;
 
     const { state, actions, observables } = useCurveEditor();
 
@@ -405,31 +402,23 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             if (selectedState === SelectionState.None) {
                 return;
             }
-
-            const frameValue = state.capabilities.constrainKeyFrames ? Math.max(state.referenceMinFrame, Math.min(state.clipLength, newValue)) : newValue;
-            let newX = convertX(frameValue);
-
-            // Clamp to neighbors
-            const previousX = getPreviousX();
-            const nextX = getNextX();
-            const spacing = state.capabilities.constrainKeyFrames ? 0.01 : 0;
-            if (previousX !== null) {
-                newX = Math.max(previousX + spacing, newX);
+            if ((!state.capabilities.canEditBoundaryKeyFrames && keyId === 0) || (state.lockLastFrameFrame && keyId === curve.keys.length - 1)) {
+                return;
             }
-            if (nextX !== null) {
-                newX = Math.min(nextX - spacing, newX);
-            }
-
-            const frame = invertX(newX);
+            const spacing = Math.abs(invertX(currentXRef.current + 0.01) - invertX(currentXRef.current));
+            const constrained = state.capabilities.constrainKeyFrames;
+            const frame = ClampKeyFrame(curve, keyId, newValue, constrained ? state.referenceMinFrame : -Infinity, constrained ? state.clipLength : Infinity, spacing, constrained);
+            const newX = convertX(frame);
             currentXRef.current = newX;
             setCurrentX(newX);
             onFrameValueChanged(frame);
+            observables.onActiveKeyDataChanged.notifyObservers(keyId);
         });
 
         return () => {
             observables.onFrameManuallyEntered.remove(observer);
         };
-    }, [observables, selectedState, convertX, invertX, getPreviousX, getNextX, onFrameValueChanged, state.capabilities, state.referenceMinFrame, state.clipLength]);
+    }, [observables, selectedState, curve, keyId, convertX, invertX, onFrameValueChanged, state.capabilities, state.referenceMinFrame, state.clipLength, state.lockLastFrameFrame]);
 
     // Handle value manually entered from top bar
     useEffect(() => {
@@ -452,6 +441,9 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     // Handle select all keys
     useEffect(() => {
         const observer = observables.onSelectAllKeys.add(() => {
+            if (curve.animation.kind === "quaternion") {
+                return;
+            }
             actions.setActiveKeyPoints((prev) => {
                 const current = prev || [];
                 const matchesCurve = (kp: KeyPoint) =>
@@ -680,19 +672,19 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                         );
                         newX = convertX(oldFrame + delta);
                     } else {
-                        if (state.capabilities.constrainKeyFrames) {
-                            newX = Math.max(convertX(state.referenceMinFrame), Math.min(convertX(state.clipLength), newX));
-                        }
-                        const previousX = getPreviousX();
-                        const nextX = getNextX();
-                        const spacing = state.capabilities.constrainKeyFrames ? 0.01 : 0;
-                        if (previousX !== null) {
-                            newX = Math.max(previousX + spacing, newX);
-                        }
-                        if (nextX !== null) {
-                            newX = Math.min(nextX - spacing, newX);
-                        }
-                        onFrameValueChanged(invertX(newX));
+                        const constrained = state.capabilities.constrainKeyFrames;
+                        const spacing = Math.abs(invertX(currentXRef.current + 0.01) - invertX(currentXRef.current));
+                        const frame = ClampKeyFrame(
+                            curve,
+                            keyId,
+                            invertX(newX),
+                            constrained ? state.referenceMinFrame : -Infinity,
+                            constrained ? state.clipLength : Infinity,
+                            spacing,
+                            constrained
+                        );
+                        newX = convertX(frame);
+                        onFrameValueChanged(frame);
                     }
                     const frame = invertX(newX);
                     observables.onFrameSet.notifyObservers(frame);
@@ -797,8 +789,6 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         },
         [
             selectedState,
-            getPreviousX,
-            getNextX,
             convertX,
             invertX,
             invertY,

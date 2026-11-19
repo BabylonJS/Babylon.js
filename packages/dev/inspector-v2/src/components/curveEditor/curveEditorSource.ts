@@ -130,7 +130,7 @@ function FromComponents(values: readonly number[], kind: CurveEditorAnimationKin
 function ToCurveEditorKey(key: IAnimationKey, kind: CurveEditorAnimationKind): CurveEditorKey {
     return {
         frame: key.frame,
-        value: ToComponents(key.value, kind),
+        value: ToComponents(typeof key.value === "function" ? key.value() : key.value, kind),
         inTangent: key.inTangent === undefined ? undefined : ToComponents(key.inTangent, kind),
         outTangent: key.outTangent === undefined ? undefined : ToComponents(key.outTangent, kind),
         lockedTangent: key.lockedTangent ?? true,
@@ -149,7 +149,7 @@ export function CreateBabylonCurveEditorAnimation(animation: Animation): ICurveE
         return undefined;
     }
 
-    const nativeKeysByEditorKey = new WeakMap<CurveEditorKey, IAnimationKey>();
+    const nativeKeysByEditorKey = new WeakMap<CurveEditorKey, { key: IAnimationKey; value: readonly number[] }>();
     return {
         uniqueId: animation.uniqueId.toString(),
         name: animation.name,
@@ -162,19 +162,23 @@ export function CreateBabylonCurveEditorAnimation(animation: Animation): ICurveE
         getKeys: () =>
             (animation.getKeys() ?? []).map((key) => {
                 const editorKey = ToCurveEditorKey(key, kind);
-                nativeKeysByEditorKey.set(editorKey, key);
+                nativeKeysByEditorKey.set(editorKey, { key, value: [...editorKey.value] });
                 return editorKey;
             }),
         setKeys: (keys) => {
-            const nativeKeys: IAnimationKey[] = keys.map((key) => ({
-                ...nativeKeysByEditorKey.get(key),
-                frame: key.frame,
-                value: FromComponents(key.value, kind),
-                inTangent: key.inTangent === undefined ? undefined : FromComponents(key.inTangent, kind),
-                outTangent: key.outTangent === undefined ? undefined : FromComponents(key.outTangent, kind),
-                lockedTangent: key.lockedTangent,
-                interpolation: key.interpolation === CurveEditorInterpolation.Step ? AnimationKeyInterpolation.STEP : AnimationKeyInterpolation.NONE,
-            }));
+            const nativeKeys: IAnimationKey[] = keys.map((key) => {
+                const original = nativeKeysByEditorKey.get(key);
+                const unchangedValue = original && original.value.length === key.value.length && original.value.every((value, index) => value === key.value[index]);
+                return {
+                    ...original?.key,
+                    frame: key.frame,
+                    value: unchangedValue && typeof original.key.value === "function" ? original.key.value : FromComponents(key.value, kind),
+                    inTangent: key.inTangent === undefined ? undefined : FromComponents(key.inTangent, kind),
+                    outTangent: key.outTangent === undefined ? undefined : FromComponents(key.outTangent, kind),
+                    lockedTangent: key.lockedTangent,
+                    interpolation: key.interpolation === CurveEditorInterpolation.Step ? AnimationKeyInterpolation.STEP : AnimationKeyInterpolation.NONE,
+                };
+            });
             animation.setKeys(nativeKeys);
         },
         evaluate: (frame) => ToComponents(animation.evaluate(frame), kind),

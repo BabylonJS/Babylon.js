@@ -75,6 +75,10 @@ export const CurveEditorContent: FunctionComponent<CurveEditorContentProps> = (p
 
     const handleKeyDown = useCallback(
         (evt: React.KeyboardEvent<HTMLDivElement>) => {
+            const target = evt.target as HTMLElement;
+            if (target.closest?.("input, textarea, select, button, [contenteditable='true']")) {
+                return;
+            }
             switch (evt.key) {
                 case "Delete":
                 case "Backspace":
@@ -99,13 +103,13 @@ export const CurveEditorContent: FunctionComponent<CurveEditorContentProps> = (p
                     break;
                 case "ArrowLeft":
                     if (!state.focusedInput) {
-                        actions.moveToFrame(Math.max(0, state.activeFrame - 1));
+                        actions.moveToFrame(Math.max(0, actions.getCurrentFrame() - 1));
                         evt.preventDefault();
                     }
                     break;
                 case "ArrowRight":
                     if (!state.focusedInput) {
-                        actions.moveToFrame(Math.min(state.clipLength, state.activeFrame + 1));
+                        actions.moveToFrame(Math.min(state.clipLength, actions.getCurrentFrame() + 1));
                         evt.preventDefault();
                     }
                     break;

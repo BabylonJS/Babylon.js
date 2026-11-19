@@ -1,4 +1,4 @@
-import { type FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type FunctionComponent, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 
@@ -60,6 +60,16 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = (props) => {
     const [viewWidth, setViewWidth] = useState(width);
     const [displayFrame, setDisplayFrame] = useState(state.activeFrame);
     const pointerIsDown = useRef(false);
+    const [keyVersion, invalidateKeys] = useReducer((version: number) => version + 1, 0);
+
+    useEffect(() => {
+        const changed = observables.onActiveKeyDataChanged.add(invalidateKeys);
+        const animationsChanged = observables.onActiveAnimationChanged.add(invalidateKeys);
+        return () => {
+            observables.onActiveKeyDataChanged.remove(changed);
+            observables.onActiveAnimationChanged.remove(animationsChanged);
+        };
+    }, [observables]);
 
     // Re-render when range updates
     // useCallback stabilizes the accessor to prevent infinite re-render loops
@@ -99,7 +109,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = (props) => {
     const pointerToFrame = useCallback(
         (offsetX: number) => {
             const { fromKey, toKey } = state;
-            return Math.round(Math.max(fromKey, Math.min(toKey, (offsetX / viewWidth) * (toKey - fromKey) + fromKey)));
+            return Math.max(fromKey, Math.min(toKey, Math.round((offsetX / viewWidth) * (toKey - fromKey) + fromKey)));
         },
         [state.fromKey, state.toKey, viewWidth]
     );
@@ -185,7 +195,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = (props) => {
         }
 
         return lines;
-    }, [state.activeCurveAnimations, frameToX, styles.keyframeLine]);
+    }, [state.activeCurveAnimations, frameToX, styles.keyframeLine, keyVersion]);
 
     // Render active frame marker - uses displayFrame for smooth updates during playback
     const renderActiveFrame = useMemo(() => {

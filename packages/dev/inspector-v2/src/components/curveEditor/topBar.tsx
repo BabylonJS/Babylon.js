@@ -111,9 +111,7 @@ export const TopBar: FunctionComponent = () => {
 
     const handleFrameChange = useCallback(
         (value: number) => {
-            if (value !== 0) {
-                observables.onFrameManuallyEntered.notifyObservers(value);
-            }
+            observables.onFrameManuallyEntered.notifyObservers(value);
         },
         [observables]
     );

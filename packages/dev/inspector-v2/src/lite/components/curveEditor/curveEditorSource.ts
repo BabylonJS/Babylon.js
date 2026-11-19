@@ -57,7 +57,21 @@ function SlerpQuaternion(left: readonly number[], right: readonly number[], amou
     return NormalizeQuaternion(left.map((value, index) => value * leftWeight + target[index] * rightWeight));
 }
 
-function EvaluateTrack(track: LiteCurveTrack, time: number): readonly number[] {
+function FindRightKey(keys: readonly LiteCurveKey[], time: number): number {
+    let low = 1;
+    let high = keys.length - 1;
+    while (low < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (keys[middle].time <= time) {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    return low;
+}
+
+function EvaluateTrack(track: LiteCurveTrack, time: number, rightIndex?: number): readonly number[] {
     const keys = track.keys;
     if (keys.length === 0) {
         return new Array<number>(track.componentCount).fill(0);
@@ -70,12 +84,9 @@ function EvaluateTrack(track: LiteCurveTrack, time: number): readonly number[] {
         return lastKey.value;
     }
 
-    let rightIndex = 1;
-    while (keys[rightIndex].time <= time) {
-        rightIndex++;
-    }
-    const left = keys[rightIndex - 1];
-    const right = keys[rightIndex];
+    const index = rightIndex ?? FindRightKey(keys, time);
+    const left = keys[index - 1];
+    const right = keys[index];
     if (track.interpolation === "step") {
         return left.value;
     }
@@ -170,7 +181,20 @@ export function CreateLiteCurveEditorAnimations(group: AnimationGroup, engine: E
             evaluate: (frame) => EvaluateTrack(readTrack(), frame / frameRate),
             createEvaluator: () => {
                 const track = readTrack();
-                return (frame) => EvaluateTrack(track, frame / frameRate);
+                let rightIndex = 1;
+                return (frame) => {
+                    const time = frame / frameRate;
+                    if (track.keys.length > 1) {
+                        if (time < track.keys[rightIndex - 1].time) {
+                            rightIndex = FindRightKey(track.keys, time);
+                        } else {
+                            while (rightIndex < track.keys.length - 1 && track.keys[rightIndex].time <= time) {
+                                rightIndex++;
+                            }
+                        }
+                    }
+                    return EvaluateTrack(track, time, rightIndex);
+                };
             },
         };
     });
@@ -185,21 +209,27 @@ export function CreateLiteCurveEditorAnimations(group: AnimationGroup, engine: E
 export function CreateLiteCurveEditorPlayback(group: AnimationGroup, engine: EngineContext): ICurveEditorPlayback {
     const frameRate = GetAnimationFrameRate(group);
     let originalSpeedRatio: number | undefined;
+    let appliedSpeedRatio: number | undefined;
+    const restoreSpeedRatio = () => {
+        if (originalSpeedRatio !== undefined && group.speedRatio === appliedSpeedRatio) {
+            group.speedRatio = originalSpeedRatio;
+        }
+        originalSpeedRatio = undefined;
+        appliedSpeedRatio = undefined;
+    };
     return {
         play: (forward, _fromFrame, _toFrame, currentFrame) => {
-            if (originalSpeedRatio === undefined) {
+            if (originalSpeedRatio === undefined || group.speedRatio !== appliedSpeedRatio) {
                 originalSpeedRatio = group.speedRatio;
             }
-            group.speedRatio = Math.abs(originalSpeedRatio) * (forward ? 1 : -1);
+            appliedSpeedRatio = Math.abs(originalSpeedRatio) * (forward ? 1 : -1);
+            group.speedRatio = appliedSpeedRatio;
             goToFrame(group, currentFrame, engine);
             playAnimation(group);
         },
         stop: () => {
             pauseAnimation(group);
-            if (originalSpeedRatio !== undefined) {
-                group.speedRatio = originalSpeedRatio;
-                originalSpeedRatio = undefined;
-            }
+            restoreSpeedRatio();
         },
         moveToFrame: (frame) => {
             const wasPlaying = group.isPlaying;
@@ -209,6 +239,7 @@ export function CreateLiteCurveEditorPlayback(group: AnimationGroup, engine: Eng
             }
         },
         getCurrentFrame: () => group.currentTime * frameRate,
+        dispose: restoreSpeedRatio,
     };
 }
 

@@ -74,6 +74,8 @@ export interface ICurveEditorPlayback {
     stop(): void;
     moveToFrame(frame: number, fromFrame: number, toFrame: number, isPlaying: boolean): void;
     getCurrentFrame(): number;
+    /** Releases any temporary playback settings owned by the editor. */
+    dispose?(): void;
 }
 
 /**

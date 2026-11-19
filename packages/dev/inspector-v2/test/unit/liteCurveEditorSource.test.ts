@@ -12,8 +12,8 @@ import {
 } from "@babylonjs/lite";
 import { describe, expect, it, vi } from "vitest";
 
-import { CurveData, MoveSelectedKeyFrames } from "../../src/components/curveEditor/canvas/curveData";
-import { CreateLiteCurveEditorAnimations, type LiteCurveKey } from "../../src/lite/components/curveEditor/curveEditorSource";
+import { ClampFrameToClip, ClampKeyFrame, CurveData, MoveSelectedKeyFrames } from "../../src/components/curveEditor/canvas/curveData";
+import { CreateLiteCurveEditorAnimations, CreateLiteCurveEditorPlayback, type LiteCurveKey } from "../../src/lite/components/curveEditor/curveEditorSource";
 
 const engine = {} as EngineContext;
 
@@ -56,6 +56,33 @@ function CreateAdapter(
 }
 
 describe("Lite curve editor adapter", () => {
+    it("retains a valid frame when neighbors leave no interval and clamps Float32 clip ends", () => {
+        const { animation } = CreateAdapter(
+            "linear",
+            [0, 0.001, 0.002].map((time) => ({ time, value: [time] }))
+        );
+        const curve = new CurveData("#fff", animation, 0);
+        curve.keys = animation.getKeys().map((key) => ({ frame: key.frame, value: key.value[0], lockedTangent: true }));
+        expect(ClampKeyFrame(curve, 1, 0, 0, 60, 0.1, true)).toBe(curve.keys[1].frame);
+        const end = 30.75;
+        const clamped = ClampFrameToClip(31, end, 30);
+        expect(clamped).toBeLessThanOrEqual(end);
+        expect(Math.fround(clamped / 30)).toBeLessThanOrEqual(end / 30);
+    });
+
+    it("restores only a playback speed override owned by the editor", () => {
+        const group = { frameRate: 30, currentTime: 0, isPlaying: false, speedRatio: 2 } as unknown as AnimationGroup;
+        const playback = CreateLiteCurveEditorPlayback(group, engine);
+        playback.play(false, 0, 30, 0);
+        expect(group.speedRatio).toBe(-2);
+        playback.dispose?.();
+        expect(group.speedRatio).toBe(2);
+        playback.play(false, 0, 30, 0);
+        group.speedRatio = 3;
+        playback.dispose?.();
+        expect(group.speedRatio).toBe(3);
+    });
+
     it("rejects unsupported interpolation rather than displaying a linear curve", () => {
         const group = {} as AnimationGroup;
         const api = {
@@ -180,6 +207,42 @@ describe("Lite curve editor adapter", () => {
             (value) => value
         );
         expect(after).not.toBe(before);
+    });
+
+    it("samples long tracks without rescanning preceding keys", () => {
+        let accesses = 0;
+        const keys = new Proxy(
+            Array.from({ length: 300 }, (_, index) => ({ time: index, value: [index], inTangent: [1], outTangent: [1] })),
+            {
+                get: (target, property, receiver) => {
+                    if (typeof property === "string" && /^\d+$/.test(property)) {
+                        accesses++;
+                    }
+                    return Reflect.get(target, property, receiver);
+                },
+            }
+        );
+        const group = { frameRate: 30, targetedAnimations: [{ path: "a" }, { path: "b" }] } as unknown as AnimationGroup;
+        const animations = CreateLiteCurveEditorAnimations(group, engine, {
+            getAnimationGroupTracks: () => group.targetedAnimations.map((target) => ({ target, interpolation: "cubicSpline", componentCount: 1, quaternion: false, keys })),
+            setAnimationTrackKeys: () => {},
+        });
+        const curves = animations.map((animation) => {
+            const curve = new CurveData("#fff", animation, 0);
+            curve.keys = animation
+                .getKeys()
+                .map((key) => ({ frame: key.frame, value: key.value[0], inTangent: key.inTangent?.[0], outTangent: key.outTangent?.[0], lockedTangent: true }));
+            return curve;
+        });
+        accesses = 0;
+        curves.forEach((curve) =>
+            curve.getPathData(
+                (frame) => frame,
+                (value) => value
+            )
+        );
+        expect(accesses).toBeLessThan(300 * CurveData.SampleRate * curves.length * 10);
+        expect(animations[0].evaluate(123.5 * 30)[0]).toBeCloseTo(123.5);
     });
 
     it("clamps selected keys as a group and commits each track once", () => {

@@ -1,5 +1,5 @@
 import { getAnimationGroupTracks, setAnimationTrackKeys, type AnimationGroup, type EngineContext } from "@babylonjs/lite";
-import { type FunctionComponent, useMemo } from "react";
+import { type FunctionComponent, useEffect, useMemo } from "react";
 
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { NormalizedCurveEditor } from "../../../components/curveEditor/normalizedCurveEditor";
@@ -32,6 +32,8 @@ export const LiteCurveEditor: FunctionComponent<LiteCurveEditorProps> = (props) 
             return { error: error instanceof Error ? error.message : String(error) };
         }
     }, [engine, group]);
+
+    useEffect(() => () => result.source?.playback.dispose?.(), [result.source]);
 
     if (!result.source) {
         return <MessageBar intent="warning" title="Animation Curves Unavailable" message={result.error ?? ""} />;
