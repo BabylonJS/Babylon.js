@@ -308,13 +308,20 @@ describe("WebXRControllerPointerSelection", () => {
             inputSource.pointer.dispose();
         }
 
-        it("creates the laser pointer and selection mesh with their own materials", () => {
+        it("disposes the materials it gave the laser pointer and selection mesh", () => {
             const feature = createFeature();
-            const materialsBefore = scene.materials.length;
-
             (feature as any)._attachController(createInputSource("ctrl-right", "right"));
+            const { laserPointer, selectionMesh } = (feature as any)._controllers["ctrl-right"];
+            const laserPointerMaterial = laserPointer.material;
+            const selectionMeshMaterial = selectionMesh.material;
+            expect(scene.materials).toContain(laserPointerMaterial);
+            expect(scene.materials).toContain(selectionMeshMaterial);
 
-            expect(scene.materials.length).toBe(materialsBefore + 2);
+            (feature as any)._detachController("ctrl-right");
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+
+            expect(scene.materials).not.toContain(laserPointerMaterial);
+            expect(scene.materials).not.toContain(selectionMeshMaterial);
         });
 
         it("leaves no meshes or materials behind when input sources come and go", () => {
