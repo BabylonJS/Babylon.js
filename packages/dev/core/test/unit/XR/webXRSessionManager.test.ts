@@ -643,10 +643,11 @@ describe("WebXRSessionManager", () => {
                 await sessionManager.initializeSessionAsync("immersive-vr", {});
                 expect(sessionManager.isNative).toBe(false);
                 sessionManager._setBaseLayerWrapper(new WebXRWebGLLayerWrapper(layer));
-                expect(sessionManager.getRenderTargetTextureForEye("left")).not.toBeNull();
-                expect(scene.textures.length).toBe(texturesBefore + 1);
+                const renderTargetTexture = sessionManager.getRenderTargetTextureForEye("left");
+                expect(scene.textures).toContain(renderTargetTexture);
 
                 endHandler!();
+                expect(scene.textures).not.toContain(renderTargetTexture);
             }
 
             expect(scene.textures.length).toBe(texturesBefore);

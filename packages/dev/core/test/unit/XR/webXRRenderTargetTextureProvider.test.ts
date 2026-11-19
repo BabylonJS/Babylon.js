@@ -174,7 +174,7 @@ describe("WebXRWebGLRenderTargetTextureProvider", () => {
 
             const renderTargetTexture = provider.getRenderTargetTextureForEye("left")!;
             const wrapper = renderTargetTexture.renderTarget as any;
-            expect(scene.textures.length).toBe(texturesBefore + 1);
+            expect(scene.textures).toContain(renderTargetTexture);
             expect(wrapper._framebuffer).toBe(xrFramebuffer);
 
             // A WebGL render target wrapper deletes whatever framebuffer it still holds when it is disposed.
@@ -188,6 +188,7 @@ describe("WebXRWebGLRenderTargetTextureProvider", () => {
             provider.dispose();
 
             expect(framebufferWhenDisposed).toBeNull();
+            expect(scene.textures).not.toContain(renderTargetTexture);
             expect(scene.textures.length).toBe(texturesBefore);
             expect(gl.deleteFramebuffer).not.toHaveBeenCalledWith(xrFramebuffer);
         });
