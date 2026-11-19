@@ -1824,6 +1824,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const hasScissor = this._scissorIsActive();
 
+        this._snapshotRendering.recordedClears?.push({
+            color: backBuffer && color ? { r: color.r, g: color.g, b: color.b, a: color.a } : null,
+            depth,
+            stencil,
+            stencilClearValue,
+            passWasOpen: !!this._currentRenderPass,
+            scissor: hasScissor ? [this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w] : null,
+        });
+
         if (backBuffer && color && hasScissor && this._currentRenderTarget) {
             const textures = this._currentRenderTarget.textures;
             const attachments = this._mrtAttachments;
@@ -1858,6 +1867,71 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 this._applyScissor(!this.compatibilityMode ? this._bundleList : null);
                 this._clearFullQuad(backBuffer ? color : null, depth, stencil);
             }
+        }
+    }
+
+    /** @internal */
+    public override _beginRenderingGroups(): void {
+        this._snapshotRendering.beginClearSequence();
+    }
+
+    /** @internal */
+    public override _endRenderingGroups(): void {
+        this._snapshotRendering.endClearSequence(!!this._currentRenderPass);
+    }
+
+    /** @internal */
+    public override _issueRenderingGroupClearsAgain(): void {
+        const sequence = this._snapshotRendering.nextClearSequence();
+        if (!sequence) {
+            return;
+        }
+
+        const clears = sequence.clears;
+        for (let index = 0; index < clears.length; index++) {
+            const clear = clears[index];
+
+            if ((clear.passWasOpen || clear.scissor) && !this._currentRenderPass) {
+                // the render pass the clear was issued in: draws that are not issued again had opened it, or the clear itself
+                this._getCurrentRenderPass();
+            }
+
+            if (clear.stencil) {
+                this._clearStencilValue = clear.stencilClearValue;
+            }
+
+            const scissor = clear.scissor;
+            if (!scissor) {
+                // the clear ended the render pass and started the next one, which the next bundle list was recorded in
+                if (this._currentRenderTarget) {
+                    this._startRenderTargetRenderPass(this._currentRenderTarget, true, clear.color, clear.depth, clear.stencil);
+                } else {
+                    this._startMainRenderPass(true, clear.color, clear.depth, clear.stencil);
+                }
+            } else if (this.compatibilityMode) {
+                // the clear was drawn in the render pass with the scissor of the recorded frame. Outside of the compatibility mode,
+                // the draw is in the bundle list.
+                const cached = this._scissorCached;
+                const x = cached.x;
+                const y = cached.y;
+                const z = cached.z;
+                const w = cached.w;
+                cached.x = scissor[0];
+                cached.y = scissor[1];
+                cached.z = scissor[2];
+                cached.w = scissor[3];
+                this._applyScissor(null);
+                this._clearFullQuad(clear.color, clear.depth, clear.stencil);
+                cached.x = x;
+                cached.y = y;
+                cached.z = z;
+                cached.w = w;
+            }
+        }
+
+        if (sequence.passWasOpenAtEnd && !this._currentRenderPass) {
+            // draws that are not issued again had opened the render pass, which what is issued next ends
+            this._getCurrentRenderPass();
         }
     }
 

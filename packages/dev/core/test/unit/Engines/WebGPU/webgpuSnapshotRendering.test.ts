@@ -102,4 +102,55 @@ describe("WebGPUSnapshotRendering", () => {
         snapshot.endFrame();
         expect(snapshot.play).toBe(true);
     });
+
+    it("keeps the clears of each rendering of the rendering groups, in the order of the recorded frame", () => {
+        const clear = { color: null, depth: true, stencil: false, stencilClearValue: 0, passWasOpen: true, scissor: null };
+
+        // nothing is recorded outside of a recording, or outside of a rendering of the groups
+        expect(snapshot.recordedClears).toBeNull();
+        snapshot.beginClearSequence();
+        expect(snapshot.recordedClears).toBeNull();
+
+        snapshot.enabled = true;
+        expect(snapshot.recordedClears).toBeNull();
+        snapshot.beginClearSequence();
+        snapshot.endClearSequence(false);
+        snapshot.beginClearSequence();
+        snapshot.recordedClears!.push(clear);
+        snapshot.endClearSequence(true);
+        expect(snapshot.recordedClears).toBeNull();
+        // the clears are issued again once the snapshot is played
+        expect(snapshot.nextClearSequence()).toBeNull();
+        snapshot.endFrame();
+
+        for (let frame = 0; frame < 2; frame++) {
+            expect(snapshot.nextClearSequence()).toEqual({ clears: [], passWasOpenAtEnd: false });
+            expect(snapshot.nextClearSequence()).toEqual({ clears: [clear], passWasOpenAtEnd: true });
+            expect(snapshot.nextClearSequence()).toBeNull();
+            snapshot.endFrame();
+        }
+    });
+
+    it("discards the recorded clears with the bundle lists of an invalidated recording", () => {
+        snapshot.enabled = true;
+        snapshot.beginClearSequence();
+        snapshot.invalidateRecording();
+        expect(snapshot.recordedClears).toBeNull();
+        snapshot.endClearSequence(true);
+        snapshot.beginClearSequence();
+        snapshot.endClearSequence(true);
+        snapshot.endFrame();
+        expect(snapshot.record).toBe(true);
+
+        // the next frame is the one recorded
+        snapshot.beginClearSequence();
+        snapshot.endClearSequence(false);
+        snapshot.endFrame();
+        expect(snapshot.nextClearSequence()).toEqual({ clears: [], passWasOpenAtEnd: false });
+        expect(snapshot.nextClearSequence()).toBeNull();
+
+        snapshot.reset();
+        snapshot.endFrame();
+        expect(snapshot.nextClearSequence()).toBeNull();
+    });
 });

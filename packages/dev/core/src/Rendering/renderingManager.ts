@@ -12,10 +12,6 @@ import { type Material } from "../Materials/material";
 import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 
-const AutoClearIssued = 1;
-const AutoClearDepth = 2;
-const AutoClearStencil = 4;
-
 /**
  * Interface describing the different options available in the rendering manager
  * regarding Auto Clear between groups.
@@ -104,11 +100,6 @@ export class RenderingManager {
     private _scene: Scene;
     private _renderingGroups = new Array<RenderingGroup>();
     private _depthStencilBufferAlreadyCleaned: boolean;
-    // For each render pass id, the clear issued before each rendering group the last time the groups were rendered (0: none, else
-    // AutoClearIssued with the depth and stencil bits). A clear on a render target ends the current render pass of a WebGPU engine,
-    // so a rendering that skips the groups (fast snapshot rendering) issues these clears again to go through the render passes of
-    // the frame the engine recorded, each of which replays its own draws.
-    private _autoClearsIssued: number[][] = [];
 
     private _autoClearDepthStencil: { [id: number]: IRenderingManagerAutoClearSetup } = {};
     private _customOpaqueSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
@@ -192,36 +183,13 @@ export class RenderingManager {
         return this._renderingGroups[renderingGroupId];
     }
 
-    private _clearDepthStencilBuffer(depth = true, stencil = true): boolean {
+    private _clearDepthStencilBuffer(depth = true, stencil = true): void {
         if (this._depthStencilBufferAlreadyCleaned) {
-            return false;
+            return;
         }
 
         this._scene.getEngine().clear(null, false, depth, stencil);
         this._depthStencilBufferAlreadyCleaned = true;
-        return true;
-    }
-
-    private _issueAutoClearAgain(autoClearsIssued: number[] | undefined, index: number): void {
-        const issued = autoClearsIssued?.[index];
-        if (issued) {
-            this._scene.getEngine().clear(null, false, (issued & AutoClearDepth) !== 0, (issued & AutoClearStencil) !== 0);
-        }
-    }
-
-    /**
-     * Issues again the clears of the last rendering of the groups for the current render pass id, without rendering the groups.
-     * This is for a rendering in fast snapshot mode that does not call render().
-     * @internal
-     */
-    public _issueAutoClearsAgain(): void {
-        const autoClearsIssued = this._autoClearsIssued[this._scene.getEngine().currentRenderPassId];
-        if (!autoClearsIssued) {
-            return;
-        }
-        for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
-            this._issueAutoClearAgain(autoClearsIssued, index);
-        }
     }
 
     // the observers of a rendering group are code of the user between the draws of the frame: they can change any material in place,
@@ -271,27 +239,19 @@ export class RenderingManager {
             }
         }
 
-        // In fast snapshot mode the engine replays the draws it recorded and the groups are empty. While the engine records, the mode
-        // is the standard one.
+        // In fast snapshot mode the engine plays the draws it recorded and the groups are empty: only the clears it recorded between
+        // the groups are left to issue. While the engine records, the mode is the standard one.
         const engine = this._scene.getEngine();
-        const groupsAreReplayed = engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
-        const renderPassId = engine.currentRenderPassId;
-        let autoClearsIssued = this._autoClearsIssued[renderPassId];
-        if (!groupsAreReplayed) {
-            if (!autoClearsIssued) {
-                autoClearsIssued = this._autoClearsIssued[renderPassId] = [];
-            }
-            autoClearsIssued.length = 0;
+        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            engine._issueRenderingGroupClearsAgain();
         }
+        engine._beginRenderingGroups();
 
         // Render
         for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
             this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
             const renderingGroup = this._renderingGroups[index];
             if (!renderingGroup || renderingGroup._empty) {
-                if (groupsAreReplayed) {
-                    this._issueAutoClearAgain(autoClearsIssued, index);
-                }
                 continue;
             }
 
@@ -305,8 +265,8 @@ export class RenderingManager {
             if (RenderingManager.AUTOCLEAR) {
                 const autoClear = this._useSceneAutoClearSetup ? this._scene.getAutoClearDepthStencilSetup(index) : this._autoClearDepthStencil[index];
 
-                if (autoClear && autoClear.autoClear && this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil) && !groupsAreReplayed) {
-                    autoClearsIssued[index] = AutoClearIssued | (autoClear.depth ? AutoClearDepth : 0) | (autoClear.stencil ? AutoClearStencil : 0);
+                if (autoClear && autoClear.autoClear) {
+                    this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
                 }
             }
 
@@ -332,6 +292,8 @@ export class RenderingManager {
             // After Observable
             this._notifyRenderingGroupObservers(this._scene.onAfterRenderingGroupObservable, info, renderingGroupMask);
         }
+
+        engine._endRenderingGroups();
     }
 
     /**

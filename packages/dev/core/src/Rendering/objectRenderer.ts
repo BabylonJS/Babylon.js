@@ -826,9 +826,10 @@ export class ObjectRenderer {
                 outlineRenderer.enabled = outlineRendererIsEnabled;
             }
         } else {
-            // the engine replays the draws it recorded: only the clears between the rendering groups are left to issue
-            this._renderingManager._issueAutoClearsAgain();
             this.onFastPathRenderObservable.notifyObservers(passIndex);
+            // the engine plays the draws it recorded: only the clears it recorded between the rendering groups are left to issue,
+            // after the initial clear of a render target, which an observer above issues
+            this._engine._issueRenderingGroupClearsAgain();
         }
 
         if (!skipOnAfterRenderObservable) {

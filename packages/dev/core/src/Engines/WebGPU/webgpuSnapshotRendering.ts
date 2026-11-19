@@ -3,6 +3,33 @@ import { Constants } from "../constants";
 import { type WebGPUEngine } from "../webgpuEngine";
 import { type WebGPUBundleList } from "./webgpuBundleList";
 import { Logger } from "core/Misc/logger";
+import { type IColor4Like } from "core/Maths/math.like";
+
+/**
+ * A clear issued while the rendering groups of a recorded frame were rendered
+ * @internal
+ */
+export interface IWebGPURecordedClear {
+    /** the color the back buffer was cleared with, if it was */
+    color: Nullable<IColor4Like>;
+    depth: boolean;
+    stencil: boolean;
+    stencilClearValue: number;
+    /** a render pass was open when the clear was issued */
+    passWasOpen: boolean;
+    /** the scissor rectangle (x, y, width, height) of a clear drawn in the open render pass; null for a clear that started a render pass */
+    scissor: Nullable<number[]>;
+}
+
+/**
+ * What a rendering of the rendering groups did to the render passes of a recorded frame
+ * @internal
+ */
+export interface IWebGPURecordedClearSequence {
+    clears: IWebGPURecordedClear[];
+    /** a render pass was open once the groups were rendered */
+    passWasOpenAtEnd: boolean;
+}
 
 /** @internal */
 export class WebGPUSnapshotRendering {
@@ -12,6 +39,11 @@ export class WebGPUSnapshotRendering {
     private _play = false;
     private _playBundleListIndex = 0;
     private _allBundleLists: WebGPUBundleList[] = [];
+    // The clears issued while the rendering groups were rendered, for each rendering in the order of the recorded frame. Fast snapshot
+    // rendering does not render the groups: it issues these clears again to go through the render passes the bundle lists come from.
+    private _allClearSequences: IWebGPURecordedClearSequence[] = [];
+    private _clearSequence: Nullable<IWebGPURecordedClearSequence> = null;
+    private _playClearSequenceIndex = 0;
     private _recordingInvalidated = false;
     private _skipNextRenderPass = false;
     private _modeSaved: number;
@@ -43,7 +75,7 @@ export class WebGPUSnapshotRendering {
     public set enabled(activate: boolean) {
         this._log("enabled", `activate=${activate}, mode=${this._mode}`);
 
-        this._allBundleLists.length = 0;
+        this._discardRecording();
         this._recordingInvalidated = false;
         this._skipNextRenderPass = false;
         if (this._record) {
@@ -82,7 +114,7 @@ export class WebGPUSnapshotRendering {
         if (this._bundleList.isEmpty) {
             this._skipNextRenderPass = true;
         } else {
-            this._allBundleLists.length = 0;
+            this._discardRecording();
             this._recordingInvalidated = true;
         }
     }
@@ -95,8 +127,47 @@ export class WebGPUSnapshotRendering {
             return;
         }
 
-        this._allBundleLists.length = 0;
+        this._discardRecording();
         this._recordingInvalidated = true;
+    }
+
+    /**
+     * The rendering groups of a rendering are about to be rendered: the clears issued until endClearSequence() are recorded
+     */
+    public beginClearSequence(): void {
+        if (this._record) {
+            this._clearSequence = { clears: [], passWasOpenAtEnd: false };
+            this._allClearSequences.push(this._clearSequence);
+        }
+    }
+
+    /**
+     * The rendering groups are rendered
+     * @param passIsOpen whether a render pass is open
+     */
+    public endClearSequence(passIsOpen: boolean): void {
+        if (this._clearSequence) {
+            this._clearSequence.passWasOpenAtEnd = passIsOpen;
+            this._clearSequence = null;
+        }
+    }
+
+    /**
+     * Gets the clears being recorded, if the rendering groups of a recorded frame are being rendered
+     */
+    public get recordedClears(): Nullable<IWebGPURecordedClear[]> {
+        return this._clearSequence ? this._clearSequence.clears : null;
+    }
+
+    /**
+     * Gets the clears recorded for the next rendering of the frame being played
+     * @returns the clears, or null if there is none to issue
+     */
+    public nextClearSequence(): Nullable<IWebGPURecordedClearSequence> {
+        if (!this._play || this._playClearSequenceIndex >= this._allClearSequences.length) {
+            return null;
+        }
+        return this._allClearSequences[this._playClearSequenceIndex++];
     }
 
     public endRenderPass(currentRenderPass: GPURenderPassEncoder): boolean {
@@ -147,7 +218,7 @@ export class WebGPUSnapshotRendering {
         if (this._record) {
             if (this._recordingInvalidated) {
                 this._recordingInvalidated = false;
-                this._allBundleLists.length = 0;
+                this._discardRecording();
                 this._log("endFrame", "recording invalidated, recording the next frame");
             } else {
                 // We stop recording and switch to replay mode for the next frames
@@ -159,6 +230,14 @@ export class WebGPUSnapshotRendering {
         }
 
         this._playBundleListIndex = 0;
+        this._playClearSequenceIndex = 0;
+        this._clearSequence = null;
+    }
+
+    private _discardRecording(): void {
+        this._allBundleLists.length = 0;
+        this._allClearSequences.length = 0;
+        this._clearSequence = null;
     }
 
     public reset(): void {

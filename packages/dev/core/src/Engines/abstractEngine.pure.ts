@@ -823,6 +823,29 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * The rendering groups of a rendering are about to be rendered. An engine that records the frame to play it without rendering the
+     * groups (fast snapshot rendering) records the clears issued until _endRenderingGroups().
+     * @internal
+     */
+    public _beginRenderingGroups(): void {
+        // Do nothing
+    }
+
+    /** @internal */
+    public _endRenderingGroups(): void {
+        // Do nothing
+    }
+
+    /**
+     * Issues again the clears the engine recorded while the rendering groups of this rendering were rendered in the recorded frame.
+     * This is for fast snapshot rendering, which does not render the groups.
+     * @internal
+     */
+    public _issueRenderingGroupClearsAgain(): void {
+        // Do nothing
+    }
+
+    /**
      * Gets or sets the snapshot rendering mode
      */
     public get snapshotRenderingMode(): number {
