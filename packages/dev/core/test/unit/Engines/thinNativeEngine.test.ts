@@ -131,6 +131,55 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("clear attachments", () => {
+        const createClearEngine = (engineConstants: object) => {
+            const engine = Object.create(ThinNativeEngine.prototype) as ThinNativeEngine & { _commandBufferEncoder: object };
+            const commands: number[][] = [];
+            engine._commandBufferEncoder = {
+                startEncodingCommand: (command: number) => commands.push([command]),
+                encodeCommandArgAsUInt32: (value: number) => commands[commands.length - 1].push(value),
+                encodeCommandArgAsFloat32: () => {},
+                finishEncodingCommand: () => {},
+            };
+            vi.stubGlobal("_native", { Engine: { COMMAND_CLEAR: 1, COMMAND_CLEAR2: 2, ...engineConstants } });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+            const clearMask = () => commands[commands.length - 1].at(-1);
+            return { engine, clearMask };
+        };
+
+        it("flags only clears issued by clearAttachments with the native operation bit", () => {
+            const { engine, clearMask } = createClearEngine({ CLEAR_ATTACHMENTS_OPERATION: 0x100 });
+            const color = { r: 0.5, g: 0.25, b: 0, a: 1 };
+
+            engine.clearAttachments(color, [0, -1, 2], true, false);
+            expect(clearMask()).toBe(0x105);
+
+            engine.clear(color, true, false);
+            expect(clearMask()).toBe(0x5);
+        });
+
+        it("resets the operation bit when the clear throws", () => {
+            const { engine, clearMask } = createClearEngine({ CLEAR_ATTACHMENTS_OPERATION: 0x100 });
+            const color = { r: 0, g: 0, b: 0, a: 1 };
+            vi.spyOn(engine, "clear").mockImplementationOnce(() => {
+                throw new Error("clear failed");
+            });
+
+            expect(() => engine.clearAttachments(color, [0], true, false)).toThrow("clear failed");
+            engine.clear(color, true, false);
+            expect(clearMask()).toBe(0x1);
+        });
+
+        it("sends the plain attachment mask when the native engine has no operation bit", () => {
+            const { engine, clearMask } = createClearEngine({});
+
+            engine.clearAttachments({ r: 0, g: 0, b: 0, a: 1 }, [0, 1], true, false);
+            expect(clearMask()).toBe(0x3);
+        });
+    });
+
     describe("host information", () => {
         it.each([
             { nativeIsMobile: true, initial: false, expected: true },
