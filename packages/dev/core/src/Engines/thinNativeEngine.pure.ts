@@ -323,7 +323,10 @@ export class ThinNativeEngine extends ThinEngine {
         });
         this._camera = _native.Camera ? new _native.Camera() : null;
         // Native hosts have no navigator.userAgent for _setupMobileChecks, so the runtime reports it directly.
-        this.hostInformation.isMobile = this._engine.isMobile === true;
+        // Older runtimes don't report it; keep whatever _setupMobileChecks found (e.g. a polyfilled userAgent).
+        if (this._engine.isMobile !== undefined) {
+            this.hostInformation.isMobile = this._engine.isMobile;
+        }
         this._commandBufferEncoder = new CommandBufferEncoder(this._engine);
         this._frameGraphFramebufferRefCount = new Map();
         this._frameStats = { gpuTimeNs: Number.NaN };

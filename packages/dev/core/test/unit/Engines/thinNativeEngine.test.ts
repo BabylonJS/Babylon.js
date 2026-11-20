@@ -131,6 +131,37 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("host information", () => {
+        it.each([
+            { nativeIsMobile: true, initial: false, expected: true },
+            { nativeIsMobile: false, initial: true, expected: false },
+            { nativeIsMobile: undefined, initial: false, expected: false },
+            { nativeIsMobile: undefined, initial: true, expected: true },
+        ])("uses the runtime isMobile ($nativeIsMobile) and otherwise keeps $initial", ({ nativeIsMobile, initial, expected }) => {
+            RegisterNativeEngine();
+            const engine = Object.create(NativeEngine.prototype) as {
+                hostInformation: { isMobile: boolean };
+                _initializeNativeEngine: (adaptToDeviceRatio: boolean) => void;
+            };
+            engine.hostInformation = { isMobile: initial };
+            vi.spyOn(ThinNativeEngine, "_createNativeDataStream").mockReturnValue({} as ReturnType<typeof ThinNativeEngine._createNativeDataStream>);
+            vi.stubGlobal("_native", {
+                Engine: class {
+                    public static PROTOCOL_VERSION = -1;
+                    public isMobile = nativeIsMobile;
+                    public setCommandDataStream() {}
+                },
+            });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+                vi.restoreAllMocks();
+            });
+
+            expect(() => engine._initializeNativeEngine(false)).toThrow("Protocol version mismatch");
+            expect(engine.hostInformation.isMobile).toBe(expected);
+        });
+    });
+
     describe("alpha mode", () => {
         it.each([
             ["ALPHA_MIN", Constants.ALPHA_MIN, Constants.ALPHA_EQUATION_MIN],
