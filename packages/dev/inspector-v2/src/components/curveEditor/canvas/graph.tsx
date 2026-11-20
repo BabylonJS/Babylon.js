@@ -156,6 +156,7 @@ export const Graph: FunctionComponent<GraphProps> = (props) => {
     const [offsetY, setOffsetY] = useState(0);
     const [isPointerDown, setIsPointerDown] = useState(false);
     const [pointerStart, setPointerStart] = useState({ x: 0, y: 0 });
+    const [valueRangeVersion, invalidateValueRange] = useReducer((version: number) => version + 1, 0);
 
     // Re-render when active animation or range changes
     // useCallback stabilizes the accessor to prevent infinite re-render loops
@@ -254,6 +255,7 @@ export const Graph: FunctionComponent<GraphProps> = (props) => {
             setScale(1);
             setOffsetX(0);
             setOffsetY(0);
+            invalidateValueRange();
         });
 
         // Handle delete active key points
@@ -341,12 +343,19 @@ export const Graph: FunctionComponent<GraphProps> = (props) => {
                     maxValue = key.value;
                 }
             }
+            if (curve.animation.requiresSampling) {
+                const range = curve.getSampledValueRange();
+                if (range) {
+                    minValue = Math.min(minValue, range.min);
+                    maxValue = Math.max(maxValue, range.max);
+                }
+            }
         }
 
         // Add padding
         const padding = (maxValue - minValue) * 0.1 || 1;
         return { min: minValue - padding, max: maxValue + padding };
-    }, [curves]);
+    }, [curves, valueRangeVersion]);
 
     // Convert frame to x position (uses reference frames for full visible range)
     const frameToX = useCallback(

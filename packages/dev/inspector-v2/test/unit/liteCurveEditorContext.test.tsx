@@ -3,6 +3,17 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+    createAnimationManager,
+    createPropertyAnimationClip,
+    createPropertyAnimationGroup,
+    evaluateAnimationTrack,
+    getAnimationGroupTracks,
+    goToFrame,
+    setAnimationTrackKeys,
+    type AnimationEasing,
+    type EngineContext,
+} from "@babylonjs/lite";
 
 import { CurveEditorProvider, useCurveEditor } from "../../src/components/curveEditor/normalizedCurveEditorContext";
 import { type ICurveEditorAnimation, type ICurveEditorSource } from "../../src/components/curveEditor/curveEditorModel";
@@ -14,10 +25,37 @@ import { CreateBabylonCurveEditorAnimation } from "../../src/components/curveEdi
 import { Animation } from "core/Animations/animation";
 import { Quaternion } from "core/Maths/math.vector";
 import { LiteCurveEditorSideBar } from "../../src/lite/components/curveEditor/sideBar";
+import { CreateLiteCurveEditorSource } from "../../src/lite/components/curveEditor/curveEditorSource";
 
 vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 });
+
+function CreateEasedLiteSource(easing: AnimationEasing, frame = 0) {
+    const target = { value: 0 };
+    const clip = createPropertyAnimationClip(
+        "Eased",
+        [
+            {
+                path: "value",
+                easing,
+                keys: [
+                    { frame: 0, value: 0 },
+                    { frame: 30, value: 10 },
+                ],
+            },
+        ],
+        { frameRate: 30 }
+    );
+    const group = createPropertyAnimationGroup(createAnimationManager(), target, clip);
+    const scene = { _kind: "scene", animationGroups: [group] };
+    const engineData = { surfaces: [] as object[], _renderingContexts: [scene] };
+    engineData.surfaces.push(engineData);
+    const engine = engineData as unknown as EngineContext;
+    goToFrame(group, frame, engine);
+    const source = CreateLiteCurveEditorSource(group, engine, { evaluateAnimationTrack, getAnimationGroupTracks, setAnimationTrackKeys });
+    return { target, group, source };
+}
 
 describe("Lite curve-editor track selection", () => {
     let container: HTMLElement;
@@ -169,6 +207,7 @@ describe("Lite curve-editor track selection", () => {
             animations: [],
             initialActiveAnimations: [],
             playback,
+            clipDuration: 0,
             capabilities: {
                 canEditClipLength: false,
                 canDeleteBoundaryKeys: true,
@@ -223,7 +262,7 @@ describe("Lite curve-editor track selection", () => {
                 constrainKeyFrames: false,
             },
         };
-        let context: ReturnType<typeof useCurveEditor>;
+        let context!: ReturnType<typeof useCurveEditor>;
         const Probe = () => {
             context = useCurveEditor();
             return null;
@@ -271,7 +310,7 @@ describe("Lite curve-editor track selection", () => {
                 constrainKeyFrames: true,
             },
         };
-        let context: ReturnType<typeof useCurveEditor>;
+        let context!: ReturnType<typeof useCurveEditor>;
         const Probe = () => {
             context = useCurveEditor();
             return null;
@@ -297,6 +336,98 @@ describe("Lite curve-editor track selection", () => {
         await act(async () => root.unmount());
     });
 
+    it.each([
+        ["positive", (gradient: number) => gradient + 0.8 * Math.sin(Math.PI * gradient), 13],
+        ["negative", (gradient: number) => gradient - 0.8 * Math.sin(Math.PI * gradient), -3],
+    ] as const)("fits %s easing overshoot in the graph", async (_direction, easing, midpoint) => {
+        const { source } = CreateEasedLiteSource(easing);
+        let context!: ReturnType<typeof useCurveEditor>;
+        const Probe = () => {
+            context = useCurveEditor();
+            return null;
+        };
+        const root = createRoot(container);
+        await act(async () =>
+            root.render(
+                <CurveEditorProvider source={source}>
+                    <Probe />
+                    <Graph width={300} height={200} />
+                </CurveEditorProvider>
+            )
+        );
+        await act(async () => context.actions.prepare());
+        const path = container.querySelector("svg svg path")?.getAttribute("d");
+        expect(path).toBeDefined();
+        const points = Array.from(path!.matchAll(/[ML]\s*([-+\d.eE]+)\s+([-+\d.eE]+)/g), ([, , value]) => Number(value));
+        expect(points.length).toBeGreaterThan(2);
+        expect(source.animations[0].evaluate(15)[0]).toBeCloseTo(midpoint);
+        expect(Math.min(...points)).toBeGreaterThanOrEqual(0);
+        expect(Math.max(...points)).toBeLessThanOrEqual(200);
+        await act(async () => root.unmount());
+    });
+
+    it("refits eased curves after editing a key", async () => {
+        const { source } = CreateEasedLiteSource((gradient) => gradient + 0.8 * Math.sin(Math.PI * gradient));
+        let context!: ReturnType<typeof useCurveEditor>;
+        const Probe = () => {
+            context = useCurveEditor();
+            return null;
+        };
+        const root = createRoot(container);
+        await act(async () =>
+            root.render(
+                <CurveEditorProvider source={source}>
+                    <Probe />
+                    <Graph width={300} height={200} />
+                </CurveEditorProvider>
+            )
+        );
+        await act(async () => context.actions.prepare());
+        await act(async () => context.observables.onSelectAllKeys.notifyObservers());
+        const point = context.state.activeKeyPoints?.find((key) => key.keyId === 1);
+        expect(point).toBeDefined();
+        await act(async () => point!.curve.updateKeyValue(1, 100));
+
+        const values = () =>
+            Array.from(
+                container
+                    .querySelector("svg svg path")!
+                    .getAttribute("d")!
+                    .matchAll(/[ML]\s*([-+\d.eE]+)\s+([-+\d.eE]+)/g),
+                ([, , value]) => Number(value)
+            );
+        expect(Math.min(...values())).toBeLessThan(0);
+        await act(async () => context.observables.onFrameRequired.notifyObservers());
+        expect(Math.min(...values())).toBeGreaterThanOrEqual(0);
+        expect(Math.max(...values())).toBeLessThanOrEqual(200);
+        await act(async () => root.unmount());
+    });
+
+    it("inserts a key using the current eased Lite value", async () => {
+        const { target, group, source } = CreateEasedLiteSource((gradient) => gradient * gradient, 15);
+        let context!: ReturnType<typeof useCurveEditor>;
+        const Probe = () => {
+            context = useCurveEditor();
+            return null;
+        };
+        const root = createRoot(container);
+        await act(async () =>
+            root.render(
+                <CurveEditorProvider source={source}>
+                    <Probe />
+                    <Graph width={300} height={200} />
+                </CurveEditorProvider>
+            )
+        );
+        await act(async () => context.actions.prepare());
+        await act(async () => context.observables.onCreateOrUpdateKeyPointRequired.notifyObservers());
+        const keys = getAnimationGroupTracks(group)[0].keys;
+        expect(keys.map((key) => key.time)).toEqual([0, 0.5, 1]);
+        expect(keys[1].value[0]).toBeCloseTo(2.5);
+        expect(target.value).toBeCloseTo(2.5);
+        await act(async () => root.unmount());
+    });
+
     it("keeps end-of-range insertion in the clip and updates key markers", async () => {
         const native = new Animation("track", "value", 30, Animation.ANIMATIONTYPE_FLOAT);
         native.setKeys([
@@ -317,7 +448,7 @@ describe("Lite curve-editor track selection", () => {
                 constrainKeyFrames: true,
             },
         };
-        let context: ReturnType<typeof useCurveEditor>;
+        let context!: ReturnType<typeof useCurveEditor>;
         const Probe = () => {
             context = useCurveEditor();
             return null;

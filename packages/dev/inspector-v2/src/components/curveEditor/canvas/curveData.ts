@@ -181,12 +181,31 @@ export class CurveData {
         this.componentIndex = componentIndex;
     }
 
+    /**
+     * Finds the sampled value bounds of non-step segments.
+     * @returns The bounds, or undefined when there are no sampled segments.
+     */
+    public getSampledValueRange(): { min: number; max: number } | undefined {
+        let min = Infinity;
+        let max = -Infinity;
+        for (let index = 1; index < this.keys.length; index++) {
+            const previous = this.keys[index - 1];
+            if (previous.interpolation === CurveEditorInterpolation.Step) {
+                continue;
+            }
+            this._sampleSegment(previous.frame, this.keys[index].frame, (_frame, value) => {
+                min = Math.min(min, value);
+                max = Math.max(max, value);
+            });
+        }
+        return min <= max ? { min, max } : undefined;
+    }
+
     public getPathData(convertX: (x: number) => number, convertY: (y: number) => number): string {
         const keys = this.keys;
         if (keys.length < 2) {
             return "";
         }
-        let evaluate: ((frame: number) => readonly number[]) | undefined;
         let pathData = `M${convertX(keys[0].frame)} ${convertY(keys[0].value)}`;
 
         for (let keyIndex = 1; keyIndex < keys.length; keyIndex++) {
@@ -196,7 +215,6 @@ export class CurveData {
             const currentValue = keys[keyIndex].value;
             const prevFrame = keys[keyIndex - 1].frame;
             const prevValue = keys[keyIndex - 1].value;
-            const frameDist = currentFrame - prevFrame;
             const prevInterpolation = keys[keyIndex - 1].interpolation;
 
             if (prevInterpolation === CurveEditorInterpolation.Step) {
@@ -205,16 +223,14 @@ export class CurveData {
                 continue;
             }
 
-            if (outTangent === undefined && inTangent === undefined && this.animation.kind !== "quaternion") {
+            if (outTangent === undefined && inTangent === undefined && this.animation.kind !== "quaternion" && !this.animation.requiresSampling) {
                 pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
                 continue;
             }
 
-            evaluate ??= this.animation.createEvaluator?.() ?? ((frame: number) => this.animation.evaluate(frame));
-            for (let frame = prevFrame; frame < currentFrame; frame += frameDist / CurveData.SampleRate) {
-                const keyValue = evaluate(frame);
-                pathData += ` L${convertX(frame)} ${convertY(keyValue[this._componentIndex()] ?? 0)}`;
-            }
+            this._sampleSegment(prevFrame, currentFrame, (frame, value) => {
+                pathData += ` L${convertX(frame)} ${convertY(value)}`;
+            });
             pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
         }
 
@@ -359,6 +375,12 @@ export class CurveData {
 
     private _componentIndex(): number {
         return this.componentIndex ?? 0;
+    }
+
+    private _sampleSegment(startFrame: number, endFrame: number, onSample: (frame: number, value: number) => void): void {
+        for (let frame = startFrame; frame < endFrame; frame += (endFrame - startFrame) / CurveData.SampleRate) {
+            onSample(frame, this.animation.evaluate(frame)[this._componentIndex()] ?? 0);
+        }
     }
 
     private _setTangentComponent(keys: CurveEditorKey[], keyIndex: number, tangent: "inTangent" | "outTangent", value: number): void {

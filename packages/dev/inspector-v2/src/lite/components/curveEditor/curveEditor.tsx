@@ -1,4 +1,4 @@
-import { getAnimationGroupTracks, setAnimationTrackKeys, type AnimationGroup, type EngineContext } from "@babylonjs/lite";
+import { evaluateAnimationTrack, getAnimationGroupTracks, setAnimationTrackKeys, type AnimationGroup, type EngineContext } from "@babylonjs/lite";
 import { type FunctionComponent, useEffect, useMemo } from "react";
 
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
@@ -27,7 +27,7 @@ export const LiteCurveEditor: FunctionComponent<LiteCurveEditorProps> = (props) 
     const { engine, group, title } = props;
     const result = useMemo(() => {
         try {
-            return { source: CreateLiteCurveEditorSource(group, engine, { getAnimationGroupTracks, setAnimationTrackKeys }) };
+            return { source: CreateLiteCurveEditorSource(group, engine, { evaluateAnimationTrack, getAnimationGroupTracks, setAnimationTrackKeys }) };
         } catch (error) {
             return { error: error instanceof Error ? error.message : String(error) };
         }

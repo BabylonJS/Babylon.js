@@ -57,13 +57,13 @@ export interface ICurveEditorAnimation {
     readonly supportsTangents: boolean;
     /** Whether interpolation can be changed per key. */
     readonly supportsInterpolationEditing: boolean;
+    /** Whether non-step segments need sampling even when they have no tangents. */
+    readonly requiresSampling?: boolean;
     /** Source object associated with the animation. */
     readonly source: object;
     getKeys(): CurveEditorKey[];
     setKeys(keys: readonly CurveEditorKey[]): void;
     evaluate(frame: number): readonly number[];
-    /** Captures a consistent evaluator for sampling a curve path. */
-    createEvaluator?(): (frame: number) => readonly number[];
 }
 
 /**

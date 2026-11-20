@@ -21,6 +21,8 @@ export type LiteCurveTrack = AnimationCurveTrack & { readonly interpolation: Lit
 export type LiteCurveApi = {
     /** Returns detached snapshots of a group's tracks. */
     getAnimationGroupTracks(group: AnimationGroup): readonly AnimationCurveTrack[];
+    /** Evaluates a track in seconds through Lite's playback sampler. */
+    evaluateAnimationTrack(group: AnimationGroup, trackIndex: number, time: number): readonly number[];
     /** Replaces keys for one track. */
     setAnimationTrackKeys(group: AnimationGroup, trackIndex: number, keys: readonly LiteCurveKey[]): void;
 };
@@ -31,85 +33,6 @@ function GetSupportedTrack(track: AnimationCurveTrack): LiteCurveTrack {
         throw new Error(`Unsupported animation interpolation: ${interpolation}`);
     }
     return { ...track, interpolation };
-}
-
-function NormalizeQuaternion(value: readonly number[]): number[] {
-    const length = Math.hypot(value[0], value[1], value[2], value[3]);
-    return length > 0 ? [value[0] / length, value[1] / length, value[2] / length, value[3] / length] : [...value];
-}
-
-function SlerpQuaternion(left: readonly number[], right: readonly number[], amount: number): number[] {
-    let dot = left[0] * right[0] + left[1] * right[1] + left[2] * right[2] + left[3] * right[3];
-    let target = right;
-    if (dot < 0) {
-        dot = -dot;
-        target = [-right[0], -right[1], -right[2], -right[3]];
-    }
-
-    if (dot > 0.9995) {
-        return NormalizeQuaternion(left.map((value, index) => value + amount * (target[index] - value)));
-    }
-
-    const theta = Math.acos(Math.min(1, dot));
-    const sinTheta = Math.sin(theta);
-    const leftWeight = Math.sin((1 - amount) * theta) / sinTheta;
-    const rightWeight = Math.sin(amount * theta) / sinTheta;
-    return NormalizeQuaternion(left.map((value, index) => value * leftWeight + target[index] * rightWeight));
-}
-
-function FindRightKey(keys: readonly LiteCurveKey[], time: number): number {
-    let low = 1;
-    let high = keys.length - 1;
-    while (low < high) {
-        const middle = Math.floor((low + high) / 2);
-        if (keys[middle].time <= time) {
-            low = middle + 1;
-        } else {
-            high = middle;
-        }
-    }
-    return low;
-}
-
-function EvaluateTrack(track: LiteCurveTrack, time: number, rightIndex?: number): readonly number[] {
-    const keys = track.keys;
-    if (keys.length === 0) {
-        return new Array<number>(track.componentCount).fill(0);
-    }
-    if (time <= keys[0].time) {
-        return keys[0].value;
-    }
-    const lastKey = keys[keys.length - 1];
-    if (time >= lastKey.time) {
-        return lastKey.value;
-    }
-
-    const index = rightIndex ?? FindRightKey(keys, time);
-    const left = keys[index - 1];
-    const right = keys[index];
-    if (track.interpolation === "step") {
-        return left.value;
-    }
-
-    const duration = right.time - left.time;
-    const amount = (time - left.time) / duration;
-    if (track.interpolation === "cubicSpline") {
-        const t2 = amount * amount;
-        const t3 = t2 * amount;
-        const h00 = 2 * t3 - 3 * t2 + 1;
-        const h10 = t3 - 2 * t2 + amount;
-        const h01 = -2 * t3 + 3 * t2;
-        const h11 = t3 - t2;
-        const value = left.value.map(
-            (component, index) => h00 * component + h10 * duration * (left.outTangent?.[index] ?? 0) + h01 * right.value[index] + h11 * duration * (right.inTangent?.[index] ?? 0)
-        );
-        return track.quaternion ? NormalizeQuaternion(value) : value;
-    }
-
-    if (track.quaternion) {
-        return SlerpQuaternion(left.value, right.value, amount);
-    }
-    return left.value.map((value, index) => value + amount * (right.value[index] - value));
 }
 
 function GetComponents(track: LiteCurveTrack): readonly CurveEditorComponent[] {
@@ -154,6 +77,7 @@ export function CreateLiteCurveEditorAnimations(group: AnimationGroup, engine: E
             components: GetComponents(initialTrack),
             supportsTangents: initialTrack.interpolation === "cubicSpline",
             supportsInterpolationEditing: false,
+            requiresSampling: initialTrack.interpolation === "linear" && initialTrack.easing !== undefined,
             source: initialTrack.target,
             getKeys: readKeys,
             setKeys: (keys) => {
@@ -178,24 +102,7 @@ export function CreateLiteCurveEditorAnimations(group: AnimationGroup, engine: E
                     goToFrame(group, group.currentTime * frameRate, engine);
                 }
             },
-            evaluate: (frame) => EvaluateTrack(readTrack(), frame / frameRate),
-            createEvaluator: () => {
-                const track = readTrack();
-                let rightIndex = 1;
-                return (frame) => {
-                    const time = frame / frameRate;
-                    if (track.keys.length > 1) {
-                        if (time < track.keys[rightIndex - 1].time) {
-                            rightIndex = FindRightKey(track.keys, time);
-                        } else {
-                            while (rightIndex < track.keys.length - 1 && track.keys[rightIndex].time <= time) {
-                                rightIndex++;
-                            }
-                        }
-                    }
-                    return EvaluateTrack(track, time, rightIndex);
-                };
-            },
+            evaluate: (frame) => api.evaluateAnimationTrack(group, trackIndex, frame / frameRate),
         };
     });
 }
