@@ -157,7 +157,15 @@ describe("ThinNativeEngine", () => {
                 vi.restoreAllMocks();
             });
 
-            expect(() => engine._initializeNativeEngine(false)).toThrow();
+            let error: unknown;
+            try {
+                engine._initializeNativeEngine(false);
+            } catch (e) {
+                error = e;
+            }
+            // The protocol check stops initialization; a TypeError would mean the fixture is incomplete.
+            expect(error).toBeInstanceOf(Error);
+            expect(error).not.toBeInstanceOf(TypeError);
             expect(engine.hostInformation.isMobile).toBe(expected);
         });
     });
