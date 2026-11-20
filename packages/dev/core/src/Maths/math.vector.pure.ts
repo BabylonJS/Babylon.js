@@ -2261,6 +2261,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * Slerp between two vectors. See also `SmoothToRef`
      * Slerp is a spherical linear interpolation
      * giving a slow in and out effect
+     * Exactly opposite vectors have no unique rotation plane, so they rotate around an arbitrary axis perpendicular to `vector0`
      * Example Playground 1 https://playground.babylonjs.com/#R1F8YU#108
      * Example Playground 2 https://playground.babylonjs.com/#R1F8YU#109
      * @param vector0 Start vector
