@@ -131,6 +131,47 @@ describe("ThinNativeEngine", () => {
         });
     });
 
+    describe("host information", () => {
+        it.each([
+            { nativeIsMobile: true, initial: false, expected: true },
+            { nativeIsMobile: false, initial: true, expected: false },
+            { nativeIsMobile: undefined, initial: false, expected: false },
+            { nativeIsMobile: undefined, initial: true, expected: true },
+        ])("uses the runtime isMobile ($nativeIsMobile) and otherwise leaves hostInformation.isMobile ($initial) unchanged", ({ nativeIsMobile, initial, expected }) => {
+            RegisterNativeEngine();
+            const engine = Object.create(NativeEngine.prototype) as {
+                hostInformation: { isMobile: boolean };
+                _initializeNativeEngine: (adaptToDeviceRatio: boolean) => void;
+            };
+            engine.hostInformation = { isMobile: initial };
+            vi.spyOn(ThinNativeEngine, "_createNativeDataStream").mockReturnValue({} as ReturnType<typeof ThinNativeEngine._createNativeDataStream>);
+            // Reading PROTOCOL_VERSION throws a sentinel, so catching it proves initialization reached the protocol check.
+            const protocolCheckReached = new Error("protocol check reached");
+            vi.stubGlobal("_native", {
+                Engine: class {
+                    public static get PROTOCOL_VERSION(): number {
+                        throw protocolCheckReached;
+                    }
+                    public isMobile = nativeIsMobile;
+                    public setCommandDataStream() {}
+                },
+            });
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+                vi.restoreAllMocks();
+            });
+
+            let error: unknown;
+            try {
+                engine._initializeNativeEngine(false);
+            } catch (e) {
+                error = e;
+            }
+            expect(error).toBe(protocolCheckReached);
+            expect(engine.hostInformation.isMobile).toBe(expected);
+        });
+    });
+
     describe("alpha mode", () => {
         it.each([
             ["ALPHA_MIN", Constants.ALPHA_MIN, Constants.ALPHA_EQUATION_MIN],

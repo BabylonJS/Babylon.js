@@ -34,9 +34,15 @@ export interface INativeEngine {
 
     /**
      * True when the runtime can copy a canvas into a dynamic texture with a mip chain and
-     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps)`).
+     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps, invertY)`).
      */
     readonly supportsDynamicTextureMipMaps?: boolean;
+
+    /**
+     * True when the runtime runs on a mobile platform (Android or iOS/iPadOS). Native runtimes
+     * have no `navigator.userAgent`, so this feeds `hostInformation.isMobile`.
+     */
+    readonly isMobile?: boolean;
 
     dispose(): void;
 
