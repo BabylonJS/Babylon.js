@@ -1,3 +1,4 @@
+import { WebGPUQuerySet } from "core/Engines/WebGPU/webgpuQuerySet";
 import { WebGPUDurationMeasure, WebGPUTimestampQuery } from "core/Engines/WebGPU/webgpuTimestampQuery";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { Observable } from "core/Misc/observable";
@@ -183,5 +184,40 @@ describe("WebGPU frame timestamps", () => {
 
         expect(order).toEqual(["submit", "released"]);
         expect(after).not.toBe(before);
+    });
+});
+
+describe("WebGPU query set readback on device loss", () => {
+    const aborted = () => new DOMException("Buffer was unmapped before mapping was resolved.", "AbortError");
+
+    it("drops a frame time whose mapAsync is aborted by a device loss before the engine is restored", async () => {
+        const t = setup();
+        t.mapAsync.mockRejectedValueOnce(aborted());
+        const e = encoder();
+        const m = measure(t);
+
+        m.start(e as any);
+        const duration = m.stop(e as any);
+        t.submitEncoders();
+
+        // the engine still has its uniqueId: the restore that assigns a new one comes after the rejection
+        await expect(duration).resolves.toBe(0);
+    });
+
+    it("returns null from readValues when its mapAsync is aborted", async () => {
+        const t = setup();
+        t.mapAsync.mockRejectedValueOnce(aborted());
+        const querySet = new WebGPUQuerySet(t.engine as any, 2, "timestamp" as GPUQueryType, t.device as any, t.bufferManager as any);
+
+        await expect(querySet.readValues(0, 2)).resolves.toBeNull();
+    });
+
+    it("still rejects on other mapAsync errors while the engine is alive", async () => {
+        const t = setup();
+        const error = new DOMException("Invalid buffer.", "OperationError");
+        t.mapAsync.mockRejectedValueOnce(error);
+        const querySet = new WebGPUQuerySet(t.engine as any, 2, "timestamp" as GPUQueryType, t.device as any, t.bufferManager as any);
+
+        await expect(querySet.readValue(0)).rejects.toBe(error);
     });
 });

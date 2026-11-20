@@ -99,7 +99,7 @@ export class WebGPUQuerySet {
 
             return arrayBuf;
         } catch (err) {
-            if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+            if (this._readbackWasAborted(err, engineId)) {
                 // Engine disposed or context loss/restoration
                 return null;
             }
@@ -129,7 +129,7 @@ export class WebGPUQuerySet {
 
             return value;
         } catch (err) {
-            if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+            if (this._readbackWasAborted(err, engineId)) {
                 // Engine disposed or context loss/restoration
                 return 0;
             }
@@ -159,12 +159,18 @@ export class WebGPUQuerySet {
 
             return value;
         } catch (err) {
-            if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+            if (this._readbackWasAborted(err, engineId)) {
                 // Engine disposed or context loss/restoration
                 return 0;
             }
             throw err;
         }
+    }
+
+    // The device can be lost before the engine is restored with a new uniqueId: the pending mapAsync then rejects right away with an
+    // AbortError (the buffer was unmapped or destroyed before the mapping resolved), while the engine still has the old uniqueId
+    private _readbackWasAborted(err: unknown, engineId: number): boolean {
+        return this._engine.isDisposed || this._engine.uniqueId !== engineId || (err as { name?: unknown } | null)?.name === "AbortError";
     }
 
     public dispose() {
