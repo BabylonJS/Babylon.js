@@ -145,9 +145,13 @@ describe("ThinNativeEngine", () => {
             };
             engine.hostInformation = { isMobile: initial };
             vi.spyOn(ThinNativeEngine, "_createNativeDataStream").mockReturnValue({} as ReturnType<typeof ThinNativeEngine._createNativeDataStream>);
+            // Reading PROTOCOL_VERSION throws a sentinel, so catching it proves initialization reached the protocol check.
+            const protocolCheckReached = new Error("protocol check reached");
             vi.stubGlobal("_native", {
                 Engine: class {
-                    public static PROTOCOL_VERSION = -1;
+                    public static get PROTOCOL_VERSION(): number {
+                        throw protocolCheckReached;
+                    }
                     public isMobile = nativeIsMobile;
                     public setCommandDataStream() {}
                 },
@@ -163,9 +167,7 @@ describe("ThinNativeEngine", () => {
             } catch (e) {
                 error = e;
             }
-            // The protocol check stops initialization; a TypeError would mean the fixture is incomplete.
-            expect(error).toBeInstanceOf(Error);
-            expect(error).not.toBeInstanceOf(TypeError);
+            expect(error).toBe(protocolCheckReached);
             expect(engine.hostInformation.isMobile).toBe(expected);
         });
     });
