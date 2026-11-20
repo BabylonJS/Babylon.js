@@ -103,9 +103,12 @@ export class BezierCurve {
                     const a = 3 * sm * sm * mid * x1;
                     const b = 3 * sm * mid * mid * x2;
                     const c = mid * mid * mid;
-                    const p = a + b, ep = b - (p - a);
-                    const q = p + c, eq = c - (q - p) + ep;
-                    const r = q - t, er = -t - (r - q) + eq;
+                    const p = a + b;
+                    const ep = b - (p - a);
+                    const q = p + c;
+                    const eq = c - (q - p) + ep;
+                    const r = q - t;
+                    const er = -t - (r - q) + eq;
                     const cr = r + er;
                     if (cr === 0) {
                         lo = mid;
