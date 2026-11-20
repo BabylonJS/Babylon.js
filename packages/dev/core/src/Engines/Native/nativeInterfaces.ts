@@ -471,6 +471,8 @@ interface INativeEngineConstructor {
     readonly COMMAND_DRAWINSTANCED: NativeData;
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_CLEAR2?: NativeData;
+    /** Flag ORed into the COMMAND_CLEAR2 attachment mask by clearAttachments(). */
+    readonly CLEAR_ATTACHMENTS_OPERATION?: number;
     readonly COMMAND_SETSTENCIL: NativeData;
     readonly COMMAND_SETSTENCIL2?: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;

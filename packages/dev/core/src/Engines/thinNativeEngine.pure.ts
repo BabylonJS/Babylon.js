@@ -259,6 +259,10 @@ export class ThinNativeEngine extends ThinEngine {
      * Only used to mask clears (see bindAttachments).
      */
     private _clearAttachmentMask: number;
+    /**
+     * Operation flags ORed into the COMMAND_CLEAR2 attachment mask (see clearAttachments).
+     */
+    private _clearOperationFlags = 0;
     private _currentDepthTest: number;
     private _depthTestEnabled: boolean;
     private _stencilTest: boolean;
@@ -806,7 +810,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilClearValue);
         if (clear2) {
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(this._clearAttachmentMask);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(this._clearAttachmentMask | this._clearOperationFlags);
         }
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -4362,7 +4366,13 @@ export class ThinNativeEngine extends ThinEngine {
         stencilClearValue = 0
     ): void {
         this.bindAttachments(attachments);
-        this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
+        // Integer attachments convert the clear color differently than in clear() (see ThinEngine.clearAttachments).
+        this._clearOperationFlags = _native.Engine.CLEAR_ATTACHMENTS_OPERATION ?? 0;
+        try {
+            this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
+        } finally {
+            this._clearOperationFlags = 0;
+        }
     }
 
     public override buildTextureLayout(textureStatus: boolean[], _backBufferLayout = false): number[] {
