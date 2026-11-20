@@ -10,6 +10,7 @@ import { type Observer, Observable } from "core/Misc/observable";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import { type Color4 } from "core/Maths/math.color";
+import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { type IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 import { type GLTFLoader } from "../glTFLoader";
 
@@ -390,14 +391,13 @@ export class TransmissionHelper {
         if (this._opaqueRenderTarget) {
             this._opaqueRenderTarget.dispose();
         }
-        this._opaqueRenderTarget = new RenderTargetTexture(
-            "opaqueSceneTexture",
-            this._options.renderSize,
-            this._scene,
-            this._options.generateMipmaps,
-            undefined,
-            this._options.renderTargetTextureType
-        );
+        const objectRenderer = new ObjectRenderer("opaqueSceneTexture", this._scene);
+        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, {
+            generateMipMaps: this._options.generateMipmaps,
+            type: this._options.renderTargetTextureType,
+            existingObjectRenderer: objectRenderer,
+        });
+        this._opaqueRenderTarget.onDisposeObservable.addOnce(() => objectRenderer.dispose());
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         // The opaque cache holds every opaque mesh of the scene, regardless of the camera currently rendering.
@@ -416,6 +416,9 @@ export class TransmissionHelper {
 
         let saveSceneEnvIntensity: number;
         this._opaqueRenderTarget.onBeforeBindObservable.add((opaqueRenderTarget) => {
+            // Scene depth peeling uses the camera's prepass even with no transparent meshes.
+            // Capture only the opaque background when OIT is active, without changing the camera pass.
+            objectRenderer.renderTransparentMeshes = !this._scene._useOrderIndependentTransparency;
             saveSceneEnvIntensity = this._scene.environmentIntensity;
             this._scene.environmentIntensity = 1.0;
             if (!this._options.clearColor) {
