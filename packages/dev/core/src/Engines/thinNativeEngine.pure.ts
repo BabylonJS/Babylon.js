@@ -323,7 +323,7 @@ export class ThinNativeEngine extends ThinEngine {
         });
         this._camera = _native.Camera ? new _native.Camera() : null;
         // Native hosts have no navigator.userAgent for _setupMobileChecks, so the runtime reports it directly.
-        // Older runtimes don't report it; keep whatever _setupMobileChecks found (e.g. a polyfilled userAgent).
+        // Older runtimes don't report it; leave hostInformation unchanged (false unless the host app set it).
         if (this._engine.isMobile !== undefined) {
             this.hostInformation.isMobile = this._engine.isMobile;
         }
@@ -2219,6 +2219,9 @@ export class ThinNativeEngine extends ThinEngine {
             if (supportsOptions) {
                 texture._premulAlpha = premulAlpha;
             }
+            // Recorded like WebGL/WebGPU so DynamicTexture._rebuild re-uploads with the last orientation.
+            texture._dynamicTextureSource = canvas;
+            texture.invertY = invertY || false;
             texture.isReady = true;
         }
     }

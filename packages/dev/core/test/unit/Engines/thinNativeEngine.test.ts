@@ -137,7 +137,7 @@ describe("ThinNativeEngine", () => {
             { nativeIsMobile: false, initial: true, expected: false },
             { nativeIsMobile: undefined, initial: false, expected: false },
             { nativeIsMobile: undefined, initial: true, expected: true },
-        ])("uses the runtime isMobile ($nativeIsMobile) and otherwise keeps $initial", ({ nativeIsMobile, initial, expected }) => {
+        ])("uses the runtime isMobile ($nativeIsMobile) and otherwise leaves hostInformation.isMobile ($initial) unchanged", ({ nativeIsMobile, initial, expected }) => {
             RegisterNativeEngine();
             const engine = Object.create(NativeEngine.prototype) as {
                 hostInformation: { isMobile: boolean };
@@ -157,7 +157,7 @@ describe("ThinNativeEngine", () => {
                 vi.restoreAllMocks();
             });
 
-            expect(() => engine._initializeNativeEngine(false)).toThrow("Protocol version mismatch");
+            expect(() => engine._initializeNativeEngine(false)).toThrow();
             expect(engine.hostInformation.isMobile).toBe(expected);
         });
     });

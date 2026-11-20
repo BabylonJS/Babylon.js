@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ThinNativeEngine } from "core/Engines/thinNativeEngine.pure";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture.pure";
 
 describe("Native font layout metrics", () => {
     it.each([
@@ -108,4 +109,23 @@ describe("Native dynamic textures", () => {
             expect(texture.isReady).toBe(true);
         }
     );
+
+    it("re-uploads with the last invertY after a rebuild", () => {
+        (globalThis as any)._native = { Engine: { COMMAND_COPYTEXTURE: 7 } };
+        const engine: ThinNativeEngine = Object.create(ThinNativeEngine.prototype);
+        const encoder = { startEncodingCommand: vi.fn(), encodeCommandArgAsNativeData: vi.fn(), finishEncodingCommand: vi.fn() };
+        Object.assign(engine, { _engine: { supportsDynamicTextureMipMaps: true }, _commandBufferEncoder: encoder });
+        const canvas = { getContext: () => ({ flush: vi.fn() }), getCanvasTexture: vi.fn(() => ({})) };
+        const texture = { _hardwareTexture: { underlyingResource: {} }, generateMipMaps: false, _premulAlpha: false, isReady: false } as any;
+        const dynamicTexture: DynamicTexture = Object.create(DynamicTexture.prototype);
+        Object.assign(dynamicTexture, { _texture: texture, _canvas: canvas, _format: 0, _getEngine: () => engine });
+
+        dynamicTexture.update(false, true);
+        dynamicTexture._rebuild();
+
+        expect(canvas.getCanvasTexture.mock.calls).toEqual([
+            [true, false, false],
+            [true, false, false],
+        ]);
+    });
 });
