@@ -2292,6 +2292,10 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
             // Nearly opposite directions: acos(dot) rounds to PI there and sin(omega) to almost 0, so dividing by it
             // blows the result up, or cancels it to zero when they are exactly opposite. Rotate vector0Dir toward
             // vector1Dir by slerp * omega instead, around any perpendicular axis when there is no single one.
+            if (slerp >= 1) {
+                result.copyFrom(vector1);
+                return result;
+            }
             const axis = MathTmp.Vector3[2];
             Vector3.CrossToRef(vector0Dir, vector1Dir, axis);
             const sinOmega = axis.length();
@@ -2302,8 +2306,10 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
                 Vector3.CrossToRef(vector0Dir, Math.abs(vector0Dir.x) < 0.9 ? Vector3.RightReadOnly : Vector3.UpReadOnly, axis);
                 axis.normalize();
             }
-            // The unit direction perpendicular to vector0Dir, on the side of vector1Dir
+            // The unit direction perpendicular to vector0Dir, on the side of vector1Dir.
+            // Normalize to guard against magnitude drift from cross products of near-antipodal vectors.
             Vector3.CrossToRef(axis, vector0Dir, vector1Dir);
+            vector1Dir.normalize();
             scale0 = Math.cos(slerp * omega);
             scale1 = Math.sin(slerp * omega);
         } else if (dot < 1 - Epsilon) {
