@@ -130,8 +130,8 @@ export class WebGPUQuerySet {
             return value;
         } catch (err) {
             if (this._readbackWasAborted(err, engineId)) {
-                // Engine disposed or context loss/restoration
-                return 0;
+                // Engine disposed or context loss/restoration: no sample, so that a cancelled readback is not recorded as a 0 ns duration
+                return null;
             }
             throw err;
         }
@@ -160,8 +160,8 @@ export class WebGPUQuerySet {
             return value;
         } catch (err) {
             if (this._readbackWasAborted(err, engineId)) {
-                // Engine disposed or context loss/restoration
-                return 0;
+                // Engine disposed or context loss/restoration: no sample, so that a cancelled readback is not recorded as a 0 ns duration
+                return null;
             }
             throw err;
         }

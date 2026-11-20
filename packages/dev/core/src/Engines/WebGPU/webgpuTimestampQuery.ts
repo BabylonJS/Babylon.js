@@ -92,7 +92,9 @@ export class WebGPUTimestampQuery {
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         this._measureDuration.stopPass(index, this._engine._renderEncoder).then((duration_) => {
-            gpuPerfCounter._addDuration(currentFrameId, duration_ !== null && duration_ > 0 ? duration_ : 0);
+            if (duration_ !== null) {
+                gpuPerfCounter._addDuration(currentFrameId, duration_ > 0 ? duration_ : 0);
+            }
         });
     }
 

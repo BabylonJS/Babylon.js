@@ -9,7 +9,8 @@ import { describe, expect, it, vi } from "vitest";
 function setup() {
     const submit = vi.fn();
     const mapAsync = vi.fn(async () => {});
-    const buffer = { mapAsync, getMappedRange: () => new BigUint64Array([1000n, 3500n]).buffer, unmap: vi.fn(), destroy: vi.fn() };
+    const getMappedRange = vi.fn(() => new BigUint64Array([1000n, 3500n]).buffer);
+    const buffer = { mapAsync, getMappedRange, unmap: vi.fn(), destroy: vi.fn() };
     const device = { createQuerySet: vi.fn(() => ({ destroy: vi.fn() })), createCommandEncoder: vi.fn(() => encoder()), queue: { submit } };
     const bufferManager = { createRawBuffer: vi.fn(() => buffer), releaseBuffer: vi.fn() };
     const proto = WebGPUEngine.prototype as any;
@@ -24,7 +25,7 @@ function setup() {
         _notifySubmitted: proto._notifySubmitted as () => void,
     };
     const submitEncoders = () => engine._notifySubmitted();
-    return { submit, mapAsync, device, bufferManager, engine, submitEncoders };
+    return { submit, mapAsync, getMappedRange, device, bufferManager, engine, submitEncoders };
 }
 
 function encoder() {
@@ -201,7 +202,50 @@ describe("WebGPU query set readback on device loss", () => {
         t.submitEncoders();
 
         // the engine still has its uniqueId: the restore that assigns a new one comes after the rejection
-        await expect(duration).resolves.toBe(0);
+        await expect(duration).resolves.toBeNull();
+    });
+
+    it("keeps the last real frame time when a frame's readback is aborted, and records the next one", async () => {
+        const t = setup();
+        const query = new WebGPUTimestampQuery(t.engine as any, t.device as any, t.bufferManager as any);
+        query.enable = true;
+        const frame = async () => {
+            const e = encoder();
+            query.startFrame(e as any);
+            query.endFrame(e as any);
+            t.submitEncoders();
+            await tick();
+        };
+
+        await frame();
+        expect(query.gpuFrameTimeCounter.current).toBe(2500);
+        expect(query.gpuFrameTimeCounter.count).toBe(1);
+
+        t.mapAsync.mockRejectedValueOnce(aborted());
+        await frame();
+        expect(query.gpuFrameTimeCounter.current).toBe(2500);
+        expect(query.gpuFrameTimeCounter.count).toBe(1);
+
+        t.getMappedRange.mockReturnValueOnce(new BigUint64Array([1000n, 5000n]).buffer);
+        await frame();
+        expect(query.gpuFrameTimeCounter.current).toBe(4000);
+        expect(query.gpuFrameTimeCounter.count).toBe(2);
+    });
+
+    it("adds no pass duration when the pass readback is aborted", async () => {
+        const t = setup();
+        const query = new WebGPUTimestampQuery(t.engine as any, t.device as any, t.bufferManager as any);
+        query.enable = true;
+        const gpuPerfCounter = { _addDuration: vi.fn() };
+
+        t.mapAsync.mockRejectedValueOnce(aborted());
+        query.endPass(0, gpuPerfCounter as any);
+        await tick();
+        expect(gpuPerfCounter._addDuration).not.toHaveBeenCalled();
+
+        query.endPass(0, gpuPerfCounter as any);
+        await tick();
+        expect(gpuPerfCounter._addDuration).toHaveBeenCalledExactlyOnceWith(7, 2500);
     });
 
     it("returns null from readValues when its mapAsync is aborted", async () => {
