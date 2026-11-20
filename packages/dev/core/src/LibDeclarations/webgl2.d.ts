@@ -50,6 +50,20 @@ interface WebGL2RenderingContext extends WebGL2RenderingContextBase {
     enableIndexed(target: GLenum, index: GLuint): void;
 }
 
+interface WebGLRenderingContextBase {
+    getExtension(extensionName: "EXT_clip_control"): EXT_clip_control | null;
+}
+
+interface EXT_clip_control {
+    readonly LOWER_LEFT_EXT: 0x8ca1;
+    readonly UPPER_LEFT_EXT: 0x8ca2;
+    readonly NEGATIVE_ONE_TO_ONE_EXT: 0x935e;
+    readonly ZERO_TO_ONE_EXT: 0x935f;
+    readonly CLIP_ORIGIN_EXT: 0x935c;
+    readonly CLIP_DEPTH_MODE_EXT: 0x935d;
+    clipControlEXT(origin: GLenum, depth: GLenum): void;
+}
+
 interface EXT_disjoint_timer_query {
     QUERY_COUNTER_BITS_EXT: number;
     TIME_ELAPSED_EXT: number;

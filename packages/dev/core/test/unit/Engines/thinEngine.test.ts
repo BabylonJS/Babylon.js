@@ -3,6 +3,9 @@ import { ThinEngine } from "core/Engines/thinEngine";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Color4 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { Vector3 } from "core/Maths/math.vector";
+import { Scene } from "core/scene";
 import "core/Engines/Extensions/engine.multiRender";
 
 type RenderFrameCallback = (timestamp: number) => void;
@@ -11,43 +14,71 @@ type RenderFrameCallback = (timestamp: number) => void;
  * Creates a canvas whose getContext("webgl2") returns a minimal mocked WebGL2 context, so that the engine
  * goes through the full context initialization (_initGLContext) in a node environment.
  * Constants are numbers (LEQUAL and GEQUAL have their real values), methods return null unless listed below.
- * @returns the mocked canvas, and the spy on the context clear() method
+ * @param supportsClipControl whether the context exposes EXT_clip_control
+ * @returns the mocked canvas, GL spies and a way to simulate context loss
  */
-function CreateMockWebGL2Canvas() {
+function CreateMockWebGL2Canvas(supportsClipControl = false) {
+    const lowerLeft = 0x8ca1;
+    const zeroToOne = 0x935f;
+    const clipDepthMode = 0x935d;
+    const negativeOneToOne = 0x935e;
+    let depthMode = negativeOneToOne;
+    const clipControl = {
+        LOWER_LEFT_EXT: lowerLeft,
+        NEGATIVE_ONE_TO_ONE_EXT: negativeOneToOne,
+        ZERO_TO_ONE_EXT: zeroToOne,
+        CLIP_DEPTH_MODE_EXT: clipDepthMode,
+        clipControlEXT: vi.fn((_origin: number, depth: number) => {
+            depthMode = depth;
+        }),
+    };
+    const getExtension = vi.fn((name: string) => (name === "EXT_clip_control" && supportsClipControl ? clipControl : null));
     const knownConstants: Record<string, number> = { LEQUAL: Constants.LEQUAL, GEQUAL: Constants.GEQUAL };
     let nextConstant = 0x10000;
     const methods: Record<string, (...args: unknown[]) => unknown> = {
         getContextAttributes: () => ({ stencil: true, antialias: false }),
-        getParameter: () => 16,
+        getParameter: (parameter) => (parameter === clipDepthMode ? depthMode : 16),
+        getExtension: (name) => getExtension(name as string),
         getShaderPrecisionFormat: () => ({ precision: 23, rangeMin: 127, rangeMax: 127 }),
         getSupportedExtensions: () => [],
         clear: vi.fn(),
     };
-    const gl = new Proxy({} as Record<string, unknown>, {
-        get: (target, name) => {
-            if (typeof name !== "string") {
-                return undefined;
-            }
-            if (!(name in target)) {
-                target[name] = /^[A-Z0-9_]+$/.test(name) ? (knownConstants[name] ?? nextConstant++) : (methods[name] ?? (() => null));
-            }
-            return target[name];
-        },
-    });
-    const canvas = {
+    const gl = new Proxy<Record<string, unknown>>(
+        { drawingBufferWidth: 300, drawingBufferHeight: 150 },
+        {
+            get: (target, name) => {
+                if (typeof name !== "string") {
+                    return undefined;
+                }
+                if (!(name in target)) {
+                    target[name] = /^[A-Z0-9_]+$/.test(name) ? (knownConstants[name] ?? nextConstant++) : (methods[name] ?? (() => null));
+                }
+                return target[name];
+            },
+        }
+    );
+    const canvas = Object.assign(new EventTarget(), {
         width: 300,
         height: 150,
         clientWidth: 300,
         clientHeight: 150,
         style: {},
         getContext: (contextType: string) => (contextType === "webgl2" ? gl : null),
-        addEventListener: () => {},
-        removeEventListener: () => {},
         setAttribute: () => {},
         getBoundingClientRect: () => ({ width: 300, height: 150 }),
-    };
+    });
     gl.canvas = canvas;
-    return { canvas: canvas as unknown as HTMLCanvasElement, clear: methods.clear };
+    return {
+        canvas: canvas as unknown as HTMLCanvasElement,
+        clear: methods.clear,
+        getExtension,
+        clipControl,
+        restoreContext: () => {
+            canvas.dispatchEvent(new Event("webglcontextlost", { cancelable: true }));
+            depthMode = negativeOneToOne;
+            canvas.dispatchEvent(new Event("webglcontextrestored"));
+        },
+    };
 }
 
 describe("Engine", () => {
@@ -121,6 +152,77 @@ describe("Engine", () => {
                     expect(clear).not.toHaveBeenCalled();
                     expect(engine.useReverseDepthBuffer).toBe(!!options.useReverseDepthBuffer);
                     expect(engine.depthCullingState.depthFunc).toBe(expectedDepthFunc);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it("only requests clip control when half-range depth is requested", () => {
+                const { canvas, getExtension } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useReverseDepthBuffer: true });
+                try {
+                    expect(getExtension).not.toHaveBeenCalledWith("EXT_clip_control");
+                    expect(engine.isNDCHalfZRange).toBe(false);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it("keeps full-range depth when the extension is unavailable", () => {
+                const { canvas, getExtension } = CreateMockWebGL2Canvas();
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
+                try {
+                    expect(getExtension).toHaveBeenCalledWith("EXT_clip_control");
+                    expect(engine.isNDCHalfZRange).toBe(false);
+                    expect(engine._getGlobalDefines()).not.toContain("IS_NDC_HALF_ZRANGE");
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it("restores the default clip range when releasing a reusable context", () => {
+                const { canvas, clipControl } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
+                engine.dispose();
+                expect(clipControl.clipControlEXT).toHaveBeenLastCalledWith(clipControl.LOWER_LEFT_EXT, clipControl.NEGATIVE_ONE_TO_ONE_EXT);
+            });
+
+            it("restores the selected clip range before notifying context restoration", async () => {
+                const { canvas, clipControl, restoreContext, getExtension } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
+                try {
+                    expect(engine.isNDCHalfZRange).toBe(true);
+                    expect(engine.useReverseDepthBuffer).toBe(false);
+                    expect(engine._getGlobalDefines()).toContain("#define IS_NDC_HALF_ZRANGE");
+                    expect(clipControl.clipControlEXT).toHaveBeenCalledExactlyOnceWith(clipControl.LOWER_LEFT_EXT, clipControl.ZERO_TO_ONE_EXT);
+
+                    const restored = new Promise<void>((resolve) => {
+                        engine.onContextRestoredObservable.addOnce(() => resolve());
+                    });
+                    restoreContext();
+                    await restored;
+                    expect(clipControl.clipControlEXT).toHaveBeenCalledTimes(2);
+                    expect(getExtension.mock.calls.filter(([name]) => name === "EXT_clip_control")).toHaveLength(2);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it.each([false, true])("projects an infinite reversed-Z frustum into [0, 1] (right-handed: %s)", (rightHanded) => {
+                const { canvas } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true, useReverseDepthBuffer: true });
+                try {
+                    const scene = new Scene(engine);
+                    scene.useRightHandedSystem = rightHanded;
+                    const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                    camera.minZ = 1;
+                    camera.maxZ = 100;
+                    camera.ignoreCameraMaxZ = true;
+                    const projection = camera.getProjectionMatrix();
+
+                    const forwardZ = rightHanded ? -1 : 1;
+                    expect(Vector3.TransformCoordinates(new Vector3(0, 0, forwardZ), projection).z).toBe(1);
+                    expect(Vector3.TransformCoordinates(new Vector3(0, 0, forwardZ * 1e9), projection).z).toBeCloseTo(1e-9, 15);
                 } finally {
                     engine.dispose();
                 }
