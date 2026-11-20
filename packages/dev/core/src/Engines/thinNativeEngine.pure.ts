@@ -322,6 +322,8 @@ export class ThinNativeEngine extends ThinEngine {
             nonFloatVertexBuffers: true,
         });
         this._camera = _native.Camera ? new _native.Camera() : null;
+        // Native hosts have no navigator.userAgent for _setupMobileChecks, so the runtime reports it directly.
+        this.hostInformation.isMobile = this._engine.isMobile === true;
         this._commandBufferEncoder = new CommandBufferEncoder(this._engine);
         this._frameGraphFramebufferRefCount = new Map();
         this._frameStats = { gpuTimeNs: Number.NaN };
@@ -2204,7 +2206,9 @@ export class ThinNativeEngine extends ThinEngine {
             context.flush();
             // Older runtimes take no options and always copy with their legacy alpha handling.
             const supportsOptions = this._engine.supportsDynamicTextureMipMaps === true;
-            const source = supportsOptions ? canvas.getCanvasTexture(premulAlpha, texture.generateMipMaps) : canvas.getCanvasTexture();
+            // invertY is always forwarded: runtimes that predate it ignore the argument, and an undefined
+            // premulAlpha with no mips selects the legacy premultiplied copy.
+            const source = supportsOptions ? canvas.getCanvasTexture(premulAlpha, texture.generateMipMaps, invertY) : canvas.getCanvasTexture(undefined, false, invertY);
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);

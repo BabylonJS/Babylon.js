@@ -83,12 +83,13 @@ describe("Native dynamic textures", () => {
     });
 
     it.each([
-        { supportsDynamicTextureMipMaps: true, expectedArgs: [true, true], expectedPremulAlpha: true },
-        { supportsDynamicTextureMipMaps: false, expectedArgs: [], expectedPremulAlpha: false },
-        { supportsDynamicTextureMipMaps: undefined, expectedArgs: [], expectedPremulAlpha: false },
+        { supportsDynamicTextureMipMaps: true, invertY: false, expectedArgs: [true, true, false], expectedPremulAlpha: true },
+        { supportsDynamicTextureMipMaps: true, invertY: true, expectedArgs: [true, true, true], expectedPremulAlpha: true },
+        { supportsDynamicTextureMipMaps: false, invertY: false, expectedArgs: [undefined, false, false], expectedPremulAlpha: false },
+        { supportsDynamicTextureMipMaps: undefined, invertY: true, expectedArgs: [undefined, false, true], expectedPremulAlpha: false },
     ])(
-        "copies the canvas with options only when the runtime supports them ($supportsDynamicTextureMipMaps)",
-        ({ supportsDynamicTextureMipMaps, expectedArgs, expectedPremulAlpha }) => {
+        "copies the canvas with options only when the runtime supports them ($supportsDynamicTextureMipMaps, invertY=$invertY)",
+        ({ supportsDynamicTextureMipMaps, invertY, expectedArgs, expectedPremulAlpha }) => {
             (globalThis as any)._native = { Engine: { COMMAND_COPYTEXTURE: 7 } };
             const engine: ThinNativeEngine = Object.create(ThinNativeEngine.prototype);
             const encoder = { startEncodingCommand: vi.fn(), encodeCommandArgAsNativeData: vi.fn(), finishEncodingCommand: vi.fn() };
@@ -97,7 +98,7 @@ describe("Native dynamic textures", () => {
             const canvas = { getContext: () => ({ flush: vi.fn() }), getCanvasTexture: vi.fn(() => source) };
             const texture = { _hardwareTexture: { underlyingResource: {} }, generateMipMaps: true, _premulAlpha: false, isReady: false } as any;
 
-            engine.updateDynamicTexture(texture, canvas, false, true);
+            engine.updateDynamicTexture(texture, canvas, invertY, true);
 
             expect(canvas.getCanvasTexture).toHaveBeenCalledExactlyOnceWith(...expectedArgs);
             expect(encoder.startEncodingCommand).toHaveBeenCalledExactlyOnceWith(7);
