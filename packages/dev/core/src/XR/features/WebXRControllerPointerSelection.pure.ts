@@ -205,6 +205,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             screenCoordinates?: { x: number; y: number };
             pointerDownTriggered?: boolean;
             finalPointerUpTriggered?: boolean;
+            // teardown support: set when the controller is detached, so a second detach does not tear it down again
+            detached?: boolean;
+            teardownObserver?: Nullable<Observer<Scene>>;
         };
     } = {};
     private _scene: Scene;
@@ -860,6 +863,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (!controllerData) {
             return;
         }
+        if (controllerData.detached) {
+            // Already detached, e.g. the input source was removed and then the feature was detached before the next frame
+            // (both happen when a session ends). Its meshes are waiting for the next frame; once the session is over that
+            // frame may never come, so release them now instead.
+            if (!this._xrSessionManager.inXRSession) {
+                this._disposeDetachedController(xrControllerUniqueId);
+            }
+            return;
+        }
+        controllerData.detached = true;
         if (controllerData.selectionComponent) {
             if (controllerData.onButtonChangedObserver) {
                 controllerData.selectionComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
@@ -891,25 +904,44 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.finalPointerUpTriggered = true;
             });
         }
-        this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
-            try {
-                controllerData.selectionMesh.dispose();
-                controllerData.laserPointer.dispose();
-                // remove from the map
-                delete this._controllers[xrControllerUniqueId];
-                if (this._attachedController === xrControllerUniqueId) {
-                    // check for other controllers
-                    const keys = Object.keys(this._controllers);
-                    if (keys.length) {
-                        this._attachedController = keys[0];
-                    } else {
-                        this._attachedController = "";
-                    }
-                }
-            } catch (e) {
-                Logger.Warn("controller already detached.");
+        if (this._xrSessionManager.inXRSession) {
+            // During a session, dispose the meshes on the next frame rather than in the middle of this one.
+            controllerData.teardownObserver = this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
+                this._disposeDetachedController(xrControllerUniqueId);
+            });
+        } else {
+            // Once the session is over, no further frame is guaranteed: an application may stop its render loop on exit
+            // while keeping the scene for the next session. Dispose now so the meshes and their materials are not held.
+            this._disposeDetachedController(xrControllerUniqueId);
+        }
+    }
+
+    private _disposeDetachedController(xrControllerUniqueId: string) {
+        const controllerData = this._controllers[xrControllerUniqueId];
+        if (!controllerData) {
+            return;
+        }
+        if (controllerData.teardownObserver) {
+            this._xrSessionManager.scene.onBeforeRenderObservable.remove(controllerData.teardownObserver);
+            controllerData.teardownObserver = null;
+        }
+        // remove from the map first, so this runs only once for this controller
+        delete this._controllers[xrControllerUniqueId];
+        if (this._attachedController === xrControllerUniqueId) {
+            // check for other controllers
+            const keys = Object.keys(this._controllers);
+            if (keys.length) {
+                this._attachedController = keys[0];
+            } else {
+                this._attachedController = "";
             }
-        });
+        }
+        try {
+            controllerData.selectionMesh.dispose();
+            controllerData.laserPointer.dispose();
+        } catch (e) {
+            Logger.Warn("controller already detached.");
+        }
     }
 
     private _generateNewMeshPair(meshParent: Node) {
