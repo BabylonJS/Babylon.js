@@ -260,7 +260,7 @@ export class ThinNativeEngine extends ThinEngine {
      */
     private _clearAttachmentMask: number;
     /**
-     * Operation flags ORed into the COMMAND_CLEAR2 attachment mask (see clearAttachments).
+     * Operation flags ORed into the attachment mask of the next COMMAND_CLEAR2 only (see clearAttachments).
      */
     private _clearOperationFlags = 0;
     private _currentDepthTest: number;
@@ -794,6 +794,11 @@ export class ThinNativeEngine extends ThinEngine {
             this.setDepthFunction(Constants.GEQUAL);
         }
 
+        // Pending operation flags apply only to the next encoded clear command, so additional clears
+        // issued by an override of clear() are encoded as ordinary clears.
+        const operationFlags = this._clearOperationFlags;
+        this._clearOperationFlags = 0;
+
         const clear2 = _native.Engine.COMMAND_CLEAR2;
         this._commandBufferEncoder.startEncodingCommand(clear2 ?? _native.Engine.COMMAND_CLEAR);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(backBuffer && color && this._clearAttachmentMask !== 0 ? 1 : 0);
@@ -810,7 +815,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilClearValue);
         if (clear2) {
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(this._clearAttachmentMask | this._clearOperationFlags);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(this._clearAttachmentMask | operationFlags);
         }
         this._commandBufferEncoder.finishEncodingCommand();
     }
