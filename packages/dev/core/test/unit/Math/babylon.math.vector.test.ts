@@ -1618,6 +1618,33 @@ describe("Babylon Vector tests", () => {
                 expect(result.z).toBeCloseTo(4.678272528167059);
                 shouldNotChange = true;
             });
+
+            it("should rotate halfway around for opposite vectors instead of passing through zero", () => {
+                const start = new Vector3(0, 2, 0);
+                const end = new Vector3(0, -2, 0);
+                const result = new Vector3();
+                for (const amount of [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1]) {
+                    Vector3.SlerpToRef(start, end, amount, result);
+                    expect(result.length()).toBeCloseTo(2);
+                    // the angle from the start grows linearly up to PI
+                    expect(result.y / 2).toBeCloseTo(Math.cos(amount * Math.PI));
+                }
+                shouldNotChange = true;
+            });
+
+            it("should stay on the unit sphere for nearly opposite vectors", () => {
+                const start = new Vector3(1, 0, 0);
+                const end = new Vector3(-1, 1e-9, 0);
+                const result = new Vector3();
+                for (const amount of [0.25, 0.5, 0.75]) {
+                    Vector3.SlerpToRef(start, end, amount, result);
+                    expect(result.length()).toBeCloseTo(1);
+                    expect(result.x).toBeCloseTo(Math.cos(amount * Math.PI));
+                    // it turns toward the side the end vector leans to
+                    expect(result.y).toBeCloseTo(Math.sin(amount * Math.PI));
+                }
+                shouldNotChange = true;
+            });
         });
 
         describe("SmoothToRef", () => {
