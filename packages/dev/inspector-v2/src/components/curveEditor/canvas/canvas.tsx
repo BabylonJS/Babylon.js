@@ -2,7 +2,7 @@ import { type FunctionComponent, useEffect, useRef, useState } from "react";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 
-import { useCurveEditor } from "../curveEditorContext";
+import { useCurveEditor } from "../normalizedCurveEditorContext";
 import { Graph } from "./graph";
 import { PlayHead } from "./playHead";
 import { FrameBar } from "./frameBar";

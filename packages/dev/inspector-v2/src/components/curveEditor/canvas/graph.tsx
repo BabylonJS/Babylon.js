@@ -1,18 +1,14 @@
 import { type FunctionComponent, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { type Animation, Animation as AnimationEnum } from "core/Animations/animation";
-import { type IAnimationKey } from "core/Animations/animationKey";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { Scalar } from "core/Maths/math.scalar";
-import { Vector2, Vector3, Quaternion } from "core/Maths/math.vector";
-import { Color3, Color4 } from "core/Maths/math.color";
 
-import { useCurveEditor } from "../curveEditorContext";
+import { useCurveEditor } from "../normalizedCurveEditorContext";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
-import { CurveData } from "./curveData";
+import { ClampFrameToClip, CurveData } from "./curveData";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
-import { ChannelColors, ColorChannelColors, DefaultCurveColor } from "../curveEditorColors";
+import { DefaultCurveColor } from "../curveEditorColors";
+import { type CurveEditorKey, type ICurveEditorAnimation } from "../curveEditorModel";
 
 const useStyles = makeStyles({
     root: {
@@ -82,20 +78,8 @@ type GraphProps = {
  * @param activeChannels - The currently active channels to determine which curves to show for multi-channel animations
  * @returns An array of CurveData instances representing the curves to display in the graph
  */
-function EvaluateKeys(activeAnimations: Animation[], activeChannels: Record<number, string>): CurveData[] {
+function EvaluateKeys(activeAnimations: ICurveEditorAnimation[], activeChannels: Record<string, string>): CurveData[] {
     const result: CurveData[] = [];
-
-    // Helper to set default tangents across all curves
-    const setDefaultInTangent = (keyId: number) => {
-        for (const curve of result) {
-            curve.storeDefaultInTangent(keyId);
-        }
-    };
-    const setDefaultOutTangent = (keyId: number) => {
-        for (const curve of result) {
-            curve.storeDefaultOutTangent(keyId);
-        }
-    };
 
     for (const animation of activeAnimations) {
         const keys = animation.getKeys();
@@ -105,75 +89,20 @@ function EvaluateKeys(activeAnimations: Animation[], activeChannels: Record<numb
 
         const channelColor = activeChannels[animation.uniqueId];
         const curvesToAdd: CurveData[] = [];
-
-        // Create curves based on data type
-        switch (animation.dataType) {
-            case AnimationEnum.ANIMATIONTYPE_FLOAT:
-                curvesToAdd.push(new CurveData(channelColor || DefaultCurveColor, animation));
-                break;
-            case AnimationEnum.ANIMATIONTYPE_VECTOR2:
-                if (!channelColor || channelColor === ChannelColors.X) {
-                    curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ChannelColors.Y) {
-                    curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                break;
-            case AnimationEnum.ANIMATIONTYPE_VECTOR3:
-                if (!channelColor || channelColor === ChannelColors.X) {
-                    curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ChannelColors.Y) {
-                    curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ChannelColors.Z) {
-                    curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                break;
-            case AnimationEnum.ANIMATIONTYPE_COLOR3:
-                if (!channelColor || channelColor === ColorChannelColors.R) {
-                    curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ColorChannelColors.G) {
-                    curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ColorChannelColors.B) {
-                    curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                break;
-            case AnimationEnum.ANIMATIONTYPE_COLOR4:
-                if (!channelColor || channelColor === ColorChannelColors.R) {
-                    curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ColorChannelColors.G) {
-                    curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ColorChannelColors.B) {
-                    curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ColorChannelColors.A) {
-                    curvesToAdd.push(new CurveData(ColorChannelColors.A, animation, "a", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                break;
-            case AnimationEnum.ANIMATIONTYPE_QUATERNION:
-                if (!channelColor || channelColor === ChannelColors.X) {
-                    curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ChannelColors.Y) {
-                    curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ChannelColors.Z) {
-                    curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                if (!channelColor || channelColor === ChannelColors.W) {
-                    curvesToAdd.push(new CurveData(ChannelColors.W, animation, "w", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
-                }
-                break;
+        for (let componentIndex = 0; componentIndex < animation.components.length; componentIndex++) {
+            const component = animation.components[componentIndex];
+            if (!channelColor || channelColor === component.color) {
+                curvesToAdd.push(
+                    new CurveData(
+                        animation.kind === "float" ? channelColor || DefaultCurveColor : component.color,
+                        animation,
+                        animation.kind === "float" ? undefined : componentIndex
+                    )
+                );
+            }
         }
 
         ExtractValuesFromKeys(keys, curvesToAdd);
-
-        // Wire up siblings so frame changes sync across all curves for the same animation
         for (const curve of curvesToAdd) {
             curve.siblings = curvesToAdd;
         }
@@ -189,33 +118,35 @@ function EvaluateKeys(activeAnimations: Animation[], activeChannels: Record<numb
  * @param keys - The animation keys to extract data from
  * @param curves - CurveData to push changes to
  */
-function ExtractValuesFromKeys(keys: IAnimationKey[], curves: CurveData[]): void {
+function ExtractValuesFromKeys(keys: CurveEditorKey[], curves: CurveData[]): void {
     for (const key of keys) {
-        const lockedTangent = key.lockedTangent ?? true;
-
         for (const curve of curves) {
-            const prop = curve.property;
-            const value = prop ? (key.value as Record<string, number>)[prop] : (key.value as number);
-            const inTangent = prop ? key.inTangent?.[prop] : (key.inTangent as number | undefined);
-            const outTangent = prop ? key.outTangent?.[prop] : (key.outTangent as number | undefined);
+            const componentIndex = curve.componentIndex ?? 0;
 
             curve.keys.push({
                 frame: key.frame,
-                value,
-                inTangent,
-                outTangent,
-                lockedTangent,
+                value: key.value[componentIndex] ?? 0,
+                inTangent: key.inTangent?.[componentIndex],
+                outTangent: key.outTangent?.[componentIndex],
+                lockedTangent: key.lockedTangent,
                 interpolation: key.interpolation,
             });
         }
     }
 }
 
+function HermiteFirstDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number {
+    const timeSquared = time * time;
+    return (timeSquared - time) * 6 * value1 + (3 * timeSquared - 4 * time + 1) * tangent1 + (-timeSquared + time) * 6 * value2 + (3 * timeSquared - 2 * time) * tangent2;
+}
+
 /**
  * Main graph area for displaying and editing animation curves
+ * @param props - Graph dimensions.
  * @returns The graph component
  */
-export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
+export const Graph: FunctionComponent<GraphProps> = (props) => {
+    const { width, height } = props;
     const styles = useStyles();
     const { state, actions, observables } = useCurveEditor();
     const svgRef = useRef<SVGSVGElement>(null);
@@ -225,6 +156,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const [offsetY, setOffsetY] = useState(0);
     const [isPointerDown, setIsPointerDown] = useState(false);
     const [pointerStart, setPointerStart] = useState({ x: 0, y: 0 });
+    const [valueRangeVersion, invalidateValueRange] = useReducer((version: number) => version + 1, 0);
 
     // Re-render when active animation or range changes
     // useCallback stabilizes the accessor to prevent infinite re-render loops
@@ -245,16 +177,17 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     useEffect(() => {
         // Handle create or update key point
         const onCreateOrUpdateKeyPointRequired = observables.onCreateOrUpdateKeyPointRequired.add(() => {
-            if (state.activeAnimations.length === 0) {
+            if (state.activeCurveAnimations.length === 0) {
                 return;
             }
 
-            for (const currentAnimation of state.activeAnimations) {
-                if (currentAnimation.dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
+            for (const currentAnimation of state.activeCurveAnimations) {
+                if (currentAnimation.kind === "quaternion") {
                     continue;
                 }
                 const keys = currentAnimation.getKeys();
-                const currentFrame = state.activeFrame;
+                const requestedFrame = actions.getCurrentFrame();
+                const currentFrame = state.capabilities.constrainKeyFrames ? ClampFrameToClip(requestedFrame, state.clipLength, currentAnimation.framePerSecond) : requestedFrame;
 
                 // Find where to insert the new key
                 let indexToAdd = -1;
@@ -272,78 +205,37 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                 const leftKey = keys[indexToAdd];
                 const rightKey = keys[indexToAdd + 1];
 
-                if (leftKey && Math.floor(currentFrame - leftKey.frame) === 0) {
+                const sameFrame = (frame: number) =>
+                    state.capabilities.constrainKeyFrames
+                        ? Math.fround(currentFrame / currentAnimation.framePerSecond) === Math.fround(frame / currentAnimation.framePerSecond)
+                        : Math.fround(currentFrame) === Math.fround(frame);
+                if (leftKey && sameFrame(leftKey.frame)) {
                     // Key already exists at this frame, update it
-                    leftKey.value = value;
-                } else if (rightKey && Math.floor(rightKey.frame - currentFrame) === 0) {
+                    leftKey.value = [...value];
+                } else if (rightKey && sameFrame(rightKey.frame)) {
                     // Key already exists at this frame, update it
-                    rightKey.value = value;
+                    rightKey.value = [...value];
                 } else {
                     // Create new key
-                    const newKey: IAnimationKey = {
+                    const newKey: CurveEditorKey = {
                         frame: currentFrame,
                         value: value,
                         lockedTangent: true,
                     };
 
-                    // Compute Hermite 1st-derivative tangents so the curve shape is preserved (like v1)
                     if (leftKey?.outTangent !== undefined && rightKey?.inTangent !== undefined) {
                         const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
                         const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
-                        let derivative: any = null;
-
-                        switch (currentAnimation.dataType) {
-                            case AnimationEnum.ANIMATIONTYPE_FLOAT:
-                                derivative = Scalar.Hermite1stDerivative(
-                                    leftKey.value * invFrameDelta,
-                                    leftKey.outTangent,
-                                    rightKey.value * invFrameDelta,
-                                    rightKey.inTangent,
-                                    cutTime
-                                );
-                                break;
-                            case AnimationEnum.ANIMATIONTYPE_VECTOR2:
-                                derivative = Vector2.Hermite1stDerivative(
-                                    leftKey.value.scale(invFrameDelta),
-                                    leftKey.outTangent,
-                                    rightKey.value.scale(invFrameDelta),
-                                    rightKey.inTangent,
-                                    cutTime
-                                );
-                                break;
-                            case AnimationEnum.ANIMATIONTYPE_VECTOR3:
-                                derivative = Vector3.Hermite1stDerivative(
-                                    leftKey.value.scale(invFrameDelta),
-                                    leftKey.outTangent,
-                                    rightKey.value.scale(invFrameDelta),
-                                    rightKey.inTangent,
-                                    cutTime
-                                );
-                                break;
-                            case AnimationEnum.ANIMATIONTYPE_COLOR3:
-                                derivative = Color3.Hermite1stDerivative(
-                                    leftKey.value.scale(invFrameDelta),
-                                    leftKey.outTangent,
-                                    rightKey.value.scale(invFrameDelta),
-                                    rightKey.inTangent,
-                                    cutTime
-                                );
-                                break;
-                            case AnimationEnum.ANIMATIONTYPE_COLOR4:
-                                derivative = Color4.Hermite1stDerivative(
-                                    leftKey.value.scale(invFrameDelta),
-                                    leftKey.outTangent,
-                                    rightKey.value.scale(invFrameDelta),
-                                    rightKey.inTangent,
-                                    cutTime
-                                );
-                                break;
-                        }
-
-                        if (derivative !== null) {
-                            newKey.inTangent = derivative;
-                            newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
-                        }
+                        newKey.inTangent = value.map((_, component) =>
+                            HermiteFirstDerivative(
+                                leftKey.value[component] * invFrameDelta,
+                                leftKey.outTangent![component],
+                                rightKey.value[component] * invFrameDelta,
+                                rightKey.inTangent![component],
+                                cutTime
+                            )
+                        );
+                        newKey.outTangent = [...newKey.inTangent];
                     }
 
                     keys.splice(indexToAdd + 1, 0, newKey);
@@ -363,6 +255,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             setScale(1);
             setOffsetX(0);
             setOffsetY(0);
+            invalidateValueRange();
         });
 
         // Handle delete active key points
@@ -372,22 +265,25 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
 
             // Group key points by animation
-            const keysByAnimation = new Map<Animation, Set<number>>();
+            const keysByAnimation = new Map<object, { animation: ICurveEditorAnimation; indices: Set<number> }>();
             for (const keyPoint of state.activeKeyPoints) {
                 const animation = keyPoint.curve.animation;
-                if (!keysByAnimation.has(animation)) {
-                    keysByAnimation.set(animation, new Set());
+                if (!keysByAnimation.has(animation.source)) {
+                    keysByAnimation.set(animation.source, { animation, indices: new Set() });
                 }
-                keysByAnimation.get(animation)!.add(keyPoint.keyId);
+                keysByAnimation.get(animation.source)!.indices.add(keyPoint.keyId);
             }
 
             // Delete keys from each animation (in reverse order to maintain indices)
-            for (const [animation, keyIndices] of keysByAnimation) {
+            for (const { animation, indices: keyIndices } of keysByAnimation.values()) {
                 const keys = animation.getKeys();
                 const sortedIndices = Array.from(keyIndices).sort((a, b) => b - a); // Sort descending
                 for (const index of sortedIndices) {
-                    if (index === 0 || index === keys.length - 1) {
-                        continue; // Cannot delete first or last key
+                    if (!state.capabilities.canDeleteLastKey && keys.length === 1) {
+                        continue;
+                    }
+                    if (!state.capabilities.canDeleteBoundaryKeys && (index === 0 || index === keys.length - 1)) {
+                        continue;
                     }
                     if (index >= 0 && index < keys.length) {
                         keys.splice(index, 1);
@@ -410,7 +306,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             observables.onFrameRequired.remove(onFrameRequired);
             observables.onDeleteKeyActiveKeyPoints.remove(onDeleteKeyActiveKeyPoints);
         };
-    }, [observables, state.activeAnimations, state.activeFrame, state.activeKeyPoints, actions]);
+    }, [observables, state.activeCurveAnimations, state.activeKeyPoints, state.capabilities, state.clipLength, actions]);
 
     // Invalidation counter — incremented when keys are added/deleted so curves recompute
     const [curveVersion, invalidateCurves] = useReducer((c: number) => c + 1, 0);
@@ -421,7 +317,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         };
     }, [observables]);
 
-    const curves = useMemo(() => EvaluateKeys(state.activeAnimations, state.activeChannels), [state.activeAnimations, state.activeChannels, curveVersion]);
+    const curves = useMemo(() => EvaluateKeys(state.activeCurveAnimations, state.activeChannels), [state.activeCurveAnimations, state.activeChannels, curveVersion]);
 
     // Re-render when any curve's key data is mutated (e.g. sibling frame sync)
     // so key point positions stay in sync with their curve paths
@@ -447,12 +343,19 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     maxValue = key.value;
                 }
             }
+            if (curve.animation.requiresSampling) {
+                const range = curve.getSampledValueRange();
+                if (range) {
+                    minValue = Math.min(minValue, range.min);
+                    maxValue = Math.max(maxValue, range.max);
+                }
+            }
         }
 
         // Add padding
         const padding = (maxValue - minValue) * 0.1 || 1;
         return { min: minValue - padding, max: maxValue + padding };
-    }, [curves]);
+    }, [curves, valueRangeVersion]);
 
     // Convert frame to x position (uses reference frames for full visible range)
     const frameToX = useCallback(
@@ -659,7 +562,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     return (
         <div className={styles.root}>
             {/* Inactive range overlays (dark areas outside playback range) */}
-            {state.activeAnimations.length > 0 && leftInactiveWidth > 0 && (
+            {state.activeCurveAnimations.length > 0 && leftInactiveWidth > 0 && (
                 <div
                     className={styles.inactiveRangeOverlay}
                     style={{
@@ -668,7 +571,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     }}
                 />
             )}
-            {state.activeAnimations.length > 0 && rightInactiveWidth > 0 && (
+            {state.activeCurveAnimations.length > 0 && rightInactiveWidth > 0 && (
                 <div
                     className={styles.inactiveRangeOverlay}
                     style={{
@@ -678,7 +581,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                 />
             )}
             {/* Active range overlay (highlight showing playback range) */}
-            {state.activeAnimations.length > 0 && activeRangeWidth > 0 && (
+            {state.activeCurveAnimations.length > 0 && activeRangeWidth > 0 && (
                 <div
                     className={styles.activeRangeOverlay}
                     style={{
@@ -700,13 +603,13 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                 {renderGrid()}
 
                 {curves.map((curve) => {
-                    const curveId = `${curve.animation.uniqueId}-${curve.property || "value"}`;
+                    const curveId = `${curve.animation.uniqueId}-${curve.componentIndex ?? "value"}`;
                     return <Curve key={curveId} curve={curve} convertX={frameToX} convertY={valueToY} />;
                 })}
 
                 {/* Render key points separately - like v1 does with KeyPointComponent */}
                 {curves.map((curve) => {
-                    const curveId = `${curve.animation.uniqueId}-${curve.property || "value"}`;
+                    const curveId = `${curve.animation.uniqueId}-${curve.componentIndex ?? "value"}`;
 
                     return curve.keys.map((key, keyIndex) => {
                         const x = frameToX(key.frame);
@@ -720,8 +623,6 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                                 key={`${curveId}-key-${keyIndex}`}
                                 x={x}
                                 y={y}
-                                getPreviousX={() => (keyIndex > 0 ? frameToX(curve.keys[keyIndex - 1].frame) : null)}
-                                getNextX={() => (keyIndex < curve.keys.length - 1 ? frameToX(curve.keys[keyIndex + 1].frame) : null)}
                                 invertX={xToFrame}
                                 invertY={yToValue}
                                 convertX={frameToX}

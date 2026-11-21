@@ -432,7 +432,7 @@ export class DebugController {
 
     private _getPhysicsScene(scene: SceneContext, helpers: Helpers): SceneContext {
         if (!helpers.physicsLayer) {
-            const layer = createUtilityLayer(scene, { addDefaultLight: false });
+            const layer = createUtilityLayer(scene, { rt: scene.surface.scRT, addDefaultLight: false });
             InspectorUtilityScenes.add(layer.scene);
             const entry: PhysicsLayer = { layer, pending: true };
             helpers.physicsLayer = entry;

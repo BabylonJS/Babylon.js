@@ -1,7 +1,6 @@
 import { type FunctionComponent, useCallback } from "react";
 
 import * as React from "react";
-import { Animation } from "core/Animations/animation";
 import { type CurveData } from "./curveData";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
@@ -16,8 +15,9 @@ type CurveProps = {
  * @param props - The curve props
  * @returns The rendered curve SVG element
  */
-export const Curve: FunctionComponent<CurveProps> = ({ curve, convertX, convertY }) => {
-    const isQuaternion = curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION;
+export const Curve: FunctionComponent<CurveProps> = (props) => {
+    const { curve, convertX, convertY } = props;
+    const isQuaternion = curve.animation.kind === "quaternion";
 
     // Derive path data, recomputing whenever the curve's key data changes
     const pathData = useObservableState(

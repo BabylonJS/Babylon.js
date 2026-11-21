@@ -11,7 +11,7 @@ import {
 } from "@babylonjs/lite";
 
 import { type ISize } from "core/index";
-import { type ITextureEditorSource, type TextureEditorPixels } from "../../../../components/textureEditor/textureEditorSource";
+import { type ITextureEditorSource, type TextureEditorPixels } from "../../../../components/textureEditor/textureEditorModel";
 
 type LiteTexture = Texture2D | CubeTexture;
 

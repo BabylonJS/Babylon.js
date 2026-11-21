@@ -10,7 +10,9 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 
 import { GetAnimationsWithChildren, type AnimatableWithChildren } from "../../src/components/curveEditor/animatableAnimations";
-import { CurveEditorProvider, useCurveEditor, type CurveEditorObservables } from "../../src/components/curveEditor/curveEditorContext";
+import { BabylonCurveEditorProvider, useBabylonCurveEditor, type BabylonCurveEditorObservables } from "../../src/components/curveEditor/curveEditorContext";
+import { CreateBabylonCurveEditorSource } from "../../src/components/curveEditor/curveEditorSource";
+import { CurveEditorProvider } from "../../src/components/curveEditor/normalizedCurveEditorContext";
 import { SideBar } from "../../src/components/curveEditor/sideBar";
 
 vi.hoisted(() => {
@@ -40,17 +42,19 @@ describe("Curve editor SideBar delete", () => {
         const child = { animations: [childAnimation] } as IAnimatable;
         const target: AnimatableWithChildren = { getAnimatables: () => [child] };
 
-        let observables: CurveEditorObservables | undefined;
+        let observables: BabylonCurveEditorObservables | undefined;
         const Probe = () => {
-            observables = useCurveEditor().observables;
+            observables = useBabylonCurveEditor().observables;
             return null;
         };
 
         const render = (animations: Animation[]) => (
-            <CurveEditorProvider scene={scene} target={target as IAnimatable} animations={animations}>
-                <SideBar />
-                <Probe />
-            </CurveEditorProvider>
+            <BabylonCurveEditorProvider target={target as IAnimatable} animations={animations}>
+                <CurveEditorProvider source={CreateBabylonCurveEditorSource({ scene, target: target as IAnimatable, animations })}>
+                    <SideBar />
+                    <Probe />
+                </CurveEditorProvider>
+            </BabylonCurveEditorProvider>
         );
 
         const root = createRoot(container);

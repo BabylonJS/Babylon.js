@@ -19,7 +19,7 @@ import { TexturePreviewCore, type TexturePreviewImperativeRef, type TexturePrevi
 import { type TextureEditorProps } from "../../../../components/textureEditor/textureEditor";
 import { ApplyTextureChannels } from "../../../../misc/textureChannels";
 import { type ISceneResourceIndexService } from "../scene/sceneResourceIndexService";
-import { GetLiteTextureEditability, LiteTextureEditorSource } from "./liteTextureEditorSource";
+import { GetLiteTextureEditability, LiteTextureEditorSource } from "./textureEditorSource";
 
 type LiteTexture = Texture2D | CubeTexture;
 

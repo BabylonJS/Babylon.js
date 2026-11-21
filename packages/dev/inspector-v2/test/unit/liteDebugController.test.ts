@@ -90,7 +90,7 @@ function SourceMesh(name = "Mesh"): Mesh {
 function Harness() {
     const scene = { meshes: [SourceMesh()], name: "Scene" } as SceneContext;
     const contexts = [scene];
-    const engine = { contexts } as unknown as EngineContext;
+    const engine = { contexts, scRT: {} } as unknown as EngineContext;
     Object.assign(engine, { surfaces: [engine] });
     Object.assign(scene, { surface: engine });
     return { scene, contexts, engine, controller: new DebugController(engine) };
@@ -226,7 +226,7 @@ describe("Babylon Lite debug helpers", () => {
         h.controller.setPhysicsBodies(true);
         h.controller.setPhysicsConstraints(true);
         const layer = Layers.create.mock.results[0].value as UtilityLayer;
-        expect(Layers.create).toHaveBeenCalledExactlyOnceWith(h.scene, { addDefaultLight: false });
+        expect(Layers.create).toHaveBeenCalledExactlyOnceWith(h.scene, { rt: h.engine.scRT, addDefaultLight: false });
         expect(Physics.create.mock.calls.every(([scene]) => scene === layer.scene)).toBe(true);
         expect(InspectorUtilityScenes.has(layer.scene)).toBe(true);
         expect(h.controller.scenes).toEqual([h.scene]);
@@ -691,7 +691,7 @@ describe("Babylon Lite debug helpers", () => {
         const topology = resources.getTopologySnapshot();
         h.controller.setPhysicsConstraints(true);
         expect(h.controller.error).toBeUndefined();
-        expect(Layers.create).toHaveBeenCalledExactlyOnceWith(h.scene, { addDefaultLight: false });
+        expect(Layers.create).toHaveBeenCalledExactlyOnceWith(h.scene, { rt: h.engine.scRT, addDefaultLight: false });
         expect(InspectorUtilityScenes.has(h.physicsScene)).toBe(true);
         expect(h.controller.scenes).toEqual([h.scene]);
         expect(h.scene.meshes).toEqual([source]);

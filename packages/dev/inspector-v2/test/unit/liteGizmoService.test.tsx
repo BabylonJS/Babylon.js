@@ -25,7 +25,7 @@ const Mocks = vi.hoisted(() => {
     );
     const modes = ["Position", "Rotation", "Scale", "BoundingBox"] as const;
     return {
-        createLayer: vi.fn<(scene: SceneContext) => UtilityLayer>(),
+        createLayer: vi.fn<(scene: SceneContext, options: { rt: SurfaceContext["scRT"] }) => UtilityLayer>(),
         registerLayer: vi.fn<(layer: UtilityLayer) => Promise<void>>(),
         disposeLayer: vi.fn<(layer: UtilityLayer) => void>(),
         dragging: vi.fn<(canvas: HTMLCanvasElement) => boolean>(),
@@ -95,7 +95,7 @@ describe("Babylon Lite gizmo service", () => {
         const canvas = document.createElement("canvas");
         document.body.appendChild(canvas);
         const surfaces: SurfaceContext[] = [];
-        const engine = { canvas, surfaces, _renderingContexts: [] as SceneContext[] } as unknown as EngineContext & { _renderingContexts: SceneContext[] };
+        const engine = { canvas, surfaces, scRT: {}, _renderingContexts: [] as SceneContext[] } as unknown as EngineContext & { _renderingContexts: SceneContext[] };
         Object.assign(engine, { engine });
         surfaces.push(engine);
         const mesh = Object.assign(createTransformNode("Mesh"), { material: {}, receiveShadows: false }) as Mesh;
@@ -222,7 +222,7 @@ describe("Babylon Lite gizmo service", () => {
         await h.select(h.mesh);
         await h.click(button);
         const layer = Mocks.createLayer.mock.results[0].value;
-        expect(Mocks.createLayer).toHaveBeenCalledExactlyOnceWith(h.scene);
+        expect(Mocks.createLayer).toHaveBeenCalledExactlyOnceWith(h.scene, { rt: h.engine.scRT });
         expect(Mocks.create[kind]).toHaveBeenCalledExactlyOnceWith(h.engine, layer);
         expect(Mocks.attach[kind]).toHaveBeenCalledWith(expect.anything(), h.mesh);
         expect(h.button(button)?.getAttribute("aria-pressed")).toBe("true");
@@ -347,7 +347,7 @@ describe("Babylon Lite gizmo service", () => {
         otherScene.meshes.push(h.mesh);
         await h.refresh();
         expect(Mocks.disposeLayer).toHaveBeenCalledTimes(1);
-        expect(Mocks.createLayer).toHaveBeenLastCalledWith(otherScene);
+        expect(Mocks.createLayer).toHaveBeenLastCalledWith(otherScene, { rt: otherScene.surface.scRT });
     });
 
     it("resets the mode after the last supported scene is removed", async () => {
