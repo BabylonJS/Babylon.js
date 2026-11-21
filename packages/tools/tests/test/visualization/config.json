@@ -6121,6 +6121,29 @@
             "replace": "const compatibilityMode = false;, const compatibilityMode = true;",
             "excludedEngines": ["webgl1", "webgl2"],
             "dependsOn": ["Compute", "Meshes", "Shadows"]
+        },
+        {
+            "title": "WebGPU fast snapshot rendering - rendering groups on the canvas and in a render target",
+            "playgroundId": "#PQTZNT#0",
+            "referenceImage": "webgpu-fast-snapshot-rendering-groups.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Engine", "Rendering", "Textures"]
+        },
+        {
+            "title": "WebGPU fast snapshot rendering - rendering groups on the canvas and in a render target - non compatibility mode",
+            "playgroundId": "#PQTZNT#0",
+            "referenceImage": "webgpu-fast-snapshot-rendering-groups.png",
+            "useNonCompatibilityMode": true,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Engine", "Rendering", "Textures"]
+        },
+        {
+            "title": "WebGPU fast snapshot rendering - rendering groups on the canvas and in a render target - without snapshot rendering",
+            "playgroundId": "#PQTZNT#0",
+            "referenceImage": "webgpu-fast-snapshot-rendering-groups.png",
+            "replace": "const snapshotRendering = true;, const snapshotRendering = false;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Engine", "Rendering", "Textures"]
         }
     ]
 }
