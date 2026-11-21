@@ -3,6 +3,10 @@
  */
 
 import { NullEngine } from "core/Engines";
+import { type Material } from "core/Materials/material";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { WebXRControllerPointerSelection, WebXRSessionManager, type IWebXRControllerPointerSelectionOptions } from "core/XR";
 
@@ -277,6 +281,203 @@ describe("WebXRControllerPointerSelection", () => {
             injectControllers(feature, [{ uniqueId: "ctrl-left", handedness: "left" }], "ctrl-left");
 
             expect(feature.attachedControllerId).toBe("ctrl-left");
+        });
+    });
+
+    describe("controller removal", () => {
+        /**
+         * An input source as WebXRInput hands it to the feature: a real pointer node to parent the
+         * laser to, and a gamepad so selection is wired through the motion controller observable.
+         */
+        function createInputSource(uniqueId: string, handedness: XRHandedness) {
+            return {
+                uniqueId,
+                inputSource: { handedness, targetRayMode: "tracked-pointer" as XRTargetRayMode, gamepad: {} },
+                pointer: new TransformNode(`${uniqueId}-pointer`, scene),
+                grip: null,
+                motionController: null,
+                onMotionControllerInitObservable: new Observable(),
+            } as any;
+        }
+
+        /** Add an input source and remove it again, as happens whenever a hand loses and regains tracking. */
+        function addAndRemoveInputSource(feature: WebXRControllerPointerSelection, uniqueId: string) {
+            const inputSource = createInputSource(uniqueId, "right");
+            (feature as any)._attachController(inputSource);
+            (feature as any)._detachController(uniqueId);
+            // The meshes are disposed on the next frame.
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            inputSource.pointer.dispose();
+        }
+
+        it("disposes the materials it gave the laser pointer and selection mesh", () => {
+            const feature = createFeature();
+            (feature as any)._attachController(createInputSource("ctrl-right", "right"));
+            const { laserPointer, selectionMesh } = (feature as any)._controllers["ctrl-right"];
+            const laserPointerMaterial = laserPointer.material;
+            const selectionMeshMaterial = selectionMesh.material;
+            expect(scene.materials).toContain(laserPointerMaterial);
+            expect(scene.materials).toContain(selectionMeshMaterial);
+
+            (feature as any)._detachController("ctrl-right");
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+
+            expect(scene.materials).not.toContain(laserPointerMaterial);
+            expect(scene.materials).not.toContain(selectionMeshMaterial);
+        });
+
+        it("leaves no meshes or materials behind when input sources come and go", () => {
+            const feature = createFeature();
+            const meshesBefore = scene.meshes.length;
+            const materialsBefore = scene.materials.length;
+
+            for (let i = 0; i < 5; i++) {
+                addAndRemoveInputSource(feature, `ctrl-${i}`);
+            }
+
+            expect(scene.meshes.length).toBe(meshesBefore);
+            expect(scene.materials.length).toBe(materialsBefore);
+        });
+
+        it("does not dispose a material the application assigned to the laser pointer", () => {
+            const feature = createFeature();
+            (feature as any)._attachController(createInputSource("ctrl-right", "right"));
+            const { laserPointer } = (feature as any)._controllers["ctrl-right"];
+            const featureMaterial = laserPointer.material;
+            const applicationMaterial = new StandardMaterial("applicationMaterial", scene);
+            laserPointer.material = applicationMaterial;
+
+            (feature as any)._detachController("ctrl-right");
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+
+            // A real material, so a teardown that disposed it (or threw part way) fails here instead of being swallowed.
+            expect(scene.materials).toContain(applicationMaterial);
+            expect(scene.materials).not.toContain(featureMaterial);
+        });
+
+        /** A feature attached the way the features manager attaches it, with input observables that really notify. */
+        function createAttachedFeature(overrides?: Partial<IWebXRControllerPointerSelectionOptions>) {
+            const xrInput = {
+                controllers: [],
+                xrCamera: {},
+                onControllerAddedObservable: new Observable<any>(),
+                onControllerRemovedObservable: new Observable<any>(),
+            } as any;
+            const feature = createFeature({ xrInput, ...overrides });
+            feature.attach();
+            return { feature, xrInput };
+        }
+
+        /** Counts scene material-removal notifications for each material. */
+        function countMaterialRemovals() {
+            const removals = new Map<Material, number>();
+            scene.onMaterialRemovedObservable.add((material) => {
+                removals.set(material, (removals.get(material) ?? 0) + 1);
+            });
+            return removals;
+        }
+
+        it("disposes each material once when the input source is removed and the feature detaches before the next frame", () => {
+            const { feature, xrInput } = createAttachedFeature();
+            sessionManager.inXRSession = true;
+            const inputSource = createInputSource("ctrl-right", "right");
+            xrInput.onControllerAddedObservable.notifyObservers(inputSource);
+            const { laserPointer, selectionMesh } = (feature as any)._controllers["ctrl-right"];
+            const laserPointerMaterial = laserPointer.material;
+            const selectionMeshMaterial = selectionMesh.material;
+            const removals = countMaterialRemovals();
+
+            // Both lifecycle signals before a single frame.
+            xrInput.onControllerRemovedObservable.notifyObservers(inputSource);
+            feature.detach();
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+
+            expect(removals.get(laserPointerMaterial)).toBe(1);
+            expect(removals.get(selectionMeshMaterial)).toBe(1);
+            expect(scene.materials).not.toContain(laserPointerMaterial);
+            expect(scene.materials).not.toContain(selectionMeshMaterial);
+        });
+
+        it("releases the meshes and materials when the session ends without another frame", () => {
+            const { feature, xrInput } = createAttachedFeature();
+            sessionManager.inXRSession = true;
+            const inputSource = createInputSource("ctrl-right", "right");
+            xrInput.onControllerAddedObservable.notifyObservers(inputSource);
+            const { laserPointer, selectionMesh } = (feature as any)._controllers["ctrl-right"];
+            const laserPointerMaterial = laserPointer.material;
+            const selectionMeshMaterial = selectionMesh.material;
+            const removals = countMaterialRemovals();
+
+            // The input source goes away during the session, so its teardown waits for the next frame...
+            xrInput.onControllerRemovedObservable.notifyObservers(inputSource);
+            expect(scene.materials).toContain(laserPointerMaterial);
+
+            // ...but the session ends first, and the application stops rendering. No frame is delivered from here on.
+            sessionManager.inXRSession = false;
+            xrInput.onControllerRemovedObservable.notifyObservers(inputSource);
+            feature.detach();
+
+            expect(scene.meshes).not.toContain(laserPointer);
+            expect(scene.meshes).not.toContain(selectionMesh);
+            expect(scene.materials).not.toContain(laserPointerMaterial);
+            expect(scene.materials).not.toContain(selectionMeshMaterial);
+            expect(removals.get(laserPointerMaterial)).toBe(1);
+            expect(removals.get(selectionMeshMaterial)).toBe(1);
+
+            // A frame that does come later finds nothing left to do.
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(removals.get(laserPointerMaterial)).toBe(1);
+            expect(removals.get(selectionMeshMaterial)).toBe(1);
+        });
+
+        it("disposes only the old gaze pair when the feature is detached and attached again before the next frame", () => {
+            const gazeCamera = new TransformNode("gazeCamera", scene) as any;
+            sessionManager.inXRSession = true;
+            const { feature } = createAttachedFeature({ gazeCamera });
+            const oldPair = (feature as any)._controllers["camera"];
+
+            // The old pair's teardown is still waiting for a frame when the new pair takes its place.
+            feature.detach();
+            feature.attach();
+            const newPair = (feature as any)._controllers["camera"];
+            expect(newPair.laserPointer).not.toBe(oldPair.laserPointer);
+
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+
+            expect(oldPair.laserPointer.isDisposed()).toBe(true);
+            expect(oldPair.selectionMesh.isDisposed()).toBe(true);
+            expect(newPair.laserPointer.isDisposed()).toBe(false);
+            expect(newPair.selectionMesh.isDisposed()).toBe(false);
+            expect((feature as any)._controllers["camera"]).toBe(newPair);
+        });
+
+        it("disposes each material once when the scene is disposed", () => {
+            const { feature, xrInput } = createAttachedFeature();
+            xrInput.onControllerAddedObservable.notifyObservers(createInputSource("ctrl-right", "right"));
+            const { laserPointer, selectionMesh } = (feature as any)._controllers["ctrl-right"];
+            const laserPointerMaterial = laserPointer.material;
+            const selectionMeshMaterial = selectionMesh.material;
+            const removals = countMaterialRemovals();
+
+            scene.dispose();
+
+            expect(removals.get(laserPointerMaterial)).toBe(1);
+            expect(removals.get(selectionMeshMaterial)).toBe(1);
+        });
+
+        it("disposes each material once when a mesh is disposed together with its material", () => {
+            const { feature, xrInput } = createAttachedFeature();
+            xrInput.onControllerAddedObservable.notifyObservers(createInputSource("ctrl-right", "right"));
+            const { laserPointer, selectionMesh } = (feature as any)._controllers["ctrl-right"];
+            const laserPointerMaterial = laserPointer.material;
+            const selectionMeshMaterial = selectionMesh.material;
+            const removals = countMaterialRemovals();
+
+            laserPointer.dispose(false, true);
+            selectionMesh.dispose(false, true);
+
+            expect(removals.get(laserPointerMaterial)).toBe(1);
+            expect(removals.get(selectionMeshMaterial)).toBe(1);
         });
     });
 });

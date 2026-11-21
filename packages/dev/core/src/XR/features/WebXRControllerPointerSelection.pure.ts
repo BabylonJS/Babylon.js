@@ -205,6 +205,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             screenCoordinates?: { x: number; y: number };
             pointerDownTriggered?: boolean;
             finalPointerUpTriggered?: boolean;
+            // teardown support: set when the controller is detached, so a second detach does not tear it down again
+            detached?: boolean;
+            teardownObserver?: Nullable<Observer<Scene>>;
         };
     } = {};
     private _scene: Scene;
@@ -860,6 +863,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (!controllerData) {
             return;
         }
+        if (controllerData.detached) {
+            // Already detached, e.g. the input source was removed and then the feature was detached before the next frame
+            // (both happen when a session ends). Its meshes are waiting for the next frame; once the session is over that
+            // frame may never come, so release them now instead.
+            if (!this._xrSessionManager.inXRSession) {
+                this._disposeDetachedController(xrControllerUniqueId, controllerData);
+            }
+            return;
+        }
+        controllerData.detached = true;
         if (controllerData.selectionComponent) {
             if (controllerData.onButtonChangedObserver) {
                 controllerData.selectionComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
@@ -891,25 +904,48 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.finalPointerUpTriggered = true;
             });
         }
-        this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
-            try {
-                controllerData.selectionMesh.dispose();
-                controllerData.laserPointer.dispose();
-                // remove from the map
-                delete this._controllers[xrControllerUniqueId];
-                if (this._attachedController === xrControllerUniqueId) {
-                    // check for other controllers
-                    const keys = Object.keys(this._controllers);
-                    if (keys.length) {
-                        this._attachedController = keys[0];
-                    } else {
-                        this._attachedController = "";
-                    }
+        if (this._xrSessionManager.inXRSession) {
+            // During a session, dispose the meshes on the next frame rather than in the middle of this one.
+            controllerData.teardownObserver = this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
+                this._disposeDetachedController(xrControllerUniqueId, controllerData);
+            });
+        } else {
+            // Once the session is over, no further frame is guaranteed: an application may stop its render loop on exit
+            // while keeping the scene for the next session. Dispose now so the meshes and their materials are not held.
+            this._disposeDetachedController(xrControllerUniqueId, controllerData);
+        }
+    }
+
+    /**
+     * Disposes the meshes of a detached controller. It works on the record that was detached, not on whatever the map
+     * holds under that id by now: the gaze pair is always stored under "camera", so detaching and attaching the feature
+     * again before the teardown runs puts a new, live pair there.
+     * @param xrControllerUniqueId the id the record was stored under
+     * @param controllerData the record that was detached
+     */
+    private _disposeDetachedController(xrControllerUniqueId: string, controllerData: (typeof this._controllers)[string]) {
+        if (controllerData.teardownObserver) {
+            this._xrSessionManager.scene.onBeforeRenderObservable.remove(controllerData.teardownObserver);
+            controllerData.teardownObserver = null;
+        }
+        if (this._controllers[xrControllerUniqueId] === controllerData) {
+            delete this._controllers[xrControllerUniqueId];
+            if (this._attachedController === xrControllerUniqueId) {
+                // check for other controllers
+                const keys = Object.keys(this._controllers);
+                if (keys.length) {
+                    this._attachedController = keys[0];
+                } else {
+                    this._attachedController = "";
                 }
-            } catch (e) {
-                Logger.Warn("controller already detached.");
             }
-        });
+        }
+        try {
+            controllerData.selectionMesh.dispose();
+            controllerData.laserPointer.dispose();
+        } catch (e) {
+            Logger.Warn("controller already detached.");
+        }
     }
 
     private _generateNewMeshPair(meshParent: Node) {
@@ -932,6 +968,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
+        this._disposeMaterialWithMesh(laserPointerMaterial, laserPointer);
         laserPointer.rotation.x = Math.PI / 2;
         this._updatePointerDistance(laserPointer, 1);
         laserPointer.isPickable = false;
@@ -957,6 +994,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;
         selectionMesh.material = targetMat;
+        this._disposeMaterialWithMesh(targetMat, selectionMesh);
 
         if (this._options.renderingGroupId !== undefined) {
             laserPointer.renderingGroupId = this._options.renderingGroupId;
@@ -967,6 +1005,23 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             laserPointer,
             selectionMesh,
         };
+    }
+
+    /**
+     * Disposes a material this feature created when the mesh it was created for is disposed. Disposing a mesh leaves
+     * its material in the scene, and input sources come and go many times (e.g. a hand that loses and regains tracking).
+     * If the material is disposed first (the scene disposes its materials before its meshes, and a mesh can be disposed
+     * together with its material), the mesh no longer disposes it, so it is disposed exactly once.
+     * @param material the material this feature created
+     * @param mesh the mesh the material was created for
+     */
+    private _disposeMaterialWithMesh(material: StandardMaterial, mesh: AbstractMesh) {
+        const meshDisposedObserver = mesh.onDisposeObservable.addOnce(() => {
+            material.dispose();
+        });
+        material.onDisposeObservable.addOnce(() => {
+            mesh.onDisposeObservable.remove(meshDisposedObserver);
+        });
     }
 
     private _pickingMoved(oldPick: PickingInfo, newPick: PickingInfo) {
