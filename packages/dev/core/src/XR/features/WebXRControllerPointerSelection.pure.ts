@@ -868,7 +868,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // (both happen when a session ends). Its meshes are waiting for the next frame; once the session is over that
             // frame may never come, so release them now instead.
             if (!this._xrSessionManager.inXRSession) {
-                this._disposeDetachedController(xrControllerUniqueId);
+                this._disposeDetachedController(xrControllerUniqueId, controllerData);
             }
             return;
         }
@@ -907,33 +907,37 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (this._xrSessionManager.inXRSession) {
             // During a session, dispose the meshes on the next frame rather than in the middle of this one.
             controllerData.teardownObserver = this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
-                this._disposeDetachedController(xrControllerUniqueId);
+                this._disposeDetachedController(xrControllerUniqueId, controllerData);
             });
         } else {
             // Once the session is over, no further frame is guaranteed: an application may stop its render loop on exit
             // while keeping the scene for the next session. Dispose now so the meshes and their materials are not held.
-            this._disposeDetachedController(xrControllerUniqueId);
+            this._disposeDetachedController(xrControllerUniqueId, controllerData);
         }
     }
 
-    private _disposeDetachedController(xrControllerUniqueId: string) {
-        const controllerData = this._controllers[xrControllerUniqueId];
-        if (!controllerData) {
-            return;
-        }
+    /**
+     * Disposes the meshes of a detached controller. It works on the record that was detached, not on whatever the map
+     * holds under that id by now: the gaze pair is always stored under "camera", so detaching and attaching the feature
+     * again before the teardown runs puts a new, live pair there.
+     * @param xrControllerUniqueId the id the record was stored under
+     * @param controllerData the record that was detached
+     */
+    private _disposeDetachedController(xrControllerUniqueId: string, controllerData: (typeof this._controllers)[string]) {
         if (controllerData.teardownObserver) {
             this._xrSessionManager.scene.onBeforeRenderObservable.remove(controllerData.teardownObserver);
             controllerData.teardownObserver = null;
         }
-        // remove from the map first, so this runs only once for this controller
-        delete this._controllers[xrControllerUniqueId];
-        if (this._attachedController === xrControllerUniqueId) {
-            // check for other controllers
-            const keys = Object.keys(this._controllers);
-            if (keys.length) {
-                this._attachedController = keys[0];
-            } else {
-                this._attachedController = "";
+        if (this._controllers[xrControllerUniqueId] === controllerData) {
+            delete this._controllers[xrControllerUniqueId];
+            if (this._attachedController === xrControllerUniqueId) {
+                // check for other controllers
+                const keys = Object.keys(this._controllers);
+                if (keys.length) {
+                    this._attachedController = keys[0];
+                } else {
+                    this._attachedController = "";
+                }
             }
         }
         try {
@@ -964,11 +968,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
-        // The material is created for this mesh alone, so it goes when the mesh goes: disposing a mesh leaves its
-        // material in the scene, and input sources come and go many times (e.g. a hand that loses and regains tracking).
-        laserPointer.onDisposeObservable.addOnce(() => {
-            laserPointerMaterial.dispose();
-        });
+        this._disposeMaterialWithMesh(laserPointerMaterial, laserPointer);
         laserPointer.rotation.x = Math.PI / 2;
         this._updatePointerDistance(laserPointer, 1);
         laserPointer.isPickable = false;
@@ -994,9 +994,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;
         selectionMesh.material = targetMat;
-        selectionMesh.onDisposeObservable.addOnce(() => {
-            targetMat.dispose();
-        });
+        this._disposeMaterialWithMesh(targetMat, selectionMesh);
 
         if (this._options.renderingGroupId !== undefined) {
             laserPointer.renderingGroupId = this._options.renderingGroupId;
@@ -1007,6 +1005,23 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             laserPointer,
             selectionMesh,
         };
+    }
+
+    /**
+     * Disposes a material this feature created when the mesh it was created for is disposed. Disposing a mesh leaves
+     * its material in the scene, and input sources come and go many times (e.g. a hand that loses and regains tracking).
+     * If the material is disposed first (the scene disposes its materials before its meshes, and a mesh can be disposed
+     * together with its material), the mesh no longer disposes it, so it is disposed exactly once.
+     * @param material the material this feature created
+     * @param mesh the mesh the material was created for
+     */
+    private _disposeMaterialWithMesh(material: StandardMaterial, mesh: AbstractMesh) {
+        const meshDisposedObserver = mesh.onDisposeObservable.addOnce(() => {
+            material.dispose();
+        });
+        material.onDisposeObservable.addOnce(() => {
+            mesh.onDisposeObservable.remove(meshDisposedObserver);
+        });
     }
 
     private _pickingMoved(oldPick: PickingInfo, newPick: PickingInfo) {
