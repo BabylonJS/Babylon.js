@@ -86,7 +86,40 @@ geometry_coat_tangent = uniforms.vGeometryCoatTangent.rg;
 }
 #endif
 
+#if defined(GLTF_TRANSMISSION_SURFACE_TO_COAT) || defined(GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT)
+    // Keep authored inputs separate: unrelated mesh UV sets cannot be combined in image space.
+    coat_color = mix(vec3f(1.0), coat_color, coat_weight);
+    coat_roughness = mix(specular_roughness, coat_roughness, coat_weight);
+    coat_ior = mix(specular_ior, coat_ior, coat_weight);
+    coat_darkening *= coat_weight;
+    coatNormalW = normalize(mix(normalW, coatNormalW, coat_weight));
+    coat_weight = 1.0;
+
+    #ifdef GLTF_DIFFUSE_TRANSMISSION_SURFACE_TO_COAT
+        var diffuseTransmissionColor: vec3f = uniforms.vGltfDiffuseTransmissionColor;
+        #ifdef GLTF_DIFFUSE_TRANSMISSION_COLOR
+            var diffuseTransmissionTextureColor: vec3f = TEXRD(gltfDiffuseTransmissionColorSampler, gltfDiffuseTransmissionColorSamplerSampler, fragmentInputs.vGltfDiffuseTransmissionColorUV + uvOffset).rgb;
+            #ifdef GLTF_DIFFUSE_TRANSMISSION_COLOR_GAMMA
+                diffuseTransmissionTextureColor = toLinearSpaceVec3(diffuseTransmissionTextureColor);
+            #endif
+            diffuseTransmissionColor *= diffuseTransmissionTextureColor * uniforms.vGltfDiffuseTransmissionColorInfos.y;
+        #endif
+        coat_color *= mix(vec3f(1.0), diffuseTransmissionColor, subsurface_weight);
+        specular_roughness = mix(specular_roughness, 1.0, subsurface_weight);
+    #endif
+
+    #ifdef GLTF_TRANSMISSION_SURFACE_TO_COAT
+        coat_color *= mix(vec3f(1.0), base_color, transmission_weight);
+    #endif
+#endif
+
 #ifdef USE_GLTF_STYLE_ANISOTROPY
+    let baseAlpha: f32 = specular_roughness * specular_roughness;
+    let roughnessT: f32 = mix(baseAlpha, 1.0f, specular_roughness_anisotropy * specular_roughness_anisotropy);
+    let roughnessB: f32 = baseAlpha;
+    specular_roughness_anisotropy = 1.0f - roughnessB / max(roughnessT, 0.00001f);
+    specular_roughness = sqrt(roughnessT / sqrt(2.0f / (1.0f + (1.0f - specular_roughness_anisotropy) * (1.0f - specular_roughness_anisotropy))));
+
     let coatAlpha: f32 = coat_roughness * coat_roughness;
 
     // From glTF to OpenPBR

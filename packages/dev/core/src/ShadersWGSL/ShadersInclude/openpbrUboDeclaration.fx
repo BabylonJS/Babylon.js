@@ -73,6 +73,7 @@ uniform vEmissionColor: vec3f;
 uniform vThinFilmWeight: f32;
 uniform vThinFilmThickness: vec2f;
 uniform vThinFilmIor: f32;
+uniform vGltfDiffuseTransmissionColor: vec3f;
 
 uniform vBaseWeightInfos: vec2f;
 uniform baseWeightMatrix: mat4x4f;
@@ -142,10 +143,11 @@ uniform vThinFilmThicknessInfos: vec2f;
 uniform thinFilmThicknessMatrix: mat4x4f;
 uniform vAmbientOcclusionInfos: vec2f;
 uniform ambientOcclusionMatrix: mat4x4f;
+uniform vGltfDiffuseTransmissionColorInfos: vec2f;
+uniform gltfDiffuseTransmissionColorMatrix: mat4x4f;
 
 #define ADDITIONAL_UBO_DECLARATION
 
 
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>
-

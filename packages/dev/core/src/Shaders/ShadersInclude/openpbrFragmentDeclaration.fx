@@ -13,6 +13,7 @@ uniform float vTransmissionDispersionScale;
 uniform float vTransmissionDispersionAbbeNumber;
 uniform float vSubsurfaceWeight;
 uniform vec3 vSubsurfaceColor;
+uniform vec3 vGltfDiffuseTransmissionColor;
 uniform float vSubsurfaceRadius;
 uniform vec3 vSubsurfaceRadiusScale;
 uniform float vSubsurfaceScatterAnisotropy;
@@ -39,6 +40,10 @@ uniform float visibility;
 uniform vec2 renderTargetSize;
 
 // Samplers
+#ifdef GLTF_DIFFUSE_TRANSMISSION_COLOR
+uniform vec2 vGltfDiffuseTransmissionColorInfos;
+#endif
+
 #ifdef BASE_COLOR
 uniform vec2 vBaseColorInfos;
 #endif

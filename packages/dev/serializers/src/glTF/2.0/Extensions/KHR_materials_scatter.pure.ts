@@ -28,7 +28,7 @@ import { type Scene } from "core/scene";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
-import { CopyTextureSampling, GetOpenPBRVolumeAttenuation, MinTransmissionColor } from "../glTFUtilities";
+import { CopyTextureSampling, GetOpenPBRVolumeAttenuation, MinTransmissionColor, ShouldExportOpenPBRDiffuseTransmission } from "../glTFUtilities";
 
 const NAME = "KHR_materials_scatter";
 
@@ -138,6 +138,10 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
         return additionalTextures;
     }
 
+    private _exportsDiffuseTransmission(mat: OpenPBRMaterial): boolean {
+        return ShouldExportOpenPBRDiffuseTransmission(mat, this._exporter.isExtensionEnabled("KHR_materials_diffuse_transmission"));
+    }
+
     private _isExtensionEnabled(mat: OpenPBRMaterial): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
         if (mat.unlit) {
@@ -147,7 +151,7 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
         // Transmission scattering is only enabled if the material is not thin-walled, and has a non-zero transmission depth.
         const transmissionVolume = mat.transmissionWeight > 0 && !mat.geometryThinWalled && mat.transmissionDepth > 0;
         const transmissionScatter = transmissionVolume && !mat.transmissionScatter.equals(Color3.Black());
-        if (transmissionScatter || mat.subsurfaceWeight > 0) {
+        if (transmissionScatter || (mat.subsurfaceWeight > 0 && !this._exportsDiffuseTransmission(mat))) {
             return true;
         }
         return false;
@@ -173,6 +177,9 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
      * @returns an operand carrying the transmission fraction (constant or baked texture)
      */
     private async _computeTransmissionFractionAsync(mat: OpenPBRMaterial): Promise<ITextureProcessOperand> {
+        if (this._exportsDiffuseTransmission(mat)) {
+            return CreateFactorOperand(new Color4(1, 1, 1, 1));
+        }
         const scene = mat.getScene();
         const transmissionWeight = mat.transmissionWeight;
         const subsurfaceWeight = mat.subsurfaceWeight;
@@ -206,6 +213,9 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
      * @returns the constant transmission and subsurface fractions of the dielectric
      */
     private _constantFractions(mat: OpenPBRMaterial): { transmissionFraction: number; subsurfaceFraction: number } {
+        if (this._exportsDiffuseTransmission(mat)) {
+            return { transmissionFraction: 1, subsurfaceFraction: 0 };
+        }
         const subsurfaceFractionOfDielectric = (1.0 - mat.transmissionWeight) * mat.subsurfaceWeight;
         const denominator = subsurfaceFractionOfDielectric + mat.transmissionWeight;
         const reciprocal = 1.0 / Math.max(denominator, 1e-6);
@@ -239,7 +249,7 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
     private async _bakeVolumetricScatterAsync(mat: OpenPBRMaterial): Promise<ScatterResult> {
         const scene = mat.getScene();
         const transmissionWeight = mat.transmissionWeight;
-        const subsurfaceWeight = mat.subsurfaceWeight;
+        const subsurfaceWeight = this._exportsDiffuseTransmission(mat) ? 0 : mat.subsurfaceWeight;
 
         // Transmission slab → multi-scatter albedo.
         let transmissionMultiOp: ITextureProcessOperand;
