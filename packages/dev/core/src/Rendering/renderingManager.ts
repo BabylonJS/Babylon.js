@@ -188,7 +188,7 @@ export class RenderingManager {
             return;
         }
 
-        this._scene.getEngine().clear(null, false, depth, stencil);
+        this._scene.getEngine()._clearBetweenRenderingGroups(depth, stencil);
         this._depthStencilBufferAlreadyCleaned = true;
     }
 

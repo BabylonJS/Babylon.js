@@ -1824,15 +1824,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const hasScissor = this._scissorIsActive();
 
-        this._snapshotRendering.recordedClears?.push({
-            color: backBuffer && color ? { r: color.r, g: color.g, b: color.b, a: color.a } : null,
-            depth,
-            stencil,
-            stencilClearValue,
-            passWasOpen: !!this._currentRenderPass,
-            scissor: hasScissor ? [this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w] : null,
-        });
-
         if (backBuffer && color && hasScissor && this._currentRenderTarget) {
             const textures = this._currentRenderTarget.textures;
             const attachments = this._mrtAttachments;
@@ -1881,6 +1872,18 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /** @internal */
+    public override _clearBetweenRenderingGroups(depth: boolean, stencil: boolean): void {
+        // what the clear below does to the render passes, which fast snapshot rendering does again without rendering the groups
+        this._snapshotRendering.recordedClears?.push({
+            depth,
+            stencil,
+            passWasOpen: !!this._currentRenderPass,
+            scissor: this._scissorIsActive() ? [this._scissorCached.x, this._scissorCached.y, this._scissorCached.z, this._scissorCached.w] : null,
+        });
+        this.clear(null, false, depth, stencil);
+    }
+
+    /** @internal */
     public override _issueRenderingGroupClearsAgain(): void {
         const sequence = this._snapshotRendering.nextClearSequence();
         if (!sequence) {
@@ -1897,16 +1900,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
 
             if (clear.stencil) {
-                this._clearStencilValue = clear.stencilClearValue;
+                this._clearStencilValue = 0;
             }
 
             const scissor = clear.scissor;
             if (!scissor) {
                 // the clear ended the render pass and started the next one, which the next bundle list was recorded in
                 if (this._currentRenderTarget) {
-                    this._startRenderTargetRenderPass(this._currentRenderTarget, true, clear.color, clear.depth, clear.stencil);
+                    this._startRenderTargetRenderPass(this._currentRenderTarget, true, null, clear.depth, clear.stencil);
                 } else {
-                    this._startMainRenderPass(true, clear.color, clear.depth, clear.stencil);
+                    this._startMainRenderPass(true, null, clear.depth, clear.stencil);
                 }
             } else if (this.compatibilityMode) {
                 // the clear was drawn in the render pass with the scissor of the recorded frame. Outside of the compatibility mode,
@@ -1921,7 +1924,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 cached.z = scissor[2];
                 cached.w = scissor[3];
                 this._applyScissor(null);
-                this._clearFullQuad(clear.color, clear.depth, clear.stencil);
+                this._clearFullQuad(null, clear.depth, clear.stencil);
                 cached.x = x;
                 cached.y = y;
                 cached.z = z;

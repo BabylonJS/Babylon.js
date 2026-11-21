@@ -11,6 +11,7 @@ import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture
 import { Vector3 } from "core/Maths/math.vector";
 import { type Mesh } from "core/Meshes/mesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { Scene } from "core/scene";
 
 interface IPass {
@@ -77,6 +78,7 @@ describe("Rendering group clears in fast snapshot rendering", () => {
             clear: prototype.clear,
             _beginRenderingGroups: prototype._beginRenderingGroups,
             _endRenderingGroups: prototype._endRenderingGroups,
+            _clearBetweenRenderingGroups: prototype._clearBetweenRenderingGroups,
             _issueRenderingGroupClearsAgain: prototype._issueRenderingGroupClearsAgain,
             _scissorIsActive: prototype._scissorIsActive,
             _applyScissor: prototype._applyScissor,
@@ -159,7 +161,7 @@ describe("Rendering group clears in fast snapshot rendering", () => {
         target.renderList = meshes;
         // the clears between the groups of a render target are its own
         for (let group = 1; group <= 3; group++) {
-            target.setRenderingAutoClearDepthStencil(group, true);
+            target.setRenderingAutoClearDepthStencil(group, true, true, true);
         }
         return target;
     }
@@ -196,7 +198,9 @@ describe("Rendering group clears in fast snapshot rendering", () => {
         camera.setTarget(Vector3.Zero());
         // NullEngine has no uniform buffers, which the scene finalizes whenever a snapshot is enabled
         vi.spyOn(scene, "finalizeSceneUbo").mockImplementation(() => scene.getSceneUniformBuffer());
-        // the tests are about these clears: they do not rely on the default setup of the groups
+        // the tests are about these clears: they do not rely on the default setup of the scene or of the groups
+        scene.autoClear = true;
+        scene.autoClearDepthAndStencil = true;
         for (let group = 1; group <= 3; group++) {
             scene.setRenderingAutoClearDepthStencil(group, true, true, true);
         }
@@ -225,14 +229,13 @@ describe("Rendering group clears in fast snapshot rendering", () => {
     it("stays in one render pass when no rendering group clears", () => {
         createBox("a", 0);
         createBox("b", 0);
-        const c = createBox("c", 2);
+        createBox("c", 2);
         scene.setRenderingAutoClearDepthStencil(2, false);
 
         expect(recordAndPlay()).toEqual([{ target: "main", clears: "color depth stencil", commands: ["a", "b", "c"] }]);
 
         // without snapshot rendering, the frame is the same
         engine.snapshotRendering = false;
-        c.renderingGroupId = 2;
         expect(renderFrame().length).toBe(1);
     });
 
@@ -350,5 +353,47 @@ describe("Rendering group clears in fast snapshot rendering", () => {
         expect(recorded.length).toBe(2);
         expect(renderFrame()).toEqual(recorded);
         expect(scene.getActiveMeshes().length).toBe(2);
+    });
+
+    it("keeps the clears of a rendering when another renderer draws in its render pass", () => {
+        createBox("a", 0);
+        createBox("b", 1);
+        // an overlay that the scene does not render: an observer of its first group renders it in the open render pass
+        const overlay = new ObjectRenderer("overlay", scene);
+        overlay.renderList = [createBox("overlay", 0, 0x10000000)];
+        let renderingOverlay = false;
+        scene.onAfterRenderingGroupObservable.add((info) => {
+            if (info.renderingGroupId === 0 && !renderingOverlay) {
+                renderingOverlay = true;
+                overlay.initRender(16, 16);
+                overlay.render();
+                overlay.finishRender();
+                renderingOverlay = false;
+            }
+        });
+
+        expect(recordAndPlay()).toEqual([
+            { target: "main", clears: "color depth stencil", commands: ["a", "overlay"] },
+            { target: "main", clears: "depth stencil", commands: ["b"] },
+        ]);
+    });
+
+    it("leaves a clear of the application to the application, which issues it in the fast path as well", () => {
+        const target = createRenderTarget("target", [createBox("a", 0)]);
+        scene.customRenderTargets.push(target);
+        const clear = () => engine.clear({ r: 0, g: 0, b: 0, a: 1 }, true, true, true);
+        // the application clears in its render function, which a fast snapshot frame does not call...
+        target.customRenderFunction = (opaqueSubMeshes) => {
+            clear();
+            for (let index = 0; index < opaqueSubMeshes.length; index++) {
+                const subMesh = opaqueSubMeshes.data[index];
+                subMesh.getRenderingMesh().render(subMesh, false);
+            }
+        };
+        // ...so it issues the same clear where a fast snapshot frame does call it
+        (target as any)._objectRenderer.onFastPathRenderObservable.add(clear);
+
+        const recorded = recordAndPlay().filter((pass) => pass.target === "target" && pass.commands.length);
+        expect(recorded).toEqual([{ target: "target", clears: "color depth stencil", commands: ["a"] }]);
     });
 });

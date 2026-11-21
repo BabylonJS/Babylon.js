@@ -3,18 +3,14 @@ import { Constants } from "../constants";
 import { type WebGPUEngine } from "../webgpuEngine";
 import { type WebGPUBundleList } from "./webgpuBundleList";
 import { Logger } from "core/Misc/logger";
-import { type IColor4Like } from "core/Maths/math.like";
 
 /**
- * A clear issued while the rendering groups of a recorded frame were rendered
+ * A depth/stencil clear the rendering manager issued between two rendering groups of a recorded frame
  * @internal
  */
 export interface IWebGPURecordedClear {
-    /** the color the back buffer was cleared with, if it was */
-    color: Nullable<IColor4Like>;
     depth: boolean;
     stencil: boolean;
-    stencilClearValue: number;
     /** a render pass was open when the clear was issued */
     passWasOpen: boolean;
     /** the scissor rectangle (x, y, width, height) of a clear drawn in the open render pass; null for a clear that started a render pass */
@@ -39,10 +35,13 @@ export class WebGPUSnapshotRendering {
     private _play = false;
     private _playBundleListIndex = 0;
     private _allBundleLists: WebGPUBundleList[] = [];
-    // The clears issued while the rendering groups were rendered, for each rendering in the order of the recorded frame. Fast snapshot
-    // rendering does not render the groups: it issues these clears again to go through the render passes the bundle lists come from.
+    // The clears the rendering manager issued between the rendering groups, for each rendering in the order of the recorded frame. Fast
+    // snapshot rendering does not render the groups: it issues these clears again to go through the render passes the bundle lists come from.
     private _allClearSequences: IWebGPURecordedClearSequence[] = [];
     private _clearSequence: Nullable<IWebGPURecordedClearSequence> = null;
+    // A rendering of the groups can start inside another one: an observer of a rendering group that renders an object renderer in
+    // the open render pass. A fast snapshot frame calls no such observer, so what it did belongs to the rendering it was called in.
+    private _clearSequenceDepth = 0;
     private _playClearSequenceIndex = 0;
     private _recordingInvalidated = false;
     private _skipNextRenderPass = false;
@@ -132,10 +131,14 @@ export class WebGPUSnapshotRendering {
     }
 
     /**
-     * The rendering groups of a rendering are about to be rendered: the clears issued until endClearSequence() are recorded
+     * The rendering groups of a rendering are about to be rendered: the clears between its groups are recorded until the matching
+     * endClearSequence(). A rendering started inside another one adds to the sequence of the enclosing rendering.
      */
     public beginClearSequence(): void {
-        if (this._record) {
+        if (!this._record) {
+            return;
+        }
+        if (this._clearSequenceDepth++ === 0) {
             this._clearSequence = { clears: [], passWasOpenAtEnd: false };
             this._allClearSequences.push(this._clearSequence);
         }
@@ -146,14 +149,19 @@ export class WebGPUSnapshotRendering {
      * @param passIsOpen whether a render pass is open
      */
     public endClearSequence(passIsOpen: boolean): void {
-        if (this._clearSequence) {
+        if (this._clearSequenceDepth === 0) {
+            // nothing was begun: no recording, or the recording was discarded since
+            return;
+        }
+        if (--this._clearSequenceDepth === 0 && this._clearSequence) {
             this._clearSequence.passWasOpenAtEnd = passIsOpen;
             this._clearSequence = null;
         }
     }
 
     /**
-     * Gets the clears being recorded, if the rendering groups of a recorded frame are being rendered
+     * Gets the clears being recorded, if the rendering groups of a recorded frame are being rendered. Only the clears the rendering
+     * manager issues between two groups go there: a clear of the application is the application's to issue in a fast snapshot frame.
      */
     public get recordedClears(): Nullable<IWebGPURecordedClear[]> {
         return this._clearSequence ? this._clearSequence.clears : null;
@@ -232,12 +240,14 @@ export class WebGPUSnapshotRendering {
         this._playBundleListIndex = 0;
         this._playClearSequenceIndex = 0;
         this._clearSequence = null;
+        this._clearSequenceDepth = 0;
     }
 
     private _discardRecording(): void {
         this._allBundleLists.length = 0;
         this._allClearSequences.length = 0;
         this._clearSequence = null;
+        this._clearSequenceDepth = 0;
     }
 
     public reset(): void {

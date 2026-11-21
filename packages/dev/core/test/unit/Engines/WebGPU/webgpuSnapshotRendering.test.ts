@@ -104,7 +104,7 @@ describe("WebGPUSnapshotRendering", () => {
     });
 
     it("keeps the clears of each rendering of the rendering groups, in the order of the recorded frame", () => {
-        const clear = { color: null, depth: true, stencil: false, stencilClearValue: 0, passWasOpen: true, scissor: null };
+        const clear = { depth: true, stencil: false, passWasOpen: true, scissor: null };
 
         // nothing is recorded outside of a recording, or outside of a rendering of the groups
         expect(snapshot.recordedClears).toBeNull();
@@ -129,6 +129,27 @@ describe("WebGPUSnapshotRendering", () => {
             expect(snapshot.nextClearSequence()).toBeNull();
             snapshot.endFrame();
         }
+    });
+
+    it("keeps what a rendering started inside another one does in the sequence of the enclosing rendering", () => {
+        const first = { depth: true, stencil: true, passWasOpen: true, scissor: null };
+        const second = { depth: true, stencil: false, passWasOpen: true, scissor: null };
+
+        snapshot.enabled = true;
+        snapshot.beginClearSequence();
+        snapshot.recordedClears!.push(first);
+        // an observer of a rendering group renders an object renderer in the open render pass
+        snapshot.beginClearSequence();
+        snapshot.endClearSequence(true);
+        // the enclosing rendering goes on: its clears are still recorded, in its own sequence
+        snapshot.recordedClears!.push(second);
+        snapshot.endClearSequence(false);
+        expect(snapshot.recordedClears).toBeNull();
+        snapshot.endFrame();
+
+        // a fast snapshot frame calls no such observer: there is one sequence to play, for the enclosing rendering
+        expect(snapshot.nextClearSequence()).toEqual({ clears: [first, second], passWasOpenAtEnd: false });
+        expect(snapshot.nextClearSequence()).toBeNull();
     });
 
     it("discards the recorded clears with the bundle lists of an invalidated recording", () => {
