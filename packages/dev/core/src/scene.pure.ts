@@ -2925,11 +2925,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
 
+        // Materials and effects are usually ready within a few checks: retry every 16 ms at first, then every 100 ms to limit the cost of isReady() on large scenes
+        const retryDelay = PrecisionDate.Now - this._timeoutChecksStartTime < 1000 ? 16 : 100;
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             // Ensure materials effects are checked outside render loops
             this.incrementRenderId();
             this._checkIsReady(checkRenderTargets);
-        }, 100);
+        }, retryDelay);
     }
 
     /**
