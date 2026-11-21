@@ -840,6 +840,10 @@ export class Geometry implements IGetSetVerticesData {
 
         // Render bundles retain buffer bindings even when the vertex layout does not change.
         for (const mesh of this._meshes) {
+            // A mesh has no submeshes until its geometry has vertices and indices (e.g. empty vertex data).
+            if (!mesh.subMeshes) {
+                continue;
+            }
             for (const subMesh of mesh.subMeshes) {
                 subMesh._invalidateVertexBuffers();
             }
