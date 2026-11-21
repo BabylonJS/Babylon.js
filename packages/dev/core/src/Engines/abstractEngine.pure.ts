@@ -823,6 +823,40 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * The rendering groups of a rendering are about to be rendered. An engine that records the frame to play it without rendering the
+     * groups (fast snapshot rendering) records the clears issued between the groups until _endRenderingGroups().
+     * @internal
+     */
+    public _beginRenderingGroups(): void {
+        // Do nothing
+    }
+
+    /**
+     * Clears the depth and/or stencil buffer between two rendering groups. This is the clear of the rendering manager, as opposed to
+     * a clear the application issues while the groups are rendered.
+     * @param depth defines if the depth buffer must be cleared
+     * @param stencil defines if the stencil buffer must be cleared
+     * @internal
+     */
+    public _clearBetweenRenderingGroups(depth: boolean, stencil: boolean): void {
+        this.clear(null, false, depth, stencil);
+    }
+
+    /** @internal */
+    public _endRenderingGroups(): void {
+        // Do nothing
+    }
+
+    /**
+     * Issues again the clears the engine recorded while the rendering groups of this rendering were rendered in the recorded frame.
+     * This is for fast snapshot rendering, which does not render the groups.
+     * @internal
+     */
+    public _issueRenderingGroupClearsAgain(): void {
+        // Do nothing
+    }
+
+    /**
      * Gets or sets the snapshot rendering mode
      */
     public get snapshotRenderingMode(): number {

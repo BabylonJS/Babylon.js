@@ -827,6 +827,9 @@ export class ObjectRenderer {
             }
         } else {
             this.onFastPathRenderObservable.notifyObservers(passIndex);
+            // the engine plays the draws it recorded: only the clears it recorded between the rendering groups are left to issue,
+            // after the initial clear of a render target, which an observer above issues
+            this._engine._issueRenderingGroupClearsAgain();
         }
 
         if (!skipOnAfterRenderObservable) {
