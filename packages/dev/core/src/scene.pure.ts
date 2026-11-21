@@ -2807,6 +2807,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         if (wasLoading && !this.isLoading) {
             this.onDataLoadedObservable.notifyObservers(this);
+            this._restartFastReadyChecks();
         }
     }
 
@@ -2886,8 +2887,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onReadyTimeoutDuration = 2 * 60 * 1000; // 2 minutes by default
 
     private _timeoutChecksStartTime: number = 0;
+    private _fastReadyChecksStartTime: number = 0;
+    private _readyChecksRenderTargets = false;
 
     private _clearReadynessChecksData() {
+        if (this._executeWhenReadyTimeoutId !== null) {
+            clearTimeout(this._executeWhenReadyTimeoutId);
+        }
         this._timeoutChecksStartTime = 0;
         this.onReadyTimeoutObservable.clear();
 
@@ -2904,15 +2910,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Starts counting time from the first check for timeout purposes
         if (this._timeoutChecksStartTime === 0) {
             this._timeoutChecksStartTime = PrecisionDate.Now;
+            this._fastReadyChecksStartTime = this._timeoutChecksStartTime;
         }
-        // Check for timeout
-        else if (this.onReadyTimeoutDuration > 0 && PrecisionDate.Now - this._timeoutChecksStartTime > this.onReadyTimeoutDuration) {
-            this.onReadyTimeoutObservable.notifyObservers(this);
-            this._clearReadynessChecksData();
-            return;
-        }
+        this._readyChecksRenderTargets = checkRenderTargets;
 
-        // Check for readyness
+        // Check for readyness, before the timeout so that a scene which became ready within the deadline is never reported as timed out by a late timer
         if (this.isReady(checkRenderTargets)) {
             this.onReadyObservable.notifyObservers(this);
             this._clearReadynessChecksData();
@@ -2925,13 +2927,44 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
 
+        // Check for timeout
+        const elapsed = PrecisionDate.Now - this._timeoutChecksStartTime;
+        if (this.onReadyTimeoutDuration > 0 && elapsed > this.onReadyTimeoutDuration) {
+            this.onReadyTimeoutObservable.notifyObservers(this);
+            this._clearReadynessChecksData();
+            return;
+        }
+
+        this._scheduleReadyCheck(elapsed);
+    }
+
+    private _scheduleReadyCheck(elapsed: number) {
         // Materials and effects are usually ready within a few checks: retry every 16 ms at first, then every 100 ms to limit the cost of isReady() on large scenes
-        const retryDelay = PrecisionDate.Now - this._timeoutChecksStartTime < 1000 ? 16 : 100;
+        let retryDelay = PrecisionDate.Now - this._fastReadyChecksStartTime < 1000 ? 16 : 100;
+        if (this.onReadyTimeoutDuration > 0) {
+            // Do not step over the deadline: the last check has to run at it
+            retryDelay = Math.max(1, Math.min(retryDelay, this.onReadyTimeoutDuration - elapsed));
+        }
+
+        // Only one retry may be pending: a restart can run while the check that is delivering a timer is still going
+        if (this._executeWhenReadyTimeoutId !== null) {
+            clearTimeout(this._executeWhenReadyTimeoutId);
+        }
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             // Ensure materials effects are checked outside render loops
             this.incrementRenderId();
-            this._checkIsReady(checkRenderTargets);
+            this._checkIsReady(this._readyChecksRenderTargets);
         }, retryDelay);
+    }
+
+    // Starts a new fast polling window, without touching the timeout, when a wait that began during a load has to catch up with it
+    private _restartFastReadyChecks() {
+        if (this._executeWhenReadyTimeoutId === null) {
+            return;
+        }
+
+        this._fastReadyChecksStartTime = PrecisionDate.Now;
+        this._scheduleReadyCheck(this._fastReadyChecksStartTime - this._timeoutChecksStartTime);
     }
 
     /**
@@ -6138,7 +6171,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onBeforeCameraRenderObservable.clear();
         this.onAfterCameraRenderObservable.clear();
         this.onAfterRenderCameraObservable.clear();
-        this.onReadyObservable.clear();
+        this._clearReadynessChecksData();
         this.onNewCameraAddedObservable.clear();
         this.onCameraRemovedObservable.clear();
         this.onNewLightAddedObservable.clear();
