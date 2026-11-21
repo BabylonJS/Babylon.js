@@ -1,3 +1,4 @@
+import { type WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { type Viewport } from "../Maths/math.viewport";
 import { type Scene } from "../scene";
@@ -85,5 +86,18 @@ export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRWebGLRender
 
     public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
         return this.getRenderTargetTextureForEye(view.eye);
+    }
+
+    public override dispose() {
+        // These render targets draw into the XRWebGLLayer's own framebuffer (an opaque framebuffer on a real
+        // device). It is not ours to delete, so detach it before the render targets are disposed.
+        for (const renderTargetTexture of this._renderTargetTextures) {
+            const renderTargetWrapper = renderTargetTexture.renderTarget as Nullable<WebGLRenderTargetWrapper>;
+            if (renderTargetWrapper) {
+                renderTargetWrapper._framebuffer = null;
+            }
+        }
+        this._rtt = null;
+        super.dispose();
     }
 }

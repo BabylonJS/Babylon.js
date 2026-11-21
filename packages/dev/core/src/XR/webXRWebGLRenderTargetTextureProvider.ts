@@ -42,15 +42,25 @@ export abstract class WebXRWebGLRenderTargetTextureProvider<LayerTypeT extends W
 
         const renderTargetTexture = this._createRenderTargetTextureShell(width, height, !!multiview);
         const renderTargetWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
+        // The shell comes with GPU objects of its own: a framebuffer and, for multiview, a color and a depth/stencil
+        // texture array. Whichever of them is replaced below by the object the XR layer provides is referenced by
+        // nothing else afterwards, so it is deleted here. Otherwise it stays allocated until the context is lost.
+        const gl = (this._engine as ThinEngine)._gl as Nullable<WebGL2RenderingContext>;
         // Set the framebuffer, make sure it works in all scenarios - emulator, no layers and layers.
         // This must happen before binding any texture, since setTexture binds it to the framebuffer.
         if (framebuffer || !colorTexture) {
+            if (gl && renderTargetWrapper._framebuffer && renderTargetWrapper._framebuffer !== framebuffer) {
+                gl.deleteFramebuffer(renderTargetWrapper._framebuffer);
+            }
             renderTargetWrapper._framebuffer = framebuffer;
         }
 
         // Create internal texture
         if (colorTexture) {
             if (multiview) {
+                if (gl && renderTargetWrapper._colorTextureArray && renderTargetWrapper._colorTextureArray !== colorTexture) {
+                    gl.deleteTexture(renderTargetWrapper._colorTextureArray);
+                }
                 renderTargetWrapper._colorTextureArray = colorTexture;
             } else {
                 const internalTexture = this._createInternalTexture(textureSize, colorTexture);
@@ -61,6 +71,9 @@ export abstract class WebXRWebGLRenderTargetTextureProvider<LayerTypeT extends W
 
         if (depthStencilTexture) {
             if (multiview) {
+                if (gl && renderTargetWrapper._depthStencilTextureArray && renderTargetWrapper._depthStencilTextureArray !== depthStencilTexture) {
+                    gl.deleteTexture(renderTargetWrapper._depthStencilTextureArray);
+                }
                 renderTargetWrapper._depthStencilTextureArray = depthStencilTexture;
             } else {
                 renderTargetWrapper._depthStencilTexture = this._createInternalTexture(textureSize, depthStencilTexture);
