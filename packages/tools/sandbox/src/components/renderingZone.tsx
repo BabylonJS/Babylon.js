@@ -7,6 +7,7 @@ import { Engine } from "core/Engines/engine";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { LoadSceneAsync, SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import { EnableNeuralTextureFileTiming } from "loaders/glTF/2.0/Extensions/BABYLON_materials_neural_texture";
 import { Scene } from "core/scene";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { type Camera } from "core/Cameras/camera";
@@ -613,6 +614,22 @@ export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderi
                     if (value !== null) {
                         (loader as unknown as Record<string, unknown>)[key] = value;
                     }
+                }
+
+                const neuralParams = new URLSearchParams(location.search);
+                const neuralShaderDecode = neuralParams.get("neuralShaderDecode");
+                if (neuralShaderDecode !== null) {
+                    loader.extensionOptions.BABYLON_materials_neural_texture = {
+                        ...loader.extensionOptions.BABYLON_materials_neural_texture,
+                        decodeInShader: neuralShaderDecode.toLowerCase() === "true",
+                    };
+                }
+                if (neuralParams.get("neuralTiming")?.toLowerCase() === "true") {
+                    loader.extensionOptions.BABYLON_materials_neural_texture = {
+                        ...loader.extensionOptions.BABYLON_materials_neural_texture,
+                        timing: true,
+                    };
+                    EnableNeuralTextureFileTiming(loader);
                 }
 
                 loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {
