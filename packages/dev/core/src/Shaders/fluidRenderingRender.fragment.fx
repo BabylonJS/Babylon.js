@@ -92,7 +92,9 @@ void main(void) {
 #else
     float bgDepth = texture2D(bgDepthSampler, texCoord).x;
     float depthNonLinear = projectionMatrix[2].z + projectionMatrix[3].z / depth;
-    depthNonLinear = depthNonLinear * 0.5 + 0.5;
+    #ifndef IS_NDC_HALF_ZRANGE
+        depthNonLinear = depthNonLinear * 0.5 + 0.5;
+    #endif
 #endif
 
     vec4 backColor = texture2D(textureSampler, texCoord);
