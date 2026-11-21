@@ -1659,6 +1659,10 @@ describe("Babylon Vector tests", () => {
                 expect(start.x).toBe(1);
                 expect(start.y).toBe(0);
                 expect(start.z).toBe(0);
+                const expectedEnd = new Vector3(-1, 1e-9, 0).normalize();
+                expect(end.x).toBe(expectedEnd.x);
+                expect(end.y).toBe(expectedEnd.y);
+                expect(end.z).toBe(expectedEnd.z);
                 shouldNotChange = true;
             });
 
@@ -1679,6 +1683,9 @@ describe("Babylon Vector tests", () => {
                 expect(start.x).toBe(0.5);
                 expect(start.y).toBe(0.5);
                 expect(start.z).toBe(Math.SQRT1_2);
+                expect(end.x).toBe(-0.49999999999999994);
+                expect(end.y).toBe(-0.5);
+                expect(end.z).toBe(-Math.SQRT1_2);
                 shouldNotChange = true;
             });
         });
