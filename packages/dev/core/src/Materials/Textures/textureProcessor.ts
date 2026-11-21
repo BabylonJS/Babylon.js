@@ -8,6 +8,7 @@ import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
 import { Color4 } from "core/Maths/math.color.pure";
+import { Observable } from "../../Misc/observable.pure";
 import { _AllTransformsMatch, _CopyTextureMetadata, _HasNonIdentityTransform, _KeepMatchingCoordinates } from "./textureSampling.functions";
 
 const _ShaderName = "textureProcessor";
@@ -93,7 +94,7 @@ export enum TextureChannel {
  *
  * Results are directly usable as operands to subsequent operations. When a result with a
  * `dispose` function is passed as an operand, the next operation automatically calls `dispose`
- * after consuming it, so intermediate textures are cleaned up without manual tracking.
+ * after consuming it, or when the output is disposed if dynamic inputs still need it.
  *
  * At least one of `texture` or `factor` must be provided when used as an operand.
  */
@@ -129,10 +130,14 @@ export interface ITextureProcessOperand {
      * Disposes the texture produced by a processing operation. Only present on results
      * returned by the texture processing functions. When a result is passed as an operand
      * to the next operation in a chain, its `dispose` is called automatically after the
-     * GPU pass completes. Call `dispose` explicitly on the final result when the texture
+     * GPU pass completes, or when the output is disposed if dynamic inputs still need it.
+     * Call `dispose` explicitly on the final result when the texture
      * is no longer needed (or skip it if transferring ownership to a material).
      */
     dispose?: () => void;
+
+    /** @internal Notifies dependent processing operations after a factor changes. */
+    onChangedObservable?: Observable<void>;
 }
 
 /**
@@ -206,18 +211,20 @@ export function CreateTextureWithFactorOperand(texture: Nullable<BaseTexture>, f
     return op;
 }
 
+const _DefaultFactor = new Color4(1, 1, 1, 1);
+
 /**
  * @internal
  * Evaluate the effective constant Color4 of an operand.
  * When a texture-only operand omits factor, the implicit value is (1, 1, 1, 1).
  */
 function _EvalConstant(op: ITextureProcessOperand): Color4 {
-    return op.factor ?? new Color4(1, 1, 1, 1);
+    return op.factor ?? _DefaultFactor;
 }
 
 /** @internal */
-function _MultiplyConstants(a: Color4, b: Color4): Color4 {
-    return new Color4(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a);
+function _MultiplyConstants(a: Color4, b: Color4, result = new Color4()): Color4 {
+    return result.set(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a);
 }
 
 /** @internal */
@@ -232,8 +239,8 @@ function _DivideConstants(a: Color4, b: Color4): Color4 {
 }
 
 /** @internal */
-function _LerpConstants(a: Color4, b: Color4, t: Color4): Color4 {
-    return new Color4(a.r + (b.r - a.r) * t.r, a.g + (b.g - a.g) * t.g, a.b + (b.b - a.b) * t.b, a.a + (b.a - a.a) * t.a);
+function _LerpConstants(a: Color4, b: Color4, t: Color4, result = new Color4()): Color4 {
+    return result.set(a.r + (b.r - a.r) * t.r, a.g + (b.g - a.g) * t.g, a.b + (b.b - a.b) * t.b, a.a + (b.a - a.a) * t.a);
 }
 
 /**
@@ -286,6 +293,99 @@ function _ResolveOutputSize(operands: ITextureProcessOperand[]): TextureSize {
         }
     }
     return result;
+}
+
+const _DynamicTextures = new WeakMap<BaseTexture, number>();
+const _DynamicTransforms = new WeakSet<BaseTexture>();
+
+/** @internal */
+export function _MarkTextureAsDynamic(texture: BaseTexture): void {
+    _DynamicTransforms.add(texture);
+    if (!_DynamicTextures.has(texture)) {
+        _DynamicTextures.set(texture, 0);
+    }
+}
+
+function _HasDynamicInputs(textures: BaseTexture[]): boolean {
+    return textures.some((texture) => texture.animations.length > 0 || _DynamicTextures.has(texture));
+}
+
+function _HasDynamicTransforms(textures: BaseTexture[]): boolean {
+    return textures.some((texture) => texture.animations.length > 0 || _DynamicTransforms.has(texture));
+}
+
+function _TrackDynamicInputs(pt: ProceduralTexture, operands: ITextureProcessOperand[], updateUniforms: () => void): void {
+    // Creation order is dependency order; downstream passes also track upstream pixel revisions.
+    _DynamicTextures.set(pt, 0);
+    const matrices = operands.map((operand) => operand.texture?.getTextureMatrix().clone());
+    const versions = operands.map((operand) => (operand.texture ? _DynamicTextures.get(operand.texture) : undefined));
+    const trackTransforms = operands.some((operand) => operand.texture && (_DynamicTextures.has(operand.texture) || operand.texture.animations.length > 0));
+    let factorsChanged = false;
+    const factorObservers = operands.map((operand) =>
+        operand.onChangedObservable?.add(() => {
+            factorsChanged = true;
+        })
+    );
+    const scene = pt.getScene()!;
+    const observer = scene.onBeforeRenderObservable.add(() => {
+        let changed = factorsChanged;
+        factorsChanged = false;
+        for (let i = 0; i < operands.length; i++) {
+            const texture = operands[i].texture;
+            if (texture && trackTransforms) {
+                const matrix = texture.getTextureMatrix();
+                const version = _DynamicTextures.get(texture);
+                if (!matrices[i]!.equals(matrix) || versions[i] !== version) {
+                    matrices[i]!.copyFrom(matrix);
+                    versions[i] = version;
+                    changed = true;
+                }
+            }
+        }
+        if (changed) {
+            updateUniforms();
+            pt.render();
+            _DynamicTextures.set(pt, _DynamicTextures.get(pt)! + 1);
+        }
+    });
+    pt.onDisposeObservable.add(() => {
+        scene.onBeforeRenderObservable.remove(observer);
+        for (let i = 0; i < operands.length; i++) {
+            operands[i].onChangedObservable?.remove(factorObservers[i] ?? null);
+            operands[i].dispose?.();
+        }
+    });
+}
+
+function _FoldConstants(operands: ITextureProcessOperand[], evaluate: (result: Color4) => void): ITextureProcessOperand {
+    const factor = new Color4();
+    evaluate(factor);
+    if (!operands.some((operand) => operand.onChangedObservable)) {
+        return { texture: null, factor };
+    }
+    const onChangedObservable = new Observable<void>();
+    const scratch = new Color4();
+    const observers = operands.map((operand) =>
+        operand.onChangedObservable?.add(() => {
+            evaluate(scratch);
+            if (!factor.equals(scratch)) {
+                factor.copyFrom(scratch);
+                onChangedObservable.notifyObservers();
+            }
+        })
+    );
+    return {
+        texture: null,
+        factor,
+        onChangedObservable,
+        dispose: () => {
+            for (let i = 0; i < operands.length; i++) {
+                operands[i].onChangedObservable?.remove(observers[i] ?? null);
+                operands[i].dispose?.();
+            }
+            onChangedObservable.clear();
+        },
+    };
 }
 
 function _KeepMatchingOperandCoordinates(name: string, operands: ITextureProcessOperand[]): ITextureProcessOperand[] {
@@ -385,24 +485,23 @@ function _BuildOutputChannelMaskDefines(mask: ChannelMask): string[] {
  * Apply a ChannelMask to a constant Color4: included channels pass through,
  * excluded color channels become 0, excluded alpha becomes 1.
  */
-function _ApplyOutputChannelMask(c: Color4, mask: ChannelMask): Color4 {
-    return new Color4(mask & ChannelMask.R ? c.r : 0, mask & ChannelMask.G ? c.g : 0, mask & ChannelMask.B ? c.b : 0, mask & ChannelMask.A ? c.a : 1);
+function _ApplyOutputChannelMask(c: Color4, mask: ChannelMask, result = new Color4()): Color4 {
+    return result.set(mask & ChannelMask.R ? c.r : 0, mask & ChannelMask.G ? c.g : 0, mask & ChannelMask.B ? c.b : 0, mask & ChannelMask.A ? c.a : 1);
 }
 
 /**
  * @internal
  * Build shader defines for a standard A/B operand.
- * When `bakeTransform` is true and the texture has a non-identity UV transform,
- * the OPERAND_X_MATRIX define is emitted so the shader applies the matrix when sampling.
+ * Baked dynamic inputs need matrix uniforms even when their initial transform is identity.
  */
-function _BuildOperandDefines(operand: ITextureProcessOperand, prefix: "A" | "B", bakeTransform: boolean): string[] {
+function _BuildOperandDefines(operand: ITextureProcessOperand, prefix: "A" | "B", bakeTransform: boolean, dynamic = false): string[] {
     const defines: string[] = [];
     if (operand.texture) {
         defines.push(`OPERAND_${prefix}_TEXTURE`);
-        if (bakeTransform && _HasNonIdentityTransform(operand.texture)) {
+        if (bakeTransform && (dynamic || _HasNonIdentityTransform(operand.texture))) {
             defines.push(`OPERAND_${prefix}_MATRIX`);
         }
-        if (operand.colorSpace) {
+        if (operand.colorSpace && !operand.texture.getInternalTexture()?._useSRGBBuffer) {
             defines.push(`OPERAND_${prefix}_SRGB`);
         }
         if (operand.channel) {
@@ -418,20 +517,19 @@ function _BuildOperandDefines(operand: ITextureProcessOperand, prefix: "A" | "B"
 /**
  * @internal
  * Build shader defines for the lerp blend operand.
- * When `bakeTransform` is true and the texture has a non-identity UV transform,
- * the LERP_T_MATRIX define is emitted.
+ * Baked dynamic inputs need a matrix uniform even when their initial transform is identity.
  */
-function _BuildLerpBlendDefines(t: ITextureProcessOperand, bakeTransform: boolean): string[] {
+function _BuildLerpBlendDefines(t: ITextureProcessOperand, bakeTransform: boolean, dynamic = false): string[] {
     const defines: string[] = [];
     if (t.texture) {
         defines.push("LERP_T_TEXTURE");
-        if (bakeTransform && _HasNonIdentityTransform(t.texture)) {
+        if (bakeTransform && (dynamic || _HasNonIdentityTransform(t.texture))) {
             defines.push("LERP_T_MATRIX");
         }
         if (t.factor !== undefined) {
             defines.push("LERP_T_FACTOR");
         }
-        if (t.colorSpace) {
+        if (t.colorSpace && !t.texture.getInternalTexture()?._useSRGBBuffer) {
             defines.push("LERP_T_SRGB");
         }
         if (t.channel) {
@@ -445,13 +543,12 @@ function _BuildLerpBlendDefines(t: ITextureProcessOperand, bakeTransform: boolea
 /**
  * @internal
  * Set uniforms and textures for a standard A/B operand on a procedural texture.
- * When `bakeTransform` is true and the texture has a non-identity UV matrix,
- * that matrix is uploaded as `<textureName>Matrix` for the shader to apply when sampling.
+ * Upload baked transforms as `<textureName>Matrix`, including identity matrices for dynamic inputs.
  */
-function _SetOperandUniforms(pt: ProceduralTexture, operand: ITextureProcessOperand, textureName: string, factorName: string, bakeTransform: boolean): void {
+function _SetOperandUniforms(pt: ProceduralTexture, operand: ITextureProcessOperand, textureName: string, factorName: string, bakeTransform: boolean, dynamic = false): void {
     if (operand.texture) {
         pt.setTexture(textureName, operand.texture as Texture);
-        if (bakeTransform && _HasNonIdentityTransform(operand.texture)) {
+        if (bakeTransform && (dynamic || _HasNonIdentityTransform(operand.texture))) {
             pt.setMatrix(`${textureName}Matrix`, operand.texture.getTextureMatrix());
         }
     }
@@ -464,13 +561,12 @@ function _SetOperandUniforms(pt: ProceduralTexture, operand: ITextureProcessOper
 /**
  * @internal
  * Set uniforms and textures for the lerp blend operand.
- * When `bakeTransform` is true and the texture has a non-identity UV matrix,
- * that matrix is uploaded as `textureTMatrix`.
+ * Upload baked transforms as `textureTMatrix`, including identity matrices for dynamic inputs.
  */
-function _SetLerpBlendUniforms(pt: ProceduralTexture, t: ITextureProcessOperand, bakeTransform: boolean): void {
+function _SetLerpBlendUniforms(pt: ProceduralTexture, t: ITextureProcessOperand, bakeTransform: boolean, dynamic = false): void {
     if (t.texture) {
         pt.setTexture("textureT", t.texture as Texture);
-        if (bakeTransform && _HasNonIdentityTransform(t.texture)) {
+        if (bakeTransform && (dynamic || _HasNonIdentityTransform(t.texture))) {
             pt.setMatrix("textureTMatrix", t.texture.getTextureMatrix());
         }
         if (t.factor !== undefined) {
@@ -525,13 +621,16 @@ function _CreateProcessorTexture(
 /**
  * @internal
  * Wait for a procedural texture's shader to compile then render it. Uniforms must be set
- * on the texture before calling this.
+ * on the texture before calling this. Live inputs are refreshed immediately before drawing,
+ * and tracking starts before resolving to avoid capturing changes after the draw.
  */
-async function _RenderAsync(pt: ProceduralTexture): Promise<void> {
+async function _RenderAsync(pt: ProceduralTexture, updateUniforms?: () => void, trackInputs?: () => void): Promise<void> {
     return await new Promise<void>((resolve, reject) => {
         pt.executeWhenReady(() => {
             try {
+                updateUniforms?.();
                 pt.render();
+                trackInputs?.();
                 resolve();
             } catch (error) {
                 reject(error instanceof Error ? error : new Error(String(error)));
@@ -551,7 +650,8 @@ async function _RenderAsync(pt: ProceduralTexture): Promise<void> {
  * the result is returned as a factor-only operand with no texture allocated.
  *
  * When operands are results of previous operations (i.e. they carry a `dispose` function),
- * their intermediate textures are automatically released after the GPU pass completes.
+ * their intermediate textures are released after the GPU pass, or when the output is disposed
+ * if dynamic transforms require the intermediate results to stay live.
  *
  * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
  * @param a - First operand
@@ -574,8 +674,12 @@ export async function MultiplyTexturesAsync(
     outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture) {
-        const factor = _MultiplyConstants(_EvalConstant(a), _EvalConstant(b));
-        return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
+        return _FoldConstants([a, b], (factor) => {
+            _MultiplyConstants(_EvalConstant(a), _EvalConstant(b), factor);
+            if (outputChannelMask) {
+                _ApplyOutputChannelMask(factor, outputChannelMask, factor);
+            }
+        });
     }
 
     [a, b] = _KeepMatchingOperandCoordinates(name, [a, b]);
@@ -586,30 +690,36 @@ export async function MultiplyTexturesAsync(
     if (b.texture) {
         allTextures.push(b.texture);
     }
-    const canPropagate = _AllTransformsMatch(allTextures);
+    const dynamic = _HasDynamicInputs(allTextures) || !!(a.onChangedObservable || b.onChangedObservable);
+    const canPropagate = !_HasDynamicTransforms(allTextures) && _AllTransformsMatch(allTextures);
     const bakeTransform = !canPropagate;
 
     const defines = [
-        ..._BuildOperandDefines(a, "A", bakeTransform),
-        ..._BuildOperandDefines(b, "B", bakeTransform),
+        ..._BuildOperandDefines(a, "A", bakeTransform, dynamic),
+        ..._BuildOperandDefines(b, "B", bakeTransform, dynamic),
         ...(outputChannelMask ? _BuildOutputChannelMaskDefines(outputChannelMask) : []),
     ];
     if (outputColorSpace) {
         defines.push("OUTPUT_SRGB");
     }
     const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b]), scene, outputColorSpace, outputOptions);
-    _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform);
-    _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform);
+    const updateUniforms = () => {
+        _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform, dynamic);
+        _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform, dynamic);
+    };
+    updateUniforms();
     try {
-        await _RenderAsync(pt);
+        await _RenderAsync(pt, updateUniforms, dynamic ? () => _TrackDynamicInputs(pt, [a, b], updateUniforms) : undefined);
     } catch (error) {
         a.dispose?.();
         b.dispose?.();
         throw error;
     }
 
-    a.dispose?.();
-    b.dispose?.();
+    if (!dynamic) {
+        a.dispose?.();
+        b.dispose?.();
+    }
 
     _CopyTextureMetadata(allTextures[0], pt, canPropagate);
     const result: ITextureProcessOperand = { texture: pt, dispose: () => pt.dispose() };
@@ -960,7 +1070,8 @@ export async function TransmissionScatterToSingleScatterAlbedoAsync(
  * the result is returned as a factor-only operand with no texture allocated.
  *
  * When operands are results of previous operations (i.e. they carry a `dispose` function),
- * their intermediate textures are automatically released after the GPU pass completes.
+ * their intermediate textures are released after the GPU pass, or when the output is disposed
+ * if dynamic transforms require the intermediate results to stay live.
  *
  * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
  * @param a - Start value operand (returned when t = 0)
@@ -985,8 +1096,12 @@ export async function LerpTexturesAsync(
     outputOptions?: ITextureProcessorOutputOptions
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture && !t.texture) {
-        const factor = _LerpConstants(_EvalConstant(a), _EvalConstant(b), _EvalConstant(t));
-        return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
+        return _FoldConstants([a, b, t], (factor) => {
+            _LerpConstants(_EvalConstant(a), _EvalConstant(b), _EvalConstant(t), factor);
+            if (outputChannelMask) {
+                _ApplyOutputChannelMask(factor, outputChannelMask, factor);
+            }
+        });
     }
 
     [a, b, t] = _KeepMatchingOperandCoordinates(name, [a, b, t]);
@@ -1000,25 +1115,29 @@ export async function LerpTexturesAsync(
     if (t.texture) {
         allTextures.push(t.texture);
     }
-    const canPropagate = _AllTransformsMatch(allTextures);
+    const dynamic = _HasDynamicInputs(allTextures) || !!(a.onChangedObservable || b.onChangedObservable || t.onChangedObservable);
+    const canPropagate = !_HasDynamicTransforms(allTextures) && _AllTransformsMatch(allTextures);
     const bakeTransform = !canPropagate;
 
     const defines = [
         "OP_LERP",
-        ..._BuildOperandDefines(a, "A", bakeTransform),
-        ..._BuildOperandDefines(b, "B", bakeTransform),
-        ..._BuildLerpBlendDefines(t, bakeTransform),
+        ..._BuildOperandDefines(a, "A", bakeTransform, dynamic),
+        ..._BuildOperandDefines(b, "B", bakeTransform, dynamic),
+        ..._BuildLerpBlendDefines(t, bakeTransform, dynamic),
         ...(outputChannelMask ? _BuildOutputChannelMaskDefines(outputChannelMask) : []),
     ];
     if (outputColorSpace == TextureColorSpace.SRGB) {
         defines.push("OUTPUT_SRGB");
     }
     const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b, t]), scene, outputColorSpace, outputOptions);
-    _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform);
-    _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform);
-    _SetLerpBlendUniforms(pt, t, bakeTransform);
+    const updateUniforms = () => {
+        _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform, dynamic);
+        _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform, dynamic);
+        _SetLerpBlendUniforms(pt, t, bakeTransform, dynamic);
+    };
+    updateUniforms();
     try {
-        await _RenderAsync(pt);
+        await _RenderAsync(pt, updateUniforms, dynamic ? () => _TrackDynamicInputs(pt, [a, b, t], updateUniforms) : undefined);
     } catch (error) {
         a.dispose?.();
         b.dispose?.();
@@ -1026,9 +1145,11 @@ export async function LerpTexturesAsync(
         throw error;
     }
 
-    a.dispose?.();
-    b.dispose?.();
-    t.dispose?.();
+    if (!dynamic) {
+        a.dispose?.();
+        b.dispose?.();
+        t.dispose?.();
+    }
 
     _CopyTextureMetadata(allTextures[0], pt, canPropagate);
     const result: ITextureProcessOperand = { texture: pt, dispose: () => pt.dispose() };
@@ -1036,6 +1157,58 @@ export async function LerpTexturesAsync(
         result.colorSpace = outputColorSpace;
     }
     return result;
+}
+
+/**
+ * Scales tangent-space normal X/Y, normalizes, and re-encodes before writing a bounded texture.
+ * @param name - Name of the processed texture
+ * @param input - Encoded normal operand
+ * @param scale - Strength operand, read from its red channel
+ * @param scene - Scene owning the processed texture
+ * @returns The normalized encoded normal, retaining dynamic inputs until disposal
+ * @internal
+ */
+export async function _ScaleNormalTextureAsync(name: string, input: ITextureProcessOperand, scale: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
+    if (!input.texture && !scale.texture) {
+        return _FoldConstants([input, scale], (result) => {
+            const normal = _EvalConstant(input);
+            const strength = _EvalConstant(scale).r;
+            const x = (normal.r * 2 - 1) * strength;
+            const y = (normal.g * 2 - 1) * strength;
+            const z = normal.b * 2 - 1;
+            const length = Math.max(Math.hypot(x, y, z), 1e-8);
+            result.set((x / length) * 0.5 + 0.5, (y / length) * 0.5 + 0.5, (z / length) * 0.5 + 0.5, normal.a);
+        });
+    }
+    const operands = [input, scale];
+    const textures = operands.flatMap((operand) => (operand.texture ? [operand.texture] : []));
+    const dynamic = _HasDynamicInputs(textures) || !!(input.onChangedObservable || scale.onChangedObservable);
+    const canPropagate = !_HasDynamicTransforms(textures) && _AllTransformsMatch(textures);
+    const bakeTransform = !canPropagate;
+    const pt = _CreateProcessorTexture(
+        name,
+        ["OP_NORMAL_SCALE", ..._BuildOperandDefines(input, "A", bakeTransform, dynamic), ..._BuildOperandDefines(scale, "B", bakeTransform, dynamic)],
+        _ResolveOutputSize(operands),
+        scene
+    );
+    const updateUniforms = () => {
+        _SetOperandUniforms(pt, input, "textureA", "factorA", bakeTransform, dynamic);
+        _SetOperandUniforms(pt, scale, "textureB", "factorB", bakeTransform, dynamic);
+    };
+    updateUniforms();
+    try {
+        await _RenderAsync(pt, updateUniforms, dynamic ? () => _TrackDynamicInputs(pt, operands, updateUniforms) : undefined);
+    } catch (error) {
+        input.dispose?.();
+        scale.dispose?.();
+        throw error;
+    }
+    if (!dynamic) {
+        input.dispose?.();
+        scale.dispose?.();
+    }
+    _CopyTextureMetadata(textures[0], pt, canPropagate);
+    return { texture: pt, dispose: () => pt.dispose() };
 }
 
 /**

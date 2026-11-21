@@ -14,8 +14,16 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { readFileSync } from "node:fs";
 import { Color4 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
+import { Observable } from "core/Misc/observable";
+import { Matrix } from "core/Maths/math.vector";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Scene } from "core/scene";
+import { Texture } from "core/Materials/Textures/texture";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { Animation } from "core/Animations/animation";
 import { Logger } from "core/Misc/logger";
 import {
     MultiplyTexturesAsync,
@@ -33,6 +41,8 @@ import {
     ChannelMask,
     TextureChannel,
     TextureColorSpace,
+    _MarkTextureAsDynamic,
+    _ScaleNormalTextureAsync,
     TransmissionFractionAsync,
     TransmissionScatterToSingleScatterAlbedoAsync,
     type ITextureProcessOperand,
@@ -64,6 +74,7 @@ function linearToSrgb(v: number): number {
 // inside the factory must also be hoisted with vi.hoisted().
 
 const _capturedPTs = vi.hoisted(() => [] as InstanceType<ReturnType<typeof _makeFakePTClass>>[]); // filled by constructor
+const _delayedReadiness = vi.hoisted(() => ({ enabled: false, callbacks: [] as (() => void)[] }));
 
 // Factory separated so TypeScript can infer the instance type for assertions.
 function _makeFakePTClass() {
@@ -91,10 +102,14 @@ function _makeFakePTClass() {
 
         disposed: boolean = false;
         options: unknown;
+        animations: Animation[] = [];
+        onDisposeObservable = new Observable<FakeProceduralTexture>();
+        private _scene: ReturnType<typeof makeFakeScene>;
 
-        constructor(name: string, _size: unknown, _shader: string, _scene: unknown, options: unknown) {
+        constructor(name: string, _size: unknown, _shader: string, scene: ReturnType<typeof makeFakeScene>, options: unknown) {
             this.name = name;
             this.options = options;
+            this._scene = scene;
             _capturedPTs.push(this);
         }
 
@@ -102,33 +117,35 @@ function _makeFakePTClass() {
             return true;
         }
         executeWhenReady(func: (texture: unknown) => void) {
-            // isReady() always returns true in this mock, so the callback fires immediately.
-            func(this);
+            if (_delayedReadiness.enabled) {
+                _delayedReadiness.callbacks.push(() => func(this));
+            } else {
+                func(this);
+            }
         }
         getEffect() {
             return fakeEffect;
         }
-        /**
-         * Return a minimal scene stub so the proceduralTextures splice in _CreateProcessorTexture
-         * runs without error. The texture is not actually added to the list by the mock constructor,
-         * so indexOf returns -1 and the splice is a no-op.
-         * @returns Minimal scene-like object
-         */
         getScene() {
-            return { proceduralTextures: [] };
+            return this._scene;
         }
-        render() {}
+        render = vi.fn();
         dispose() {
             this.disposed = true;
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
 
         // Required when this PT is later passed as an operand to another operation.
         getSize() {
             return { width: 4, height: 4 };
         }
+        getInternalTexture() {
+            return null;
+        }
         getTextureMatrix() {
             // Identity — no UV transform on a freshly-created output texture.
-            return { isIdentity: () => true, equals: (other: any) => other === this.getTextureMatrix() };
+            return Matrix.Identity();
         }
 
         setTexture(_name: string, _tex: unknown) {}
@@ -171,6 +188,7 @@ vi.mock("core/Materials/Textures/Procedurals/proceduralTexture.pure", () => ({
 function makeFakeScene(caps: Record<string, unknown> = {}) {
     return {
         getEngine: () => ({ isWebGPU: false, getCaps: () => caps }),
+        onBeforeRenderObservable: new Observable<Scene>(),
     } as any;
 }
 
@@ -213,7 +231,9 @@ function makeFakeTexture(opts: FakeTextureOpts = {}): ITextureProcessOperand["te
     };
 
     return {
+        animations: [],
         getSize: () => ({ width: 4, height: 4 }),
+        getInternalTexture: () => null,
         getTextureMatrix: () => mat,
         // Properties read by _CopyTextureMetadata
         coordinatesIndex: 0,
@@ -228,6 +248,276 @@ function makeFakeTexture(opts: FakeTextureOpts = {}): ITextureProcessOperand["te
 }
 
 // ── Test suite ────────────────────────────────────────────────────────────────
+
+describe("dynamic texture processing", () => {
+    beforeEach(() => {
+        _capturedPTs.length = 0;
+        _delayedReadiness.enabled = false;
+        _delayedReadiness.callbacks.length = 0;
+    });
+
+    it.each(["multiply", "lerp", "normal"])("refreshes live %s inputs after delayed compilation and tracks the initial draw", async (operation) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        _MarkTextureAsDynamic(texture);
+        texture.uOffset = 0.1;
+        _delayedReadiness.enabled = true;
+        try {
+            const factor = CreateFactorOperand(new Color4(1, 1, 1, 1));
+            const resultPromise =
+                operation === "multiply"
+                    ? MultiplyTexturesAsync("delayed", { texture }, factor, scene)
+                    : operation === "lerp"
+                      ? LerpTexturesAsync("delayed", factor, { texture }, factor, scene)
+                      : _ScaleNormalTextureAsync("delayed", { texture }, factor, scene);
+            const pt = _capturedPTs[0];
+            const snapshots: number[][] = [];
+            vi.spyOn(pt, "setMatrix").mockImplementation((_name, value) => snapshots.push(Array.from((value as Matrix).asArray())));
+            texture.uOffset = 0.4;
+            const initialMatrix = Array.from(texture.getTextureMatrix().asArray());
+            expect(_delayedReadiness.callbacks).toHaveLength(1);
+            _delayedReadiness.callbacks[0]();
+            texture.uOffset = 0.6;
+            const result = await resultPromise;
+            expect(snapshots.at(-1)).toEqual(initialMatrix);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(snapshots.at(-1)).toEqual(Array.from(texture.getTextureMatrix().asArray()));
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            result.dispose!();
+        } finally {
+            vi.restoreAllMocks();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("does not redraw downstream textures when a live folded result is unchanged", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        const changes = new Observable<void>();
+        const weight = { texture: null, factor: new Color4(0.5, 0.5, 0.5, 1), onChangedObservable: changes };
+        try {
+            const white = CreateFactorOperand(new Color4(1, 1, 1, 1));
+            const folded = await LerpTexturesAsync("white", white, white, weight, scene);
+            const changed = vi.fn();
+            folded.onChangedObservable!.add(changed);
+            const output = await MultiplyTexturesAsync("downstream", { texture }, folded, scene);
+            weight.factor.set(0.8, 0.8, 0.8, 1);
+            changes.notifyObservers();
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(changed).not.toHaveBeenCalled();
+            expect(_capturedPTs[0].render).toHaveBeenCalledTimes(1);
+            output.dispose!();
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("does not decode hardware-linearized color operands a second time", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        const internal = new InternalTexture(engine, InternalTextureSource.Raw);
+        internal._useSRGBBuffer = true;
+        vi.spyOn(texture, "getInternalTexture").mockReturnValue(internal);
+        try {
+            const operand = { texture, colorSpace: TextureColorSpace.SRGB };
+            const output = await LerpTexturesAsync("linearized", operand, operand, operand, scene);
+            expect(_capturedPTs[0].getDefines().some((define) => define.endsWith("_SRGB"))).toBe(false);
+            output.dispose!();
+        } finally {
+            vi.restoreAllMocks();
+            scene.dispose();
+            internal.dispose();
+            engine.dispose();
+        }
+    });
+
+    it.each(["multiply", "lerp", "normal"])("preserves static UV transforms through live %s factors and downstream passes", async (operation) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        texture.uScale = 0.5;
+        texture.vOffset = 0.25;
+        const changes = new Observable<void>();
+        const factor = { texture: null, factor: new Color4(0.5, 0.5, 0.5, 1), onChangedObservable: changes };
+        try {
+            const input = { texture };
+            const first =
+                operation === "multiply"
+                    ? await MultiplyTexturesAsync("first", input, factor, scene)
+                    : operation === "lerp"
+                      ? await LerpTexturesAsync("first", CreateFactorOperand(new Color4(1, 1, 1, 1)), input, factor, scene)
+                      : await _ScaleNormalTextureAsync("first", input, factor, scene);
+            const output = await MultiplyTexturesAsync("second", first, CreateFactorOperand(new Color4(1, 1, 1, 1)), scene);
+            for (const pt of _capturedPTs) {
+                expect(pt.uScale).toBe(0.5);
+                expect(pt.vOffset).toBe(0.25);
+                expect(pt.getDefines().some((define) => define.endsWith("_MATRIX"))).toBe(false);
+            }
+            factor.factor.r = 0.25;
+            changes.notifyObservers();
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(_capturedPTs.every((pt) => pt.render.mock.calls.length === 2)).toBe(true);
+            expect(output.texture!.wrapU).toBe(texture.wrapU);
+            output.dispose!();
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it.each([0, 0.5, 2, 4])("normalizes encoded normals before output at strength %s", async (strength) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const onChangedObservable = new Observable<void>();
+        const scale = { texture: null, factor: new Color4(strength, strength, 1, 1), onChangedObservable };
+        try {
+            const result = await _ScaleNormalTextureAsync("normal", CreateFactorOperand(new Color4(0.8, 0.5, 0.9, 1)), scale, scene);
+            const normal = [0.6 * strength, 0, 0.8];
+            const length = Math.hypot(...normal);
+            expect(result.factor!.r).toBeCloseTo(0.5 + (normal[0] / length) * 0.5);
+            expect(result.factor!.g).toBe(0.5);
+            expect(result.factor!.b).toBeCloseTo(0.5 + (normal[2] / length) * 0.5);
+            scale.factor.r = 0;
+            onChangedObservable.notifyObservers();
+            expect(result.factor!.asArray()).toEqual([0.5, 0.5, 1, 1]);
+            result.dispose!();
+            await vi.waitFor(() => expect(onChangedObservable.hasObservers()).toBe(false));
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("scales dynamic normal textures without clipping intermediates and releases the strength binding", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        const changes = new Observable<void>();
+        const scale = { texture: null, factor: new Color4(2, 2, 1, 1), onChangedObservable: changes, dispose: vi.fn() };
+        try {
+            const result = await _ScaleNormalTextureAsync("normal", { texture }, scale, scene);
+            const pt = _capturedPTs[0];
+            expect(pt.getDefines()).toContain("OP_NORMAL_SCALE");
+            expect(pt.render).toHaveBeenCalledTimes(1);
+            scale.factor.r = 4;
+            changes.notifyObservers();
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            result.dispose!();
+            expect(scale.dispose).toHaveBeenCalledOnce();
+            await vi.waitFor(() => expect(changes.hasObservers()).toBe(false));
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("propagates factor changes through constant and textured results and releases subscriptions", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const texture = new Texture(null, scene);
+        const onChangedObservable = new Observable<void>();
+        const weight = CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 0.5));
+        weight.onChangedObservable = onChangedObservable;
+        try {
+            const folded = await LerpTexturesAsync("constant", CreateFactorOperand(new Color4(0, 0, 0, 0)), CreateFactorOperand(new Color4(1, 1, 1, 1)), weight, scene);
+            const output = await MultiplyTexturesAsync("textured", { texture }, folded, scene);
+            const pt = _capturedPTs.find((candidate) => candidate.name === "textured")!;
+            expect(folded.factor!.r).toBe(0.5);
+            weight.factor!.set(0.25, 0.25, 0.25, 0.25);
+            onChangedObservable.notifyObservers();
+            expect(folded.factor!.r).toBe(0.25);
+            expect(pt.render).toHaveBeenCalledTimes(1);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(pt.render).toHaveBeenCalledTimes(2);
+            output.dispose!();
+            await vi.waitFor(() => expect(onChangedObservable.hasObservers()).toBe(false));
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it.each(["animation", "runtime"])("updates %s inputs only when changed and retains intermediates until output disposal", async (mode) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const source = new Texture(null, scene);
+        const other = new Texture(null, scene);
+        if (mode === "animation") {
+            source.animations.push(new Animation("offset", "uOffset", 60, Animation.ANIMATIONTYPE_FLOAT));
+        } else {
+            _MarkTextureAsDynamic(source);
+        }
+        other.uOffset = 0.2;
+        const observerCount = scene.onBeforeRenderObservable.observers.length;
+        try {
+            const first = await LerpTexturesAsync("animated lerp", { texture: other }, { texture: source }, CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 0.5)), scene);
+            const disposeInput = vi.fn(first.dispose!);
+            const last = await MultiplyTexturesAsync("animated multiply", { ...first, dispose: disposeInput }, CreateFactorOperand(new Color4(0.5, 0.5, 0.5, 1)), scene);
+            const firstPT = _capturedPTs.find((texture) => texture.name === "animated lerp")!;
+            const lastPT = _capturedPTs.find((texture) => texture.name === "animated multiply")!;
+            expect(firstPT.getDefines()).toContain("OPERAND_A_MATRIX");
+            expect(firstPT.getDefines()).toContain("OPERAND_B_MATRIX");
+            expect(firstPT.uOffset).toBe(0);
+            expect(firstPT.disposed).toBe(false);
+            expect(disposeInput).not.toHaveBeenCalled();
+
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(firstPT.render).toHaveBeenCalledTimes(1);
+            expect(lastPT.render).toHaveBeenCalledTimes(1);
+            source.uOffset = 0.4;
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(firstPT.render).toHaveBeenCalledTimes(2);
+            expect(lastPT.render).toHaveBeenCalledTimes(2);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(lastPT.render).toHaveBeenCalledTimes(2);
+            other.uScale = 0.7;
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(firstPT.render).toHaveBeenCalledTimes(3);
+            expect(lastPT.render).toHaveBeenCalledTimes(3);
+
+            last.texture!.dispose();
+            expect(disposeInput).toHaveBeenCalledTimes(1);
+            expect(firstPT.disposed).toBe(true);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+            expect(lastPT.render).toHaveBeenCalledTimes(3);
+            await vi.waitFor(() => expect(scene.onBeforeRenderObservable.observers.length).toBe(observerCount));
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it.each(["Shaders", "ShadersWGSL"])("applies Babylon texture offsets to every %s operand", (directory) => {
+        const shader = readFileSync(new URL(`../../../../src/${directory}/textureProcessor.fragment.fx`, import.meta.url), "utf8");
+        const coordinates = [...shader.matchAll(/texture[ABT]Matrix\s*\*\s*vec4f?\(uv,\s*([\d.]+),\s*([\d.]+)\)/g)];
+        expect(coordinates).toHaveLength(3);
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        try {
+            const texture = new Texture(null, scene);
+            texture.uOffset = 0.25;
+            texture.vOffset = 0.5;
+            const matrix = texture.getTextureMatrix().m;
+            for (const [, z, w] of coordinates) {
+                expect(matrix[0] * 0.2 + matrix[4] * 0.3 + matrix[8] * Number(z) + matrix[12] * Number(w)).toBeCloseTo(0.45);
+                expect(matrix[1] * 0.2 + matrix[5] * 0.3 + matrix[9] * Number(z) + matrix[13] * Number(w)).toBeCloseTo(0.8);
+            }
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+});
 
 describe("TextureProcessor", () => {
     let scene: any;

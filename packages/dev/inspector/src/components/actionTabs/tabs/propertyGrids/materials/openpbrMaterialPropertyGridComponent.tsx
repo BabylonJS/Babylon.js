@@ -118,6 +118,14 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
                 <TextureLinkLineComponent
+                    label="Specular Retroreflectivity"
+                    texture={material.specularRetroreflectivityTexture}
+                    propertyName="specularRetroreflectivityTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
                     label="Geometry Normal"
                     texture={material.geometryNormalTexture}
                     propertyName="geometryNormalTexture"
@@ -481,6 +489,24 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         maximum={3}
                         step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Retroreflectivity"
+                        target={material}
+                        propertyName="specularRetroreflectivity"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Retroreflectivity Texture"
+                        texture={material.specularRetroreflectivityTexture}
+                        propertyName="specularRetroreflectivityTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
                     />
                 </LineContainerComponent>
                 <LineContainerComponent title="COAT" selection={this.props.globalState}>

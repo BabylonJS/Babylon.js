@@ -1823,9 +1823,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         Material._ParsePlugins(serializationObject, targetMaterial, this._scene, rootUrl);
 
         // Copy the properties of the current plugins to the cloned material's plugins
-        if (this.pluginManager) {
+        if (this.pluginManager && targetMaterial.pluginManager) {
             for (const plugin of this.pluginManager._plugins) {
-                const targetPlugin = targetMaterial.pluginManager!.getPlugin(plugin.name);
+                const targetPlugin = targetMaterial.pluginManager.getPlugin(plugin.name);
                 if (targetPlugin) {
                     plugin.copyTo(targetPlugin);
                 }

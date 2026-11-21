@@ -67,7 +67,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const transmissionWeight = extension.transmissionFactor !== undefined ? extension.transmissionFactor : 0.0;
 
-        if (transmissionWeight === 0 || !adapter) {
+        if (!adapter || (transmissionWeight === 0 && babylonMaterial.getClassName() !== "OpenPBRMaterial")) {
             return Promise.resolve();
         }
 
@@ -75,7 +75,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         adapter.configureTransmission();
         adapter.transmissionWeight = transmissionWeight;
 
-        if (transmissionWeight > 0) {
+        if (transmissionWeight > 0 || babylonMaterial.getClassName() === "OpenPBRMaterial") {
             ensureTransmissionHelper(this._loader, babylonMaterial);
         }
 
