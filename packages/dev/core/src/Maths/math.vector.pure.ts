@@ -2261,6 +2261,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * Slerp between two vectors. See also `SmoothToRef`
      * Slerp is a spherical linear interpolation
      * giving a slow in and out effect
+     * Exactly opposite vectors have no unique rotation plane, so they rotate around an arbitrary axis perpendicular to `vector0`
      * Example Playground 1 https://playground.babylonjs.com/#R1F8YU#108
      * Example Playground 2 https://playground.babylonjs.com/#R1F8YU#109
      * @param vector0 Start vector
@@ -2287,7 +2288,31 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
         let scale0;
         let scale1;
 
-        if (dot < 1 - Epsilon) {
+        if (dot <= -1 + Epsilon) {
+            // Nearly opposite directions: acos(dot) rounds to PI there and sin(omega) to almost 0, so dividing by it
+            // blows the result up, or cancels it to zero when they are exactly opposite. Rotate vector0Dir toward
+            // vector1Dir by slerp * omega instead, around any perpendicular axis when there is no single one.
+            if (slerp >= 1) {
+                result.copyFrom(vector1);
+                return result;
+            }
+            const axis = MathTmp.Vector3[2];
+            Vector3.CrossToRef(vector0Dir, vector1Dir, axis);
+            const sinOmega = axis.length();
+            const omega = Math.atan2(sinOmega, dot);
+            if (sinOmega > 0) {
+                axis.scaleInPlace(1 / sinOmega);
+            } else {
+                Vector3.CrossToRef(vector0Dir, Math.abs(vector0Dir.x) < 0.9 ? Vector3.RightReadOnly : Vector3.UpReadOnly, axis);
+                axis.normalize();
+            }
+            // The unit direction perpendicular to vector0Dir, on the side of vector1Dir.
+            // Normalize to guard against magnitude drift from cross products of near-antipodal vectors.
+            Vector3.CrossToRef(axis, vector0Dir, vector1Dir);
+            vector1Dir.normalize();
+            scale0 = Math.cos(slerp * omega);
+            scale1 = Math.sin(slerp * omega);
+        } else if (dot < 1 - Epsilon) {
             const omega = Math.acos(dot);
             const invSin = 1 / Math.sin(omega);
             scale0 = Math.sin((1 - slerp) * omega) * invSin;
