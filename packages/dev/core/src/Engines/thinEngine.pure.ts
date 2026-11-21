@@ -79,6 +79,15 @@ export interface EngineOptions extends AbstractEngineOptions, WebGLContextAttrib
     disableWebGL2Support?: boolean;
 
     /**
+     * Requests an NDC depth range of [0, 1] using EXT_clip_control (default: false).
+     * Check engine.isNDCHalfZRange to see if the extension was enabled. If it is unavailable, WebGL uses [-1, 1].
+     * This option is fixed at engine creation and can be used independently of useReverseDepthBuffer.
+     * To get the full precision benefit of reversed depth, render to a floating-point depth attachment.
+     * This option does not change the default framebuffer's depth format.
+     */
+    useNDCHalfZRange?: boolean;
+
+    /**
      * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
     useHighPrecisionFloats?: boolean;
@@ -135,6 +144,9 @@ export class ThinEngine extends AbstractEngine {
 
     /** @internal */
     protected override _name = "WebGL";
+
+    /** @inheritdoc */
+    public override readonly isNDCHalfZRange: boolean = false;
 
     /**
      * Gets or sets the name of the engine
@@ -346,7 +358,13 @@ export class ThinEngine extends AbstractEngine {
                 };
 
                 this._onContextRestored = () => {
-                    this._restoreEngineAfterContextLost(() => this._initGLContext());
+                    this._restoreEngineAfterContextLost(() => {
+                        // Existing projections and shaders retain the convention selected at construction.
+                        if (!this.isDisposed && this.isNDCHalfZRange && !this._setClipDepthRange(true)) {
+                            throw new Error("Could not restore the [0, 1] NDC depth range with EXT_clip_control.");
+                        }
+                        this._initGLContext();
+                    });
                 };
 
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
@@ -425,6 +443,9 @@ export class ThinEngine extends AbstractEngine {
 
         this.resize();
 
+        if (options.useNDCHalfZRange) {
+            this.isNDCHalfZRange = this._setClipDepthRange(true);
+        }
         this._initGLContext();
         this._initFeatures();
 
@@ -484,6 +505,16 @@ export class ThinEngine extends AbstractEngine {
         }
 
         return true;
+    }
+
+    private _setClipDepthRange(halfZRange: boolean): boolean {
+        const extension = this._gl.getExtension("EXT_clip_control");
+        if (extension === null) {
+            return false;
+        }
+        const depthMode = halfZRange ? extension.ZERO_TO_ONE_EXT : extension.NEGATIVE_ONE_TO_ONE_EXT;
+        extension.clipControlEXT(extension.LOWER_LEFT_EXT, depthMode);
+        return this._gl.getParameter(extension.CLIP_DEPTH_MODE_EXT) === depthMode;
     }
 
     protected _initGLContext(): void {
@@ -4241,6 +4272,7 @@ export class ThinEngine extends AbstractEngine {
      * Dispose and release all associated resources
      */
     public override dispose(): void {
+        const resetClipDepthRange = this.isNDCHalfZRange && !this.isDisposed;
         // Events
         if (IsWindowObjectExist()) {
             if (this._renderingCanvas) {
@@ -4268,6 +4300,9 @@ export class ThinEngine extends AbstractEngine {
         this._currentBufferPointers.length = 0;
         this._currentProgram = null;
 
+        if (resetClipDepthRange && this._gl != null && !this._gl.isContextLost()) {
+            this._setClipDepthRange(false);
+        }
         if ((this._creationOptions as EngineOptions).loseContextOnDispose) {
             this._gl.getExtension("WEBGL_lose_context")?.loseContext();
         }

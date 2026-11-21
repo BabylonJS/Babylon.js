@@ -186,8 +186,8 @@ export interface AbstractEngineOptions {
      * applied during construction, so it is already in effect for the first frame.
      *
      * A reversed depth buffer gives more depth precision to distant objects and reduces z-fighting, especially when the
-     * camera covers a large depth range. It is recommended for WebGPU. With WebGL it brings little or no gain, because the
-     * [-1, 1] clip space depth range loses the extra precision.
+     * camera covers a large depth range. It is recommended for WebGPU and for WebGL with the `useNDCHalfZRange` option
+     * and a floating-point depth attachment. WebGL's default [-1, 1] clip-space depth range provides little or no gain.
      * For the best precision, pair it with a floating-point depth buffer (on WebGPU, creating the engine with `stencil: false`
      * makes the main depth buffer `depth32float` instead of `depth24plus-stencil8`).
      *
