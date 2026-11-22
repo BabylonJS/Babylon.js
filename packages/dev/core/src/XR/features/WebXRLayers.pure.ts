@@ -601,6 +601,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         this._validateLayerCount(this._existingLayers.length + 1);
         const binding = this._xrGPUBinding!;
         const init = CreateDefaultXRGPUProjectionLayerInit(binding.getPreferredColorFormat());
+        init.scaleFactor = this._options.projectionLayerInit?.scaleFactor ?? init.scaleFactor;
         const projLayer = binding.createProjectionLayer(init);
         const layer = new WebXRWebGPUProjectionLayerWrapper(projLayer, false, binding, init.depthStencilFormat);
         this.addXRSessionLayer(layer);

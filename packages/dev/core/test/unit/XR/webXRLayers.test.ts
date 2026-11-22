@@ -297,6 +297,27 @@ describe("WebXRLayers", () => {
         });
     });
 
+    describe("WebGPU projection layer initialization", () => {
+        it.each([undefined, 0.75, 1.5])("uses the requested scale (%s) without passing WebGL formats to XRGPUBinding", (scaleFactor) => {
+            const createProjectionLayer = vi.fn(() => ({ textureWidth: 1024, textureHeight: 512 }));
+            testGlobals.XRGPUBinding = vi.fn().mockImplementation(function () {
+                return { createProjectionLayer, getPreferredColorFormat: () => "rgba8unorm" };
+            }) as unknown as LayerBindingConstructor;
+            (engine as any)._isWebGPU = true;
+            (engine as any)._device = {};
+            initializeSession();
+            const feature = new WebXRLayers(sessionManager, { projectionLayerInit: { scaleFactor, colorFormat: 0x1908 } });
+
+            expect(feature.attach()).toBe(true);
+            expect(createProjectionLayer).toHaveBeenCalledExactlyOnceWith({
+                colorFormat: "rgba8unorm",
+                depthStencilFormat: "depth24plus-stencil8",
+                textureUsage: 0x10,
+                scaleFactor: scaleFactor ?? 1,
+            });
+        });
+    });
+
     describe("projection fixed foveation", () => {
         it("exposes XRProjectionLayer fixed foveation through the session manager convenience API", () => {
             const projectionLayer = { fixedFoveation: 0, textureHeight: 512, textureWidth: 1024 };
