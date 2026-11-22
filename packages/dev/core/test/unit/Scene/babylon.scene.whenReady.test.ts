@@ -1,4 +1,5 @@
 import { NullEngine } from "core/Engines/nullEngine";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { PrecisionDate } from "core/Misc/precisionDate";
 import { Scene } from "core/scene";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -80,6 +81,8 @@ describe("Scene readiness polling", () => {
 
         expect(checksInSecondSecond).toBeLessThan(checksInFirstSecond);
         expect(checksInThirdSecond).toBeLessThanOrEqual(checksInSecondSecond);
+        // generous absolute bound: a backed-off interval of 32 ms would traverse a large scene about three times as often as intended
+        expect(checksInThirdSecond).toBeLessThanOrEqual(15);
     });
 
     it("keeps checking a scene that becomes ready late", async () => {
@@ -142,6 +145,66 @@ describe("Scene readiness polling", () => {
 
         expect(onReady).toHaveBeenCalledTimes(1);
         expect(onTimeout).not.toHaveBeenCalled();
+    });
+
+    it("treats a scene that is still unready at the deadline as timed out, even if it gets ready right after", () => {
+        scene.onReadyTimeoutDuration = 105;
+        readyAfter(106);
+        const onTimeout = vi.fn();
+        scene.onReadyTimeoutObservable.add(onTimeout);
+        const onReady = vi.fn();
+
+        scene.executeWhenReady(onReady);
+        vi.advanceTimersByTime(300);
+
+        expect(onTimeout).toHaveBeenCalledTimes(1);
+        expect(onReady).not.toHaveBeenCalled();
+    });
+
+    it("does not keep pushing the next check back while short loads keep finishing", () => {
+        const loading = {};
+        scene.addPendingData(loading);
+        let ready = false;
+        scene.addIsReadyCheck({ isReady: () => ready });
+        const onReady = vi.fn();
+        scene.executeWhenReady(onReady);
+        vi.advanceTimersByTime(2000);
+        scene.removePendingData(loading);
+
+        // the scene becomes ready while loads finish every 10 ms, which is more often than the 16 ms fast interval
+        ready = true;
+        for (let i = 0; i < 4; i++) {
+            vi.advanceTimersByTime(10);
+            const shortLoad = {};
+            scene.addPendingData(shortLoad);
+            scene.removePendingData(shortLoad);
+        }
+
+        expect(onReady).toHaveBeenCalledTimes(1);
+    });
+
+    it("applies render target checks of a later wait to the wait that is already running", () => {
+        // the default loading screen wait does not check render targets, a later strict wait joins it
+        let renderTargetReady = false;
+        scene.customRenderTargets.push({ isReadyForRendering: () => renderTargetReady } as unknown as RenderTargetTexture);
+        // still busy at the first check, so that the default wait is pending when the strict one joins
+        readyAfter(50);
+        const defaultWait = vi.fn();
+        const strictWait = vi.fn();
+
+        scene.executeWhenReady(defaultWait);
+        scene.executeWhenReady(strictWait, true);
+        vi.advanceTimersByTime(200);
+
+        expect(defaultWait).not.toHaveBeenCalled();
+        expect(strictWait).not.toHaveBeenCalled();
+
+        renderTargetReady = true;
+        vi.advanceTimersByTime(20);
+
+        expect(defaultWait).toHaveBeenCalledTimes(1);
+        expect(strictWait).toHaveBeenCalledTimes(1);
+        scene.customRenderTargets.length = 0;
     });
 
     it("runs no check and no callback after the scene is disposed", () => {

@@ -2857,6 +2857,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onReadyObservable.addOnce(func);
 
         if (this._executeWhenReadyTimeoutId !== null) {
+            // The wait that is already running serves every waiter: it has to meet the strictest of them
+            this._readyChecksRenderTargets ||= checkRenderTargets;
             return;
         }
 
@@ -2888,6 +2890,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _timeoutChecksStartTime: number = 0;
     private _fastReadyChecksStartTime: number = 0;
+    private _readyCheckDueTime: number = 0;
     private _readyChecksRenderTargets = false;
 
     private _clearReadynessChecksData() {
@@ -2929,7 +2932,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         // Check for timeout
         const elapsed = PrecisionDate.Now - this._timeoutChecksStartTime;
-        if (this.onReadyTimeoutDuration > 0 && elapsed > this.onReadyTimeoutDuration) {
+        if (this.onReadyTimeoutDuration > 0 && elapsed >= this.onReadyTimeoutDuration) {
             this.onReadyTimeoutObservable.notifyObservers(this);
             this._clearReadynessChecksData();
             return;
@@ -2938,7 +2941,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._scheduleReadyCheck(elapsed);
     }
 
-    private _scheduleReadyCheck(elapsed: number) {
+    private _scheduleReadyCheck(elapsed: number, keepEarlierCheck = false) {
         // Materials and effects are usually ready within a few checks: retry every 16 ms at first, then every 100 ms to limit the cost of isReady() on large scenes
         let retryDelay = PrecisionDate.Now - this._fastReadyChecksStartTime < 1000 ? 16 : 100;
         if (this.onReadyTimeoutDuration > 0) {
@@ -2946,10 +2949,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             retryDelay = Math.max(1, Math.min(retryDelay, this.onReadyTimeoutDuration - elapsed));
         }
 
-        // Only one retry may be pending: a restart can run while the check that is delivering a timer is still going
+        const dueTime = PrecisionDate.Now + retryDelay;
         if (this._executeWhenReadyTimeoutId !== null) {
+            if (keepEarlierCheck && this._readyCheckDueTime <= dueTime) {
+                return;
+            }
+            // Only one retry may be pending: a restart can run while the check that is delivering a timer is still going
             clearTimeout(this._executeWhenReadyTimeoutId);
         }
+        this._readyCheckDueTime = dueTime;
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             // Ensure materials effects are checked outside render loops
             this.incrementRenderId();
@@ -2964,7 +2972,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this._fastReadyChecksStartTime = PrecisionDate.Now;
-        this._scheduleReadyCheck(this._fastReadyChecksStartTime - this._timeoutChecksStartTime);
+        // A check that is already due sooner stays where it is: moving it back at every load would starve the wait while short loads keep finishing
+        this._scheduleReadyCheck(this._fastReadyChecksStartTime - this._timeoutChecksStartTime, true);
     }
 
     /**
