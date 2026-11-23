@@ -6151,6 +6151,16 @@
             "excludeFromPerformance": true,
             "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
             "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;"
+        },
+        {
+            "title": "WebGPU depth - right-handed fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, engine.webGLVersion !== 2 || engine.isNDCHalfZRange !== requestedHalfRange, !engine.isWebGPU || !engine.isNDCHalfZRange"
         }
     ]
 }

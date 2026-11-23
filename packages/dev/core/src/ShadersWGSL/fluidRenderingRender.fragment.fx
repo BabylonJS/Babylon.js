@@ -99,8 +99,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #else
     var thickness: f32 = uniforms.thickness;
     var bgDepth: f32 = textureSample(bgDepthSampler, bgDepthSamplerSampler, texCoord).x;
-    var depthNonLinear: f32 = computeNdcDepth(depth);
-    depthNonLinear = depthNonLinear * 0.5 + 0.5;
+    let depthNonLinear = computeNdcDepth(depth);
 #endif
 
     var backColor: vec4f = textureSample(textureSampler, textureSamplerSampler, texCoord);
