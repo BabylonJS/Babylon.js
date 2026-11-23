@@ -741,7 +741,7 @@ export class FluidRenderingTargetRenderer {
             }
         }
 
-        this._renderPostProcess = new PostProcess(
+        const renderPostProcess = new PostProcess(
             "FluidRendering",
             "fluidRenderingRender",
             uniformNames,
@@ -767,17 +767,34 @@ export class FluidRenderingTargetRenderer {
                 }
             }
         );
-        this._renderPostProcess.updateEffect(defines.join("\n"));
+        this._renderPostProcess = renderPostProcess;
+        const postProcessDefines = defines.join("\n");
+        let reverseDepth = engine.useReverseDepthBuffer;
+        renderPostProcess.updateEffect(postProcessDefines);
 
-        this._renderPostProcess.samples = this._samples;
+        if (this._useFixedThickness) {
+            renderPostProcess.onActivateObservable.add(() => {
+                const currentReverseDepth = engine.useReverseDepthBuffer;
+                if (currentReverseDepth === reverseDepth) {
+                    return;
+                }
+
+                const previousEffect = renderPostProcess.getEffect();
+                renderPostProcess.updateEffect(postProcessDefines);
+                reverseDepth = currentReverseDepth;
+                previousEffect.dispose();
+            });
+        }
+
+        renderPostProcess.samples = this._samples;
         const engineWebGPU = engine as WebGPUEngine;
         const setTextureSampler = engineWebGPU.setTextureSampler;
-        this._renderPostProcess.onApplyObservable.add((effect) => {
+        renderPostProcess.onApplyObservable.add((effect) => {
             this._invProjectionMatrix.copyFrom(this._scene.getProjectionMatrix());
             this._invProjectionMatrix.invert();
 
             if (setTextureSampler) {
-                setTextureSampler.call(engineWebGPU, "textureSamplerSampler", this._renderPostProcess!.inputTexture.texture);
+                setTextureSampler.call(engineWebGPU, "textureSamplerSampler", renderPostProcess.inputTexture.texture);
             }
 
             if (!this._depthRenderTarget!.enableBlur) {
