@@ -80,7 +80,8 @@ export interface EngineOptions extends AbstractEngineOptions, WebGLContextAttrib
     /**
      * Requests an NDC depth range of [0, 1] using EXT_clip_control (default: false).
      * Applies to engines created from a canvas. With `doNotHandleContextLost` enabled, resume rendering after context loss
-     * by creating a new engine on a new or restored canvas.
+     * by creating a new engine on a new or restored canvas. When reusing a restored canvas, dispose the old engine
+     * before creating its replacement, since disposal can reset the context's clip depth range.
      * Check engine.isNDCHalfZRange to see if the extension was enabled. If it is unavailable, WebGL uses [-1, 1].
      * This option is fixed at engine creation and can be used independently of useReverseDepthBuffer.
      * To get the full precision benefit of reversed depth, render to a floating-point depth attachment.
