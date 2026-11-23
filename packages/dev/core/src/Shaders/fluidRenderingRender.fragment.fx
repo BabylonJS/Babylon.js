@@ -44,16 +44,16 @@ uniform float specularPower;
 
 varying vec2 vUV;
 
-vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
-    vec4 ndc;
-    
-    ndc.xy = texCoord * 2.0 - 1.0;
+float computeNdcDepth(float depth) {
 #ifdef FLUIDRENDERING_RHS
-    ndc.z = -projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    return -projectionMatrix[2].z + projectionMatrix[3].z / depth;
 #else
-    ndc.z = projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    return projectionMatrix[2].z + projectionMatrix[3].z / depth;
 #endif
-    ndc.w = 1.0;
+}
+
+vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
+    vec4 ndc = vec4(texCoord * 2.0 - 1.0, computeNdcDepth(depth), 1.0);
 
     vec4 eyePos = invProjectionMatrix * ndc;
     eyePos.xyz /= eyePos.w;
@@ -91,7 +91,7 @@ void main(void) {
     float thickness = texture2D(thicknessSampler, texCoord).x;
 #else
     float bgDepth = texture2D(bgDepthSampler, texCoord).x;
-    float depthNonLinear = projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    float depthNonLinear = computeNdcDepth(depth);
     #ifndef IS_NDC_HALF_ZRANGE
         depthNonLinear = depthNonLinear * 0.5 + 0.5;
     #endif
