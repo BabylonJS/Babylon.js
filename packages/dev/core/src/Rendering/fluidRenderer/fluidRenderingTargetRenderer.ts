@@ -1,4 +1,4 @@
-import { type Camera } from "core/Cameras/camera";
+import { Camera } from "core/Cameras/camera.pure";
 import { Constants } from "core/Engines/constants";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -681,7 +681,8 @@ export class FluidRenderingTargetRenderer {
 
         this.dispose(true);
 
-        if (!this._camera) {
+        const camera = this._camera;
+        if (camera === null) {
             return;
         }
 
@@ -847,7 +848,10 @@ export class FluidRenderingTargetRenderer {
 
             effect.setVector3("dirLight", this.dirLight);
 
-            effect.setFloat("cameraFar", this._camera!.maxZ);
+            // Without a perspective far plane, still reject pixels that contain the cleared depth.
+            const { maxZ, mode } = camera;
+            const farDepth = mode === Camera.PERSPECTIVE_CAMERA && maxZ === 0 ? this._depthClearColor.r : maxZ;
+            effect.setFloat("cameraFar", farDepth);
 
             if (this._debug) {
                 let texture: Nullable<ThinTexture> = null;
