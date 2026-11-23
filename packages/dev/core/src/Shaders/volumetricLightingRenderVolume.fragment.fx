@@ -30,7 +30,11 @@ void main(void) {
     float depth = texelFetch(depthTexture, ivec2(gl_FragCoord.xy * textureRatio), 0).r;
     vec4 worldPos = vWorldPos;
 
+#ifdef USE_REVERSE_DEPTHBUFFER
+    if (gl_FragCoord.z < depth) {
+#else
     if (gl_FragCoord.z > depth) {
+#endif
 #ifndef IS_NDC_HALF_ZRANGE
         depth = depth * 2.0 - 1.0;
 #endif

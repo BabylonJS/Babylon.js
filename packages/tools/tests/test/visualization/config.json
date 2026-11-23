@@ -6184,6 +6184,17 @@
             "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
             "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, engine.webGLVersion !== 2 || engine.isNDCHalfZRange !== requestedHalfRange, !engine.isWebGPU || !engine.isNDCHalfZRange",
             "useReverseDepthBuffer": "true"
+        },
+        {
+            "title": "WebGL2 half-range depth - volumetric lighting occlusion with reversed Z",
+            "replace": "output.sourceTexture = volume.outputTexture;, output.sourceTexture = volume.outputTexture; output.depthTest = false;",
+            "playgroundId": "#YAZ8XO#0",
+            "referenceImage": "webgl2-half-range-depth-volumetric.png",
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "FrameGraph", "Lights", "Rendering", "Textures"],
+            "useReverseDepthBuffer": "true"
         }
     ]
 }
