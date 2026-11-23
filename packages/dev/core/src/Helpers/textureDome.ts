@@ -276,12 +276,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         // Initial rotation
         if (options.faceForward && scene.activeCamera) {
             const camera = scene.activeCamera;
-
-            // Turn the dome to the camera's yaw. The angle to the view space forward vector is
-            // unsigned and also counts the camera's pitch, so it only matched for a camera
-            // turned right and level.
-            const direction = camera.getDirection(Vector3.Forward());
-
+            const direction = camera.getDirection(Vector3.Forward(scene.useRightHandedSystem));
             this.rotation.y = Math.atan2(direction.x, direction.z);
         }
 

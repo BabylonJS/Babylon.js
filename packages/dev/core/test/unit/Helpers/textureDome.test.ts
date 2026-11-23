@@ -43,7 +43,9 @@ describe("TextureDome", () => {
 
                     const dome = new PhotoDome("dome", "dome.jpg", { resolution: 8, size: 10 }, scene);
 
-                    expect(dome.rotation.y).toBeCloseTo(yaw, 6);
+                    const camFwd = camera.getDirection(Vector3.Forward(scene.useRightHandedSystem)).normalize();
+                    const expectedAngle = Math.atan2(camFwd.x, camFwd.z);
+                    expect(dome.rotation.y).toBeCloseTo(expectedAngle, 6);
                 });
             }
         }
