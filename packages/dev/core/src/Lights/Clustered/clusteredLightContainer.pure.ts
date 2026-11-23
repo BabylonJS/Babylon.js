@@ -126,6 +126,8 @@ export class ClusteredLightContainer extends Light {
     private _lightDataBuffer: Float32Array;
     private _lightDataTexture: RawTexture;
     private _lightDataRenderId = -1;
+    // How many lights at the start of _sortedLights are enabled and written to the light data
+    private _activeLightCount = 0;
 
     private _tileMaskBatches = -1;
     private _tileMaskTexture: RenderTargetTexture;
@@ -308,13 +310,12 @@ export class ClusteredLightContainer extends Light {
     /** @internal */
     public _updateBatches(camera: Nullable<Camera> = null): RenderTargetTexture {
         this._camera = camera;
-        this._proxyMesh.isVisible = this._sortedLights.length > 0;
 
         // Ensure space for atleast 1 batch
         const batches = Math.max(Math.ceil(this._sortedLights.length / this._batchSize), 1);
         if (this._tileMaskBatches >= batches) {
             this._tileMaskTexture.activeCamera = camera;
-            this._proxyMesh.thinInstanceCount = this._sortedLights.length;
+            this._updateProxyInstances();
             return this._tileMaskTexture;
         }
         const engine = this.getEngine();
@@ -401,9 +402,18 @@ export class ClusteredLightContainer extends Light {
         if (this._proxyMesh.thinInstanceSetBuffer) {
             this._proxyMesh.thinInstanceSetBuffer("matrix", new Float32Array(maxLights * 16));
         }
-        this._proxyMesh.thinInstanceCount = this._sortedLights.length;
+        this._updateProxyInstances();
         this._tileMaskBatches = batches;
         return this._tileMaskTexture;
+    }
+
+    // Only the enabled lights get a light proxy, so disabled lights are not added to any tile.
+    // A mesh with 0 thin instances would be drawn once as a regular mesh, so hide it instead.
+    private _updateProxyInstances(): void {
+        this._proxyMesh.isVisible = this._activeLightCount > 0;
+        if (this._activeLightCount > 0) {
+            this._proxyMesh.thinInstanceCount = this._activeLightCount;
+        }
     }
 
     private _getSliceIndex(camera: Camera, depth: number): number {
@@ -422,14 +432,28 @@ export class ClusteredLightContainer extends Light {
         }
         this._lightDataRenderId = renderId;
 
-        // Resort lights based on distance from camera
+        // Resort lights based on distance from camera. Disabled lights go to the end and are
+        // left out of the light data, the tile masks and the slice ranges, so they cost nothing.
         const view = camera.getViewMatrix();
+        let activeLightCount = 0;
         for (const light of this._sortedLights) {
+            if (!light.isEnabled()) {
+                continue;
+            }
+            activeLightCount += 1;
             const position = light.computeTransformedInformation() ? light.transformedPosition : light.position;
             const viewPosition = Vector3.TransformCoordinatesToRef(position, view, TmpVectors.Vector3[0]);
             light._currentViewDepth = this._scene.useRightHandedSystem ? -viewPosition.z : viewPosition.z;
         }
-        this._sortedLights.sort((a, b) => a._currentViewDepth - b._currentViewDepth);
+        this._sortedLights.sort((a, b) => {
+            const aEnabled = a.isEnabled();
+            if (aEnabled !== b.isEnabled()) {
+                return aEnabled ? -1 : 1;
+            }
+            return aEnabled ? a._currentViewDepth - b._currentViewDepth : 0;
+        });
+        this._activeLightCount = activeLightCount;
+        this._updateProxyInstances();
 
         // DOOM 2016 subdivision scheme, copied from: https://www.aortiz.me/2018/12/21/CG.html
         const logFarNear = Math.log(camera.maxZ / camera.minZ);
@@ -443,7 +467,7 @@ export class ClusteredLightContainer extends Light {
         const buf = this._lightDataBuffer;
         const offset = this._scene.floatingOriginOffset;
 
-        for (let i = 0; i < this._sortedLights.length; i += 1) {
+        for (let i = 0; i < activeLightCount; i += 1) {
             const light = this._sortedLights[i];
             const off = i * 20;
             const computed = light.computeTransformedInformation();

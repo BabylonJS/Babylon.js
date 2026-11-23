@@ -53,6 +53,70 @@ describe("ClusteredLightContainer", () => {
         expect(resized.activeCamera).toBe(second);
     });
 
+    describe("disabled lights", () => {
+        const createContainer = (depths: number[]) => {
+            Object.assign(engine.getCaps(), { texelFetch: true, colorBufferFloat: true, blendFloat: true, shaderFloatPrecision: 24 });
+            vi.spyOn(engine, "version", "get").mockReturnValue(2);
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            camera.setTarget(new Vector3(0, 0, 1));
+            const container = new ClusteredLightContainer("cluster", [], scene);
+            const lights = depths.map((z, i) => {
+                const light = new PointLight("light" + i, new Vector3(0, 0, z), scene);
+                light.range = 1;
+                container.addLight(light);
+                return light;
+            });
+            const update = () => {
+                scene.incrementRenderId();
+                container._updateBatches(camera);
+                (container as any)._updateLightData();
+            };
+            const writtenDepths = (count: number) => {
+                const buffer: Float32Array = (container as any)._lightDataBuffer;
+                return Array.from({ length: count }, (_, i) => buffer[i * 20 + 2]);
+            };
+            const highestSliceIndex = () => Math.max(...(container as any)._sliceRanges);
+            return { container, lights, update, writtenDepths, highestSliceIndex };
+        };
+
+        it("leaves disabled lights out of the light data, the proxy instances and the slice ranges", () => {
+            const { container, lights, update, writtenDepths, highestSliceIndex } = createContainer([5, 10, 15]);
+            lights[1].setEnabled(false);
+            update();
+
+            expect((container as any)._sortedLights).toEqual([lights[0], lights[2], lights[1]]);
+            expect(writtenDepths(2)).toEqual([5, 15]);
+            expect((container as any)._proxyMesh.isVisible).toBe(true);
+            expect((container as any)._proxyMesh.thinInstanceCount).toBe(2);
+            expect(highestSliceIndex()).toBe(1);
+
+            lights[1].setEnabled(true);
+            update();
+
+            expect((container as any)._sortedLights).toEqual(lights);
+            expect(writtenDepths(3)).toEqual([5, 10, 15]);
+            expect((container as any)._proxyMesh.thinInstanceCount).toBe(3);
+            expect(highestSliceIndex()).toBe(2);
+        });
+
+        it("hides the light proxy when every light is disabled", () => {
+            const { container, lights, update, highestSliceIndex } = createContainer([5, 10]);
+            for (const light of lights) {
+                light.setEnabled(false);
+            }
+            update();
+
+            expect((container as any)._proxyMesh.isVisible).toBe(false);
+            expect(highestSliceIndex()).toBe(0);
+
+            lights[0].setEnabled(true);
+            update();
+
+            expect((container as any)._proxyMesh.isVisible).toBe(true);
+            expect((container as any)._proxyMesh.thinInstanceCount).toBe(1);
+        });
+    });
+
     describe("serialize", () => {
         it("should serialize an empty container", () => {
             const container = new ClusteredLightContainer("cluster", [], scene);
