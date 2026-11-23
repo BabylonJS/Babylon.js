@@ -282,6 +282,31 @@ describe("Engine", () => {
                 }
             });
 
+            it.each([false, true])("picks distant meshes in reversed Z with a standard engine created last (half range: %s)", (halfZRange) => {
+                const engine = new Engine(CreateMockWebGL2Canvas(true).canvas, false, { useNDCHalfZRange: halfZRange, useReverseDepthBuffer: true });
+                const standardEngine = new Engine(CreateMockWebGL2Canvas().canvas, false);
+
+                try {
+                    const scene = new Scene(engine);
+                    const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                    camera.minZ = 1;
+                    camera.maxZ = 0;
+                    scene.activeCamera = camera;
+
+                    const box = CreateBox("box", { size: 2 }, scene);
+                    box.position.z = 2 ** 30;
+                    box.computeWorldMatrix(true);
+
+                    const x = engine.getRenderWidth() / 2;
+                    const y = engine.getRenderHeight() / 2;
+                    expect(scene.createPickingRayInCameraSpace(x, y).origin.z).toBeCloseTo(camera.minZ);
+                    expect(scene.pick(x, y).pickedMesh).toBe(box);
+                } finally {
+                    standardEngine.dispose();
+                    engine.dispose();
+                }
+            });
+
             it.each([false, true])("projects an infinite reversed-Z frustum into [0, 1] (right-handed: %s)", (rightHanded) => {
                 const { canvas } = CreateMockWebGL2Canvas(true);
                 const engine = new Engine(canvas, false, { useNDCHalfZRange: true, useReverseDepthBuffer: true });

@@ -701,20 +701,24 @@ export class Ray {
         matrix.invert();
 
         const convention = depthConvention ?? EngineStore.LastCreatedEngine;
+        const reverseDepth = convention?.useReverseDepthBuffer;
+        const minNdcZ = convention?.isNDCHalfZRange ? 0 : -1;
         const nearScreenSource = TmpVectors.Vector3[0];
         nearScreenSource.x = (sourceX / viewportWidth) * 2 - 1;
         nearScreenSource.y = -((sourceY / viewportHeight) * 2 - 1);
-        nearScreenSource.z = convention?.useReverseDepthBuffer ? 1 : convention?.isNDCHalfZRange ? 0 : -1;
+        nearScreenSource.z = reverseDepth ? 1 : minNdcZ;
 
-        // far Z need to be close but < to 1 or camera projection matrix with maxZ = 0 will NaN
-        const farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-8);
-        const nearVec3 = TmpVectors.Vector3[2];
-        const farVec3 = TmpVectors.Vector3[3];
-        Vector3.TransformCoordinatesToRef(nearScreenSource, matrix, nearVec3);
-        Vector3.TransformCoordinatesToRef(farScreenSource, matrix, farVec3);
+        // In reversed Z, a sample too close to the near plane can round to the ray origin after unprojection.
+        // Use the midpoint for reversed depth and stay just short of the far plane for standard depth to avoid infinity.
+        const directionZ = reverseDepth ? (1 + minNdcZ) * 0.5 : 1.0 - 1e-8;
+        const directionScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, directionZ);
+        const nearPoint = TmpVectors.Vector3[2];
+        const directionPoint = TmpVectors.Vector3[3];
+        Vector3.TransformCoordinatesToRef(nearScreenSource, matrix, nearPoint);
+        Vector3.TransformCoordinatesToRef(directionScreenSource, matrix, directionPoint);
 
-        this.origin.copyFrom(nearVec3);
-        farVec3.subtractToRef(nearVec3, this.direction);
+        this.origin.copyFrom(nearPoint);
+        directionPoint.subtractToRef(nearPoint, this.direction);
         this.direction.normalize();
     }
 }
