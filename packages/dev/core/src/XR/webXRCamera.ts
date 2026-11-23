@@ -334,14 +334,14 @@ export class WebXRCamera extends FreeCamera {
             // WebXR view space is right-handed (-Z forward), so a [-1, 1] projection maps (0, 0, -near) to NDC z ~= -1,
             // while a [0, 1] projection maps it to ~= 0. Both mappings assume the runtime's standard depth ordering.
             if (this._scene.getEngine().isNDCHalfZRange) {
-                const near = this.minZ;
+                // updateRenderState applies camera minZ changes starting on the next XR frame.
+                const near = this._xrSessionManager.session.renderState.depthNear;
                 let needsHalfZConversion: boolean;
                 if (near > 0) {
                     const ndc = Vector3.TransformCoordinatesFromFloatsToRef(0, 0, -near, currentRig._projectionMatrix, TmpVectors.Vector3[0]);
                     needsHalfZConversion = ndc.z < -0.5;
                 } else {
-                    // depthNear must be > 0 per the WebXR spec; if it is not, the near-plane probe would divide by zero,
-                    // so default to converting (matches the [-1, 1] range current XRGPUBinding implementations return).
+                    // Without a positive near distance, assume the runtime supplied a full-range projection.
                     needsHalfZConversion = true;
                 }
                 if (needsHalfZConversion) {

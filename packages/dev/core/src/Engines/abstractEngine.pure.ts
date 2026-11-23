@@ -191,6 +191,7 @@ export interface AbstractEngineOptions {
      * For the best precision, pair it with a floating-point depth buffer (on WebGPU, creating the engine with `stencil: false`
      * makes the main depth buffer `depth32float` instead of `depth24plus-stencil8`).
      *
+     * For WebXR rendering, keep this disabled so depth testing matches the runtime's projection.
      * Custom shaders that write or read depth values must account for the reversed range (see the `USE_REVERSE_DEPTHBUFFER` define).
      */
     useReverseDepthBuffer?: boolean;
@@ -565,7 +566,7 @@ export abstract class AbstractEngine {
     private _useReverseDepthBuffer = false;
     /**
      * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
-     * This can provide greater z depth for distant objects.
+     * This can provide greater z depth for distant objects. Keep this disabled while rendering WebXR views.
      */
     public get useReverseDepthBuffer(): boolean {
         return this._useReverseDepthBuffer;

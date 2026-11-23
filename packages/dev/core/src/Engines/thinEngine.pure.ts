@@ -84,6 +84,7 @@ export interface EngineOptions extends AbstractEngineOptions, WebGLContextAttrib
      * Check engine.isNDCHalfZRange to see if the extension was enabled. If it is unavailable, WebGL uses [-1, 1].
      * This option is fixed at engine creation and can be used independently of useReverseDepthBuffer.
      * To get the full precision benefit of reversed depth, render to a floating-point depth attachment.
+     * For WebXR rendering, use this option with `useReverseDepthBuffer` disabled.
      * This option does not change the default framebuffer's depth format.
      */
     useNDCHalfZRange?: boolean;
