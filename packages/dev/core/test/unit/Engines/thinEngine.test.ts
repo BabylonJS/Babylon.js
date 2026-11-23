@@ -5,6 +5,7 @@ import { Color4 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Scene } from "core/scene";
 import "core/Engines/Extensions/engine.multiRender";
 
@@ -41,6 +42,7 @@ function CreateMockWebGL2Canvas(supportsClipControl = false) {
         getExtension: (name) => getExtension(name as string),
         getShaderPrecisionFormat: () => ({ precision: 23, rangeMin: 127, rangeMax: 127 }),
         getSupportedExtensions: () => [],
+        createBuffer: () => ({}),
         clear: vi.fn(),
     };
     const gl = new Proxy<Record<string, unknown>>(
@@ -203,6 +205,48 @@ describe("Engine", () => {
                     await restored;
                     expect(clipControl.clipControlEXT).toHaveBeenCalledTimes(2);
                     expect(getExtension.mock.calls.filter(([name]) => name === "EXT_clip_control")).toHaveLength(2);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it.each([
+                { halfZRange: false, reverseDepth: false },
+                { halfZRange: false, reverseDepth: true },
+                { halfZRange: true, reverseDepth: false },
+                { halfZRange: true, reverseDepth: true },
+            ])("culls meshes at the camera depth limits (half range: $halfZRange, reversed Z: $reverseDepth)", ({ halfZRange, reverseDepth }) => {
+                const { canvas } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: halfZRange, useReverseDepthBuffer: reverseDepth });
+                try {
+                    const scene = new Scene(engine);
+                    const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                    scene.activeCamera = camera;
+                    camera.minZ = 1;
+                    camera.maxZ = 10;
+                    scene.updateTransformMatrix();
+
+                    const box = CreateBox("box", { size: 0.1 }, scene);
+                    for (const [z, visible] of [
+                        [0.75, false],
+                        [5, true],
+                        [11, false],
+                    ] as const) {
+                        box.position.z = z;
+                        box.computeWorldMatrix(true);
+                        expect([camera.isInFrustum(box), box.isInFrustum(scene.frustumPlanes)], `box at z=${z}`).toEqual([visible, visible]);
+                    }
+
+                    camera.maxZ = 0;
+                    scene.updateTransformMatrix();
+                    expect(camera.isInFrustum(box)).toBe(true);
+                    expect(box.isInFrustum(scene.frustumPlanes)).toBe(true);
+
+                    if (halfZRange && reverseDepth) {
+                        box.scaling.setAll(0);
+                        box.computeWorldMatrix(true);
+                        expect([camera.isInFrustum(box), box.isInFrustum(scene.frustumPlanes)], "zero-extent bounds in the infinite frustum").toEqual([true, true]);
+                    }
                 } finally {
                     engine.dispose();
                 }

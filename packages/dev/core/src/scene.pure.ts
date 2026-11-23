@@ -3008,10 +3008,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
 
         // Update frustum
+        const halfZRange = this._engine.isNDCHalfZRange;
         if (!this._frustumPlanes) {
-            this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
+            this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix, halfZRange);
         } else {
-            Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes, halfZRange);
         }
 
         if (this._multiviewSceneUboIsActive && this._multiviewSceneUbo!.useUbo) {
