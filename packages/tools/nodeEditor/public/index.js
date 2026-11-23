@@ -151,7 +151,8 @@ checkBabylonVersionAsync().then(() => {
 
                         let hash = location.hash.substr(1);
                         currentSnippetToken = hash.split("#")[0];
-                        xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
+                        const snippetPath = hash.split("#").map(encodeURIComponent).join("/");
+                        xmlHttp.open("GET", snippetUrl + "/" + snippetPath);
                         xmlHttp.send();
                     } catch (e) {}
                 }

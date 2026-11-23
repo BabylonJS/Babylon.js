@@ -168,7 +168,8 @@ checkBabylonVersionAsync().then(() => {
                 xmlHttp.onerror = function () {
                     reject(new Error(`Unable to load node geometry snippet ${hash}`));
                 };
-                xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
+                const snippetPath = hash.split("#").map(encodeURIComponent).join("/");
+                xmlHttp.open("GET", snippetUrl + "/" + snippetPath);
                 xmlHttp.send();
             });
         };
@@ -231,7 +232,7 @@ checkBabylonVersionAsync().then(() => {
                                 }
                             };
 
-                            xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
+                            xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + encodeURIComponent(currentSnippetToken) : ""), true);
                             xmlHttp.setRequestHeader("Content-Type", "application/json");
 
                             let dataToSend = {

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/shared-ui-components",
-    "version": "9.37.0",
+    "version": "9.37.1",
     "exports": {
         "./lite": {
             "types": "./lite/index.d.ts",

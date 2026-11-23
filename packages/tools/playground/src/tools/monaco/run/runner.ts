@@ -195,11 +195,17 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
     }
 
     const cdnBase = String(manifest.cdnBase || "https://esm.sh/");
+    let cdnHostname = "";
+    try {
+        cdnHostname = new URL(cdnBase, window.location.href).hostname;
+    } catch {
+        // Invalid custom bases retain the generic URL concatenation behavior below.
+    }
     const cdnUrl = (spec: string) => {
-        if (cdnBase.includes("esm.sh")) {
+        if (cdnHostname === "esm.sh") {
             return cdnBase.replace(/\/$/, "") + "/" + spec;
         }
-        if (cdnBase.includes("cdn.jsdelivr.net")) {
+        if (cdnHostname === "cdn.jsdelivr.net") {
             return cdnBase.replace(/\/$/, "") + "/" + spec + "/+esm";
         }
         return cdnBase.replace(/\/$/, "") + "/" + spec;

@@ -31,11 +31,11 @@ export class EnvironmentTools {
             rotationY = this.SkyboxesRotation[defaultSkyboxIndex];
         }
 
-        if (path.indexOf(".hdr") === path.length - 4) {
+        if (path.endsWith(".hdr")) {
             return new HDRCubeTexture(path, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
         }
 
-        if (path.indexOf(".exr") === path.length - 4) {
+        if (path.endsWith(".exr")) {
             return new EXRCubeTexture(path, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
         }
 

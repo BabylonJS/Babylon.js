@@ -9,6 +9,23 @@ import { spawn } from "child_process";
 import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile, kebabize } from "./utils.js";
 import { type BuildType, type DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
 
+const EscapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+function IsFileNotFoundError(error: unknown): boolean {
+    return error instanceof Error && "code" in error && error.code === "ENOENT";
+}
+
+function HasSameFileContent(filename: string, content: string): boolean {
+    try {
+        return getHashOfFile(filename) === getHashOfContent(content);
+    } catch (error) {
+        if (IsFileNotFoundError(error)) {
+            return false;
+        }
+        throw error;
+    }
+}
+
 export interface IGenerateDeclarationConfig {
     devPackageName: DevPackageName;
     outputDirectory?: string;
@@ -50,7 +67,8 @@ function GetModuleDeclaration(
             .replace(/\\/g, "/");
     const sourceDir = path.dirname(moduleName);
     const lines = source.split("\n");
-    const namedExportPathsToExcludeRegExp = config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${config.namedExportPathsToExclude}"`) : undefined;
+    const namedExportPathsToExcludeRegExp =
+        config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${EscapeRegExp(config.namedExportPathsToExclude)}"`) : undefined;
     const mapping = getAllPackageMappingsByDevNames();
     let processedLines = lines
         .map((line: string) => {
@@ -724,10 +742,19 @@ ${looseDeclarationsString || ""}
                     // make sure snapshot directory exists
                     checkDirectorySync(path.join(rootDir, ".snapshot"));
                     const documentationFile = path.join(rootDir, ".snapshot", "documentation.d.ts");
-                    const originalFile =
-                        fs.existsSync(documentationFile) && !config.initDocumentation
-                            ? fs.readFileSync(documentationFile, "utf8")
-                            : fs.readFileSync(path.resolve(rootDir, "packages/public/glTF2Interface", "babylon.glTF2Interface.d.ts"), "utf8");
+                    let originalFile: string;
+                    if (!config.initDocumentation) {
+                        try {
+                            originalFile = fs.readFileSync(documentationFile, "utf8");
+                        } catch (error) {
+                            if (!IsFileNotFoundError(error)) {
+                                throw error;
+                            }
+                            originalFile = fs.readFileSync(path.resolve(rootDir, "packages/public/glTF2Interface", "babylon.glTF2Interface.d.ts"), "utf8");
+                        }
+                    } else {
+                        originalFile = fs.readFileSync(path.resolve(rootDir, "packages/public/glTF2Interface", "babylon.glTF2Interface.d.ts"), "utf8");
+                    }
                     fs.writeFileSync(
                         documentationFile,
                         `${originalFile}
@@ -737,12 +764,8 @@ ${looseDeclarationsString || ""}`
                 }
             }
             // check hash
-            if (fs.existsSync(filename)) {
-                const hash = getHashOfFile(filename);
-                const newHash = getHashOfContent(output);
-                if (hash === newHash) {
-                    return;
-                }
+            if (HasSameFileContent(filename, output)) {
+                return;
             }
             fs.writeFileSync(filename, output);
             console.log("declaration file generated", config.declarationLibs);

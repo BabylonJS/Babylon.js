@@ -21,7 +21,7 @@ export async function SaveToSnippetServerAsync(smartFilter: SmartFilter): Promis
 
     const [snippetToken] = GetSnippet();
 
-    const response = await fetch(`${SnippetUrl}/${snippetToken || ""}`, {
+    const response = await fetch(`${SnippetUrl}/${snippetToken ? encodeURIComponent(snippetToken) : ""}`, {
         method: "POST",
         headers: {
             // eslint-disable-next-line @typescript-eslint/naming-convention

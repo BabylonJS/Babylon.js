@@ -286,7 +286,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         data = this._decode(data);
 
         // Sanitize data
-        data = data.replace(/#.*$/gm, "").trim();
+        data = data.replace(/#[^\r\n]*/g, "").trim();
 
         // Main function
         const solidParser = new SolidParser(materialToUse, babylonMeshesArray, this._loadingOptions);

@@ -71,4 +71,31 @@ describe("STLFileLoader", () => {
         expect(importNames(["stlmesh"], BinaryStl())).toEqual(["stlmesh"]);
         expect(importNames(null, BinaryStl())).toEqual(["stlmesh"]);
     });
+
+    it("parses decimal and scientific notation without ambiguous numeric matching", () => {
+        const data = `solid numeric
+facet normal 1. -2.5 .3e+2
+outer loop
+vertex 1. -2.5 .3e+2
+vertex 4e-1 5 6.0
+vertex 7 8.25 9e2
+endloop
+endfacet
+endsolid numeric
+`;
+        const meshes: AbstractMesh[] = [];
+
+        expect(new STLFileLoader().importMesh(null, scene, data, "", meshes)).toBe(true);
+        expect(meshes).toHaveLength(1);
+        expect(Array.from(meshes[0].getVerticesData("position")!)).toEqual([1, 30, -2.5, 0.4, 6, 5, 7, 900, 8.25]);
+    });
+
+    it("ignores solids and facets without terminators", () => {
+        const facet = "facet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\n";
+        const meshes: AbstractMesh[] = [];
+
+        expect(new STLFileLoader().importMesh(null, scene, `solid a\n${facet}facet normal 0 0 1\nendsolid a\nsolid b\n${facet}`, "", meshes)).toBe(true);
+        expect(meshes.map((mesh) => mesh.name)).toEqual(["a"]);
+        expect(meshes[0].getTotalVertices()).toBe(3);
+    });
 });

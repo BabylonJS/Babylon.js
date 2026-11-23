@@ -34,9 +34,15 @@ export interface INativeEngine {
 
     /**
      * True when the runtime can copy a canvas into a dynamic texture with a mip chain and
-     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps)`).
+     * premultiplied-alpha option (`Canvas.getCanvasTexture(premulAlpha, generateMipMaps, invertY)`).
      */
     readonly supportsDynamicTextureMipMaps?: boolean;
+
+    /**
+     * True when the runtime runs on a mobile platform (Android or iOS/iPadOS). Native runtimes
+     * have no `navigator.userAgent`, so this feeds `hostInformation.isMobile`.
+     */
+    readonly isMobile?: boolean;
 
     dispose(): void;
 
@@ -175,6 +181,14 @@ export interface INativeEngine {
         mip?: number,
         autoGenerateMips?: boolean
     ): NativeFramebuffer;
+
+    /**
+     * Moves a framebuffer's generated depth/stencil into a texture without rebuilding the framebuffer, so it can be
+     * attached elsewhere with its current contents; it cannot be sampled. Layered render targets share one generated
+     * depth allocation across their face/layer framebuffers. Returns false when the framebuffer has no generated
+     * depth/stencil of its own.
+     */
+    shareFrameBufferDepthStencil?(frameBuffer: NativeFramebuffer, texture: NativeTexture): boolean;
 
     /** Optional: older runtimes only support single-attachment framebuffers. Omitted mip flags retain automatic generation for all color attachments. */
     createMultiFrameBuffer?(
@@ -457,6 +471,8 @@ interface INativeEngineConstructor {
     readonly COMMAND_DRAWINSTANCED: NativeData;
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_CLEAR2?: NativeData;
+    /** Flag ORed into the COMMAND_CLEAR2 attachment mask by clearAttachments(). */
+    readonly CLEAR_ATTACHMENTS_OPERATION?: number;
     readonly COMMAND_SETSTENCIL: NativeData;
     readonly COMMAND_SETSTENCIL2?: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;
@@ -575,26 +591,35 @@ export interface INative {
     endPerformanceCounter?(counter: unknown): void;
 
     // GaussianSplatting
+    /**
+     * Sorts splats back to front using model-view depth.
+     * @param modelViewMatrix mesh world matrix multiplied by the camera view matrix
+     * @param splatPositions splat centers (stride 4)
+     * @param splatIndex receives the sorted splat indices
+     * @param useRightHandedSystem whether the scene uses a right-handed coordinate system
+     */
     sortSplats?(modelViewMatrix: Matrix, splatPositions: Float32Array, splatIndex: Float32Array, useRightHandedSystem: boolean): void;
     /**
      * Writes the active splats to `splatIndex` sorted back to front, like the Gaussian Splatting sort worker.
-     * @param viewProjection camera view projection matrix
+     * @param view camera view matrix
      * @param worldMatrices the mesh world matrix, or one world matrix per part when `partIndices` is set
      * @param splatPositions splat centers (stride 4)
      * @param splatIndex receives the sorted active splat indices, padded with `vertexCount`
      * @param vertexCount number of source splats
      * @param intervals active source splat ranges as [start0, count0, ...], or null for every splat
      * @param partIndices part index of each splat for compound meshes, or null
+     * @param useRightHandedSystem whether the scene uses a right-handed coordinate system
      * @returns false when a part index has no world matrix, leaving `splatIndex` unchanged
      */
     sortSplatIndices?(
-        viewProjection: Matrix,
+        view: Matrix,
         worldMatrices: ReadonlyArray<Matrix>,
         splatPositions: Float32Array,
         splatIndex: Float32Array,
         vertexCount: number,
         intervals: Nullable<Uint32Array>,
-        partIndices: Nullable<Uint8Array>
+        partIndices: Nullable<Uint8Array>,
+        useRightHandedSystem: boolean
     ): boolean;
 
     // NativeDraco plugin — synchronous native replacement for the WASM Draco decoder.

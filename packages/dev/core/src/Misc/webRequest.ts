@@ -53,7 +53,66 @@ export class WebRequest implements IWebRequest {
     }
 
     private static _ShouldSkipRequestModifications(url: string): boolean {
-        return WebRequest.SkipRequestModificationForBabylonCDN && (url.includes("preview.babylonjs.com") || url.includes("cdn.babylonjs.com"));
+        if (!WebRequest.SkipRequestModificationForBabylonCDN) {
+            return false;
+        }
+
+        const hostname = WebRequest._GetHostname(WebRequest._CleanUrl(url));
+        return hostname === "preview.babylonjs.com" || hostname === "cdn.babylonjs.com";
+    }
+
+    /**
+     * Gets the lower-cased hostname of the URL a request will actually target. Uses the URL parser when it is available,
+     * and otherwise a string parser that applies the same input normalization, since not every environment provides a
+     * constructible URL (e.g. Babylon Native installs a non-constructible shim).
+     * @param url - The URL to inspect.
+     * @returns The hostname, or an empty string for URLs without a host.
+     */
+    private static _GetHostname(url: string): string {
+        if (typeof URL === "function") {
+            try {
+                return new URL(url, typeof location !== "undefined" ? location.href : undefined).hostname;
+            } catch {
+                // Fall back to the string parser below.
+            }
+        }
+
+        // Like the URL parser, remove tabs and newlines and trim leading and trailing C0 controls and spaces.
+        url = url.replace(/[\t\n\r]/g, "");
+        let start = 0;
+        let end = url.length;
+        while (start < end && url.charCodeAt(start) <= 0x20) {
+            start++;
+        }
+        while (end > start && url.charCodeAt(end - 1) <= 0x20) {
+            end--;
+        }
+        url = url.substring(start, end);
+
+        let authorityStart = -1;
+        if (url.startsWith("//")) {
+            authorityStart = 2;
+        } else {
+            const schemeEnd = url.indexOf("://");
+            if (schemeEnd > 0 && /^[a-z][a-z0-9+.-]*$/i.test(url.substring(0, schemeEnd))) {
+                authorityStart = schemeEnd + 3;
+            }
+        }
+        if (authorityStart === -1) {
+            return "";
+        }
+
+        let authorityEnd = authorityStart;
+        while (authorityEnd < url.length && "/?#\\".indexOf(url[authorityEnd]) === -1) {
+            authorityEnd++;
+        }
+        let host = url.substring(authorityStart, authorityEnd);
+        host = host.substring(host.lastIndexOf("@") + 1);
+        const portStart = host.lastIndexOf(":");
+        if (portStart !== -1 && host.indexOf("]") < portStart) {
+            host = host.substring(0, portStart);
+        }
+        return host.toLowerCase();
     }
 
     /**

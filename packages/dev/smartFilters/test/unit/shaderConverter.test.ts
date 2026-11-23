@@ -132,4 +132,68 @@ describe("parseFragmentShader", () => {
             expect(() => ParseFragmentShader(twoMainFunctions)).toThrow();
         });
     });
+
+    describe("metadata parsing", () => {
+        it("parses single-line and multi-line headers", () => {
+            const shaderBody = `
+uniform sampler2D input; // main
+vec4 apply(vec2 vUV) { // main
+    return texture2D(input, vUV);
+}`;
+            const singleLine = ParseFragmentShader(`// {"smartFilterBlockType":"Single","namespace":"Test"}${shaderBody}`);
+            const multiLine = ParseFragmentShader(`/* {"smartFilterBlockType":"Multi","namespace":"Test"} */${shaderBody}`);
+
+            expect(singleLine.blockType).toBe("Single");
+            expect(singleLine.namespace).toBe("Test");
+            expect(multiLine.blockType).toBe("Multi");
+            expect(multiLine.namespace).toBe("Test");
+        });
+
+        it("finds a main input whose marker is on the next line", () => {
+            const shader = `// {"smartFilterBlockType":"NextLineMain"}
+uniform sampler2D input;
+// main
+vec4 apply(vec2 vUV) { // main
+    return texture2D(input, vUV);
+}`;
+
+            expect(ParseFragmentShader(shader).shaderCode.mainInputTexture).toBe(decorated("input"));
+        });
+
+        it("rejects a long non-matching main input declaration quickly", () => {
+            const shader = `// {"smartFilterBlockType":"LongName"}
+uniform sampler2D ${"a".repeat(20000)}[1]; // main
+vec4 apply(vec2 vUV) { // main
+    return vec4(0.);
+}`;
+
+            expect(ParseFragmentShader(shader).shaderCode.mainInputTexture).toBeUndefined();
+        });
+
+        it("stops a single-line header at a carriage return", () => {
+            const shader = `// {"smartFilterBlockType":"CarriageReturn"}\runiform sampler2D input; // main\rvec4 apply(vec2 vUV) { // main\r    return texture2D(input, vUV);\r}`;
+
+            expect(ParseFragmentShader(shader).blockType).toBe("CarriageReturn");
+        });
+
+        it("parses annotated const properties", () => {
+            const shader = `
+// {"smartFilterBlockType":"AnnotatedConst"}
+// {"property":{"options":{"min":0,"max":2}}}
+const float strength = 1.5;
+uniform sampler2D input; // main
+vec4 apply(vec2 vUV) { // main
+    return texture2D(input, vUV) * strength;
+}`;
+            const parsed = ParseFragmentShader(shader);
+
+            expect(parsed.fragmentConstProperties).toEqual([
+                expect.objectContaining({
+                    friendlyName: "strength",
+                    defaultValue: 1.5,
+                }),
+            ]);
+            expect(parsed.shaderCode.constPerInstance).toContain("const float _strength_ = 1.5;");
+        });
+    });
 });

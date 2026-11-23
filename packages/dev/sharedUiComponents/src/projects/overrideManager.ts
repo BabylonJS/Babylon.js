@@ -666,6 +666,11 @@ function MakeOriginalValueKey(targetType: OverrideTargetType, targetName: string
  */
 function GetNestedProperty(obj: object, path: string): unknown {
     const parts = path.split(".");
+    for (const part of parts) {
+        if (part === "__proto__" || part === "constructor" || part === "prototype") {
+            return undefined;
+        }
+    }
     let current: unknown = obj;
 
     for (const part of parts) {
@@ -698,6 +703,11 @@ function GetNestedProperty(obj: object, path: string): unknown {
  */
 function SetNestedProperty(obj: object, path: string, value: unknown): void {
     const parts = path.split(".");
+    for (const part of parts) {
+        if (part === "__proto__" || part === "constructor" || part === "prototype") {
+            return;
+        }
+    }
     let current: unknown = obj;
 
     for (let i = 0; i < parts.length - 1; i++) {

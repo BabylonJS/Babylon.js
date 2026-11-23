@@ -244,7 +244,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             }
 
             for (let i = 0; i < arraySize; ++i) {
-                const { groupIndex, bindingIndex } = textureInfo.textures[i];
+                // Avoid destructuring: in the minified ES5 bundle its temporary can collide with the texture dimension local.
+                const groupIndex = textureInfo.textures[i].groupIndex;
+                const bindingIndex = textureInfo.textures[i].bindingIndex;
 
                 if (i === 0) {
                     texture = `@group(${groupIndex}) @binding(${bindingIndex}) ${texture}`;
@@ -581,7 +583,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         let stridedArrays = "";
         let ubo = `struct ${name} {\n`;
         for (const leftOverUniform of this._webgpuProcessingContext.leftOverUniforms) {
-            const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
+            const genericStart = leftOverUniform.type.indexOf("<");
+            const type = genericStart === -1 ? leftOverUniform.type : leftOverUniform.type.substring(0, genericStart);
             const size = WebGPUShaderProcessor.UniformSizes[type];
 
             if (leftOverUniform.length > 0) {
@@ -655,7 +658,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     private _processCustomBuffers(code: string, isVertex: boolean): string {
-        const instantiateBufferRegexp = /var<\s*(uniform|storage)\s*(,\s*(read|read_write)\s*)?>\s+(\S+)\s*:\s*(\S+)\s*;/gm;
+        const instantiateBufferRegexp = /var<\s*(uniform|storage)\s*(,\s*(read|read_write)\s*)?>\s+([^\s:]+)\s*:\s*([^\s;]+)\s*;/gm;
 
         // eslint-disable-next-line no-constant-condition
         while (true) {

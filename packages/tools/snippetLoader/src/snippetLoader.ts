@@ -542,6 +542,124 @@ async function LoadModuleEsm(jsFiles: Record<string, string>, entryName: string,
     return mod;
 }
 
+const IsWhitespace = (char: string | undefined): boolean => char !== undefined && /\s/.test(char);
+const IsLineTerminator = (char: string | undefined): boolean => char === "\n" || char === "\r" || char === "\u2028" || char === "\u2029";
+const IsImportClauseChar = (char: string | undefined): boolean => char !== undefined && char !== '"' && char !== "'" && char !== ";" && char !== "\n";
+
+function SkipWhitespace(code: string, index: number): number {
+    while (IsWhitespace(code[index])) {
+        index++;
+    }
+    return index;
+}
+
+function LastLineTerminator(code: string, start: number, end: number): number {
+    for (let i = end - 1; i >= start; i--) {
+        if (IsLineTerminator(code[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * Returns where the optional `;` and trailing whitespace of an import declaration end (just before a line
+ * terminator, or at the end of the code), or -1 if other code follows on the same line.
+ * @param code The code
+ * @param index The index right after the module specifier's closing quote
+ * @returns The end of the declaration or -1
+ */
+function FindImportDeclarationEnd(code: string, index: number): number {
+    const afterWhitespace = SkipWhitespace(code, index);
+    if (afterWhitespace === code.length) {
+        return code.length;
+    }
+    if (code[afterWhitespace] === ";") {
+        const afterSemicolon = SkipWhitespace(code, afterWhitespace + 1);
+        if (afterSemicolon === code.length) {
+            return code.length;
+        }
+        const lineEnd = LastLineTerminator(code, afterWhitespace + 1, afterSemicolon);
+        if (lineEnd !== -1) {
+            return lineEnd;
+        }
+    }
+    return LastLineTerminator(code, index, afterWhitespace);
+}
+
+/**
+ * Replaces static `import <clause> from "<spec>";` declarations, which may span lines, using forward-only scanning.
+ * Matches the same declarations as /^\s*import\s+([^"'\n;]+?)\s+from\s+["']([^"']+)["']\s*;?\s*$/gm.
+ * @param code The module code
+ * @param convert Builds the replacement for a declaration from its clause and module specifier
+ * @returns The code with the declarations replaced
+ */
+function ReplaceStaticImports(code: string, convert: (clause: string, spec: string) => string): string {
+    let result = "";
+    let copiedUntil = 0;
+    let searchFrom = 0;
+
+    while (searchFrom < code.length) {
+        const importIndex = code.indexOf("import", searchFrom);
+        if (importIndex === -1) {
+            break;
+        }
+        searchFrom = importIndex + 1;
+
+        // The declaration must start a line (possibly after whitespace, including blank lines).
+        let start = importIndex;
+        let lineStart = start === 0 || IsLineTerminator(code[start - 1]) ? start : -1;
+        while (start > copiedUntil && IsWhitespace(code[start - 1])) {
+            start--;
+            if (start === 0 || IsLineTerminator(code[start - 1])) {
+                lineStart = start;
+            }
+        }
+        if (lineStart === -1) {
+            continue;
+        }
+
+        const clauseStart = SkipWhitespace(code, importIndex + 6);
+        if (clauseStart === importIndex + 6 || !IsImportClauseChar(code[clauseStart])) {
+            continue;
+        }
+        let clauseLimit = clauseStart;
+        while (IsImportClauseChar(code[clauseLimit])) {
+            clauseLimit++;
+        }
+        const fromSearchEnd = SkipWhitespace(code, clauseLimit);
+
+        for (let fromIndex = clauseStart + 1; fromIndex <= fromSearchEnd; fromIndex++) {
+            if (!code.startsWith("from", fromIndex)) {
+                continue;
+            }
+            let clauseEnd = fromIndex;
+            while (clauseEnd > clauseStart + 1 && IsWhitespace(code[clauseEnd - 1])) {
+                clauseEnd--;
+            }
+            const quoteIndex = SkipWhitespace(code, fromIndex + 4);
+            const quote = code[quoteIndex];
+            if (clauseEnd < fromIndex && clauseEnd <= clauseLimit && quoteIndex > fromIndex + 4 && (quote === '"' || quote === "'")) {
+                let specEnd = quoteIndex + 1;
+                while (specEnd < code.length && code[specEnd] !== '"' && code[specEnd] !== "'") {
+                    specEnd++;
+                }
+                if (specEnd < code.length && specEnd > quoteIndex + 1) {
+                    const end = FindImportDeclarationEnd(code, specEnd + 1);
+                    if (end !== -1) {
+                        result += code.substring(copiedUntil, lineStart) + convert(code.substring(clauseStart, clauseEnd), code.substring(quoteIndex + 1, specEnd));
+                        copiedUntil = end;
+                        searchFrom = end;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return copiedUntil === 0 ? code : result + code.substring(copiedUntil);
+}
+
 // -----------------------------------------------------------------------
 // Playground runner — Script strategy (module graph + CJS-like runtime)
 // -----------------------------------------------------------------------
@@ -602,9 +720,7 @@ function TransformModuleSyntaxToCjs(code: string): string {
         return `const ${tmp} = require(${specLit});\nconst ${trimmed} = (${tmp} && Object.prototype.hasOwnProperty.call(${tmp}, "default")) ? ${tmp}.default : ${tmp};`;
     };
 
-    result = result.replace(/^\s*import\s+([^"'\n;]+?)\s+from\s+["']([^"']+)["']\s*;?\s*$/gm, (_m, clause: string, spec: string) => {
-        return convertImportClause(clause, spec);
-    });
+    result = ReplaceStaticImports(result, convertImportClause);
 
     result = result.replace(/^\s*import\s+["']([^"']+)["']\s*;?\s*$/gm, (_m, spec: string) => `require(${JSON.stringify(spec)});`);
 
@@ -919,7 +1035,10 @@ async function InitializeRuntimeAsync(features: IRuntimeFeatures, options?: IIni
     const g = globalThis as any;
     const inject = options?.loadScripts === true;
     const urls = options?.scriptUrls ?? {};
-    const base = (options?.baseUrl ?? DefaultRuntimeBaseUrl).replace(/\/+$/, "");
+    let base = options?.baseUrl ?? DefaultRuntimeBaseUrl;
+    while (base.endsWith("/")) {
+        base = base.slice(0, -1);
+    }
 
     const resolveUrl = (feature: keyof IRuntimeFeatures): string => urls[feature] ?? `${base}/${RuntimeScriptPaths[feature]}`;
 

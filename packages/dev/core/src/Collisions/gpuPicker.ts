@@ -1462,6 +1462,9 @@ export class GPUPicker {
                         allReady = false;
                     }
                 }
+            } catch (error) {
+                this._pickingInProgress = false;
+                throw error;
             } finally {
                 engine.currentRenderPassId = previousRenderPassId;
             }

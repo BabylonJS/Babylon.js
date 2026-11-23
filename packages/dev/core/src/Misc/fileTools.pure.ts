@@ -20,7 +20,26 @@ import { GetBlobBufferSource } from "../Buffers/bufferUtils";
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-const Base64DataUrlRegEx = /*#__PURE__*/ new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
+const _Base64Marker = ";base64";
+
+function _GetBase64DataUrlPrefixLength(uri: string): number {
+    if (uri.length < 13 || uri.substring(0, 5).toLowerCase() !== "data:") {
+        return -1;
+    }
+
+    const commaIndex = uri.indexOf(",", 5);
+    if (commaIndex === -1 || uri.substring(commaIndex - _Base64Marker.length, commaIndex).toLowerCase() !== _Base64Marker) {
+        return -1;
+    }
+
+    const typeEnd = commaIndex - _Base64Marker.length;
+    const slashIndex = uri.indexOf("/", 6);
+    if (typeEnd !== 5 && (slashIndex <= 5 || slashIndex >= typeEnd - 1)) {
+        return -1;
+    }
+
+    return commaIndex + 1;
+}
 
 /** @ignore */
 export class LoadFileError extends RuntimeError {
@@ -814,8 +833,10 @@ export const GetMimeType = (url: string): string | undefined => {
         return type || undefined;
     }
 
-    const lastDot = url.lastIndexOf(".");
-    const extension = url.substring(lastDot + 1).toLowerCase();
+    // The extension is in the path, not in the query string or fragment (e.g. "texture.jpg?v=2")
+    const path = url.split(/[?#]/)[0];
+    const lastDot = path.lastIndexOf(".");
+    const extension = path.substring(lastDot + 1).toLowerCase();
 
     switch (extension) {
         case "glb":
@@ -858,15 +879,15 @@ export const IsFileURL = (): boolean => {
  * @internal
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
-    return Base64DataUrlRegEx.test(uri);
+    return _GetBase64DataUrlPrefixLength(uri) !== -1;
 };
 
 export const TestBase64DataUrl = (uri: string): { match: boolean; type: string } => {
-    const results = Base64DataUrlRegEx.exec(uri);
-    if (results === null || results.length === 0) {
+    const prefixLength = _GetBase64DataUrlPrefixLength(uri);
+    if (prefixLength === -1) {
         return { match: false, type: "" };
     } else {
-        const type = results[0].replace("data:", "").replace(";base64,", "");
+        const type = uri.substring(0, prefixLength).replace("data:", "").replace(";base64,", "");
         return { match: true, type };
     }
 };

@@ -235,14 +235,17 @@ async function _routeAsset(page: Page, filePath: string): Promise<IRoutedAsset> 
             await route.fulfill({ status: 403, body: "Forbidden" });
             return;
         }
-        if (!fs.existsSync(localPath) || !fs.statSync(localPath).isFile()) {
+        let body: Buffer;
+        try {
+            body = fs.readFileSync(localPath);
+        } catch {
             await route.fulfill({ status: 404, body: `Missing asset dependency: ${requestPath}` });
             return;
         }
         await route.fulfill({
             status: 200,
             contentType: ContentTypes[path.extname(localPath).toLowerCase()] ?? "application/octet-stream",
-            body: fs.readFileSync(localPath),
+            body,
         });
     });
 

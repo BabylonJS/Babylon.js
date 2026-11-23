@@ -27,15 +27,8 @@ export class Utilities {
         head.appendChild(script);
     }
 
-    public static ParseQuery() {
-        const queryString = location.search;
-        const query: any = {};
-        const pairs = (queryString[0] === "?" ? queryString.substring(1) : queryString).split("&");
-        for (let i = 0; i < pairs.length; i++) {
-            const pair = pairs[i].split("=");
-            query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || "");
-        }
-        return query;
+    public static ParseQuery(): Record<string, string> {
+        return Object.fromEntries(new URLSearchParams(location.search));
     }
 
     public static ReadStringFromStore(key: string, defaultValue: string, useSession = false): string {
