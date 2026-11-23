@@ -46,7 +46,7 @@ function CreateMockWebGL2Canvas(supportsClipControl = false) {
         clear: vi.fn(),
     };
     const gl = new Proxy<Record<string, unknown>>(
-        { drawingBufferWidth: 300, drawingBufferHeight: 150 },
+        { drawingBufferWidth: 300, drawingBufferHeight: 150, getContext: undefined },
         {
             get: (target, name) => {
                 if (typeof name !== "string") {
@@ -72,13 +72,16 @@ function CreateMockWebGL2Canvas(supportsClipControl = false) {
     gl.canvas = canvas;
     return {
         canvas: canvas as unknown as HTMLCanvasElement,
+        context: gl as unknown as WebGL2RenderingContext,
         clear: methods.clear,
         getExtension,
         clipControl,
         restoreContext: () => {
-            canvas.dispatchEvent(new Event("webglcontextlost", { cancelable: true }));
+            const event = new Event("webglcontextlost", { cancelable: true });
+            canvas.dispatchEvent(event);
             depthMode = negativeOneToOne;
             canvas.dispatchEvent(new Event("webglcontextrestored"));
+            return event.defaultPrevented;
         },
     };
 }
@@ -182,11 +185,77 @@ describe("Engine", () => {
                 }
             });
 
-            it("restores the default clip range when releasing a reusable context", () => {
-                const { canvas, clipControl } = CreateMockWebGL2Canvas(true);
+            it("leaves the clip range alone for a supplied WebGL context", () => {
+                const { context, getExtension, clipControl } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(context, false, { useNDCHalfZRange: true });
+                try {
+                    expect(engine.isNDCHalfZRange).toBe(false);
+                    expect(getExtension).not.toHaveBeenCalledWith("EXT_clip_control");
+                } finally {
+                    engine.dispose();
+                }
+                expect(clipControl.clipControlEXT).not.toHaveBeenCalled();
+            });
+
+            it("keeps a half-range engine with context loss handling disabled suspended after a context loss", () => {
+                const { canvas, clipControl, context, restoreContext } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true, doNotHandleContextLost: true });
+                const render = vi.fn();
+                const requestAnimationFrame = vi.fn<(_callback: RenderFrameCallback) => number>(() => 1);
+                engine.customAnimationFrameRequester = { requestAnimationFrame, cancelAnimationFrame: vi.fn(), requestID: 0 };
+
+                try {
+                    expect(engine.isNDCHalfZRange).toBe(true);
+                    engine.runRenderLoop(render);
+                    requestAnimationFrame.mock.calls[0][0](1000);
+                    expect(render).toHaveBeenCalledOnce();
+
+                    expect(restoreContext()).toBe(false);
+                    requestAnimationFrame.mock.calls[1][0](1016);
+                    expect(render).toHaveBeenCalledOnce();
+                    expect(clipControl.clipControlEXT).toHaveBeenCalledExactlyOnceWith(clipControl.LOWER_LEFT_EXT, clipControl.ZERO_TO_ONE_EXT);
+                    expect(context.getParameter(clipControl.CLIP_DEPTH_MODE_EXT)).toBe(clipControl.NEGATIVE_ONE_TO_ONE_EXT);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it("resets clip depth before disposal observers can create a replacement engine", () => {
+                const { canvas, context, clipControl } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
+                const onDispose = vi.fn(() => {
+                    const depthAtHandoff = context.getParameter(clipControl.CLIP_DEPTH_MODE_EXT);
+                    const replacement = new Engine(canvas, false, { useNDCHalfZRange: true });
+                    return { depthAtHandoff, replacement };
+                });
+                engine.onDisposeObservable.addOnce(onDispose);
+                engine.dispose();
+
+                expect(onDispose).toHaveBeenCalledOnce();
+                const { depthAtHandoff, replacement } = onDispose.mock.results[0].value;
+                try {
+                    expect(depthAtHandoff).toBe(clipControl.NEGATIVE_ONE_TO_ONE_EXT);
+                    expect(replacement.isNDCHalfZRange).toBe(true);
+                    expect(context.getParameter(clipControl.CLIP_DEPTH_MODE_EXT)).toBe(clipControl.ZERO_TO_ONE_EXT);
+                    expect(clipControl.clipControlEXT.mock.calls).toEqual([
+                        [clipControl.LOWER_LEFT_EXT, clipControl.ZERO_TO_ONE_EXT],
+                        [clipControl.LOWER_LEFT_EXT, clipControl.NEGATIVE_ONE_TO_ONE_EXT],
+                        [clipControl.LOWER_LEFT_EXT, clipControl.ZERO_TO_ONE_EXT],
+                    ]);
+                } finally {
+                    replacement.dispose();
+                }
+            });
+
+            it("detaches the canvas context handlers on disposal without a window", () => {
+                const { canvas } = CreateMockWebGL2Canvas(true);
+                const removeEventListener = vi.spyOn(canvas, "removeEventListener");
                 const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
                 engine.dispose();
-                expect(clipControl.clipControlEXT).toHaveBeenLastCalledWith(clipControl.LOWER_LEFT_EXT, clipControl.NEGATIVE_ONE_TO_ONE_EXT);
+
+                expect(removeEventListener).toHaveBeenCalledWith("webglcontextlost", expect.any(Function));
+                expect(removeEventListener).toHaveBeenCalledWith("webglcontextrestored", expect.any(Function));
+                expect(canvas.dispatchEvent(new Event("webglcontextlost", { cancelable: true }))).toBe(true);
             });
 
             it("restores the selected clip range before notifying context restoration", async () => {

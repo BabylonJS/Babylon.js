@@ -41,7 +41,6 @@ import { type AbstractEngineOptions, type ISceneLike, type PrepareTextureFunctio
 import { type PerformanceMonitor } from "../Misc/performanceMonitor";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 import { Logger } from "../Misc/logger";
-import { IsWindowObjectExist } from "../Misc/domManagement";
 import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
 import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
@@ -80,6 +79,8 @@ export interface EngineOptions extends AbstractEngineOptions, WebGLContextAttrib
 
     /**
      * Requests an NDC depth range of [0, 1] using EXT_clip_control (default: false).
+     * Applies to engines created from a canvas. With `doNotHandleContextLost` enabled, resume rendering after context loss
+     * by creating a new engine on a new or restored canvas.
      * Check engine.isNDCHalfZRange to see if the extension was enabled. If it is unavailable, WebGL uses [-1, 1].
      * This option is fixed at engine creation and can be used independently of useReverseDepthBuffer.
      * To get the full precision benefit of reversed depth, render to a floating-point depth attachment.
@@ -372,6 +373,10 @@ export class ThinEngine extends AbstractEngine {
                 options.powerPreference = options.powerPreference || "high-performance";
             } else {
                 this._onContextLost = () => {
+                    if (this.isNDCHalfZRange) {
+                        // A context restored by the host resets the clip range, so the old engine must stay suspended.
+                        this._contextWasLost = true;
+                    }
                     deleteStateObject(this._gl);
                 };
             }
@@ -443,7 +448,7 @@ export class ThinEngine extends AbstractEngine {
 
         this.resize();
 
-        if (options.useNDCHalfZRange) {
+        if (options.useNDCHalfZRange && this._onContextLost != null) {
             this.isNDCHalfZRange = this._setClipDepthRange(true);
         }
         this._initGLContext();
@@ -4272,19 +4277,18 @@ export class ThinEngine extends AbstractEngine {
      * Dispose and release all associated resources
      */
     public override dispose(): void {
-        const resetClipDepthRange = this.isNDCHalfZRange && !this.isDisposed;
-        // Events
-        if (IsWindowObjectExist()) {
-            if (this._renderingCanvas) {
-                this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
-
-                if (this._onContextRestored) {
-                    this._renderingCanvas.removeEventListener("webglcontextrestored", this._onContextRestored);
-                }
-            }
+        if (this._onContextLost != null) {
+            this._renderingCanvas?.removeEventListener("webglcontextlost", this._onContextLost);
+        }
+        if (this._onContextRestored != null) {
+            this._renderingCanvas?.removeEventListener("webglcontextrestored", this._onContextRestored);
         }
 
-        // Should not be moved up of renderingCanvas will be null.
+        // Disposal observers can reuse the canvas and set their own clip depth range.
+        if (this.isNDCHalfZRange && !this.isDisposed && !this._gl.isContextLost()) {
+            this._setClipDepthRange(false);
+        }
+
         super.dispose();
 
         if (this._dummyFramebuffer) {
@@ -4300,9 +4304,6 @@ export class ThinEngine extends AbstractEngine {
         this._currentBufferPointers.length = 0;
         this._currentProgram = null;
 
-        if (resetClipDepthRange && this._gl != null && !this._gl.isContextLost()) {
-            this._setClipDepthRange(false);
-        }
         if ((this._creationOptions as EngineOptions).loseContextOnDispose) {
             this._gl.getExtension("WEBGL_lose_context")?.loseContext();
         }
