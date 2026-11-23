@@ -1,14 +1,30 @@
 import { type ITextureInfo } from "babylonjs-gltf2interface";
 
-/** Core glTF texture slots supported by the experimental neural codec. */
-export type NeuralTextureSlot = "baseColorTexture" | "normalTexture" | "occlusionTexture" | "metallicRoughnessTexture";
+/** glTF texture slots that the experimental neural codec can replace. */
+export type NeuralTextureSlot =
+    | "baseColorTexture"
+    | "normalTexture"
+    | "occlusionTexture"
+    | "metallicRoughnessTexture"
+    | "emissiveTexture"
+    | "KHR_materials_pbrSpecularGlossiness.diffuseTexture"
+    | "KHR_materials_pbrSpecularGlossiness.specularGlossinessTexture";
+
+/** Codec identifiers understood by the loader. Other identifiers fall back to the placeholder textures. */
+export type NeuralTextureCodec = "babylon-ntc-v1" | "babylon-ntc-v2";
+
+/**
+ * Network output channels for each material property group. A group is either the explicit list of output
+ * indices (always the form of babylon-ntc-v1) or, for babylon-ntc-v2, a [startChannel, componentCount] pair.
+ */
+export type NeuralTextureOutputs = Partial<Record<"baseColor" | "normal" | "occlusion" | "roughness" | "metallic" | "emissive" | "diffuse" | "specular" | "glossiness", number[]>>;
 
 /** JSON payload for the experimental BABYLON_materials_neural_texture extension. */
 export interface IBabylonMaterialsNeuralTexture {
-    /** Bitstream version. */
+    /** Extension version. */
     version: 1;
-    /** Codec identifier. */
-    codec: "babylon-ntc-v1";
+    /** Codec identifier. babylon-ntc-v1 is fixed to 9 outputs; babylon-ntc-v2 has a variable number of outputs. */
+    codec: NeuralTextureCodec;
     /** Decoded image width and height. */
     resolution: [number, number];
     /** High latent grid dimensions. */
@@ -16,26 +32,25 @@ export interface IBabylonMaterialsNeuralTexture {
     /** Low latent grid dimensions. */
     loResolution: [number, number];
     /** Channels in each latent grid. */
-    latentChannels: 8;
+    latentChannels?: 8;
     /** High RGBA, high RGBA, low RGBA, low RGBA, in that order. */
     latentTextures: ITextureInfo[];
-    /** Little-endian, input-major float32 network parameters. */
-    weights: { bufferView: number; componentType: 5126; count: 2153 };
+    /** Little-endian, input-major float32 network parameters: 1856 + 33 * outputs for babylon-ntc-v2 (2153 for babylon-ntc-v1). */
+    weights: { bufferView: number; componentType: 5126; count: number };
     /** Network architecture. */
     network: {
         inputs: 24;
         hidden: [32, 32];
-        outputs: 9;
+        outputs: number;
         activation: "relu";
-        positionalEncoding: { frequencies: [1, 2]; scale: "hiResolution" };
-        weightLayout: "W0[in][out],b0,W1,b1,W2,b2 float32";
+        positionalEncoding?: { frequencies: [1, 2]; scale: "hiResolution" };
+        weightLayout?: string;
     };
-    /** Indices into the network output vector. */
-    outputs: Partial<{ baseColor: [number, number, number, number]; normal: [number, number]; occlusion: [number]; roughness: [number]; metallic: [number] }>;
+    /** Network output channels of each property group. */
+    outputs: NeuralTextureOutputs;
     /** Only these texture slots are replaced. All material factors still apply. */
     replacedSlots: NeuralTextureSlot[];
 }
-
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {

@@ -10,8 +10,9 @@ See documentation links:
 
 ### Experimental neural material textures
 
-`BABYLON_materials_neural_texture` version 1 (`babylon-ntc-v1`) is enabled by
-default. Its two RGBA8-pair latent grids and float32 24→32→32→9 network are
+`BABYLON_materials_neural_texture` (`babylon-ntc-v1` and `babylon-ntc-v2`) is enabled by
+default. An unknown `codec` logs a warning and the material keeps its core fallback textures.
+The text below describes the shared pipeline for the original v1 layout. Its two RGBA8-pair latent grids and float32 24→32→32→9 network are
 baked into ordinary mipmapped base-color (sRGB), normal (linear, reconstructed
 Z), and occlusion/roughness/metallic (linear RGB) textures at load time. WebGL 2
 uses fullscreen GLSL render-to-texture passes; WebGPU uses an 8×8 WGSL compute
@@ -72,9 +73,39 @@ parallax offsets, swizzles, and statement terminators. Covered sites are:
 
 Equal UV0 samples reuse one per-fragment decode; differing UVs are decoded at the
 requested coordinates. The codec reconstructs normal Z and supplies normal alpha
-1 (it has no authored height channel). Unreplaced slots, emissive/extension textures,
+1 (it has no authored height channel). Unreplaced slots, other extension textures,
 and non-PBR shader families (including Standard, Node, OpenPBR, depth/shadow passes)
 are not redirected. No shared shader includes or other material families are modified.
+
+#### `babylon-ntc-v2`
+
+v2 keeps the v1 latents and 24→32→32 network but the last layer has a variable
+number of outputs `N = network.outputs` (1 to 32); `weights.count` must equal
+`1856 + 33 * N`. `outputs` maps groups to indices into the N network outputs, either
+as explicit index lists or as `[startChannel, componentCount]` pairs. Supported groups
+and component counts: `baseColor` (3 or 4), `normal` (2), `occlusion`, `roughness`,
+`metallic` (1 each), `emissive` (3), `diffuse` (3 or 4), `specular` (3), `glossiness` (1).
+`replacedSlots` may additionally contain `emissiveTexture`,
+`KHR_materials_pbrSpecularGlossiness.diffuseTexture` and
+`KHR_materials_pbrSpecularGlossiness.specularGlossinessTexture`. Every replaced slot
+needs its output groups. v1 payloads keep their strict validation and are unchanged.
+
+Workflow rule: the metallic/roughness workflow is used unless the material has a
+`KHR_materials_pbrSpecularGlossiness` extension **and** a specular/glossiness slot is
+replaced. In that case `diffuseTexture` replaces the albedo, the specular RGB and
+glossiness (alpha) replace the reflectivity texture (with
+`useMicroSurfaceFromReflectivityMapAlpha`), the ORM output only feeds occlusion, and the
+metallic/roughness slots are ignored. If only metallic/roughness slots are replaced the
+legacy specular/glossiness alternative is dropped, as before. Specular/glossiness slots
+on a material without that extension are ignored with a warning. Base color, emissive,
+diffuse and specular stay sRGB-encoded (linearized by PBR); glossiness is linear data.
+
+Load-time baking writes up to six textures (base color, normal, ORM, emissive,
+diffuse, specular/glossiness). WebGPU compute passes bind at most four storage
+textures each, so more outputs are produced by additional passes. Shader decoding
+declares the decoder variables of a group only when the payload provides it, sizes
+the weight uniform from N, and keys the compiled effect on the layout. Emissive reads
+(`pbrBlockFinalUnlitComponents`) are redirected like the other samplers.
 
 Sandbox accepts `?neuralShaderDecode=true` (default: `false`), together with
 `assetUrl=...` and optionally `engine=webgpu`.

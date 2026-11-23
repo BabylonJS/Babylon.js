@@ -1,14 +1,23 @@
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
 
+/**
+ * Number of vec4 in the packed weights: 25 rows of 8 groups, 33 rows of 8 groups, and 33 rows of ceil(outputs / 4) groups.
+ * 563 for the 9 outputs of babylon-ntc-v1, 629 for 20 outputs.
+ * @internal
+ */
+export function GetNeuralTexturePackedSize(outputs: number): number {
+    return 25 * 8 + 33 * 8 + 33 * Math.ceil(outputs / 4);
+}
+
 /** @internal */
-export function PackNeuralTextureWeights(weights: Float32Array): Float32Array {
-    const packed = new Float32Array(563 * 4);
+export function PackNeuralTextureWeights(weights: Float32Array, outputCount = 9): Float32Array {
+    const packed = new Float32Array(GetNeuralTexturePackedSize(outputCount) * 4);
     let destination = 0;
     for (const [inputs, outputs, weightOffset, biasOffset] of [
         [24, 32, 0, 768],
         [32, 32, 800, 1824],
-        [32, 9, 1856, 2144],
+        [32, outputCount, 1856, 1856 + 32 * outputCount],
     ]) {
         const groups = Math.ceil(outputs / 4);
         for (let i = 0; i <= inputs; i++) {
@@ -90,7 +99,7 @@ vec4 neuralSampleBilinear(sampler2D source, vec2 uv) {
     let outputName = "";
     for (let layer = 0; layer < 3; layer++) {
         const inputs = layer === 0 ? 24 : 32;
-        const groups = layer === 2 ? 3 : 8;
+        const groups = layer === 2 ? Math.ceil(extension.network.outputs / 4) : 8;
         if (unroll) {
             outputName = `neuralLayer${layer}_`;
             for (let group = 0; group < groups; group++) {
@@ -126,7 +135,13 @@ vec4 neuralSampleBilinear(sampler2D source, vec2 uv) {
     }
     const channel = (index: number) => `${outputName}${unroll ? Math.floor(index / 4) : `[${Math.floor(index / 4)}]`}.${"xyzw"[index % 4]}`;
     const outputs = extension.outputs;
-    main += variable("neuralBaseColor", `${vec4}(${outputs.baseColor?.map(channel).join(", ") ?? "1.0"})`) + "\n";
+    const color = (channels: number[] | undefined, fallback: string) => {
+        if (!channels) {
+            return `${vec4}(${fallback})`;
+        }
+        return `${vec4}(${channels.map(channel).join(", ")}${channels.length === 3 ? ", 1.0" : ""})`;
+    };
+    main += variable("neuralBaseColor", color(outputs.baseColor, "1.0")) + "\n";
     main += variable("neuralNormal", `${vec4}(${outputs.normal?.map(channel).join(", ") ?? "0.5, 0.5"}, 0.0, 1.0)`) + "\n";
     main += `neuralNormal.z = sqrt(max(0.0, 1.0 - dot(neuralNormal.xy * 2.0 - ${vec2}(1.0), neuralNormal.xy * 2.0 - ${vec2}(1.0)))) * 0.5 + 0.5;\n`;
     main +=
@@ -134,5 +149,14 @@ vec4 neuralSampleBilinear(sampler2D source, vec2 uv) {
             "neuralORM",
             `${vec4}(${outputs.occlusion ? channel(outputs.occlusion[0]) : "1.0"}, ${outputs.roughness ? channel(outputs.roughness[0]) : "1.0"}, ${outputs.metallic ? channel(outputs.metallic[0]) : "1.0"}, 1.0)`
         ) + "\n";
+    if (outputs.emissive) {
+        main += variable("neuralEmissive", color(outputs.emissive, "0.0, 0.0, 0.0, 1.0")) + "\n";
+    }
+    if (outputs.diffuse) {
+        main += variable("neuralDiffuse", color(outputs.diffuse, "1.0")) + "\n";
+    }
+    if (outputs.specular) {
+        main += variable("neuralSpecGloss", `${vec4}(${outputs.specular.map(channel).join(", ")}, ${outputs.glossiness ? channel(outputs.glossiness[0]) : "1.0"})`) + "\n";
+    }
     return { definitions, functions, main };
 }

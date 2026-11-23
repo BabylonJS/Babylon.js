@@ -13,7 +13,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
-import { GetNeuralTextureShader, PackNeuralTextureWeights } from "./neuralTextureShaders";
+import { GetNeuralTexturePackedSize, GetNeuralTextureShader, PackNeuralTextureWeights } from "./neuralTextureShaders";
 import { type NeuralTextureTiming } from "./neuralTextureTiming";
 
 /** @internal */
@@ -21,7 +21,27 @@ export interface INeuralTextureBaked {
     baseColor?: Texture;
     normal?: Texture;
     orm?: Texture;
+    emissive?: Texture;
+    diffuse?: Texture;
+    /** Specular RGB with glossiness in alpha. */
+    specGloss?: Texture;
 }
+
+/** Baked texture, decoder variable, GLSL output selector, and the slots that need it. */
+const BakedOutputs: Array<[keyof INeuralTextureBaked, string, number, string[]]> = [
+    ["baseColor", "neuralBaseColor", 0, ["baseColorTexture"]],
+    ["normal", "neuralNormal", 1, ["normalTexture"]],
+    ["orm", "neuralORM", 2, ["occlusionTexture", "metallicRoughnessTexture"]],
+    ["emissive", "neuralEmissive", 3, ["emissiveTexture"]],
+    ["diffuse", "neuralDiffuse", 4, ["KHR_materials_pbrSpecularGlossiness.diffuseTexture"]],
+    ["specGloss", "neuralSpecGloss", 5, ["KHR_materials_pbrSpecularGlossiness.specularGlossinessTexture"]],
+];
+
+// RGB of these is sRGB-encoded, as in the original images; alpha stays linear.
+const GammaOutputs = ["baseColor", "emissive", "diffuse", "specGloss"];
+
+// WebGPU guarantees four storage textures per compute stage by default.
+const MaxStorageTextures = 4;
 
 /**
  * Bakes base-level texels directly into RGBA8 GPU textures, then generates the
@@ -55,16 +75,10 @@ export async function BakeNeuralTextureAsync(
     if (width > engine.getCaps().maxTextureSize || height > engine.getCaps().maxTextureSize) {
         throw new Error("Neural texture resolution exceeds the engine texture size limit");
     }
-    const outputs: Array<[keyof INeuralTextureBaked, string, number]> = [];
-    if (extension.replacedSlots.includes("baseColorTexture")) {
-        outputs.push(["baseColor", "neuralBaseColor", 0]);
-    }
-    if (extension.replacedSlots.includes("normalTexture")) {
-        outputs.push(["normal", "neuralNormal", 1]);
-    }
-    if (extension.replacedSlots.includes("occlusionTexture") || extension.replacedSlots.includes("metallicRoughnessTexture")) {
-        outputs.push(["orm", "neuralORM", 2]);
-    }
+    const outputs = BakedOutputs.filter(([, , , slots]) => slots.some((slot) => extension.replacedSlots.includes(slot as never))).map(
+        ([slot, name, index]): [keyof INeuralTextureBaked, string, number] => [slot, name, index]
+    );
+    const packedSize = GetNeuralTexturePackedSize(extension.network.outputs);
     const result: INeuralTextureBaked = {};
     if (!outputs.length) {
         return result;
@@ -79,10 +93,10 @@ export async function BakeNeuralTextureAsync(
     let gpuQuery: Nullable<WebGLQuery> = null;
     try {
         checkCancelled();
-        parameters.addUniform("neuralWeights", 4, 563);
+        parameters.addUniform("neuralWeights", 4, packedSize);
         parameters.addUniform("neuralNetworkSize", 1);
         parameters.create();
-        parameters.updateFloatArray("neuralWeights", PackNeuralTextureWeights(weights));
+        parameters.updateFloatArray("neuralWeights", PackNeuralTextureWeights(weights, extension.network.outputs));
         parameters.updateFloat("neuralNetworkSize", 32);
         parameters.update();
         for (const [slot] of outputs) {
@@ -119,7 +133,7 @@ export async function BakeNeuralTextureAsync(
             });
             texture._parentContainer = container;
             texture.name = `Neural ${slot} (baked)`;
-            texture.gammaSpace = slot === "baseColor";
+            texture.gammaSpace = GammaOutputs.includes(slot);
             texture.wrapU = texture.wrapV = Texture.WRAP_ADDRESSMODE;
             result[slot] = texture;
         }
@@ -136,26 +150,30 @@ export async function BakeNeuralTextureAsync(
                 // the runtime cost of dynamic local-array indexing during full bakes.
                 true
             );
-            let declarations = `
-struct NeuralParameters { weights: array<vec4f, 563>, neuralNetworkSize: f32, };
+            const dispatchStart = timing ? performance.now() : 0;
+            // Each pass re-evaluates the network, so only outputs beyond the storage texture limit cost extra passes.
+            for (let first = 0; first < outputs.length; first += MaxStorageTextures) {
+                const pass = outputs.slice(first, first + MaxStorageTextures);
+                let declarations = `
+struct NeuralParameters { weights: array<vec4f, ${packedSize}>, neuralNetworkSize: f32, };
 @group(0) @binding(0) var<uniform> neuralParameters: NeuralParameters;\n`;
-            const bindings: ComputeBindingMapping = { neuralParameters: { group: 0, binding: 0 } };
-            for (let i = 0; i < 4; i++) {
-                declarations += `@group(0) @binding(${i * 2 + 2}) var neuralLatent${i}: texture_2d<f32>;\n`;
-                bindings[`neuralLatent${i}`] = { group: 0, binding: i * 2 + 2 };
-            }
-            let stores = "";
-            for (let i = 0; i < outputs.length; i++) {
-                const [slot, value] = outputs[i];
-                declarations += `@group(0) @binding(${i + 9}) var output_${slot}: texture_storage_2d<rgba8unorm, write>;\n`;
-                bindings[`output_${slot}`] = { group: 0, binding: i + 9 };
-                stores += `textureStore(output_${slot}, vec2i(globalId.xy), ${value});\n`;
-            }
-            const compute = new ComputeShader(
-                "neuralTextureBake",
-                engine,
-                {
-                    computeSource: `
+                const bindings: ComputeBindingMapping = { neuralParameters: { group: 0, binding: 0 } };
+                for (let i = 0; i < 4; i++) {
+                    declarations += `@group(0) @binding(${i * 2 + 2}) var neuralLatent${i}: texture_2d<f32>;\n`;
+                    bindings[`neuralLatent${i}`] = { group: 0, binding: i * 2 + 2 };
+                }
+                let stores = "";
+                for (let i = 0; i < pass.length; i++) {
+                    const [slot, value] = pass[i];
+                    declarations += `@group(0) @binding(${i + 9}) var output_${slot}: texture_storage_2d<rgba8unorm, write>;\n`;
+                    bindings[`output_${slot}`] = { group: 0, binding: i + 9 };
+                    stores += `textureStore(output_${slot}, vec2i(globalId.xy), ${value});\n`;
+                }
+                const compute = new ComputeShader(
+                    "neuralTextureBake",
+                    engine,
+                    {
+                        computeSource: `
 ${declarations}
 ${decoder.functions}
 @compute @workgroup_size(8, 8)
@@ -164,21 +182,23 @@ fn main(@builtin(global_invocation_id) globalId: vec3u) {
     ${decoder.main}
     ${stores}
 }`,
-                },
-                { bindingsMapping: bindings }
-            );
-            if (timing) {
-                compute.onCompiled = () => timing("bakeEffectCompile", phaseStart);
+                    },
+                    { bindingsMapping: bindings }
+                );
+                if (timing) {
+                    compute.onCompiled = () => timing("bakeEffectCompile", phaseStart);
+                }
+                compute.setUniformBuffer("neuralParameters", parameters);
+                for (let i = 0; i < 4; i++) {
+                    compute.setTexture(`neuralLatent${i}`, latents[i], false);
+                }
+                for (const [slot] of pass) {
+                    compute.setStorageTexture(`output_${slot}`, result[slot]!);
+                }
+                // eslint-disable-next-line no-await-in-loop
+                await compute.dispatchWhenReady(Math.ceil(width / 8), Math.ceil(height / 8), 1, 0);
+                checkCancelled();
             }
-            compute.setUniformBuffer("neuralParameters", parameters);
-            for (let i = 0; i < 4; i++) {
-                compute.setTexture(`neuralLatent${i}`, latents[i], false);
-            }
-            for (const [slot] of outputs) {
-                compute.setStorageTexture(`output_${slot}`, result[slot]!);
-            }
-            const dispatchStart = timing ? performance.now() : 0;
-            await compute.dispatchWhenReady(Math.ceil(width / 8), Math.ceil(height / 8), 1, 0);
             timing?.("bakeCompileAndDispatch", dispatchStart);
             checkCancelled();
             phaseStart = timing ? performance.now() : 0;
@@ -188,21 +208,37 @@ fn main(@builtin(global_invocation_id) globalId: vec3u) {
             timing?.("mipmapSubmission", phaseStart);
         } else {
             const decoder = GetNeuralTextureShader(extension, ShaderLanguage.GLSL, "gl_FragCoord.xy / neuralResolution");
+            // Only the baked outputs are referenced: the other groups may not be declared by the decoder.
+            let glslSelector = outputs[outputs.length - 1][1];
+            for (let i = outputs.length - 2; i >= 0; i--) {
+                glslSelector = `neuralOutput == ${outputs[i][2]} ? ${outputs[i][1]} : (${glslSelector})`;
+            }
             shaderName =
-                "neuralTextureBake_" +
-                [extension.outputs.baseColor, extension.outputs.normal, extension.outputs.occlusion, extension.outputs.roughness, extension.outputs.metallic]
+                `neuralTextureBake_${extension.network.outputs}_` +
+                [
+                    extension.outputs.baseColor,
+                    extension.outputs.normal,
+                    extension.outputs.occlusion,
+                    extension.outputs.roughness,
+                    extension.outputs.metallic,
+                    extension.outputs.emissive,
+                    extension.outputs.diffuse,
+                    extension.outputs.specular,
+                    extension.outputs.glossiness,
+                ]
                     .map((channels) => channels?.join("_") ?? "none")
-                    .join("__");
+                    .join("__") +
+                `_o${outputs.map(([, , index]) => index).join("")}`;
             ShaderStore.ShadersStore[`${shaderName}VertexShader`] = "attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }";
             ShaderStore.ShadersStore[`${shaderName}PixelShader`] = `
 precision highp float;
-layout(std140) uniform NeuralParameters { vec4 neuralWeights[563]; float neuralNetworkSize; };
+layout(std140) uniform NeuralParameters { vec4 neuralWeights[${packedSize}]; float neuralNetworkSize; };
 uniform vec2 neuralResolution;
 uniform int neuralOutput;
 ${decoder.definitions}
 void main() {
     ${decoder.main}
-    gl_FragColor = neuralOutput == 0 ? neuralBaseColor : (neuralOutput == 1 ? neuralNormal : neuralORM);
+    gl_FragColor = ${glslSelector};
 }`;
             wrapper = new EffectWrapper({
                 engine,
