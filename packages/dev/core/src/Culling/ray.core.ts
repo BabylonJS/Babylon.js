@@ -10,10 +10,13 @@ import { type Plane } from "core/Maths/math.plane";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { PickingInfo } from "core/Collisions/pickingInfo";
 import { EngineStore } from "core/Engines/engineStore";
+import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type Scene } from "core/scene";
 import { type Camera } from "core/Cameras/camera";
 import { type Mesh } from "core/Meshes/mesh";
 import { _ImportHelper } from "core/import.helper";
+
+type RayDepthConvention = Pick<AbstractEngine, "isNDCHalfZRange" | "useReverseDepthBuffer">;
 
 /**
  * Type used to define predicate for selecting meshes and instances (if exist)
@@ -529,6 +532,7 @@ export class Ray {
      * @param view view matrix
      * @param projection projection matrix
      * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
+     * @param depthConvention defines the projection's depth range and order (defaults to the last created engine's convention)
      * @returns this ray updated
      */
     public update(
@@ -539,7 +543,8 @@ export class Ray {
         world: DeepImmutable<Matrix>,
         view: DeepImmutable<Matrix>,
         projection: DeepImmutable<Matrix>,
-        enableDistantPicking: boolean = false
+        enableDistantPicking: boolean = false,
+        depthConvention?: RayDepthConvention
     ): Ray {
         if (enableDistantPicking) {
             // With world matrices having great values (like 8000000000 on 1 or more scaling or position axis),
@@ -551,13 +556,13 @@ export class Ray {
                 Ray._RayDistant = Ray.Zero();
             }
 
-            Ray._RayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection);
+            Ray._RayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection, depthConvention);
 
             const tm = TmpVectors.Matrix[0];
             world.invertToRef(tm);
             Ray.TransformToRef(Ray._RayDistant, tm, this);
         } else {
-            this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
+            this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection, depthConvention);
         }
 
         return this;
@@ -678,6 +683,7 @@ export class Ray {
      * @param world defines the world matrix to use (can be set to Identity to go to world space)
      * @param view defines the view matrix to use
      * @param projection defines the projection matrix to use
+     * @param depthConvention defines the projection's depth range and order (defaults to the last created engine's convention)
      */
     public unprojectRayToRef(
         sourceX: float,
@@ -686,18 +692,19 @@ export class Ray {
         viewportHeight: number,
         world: DeepImmutable<Matrix>,
         view: DeepImmutable<Matrix>,
-        projection: DeepImmutable<Matrix>
+        projection: DeepImmutable<Matrix>,
+        depthConvention?: RayDepthConvention
     ): void {
         const matrix = TmpVectors.Matrix[0];
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
         matrix.invert();
 
-        const engine = EngineStore.LastCreatedEngine;
+        const convention = depthConvention ?? EngineStore.LastCreatedEngine;
         const nearScreenSource = TmpVectors.Vector3[0];
         nearScreenSource.x = (sourceX / viewportWidth) * 2 - 1;
         nearScreenSource.y = -((sourceY / viewportHeight) * 2 - 1);
-        nearScreenSource.z = engine?.useReverseDepthBuffer ? 1 : engine?.isNDCHalfZRange ? 0 : -1;
+        nearScreenSource.z = convention?.useReverseDepthBuffer ? 1 : convention?.isNDCHalfZRange ? 0 : -1;
 
         // far Z need to be close but < to 1 or camera projection matrix with maxZ = 0 will NaN
         const farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-8);
@@ -775,7 +782,8 @@ export function CreatePickingRayToRef(
         world ? world : Matrix.IdentityReadOnly,
         cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(),
         camera.getProjectionMatrix(),
-        enableDistantPicking
+        enableDistantPicking,
+        engine
     );
     return scene;
 }
@@ -825,7 +833,7 @@ export function CreatePickingRayInCameraSpaceToRef(scene: Scene, x: number, y: n
     const levelInv = 1 / engine.getHardwareScalingLevel();
     x = x * levelInv - vx;
     y = y * levelInv - (renderHeight - vy - height);
-    result.update(x, y, width, height, identity, identity, camera.getProjectionMatrix());
+    result.update(x, y, width, height, identity, identity, camera.getProjectionMatrix(), false, engine);
     return scene;
 }
 
