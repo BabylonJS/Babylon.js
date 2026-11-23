@@ -848,7 +848,8 @@ export class FluidRenderingTargetRenderer {
 
             effect.setVector3("dirLight", this.dirLight);
 
-            // Without a perspective far plane, still reject pixels that contain the cleared depth.
+            // With an infinite perspective far plane, use the clear value to reject pixels without particles.
+            // This also discards fluid samples at view-space depths of 1,000,000 units or more.
             const { maxZ, mode } = camera;
             const farDepth = mode === Camera.PERSPECTIVE_CAMERA && maxZ === 0 ? this._depthClearColor.r : maxZ;
             effect.setFloat("cameraFar", farDepth);
