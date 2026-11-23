@@ -6153,6 +6153,16 @@
             "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;"
         },
         {
+            "title": "WebGL2 - right-handed orthographic fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-orthographic-fluid-occlusion.png",
+            "renderCount": 32,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Cameras", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, camera.fov = 0.9;, camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA; camera.orthoLeft = -2.4; camera.orthoRight = 2.4; camera.orthoBottom = -1.35; camera.orthoTop = 1.35;"
+        },
+        {
             "title": "WebGPU depth - right-handed fluid particle occlusion",
             "playgroundId": "#7U2BZN#0",
             "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",

@@ -46,10 +46,12 @@ varying vec2 vUV;
 
 float computeNdcDepth(float depth) {
 #ifdef FLUIDRENDERING_RHS
-    return -projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    float viewZ = -depth;
 #else
-    return projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    float viewZ = depth;
 #endif
+    vec2 clipZW = projectionMatrix[2].zw * viewZ + projectionMatrix[3].zw;
+    return clipZW.x / clipZW.y;
 }
 
 vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {

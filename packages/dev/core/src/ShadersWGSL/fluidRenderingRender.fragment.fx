@@ -53,10 +53,12 @@ varying vUV: vec2f;
 
 fn computeNdcDepth(depth: f32) -> f32 {
 #ifdef FLUIDRENDERING_RHS
-    return -uniforms.projectionMatrix[2].z + uniforms.projectionMatrix[3].z / depth;
+    let viewZ = -depth;
 #else
-    return uniforms.projectionMatrix[2].z + uniforms.projectionMatrix[3].z / depth;
+    let viewZ = depth;
 #endif
+    let clipZW = uniforms.projectionMatrix[2].zw * viewZ + uniforms.projectionMatrix[3].zw;
+    return clipZW.x / clipZW.y;
 }
 
 fn computeViewPosFromUVDepth(texCoord: vec2f, depth: f32) -> vec3f {
