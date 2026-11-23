@@ -624,6 +624,18 @@ export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderi
                         decodeInShader: neuralShaderDecode.toLowerCase() === "true",
                     };
                 }
+                const neuralBakeMips = neuralParams.get("neuralBakeMips");
+                const neuralRuntimeFilter = neuralParams.get("neuralRuntimeFilter");
+                const neuralLodBias = Number(neuralParams.get("neuralLodBias"));
+                if (neuralBakeMips === "generate" || neuralBakeMips === "neural") {
+                    loader.extensionOptions.BABYLON_materials_neural_texture = { ...loader.extensionOptions.BABYLON_materials_neural_texture, bakeMips: neuralBakeMips };
+                }
+                if (neuralRuntimeFilter === "bilinear" || neuralRuntimeFilter === "nearest" || neuralRuntimeFilter === "trilinear" || neuralRuntimeFilter === "stochastic") {
+                    loader.extensionOptions.BABYLON_materials_neural_texture = { ...loader.extensionOptions.BABYLON_materials_neural_texture, runtimeFilter: neuralRuntimeFilter };
+                }
+                if (neuralLodBias) {
+                    loader.extensionOptions.BABYLON_materials_neural_texture = { ...loader.extensionOptions.BABYLON_materials_neural_texture, lodBias: neuralLodBias };
+                }
                 if (neuralParams.get("neuralTiming")?.toLowerCase() === "true") {
                     loader.extensionOptions.BABYLON_materials_neural_texture = {
                         ...loader.extensionOptions.BABYLON_materials_neural_texture,
