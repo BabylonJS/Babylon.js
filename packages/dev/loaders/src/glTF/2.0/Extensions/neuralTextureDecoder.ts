@@ -1,4 +1,5 @@
 import { type IBabylonMaterialsNeuralTexture, type NeuralTextureOutputs } from "./BABYLON_materials_neural_texture.types";
+import { GetNeuralV4Layout } from "./neuralTextureV4";
 
 /** @internal */
 export interface INeuralTextureGrid {
@@ -59,8 +60,20 @@ export function ResolveNeuralTexture(context: string, extension: IBabylonMateria
     if (extension?.codec === "babylon-ntc-v2") {
         return ResolveV2(context, extension);
     }
+    if (extension?.codec === "babylon-ntc-v4") {
+        return ResolveV4(context, extension);
+    }
     ValidateV1(context, extension);
     return extension;
+}
+
+function ResolveV4(context: string, extension: IBabylonMaterialsNeuralTexture): IBabylonMaterialsNeuralTexture {
+    const invalid = (reason: string) => new Error(`${context}: Unsupported or invalid babylon-ntc-v4 payload (${reason})`);
+    const { layout, error } = GetNeuralV4Layout(extension);
+    if (!layout) {
+        throw invalid(error);
+    }
+    return { ...extension, outputs: ResolveGroupOutputs(extension, layout.channels.length, invalid) };
 }
 
 /** @internal */
@@ -70,7 +83,7 @@ export function ValidateNeuralTexture(context: string, extension: IBabylonMateri
 
 function ValidateV1(context: string, extension: IBabylonMaterialsNeuralTexture): void {
     const network = extension.network;
-    const dimensions = [extension.resolution, extension.hiResolution, extension.loResolution];
+    const dimensions = [extension.resolution, extension.hiResolution!, extension.loResolution];
     const outputs = extension.outputs;
     if (
         extension.version !== 1 ||
@@ -122,7 +135,7 @@ function ValidateV1(context: string, extension: IBabylonMaterialsNeuralTexture):
 function ResolveV2(context: string, extension: IBabylonMaterialsNeuralTexture): IBabylonMaterialsNeuralTexture {
     const network = extension.network;
     const count = network?.outputs;
-    const dimensions = [extension.resolution, extension.hiResolution, extension.loResolution];
+    const dimensions = [extension.resolution, extension.hiResolution!, extension.loResolution];
     const invalid = (reason: string) => new Error(`${context}: Unsupported or invalid babylon-ntc-v2 payload (${reason})`);
     if (
         extension.version !== 1 ||
@@ -143,6 +156,11 @@ function ResolveV2(context: string, extension: IBabylonMaterialsNeuralTexture): 
     if (extension.weights.count !== GetNeuralTextureWeightCount(count)) {
         throw invalid("weights.count");
     }
+    return { ...extension, outputs: ResolveGroupOutputs(extension, count, invalid) };
+}
+
+// Checks the outputs and replacedSlots of babylon-ntc-v2 and v4, and expresses every group as explicit channel indices into the `count` logical channels.
+function ResolveGroupOutputs(extension: IBabylonMaterialsNeuralTexture, count: number, invalid: (reason: string) => Error): NeuralTextureOutputs {
     if (
         !extension.outputs ||
         !Array.isArray(extension.replacedSlots) ||
@@ -191,8 +209,9 @@ function ResolveV2(context: string, extension: IBabylonMaterialsNeuralTexture): 
             throw invalid(`replacedSlots ${slot} without its outputs`);
         }
     }
-    return { ...extension, outputs };
+    return outputs;
 }
+
 function SampleGrid(grid: INeuralTextureGrid, u: number, v: number, target: Float32Array, offset: number): void {
     const x = u * grid.width - 0.5;
     const y = v * grid.height - 0.5;
@@ -276,7 +295,7 @@ export async function DecodeNeuralTextureAsync(
             throw new Error("Neural texture decoding cancelled");
         }
         const v = (y + 0.5) / height;
-        const py = ((v * extension.hiResolution[1]) % 1) * 2 * Math.PI;
+        const py = ((v * extension.hiResolution![1]) % 1) * 2 * Math.PI;
         input[17] = Math.sin(py);
         input[19] = Math.cos(py);
         input[21] = Math.sin(2 * py);
@@ -286,7 +305,7 @@ export async function DecodeNeuralTextureAsync(
             for (let grid = 0; grid < 4; grid++) {
                 SampleGrid(grids[grid], u, v, input, grid * 4);
             }
-            const px = ((u * extension.hiResolution[0]) % 1) * 2 * Math.PI;
+            const px = ((u * extension.hiResolution![0]) % 1) * 2 * Math.PI;
             input[16] = Math.sin(px);
             input[18] = Math.cos(px);
             input[20] = Math.sin(2 * px);

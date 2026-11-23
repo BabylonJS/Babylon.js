@@ -84,9 +84,26 @@ export class NeuralTextureMaterialPlugin extends MaterialPluginBase {
         if (shaderType !== "fragment" || !this._extension) {
             return null;
         }
+        return GetNeuralCustomCode(this._extension, shaderLanguage, GetNeuralTextureShader(this._extension, shaderLanguage, "uv"));
+    }
+}
+
+/**
+ * The fragment injection shared by the babylon-ntc-v1/v2 and babylon-ntc-v4 plugins: replaces the samples of the replaced slots by a decode.
+ * @param extension the resolved payload
+ * @param shaderLanguage the language of the shader
+ * @param shader the decoder, whose main evaluates `uv` into the neural* group variables
+ * @returns the custom code of the PBR fragment shader
+ * @internal
+ */
+export function GetNeuralCustomCode(
+    extension: IBabylonMaterialsNeuralTexture,
+    shaderLanguage: ShaderLanguage,
+    shader: { definitions: string; main: string; mainBegin?: string; preamble?: string }
+) {
+    {
         const wgsl = shaderLanguage === ShaderLanguage.WGSL;
-        const shader = GetNeuralTextureShader(this._extension, shaderLanguage, "uv");
-        const outputs = this._extension.outputs;
+        const outputs = extension.outputs;
         // Optional groups exist in the decoder only when the payload provides them.
         const optional = [outputs.emissive ? "emissive" : "", outputs.diffuse ? "diffuse" : "", outputs.specular ? "specGloss" : ""].filter(Boolean);
         const fields = ["baseColor", "normal", "orm", ...optional];
@@ -101,7 +118,7 @@ export class NeuralTextureMaterialPlugin extends MaterialPluginBase {
             : `struct NeuralTexel { ${fields.map((field) => `vec4 ${field};`).join(" ")} };`;
         const declarationsPoint = "!\\bprecision highp float;";
         const code: Record<string, string> = {
-            [declarationsPoint]: wgsl ? "" : `precision highp float;\n${structure}`,
+            [declarationsPoint]: wgsl ? "" : `precision highp float;\n${shader.preamble ?? ""}${structure}`,
             CUSTOM_FRAGMENT_DEFINITIONS: wgsl
                 ? `
 ${structure}
@@ -129,6 +146,7 @@ NeuralTexel sampleNeural(vec2 uv) {
     return decodeNeural(uv);
 }`,
             CUSTOM_FRAGMENT_MAIN_BEGIN: `
+${shader.mainBegin ?? ""}
 neuralCachedUV = ${wgsl ? "fragmentInputs.vMainUV1" : "vMainUV1"};
 neuralCachedTexel = decodeNeural(neuralCachedUV);`,
         };
@@ -143,7 +161,7 @@ neuralCachedTexel = decodeNeural(neuralCachedUV);`,
             ["metallicRoughnessTexture", "reflectivity", "orm"],
             ["emissiveTexture", "emissive", "emissive"],
         ] as const) {
-            if (this._extension.replacedSlots.includes(slot) && !redirected.has(sampler)) {
+            if (extension.replacedSlots.includes(slot) && !redirected.has(sampler)) {
                 redirected.add(sampler);
                 const sample = `sampleNeural${sampler}`;
                 if (wgsl) {
