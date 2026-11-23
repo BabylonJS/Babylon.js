@@ -277,11 +277,12 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         if (options.faceForward && scene.activeCamera) {
             const camera = scene.activeCamera;
 
-            const forward = Vector3.Forward();
-            const direction = Vector3.TransformNormal(forward, camera.getViewMatrix());
-            direction.normalize();
+            // Turn the dome to the camera's yaw. The angle to the view space forward vector is
+            // unsigned and also counts the camera's pitch, so it only matched for a camera
+            // turned right and level.
+            const direction = camera.getDirection(Vector3.Forward());
 
-            this.rotation.y = Math.acos(Vector3.Dot(forward, direction));
+            this.rotation.y = Math.atan2(direction.x, direction.z);
         }
 
         this._changeTextureMode(this._textureMode);
