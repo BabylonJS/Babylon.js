@@ -100,6 +100,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var thickness: f32 = uniforms.thickness;
     var bgDepth: f32 = textureSample(bgDepthSampler, bgDepthSamplerSampler, texCoord).x;
     let depthNonLinear = computeNdcDepth(depth);
+    #ifdef USE_REVERSE_DEPTHBUFFER
+        let occluded = bgDepth >= depthNonLinear;
+    #else
+        let occluded = bgDepth <= depthNonLinear;
+    #endif
 #endif
 
     var backColor: vec4f = textureSample(textureSampler, textureSamplerSampler, texCoord);
@@ -107,7 +112,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
     if (depth >= uniforms.cameraFar || depth <= 0. || thickness <= uniforms.minimumThickness) {
 #else
-    if (depth >= uniforms.cameraFar || depth <= 0. || bgDepth <= depthNonLinear) {
+    if (depth >= uniforms.cameraFar || depth <= 0. || occluded) {
 #endif
     #ifdef FLUIDRENDERING_COMPOSITE_MODE
         fragmentOutputs.color = vec4f(backColor.rgb * backColor.a, backColor.a);

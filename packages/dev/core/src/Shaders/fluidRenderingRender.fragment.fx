@@ -95,6 +95,11 @@ void main(void) {
     #ifndef IS_NDC_HALF_ZRANGE
         depthNonLinear = depthNonLinear * 0.5 + 0.5;
     #endif
+    #ifdef USE_REVERSE_DEPTHBUFFER
+        bool occluded = bgDepth >= depthNonLinear;
+    #else
+        bool occluded = bgDepth <= depthNonLinear;
+    #endif
 #endif
 
     vec4 backColor = texture2D(textureSampler, texCoord);
@@ -102,7 +107,7 @@ void main(void) {
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
     if (depth >= cameraFar || depth <= 0. || thickness <= minimumThickness) {
 #else
-    if (depth >= cameraFar || depth <= 0. || bgDepth <= depthNonLinear) {
+    if (depth >= cameraFar || depth <= 0. || occluded) {
 #endif
     #ifdef FLUIDRENDERING_COMPOSITE_MODE
         glFragColor.rgb = backColor.rgb * backColor.a;
