@@ -25,7 +25,13 @@ import {
 } from "./neuralTextureV4";
 import { BakeNeuralV4Async, CreateNeuralV4WeightsTexture, type NeuralTextureBakeMips } from "./neuralTextureV4Baker";
 import { NeuralTextureV4MaterialPlugin } from "./neuralTextureV4MaterialPlugin";
-import { GetNeuralV4LatentTextureOrder, type NeuralTextureRuntimeFilter } from "./neuralTextureV4Shaders";
+import {
+    GetNeuralV4LatentTextureOrder,
+    type NeuralTextureRuntimeFilter,
+    type NeuralTextureRuntimePrecision,
+    type NeuralTextureRuntimeUnroll,
+    type NeuralTextureRuntimeWeights,
+} from "./neuralTextureV4Shaders";
 
 export { EnableNeuralTextureFileTiming } from "./neuralTextureTiming";
 
@@ -56,6 +62,12 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
     public runtimeFilter: NeuralTextureRuntimeFilter;
     /** babylon-ntc-v4 only: bias added to the mip selected by the in-shader decode. */
     public lodBias: number;
+    /** babylon-ntc-v4 only: network parameters of the in-shader decode in the "texture" (default) or a "uniform" buffer. */
+    public runtimeWeights: NeuralTextureRuntimeWeights;
+    /** babylon-ntc-v4 only: loop unrolling of the in-shader network, "none" (default), "inner" or "full". */
+    public runtimeUnroll: NeuralTextureRuntimeUnroll;
+    /** babylon-ntc-v4 only: arithmetic precision of the in-shader network, "f32" (default) or "f16". */
+    public runtimePrecision: NeuralTextureRuntimePrecision;
 
     private _loader: GLTFLoader;
     private _disposed = false;
@@ -70,6 +82,9 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
         this.bakeMips = options?.bakeMips ?? "generate";
         this.runtimeFilter = options?.runtimeFilter ?? "bilinear";
         this.lodBias = options?.lodBias ?? 0;
+        this.runtimeWeights = options?.runtimeWeights ?? "texture";
+        this.runtimeUnroll = options?.runtimeUnroll ?? "none";
+        this.runtimePrecision = options?.runtimePrecision ?? "f32";
     }
 
     /** @internal */
@@ -358,7 +373,8 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
     ): Promise<void> {
         const scene = this._loader.babylonScene;
         const container = this._loader._assetContainer;
-        const weightsTexture = CreateNeuralV4WeightsTexture(scene, PackNeuralV4WeightTexture(layout, half), container);
+        const packedWeights = PackNeuralV4WeightTexture(layout, half);
+        const weightsTexture = CreateNeuralV4WeightsTexture(scene, packedWeights, container);
         if (this.decodeInShader) {
             const start = timing ? performance.now() : 0;
             // Core textures remain assigned to preserve texture defines, factors, alpha handling and tangent-space setup. Only their fragment samples are replaced.
@@ -379,7 +395,11 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                 babylonMaterial.emissiveTexture = placeholder("Neural emissive");
             }
             this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
-            new NeuralTextureV4MaterialPlugin(babylonMaterial, extension, layout, latents, weightsTexture, this.runtimeFilter, this.lodBias, timing);
+            new NeuralTextureV4MaterialPlugin(babylonMaterial, extension, layout, latents, weightsTexture, packedWeights, this.runtimeFilter, this.lodBias, timing, {
+                weights: this.runtimeWeights,
+                unroll: this.runtimeUnroll,
+                precision: this.runtimePrecision,
+            });
             timing?.("shaderPluginAndPlaceholderCreation", start);
             timing?.("materialLoad", materialStart);
             return;

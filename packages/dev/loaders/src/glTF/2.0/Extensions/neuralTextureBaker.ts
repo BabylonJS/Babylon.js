@@ -1,4 +1,5 @@
 import { type Scene } from "core/scene";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type AssetContainer } from "core/assetContainer";
 import { Constants } from "core/Engines/constants";
 import { ShaderStore } from "core/Engines/shaderStore";
@@ -44,6 +45,16 @@ const GammaOutputs = ["baseColor", "emissive", "diffuse", "specGloss"];
 const MaxStorageTextures = 4;
 
 /**
+ * Returns the engine's own WebGL 2 context. Querying the canvas again can return
+ * null (for example when the context was created with different attributes).
+ * @internal
+ */
+export function GetWebGL2Context(engine: AbstractEngine): Nullable<WebGL2RenderingContext> {
+    const gl = (engine as unknown as { _gl?: WebGLRenderingContext | WebGL2RenderingContext })._gl;
+    return gl && typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext ? gl : null;
+}
+
+/**
  * Bakes base-level texels directly into RGBA8 GPU textures, then generates the
  * complete mip chain. No latent readback or CPU network evaluation is used.
  * @internal
@@ -67,7 +78,7 @@ export async function BakeNeuralTextureAsync(
     if (engine.isWebGPU ? !engine.getCaps().supportComputeShaders : !engine.supportsUniformBuffers) {
         return null;
     }
-    const gl = engine.isWebGPU ? null : (engine.getRenderingCanvas()?.getContext("webgl2") as Nullable<WebGL2RenderingContext>);
+    const gl = engine.isWebGPU ? null : GetWebGL2Context(engine);
     if (!engine.isWebGPU && !gl) {
         return null;
     }

@@ -6,9 +6,23 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
 import { GetNeuralCustomCode } from "./neuralTextureMaterialPlugin";
-import { type INeuralV4Layout } from "./neuralTextureV4";
-import { GetNeuralV4RuntimeShader, type NeuralTextureRuntimeFilter } from "./neuralTextureV4Shaders";
+import { type INeuralV4Layout, type INeuralV4WeightTexture, HalfToFloat } from "./neuralTextureV4";
+import {
+    GetNeuralV4RuntimeShader,
+    NeuralV4WeightsUboName,
+    type INeuralV4ShaderOptions,
+    type NeuralTextureRuntimeFilter,
+    type NeuralTextureRuntimePrecision,
+    type NeuralTextureRuntimeUnroll,
+    type NeuralTextureRuntimeWeights,
+} from "./neuralTextureV4Shaders";
 import { type NeuralTextureTiming } from "./neuralTextureTiming";
+import { type Scene } from "core/scene.pure";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
+import { type SubMesh } from "core/Meshes/subMesh.pure";
+import { type DataBuffer } from "core/Buffers/dataBuffer";
+import { type Nullable } from "core/types";
+import { Logger } from "core/Misc/logger";
 
 function HashString(text: string): number {
     let hash = 2166136261;
@@ -28,8 +42,14 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
     private _layout: INeuralV4Layout;
     private _latents: BaseTexture[];
     private _weights: BaseTexture;
+    private _packedWeights: INeuralV4WeightTexture;
     private _timing?: NeuralTextureTiming;
     private _runtimeFilter: NeuralTextureRuntimeFilter;
+    private _runtimeWeights: NeuralTextureRuntimeWeights;
+    private _runtimeUnroll: NeuralTextureRuntimeUnroll;
+    private _runtimePrecision: NeuralTextureRuntimePrecision;
+    private _weightsUbo: Nullable<DataBuffer> = null;
+    private _warned = new Set<string>();
     private _debugChannels: number[] | undefined;
 
     /** Bias added to the mip level selected from the UV derivatives. */
@@ -43,9 +63,11 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         layout: INeuralV4Layout,
         latents: BaseTexture[],
         weights: BaseTexture,
+        packedWeights: INeuralV4WeightTexture,
         runtimeFilter: NeuralTextureRuntimeFilter = "bilinear",
         lodBias = 0,
-        timing?: NeuralTextureTiming
+        timing?: NeuralTextureTiming,
+        shaderOptions: INeuralV4ShaderOptions = {}
     ) {
         super(material, "BABYLON_materials_neural_texture", 190, { NEURAL_LAYOUT: 0 }, false);
         this.doNotSerialize = true;
@@ -53,8 +75,12 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         this._layout = layout;
         this._latents = latents;
         this._weights = weights;
+        this._packedWeights = packedWeights;
         this._timing = timing;
         this._runtimeFilter = runtimeFilter;
+        this._runtimeWeights = shaderOptions.weights ?? "texture";
+        this._runtimeUnroll = shaderOptions.unroll ?? "none";
+        this._runtimePrecision = shaderOptions.precision ?? "f32";
         this.lodBias = lodBias;
         this._pluginManager._addPlugin(this);
         this._enable(true);
@@ -72,6 +98,42 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         }
     }
 
+    /** Source of the network parameters: "texture" (the default, RGBA16F texel fetches) or "uniform" (a fp32 uniform buffer, when it fits the device limit). */
+    public get runtimeWeights(): NeuralTextureRuntimeWeights {
+        return this._runtimeWeights;
+    }
+
+    public set runtimeWeights(value: NeuralTextureRuntimeWeights) {
+        if (value !== this._runtimeWeights) {
+            this._runtimeWeights = value;
+            this.markAllDefinesAsDirty();
+        }
+    }
+
+    /** Network loop generation: "none" (the default), "inner" (dot products unrolled) or "full" (every neuron unrolled). */
+    public get runtimeUnroll(): NeuralTextureRuntimeUnroll {
+        return this._runtimeUnroll;
+    }
+
+    public set runtimeUnroll(value: NeuralTextureRuntimeUnroll) {
+        if (value !== this._runtimeUnroll) {
+            this._runtimeUnroll = value;
+            this.markAllDefinesAsDirty();
+        }
+    }
+
+    /** Network arithmetic: "f32" (the default) or "f16" (WGSL f16 when the shader-f16 feature is enabled, GLSL mediump). */
+    public get runtimePrecision(): NeuralTextureRuntimePrecision {
+        return this._runtimePrecision;
+    }
+
+    public set runtimePrecision(value: NeuralTextureRuntimePrecision) {
+        if (value !== this._runtimePrecision) {
+            this._runtimePrecision = value;
+            this.markAllDefinesAsDirty();
+        }
+    }
+
     /** Logical channel indices written to the base color instead of the payload outputs. Debug and test aid: the material must replace its base color. */
     public get debugChannels(): number[] | undefined {
         return this._debugChannels;
@@ -82,13 +144,62 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         this.markAllDefinesAsDirty();
     }
 
+    private _warnOnce(message: string): void {
+        if (!this._warned.has(message)) {
+            this._warned.add(message);
+            Logger.Warn(message);
+        }
+    }
+
+    /**
+     * The options that the device supports: unsupported requests fall back to the texture and f32.
+     * @returns the effective options
+     */
+    private _getEffectiveOptions(): Required<INeuralV4ShaderOptions> {
+        const engine = this._material.getScene().getEngine();
+        let weights = this._runtimeWeights;
+        if (weights === "uniform") {
+            const bytes = this._packedWeights.width * this._packedWeights.height * 16;
+            let maxBytes = 0;
+            if (engine.supportsUniformBuffers) {
+                if (engine.isWebGPU) {
+                    maxBytes = engine.getCaps().maxFragmentUniformVectors * 4;
+                } else {
+                    const gl = (engine as unknown as { _gl?: WebGL2RenderingContext })._gl;
+                    maxBytes = gl ? (gl.getParameter(gl.MAX_UNIFORM_BLOCK_SIZE) as number) : 0;
+                }
+            }
+            if (bytes > maxBytes) {
+                this._warnOnce(`BABYLON_materials_neural_texture: ${bytes} bytes of uniform weights exceed the ${maxBytes} bytes limit; using the weights texture`);
+                weights = "texture";
+            }
+        }
+        let precision = this._runtimePrecision;
+        if (precision === "f16" && engine.isWebGPU && !(engine as unknown as { enabledExtensions?: string[] }).enabledExtensions?.includes("shader-f16")) {
+            this._warnOnce("BABYLON_materials_neural_texture: the shader-f16 WebGPU feature is not enabled; using f32");
+            precision = "f32";
+        }
+        return { weights, unroll: this._runtimeUnroll, precision };
+    }
+
     public override isCompatible(): boolean {
         return true;
     }
 
     public override prepareDefines(defines: MaterialDefines): void {
+        const options = this._getEffectiveOptions();
         defines["NEURAL_LAYOUT"] = HashString(
-            JSON.stringify([this._layout.channels, this._layout.grids, this._extension.outputs, this._extension.replacedSlots, this._runtimeFilter, this._debugChannels])
+            JSON.stringify([
+                this._layout.channels,
+                this._layout.grids,
+                this._extension.outputs,
+                this._extension.replacedSlots,
+                this._runtimeFilter,
+                options.weights,
+                options.unroll,
+                options.precision,
+                this._debugChannels,
+            ])
         );
     }
 
@@ -97,17 +208,40 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         samplers.push("neuralWeightTex");
     }
 
+    public override getUniformBuffersNames(ubos: string[]): void {
+        ubos.push(NeuralV4WeightsUboName);
+    }
+
     public override getUniforms() {
         return { ubo: [{ name: "neuralParams", size: 4, type: "vec4" }] };
     }
 
-    public override bindForSubMesh(uniformBuffer: UniformBuffer): void {
+    public override bindForSubMesh(uniformBuffer: UniformBuffer, _scene: Scene, engine: AbstractEngine, subMesh: SubMesh): void {
         const start = this._timing ? performance.now() : 0;
         uniformBuffer.updateFloat4("neuralParams", this._material.getScene().getFrameId() & 0xffff, this.lodBias, this.forceMip, 0);
         this._latents.forEach((latent, i) => uniformBuffer.setTexture(`neuralLatent${i}`, latent));
         uniformBuffer.setTexture("neuralWeightTex", this._weights);
+        if (this._runtimeWeights === "uniform" && subMesh.effect) {
+            if (!this._weightsUbo) {
+                const half = this._packedWeights.data;
+                const data = new Float32Array(half.length);
+                for (let i = 0; i < half.length; i++) {
+                    data[i] = HalfToFloat(half[i]);
+                }
+                this._weightsUbo = engine.createUniformBuffer(data, "NeuralWeights");
+            }
+            // Ignored when the effect does not declare the block (texture fallback).
+            subMesh.effect.bindUniformBuffer(this._weightsUbo, NeuralV4WeightsUboName);
+        }
         this._timing?.("shaderWeightsUploadAndBind", start);
         this._timing = undefined;
+    }
+
+    public override dispose(): void {
+        if (this._weightsUbo) {
+            this._material.getScene().getEngine()._releaseBuffer(this._weightsUbo);
+            this._weightsUbo = null;
+        }
     }
 
     public override getActiveTextures(activeTextures: BaseTexture[]): void {
@@ -130,6 +264,10 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
                 replacedSlots: [...new Set([...extension.replacedSlots, "baseColorTexture" as const])],
             };
         }
-        return GetNeuralCustomCode(extension, shaderLanguage, GetNeuralV4RuntimeShader(this._layout, extension.outputs, shaderLanguage, this._runtimeFilter));
+        return GetNeuralCustomCode(
+            extension,
+            shaderLanguage,
+            GetNeuralV4RuntimeShader(this._layout, extension.outputs, shaderLanguage, this._runtimeFilter, this._getEffectiveOptions())
+        );
     }
 }

@@ -10,6 +10,38 @@ import { GetNeuralV4RowOffsets, type INeuralV4Layout } from "./neuralTextureV4";
 /** Filtering of the runtime (decodeInShader) mode. */
 export type NeuralTextureRuntimeFilter = "bilinear" | "nearest" | "trilinear" | "stochastic";
 
+/** Source of the network parameters: the RGBA16F data texture or a uniform buffer (fp32, same texel layout). */
+export type NeuralTextureRuntimeWeights = "texture" | "uniform";
+
+/** Network loop generation: kept as loops, inner (per-neuron dot products) unrolled, or fully unrolled. */
+export type NeuralTextureRuntimeUnroll = "none" | "inner" | "full";
+
+/** Network arithmetic precision: f32, or f16 (WGSL f16 with the shader-f16 feature, GLSL mediump). */
+export type NeuralTextureRuntimePrecision = "f32" | "f16";
+
+/** Code generation options of the network evaluation. @internal */
+export interface INeuralV4ShaderOptions {
+    weights?: NeuralTextureRuntimeWeights;
+    unroll?: NeuralTextureRuntimeUnroll;
+    precision?: NeuralTextureRuntimePrecision;
+}
+
+/** Name of the uniform buffer that holds the network parameters in the "uniform" weights mode. @internal */
+export const NeuralV4WeightsUboName = "neuralWeights";
+
+/**
+ * Number of vec4 of the uniform weights buffer: the data texture texels, row by row.
+ * @param layout the payload layout
+ * @returns the vec4 count
+ * @internal
+ */
+export function GetNeuralV4WeightsVec4Count(layout: INeuralV4Layout): number {
+    const width = Math.max(...layout.layers.map((layer) => layer.inStride / 4 + 1));
+    const rows = GetNeuralV4RowOffsets(layout.layers);
+    const last = layout.layers[layout.layers.length - 1];
+    return width * Math.max(1, rows[rows.length - 1] + Math.ceil(last.out / 4) * 4);
+}
+
 /** The shader pieces of the runtime decode. @internal */
 export interface INeuralV4RuntimeShader {
     /** Declarations and functions, for CUSTOM_FRAGMENT_DEFINITIONS. */
@@ -126,10 +158,18 @@ export function GetNeuralV4LatentTextureOrder(layout: INeuralV4Layout): number[]
  * Uniform neuralParams (a vec4) is declared by the caller and neuralParams.w must be 0: it keeps compilers from unrolling the network loops.
  * @param layout the payload layout
  * @param lang the language description
+ * @param options the runtime weights, unroll and precision options
  * @returns the shader source
  */
-function GetDecodeSource(layout: INeuralV4Layout, lang: ILanguage): string {
+function GetDecodeSource(layout: INeuralV4Layout, lang: ILanguage, options: INeuralV4ShaderOptions = {}): string {
     const wgsl = lang.wgsl;
+    const uniformWeights = options.weights === "uniform";
+    const unroll = options.unroll ?? "none";
+    const f16 = options.precision === "f16";
+    // Network value types: f16 in WGSL, mediump in GLSL (a hint that desktop GPUs ignore).
+    const nv4 = f16 ? (wgsl ? "vec4h" : "mediump vec4") : lang.vec4;
+    const nv4Ctor = f16 && wgsl ? "vec4h" : lang.vec4;
+    const toNet = (e: string) => (f16 && wgsl ? `f16(${e})` : e);
     const [g0, g1] = layout.grids;
     const out: string[] = [];
     const net4 = GetNeuralV4NetVec4Count(layout);
@@ -142,6 +182,20 @@ function GetDecodeSource(layout: INeuralV4Layout, lang: ILanguage): string {
         out.push(wgsl ? `var neuralLatent${i}: ${lang.texture};\nvar neuralLatent${i}Sampler: sampler;` : `uniform sampler2D neuralLatent${i};`);
     }
     out.push(wgsl ? `var neuralWeightTex: ${lang.texture};\nvar neuralWeightTexSampler: sampler;` : "uniform sampler2D neuralWeightTex;");
+    if (uniformWeights) {
+        const count = GetNeuralV4WeightsVec4Count(layout);
+        out.push(
+            wgsl
+                ? `struct NeuralWeightsBlock { w: array<vec4f, ${count}>, };\nvar<uniform> ${NeuralV4WeightsUboName} : NeuralWeightsBlock;`
+                : `layout(std140) uniform ${NeuralV4WeightsUboName} { highp vec4 neuralW[${count}]; };`
+        );
+    }
+    if (f16 && wgsl) {
+        // Hoisted to the top of the module by the WGSL shader processor.
+        out.push("enable f16;");
+        out.push(`fn neuralHardGeluH(z: f16) -> f16 { if (z < -1.5h) { return 0.0h; } if (z > 1.5h) { return z; } return z * (z + 1.5h) / 3.0h; }
+fn neuralHardGelu4H(z: vec4h) -> vec4h { return vec4h(neuralHardGeluH(z.x), neuralHardGeluH(z.y), neuralHardGeluH(z.z), neuralHardGeluH(z.w)); }`);
+    }
     out.push(wgsl ? `var<private> neuralNet: array<vec4f, ${net4}>;` : `vec4 neuralNet[${net4}];`);
     out.push(
         wgsl
@@ -200,7 +254,7 @@ vec4 neuralHardGelu4(vec4 z) { return vec4(neuralHardGelu(z.x), neuralHardGelu(z
         return `((${q} - ${Lit(2 ** (grid.bits - 1) - 1)}) * ${Lit(1 / 2 ** grid.bits)})`;
     };
     const slot = (g: number, image: number) => (g === 0 ? 0 : g0.textures.length) + image;
-    const store = (index: number, value: string) => b.push(`x[${index >> 2}].${"xyzw"[index & 3]} = ${value};`);
+    const store = (index: number, value: string) => b.push(`x[${index >> 2}].${"xyzw"[index & 3]} = ${toNet(value)};`);
 
     b.push(d(lang.int, "lv", `min(${levels - 1}, max(0, (m >> 1) - 1))`));
     b.push(d(lang.int, "wm", `max(1, ${lang.shr(layout.width, "m")})`));
@@ -208,9 +262,9 @@ vec4 neuralHardGelu4(vec4 z) { return vec4(neuralHardGelu(z.x), neuralHardGelu(z
     b.push(d(lang.float, "fi", `${lang.toFloat("i")} + 0.5`));
     b.push(d(lang.float, "fj", `${lang.toFloat("j")} + 0.5`));
     if (wgsl) {
-        b.push(`var x: array<vec4f, ${in4}>;`);
+        b.push(`var x: array<${nv4}, ${in4}>;`);
     } else {
-        b.push(`vec4 x[${in4}];`);
+        b.push(`${nv4} x[${in4}];`);
         b.push(`for (int q = 0; q < ${in4}; q++) { x[q] = vec4(0.0); }`);
     }
     let index = 0;
@@ -261,30 +315,68 @@ vec4 neuralHardGelu4(vec4 z) { return vec4(neuralHardGelu(z.x), neuralHardGelu(z
 
     if (layout.netOutputs > 0) {
         const groups = [16, 16, Math.ceil(layout.netOutputs / 4)];
+        const width = Math.max(...layout.layers.map((layer) => layer.inStride / 4 + 1));
+        const isNumber = (e: string) => /^\d+$/.test(e);
+        // Weight texel k of row `row`; literal indices are folded.
+        const weight = (k: string, row: string) => {
+            let value: string;
+            if (uniformWeights) {
+                const index = isNumber(k) && isNumber(row) ? String(+row * width + +k) : `(${row}) * ${width} + ${k}`;
+                value = wgsl ? `${NeuralV4WeightsUboName}.w[${index}]` : `neuralW[${index}]`;
+            } else {
+                value = wgsl ? `textureLoad(neuralWeightTex, vec2i(${k}, ${row}), 0)` : `texelFetch(neuralWeightTex, ivec2(${k}, ${row}), 0)`;
+            }
+            return f16 && wgsl ? `vec4h(${value})` : value;
+        };
         b.push(d(lang.int, "z", lang.toInt(`${lang.params}.w`)));
-        b.push(wgsl ? `var hid0: array<vec4f, 16>;\nvar hid1: array<vec4f, 16>;\nvar y2: array<vec4f, ${groups[2]}>;` : `vec4 hid0[16];\nvec4 hid1[16];\nvec4 y2[${groups[2]}];`);
+        b.push(
+            wgsl
+                ? `var hid0: array<${nv4}, 16>;\nvar hid1: array<${nv4}, 16>;\nvar y2: array<${nv4}, ${groups[2]}>;`
+                : `${nv4} hid0[16];\n${nv4} hid1[16];\n${nv4} y2[${groups[2]}];`
+        );
         const layerInputs = ["x", "hid0", "hid1"];
         const layerOutputs = ["hid0", "hid1", "y2"];
         const inVec4 = [in4, 16, 16];
-        for (let l = 0; l < 3; l++) {
-            const weight = (k: string, row: string) => (wgsl ? `textureLoad(neuralWeightTex, vec2i(${k}, ${row}), 0)` : `texelFetch(neuralWeightTex, ivec2(${k}, ${row}), 0)`);
-            b.push(`${lang.forLoop("g", `${groups[l]} + z`)} {`);
-            b.push(d(lang.int, "r", `${rows[l]} + g * 4`));
-            b.push(d(lang.vec4, "acc", `${lang.vec4}(0.0)`));
-            b.push(`${lang.forLoop("k", `${inVec4[l]} + z`)} {`);
-            b.push(d(lang.vec4, "xv", `${layerInputs[l]}[k]`));
-            for (let c = 0; c < 4; c++) {
-                b.push(`acc.${"xyzw"[c]} += dot(${weight("k", c ? `r + ${c}` : "r")}, xv);`);
+        const activation = (l: number, acc: string) => (l < 2 ? (f16 && wgsl ? `neuralHardGelu4H(${acc})` : `neuralHardGelu4(${acc})`) : acc);
+        // One group of 4 output neurons: g and r are literals (full unroll) or loop variables.
+        const neuronGroup = (l: number, g: string, r: string, accName: string) => {
+            const lines: string[] = [];
+            const row = (c: number) => (c === 0 ? r : isNumber(r) ? String(+r + c) : `${r} + ${c}`);
+            lines.push(wgsl ? `var ${accName}: ${nv4} = ${nv4Ctor}(0.0);` : `${nv4} ${accName} = vec4(0.0);`);
+            if (unroll === "none") {
+                lines.push(`${lang.forLoop("k", `${inVec4[l]} + z`)} {`);
+                lines.push(d(nv4, "xv", `${layerInputs[l]}[k]`));
+                for (let c = 0; c < 4; c++) {
+                    lines.push(`${accName}.${"xyzw"[c]} += dot(${weight("k", row(c))}, xv);`);
+                }
+                lines.push("}");
+            } else {
+                for (let k = 0; k < inVec4[l]; k++) {
+                    for (let c = 0; c < 4; c++) {
+                        lines.push(`${accName}.${"xyzw"[c]} += dot(${weight(String(k), row(c))}, ${layerInputs[l]}[${k}]);`);
+                    }
+                }
             }
-            b.push("}");
-            const bias = [0, 1, 2, 3].map((c) => `${weight(String(inVec4[l]), c ? `r + ${c}` : "r")}.x`).join(", ");
-            b.push(`acc += ${lang.vec4}(${bias});`);
-            b.push(`${layerOutputs[l]}[g] = ${l < 2 ? "neuralHardGelu4(acc)" : "acc"};`);
-            b.push("}");
+            const bias = [0, 1, 2, 3].map((c) => `${weight(String(inVec4[l]), row(c))}.x`).join(", ");
+            lines.push(`${accName} += ${nv4Ctor}(${bias});`);
+            lines.push(`${layerOutputs[l]}[${g}] = ${activation(l, accName)};`);
+            return lines;
+        };
+        for (let l = 0; l < 3; l++) {
+            if (unroll === "full") {
+                for (let g = 0; g < groups[l]; g++) {
+                    b.push(...neuronGroup(l, String(g), String(rows[l] + g * 4), `acc${l}_${g}`));
+                }
+            } else {
+                b.push(`${lang.forLoop("g", `${groups[l]} + z`)} {`);
+                b.push(d(lang.int, "r", `${rows[l]} + g * 4`));
+                b.push(...neuronGroup(l, "g", "r", "acc"));
+                b.push("}");
+            }
         }
         layout.channels.forEach((channel) => {
             if ("net" in channel) {
-                const y = `y2[${channel.net >> 2}].${"xyzw"[channel.net & 3]}`;
+                const y = `${lang.toFloat(`y2[${channel.net >> 2}].${"xyzw"[channel.net & 3]}`)}`;
                 b.push(`neuralNet[${channel.net >> 2}].${"xyzw"[channel.net & 3]} = ${channel.activation === "sigmoid" ? `1.0 / (1.0 + exp(-${y}))` : `clamp(${y}, 0.0, 1.0)`};`);
             }
         });
@@ -363,7 +455,8 @@ export function GetNeuralV4RuntimeShader(
     layout: INeuralV4Layout,
     outputs: NeuralTextureOutputs,
     shaderLanguage: ShaderLanguage,
-    filter: NeuralTextureRuntimeFilter
+    filter: NeuralTextureRuntimeFilter,
+    options: INeuralV4ShaderOptions = {}
 ): INeuralV4RuntimeShader {
     const lang = GetLanguage(shaderLanguage);
     const wgsl = lang.wgsl;
@@ -371,7 +464,7 @@ export function GetNeuralV4RuntimeShader(
     const maxMip = layout.mipCount - 1;
     const p = lang.params;
     const zero = lang.toInt(`${p}.w`);
-    const d: string[] = [GetDecodeSource(layout, lang)];
+    const d: string[] = [GetDecodeSource(layout, lang, options)];
     const mipSize = (axis: "width" | "height") => `max(1, ${lang.shr(layout[axis], "m")})`;
 
     d.push(wgsl ? `var<private> neuralAcc: array<vec4f, ${net4}>;` : `vec4 neuralAcc[${net4}];`);

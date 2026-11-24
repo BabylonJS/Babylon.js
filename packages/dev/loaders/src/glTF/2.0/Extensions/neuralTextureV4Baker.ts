@@ -10,7 +10,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
-import { type INeuralTextureBaked } from "./neuralTextureBaker";
+import { GetWebGL2Context, type INeuralTextureBaked } from "./neuralTextureBaker";
 import { GetNeuralV4ConstantGroup, GetNeuralV4MipSize, HalfToFloat, type INeuralV4Layout, type INeuralV4WeightTexture } from "./neuralTextureV4";
 import { GetNeuralV4BakeShader } from "./neuralTextureV4Shaders";
 import { type NeuralTextureTiming } from "./neuralTextureTiming";
@@ -115,7 +115,7 @@ export async function BakeNeuralV4Async(
         return null;
     }
     const wgsl = engine.isWebGPU;
-    const gl = wgsl ? null : (engine.getRenderingCanvas()?.getContext("webgl2") as Nullable<WebGL2RenderingContext>);
+    const gl = wgsl ? null : GetWebGL2Context(engine);
     if (!wgsl && !gl) {
         return null;
     }

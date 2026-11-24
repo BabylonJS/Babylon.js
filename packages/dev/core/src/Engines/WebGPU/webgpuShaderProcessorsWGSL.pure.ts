@@ -353,6 +353,13 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
         const enabledExtensions: string[] = [];
 
+        // Hoist the enable f16 directives that shader code (e.g. material plugins) may emit mid-module.
+        const f16Directive = /^[ \t]*enable[ \t]+f16[ \t]*;[ \t]*$/gm;
+        if (f16Directive.test(fragmentCode)) {
+            fragmentCode = fragmentCode.replace(f16Directive, "");
+            enabledExtensions.push("f16");
+        }
+
         const fragCoordCode =
             fragmentCode.indexOf("fragmentInputs.position") >= 0 && !this.pureMode
                 ? `
