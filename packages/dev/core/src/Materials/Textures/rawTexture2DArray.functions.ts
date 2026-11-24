@@ -39,8 +39,36 @@ export interface ICreateTexture2DArrayFromImageUrlsOptions extends IUploadImageT
     samplingMode?: number;
     /** Defines the texture type (Constants.TEXTURETYPE_UNSIGNED_BYTE by default) */
     textureType?: number;
-    /** Options forwarded to createImageBitmap when decoding each url */
+    /** Options forwarded to createImageBitmap when decoding each url. Babylon Native decodes images as stored and rejects imageOrientation "flipY" and resize options. */
     imageBitmapOptions?: ImageBitmapOptions;
+}
+
+/**
+ * Closes a decoded bitmap. Bitmaps from older Babylon Native runtimes have no close(), and failing here would
+ * replace the upload result or the original error.
+ * @param bitmap defines the bitmap to close
+ */
+function CloseBitmap(bitmap: ImageBitmap): void {
+    if (typeof bitmap.close === "function") {
+        bitmap.close();
+    }
+}
+
+/**
+ * Throws when Babylon Native would silently ignore decode options that change the decoded pixels.
+ * @param scene defines the hosting scene
+ * @param options defines the decode options
+ */
+function ValidateImageBitmapOptions(scene: Scene, options?: ImageBitmapOptions): void {
+    if (!options || scene.getEngine().name !== "Native") {
+        return;
+    }
+
+    if (options.imageOrientation === "flipY" || options.resizeWidth !== undefined || options.resizeHeight !== undefined) {
+        throw new Error(
+            'Babylon Native does not support the imageOrientation "flipY", resizeWidth or resizeHeight image bitmap options; use invertY or resize the source images instead.'
+        );
+    }
 }
 
 /**
@@ -102,7 +130,7 @@ export async function LoadImageToTexture2DArrayLayerAsync(
     try {
         UploadImageToTexture2DArrayLayer(texture, bitmap, layer, options);
     } finally {
-        bitmap.close();
+        CloseBitmap(bitmap);
     }
 }
 
@@ -234,6 +262,7 @@ export async function CreateTexture2DArrayFromImageUrlsAsync(
     // fulfilled ones here, then rethrow the original failure.
     // Decode through the engine so runtimes without a global createImageBitmap (e.g. Babylon Native) work too.
     const engine = scene.getEngine();
+    ValidateImageBitmapOptions(scene, options?.imageBitmapOptions);
     const results = await Promise.allSettled(
         urls.map(async (url) => {
             const response = await fetch(url);
@@ -248,7 +277,7 @@ export async function CreateTexture2DArrayFromImageUrlsAsync(
     if (firstRejection) {
         for (const result of results) {
             if (result.status === "fulfilled") {
-                result.value.close();
+                CloseBitmap(result.value);
             }
         }
         throw firstRejection.reason;
@@ -315,7 +344,7 @@ export async function CreateTexture2DArrayFromImageUrlsAsync(
         }
     } finally {
         for (let index = 0; index < bitmaps.length; index++) {
-            bitmaps[index].close();
+            CloseBitmap(bitmaps[index]);
         }
     }
 }

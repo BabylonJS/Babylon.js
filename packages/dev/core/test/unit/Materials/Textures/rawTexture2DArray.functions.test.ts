@@ -279,6 +279,43 @@ describe("rawTexture2DArray.functions", () => {
             expect(bitmaps[0].close).toHaveBeenCalledTimes(1);
             expect(bitmaps[1].close).toHaveBeenCalledTimes(1);
         });
+
+        it("keeps the original upload error for Native bitmaps without close()", async () => {
+            mockState.instances.length = 0;
+            // Older Babylon Native runtimes decode to plain objects without close().
+            const bitmaps = [
+                { width: 8, height: 8, data: new Uint8Array(256) },
+                { width: 8, height: 8, data: new Uint8Array(256) },
+            ];
+            let call = 0;
+            vi.stubGlobal(
+                "fetch",
+                vi.fn(async () => ({ ok: true, status: 200, statusText: "OK", blob: async () => ({}) }))
+            );
+            vi.stubGlobal(
+                "createImageBitmap",
+                vi.fn(async () => bitmaps[call++])
+            );
+
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(FakeScene, ["a.png", "b.png"])).rejects.toThrow(/upload boom/);
+            expect(mockState.instances[0].dispose).toHaveBeenCalledTimes(1);
+
+            call = 0;
+            const { texture, update } = createFakeTexture({ depth: 2 });
+            await expect(LoadImageToTexture2DArrayLayerAsync(texture, "a.png", 1)).resolves.toBeUndefined();
+            expect(update).toHaveBeenCalledWith(expect.anything(), bitmaps[0], 1, false, false);
+        });
+
+        it("rejects decode options that Babylon Native would ignore", async () => {
+            const engineCreateImageBitmap = vi.fn();
+            vi.stubGlobal("fetch", vi.fn());
+            const scene = { getEngine: () => ({ name: "Native", createImageBitmap: engineCreateImageBitmap }) } as any;
+
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { imageOrientation: "flipY" } })).rejects.toThrow(/does not support/);
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { resizeWidth: 4 } })).rejects.toThrow(/does not support/);
+            expect(fetch).not.toHaveBeenCalled();
+            expect(engineCreateImageBitmap).not.toHaveBeenCalled();
+        });
     });
 
     describe("CreateTexture2DArrayFromKTX2Async", () => {

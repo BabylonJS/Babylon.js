@@ -225,6 +225,108 @@ const _TexturesWithMipStorage = /*#__PURE__*/ new WeakSet<InternalTexture>();
 // and updateTextureData requires that storage to exist.
 const _RawTextureResourcesWithoutStorage = /*#__PURE__*/ new WeakSet<IHardwareTextureWrapper>();
 
+// Base-level buffers of raw 2D arrays that the engine allocated to retain image layer uploads, so later
+// layer writes can patch them in place without touching caller-owned data.
+const _OwnedRawArrayBaseData = /*#__PURE__*/ new WeakSet<ArrayBufferView>();
+
+// Per raw 2D array: for each cached explicit mip level, the layers whose mips a later image layer upload
+// regenerated. Context-loss replay skips those layers so it keeps the regenerated mips, as live rendering did.
+const _RawArrayMipLayersRegenerated = /*#__PURE__*/ new WeakMap<InternalTexture, Map<number, Set<number>>>();
+
+/**
+ * Returns the byte size of one texel of an uncompressed raw texture, or 0 when it is unknown.
+ * @param format defines the Babylon texture format
+ * @param type defines the Babylon texture type
+ * @returns the texel size in bytes
+ */
+function GetRawTexelByteLength(format: number, type: number): number {
+    switch (type) {
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+            return 2;
+        case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+            return 4;
+    }
+
+    let componentCount: number;
+    switch (format) {
+        case Constants.TEXTUREFORMAT_ALPHA:
+        case Constants.TEXTUREFORMAT_LUMINANCE:
+        case Constants.TEXTUREFORMAT_RED:
+        case Constants.TEXTUREFORMAT_RED_INTEGER:
+            componentCount = 1;
+            break;
+        case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
+        case Constants.TEXTUREFORMAT_RG:
+        case Constants.TEXTUREFORMAT_RG_INTEGER:
+            componentCount = 2;
+            break;
+        case Constants.TEXTUREFORMAT_RGB:
+        case Constants.TEXTUREFORMAT_RGB_INTEGER:
+            componentCount = 3;
+            break;
+        case Constants.TEXTUREFORMAT_RGBA:
+        case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+            componentCount = 4;
+            break;
+        default:
+            return 0;
+    }
+
+    switch (type) {
+        case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+        case Constants.TEXTURETYPE_BYTE:
+            return componentCount;
+        case Constants.TEXTURETYPE_SHORT:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT:
+        case Constants.TEXTURETYPE_HALF_FLOAT:
+            return componentCount * 2;
+        case Constants.TEXTURETYPE_INT:
+        case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
+        case Constants.TEXTURETYPE_FLOAT:
+            return componentCount * 4;
+        default:
+            return 0;
+    }
+}
+
+/**
+ * Converts raw upload data to the exact texture layout the native upload resolves it to: oversized data is
+ * truncated, and tightly packed RGB data is widened for RGBA textures with 8-bit components.
+ * @param data defines the uploaded data
+ * @param texelCount defines the number of texels covered by the upload
+ * @param byteLength defines the byte size of those texels in the texture format
+ * @param format defines the Babylon texture format
+ * @param type defines the Babylon texture type
+ * @returns the data in texture layout, or null when the native upload would reject it
+ */
+function ResolveRawUploadLayout(data: ArrayBufferView, texelCount: number, byteLength: number, format: number, type: number): Nullable<Uint8Array> {
+    const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    if (bytes.byteLength >= byteLength) {
+        return bytes.subarray(0, byteLength);
+    }
+
+    const isRgba = format === Constants.TEXTUREFORMAT_RGBA || format === Constants.TEXTUREFORMAT_RGBA_INTEGER;
+    const isByte = type === Constants.TEXTURETYPE_UNSIGNED_BYTE || type === Constants.TEXTURETYPE_BYTE;
+    if (!isRgba || !isByte || bytes.byteLength !== texelCount * 3 || byteLength !== texelCount * 4) {
+        return null;
+    }
+
+    // Same alpha the native widening writes: 1 for integer formats, otherwise the type's maximum.
+    const alpha = format === Constants.TEXTUREFORMAT_RGBA_INTEGER ? 1 : type === Constants.TEXTURETYPE_BYTE ? 127 : 255;
+    const widened = new Uint8Array(byteLength);
+    for (let texel = 0; texel < texelCount; texel++) {
+        widened[texel * 4] = bytes[texel * 3];
+        widened[texel * 4 + 1] = bytes[texel * 3 + 1];
+        widened[texel * 4 + 2] = bytes[texel * 3 + 2];
+        widened[texel * 4 + 3] = alpha;
+    }
+    return widened;
+}
+
 /**
  * Sentinel for "no attachment masking": every color attachment of the bound framebuffer takes part in
  * the clear. Native treats this value specially and skips the bgfx color-palette clear path.
@@ -2457,50 +2559,104 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(`NativeEngine.updateRawTexture2DArray: compressed raw array uploads are not supported (${compression}).`);
         }
 
+        if (!Number.isInteger(mipLevel) || mipLevel < 0) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: invalid mip level ${mipLevel}.`);
+        }
+
+        if (mipLevel > 0) {
+            this._updateRawTexture2DArrayMip(texture, bufferView, format, invertY, textureType, mipLevel);
+            return;
+        }
+
+        // Upload first so a rejected upload leaves the previous rebuild state intact.
+        if (bufferView && texture._hardwareTexture) {
+            this._engine.loadRawTexture2DArray(
+                texture._hardwareTexture.underlyingResource,
+                bufferView,
+                texture.width,
+                texture.height,
+                texture.depth,
+                getNativeTextureFormat(format, textureType),
+                texture.generateMipMaps,
+                invertY
+            );
+            this._setHasMipStorage(texture, texture.generateMipMaps);
+        }
+
         texture.format = format;
         texture.type = textureType;
         texture.invertY = invertY;
         texture._compression = compression;
         if (!this._doNotHandleContextLost) {
-            if (mipLevel > 0) {
-                texture._bufferViewArray ??= [];
-                texture._bufferViewArray[mipLevel] = bufferView!;
-            } else {
-                texture._bufferView = bufferView;
-                if (bufferView && texture.generateMipMaps) {
-                    // The base upload regenerates every higher mip, so cached ones would be stale on rebuild.
-                    texture._bufferViewArray = null;
-                }
+            texture._bufferView = bufferView;
+            if (bufferView) {
+                // Native reallocates the array for a base upload, which discards explicitly uploaded mips.
+                texture._bufferViewArray = null;
+                _RawArrayMipLayersRegenerated.delete(texture);
             }
         }
 
-        if (bufferView && texture._hardwareTexture) {
+        texture.isReady = true;
+    }
+
+    private _updateRawTexture2DArrayMip(
+        texture: InternalTexture,
+        bufferView: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        textureType: number,
+        mipLevel: number
+    ): void {
+        if (!bufferView) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: updating mip level ${mipLevel} requires data.`);
+        }
+
+        // The base upload's descriptor stays authoritative, and rebuilds replay every mip with the base invertY.
+        if (format !== texture.format || textureType !== texture.type) {
+            throw new Error("NativeEngine.updateRawTexture2DArray: changing the format or type is only supported when updating level 0.");
+        }
+        if (invertY !== texture.invertY) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: mip level ${mipLevel} must use the same invertY as level 0 (${texture.invertY}).`);
+        }
+
+        if (!this._engine.updateTextureData) {
+            throw new Error("NativeEngine.updateRawTexture2DArray: updating mip levels above 0 requires a Babylon Native runtime with updateTextureData.");
+        }
+
+        const maxMipLevel = Math.floor(Math.log2(Math.max(texture.width, texture.height)));
+        if (!this._hasMipStorage(texture) || mipLevel > maxMipLevel) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: mip level ${mipLevel} is out of range for this texture.`);
+        }
+
+        // The buffer holds every layer of the mip level back to back.
+        if (bufferView.byteLength === 0 || bufferView.byteLength % texture.depth !== 0) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: ${bufferView.byteLength} bytes cannot be split evenly across ${texture.depth} layers.`);
+        }
+
+        // Rebuilds replay the copy cached below. Layers whose mips a later image upload regenerated keep those
+        // regenerated mips, which the rebuilt base level already produced.
+        const isReplay = texture._bufferViewArray?.[mipLevel] === bufferView;
+        const regeneratedLayers = isReplay ? _RawArrayMipLayersRegenerated.get(texture)?.get(mipLevel) : undefined;
+
+        if (texture._hardwareTexture) {
             const nativeTexture = texture._hardwareTexture.underlyingResource;
-            if (mipLevel > 0) {
-                if (!this._engine.updateTextureData) {
-                    throw new Error("NativeEngine.updateRawTexture2DArray: updating mip levels above 0 requires a Babylon Native runtime with updateTextureData.");
+            const width = Math.max(1, texture.width >> mipLevel);
+            const height = Math.max(1, texture.height >> mipLevel);
+            const layerByteLength = bufferView.byteLength / texture.depth;
+            for (let layer = 0; layer < texture.depth; layer++) {
+                if (regeneratedLayers?.has(layer)) {
+                    continue;
                 }
-                // The buffer holds every layer of the mip level back to back.
-                const width = Math.max(1, texture.width >> mipLevel);
-                const height = Math.max(1, texture.height >> mipLevel);
-                const layerByteLength = bufferView.byteLength / texture.depth;
-                for (let layer = 0; layer < texture.depth; layer++) {
-                    const layerData = new Uint8Array(bufferView.buffer, bufferView.byteOffset + layer * layerByteLength, layerByteLength);
-                    this._engine.updateTextureData(nativeTexture, layerData, 0, 0, width, height, layer, mipLevel, invertY, false);
-                }
-            } else {
-                this._engine.loadRawTexture2DArray(
-                    nativeTexture,
-                    bufferView,
-                    texture.width,
-                    texture.height,
-                    texture.depth,
-                    getNativeTextureFormat(format, textureType),
-                    texture.generateMipMaps,
-                    invertY
-                );
-                this._setHasMipStorage(texture, texture.generateMipMaps);
+                const layerData = new Uint8Array(bufferView.buffer, bufferView.byteOffset + layer * layerByteLength, layerByteLength);
+                this._engine.updateTextureData(nativeTexture, layerData, 0, 0, width, height, layer, mipLevel, invertY, false);
             }
+        }
+
+        if (!isReplay && !this._doNotHandleContextLost) {
+            // Copy so later edits to the caller's buffer cannot change what a rebuild replays.
+            texture._bufferViewArray ??= [];
+            texture._bufferViewArray[mipLevel] = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength).slice();
+            _RawArrayMipLayersRegenerated.get(texture)?.delete(mipLevel);
         }
 
         texture.isReady = true;
@@ -2543,22 +2699,77 @@ export class ThinNativeEngine extends ThinEngine {
                 `NativeEngine.updateTextureArrayLayerFromImageSource: the ${bitmap.width}x${bitmap.height} source does not match the ${texture.width}x${texture.height} texture.`
             );
         }
+        if (!Number.isInteger(layer) || layer < 0 || layer >= texture.depth) {
+            throw new Error(`NativeEngine.updateTextureArrayLayerFromImageSource: layer ${layer} is out of range for a texture with ${texture.depth} layers.`);
+        }
 
         // Native generates mips per layer, so rebuild this layer's chain whenever the texture has one.
-        this._engine.updateTextureData(
-            texture._hardwareTexture.underlyingResource,
-            bitmap.data,
-            0,
-            0,
-            texture.width,
-            texture.height,
-            layer,
-            0,
-            invertY,
-            this._hasMipStorage(texture)
-        );
+        const regenerateMips = this._hasMipStorage(texture);
+        this._engine.updateTextureData(texture._hardwareTexture.underlyingResource, bitmap.data, 0, 0, texture.width, texture.height, layer, 0, invertY, regenerateMips);
+
+        if (!this._doNotHandleContextLost) {
+            this._retainRawTexture2DArrayLayer(texture, bitmap.data, layer, invertY);
+            if (regenerateMips && texture._bufferViewArray) {
+                let regeneratedLayers = _RawArrayMipLayersRegenerated.get(texture);
+                if (!regeneratedLayers) {
+                    regeneratedLayers = new Map();
+                    _RawArrayMipLayersRegenerated.set(texture, regeneratedLayers);
+                }
+                for (let mipLevel = 1; mipLevel < texture._bufferViewArray.length; mipLevel++) {
+                    if (texture._bufferViewArray[mipLevel]) {
+                        let layers = regeneratedLayers.get(mipLevel);
+                        if (!layers) {
+                            layers = new Set();
+                            regeneratedLayers.set(mipLevel, layers);
+                        }
+                        layers.add(layer);
+                    }
+                }
+            }
+        }
 
         texture.isReady = true;
+    }
+
+    /**
+     * Writes an uploaded layer into the base data that context-loss rebuilds recreate the array from.
+     * The layer is stored in the texture layout and orientation so the rebuild reproduces the live texture.
+     * @param texture defines the 2D array texture
+     * @param data defines the uploaded layer data
+     * @param layer defines the uploaded layer
+     * @param invertY defines the orientation the layer was uploaded with
+     */
+    private _retainRawTexture2DArrayLayer(texture: InternalTexture, data: ArrayBufferView, layer: number, invertY: boolean): void {
+        const texelCount = texture.width * texture.height;
+        const layerByteLength = texelCount * GetRawTexelByteLength(texture.format, texture.type);
+        const layerData = layerByteLength ? ResolveRawUploadLayout(data, texelCount, layerByteLength, texture.format, texture.type) : null;
+        if (!layerData) {
+            Logger.Warn(`NativeEngine.updateTextureArrayLayerFromImageSource: layer ${layer} cannot be kept for context-loss rebuilds; it will be empty after a device reset.`);
+            return;
+        }
+
+        let baseData = texture._bufferView;
+        if (!baseData || !_OwnedRawArrayBaseData.has(baseData)) {
+            // Never patch caller-owned data; start from a copy of the current base level in texture layout.
+            const ownedData = new Uint8Array(layerByteLength * texture.depth);
+            const currentData = baseData && ResolveRawUploadLayout(baseData, texelCount * texture.depth, ownedData.byteLength, texture.format, texture.type);
+            if (currentData) {
+                ownedData.set(currentData);
+            }
+            _OwnedRawArrayBaseData.add(ownedData);
+            texture._bufferView = baseData = ownedData;
+        }
+
+        // The rebuild uploads the whole base level with the texture's invertY, so flip layers uploaded the other way.
+        const target = new Uint8Array(baseData.buffer, baseData.byteOffset + layer * layerByteLength, layerByteLength);
+        if (invertY === texture.invertY) {
+            target.set(layerData);
+        } else {
+            const rowByteLength = layerByteLength / texture.height;
+            for (let row = 0; row < texture.height; row++) {
+                target.set(layerData.subarray(row * rowByteLength, (row + 1) * rowByteLength), (texture.height - 1 - row) * rowByteLength);
+            }
+        }
     }
 
     public override updateRawTexture(
