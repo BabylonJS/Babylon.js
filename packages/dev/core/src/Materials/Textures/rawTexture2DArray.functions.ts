@@ -39,8 +39,33 @@ export interface ICreateTexture2DArrayFromImageUrlsOptions extends IUploadImageT
     samplingMode?: number;
     /** Defines the texture type (Constants.TEXTURETYPE_UNSIGNED_BYTE by default) */
     textureType?: number;
-    /** Options forwarded to createImageBitmap when decoding each url */
+    /**
+     * Options forwarded to createImageBitmap when decoding each url. Babylon Native decodes images as stored: it rejects
+     * imageOrientation "flipY", premultiplyAlpha "premultiply" and resize options, and ignores the other options.
+     */
     imageBitmapOptions?: ImageBitmapOptions;
+}
+
+/**
+ * Closes a decoded bitmap. Bitmaps from older Babylon Native runtimes have no close(), and failing here would
+ * replace the upload result or the original error.
+ * @param bitmap defines the bitmap to close
+ */
+function CloseBitmap(bitmap: ImageBitmap): void {
+    if (typeof bitmap.close === "function") {
+        bitmap.close();
+    }
+}
+
+/**
+ * Throws when Babylon Native would silently ignore decode options that change the decoded pixels.
+ * @param scene defines the hosting scene
+ * @param options defines the decode options
+ */
+function ValidateImageBitmapOptions(scene: Scene, options?: ImageBitmapOptions): void {
+    // Bound to the backend (ThinNativeEngine) rather than engine.name, which is writable.
+    const engine = scene.getEngine() as { _validateImageBitmapOptions?: (options?: ImageBitmapOptions) => void };
+    engine._validateImageBitmapOptions?.(options);
 }
 
 /**
@@ -96,11 +121,13 @@ export async function LoadImageToTexture2DArrayLayerAsync(
         throw new Error(`Failed to fetch image "${url}": ${response.status} ${response.statusText}`);
     }
     const blob = await response.blob();
-    const bitmap = await createImageBitmap(blob);
+    // Decode through the engine so runtimes without a global createImageBitmap (e.g. Babylon Native) work too.
+    const engine = texture.getScene()?.getEngine();
+    const bitmap = await (engine ? engine.createImageBitmap(blob) : createImageBitmap(blob));
     try {
         UploadImageToTexture2DArrayLayer(texture, bitmap, layer, options);
     } finally {
-        bitmap.close();
+        CloseBitmap(bitmap);
     }
 }
 
@@ -230,13 +257,16 @@ export async function CreateTexture2DArrayFromImageUrlsAsync(
     // already decoded. Promise.all rejects on the first failure and never enters the
     // try/finally below, orphaning every ImageBitmap that resolved. Close the
     // fulfilled ones here, then rethrow the original failure.
+    // Decode through the engine so runtimes without a global createImageBitmap (e.g. Babylon Native) work too.
+    const engine = scene.getEngine();
+    ValidateImageBitmapOptions(scene, options?.imageBitmapOptions);
     const results = await Promise.allSettled(
         urls.map(async (url) => {
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`Failed to fetch image "${url}": ${response.status} ${response.statusText}`);
             }
-            return await createImageBitmap(await response.blob(), options?.imageBitmapOptions);
+            return await engine.createImageBitmap(await response.blob(), options?.imageBitmapOptions);
         })
     );
 
@@ -244,7 +274,7 @@ export async function CreateTexture2DArrayFromImageUrlsAsync(
     if (firstRejection) {
         for (const result of results) {
             if (result.status === "fulfilled") {
-                result.value.close();
+                CloseBitmap(result.value);
             }
         }
         throw firstRejection.reason;
@@ -311,7 +341,7 @@ export async function CreateTexture2DArrayFromImageUrlsAsync(
         }
     } finally {
         for (let index = 0; index < bitmaps.length; index++) {
-            bitmaps[index].close();
+            CloseBitmap(bitmaps[index]);
         }
     }
 }
