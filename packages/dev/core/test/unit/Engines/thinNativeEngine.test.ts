@@ -2494,6 +2494,21 @@ describe("ThinNativeEngine", () => {
             expect(Array.from(layerCalls[1][1] as Uint8Array)).toEqual(Array.from(mip1.subarray(16)));
             expect(texture._bufferViewArray![1]).toBe(mip1);
             expect(texture._bufferView).toBe(base);
+
+            // A regenerating base upload replaces the cached mips, so rebuilds must not replay them.
+            const newBase = new Uint8Array(base.length);
+            engine.updateRawTexture2DArray(texture, newBase, Constants.TEXTUREFORMAT_RGBA, false);
+            expect(texture._bufferViewArray).toBeNull();
+            expect(texture._bufferView).toBe(newBase);
+        });
+
+        it("keeps creation state of raw 2D arrays for mip updates and rebuilds", () => {
+            const { engine } = createEngine();
+            const data = new Uint8Array(4 * 4 * 4 * 2);
+            const texture = engine.createRawTexture2DArray(data, 4, 4, 2, Constants.TEXTUREFORMAT_RGBA, true, true, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+
+            expect(texture.invertY).toBe(true);
+            expect(texture._bufferView).toBe(data);
         });
 
         it("regenerates layer mips for image uploads even while generateMipMaps is toggled off", () => {

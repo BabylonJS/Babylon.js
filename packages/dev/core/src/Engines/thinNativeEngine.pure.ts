@@ -2327,6 +2327,12 @@ export class ThinNativeEngine extends ThinEngine {
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.is2DArray = true;
+        // Later mip updates and context-loss rebuilds read these back.
+        texture.invertY = invertY;
+        texture._compression = compression;
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = data;
+        }
 
         if (texture._hardwareTexture) {
             const nativeTexture = texture._hardwareTexture.underlyingResource;
@@ -2461,6 +2467,10 @@ export class ThinNativeEngine extends ThinEngine {
                 texture._bufferViewArray[mipLevel] = bufferView!;
             } else {
                 texture._bufferView = bufferView;
+                if (bufferView && texture.generateMipMaps) {
+                    // The base upload regenerates every higher mip, so cached ones would be stale on rebuild.
+                    texture._bufferViewArray = null;
+                }
             }
         }
 
