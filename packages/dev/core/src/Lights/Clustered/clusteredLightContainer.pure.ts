@@ -120,14 +120,14 @@ export class ClusteredLightContainer extends Light {
 
     private _camera: Nullable<Camera> = null;
 
-    // The lights sorted by depth
+    // All the lights in the container (the enabled ones are copied to _activeLights)
     private readonly _sortedLights: (PointLight | SpotLight)[] = [];
+    // The enabled lights sorted by depth, refilled on every light data update
+    private readonly _activeLights: (PointLight | SpotLight)[] = [];
 
     private _lightDataBuffer: Float32Array;
     private _lightDataTexture: RawTexture;
     private _lightDataRenderId = -1;
-    // How many lights at the start of _sortedLights are enabled and written to the light data
-    private _activeLightCount = 0;
 
     private _tileMaskBatches = -1;
     private _tileMaskTexture: RenderTargetTexture;
@@ -310,12 +310,13 @@ export class ClusteredLightContainer extends Light {
     /** @internal */
     public _updateBatches(camera: Nullable<Camera> = null): RenderTargetTexture {
         this._camera = camera;
+        this._proxyMesh.isVisible = this._sortedLights.length > 0;
 
         // Ensure space for atleast 1 batch
         const batches = Math.max(Math.ceil(this._sortedLights.length / this._batchSize), 1);
         if (this._tileMaskBatches >= batches) {
             this._tileMaskTexture.activeCamera = camera;
-            this._updateProxyInstances();
+            this._proxyMesh.thinInstanceCount = this._sortedLights.length;
             return this._tileMaskTexture;
         }
         const engine = this.getEngine();
@@ -402,18 +403,9 @@ export class ClusteredLightContainer extends Light {
         if (this._proxyMesh.thinInstanceSetBuffer) {
             this._proxyMesh.thinInstanceSetBuffer("matrix", new Float32Array(maxLights * 16));
         }
-        this._updateProxyInstances();
+        this._proxyMesh.thinInstanceCount = this._sortedLights.length;
         this._tileMaskBatches = batches;
         return this._tileMaskTexture;
-    }
-
-    // Only the enabled lights get a light proxy, so disabled lights are not added to any tile.
-    // A mesh with 0 thin instances would be drawn once as a regular mesh, so hide it instead.
-    private _updateProxyInstances(): void {
-        this._proxyMesh.isVisible = this._activeLightCount > 0;
-        if (this._activeLightCount > 0) {
-            this._proxyMesh.thinInstanceCount = this._activeLightCount;
-        }
     }
 
     private _getSliceIndex(camera: Camera, depth: number): number {
@@ -432,28 +424,23 @@ export class ClusteredLightContainer extends Light {
         }
         this._lightDataRenderId = renderId;
 
-        // Resort lights based on distance from camera. Disabled lights go to the end and are
-        // left out of the light data, the tile masks and the slice ranges, so they cost nothing.
+        // Resort the enabled lights based on distance from camera. Disabled lights are left out of the
+        // light data and the slice ranges, and their rows get a negative range so the light proxy
+        // collapses them and they cover no tile. The proxy still draws one instance per light, so the
+        // draw does not change when a light is enabled or disabled (a recorded WebGPU snapshot replays it).
         const view = camera.getViewMatrix();
-        let activeLightCount = 0;
+        const activeLights = this._activeLights;
+        activeLights.length = 0;
         for (const light of this._sortedLights) {
             if (!light.isEnabled()) {
                 continue;
             }
-            activeLightCount += 1;
             const position = light.computeTransformedInformation() ? light.transformedPosition : light.position;
             const viewPosition = Vector3.TransformCoordinatesToRef(position, view, TmpVectors.Vector3[0]);
             light._currentViewDepth = this._scene.useRightHandedSystem ? -viewPosition.z : viewPosition.z;
+            activeLights.push(light);
         }
-        this._sortedLights.sort((a, b) => {
-            const aEnabled = a.isEnabled();
-            if (aEnabled !== b.isEnabled()) {
-                return aEnabled ? -1 : 1;
-            }
-            return aEnabled ? a._currentViewDepth - b._currentViewDepth : 0;
-        });
-        this._activeLightCount = activeLightCount;
-        this._updateProxyInstances();
+        activeLights.sort((a, b) => a._currentViewDepth - b._currentViewDepth);
 
         // DOOM 2016 subdivision scheme, copied from: https://www.aortiz.me/2018/12/21/CG.html
         const logFarNear = Math.log(camera.maxZ / camera.minZ);
@@ -467,8 +454,8 @@ export class ClusteredLightContainer extends Light {
         const buf = this._lightDataBuffer;
         const offset = this._scene.floatingOriginOffset;
 
-        for (let i = 0; i < activeLightCount; i += 1) {
-            const light = this._sortedLights[i];
+        for (let i = 0; i < activeLights.length; i += 1) {
+            const light = activeLights[i];
             const off = i * 20;
             const computed = light.computeTransformedInformation();
             const scaledIntensity = light.getScaledIntensity();
@@ -535,6 +522,12 @@ export class ClusteredLightContainer extends Light {
                 // Update max index
                 this._sliceRanges[j * 2 + 1] = i;
             }
+        }
+
+        // Rows of the disabled lights: no color, and a negative range tells the light proxy to skip them
+        buf.fill(0, activeLights.length * 20, this._sortedLights.length * 20);
+        for (let i = activeLights.length; i < this._sortedLights.length; i += 1) {
+            buf[i * 20 + 16] = -1;
         }
 
         const engine = this.getEngine();

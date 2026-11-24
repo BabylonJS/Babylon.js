@@ -75,45 +75,64 @@ describe("ClusteredLightContainer", () => {
                 const buffer: Float32Array = (container as any)._lightDataBuffer;
                 return Array.from({ length: count }, (_, i) => buffer[i * 20 + 2]);
             };
+            const writtenRanges = (count: number) => {
+                const buffer: Float32Array = (container as any)._lightDataBuffer;
+                return Array.from({ length: count }, (_, i) => buffer[i * 20 + 16]);
+            };
             const highestSliceIndex = () => Math.max(...(container as any)._sliceRanges);
-            return { container, lights, update, writtenDepths, highestSliceIndex };
+            return { container, lights, update, writtenDepths, writtenRanges, highestSliceIndex };
         };
 
-        it("leaves disabled lights out of the light data, the proxy instances and the slice ranges", () => {
-            const { container, lights, update, writtenDepths, highestSliceIndex } = createContainer([5, 10, 15]);
+        it("leaves disabled lights out of the light data and the slice ranges", () => {
+            const { container, lights, update, writtenDepths, writtenRanges, highestSliceIndex } = createContainer([5, 10, 15]);
             lights[1].setEnabled(false);
             update();
 
-            expect((container as any)._sortedLights).toEqual([lights[0], lights[2], lights[1]]);
+            expect((container as any)._activeLights).toEqual([lights[0], lights[2]]);
             expect(writtenDepths(2)).toEqual([5, 15]);
-            expect((container as any)._proxyMesh.isVisible).toBe(true);
-            expect((container as any)._proxyMesh.thinInstanceCount).toBe(2);
+            // The disabled light's row gets a negative range so the light proxy skips it
+            expect(writtenRanges(3)).toEqual([1, 1, -1]);
             expect(highestSliceIndex()).toBe(1);
+            // The proxy draw keeps one instance per light so a recorded snapshot stays valid
+            expect((container as any)._proxyMesh.isVisible).toBe(true);
+            expect((container as any)._proxyMesh.thinInstanceCount).toBe(3);
 
             lights[1].setEnabled(true);
             update();
 
-            expect((container as any)._sortedLights).toEqual(lights);
+            expect((container as any)._activeLights).toEqual(lights);
             expect(writtenDepths(3)).toEqual([5, 10, 15]);
-            expect((container as any)._proxyMesh.thinInstanceCount).toBe(3);
+            expect(writtenRanges(3)).toEqual([1, 1, 1]);
             expect(highestSliceIndex()).toBe(2);
+            expect((container as any)._proxyMesh.thinInstanceCount).toBe(3);
         });
 
-        it("hides the light proxy when every light is disabled", () => {
-            const { container, lights, update, highestSliceIndex } = createContainer([5, 10]);
+        it("keeps the light proxy draw when every light is disabled and toggled back", () => {
+            const { container, lights, update, writtenDepths, writtenRanges, highestSliceIndex } = createContainer([5, 10]);
             for (const light of lights) {
                 light.setEnabled(false);
             }
             update();
 
-            expect((container as any)._proxyMesh.isVisible).toBe(false);
+            expect(writtenRanges(2)).toEqual([-1, -1]);
             expect(highestSliceIndex()).toBe(0);
+            expect((container as any)._proxyMesh.isVisible).toBe(true);
+            expect((container as any)._proxyMesh.thinInstanceCount).toBe(2);
 
-            lights[0].setEnabled(true);
+            lights[1].setEnabled(true);
             update();
 
+            expect(writtenDepths(1)).toEqual([10]);
+            expect(writtenRanges(2)).toEqual([1, -1]);
             expect((container as any)._proxyMesh.isVisible).toBe(true);
-            expect((container as any)._proxyMesh.thinInstanceCount).toBe(1);
+            expect((container as any)._proxyMesh.thinInstanceCount).toBe(2);
+
+            // Disabling the last active light again must not leave its old row behind
+            lights[1].setEnabled(false);
+            update();
+
+            expect(writtenRanges(2)).toEqual([-1, -1]);
+            expect(highestSliceIndex()).toBe(0);
         });
     });
 
