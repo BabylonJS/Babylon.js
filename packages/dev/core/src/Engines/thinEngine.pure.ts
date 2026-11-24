@@ -4287,7 +4287,7 @@ export class ThinEngine extends AbstractEngine {
         }
 
         // Disposal observers can reuse the canvas and set their own clip depth range.
-        if (this.isNDCHalfZRange && !this.isDisposed && !this._gl.isContextLost()) {
+        if (this.isNDCHalfZRange && !this.isDisposed && this._gl != null && !this._gl.isContextLost()) {
             this._setClipDepthRange(false);
         }
 
