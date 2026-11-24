@@ -39,7 +39,10 @@ export interface ICreateTexture2DArrayFromImageUrlsOptions extends IUploadImageT
     samplingMode?: number;
     /** Defines the texture type (Constants.TEXTURETYPE_UNSIGNED_BYTE by default) */
     textureType?: number;
-    /** Options forwarded to createImageBitmap when decoding each url. Babylon Native decodes images as stored and rejects imageOrientation "flipY" and resize options. */
+    /**
+     * Options forwarded to createImageBitmap when decoding each url. Babylon Native decodes images as stored: it rejects
+     * imageOrientation "flipY", premultiplyAlpha "premultiply" and resize options, and ignores the other options.
+     */
     imageBitmapOptions?: ImageBitmapOptions;
 }
 
@@ -68,6 +71,10 @@ function ValidateImageBitmapOptions(scene: Scene, options?: ImageBitmapOptions):
         throw new Error(
             'Babylon Native does not support the imageOrientation "flipY", resizeWidth or resizeHeight image bitmap options; use invertY or resize the source images instead.'
         );
+    }
+
+    if (options.premultiplyAlpha === "premultiply") {
+        throw new Error('Babylon Native does not support the premultiplyAlpha "premultiply" image bitmap option; premultiply the source images instead.');
     }
 }
 

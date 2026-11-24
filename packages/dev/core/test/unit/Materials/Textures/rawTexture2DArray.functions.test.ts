@@ -313,6 +313,7 @@ describe("rawTexture2DArray.functions", () => {
 
             await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { imageOrientation: "flipY" } })).rejects.toThrow(/does not support/);
             await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { resizeWidth: 4 } })).rejects.toThrow(/does not support/);
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { premultiplyAlpha: "premultiply" } })).rejects.toThrow(/does not support/);
             expect(fetch).not.toHaveBeenCalled();
             expect(engineCreateImageBitmap).not.toHaveBeenCalled();
         });

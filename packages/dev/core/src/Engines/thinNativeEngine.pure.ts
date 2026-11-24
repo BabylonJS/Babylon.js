@@ -225,104 +225,134 @@ const _TexturesWithMipStorage = /*#__PURE__*/ new WeakSet<InternalTexture>();
 // and updateTextureData requires that storage to exist.
 const _RawTextureResourcesWithoutStorage = /*#__PURE__*/ new WeakSet<IHardwareTextureWrapper>();
 
-// Base-level buffers of raw 2D arrays that the engine allocated to retain image layer uploads, so later
-// layer writes can patch them in place without touching caller-owned data.
-const _OwnedRawArrayBaseData = /*#__PURE__*/ new WeakSet<ArrayBufferView>();
+// Raw 2D array buffers the engine allocated: retained base levels that image layer uploads patch in place,
+// and mip snapshots that same-size updates overwrite, so neither ever aliases caller-owned data.
+const _OwnedRawArrayData = /*#__PURE__*/ new WeakSet<ArrayBufferView>();
 
 // Per raw 2D array: for each cached explicit mip level, the layers whose mips a later image layer upload
 // regenerated. Context-loss replay skips those layers so it keeps the regenerated mips, as live rendering did.
 const _RawArrayMipLayersRegenerated = /*#__PURE__*/ new WeakMap<InternalTexture, Map<number, Set<number>>>();
 
+/** How Native stores one texel of an uncompressed format and widens tightly packed RGB uploads into it. */
+interface INativeRawLayout {
+    /** Size of one texel in the native texture format */
+    texelByteLength: number;
+    /** Size of one component when Native accepts RGB data for this RGBA format, otherwise 0 */
+    rgbComponentByteLength: number;
+    /** Alpha value Native writes when widening RGB data */
+    alpha: number;
+}
+
+// Mirrors the texel sizes bgfx uses for the uncompressed formats getNativeTextureFormat returns, and the RGB
+// widening of ResolveRawUpload in NativeEngine.cpp: [native format, texel bytes, RGB component bytes, alpha].
+const _NativeRawLayouts: ReadonlyArray<readonly [string, number, number, number]> = [
+    ["TEXTURE_FORMAT_R8", 1, 0, 0],
+    ["TEXTURE_FORMAT_R8S", 1, 0, 0],
+    ["TEXTURE_FORMAT_R8U", 1, 0, 0],
+    ["TEXTURE_FORMAT_R16", 2, 0, 0],
+    ["TEXTURE_FORMAT_R16S", 2, 0, 0],
+    ["TEXTURE_FORMAT_R16U", 2, 0, 0],
+    ["TEXTURE_FORMAT_R16F", 2, 0, 0],
+    ["TEXTURE_FORMAT_R32F", 4, 0, 0],
+    ["TEXTURE_FORMAT_R32I", 4, 0, 0],
+    ["TEXTURE_FORMAT_R32U", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG8", 2, 0, 0],
+    ["TEXTURE_FORMAT_RG8S", 2, 0, 0],
+    ["TEXTURE_FORMAT_RG16", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG16S", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG16U", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG16F", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG32F", 8, 0, 0],
+    ["TEXTURE_FORMAT_RG32I", 8, 0, 0],
+    ["TEXTURE_FORMAT_RG32U", 8, 0, 0],
+    ["TEXTURE_FORMAT_RGB8", 3, 0, 0],
+    ["TEXTURE_FORMAT_RGB8S", 3, 0, 0],
+    ["TEXTURE_FORMAT_RGB8I", 3, 0, 0],
+    ["TEXTURE_FORMAT_RGB8U", 3, 0, 0],
+    ["TEXTURE_FORMAT_B5G6R5", 2, 0, 0],
+    ["TEXTURE_FORMAT_BGRA8", 4, 0, 0],
+    ["TEXTURE_FORMAT_RGBA8", 4, 1, 0xff],
+    ["TEXTURE_FORMAT_RGBA8S", 4, 1, 0x7f],
+    ["TEXTURE_FORMAT_RGBA16", 8, 2, 0xffff],
+    ["TEXTURE_FORMAT_RGBA16S", 8, 2, 0x7fff],
+    ["TEXTURE_FORMAT_RGBA16F", 8, 2, 0x3c00],
+    ["TEXTURE_FORMAT_RGBA16I", 8, 2, 1],
+    ["TEXTURE_FORMAT_RGBA16U", 8, 2, 1],
+    ["TEXTURE_FORMAT_RGBA32F", 16, 4, 0x3f800000],
+    ["TEXTURE_FORMAT_RGBA32I", 16, 4, 1],
+    ["TEXTURE_FORMAT_RGBA32U", 16, 4, 1],
+];
+
 /**
- * Returns the byte size of one texel of an uncompressed raw texture, or 0 when it is unknown.
+ * Returns how Native lays out raw uploads for a texture format, or null when the format is not an uncompressed
+ * format whose uploads the engine can validate and keep for context-loss rebuilds.
  * @param format defines the Babylon texture format
  * @param type defines the Babylon texture type
- * @returns the texel size in bytes
+ * @returns the native layout, or null
  */
-function GetRawTexelByteLength(format: number, type: number): number {
-    switch (type) {
-        case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
-        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
-        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
-            return 2;
-        case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
-        case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
-        case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
-            return 4;
+function GetNativeRawLayout(format: number, type: number): Nullable<INativeRawLayout> {
+    let nativeFormat: number | undefined;
+    try {
+        nativeFormat = getNativeTextureFormat(format, type);
+    } catch {
+        return null;
     }
+    if (nativeFormat === undefined) {
+        return null;
+    }
+    const constants = _native.Engine as unknown as Record<string, unknown>;
+    for (const [name, texelByteLength, rgbComponentByteLength, alpha] of _NativeRawLayouts) {
+        if (constants[name] === nativeFormat) {
+            return { texelByteLength, rgbComponentByteLength, alpha };
+        }
+    }
+    return null;
+}
 
-    let componentCount: number;
-    switch (format) {
-        case Constants.TEXTUREFORMAT_ALPHA:
-        case Constants.TEXTUREFORMAT_LUMINANCE:
-        case Constants.TEXTUREFORMAT_RED:
-        case Constants.TEXTUREFORMAT_RED_INTEGER:
-            componentCount = 1;
-            break;
-        case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
-        case Constants.TEXTUREFORMAT_RG:
-        case Constants.TEXTUREFORMAT_RG_INTEGER:
-            componentCount = 2;
-            break;
-        case Constants.TEXTUREFORMAT_RGB:
-        case Constants.TEXTUREFORMAT_RGB_INTEGER:
-            componentCount = 3;
-            break;
-        case Constants.TEXTUREFORMAT_RGBA:
-        case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-            componentCount = 4;
-            break;
-        default:
-            return 0;
-    }
-
-    switch (type) {
-        case Constants.TEXTURETYPE_UNSIGNED_BYTE:
-        case Constants.TEXTURETYPE_BYTE:
-            return componentCount;
-        case Constants.TEXTURETYPE_SHORT:
-        case Constants.TEXTURETYPE_UNSIGNED_SHORT:
-        case Constants.TEXTURETYPE_HALF_FLOAT:
-            return componentCount * 2;
-        case Constants.TEXTURETYPE_INT:
-        case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
-        case Constants.TEXTURETYPE_FLOAT:
-            return componentCount * 4;
-        default:
-            return 0;
-    }
+/**
+ * Checks whether Native accepts an upload of the given size, like ResolveRawUpload in NativeEngine.cpp: data at
+ * least as large as the texels (the excess is ignored), or tightly packed RGB data for formats stored as RGBA.
+ * @param byteLength defines the size of the uploaded data
+ * @param texelCount defines the number of texels covered by the upload
+ * @param layout defines the native layout of the texture
+ * @returns true if the upload size is accepted
+ */
+function IsRawUploadSizeValid(byteLength: number, texelCount: number, layout: INativeRawLayout): boolean {
+    return (
+        texelCount > 0 &&
+        (byteLength >= texelCount * layout.texelByteLength || (layout.rgbComponentByteLength > 0 && byteLength === texelCount * 3 * layout.rgbComponentByteLength))
+    );
 }
 
 /**
  * Converts raw upload data to the exact texture layout the native upload resolves it to: oversized data is
- * truncated, and tightly packed RGB data is widened for RGBA textures with 8-bit components.
+ * truncated, and tightly packed RGB data is widened with the alpha Native writes for formats stored as RGBA.
  * @param data defines the uploaded data
  * @param texelCount defines the number of texels covered by the upload
- * @param byteLength defines the byte size of those texels in the texture format
- * @param format defines the Babylon texture format
- * @param type defines the Babylon texture type
+ * @param layout defines the native layout of the texture
  * @returns the data in texture layout, or null when the native upload would reject it
  */
-function ResolveRawUploadLayout(data: ArrayBufferView, texelCount: number, byteLength: number, format: number, type: number): Nullable<Uint8Array> {
+function ResolveRawUploadLayout(data: ArrayBufferView, texelCount: number, layout: INativeRawLayout): Nullable<Uint8Array> {
+    if (!IsRawUploadSizeValid(data.byteLength, texelCount, layout)) {
+        return null;
+    }
+
     const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    const byteLength = texelCount * layout.texelByteLength;
     if (bytes.byteLength >= byteLength) {
         return bytes.subarray(0, byteLength);
     }
 
-    const isRgba = format === Constants.TEXTUREFORMAT_RGBA || format === Constants.TEXTUREFORMAT_RGBA_INTEGER;
-    const isByte = type === Constants.TEXTURETYPE_UNSIGNED_BYTE || type === Constants.TEXTURETYPE_BYTE;
-    if (!isRgba || !isByte || bytes.byteLength !== texelCount * 3 || byteLength !== texelCount * 4) {
-        return null;
-    }
-
-    // Same alpha the native widening writes: 1 for integer formats, otherwise the type's maximum.
-    const alpha = format === Constants.TEXTUREFORMAT_RGBA_INTEGER ? 1 : type === Constants.TEXTURETYPE_BYTE ? 127 : 255;
+    // Native writes the alpha component in little-endian byte order after each RGB triplet.
+    const componentByteLength = layout.rgbComponentByteLength;
+    const rgbByteLength = 3 * componentByteLength;
     const widened = new Uint8Array(byteLength);
     for (let texel = 0; texel < texelCount; texel++) {
-        widened[texel * 4] = bytes[texel * 3];
-        widened[texel * 4 + 1] = bytes[texel * 3 + 1];
-        widened[texel * 4 + 2] = bytes[texel * 3 + 2];
-        widened[texel * 4 + 3] = alpha;
+        const target = texel * layout.texelByteLength;
+        widened.set(bytes.subarray(texel * rgbByteLength, (texel + 1) * rgbByteLength), target);
+        for (let byte = 0; byte < componentByteLength; byte++) {
+            widened[target + rgbByteLength + byte] = (layout.alpha >>> (8 * byte)) & 0xff;
+        }
     }
     return widened;
 }
@@ -2568,8 +2598,9 @@ export class ThinNativeEngine extends ThinEngine {
             return;
         }
 
-        // Upload first so a rejected upload leaves the previous rebuild state intact.
-        if (bufferView && texture._hardwareTexture) {
+        // Upload first so a rejected upload leaves the previous rebuild state intact. Like WebGL's texImage3D,
+        // a null upload reinitializes the array, so the retained data below is replaced either way.
+        if (texture._hardwareTexture) {
             this._engine.loadRawTexture2DArray(
                 texture._hardwareTexture.underlyingResource,
                 bufferView,
@@ -2588,12 +2619,10 @@ export class ThinNativeEngine extends ThinEngine {
         texture.invertY = invertY;
         texture._compression = compression;
         if (!this._doNotHandleContextLost) {
+            // Native reallocates the array for a base upload, which discards explicitly uploaded mips.
             texture._bufferView = bufferView;
-            if (bufferView) {
-                // Native reallocates the array for a base upload, which discards explicitly uploaded mips.
-                texture._bufferViewArray = null;
-                _RawArrayMipLayersRegenerated.delete(texture);
-            }
+            texture._bufferViewArray = null;
+            _RawArrayMipLayersRegenerated.delete(texture);
         }
 
         texture.isReady = true;
@@ -2628,9 +2657,19 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(`NativeEngine.updateRawTexture2DArray: mip level ${mipLevel} is out of range for this texture.`);
         }
 
-        // The buffer holds every layer of the mip level back to back.
-        if (bufferView.byteLength === 0 || bufferView.byteLength % texture.depth !== 0) {
-            throw new Error(`NativeEngine.updateRawTexture2DArray: ${bufferView.byteLength} bytes cannot be split evenly across ${texture.depth} layers.`);
+        const layout = GetNativeRawLayout(format, textureType);
+        if (!layout) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: updating mip levels above 0 is not supported for format ${format}, type ${textureType}.`);
+        }
+
+        // The buffer holds every layer of the mip level back to back, and each layer must be a valid native upload.
+        const width = Math.max(1, texture.width >> mipLevel);
+        const height = Math.max(1, texture.height >> mipLevel);
+        const layerByteLength = bufferView.byteLength / texture.depth;
+        if (!Number.isInteger(layerByteLength) || !IsRawUploadSizeValid(layerByteLength, width * height, layout)) {
+            throw new Error(
+                `NativeEngine.updateRawTexture2DArray: ${bufferView.byteLength} bytes do not hold ${texture.depth} layers of ${width}x${height} texels for mip level ${mipLevel}.`
+            );
         }
 
         // Rebuilds replay the copy cached below. Layers whose mips a later image upload regenerated keep those
@@ -2640,9 +2679,6 @@ export class ThinNativeEngine extends ThinEngine {
 
         if (texture._hardwareTexture) {
             const nativeTexture = texture._hardwareTexture.underlyingResource;
-            const width = Math.max(1, texture.width >> mipLevel);
-            const height = Math.max(1, texture.height >> mipLevel);
-            const layerByteLength = bufferView.byteLength / texture.depth;
             for (let layer = 0; layer < texture.depth; layer++) {
                 if (regeneratedLayers?.has(layer)) {
                     continue;
@@ -2653,9 +2689,18 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         if (!isReplay && !this._doNotHandleContextLost) {
-            // Copy so later edits to the caller's buffer cannot change what a rebuild replays.
+            // Copy so later edits to the caller's buffer cannot change what a rebuild replays; same-size updates
+            // overwrite the existing engine-owned snapshot instead of allocating a new one.
+            const bytes = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
             texture._bufferViewArray ??= [];
-            texture._bufferViewArray[mipLevel] = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength).slice();
+            const snapshot = texture._bufferViewArray[mipLevel];
+            if (snapshot instanceof Uint8Array && snapshot.byteLength === bytes.byteLength && _OwnedRawArrayData.has(snapshot)) {
+                snapshot.set(bytes);
+            } else {
+                const ownedSnapshot = bytes.slice();
+                _OwnedRawArrayData.add(ownedSnapshot);
+                texture._bufferViewArray[mipLevel] = ownedSnapshot;
+            }
             _RawArrayMipLayersRegenerated.get(texture)?.delete(mipLevel);
         }
 
@@ -2703,12 +2748,25 @@ export class ThinNativeEngine extends ThinEngine {
             throw new Error(`NativeEngine.updateTextureArrayLayerFromImageSource: layer ${layer} is out of range for a texture with ${texture.depth} layers.`);
         }
 
+        // Resolve the layer in the texture layout before writing, so an upload that a rebuild could not
+        // reproduce is rejected instead of leaving the live texture and its rebuild data out of sync.
+        let retainedLayer: Nullable<Uint8Array> = null;
+        if (!this._doNotHandleContextLost) {
+            const layout = GetNativeRawLayout(texture.format, texture.type);
+            retainedLayer = layout && ResolveRawUploadLayout(bitmap.data, texture.width * texture.height, layout);
+            if (!retainedLayer) {
+                throw new Error(
+                    `NativeEngine.updateTextureArrayLayerFromImageSource: the ${bitmap.data.byteLength}-byte source cannot be stored in a texture with format ${texture.format}, type ${texture.type}.`
+                );
+            }
+        }
+
         // Native generates mips per layer, so rebuild this layer's chain whenever the texture has one.
         const regenerateMips = this._hasMipStorage(texture);
         this._engine.updateTextureData(texture._hardwareTexture.underlyingResource, bitmap.data, 0, 0, texture.width, texture.height, layer, 0, invertY, regenerateMips);
 
-        if (!this._doNotHandleContextLost) {
-            this._retainRawTexture2DArrayLayer(texture, bitmap.data, layer, invertY);
+        if (retainedLayer) {
+            this._retainRawTexture2DArrayLayer(texture, retainedLayer, layer, invertY);
             if (regenerateMips && texture._bufferViewArray) {
                 let regeneratedLayers = _RawArrayMipLayersRegenerated.get(texture);
                 if (!regeneratedLayers) {
@@ -2735,28 +2793,22 @@ export class ThinNativeEngine extends ThinEngine {
      * Writes an uploaded layer into the base data that context-loss rebuilds recreate the array from.
      * The layer is stored in the texture layout and orientation so the rebuild reproduces the live texture.
      * @param texture defines the 2D array texture
-     * @param data defines the uploaded layer data
+     * @param layerData defines the uploaded layer, already resolved to the texture layout
      * @param layer defines the uploaded layer
      * @param invertY defines the orientation the layer was uploaded with
      */
-    private _retainRawTexture2DArrayLayer(texture: InternalTexture, data: ArrayBufferView, layer: number, invertY: boolean): void {
-        const texelCount = texture.width * texture.height;
-        const layerByteLength = texelCount * GetRawTexelByteLength(texture.format, texture.type);
-        const layerData = layerByteLength ? ResolveRawUploadLayout(data, texelCount, layerByteLength, texture.format, texture.type) : null;
-        if (!layerData) {
-            Logger.Warn(`NativeEngine.updateTextureArrayLayerFromImageSource: layer ${layer} cannot be kept for context-loss rebuilds; it will be empty after a device reset.`);
-            return;
-        }
-
+    private _retainRawTexture2DArrayLayer(texture: InternalTexture, layerData: Uint8Array, layer: number, invertY: boolean): void {
+        const layerByteLength = layerData.byteLength;
         let baseData = texture._bufferView;
-        if (!baseData || !_OwnedRawArrayBaseData.has(baseData)) {
+        if (!baseData || !_OwnedRawArrayData.has(baseData)) {
             // Never patch caller-owned data; start from a copy of the current base level in texture layout.
             const ownedData = new Uint8Array(layerByteLength * texture.depth);
-            const currentData = baseData && ResolveRawUploadLayout(baseData, texelCount * texture.depth, ownedData.byteLength, texture.format, texture.type);
+            const layout = GetNativeRawLayout(texture.format, texture.type);
+            const currentData = baseData && layout ? ResolveRawUploadLayout(baseData, texture.width * texture.height * texture.depth, layout) : null;
             if (currentData) {
                 ownedData.set(currentData);
             }
-            _OwnedRawArrayBaseData.add(ownedData);
+            _OwnedRawArrayData.add(ownedData);
             texture._bufferView = baseData = ownedData;
         }
 

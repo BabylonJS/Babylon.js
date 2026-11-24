@@ -2545,7 +2545,7 @@ describe("ThinNativeEngine", () => {
             expect(() => update(mip1, -1)).toThrow(/invalid mip level/);
             expect(() => update(mip1, 1.5)).toThrow(/invalid mip level/);
             expect(() => update(mip1, 3)).toThrow(/out of range/);
-            expect(() => update(mip1.subarray(1), 1)).toThrow(/split evenly/);
+            expect(() => update(mip1.subarray(1), 1)).toThrow(/do not hold/);
             expect(() => update(mip1, 1, true)).toThrow(/same invertY/);
             expect(() => update(new Float32Array(mip1.length), 1, false, Constants.TEXTURETYPE_FLOAT)).toThrow(/format or type/);
 
@@ -2626,6 +2626,88 @@ describe("ThinNativeEngine", () => {
                 [0, 1],
                 [1, 1],
             ]);
+        });
+
+        it("rejects undersized raw 2D array mips and keeps the previous mip for rebuilds", () => {
+            const { engine, nativeEngine } = createEngine();
+            const texture = engine.createRawTexture2DArray(
+                new Uint8Array(4 * 4 * 4 * 2),
+                4,
+                4,
+                2,
+                Constants.TEXTUREFORMAT_RGBA,
+                true,
+                false,
+                Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+            );
+            const update = (bytes: ArrayBufferView) =>
+                engine.updateRawTexture2DArray(texture, bytes, Constants.TEXTUREFORMAT_RGBA, false, null, Constants.TEXTURETYPE_UNSIGNED_BYTE, 1);
+            const mip1 = new Uint8Array(2 * 2 * 4 * 2).map((_, i) => i);
+            update(mip1);
+            const snapshot = texture._bufferViewArray![1];
+
+            // Two bytes split evenly across two layers, but neither holds a 2x2 RGBA8 mip.
+            nativeEngine.updateTextureData.mockClear();
+            expect(() => update(new Uint8Array(2))).toThrow(/do not hold/);
+            expect(nativeEngine.updateTextureData).not.toHaveBeenCalled();
+
+            // Same-size updates reuse the engine-owned snapshot.
+            update(new Uint8Array(mip1.length).fill(5));
+            expect(texture._bufferViewArray![1]).toBe(snapshot);
+            update(mip1);
+
+            nativeEngine.updateTextureData.mockClear();
+            texture._rebuild();
+            expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => Array.from(call[1] as Uint8Array))).toEqual([
+                Array.from(mip1.subarray(0, 16)),
+                Array.from(mip1.subarray(16)),
+            ]);
+
+            // A null base update reinitializes the array, so nothing earlier is replayed.
+            nativeEngine.loadRawTexture2DArray.mockClear();
+            engine.updateRawTexture2DArray(texture, null, Constants.TEXTUREFORMAT_RGBA, false);
+            expect(nativeEngine.loadRawTexture2DArray.mock.lastCall![1]).toBeNull();
+            expect(texture._bufferView).toBeNull();
+            expect(texture._bufferViewArray).toBeNull();
+        });
+
+        it("restores layers and authored mips of non-RGBA8 raw 2D arrays after a device reset", () => {
+            const { engine, nativeEngine } = createEngine();
+            const base = new Uint8Array(2 * 2 * 4 * 2).fill(7);
+            const texture = engine.createRawTexture2DArray(base, 2, 2, 2, Constants.TEXTUREFORMAT_BGRA, true, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+            const mip1 = new Uint8Array(4 * 2).map((_, i) => i + 1);
+            engine.updateRawTexture2DArray(texture, mip1, Constants.TEXTUREFORMAT_BGRA, false, null, Constants.TEXTURETYPE_UNSIGNED_BYTE, 1);
+            engine.updateTextureArrayLayerFromImageSource(texture, { data: new Uint8Array(2 * 2 * 4).fill(9), width: 2, height: 2 } as any, 1);
+
+            nativeEngine.loadRawTexture2DArray.mockClear();
+            nativeEngine.updateTextureData.mockClear();
+            texture._rebuild();
+            expect(Array.from(nativeEngine.loadRawTexture2DArray.mock.lastCall![1] as Uint8Array)).toEqual([...new Array(16).fill(7), ...new Array(16).fill(9)]);
+            // Layer 1's regenerated mip is kept; layer 0 gets its authored mip back.
+            expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => [Array.from(call[1] as Uint8Array), call[6], call[7]])).toEqual([[[1, 2, 3, 4], 0, 1]]);
+
+            // RGB float arrays are stored as RGBA32F, so retained RGB layers are widened with an alpha of 1.
+            const rgbFloat = engine.createRawTexture2DArray(
+                null,
+                1,
+                1,
+                2,
+                Constants.TEXTUREFORMAT_RGB,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                null,
+                Constants.TEXTURETYPE_FLOAT
+            );
+            engine.updateTextureArrayLayerFromImageSource(rgbFloat, { data: new Float32Array([0.25, 0.5, 0.75]), width: 1, height: 1 } as any, 1);
+            rgbFloat._rebuild();
+            const rebuilt = nativeEngine.loadRawTexture2DArray.mock.lastCall![1] as Uint8Array;
+            expect(Array.from(new Float32Array(rebuilt.buffer, rebuilt.byteOffset, rebuilt.byteLength / 4))).toEqual([0, 0, 0, 0, 0.25, 0.5, 0.75, 1]);
+
+            // Layers a rebuild could not reproduce are rejected before anything is written.
+            nativeEngine.updateTextureData.mockClear();
+            expect(() => engine.updateTextureArrayLayerFromImageSource(texture, { data: new Uint8Array(2 * 2 * 3), width: 2, height: 2 } as any, 0)).toThrow(/cannot be stored/);
+            expect(nativeEngine.updateTextureData).not.toHaveBeenCalled();
         });
 
         it("rebuilds raw volume and cube textures from their latest data", () => {
