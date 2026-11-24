@@ -6,7 +6,7 @@ import { Tools } from "./Misc/tools.pure";
 import { TimingTools, _RetryWithInterval } from "./Misc/timingTools";
 import { type IAnimatable } from "./Animations/animatable.interface";
 import { PrecisionDate } from "./Misc/precisionDate";
-import { type Observer, Observable, EventState } from "./Misc/observable.pure";
+import { type Observer, Observable } from "./Misc/observable.pure";
 import { type ISmartArrayLike, SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
@@ -2919,33 +2919,38 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         // Check for readyness, before the timeout so that a scene which became ready within the deadline is never reported as timed out by a late timer.
-        // The waiters of executeWhenReady that did not ask for the render targets are served by the ordinary check. The other observers, which include the waiters
-        // that asked for the render targets, are served by a check that includes them when there is such a waiter, and by the ordinary check otherwise.
-        // A waiter that joins while a check is running is only served by a check that starts after it joined.
-        const renderTargetsWaiters = this._getObservers((observer) => observer.mask === RenderTargetsWaiterMask);
-        const onlyRenderTargetsCheck = renderTargetsWaiters.length > 0 && this._getObservers((observer) => observer.mask === OrdinaryWaiterMask).length === 0;
-        if (this.isReady(onlyRenderTargetsCheck)) {
-            if (renderTargetsWaiters.length === 0) {
-                // No waiter asked for the render targets: every observer is served by the check that just passed, in the order they were added (a waiter that joined while it ran waits for the next check)
-                this._notifyReadyObservers(this._getObservers((observer) => observer.mask !== RenderTargetsWaiterMask));
-            } else {
-                if (!onlyRenderTargetsCheck) {
-                    this._notifyReadyObservers(this._getObservers((observer) => observer.mask === OrdinaryWaiterMask));
-                }
-                if (onlyRenderTargetsCheck || this._getObservers((observer) => observer.mask === RenderTargetsWaiterMask).length === 0) {
-                    // Nothing waits for the render targets any more: the other observers are served by the check that just passed
-                    this._notifyReadyObservers(this._getObservers((observer) => observer.mask !== RenderTargetsWaiterMask || renderTargetsWaiters.includes(observer)));
-                } else if (!this._isDisposed) {
-                    const waiters = this._getObservers((observer) => observer.mask === RenderTargetsWaiterMask);
-                    if (this.isReady(true)) {
-                        this._notifyReadyObservers(this._getObservers((observer) => observer.mask !== RenderTargetsWaiterMask || waiters.includes(observer)));
-                    }
-                }
-            }
+        // The ordinary and the render targets readiness are collected in the same poll, so that a render target that only starts to initialize when it is first
+        // probed is not held back by an ordinary check that still fails. A waiter that joins while a check is running is only served by a check that starts after it joined.
+        const observers = this._getObservers(() => true);
+        const known = new Set(observers);
+        const timeoutObservers = this.onReadyTimeoutObservable.observers.slice();
+        const renderTargetsWaiting = observers.some((observer) => observer.mask === RenderTargetsWaiterMask);
+        const ordinaryWaiting = observers.some((observer) => observer.mask === OrdinaryWaiterMask);
+        const renderTargetsReady = renderTargetsWaiting && this.isReady(true);
+        const ordinaryReady = renderTargetsReady || ((ordinaryWaiting || !renderTargetsWaiting) && this.isReady(false));
 
-            if (this._getObservers(() => true).length === 0) {
-                this._clearReadynessChecksData();
-                return;
+        if (ordinaryReady) {
+            // One ordered set of callbacks: the waiters follow their own check, and the observers added to onReadyObservable follow the strictest one
+            const eligible = observers.filter((observer) => {
+                if (observer.mask === RenderTargetsWaiterMask) {
+                    return renderTargetsReady;
+                }
+                return observer.mask === OrdinaryWaiterMask || !renderTargetsWaiting ? ordinaryReady : renderTargetsReady;
+            });
+            this._notifyReadyObservers(eligible);
+
+            if (!this._isDisposed) {
+                const served = new Set(eligible);
+                const stillWaiting = this._getObservers((observer) => !served.has(observer));
+                if (!stillWaiting.some((observer) => known.has(observer))) {
+                    if (stillWaiting.length === 0) {
+                        this._clearReadynessChecksData();
+                        return;
+                    }
+                    // The callbacks started another wait while the last one was completing: it gets a deadline and checks of its own
+                    this._startReadyWaitOfNewObservers(timeoutObservers);
+                    return;
+                }
             }
         }
 
@@ -2959,6 +2964,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const elapsed = PrecisionDate.Now - this._timeoutChecksStartTime;
         if (this.onReadyTimeoutDuration > 0 && elapsed >= this.onReadyTimeoutDuration) {
             this.onReadyTimeoutObservable.notifyObservers(this);
+            // The waits that were pending are dropped, but not the ones that callbacks of this poll requested: they get a deadline and checks of their own
+            if (this._getObservers((observer) => !known.has(observer)).length > 0) {
+                for (const observer of observers) {
+                    this.onReadyObservable.remove(observer);
+                }
+                this._startReadyWaitOfNewObservers(timeoutObservers);
+                return;
+            }
             this._clearReadynessChecksData();
             return;
         }
@@ -2972,23 +2985,38 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     private _notifyReadyObservers(observers: Observer<Scene>[]) {
-        const state = new EventState(-1);
-        for (const observer of observers.slice()) {
-            // An observer can be removed by the callback of an earlier one
-            if (observer._willBeUnregistered) {
-                continue;
-            }
-            // Take the observer out before calling it, so that a wait registered by its callback never calls it again
-            this.onReadyObservable.remove(observer);
-            // Call the observer with its scope, and let it skip the observers after it
-            if (!state.skipNextObservers) {
-                observer.callback.apply(observer.scope, [this, state]);
-            }
-            // The callback disposed the scene: the other observers are gone with it
-            if (this._isDisposed) {
-                return;
+        // The observers are called through an Observable, to keep its notification contract (mask, scope, last return value, skipNextObservers)
+        const notification = new Observable<Scene>();
+        for (const observer of observers) {
+            notification.add((scene, state) => {
+                // An observer that an earlier callback removed, or cleared, is not called any more
+                if (observer._willBeUnregistered || !this.onReadyObservable.observers.includes(observer) || this._isDisposed) {
+                    return state.lastReturnValue;
+                }
+                // Take the observer out before calling it, so that a wait registered by its callback never calls it again
+                this.onReadyObservable.remove(observer);
+                return observer.callback.apply(observer.scope, [scene, state]);
+            }, observer.mask);
+        }
+        notification.notifyObservers(this);
+
+        // The observers that were served but suppressed by skipNextObservers are served too
+        for (const observer of observers) {
+            if (this.onReadyObservable.observers.includes(observer)) {
+                this.onReadyObservable.remove(observer);
             }
         }
+    }
+
+    // Starts the wait of the observers that joined while a poll was running, with a deadline and a fast polling window of their own
+    private _startReadyWaitOfNewObservers(finishedWaitTimeoutObservers: Observer<Scene>[]) {
+        // The timeout observers of the wait that just ended are not kept for the new one, as when a wait starts after the previous one was cleared
+        for (const observer of finishedWaitTimeoutObservers) {
+            this.onReadyTimeoutObservable.remove(observer);
+        }
+        this._timeoutChecksStartTime = PrecisionDate.Now;
+        this._fastReadyChecksStartTime = this._timeoutChecksStartTime;
+        this._scheduleReadyCheck(0);
     }
 
     private _scheduleReadyCheck(elapsed: number, keepEarlierCheck = false) {

@@ -313,6 +313,159 @@ describe("Scene readiness polling", () => {
         expect(vi.getTimerCount()).toBe(0);
     });
 
+    it("does not call the observers after a callback that cleared onReadyObservable", () => {
+        const after = vi.fn();
+        const directAfter = vi.fn();
+        readyAfter(50);
+        scene.executeWhenReady(() => scene.onReadyObservable.clear());
+        scene.executeWhenReady(after);
+        scene.onReadyObservable.add(directAfter);
+        vi.advanceTimersByTime(100);
+
+        expect(after).not.toHaveBeenCalled();
+        expect(directAfter).not.toHaveBeenCalled();
+    });
+
+    it("does not call an observer that an earlier callback removed with its handle", () => {
+        const after = vi.fn();
+        readyAfter(50);
+        scene.executeWhenReady(() => scene.onReadyObservable.remove(next));
+        const next = scene.onReadyObservable.add(after);
+        vi.advanceTimersByTime(100);
+
+        expect(after).not.toHaveBeenCalled();
+    });
+
+    it("does not call an observer that an earlier callback removed with its own remove", () => {
+        const after = vi.fn();
+        readyAfter(50);
+        scene.executeWhenReady(() => handle.remove());
+        const handle = scene.onReadyObservable.add(after);
+        vi.advanceTimersByTime(100);
+
+        expect(after).not.toHaveBeenCalled();
+    });
+
+    it("does not report the timeout to the observers of a wait that completed when a callback starts the next wait", () => {
+        let ready = false;
+        scene.addIsReadyCheck({ isReady: () => ready });
+        scene.onReadyTimeoutDuration = 100;
+        const onTimeout = vi.fn();
+        const second = vi.fn();
+        scene.onReadyTimeoutObservable.add(onTimeout);
+        scene.executeWhenReady(() => {
+            ready = false;
+            scene.executeWhenReady(second);
+        });
+        vi.advanceTimersByTime(30);
+        ready = true;
+        vi.advanceTimersByTime(20);
+        expect(second).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(500);
+
+        expect(second).not.toHaveBeenCalled();
+        expect(onTimeout).not.toHaveBeenCalled();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("probes the render targets in the same poll as the ordinary check, so that a target that starts initializing on its first probe is ready in time", () => {
+        // the target needs 100 ms from its first probe, the ordinary check passes at 300 ms, and the wait has 350 ms
+        let firstProbe = -1;
+        scene.customRenderTargets.push({
+            isReadyForRendering: () => {
+                firstProbe = firstProbe < 0 ? performance.now() : firstProbe;
+                return performance.now() - firstProbe >= 100;
+            },
+        } as unknown as RenderTargetTexture);
+        readyAfter(300);
+        scene.onReadyTimeoutDuration = 350;
+        const defaultWait = vi.fn();
+        const strictWait = vi.fn();
+        const onTimeout = vi.fn();
+        scene.onReadyTimeoutObservable.add(onTimeout);
+
+        scene.executeWhenReady(defaultWait);
+        scene.executeWhenReady(strictWait, true);
+        vi.advanceTimersByTime(400);
+
+        expect(defaultWait).toHaveBeenCalledTimes(1);
+        expect(strictWait).toHaveBeenCalledTimes(1);
+        expect(onTimeout).not.toHaveBeenCalled();
+        scene.customRenderTargets.length = 0;
+    });
+
+    it("gives a wait that a callback requests on the last check a check of its own", () => {
+        // the scene is first ready at the check that runs at the deadline
+        readyAfter(99);
+        scene.onReadyTimeoutDuration = 100;
+        const onTimeout = vi.fn();
+        scene.onReadyTimeoutObservable.add(onTimeout);
+        const second = vi.fn();
+        scene.executeWhenReady(() => scene.executeWhenReady(second));
+        vi.advanceTimersByTime(99);
+        expect(second).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(200);
+
+        expect(second).toHaveBeenCalledTimes(1);
+        expect(onTimeout).not.toHaveBeenCalled();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("gives a wait that an ordinary callback requests on the last check a check of its own when a strict wait times out there", () => {
+        // the render target never gets ready, the ordinary check passes at 99 ms and the deadline is 100 ms
+        scene.customRenderTargets.push({ isReadyForRendering: () => false } as unknown as RenderTargetTexture);
+        readyAfter(99);
+        scene.onReadyTimeoutDuration = 100;
+        const strictWait = vi.fn();
+        const second = vi.fn();
+        const onTimeout = vi.fn();
+        scene.onReadyTimeoutObservable.add(onTimeout);
+        scene.executeWhenReady(() => scene.executeWhenReady(second));
+        scene.executeWhenReady(strictWait, true);
+        vi.advanceTimersByTime(300);
+
+        expect(second).toHaveBeenCalledTimes(1);
+        expect(strictWait).not.toHaveBeenCalled();
+        expect(onTimeout).toHaveBeenCalledTimes(1);
+        expect(vi.getTimerCount()).toBe(0);
+        scene.customRenderTargets.length = 0;
+    });
+
+    it("lets an observer added first suppress a waiter that is ready in the same poll, strict wait or not", () => {
+        scene.customRenderTargets.push({ isReadyForRendering: () => true } as unknown as RenderTargetTexture);
+        readyAfter(50);
+        const ordinary = vi.fn();
+        const strict = vi.fn();
+        scene.executeWhenReady(ordinary);
+        scene.executeWhenReady(strict, true);
+        scene.onReadyObservable.add((_, state) => (state.skipNextObservers = true), -1, true);
+        vi.advanceTimersByTime(100);
+
+        expect(ordinary).not.toHaveBeenCalled();
+        expect(strict).not.toHaveBeenCalled();
+        expect(vi.getTimerCount()).toBe(0);
+        scene.customRenderTargets.length = 0;
+    });
+
+    it("hands the scene as the last return value, and never calls an observer whose mask is zero", () => {
+        const seen: unknown[] = [];
+        const masked = vi.fn();
+        readyAfter(50);
+        scene.executeWhenReady(vi.fn());
+        scene.onReadyObservable.add(
+            (_, state) => {
+                seen.push(state.lastReturnValue);
+            },
+            -1,
+            true
+        );
+        scene.onReadyObservable.add(masked, 0);
+        vi.advanceTimersByTime(100);
+
+        expect(seen).toEqual([scene]);
+        expect(masked).not.toHaveBeenCalled();
+    });
+
     it("still times out a strict wait on its render targets after the ordinary wait was served", () => {
         scene.onReadyTimeoutDuration = 500;
         readyAfter(50);
