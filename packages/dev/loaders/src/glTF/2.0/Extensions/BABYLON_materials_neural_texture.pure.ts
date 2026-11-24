@@ -279,7 +279,9 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                 return;
             }
             if (!this.allowCPUFallback) {
-                throw new Error(`${extensionContext}: GPU baking is unavailable; opt into allowCPUFallback to use CPU decoding`);
+                throw new Error(
+                    `${extensionContext}: GPU baking is unavailable (uniform buffers: ${scene.getEngine().supportsUniformBuffers}); opt into allowCPUFallback to use CPU decoding`
+                );
             }
             const grids = await Promise.all(
                 latents.map(async (latent): Promise<INeuralTextureGrid> => {
@@ -421,7 +423,9 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
             return;
         }
         if (!this.allowCPUFallback) {
-            throw new Error(`${extensionContext}: GPU baking is unavailable; opt into allowCPUFallback to use CPU decoding`);
+            throw new Error(
+                `${extensionContext}: GPU baking is unavailable (uniform buffers: ${scene.getEngine().supportsUniformBuffers}); opt into allowCPUFallback to use CPU decoding`
+            );
         }
         const atlases = await Promise.all(
             latents.map(async (latent) => {

@@ -116,9 +116,6 @@ export async function BakeNeuralV4Async(
     }
     const wgsl = engine.isWebGPU;
     const gl = wgsl ? null : GetWebGL2Context(engine);
-    if (!wgsl && !gl) {
-        return null;
-    }
     const { width, height, mipCount } = layout;
     if (width > engine.getCaps().maxTextureSize || height > engine.getCaps().maxTextureSize) {
         throw new Error("Neural texture resolution exceeds the engine texture size limit");

@@ -79,9 +79,6 @@ export async function BakeNeuralTextureAsync(
         return null;
     }
     const gl = engine.isWebGPU ? null : GetWebGL2Context(engine);
-    if (!engine.isWebGPU && !gl) {
-        return null;
-    }
     const [width, height] = extension.resolution;
     if (width > engine.getCaps().maxTextureSize || height > engine.getCaps().maxTextureSize) {
         throw new Error("Neural texture resolution exceeds the engine texture size limit");
@@ -269,8 +266,8 @@ void main() {
             const colorWrite = engine.getColorWrite();
             const viewport = engine.currentViewport;
             const dispatchStart = timing ? performance.now() : 0;
-            const generateMipmap = gl!.generateMipmap;
-            if (timing) {
+            const generateMipmap = gl?.generateMipmap;
+            if (timing && gl && generateMipmap) {
                 gl!.generateMipmap = (target) => {
                     const start = performance.now();
                     generateMipmap.call(gl, target);
@@ -306,10 +303,10 @@ void main() {
                 }
             } finally {
                 if (gpuQuery) {
-                    gl!.endQuery(0x88bf);
+                    gl?.endQuery(0x88bf);
                 }
-                if (timing) {
-                    gl!.generateMipmap = generateMipmap;
+                if (timing && gl && generateMipmap) {
+                    gl.generateMipmap = generateMipmap;
                 }
                 engine.setAlphaMode(alphaMode);
                 engine.setColorWrite(colorWrite);
