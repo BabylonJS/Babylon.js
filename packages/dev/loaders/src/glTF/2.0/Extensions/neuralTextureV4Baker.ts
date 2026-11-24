@@ -111,7 +111,8 @@ export async function BakeNeuralV4Async(
     };
     checkCancelled();
     const engine = scene.getEngine();
-    if (!engine.supportsUniformBuffers) {
+    // Plain uniforms only: this also works where WebGL uniform buffers are disabled (macOS Chrome).
+    if (!engine.isWebGPU && engine.version < 2) {
         return null;
     }
     const wgsl = engine.isWebGPU;

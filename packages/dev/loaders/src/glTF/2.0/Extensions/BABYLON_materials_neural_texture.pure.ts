@@ -154,7 +154,8 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                 TrackNeuralTextureMaterialTiming(babylonMaterial, timing);
             }
             const shaderDecode = this.decodeInShader;
-            if (shaderDecode && !engine.supportsUniformBuffers) {
+            // v4 needs no uniform buffer (macOS Chrome disables them); the v1/v2 decoder keeps its weights in one.
+            if (shaderDecode && (v4 ? !engine.isWebGPU && engine.version < 2 : !engine.supportsUniformBuffers)) {
                 throw new Error(`${extensionContext}: Shader decoding requires WebGL 2 or WebGPU; disable decodeInShader to bake textures`);
             }
             const textureOrder = v4 ? GetNeuralV4LatentTextureOrder(layout!) : extension.latentTextures.map((_, index) => index);
@@ -279,9 +280,7 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                 return;
             }
             if (!this.allowCPUFallback) {
-                throw new Error(
-                    `${extensionContext}: GPU baking is unavailable (uniform buffers: ${scene.getEngine().supportsUniformBuffers}); opt into allowCPUFallback to use CPU decoding`
-                );
+                throw new Error(`${extensionContext}: GPU baking is unavailable (requires WebGL 2 or WebGPU compute); opt into allowCPUFallback to use CPU decoding`);
             }
             const grids = await Promise.all(
                 latents.map(async (latent): Promise<INeuralTextureGrid> => {
@@ -423,9 +422,7 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
             return;
         }
         if (!this.allowCPUFallback) {
-            throw new Error(
-                `${extensionContext}: GPU baking is unavailable (uniform buffers: ${scene.getEngine().supportsUniformBuffers}); opt into allowCPUFallback to use CPU decoding`
-            );
+            throw new Error(`${extensionContext}: GPU baking is unavailable (requires WebGL 2 or WebGPU compute); opt into allowCPUFallback to use CPU decoding`);
         }
         const atlases = await Promise.all(
             latents.map(async (latent) => {

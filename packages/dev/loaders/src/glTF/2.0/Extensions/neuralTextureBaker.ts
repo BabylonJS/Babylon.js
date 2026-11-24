@@ -75,7 +75,9 @@ export async function BakeNeuralTextureAsync(
     };
     checkCancelled();
     const engine = scene.getEngine();
-    if (engine.isWebGPU ? !engine.getCaps().supportComputeShaders : !engine.supportsUniformBuffers) {
+    // macOS Chrome disables WebGL uniform buffers: the fragment bake then uses a plain uniform array.
+    const useUbo = engine.isWebGPU || engine.supportsUniformBuffers;
+    if (engine.isWebGPU ? !engine.getCaps().supportComputeShaders : engine.version < 2) {
         return null;
     }
     const gl = engine.isWebGPU ? null : GetWebGL2Context(engine);
@@ -87,12 +89,16 @@ export async function BakeNeuralTextureAsync(
         ([slot, name, index]): [keyof INeuralTextureBaked, string, number] => [slot, name, index]
     );
     const packedSize = GetNeuralTexturePackedSize(extension.network.outputs);
+    if (!useUbo && packedSize + 4 > engine.getCaps().maxFragmentUniformVectors) {
+        return null;
+    }
     const result: INeuralTextureBaked = {};
     if (!outputs.length) {
         return result;
     }
     const start = Date.now();
     let phaseStart = timing ? performance.now() : 0;
+    const packedWeights = PackNeuralTextureWeights(weights, extension.network.outputs);
     const parameters = new UniformBuffer(engine);
     const renderTargets: RenderTargetWrapper[] = [];
     let renderer: Nullable<EffectRenderer> = null;
@@ -101,12 +107,14 @@ export async function BakeNeuralTextureAsync(
     let gpuQuery: Nullable<WebGLQuery> = null;
     try {
         checkCancelled();
-        parameters.addUniform("neuralWeights", 4, packedSize);
-        parameters.addUniform("neuralNetworkSize", 1);
-        parameters.create();
-        parameters.updateFloatArray("neuralWeights", PackNeuralTextureWeights(weights, extension.network.outputs));
-        parameters.updateFloat("neuralNetworkSize", 32);
-        parameters.update();
+        if (useUbo) {
+            parameters.addUniform("neuralWeights", 4, packedSize);
+            parameters.addUniform("neuralNetworkSize", 1);
+            parameters.create();
+            parameters.updateFloatArray("neuralWeights", packedWeights);
+            parameters.updateFloat("neuralNetworkSize", 32);
+            parameters.update();
+        }
         for (const [slot] of outputs) {
             const texture = scene._executeWithBlockedEntityCollection(!!container, () => {
                 if (engine.isWebGPU) {
@@ -236,11 +244,12 @@ fn main(@builtin(global_invocation_id) globalId: vec3u) {
                 ]
                     .map((channels) => channels?.join("_") ?? "none")
                     .join("__") +
-                `_o${outputs.map(([, , index]) => index).join("")}`;
+                `_o${outputs.map(([, , index]) => index).join("")}` +
+                (useUbo ? "" : "_noubo");
             ShaderStore.ShadersStore[`${shaderName}VertexShader`] = "attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }";
             ShaderStore.ShadersStore[`${shaderName}PixelShader`] = `
 precision highp float;
-layout(std140) uniform NeuralParameters { vec4 neuralWeights[${packedSize}]; float neuralNetworkSize; };
+${useUbo ? `layout(std140) uniform NeuralParameters { vec4 neuralWeights[${packedSize}]; float neuralNetworkSize; };` : `uniform vec4 neuralWeights[${packedSize}];\nuniform float neuralNetworkSize;`}
 uniform vec2 neuralResolution;
 uniform int neuralOutput;
 ${decoder.definitions}
@@ -254,8 +263,8 @@ void main() {
                 useShaderStore: true,
                 vertexShader: shaderName,
                 fragmentShader: shaderName,
-                uniformBuffers: ["NeuralParameters"],
-                uniformNames: ["neuralResolution", "neuralOutput"],
+                uniformBuffers: useUbo ? ["NeuralParameters"] : [],
+                uniformNames: useUbo ? ["neuralResolution", "neuralOutput"] : ["neuralResolution", "neuralOutput", "neuralWeights", "neuralNetworkSize"],
                 samplerNames: ["neuralLatent0", "neuralLatent1", "neuralLatent2", "neuralLatent3"],
             });
             await WaitForFragmentShaderAsync(wrapper, checkCancelled);
@@ -285,8 +294,13 @@ void main() {
                 engine.setColorWrite(true);
                 let outputIndex = 0;
                 wrapper.onApplyObservable.add(() => {
-                    parameters.bindToEffect(effect, "NeuralParameters");
-                    parameters.bindUniformBuffer();
+                    if (useUbo) {
+                        parameters.bindToEffect(effect, "NeuralParameters");
+                        parameters.bindUniformBuffer();
+                    } else {
+                        effect.setArray4("neuralWeights", packedWeights as unknown as number[]);
+                        effect.setFloat("neuralNetworkSize", 32);
+                    }
                     effect.setFloat2("neuralResolution", width, height);
                     effect.setInt("neuralOutput", outputIndex);
                     for (let i = 0; i < 4; i++) {
