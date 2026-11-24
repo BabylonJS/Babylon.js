@@ -14,6 +14,13 @@ void main(void) {
     ClusteredLight light = getClusteredLight(lightDataTexture, gl_InstanceID);
     float range = light.vLightFalloff.x;
 
+    // Disabled lights have a negative range: collapse the proxy so it does not add the light to any tile
+    if (range < 0.0) {
+        gl_Position = vec4(0, 0, 0, 1);
+        vMask = 0u;
+        return;
+    }
+
     vec4 viewPosition = view * vec4(light.vLightData.xyz, 1);
     vec4 viewPositionSq = viewPosition * viewPosition;
 
@@ -55,10 +62,4 @@ void main(void) {
     gl_Position = vec4(tilePosition / halfTileRes - 1.0, 0, 1);
     vLimits = vec2(offset, offset + tileMaskResolution.y);
     vMask = 1u << (gl_InstanceID % CLUSTLIGHT_BATCH);
-
-    // Disabled lights have a negative range: collapse the proxy so it does not add the light to any tile
-    if (range < 0.0) {
-        gl_Position = vec4(0, 0, 0, 1);
-        vMask = 0u;
-    }
 }

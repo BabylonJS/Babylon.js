@@ -84,11 +84,11 @@ describe("ClusteredLightContainer", () => {
         };
 
         it("leaves disabled lights out of the light data and the slice ranges", () => {
-            const { container, lights, update, writtenDepths, writtenRanges, highestSliceIndex } = createContainer([5, 10, 15]);
+            const { container, lights, update, writtenDepths, writtenRanges, highestSliceIndex } = createContainer([15, 10, 5]);
             lights[1].setEnabled(false);
             update();
 
-            expect((container as any)._activeLights).toEqual([lights[0], lights[2]]);
+            expect((container as any)._activeLights).toEqual([lights[2], lights[0]]);
             expect(writtenDepths(2)).toEqual([5, 15]);
             // The disabled light's row gets a negative range so the light proxy skips it
             expect(writtenRanges(3)).toEqual([1, 1, -1]);
@@ -100,7 +100,7 @@ describe("ClusteredLightContainer", () => {
             lights[1].setEnabled(true);
             update();
 
-            expect((container as any)._activeLights).toEqual(lights);
+            expect((container as any)._activeLights).toEqual([lights[2], lights[1], lights[0]]);
             expect(writtenDepths(3)).toEqual([5, 10, 15]);
             expect(writtenRanges(3)).toEqual([1, 1, 1]);
             expect(highestSliceIndex()).toBe(2);
