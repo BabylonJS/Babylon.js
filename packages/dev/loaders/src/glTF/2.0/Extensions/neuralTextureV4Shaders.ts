@@ -13,16 +13,12 @@ export type NeuralTextureRuntimeFilter = "bilinear" | "nearest" | "trilinear" | 
 /** Source of the network parameters: the RGBA16F data texture or a uniform buffer (fp32, same texel layout). */
 export type NeuralTextureRuntimeWeights = "texture" | "uniform";
 
-/** Network loop generation: kept as loops, inner (per-neuron dot products) unrolled, or fully unrolled. */
-export type NeuralTextureRuntimeUnroll = "none" | "inner" | "full";
-
 /** Network arithmetic precision: f32, or f16 (WGSL f16 with the shader-f16 feature, GLSL mediump). */
 export type NeuralTextureRuntimePrecision = "f32" | "f16";
 
 /** Code generation options of the network evaluation. @internal */
 export interface INeuralV4ShaderOptions {
     weights?: NeuralTextureRuntimeWeights;
-    unroll?: NeuralTextureRuntimeUnroll;
     precision?: NeuralTextureRuntimePrecision;
 }
 
@@ -158,13 +154,12 @@ export function GetNeuralV4LatentTextureOrder(layout: INeuralV4Layout): number[]
  * Uniform neuralParams (a vec4) is declared by the caller and neuralParams.w must be 0: it keeps compilers from unrolling the network loops.
  * @param layout the payload layout
  * @param lang the language description
- * @param options the runtime weights, unroll and precision options
+ * @param options the runtime weights and precision options
  * @returns the shader source
  */
 function GetDecodeSource(layout: INeuralV4Layout, lang: ILanguage, options: INeuralV4ShaderOptions = {}): string {
     const wgsl = lang.wgsl;
     const uniformWeights = options.weights === "uniform";
-    const unroll = options.unroll ?? "none";
     const f16 = options.precision === "f16";
     // Network value types: f16 in WGSL, mediump in GLSL (a hint that desktop GPUs ignore).
     const nv4 = f16 ? (wgsl ? "vec4h" : "mediump vec4") : lang.vec4;
@@ -338,41 +333,20 @@ vec4 neuralHardGelu4(vec4 z) { return vec4(neuralHardGelu(z.x), neuralHardGelu(z
         const layerOutputs = ["hid0", "hid1", "y2"];
         const inVec4 = [in4, 16, 16];
         const activation = (l: number, acc: string) => (l < 2 ? (f16 && wgsl ? `neuralHardGelu4H(${acc})` : `neuralHardGelu4(${acc})`) : acc);
-        // One group of 4 output neurons: g and r are literals (full unroll) or loop variables.
-        const neuronGroup = (l: number, g: string, r: string, accName: string) => {
-            const lines: string[] = [];
-            const row = (c: number) => (c === 0 ? r : isNumber(r) ? String(+r + c) : `${r} + ${c}`);
-            lines.push(wgsl ? `var ${accName}: ${nv4} = ${nv4Ctor}(0.0);` : `${nv4} ${accName} = vec4(0.0);`);
-            if (unroll === "none") {
-                lines.push(`${lang.forLoop("k", `${inVec4[l]} + z`)} {`);
-                lines.push(d(nv4, "xv", `${layerInputs[l]}[k]`));
-                for (let c = 0; c < 4; c++) {
-                    lines.push(`${accName}.${"xyzw"[c]} += dot(${weight("k", row(c))}, xv);`);
-                }
-                lines.push("}");
-            } else {
-                for (let k = 0; k < inVec4[l]; k++) {
-                    for (let c = 0; c < 4; c++) {
-                        lines.push(`${accName}.${"xyzw"[c]} += dot(${weight(String(k), row(c))}, ${layerInputs[l]}[${k}]);`);
-                    }
-                }
-            }
-            const bias = [0, 1, 2, 3].map((c) => `${weight(String(inVec4[l]), row(c))}.x`).join(", ");
-            lines.push(`${accName} += ${nv4Ctor}(${bias});`);
-            lines.push(`${layerOutputs[l]}[${g}] = ${activation(l, accName)};`);
-            return lines;
-        };
+        // Loop over the groups of 4 output neurons; the dot products of each group are unrolled.
         for (let l = 0; l < 3; l++) {
-            if (unroll === "full") {
-                for (let g = 0; g < groups[l]; g++) {
-                    b.push(...neuronGroup(l, String(g), String(rows[l] + g * 4), `acc${l}_${g}`));
+            b.push(`${lang.forLoop("g", `${groups[l]} + z`)} {`);
+            b.push(d(lang.int, "r", `${rows[l]} + g * 4`));
+            b.push(wgsl ? `var acc: ${nv4} = ${nv4Ctor}(0.0);` : `${nv4} acc = vec4(0.0);`);
+            for (let k = 0; k < inVec4[l]; k++) {
+                for (let c = 0; c < 4; c++) {
+                    b.push(`acc.${"xyzw"[c]} += dot(${weight(String(k), c === 0 ? "r" : `r + ${c}`)}, ${layerInputs[l]}[${k}]);`);
                 }
-            } else {
-                b.push(`${lang.forLoop("g", `${groups[l]} + z`)} {`);
-                b.push(d(lang.int, "r", `${rows[l]} + g * 4`));
-                b.push(...neuronGroup(l, "g", "r", "acc"));
-                b.push("}");
             }
+            const bias = [0, 1, 2, 3].map((c) => `${weight(String(inVec4[l]), c === 0 ? "r" : `r + ${c}`)}.x`).join(", ");
+            b.push(`acc += ${nv4Ctor}(${bias});`);
+            b.push(`${layerOutputs[l]}[g] = ${activation(l, "acc")};`);
+            b.push("}");
         }
         layout.channels.forEach((channel) => {
             if ("net" in channel) {

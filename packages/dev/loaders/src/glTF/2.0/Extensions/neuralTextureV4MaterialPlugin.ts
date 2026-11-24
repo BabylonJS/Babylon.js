@@ -13,7 +13,6 @@ import {
     type INeuralV4ShaderOptions,
     type NeuralTextureRuntimeFilter,
     type NeuralTextureRuntimePrecision,
-    type NeuralTextureRuntimeUnroll,
     type NeuralTextureRuntimeWeights,
 } from "./neuralTextureV4Shaders";
 import { type NeuralTextureTiming } from "./neuralTextureTiming";
@@ -46,7 +45,6 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
     private _timing?: NeuralTextureTiming;
     private _runtimeFilter: NeuralTextureRuntimeFilter;
     private _runtimeWeights: NeuralTextureRuntimeWeights;
-    private _runtimeUnroll: NeuralTextureRuntimeUnroll;
     private _runtimePrecision: NeuralTextureRuntimePrecision;
     private _weightsUbo: Nullable<DataBuffer> = null;
     private _warned = new Set<string>();
@@ -79,7 +77,6 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         this._timing = timing;
         this._runtimeFilter = runtimeFilter;
         this._runtimeWeights = shaderOptions.weights ?? "texture";
-        this._runtimeUnroll = shaderOptions.unroll ?? "none";
         this._runtimePrecision = shaderOptions.precision ?? "f32";
         this.lodBias = lodBias;
         this._pluginManager._addPlugin(this);
@@ -106,18 +103,6 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
     public set runtimeWeights(value: NeuralTextureRuntimeWeights) {
         if (value !== this._runtimeWeights) {
             this._runtimeWeights = value;
-            this.markAllDefinesAsDirty();
-        }
-    }
-
-    /** Network loop generation: "none" (the default), "inner" (dot products unrolled) or "full" (every neuron unrolled). */
-    public get runtimeUnroll(): NeuralTextureRuntimeUnroll {
-        return this._runtimeUnroll;
-    }
-
-    public set runtimeUnroll(value: NeuralTextureRuntimeUnroll) {
-        if (value !== this._runtimeUnroll) {
-            this._runtimeUnroll = value;
             this.markAllDefinesAsDirty();
         }
     }
@@ -179,7 +164,7 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
             this._warnOnce("BABYLON_materials_neural_texture: the shader-f16 WebGPU feature is not enabled; using f32");
             precision = "f32";
         }
-        return { weights, unroll: this._runtimeUnroll, precision };
+        return { weights, precision };
     }
 
     public override isCompatible(): boolean {
@@ -196,7 +181,6 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
                 this._extension.replacedSlots,
                 this._runtimeFilter,
                 options.weights,
-                options.unroll,
                 options.precision,
                 this._debugChannels,
             ])

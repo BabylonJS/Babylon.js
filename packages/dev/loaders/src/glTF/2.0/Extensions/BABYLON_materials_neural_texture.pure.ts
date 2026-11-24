@@ -25,13 +25,7 @@ import {
 } from "./neuralTextureV4";
 import { BakeNeuralV4Async, CreateNeuralV4WeightsTexture, type NeuralTextureBakeMips } from "./neuralTextureV4Baker";
 import { NeuralTextureV4MaterialPlugin } from "./neuralTextureV4MaterialPlugin";
-import {
-    GetNeuralV4LatentTextureOrder,
-    type NeuralTextureRuntimeFilter,
-    type NeuralTextureRuntimePrecision,
-    type NeuralTextureRuntimeUnroll,
-    type NeuralTextureRuntimeWeights,
-} from "./neuralTextureV4Shaders";
+import { GetNeuralV4LatentTextureOrder, type NeuralTextureRuntimeFilter, type NeuralTextureRuntimePrecision, type NeuralTextureRuntimeWeights } from "./neuralTextureV4Shaders";
 
 export { EnableNeuralTextureFileTiming } from "./neuralTextureTiming";
 
@@ -64,8 +58,6 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
     public lodBias: number;
     /** babylon-ntc-v4 only: network parameters of the in-shader decode in the "texture" (default) or a "uniform" buffer. */
     public runtimeWeights: NeuralTextureRuntimeWeights;
-    /** babylon-ntc-v4 only: loop unrolling of the in-shader network, "none" (default), "inner" or "full". */
-    public runtimeUnroll: NeuralTextureRuntimeUnroll;
     /** babylon-ntc-v4 only: arithmetic precision of the in-shader network, "f32" (default) or "f16". */
     public runtimePrecision: NeuralTextureRuntimePrecision;
 
@@ -83,7 +75,6 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
         this.runtimeFilter = options?.runtimeFilter ?? "bilinear";
         this.lodBias = options?.lodBias ?? 0;
         this.runtimeWeights = options?.runtimeWeights ?? "texture";
-        this.runtimeUnroll = options?.runtimeUnroll ?? "none";
         this.runtimePrecision = options?.runtimePrecision ?? "f32";
     }
 
@@ -398,7 +389,6 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
             this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
             new NeuralTextureV4MaterialPlugin(babylonMaterial, extension, layout, latents, weightsTexture, packedWeights, this.runtimeFilter, this.lodBias, timing, {
                 weights: this.runtimeWeights,
-                unroll: this.runtimeUnroll,
                 precision: this.runtimePrecision,
             });
             timing?.("shaderPluginAndPlaceholderCreation", start);

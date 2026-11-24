@@ -102,8 +102,6 @@ declare module "../../glTFFileLoader" {
             lodBias: number;
             /** babylon-ntc-v4 only. Network parameters of the per-fragment decode: RGBA16F "texture" fetches or a fp32 "uniform" buffer (falls back to the texture above the device limit). Default: "texture". */
             runtimeWeights: "texture" | "uniform";
-            /** babylon-ntc-v4 only. Loop unrolling of the per-fragment network: "none", "inner" (dot products) or "full". Default: "none". */
-            runtimeUnroll: "none" | "inner" | "full";
             /** babylon-ntc-v4 only. Arithmetic of the per-fragment network: "f32" or "f16" (WGSL with the shader-f16 feature, GLSL mediump). Default: "f32". */
             runtimePrecision: "f32" | "f16";
             /** Record opt-in performance.measure phase entries named neural:*. Default: false. */
