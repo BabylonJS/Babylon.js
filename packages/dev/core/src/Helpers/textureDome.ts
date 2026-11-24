@@ -6,7 +6,7 @@ import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial.p
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder.pure";
 import { type Nullable } from "../types";
 import { type Observer, Observable } from "../Misc/observable";
-import { Vector3 } from "../Maths/math.vector.pure";
+import { Matrix, Vector3 } from "../Maths/math.vector.pure";
 import { Axis } from "../Maths/math";
 
 import { type Camera } from "../Cameras/camera";
@@ -276,7 +276,11 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         // Initial rotation
         if (options.faceForward && scene.activeCamera) {
             const camera = scene.activeCamera;
-            const direction = camera.getDirection(Vector3.Forward(scene.useRightHandedSystem));
+            // Invert the current view matrix instead of calling camera.getDirection(): getViewMatrix() notifies
+            // onViewMatrixChangedObservable before it refreshes the camera world matrix, so a dome created in
+            // that callback would otherwise face the previous direction.
+            const cameraWorld = Matrix.Invert(camera.getViewMatrix());
+            const direction = Vector3.TransformNormal(Vector3.Forward(scene.useRightHandedSystem), cameraWorld);
             this.rotation.y = Math.atan2(direction.x, direction.z);
         }
 
