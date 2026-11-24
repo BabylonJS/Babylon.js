@@ -7,6 +7,7 @@ import {
     UploadImageToTexture2DArrayLayer,
 } from "core/Materials/Textures/rawTexture2DArray.functions";
 import { type RawTexture2DArray } from "core/Materials/Textures/rawTexture2DArray";
+import { ThinNativeEngine } from "core/Engines/thinNativeEngine.pure";
 
 // Registry of RawTexture2DArray instances constructed during a test, so a test can assert dispose()
 // was called. The mocked class's engine upload always throws, which lets us exercise the
@@ -306,16 +307,33 @@ describe("rawTexture2DArray.functions", () => {
             expect(update).toHaveBeenCalledWith(expect.anything(), bitmaps[0], 1, false, false);
         });
 
-        it("rejects decode options that Babylon Native would ignore", async () => {
+        it("rejects decode options that Babylon Native would ignore, regardless of the engine name", async () => {
             const engineCreateImageBitmap = vi.fn();
             vi.stubGlobal("fetch", vi.fn());
-            const scene = { getEngine: () => ({ name: "Native", createImageBitmap: engineCreateImageBitmap }) } as any;
+            const nativeEngine = Object.create(ThinNativeEngine.prototype);
+            nativeEngine.name = "Renamed";
+            nativeEngine.createImageBitmap = engineCreateImageBitmap;
+            const scene = { getEngine: () => nativeEngine } as any;
 
             await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { imageOrientation: "flipY" } })).rejects.toThrow(/does not support/);
             await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { resizeWidth: 4 } })).rejects.toThrow(/does not support/);
             await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { premultiplyAlpha: "premultiply" } })).rejects.toThrow(/does not support/);
             expect(fetch).not.toHaveBeenCalled();
             expect(engineCreateImageBitmap).not.toHaveBeenCalled();
+        });
+
+        it("forwards decode options on web engines named Native", async () => {
+            const bitmap = createFakeBitmap(8, 8);
+            const engineCreateImageBitmap = vi.fn(async () => bitmap);
+            vi.stubGlobal(
+                "fetch",
+                vi.fn(async () => ({ ok: true, status: 200, statusText: "OK", blob: async () => ({}) }))
+            );
+            const scene = { getEngine: () => ({ name: "Native", createImageBitmap: engineCreateImageBitmap }) } as any;
+
+            // The mocked texture upload throws after decoding, which is enough to observe the forwarded options.
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png"], { imageBitmapOptions: { premultiplyAlpha: "premultiply" } })).rejects.toThrow(/upload boom/);
+            expect(engineCreateImageBitmap).toHaveBeenCalledWith(expect.anything(), { premultiplyAlpha: "premultiply" });
         });
     });
 

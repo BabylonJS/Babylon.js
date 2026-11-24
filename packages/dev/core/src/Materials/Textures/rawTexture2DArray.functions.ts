@@ -63,19 +63,9 @@ function CloseBitmap(bitmap: ImageBitmap): void {
  * @param options defines the decode options
  */
 function ValidateImageBitmapOptions(scene: Scene, options?: ImageBitmapOptions): void {
-    if (!options || scene.getEngine().name !== "Native") {
-        return;
-    }
-
-    if (options.imageOrientation === "flipY" || options.resizeWidth !== undefined || options.resizeHeight !== undefined) {
-        throw new Error(
-            'Babylon Native does not support the imageOrientation "flipY", resizeWidth or resizeHeight image bitmap options; use invertY or resize the source images instead.'
-        );
-    }
-
-    if (options.premultiplyAlpha === "premultiply") {
-        throw new Error('Babylon Native does not support the premultiplyAlpha "premultiply" image bitmap option; premultiply the source images instead.');
-    }
+    // Bound to the backend (ThinNativeEngine) rather than engine.name, which is writable.
+    const engine = scene.getEngine() as { _validateImageBitmapOptions?: (options?: ImageBitmapOptions) => void };
+    engine._validateImageBitmapOptions?.(options);
 }
 
 /**

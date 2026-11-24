@@ -2642,21 +2642,20 @@ describe("ThinNativeEngine", () => {
             );
             const update = (bytes: ArrayBufferView) =>
                 engine.updateRawTexture2DArray(texture, bytes, Constants.TEXTUREFORMAT_RGBA, false, null, Constants.TEXTURETYPE_UNSIGNED_BYTE, 1);
+            update(new Uint8Array(2 * 2 * 4 * 2).fill(5));
+            const snapshot = texture._bufferViewArray![1];
+
+            // Same-size updates reuse the engine-owned snapshot with the latest bytes.
             const mip1 = new Uint8Array(2 * 2 * 4 * 2).map((_, i) => i);
             update(mip1);
-            const snapshot = texture._bufferViewArray![1];
+            expect(texture._bufferViewArray![1]).toBe(snapshot);
 
             // Two bytes split evenly across two layers, but neither holds a 2x2 RGBA8 mip.
             nativeEngine.updateTextureData.mockClear();
             expect(() => update(new Uint8Array(2))).toThrow(/do not hold/);
             expect(nativeEngine.updateTextureData).not.toHaveBeenCalled();
 
-            // Same-size updates reuse the engine-owned snapshot.
-            update(new Uint8Array(mip1.length).fill(5));
-            expect(texture._bufferViewArray![1]).toBe(snapshot);
-            update(mip1);
-
-            nativeEngine.updateTextureData.mockClear();
+            // Rebuilding right after the rejection replays the last successful mip for both layers.
             texture._rebuild();
             expect(nativeEngine.updateTextureData.mock.calls.map((call: unknown[]) => Array.from(call[1] as Uint8Array))).toEqual([
                 Array.from(mip1.subarray(0, 16)),

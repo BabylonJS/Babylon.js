@@ -347,9 +347,11 @@ function ResolveRawUploadLayout(data: ArrayBufferView, texelCount: number, layou
     const componentByteLength = layout.rgbComponentByteLength;
     const rgbByteLength = 3 * componentByteLength;
     const widened = new Uint8Array(byteLength);
-    for (let texel = 0; texel < texelCount; texel++) {
-        const target = texel * layout.texelByteLength;
-        widened.set(bytes.subarray(texel * rgbByteLength, (texel + 1) * rgbByteLength), target);
+    const texelByteLength = layout.texelByteLength;
+    for (let texel = 0, source = 0, target = 0; texel < texelCount; texel++, target += texelByteLength) {
+        for (let byte = 0; byte < rgbByteLength; byte++) {
+            widened[target + byte] = bytes[source++];
+        }
         for (let byte = 0; byte < componentByteLength; byte++) {
             widened[target + rgbByteLength + byte] = (layout.alpha >>> (8 * byte)) & 0xff;
         }
@@ -4104,6 +4106,27 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         throw new Error("Unsupported data for createImageBitmap.");
+    }
+
+    /**
+     * Throws for image bitmap options that createImageBitmap would silently ignore on Babylon Native.
+     * @param options defines the options to validate
+     * @internal
+     */
+    public _validateImageBitmapOptions(options?: ImageBitmapOptions): void {
+        if (!options) {
+            return;
+        }
+
+        if (options.imageOrientation === "flipY" || options.resizeWidth !== undefined || options.resizeHeight !== undefined) {
+            throw new Error(
+                'Babylon Native does not support the imageOrientation "flipY", resizeWidth or resizeHeight image bitmap options; use invertY or resize the source images instead.'
+            );
+        }
+
+        if (options.premultiplyAlpha === "premultiply") {
+            throw new Error('Babylon Native does not support the premultiplyAlpha "premultiply" image bitmap option; premultiply the source images instead.');
+        }
     }
 
     /**
