@@ -5271,25 +5271,29 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         const qw = this._w;
 
         const zAxisY = qy * qz - qx * qw;
-        const limit = 0.4999999;
+        const sqw = qw * qw;
+        const sqz = qz * qz;
+        const sqx = qx * qx;
+        const sqy = qy * qy;
+        // sin(z) * cos(x) and cos(z) * cos(x): their length is cos(x), so x comes from atan2, which keeps
+        // its precision close to +-90 degrees, unlike asin(-2 * zAxisY)
+        const zSin = 2.0 * (qx * qy + qz * qw);
+        const zCos = -sqz - sqx + sqy + sqw;
+        const cosX = Math.sqrt(zSin * zSin + zCos * zCos);
 
-        if (zAxisY < -limit) {
+        if (cosX < 1e-8 && zAxisY < 0) {
             result._y = 2 * Math.atan2(qy, qw);
             result._x = Math.PI / 2;
             result._z = 0;
             result._isDirty = true;
-        } else if (zAxisY > limit) {
+        } else if (cosX < 1e-8) {
             result._y = 2 * Math.atan2(qy, qw);
             result._x = -Math.PI / 2;
             result._z = 0;
             result._isDirty = true;
         } else {
-            const sqw = qw * qw;
-            const sqz = qz * qz;
-            const sqx = qx * qx;
-            const sqy = qy * qy;
-            result._z = Math.atan2(2.0 * (qx * qy + qz * qw), -sqz - sqx + sqy + sqw);
-            result._x = Math.asin(-2.0 * zAxisY);
+            result._z = Math.atan2(zSin, zCos);
+            result._x = Math.atan2(-2.0 * zAxisY, cosX);
             result._y = Math.atan2(2.0 * (qz * qx + qy * qw), sqz - sqx - sqy + sqw);
             result._isDirty = true;
         }

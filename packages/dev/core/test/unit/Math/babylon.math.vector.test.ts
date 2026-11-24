@@ -2482,6 +2482,27 @@ describe("Babylon Vector tests", () => {
         });
     });
 
+    describe("Quaternion", () => {
+        describe("toEulerAngles", () => {
+            it("round-trips rotations close to a 90 degree pitch", () => {
+                for (const pitch of [1.5, 1.57, 1.5707, -1.5707]) {
+                    const q = Quaternion.FromEulerAngles(pitch, 0.4, 0.7);
+                    const euler = q.toEulerAngles();
+                    const back = Quaternion.FromEulerVector(euler);
+                    expect(Math.abs(Quaternion.Dot(q, back))).toBeCloseTo(1, 12);
+                    expect(euler.x).toBeCloseTo(pitch, 10);
+                }
+            });
+
+            it("keeps the gimbal lock result at exactly 90 degrees", () => {
+                const euler = Quaternion.FromEulerAngles(Math.PI / 2, 0.4, 0).toEulerAngles();
+                expect(euler.x).toBe(Math.PI / 2);
+                expect(euler.y).toBeCloseTo(0.4, 10);
+                expect(euler.z).toBe(0);
+            });
+        });
+    });
+
     describe("Matrix", () => {
         describe("LookDirectionLHToRef / LookDirectionRHToRef", () => {
             it.each([false, true])("preserves the legacy orientation for Matrix and Quaternion (RH=%s)", (isRightHanded) => {
