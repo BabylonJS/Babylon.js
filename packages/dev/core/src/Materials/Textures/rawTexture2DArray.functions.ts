@@ -96,7 +96,9 @@ export async function LoadImageToTexture2DArrayLayerAsync(
         throw new Error(`Failed to fetch image "${url}": ${response.status} ${response.statusText}`);
     }
     const blob = await response.blob();
-    const bitmap = await createImageBitmap(blob);
+    // Decode through the engine so runtimes without a global createImageBitmap (e.g. Babylon Native) work too.
+    const engine = texture.getScene()?.getEngine();
+    const bitmap = await (engine ? engine.createImageBitmap(blob) : createImageBitmap(blob));
     try {
         UploadImageToTexture2DArrayLayer(texture, bitmap, layer, options);
     } finally {
@@ -230,13 +232,15 @@ export async function CreateTexture2DArrayFromImageUrlsAsync(
     // already decoded. Promise.all rejects on the first failure and never enters the
     // try/finally below, orphaning every ImageBitmap that resolved. Close the
     // fulfilled ones here, then rethrow the original failure.
+    // Decode through the engine so runtimes without a global createImageBitmap (e.g. Babylon Native) work too.
+    const engine = scene.getEngine();
     const results = await Promise.allSettled(
         urls.map(async (url) => {
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`Failed to fetch image "${url}": ${response.status} ${response.statusText}`);
             }
-            return await createImageBitmap(await response.blob(), options?.imageBitmapOptions);
+            return await engine.createImageBitmap(await response.blob(), options?.imageBitmapOptions);
         })
     );
 

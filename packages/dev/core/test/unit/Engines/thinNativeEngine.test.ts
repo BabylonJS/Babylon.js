@@ -974,6 +974,7 @@ describe("ThinNativeEngine", () => {
                 initializeTexture: vi.fn(),
                 loadRawTexture: vi.fn(),
                 loadRawTexture3D: vi.fn(),
+                loadRawTexture2DArray: vi.fn(),
                 updateTextureData: vi.fn(),
                 deleteTexture: vi.fn(),
                 getTextureWidth: () => 64,
@@ -2470,6 +2471,42 @@ describe("ThinNativeEngine", () => {
 
             expect(nativeEngine.loadRawTexture3D.mock.calls.map((call: unknown[]) => call[7])).toEqual([true, true]);
             expect(internalTexture.invertY).toBe(true);
+        });
+
+        it("updates raw 2D arrays natively, including individual mip levels", () => {
+            const { engine, nativeEngine } = createEngine();
+            const texture = engine.createRawTexture2DArray(null, 4, 4, 2, Constants.TEXTUREFORMAT_RGBA, true, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+            const base = new Uint8Array(4 * 4 * 4 * 2);
+            engine.updateRawTexture2DArray(texture, base, Constants.TEXTUREFORMAT_RGBA, true);
+
+            const baseCall = nativeEngine.loadRawTexture2DArray.mock.lastCall!;
+            expect([baseCall[1], baseCall[2], baseCall[3], baseCall[4], baseCall[6], baseCall[7]]).toEqual([base, 4, 4, 2, true, true]);
+            expect(texture._bufferView).toBe(base);
+
+            const mip1 = new Uint8Array(2 * 2 * 4 * 2).map((_, i) => i);
+            engine.updateRawTexture2DArray(texture, mip1, Constants.TEXTUREFORMAT_RGBA, false, null, Constants.TEXTURETYPE_UNSIGNED_BYTE, 1);
+
+            const layerCalls = nativeEngine.updateTextureData.mock.calls;
+            expect(layerCalls.map((call: unknown[]) => call.slice(2))).toEqual([
+                [0, 0, 2, 2, 0, 1, false, false],
+                [0, 0, 2, 2, 1, 1, false, false],
+            ]);
+            expect(Array.from(layerCalls[1][1] as Uint8Array)).toEqual(Array.from(mip1.subarray(16)));
+            expect(texture._bufferViewArray![1]).toBe(mip1);
+            expect(texture._bufferView).toBe(base);
+        });
+
+        it("regenerates layer mips for image uploads even while generateMipMaps is toggled off", () => {
+            const { engine, nativeEngine } = createEngine();
+            const texture = engine.createRawTexture2DArray(null, 4, 4, 3, Constants.TEXTUREFORMAT_RGBA, true, false, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+            const pixels = new Uint8Array(4 * 4 * 4);
+
+            texture.generateMipMaps = false;
+            engine.updateTextureArrayLayerFromImageSource(texture, { data: pixels, width: 4, height: 4 } as any, 2, true);
+
+            expect(nativeEngine.updateTextureData.mock.lastCall!.slice(1)).toEqual([pixels, 0, 0, 4, 4, 2, 0, true, true]);
+            expect(() => engine.updateTextureArrayLayerFromImageSource(texture, { data: pixels, width: 2, height: 2 } as any, 0)).toThrow(/does not match/);
+            expect(() => engine.updateTextureArrayLayerFromImageSource(texture, { width: 4, height: 4 } as any, 0)).toThrow(/createImageBitmap/);
         });
 
         it("rebuilds raw volume and cube textures from their latest data", () => {

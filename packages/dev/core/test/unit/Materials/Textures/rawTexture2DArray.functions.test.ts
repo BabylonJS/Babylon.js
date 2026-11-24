@@ -65,6 +65,10 @@ vi.mock("core/Materials/Textures/rawTexture2DArray", () => {
 
 type UpdateSpy = ReturnType<typeof vi.fn>;
 
+// Mirrors AbstractEngine.createImageBitmap, which forwards to the (stubbed) global.
+const GlobalCreateImageBitmap = async (...args: Parameters<typeof createImageBitmap>) => await createImageBitmap(...args);
+const FakeScene = { getEngine: () => ({ createImageBitmap: GlobalCreateImageBitmap }) } as any;
+
 function createFakeTexture(options?: { depth?: number; hasInternal?: boolean; hasScene?: boolean }): { texture: RawTexture2DArray; update: UpdateSpy } {
     const depth = options?.depth ?? 4;
     const hasInternal = options?.hasInternal ?? true;
@@ -72,7 +76,7 @@ function createFakeTexture(options?: { depth?: number; hasInternal?: boolean; ha
     const update: UpdateSpy = vi.fn();
 
     const internal = hasInternal ? { uniqueId: 1 } : null;
-    const scene = hasScene ? { getEngine: () => ({ updateTextureArrayLayerFromImageSource: update }) } : null;
+    const scene = hasScene ? { getEngine: () => ({ updateTextureArrayLayerFromImageSource: update, createImageBitmap: GlobalCreateImageBitmap }) } : null;
 
     const texture = {
         depth,
@@ -193,6 +197,25 @@ describe("rawTexture2DArray.functions", () => {
             expect(call).toBeTypeOf("function");
         });
 
+        it("decodes through the engine instead of the global createImageBitmap", async () => {
+            const bitmaps = [createFakeBitmap(8, 8), createFakeBitmap(16, 8)];
+            let call = 0;
+            const engineCreateImageBitmap = vi.fn(async () => bitmaps[call++]);
+            vi.stubGlobal(
+                "fetch",
+                vi.fn(async () => ({ ok: true, status: 200, statusText: "OK", blob: async () => ({}) }))
+            );
+            vi.stubGlobal("createImageBitmap", undefined);
+            const scene = { getEngine: () => ({ createImageBitmap: engineCreateImageBitmap }) } as any;
+
+            // Mismatched sizes stop before the texture is created, after both layers were decoded.
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(scene, ["a.png", "b.png"], { imageBitmapOptions: { imageOrientation: "flipY" } })).rejects.toThrow(
+                /same dimensions/
+            );
+            expect(engineCreateImageBitmap).toHaveBeenCalledTimes(2);
+            expect(engineCreateImageBitmap).toHaveBeenCalledWith(expect.anything(), { imageOrientation: "flipY" });
+        });
+
         it("throws when the images do not share dimensions", async () => {
             const bitmaps = [createFakeBitmap(8, 8), createFakeBitmap(16, 8)];
             let call = 0;
@@ -205,7 +228,7 @@ describe("rawTexture2DArray.functions", () => {
                 vi.fn(async () => bitmaps[call++])
             );
 
-            await expect(CreateTexture2DArrayFromImageUrlsAsync({} as any, ["a.png", "b.png"])).rejects.toThrow(/same dimensions/);
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(FakeScene, ["a.png", "b.png"])).rejects.toThrow(/same dimensions/);
             // Both fetched bitmaps must be released even on validation failure.
             expect(bitmaps[0].close).toHaveBeenCalledTimes(1);
             expect(bitmaps[1].close).toHaveBeenCalledTimes(1);
@@ -229,7 +252,7 @@ describe("rawTexture2DArray.functions", () => {
                 })
             );
 
-            await expect(CreateTexture2DArrayFromImageUrlsAsync({} as any, ["a.png", "b.png"])).rejects.toThrow(/decode failed/);
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(FakeScene, ["a.png", "b.png"])).rejects.toThrow(/decode failed/);
             // The layer that decoded before the failure must not leak.
             expect(good.close).toHaveBeenCalledTimes(1);
         });
@@ -249,7 +272,7 @@ describe("rawTexture2DArray.functions", () => {
 
             // The mocked RawTexture2DArray's engine upload always throws, so this exercises the
             // dispose-on-error path after the texture has already been allocated.
-            await expect(CreateTexture2DArrayFromImageUrlsAsync({} as any, ["a.png", "b.png"])).rejects.toThrow(/upload boom/);
+            await expect(CreateTexture2DArrayFromImageUrlsAsync(FakeScene, ["a.png", "b.png"])).rejects.toThrow(/upload boom/);
             expect(mockState.instances).toHaveLength(1);
             expect(mockState.instances[0].dispose).toHaveBeenCalledTimes(1);
             // Bitmaps are still released on the error path.

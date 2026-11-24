@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
+import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int, type ImageSource } from "../types";
 
 import { type Scene } from "../scene.pure";
 import { type VertexBuffer } from "../Buffers/buffer.pure";
@@ -2331,6 +2331,8 @@ export class ThinNativeEngine extends ThinEngine {
         if (texture._hardwareTexture) {
             const nativeTexture = texture._hardwareTexture.underlyingResource;
             this._engine.loadRawTexture2DArray(nativeTexture, data, width, height, depth, getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
+            // Layer uploads can toggle generateMipMaps off temporarily; keep track of the allocated mip chain.
+            this._setHasMipStorage(texture, generateMipMaps);
 
             const filter = getNativeSamplingMode(samplingMode);
             this._setTextureSampling(nativeTexture, filter);
@@ -2428,6 +2430,123 @@ export class ThinNativeEngine extends ThinEngine {
                 invertY
             );
         }
+
+        texture.isReady = true;
+    }
+
+    public override updateRawTexture2DArray(
+        texture: Nullable<InternalTexture>,
+        bufferView: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression: Nullable<string> = null,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        mipLevel: number = 0
+    ): void {
+        if (!texture) {
+            return;
+        }
+
+        if (compression) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: compressed raw array uploads are not supported (${compression}).`);
+        }
+
+        texture.format = format;
+        texture.type = textureType;
+        texture.invertY = invertY;
+        texture._compression = compression;
+        if (!this._doNotHandleContextLost) {
+            if (mipLevel > 0) {
+                texture._bufferViewArray ??= [];
+                texture._bufferViewArray[mipLevel] = bufferView!;
+            } else {
+                texture._bufferView = bufferView;
+            }
+        }
+
+        if (bufferView && texture._hardwareTexture) {
+            const nativeTexture = texture._hardwareTexture.underlyingResource;
+            if (mipLevel > 0) {
+                if (!this._engine.updateTextureData) {
+                    throw new Error("NativeEngine.updateRawTexture2DArray: updating mip levels above 0 requires a Babylon Native runtime with updateTextureData.");
+                }
+                // The buffer holds every layer of the mip level back to back.
+                const width = Math.max(1, texture.width >> mipLevel);
+                const height = Math.max(1, texture.height >> mipLevel);
+                const layerByteLength = bufferView.byteLength / texture.depth;
+                for (let layer = 0; layer < texture.depth; layer++) {
+                    const layerData = new Uint8Array(bufferView.buffer, bufferView.byteOffset + layer * layerByteLength, layerByteLength);
+                    this._engine.updateTextureData(nativeTexture, layerData, 0, 0, width, height, layer, mipLevel, invertY, false);
+                }
+            } else {
+                this._engine.loadRawTexture2DArray(
+                    nativeTexture,
+                    bufferView,
+                    texture.width,
+                    texture.height,
+                    texture.depth,
+                    getNativeTextureFormat(format, textureType),
+                    texture.generateMipMaps,
+                    invertY
+                );
+                this._setHasMipStorage(texture, texture.generateMipMaps);
+            }
+        }
+
+        texture.isReady = true;
+    }
+
+    /**
+     * Uploads an image bitmap created by createImageBitmap into a single layer of a 2D array texture.
+     * @param texture defines the 2D array texture to update
+     * @param source defines the image bitmap to upload
+     * @param layer defines the array layer to upload into
+     * @param invertY defines if the source must be stored with the Y axis inverted (false by default)
+     * @param premultiplyAlpha defines if the source alpha must be premultiplied (not supported)
+     */
+    public override updateTextureArrayLayerFromImageSource(
+        texture: InternalTexture,
+        source: ImageSource,
+        layer: number,
+        invertY: boolean = false,
+        premultiplyAlpha: boolean = false
+    ): void {
+        if (!texture._hardwareTexture) {
+            return;
+        }
+
+        if (premultiplyAlpha) {
+            throw new Error("NativeEngine.updateTextureArrayLayerFromImageSource: premultiplyAlpha is not supported.");
+        }
+
+        if (!this._engine.updateTextureData) {
+            throw new Error("NativeEngine.updateTextureArrayLayerFromImageSource requires a Babylon Native runtime with updateTextureData.");
+        }
+
+        // Native image bitmaps expose their decoded pixels as data; the native upload validates them against the texture format.
+        const bitmap = source as unknown as { data?: ArrayBufferView; width: number; height: number };
+        if (!bitmap.data) {
+            throw new Error("NativeEngine.updateTextureArrayLayerFromImageSource: only image bitmaps created by createImageBitmap are supported.");
+        }
+        if (bitmap.width !== texture.width || bitmap.height !== texture.height) {
+            throw new Error(
+                `NativeEngine.updateTextureArrayLayerFromImageSource: the ${bitmap.width}x${bitmap.height} source does not match the ${texture.width}x${texture.height} texture.`
+            );
+        }
+
+        // Native generates mips per layer, so rebuild this layer's chain whenever the texture has one.
+        this._engine.updateTextureData(
+            texture._hardwareTexture.underlyingResource,
+            bitmap.data,
+            0,
+            0,
+            texture.width,
+            texture.height,
+            layer,
+            0,
+            invertY,
+            this._hasMipStorage(texture)
+        );
 
         texture.isReady = true;
     }
