@@ -2084,32 +2084,13 @@ export class ThinEngine extends AbstractEngine {
         const name = vertex + "+" + fragment + "@" + fullDefines;
         if (this._compiledEffects[name]) {
             const compiledEffect = this._compiledEffects[name];
-            // Like the Effect constructor, take the callbacks from the creation options when they are given
-            const callerOnCompiled = isOptions ? (<IEffectCreationOptions>attributesNamesOrOptions).onCompiled : onCompiled;
-            const callerOnError = isOptions ? (<IEffectCreationOptions>attributesNamesOrOptions).onError : onError;
-            if (callerOnCompiled || callerOnError) {
-                if (compiledEffect.isReady()) {
-                    callerOnCompiled?.(compiledEffect);
-                } else if (compiledEffect.allFallbacksProcessed() && compiledEffect.getCompilationError()) {
-                    callerOnError?.(compiledEffect, compiledEffect.getCompilationError());
-                } else {
-                    // The cached effect only calls the callbacks it was created with, so the callbacks of this
-                    // caller are attached to the compilation result (which may come from a fallback) separately
-                    const pendingOnCompiled = callerOnCompiled !== compiledEffect.onCompiled ? callerOnCompiled : null;
-                    const pendingOnError = callerOnError !== compiledEffect.onError ? callerOnError : null;
-                    if (pendingOnCompiled || pendingOnError) {
-                        const compileObserver = compiledEffect.onCompileObservable.addOnce((effect) => {
-                            compiledEffect.onErrorObservable.remove(errorObserver);
-                            pendingOnCompiled?.(effect);
-                        });
-                        const errorObserver = compiledEffect.onErrorObservable.addOnce((effect) => {
-                            compiledEffect.onCompileObservable.remove(compileObserver);
-                            pendingOnError?.(effect, effect.getCompilationError());
-                        });
-                    }
-                }
-            }
+            // Take the reference first: a callback (also one called while checking the readiness) can release the other references
             compiledEffect._refCount++;
+            // Like the Effect constructor, take the callbacks from the creation options when they are given
+            compiledEffect._notifyCacheHit(
+                isOptions ? (<IEffectCreationOptions>attributesNamesOrOptions).onCompiled : onCompiled,
+                isOptions ? (<IEffectCreationOptions>attributesNamesOrOptions).onError : onError
+            );
             return compiledEffect;
         }
         if (this._gl) {
