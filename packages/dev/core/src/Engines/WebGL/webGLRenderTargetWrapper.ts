@@ -283,6 +283,9 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
         super.resolveMSAATextures();
 
+        // The resolve changes the WebGL framebuffer bindings without updating engine._currentFramebuffer,
+        // so _bindUnboundFramebuffer would do nothing when the render target is the one being rendered into
+        engine._currentFramebuffer = null;
         engine._bindUnboundFramebuffer(currentFramebuffer);
     }
 
