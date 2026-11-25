@@ -1237,7 +1237,7 @@ export class TransformNode extends Node {
                 if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
                     TmpVectors.Matrix[0].decompose(undefined, TmpVectors.Quaternion[0], undefined);
                     const eulerAngles = TmpVectors.Vector3[1];
-                    TmpVectors.Quaternion[0].toEulerAnglesToRef(eulerAngles);
+                    TmpVectors.Quaternion[0]._toEulerAnglesToRef(eulerAngles, true);
 
                     if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) !== TransformNode.BILLBOARDMODE_X) {
                         eulerAngles.x = 0;
@@ -1284,7 +1284,7 @@ export class TransformNode extends Node {
 
                 if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
                     const eulerAngles = TmpVectors.Vector3[1];
-                    TmpVectors.Quaternion[0].toEulerAnglesToRef(eulerAngles);
+                    TmpVectors.Quaternion[0]._toEulerAnglesToRef(eulerAngles, true);
 
                     if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) !== TransformNode.BILLBOARDMODE_X) {
                         eulerAngles.x = 0;

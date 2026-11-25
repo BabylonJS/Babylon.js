@@ -5265,6 +5265,16 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/rotation_conventions
      */
     public toEulerAnglesToRef<T extends Vector3>(result: T): T {
+        return this._toEulerAnglesToRef(result, false);
+    }
+
+    /**
+     * @internal
+     * Same as toEulerAnglesToRef. With legacyPoles, every pitch whose sine is within 1e-7 of +-1 is treated as
+     * exactly +-90 degrees (roll forced to 0), which callers that keep only some of the axes rely on to avoid a
+     * 180 degree flip when the rotation crosses the vertical.
+     */
+    public _toEulerAnglesToRef<T extends Vector3>(result: T, legacyPoles: boolean): T {
         const qz = this._z;
         const qx = this._x;
         const qy = this._y;
@@ -5275,20 +5285,19 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         const sqz = qz * qz;
         const sqx = qx * qx;
         const sqy = qy * qy;
-        // sin(z) * cos(x) and cos(z) * cos(x): their length is cos(x), so x comes from atan2, which keeps
-        // its precision close to +-90 degrees, unlike asin(-2 * zAxisY)
+        // sin(z) * cos(x) and cos(z) * cos(x), scaled by the squared length: their length is cos(x), so x comes from
+        // atan2, which keeps its precision close to +-90 degrees, unlike asin(-2 * zAxisY)
         const zSin = 2.0 * (qx * qy + qz * qw);
         const zCos = -sqz - sqx + sqy + sqw;
         const cosX = Math.sqrt(zSin * zSin + zCos * zCos);
+        // The pole tests are relative to the squared length so that they do not depend on the quaternion scale,
+        // and a zero quaternion keeps returning a zero rotation
+        const lengthSquared = sqx + sqy + sqz + sqw;
+        const isPole = legacyPoles ? Math.abs(zAxisY) > 0.4999999 * lengthSquared : cosX < 1e-8 * lengthSquared;
 
-        if (cosX < 1e-8 && zAxisY < 0) {
+        if (isPole) {
             result._y = 2 * Math.atan2(qy, qw);
-            result._x = Math.PI / 2;
-            result._z = 0;
-            result._isDirty = true;
-        } else if (cosX < 1e-8) {
-            result._y = 2 * Math.atan2(qy, qw);
-            result._x = -Math.PI / 2;
+            result._x = zAxisY < 0 ? Math.PI / 2 : -Math.PI / 2;
             result._z = 0;
             result._isDirty = true;
         } else {
