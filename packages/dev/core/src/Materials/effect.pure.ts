@@ -250,12 +250,10 @@ export class Effect implements IDisposable {
     private _isReady = false;
     private _compilationError = "";
     private _allFallbacksProcessed = false;
-    // Callbacks of the callers that got the effect from the engine cache while it was compiling (see _notifyCacheHit)
+    // Callbacks of the callers that got the effect from the engine cache while it was compiling, with their number of requests (see _notifyCacheHit)
     private _cacheHitWaiters: Nullable<{
-        onCompiled: Set<(effect: Effect) => void>;
-        onError: Set<(effect: Effect, errors: string) => void>;
-        compileObserver: Observer<Effect>;
-        errorObserver: Observer<Effect>;
+        onCompiled: Map<(effect: Effect) => void, number>;
+        onError: Map<(effect: Effect, errors: string) => void, number>;
     }> = null;
     // Callbacks of the callers that got the effect from the engine cache already called with the result of the current compilation
     private _calledCacheHitCallbacks: Nullable<WeakSet<object>> = null;
@@ -670,7 +668,11 @@ export class Effect implements IDisposable {
      * right away if the compilation (fallbacks included) is complete, else when it completes.
      * The effect calls the callbacks it was created with itself, and calls the callbacks of the callers once per compilation, so a caller
      * that looks the effect up again until it is compiled (like a material using shader hot swapping) is not called several times.
-     * A callback that throws is reported without preventing the other callbacks from being called or the compilation from completing.
+     * The caller takes its reference to the effect before this call. A callback called right away is called like any synchronous callback:
+     * if it throws, the lookup is undone (the reference of the caller is released and the next lookup calls the callback again) and the
+     * exception is thrown to the caller.
+     * The callbacks of the waiting callers are called by the compilation once its result is set, before the callbacks and the observers of
+     * the effect: one that throws is reported without preventing the other callbacks from being called or the compilation from completing.
      * @param onCompiled defines the function to call when the effect is compiled
      * @param onError defines the function to call if the compilation fails
      * @internal
@@ -682,69 +684,106 @@ export class Effect implements IDisposable {
             return;
         }
 
-        if (this.isReady()) {
+        // isReady() can complete a parallel compilation (WebGL): it returns false if a callback of the effect then throws, but the result is set
+        if (this.isReady() || this._isReady) {
             if (callerOnCompiled) {
-                this._callCacheHitCallback(callerOnCompiled, () => callerOnCompiled(this));
+                this._callCacheHitCallbackNow(callerOnCompiled, () => callerOnCompiled(this));
             }
         } else if (this._allFallbacksProcessed && this._compilationError) {
             if (callerOnError) {
-                this._callCacheHitCallback(callerOnError, () => callerOnError(this, this._compilationError));
+                this._callCacheHitCallbackNow(callerOnError, () => callerOnError(this, this._compilationError));
             }
         } else {
-            const waiters = this._cacheHitWaiters ?? this._waitForCacheHitCompilation();
-            // A set keeps one request for a caller that looks the effect up again in every frame
+            // Each lookup is a request, which the caller cancels if it releases the effect before the compilation completes (see _cancelCacheHit).
+            // A callback is called once whatever its number of requests (a caller that looks the effect up again in every frame).
+            const waiters = (this._cacheHitWaiters ??= { onCompiled: new Map(), onError: new Map() });
             if (callerOnCompiled) {
-                waiters.onCompiled.add(callerOnCompiled);
+                waiters.onCompiled.set(callerOnCompiled, (waiters.onCompiled.get(callerOnCompiled) ?? 0) + 1);
             }
             if (callerOnError) {
-                waiters.onError.add(callerOnError);
+                waiters.onError.set(callerOnError, (waiters.onError.get(callerOnError) ?? 0) + 1);
             }
         }
     }
 
-    private _waitForCacheHitCompilation() {
-        const waiters = {
-            onCompiled: new Set<(effect: Effect) => void>(),
-            onError: new Set<(effect: Effect, errors: string) => void>(),
-            compileObserver: this.onCompileObservable.addOnce(() => {
-                this._stopWaitingForCacheHitCompilation();
-                for (const callback of waiters.onCompiled) {
-                    this._callCacheHitCallback(callback, () => callback(this));
-                }
-            }),
-            // Only raised once the fallbacks are exhausted, or after a failed rebuild of an effect that was compiled before
-            errorObserver: this.onErrorObservable.addOnce(() => {
-                this._stopWaitingForCacheHitCompilation();
-                for (const callback of waiters.onError) {
-                    this._callCacheHitCallback(callback, () => callback(this, this._compilationError));
-                }
-            }),
-        };
-        this._cacheHitWaiters = waiters;
-        return waiters;
-    }
-
-    private _stopWaitingForCacheHitCompilation() {
+    /**
+     * Cancels a request of a caller that got this effect from the engine cache while it was compiling, when the caller releases the effect
+     * (like a material that is disposed): its callbacks are not called when the compilation completes, unless another request has them.
+     * @param onCompiled defines the onCompiled function of the request
+     * @param onError defines the onError function of the request
+     * @internal
+     */
+    public _cancelCacheHit(onCompiled: Nullable<(effect: Effect) => void> | undefined, onError: Nullable<(effect: Effect, errors: string) => void> | undefined): void {
         const waiters = this._cacheHitWaiters;
         if (waiters) {
-            this._cacheHitWaiters = null;
-            this.onCompileObservable.remove(waiters.compileObserver);
-            this.onErrorObservable.remove(waiters.errorObserver);
+            this._cancelCacheHitRequest(waiters.onCompiled, onCompiled);
+            this._cancelCacheHitRequest(waiters.onError, onError);
         }
     }
 
-    private _callCacheHitCallback(callback: object, call: () => void) {
-        const calledCallbacks = (this._calledCacheHitCallbacks ??= new WeakSet());
-        if (calledCallbacks.has(callback)) {
+    private _cancelCacheHitRequest<T>(requests: Map<T, number>, callback: Nullable<T> | undefined) {
+        const count = callback ? requests.get(callback) : undefined;
+        if (count === undefined) {
             return;
         }
-        calledCallbacks.add(callback);
+        if (count > 1) {
+            requests.set(callback!, count - 1);
+        } else {
+            requests.delete(callback!);
+        }
+    }
+
+    private _notifyCacheHitWaiters(compiled: boolean) {
+        const waiters = this._cacheHitWaiters;
+        if (!waiters) {
+            return;
+        }
+        this._cacheHitWaiters = null;
+        if (compiled) {
+            for (const callback of waiters.onCompiled.keys()) {
+                this._callCacheHitWaiter(callback, () => callback(this));
+            }
+        } else {
+            for (const callback of waiters.onError.keys()) {
+                this._callCacheHitWaiter(callback, () => callback(this, this._compilationError));
+            }
+        }
+    }
+
+    private _callCacheHitCallbackNow(callback: object, call: () => void) {
+        if (!this._markCacheHitCallbackAsCalled(callback)) {
+            return;
+        }
+        try {
+            call();
+        } catch (e) {
+            // The lookup is undone: the next one calls the callback again, and the reference of the caller is released like an owner
+            // releases it, as the callback can have released the other references
+            this._calledCacheHitCallbacks?.delete(callback);
+            this.dispose();
+            throw e;
+        }
+    }
+
+    private _callCacheHitWaiter(callback: object, call: () => void) {
+        if (!this._markCacheHitCallbackAsCalled(callback)) {
+            return;
+        }
         try {
             call();
         } catch (e) {
             // Reported on its own: it must not stop the other callers, nor be taken for an error of the compilation running the callback
             Logger.Error(`A callback of a caller that got the effect from the engine cache failed: ${typeof e?.stack === "string" ? e.stack : String(e)}`);
         }
+    }
+
+    private _markCacheHitCallbackAsCalled(callback: object): boolean {
+        const calledCallbacks = (this._calledCacheHitCallbacks ??= new WeakSet());
+        if (calledCallbacks.has(callback)) {
+            return false;
+        }
+        calledCallbacks.add(callback);
+        return true;
     }
 
     private _checkIsReady(previousPipelineContext: Nullable<IPipelineContext>) {
@@ -901,6 +940,8 @@ export class Effect implements IDisposable {
 
         this._compilationError = "";
         this._isReady = true;
+        // Not through onCompileObservable, which its users can clear, nor after the callbacks of the effect, which can throw
+        this._notifyCacheHitWaiters(true);
         if (this.onCompiled) {
             this.onCompiled(this);
         }
@@ -1043,6 +1084,8 @@ export class Effect implements IDisposable {
         Logger.Error("Error: " + this._compilationError);
 
         const notifyErrors = () => {
+            // Not through onErrorObservable, which its users can clear, nor after the callbacks of the effect, which can throw
+            this._notifyCacheHitWaiters(false);
             if (this.onError) {
                 this.onError(this, this._compilationError);
             }
@@ -1659,7 +1702,7 @@ export class Effect implements IDisposable {
         }
 
         // A compilation still running after the disposal must not call the callers that got the effect from the engine cache
-        this._stopWaitingForCacheHitCompilation();
+        this._cacheHitWaiters = null;
         this._calledCacheHitCallbacks = null;
 
         if (this._pipelineContext) {

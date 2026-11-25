@@ -342,6 +342,122 @@ describe.each(engineVariants)("%s.createEffect cache hits", (_name, createEffect
         expect(secondOnCompiled).not.toHaveBeenCalled();
         expect(secondOnError).not.toHaveBeenCalled();
     });
+
+    it("calls a caller that hits the cache after the compile observers of the effect were cleared", async () => {
+        const firstOnCompiled = vi.fn();
+        const secondOnCompiled = vi.fn();
+        const thirdOnCompiled = vi.fn();
+
+        const first = createWithOptions({ onCompiled: firstOnCompiled });
+        createWithOptions({ onCompiled: secondOnCompiled });
+        // The observables of the effect are public: their users can clear them
+        first.onCompileObservable.clear();
+        createWithOptions({ onCompiled: thirdOnCompiled });
+        expect(first.isReady()).toBe(false);
+
+        await vi.waitFor(() => expect(firstOnCompiled).toHaveBeenCalledOnce());
+
+        expect(secondOnCompiled).toHaveBeenCalledExactlyOnceWith(first);
+        expect(thirdOnCompiled).toHaveBeenCalledExactlyOnceWith(first);
+    });
+
+    it("reports the compilation error to a caller that hits the cache after the error observers of the effect were cleared", async () => {
+        vi.spyOn(engine, "_preparePipelineContextAsync").mockImplementation(() => {
+            throw new Error("Shader stage creation failed");
+        });
+        const firstOnError = vi.fn();
+        const secondOnError = vi.fn();
+        const thirdOnError = vi.fn();
+
+        const first = createWithOptions({ onError: firstOnError });
+        createWithOptions({ onError: secondOnError });
+        first.onErrorObservable.clear();
+        createWithOptions({ onError: thirdOnError });
+
+        await vi.waitFor(() => expect(firstOnError).toHaveBeenCalledOnce());
+
+        expect(secondOnError).toHaveBeenCalledExactlyOnceWith(first, first.getCompilationError());
+        expect(thirdOnError).toHaveBeenCalledExactlyOnceWith(first, first.getCompilationError());
+    });
+
+    it("throws the exception of the onCompiled argument of a caller that hits the cache of a ready effect without keeping its reference", async () => {
+        const first = createWithOptions();
+        await vi.waitFor(() => expect(first.isReady()).toBe(true));
+        const failure = new Error("Callback failure");
+        const onCompiled = () => {
+            throw failure;
+        };
+
+        expect(() => createWithArguments(onCompiled, vi.fn())).toThrow(failure);
+        expect(first._refCount).toBe(1);
+
+        // The lookup that threw is undone: the next lookup calls the callback again
+        expect(() => createWithArguments(onCompiled, vi.fn())).toThrow(failure);
+        expect(first._refCount).toBe(1);
+        expect(first.isDisposed).toBe(false);
+    });
+
+    it("releases the cached effect when the onCompiled argument of a caller that hits the cache of a ready effect releases the other reference and throws", async () => {
+        const first = createWithOptions();
+        await vi.waitFor(() => expect(first.isReady()).toBe(true));
+        const failure = new Error("Callback failure");
+
+        expect(() =>
+            createWithArguments(() => {
+                first.dispose();
+                throw failure;
+            }, vi.fn())
+        ).toThrow(failure);
+
+        expect(first.isDisposed).toBe(true);
+    });
+
+    it("calls a caller that hit the cache while the effect was compiling when the onCompiled of the effect throws", async () => {
+        const secondOnCompiled = vi.fn();
+        const secondOnError = vi.fn();
+
+        const first = createWithOptions({
+            onCompiled: () => {
+                throw new Error("Callback failure");
+            },
+        });
+        createWithOptions({ onCompiled: secondOnCompiled, onError: secondOnError });
+        expect(first.isReady()).toBe(false);
+
+        await vi.waitFor(() => expect(secondOnCompiled.mock.calls.length + secondOnError.mock.calls.length).toBe(1));
+
+        expect(secondOnCompiled).toHaveBeenCalledExactlyOnceWith(first);
+        expect(secondOnError).not.toHaveBeenCalled();
+    });
+
+    it("calls a caller whose readiness check completes the compilation when the onCompiled of the effect throws", async () => {
+        let completeCompilation: (() => void) | undefined;
+        vi.spyOn(engine, "_executeWhenRenderingStateIsCompiled").mockImplementationOnce((_pipelineContext, action) => {
+            completeCompilation = action;
+        });
+        const first = createWithOptions({
+            onCompiled: () => {
+                throw new Error("Callback failure");
+            },
+        });
+        await vi.waitFor(() => expect(completeCompilation).toBeDefined());
+
+        // Like a parallel compilation (WebGL), the compilation completes when the readiness of the effect is checked
+        Object.defineProperty(first.getPipelineContext()!, "isReady", {
+            get: () => {
+                const complete = completeCompilation;
+                completeCompilation = undefined;
+                complete?.();
+                return true;
+            },
+        });
+        const secondOnCompiled = vi.fn();
+        const secondOnError = vi.fn();
+        createWithOptions({ onCompiled: secondOnCompiled, onError: secondOnError });
+
+        expect(secondOnCompiled).toHaveBeenCalledExactlyOnceWith(first);
+        expect(secondOnError).not.toHaveBeenCalled();
+    });
 });
 
 describe("Material.onCompiled with an effect from the engine cache", () => {
@@ -409,5 +525,41 @@ describe("Material.onCompiled with an effect from the engine cache", () => {
 
         expect(second.getEffect()).toBe(effect);
         expect(effect.isDisposed).toBe(false);
+    });
+
+    it("is not called for a material disposed while the effect it got from the engine cache is compiling", async () => {
+        const mesh = CreateBox("box", {}, scene);
+        const firstOnCompiled = vi.fn();
+        const first = createMaterial("first", firstOnCompiled);
+        const secondOnCompiled = vi.fn();
+        const second = createMaterial("second", secondOnCompiled);
+        expect(first.isReady(mesh)).toBe(false);
+        expect(second.isReady(mesh)).toBe(false);
+        const effect = first.getEffect()!;
+        expect(second.getEffect()).toBe(effect);
+
+        second.dispose();
+        await vi.waitFor(() => expect(first.isReady(mesh)).toBe(true));
+
+        expect(firstOnCompiled).toHaveBeenCalledExactlyOnceWith(effect);
+        expect(secondOnCompiled).not.toHaveBeenCalled();
+        expect(effect.isDisposed).toBe(false);
+    });
+
+    it("is called for a material that passed the same function as a material disposed while the effect was compiling", async () => {
+        const mesh = CreateBox("box", {}, scene);
+        const first = createMaterial("first", vi.fn());
+        const sharedOnCompiled = vi.fn();
+        const second = createMaterial("second", sharedOnCompiled);
+        const third = createMaterial("third", sharedOnCompiled);
+        expect(first.isReady(mesh)).toBe(false);
+        expect(second.isReady(mesh)).toBe(false);
+        expect(third.isReady(mesh)).toBe(false);
+
+        third.dispose();
+        await vi.waitFor(() => expect(first.isReady(mesh)).toBe(true));
+
+        expect(second.getEffect()).toBe(first.getEffect());
+        expect(sharedOnCompiled).toHaveBeenCalledExactlyOnceWith(first.getEffect());
     });
 });

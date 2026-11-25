@@ -2252,6 +2252,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
         if (this._drawWrapper.effect) {
             if (!this._storeEffectOnSubMeshes) {
+                // The material no longer waits for the effect if it got it from the engine cache while it was compiling
+                this._drawWrapper.effect._cancelCacheHit(this.onCompiled, this.onError);
                 this._drawWrapper.effect.dispose();
             }
 
@@ -2300,6 +2302,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                         const material = materialForRenderPass[renderPassIndex];
                         if (material === this) {
                             geometry?._releaseVertexArrayObject(effect);
+                            effect._cancelCacheHit(this.onCompiled, this.onError);
                             subMesh._removeDrawWrapper(renderPassIndex, true, true);
                         }
                     }
