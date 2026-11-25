@@ -283,10 +283,11 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
         super.resolveMSAATextures();
 
-        // The resolve changes the WebGL framebuffer bindings without updating engine._currentFramebuffer,
-        // so _bindUnboundFramebuffer would do nothing when the render target is the one being rendered into
-        engine._currentFramebuffer = null;
-        engine._bindUnboundFramebuffer(currentFramebuffer);
+        // The resolve rebinds READ_FRAMEBUFFER and DRAW_FRAMEBUFFER without going through the engine cache,
+        // so restore both bindings unconditionally, including when the saved binding is the default framebuffer (null)
+        const gl = this._context;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, currentFramebuffer);
+        engine._currentFramebuffer = currentFramebuffer;
     }
 
     public override dispose(disposeOnlyFramebuffers = this._disposeOnlyFramebuffers): void {

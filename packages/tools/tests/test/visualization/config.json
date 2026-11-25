@@ -124,12 +124,20 @@
             "dependsOn": ["Rendering", "Textures"]
         },
         {
+            "title": "MSAA manual resolve of an offscreen target while the canvas is bound",
+            "playgroundId": "#46KKRB#0",
+            "referenceImage": "msaa-manual-resolve-canvas-bound.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Rendering", "Textures"]
+        },
+        {
             "title": "MSAA manual resolve on the bound render target",
             "playgroundId": "#009WF3#0",
             "referenceImage": "msaa-manual-resolve-bound-target.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "excludeFromPerformance": true,
-            "dependsOn": ["Rendering", "Textures"]
+            "dependsOn": ["Rendering", "Textures", "PostProcesses"]
         },
         {
             "title": "Merge Meshes with submeshes",
