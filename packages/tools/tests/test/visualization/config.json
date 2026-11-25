@@ -124,6 +124,14 @@
             "dependsOn": ["Rendering", "Textures"]
         },
         {
+            "title": "MSAA manual resolve on the bound render target",
+            "playgroundId": "#009WF3#0",
+            "referenceImage": "msaa-manual-resolve-bound-target.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Rendering", "Textures"]
+        },
+        {
             "title": "Merge Meshes with submeshes",
             "playgroundId": "#ZHPFRQ",
             "referenceImage": "mergemeshes-sub.png",
