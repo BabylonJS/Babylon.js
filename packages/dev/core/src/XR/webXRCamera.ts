@@ -183,7 +183,7 @@ export class WebXRCamera extends FreeCamera {
         mat.decompose(undefined, this.rotationQuaternion, this.position);
         // set the ground level
         this.position.y = 0;
-        Quaternion.FromEulerAnglesToRef(0, this.rotationQuaternion.toEulerAngles().y, 0, this.rotationQuaternion);
+        Quaternion.FromEulerAnglesToRef(0, this.rotationQuaternion._toEulerAnglesToRef(new Vector3(), true).y, 0, this.rotationQuaternion);
         this._firstFrame = true;
         if (resetToBaseReferenceSpace) {
             this._xrSessionManager.resetReferenceSpace();
@@ -210,7 +210,7 @@ export class WebXRCamera extends FreeCamera {
         tmpVector.y = 0;
         tmpVector.normalize();
         const yRotation = Math.atan2(tmpVector.x, tmpVector.z) + (this._scene.useRightHandedSystem ? Math.PI : 0);
-        this.rotationQuaternion.toEulerAnglesToRef(tmpVector);
+        this.rotationQuaternion._toEulerAnglesToRef(tmpVector, true);
         Quaternion.FromEulerAnglesToRef(tmpVector.x, yRotation, tmpVector.z, this.rotationQuaternion);
     }
 
