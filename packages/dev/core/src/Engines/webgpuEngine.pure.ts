@@ -2543,8 +2543,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public _releaseEffect(effect: Effect): void {
         if (this._compiledEffects[effect._key]) {
             delete this._compiledEffects[effect._key];
-
-            this._deletePipelineContext(effect.getPipelineContext() as WebGPUPipelineContext);
+        }
+        const pipelineContext = effect.getPipelineContext();
+        if (pipelineContext) {
+            this._deletePipelineContext(pipelineContext);
         }
     }
 
@@ -2566,6 +2568,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const webgpuPipelineContext = pipelineContext as WebGPUPipelineContext;
         if (webgpuPipelineContext) {
             resetCachedPipeline(webgpuPipelineContext);
+            webgpuPipelineContext.dispose();
         }
     }
 
