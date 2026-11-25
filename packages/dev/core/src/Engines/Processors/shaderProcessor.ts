@@ -402,7 +402,7 @@ function PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEng
     preprocessors["__VERSION__"] = options.version;
     preprocessors[options.platformName] = "true";
 
-    _GetGlobalDefines(preprocessors, engine?.isNDCHalfZRange, engine?.useReverseDepthBuffer, engine?.useExactSrgbConversions);
+    _GetGlobalDefines(preprocessors, engine?.isNDCHalfZRange, engine && options.useReverseDepthBuffer, engine?.useExactSrgbConversions);
 
     return preprocessors;
 }

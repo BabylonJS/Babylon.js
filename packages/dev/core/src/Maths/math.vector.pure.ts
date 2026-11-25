@@ -3115,6 +3115,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param view defines the view matrix to use
      * @param projection defines the projection matrix to use
      * @param result defines the Vector3 where to store the result
+     * @param halfZRange whether the projection uses [0, 1] NDC depth (defaults to the last created engine's range)
      * @returns result input
      */
     public static UnprojectFloatsToRef<T extends Vector3>(
@@ -3126,7 +3127,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
         world: DeepImmutable<Matrix>,
         view: DeepImmutable<Matrix>,
         projection: DeepImmutable<Matrix>,
-        result: T
+        result: T,
+        halfZRange?: boolean
     ): T {
         const matrix = MathTmp.Matrix[0];
         world.multiplyToRef(view, matrix);
@@ -3136,7 +3138,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
         const screenSource = MathTmp.Vector3[0];
         screenSource.x = (sourceX / viewportWidth) * 2 - 1;
         screenSource.y = -((sourceY / viewportHeight) * 2 - 1);
-        if (EngineStore.LastCreatedEngine?.isNDCHalfZRange) {
+        if (halfZRange ?? EngineStore.LastCreatedEngine?.isNDCHalfZRange) {
             screenSource.z = sourceZ;
         } else {
             screenSource.z = 2 * sourceZ - 1.0;

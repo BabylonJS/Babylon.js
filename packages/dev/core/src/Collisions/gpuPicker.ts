@@ -20,8 +20,16 @@ import { type Mesh } from "core/Meshes/mesh";
 import { type InstancedMesh } from "core/Meshes/instancedMesh";
 import { Logger } from "core/Misc/logger";
 import { type Scene } from "core/scene";
-import { type Nullable } from "core/types";
+import { type DeepImmutable, type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
+
+type DepthPickingView = {
+    view: DeepImmutable<Matrix>;
+    projection: DeepImmutable<Matrix>;
+    cameraPosition: Vector3;
+    viewport: { x: number; y: number; width: number; height: number };
+    halfZRange: boolean;
+};
 
 /**
  * Class used to store the result of a GPU picking operation
@@ -1107,14 +1115,10 @@ export class GPUPicker {
                         // otherwise the reconstructed pickedPoint/normal may be missing or incorrect.
                         let depthPickingInfo: Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }> = null;
                         if (this._useDepthPicking && pickedMesh) {
-                            const camera = this._cachedScene!.activeCamera;
-                            if (camera) {
-                                const { rttSizeW, rttSizeH } = this._getRenderInfo();
-                                const viewport = camera.viewport.toGlobal(rttSizeW, rttSizeH);
-                                const view = this._cachedScene!.getViewMatrix().clone();
-                                const projection = this._cachedScene!.getProjectionMatrix().clone();
-                                const cameraPosition = camera.globalPosition.clone();
-                                depthPickingInfo = await this._getDepthPickingInfoAsync(x, y, rttSizeW, rttSizeH, view, projection, cameraPosition, viewport);
+                            const { rttSizeW, rttSizeH } = this._getRenderInfo();
+                            const depthView = this._getDepthPickingView(rttSizeW, rttSizeH);
+                            if (depthView !== null) {
+                                depthPickingInfo = await this._getDepthPickingInfoAsync(x, y, rttSizeW, rttSizeH, depthView);
                             }
                         }
                         if (disposeWhenDone) {
@@ -1196,13 +1200,8 @@ export class GPUPicker {
                         }
 
                         if (pickedPoints && normals && pickedMeshes.some((mesh) => !!mesh)) {
-                            const camera = this._cachedScene!.activeCamera;
-                            if (camera) {
-                                const viewport = camera.viewport.toGlobal(rttSizeW, rttSizeH);
-                                const view = this._cachedScene!.getViewMatrix().clone();
-                                const projection = this._cachedScene!.getProjectionMatrix().clone();
-                                const cameraPosition = camera.globalPosition.clone();
-
+                            const depthView = this._getDepthPickingView(rttSizeW, rttSizeH);
+                            if (depthView !== null) {
                                 if (useIndividualReadback) {
                                     for (let i = 0; i < xy.length; i++) {
                                         if (!pickedMeshes[i]) {
@@ -1211,16 +1210,7 @@ export class GPUPicker {
 
                                         const pointY = rttSizeH - xy[i].y - 1;
                                         // eslint-disable-next-line no-await-in-loop
-                                        const depthPickingInfo = await this._getDepthPickingInfoAsync(
-                                            xy[i].x,
-                                            pointY,
-                                            rttSizeW,
-                                            rttSizeH,
-                                            view,
-                                            projection,
-                                            cameraPosition,
-                                            viewport
-                                        );
+                                        const depthPickingInfo = await this._getDepthPickingInfoAsync(xy[i].x, pointY, rttSizeW, rttSizeH, depthView);
                                         pickedPoints[i] = depthPickingInfo?.pickedPoint ?? null;
                                         normals[i] = depthPickingInfo?.normal ?? null;
                                     }
@@ -1233,20 +1223,7 @@ export class GPUPicker {
                                             }
 
                                             const pointY = rttSizeH - xy[i].y - 1;
-                                            const depthPickingInfo = this._getDepthPickingInfoFromBuffer(
-                                                depthPixels,
-                                                xy[i].x,
-                                                pointY,
-                                                readX,
-                                                readY,
-                                                w,
-                                                h,
-                                                rttSizeH,
-                                                view,
-                                                projection,
-                                                cameraPosition,
-                                                viewport
-                                            );
+                                            const depthPickingInfo = this._getDepthPickingInfoFromBuffer(depthPixels, xy[i].x, pointY, readX, readY, w, h, rttSizeH, depthView);
                                             pickedPoints[i] = depthPickingInfo?.pickedPoint ?? null;
                                             normals[i] = depthPickingInfo?.normal ?? null;
                                         }
@@ -1340,31 +1317,13 @@ export class GPUPicker {
                         }
 
                         if (pickedPoints && normals && pickedMeshes.length > 0) {
-                            const camera = this._cachedScene!.activeCamera;
+                            const depthView = this._getDepthPickingView(rttSizeW, rttSizeH);
                             const depthPixels = await this._readDepthTexturePixelsAsync(readX, readY, readW, readH);
-                            if (camera && depthPixels) {
-                                const viewport = camera.viewport.toGlobal(rttSizeW, rttSizeH);
-                                const view = this._cachedScene!.getViewMatrix().clone();
-                                const projection = this._cachedScene!.getProjectionMatrix().clone();
-                                const cameraPosition = camera.globalPosition.clone();
-
+                            if (depthView !== null && depthPixels !== null) {
                                 for (let i = 0; i < pickedPixelCoordinates.length; i++) {
                                     const point = pickedPixelCoordinates[i];
                                     const pointY = rttSizeH - point.y - 1;
-                                    const depthPickingInfo = this._getDepthPickingInfoFromBuffer(
-                                        depthPixels,
-                                        point.x,
-                                        pointY,
-                                        readX,
-                                        readY,
-                                        readW,
-                                        readH,
-                                        rttSizeH,
-                                        view,
-                                        projection,
-                                        cameraPosition,
-                                        viewport
-                                    );
+                                    const depthPickingInfo = this._getDepthPickingInfoFromBuffer(depthPixels, point.x, pointY, readX, readY, readW, readH, rttSizeH, depthView);
                                     pickedPoints[i] = depthPickingInfo?.pickedPoint ?? null;
                                     normals[i] = depthPickingInfo?.normal ?? null;
                                 }
@@ -1611,15 +1570,28 @@ export class GPUPicker {
         return await engine._readTexturePixels(texture, w, h, -1, 0, this._depthReadbuffer, true, false, x, readY);
     }
 
+    private _getDepthPickingView(renderWidth: number, renderHeight: number): Nullable<DepthPickingView> {
+        const scene = this._cachedScene;
+        const camera = scene?.activeCamera;
+        if (scene === null || camera == null) {
+            return null;
+        }
+
+        return {
+            view: scene.getViewMatrix().clone(),
+            projection: scene.getProjectionMatrix().clone(),
+            cameraPosition: camera.globalPosition.clone(),
+            viewport: camera.viewport.toGlobal(renderWidth, renderHeight),
+            halfZRange: scene.getEngine().isNDCHalfZRange,
+        };
+    }
+
     private async _getDepthPickingInfoAsync(
         x: number,
         y: number,
         renderWidth: number,
         renderHeight: number,
-        view: Matrix,
-        projection: Matrix,
-        cameraPosition: Vector3,
-        viewport: { x: number; y: number; width: number; height: number }
+        depthView: DepthPickingView
     ): Promise<Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }>> {
         const radius = GPUPicker._DepthPixelRadius;
         const left = Math.max(x - radius, 0);
@@ -1634,7 +1606,7 @@ export class GPUPicker {
             return null;
         }
 
-        return this._getDepthPickingInfoFromBuffer(pixels, x, y, left, bottom, width, height, renderHeight, view, projection, cameraPosition, viewport);
+        return this._getDepthPickingInfoFromBuffer(pixels, x, y, left, bottom, width, height, renderHeight, depthView);
     }
 
     private _getDepthPickingInfoFromBuffer(
@@ -1646,10 +1618,7 @@ export class GPUPicker {
         bufferWidth: number,
         bufferHeight: number,
         renderHeight: number,
-        view: Matrix,
-        projection: Matrix,
-        cameraPosition: Vector3,
-        viewport: { x: number; y: number; width: number; height: number }
+        depthView: DepthPickingView
     ): Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }> {
         let centerBufferX = x - bufferLeft;
         let centerBufferY = y - bufferBottom;
@@ -1682,6 +1651,7 @@ export class GPUPicker {
         x = bufferLeft + centerBufferX;
         y = bufferBottom + centerBufferY;
 
+        const { view, projection, cameraPosition, viewport, halfZRange } = depthView;
         const viewportTop = renderHeight - viewport.y - viewport.height;
         const centerViewportX = x - viewport.x;
         const centerViewportY = renderHeight - y - 1 - viewportTop;
@@ -1698,7 +1668,8 @@ export class GPUPicker {
             Matrix.IdentityReadOnly,
             view,
             projection,
-            new Vector3()
+            new Vector3(),
+            halfZRange
         );
         const fallbackNormal = (): Vector3 => cameraPosition.subtractToRef(pickedPoint, new Vector3()).normalize();
         let bestOffsetA: Nullable<(typeof GPUPicker._DepthNeighborOffsets)[number]> = null;
@@ -1724,9 +1695,7 @@ export class GPUPicker {
                     bufferWidth,
                     bufferHeight,
                     renderHeight,
-                    view,
-                    projection,
-                    viewport,
+                    depthView,
                     TmpVectors.Vector3[3]
                 )
             ) {
@@ -1751,9 +1720,7 @@ export class GPUPicker {
                 bufferWidth,
                 bufferHeight,
                 renderHeight,
-                view,
-                projection,
-                viewport,
+                depthView,
                 TmpVectors.Vector3[3]
             );
 
@@ -1770,9 +1737,7 @@ export class GPUPicker {
                     bufferWidth,
                     bufferHeight,
                     renderHeight,
-                    view,
-                    projection,
-                    viewport,
+                    depthView,
                     TmpVectors.Vector3[4]
                 );
 
@@ -1811,9 +1776,7 @@ export class GPUPicker {
             bufferWidth,
             bufferHeight,
             renderHeight,
-            view,
-            projection,
-            viewport,
+            depthView,
             TmpVectors.Vector3[3]
         );
         this._getDepthPointFromBufferToRef(
@@ -1827,9 +1790,7 @@ export class GPUPicker {
             bufferWidth,
             bufferHeight,
             renderHeight,
-            view,
-            projection,
-            viewport,
+            depthView,
             TmpVectors.Vector3[4]
         );
 
@@ -1867,9 +1828,7 @@ export class GPUPicker {
         bufferWidth: number,
         bufferHeight: number,
         renderHeight: number,
-        view: Matrix,
-        projection: Matrix,
-        viewport: { x: number; y: number; width: number; height: number },
+        depthView: DepthPickingView,
         result: Vector3
     ): boolean {
         const bufferX = x + offsetX - left;
@@ -1879,6 +1838,7 @@ export class GPUPicker {
             return false;
         }
 
+        const { view, projection, viewport, halfZRange } = depthView;
         const viewportTop = renderHeight - viewport.y - viewport.height;
         const viewportX = x + offsetX - viewport.x;
         const viewportY = renderHeight - (y + offsetY) - 1 - viewportTop;
@@ -1886,7 +1846,7 @@ export class GPUPicker {
             return false;
         }
 
-        Vector3.UnprojectFloatsToRef(viewportX, viewportY, depth, viewport.width, viewport.height, Matrix.IdentityReadOnly, view, projection, result);
+        Vector3.UnprojectFloatsToRef(viewportX, viewportY, depth, viewport.width, viewport.height, Matrix.IdentityReadOnly, view, projection, result, halfZRange);
         return true;
     }
 

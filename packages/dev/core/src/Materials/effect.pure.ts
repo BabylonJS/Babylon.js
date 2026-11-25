@@ -267,6 +267,7 @@ export class Effect implements IDisposable {
     private _transformFeedbackVaryings: Nullable<string[]> = null;
     private _shaderLanguage: ShaderLanguage;
     private _disableParallelShaderCompilation: boolean = false;
+    private readonly _useReverseDepthBuffer: boolean;
     /**
      * Compiled shader to webGL program.
      * @internal
@@ -392,6 +393,9 @@ export class Effect implements IDisposable {
             this._fallbacks = fallbacks;
         }
 
+        // Keep the shader consistent with its cache key if source loading is asynchronous.
+        this._useReverseDepthBuffer = this._engine.useReverseDepthBuffer;
+
         // Use the cache if we can. For now, WebGL2 only.
         if (this._engine.shaderPlatformName === "WEBGL2") {
             cachedPipeline = getCachedPipeline(pipelineName, (this._engine as any)._gl) ?? cachedPipeline;
@@ -442,6 +446,9 @@ export class Effect implements IDisposable {
         if (extraInitializationsAsync) {
             await extraInitializationsAsync();
         }
+        if (this.isDisposed) {
+            return;
+        }
 
         this._processingContext = shaderProcessingContext || this._engine._getShaderProcessingContext(this._shaderLanguage, false);
 
@@ -458,7 +465,7 @@ export class Effect implements IDisposable {
             platformName: this._engine.shaderPlatformName,
             processingContext: this._processingContext,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
-            useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+            useReverseDepthBuffer: this._useReverseDepthBuffer,
             processCodeAfterIncludes: this._processCodeAfterIncludes,
         };
 
@@ -467,6 +474,10 @@ export class Effect implements IDisposable {
             this.name,
             this._processFinalCode,
             (migratedVertexCode, migratedFragmentCode) => {
+                if (this.isDisposed) {
+                    return;
+                }
+
                 this._vertexSourceCode = migratedVertexCode;
                 this._fragmentSourceCode = migratedFragmentCode;
                 this._isShaderCodeProcessingPending = false;
@@ -741,7 +752,7 @@ export class Effect implements IDisposable {
             extendedProcessingOptions: {
                 indexParameters: this._indexParameters,
                 isNDCHalfZRange: this._engine.isNDCHalfZRange,
-                useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+                useReverseDepthBuffer: this._useReverseDepthBuffer,
                 supportsUniformBuffers: this._engine.supportsUniformBuffers,
             },
             extendedCreatePipelineOptions: {
@@ -1571,6 +1582,7 @@ export class Effect implements IDisposable {
 
         this.clearCodeCache();
 
+        this._isShaderCodeProcessingPending = false;
         this._isDisposed = true;
     }
 

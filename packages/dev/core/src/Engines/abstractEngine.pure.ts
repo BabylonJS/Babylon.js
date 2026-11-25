@@ -186,11 +186,12 @@ export interface AbstractEngineOptions {
      * applied during construction, so it is already in effect for the first frame.
      *
      * A reversed depth buffer gives more depth precision to distant objects and reduces z-fighting, especially when the
-     * camera covers a large depth range. It is recommended for WebGPU. With WebGL it brings little or no gain, because the
-     * [-1, 1] clip space depth range loses the extra precision.
+     * camera covers a large depth range. It is recommended for WebGPU and for WebGL with the `useNDCHalfZRange` option
+     * and a floating-point depth attachment. WebGL's default [-1, 1] clip-space depth range provides little or no gain.
      * For the best precision, pair it with a floating-point depth buffer (on WebGPU, creating the engine with `stencil: false`
      * makes the main depth buffer `depth32float` instead of `depth24plus-stencil8`).
      *
+     * For WebXR rendering, keep this disabled so depth testing matches the runtime's projection.
      * Custom shaders that write or read depth values must account for the reversed range (see the `USE_REVERSE_DEPTHBUFFER` define).
      */
     useReverseDepthBuffer?: boolean;
@@ -565,7 +566,7 @@ export abstract class AbstractEngine {
     private _useReverseDepthBuffer = false;
     /**
      * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
-     * This can provide greater z depth for distant objects.
+     * This can provide greater z depth for distant objects. Keep this disabled while rendering WebXR views.
      */
     public get useReverseDepthBuffer(): boolean {
         return this._useReverseDepthBuffer;

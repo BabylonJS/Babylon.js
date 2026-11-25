@@ -159,6 +159,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     private readonly _renderLightingVolumeTask: FrameGraphObjectRendererTask;
     private readonly _blendLightingVolumeTask: FrameGraphVolumetricLightingBlendVolumeTask;
     private _renderLightingVolumeMaterial: ShaderMaterial;
+    private _materialReverseDepth: boolean;
 
     /**
      * Creates a new FrameGraphVolumetricLightingTask.
@@ -176,6 +177,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         }
 
         this.enableExtinction = enableExtinction;
+        this._materialReverseDepth = frameGraph.engine.useReverseDepthBuffer;
 
         const isWebGPU = this._frameGraph.engine.isWebGPU;
 
@@ -220,12 +222,26 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     }
 
     public override isReady() {
+        this._updateMaterialDepthOrder();
         return (
             this._renderLightingVolumeMaterial.isReady() &&
             this._clearLightingVolumeTextureTask.isReady() &&
             this._renderLightingVolumeMaterial.isReady() &&
             this._blendLightingVolumeTask.isReady()
         );
+    }
+
+    private _updateMaterialDepthOrder(): void {
+        const reverseDepth = this._frameGraph.engine.useReverseDepthBuffer;
+        if (this._materialReverseDepth === reverseDepth) {
+            return;
+        }
+
+        const drawWrapper = this._renderLightingVolumeMaterial._getDrawWrapper();
+        drawWrapper.effect?.dispose();
+        drawWrapper.setEffect(null, null);
+        this._renderLightingVolumeMaterial.resetDrawCache();
+        this._materialReverseDepth = reverseDepth;
     }
 
     public override getClassName(): string {
@@ -268,6 +284,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         const passUpdateMaterial = this._frameGraph.addPass(this.name);
 
         passUpdateMaterial.setExecuteFunc(() => {
+            this._updateMaterialDepthOrder();
             this.camera.getTransformationMatrix().invertToRef(InvViewProjectionMatrix);
 
             this._renderLightingVolumeMaterial.setMatrix("invViewProjection", InvViewProjectionMatrix);
