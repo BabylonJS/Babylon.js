@@ -434,11 +434,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                     }
                 } finally {
                     try {
-                        // Dispose render target textures.
-                        // Only dispose on native because we can't destroy opaque textures on browser.
-                        if (this.isNative) {
-                            this._baseLayerRTTProvider?.dispose();
-                        }
+                        // Dispose the base layer's render target textures, or every session leaves them (and the
+                        // GPU objects they own) in the scene. The browser does not let us delete an XRWebGLLayer's
+                        // opaque framebuffer, so its provider detaches it first. A base layer owned by the
+                        // WebXRLayers feature was already disposed when the feature detached.
+                        this._baseLayerRTTProvider?.dispose();
                     } finally {
                         this._baseLayerRTTProvider = null;
                         this._baseLayerWrapper = null;
