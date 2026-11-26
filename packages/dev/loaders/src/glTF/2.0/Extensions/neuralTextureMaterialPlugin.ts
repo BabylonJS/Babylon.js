@@ -3,6 +3,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { type MaterialDefines } from "core/Materials/materialDefines";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture.pure";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
 import { GetNeuralTexturePackedSize, GetNeuralTextureShader, PackNeuralTextureWeights } from "./neuralTextureShaders";
@@ -17,8 +18,30 @@ function HashString(text: string): number {
 }
 
 /**
+ * Creates a texture that references the GPU data of another one: the data is freed once both are disposed,
+ * so a clone stays valid when the source (or its asset container) is disposed first.
+ * @param texture the texture to share
+ * @returns the new texture, owned by the caller
+ * @internal
+ */
+export function ShareNeuralTexture(texture: BaseTexture): BaseTexture {
+    const internalTexture = texture.getInternalTexture();
+    const scene = texture.getScene();
+    if (!internalTexture || !scene) {
+        throw new Error(`BABYLON_materials_neural_texture: Cannot share the texture ${texture.name}`);
+    }
+    internalTexture.incrementReferences();
+    const shared = new Texture(null, scene, { internalTexture, invertY: false, noMipmap: !internalTexture.generateMipMaps });
+    shared.name = texture.name;
+    shared.gammaSpace = texture.gammaSpace;
+    shared.wrapU = texture.wrapU;
+    shared.wrapV = texture.wrapV;
+    return shared;
+}
+
+/**
  * Material plugins that are not serialized are not recreated by Material.clone: recreate the neural decoder on
- * the clones, sharing the decoding resources, so that they keep the appearance of the source material.
+ * the clones, with their own references to the decoding resources, so that they keep the appearance of the source material.
  * @param material the material of the plugin
  * @param create creates the plugin on a clone
  * @internal
@@ -40,20 +63,35 @@ export class NeuralTextureMaterialPlugin extends MaterialPluginBase {
     private _extension: IBabylonMaterialsNeuralTexture;
     private _latents: BaseTexture[];
     private _timing?: NeuralTextureTiming;
+    private _ownsTextures: boolean;
 
-    constructor(material: PBRMaterial, extension: IBabylonMaterialsNeuralTexture, latents: BaseTexture[], weights: Float32Array, timing?: NeuralTextureTiming) {
+    constructor(
+        material: PBRMaterial,
+        extension: IBabylonMaterialsNeuralTexture,
+        latents: BaseTexture[],
+        weights: Float32Array,
+        timing?: NeuralTextureTiming,
+        ownsTextures = false
+    ) {
         super(material, "BABYLON_materials_neural_texture", 190, { NEURAL_WEIGHT_VEC4S: 0, NEURAL_LAYOUT: 0 }, false);
         this.doNotSerialize = true;
         this._extension = extension;
         this._latents = latents;
         this._timing = timing;
+        this._ownsTextures = ownsTextures;
         this._packedWeights = PackNeuralTextureWeights(weights, extension.network.outputs);
         this._packedSize = GetNeuralTexturePackedSize(extension.network.outputs);
         // The uniform array size and the generated code depend on the network, and the compiled effect is cached by defines.
         this._layoutKey = HashString(JSON.stringify([extension.network.outputs, extension.outputs, extension.replacedSlots]));
         this._pluginManager._addPlugin(this);
         this._enable(true);
-        PreserveNeuralPluginOnClone(material, (clone) => new NeuralTextureMaterialPlugin(clone, extension, latents, weights));
+        PreserveNeuralPluginOnClone(material, (clone) => new NeuralTextureMaterialPlugin(clone, extension, this._latents.map(ShareNeuralTexture), weights, undefined, true));
+    }
+
+    public override dispose(): void {
+        if (this._ownsTextures) {
+            this._latents.forEach((latent) => latent.dispose());
+        }
     }
 
     public override isCompatible(): boolean {
@@ -186,7 +224,10 @@ neuralCachedTexel = decodeNeural(neuralCachedUV);
                 const sample = `sampleNeural${sampler}`;
                 // An alpha-tested albedo is kept for the depth and shadow passes: when the hardware decodes it
                 // from sRGB, GAMMAALBEDO is off and the encoded neural color must be linearized here.
-                const linearize = sampler === "albedo" ? `\n#ifndef GAMMAALBEDO\ncolor = ${wgsl ? "vec4f" : "vec4"}(toLinearSpace(color.rgb), color.a);\n#endif\n` : "";
+                const linearize =
+                    sampler === "albedo"
+                        ? `\n#ifndef GAMMAALBEDO\ncolor = ${wgsl ? "vec4f(toLinearSpaceVec3(color.rgb)" : "vec4(toLinearSpace(color.rgb)"}, color.a);\n#endif\n`
+                        : "";
                 if (wgsl) {
                     code.CUSTOM_FRAGMENT_DEFINITIONS += `\nfn ${sample}(uv: vec2f) -> vec4f {\nvar color = sampleNeural(uv).${field};${linearize}\nreturn color;\n}\n`;
                 } else {

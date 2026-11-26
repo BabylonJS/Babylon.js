@@ -80,6 +80,16 @@ function HashString(text: string): string {
 }
 
 /**
+ * Whether BakeNeuralV4Async can bake on the engine.
+ * @param engine the engine
+ * @returns true when the GPU bake is available
+ * @internal
+ */
+export function CanBakeNeuralV4(engine: AbstractEngine): boolean {
+    return engine.isWebGPU || engine.version >= 2;
+}
+
+/**
  * Decodes a babylon-ntc-v4 payload at load time: one fragment pass per baked group (and mip) into RGBA8 render targets.
  * No latent readback or CPU network evaluation is used.
  * @param scene the scene
@@ -113,7 +123,7 @@ export async function BakeNeuralV4Async(
     checkCancelled();
     const engine = scene.getEngine();
     // Plain uniforms only: this also works where WebGL uniform buffers are disabled (macOS Chrome).
-    if (!engine.isWebGPU && engine.version < 2) {
+    if (!CanBakeNeuralV4(engine)) {
         return null;
     }
     const wgsl = engine.isWebGPU;
@@ -217,6 +227,8 @@ export async function BakeNeuralV4Async(
                 const colorWrite = engine.getColorWrite();
                 const viewport = engine.currentViewport;
                 const scissor = w !== mw || h !== mh;
+                // Saved and restored around this synchronous draw: the application can render between the async tiles.
+                const restoreScissor = SaveScissor(engine, gl);
                 let saved = false;
                 let bound = false;
                 try {
@@ -228,13 +240,13 @@ export async function BakeNeuralV4Async(
                     bound = true;
                     if (scissor) {
                         engine.enableScissor(x, y, w, h);
+                    } else {
+                        engine.disableScissor();
                     }
                     renderer!.applyEffectWrapper(wrapper!);
                     renderer!.draw();
                 } finally {
-                    if (scissor) {
-                        engine.disableScissor();
-                    }
+                    restoreScissor();
                     if (bound) {
                         engine.unBindFramebuffer(target, true);
                     }
@@ -251,30 +263,24 @@ export async function BakeNeuralV4Async(
             };
             const dispatchStart = timing ? performance.now() : 0;
             const lastMip = mips === "neural" ? mipCount - 1 : 0;
-            // Tiles of big textures use the scissor: the application's own scissor is restored afterwards.
-            const restoreScissor = SaveScissor(engine, gl);
-            try {
-                for (const entry of renderTargets) {
-                    group = entry.index;
-                    for (mip = 0; mip <= lastMip; mip++) {
-                        const [mw, mh] = GetNeuralV4MipSize(layout, mip);
-                        for (let y = 0; y < mh; y += TileSize) {
-                            for (let x = 0; x < mw; x += TileSize) {
-                                checkCancelled();
-                                drawTile(entry.target, mip, x, y, Math.min(TileSize, mw - x), Math.min(TileSize, mh - y), mw, mh);
-                                if (mw > TileSize || mh > TileSize) {
-                                    // eslint-disable-next-line no-await-in-loop
-                                    await new Promise<void>((resolve) => setTimeout(resolve, 0));
-                                }
+            for (const entry of renderTargets) {
+                group = entry.index;
+                for (mip = 0; mip <= lastMip; mip++) {
+                    const [mw, mh] = GetNeuralV4MipSize(layout, mip);
+                    for (let y = 0; y < mh; y += TileSize) {
+                        for (let x = 0; x < mw; x += TileSize) {
+                            checkCancelled();
+                            drawTile(entry.target, mip, x, y, Math.min(TileSize, mw - x), Math.min(TileSize, mh - y), mw, mh);
+                            if (mw > TileSize || mh > TileSize) {
+                                // eslint-disable-next-line no-await-in-loop
+                                await new Promise<void>((resolve) => setTimeout(resolve, 0));
                             }
                         }
                     }
-                    if (mips === "generate" && mipCount > 1) {
-                        engine.generateMipmaps(entry.target.texture!);
-                    }
                 }
-            } finally {
-                restoreScissor();
+                if (mips === "generate" && mipCount > 1) {
+                    engine.generateMipmaps(entry.target.texture!);
+                }
             }
             timing?.("bakeDispatch", dispatchStart);
             // WebGL texture.readPixels wraps a synchronous read: use a nonblocking GL fence instead.

@@ -321,5 +321,12 @@ describe("WebGPUShaderProcessorWGSL", () => {
             const { fragmentCode } = processor.finalizeShaders(vtx, "/*\nenable f16;\n*/\n// enable f16;\n" + body);
             expect(fragmentCode).not.toContain("enable f16;\nstruct FragmentInputs");
         });
+
+        it("hoists a real directive and keeps the commented ones", () => {
+            const { fragmentCode } = processor.finalizeShaders(vtx, "/*\nenable f16;\n*/\n// enable f16;\nenable f16;\n" + body);
+            expect(fragmentCode).toContain("enable f16;\nstruct FragmentInputs");
+            expect(fragmentCode).toContain("/*\nenable f16;\n*/\n// enable f16;\n");
+            expect(fragmentCode.match(/^enable f16;$/gm)).toHaveLength(2);
+        });
     });
 });

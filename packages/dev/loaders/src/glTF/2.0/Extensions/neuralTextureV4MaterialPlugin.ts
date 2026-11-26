@@ -5,7 +5,7 @@ import { type MaterialDefines } from "core/Materials/materialDefines";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
-import { GetNeuralCustomCode, PreserveNeuralPluginOnClone } from "./neuralTextureMaterialPlugin";
+import { GetNeuralCustomCode, PreserveNeuralPluginOnClone, ShareNeuralTexture } from "./neuralTextureMaterialPlugin";
 import { type INeuralV4Layout, type INeuralV4WeightTexture, HalfToFloat } from "./neuralTextureV4";
 import {
     GetNeuralV4RuntimeShader,
@@ -49,6 +49,7 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
     private _weightsUbo: Nullable<DataBuffer> = null;
     private _warned = new Set<string>();
     private _debugChannels: number[] | undefined;
+    private _ownsTextures: boolean;
     // The options of prepareDefines, which the effect is compiled and bound with; reset when a requested option changes.
     private _effectiveOptions: Nullable<Required<INeuralV4ShaderOptions>> = null;
 
@@ -67,7 +68,8 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         runtimeFilter: NeuralTextureRuntimeFilter = "bilinear",
         lodBias = 0,
         timing?: NeuralTextureTiming,
-        shaderOptions: INeuralV4ShaderOptions = {}
+        shaderOptions: INeuralV4ShaderOptions = {},
+        ownsTextures = false
     ) {
         super(material, "BABYLON_materials_neural_texture", 190, { NEURAL_LAYOUT: 0 }, false);
         this.doNotSerialize = true;
@@ -81,15 +83,26 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         this._runtimeWeights = shaderOptions.weights ?? "texture";
         this._runtimePrecision = shaderOptions.precision ?? "f32";
         this.lodBias = lodBias;
+        this._ownsTextures = ownsTextures;
         this._pluginManager._addPlugin(this);
         this._enable(true);
+        // A clone owns references to the latents and weights, so it outlives the disposal of the source asset container.
         PreserveNeuralPluginOnClone(
             material,
             (clone) =>
-                new NeuralTextureV4MaterialPlugin(clone, extension, layout, latents, weights, packedWeights, this._runtimeFilter, this.lodBias, undefined, {
-                    weights: this._runtimeWeights,
-                    precision: this._runtimePrecision,
-                })
+                new NeuralTextureV4MaterialPlugin(
+                    clone,
+                    extension,
+                    layout,
+                    this._latents.map(ShareNeuralTexture),
+                    ShareNeuralTexture(this._weights),
+                    packedWeights,
+                    this._runtimeFilter,
+                    this.lodBias,
+                    undefined,
+                    { weights: this._runtimeWeights, precision: this._runtimePrecision },
+                    true
+                )
         );
     }
 
@@ -241,6 +254,10 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         if (this._weightsUbo) {
             this._material.getScene().getEngine()._releaseBuffer(this._weightsUbo);
             this._weightsUbo = null;
+        }
+        if (this._ownsTextures) {
+            this._latents.forEach((latent) => latent.dispose());
+            this._weights.dispose();
         }
     }
 

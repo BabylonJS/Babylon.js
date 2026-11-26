@@ -354,10 +354,17 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         const enabledExtensions: string[] = [];
 
         // Hoist the enable f16 directives that shader code (e.g. material plugins) may emit mid-module.
-        // Line comments are excluded by the anchors, block comments explicitly: a commented-out directive is no feature requirement.
-        const f16Directive = /^[ \t]*enable[ \t]+f16[ \t]*;[ \t]*$/gm;
-        if (f16Directive.test(fragmentCode.replace(/\/\*[\s\S]*?\*\//g, ""))) {
-            fragmentCode = fragmentCode.replace(f16Directive, "");
+        // A single scan matches comments and directives together: a directive inside a comment is consumed with the comment
+        // and kept, so detection and removal see the same spans.
+        let f16 = false;
+        fragmentCode = fragmentCode.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\/|^[ \t]*enable[ \t]+f16[ \t]*;[ \t]*$/gm, (match) => {
+            if (match.startsWith("/")) {
+                return match;
+            }
+            f16 = true;
+            return "";
+        });
+        if (f16) {
             enabledExtensions.push("f16");
         }
 

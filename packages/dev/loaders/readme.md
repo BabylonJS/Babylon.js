@@ -91,8 +91,9 @@ are not redirected. No shared shader includes or other material families are mod
 
 v2 keeps the v1 latents and 24→32→32 network but the last layer has a variable
 number of outputs `N = network.outputs` (1 to 32); `weights.count` must equal
-`1856 + 33 * N`. `outputs` maps groups to indices into the N network outputs, either
-as explicit index lists or as `[startChannel, componentCount]` pairs. Supported groups
+`1856 + 33 * N`. `outputs` maps every group to a `[startChannel, componentCount]` pair of
+consecutive network outputs; this is the only accepted form (unlike v1's explicit channel
+index lists), and the range must lie within the N outputs. Supported groups
 and component counts: `baseColor` (3 or 4), `normal` (2), `occlusion`, `roughness`,
 `metallic` (1 each), `emissive` (3), `diffuse` (3 or 4), `specular` (3), `glossiness` (1).
 `replacedSlots` may additionally contain `emissiveTexture`,

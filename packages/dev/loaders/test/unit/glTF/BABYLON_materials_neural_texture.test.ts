@@ -13,6 +13,8 @@ import { Observable } from "core/Misc/observable";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { Logger } from "core/Misc/logger";
 import * as NeuralBaker from "loaders/glTF/2.0/Extensions/neuralTextureBaker";
 import * as NeuralDecoder from "loaders/glTF/2.0/Extensions/neuralTextureDecoder";
 import { ShaderStore } from "core/Engines/shaderStore";
@@ -368,6 +370,10 @@ describe("BABYLON_materials_neural_texture", () => {
         const outOfRange = PayloadV2();
         outOfRange.outputs.emissive = [11, 3];
         expect(() => ValidateNeuralTexture("v2", outOfRange)).toThrow("outputs.emissive");
+        // Rejected before the range is expanded.
+        const huge = PayloadV2();
+        huge.outputs.normal = [0, 2 ** 31];
+        expect(() => ValidateNeuralTexture("v2", huge)).toThrow("outputs.normal");
         const missing = PayloadV2();
         delete missing.outputs.glossiness;
         expect(() => ValidateNeuralTexture("v2", missing)).toThrow("without its outputs");
@@ -503,6 +509,92 @@ describe("BABYLON_materials_neural_texture", () => {
             const loaded = (loader.loadMaterialPropertiesAsync.mock.calls[0] as unknown[])[1] as { extensions: Record<string, unknown> };
             expect(loaded.extensions.KHR_materials_pbrSpecularGlossiness).toBeUndefined();
         } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+    it("linearizes the decoded albedo with the vec3 helper of each shader language", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        try {
+            const plugin = new NeuralTextureMaterialPlugin(new PBRMaterial("neural", scene), Payload(), [], new Float32Array(2153));
+            const wgsl = Object.values(plugin.getCustomCode("fragment", ShaderLanguage.WGSL)!).join("\n");
+            expect(wgsl).toContain("color = vec4f(toLinearSpaceVec3(color.rgb), color.a);");
+            expect(ShaderStore.GetIncludesShadersStore(ShaderLanguage.WGSL)["helperFunctions"]).toContain("fn toLinearSpaceVec3(");
+            const glsl = Object.values(plugin.getCustomCode("fragment", ShaderLanguage.GLSL)!).join("\n");
+            expect(glsl).toContain("color = vec4(toLinearSpace(color.rgb), color.a);");
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("gives clones their own latent references, so they outlive the source material and textures", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        try {
+            const latents = [0, 1, 2, 3].map(() => RawTexture.CreateRGBATexture(new Uint8Array(4), 1, 1, scene));
+            const material = new PBRMaterial("neural", scene);
+            new NeuralTextureMaterialPlugin(material, Payload(), latents, new Float32Array(2153));
+            const clone = material.clone("clone");
+            const plugin = clone.pluginManager!.getPlugin("BABYLON_materials_neural_texture") as unknown as { _latents: BaseTexture[] };
+            expect(plugin._latents).toHaveLength(4);
+            plugin._latents.forEach((latent, i) => {
+                expect(latent).not.toBe(latents[i]);
+                expect(latent.getInternalTexture()).toBe(latents[i].getInternalTexture());
+            });
+            const internals = latents.map((latent) => latent.getInternalTexture()!);
+            material.dispose();
+            latents.forEach((latent) => latent.dispose());
+            expect(internals.every((internal) => internal._references === 1)).toBe(true);
+            clone.dispose();
+            expect(internals.every((internal) => internal._references === 0)).toBe(true);
+        } finally {
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("bakes, instead of decoding at runtime, a cutout material whose replaced color has no core texture", async () => {
+        const engine = new NullEngine();
+        Object.defineProperty(engine, "supportsUniformBuffers", { configurable: true, get: () => true });
+        const scene = new Scene(engine);
+        const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+        try {
+            const payload = Payload();
+            const loader = CreateLoader(scene, payload, true);
+            const material = new PBRMaterial("neural", scene);
+            const source = { index: 0, alphaMode: "MASK" as const, extensions: { BABYLON_materials_neural_texture: payload } };
+            await new NeuralExtension(loader as unknown as GLTFLoader).loadMaterialPropertiesAsync("/materials/0", source, material);
+            expect(warn.mock.calls.some(([message]) => String(message).includes("baking at load time"))).toBe(true);
+            expect(material.pluginManager?.getPlugin("BABYLON_materials_neural_texture")).toBeFalsy();
+            const withCore = { ...source, pbrMetallicRoughness: { baseColorTexture: { index: 0 } } };
+            await new NeuralExtension(loader as unknown as GLTFLoader).loadMaterialPropertiesAsync("/materials/0", withCore, material);
+            expect(material.pluginManager!.getPlugin("BABYLON_materials_neural_texture")).toBeTruthy();
+        } finally {
+            warn.mockRestore();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("falls back to the unmodified dual-workflow material when the optional extension cannot be decoded", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+        try {
+            const payload = Payload();
+            const loader = CreateLoader(scene, payload, false);
+            const material = new PBRMaterial("neural", scene);
+            const specularGlossiness = { diffuseTexture: { index: 5 }, specularFactor: [0.5, 0.5, 0.5] };
+            const source = { index: 0, extensions: { BABYLON_materials_neural_texture: payload, KHR_materials_pbrSpecularGlossiness: specularGlossiness } };
+            await new NeuralExtension(loader as unknown as GLTFLoader).loadMaterialPropertiesAsync("/materials/0", source, material);
+            expect(loader.loadMaterialPropertiesAsync).toHaveBeenCalledTimes(1);
+            expect((loader.loadMaterialPropertiesAsync.mock.calls[0] as unknown[])[1]).toBe(source);
+            expect(source.extensions.KHR_materials_pbrSpecularGlossiness).toBe(specularGlossiness);
+            expect(loader.loadTextureInfoAsync).not.toHaveBeenCalled();
+        } finally {
+            warn.mockRestore();
             scene.dispose();
             engine.dispose();
         }

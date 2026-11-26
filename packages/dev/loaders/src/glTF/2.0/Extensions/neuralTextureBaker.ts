@@ -77,6 +77,20 @@ export function GetWebGL2Context(engine: AbstractEngine): Nullable<WebGL2Renderi
 }
 
 /**
+ * Whether BakeNeuralTextureAsync can bake a babylon-ntc-v1/v2 payload on the engine.
+ * @param engine the engine
+ * @param extension the resolved payload
+ * @returns true when the GPU bake is available
+ * @internal
+ */
+export function CanBakeNeuralTexture(engine: AbstractEngine, extension: IBabylonMaterialsNeuralTexture): boolean {
+    if (engine.isWebGPU ? !engine.getCaps().supportComputeShaders : engine.version < 2) {
+        return false;
+    }
+    return engine.isWebGPU || engine.supportsUniformBuffers || GetNeuralTexturePackedSize(extension.network.outputs) + 4 <= engine.getCaps().maxFragmentUniformVectors;
+}
+
+/**
  * Bakes base-level texels directly into RGBA8 GPU textures, then generates the
  * complete mip chain. No latent readback or CPU network evaluation is used.
  * @internal
@@ -99,7 +113,7 @@ export async function BakeNeuralTextureAsync(
     const engine = scene.getEngine();
     // macOS Chrome disables WebGL uniform buffers: the fragment bake then uses a plain uniform array.
     const useUbo = engine.isWebGPU || engine.supportsUniformBuffers;
-    if (engine.isWebGPU ? !engine.getCaps().supportComputeShaders : engine.version < 2) {
+    if (!CanBakeNeuralTexture(engine, extension)) {
         return null;
     }
     const gl = engine.isWebGPU ? null : GetWebGL2Context(engine);
@@ -111,9 +125,6 @@ export async function BakeNeuralTextureAsync(
         ([slot, name, index]): [keyof INeuralTextureBaked, string, number] => [slot, name, index]
     );
     const packedSize = GetNeuralTexturePackedSize(extension.network.outputs);
-    if (!useUbo && packedSize + 4 > engine.getCaps().maxFragmentUniformVectors) {
-        return null;
-    }
     const result: INeuralTextureBaked = {};
     if (!outputs.length) {
         return result;

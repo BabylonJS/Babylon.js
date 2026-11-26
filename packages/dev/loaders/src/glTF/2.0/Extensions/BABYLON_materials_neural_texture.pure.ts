@@ -12,7 +12,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
 import { DecodeNeuralTextureAsync, ResolveNeuralTexture, type INeuralTextureGrid } from "./neuralTextureDecoder";
 import { NeuralTextureMaterialPlugin } from "./neuralTextureMaterialPlugin";
-import { BakeNeuralTextureAsync, type INeuralTextureBaked } from "./neuralTextureBaker";
+import { BakeNeuralTextureAsync, CanBakeNeuralTexture, type INeuralTextureBaked } from "./neuralTextureBaker";
 import { CreateNeuralTextureTiming, TrackNeuralTextureMaterialTiming } from "./neuralTextureTiming";
 import {
     DecodeNeuralV4Async,
@@ -24,7 +24,7 @@ import {
     type INeuralV4Layout,
     type NeuralV4Group,
 } from "./neuralTextureV4";
-import { BakeNeuralV4Async, CreateNeuralV4WeightsTexture, type NeuralTextureBakeMips } from "./neuralTextureV4Baker";
+import { BakeNeuralV4Async, CanBakeNeuralV4, CreateNeuralV4WeightsTexture, type NeuralTextureBakeMips } from "./neuralTextureV4Baker";
 import { NeuralTextureV4MaterialPlugin } from "./neuralTextureV4MaterialPlugin";
 import { GetNeuralV4LatentTextureOrder, type NeuralTextureRuntimeFilter, type NeuralTextureRuntimePrecision, type NeuralTextureRuntimeWeights } from "./neuralTextureV4Shaders";
 
@@ -146,14 +146,26 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
             if (timing) {
                 TrackNeuralTextureMaterialTiming(babylonMaterial, timing);
             }
-            const shaderDecode = this.decodeInShader;
-            // Without extensionsRequired, an unsupported backend degrades to the core textures.
+            let shaderDecode = this.decodeInShader;
+            // Depth and shadow passes test the alpha of the core albedo texture without the neural plugin: a cutout or blended
+            // material whose color is replaced needs that core texture to decode at runtime, otherwise it is baked at load time.
+            const replacesColor = replaces("baseColorTexture") || replaces(DiffuseSlot);
+            const coreColor = specularGlossinessNeural ? specularGlossiness?.diffuseTexture : material.pbrMetallicRoughness?.baseColorTexture;
+            if (shaderDecode && replacesColor && (material.alphaMode === "MASK" || material.alphaMode === "BLEND") && !coreColor) {
+                Logger.Warn(`${extensionContext}: Runtime decoding of a ${material.alphaMode} material requires a core base color texture; baking at load time`);
+                shaderDecode = false;
+            }
+            // Without extensionsRequired, an unsupported backend degrades to the core textures. This is decided before any
+            // neural resource is loaded or the material workflow is changed, so the fallback is the unmodified core material.
             const required = !!this._loader.gltf.extensionsRequired?.includes(NAME);
             // v4 needs no uniform buffer (macOS Chrome disables them); the v1/v2 decoder keeps its weights in one.
             // Babylon Native reports a version without supporting these shaders.
             const shaderSupported = engine.name !== "Native" && (v4 ? engine.isWebGPU || engine.version >= 2 : engine.supportsUniformBuffers);
-            if (shaderDecode && !shaderSupported) {
-                const message = `${extensionContext}: Shader decoding requires WebGL 2 or WebGPU; disable decodeInShader to bake textures`;
+            const bakeSupported = this.allowCPUFallback || (v4 ? CanBakeNeuralV4(engine) : CanBakeNeuralTexture(engine, extension));
+            if (shaderDecode ? !shaderSupported : !bakeSupported) {
+                const message = shaderDecode
+                    ? `${extensionContext}: Shader decoding requires WebGL 2 or WebGPU; disable decodeInShader to bake textures`
+                    : `${extensionContext}: GPU baking is unavailable (requires WebGL 2 or WebGPU compute); opt into allowCPUFallback to use CPU decoding`;
                 if (required) {
                     throw new Error(message);
                 }
@@ -237,6 +249,7 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                     parsedWeights as Uint16Array,
                     replaces,
                     required,
+                    shaderDecode,
                     timing,
                     materialStart
                 );
@@ -399,6 +412,7 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
         half: Uint16Array,
         replaces: (slot: string) => boolean,
         required: boolean,
+        shaderDecode: boolean,
         timing: ReturnType<typeof CreateNeuralTextureTiming> | undefined,
         materialStart: number
     ): Promise<void> {
@@ -406,7 +420,7 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
         const container = this._loader._assetContainer;
         const packedWeights = PackNeuralV4WeightTexture(layout, half);
         const weightsTexture = CreateNeuralV4WeightsTexture(scene, packedWeights, container);
-        if (this.decodeInShader) {
+        if (shaderDecode) {
             const start = timing ? performance.now() : 0;
             this._assignPlaceholders(context, material, babylonMaterial, replaces);
             // The weights texture is sampled at runtime, so it is a loaded texture of the asset.

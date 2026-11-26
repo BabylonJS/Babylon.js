@@ -170,11 +170,12 @@ function ResolveGroupOutputs(extension: IBabylonMaterialsNeuralTexture, count: n
         if (!Array.isArray(channels) || channels.length !== 2 || !channels.every((value) => Number.isInteger(value) && value >= 0)) {
             throw invalid(`outputs.${name}`);
         }
-        const indices = Array.from({ length: channels[1] }, (_, i) => channels[0] + i);
-        if (!components.includes(indices.length) || !indices.every((value) => value < count)) {
+        const [start, length] = channels as number[];
+        // Bounded before expansion: a huge componentCount must not allocate.
+        if (!components.includes(length) || start + length > count) {
             throw invalid(`outputs.${name}`);
         }
-        outputs[name] = indices;
+        outputs[name] = Array.from({ length }, (_, i) => start + i);
     }
     const groups = (slot: string): Array<keyof NeuralTextureOutputs> => {
         switch (slot) {
