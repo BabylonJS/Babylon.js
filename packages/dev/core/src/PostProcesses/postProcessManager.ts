@@ -207,7 +207,13 @@ export class PostProcessManager {
                 pp._outputTexture = postProcesses[index + 1].activate(camera, targetTexture?.texture);
             } else {
                 if (targetTexture) {
-                    engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport);
+                    const output = camera.outputRenderTarget;
+                    if (output?.renderTarget === targetTexture && faceIndex === undefined) {
+                        // The camera target owns the layer selection (e.g. one eye of a projection layer).
+                        output._bindFrameBuffer(undefined, undefined, forceFullscreenViewport);
+                    } else {
+                        engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport);
+                    }
                     pp._outputTexture = targetTexture;
                 } else {
                     engine.restoreDefaultFramebuffer();

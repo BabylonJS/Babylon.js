@@ -1163,8 +1163,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @internal
      * @param faceIndex face index to bind to if this is a cubetexture
      * @param layer defines the index of the texture to bind in the array
+     * @param forceFullscreenViewport overrides the target's viewport policy for an explicit bind
      */
-    public _bindFrameBuffer(faceIndex: number = 0, layer = 0) {
+    public _bindFrameBuffer(faceIndex: number = 0, layer = 0, forceFullscreenViewport = this.ignoreCameraViewport) {
         const scene = this.getScene();
         if (!scene) {
             return;
@@ -1172,7 +1173,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         const engine = scene.getEngine();
         if (this._renderTarget) {
-            engine.bindFramebuffer(this._renderTarget, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, 0, layer);
+            engine.bindFramebuffer(this._renderTarget, this.isCube ? faceIndex : undefined, undefined, undefined, forceFullscreenViewport, 0, layer);
         }
     }
 

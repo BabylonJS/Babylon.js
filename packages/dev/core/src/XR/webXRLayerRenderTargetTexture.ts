@@ -21,8 +21,9 @@ export class WebXRLayerRenderTargetTexture extends RenderTargetTexture {
      * @internal
      * @param faceIndex face index to bind to if this is a cubetexture
      * @param layer defines the index of the texture to bind in the array; defaults to {@link layerIndex}
+     * @param forceFullscreenViewport overrides the target's viewport policy for an explicit bind
      */
-    public override _bindFrameBuffer(faceIndex: number = 0, layer: number = this.layerIndex) {
-        super._bindFrameBuffer(faceIndex, layer);
+    public override _bindFrameBuffer(faceIndex: number = 0, layer: number = this.layerIndex, forceFullscreenViewport = this.ignoreCameraViewport) {
+        super._bindFrameBuffer(faceIndex, layer, forceFullscreenViewport);
     }
 }
