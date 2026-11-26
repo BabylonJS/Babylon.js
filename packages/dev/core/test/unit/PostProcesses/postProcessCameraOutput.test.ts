@@ -24,8 +24,14 @@ describe("PostProcessManager camera output", () => {
             });
         const left = eye(0);
         const right = eye(1);
-        const scene = { activeCamera: { outputRenderTarget: left }, getEngine: () => engine, postProcessesEnabled: true };
+        const scene = {
+            activeCamera: { outputRenderTarget: left },
+            _bindFrameBuffer: (camera: { outputRenderTarget: RenderTargetTexture }) => camera.outputRenderTarget._bindFrameBuffer(),
+            getEngine: () => engine,
+            postProcessesEnabled: true,
+        };
         const manager = new PostProcessManager(scene as unknown as Scene);
+        Object.assign(scene, { postProcessManager: manager });
         const pp = { apply: () => null } as unknown as PostProcess;
         const render = (output?: RenderTargetWrapper, face?: number, fullscreen = false, layer?: number) => manager._finalizeFrame(false, output, face, [pp], fullscreen, layer);
         return { engine, scene, left, right, target, pp, render, manager };
@@ -111,9 +117,8 @@ describe("PostProcessManager camera output", () => {
     });
 
     it("composes the camera pre-pass into its eye unless a subsequent process owns the destination", () => {
-        const { engine, scene, right, target, pp, manager } = setup();
+        const { engine, scene, right, target, pp } = setup();
         scene.activeCamera.outputRenderTarget = right;
-        Object.assign(scene, { postProcessManager: manager });
         const input = {} as RenderTargetWrapper;
         const chain = Object.assign({}, pp, { activate: vi.fn() });
         const prepass: PrePassRenderer = Object.assign(Object.create(PrePassRenderer.prototype), {
@@ -126,7 +131,7 @@ describe("PostProcessManager camera output", () => {
         Object.assign(scene.activeCamera, { _postProcesses: [] });
         prepass._afterDraw();
         expect(engine.restoreDefaultFramebuffer).not.toHaveBeenCalled();
-        expect(engine.bindFramebuffer).toHaveBeenLastCalledWith(target, undefined, undefined, undefined, false, 0, 1);
+        expect(engine.bindFramebuffer).toHaveBeenCalledExactlyOnceWith(target, undefined, undefined, undefined, true, 0, 1);
 
         Object.assign(prepass, { _postProcessesSourceForThisPass: [{ inputTexture: input }] });
         prepass._afterDraw(0, 2);
@@ -139,5 +144,90 @@ describe("PostProcessManager camera output", () => {
         vi.spyOn(right, "_prepareFrame").mockImplementation(() => {});
         prepass._afterDraw(0, 2);
         expect(engine.bindFramebuffer).toHaveBeenLastCalledWith(target, undefined, undefined, undefined, false, 0, 2);
+    });
+
+    it.each([
+        [false, false],
+        [false, true],
+        [true, false],
+        [true, true],
+    ])("clears each eye before its terminal draw and overlay (ignoreCameraViewport=%s, camera chain=%s)", (fullscreen, cameraChain) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const overlay = new Scene(engine);
+        try {
+            const camera = new FreeCamera("eye", Vector3.Zero(), scene);
+            camera.viewport.width = 0.5;
+            const binds = vi.spyOn(engine, "bindFramebuffer");
+            const events: string[] = [];
+            const chain = {
+                activate: vi.fn(),
+                apply: () => {
+                    events.push("main");
+                    return null;
+                },
+            };
+            const prepass: PrePassRenderer = Object.assign(Object.create(PrePassRenderer.prototype), {
+                _scene: scene,
+                _engine: engine,
+                _enabled: true,
+                _currentTarget: { enabled: true, _beforeCompositionPostProcesses: [chain] },
+                _postProcessesSourceForThisPass: [],
+            });
+            for (const layer of [0, 1]) {
+                const eye = new WebXRLayerRenderTargetTexture("eye", { width: 8, height: 8, layers: 2 }, scene, false);
+                eye.layerIndex = layer;
+                eye.ignoreCameraViewport = fullscreen;
+                camera.outputRenderTarget = eye;
+                // The XR provider clears once per eye per frame, across main and utility scenes.
+                let cleared = false;
+                eye.onClearObservable.add(() => {
+                    if (!cleared) {
+                        events.push("clear");
+                        cleared = true;
+                    }
+                });
+                binds.mockClear();
+                if (cameraChain) {
+                    scene.postProcessManager._finalizeFrame(false, eye.renderTarget!, undefined, [chain as unknown as PostProcess], false, undefined, true);
+                } else {
+                    prepass._afterDraw();
+                }
+                expect(binds).toHaveBeenCalledExactlyOnceWith(eye.renderTarget, undefined, undefined, undefined, fullscreen, 0, layer);
+                overlay._bindFrameBuffer(camera);
+                events.push("overlay");
+            }
+            expect(events).toEqual(["clear", "main", "overlay", "clear", "main", "overlay"]);
+        } finally {
+            overlay.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it.each([false, true])("falls back to canvas for missing or multiview targets (composition=%s)", (compose) => {
+        const { engine, scene, right, target } = setup();
+        const chain = { activate: vi.fn(), apply: () => null };
+        const prepass: PrePassRenderer = Object.assign(Object.create(PrePassRenderer.prototype), {
+            _scene: scene,
+            _engine: engine,
+            _enabled: true,
+            _currentTarget: { enabled: true, _beforeCompositionPostProcesses: compose ? [chain] : [] },
+            _postProcessesSourceForThisPass: [],
+        });
+        scene.activeCamera.outputRenderTarget = right;
+        Object.assign(right, { _renderTarget: null });
+        prepass._afterDraw();
+        expect(engine.restoreDefaultFramebuffer).toHaveBeenCalledTimes(1);
+        Object.assign(right, { _renderTarget: target });
+        prepass._afterDraw();
+        expect(engine.bindFramebuffer).toHaveBeenCalledExactlyOnceWith(target, undefined, undefined, undefined, true, 0, 1);
+        Object.assign(scene.activeCamera, { _multiviewTexture: right });
+        prepass._afterDraw();
+        Object.assign(scene.activeCamera, { _multiviewTexture: null });
+        vi.spyOn(right, "getViewCount").mockReturnValue(2);
+        prepass._afterDraw();
+        expect(engine.restoreDefaultFramebuffer).toHaveBeenCalledTimes(3);
+        expect(engine.bindFramebuffer).toHaveBeenCalledTimes(1);
     });
 });

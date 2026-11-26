@@ -532,22 +532,6 @@ export class PrePassRenderer {
         this._setupOutputForThisPass(this._currentTarget, camera);
     }
 
-    private _prepareFrame(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number, layer?: number) {
-        if (prePassRenderTarget.renderTargetTexture) {
-            prePassRenderTarget.renderTargetTexture._prepareFrame(this._scene, faceIndex, layer, prePassRenderTarget.renderTargetTexture.useCameraPostProcesses);
-        } else if (this._postProcessesSourceForThisPass.length) {
-            this._scene.postProcessManager._prepareFrame();
-        } else {
-            const camera = this._scene.activeCamera;
-            const output = camera?._multiviewTexture ?? camera?.outputRenderTarget;
-            if (output) {
-                output._bindFrameBuffer();
-            } else {
-                this._engine.restoreDefaultFramebuffer();
-            }
-        }
-    }
-
     /**
      * Sets an intermediary texture between prepass and postprocesses. This texture
      * will be used as input for post processes
@@ -569,10 +553,10 @@ export class PrePassRenderer {
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number, layer?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
         const camera = this._scene.activeCamera;
-        const destination = prePassRenderTarget.renderTargetTexture ?? camera?._multiviewTexture ?? camera?.outputRenderTarget;
-        const outputTexture = firstPP ? firstPP.inputTexture : (destination?.renderTarget ?? null);
-        // A downstream post-process usually owns a flat intermediate, not a slice of the scene output.
-        const output = destination?.renderTarget === outputTexture ? destination : null;
+        // The composition shader is single-view. A multiview attachment requires a view-aware pass.
+        const cameraOutput =
+            !camera?._multiviewTexture && camera?.outputRenderTarget?.getViewCount() === 1 && camera.outputRenderTarget.renderTarget ? camera.outputRenderTarget : null;
+        const rtt = prePassRenderTarget.renderTargetTexture;
 
         // Build post process chain for this prepass post draw
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
@@ -586,10 +570,32 @@ export class PrePassRenderer {
             postProcessChain.push(this._currentTarget.imageProcessingPostProcess);
         }
 
-        // Activates and renders the chain
+        if (rtt) {
+            rtt._prepareFrame(this._scene, faceIndex, layer, rtt.useCameraPostProcesses);
+        } else if (firstPP) {
+            this._scene.postProcessManager._prepareFrame();
+        } else if (!postProcessChain.length) {
+            if (cameraOutput) {
+                cameraOutput._bindFrameBuffer();
+            } else {
+                this._engine.restoreDefaultFramebuffer();
+            }
+        }
+
         if (postProcessChain.length) {
+            const destination = rtt ?? cameraOutput;
+            const outputTexture = firstPP ? firstPP.inputTexture : (destination?.renderTarget ?? null);
+            // An intermediate does not inherit the final eye or array slice.
+            const output = outputTexture && destination?.renderTarget === outputTexture ? destination : null;
             this._scene.postProcessManager._prepareFrame(this._currentTarget.renderTarget?.texture, postProcessChain);
-            this._scene.postProcessManager._directRender(postProcessChain, outputTexture, output, output || outputTexture?.isCube ? faceIndex : undefined, layer);
+            this._scene.postProcessManager._directRender(
+                postProcessChain,
+                outputTexture,
+                output,
+                !rtt && !firstPP && !!cameraOutput,
+                output || outputTexture?.isCube ? faceIndex : undefined,
+                layer
+            );
         }
     }
 
@@ -598,7 +604,6 @@ export class PrePassRenderer {
      */
     public _afterDraw(faceIndex?: number, layer?: number) {
         if (this._enabled && this._currentTarget.enabled) {
-            this._prepareFrame(this._currentTarget, faceIndex, layer);
             this._renderPostProcesses(this._currentTarget, faceIndex, layer);
         }
     }

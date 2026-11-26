@@ -135,7 +135,7 @@ export class PostProcessManager {
         doNotBindFrambuffer = false,
         numPostsProcesses = postProcesses.length
     ): void {
-        this._directRender(postProcesses, targetTexture, null, faceIndex, undefined, forceFullscreenViewport, lodLevel, doNotBindFrambuffer, numPostsProcesses);
+        this._directRender(postProcesses, targetTexture, null, false, faceIndex, undefined, forceFullscreenViewport, lodLevel, doNotBindFrambuffer, numPostsProcesses);
     }
 
     /** @internal */
@@ -143,6 +143,7 @@ export class PostProcessManager {
         postProcesses: PostProcess[],
         targetTexture: Nullable<RenderTargetWrapper>,
         output: Nullable<RenderTargetTexture> | undefined,
+        presentToCamera: boolean,
         faceIndex = 0,
         layer?: number,
         forceFullscreenViewport = false,
@@ -156,7 +157,9 @@ export class PostProcessManager {
             if (index < postProcesses.length - 1) {
                 postProcesses[index + 1].activate(this._scene.activeCamera || this._scene, targetTexture?.texture);
             } else {
-                if (output) {
+                if (presentToCamera) {
+                    this._scene._bindFrameBuffer(this._scene.activeCamera);
+                } else if (output) {
                     output._bindFrameBuffer(faceIndex, layer, forceFullscreenViewport);
                 } else if (targetTexture) {
                     engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, lodLevel);
@@ -196,6 +199,7 @@ export class PostProcessManager {
      * @param postProcesses The array of post processes to render.
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
      * @param layer Explicit output slice when rendering an array or volume texture.
+     * @param presentToCamera Use the scene's camera bind-and-clear when pre-pass deferred it to presentation.
      * @internal
      */
     public _finalizeFrame(
@@ -204,7 +208,8 @@ export class PostProcessManager {
         faceIndex?: number,
         postProcesses?: Array<PostProcess>,
         forceFullscreenViewport = false,
-        layer?: number
+        layer?: number,
+        presentToCamera = false
     ): void {
         const camera = this._scene.activeCamera;
 
@@ -230,7 +235,11 @@ export class PostProcessManager {
                     const output = camera.outputRenderTarget;
                     if (output?.renderTarget === targetTexture && faceIndex === undefined && layer === undefined) {
                         // The camera target owns the layer selection (e.g. one eye of a projection layer).
-                        output._bindFrameBuffer(undefined, undefined, forceFullscreenViewport);
+                        if (presentToCamera && !doNotPresent && output.getViewCount() === 1) {
+                            this._scene._bindFrameBuffer(camera);
+                        } else {
+                            output._bindFrameBuffer(undefined, undefined, forceFullscreenViewport);
+                        }
                     } else {
                         engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, 0, layer);
                     }

@@ -5118,7 +5118,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _useCurrentFrameBuffer = false;
 
-    private _bindFrameBuffer(camera: Nullable<Camera>, clear = true) {
+    /** @internal */
+    public _bindFrameBuffer(camera: Nullable<Camera>, clear = true) {
         if (!this._useCurrentFrameBuffer) {
             if (camera && camera._multiviewTexture) {
                 camera._multiviewTexture._bindFrameBuffer();
@@ -5338,7 +5339,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.postProcessManager && !camera._multiviewTexture) {
             // if the camera has an output render target, render the post process to the render target
             const texture = camera.outputRenderTarget ? camera.outputRenderTarget.renderTarget! : undefined;
-            this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
+            this.postProcessManager._finalizeFrame(camera.isIntermediate, texture, undefined, undefined, false, undefined, this.prePass && bindFrameBuffer);
         }
 
         // After post process
