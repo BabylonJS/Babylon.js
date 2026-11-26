@@ -5,6 +5,8 @@ import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 // releaseEffects() flushes the effect cache while effects, the clear quad and recorded snapshot bundles can still use their GPU resources.
 // These tests render, call releaseEffects(), keep rendering long enough for the deferred buffer destruction to run, and check that the
 // rendering is unchanged and that WebGPU reports no validation error (a destroyed buffer in a submitted bundle is one).
+// readPixels() returns the raw bytes of the swap chain, which are BGRA on a bgra8unorm canvas: the checked pixels are green on a blue
+// background, so the expected bytes are the same for both canvas formats.
 
 type ReleaseEffectsResult = {
     before: number[];
@@ -123,7 +125,7 @@ for (const reuseDraws of [false, true]) {
                     { vertex: "releaseEffectsTint", fragment: "releaseEffectsTint" },
                     { attributes: ["position"], uniforms: ["worldViewProjection", "tint"], shaderLanguage: BABYLON.ShaderLanguage.WGSL }
                 );
-                material.setColor4("tint", new BABYLON.Color4(1, 0, 0, 1));
+                material.setColor4("tint", new BABYLON.Color4(0, 1, 0, 1));
                 box.material = material;
 
                 let waiters: { frames: number; resolve: () => void }[] = [];
@@ -160,8 +162,8 @@ for (const reuseDraws of [false, true]) {
                 return { before, after, gpuErrors };
             }, reuseDraws);
 
-            expectSameColor(result.before, [255, 0, 0, 255]);
-            expectSameColor(result.after, [255, 0, 0, 255]);
+            expectSameColor(result.before, [0, 255, 0, 255]);
+            expectSameColor(result.after, [0, 255, 0, 255]);
             expect(result.gpuErrors).toEqual([]);
         } finally {
             await page.evaluate(evaluateDisposeEngine);
