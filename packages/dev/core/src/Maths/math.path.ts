@@ -1124,7 +1124,10 @@ export class Curve3 {
         const yAxis = Vector3.Cross(zAxis, xAxis).normalize();
         if (fullCircle) {
             const dStep = (2 * Math.PI) / steps;
-            for (let theta = 0; theta <= 2 * Math.PI; theta += dStep) {
+            // Count the steps instead of adding dStep up to 2 * PI: depending on rounding, the sum reached 2 * PI
+            // or not, so the circle sometimes ended with a second copy of its first point (a zero length segment).
+            for (let i = 0; i < steps; i++) {
+                const theta = i * dStep;
                 arc.push(center.add(xAxis.scale(radius * Math.cos(theta)).add(yAxis.scale(radius * Math.sin(theta)))));
             }
             arc.push(first);
