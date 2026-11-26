@@ -1,6 +1,135 @@
 {
-    "fromTag": "9.37.1",
+    "fromTag": "9.37.2",
     "changelog": {
+        "9.38.0": [
+            {
+                "pr": "19226",
+                "title": "Atmosphere depth improvements",
+                "description": "For the various atmosphere addon effects:\n* Support NDC half range\n* Support reverse depth\n* Disable depth test when not used\n\nAlso, add a new visual test to validate that there is no change under a different depth configuration.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/addons/src/atmosphere/Shaders/ShadersInclude/depthFunctions.fx",
+                    "packages/dev/addons/src/atmosphere/Shaders/compositeAerialPerspective.fragment.fx",
+                    "packages/dev/addons/src/atmosphere/Shaders/compositeGlobeAtmosphere.fragment.fx",
+                    "packages/dev/addons/src/atmosphere/Shaders/fullscreenTriangle.vertex.fx",
+                    "packages/dev/addons/src/atmosphere/ShadersWGSL/ShadersInclude/depthFunctions.fx",
+                    "packages/dev/addons/src/atmosphere/ShadersWGSL/compositeAerialPerspective.fragment.fx",
+                    "packages/dev/addons/src/atmosphere/ShadersWGSL/compositeGlobeAtmosphere.fragment.fx",
+                    "packages/dev/addons/src/atmosphere/ShadersWGSL/fullscreenTriangle.vertex.fx",
+                    "packages/dev/addons/src/atmosphere/atmosphere.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19225",
+                "title": "WebGPU: dispose the pipeline context of every released effect",
+                "description": "Fixes #19223\n\nOn WebGPU, releasing an effect never disposed its `WebGPUPipelineContext`, so the uniform buffer it creates for left-over uniforms (`leftOver-…`) stayed alive. There were two gaps:\n\n- `_releaseEffect` only released the pipeline context when the effect was in `_compiledEffects`. Effects built with `new Effect(...)` (for example `EffectWrapper` with `useShaderStore: false`) are never in that cache, so nothing was released for them.\n- `_deletePipelineContext` only called `resetCachedPipeline`. It never called `webgpuPipelineContext.dispose()`, so a cached effect kept its uniform buffer too.\n\n**Fix:** `_releaseEffect` now releases the pipeline context of every effect, the same way `ThinEngine._releaseEffect` does on WebGL, and `_deletePipelineContext` disposes the context after `resetCachedPipeline`. That also covers the previous pipeline context that `Effect` deletes when it is rebuilt.\n\n`releaseEffects()` can now dispose a context twice (once in its loop, once when the effect's observer calls `dispose(true)`). `UniformBuffer.dispose()` is safe to call twice, and a disposed uniform buffer is recreated by its next `update()`. So internal effects that outlive `releaseEffects()`, such as the clear quad, keep working (see below).\n\n**Tests:** new `webgpuEngine.releaseEffect.test.ts` runs the real `_releaseEffect` / `_deletePipelineContext` on a real `WebGPUPipelineContext` with a spied uniform buffer. It covers an uncached effect, a cached effect (also removed from the cache), an effect with no pipeline context yet, and `_deletePipelineContext` on its own. 3 of the 4 fail on master. `Engines` + `Materials` unit tests: 1116 passed. The only failures are 19 in `thinEngine.test.ts` (`navigator is not defined` in my local environment), and they fail the same way on master. prettier and eslint are clean (no new warnings). `tsc -p packages/dev/core/tsconfig.build.json` reports no errors, and `tsconfig.test.json` reports none in the new test file.\n\n**In a browser** (headless Chromium, WebGPU on SwiftShader, bundles built from master and from this branch), I counted live `GPUBuffer`s by wrapping `createBuffer`/`destroy`. Each cycle created an `EffectWrapper` with a WGSL fragment that has one left-over uniform, waited for `executeWhenCompiled`, disposed it, then let the render loop run 3 frames:\n\n| 20 cycles | master | this branch |\n|---|---|---|\n| `useShaderStore: false` (uncached effect) | +20 buffers | +0 |\n| `useShaderStore: true` (cached effect, same key) | +20 buffers | +0 |\n\nThe leaked buffers on master are the `…-leftOver-_UniformList:…` ones from the issue. After that I called `engine.releaseEffects()` at runtime (the node editor preview does this) and kept rendering a scene with a clear color and an emissive box. The clear color and the box still render on both builds, with no WebGPU errors or warnings.\n\nI re-ran the unit tests and the browser check from a clean clone of the branch.\n",
+                "author": {
+                    "name": "vladosskins178",
+                    "url": "https://github.com/vladosskins178"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/webgpuEngine.releaseEffect.test.ts",
+                    "packages/tools/tests/test/playwright/releaseEffects.webgpu.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19220",
+                "title": "Keep Quaternion.toEulerAngles accurate close to a 90 degree pitch",
+                "description": "`Quaternion.toEulerAnglesToRef` treats a rotation as an exact +-90 degree pitch (gimbal lock) once `|qy*qz - qx*qw|` passes 0.4999999, then sets `z` to 0 and puts the rest into `y`. That threshold is reached about 0.05 degrees before 90, so rotations in that band come back as a slightly different rotation, and closer to the lock `asin(-2 * zAxisY)` also loses precision.\n\nOver random yaw/roll with pitch within 0.1 rad of +-90 degrees, `FromEulerVector(q.toEulerAngles())` was off from `q` by up to 0.051 degrees.\n\nThe two values already passed to `atan2` for `z`, `sin(z)cos(x)` and `cos(z)cos(x)`, have length `cos(x)`. The pitch now comes from `atan2(-2 * zAxisY, cos(x))`, and the gimbal lock branch is used only when that cosine is below 1e-8. The branch itself is unchanged, so an exact 90 degree pitch still gives `x = PI / 2`, `z = 0`. With this, the worst error in the same sweep is 3.8e-6 degrees.\n\nTests: a new `Quaternion` / `toEulerAngles` block in `babylon.math.vector.test.ts` round-trips pitches of 1.5, 1.57, 1.5707 and -1.5707 rad and checks the exact gimbal lock result. The round trip case fails before the change and passes after; the `test/unit/Math` folder passes (1307 tests), prettier is clean and eslint has no new findings.\n",
+                "author": {
+                    "name": "SwastikTripathi",
+                    "url": "https://github.com/SwastikTripathi"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.pure.ts",
+                    "packages/dev/core/src/Maths/math.vector.pure.ts",
+                    "packages/dev/core/src/Meshes/transformNode.pure.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.pure.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/test/unit/Behaviors/babylon.sixDofDragBehavior.rotateAroundYOnly.test.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.mesh.bake.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.transformNode.billboard.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19209",
+                "title": "Add opt-in WebGL clip control for a  depth range",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Motivation\n\nWebGL's default clip-space depth range limits the precision benefit of reversed Z. `EXT_clip_control` lets WebGL use a `[0, 1]` depth range, which preserves that benefit with a floating-point depth attachment. This follows the [Babylon.js forum discussion](https://forum.babylonjs.com/t/webgpu-default-depth-setup-z-fights-noticeably-more-than-webgl2-reversed-z-fixes-it-worth-making-it-the-default/64351/10).\n\n## Changes\n\n- Add the WebGL engine option `useNDCHalfZRange`, independent of `useReverseDepthBuffer`. It selects `LOWER_LEFT_EXT` and `ZERO_TO_ONE_EXT` when available. Otherwise WebGL uses its default `[-1, 1]` range. `engine.isNDCHalfZRange` reports the active mode.\n- Restore the selected range after context loss and reset it when disposing the engine so the context can be reused.\n- Make the affected GLSL fluid, volumetric lighting, and Gaussian splat voxelization shaders follow the active clip-space depth range.\n\n```ts\nconst engine = new Engine(canvas, true, {\n    useNDCHalfZRange: true,\n    useReverseDepthBuffer: true,\n});\n// For a perspective camera:\ncamera.maxZ = 0;\n```\n\nWith an infinite far plane (`camera.maxZ = 0`), the fluid compositor discards samples at view-space depths of 1,000,000 units or more.\n\nUse a floating-point depth attachment such as `Constants.TEXTUREFORMAT_DEPTH32_FLOAT` on a render target for the full precision benefit. The WebGL default framebuffer retains its depth format.\n\nFor a camera with `maxZ = 0` and cascaded shadows, set a finite `CascadedShadowGenerator.shadowMaxZ` explicitly. The generator uses it to bound the shadow frustum. [CSM support for infinite far planes](https://github.com/BabylonJS/Babylon.js/pull/13892)\n\n## Validation\n\n- 82 focused unit tests passed, including engine, shadows, and XR projection suites. The core TypeScript check passed.\n- 20 GLSL variants compiled across both clip ranges and depth orders.\n- A Chromium WebGL2 smoke test verified that the closer of two surfaces at 100 million units won the depth test with an infinite far plane and a float32 depth attachment, before and after forced context loss.\n\n### WebGL2 visual regressions\n\nThe two Playwright cases use pinned Playground snippets. Their reference images were captured with WebGL's standard `[-1, 1]` clip depth range. Both cases passed in local Chromium with `[0, 1]` enabled.\n\n| Scene | Changed pixels with the new engine and the previous GLSL shaders |\n| --- | ---: |\n| [Fluid particles between two opaque plates](https://playground.babylonjs.com/?clipDepth=reference#7U2BZN#0) | 16,383 (6.8%) |\n| [Wall intersecting a light volume](https://playground.babylonjs.com/?clipDepth=reference#YAZ8XO#0) | 21,469 (8.9%) |\n\nBoth cases failed the 1.1% screenshot tolerance when the earlier shaders were restored and the engine stayed in `[0, 1]`. The Playwright cases skip contexts without `EXT_clip_control` and require the requested range to be active on supported contexts.\n\nThe links show the standard-range references. To try `[0, 1]` in the Playground, use a build containing this PR and remove `clipDepth=reference` from the URL.\n\nThe volumetric scene exercises depth reconstruction with extinction disabled. Gaussian splat voxelization was checked by shader compilation. XR coverage is at the projection unit-test level.\n",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    ".github/instructions/visual-tests-reference.md",
+                    "packages/dev/core/src/Cameras/camera.pure.ts",
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Culling/ray.core.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.pure.ts",
+                    "packages/dev/core/src/Engines/thinEngine.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/volumetricLightingTask.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl2.d.ts",
+                    "packages/dev/core/src/Materials/effect.pure.ts",
+                    "packages/dev/core/src/Maths/math.frustum.ts",
+                    "packages/dev/core/src/Maths/math.vector.pure.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDepth.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingRender.fragment.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplattingVoxel.vertex.fx",
+                    "packages/dev/core/src/Shaders/volumetricLightingBlendVolume.fragment.fx",
+                    "packages/dev/core/src/Shaders/volumetricLightingRenderVolume.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/fluidRenderingRender.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/volumetricLightingRenderVolume.fragment.fx",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/src/scene.pure.ts",
+                    "packages/dev/core/test/unit/Collisions/babylon.gpuPicker.test.ts",
+                    "packages/dev/core/test/unit/Engines/mockWebGL2Canvas.ts",
+                    "packages/dev/core/test/unit/Engines/thinEngine.test.ts",
+                    "packages/dev/core/test/unit/Materials/effect.shaderPreparation.test.ts",
+                    "packages/dev/core/test/unit/Rendering/depthOrderEffects.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRCamera.test.ts",
+                    "packages/tools/tests/test/playwright/clipDepth.webgl2.test.ts",
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgl2-half-range-depth-fluid-rhs.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgl2-half-range-depth-fluid-variable-thickness.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgl2-half-range-depth-fluid.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgl2-half-range-depth-volumetric.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgl2-orthographic-fluid-occlusion.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19219",
+                "title": "NativeEngine: support raw 2D array updates, layer image uploads and mip storage",
+                "description": "Babylon Native's `ThinNativeEngine` lacked several `RawTexture2DArray` paths, so playground `#I5RZPG#1` (Raw Texture 2D Array Mipmaps, BabylonNative validation test 886) failed on Native.\n\n## Changes\n- **`updateRawTexture2DArray`**: override the WebGL implementation, which reached for `_gl`.\n  - The base level re-uploads through `loadRawTexture2DArray`.\n  - Higher `mipLevel`s (from `RawTexture2DArray.updateMipLevel` and context-lost rebuilds) upload per layer through `updateTextureData`.\n- **`updateTextureArrayLayerFromImageSource`**: upload a `createImageBitmap` result into one layer.\n  - Native generates mips per layer, so it uses the recorded mip storage (`_hasMipStorage`) instead of `generateMipMaps`, which `CreateTexture2DArrayFromImageUrlsAsync` toggles off for all but the last layer.\n  - Unsupported sources and size mismatches throw clear errors.\n- **`createRawTexture2DArray`**: record mip storage.\n- **`rawTexture2DArray` URL helpers**: decode with `engine.createImageBitmap` instead of the global, following `fileTools` and `environmentTextureTools`. Babylon Native has no global `createImageBitmap`. `AbstractEngine.createImageBitmap` still forwards to the global on the web.\n\nThe matching native side (per-layer CPU mips, `null` data, `ImageBitmap.close()`, padded `toDataURL`) is in a companion BabylonNative PR.\n\n## Testing\n- Added unit tests:\n  - `thinNativeEngine.test.ts`: base and mip-level array updates, and layer uploads while `generateMipMaps` is toggled off.\n  - `rawTexture2DArray.functions.test.ts`: decoding through the engine.\n- Ran vitest on both files (179 passed), plus eslint, prettier and `tsc` on core.\n- With the BabylonNative changes, test 886 renders with no pixel difference on Metal/macOS. The full macOS validation sweep stays at 875/875.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.functions.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/rawTexture2DArray.functions.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "native"
+                ]
+            }
+        ],
         "9.37.2": [
             {
                 "pr": "19207",
