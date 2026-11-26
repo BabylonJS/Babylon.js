@@ -4273,9 +4273,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             return;
         }
 
+        const forceBindGroupCreation = !this.compatibilityMode && this._currentMaterialContext.forceBindGroupCreation;
         if (
             !this.compatibilityMode &&
-            (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)
+            (forceBindGroupCreation || this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty)
         ) {
             this._currentDrawContext._invalidateFastBundles();
         }
@@ -4312,6 +4313,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
+        const cacheFastBundle = nonCompatMode && !forceBindGroupCreation;
         const drawContext = this._currentDrawContext;
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
         const indexed = drawKind === WebGPURenderPassDrawKind.INDEXED;
@@ -4327,7 +4329,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
               : null;
         const indirectDrawByteOffset = externalIndirectDrawBuffer ? drawContext._externalIndirectDrawByteOffset : 0;
 
-        if (nonCompatMode) {
+        if (cacheFastBundle) {
             this._validateFastBundleDraw(indexBuffer?.underlyingResource ?? null, indexFormat, indirectDrawBuffer, indirectDrawByteOffset, indexed, count, instances, start);
             // Pipeline state can change without dirtying the draw or material bindings.
             let fastBundle: GPURenderBundle | undefined;
@@ -4444,16 +4446,18 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (nonCompatMode) {
             const bundle = (renderPass2 as GPURenderBundleEncoder).finish();
-            if (this._colorWriteLocal) {
-                drawContext._previousFastBundle = drawContext.fastBundle;
-                drawContext._previousFastBundlePipeline = drawContext._fastBundlePipeline;
-                drawContext.fastBundle = bundle;
-                drawContext._fastBundlePipeline = pipeline;
-            } else {
-                drawContext._previousFastBundleWithoutColorWrite = drawContext._fastBundleWithoutColorWrite;
-                drawContext._previousFastBundleWithoutColorWritePipeline = drawContext._fastBundleWithoutColorWritePipeline;
-                drawContext._fastBundleWithoutColorWrite = bundle;
-                drawContext._fastBundleWithoutColorWritePipeline = pipeline;
+            if (cacheFastBundle) {
+                if (this._colorWriteLocal) {
+                    drawContext._previousFastBundle = drawContext.fastBundle;
+                    drawContext._previousFastBundlePipeline = drawContext._fastBundlePipeline;
+                    drawContext.fastBundle = bundle;
+                    drawContext._fastBundlePipeline = pipeline;
+                } else {
+                    drawContext._previousFastBundleWithoutColorWrite = drawContext._fastBundleWithoutColorWrite;
+                    drawContext._previousFastBundleWithoutColorWritePipeline = drawContext._fastBundleWithoutColorWritePipeline;
+                    drawContext._fastBundleWithoutColorWrite = bundle;
+                    drawContext._fastBundleWithoutColorWritePipeline = pipeline;
+                }
             }
             bundleList.addBundle(bundle);
         }

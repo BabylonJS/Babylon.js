@@ -140,6 +140,35 @@ describe("WebGPU draw submission", () => {
         expect(state._bundleList.addBundle.mock.calls).toEqual([...originals, ...replacements].map((bundle) => [bundle]));
     });
 
+    it("submits fresh bundles without caching draws that force bind group creation", () => {
+        const { engine, state, bundleEncoder } = createEngine();
+        const cached = { id: 1 };
+        const external = [{ id: 2 }, { id: 3 }];
+        const replacement = { id: 4 };
+        for (const bundle of [cached, ...external, replacement]) {
+            bundleEncoder.finish.mockReturnValueOnce(bundle);
+        }
+        engine.compatibilityMode = false;
+        engine.drawElementsType(0, 0, 3);
+
+        state._currentMaterialContext.forceBindGroupCreation = true;
+        for (const colorWrite of [true, false]) {
+            engine.setColorWrite(colorWrite);
+            engine.drawElementsType(0, 0, 3);
+            expect(state._currentDrawContext).toHaveProperty("_fastBundleDraw", undefined);
+            expect(state._currentDrawContext.fastBundle).toBeUndefined();
+            expect(state._currentDrawContext._fastBundleWithoutColorWrite).toBeUndefined();
+        }
+
+        state._currentMaterialContext.forceBindGroupCreation = false;
+        engine.setColorWrite(true);
+        engine.drawElementsType(0, 0, 3);
+        engine.drawElementsType(0, 0, 3);
+
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(4);
+        expect(state._bundleList.addBundle.mock.calls).toEqual([cached, ...external, replacement, replacement].map((bundle) => [bundle]));
+    });
+
     it("re-records both bundle variants when the depth comparison changes without dirty bindings", () => {
         const { engine, state, bundleEncoder } = createEngine();
         const depthOnly = { id: 1 };
